@@ -318,6 +318,9 @@ return [
             'fleet' => [
                 'licenseCheckDue' => 'Contrôle du permis de conduire à échéance',
             ],
+            'recruiting' => [
+                'applicationReceived' => 'Candidature publique reçue',
+            ],
             'assetCompliance' => [
                 'inspectionDue' => 'Contrôle à échéance/en retard',
             ],

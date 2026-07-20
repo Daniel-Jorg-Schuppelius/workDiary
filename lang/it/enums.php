@@ -318,6 +318,9 @@ return [
             'fleet' => [
                 'licenseCheckDue' => 'Controllo della patente in scadenza',
             ],
+            'recruiting' => [
+                'applicationReceived' => 'Candidatura pubblica ricevuta',
+            ],
             'assetCompliance' => [
                 'inspectionDue' => 'Verifica in scadenza/scaduta',
             ],

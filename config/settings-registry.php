@@ -182,4 +182,14 @@ return [
     // System-Scope); Klartext, Ausgabe HTML-escaped auf /impressum bzw. /datenschutz.
     'legal.imprint' => ['type' => 'text', 'scopes' => ['system'], 'rules' => 'nullable|max:65535'],
     'legal.privacy' => ['type' => 'text', 'scopes' => ['system'], 'rules' => 'nullable|max:65535'],
+
+    // --- Öffentlicher Karrierebereich (Feature 068, MVP-437) ---
+    // Je Organisation Opt-in (Default AUS). Öffentliche Stellen + sessionlose
+    // Self-Service-Bewerbung; Einbettung nur für freigegebene HTTPS-Origins.
+    'applications.portal.enabled' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
+    'applications.portal.privacy_notice_text' => ['type' => 'text', 'scopes' => ['organization'], 'rules' => 'nullable|max:65535'],
+    'applications.portal.privacy_notice_url' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|url|max:500'],
+    // Zeilen-/kommagetrennte HTTPS-Origins für die Iframe-Einbettung (frame-ancestors).
+    'applications.portal.embed_origins' => ['type' => 'text', 'scopes' => ['organization'], 'rules' => 'nullable|max:2000'],
+    'applications.portal.contact_email' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|email|max:190'],
 ];

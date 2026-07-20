@@ -1430,6 +1430,9 @@ Route::middleware('auth')->group(function () {
             Route::post('{requisition}/status', [\App\Http\Controllers\Applications\JobRequisitionController::class, 'updateStatus'])->name('status');
             Route::post('{requisition}/veroeffentlichungen', [\App\Http\Controllers\Applications\JobRequisitionController::class, 'addPosting'])->name('postings.store');
             Route::post('{requisition}/veroeffentlichungen/{posting}/schliessen', [\App\Http\Controllers\Applications\JobRequisitionController::class, 'closePosting'])->name('postings.close');
+            // MVP-437: öffentlicher Karrierebereich — explizite Veröffentlichung/Pause.
+            Route::post('{requisition}/karriere', [\App\Http\Controllers\Applications\JobRequisitionController::class, 'publishCareer'])->name('career.publish');
+            Route::post('{requisition}/karriere/pausieren', [\App\Http\Controllers\Applications\JobRequisitionController::class, 'pauseCareer'])->name('career.pause');
         });
         Route::prefix('personal/bewerbungen')->name('recruiting.applications.')->group(function (): void {
             Route::get('/', [\App\Http\Controllers\Applications\JobApplicationController::class, 'index'])->name('index');
@@ -2648,6 +2651,8 @@ Route::middleware('auth')->group(function () {
         Route::get('admin/imports/create', [ImportController::class, 'create'])->name('admin.imports.create');
         // CSV-Mustervorlage je Entität (Feature 020 MVP; Vollaudit 2026-07, N8).
         Route::get('admin/imports/vorlage/{entity}.csv', [ImportController::class, 'template'])->name('admin.imports.template');
+        // MVP-438: iCal-Beispieldatei je Zeiterfassungs-Entität.
+        Route::get('admin/imports/vorlage/{entity}.ics', [ImportController::class, 'icalSample'])->name('admin.imports.icalSample');
         Route::post('admin/imports/preflight', [ImportController::class, 'preflight'])->name('admin.imports.preflight');
         Route::get('admin/imports/{import}', [ImportController::class, 'show'])->name('admin.imports.show');
         Route::post('admin/imports/{import}/confirm', [ImportController::class, 'confirm'])->name('admin.imports.confirm');

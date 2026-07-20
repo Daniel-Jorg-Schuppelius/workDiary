@@ -318,6 +318,9 @@ return [
             'fleet' => [
                 'licenseCheckDue' => 'Control del permiso de conducir pendiente',
             ],
+            'recruiting' => [
+                'applicationReceived' => 'Candidatura pública recibida',
+            ],
             'assetCompliance' => [
                 'inspectionDue' => 'Inspección pendiente/vencida',
             ],

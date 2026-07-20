@@ -14,10 +14,10 @@ namespace App\Services\Import;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode, ImportRunState};
 use App\Models\{ImportRun, ImportRunError, Organization, User};
-use App\Support\Toolkit\CsvFacade;
+use App\Services\Import\Source\{CsvImportSource, ImportSource, ImportSourceFactory};
 use CommonToolkit\Helper\Data\CSV\StringHelper;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
-use CommonToolkit\Parsers\{CSVDocumentParser, XLSXDocumentParser};
+use CommonToolkit\Parsers\XLSXDocumentParser;
 use DateTimeInterface;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{DB, Storage};
@@ -47,10 +47,13 @@ class CsvPreflightAnalyzer {
 
     public function __construct(
         private readonly EntitySpecRegistry $registry,
+        private readonly ImportSourceFactory $sources,
     ) {}
 
     /**
      * Führt die Vorprüfung durch und persistiert einen Import-Lauf.
+     *
+     * @param  array<string, mixed>  $options  Quellen-Optionen (z. B. iCal-`category_allowlist`)
      */
     public function analyze(
         UploadedFile $file,
@@ -58,6 +61,7 @@ class CsvPreflightAnalyzer {
         Organization $organization,
         ?User $actor = null,
         string $matchPolicy = 'auto_create',
+        array $options = [],
     ): ImportRun {
         $spec = $this->registry->for($entity);
 
@@ -78,6 +82,7 @@ class CsvPreflightAnalyzer {
             'input_hash' => $hash,
             'storage_path' => $stored,
             'match_policy' => $matchPolicy === 'inbox_first' ? 'inbox_first' : 'auto_create',
+            'source_options' => $options === [] ? null : $options,
             'created_by_user_id' => $actor?->id,
         ]);
         $run->save();
@@ -91,99 +96,42 @@ class CsvPreflightAnalyzer {
                 $absolutePath = Storage::disk(self::DISK)->path($stored);
             }
 
-            // Entitätsspezifische Vorverarbeitung des Roh-Inhalts (z. B. Excel-`sep=`-
-            // Vorzeile entfernen). Nur bei tatsächlicher Änderung neu schreiben, damit
-            // der Default-Pfad (keine Vorverarbeitung) das gestreamte File unberührt lässt.
-            $raw = ToolkitFile::read($absolutePath);
-            $processed = $spec->preprocessRaw($raw);
-            if ($processed !== $raw) {
-                Storage::disk(self::DISK)->put($stored, $processed);
-            }
-
-            $delimiter = CSVDocumentParser::detectDelimiter($absolutePath);
-            $run->delimiter = $delimiter;
-
-            $rawHeader = array_values(CSVDocumentParser::readHeader($absolutePath, $delimiter)->getColumnNames());
-            [$headerMap, $headerIssues] = $this->mapHeader($rawHeader, $spec);
-
-            if ($headerIssues !== []) {
-                $this->persistHeaderIssues($run, $headerIssues);
-                $run->state = ImportRunState::Failed;
-                $run->save();
-
-                return $run;
-            }
-
-            $preview = [];
-            $rowsTotal = 0;
-            $rowsFailed = 0;
-            // Rang 58: unbekannte Tag-/Kategorie-Quellwerte fürs Mapping-Formular.
-            $unresolvedValues = [];
-
-            DB::transaction(function () use ($run, $absolutePath, $delimiter, $headerMap, $spec, $organization, &$preview, &$rowsTotal, &$rowsFailed, &$unresolvedValues): void {
-                foreach (CsvFacade::streamAssoc($absolutePath, $delimiter) as $lineNumber => $rawRow) {
-                    if ($rowsTotal >= self::MAX_ROWS) {
-                        ImportRunError::create([
-                            'import_run_id' => $run->id,
-                            'row_number' => $rowsTotal + 1,
-                            'field' => null,
-                            'code' => ImportErrorCode::OutOfRange,
-                            'message' => __('import.error.outOfRange.rowLimit', ['max' => self::MAX_ROWS]),
-                            'row_data' => null,
-                        ]);
-                        $rowsFailed++;
-
-                        break;
-                    }
-
-                    $rowsTotal++;
-                    $rowNumber = $rowsTotal; // 1-basiert ohne Header
-
-                    $mapped = $this->applyHeaderMap($rawRow, $headerMap);
-                    $normalized = $spec->normalize($mapped);
-
-                    if ($spec instanceof \App\Services\Import\HasMappableValues) {
-                        $raw = $normalized[$spec->mappableColumn()] ?? null;
-                        foreach ($spec->splitMappableValues(is_string($raw) ? $raw : null) as $value) {
-                            $unresolvedValues[\App\Models\ImportValueMapping::normalize($value)] = $value;
-                        }
-                    }
-
-                    $issues = $spec->validateRow($normalized, $organization);
-                    foreach ($issues as $issue) {
-                        ImportRunError::create([
-                            'import_run_id' => $run->id,
-                            'row_number' => $rowNumber,
-                            'field' => $issue->field,
-                            'code' => $issue->code,
-                            'message' => $issue->message,
-                            'row_data' => $mapped,
-                        ]);
-                    }
-                    if ($issues !== []) {
-                        $rowsFailed++;
-                    }
-
-                    if (count($preview) < self::PREVIEW_ROWS) {
-                        $preview[] = [
-                            'row' => $rowNumber,
-                            'data' => $mapped,
-                            'issues' => array_map(static fn($i) => [
-                                'field' => $i->field,
-                                'code' => $i->code->value,
-                                'message' => $i->message,
-                            ], $issues),
-                        ];
-                    }
+            // MVP-438: Format-Schicht. iCal überspringt Kopfzeile/Delimiter und
+            // liefert kanonische Zeilen direkt aus den VEVENTs.
+            if ($this->sources->isIcal($absolutePath)) {
+                $source = $this->sources->make($absolutePath, $entity, $organization, null, $options);
+            } else {
+                // Entitätsspezifische Vorverarbeitung des Roh-Inhalts (z. B. Excel-`sep=`-
+                // Vorzeile entfernen). Nur bei tatsächlicher Änderung neu schreiben, damit
+                // der Default-Pfad (keine Vorverarbeitung) das gestreamte File unberührt lässt.
+                $raw = ToolkitFile::read($absolutePath);
+                $processed = $spec->preprocessRaw($raw);
+                if ($processed !== $raw) {
+                    Storage::disk(self::DISK)->put($stored, $processed);
                 }
-            });
+
+                $csv = new CsvImportSource($absolutePath);
+                $run->delimiter = $csv->delimiter();
+
+                $headerIssues = $csv->headerIssues($spec);
+                if ($headerIssues !== []) {
+                    $this->persistHeaderIssues($run, $headerIssues);
+                    $run->state = ImportRunState::Failed;
+                    $run->save();
+
+                    return $run;
+                }
+                $source = $csv;
+            }
+
+            $result = $this->ingestRows($run, $source, $spec, $organization);
 
             // Rang 58/A13: nur wirklich unbekannte Werte behalten (kein Mapping,
             // kein Namens-Tag, kein eindeutiger Klassifikations-Code) — sie
             // blockieren die Bestätigung bis zur Zuordnung.
-            if ($spec instanceof \App\Services\Import\HasMappableValues && $unresolvedValues !== []) {
+            if ($spec instanceof \App\Services\Import\HasMappableValues && $result['unresolvedValues'] !== []) {
                 $pending = [];
-                foreach ($unresolvedValues as $value) {
+                foreach ($result['unresolvedValues'] as $value) {
                     if ($spec->unresolvedMappableValues($organization, $value, $spec->entity()->value) !== []) {
                         $pending[] = $value;
                     }
@@ -192,9 +140,9 @@ class CsvPreflightAnalyzer {
                 $run->unresolved_values = $pending === [] ? null : [$spec->mappableColumn() => $pending];
             }
 
-            $run->rows_total = $rowsTotal;
-            $run->rows_failed = $rowsFailed;
-            $run->preview = $preview;
+            $run->rows_total = $result['rowsTotal'];
+            $run->rows_failed = $result['rowsFailed'];
+            $run->preview = $result['preview'];
             $run->state = ImportRunState::AwaitingApproval;
             $run->save();
         } catch (Throwable $e) {
@@ -214,87 +162,124 @@ class CsvPreflightAnalyzer {
     }
 
     /**
-     * @param  list<string>  $rawHeader
-     * @return array{0: array<int, string|null>, 1: list<array{field: ?string, code: ImportErrorCode, message: string}>}
+     * Geteilte Zeilenaufnahme über die {@see ImportSource} (MVP-438): validiert
+     * Datenzeilen, sammelt die Vorschau und persistiert Zeilenfehler sowie nicht
+     * blockierende Quellen-Hinweise (z. B. übersprungene iCal-Ganztags-Events).
+     *
+     * @return array{preview: list<array<string, mixed>>, rowsTotal: int, rowsFailed: int, unresolvedValues: array<string, string>}
      */
-    private function mapHeader(array $rawHeader, EntitySpec $spec): array {
-        $aliases = [];
-        foreach ($spec->headerAliases() as $alias => $canonical) {
-            $aliases[$this->normKey($alias)] = $canonical;
-        }
-        foreach ($spec->columns() as $col) {
-            $aliases[$this->normKey($col)] = $col;
-        }
+    private function ingestRows(ImportRun $run, ImportSource $source, EntitySpec $spec, Organization $organization): array {
+        $preview = [];
+        $rowsTotal = 0;
+        $rowsFailed = 0;
+        // Rang 58: unbekannte Tag-/Kategorie-Quellwerte fürs Mapping-Formular.
+        $unresolvedValues = [];
 
-        $map = [];
-        $seen = [];
-        $issues = [];
-        foreach ($rawHeader as $idx => $headerCell) {
-            $key = $this->normKey($headerCell);
-            $canonical = $aliases[$key] ?? null;
-            $map[$idx] = $canonical;
-            if ($canonical !== null) {
-                if (isset($seen[$canonical])) {
-                    $issues[] = [
-                        'field' => $canonical,
-                        'code' => ImportErrorCode::HeaderUnknown,
-                        'message' => __('import.error.header.duplicate', ['column' => $canonical]),
+        DB::transaction(function () use ($run, $source, $spec, $organization, &$preview, &$rowsTotal, &$rowsFailed, &$unresolvedValues): void {
+            foreach ($source->rows($spec) as $sourceRow) {
+                // Nicht blockierende Quellen-Hinweise (iCal-Ganztags-/OOF-/Serien-Zeilen).
+                $warning = $sourceRow->warning;
+                if ($warning !== null) {
+                    ImportRunError::create([
+                        'import_run_id' => $run->id,
+                        'row_number' => $sourceRow->number,
+                        'field' => $warning->field,
+                        'code' => $warning->code,
+                        'message' => $warning->message,
+                        'row_data' => null,
+                    ]);
+                    $rowsFailed++;
+                    if (count($preview) < self::PREVIEW_ROWS) {
+                        $preview[] = [
+                            'row' => $sourceRow->number,
+                            'data' => [],
+                            'issues' => [[
+                                'field' => $warning->field,
+                                'code' => $warning->code->value,
+                                'message' => $warning->message,
+                            ]],
+                        ];
+                    }
+
+                    continue;
+                }
+
+                if ($rowsTotal >= self::MAX_ROWS) {
+                    ImportRunError::create([
+                        'import_run_id' => $run->id,
+                        'row_number' => $sourceRow->number,
+                        'field' => null,
+                        'code' => ImportErrorCode::OutOfRange,
+                        'message' => __('import.error.outOfRange.rowLimit', ['max' => self::MAX_ROWS]),
+                        'row_data' => null,
+                    ]);
+                    $rowsFailed++;
+
+                    break;
+                }
+
+                $rowsTotal++;
+                $mapped = $sourceRow->data;
+                $normalized = $spec->normalize($mapped);
+
+                if ($spec instanceof \App\Services\Import\HasMappableValues) {
+                    $raw = $normalized[$spec->mappableColumn()] ?? null;
+                    foreach ($spec->splitMappableValues(is_string($raw) ? $raw : null) as $value) {
+                        $unresolvedValues[\App\Models\ImportValueMapping::normalize($value)] = $value;
+                    }
+                }
+
+                $issues = $spec->validateRow($normalized, $organization);
+                foreach ($issues as $issue) {
+                    ImportRunError::create([
+                        'import_run_id' => $run->id,
+                        'row_number' => $sourceRow->number,
+                        'field' => $issue->field,
+                        'code' => $issue->code,
+                        'message' => $issue->message,
+                        'row_data' => $mapped,
+                    ]);
+                }
+                if ($issues !== []) {
+                    $rowsFailed++;
+                }
+
+                if (count($preview) < self::PREVIEW_ROWS) {
+                    $preview[] = [
+                        'row' => $sourceRow->number,
+                        'data' => $mapped,
+                        'issues' => array_map(static fn($i) => [
+                            'field' => $i->field,
+                            'code' => $i->code->value,
+                            'message' => $i->message,
+                        ], $issues),
                     ];
-                } else {
-                    $seen[$canonical] = true;
                 }
             }
-        }
+        });
 
-        foreach ($spec->requiredColumns() as $required) {
-            if (! isset($seen[$required])) {
-                $issues[] = [
-                    'field' => $required,
-                    'code' => ImportErrorCode::HeaderMissing,
-                    'message' => __('import.error.header.missing', ['column' => $required]),
-                ];
-            }
-        }
-
-        return [$map, $issues];
+        return [
+            'preview' => $preview,
+            'rowsTotal' => $rowsTotal,
+            'rowsFailed' => $rowsFailed,
+            'unresolvedValues' => $unresolvedValues,
+        ];
     }
 
     /**
-     * @param  array<string, string>  $raw
-     * @param  array<int, string|null>  $headerMap
-     * @return array<string, string>
-     */
-    private function applyHeaderMap(array $raw, array $headerMap): array {
-        $values = array_values($raw);
-        $out = [];
-        foreach ($headerMap as $idx => $canonical) {
-            if ($canonical === null) {
-                continue;
-            }
-            $out[$canonical] = $values[$idx] ?? '';
-        }
-
-        return $out;
-    }
-
-    /**
-     * @param  list<array{field: ?string, code: ImportErrorCode, message: string}>  $issues
+     * @param  list<\App\Services\Import\ValidationIssue>  $issues
      */
     private function persistHeaderIssues(ImportRun $run, array $issues): void {
         foreach ($issues as $issue) {
             ImportRunError::create([
                 'import_run_id' => $run->id,
                 'row_number' => 0,
-                'field' => $issue['field'],
-                'code' => $issue['code'],
-                'message' => $issue['message'],
+                'field' => $issue->field,
+                'code' => $issue->code,
+                'message' => $issue->message,
                 'row_data' => null,
             ]);
         }
-    }
-
-    private function normKey(string $key): string {
-        return mb_strtolower(trim($key));
     }
 
     /**

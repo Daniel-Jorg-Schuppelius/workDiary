@@ -12,6 +12,8 @@ return [
         'scheduled_shifts' => 'Planes de turnos',
         'tours' => 'Rutas',
         'remote_sessions' => 'Sesiones de mantenimiento remoto',
+        'attendances' => 'Fichajes',
+        'project_times' => 'Tiempos de proyecto',
     ],
     'template' => [
         'example_required' => 'Valor de ejemplo (obligatorio)',
@@ -37,6 +39,8 @@ return [
         'persist' => 'Error de persistencia',
         'headerMissing' => 'Columna ausente',
         'headerUnknown' => 'Columna desconocida',
+        'periodLocked' => 'Periodo bloqueado',
+        'skipped' => 'Omitido',
     ],
     'error' => [
         'required' => 'Falta el campo obligatorio :field.',
@@ -64,9 +68,24 @@ return [
         'fkMissing' => [
             'customer' => 'No se encontró ningún cliente con el número :number.',
             'user' => 'No se encontró ningún usuario con el correo :value.',
+            'project' => 'No se encontró ningún proyecto «:value» — fila enviada a la bandeja de asignación.',
         ],
         'persist' => [
             'noBookingUser' => 'No se encontró ningún usuario imputable en la organización.',
+        ],
+        // MVP-438: bloqueo GoBD — sin sobrescritura silenciosa de periodos revisados.
+        'periodLocked' => [
+            'attendance' => 'El día :date está bloqueado por el cierre diario o la aprobación mensual — fila omitida.',
+            'projectTime' => 'El periodo :date ya está cerrado/exportado — fila omitida.',
+        ],
+        // MVP-438: filas de aviso iCal (mapeo deliberadamente conservador).
+        'ical' => [
+            'allDay' => 'Evento de todo el día «:event» omitido (no computable como presencia).',
+            'noTime' => 'Evento «:event» sin hora omitido.',
+            'category' => 'Evento «:event» fuera de la lista de categorías permitidas omitido.',
+            'transparent' => 'Evento «:event» marcado como libre/ausente omitido.',
+            'recurring' => 'Evento recurrente «:event»: solo se importó la instancia base (la expansión de la serie vendrá después).',
+            'unsupportedEntity' => 'La importación iCal no es compatible con este tipo de importación.',
         ],
     ],
 ];

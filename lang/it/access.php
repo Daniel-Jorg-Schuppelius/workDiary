@@ -396,6 +396,8 @@ return [
         'audit-log.view' => 'Visualizza il registro di audit',
         'attendance.viewAny' => 'Visualizza le presenze',
         'attendance.manage' => 'Gestisci le presenze',
+        'attendance.import' => 'Importa timbrature',
+        'project-time.import' => 'Importa tempi di progetto',
         'compliance.viewAny' => 'Visualizza la conformità orario di lavoro',
         'work-schedule.manage' => 'Gestisci l\'orario di lavoro',
         'flex.view' => 'Visualizza il saldo flex',

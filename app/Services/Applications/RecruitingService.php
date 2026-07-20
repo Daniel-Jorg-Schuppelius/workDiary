@@ -12,8 +12,10 @@ declare(strict_types=1);
 
 namespace App\Services\Applications;
 
-use App\Models\Applications\{EmployeeDraft, JobApplication};
-use App\Models\User;
+use App\Enums\Notification\NotificationEvent;
+use App\Models\Applications\{EmployeeDraft, JobApplication, JobPosting};
+use App\Models\{Organization, User};
+use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Support\Facades\{DB, Hash};
 use Illuminate\Support\Str;
 
@@ -61,6 +63,86 @@ class RecruitingService {
         $application->audit('recruiting.application_received', ['duplicates' => $duplicates]);
 
         return ['application' => $application, 'duplicates' => $duplicates];
+    }
+
+    /**
+     * Öffentlicher Selbst-Service-Eingang (MVP-437). Anders als {@see intake()}
+     * gibt es **keinen fingierten Nutzer**: Organisation, Posting, Quelle und der
+     * Datenschutz-Nachweis werden explizit übergeben, `created_by` bleibt null.
+     * Die Dubletten-/Hash-/Empty-null-Logik wird bewusst wiederverwendet; das
+     * Audit-Ereignis und die interne Benachrichtigung (ohne Bewerber-PII) sind
+     * eigenständig.
+     *
+     * @param  array<string, mixed>  $attributes
+     * @return array{application: JobApplication, duplicates: int}
+     */
+    public function publicIntake(Organization $organization, JobPosting $posting, array $attributes, string $privacyVersion, string $intakeRef): array {
+        $email = trim((string) ($attributes['email'] ?? ''));
+        $emailHash = $email !== '' ? JobApplication::hashEmail($email) : null;
+
+        $duplicates = 0;
+        if ($emailHash !== null) {
+            $duplicates = JobApplication::query()
+                ->where('organization_id', $organization->id)
+                ->where('email_hash', $emailHash)
+                ->whereNull('anonymized_at')
+                ->count();
+        }
+
+        $responsibleId = $posting->requisition?->responsible_user_id;
+
+        $application = JobApplication::query()->create([
+            'organization_id' => $organization->id,
+            'job_requisition_id' => $posting->job_requisition_id,
+            'job_posting_id' => $posting->id,
+            'candidate_name' => trim((string) ($attributes['candidate_name'] ?? '')) ?: null,
+            'email' => $email !== '' ? $email : null,
+            'phone' => trim((string) ($attributes['phone'] ?? '')) ?: null,
+            'email_hash' => $emailHash,
+            'source' => 'website',
+            'status' => 'received',
+            'received_at' => now(),
+            'notes' => trim((string) ($attributes['notes'] ?? '')) ?: null,
+            'responsible_user_id' => $responsibleId,
+            'created_by' => null,
+            'privacy_ack_at' => now(),
+            'privacy_ack_version' => $privacyVersion,
+            'public_intake_ref' => $intakeRef,
+        ]);
+        $application->audit('recruiting.public_application_received', [
+            'duplicates' => $duplicates,
+            'posting_id' => $posting->id,
+            'source' => 'website',
+        ]);
+
+        $this->notifyResponsible($application, $responsibleId);
+
+        return ['application' => $application, 'duplicates' => $duplicates];
+    }
+
+    /**
+     * Interne Benachrichtigung der verantwortlichen Person — bewusst **ohne**
+     * Bewerber-PII/-Unterlagen im Text (nur Verweis auf die Bewerbungsakte).
+     */
+    private function notifyResponsible(JobApplication $application, ?int $responsibleId): void {
+        if ($responsibleId === null) {
+            return;
+        }
+        $responsible = User::query()->find($responsibleId);
+        if (! $responsible instanceof User) {
+            return;
+        }
+
+        app(NotificationDispatcher::class)->notify(
+            NotificationEvent::RecruitingApplicationReceived,
+            $application,
+            $responsible,
+            [
+                'title' => (string) __('Neue Bewerbung über den Karrierebereich'),
+                'message' => (string) __('Es ist eine neue Bewerbung eingegangen. Details in der Bewerbungsakte.'),
+                'url' => route('recruiting.applications.show', $application),
+            ],
+        );
     }
 
     /**

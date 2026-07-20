@@ -318,6 +318,9 @@ return [
             'fleet' => [
                 'licenseCheckDue' => 'Führerscheinkontrolle fällig',
             ],
+            'recruiting' => [
+                'applicationReceived' => 'Öffentliche Bewerbung eingegangen',
+            ],
             'assetCompliance' => [
                 'inspectionDue' => 'Prüfung fällig/überfällig',
             ],

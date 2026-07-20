@@ -438,6 +438,8 @@ return [
         'audit-log.view' => 'Audit-Log einsehen',
         'attendance.viewAny' => 'Anwesenheiten einsehen',
         'attendance.manage' => 'Anwesenheit verwalten',
+        'attendance.import' => 'Stempelungen importieren',
+        'project-time.import' => 'Projektzeiten importieren',
         'compliance.viewAny' => 'ArbZG-Compliance einsehen',
         'work-schedule.manage' => 'Arbeitszeit-Modell verwalten',
         'flex.view' => 'Gleitzeit-Saldo einsehen',

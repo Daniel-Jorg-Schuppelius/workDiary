@@ -26,6 +26,14 @@
                 {{ __('import.template.download') }} ({{ $entity->label() }})
             </a>
 
+            {{-- MVP-438: iCal-Beispieldatei für die Zeiterfassungs-Importe. --}}
+            @if(in_array($entity, [\App\Enums\Import\ImportEntity::Attendances, \App\Enums\Import\ImportEntity::ProjectTimes], true))
+                <a class="link link-hover inline-flex items-center gap-1 text-sm" href="{{ route('admin.imports.icalSample', ['entity' => $entity->value]) }}">
+                    <span class="material-symbols-outlined text-base" aria-hidden="true">calendar_month</span>
+                    {{ __('iCal-Beispieldatei herunterladen') }}
+                </a>
+            @endif
+
             <fieldset class="form-control max-w-xl">
                 <legend class="label-text font-semibold">{{ __('Bei unzuordenbaren Zeilen') }}</legend>
                 <label class="label cursor-pointer justify-start gap-2 py-1">
@@ -39,10 +47,22 @@
             </fieldset>
 
             <label class="form-control">
-                <span class="label-text">{{ __('CSV- oder Excel-Datei (.xlsx, max. :mb MB, :rows Zeilen)', ['mb' => 5, 'rows' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(50000, 0, withThousandsSeparator: true)]) }}</span>
-                <input type="file" name="file" required accept=".csv,.txt,.xlsx"
+                <span class="label-text">{{ __('CSV-, Excel- oder iCal-Datei (.csv, .xlsx, .ics, max. :mb MB, :rows Zeilen)', ['mb' => 5, 'rows' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(50000, 0, withThousandsSeparator: true)]) }}</span>
+                <input type="file" name="file" required accept=".csv,.txt,.xlsx,.ics"
                        class="file-input file-input-sm file-input-bordered w-full max-w-md" />
             </label>
+
+            {{-- MVP-438: optionale iCal-Kategorie-Allowlist (nur Stempelungen) —
+                 damit ein voller Kalender nicht pauschal als Anwesenheit gilt. --}}
+            @if($entity === \App\Enums\Import\ImportEntity::Attendances)
+                <label class="form-control max-w-md">
+                    <span class="label-text">{{ __('iCal-Kategorie-Allowlist (optional, kommagetrennt)') }}</span>
+                    <input type="text" name="ical_category_allowlist" maxlength="500"
+                           placeholder="{{ __('z. B. Arbeitszeit, Einsatz') }}"
+                           class="input input-sm input-bordered w-full" />
+                    <span class="label-text-alt text-base-content/60">{{ __('Nur iCal-Events dieser Kategorien werden als Anwesenheit gewertet.') }}</span>
+                </label>
+            @endif
 
             @error('file')<div class="text-error text-sm">{{ $message }}</div>@enderror
             @error('entity')<div class="text-error text-sm">{{ $message }}</div>@enderror

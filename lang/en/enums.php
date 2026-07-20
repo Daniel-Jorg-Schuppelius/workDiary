@@ -318,6 +318,9 @@ return [
             'fleet' => [
                 'licenseCheckDue' => 'Driver licence check due',
             ],
+            'recruiting' => [
+                'applicationReceived' => 'Public application received',
+            ],
             'assetCompliance' => [
                 'inspectionDue' => 'Inspection due/overdue',
             ],

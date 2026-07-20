@@ -26,4 +26,8 @@ enum ImportErrorCode: string {
     case Persist = 'persist';
     case HeaderMissing = 'headerMissing';
     case HeaderUnknown = 'headerUnknown';
+    // MVP-438: Zeitraum durch Tagesabschluss/Monatsfreigabe gesperrt (skip + Warnung).
+    case PeriodLocked = 'periodLocked';
+    // MVP-438: bewusst übersprungene Quellzeile (iCal-Ganztags-/OOF-/Serien-Hinweis).
+    case Skipped = 'skipped';
 }

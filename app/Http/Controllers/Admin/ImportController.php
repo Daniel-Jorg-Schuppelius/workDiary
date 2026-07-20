@@ -113,16 +113,63 @@ class ImportController extends Controller {
         ]);
     }
 
+    /**
+     * MVP-438: iCal-Beispieldatei für die Zeiterfassungs-Importe. Zeigt ein
+     * terminiertes VEVENT mit `ORGANIZER`-E-Mail (User-Auflösung) und `UID`
+     * (Idempotenz) — die Regeln, auf die der {@see \App\Services\Import\Source\IcalImportSource}
+     * aufsetzt.
+     */
+    public function icalSample(string $entity): Response {
+        $entityEnum = ImportEntity::tryFrom($entity);
+        abort_if($entityEnum === null, 404);
+        abort_unless(in_array($entityEnum, [ImportEntity::Attendances, ImportEntity::ProjectTimes], true), 404);
+        $this->authorizeImport($entityEnum);
+
+        $summary = $entityEnum === ImportEntity::Attendances ? 'Arbeitszeit Baustelle' : 'Projekt Website Relaunch';
+        $ics = implode("\r\n", [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//workDiary//Zeiterfassungs-Import//DE',
+            'CALSCALE:GREGORIAN',
+            'BEGIN:VEVENT',
+            'UID:beispiel-1@workdiary',
+            'DTSTAMP:20260701T060000Z',
+            'DTSTART:20260701T060000Z',
+            'DTEND:20260701T140000Z',
+            'SUMMARY:' . $summary,
+            'DESCRIPTION:' . __('Beispiel — bitte durch echte Kalenderdaten ersetzen.'),
+            'ORGANIZER:mailto:mitarbeiter@example.com',
+            'END:VEVENT',
+            'END:VCALENDAR',
+            '',
+        ]);
+
+        return response($ics, 200, [
+            'Content-Type' => 'text/calendar; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="import-beispiel-' . $entityEnum->value . '.ics"',
+        ]);
+    }
+
     public function preflight(Request $request): RedirectResponse {
         $organization = $this->currentOrganization();
         $data = $request->validate([
             'entity' => ['required', \Illuminate\Validation\Rule::enum(ImportEntity::class)],
-            // A13: neben CSV auch Excel (.xlsx) — gleiches Größenlimit, ein Wizard-Pfad.
-            'file' => ['required', 'file', 'mimes:csv,txt,xlsx', 'max:' . (CsvPreflightAnalyzer::MAX_BYTES / 1024)],
+            // A13: neben CSV auch Excel (.xlsx); MVP-438: zusätzlich iCal (.ics) —
+            // gleiches Größenlimit, ein Wizard-Pfad.
+            'file' => ['required', 'file', 'mimes:csv,txt,xlsx,ics', 'max:' . (CsvPreflightAnalyzer::MAX_BYTES / 1024)],
             'match_policy' => ['nullable', 'in:auto_create,inbox_first'],
+            // MVP-438: optionale iCal-Kategorie-Allowlist (nur Events dieser
+            // Kategorien werden als Anwesenheit gewertet).
+            'ical_category_allowlist' => ['nullable', 'string', 'max:500'],
         ]);
         $entity = ImportEntity::from($data['entity']);
         $this->authorizeImport($entity);
+
+        $options = [];
+        $allowlist = $this->parseCategoryAllowlist($data['ical_category_allowlist'] ?? null);
+        if ($allowlist !== []) {
+            $options['category_allowlist'] = $allowlist;
+        }
 
         $run = $this->analyzer->analyze(
             $request->file('file'),
@@ -130,6 +177,7 @@ class ImportController extends Controller {
             $organization,
             Auth::user(),
             (string) ($data['match_policy'] ?? 'auto_create'),
+            $options,
         );
 
         if ($run->state === ImportRunState::Failed) {
@@ -329,6 +377,29 @@ class ImportController extends Controller {
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ]);
+    }
+
+    /**
+     * Zerlegt die iCal-Kategorie-Allowlist (Komma/Semikolon/Zeilenumbruch) in
+     * eine deduplizierte Liste; Deckel bei 50 Einträgen (MVP-438).
+     *
+     * @return list<string>
+     */
+    private function parseCategoryAllowlist(?string $raw): array {
+        if ($raw === null || trim($raw) === '') {
+            return [];
+        }
+
+        $parts = preg_split('/[,;\n\r]+/', $raw) ?: [];
+        $out = [];
+        foreach ($parts as $part) {
+            $value = trim($part);
+            if ($value !== '' && ! in_array($value, $out, true)) {
+                $out[] = $value;
+            }
+        }
+
+        return array_slice($out, 0, 50);
     }
 
     private function ensureOwned(ImportRun $run): void {

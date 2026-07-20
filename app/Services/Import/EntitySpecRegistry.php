@@ -14,7 +14,7 @@ namespace App\Services\Import;
 
 use App\Enums\Import\ImportEntity;
 use App\Plugins\RemoteSupport\Import\RemoteSessionSpec;
-use App\Services\Import\Specs\{ArticleSpec, CustomerSpec, MaterialSpec, ProjectSpec, ScheduledShiftSpec, SupplierSpec, UserSpec, VehicleSpec};
+use App\Services\Import\Specs\{ArticleSpec, AttendanceSpec, CustomerSpec, MaterialSpec, ProjectSpec, ProjectTimeSpec, ScheduledShiftSpec, SupplierSpec, UserSpec, VehicleSpec};
 use InvalidArgumentException;
 
 /**
@@ -31,6 +31,8 @@ class EntitySpecRegistry {
         private readonly VehicleSpec $vehicles,
         private readonly ScheduledShiftSpec $scheduledShifts,
         private readonly RemoteSessionSpec $remoteSessions,
+        private readonly AttendanceSpec $attendances,
+        private readonly ProjectTimeSpec $projectTimes,
     ) {}
 
     public function for(ImportEntity $entity): EntitySpec {
@@ -44,6 +46,8 @@ class EntitySpecRegistry {
             ImportEntity::Vehicles => $this->vehicles,
             ImportEntity::ScheduledShifts => $this->scheduledShifts,
             ImportEntity::RemoteSessions => $this->remoteSessions,
+            ImportEntity::Attendances => $this->attendances,
+            ImportEntity::ProjectTimes => $this->projectTimes,
         };
     }
 

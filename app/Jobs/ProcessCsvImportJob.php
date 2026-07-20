@@ -15,9 +15,8 @@ namespace App\Jobs;
 use App\Enums\Import\{ImportErrorCode, ImportRunState};
 use App\Models\{AuditLog, ImportRun, ImportRunError};
 use App\Services\Import\{CsvPreflightAnalyzer, EntitySpecRegistry, ImportOutcome};
-use App\Support\Toolkit\CsvFacade;
+use App\Services\Import\Source\ImportSourceFactory;
 use Carbon\CarbonImmutable;
-use CommonToolkit\Parsers\CSVDocumentParser;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -74,7 +73,7 @@ class ProcessCsvImportJob implements ShouldQueue {
         $run->save();
     }
 
-    public function handle(EntitySpecRegistry $registry): void {
+    public function handle(EntitySpecRegistry $registry, ImportSourceFactory $sources): void {
         $run = ImportRun::query()->find($this->importRunId);
         if ($run === null) {
             return;
@@ -124,17 +123,30 @@ class ProcessCsvImportJob implements ShouldQueue {
         $failed = 0;
 
         try {
-            $delimiter = $run->delimiter ?: CSVDocumentParser::detectDelimiter($path);
-            $rawHeader = array_values(CSVDocumentParser::readHeader($path, $delimiter)->getColumnNames());
-            $headerMap = $this->buildHeaderMap($rawHeader, $spec);
+            // MVP-438: gemeinsame Format-Schicht (CSV/XLSX/iCal). iCal-Hinweise
+            // (Ganztags/OOF/Serie) werden als übersprungen gezählt und im Bericht
+            // sichtbar gemacht; Datenzeilen laufen chunkweise durch den Upsert.
+            $source = $sources->make($path, $run->entity, $organization, $run->delimiter ?: null, (array) ($run->source_options ?? []));
 
-            $rowNumber = 0;
             $chunk = [];
-            foreach (CsvFacade::streamAssoc($path, $delimiter) as $rawRow) {
-                $rowNumber++;
-                $mapped = $this->applyHeaderMap($rawRow, $headerMap);
-                $normalized = $spec->normalize($mapped);
-                $chunk[] = ['row' => $rowNumber, 'raw' => $mapped, 'norm' => $normalized];
+            foreach ($source->rows($spec) as $sourceRow) {
+                $warning = $sourceRow->warning;
+                if ($warning !== null) {
+                    ImportRunError::create([
+                        'import_run_id' => $run->id,
+                        'row_number' => $sourceRow->number,
+                        'field' => $warning->field,
+                        'code' => $warning->code,
+                        'message' => $warning->message,
+                        'row_data' => null,
+                    ]);
+                    $skipped++;
+
+                    continue;
+                }
+
+                $mapped = $sourceRow->data;
+                $chunk[] = ['row' => $sourceRow->number, 'raw' => $mapped, 'norm' => $spec->normalize($mapped)];
 
                 if (count($chunk) >= self::CHUNK) {
                     [$c, $u, $s, $f] = $this->processChunk($run, $spec, $chunk, $organization);
@@ -268,43 +280,5 @@ class ProcessCsvImportJob implements ShouldQueue {
         }
 
         return ImportRunState::Succeeded;
-    }
-
-    /**
-     * @param  list<string>  $rawHeader
-     * @return array<int, string|null>
-     */
-    private function buildHeaderMap(array $rawHeader, \App\Services\Import\EntitySpec $spec): array {
-        $aliases = [];
-        foreach ($spec->headerAliases() as $alias => $canonical) {
-            $aliases[mb_strtolower(trim($alias))] = $canonical;
-        }
-        foreach ($spec->columns() as $col) {
-            $aliases[mb_strtolower(trim($col))] = $col;
-        }
-        $out = [];
-        foreach ($rawHeader as $i => $h) {
-            $out[$i] = $aliases[mb_strtolower(trim($h))] ?? null;
-        }
-
-        return $out;
-    }
-
-    /**
-     * @param  array<string,string>  $raw
-     * @param  array<int,string|null>  $headerMap
-     * @return array<string,string>
-     */
-    private function applyHeaderMap(array $raw, array $headerMap): array {
-        $values = array_values($raw);
-        $out = [];
-        foreach ($headerMap as $i => $canonical) {
-            if ($canonical === null) {
-                continue;
-            }
-            $out[$canonical] = $values[$i] ?? '';
-        }
-
-        return $out;
     }
 }
