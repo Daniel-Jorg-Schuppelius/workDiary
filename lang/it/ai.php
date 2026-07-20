@@ -10,6 +10,30 @@
 
 // Assistenza IA (funzionalità 025, MVP-400/401).
 return [
+    'covering' => [
+        'suggest_mail' => 'Suggerisci testo di accompagnamento (IA)',
+        'suggest_dunning' => 'Suggerisci testo di sollecito (IA)',
+        'draft_hint' => 'Bozza IA — verificare e adattare se necessario.',
+        'translate_to' => 'Traduci (IA)',
+        'translate_none' => 'Nessuna traduzione',
+        'translated_hint' => 'Bozza di traduzione inserita — verificare e inviare di nuovo.',
+        'translate_unavailable' => 'La capacità di traduzione non è abilitata.',
+    ],
+    'usage' => [
+        'title' => 'Consumo IA',
+        'subtitle' => 'Consumo mensile per famiglia, utilizzo del budget e funnel dei suggerimenti per capacità.',
+        'of_limit' => 'di :limit (:percent %)',
+        'unlimited' => 'Nessun budget mensile impostato',
+        'months' => 'Andamento mensile (12 mesi)',
+        'funnel' => 'Suggerimenti per capacità',
+        'funnel_empty' => 'Nessun suggerimento di testo registrato finora.',
+        'proposed' => 'Totale',
+        'adopted' => 'Adottati',
+        'rejected' => 'Rifiutati',
+        'adoption_rate' => 'Tasso di adozione',
+        'cached' => 'Dalla cache',
+        'fallbacks' => 'Fallback',
+    ],
     'title' => [
         'connections' => 'Servizi IA',
         'connections_subtitle' => 'Connessioni ai provider, routing delle capability e flusso dati per organizzazione.',

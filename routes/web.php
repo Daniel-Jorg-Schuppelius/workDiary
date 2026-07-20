@@ -1504,6 +1504,8 @@ Route::middleware('auth')->group(function () {
             Route::get('verbinden', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'create'])->name('create');
             Route::post('/', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'store'])->name('store');
             // Statische Segmente VOR dem {connection}-Wildcard.
+            // Verbrauchsbericht (Feature 025, Phase-36-Rest) — statisch VOR {connection}.
+            Route::get('verbrauch', [\App\Http\Controllers\Admin\Ai\AiUsageReportController::class, 'index'])->name('usage');
             Route::get('gedaechtnis', [\App\Http\Controllers\Admin\Ai\AiMemoryController::class, 'index'])->name('memory');
             // DSGVO-Export des Gedächtnisses (Vollaudit 2026-07, M9), optional ?kunde=<id>.
             Route::get('gedaechtnis/export', [\App\Http\Controllers\Admin\Ai\AiMemoryController::class, 'export'])->name('memory.export');

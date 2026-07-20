@@ -45,7 +45,24 @@
 
         {{-- Freitext --}}
         <x-textarea-field name="custom_text" :label="__('Individueller Begleittext (optional)')" rows="3"
+                          :value="old('custom_text', $aiText ?? '')"
                           placeholder="{{ __('Wird als Platzhalter custom_text im Template eingesetzt.') }}" />
+
+        {{-- KI-Begleittext-Entwurf (Feature 084, MVP-405-Rest): lädt den Dialog mit
+             Vorschlag im Feld neu — Entwurf, nie Auto-Versand. --}}
+        @if ($aiUsable ?? false)
+            <div class="flex items-center gap-2">
+                <x-icon-btn icon="auto_awesome" size="xs" tone="ghost"
+                            data-entry-modal-trigger
+                            :href="route('invoices.send.form', [$invoice, 'ki' => 1])"
+                            show-label>{{ __('ai.covering.suggest_mail') }}</x-icon-btn>
+                @if (! empty($aiText))
+                    <span class="text-xs text-base-content/60">{{ __('ai.covering.draft_hint') }}</span>
+                @elseif (! empty($aiError))
+                    <span class="text-xs text-warning">{{ $aiError }}</span>
+                @endif
+            </div>
+        @endif
 
         <details class="text-xs">
             <summary class="cursor-pointer text-base-content/60">{{ __('Verfügbare Variablen') }}</summary>

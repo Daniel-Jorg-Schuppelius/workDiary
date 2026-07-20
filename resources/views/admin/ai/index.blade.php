@@ -19,6 +19,7 @@
                         :href="route('admin.ai.create')"
                         show-label>{{ __('ai.connect.title') }}</x-icon-btn>
         @endif
+        <x-icon-btn icon="monitoring" size="sm" :href="route('admin.ai.usage')" show-label>{{ __('ai.usage.title') }}</x-icon-btn>
         <x-icon-btn icon="psychology" size="sm" :href="route('admin.ai.memory')" show-label>{{ __('ai.title.memory') }}</x-icon-btn>
     </x-slot:actions>
 

@@ -45,6 +45,9 @@ class CustomerQueryController extends Controller {
         return view('customer-queries.index', [
             'queries' => $queries,
             'status' => $status,
+            // Portal-Antwort-Übersetzung (Feature 084, Phase-36-Rest).
+            'translateUsable' => app(\App\Services\Ai\Suggestions\SuggestionViewData::class)
+                ->capabilityUsable(\App\Services\Ai\Suggestions\CoveringTextSuggestionService::CAPABILITY_ANSWER_TRANSLATE),
         ]);
     }
 
@@ -53,7 +56,41 @@ class CustomerQueryController extends Controller {
 
         $data = $request->validate([
             'answer' => ['required', 'string', 'min:2', 'max:5000'],
+            'translate_to' => ['nullable', 'string', \Illuminate\Validation\Rule::in(\App\Support\Locales::enabledCodes())],
         ]);
+
+        // Portal-Antwort-Übersetzung (Feature 084, Phase-36-Rest): mit
+        // gewählter Zielsprache wird NICHT gespeichert — die Übersetzung
+        // kommt als Vorschau-Entwurf zurück ins Formular (Original +
+        // Übersetzung), der Nutzer prüft und sendet erneut. Nie Auto-Versand.
+        if (! empty($data['translate_to'])) {
+            $usable = app(\App\Services\Ai\Suggestions\SuggestionViewData::class)
+                ->capabilityUsable(\App\Services\Ai\Suggestions\CoveringTextSuggestionService::CAPABILITY_ANSWER_TRANSLATE);
+            if (! $usable) {
+                return back()->with('error', __('ai.covering.translate_unavailable'));
+            }
+
+            try {
+                $organization = \App\Models\Organization::query()->withoutGlobalScopes()->findOrFail($customerQuery->organization_id);
+                $translated = app(\App\Services\Ai\Suggestions\CoveringTextSuggestionService::class)->translatePortalAnswer(
+                    $organization,
+                    $customerQuery->customer_id !== null ? (int) $customerQuery->customer_id : null,
+                    $data['answer'],
+                    $data['translate_to'],
+                );
+            } catch (\App\Services\Ai\Exceptions\AiException $e) {
+                return back()
+                    ->withInput(['answer' => $data['answer'], 'query_sqid' => $customerQuery->sqid])
+                    ->with('error', $e->getMessage());
+            }
+
+            return back()
+                ->withInput([
+                    'answer' => $translated !== '' ? $data['answer'] . "\n\n---\n\n" . $translated : $data['answer'],
+                    'query_sqid' => $customerQuery->sqid,
+                ])
+                ->with('status', __('ai.covering.translated_hint'));
+        }
 
         /** @var User $actor */
         $actor = Auth::user();

@@ -221,16 +221,53 @@ class InvoiceController extends Controller {
     }
 
     /** Mahn-Dialog (MVP-163, UI-Nacharbeit): Stufe + optionaler Mailversand. */
-    public function dunForm(Invoice $invoice): View {
+    public function dunForm(\Illuminate\Http\Request $request, Invoice $invoice): View {
         abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
         abort_unless($invoice->isOverdue() && (int) $invoice->dunning_level < 3, 422);
         $invoice->load('customer');
 
+        $nextLevel = (int) $invoice->dunning_level + 1;
+
+        // KI-Mahntext-Entwurf (Feature 084, MVP-405-Rest): ?ki=1 lädt den
+        // Dialog mit vorbefülltem Zusatztext — nie Auto-Versand.
+        [$aiUsable, $aiText, $aiError] = $this->coveringTextFor(
+            $request,
+            \App\Services\Ai\Suggestions\CoveringTextSuggestionService::CAPABILITY_DUNNING_TEXT,
+            fn (): string => app(\App\Services\Ai\Suggestions\CoveringTextSuggestionService::class)->suggestDunningText($invoice, $nextLevel),
+        );
+
         return view('invoices._dun_dialog', [
             'invoice' => $invoice,
-            'nextLevel' => (int) $invoice->dunning_level + 1,
+            'nextLevel' => $nextLevel,
             'defaultTo' => $invoice->customer->primaryContact()['email'] ?? $invoice->customer->email ?? '',
+            'aiUsable' => $aiUsable,
+            'aiText' => $aiText,
+            'aiError' => $aiError,
         ]);
+    }
+
+    /**
+     * Gemeinsamer KI-Zweig der Dialog-Loader (Feature 084, MVP-405-Rest):
+     * prüft die Capability-Freischaltung und holt bei ?ki=1 synchron den
+     * Entwurf; Fehler werden als Hinweis in den Dialog gereicht.
+     *
+     * @param  callable(): string  $suggest
+     * @return array{0: bool, 1: ?string, 2: ?string}
+     */
+    private function coveringTextFor(\Illuminate\Http\Request $request, string $capability, callable $suggest): array {
+        $usable = app(\App\Services\Ai\Suggestions\SuggestionViewData::class)->capabilityUsable($capability);
+        $text = null;
+        $error = null;
+
+        if ($usable && $request->boolean('ki')) {
+            try {
+                $text = $suggest();
+            } catch (\App\Services\Ai\Exceptions\AiException $e) {
+                $error = $e->getMessage();
+            }
+        }
+
+        return [$usable, $text !== '' ? $text : null, $error];
     }
 
     /** Mahnstufe erhöhen (MVP-163): nur für überfällige Rechnungen, max. 3. */
@@ -667,9 +704,17 @@ class InvoiceController extends Controller {
     /**
      * Zeigt den Versand-Dialog mit Empfängern, Template-Auswahl und Freitext.
      */
-    public function sendForm(Invoice $invoice): View {
+    public function sendForm(\Illuminate\Http\Request $request, Invoice $invoice): View {
         Gate::authorize('send', $invoice);
         $invoice->load(['customer', 'items']);
+
+        // KI-Begleittext-Entwurf (Feature 084, MVP-405-Rest): ?ki=1 lädt den
+        // Dialog mit vorbefülltem custom_text — nie Auto-Versand.
+        [$aiUsable, $aiText, $aiError] = $this->coveringTextFor(
+            $request,
+            \App\Services\Ai\Suggestions\CoveringTextSuggestionService::CAPABILITY_MAIL_TEXT,
+            fn (): string => app(\App\Services\Ai\Suggestions\CoveringTextSuggestionService::class)->suggestMailText($invoice),
+        );
 
         $templates = InvoiceMailTemplate::query()
             ->where(function ($q) use ($invoice): void {
@@ -691,6 +736,9 @@ class InvoiceController extends Controller {
             'defaultTemplateId' => $defaultTemplate->id,
             'defaultTo' => $defaultTo,
             'variables' => InvoiceMailTemplate::availableVariables(),
+            'aiUsable' => $aiUsable,
+            'aiText' => $aiText,
+            'aiError' => $aiError,
         ]);
     }
 

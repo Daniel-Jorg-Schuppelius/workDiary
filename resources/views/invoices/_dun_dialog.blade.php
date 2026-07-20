@@ -26,6 +26,23 @@
         <x-input-field name="email" type="email" :label="__('Empfänger')" :value="$defaultTo"
                        placeholder="empfaenger@firma.de" />
 
-        <x-textarea-field name="note" :label="__('Individueller Zusatztext (optional)')" rows="3" />
+        <x-textarea-field name="note" :label="__('Individueller Zusatztext (optional)')" rows="3"
+                          :value="old('note', $aiText ?? '')" />
+
+        {{-- KI-Mahntext-Entwurf (Feature 084, MVP-405-Rest): lädt den Dialog mit
+             Vorschlag im Feld neu — Entwurf, nie Auto-Versand. --}}
+        @if ($aiUsable ?? false)
+            <div class="flex items-center gap-2">
+                <x-icon-btn icon="auto_awesome" size="xs" tone="ghost"
+                            data-entry-modal-trigger
+                            :href="route('invoices.dun.form', [$invoice, 'ki' => 1])"
+                            show-label>{{ __('ai.covering.suggest_dunning') }}</x-icon-btn>
+                @if (! empty($aiText))
+                    <span class="text-xs text-base-content/60">{{ __('ai.covering.draft_hint') }}</span>
+                @elseif (! empty($aiError))
+                    <span class="text-xs text-warning">{{ $aiError }}</span>
+                @endif
+            </div>
+        @endif
     </div>
 </x-modal>

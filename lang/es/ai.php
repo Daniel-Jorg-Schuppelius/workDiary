@@ -10,6 +10,30 @@
 
 // Asistencia de IA (característica 025, MVP-400/401).
 return [
+    'covering' => [
+        'suggest_mail' => 'Sugerir texto de acompañamiento (IA)',
+        'suggest_dunning' => 'Sugerir texto de reclamación (IA)',
+        'draft_hint' => 'Borrador de IA: revíselo y ajústelo si es necesario.',
+        'translate_to' => 'Traducir (IA)',
+        'translate_none' => 'Sin traducción',
+        'translated_hint' => 'Borrador de traducción insertado: revíselo y envíelo de nuevo.',
+        'translate_unavailable' => 'La capacidad de traducción no está habilitada.',
+    ],
+    'usage' => [
+        'title' => 'Consumo de IA',
+        'subtitle' => 'Consumo mensual por familia, uso del presupuesto y embudo de sugerencias por capacidad.',
+        'of_limit' => 'de :limit (:percent %)',
+        'unlimited' => 'Sin presupuesto mensual definido',
+        'months' => 'Historial mensual (12 meses)',
+        'funnel' => 'Sugerencias por capacidad',
+        'funnel_empty' => 'Aún no hay sugerencias de texto registradas.',
+        'proposed' => 'Total',
+        'adopted' => 'Aceptadas',
+        'rejected' => 'Rechazadas',
+        'adoption_rate' => 'Tasa de aceptación',
+        'cached' => 'Desde caché',
+        'fallbacks' => 'Alternativas',
+    ],
     'title' => [
         'connections' => 'Servicios de IA',
         'connections_subtitle' => 'Conexiones de proveedores, enrutamiento de capacidades y flujo de datos por organización.',

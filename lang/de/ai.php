@@ -10,6 +10,30 @@
 
 // KI-Assistenz (Feature 025, MVP-400/401).
 return [
+    'covering' => [
+        'suggest_mail' => 'Begleittext vorschlagen (KI)',
+        'suggest_dunning' => 'Mahntext vorschlagen (KI)',
+        'draft_hint' => 'KI-Entwurf — bitte prüfen und bei Bedarf anpassen.',
+        'translate_to' => 'Übersetzen (KI)',
+        'translate_none' => 'Keine Übersetzung',
+        'translated_hint' => 'Übersetzungs-Entwurf eingefügt — bitte prüfen und erneut senden.',
+        'translate_unavailable' => 'Die Übersetzungs-Capability ist nicht freigeschaltet.',
+    ],
+    'usage' => [
+        'title' => 'KI-Verbrauch',
+        'subtitle' => 'Monatsverbrauch je Familie, Budgetauslastung und Vorschlags-Funnel je Capability.',
+        'of_limit' => 'von :limit (:percent %)',
+        'unlimited' => 'Kein Monatsbudget gesetzt',
+        'months' => 'Monatsverlauf (12 Monate)',
+        'funnel' => 'Vorschläge je Capability',
+        'funnel_empty' => 'Noch keine Textvorschläge erfasst.',
+        'proposed' => 'Gesamt',
+        'adopted' => 'Übernommen',
+        'rejected' => 'Verworfen',
+        'adoption_rate' => 'Übernahmequote',
+        'cached' => 'Aus Cache',
+        'fallbacks' => 'Fallbacks',
+    ],
     'title' => [
         'connections' => 'KI-Dienste',
         'connections_subtitle' => 'Provider-Verbindungen, Capability-Routing und Datenfluss je Organisation.',

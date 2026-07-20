@@ -60,8 +60,23 @@
                                 @csrf
                                 <div class="form-control flex-1">
                                     <label class="label py-0"><span class="label-text text-xs">{{ __('customer-query.answer') }}</span></label>
-                                    <textarea name="answer" class="textarea textarea-sm textarea-bordered" rows="2" required minlength="2" maxlength="5000">{{ old('answer') }}</textarea>
+                                    {{-- old() nur für das Formular der betroffenen Rückfrage (Übersetzungs-Vorschau, Feature 084 Phase-36-Rest). --}}
+                                    <textarea name="answer" class="textarea textarea-sm textarea-bordered" rows="2" required minlength="2" maxlength="5000">{{ old('query_sqid') === $query->sqid ? old('answer') : '' }}</textarea>
                                 </div>
+                                <input type="hidden" name="query_sqid" value="{{ $query->sqid }}">
+                                @if ($translateUsable ?? false)
+                                    {{-- Übersetzungs-Vorschau: mit Zielsprache wird NICHT gespeichert,
+                                         sondern der Entwurf (Original + Übersetzung) neu angezeigt. --}}
+                                    <div class="form-control">
+                                        <label class="label py-0"><span class="label-text text-xs">{{ __('ai.covering.translate_to') }}</span></label>
+                                        <select name="translate_to" class="select select-sm select-bordered">
+                                            <option value="">{{ __('ai.covering.translate_none') }}</option>
+                                            @foreach (\App\Support\Locales::enabled() as $code => $label)
+                                                <option value="{{ $code }}">{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                @endif
                                 <x-button type="submit" size="sm" tone="primary">{{ __('customer-query.answerSubmit') }}</x-button>
                             </form>
                             <form method="POST" action="{{ route('customer-queries.close', $query) }}">

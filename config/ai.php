@@ -54,6 +54,33 @@ return [
             'memory_scopes' => ['organization', 'customer'],
             'prompt_version' => 1,
         ],
+        // Feature 084, MVP-405 (Phase-36-Rest): E-Mail-Begleittext beim
+        // Rechnungsversand — Entwurf im Versand-Dialog, nie Auto-Versand.
+        'invoicing.mail_text' => [
+            'verb' => 'formulate',
+            'sensitivity' => 'medium',
+            'data_classes' => ['rechnungsmetadaten'],
+            'memory_scopes' => ['organization', 'customer', 'capability'],
+            'prompt_version' => 1,
+        ],
+        // Feature 084, MVP-405 (Phase-36-Rest): Zahlungserinnerung/Mahntext
+        // (Stufe 1–3) — Entwurf im Mahn-Dialog, nie Auto-Versand.
+        'invoicing.dunning_text' => [
+            'verb' => 'formulate',
+            'sensitivity' => 'medium',
+            'data_classes' => ['rechnungsmetadaten', 'mahnstufe'],
+            'memory_scopes' => ['organization', 'customer', 'capability'],
+            'prompt_version' => 1,
+        ],
+        // Feature 084 (Phase-36-Rest): Portal-Antwort in Kundensprache
+        // übersetzen — Vorschau-Entwurf im Antwortformular, nie Auto-Versand.
+        'portal.answer_translate' => [
+            'verb' => 'translate',
+            'sensitivity' => 'medium',
+            'data_classes' => ['antworttext', 'zielsprache'],
+            'memory_scopes' => ['organization', 'customer'],
+            'prompt_version' => 1,
+        ],
         // Feature 084, MVP-405: Angebotspositionen.
         'quotes.item_text' => [
             'verb' => 'formulate',
