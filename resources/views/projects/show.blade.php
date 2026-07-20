@@ -67,8 +67,8 @@
             </button>
             <button role="tab" @click="setTab('diary')" :class="tabClass('diary')" class="tab">
                 {{ __('Aufträge') }}
-                @if ($entries->isNotEmpty())
-                    <x-status-badge tone="ghost" size="xs" class="ml-1">{{ $entries->count() }}</x-status-badge>
+                @if ($entries->total() > 0)
+                    <x-status-badge tone="ghost" size="xs" class="ml-1">{{ $entries->total() }}</x-status-badge>
                 @endif
             </button>
             <button role="tab" @click="setTab('timeline')" :class="tabClass('timeline')" class="tab">

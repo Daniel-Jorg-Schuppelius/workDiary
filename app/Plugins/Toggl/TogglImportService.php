@@ -59,7 +59,22 @@ class TogglImportService extends MatchingTimeImportService {
             $workspaceNames[(int) $workspace['id']] = (string) $workspace['name'];
         }
 
-        return $this->ingest($organization, $this->mapEntries($client->fetchEntries($from, $to), $workspaceNames), $config);
+        // Eigene Zeiten des Token-Inhabers (/me) PLUS die Einträge ALLER
+        // Benutzer über die Reports-API je Workspace — /me allein kennt nur
+        // die eigenen Zeiten, Mitarbeiter-Einträge kämen sonst nie an.
+        // Dedupe über den stabilen Entry-Key; die Report-Variante gewinnt
+        // (trägt die Benutzer-E-Mail für die Mitarbeiter-Zuordnung).
+        $entries = [];
+        foreach ($client->fetchEntries($from, $to) as $entry) {
+            $entries[$entry->entryKey] = $entry;
+        }
+        foreach (array_keys($workspaceNames) as $workspaceId) {
+            foreach ($client->workspaceEntries($workspaceId, $from, $to) as $entry) {
+                $entries[$entry->entryKey] = $entry;
+            }
+        }
+
+        return $this->ingest($organization, $this->mapEntries(array_values($entries), $workspaceNames), $config);
     }
 
     /**

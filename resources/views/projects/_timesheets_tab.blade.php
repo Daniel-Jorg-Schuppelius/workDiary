@@ -52,3 +52,7 @@
         @endif
     </div>
 </div>
+
+{{-- Stehendes Pagination-Panel, nur im Stundenzettel-Tab sichtbar. --}}
+<x-pagination :paginator="$timesheets" standing data-tab-footer="timesheets"
+              :hidden="request('tab', 'overview') !== 'timesheets'" />
