@@ -14,6 +14,8 @@ return [
         'scheduled_shifts' => 'Schichtpläne',
         'tours' => 'Touren',
         'remote_sessions' => 'Fernwartungs-Sitzungen',
+        'attendances' => 'Stempelungen',
+        'project_times' => 'Projektzeiten',
     ],
 
     'template' => [
@@ -41,6 +43,8 @@ return [
         'persist' => 'Speicherfehler',
         'headerMissing' => 'Spalte fehlt',
         'headerUnknown' => 'Spalte unbekannt',
+        'periodLocked' => 'Zeitraum gesperrt',
+        'skipped' => 'Übersprungen',
     ],
 
     'error' => [
@@ -69,9 +73,24 @@ return [
         'fkMissing' => [
             'customer' => 'Kein Kunde mit Nummer :number gefunden.',
             'user' => 'Kein Benutzer mit E-Mail :value gefunden.',
+            'project' => 'Kein Projekt „:value" gefunden — Zeile in die Zuordnungs-Inbox gelegt.',
         ],
         'persist' => [
             'noBookingUser' => 'Kein buchbarer Benutzer in der Organisation gefunden.',
+        ],
+        // MVP-438: GoBD-Sperre — kein stilles Überschreiben geprüfter Zeiträume.
+        'periodLocked' => [
+            'attendance' => 'Tag :date ist durch Tagesabschluss oder Monatsfreigabe gesperrt — Zeile übersprungen.',
+            'projectTime' => 'Zeitraum :date ist bereits abgeschlossen/exportiert — Zeile übersprungen.',
+        ],
+        // MVP-438: iCal-Hinweiszeilen (bewusst konservatives Mapping).
+        'ical' => [
+            'allDay' => 'Ganztags-Termin „:event" übersprungen (nicht als Anwesenheit wertbar).',
+            'noTime' => 'Termin „:event" ohne Uhrzeit übersprungen.',
+            'category' => 'Termin „:event" außerhalb der Kategorie-Allowlist übersprungen.',
+            'transparent' => 'Als „frei"/abwesend markierter Termin „:event" übersprungen.',
+            'recurring' => 'Serientermin „:event": nur die Basisinstanz wurde importiert (Serien-Expansion folgt später).',
+            'unsupportedEntity' => 'iCal-Import wird für diese Import-Art nicht unterstützt.',
         ],
     ],
 ];

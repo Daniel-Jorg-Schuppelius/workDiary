@@ -28,6 +28,9 @@ enum ImportEntity: string implements HasLabel {
     case Vehicles = 'vehicles';
     case ScheduledShifts = 'scheduled_shifts';
     case RemoteSessions = 'remote_sessions';
+    // MVP-438: Zeiterfassungs-Import (CSV/XLSX/iCal) über die MVP-049-Engine.
+    case Attendances = 'attendances';
+    case ProjectTimes = 'project_times';
 
     public function label(): string {
         return (string) __('import.entity.' . $this->value);
@@ -44,6 +47,9 @@ enum ImportEntity: string implements HasLabel {
             self::Vehicles => 'vehicle.import',
             self::ScheduledShifts => 'schedule.import',
             self::RemoteSessions => 'remote-session.import',
+            // MVP-438: Stempelungen streng (Admin/HR), Projektzeiten breiter vergebbar.
+            self::Attendances => 'attendance.import',
+            self::ProjectTimes => 'project-time.import',
         };
     }
 
@@ -64,6 +70,8 @@ enum ImportEntity: string implements HasLabel {
             self::Vehicles => \App\Models\Vehicle::class,
             self::ScheduledShifts => \App\Models\ScheduledShift::class,
             self::RemoteSessions => null,
+            self::Attendances => \App\Models\Attendance::class,
+            self::ProjectTimes => \App\Models\TimeEntry::class,
         };
     }
 

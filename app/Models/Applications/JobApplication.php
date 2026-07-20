@@ -43,6 +43,9 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne, MorphMan
  * @property int|null $responsible_user_id
  * @property \Illuminate\Support\Carbon|null $anonymized_at
  * @property int|null $created_by
+ * @property \Illuminate\Support\Carbon|null $privacy_ack_at
+ * @property string|null $privacy_ack_version
+ * @property string|null $public_intake_ref
  */
 #[Hidden(['candidate_name', 'email', 'phone', 'notes', 'email_hash'])]
 class JobApplication extends Model {
@@ -61,6 +64,8 @@ class JobApplication extends Model {
         'received_at', 'consent_talent_pool_at', 'consent_expires_on',
         'retention_until', 'notes', 'responsible_user_id', 'anonymized_at',
         'created_by',
+        // MVP-437: öffentlicher Selbst-Service.
+        'privacy_ack_at', 'privacy_ack_version', 'public_intake_ref',
     ];
 
     /** @var array<string, string> */
@@ -76,6 +81,7 @@ class JobApplication extends Model {
         'consent_expires_on' => 'date',
         'retention_until' => 'date',
         'anonymized_at' => 'datetime',
+        'privacy_ack_at' => 'datetime',
     ];
 
     /** Deterministischer Lookup-Hash für die Dublettenprüfung (MVP-190). */

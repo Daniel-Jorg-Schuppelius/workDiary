@@ -351,6 +351,10 @@ enum Permission: string implements HasLabel {
     case AuditLogView = 'audit-log.view';
     case AttendanceViewAny = 'attendance.viewAny';
     case AttendanceManage = 'attendance.manage';
+    // MVP-438: Zeiterfassungs-Import (CSV/XLSX/iCal). Stempelungen streng
+    // (Admin/HR), Projektzeiten breiter vergebbar.
+    case AttendanceImport = 'attendance.import';
+    case ProjectTimeImport = 'project-time.import';
     // ArbZG-Compliance-Auswertung auf Ist-Arbeitszeit (Feature 006).
     case ComplianceViewAny = 'compliance.viewAny';
     case WorkScheduleManage = 'work-schedule.manage';
@@ -679,7 +683,7 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'supplier.') => PermissionGroup::Customers,
             str_starts_with($this->value, 'permit.') => PermissionGroup::Customers,
             str_starts_with($this->value, 'project.'), str_starts_with($this->value, 'task.'), str_starts_with($this->value, 'milestone.'), str_starts_with($this->value, 'agile.') => PermissionGroup::Projects,
-            str_starts_with($this->value, 'timeEntry.') => PermissionGroup::TimeEntries,
+            str_starts_with($this->value, 'timeEntry.'), str_starts_with($this->value, 'project-time.') => PermissionGroup::TimeEntries,
             str_starts_with($this->value, 'timesheet.') => PermissionGroup::Timesheets,
             str_starts_with($this->value, 'invoice.') => PermissionGroup::Invoicing,
             str_starts_with($this->value, 'finance.') => PermissionGroup::Finance,

@@ -118,6 +118,10 @@ enum NotificationEvent: string implements HasLabel {
     // MVP-417: Führerscheinkontrolle fällig/überfällig (Halterhaftung).
     case DriverLicenseCheckDue = 'fleet.licenseCheckDue';
 
+    // MVP-437: Öffentliche Bewerbung eingegangen (an die verantwortliche Person,
+    // ohne Bewerberunterlagen im Text).
+    case RecruitingApplicationReceived = 'recruiting.applicationReceived';
+
     // Feature 075: Prüfung fällig/überfällig (MVP-285/288).
     case AssetInspectionDue = 'assetCompliance.inspectionDue';
 
@@ -322,6 +326,7 @@ enum NotificationEvent: string implements HasLabel {
             self::ContractDeadlineDue => 'contract',
             self::InvoiceRecurringDraft => 'receipt_long',
             self::DriverLicenseCheckDue => 'badge',
+            self::RecruitingApplicationReceived => 'work',
             self::AssetInspectionDue => 'rule_settings',
             self::QualificationExpiring => 'workspace_premium',
             self::ShiftExchangeRequested,

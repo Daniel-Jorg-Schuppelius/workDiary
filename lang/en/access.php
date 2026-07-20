@@ -438,6 +438,8 @@ return [
         'audit-log.view' => 'View audit log',
         'attendance.viewAny' => 'View attendance',
         'attendance.manage' => 'Manage attendance',
+        'attendance.import' => 'Import attendances',
+        'project-time.import' => 'Import project times',
         'compliance.viewAny' => 'View working-time compliance',
         'work-schedule.manage' => 'Manage work schedule',
         'flex.view' => 'View flex balance',

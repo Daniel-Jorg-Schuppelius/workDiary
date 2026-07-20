@@ -32,6 +32,9 @@ return Application::configure(basePath: dirname(__DIR__))
             // Oeffentliches Hinweisgeber-Meldeportal: eigener schlanker Stack
             // (kein Auth/Org-Context/Locale/2FA), siehe Middleware-Gruppe unten.
             Route::middleware('whistleblowing')->group(__DIR__ . '/../routes/whistleblowing.php');
+            // Oeffentlicher Karrierebereich (Feature 068, MVP-437): eigener
+            // schlanker Public-Stack (kein Auth/Org-Context/Locale/2FA).
+            Route::middleware('careers')->group(__DIR__ . '/../routes/careers.php');
             // SCIM-2.0-Provisioning (Feature 057): sessionlos, Bearer-Token-Auth
             // je Organisation über AuthenticateScim (kein web/api-Gruppen-Stack).
             Route::middleware(AuthenticateScim::class)->prefix('scim/v2')->group(__DIR__ . '/../routes/scim.php');
@@ -100,6 +103,20 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\Whistleblowing\WhistleblowingSecurityHeaders::class,
         ]);
 
+        // Schlanker Stack fuer den oeffentlichen Karrierebereich (MVP-437):
+        // wie das Meldeportal, aber mit dynamischer frame-ancestors-CSP fuer die
+        // einbettbare Ansicht. Der Bewerbungs-POST ist von CSRF ausgenommen
+        // (sessionlos/Embed) und schuetzt sich ueber signierten Formularzustand.
+        $middleware->group('careers', [
+            HandleDatabaseUnavailable::class,
+            \Illuminate\Cookie\Middleware\EncryptCookies::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\Careers\CareerPortalSecurityHeaders::class,
+        ]);
+
         // SetOrganizationContext MUSS vor SubstituteBindings laufen, damit
         // der OrganizationScope beim Route-Model-Binding bereits greift —
         // sonst lädt Laravel {attachment} & Co. aus fremden Organisationen,
@@ -136,6 +153,10 @@ return Application::configure(basePath: dirname(__DIR__))
             // cross-site ohne CSRF-Token. Schutz kommt aus der SAML-Signatur,
             // dem InResponseTo-Abgleich (Session) und dem Replay-Cache.
             'sso/*/saml/acs',
+            // Öffentlicher Karrierebereich (MVP-437): der Bewerbungs-POST ist
+            // sessionlos/einbettbar; Schutz über signierten Formularzustand,
+            // Honeypot, Idempotenz und Rate-Limit statt Session-CSRF.
+            'karriere/*/stellen/*/bewerben',
         ]);
 
         // Pro-Guard-Redirect fuer nicht authentifizierte Anfragen. Ohne

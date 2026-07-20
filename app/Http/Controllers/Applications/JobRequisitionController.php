@@ -137,6 +137,62 @@ class JobRequisitionController extends Controller {
         return back()->with('success', __('Veröffentlichung geschlossen.'));
     }
 
+    /**
+     * MVP-437: veröffentlicht die Stelle im öffentlichen Karrierebereich —
+     * explizite Aktion (nie automatisch), getrennte öffentliche Inhaltsfelder,
+     * stabiler Slug. Nutzt genau eine `website`-Veröffentlichung je Stelle als
+     * Karriereseite.
+     */
+    public function publishCareer(Request $request, JobRequisition $requisition): RedirectResponse {
+        Gate::authorize('update', $requisition);
+        $data = $request->validate([
+            'public_title' => ['required', 'string', 'max:200'],
+            'public_summary' => ['nullable', 'string', 'max:500'],
+            'public_description' => ['nullable', 'string', 'max:10000'],
+            'public_tasks' => ['nullable', 'string', 'max:10000'],
+            'public_requirements' => ['nullable', 'string', 'max:10000'],
+            'public_benefits' => ['nullable', 'string', 'max:10000'],
+            'work_location' => ['nullable', 'string', 'max:200'],
+            'application_deadline' => ['nullable', 'date'],
+        ]);
+
+        /** @var JobPosting $posting */
+        $posting = $requisition->postings()->firstOrNew(['channel' => 'website']);
+        $posting->organization_id = $requisition->organization_id;
+        $posting->fill([
+            'public_title' => $data['public_title'],
+            'public_summary' => $data['public_summary'] ?? null,
+            'public_description' => $data['public_description'] ?? null,
+            'public_tasks' => $data['public_tasks'] ?? null,
+            'public_requirements' => $data['public_requirements'] ?? null,
+            'public_benefits' => $data['public_benefits'] ?? null,
+            'work_location' => $data['work_location'] ?? null,
+            'application_deadline' => $data['application_deadline'] ?? null,
+        ]);
+        $posting->public_slug = $posting->ensurePublicSlug($data['public_title']);
+        $posting->status = 'published';
+        $posting->published_at ??= now();
+        $posting->save();
+        $posting->audit('recruiting.posting_published', ['slug' => $posting->public_slug]);
+
+        return back()->with('success', __('Stelle im Karrierebereich veröffentlicht.'));
+    }
+
+    /**
+     * MVP-437: pausiert die öffentliche Karriereseite — sichtbar (Vorschau),
+     * aber nicht bewerbbar.
+     */
+    public function pauseCareer(JobRequisition $requisition): RedirectResponse {
+        Gate::authorize('update', $requisition);
+        $posting = $requisition->postings()->where('channel', 'website')->first();
+        if ($posting instanceof JobPosting && $posting->status === 'published') {
+            $posting->update(['status' => 'paused']);
+            $posting->audit('recruiting.posting_paused', []);
+        }
+
+        return back()->with('success', __('Karriere-Veröffentlichung pausiert.'));
+    }
+
     /** @return array<string, mixed> */
     private function validated(Request $request): array {
         $request->merge([

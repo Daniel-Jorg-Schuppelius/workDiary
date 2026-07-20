@@ -293,6 +293,7 @@ return [
         'tenders.*' => 'module.applications', // Feature 068 Auftragsbewerbungen
         'recruiting.*' => 'module.applications', // Feature 068 Personalbewerbungen
         'applications.*' => 'module.applications', // Feature 068 Vertragsverhandlungen/Berichte
+        'careers.*' => 'module.applications', // Feature 068 MVP-437 öffentlicher Karrierebereich
         'investments.*' => 'module.investments', // Feature 069 Investitionsplanung
         'crisis.*' => 'module.crisis_management', // Feature 070 Notfall-/Krisenmanagement
         'sustainability.*' => 'module.sustainability', // Feature 071 Nachhaltigkeit/ESG

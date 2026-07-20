@@ -12,6 +12,8 @@ return [
         'scheduled_shifts' => 'Plannings de service',
         'tours' => 'Tournées',
         'remote_sessions' => 'Sessions de maintenance à distance',
+        'attendances' => 'Pointages',
+        'project_times' => 'Temps de projet',
     ],
     'template' => [
         'example_required' => "Valeur d'exemple (obligatoire)",
@@ -37,6 +39,8 @@ return [
         'persist' => 'Erreur de persistance',
         'headerMissing' => 'Colonne manquante',
         'headerUnknown' => 'Colonne inconnue',
+        'periodLocked' => 'Période verrouillée',
+        'skipped' => 'Ignoré',
     ],
     'error' => [
         'required' => 'Le champ obligatoire :field est manquant.',
@@ -64,9 +68,24 @@ return [
         'fkMissing' => [
             'customer' => 'Aucun client avec le numéro :number trouvé.',
             'user' => 'Aucun utilisateur avec l\'e-mail :value trouvé.',
+            'project' => 'Aucun projet « :value » trouvé — ligne placée dans la boîte d\'affectation.',
         ],
         'persist' => [
             'noBookingUser' => 'Aucun utilisateur imputable trouvé dans l\'organisation.',
+        ],
+        // MVP-438 : verrou GoBD — pas d\'écrasement silencieux des périodes vérifiées.
+        'periodLocked' => [
+            'attendance' => 'Le jour :date est verrouillé par la clôture journalière ou l\'approbation mensuelle — ligne ignorée.',
+            'projectTime' => 'La période :date est déjà clôturée/exportée — ligne ignorée.',
+        ],
+        // MVP-438 : lignes d\'avertissement iCal (mappage volontairement prudent).
+        'ical' => [
+            'allDay' => 'Événement toute la journée « :event » ignoré (non comptabilisable comme présence).',
+            'noTime' => 'Événement « :event » sans heure ignoré.',
+            'category' => 'Événement « :event » hors de la liste de catégories autorisées ignoré.',
+            'transparent' => 'Événement « :event » marqué libre/absent ignoré.',
+            'recurring' => 'Événement récurrent « :event » : seule l\'instance de base a été importée (l\'expansion de la série viendra plus tard).',
+            'unsupportedEntity' => 'L\'import iCal n\'est pas pris en charge pour ce type d\'import.',
         ],
     ],
 ];

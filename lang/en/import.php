@@ -14,6 +14,8 @@ return [
         'scheduled_shifts' => 'Shift schedules',
         'tours' => 'Tours',
         'remote_sessions' => 'Remote support sessions',
+        'attendances' => 'Attendances',
+        'project_times' => 'Project times',
     ],
 
     'template' => [
@@ -41,6 +43,8 @@ return [
         'persist' => 'Persistence error',
         'headerMissing' => 'Column missing',
         'headerUnknown' => 'Column unknown',
+        'periodLocked' => 'Period locked',
+        'skipped' => 'Skipped',
     ],
 
     'error' => [
@@ -69,9 +73,24 @@ return [
         'fkMissing' => [
             'customer' => 'No customer with number :number found.',
             'user' => 'No user with email :value found.',
+            'project' => 'No project ":value" found — row moved to the assignment inbox.',
         ],
         'persist' => [
             'noBookingUser' => 'No bookable user found in the organisation.',
+        ],
+        // MVP-438: GoBD lock — no silent overwrite of reviewed periods.
+        'periodLocked' => [
+            'attendance' => 'Day :date is locked by day-close or month approval — row skipped.',
+            'projectTime' => 'Period :date is already closed/exported — row skipped.',
+        ],
+        // MVP-438: iCal notice rows (deliberately conservative mapping).
+        'ical' => [
+            'allDay' => 'All-day event ":event" skipped (cannot count as attendance).',
+            'noTime' => 'Event ":event" without a time skipped.',
+            'category' => 'Event ":event" outside the category allowlist skipped.',
+            'transparent' => 'Event ":event" marked free/out-of-office skipped.',
+            'recurring' => 'Recurring event ":event": only the base instance was imported (series expansion comes later).',
+            'unsupportedEntity' => 'iCal import is not supported for this import type.',
         ],
     ],
 ];

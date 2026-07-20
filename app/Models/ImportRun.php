@@ -35,6 +35,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property int $rows_failed
  * @property array<int, array<string, mixed>>|null $preview
  * @property array<string, array<int, string>>|null $unresolved_values
+ * @property array<string, mixed>|null $source_options
  * @property CarbonImmutable|null $started_at
  * @property CarbonImmutable|null $finished_at
  * @property int|null $created_by_user_id
@@ -65,6 +66,7 @@ class ImportRun extends Model {
         'rows_failed',
         'preview',
         'unresolved_values',
+        'source_options',
         'started_at',
         'finished_at',
         'created_by_user_id',
@@ -76,6 +78,7 @@ class ImportRun extends Model {
         'state' => ImportRunState::class,
         'preview' => 'array',
         'unresolved_values' => 'array',
+        'source_options' => 'array',
         'started_at' => 'immutable_datetime',
         'finished_at' => 'immutable_datetime',
     ];

@@ -396,6 +396,8 @@ return [
         'audit-log.view' => 'Ver el registro de auditoría',
         'attendance.viewAny' => 'Ver las presencias',
         'attendance.manage' => 'Gestionar las presencias',
+        'attendance.import' => 'Importar fichajes',
+        'project-time.import' => 'Importar tiempos de proyecto',
         'compliance.viewAny' => 'Ver el cumplimiento del tiempo de trabajo',
         'work-schedule.manage' => 'Gestionar el horario de trabajo',
         'flex.view' => 'Ver el saldo flex',

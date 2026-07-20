@@ -748,6 +748,13 @@ class AppServiceProvider extends ServiceProvider {
             Limit::perMinute(5)->by('wbl:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)),
             Limit::perHour(30)->by('wblh:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)),
         ]);
+        // Öffentlicher Karrierebereich (MVP-437): Ansicht großzügig, Bewerbungs-
+        // eingang streng gegen Massensendungen — gehashte IP als Cache-Key.
+        RateLimiter::for('careers-view', fn(Request $request) => Limit::perMinute(30)->by('crv:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)));
+        RateLimiter::for('careers-submit', fn(Request $request) => [
+            Limit::perMinute(5)->by('crs:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)),
+            Limit::perHour(20)->by('crsh:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)),
+        ]);
 
         RateLimiter::for('password', function (Request $request) {
             $userId = (string) ($request->user()?->getAuthIdentifier() ?? 'guest');
