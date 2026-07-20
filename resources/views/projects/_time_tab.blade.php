@@ -12,7 +12,7 @@
     </div>
 
     {{-- Tabelle — Standard-Karte; Leerzustand kommt aus x-table --}}
-    <x-card :title="__('Zeiteinträge')" icon="schedule" :count="$timeEntries->count()">
+    <x-card :title="__('Zeiteinträge')" icon="schedule" :count="$timeEntries->total()">
         <x-slot:actions>
             @can('create', \App\Models\TimeEntry::class)
                 <x-icon-btn icon="add" tone="primary" size="sm"
@@ -21,15 +21,19 @@
                             show-label>{{ __('Zeiteintrag') }}</x-icon-btn>
             @endcan
         </x-slot:actions>
-        <x-table table-sort="client" bare
+        <x-table table-sort="server" bare
+                 :route="route('projects.show', $project)"
+                 :current-sort="$timeSort"
+                 :current-dir="$timeDir"
+                 :sort-params="['tab' => 'time']"
                  empty-icon="schedule" :empty-title="__('Noch keine Zeiteinträge erfasst.')">
                 <x-slot:head>
                     <tr class="text-xs text-base-content/50">
-                        <x-table.th sort type="date" default="desc">{{ __('Datum') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Mitarbeitende') }}</x-table.th>
-                        <x-table.th sort type="number" align="right">{{ __('Zeit') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Aufgabe') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Beschreibung') }}</x-table.th>
+                        <x-table.th sort="date" default="desc">{{ __('Datum') }}</x-table.th>
+                        <x-table.th sort="user">{{ __('Mitarbeitende') }}</x-table.th>
+                        <x-table.th sort="minutes" align="right">{{ __('Zeit') }}</x-table.th>
+                        <x-table.th sort="task">{{ __('Aufgabe') }}</x-table.th>
+                        <x-table.th sort="description">{{ __('Beschreibung') }}</x-table.th>
                         <th></th>
                     </tr>
                 </x-slot:head>
@@ -61,5 +65,6 @@
                     </tr>
             @endforeach
         </x-table>
+        <x-pagination :paginator="$timeEntries" :framed="false" />
     </x-card>
 </div>

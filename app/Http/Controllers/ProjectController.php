@@ -143,12 +143,33 @@ class ProjectController extends Controller {
             ->groupBy('status')
             ->pluck('cnt', 'status');
 
-        // Zeiteinträge (Tab 3)
-        $timeEntries = $project->timeEntries()
-            ->with(['user:id,name', 'task:id,title'])
-            ->orderByDesc('date')
-            ->limit(100)
-            ->get();
+        // Zeiteinträge (Tab 3) — paginiert, serverseitig über ALLE Seiten
+        // sortierbar; Query-String (u. a. ?tab=time) bleibt beim Blättern erhalten.
+        $timeSort = (string) request()->query('sort', 'date');
+        $timeDir = strtolower((string) request()->query('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+
+        $timeEntriesQuery = $project->timeEntries()->with(['user:id,name', 'task:id,title']);
+        match ($timeSort) {
+            // Relations-Spalten über korrelierte Subqueries sortieren.
+            'user' => $timeEntriesQuery->orderBy(
+                \App\Models\User::query()->select('name')->whereColumn('users.id', 'time_entries.user_id'),
+                $timeDir,
+            ),
+            'task' => $timeEntriesQuery->orderBy(
+                \App\Models\Task::query()->select('title')->whereColumn('tasks.id', 'time_entries.task_id'),
+                $timeDir,
+            ),
+            'minutes', 'description', 'date' => $timeEntriesQuery->orderBy($timeSort, $timeDir),
+            default => (function () use (&$timeSort, &$timeDir, $timeEntriesQuery): void {
+                $timeSort = 'date';
+                $timeDir = 'desc';
+                $timeEntriesQuery->orderByDesc('date');
+            })(),
+        };
+        $timeEntries = $timeEntriesQuery
+            ->orderByDesc('id')
+            ->paginate(50)
+            ->withQueryString();
 
         // Zeit-Aggregationen (Tab 1 + 3)
         $totalMinutes = $project->timeEntries()->sum('minutes');
@@ -199,6 +220,8 @@ class ProjectController extends Controller {
             'topTasks' => $topTasks,
             'taskStats' => $taskStats,
             'timeEntries' => $timeEntries,
+            'timeSort' => $timeSort,
+            'timeDir' => $timeDir,
             'totalMinutes' => (int) $totalMinutes,
             'monthMinutes' => (int) $monthMinutes,
             'myMinutes' => (int) $myMinutes,
