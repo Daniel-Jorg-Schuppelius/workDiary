@@ -49,6 +49,9 @@
                     @else
                         <input type="email" name="toggl_email" required maxlength="191" placeholder="name@firma.de"
                                class="input input-sm input-bordered w-full">
+                        @if ($allTogglEmailsMapped)
+                            <span class="label-text-alt text-success">{{ __('Alle bekannten Toggl-Adressen sind bereits zugeordnet.') }}</span>
+                        @endif
                     @endif
                 </label>
                 <label class="form-control w-full max-w-xs">

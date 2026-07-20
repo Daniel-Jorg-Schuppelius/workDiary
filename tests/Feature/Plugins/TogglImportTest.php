@@ -610,6 +610,25 @@ class TogglImportTest extends TestCase {
             ->get(route('admin.toggl.mappings.index'))
             ->assertOk()
             ->assertSee('privat@gmx.de');
+
+        // Nach der Zuordnung verschwindet die Adresse aus dem Dropdown,
+        // bleibt aber als Benutzer-Zeile in der Tabelle sichtbar.
+        $mitarbeiter = User::factory()->user()->create([
+            'organization_id' => $this->organization->id,
+            'email' => 'firma2@workdiary.local',
+        ]);
+        $this->actingAs($this->admin)
+            ->post(route('admin.toggl.mappings.store-user'), [
+                'toggl_email' => 'privat@gmx.de',
+                'user' => $mitarbeiter->sqid,
+            ])
+            ->assertRedirect();
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.toggl.mappings.index'))
+            ->assertOk()
+            ->assertDontSee('option value="privat@gmx.de"', false)
+            ->assertSee('privat@gmx.de');
     }
 
     public function test_repair_command_reassigns_users_from_csv(): void {

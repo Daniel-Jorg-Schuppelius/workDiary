@@ -8851,5 +8851,6 @@
     "Benutzer-Zuordnung gespeichert.": "Associazione utente salvata.",
     "Toggl-E-Mail": "E-mail Toggl",
     "Benutzer-Zuordnung anlegen": "Crea associazione utente",
-    "Toggl-E-Mail einem Benutzer zuordnen — für Mitarbeiter, deren Toggl-Adresse von der workDiary-Adresse abweicht.": "Associa un’e-mail Toggl a un utente — per collaboratori la cui e-mail Toggl differisce da quella di workDiary."
+    "Toggl-E-Mail einem Benutzer zuordnen — für Mitarbeiter, deren Toggl-Adresse von der workDiary-Adresse abweicht.": "Associa un’e-mail Toggl a un utente — per collaboratori la cui e-mail Toggl differisce da quella di workDiary.",
+    "Alle bekannten Toggl-Adressen sind bereits zugeordnet.": "Tutti gli indirizzi Toggl noti sono già associati."
 }

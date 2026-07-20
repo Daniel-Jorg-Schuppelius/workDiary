@@ -95,6 +95,19 @@ class TogglController extends Controller {
 
         $mappings = $organization instanceof Organization ? $this->service->mappings($organization) : collect();
 
+        // Dropdown nur mit UNaufgelösten Toggl-Adressen: Bereits zugeordnete
+        // (oder direkt per E-Mail matchende) verschwinden aus der Auswahl.
+        $togglEmails = [];
+        $allMapped = false;
+        if ($organization instanceof Organization) {
+            $known = $this->knownTogglEmails($organization);
+            $togglEmails = array_values(array_filter(
+                $known,
+                fn (array $tu): bool => $this->service->resolveImportUser($organization, $tu['email']) === null,
+            ));
+            $allMapped = $known !== [] && $togglEmails === [];
+        }
+
         $customers = Customer::query()->orderBy('name')->get(['id', 'name', 'company']);
         // Inkl. kundenloser (interner) Projekte, damit eine Name-Zuordnung auch auf ein
         // unternehmenseigenes Projekt zeigen kann.
@@ -117,7 +130,8 @@ class TogglController extends Controller {
             'projects' => $this->options->projectOptions($projects),
             'foreignCustomers' => $foreignCustomers,
             'users' => $this->options->userSelectOptions(),
-            'togglEmails' => $organization instanceof Organization ? $this->knownTogglEmails($organization) : [],
+            'togglEmails' => $togglEmails,
+            'allTogglEmailsMapped' => $allMapped,
         ]);
     }
 
