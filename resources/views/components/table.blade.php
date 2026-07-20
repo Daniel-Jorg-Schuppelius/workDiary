@@ -41,7 +41,7 @@
     <x-table.empty …> @endforelse`; der gefüllte Slot deaktiviert die Auto-Erkennung.
 
     Beispiel:
-        <x-table :empty-title="__('Keine Kunden')">
+        <x-table>
             <x-slot:head>
                 <tr><x-table.th sort="name">Name</x-table.th></tr>
             </x-slot:head>
