@@ -165,21 +165,10 @@ class TogglImportTest extends TestCase {
         ]);
 
         // /me liefert nur eigene Zeiten (hier: keine) — die Mitarbeiter-Zeit
-        // kommt ausschließlich über die Reports-API des Workspaces.
-        FakePluginHttp::fake([
-            'https://api.track.toggl.com/api/v9/me/time_entries*' => FakePluginHttp::response([], 200),
-            'https://api.track.toggl.com/api/v9/me*' => FakePluginHttp::response(['email' => 'chef@example.com', 'clients' => [], 'projects' => []], 200),
-            'https://api.track.toggl.com/api/v9/workspaces/7/clients*' => FakePluginHttp::response([['id' => 5, 'name' => 'Acme']], 200),
-            'https://api.track.toggl.com/api/v9/workspaces/7/projects*' => FakePluginHttp::response([['id' => 9, 'name' => 'Website', 'client_id' => 5, 'active' => true]], 200),
-            'https://api.track.toggl.com/api/v9/workspaces' => FakePluginHttp::response([['id' => 7, 'name' => 'Firma WS']], 200),
-            'https://api.track.toggl.com/reports/api/v3/workspace/7/search/time_entries*' => FakePluginHttp::response([[
-                'project_id' => 9,
-                'description' => 'Mitarbeiter-Arbeit',
-                'billable' => true,
-                'user_email' => 'worker@example.com',
-                'time_entries' => [['id' => 555, 'start' => '2026-05-26T10:00:00+00:00', 'stop' => '2026-05-26T11:00:00+00:00']],
-            ]], 200),
-        ]);
+        // kommt ausschließlich über die Reports-API des Workspaces. Deren
+        // Zeilen tragen nur die user_id; die E-Mail kommt aus der
+        // Workspace-Benutzerliste.
+        FakePluginHttp::fake($this->reportApiStubs(withUsers: true));
 
         $result = $this->service()->importFromApi(
             $this->organization,
@@ -199,6 +188,61 @@ class TogglImportTest extends TestCase {
             'external_id' => 'toggl:555',
             'referenceable_id' => $entry->id,
         ]);
+    }
+
+    /**
+     * Endpunkt-Stubs für den Reports-API-Sync (Workspace 7, Projekt 9, ein
+     * Mitarbeiter-Eintrag von Toggl-User 42). Ohne Benutzerliste bleibt die
+     * E-Mail unaufgelöst → Buchung auf den Standard-Benutzer.
+     *
+     * @return array<string, mixed>
+     */
+    private function reportApiStubs(bool $withUsers): array {
+        return [
+            'https://api.track.toggl.com/api/v9/me/time_entries*' => FakePluginHttp::response([], 200),
+            'https://api.track.toggl.com/api/v9/me*' => FakePluginHttp::response(['email' => 'chef@example.com', 'clients' => [], 'projects' => []], 200),
+            'https://api.track.toggl.com/api/v9/workspaces/7/users*' => FakePluginHttp::response(
+                $withUsers ? [['id' => 42, 'email' => 'worker@example.com', 'fullname' => 'Worker']] : [],
+                200,
+            ),
+            'https://api.track.toggl.com/api/v9/workspaces/7/clients*' => FakePluginHttp::response([['id' => 5, 'name' => 'Acme']], 200),
+            'https://api.track.toggl.com/api/v9/workspaces/7/projects*' => FakePluginHttp::response([['id' => 9, 'name' => 'Website', 'client_id' => 5, 'active' => true]], 200),
+            'https://api.track.toggl.com/api/v9/workspaces' => FakePluginHttp::response([['id' => 7, 'name' => 'Firma WS']], 200),
+            'https://api.track.toggl.com/reports/api/v3/workspace/7/search/time_entries*' => FakePluginHttp::response([[
+                'project_id' => 9,
+                'description' => 'Mitarbeiter-Arbeit',
+                'billable' => true,
+                'user_id' => 42,
+                'time_entries' => [['id' => 555, 'start' => '2026-05-26T10:00:00+00:00', 'stop' => '2026-05-26T11:00:00+00:00']],
+            ]], 200),
+        ];
+    }
+
+    public function test_repair_command_api_mode_fixes_users_via_reports(): void {
+        $config = $this->enableToggl();
+        $project = $this->customerWithProject('Acme', 'Website');
+        $mitarbeiter = User::factory()->user()->create([
+            'organization_id' => $this->organization->id,
+            'email' => 'worker@example.com',
+        ]);
+
+        // Alt-Zustand: Import ohne auflösbare E-Mail → Eintrag beim Owner.
+        FakePluginHttp::fake($this->reportApiStubs(withUsers: false));
+        $this->service()->importFromApi(
+            $this->organization,
+            $config,
+            CarbonImmutable::parse('2026-05-25'),
+            CarbonImmutable::parse('2026-05-27'),
+        );
+        $entry = TimeEntry::query()->where('project_id', $project->id)->firstOrFail();
+        $this->assertSame((int) $this->organization->owner_id, (int) $entry->user_id);
+
+        // Reparatur im API-Modus (ohne CSV): Reports + Benutzerliste liefern die E-Mail.
+        FakePluginHttp::fake($this->reportApiStubs(withUsers: true));
+        $this->artisan('toggl:repair-entry-users', ['--organization' => $this->organization->id, '--days' => 60, '--apply' => true])
+            ->assertExitCode(0);
+
+        $this->assertSame($mitarbeiter->id, (int) $entry->fresh()->user_id);
     }
 
     public function test_api_import_is_idempotent(): void {
