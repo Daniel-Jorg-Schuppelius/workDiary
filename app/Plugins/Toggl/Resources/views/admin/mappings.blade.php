@@ -33,8 +33,18 @@
             @csrf
             <label class="form-control min-w-48 flex-1">
                 <span class="label-text text-xs">{{ __('Toggl-E-Mail') }}</span>
-                <input type="email" name="toggl_email" required maxlength="191" placeholder="name@firma.de"
-                       class="input input-sm input-bordered w-full">
+                @if ($togglEmails !== [])
+                    {{-- Bekannte Toggl-Benutzer (API/Inbox) — verhindert Tippfehler. --}}
+                    <select name="toggl_email" required class="select select-sm select-bordered w-full">
+                        <option value="">{{ __('— wählen —') }}</option>
+                        @foreach ($togglEmails as $tu)
+                            <option value="{{ $tu['email'] }}">{{ $tu['name'] === $tu['email'] ? $tu['email'] : $tu['name'] . ' (' . $tu['email'] . ')' }}</option>
+                        @endforeach
+                    </select>
+                @else
+                    <input type="email" name="toggl_email" required maxlength="191" placeholder="name@firma.de"
+                           class="input input-sm input-bordered w-full">
+                @endif
             </label>
             <label class="form-control min-w-56">
                 <span class="label-text text-xs">{{ __('Benutzer') }}</span>

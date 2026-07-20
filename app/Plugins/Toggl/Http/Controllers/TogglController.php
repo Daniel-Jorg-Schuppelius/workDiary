@@ -117,7 +117,48 @@ class TogglController extends Controller {
             'projects' => $this->options->projectOptions($projects),
             'foreignCustomers' => $foreignCustomers,
             'users' => $this->options->userSelectOptions(),
+            'togglEmails' => $organization instanceof Organization ? $this->knownTogglEmails($organization) : [],
         ]);
+    }
+
+    /**
+     * Bekannte Toggl-Benutzer für die Zuordnungs-Auswahl (statt Freitext):
+     * Workspace-Benutzer der API (falls Token konfiguriert) plus E-Mails aus
+     * offenen Inbox-Snapshots (CSV-Quelle). Dedupe per lower(email).
+     *
+     * @return array<int, array{email: string, name: string}>
+     */
+    private function knownTogglEmails(Organization $organization): array {
+        $bucket = [];
+
+        $config = TogglConfig::resolve($organization->id);
+        if ($config['enabled'] && $config['api_token'] !== null) {
+            try {
+                $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id']);
+                foreach ($client->workspaces() as $workspace) {
+                    $this->options->collectTogglUsers($bucket, $client->workspaceUsers((int) $workspace['id']));
+                }
+            } catch (\Throwable) {
+                // API nicht erreichbar → nur Snapshot-Quellen anbieten.
+            }
+        }
+
+        // E-Mails aus offenen Zeit-Import-Snapshots (deckt reine CSV-Importe ab).
+        $snapshots = IntegrationInboxItem::query()
+            ->where('organization_id', $organization->id)
+            ->where('plugin_id', TogglPlugin::ID)
+            ->whereNotNull('group_key')
+            ->orderByDesc('id')
+            ->limit(500)
+            ->pluck('remote_snapshot');
+        foreach ($snapshots as $snap) {
+            $email = trim((string) (((array) $snap)['user_email'] ?? ''));
+            if ($email !== '') {
+                $this->options->collectTogglUsers($bucket, [['email' => $email, 'name' => $email]]);
+            }
+        }
+
+        return $this->options->sortTogglUsers($bucket);
     }
 
     /**

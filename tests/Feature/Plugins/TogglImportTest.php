@@ -598,6 +598,20 @@ class TogglImportTest extends TestCase {
         ]);
     }
 
+    public function test_mappings_page_offers_known_toggl_emails_as_dropdown(): void {
+        $this->enableToggl();
+        FakePluginHttp::fake([]); // API liefert leer — Snapshot-Quelle bleibt.
+
+        // Bekannte Adresse aus einem offenen Inbox-Snapshot (CSV-Quelle).
+        $item = $this->seedInboxEntry('Acme', 'Website', 'csv:mail1', '2026-05-26 09:00:00', '2026-05-26 10:00:00');
+        $item->update(['remote_snapshot' => array_merge((array) $item->remote_snapshot, ['user_email' => 'privat@gmx.de'])]);
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.toggl.mappings.index'))
+            ->assertOk()
+            ->assertSee('privat@gmx.de');
+    }
+
     public function test_repair_command_reassigns_users_from_csv(): void {
         $config = $this->enableToggl();
         $this->customerWithProject('Acme', 'Website');
