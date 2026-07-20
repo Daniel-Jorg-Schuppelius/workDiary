@@ -61,7 +61,7 @@
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <x-kpi-tile :label="__('Arbeit')"         :value="$fmtMin((int)$timesheet->total_work_minutes) . ' h'" />
         <x-kpi-tile :label="__('Pause')"          :value="$fmtMin((int)$timesheet->total_break_minutes) . ' h'" />
-        <x-kpi-tile :label="__('Material netto')" :value="number_format((float)$timesheet->total_material_net, 2, ',', '.') . ' €'" />
+        <x-kpi-tile :label="__('Material netto')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float)$timesheet->total_material_net, 2, withThousandsSeparator: true) . ' €'" />
     </div>
 
     <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
@@ -140,10 +140,10 @@
             @forelse($timesheet->materialUsages as $u)
                 <tr>
                     <td>{{ $u->description }}</td>
-                    <td class="text-right tabular-nums" data-sort-value="{{ (float) $u->quantity }}">{{ rtrim(rtrim(number_format((float)$u->quantity, 3, ',', '.'), '0'), ',') }}</td>
+                    <td class="text-right tabular-nums" data-sort-value="{{ (float) $u->quantity }}">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float)$u->quantity, 3, withThousandsSeparator: true), '0'), ',') }}</td>
                     <td>{{ $u->unit }}</td>
-                    <td class="text-right tabular-nums" data-sort-value="{{ (float) ($u->unit_price ?? 0) }}">{{ $u->unit_price !== null ? number_format((float)$u->unit_price, 4, ',', '.').' €' : '—' }}</td>
-                    <td class="text-right tabular-nums" data-sort-value="{{ (float) $u->line_total_net }}">{{ number_format((float)$u->line_total_net, 2, ',', '.') }} €</td>
+                    <td class="text-right tabular-nums" data-sort-value="{{ (float) ($u->unit_price ?? 0) }}">{{ $u->unit_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float)$u->unit_price, 4, withThousandsSeparator: true).' €' : '—' }}</td>
+                    <td class="text-right tabular-nums" data-sort-value="{{ (float) $u->line_total_net }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float)$u->line_total_net, 2, withThousandsSeparator: true) }} €</td>
                     <td class="text-right">
                         @if($editable)
                             <x-action-form :action="route('projects.timesheets.materials.destroy', [$project, $timesheet, $u])" method="DELETE"

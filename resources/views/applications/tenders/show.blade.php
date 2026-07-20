@@ -55,7 +55,7 @@
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('Akte')">
             <x-detail-grid>
-                <x-detail-grid.row :label="__('Wertpotenzial')">{{ $opportunity->estimated_value !== null ? number_format((float) $opportunity->estimated_value, 2, ',', '.') . ' €' : '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Wertpotenzial')">{{ $opportunity->estimated_value !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $opportunity->estimated_value, 2, withThousandsSeparator: true) . ' €' : '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Erfolgswahrscheinlichkeit')">{{ $opportunity->probability !== null ? $opportunity->probability . ' %' : '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Rückfragefrist')">{{ optional($opportunity->question_deadline)->fdate() ?? '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Entscheidung erwartet')">{{ optional($opportunity->decision_expected_on)->fdate() ?? '—' }}</x-detail-grid.row>

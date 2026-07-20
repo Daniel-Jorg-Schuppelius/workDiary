@@ -28,7 +28,7 @@
     </x-filter-bar>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <x-kpi-tile :label="__('Summe (Brutto)')" :value="number_format($grandTotal, 2, ',', '.') . ' €'" />
+        <x-kpi-tile :label="__('Summe (Brutto)')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($grandTotal, 2, withThousandsSeparator: true) . ' €'" />
         <x-kpi-tile :label="__('Mitarbeiter')" :value="count($totalsPerUser)" />
         <x-kpi-tile :label="__('Kategorien')" :value="count($totalsPerCategory)" />
         <x-kpi-tile :label="__('Monate')" :value="count($months)" />
@@ -54,9 +54,9 @@
                     <tr class="font-semibold">
                         <td colspan="2">{{ __('Gesamt') }}</td>
                         @foreach ($months as $m)
-                            <td class="text-right tabular-nums">{{ number_format($totalsPerMonth[$m] ?? 0, 2, ',', '.') }}</td>
+                            <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totalsPerMonth[$m] ?? 0, 2, withThousandsSeparator: true) }}</td>
                         @endforeach
-                        <td class="text-right tabular-nums">{{ number_format($grandTotal, 2, ',', '.') }}</td>
+                        <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($grandTotal, 2, withThousandsSeparator: true) }}</td>
                     </tr>
                 </x-slot:foot>
                     @foreach ($rows as $row)
@@ -73,13 +73,13 @@
                             @foreach ($months as $m)
                                 <td class="text-right tabular-nums">
                                     @if (isset($row['months'][$m]))
-                                        {{ number_format($row['months'][$m], 2, ',', '.') }}
+                                        {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['months'][$m], 2, withThousandsSeparator: true) }}
                                     @else
                                         <span class="text-base-content/30">—</span>
                                     @endif
                                 </td>
                             @endforeach
-                            <td class="text-right tabular-nums font-semibold">{{ number_format($row['total'], 2, ',', '.') }}</td>
+                            <td class="text-right tabular-nums font-semibold">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['total'], 2, withThousandsSeparator: true) }}</td>
                         </tr>
                     @endforeach
             </x-table>
@@ -94,7 +94,7 @@
                 @foreach ($totalsPerCategory as $cat => $sum)
                     <div class="flex items-center justify-between rounded-box bg-base-200/50 px-3 py-2">
                         <span class="truncate">{{ $cat }}</span>
-                        <span class="tabular-nums font-semibold">{{ number_format($sum, 2, ',', '.') }} €</span>
+                        <span class="tabular-nums font-semibold">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($sum, 2, withThousandsSeparator: true) }} €</span>
                     </div>
                 @endforeach
             </div>

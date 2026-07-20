@@ -4,7 +4,7 @@
 
 @section('content')
 @php
-    $money = fn (float $v): string => number_format($v, 2, ',', '.') . ' €';
+    $money = fn (float $v): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) . ' €';
 @endphp
 
 <x-page-shell>

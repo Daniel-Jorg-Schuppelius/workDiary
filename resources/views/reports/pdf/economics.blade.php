@@ -4,8 +4,8 @@
 @section('pdf-heading', __('Wirtschaftlichkeit'))
 
 @php
-    $eur = fn($v): string => number_format((float) $v, 2, ',', '.') . ' €';
-    $pct = fn($v): string => number_format((float) $v, 2, ',', '.') . ' %';
+    $eur = fn($v): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $v, 2, withThousandsSeparator: true) . ' €';
+    $pct = fn($v): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $v, 2, withThousandsSeparator: true) . ' %';
 @endphp
 
 @section('pdf-table')
@@ -100,7 +100,7 @@
                         <td>{{ $p['referenceNo'] }}</td>
                         <td>{{ $p['shortText'] ?? '—' }}</td>
                         <td>{{ $p['isAddendum'] ? __('Ja') : __('Nein') }}</td>
-                        <td class="num">{{ number_format($p['measuredQuantity'], 3, ',', '.') }}</td>
+                        <td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($p['measuredQuantity'], 3, withThousandsSeparator: true) }}</td>
                         <td>{{ $p['unit'] ?? '—' }}</td>
                         <td class="num">{{ $eur($p['revenue']) }}</td>
                         <td class="num">{{ $p['timeMinutes'] }}</td>

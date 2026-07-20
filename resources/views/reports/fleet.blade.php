@@ -4,9 +4,9 @@
 
 @section('content')
 @php
-    $money = fn (float $v) => number_format($v, 2, ',', '.') . ' €';
-    $km    = fn (float $v) => number_format($v, 1, ',', '.') . ' km';
-    $num   = fn (float $v, int $d = 2) => number_format($v, $d, ',', '.');
+    $money = fn (float $v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) . ' €';
+    $km    = fn (float $v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 1, withThousandsSeparator: true) . ' km';
+    $num   = fn (float $v, int $d = 2) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, $d, withThousandsSeparator: true);
 @endphp
 
 <x-page-shell>
@@ -95,7 +95,7 @@
                         <td class="text-right tabular-nums" data-sort-value="{{ (float) $r['kwh'] }}">{{ $r['kwh'] > 0 ? $num($r['kwh'], 2) : '–' }}</td>
                         <td class="text-right tabular-nums" data-sort-value="{{ (float) $r['energy_cost'] }}">{{ $money($r['energy_cost']) }}</td>
                         <td class="text-right tabular-nums" data-sort-value="{{ $r['cost_per_km'] ?? -1 }}">{{ $r['cost_per_km'] !== null ? $num($r['cost_per_km'], 3) . ' €' : '–' }}</td>
-                        <td class="text-right tabular-nums" data-sort-value="{{ $r['last_odometer'] ?? -1 }}">{{ $r['last_odometer'] !== null ? number_format($r['last_odometer'], 0, ',', '.') : '–' }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ $r['last_odometer'] ?? -1 }}">{{ $r['last_odometer'] !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($r['last_odometer'], 0, withThousandsSeparator: true) : '–' }}</td>
                     </tr>
                 @endforeach
             </x-table>

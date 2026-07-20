@@ -29,7 +29,7 @@
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <x-kpi-tile :label="__('Reisen im Zeitraum')" :value="(string) $totals['count']" />
             <x-kpi-tile :label="__('Pauschalen-Summe')"
-                        :value="number_format($totals['amount'], 2, ',', '.') . ' €'" />
+                        :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totals['amount'], 2, withThousandsSeparator: true) . ' €'" />
             <x-kpi-tile :label="__('Offene Reisen')"
                         :value="(string) $totals['open']"
                         :tone="$totals['open'] > 0 ? 'warning' : 'ghost'" />
@@ -66,7 +66,7 @@
                         </td>
                         <td class="max-w-xs truncate">{{ $trip->purpose }}</td>
                         <td class="text-right whitespace-nowrap">
-                            {{ number_format((float) $trip->totalAmount(), 2, ',', '.') }} €
+                            {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $trip->totalAmount(), 2, withThousandsSeparator: true) }} €
                             <span class="text-xs text-base-content/60 ml-1">({{ $trip->days->count() }} {{ __('Tage') }})</span>
                         </td>
                         <td>

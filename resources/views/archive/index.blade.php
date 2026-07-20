@@ -124,12 +124,12 @@
                     <a href="{{ $tile['href'] }}"
                        class="{{ $base }} transition hover:border-primary hover:shadow-md{{ $ring }}">
                         <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $tile['label'] }}</p>
-                        <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ number_format((int) $tile['value'], 0, ',', '.') }}</p>
+                        <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((int) $tile['value'], 0, withThousandsSeparator: true) }}</p>
                     </a>
                 @else
                     <div class="{{ $base }}">
                         <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $tile['label'] }}</p>
-                        <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ number_format((int) $tile['value'], 0, ',', '.') }}</p>
+                        <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((int) $tile['value'], 0, withThousandsSeparator: true) }}</p>
                     </div>
                 @endif
             @endforeach

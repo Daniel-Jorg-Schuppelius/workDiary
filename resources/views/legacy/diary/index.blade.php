@@ -138,7 +138,7 @@
                     <a href="{{ $tileUrl }}"
                        class="rounded-box border bg-base-100 px-4 py-3 shadow-xs transition hover:border-primary hover:shadow-md {{ $isActive ? 'border-primary ring-1 ring-primary/40' : $borderClass }}">
                         <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $label }}</p>
-                        <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ number_format($diaryCounts[$key], 0, ',', '.') }}</p>
+                        <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($diaryCounts[$key], 0, withThousandsSeparator: true) }}</p>
                     </a>
                 @endforeach
             </div>
@@ -297,7 +297,7 @@
                 @foreach ([['all', __('Gesamt'), 'border-base-300'], ['today', __('Heute aktiv'), 'border-primary/40'], ['upcoming', __('Kommend'), 'border-info/40'], ['past', __('Vergangen'), 'border-neutral/40']] as [$key, $label, $border])
                     <div class="rounded-box border bg-base-100 px-4 py-3 shadow-xs {{ $border }}">
                         <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $label }}</p>
-                        <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ number_format($oncallCounts[$key] ?? 0, 0, ',', '.') }}</p>
+                        <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($oncallCounts[$key] ?? 0, 0, withThousandsSeparator: true) }}</p>
                     </div>
                 @endforeach
             </div>
@@ -375,7 +375,7 @@
                 @foreach ([['all', __('Gesamt'), 'border-base-300'], ['today', __('Heute aktiv'), 'border-warning/40'], ['upcoming', __('Kommend'), 'border-info/40'], ['past', __('Vergangen'), 'border-neutral/40']] as [$key, $label, $border])
                     <div class="rounded-box border bg-base-100 px-4 py-3 shadow-xs {{ $border }}">
                         <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $label }}</p>
-                        <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ number_format($notdienstCounts[$key] ?? 0, 0, ',', '.') }}</p>
+                        <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($notdienstCounts[$key] ?? 0, 0, withThousandsSeparator: true) }}</p>
                     </div>
                 @endforeach
             </div>
@@ -479,7 +479,7 @@
                 ] as [$key, $label, $border])
                     <div class="rounded-box border bg-base-100 px-4 py-3 shadow-xs {{ $border }}">
                         <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $label }}</p>
-                        <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ number_format($vacationKpis[$key] ?? 0, 0, ',', '.') }}</p>
+                        <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($vacationKpis[$key] ?? 0, 0, withThousandsSeparator: true) }}</p>
                     </div>
                 @endforeach
             </div>

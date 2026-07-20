@@ -338,7 +338,7 @@
                         <span class="badge badge-outline">{{ $outcome->kind->label() }}</span>
                         <x-status-badge size="md" outline>{{ $outcome->status->label() }}</x-status-badge>
                         @if ($outcome->amount !== null)
-                            <span class="font-mono">{{ number_format((float) $outcome->amount, 2, ',', '.') }} {{ $outcome->currency->value }}</span>
+                            <span class="font-mono">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $outcome->amount, 2, withThousandsSeparator: true) }} {{ $outcome->currency->value }}</span>
                         @endif
                         @if ($outcome->resultInvoice !== null)
                             <span class="badge badge-ghost">{{ __('Beleg :number', ['number' => $outcome->resultInvoice->number]) }}</span>
@@ -401,10 +401,10 @@
                         <span class="text-base-content/60">{{ __('Antwortfrist: :date', ['date' => $recourse->response_due_at->fdatetime()]) }}</span>
                     @endif
                     @if ($recourse->amount_claimed !== null)
-                        <span class="font-mono">{{ __('gefordert') }}: {{ number_format((float) $recourse->amount_claimed, 2, ',', '.') }}</span>
+                        <span class="font-mono">{{ __('gefordert') }}: {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $recourse->amount_claimed, 2, withThousandsSeparator: true) }}</span>
                     @endif
                     @if ($recourse->amount_recovered !== null)
-                        <span class="font-mono text-success">{{ __('erstattet') }}: {{ number_format((float) $recourse->amount_recovered, 2, ',', '.') }}</span>
+                        <span class="font-mono text-success">{{ __('erstattet') }}: {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $recourse->amount_recovered, 2, withThousandsSeparator: true) }}</span>
                     @endif
                 </div>
                 @can('recourse', $claim)

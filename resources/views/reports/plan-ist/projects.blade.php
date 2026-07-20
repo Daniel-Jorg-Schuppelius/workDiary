@@ -18,7 +18,7 @@
 
 @section('content')
 @php
-    $fmtH = fn (int $minutes): string => number_format($minutes / 60, 1, ',', '.') . ' h';
+    $fmtH = fn (int $minutes): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minutes / 60, 1, withThousandsSeparator: true) . ' h';
     // Diagramm: Top-Projekte nach Ist-Minuten (zwei Serien Plan/Ist).
     $chartSeries = collect($allRows)
         ->sortByDesc('actual_minutes')

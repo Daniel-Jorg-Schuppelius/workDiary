@@ -31,14 +31,14 @@
 
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <x-kpi-tile :label="__('Summe (Brutto)')"
-                        :value="number_format($totals['gross'], 2, ',', '.') . ' €'" />
+                        :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totals['gross'], 2, withThousandsSeparator: true) . ' €'" />
             <x-kpi-tile :label="__('Diesen Monat')"
-                        :value="number_format($totals['current_month'], 2, ',', '.') . ' €'" />
+                        :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totals['current_month'], 2, withThousandsSeparator: true) . ' €'" />
             <x-kpi-tile :label="__('Privat verauslagt (erstattbar)')"
-                        :value="number_format($totals['reimbursable'], 2, ',', '.') . ' €'"
+                        :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totals['reimbursable'], 2, withThousandsSeparator: true) . ' €'"
                         tone="info" />
             <x-kpi-tile :label="__('Erstattung ausstehend')"
-                        :value="number_format($totals['reimbursement_pending'], 2, ',', '.') . ' €'"
+                        :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totals['reimbursement_pending'], 2, withThousandsSeparator: true) . ' €'"
                         :tone="$totals['reimbursement_pending'] > 0 ? 'warning' : 'ghost'" />
             <x-kpi-tile :label="__('Offene Genehmigungen')"
                         :value="(string) $totals['pending']"
@@ -80,7 +80,7 @@
                         <td>{{ $expense->vendor ?: '—' }}</td>
                         <td class="max-w-xs truncate">{{ $expense->description }}</td>
                         <td class="text-right whitespace-nowrap">
-                            {{ number_format((float) $expense->amount_gross, 2, ',', '.') }} {{ $expense->currency->value }}
+                            {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $expense->amount_gross, 2, withThousandsSeparator: true) }} {{ $expense->currency->value }}
                             @if ($expense->billable)
                                 <x-status-badge tone="ghost" size="xs" class="ml-1">{{ __('weiterberechnet') }}</x-status-badge>
                             @endif

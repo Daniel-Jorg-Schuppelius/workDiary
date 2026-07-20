@@ -80,7 +80,7 @@
                         {{ $transfer->period_from?->format('d.m.Y') ?? '—' }} – {{ $transfer->period_to?->format('d.m.Y') ?? '—' }}
                     </td>
                     <td class="text-right tabular-nums">{{ $transfer->position_count }}</td>
-                    <td class="text-right tabular-nums">{{ number_format((float) $transfer->total_amount, 2, ',', '.') }}</td>
+                    <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $transfer->total_amount, 2, withThousandsSeparator: true) }}</td>
                     <td><x-status-badge :tone="$transfer->status->tone()">{{ $transfer->status->label() }}</x-status-badge></td>
                     <td>
                         <span class="font-mono text-xs text-base-content/60" title="{{ $transfer->payload_hash }}">

@@ -95,9 +95,9 @@
                         <tr>
                             <td class="text-end font-mono">{{ $f->level }}</td>
                             <td><a class="link link-hover" href="{{ route('floors.show', $f) }}">{{ $f->label }}</a></td>
-                            <td class="text-end" data-sort-value="{{ $f->gross_area_m2 !== null ? (float) $f->gross_area_m2 : -1 }}">{{ $f->gross_area_m2 !== null ? number_format((float) $f->gross_area_m2, 1, ',', '.') : '—' }}</td>
+                            <td class="text-end" data-sort-value="{{ $f->gross_area_m2 !== null ? (float) $f->gross_area_m2 : -1 }}">{{ $f->gross_area_m2 !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $f->gross_area_m2, 1, withThousandsSeparator: true) : '—' }}</td>
                             <td class="text-end">{{ $f->rooms_count }}</td>
-                            <td class="text-end" data-sort-value="{{ $f->net_area_sum !== null ? (float) $f->net_area_sum : -1 }}">{{ $f->net_area_sum !== null ? number_format((float) $f->net_area_sum, 1, ',', '.') : '—' }}</td>
+                            <td class="text-end" data-sort-value="{{ $f->net_area_sum !== null ? (float) $f->net_area_sum : -1 }}">{{ $f->net_area_sum !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $f->net_area_sum, 1, withThousandsSeparator: true) : '—' }}</td>
                             <td class="text-right">
                                 <x-icon-btn icon="edit" size="sm"
                                             data-entry-modal-trigger

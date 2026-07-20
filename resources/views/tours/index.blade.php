@@ -73,7 +73,7 @@
                                 {{ $tour->name ?? ('#' . $tour->id) }}
                             </a>
                         </td>
-                        <td class="text-right">{{ number_format((float) $tour->planned_distance_km, 2, ',', '.') }}</td>
+                        <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $tour->planned_distance_km, 2, withThousandsSeparator: true) }}</td>
                         <td class="text-right">{{ $tour->planned_duration_minutes }}</td>
                         <td><x-status-badge tone="ghost" size="sm">{{ $tour->status?->label() }}</x-status-badge></td>
                         <td class="text-right">

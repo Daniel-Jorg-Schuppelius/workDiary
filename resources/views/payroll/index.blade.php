@@ -97,8 +97,8 @@
             </div>
             <p class="text-sm text-base-content/60">
                 @if ($currentMinimum !== null)
-                    {{ __('Aktuell: :amount € / Std.', ['amount' => number_format($currentMinimum, 2, ',', '.')]) }}
-                    @if ($minijobLimit !== null) · {{ __('Minijob-Grenze: :limit € / Monat', ['limit' => number_format($minijobLimit, 0, ',', '.')]) }}@endif
+                    {{ __('Aktuell: :amount € / Std.', ['amount' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($currentMinimum, 2, withThousandsSeparator: true)]) }}
+                    @if ($minijobLimit !== null) · {{ __('Minijob-Grenze: :limit € / Monat', ['limit' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minijobLimit, 0, withThousandsSeparator: true)]) }}@endif
                 @else
                     {{ __('Noch kein Mindestlohn hinterlegt.') }}
                 @endif
@@ -144,7 +144,7 @@
                 @forelse ($minimumWages as $mw)
                     <tr>
                         <td data-sort-value="{{ $mw->valid_from->format('Y-m-d') }}">{{ $mw->valid_from->fdate() }}</td>
-                        <td class="tabular-nums">{{ number_format((float) $mw->hourly_amount, 2, ',', '.') }} €</td>
+                        <td class="tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $mw->hourly_amount, 2, withThousandsSeparator: true) }} €</td>
                         <td class="text-sm text-base-content/70">{{ $mw->note }}</td>
                         <td class="text-right">
                             <x-action-form :action="route('payroll.minimum-wages.destroy', $mw)" method="DELETE"
@@ -177,7 +177,7 @@
                 <p class="text-sm text-base-content/70">
                     {{ __('Land :country: :amount :currency / Monat (Stand :date).', [
                         'country' => $reference->country,
-                        'amount' => number_format((float) $reference->monthly_amount, 2, ',', '.'),
+                        'amount' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $reference->monthly_amount, 2, withThousandsSeparator: true),
                         'currency' => $reference->currency->value,
                         'date' => $reference->valid_from->fdate(),
                     ]) }}
@@ -221,7 +221,7 @@
                         <tr>
                             <td>{{ $u->name }}</td>
                             <td class="text-sm">{{ $u->employment_type?->label() ?? '—' }}</td>
-                            <td class="tabular-nums text-warning">{{ number_format((float) $u->payroll_hourly_wage, 2, ',', '.') }} €</td>
+                            <td class="tabular-nums text-warning">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $u->payroll_hourly_wage, 2, withThousandsSeparator: true) }} €</td>
                             <td class="text-right">
                                 <x-action-form :action="route('payroll.raise-to-minimum')">
                                     <input type="hidden" name="user" value="{{ $u->sqid }}">

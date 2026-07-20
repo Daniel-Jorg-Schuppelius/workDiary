@@ -27,17 +27,17 @@
                 <tr>
                     <td>{{ $row['entryTypeName'] }}</td>
                     <td class="num">{{ $row['entryCount'] }}</td>
-                    <td class="num">{{ number_format($row['avgPlannedMinutes'], 2, ',', '.') }}</td>
-                    <td class="num">{{ number_format($row['avgActualMinutes'], 2, ',', '.') }}</td>
-                    <td class="num">{{ $row['planActualRatio'] === null ? '—' : number_format($row['planActualRatio'], 3, ',', '.') }}</td>
+                    <td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['avgPlannedMinutes'], 2, withThousandsSeparator: true) }}</td>
+                    <td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['avgActualMinutes'], 2, withThousandsSeparator: true) }}</td>
+                    <td class="num">{{ $row['planActualRatio'] === null ? '—' : \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['planActualRatio'], 3, withThousandsSeparator: true) }}</td>
                     <td class="num">{{ $row['overrunCount'] }}</td>
-                    <td class="num">{{ number_format($row['overrunShare'], 2, ',', '.') }}</td>
+                    <td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['overrunShare'], 2, withThousandsSeparator: true) }}</td>
                     <td class="num">{{ $row['reworkCount'] }}</td>
-                    <td class="num">{{ number_format($row['reworkShare'], 2, ',', '.') }}</td>
-                    <td class="num">{{ number_format($row['escalationShare'], 2, ',', '.') }}</td>
-                    <td class="num">{{ number_format($row['firstTimeRightShare'], 2, ',', '.') }}</td>
-                    <td class="num">{{ number_format($row['medianActualMinutes'], 2, ',', '.') }}</td>
-                    <td class="num">{{ number_format($row['p90ActualMinutes'], 2, ',', '.') }}</td>
+                    <td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['reworkShare'], 2, withThousandsSeparator: true) }}</td>
+                    <td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['escalationShare'], 2, withThousandsSeparator: true) }}</td>
+                    <td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['firstTimeRightShare'], 2, withThousandsSeparator: true) }}</td>
+                    <td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['medianActualMinutes'], 2, withThousandsSeparator: true) }}</td>
+                    <td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['p90ActualMinutes'], 2, withThousandsSeparator: true) }}</td>
                 </tr>
             @endforeach
         </tbody>

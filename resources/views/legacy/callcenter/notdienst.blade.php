@@ -66,7 +66,7 @@
                             <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $tile['label'] }}</p>
                             <span class="text-base-content/30 transition group-hover:text-primary">›</span>
                         </div>
-                        <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold {{ $tile['tone'] }}">{{ number_format((int) $tile['value'], 0, ',', '.') }}</p>
+                        <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold {{ $tile['tone'] }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((int) $tile['value'], 0, withThousandsSeparator: true) }}</p>
                     </a>
                 @endforeach
             </div>

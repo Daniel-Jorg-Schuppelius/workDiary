@@ -114,23 +114,23 @@
                             <a href="{{ $drilldownHref }}" class="link link-hover">{{ $row['entryTypeName'] }}</a>
                         </td>
                         <td class="text-right tabular-nums">{{ $row['entryCount'] }}</td>
-                        <td class="text-right tabular-nums">{{ number_format($row['avgPlannedMinutes'], 2, ',', '.') }}</td>
-                        <td class="text-right tabular-nums">{{ number_format($row['avgActualMinutes'], 2, ',', '.') }}</td>
-                        <td class="text-right tabular-nums {{ $ratioClass }}">{{ $ratio === null ? '—' : number_format($ratio, 3, ',', '.') }}</td>
+                        <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['avgPlannedMinutes'], 2, withThousandsSeparator: true) }}</td>
+                        <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['avgActualMinutes'], 2, withThousandsSeparator: true) }}</td>
+                        <td class="text-right tabular-nums {{ $ratioClass }}">{{ $ratio === null ? '—' : \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($ratio, 3, withThousandsSeparator: true) }}</td>
                         <td class="text-right tabular-nums">{{ $row['overrunCount'] }}</td>
-                        <td class="text-right tabular-nums">{{ number_format($row['overrunShare'], 2, ',', '.') }}</td>
+                        <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['overrunShare'], 2, withThousandsSeparator: true) }}</td>
                         <td class="text-right tabular-nums">
                             <a href="{{ route('reports.entry-types.drilldown.protocols', $reportDrilldown) }}" class="link link-hover">{{ $row['reworkCount'] }}</a>
                         </td>
-                        <td class="text-right tabular-nums">{{ number_format($row['reworkShare'], 2, ',', '.') }}</td>
+                        <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['reworkShare'], 2, withThousandsSeparator: true) }}</td>
                         <td class="text-right tabular-nums">
-                            <a href="{{ route('reports.entry-types.drilldown.open-issues', array_merge($reportDrilldown, ['escalated' => 1])) }}" class="link link-hover">{{ number_format($row['escalationShare'], 2, ',', '.') }}</a>
+                            <a href="{{ route('reports.entry-types.drilldown.open-issues', array_merge($reportDrilldown, ['escalated' => 1])) }}" class="link link-hover">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['escalationShare'], 2, withThousandsSeparator: true) }}</a>
                         </td>
-                        <td class="text-right tabular-nums">{{ number_format($row['firstTimeRightShare'], 2, ',', '.') }}</td>
-                        <td class="text-right tabular-nums">{{ number_format($row['medianActualMinutes'], 2, ',', '.') }}</td>
-                        <td class="text-right tabular-nums">{{ number_format($row['p90ActualMinutes'], 2, ',', '.') }}</td>
-                        <td class="text-right tabular-nums {{ $row['contribution'] < 0 ? 'text-error' : '' }}" title="{{ __('Erlös :revenue · Kosten :cost', ['revenue' => number_format($row['revenue'], 2, ',', '.') . ' €', 'cost' => number_format($row['cost'], 2, ',', '.') . ' €']) }}">{{ number_format($row['contribution'], 2, ',', '.') }} €</td>
-                        <td class="text-right tabular-nums {{ $row['contributionPerEntry'] < 0 ? 'text-error' : '' }}">{{ number_format($row['contributionPerEntry'], 2, ',', '.') }} €</td>
+                        <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['firstTimeRightShare'], 2, withThousandsSeparator: true) }}</td>
+                        <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['medianActualMinutes'], 2, withThousandsSeparator: true) }}</td>
+                        <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['p90ActualMinutes'], 2, withThousandsSeparator: true) }}</td>
+                        <td class="text-right tabular-nums {{ $row['contribution'] < 0 ? 'text-error' : '' }}" title="{{ __('Erlös :revenue · Kosten :cost', ['revenue' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['revenue'], 2, withThousandsSeparator: true) . ' €', 'cost' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['cost'], 2, withThousandsSeparator: true) . ' €']) }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['contribution'], 2, withThousandsSeparator: true) }} €</td>
+                        <td class="text-right tabular-nums {{ $row['contributionPerEntry'] < 0 ? 'text-error' : '' }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['contributionPerEntry'], 2, withThousandsSeparator: true) }} €</td>
                     </tr>
                 @endforeach
             </x-table>

@@ -30,7 +30,7 @@
         <x-kpi-tile :label="__('Abgeschlossen')" :value="$data['closed']" />
         <x-kpi-tile :label="__('Überfällig')" :value="$data['overdue']" />
         <x-kpi-tile :label="__('Ø Dauer (Tage)')" :value="$data['avg_duration_days'] ?? '—'" />
-        <x-kpi-tile :label="__('Kosten (ausgeführt)')" :value="number_format((float) $data['cost_total'], 2, ',', '.') . ' €'" />
+        <x-kpi-tile :label="__('Kosten (ausgeführt)')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $data['cost_total'], 2, withThousandsSeparator: true) . ' €'" />
     </div>
 
     <div class="grid gap-4 lg:grid-cols-2">
@@ -77,7 +77,7 @@
         @else
             <ul class="space-y-1 text-sm">
                 @foreach ($snapshots as $snapshot)
-                    <li>{{ $snapshot->period_start->fdate() }} – {{ $snapshot->period_end->fdate() }} ({{ $snapshot->created_at->fdatetime() }}): {{ __(':total Fälle, :cost € Kosten', ['total' => $snapshot->payload['total'] ?? 0, 'cost' => number_format((float) ($snapshot->payload['cost_total'] ?? 0), 2, ',', '.')]) }}</li>
+                    <li>{{ $snapshot->period_start->fdate() }} – {{ $snapshot->period_end->fdate() }} ({{ $snapshot->created_at->fdatetime() }}): {{ __(':total Fälle, :cost € Kosten', ['total' => $snapshot->payload['total'] ?? 0, 'cost' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($snapshot->payload['cost_total'] ?? 0), 2, withThousandsSeparator: true)]) }}</li>
                 @endforeach
             </ul>
         @endif

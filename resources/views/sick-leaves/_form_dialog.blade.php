@@ -115,7 +115,7 @@
             <input id="sick-au-file" type="file" name="au_file" accept="{{ $acceptHint }}"
                    class="file-input file-input-bordered file-input-sm w-full">
             <p class="text-xs text-base-content/60 mt-1">
-                {{ __('Erlaubt: :mimes — max. :mb MB', ['mimes' => strtoupper(implode(', ', $mimes)), 'mb' => number_format($maxKb / 1024, 1, ',', '.')]) }}
+                {{ __('Erlaubt: :mimes — max. :mb MB', ['mimes' => strtoupper(implode(', ', $mimes)), 'mb' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($maxKb / 1024, 1, withThousandsSeparator: true)]) }}
             </p>
             <p class="text-xs text-warning mt-1" x-show="requiresAu" x-cloak>
                 {{ __('Ab dem :n. Tag ist eine AU-Bescheinigung verpflichtend.', ['n' => $auThreshold]) }}

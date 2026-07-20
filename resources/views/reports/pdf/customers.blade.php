@@ -28,7 +28,7 @@
                     <td class="num">{{ $row['totalMinutes'] }}</td>
                     <td class="num">{{ $row['billableMinutes'] }}</td>
                     <td class="num">{{ $row['nonBillableMinutes'] }}</td>
-                    <td class="num">{{ number_format((float) $row['nonBillableShare'], 2, ',', '.') }}</td>
+                    <td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row['nonBillableShare'], 2, withThousandsSeparator: true) }}</td>
                     <td class="num">{{ $row['reworkEntryCount'] }}</td>
                     <td class="num">{{ $row['openIssueCount'] }}</td>
                     <td class="num">{{ $row['escalationCount'] }}</td>

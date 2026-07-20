@@ -26,7 +26,7 @@
             }
         }
     }
-    $totalHours = number_format($totalMinutes / 60, 2, ',', '');
+    $totalHours = \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totalMinutes / 60, 2);
 
     $vacationByDate = [];
     foreach ($vacations as $v) {

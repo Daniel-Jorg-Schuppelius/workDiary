@@ -10,7 +10,7 @@
         return $sign . intdiv($abs, 60) . ':' . str_pad((string) ($abs % 60), 2, '0', STR_PAD_LEFT) . ' h';
     };
     $money = function (float $val): string {
-        return number_format($val, 2, ',', '.') . ' €';
+        return \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($val, 2, withThousandsSeparator: true) . ' €';
     };
     $kindBadge = [
         'work' => 'badge-primary',

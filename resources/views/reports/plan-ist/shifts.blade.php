@@ -17,7 +17,7 @@
 
 @section('content')
 @php
-    $fmtH = fn (int $minutes): string => number_format($minutes / 60, 1, ',', '.') . ' h';
+    $fmtH = fn (int $minutes): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minutes / 60, 1, withThousandsSeparator: true) . ' h';
     $chartSeries = array_map(fn (array $b): array => [
         'x' => $b['key'],
         'y' => round($b['plan_minutes'] / 60, 1),
@@ -54,7 +54,7 @@
             <x-kpi-tile :label="__('Plan')" :value="$fmtH($report['totals']['plan_minutes'])" tone="info" />
             <x-kpi-tile :label="__('Ist')" :value="$fmtH($report['totals']['actual_minutes'])" tone="primary" />
             <x-kpi-tile :label="__('Differenz')" :value="$fmtH($report['totals']['delta_minutes'])" :tone="$report['totals']['delta_minutes'] < 0 ? 'warning' : 'success'" />
-            <x-kpi-tile :label="__('Abdeckung')" :value="$report['totals']['coverage_pct'] !== null ? number_format($report['totals']['coverage_pct'], 1, ',', '.') . ' %' : '—'" :tone="($report['totals']['coverage_pct'] ?? 100) < 100 ? 'warning' : 'success'" />
+            <x-kpi-tile :label="__('Abdeckung')" :value="$report['totals']['coverage_pct'] !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($report['totals']['coverage_pct'], 1, withThousandsSeparator: true) . ' %' : '—'" :tone="($report['totals']['coverage_pct'] ?? 100) < 100 ? 'warning' : 'success'" />
         </div>
 
         <x-charts.bar :title="$group === 'week' ? __('Plan vs. Ist je Woche') : __('Plan vs. Ist je Tag')"
@@ -99,9 +99,9 @@
                                 <span class="text-base-content/40">—</span>
                             @elseif ($row['coverage_pct'] < 100)
                                 {{-- Unterdeckung hervorheben (§2.3): Ist deckt das Soll-Fenster nicht. --}}
-                                <x-status-badge size="xs" tone="warning">{{ number_format($row['coverage_pct'], 1, ',', '.') }} %</x-status-badge>
+                                <x-status-badge size="xs" tone="warning">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['coverage_pct'], 1, withThousandsSeparator: true) }} %</x-status-badge>
                             @else
-                                {{ number_format($row['coverage_pct'], 1, ',', '.') }} %
+                                {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['coverage_pct'], 1, withThousandsSeparator: true) }} %
                             @endif
                         </td>
                     </tr>

@@ -40,10 +40,10 @@
         </x-filter-bar>
 
         <div class="grid gap-3 sm:grid-cols-4">
-            <x-kpi-tile :label="__('Liter gesamt')" :value="number_format($totals['liters'], 2, ',', '.') . ' l'" />
-            <x-kpi-tile :label="__('kWh gesamt')" :value="number_format($totals['kwh'], 2, ',', '.') . ' kWh'" />
-            <x-kpi-tile :label="__('Kosten')" :value="number_format($totals['cost'], 2, ',', '.') . ' €'" />
-            <x-kpi-tile :label="__('Strecke (Δ)')" :value="number_format($totals['distance'], 0, ',', '.') . ' km'" />
+            <x-kpi-tile :label="__('Liter gesamt')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totals['liters'], 2, withThousandsSeparator: true) . ' l'" />
+            <x-kpi-tile :label="__('kWh gesamt')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totals['kwh'], 2, withThousandsSeparator: true) . ' kWh'" />
+            <x-kpi-tile :label="__('Kosten')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totals['cost'], 2, withThousandsSeparator: true) . ' €'" />
+            <x-kpi-tile :label="__('Strecke (Δ)')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totals['distance'], 0, withThousandsSeparator: true) . ' km'" />
         </div>
 
         <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
@@ -87,10 +87,10 @@
                                 <x-status-badge tone="ghost" size="sm">{{ __($log->charger_type) }}</x-status-badge>
                             @endif
                         </td>
-                        <td class="text-right">{{ number_format((float) $log->quantity, 2, ',', '.') }} {{ $log->unit === 'kwh' ? 'kWh' : 'l' }}</td>
-                        <td class="text-right">{{ $log->cost_total !== null ? number_format((float) $log->cost_total, 2, ',', '.') . ' €' : '—' }}</td>
-                        <td class="text-right">{{ $log->odometer_km !== null ? number_format($log->odometer_km, 0, ',', '.') : '—' }}</td>
-                        <td class="text-right">{{ $log->distance_since_last !== null ? number_format($log->distance_since_last, 0, ',', '.') : '—' }}</td>
+                        <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $log->quantity, 2, withThousandsSeparator: true) }} {{ $log->unit === 'kwh' ? 'kWh' : 'l' }}</td>
+                        <td class="text-right">{{ $log->cost_total !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $log->cost_total, 2, withThousandsSeparator: true) . ' €' : '—' }}</td>
+                        <td class="text-right">{{ $log->odometer_km !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($log->odometer_km, 0, withThousandsSeparator: true) : '—' }}</td>
+                        <td class="text-right">{{ $log->distance_since_last !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($log->distance_since_last, 0, withThousandsSeparator: true) : '—' }}</td>
                         <td class="text-right">
                             <x-icon-btn icon="edit"
                                         data-entry-modal-trigger

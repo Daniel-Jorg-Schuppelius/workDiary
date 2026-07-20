@@ -124,16 +124,16 @@
             </tr>
         </x-slot:head>
         <x-slot:foot>
-            <tr><td colspan="4" class="text-right">{{ __('Zwischensumme') }}</td><td class="text-right" colspan="3">{{ number_format((float) $quote->subtotal, 2, ',', '.') }} EUR</td></tr>
-            <tr><td colspan="4" class="text-right">{{ __('USt.') }}</td><td class="text-right" colspan="3">{{ number_format((float) $quote->tax_amount, 2, ',', '.') }} EUR</td></tr>
-            <tr><td colspan="4" class="text-right font-bold">{{ __('Gesamt') }}</td><td class="text-right font-bold" colspan="3">{{ number_format((float) $quote->total, 2, ',', '.') }} EUR</td></tr>
+            <tr><td colspan="4" class="text-right">{{ __('Zwischensumme') }}</td><td class="text-right" colspan="3">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $quote->subtotal, 2, withThousandsSeparator: true) }} EUR</td></tr>
+            <tr><td colspan="4" class="text-right">{{ __('USt.') }}</td><td class="text-right" colspan="3">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $quote->tax_amount, 2, withThousandsSeparator: true) }} EUR</td></tr>
+            <tr><td colspan="4" class="text-right font-bold">{{ __('Gesamt') }}</td><td class="text-right font-bold" colspan="3">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $quote->total, 2, withThousandsSeparator: true) }} EUR</td></tr>
         </x-slot:foot>
         @forelse ($quote->items as $item)
             <tr>
                 <td>{{ $item->position }}</td>
                 <td>{{ $item->description }}</td>
-                <td class="text-right">{{ number_format((float) $item->quantity, 2, ',', '.') }} {{ $item->unit }}</td>
-                <td class="text-right">{{ number_format((float) $item->unit_price, 2, ',', '.') }} EUR</td>
+                <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, 2, withThousandsSeparator: true) }} {{ $item->unit }}</td>
+                <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->unit_price, 2, withThousandsSeparator: true) }} EUR</td>
                 <td class="text-right">{{ $item->tax_rate !== null ? rtrim(rtrim((string) $item->tax_rate, '0'), '.') : '—' }}</td>
                 <td>{{ $item->optional ? __('Option') : __('Pflicht') }}</td>
                 @if ($quote->decided_at !== null)

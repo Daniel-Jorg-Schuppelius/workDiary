@@ -40,9 +40,9 @@
     }
 
     if ($format === 'int' && is_numeric($value)) {
-        $displayValue = number_format((float) $value, 0, ',', '.');
+        $displayValue = \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $value, 0, withThousandsSeparator: true);
     } elseif ($format === 'decimal' && is_numeric($value)) {
-        $displayValue = number_format((float) $value, 1, ',', '.');
+        $displayValue = \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $value, 1, withThousandsSeparator: true);
     } else {
         $displayValue = (string) $value;
     }

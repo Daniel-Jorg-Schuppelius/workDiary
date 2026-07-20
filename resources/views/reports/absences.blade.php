@@ -86,9 +86,9 @@
                         <td class="text-right tabular-nums">{{ $r['special_days'] }}</td>
                         <td class="text-right tabular-nums">{{ $r['unpaid_days'] }}</td>
                         <td class="text-right tabular-nums {{ $r['pending_days'] > 0 ? 'text-warning' : '' }}">{{ $r['pending_days'] }}</td>
-                        <td class="text-right tabular-nums">{{ ($r['entitled_total_days'] ?? null) !== null ? number_format($r['entitled_total_days'], 1, ',', '.') : '–' }}</td>
+                        <td class="text-right tabular-nums">{{ ($r['entitled_total_days'] ?? null) !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($r['entitled_total_days'], 1, withThousandsSeparator: true) : '–' }}</td>
                         <td class="text-right tabular-nums {{ ($r['remaining_days'] ?? null) !== null && $r['remaining_days'] < 0 ? 'text-error font-semibold' : '' }}" data-sort-value="{{ $r['remaining_days'] ?? 0 }}">
-                            {{ ($r['remaining_days'] ?? null) !== null ? number_format($r['remaining_days'], 1, ',', '.') : '–' }}
+                            {{ ($r['remaining_days'] ?? null) !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($r['remaining_days'], 1, withThousandsSeparator: true) : '–' }}
                         </td>
                         <td class="text-right tabular-nums" data-sort-value="{{ (int) $r['flex_change_minutes'] }}">
                             <span class="{{ $r['flex_change_minutes'] < 0 ? 'text-error' : ($r['flex_change_minutes'] > 0 ? 'text-success' : '') }}">{{ $fmtMin($r['flex_change_minutes']) }}</span>

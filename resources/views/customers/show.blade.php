@@ -48,7 +48,7 @@
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <x-kpi-tile :label="__('Projekte')" :value="$projects->count()" tone="neutral" />
         <x-kpi-tile :label="__('Erfasste Zeit')" :value="$timeFormatted" tone="neutral" />
-        <x-kpi-tile :label="__('Umsatz (kalk.)')" :value="number_format($totalRate, 2, ',', '.') . ' ' . $customer->currency->value" tone="neutral" />
+        <x-kpi-tile :label="__('Umsatz (kalk.)')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totalRate, 2, withThousandsSeparator: true) . ' ' . $customer->currency->value" tone="neutral" />
     </div>
 
     {{-- Stammdaten --}}
@@ -78,10 +78,10 @@
                 <x-detail-grid.row :label="__('Währung')" :value="$customer->currency->value" />
                 <x-detail-grid.row :label="__('Zeitzone')" :value="$customer->timezone" />
                 @if ($customer->hourly_rate !== null)
-                    <x-detail-grid.row :label="__('Stundensatz')" :value="number_format((float) $customer->hourly_rate, 2, ',', '.').' '.$customer->currency->value" />
+                    <x-detail-grid.row :label="__('Stundensatz')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $customer->hourly_rate, 2, withThousandsSeparator: true).' '.$customer->currency->value" />
                 @endif
                 @if ($customer->internal_rate !== null)
-                    <x-detail-grid.row :label="__('Interner Satz')" :value="number_format((float) $customer->internal_rate, 2, ',', '.').' '.$customer->currency->value" />
+                    <x-detail-grid.row :label="__('Interner Satz')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $customer->internal_rate, 2, withThousandsSeparator: true).' '.$customer->currency->value" />
                 @endif
             </x-detail-grid>
             @if ($customer->invoice_text)
@@ -199,11 +199,11 @@
                     <div class="mb-3 grid grid-cols-2 gap-3 text-sm">
                         <div class="rounded-box bg-base-200 p-3">
                             <div class="text-xs text-base-content/60">{{ __('Stunden gesamt') }}</div>
-                            <div class="font-['Space_Grotesk'] text-xl font-semibold">{{ number_format($set['total_minutes'] / 60, 2, ',', '.') }} h</div>
+                            <div class="font-['Space_Grotesk'] text-xl font-semibold">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($set['total_minutes'] / 60, 2, withThousandsSeparator: true) }} h</div>
                         </div>
                         <div class="rounded-box bg-base-200 p-3">
                             <div class="text-xs text-base-content/60">{{ __('davon abrechenbar') }}</div>
-                            <div class="font-['Space_Grotesk'] text-xl font-semibold">{{ number_format($set['billable_minutes'] / 60, 2, ',', '.') }} h</div>
+                            <div class="font-['Space_Grotesk'] text-xl font-semibold">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($set['billable_minutes'] / 60, 2, withThousandsSeparator: true) }} h</div>
                         </div>
                     </div>
                     @if (count($set['by_project']) > 0)
@@ -223,8 +223,8 @@
                                         @endif
                                         {{ $row['name'] }}
                                     </td>
-                                    <td class="text-right" data-sort-value="{{ (float) $row['minutes'] }}">{{ number_format($row['minutes'] / 60, 2, ',', '.') }}</td>
-                                    <td class="text-right" data-sort-value="{{ (float) $row['billable_minutes'] }}">{{ number_format($row['billable_minutes'] / 60, 2, ',', '.') }}</td>
+                                    <td class="text-right" data-sort-value="{{ (float) $row['minutes'] }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['minutes'] / 60, 2, withThousandsSeparator: true) }}</td>
+                                    <td class="text-right" data-sort-value="{{ (float) $row['billable_minutes'] }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['billable_minutes'] / 60, 2, withThousandsSeparator: true) }}</td>
                                 </tr>
                             @endforeach
                         </x-table>

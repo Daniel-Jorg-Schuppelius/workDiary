@@ -45,9 +45,9 @@
             <span>
                 {{ __('Urlaubskonto :year: :remaining von :total Tagen übrig (:pending Tage beantragt).', [
                     'year' => $balance->year,
-                    'remaining' => number_format($balance->remainingDays(), 1, ',', '.'),
-                    'total' => number_format($balance->totalDays(), 1, ',', '.'),
-                    'pending' => number_format($balance->pendingDays, 1, ',', '.'),
+                    'remaining' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($balance->remainingDays(), 1, withThousandsSeparator: true),
+                    'total' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($balance->totalDays(), 1, withThousandsSeparator: true),
+                    'pending' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($balance->pendingDays, 1, withThousandsSeparator: true),
                 ]) }}
                 @if ($balance->remainingAfterPendingDays() < 0)
                     {{ __('Offene Anträge übersteigen den Restanspruch.') }}

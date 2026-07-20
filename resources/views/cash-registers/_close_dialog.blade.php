@@ -24,7 +24,7 @@
         <x-input-field name="closing_date" type="date" :label="__('Abschlussdatum')" required :value="old('closing_date', now()->format('Y-m-d'))" />
         <x-input-field name="counted_balance" type="number" :label="__('Gezählter Bestand (EUR)')" required min="0" step="0.01"
                        :value="old('counted_balance', number_format($expected, 2, '.', ''))"
-                       :hint="__('Soll laut Kassenbuch: :expected', ['expected' => number_format($expected, 2, ',', '.')])" />
+                       :hint="__('Soll laut Kassenbuch: :expected', ['expected' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($expected, 2, withThousandsSeparator: true)])" />
         <div class="fieldset" style="grid-column: span 2;">
             <label class="fieldset-label" for="cc-note">{{ __('Notiz (bei Differenz empfohlen)') }}</label>
             <textarea id="cc-note" name="note" rows="2" maxlength="500" class="textarea textarea-bordered w-full">{{ old('note') }}</textarea>

@@ -41,8 +41,8 @@
                 <td>{{ $entry->type ?? '—' }}</td>
                 <td>{{ $entry->description ?? '—' }}</td>
                 <td>{{ $entry->customer?->name ?? '—' }}</td>
-                <td class="text-right tabular-nums">{{ $entry->net_amount !== null ? number_format((float) $entry->net_amount, 2, ',', '.') : '—' }}</td>
-                <td class="text-right tabular-nums">{{ $entry->tax_amount !== null ? number_format((float) $entry->tax_amount, 2, ',', '.') : '—' }}</td>
+                <td class="text-right tabular-nums">{{ $entry->net_amount !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $entry->net_amount, 2, withThousandsSeparator: true) : '—' }}</td>
+                <td class="text-right tabular-nums">{{ $entry->tax_amount !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $entry->tax_amount, 2, withThousandsSeparator: true) : '—' }}</td>
             </tr>
         @empty
             <x-table.empty :colspan="6" :title="__('domain.accounting.empty')" compact />

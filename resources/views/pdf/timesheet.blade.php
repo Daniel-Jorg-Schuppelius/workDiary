@@ -84,10 +84,10 @@
             @forelse($timesheet->materialUsages as $u)
                 <tr>
                     <td>{{ $u->description }}</td>
-                    <td class="right">{{ rtrim(rtrim(number_format((float)$u->quantity, 3, ',', '.'), '0'), ',') }}</td>
+                    <td class="right">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float)$u->quantity, 3, withThousandsSeparator: true), '0'), ',') }}</td>
                     <td>{{ $u->unit }}</td>
-                    <td class="right">{{ $u->unit_price !== null ? number_format((float)$u->unit_price, 4, ',', '.').' €' : '—' }}</td>
-                    <td class="right">{{ number_format((float)$u->line_total_net, 2, ',', '.') }} €</td>
+                    <td class="right">{{ $u->unit_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float)$u->unit_price, 4, withThousandsSeparator: true).' €' : '—' }}</td>
+                    <td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float)$u->line_total_net, 2, withThousandsSeparator: true) }} €</td>
                 </tr>
             @empty
                 <tr><td colspan="5">—</td></tr>
@@ -95,7 +95,7 @@
         </tbody>
     </table>
     <table class="totals">
-        <tr><td class="right">{{ __('timesheet.totals.material_net') }}:</td><td class="right" style="width:80pt;"><strong>{{ number_format((float)$timesheet->total_material_net, 2, ',', '.') }} €</strong></td></tr>
+        <tr><td class="right">{{ __('timesheet.totals.material_net') }}:</td><td class="right" style="width:80pt;"><strong>{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float)$timesheet->total_material_net, 2, withThousandsSeparator: true) }} €</strong></td></tr>
     </table>
 
     <div class="sig">

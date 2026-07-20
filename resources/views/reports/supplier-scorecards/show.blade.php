@@ -156,8 +156,8 @@
                     @foreach ($price['articles'] as $article)
                         <tr class="hover">
                             <td>{{ $article['article'] }}</td>
-                            <td class="text-right tabular-nums">{{ number_format($article['first'], 2, ',', '.') }}</td>
-                            <td class="text-right tabular-nums">{{ number_format($article['last'], 2, ',', '.') }}</td>
+                            <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($article['first'], 2, withThousandsSeparator: true) }}</td>
+                            <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($article['last'], 2, withThousandsSeparator: true) }}</td>
                             <td class="text-right tabular-nums {{ $article['pct'] > 0 ? 'text-error' : ($article['pct'] < 0 ? 'text-success' : '') }}">
                                 {{ ($article['pct'] > 0 ? '+' : '') . $article['pct'] }} %
                             </td>

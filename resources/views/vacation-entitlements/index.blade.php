@@ -78,15 +78,15 @@
             @endphp
             <tr class="hover">
                 <td class="font-medium">{{ $entitlement->user?->name ?? '—' }}</td>
-                <td class="tabular-nums">{{ rtrim(rtrim(number_format($entitlement->entitled_days, 1, ',', '.'), '0'), ',') }}</td>
-                <td class="tabular-nums">{{ rtrim(rtrim(number_format($entitlement->carryover_days, 1, ',', '.'), '0'), ',') }}</td>
+                <td class="tabular-nums">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($entitlement->entitled_days, 1, withThousandsSeparator: true), '0'), ',') }}</td>
+                <td class="tabular-nums">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($entitlement->carryover_days, 1, withThousandsSeparator: true), '0'), ',') }}</td>
                 <td class="whitespace-nowrap">{{ $entitlement->carryover_expires_on?->fdate() ?? '—' }}</td>
-                <td class="tabular-nums">{{ $balance !== null ? rtrim(rtrim(number_format($balance->takenDays, 1, ',', '.'), '0'), ',') : '—' }}</td>
-                <td class="tabular-nums">{{ $balance !== null ? rtrim(rtrim(number_format($balance->pendingDays, 1, ',', '.'), '0'), ',') : '—' }}</td>
+                <td class="tabular-nums">{{ $balance !== null ? rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($balance->takenDays, 1, withThousandsSeparator: true), '0'), ',') : '—' }}</td>
+                <td class="tabular-nums">{{ $balance !== null ? rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($balance->pendingDays, 1, withThousandsSeparator: true), '0'), ',') : '—' }}</td>
                 <td class="tabular-nums" data-sort-value="{{ $remaining ?? 0 }}">
                     @if ($remaining !== null)
                         <span @class(['text-error font-semibold' => $afterPending !== null && $afterPending < 0])>
-                            {{ rtrim(rtrim(number_format($remaining, 1, ',', '.'), '0'), ',') }}
+                            {{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($remaining, 1, withThousandsSeparator: true), '0'), ',') }}
                         </span>
                         @if ($afterPending !== null && $afterPending < 0)
                             <span class="tooltip tooltip-left" data-tip="{{ __('Offene Anträge übersteigen den Restanspruch.') }}">

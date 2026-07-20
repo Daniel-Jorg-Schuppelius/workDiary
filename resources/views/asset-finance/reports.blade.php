@@ -23,9 +23,9 @@
     </div>
 
     <div class="grid gap-4 sm:grid-cols-3">
-        <x-kpi-tile :label="__('Soll (Ratenplan)')" :value="number_format($plannedTotal, 2, ',', '.') . ' €'" />
-        <x-kpi-tile :label="__('Referenziert (Eingangsrechnungen)')" :value="number_format($referencedTotal, 2, ',', '.') . ' €'" />
-        <x-kpi-tile :label="__('Offen')" :value="number_format($openTotal, 2, ',', '.') . ' €'" />
+        <x-kpi-tile :label="__('Soll (Ratenplan)')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($plannedTotal, 2, withThousandsSeparator: true) . ' €'" />
+        <x-kpi-tile :label="__('Referenziert (Eingangsrechnungen)')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($referencedTotal, 2, withThousandsSeparator: true) . ' €'" />
+        <x-kpi-tile :label="__('Offen')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($openTotal, 2, withThousandsSeparator: true) . ' €'" />
     </div>
 
     <div class="grid gap-4 lg:grid-cols-2">
@@ -51,7 +51,7 @@
                     <tr>
                         <td class="font-mono">{{ $row['contract'] }}</td>
                         <td>{{ $row['kind'] }}</td>
-                        <td class="text-right font-mono text-error">{{ number_format($row['overrun'], 2, ',', '.') }}</td>
+                        <td class="text-right font-mono text-error">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['overrun'], 2, withThousandsSeparator: true) }}</td>
                     </tr>
                 @empty
                     <x-table.empty :colspan="3" :title="__('Keine Überschreitungen.')" compact />
@@ -68,7 +68,7 @@
                     <td>{{ $snapshot->period_start->fdate() }} – {{ $snapshot->period_end->fdate() }}</td>
                     <td>{{ $snapshot->created_at?->fdatetime() }}</td>
                     <td class="text-right font-mono">{{ data_get($snapshot->payload, 'contractCount', 0) }}</td>
-                    <td class="text-right font-mono">{{ number_format((float) data_get($snapshot->payload, 'plannedTotal', 0), 2, ',', '.') }} €</td>
+                    <td class="text-right font-mono">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) data_get($snapshot->payload, 'plannedTotal', 0), 2, withThousandsSeparator: true) }} €</td>
                 </tr>
             @empty
                 <x-table.empty :colspan="4" :title="__('Noch keine Snapshots eingefroren.')" compact />

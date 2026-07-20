@@ -31,7 +31,7 @@
                 <tr>
                     <td>{{ $monthLabels[$idx] ?? $idx }}</td>
                     <td class="right">{{ $row['minutes'] > 0 ? sprintf('%d:%02d', $h, $m) : '–' }}</td>
-                    <td class="right">{{ number_format((float) $row['rate'], 2, ',', '.') }} €</td>
+                    <td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row['rate'], 2, withThousandsSeparator: true) }} €</td>
                 </tr>
             @endforeach
         </tbody>
@@ -40,7 +40,7 @@
                 $hY = intdiv((int) $yearMinutes, 60);
                 $mY = (int) $yearMinutes % 60;
             @endphp
-            <tr><td>Gesamt</td><td class="right">{{ $hY }}:{{ str_pad((string) $mY, 2, '0', STR_PAD_LEFT) }}</td><td class="right">{{ number_format((float) $yearRate, 2, ',', '.') }} €</td></tr>
+            <tr><td>Gesamt</td><td class="right">{{ $hY }}:{{ str_pad((string) $mY, 2, '0', STR_PAD_LEFT) }}</td><td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $yearRate, 2, withThousandsSeparator: true) }} €</td></tr>
         </tfoot>
     </table>
 
@@ -59,7 +59,7 @@
                     <tr>
                         <td>{{ $users->get($uid)?->name ?? '#' . $uid }}</td>
                         <td class="right">{{ $h }}:{{ str_pad((string) $m, 2, '0', STR_PAD_LEFT) }}</td>
-                        <td class="right">{{ number_format((float) $row['rate'], 2, ',', '.') }} €</td>
+                        <td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row['rate'], 2, withThousandsSeparator: true) }} €</td>
                     </tr>
                 @endforeach
             </tbody>

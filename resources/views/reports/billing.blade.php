@@ -4,7 +4,7 @@
 
 @section('content')
 @php
-    $eur = fn (float $v) => number_format($v, 2, ',', '.') . ' €';
+    $eur = fn (float $v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) . ' €';
     $fmtMin = function (int $minutes): string {
         $abs = abs($minutes);
         return intdiv($abs, 60) . ':' . str_pad((string) ($abs % 60), 2, '0', STR_PAD_LEFT) . ' h';
@@ -171,12 +171,12 @@
                 @empty
                     <x-detail-grid.row :label="__('Angebote')">{{ __('Keine im Zeitraum.') }}</x-detail-grid.row>
                 @endforelse
-                <x-detail-grid.row :label="__('Annahmequote')">{{ $documentChain['acceptance_rate'] !== null ? number_format($documentChain['acceptance_rate'], 1, ',', '.') . ' %' : '—' }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('Median Erstellung → Entscheidung')">{{ $documentChain['decision_median_days'] !== null ? number_format($documentChain['decision_median_days'], 1, ',', '.') . ' ' . __('Tage') : '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Annahmequote')">{{ $documentChain['acceptance_rate'] !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($documentChain['acceptance_rate'], 1, withThousandsSeparator: true) . ' %' : '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Median Erstellung → Entscheidung')">{{ $documentChain['decision_median_days'] !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($documentChain['decision_median_days'], 1, withThousandsSeparator: true) . ' ' . __('Tage') : '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Angebot → Rechnung')">{{ $documentChain['conversions']['quote_to_invoice'] }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Pro-forma → Rechnung')">{{ $documentChain['conversions']['proforma_to_invoice'] }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Stornos / Gutschriften')">{{ $documentChain['correction']['cancellations'] }} / {{ $documentChain['correction']['credit_notes'] }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('Korrekturquote')">{{ $documentChain['correction']['rate'] !== null ? number_format($documentChain['correction']['rate'], 1, ',', '.') . ' %' : '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Korrekturquote')">{{ $documentChain['correction']['rate'] !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($documentChain['correction']['rate'], 1, withThousandsSeparator: true) . ' %' : '—' }}</x-detail-grid.row>
             </x-detail-grid>
         </x-card>
     </div>

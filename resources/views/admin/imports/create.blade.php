@@ -39,7 +39,7 @@
             </fieldset>
 
             <label class="form-control">
-                <span class="label-text">{{ __('CSV- oder Excel-Datei (.xlsx, max. :mb MB, :rows Zeilen)', ['mb' => 5, 'rows' => number_format(50000, 0, ',', '.')]) }}</span>
+                <span class="label-text">{{ __('CSV- oder Excel-Datei (.xlsx, max. :mb MB, :rows Zeilen)', ['mb' => 5, 'rows' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(50000, 0, withThousandsSeparator: true)]) }}</span>
                 <input type="file" name="file" required accept=".csv,.txt,.xlsx"
                        class="file-input file-input-sm file-input-bordered w-full max-w-md" />
             </label>

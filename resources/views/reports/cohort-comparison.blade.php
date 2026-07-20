@@ -13,12 +13,12 @@
 
 @section('content')
 @php
-    $pct = fn($v): string => $v === null ? '–' : number_format((float) $v, 2, ',', '.') . ' %';
+    $pct = fn($v): string => $v === null ? '–' : \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $v, 2, withThousandsSeparator: true) . ' %';
     $deltaCell = function ($delta, $improved): string {
         if ($delta === null) {
             return '–';
         }
-        $str = ($delta > 0 ? '+' : '') . number_format((float) $delta, 2, ',', '.') . ' %';
+        $str = ($delta > 0 ? '+' : '') . \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $delta, 2, withThousandsSeparator: true) . ' %';
         $tone = $improved === true ? 'text-success' : ($improved === false ? 'text-error' : '');
         return '<span class="' . $tone . '">' . $str . '</span>';
     };
@@ -74,7 +74,7 @@
             <x-kpi-tile :label="__('reporting.cohort.before')" :value="$pct($agg['before'])" />
             <x-kpi-tile :label="__('reporting.cohort.after')" :value="$pct($agg['after'])" />
             <x-kpi-tile :label="__('reporting.cohort.delta')"
-                        :value="$agg['delta'] === null ? '–' : (($agg['delta'] > 0 ? '+' : '') . number_format((float) $agg['delta'], 2, ',', '.') . ' %')"
+                        :value="$agg['delta'] === null ? '–' : (($agg['delta'] > 0 ? '+' : '') . \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $agg['delta'], 2, withThousandsSeparator: true) . ' %')"
                         :tone="$agg['delta'] === null ? 'neutral' : ($agg['delta'] > 0 xor $metric === 'reworkShare' ? 'success' : 'error')" />
             <x-kpi-tile :label="__('reporting.cohort.improved_count')" :value="$agg['improvedCount'] . ' / ' . $agg['membersWithDate']" tone="info" />
         </div>

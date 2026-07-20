@@ -35,7 +35,7 @@
                         <td class="right">{{ $minutes > 0 ? sprintf('%d:%02d', $h, $m) : '–' }}</td>
                     @endforeach
                     <td class="right">{{ $hT }}:{{ str_pad((string) $mT, 2, '0', STR_PAD_LEFT) }}</td>
-                    <td class="right">{{ number_format((float) $row['rate'], 2, ',', '.') }} €</td>
+                    <td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row['rate'], 2, withThousandsSeparator: true) }} €</td>
                 </tr>
             @endforeach
         </tbody>
@@ -54,7 +54,7 @@
                     <td class="right">{{ $m > 0 ? sprintf('%d:%02d', $h, $mm) : '–' }}</td>
                 @endforeach
                 <td class="right">{{ $hW }}:{{ str_pad((string) $mW, 2, '0', STR_PAD_LEFT) }}</td>
-                <td class="right">{{ number_format((float) $weekRate, 2, ',', '.') }} €</td>
+                <td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $weekRate, 2, withThousandsSeparator: true) }} €</td>
             </tr>
         </tfoot>
     </table>

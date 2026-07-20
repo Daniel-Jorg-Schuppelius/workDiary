@@ -49,11 +49,11 @@
                 </div>
                 <div>
                     <div class="text-base-content/60">{{ __('bank.field.opening_balance') }}</div>
-                    <div>{{ $statement->opening_balance !== null ? number_format((float) $statement->opening_balance, 2, ',', '.') : '—' }}</div>
+                    <div>{{ $statement->opening_balance !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $statement->opening_balance, 2, withThousandsSeparator: true) : '—' }}</div>
                 </div>
                 <div>
                     <div class="text-base-content/60">{{ __('bank.field.closing_balance') }}</div>
-                    <div>{{ $statement->closing_balance !== null ? number_format((float) $statement->closing_balance, 2, ',', '.') : '—' }}</div>
+                    <div>{{ $statement->closing_balance !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $statement->closing_balance, 2, withThousandsSeparator: true) : '—' }}</div>
                 </div>
             </div>
         </x-card>
@@ -66,7 +66,7 @@
                             <div class="font-medium">
                                 {{ $transaction->booking_date->format('d.m.Y') }} ·
                                 <span class="{{ $transaction->isCredit() ? 'text-success' : 'text-base-content' }}">
-                                    {{ $transaction->isCredit() ? '+' : '−' }}{{ number_format((float) $transaction->amount, 2, ',', '.') }} {{ $transaction->currency->value }}
+                                    {{ $transaction->isCredit() ? '+' : '−' }}{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $transaction->amount, 2, withThousandsSeparator: true) }} {{ $transaction->currency->value }}
                                 </span>
                             </div>
                             <div class="text-sm text-base-content/70">
@@ -95,7 +95,7 @@
                                     <span>
                                         <x-status-badge size="xs" :tone="$allocation->kind->tone()" :label="$allocation->kind->label()" />
                                         {{ \App\Support\EntityType::label($allocation->allocatable_type) }} #{{ $allocation->allocatable_id }}
-                                        · {{ number_format((float) $allocation->amount, 2, ',', '.') }}
+                                        · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $allocation->amount, 2, withThousandsSeparator: true) }}
                                     </span>
                                     @if ($canReconcile)
                                         <x-action-form :action="route('finance.reconciliation.unmatch', $allocation->sqid)" method="DELETE"
@@ -157,7 +157,7 @@
                                                            x-model="rows[{{ $index }}].picked">
                                                     <span class="text-sm">
                                                         <span class="font-medium {{ $detailSigned >= 0 ? 'text-success' : 'text-base-content' }}">
-                                                            {{ $detailSigned >= 0 ? '+' : '−' }}{{ number_format(abs($detailSigned), 2, ',', '.') }}
+                                                            {{ $detailSigned >= 0 ? '+' : '−' }}{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(abs($detailSigned), 2, withThousandsSeparator: true) }}
                                                         </span>
                                                         @if (! empty($detail['counterparty_name']))
                                                             · {{ $detail['counterparty_name'] }}
@@ -219,7 +219,7 @@
                                                         <span class="font-medium">
                                                             {{ $target instanceof \App\Models\Invoice ? $target->number : (__('bank.title.menu') . ' #' . $target->id) }}
                                                         </span>
-                                                        · {{ number_format($suggestion['open_amount'], 2, ',', '.') }}
+                                                        · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($suggestion['open_amount'], 2, withThousandsSeparator: true) }}
                                                         @foreach ($suggestion['reasons'] as $reason)
                                                             <span class="badge badge-xs badge-ghost">{{ __('bank.reason.' . $reason) }}</span>
                                                         @endforeach
@@ -262,7 +262,7 @@
                                         <form method="POST" action="{{ route('finance.reconciliation.return', $transaction->sqid) }}" class="mb-2">
                                             @csrf
                                             <div class="text-xs text-base-content/60 mb-1">
-                                                {{ $detailSigned >= 0 ? '+' : '−' }}{{ number_format(abs($detailSigned), 2, ',', '.') }}
+                                                {{ $detailSigned >= 0 ? '+' : '−' }}{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(abs($detailSigned), 2, withThousandsSeparator: true) }}
                                                 @if (! empty($detail['counterparty_name']))
                                                     · {{ $detail['counterparty_name'] }}
                                                 @endif
@@ -281,7 +281,7 @@
                                                                class="radio radio-xs" @checked($originIndex === 0)>
                                                         <x-status-badge size="xs" :tone="$allocation->kind->tone()" :label="$allocation->kind->label()" />
                                                         {{ \App\Support\EntityType::label($allocation->allocatable_type) }} #{{ $allocation->allocatable_id }}
-                                                        · {{ number_format((float) $allocation->amount, 2, ',', '.') }}
+                                                        · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $allocation->amount, 2, withThousandsSeparator: true) }}
                                                         @foreach ($origin['reasons'] as $reason)
                                                             <span class="badge badge-xs badge-ghost">{{ __('bank.return.reason.' . $reason) }}</span>
                                                         @endforeach
@@ -316,7 +316,7 @@
                                                            class="radio radio-xs" @checked($originIndex === 0)>
                                                     <x-status-badge size="xs" :tone="$allocation->kind->tone()" :label="$allocation->kind->label()" />
                                                     {{ \App\Support\EntityType::label($allocation->allocatable_type) }} #{{ $allocation->allocatable_id }}
-                                                    · {{ number_format((float) $allocation->amount, 2, ',', '.') }}
+                                                    · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $allocation->amount, 2, withThousandsSeparator: true) }}
                                                     @foreach ($origin['reasons'] as $reason)
                                                         <span class="badge badge-xs badge-ghost">{{ __('bank.return.reason.' . $reason) }}</span>
                                                     @endforeach

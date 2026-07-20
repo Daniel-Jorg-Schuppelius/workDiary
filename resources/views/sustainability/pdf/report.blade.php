@@ -22,7 +22,7 @@
 @endsection
 
 @php
-    $kg = fn($v): string => number_format((float) $v, 3, ',', '.') . ' kg';
+    $kg = fn($v): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $v, 3, withThousandsSeparator: true) . ' kg';
 @endphp
 
 @section('pdf-table')
@@ -65,7 +65,7 @@
             @forelse ($aggregate['activities'] as $code => $activity)
                 <tr>
                     <td>{{ $code }}</td>
-                    <td class="num">{{ number_format((float) $activity['amount'], 3, ',', '.') }}</td>
+                    <td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $activity['amount'], 3, withThousandsSeparator: true) }}</td>
                     <td>{{ $activity['unit'] }}</td>
                     <td class="num">{{ $activity['co2e_kg'] !== null ? $kg($activity['co2e_kg']) : __('Faktor fehlt') }}</td>
                     <td>{{ $activity['factor_source'] ?? '—' }}</td>

@@ -51,7 +51,7 @@
                 <x-detail-grid.row :label="__('Übergabeort')">{{ $case->handover_location ?? '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Rückgabeort')">{{ $case->return_location ?? '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Verantwortlich')">{{ $case->responsible->name ?? '—' }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('Kaution (vereinbart)')">{{ $case->deposit_amount !== null ? number_format((float) $case->deposit_amount, 2, ',', '.') . ' €' : '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Kaution (vereinbart)')">{{ $case->deposit_amount !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $case->deposit_amount, 2, withThousandsSeparator: true) . ' €' : '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Versicherung')">{{ $case->insurance_note ?? '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Tatsächliche Rückgabe')">{{ optional($case->actual_return_at)->fdatetime() ?? '—' }}</x-detail-grid.row>
             </x-detail-grid>
@@ -84,7 +84,7 @@
                         <tr>
                             <td>{{ $item['label'] ?? '—' }}</td>
                             <td>{{ \App\Enums\Rental\RentalChargeKind::tryFrom($item['kind'] ?? '')?->label() ?? ($item['kind'] ?? '—') }}</td>
-                            <td class="text-right font-mono">{{ number_format((float) ($item['amount'] ?? 0), 2, ',', '.') }} € / {{ $item['unit'] ?? '—' }}</td>
+                            <td class="text-right font-mono">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($item['amount'] ?? 0), 2, withThousandsSeparator: true) }} € / {{ $item['unit'] ?? '—' }}</td>
                         </tr>
                     @endforeach
                 </x-table>
@@ -223,8 +223,8 @@
                     <tr>
                         <td>{{ $charge->label }}</td>
                         <td>{{ $charge->kind->label() }}</td>
-                        <td class="text-right font-mono">{{ $charge->quantity }} × {{ number_format((float) $charge->unit_price, 2, ',', '.') }} €</td>
-                        <td class="text-right font-mono">{{ number_format((float) $charge->amount, 2, ',', '.') }} €</td>
+                        <td class="text-right font-mono">{{ $charge->quantity }} × {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $charge->unit_price, 2, withThousandsSeparator: true) }} €</td>
+                        <td class="text-right font-mono">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $charge->amount, 2, withThousandsSeparator: true) }} €</td>
                         <td><x-status-badge size="md" outline>{{ $charge->status->label() }}</x-status-badge></td>
                         <td>
                             @if ($charge->invoice !== null)
@@ -300,9 +300,9 @@
                 </x-slot:head>
                 @forelse ($case->deposits as $deposit)
                     <tr>
-                        <td class="text-right font-mono">{{ number_format((float) $deposit->amount, 2, ',', '.') }} €
+                        <td class="text-right font-mono">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $deposit->amount, 2, withThousandsSeparator: true) }} €
                             @if ($deposit->retained_amount !== null)
-                                <span class="text-xs text-error">({{ __('einbehalten') }}: {{ number_format((float) $deposit->retained_amount, 2, ',', '.') }} €)</span>
+                                <span class="text-xs text-error">({{ __('einbehalten') }}: {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $deposit->retained_amount, 2, withThousandsSeparator: true) }} €)</span>
                             @endif
                         </td>
                         <td><x-status-badge size="md" outline>{{ $deposit->status->label() }}</x-status-badge></td>

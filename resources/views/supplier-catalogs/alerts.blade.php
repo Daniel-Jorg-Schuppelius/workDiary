@@ -54,13 +54,13 @@
                         </td>
                         <td class="text-sm">{{ $alert->supplier?->name ?: '—' }}</td>
                         <td class="text-right tabular-nums text-sm opacity-70">
-                            {{ $alert->old_purchase_price !== null ? number_format((float) $alert->old_purchase_price, 2, ',', '.') : '—' }}
+                            {{ $alert->old_purchase_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $alert->old_purchase_price, 2, withThousandsSeparator: true) : '—' }}
                         </td>
                         <td class="text-right tabular-nums font-medium">
-                            {{ $alert->new_purchase_price !== null ? number_format((float) $alert->new_purchase_price, 2, ',', '.') : '—' }}
+                            {{ $alert->new_purchase_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $alert->new_purchase_price, 2, withThousandsSeparator: true) : '—' }}
                         </td>
                         <td class="text-right tabular-nums">
-                            {{ $alert->sale_price !== null ? number_format((float) $alert->sale_price, 2, ',', '.') : '—' }}
+                            {{ $alert->sale_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $alert->sale_price, 2, withThousandsSeparator: true) : '—' }}
                         </td>
                         <td class="text-right tabular-nums">
                             @if ($alert->type === \App\Models\PricingChangeAlert::TYPE_AVAILABILITY)

@@ -13,9 +13,9 @@
     </x-page-toolbar>
 
     <div class="grid gap-4 sm:grid-cols-4">
-        <x-kpi-tile :label="__('Genehmigt gesamt')" :value="number_format($totals['approved'], 2, ',', '.') . ' €'" />
-        <x-kpi-tile :label="__('Gebunden')" :value="number_format($totals['committed'], 2, ',', '.') . ' €'" />
-        <x-kpi-tile :label="__('Ist-Kosten')" :value="number_format($totals['actual'], 2, ',', '.') . ' €'" />
+        <x-kpi-tile :label="__('Genehmigt gesamt')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totals['approved'], 2, withThousandsSeparator: true) . ' €'" />
+        <x-kpi-tile :label="__('Gebunden')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totals['committed'], 2, withThousandsSeparator: true) . ' €'" />
+        <x-kpi-tile :label="__('Ist-Kosten')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totals['actual'], 2, withThousandsSeparator: true) . ' €'" />
         <x-kpi-tile :label="__('Offene Freigaben / Abweichungen')" :value="$openApprovals . ' / ' . $openDeviations" />
     </div>
 
@@ -50,9 +50,9 @@
                             @foreach ($rows as $row)
                                 <tr @class(['text-error' => $row['projection']['remaining'] !== null && $row['projection']['remaining'] < 0])>
                                     <td><a class="link" href="{{ route('investments.show', $row['case']) }}">{{ $row['case']->title }}</a></td>
-                                    <td class="text-right tabular-nums">{{ number_format($row['projection']['approved'], 2, ',', '.') }} €</td>
-                                    <td class="text-right tabular-nums">{{ number_format($row['projection']['actual'], 2, ',', '.') }} €</td>
-                                    <td class="text-right tabular-nums">{{ $row['projection']['remaining'] !== null ? number_format($row['projection']['remaining'], 2, ',', '.') . ' €' : '—' }}</td>
+                                    <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['projection']['approved'], 2, withThousandsSeparator: true) }} €</td>
+                                    <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['projection']['actual'], 2, withThousandsSeparator: true) }} €</td>
+                                    <td class="text-right tabular-nums">{{ $row['projection']['remaining'] !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['projection']['remaining'], 2, withThousandsSeparator: true) . ' €' : '—' }}</td>
                                 </tr>
                             @endforeach
                 </x-table>

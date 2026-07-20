@@ -50,7 +50,7 @@
             <x-kpi-tile :label="__('finance.datev.field.open_ready')" :value="$openCount" tone="warning" />
             <x-kpi-tile :label="__('finance.datev.metric.draft')" :value="$draftCount" />
             <x-kpi-tile :label="__('finance.datev.metric.exported')" :value="$exportedCount" tone="success" />
-            <x-kpi-tile :label="__('finance.datev.metric.exported_total_year')" :value="number_format($exportedTotalYear, 2, ',', '.') . ' €'" />
+            <x-kpi-tile :label="__('finance.datev.metric.exported_total_year')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($exportedTotalYear, 2, withThousandsSeparator: true) . ' €'" />
         </div>
 
         <x-table>
@@ -72,7 +72,7 @@
                     <td>{{ $batch->period_from?->toDateString() }} – {{ $batch->period_to?->toDateString() }}</td>
                     <td><x-status-badge :tone="$batch->status->tone()" :label="$batch->status->label()" /></td>
                     <td class="text-right">{{ $batch->booking_count }}</td>
-                    <td class="text-right">{{ number_format((float) $batch->total_amount, 2, ',', '.') }}</td>
+                    <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $batch->total_amount, 2, withThousandsSeparator: true) }}</td>
                     <td class="font-mono text-xs">{{ $batch->file_hash ? \Illuminate\Support\Str::limit($batch->file_hash, 12, '…') : '—' }}</td>
                     <td class="text-right">
                         <x-icon-btn icon="visibility" tone="ghost" size="xs" :href="route('finance.datev.show', $batch)" />

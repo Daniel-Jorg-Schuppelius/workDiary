@@ -30,8 +30,8 @@
         </x-filter-bar>
 
         <div class="grid gap-3 sm:grid-cols-2">
-            <x-kpi-tile :label="__('Gefahrene Kilometer')" :value="number_format($totals['distance_km'], 2, ',', '.') . ' km'" />
-            <x-kpi-tile :label="__('Erstattung')" :value="number_format($totals['reimbursement'], 2, ',', '.') . ' €'" />
+            <x-kpi-tile :label="__('Gefahrene Kilometer')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totals['distance_km'], 2, withThousandsSeparator: true) . ' km'" />
+            <x-kpi-tile :label="__('Erstattung')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totals['reimbursement'], 2, withThousandsSeparator: true) . ' €'" />
         </div>
 
         <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
@@ -59,7 +59,7 @@
                         <td>{{ $log->from_address }}</td>
                         <td>{{ $log->to_address }}</td>
                         <td class="text-right">
-                            {{ number_format((float) $log->distance_km, 2, ',', '.') }}
+                            {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $log->distance_km, 2, withThousandsSeparator: true) }}
                             @if ($log->round_trip)
                                 <x-status-badge tone="ghost" size="xs" class="ml-1">{{ __('hin/rück') }}</x-status-badge>
                             @endif
@@ -68,7 +68,7 @@
                             <x-status-badge tone="ghost" size="sm">{{ $log->vehicle->label() }}</x-status-badge>
                         </td>
                         <td class="text-right">
-                            {{ number_format((float) $log->reimbursement_total, 2, ',', '.') }} €
+                            {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $log->reimbursement_total, 2, withThousandsSeparator: true) }} €
                         </td>
                         <td class="max-w-xs truncate">{{ $log->purpose }}</td>
                         <td class="text-right">

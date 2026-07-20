@@ -11,7 +11,7 @@
 
 @section('pdf-table')
     @php
-        $pct = fn (?float $v) => $v !== null ? number_format($v * 100, 1, ',', '.') . ' %' : '–';
+        $pct = fn (?float $v) => $v !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v * 100, 1, withThousandsSeparator: true) . ' %' : '–';
         $kindLabels = [
             'responseTime'   => __('enums.sla.violationKind.responseTime'),
             'resolutionTime' => __('enums.sla.violationKind.resolutionTime'),

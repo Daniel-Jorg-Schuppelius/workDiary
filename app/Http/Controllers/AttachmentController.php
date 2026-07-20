@@ -12,11 +12,9 @@ namespace App\Http\Controllers;
 
 use App\Models\{Asset, Attachment, Comment, Customer, DiaryEntry, EmergencyAssignment, KnowledgeArticle, OnCallShift, Organization, ServiceTicket, Supplier, Task, User};
 use App\Services\Attachments\{FileAttacher, ImageMetaUploader};
-use App\Support\Filename;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\{Auth, Gate, Storage, URL};
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -94,19 +92,6 @@ class AttachmentController extends Controller {
 
         $file = $request->file('file');
 
-        // Vollaudit 2026-07 (H8): storage_quota_gb der Lizenz durchsetzen —
-        // der Guard existierte, wurde aber nirgends aufgerufen.
-        $orgId = $parent->getAttribute('organization_id');
-        if ($orgId !== null) {
-            try {
-                app(\App\Services\Licensing\LimitGuard::class)->ensureCanStoreAttachment(
-                    Organization::query()->withoutGlobalScopes()->findOrFail((int) $orgId),
-                    (int) $file->getSize(),
-                );
-            } catch (\App\Exceptions\LimitExceededException $e) {
-                return back()->withErrors(['file' => $e->getMessage()]);
-            }
-        }
         $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
         if (! in_array($ext, self::ALLOWED_EXTENSIONS, true)) {
             return back()->withErrors(['file' => __('Dateityp nicht erlaubt.')]);
@@ -118,19 +103,10 @@ class AttachmentController extends Controller {
             return back()->withErrors(['file' => __('Dateityp nicht erlaubt.')]);
         }
 
-        $folder = 'attachments/' . now()->format('Y/m');
-        $filename = Str::uuid()->toString() . '.' . $ext;
-        $path = $file->storeAs($folder, $filename, 'local');
-
-        /** @var DiaryEntry|Comment|OnCallShift|EmergencyAssignment|Task|Customer|Organization|User|Asset $parent */
-        $parent->attachments()->create([
-            'user_id' => Auth::id(),
-            'disk' => 'local',
-            'path' => $path,
-            'original_name' => Filename::sanitize($file->getClientOriginalName()),
-            'mime' => $serverMime,
-            'size' => $file->getSize(),
-        ]);
+        // Kanonische Ablage über FileAttacher (M46-Rest, Folgepunkt 2026-07-20):
+        // Ordner/UUID/sanitize/morphMany UND der H8-Quota-Guard (wirft
+        // ValidationException → Redirect mit errors['file'], wie zuvor).
+        app(FileAttacher::class)->store($parent, $file, Auth::id() !== null ? (int) Auth::id() : null);
 
         return back()->with('success', __('Anhang hochgeladen.'));
     }

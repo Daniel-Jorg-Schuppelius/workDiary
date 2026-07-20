@@ -45,8 +45,8 @@
                     <td>{{ $line->article->name }}</td>
                     <td style="text-align: right;">{{ rtrim(rtrim((string) $line->ordered_qty, '0'), '.') }}</td>
                     <td>{{ $line->unit }}</td>
-                    <td style="text-align: right;">{{ $line->unit_price !== null ? number_format((float) $line->unit_price, 2, ',', '.') : '—' }}</td>
-                    <td style="text-align: right;">{{ number_format((float) $lineTotal, 2, ',', '.') }}</td>
+                    <td style="text-align: right;">{{ $line->unit_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $line->unit_price, 2, withThousandsSeparator: true) : '—' }}</td>
+                    <td style="text-align: right;">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $lineTotal, 2, withThousandsSeparator: true) }}</td>
                 </tr>
             @endforeach
         </tbody>
@@ -56,7 +56,7 @@
         <tr>
             <td style="text-align: right;"><strong>{{ __('procurement.pdf.total') }}</strong></td>
             <td style="text-align: right; width: 25%;">
-                <strong>{{ number_format((float) $total, 2, ',', '.') }} {{ $order->currency->value }}</strong>
+                <strong>{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $total, 2, withThousandsSeparator: true) }} {{ $order->currency->value }}</strong>
             </td>
         </tr>
     </table>

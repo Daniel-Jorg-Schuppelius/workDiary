@@ -146,7 +146,7 @@
                         </td>
                         <td class="text-right tabular-nums">{{ $row['billableMinutes'] }}</td>
                         <td class="text-right tabular-nums">{{ $row['nonBillableMinutes'] }}</td>
-                        <td class="text-right tabular-nums">{{ number_format((float) $row['nonBillableShare'], 2, ',', '.') }}</td>
+                        <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row['nonBillableShare'], 2, withThousandsSeparator: true) }}</td>
                         <td class="text-right tabular-nums">
                             <a href="{{ route('reports.customers.drilldown.protocols', $reportDrilldownBase) }}" class="link link-hover">{{ $row['reworkEntryCount'] }}</a>
                         </td>

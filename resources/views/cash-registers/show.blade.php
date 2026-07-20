@@ -25,10 +25,10 @@
 @section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-index-page overflow="clip" :subtitle="__('Kassenbuch') . ' · ' . __('Saldo') . ': ' . number_format($balance, 2, ',', '.') . ' ' . $register->currency->value">
+<x-index-page overflow="clip" :subtitle="__('Kassenbuch') . ' · ' . __('Saldo') . ': ' . \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($balance, 2, withThousandsSeparator: true) . ' ' . $register->currency->value">
 
     <div class="grid grid-cols-1 gap-3 flex-none sm:grid-cols-3">
-        <x-kpi-tile :label="__('Saldo')" :value="number_format($balance, 2, ',', '.') . ' ' . $register->currency->value" tone="neutral" />
+        <x-kpi-tile :label="__('Saldo')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($balance, 2, withThousandsSeparator: true) . ' ' . $register->currency->value" tone="neutral" />
         <x-kpi-tile :label="__('Letzter Tagesabschluss')" :value="$lastClosing?->fdate() ?? '—'" tone="neutral" />
         <x-kpi-tile :label="__('Buchungen')" :value="$entries->total()" tone="neutral" />
     </div>
@@ -101,8 +101,8 @@
                         —
                     @endif
                 </td>
-                <td class="text-right tabular-nums">{{ $entry->direction === \App\Models\CashEntry::DIRECTION_IN ? number_format((float) $entry->amount, 2, ',', '.') : '' }}</td>
-                <td class="text-right tabular-nums">{{ $entry->direction === \App\Models\CashEntry::DIRECTION_OUT ? number_format((float) $entry->amount, 2, ',', '.') : '' }}</td>
+                <td class="text-right tabular-nums">{{ $entry->direction === \App\Models\CashEntry::DIRECTION_IN ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $entry->amount, 2, withThousandsSeparator: true) : '' }}</td>
+                <td class="text-right tabular-nums">{{ $entry->direction === \App\Models\CashEntry::DIRECTION_OUT ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $entry->amount, 2, withThousandsSeparator: true) : '' }}</td>
                 <td>
                     @can(\App\Enums\User\Permission::CashManage->value)
                         @if (! $isReversed && $entry->reversal_of_id === null)
@@ -136,9 +136,9 @@
                 @foreach ($closings as $closing)
                     <tr>
                         <td class="whitespace-nowrap">{{ $closing->closing_date->fdate() }}</td>
-                        <td class="text-right tabular-nums">{{ number_format((float) $closing->expected_balance, 2, ',', '.') }}</td>
-                        <td class="text-right tabular-nums">{{ number_format((float) $closing->counted_balance, 2, ',', '.') }}</td>
-                        <td @class(['text-right tabular-nums', 'text-error font-semibold' => (float) $closing->difference !== 0.0])>{{ number_format((float) $closing->difference, 2, ',', '.') }}</td>
+                        <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $closing->expected_balance, 2, withThousandsSeparator: true) }}</td>
+                        <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $closing->counted_balance, 2, withThousandsSeparator: true) }}</td>
+                        <td @class(['text-right tabular-nums', 'text-error font-semibold' => (float) $closing->difference !== 0.0])>{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $closing->difference, 2, withThousandsSeparator: true) }}</td>
                         <td class="max-w-xs truncate text-base-content/60 text-xs">{{ $closing->note }}</td>
                     </tr>
                 @endforeach

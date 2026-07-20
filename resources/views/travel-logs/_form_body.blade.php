@@ -8,7 +8,7 @@
             @php($label = $v instanceof \App\Enums\Travel\TravelLogVehicle ? $v->label() : __($value))
             <option value="{{ $value }}" @selected(old('vehicle', $log?->vehicle?->value ?? 'private') === $value)>
                 {{ $label }}
-                @isset ($rates[$value]) ({{ number_format((float) $rates[$value], 2, ',', '.') }} €/km) @endisset
+                @isset ($rates[$value]) ({{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $rates[$value], 2, withThousandsSeparator: true) }} €/km) @endisset
             </option>
         @endforeach
     </x-select-field>

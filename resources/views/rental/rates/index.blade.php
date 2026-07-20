@@ -72,7 +72,7 @@
                         <td>{{ $item->kind->label() }}</td>
                         <td>{{ $item->label }}</td>
                         <td>{{ $item->group_code ?? '—' }}</td>
-                        <td class="text-right font-mono">{{ number_format((float) $item->amount, 2, ',', '.') }} € / {{ $item->unit }}</td>
+                        <td class="text-right font-mono">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->amount, 2, withThousandsSeparator: true) }} € / {{ $item->unit }}</td>
                         <td>{{ $item->min_duration_days !== null ? $item->min_duration_days . ' ' . __('Tage') : '—' }}</td>
                         <td class="text-right">
                             @can('update', $card)

@@ -31,10 +31,10 @@
 
     {{-- Soll-Ist (MVP-205) --}}
     <div class="grid gap-4 sm:grid-cols-4">
-        <x-kpi-tile :label="__('Genehmigt')" :value="number_format($projection['approved'], 2, ',', '.') . ' €'" />
-        <x-kpi-tile :label="__('Gebunden (Bestellungen)')" :value="number_format($projection['committed'], 2, ',', '.') . ' €'" />
-        <x-kpi-tile :label="__('Ist-Kosten')" :value="number_format($projection['actual'], 2, ',', '.') . ' €'" />
-        <x-kpi-tile :label="__('Rest')" :value="$projection['remaining'] !== null ? number_format($projection['remaining'], 2, ',', '.') . ' €' : '—'" />
+        <x-kpi-tile :label="__('Genehmigt')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($projection['approved'], 2, withThousandsSeparator: true) . ' €'" />
+        <x-kpi-tile :label="__('Gebunden (Bestellungen)')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($projection['committed'], 2, withThousandsSeparator: true) . ' €'" />
+        <x-kpi-tile :label="__('Ist-Kosten')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($projection['actual'], 2, withThousandsSeparator: true) . ' €'" />
+        <x-kpi-tile :label="__('Rest')" :value="$projection['remaining'] !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($projection['remaining'], 2, withThousandsSeparator: true) . ' €' : '—'" />
     </div>
 
     <div class="grid gap-4 lg:grid-cols-2">
@@ -110,8 +110,8 @@
                                         @if ($option->recommended)<span class="badge badge-success badge-xs">{{ __('Empfehlung') }}</span>@endif
                                         @if ($option->supplier)<div class="text-xs text-base-content/60">{{ $option->supplier->company ?: $option->supplier->name }}</div>@endif
                                     </td>
-                                    <td class="text-right tabular-nums">{{ number_format((float) $option->one_time_cost, 2, ',', '.') }} €</td>
-                                    <td class="text-right tabular-nums">{{ number_format((float) $option->recurring_cost_yearly, 2, ',', '.') }} €</td>
+                                    <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $option->one_time_cost, 2, withThousandsSeparator: true) }} €</td>
+                                    <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $option->recurring_cost_yearly, 2, withThousandsSeparator: true) }} €</td>
                                     <td class="text-right">{{ $option->delivery_weeks !== null ? __(':count Wo.', ['count' => $option->delivery_weeks]) : '—' }}</td>
                                     <td>{{ $option->quality_score !== null ? str_repeat('★', (int) $option->quality_score) : '—' }}</td>
                                     <td class="whitespace-nowrap text-right">
@@ -178,7 +178,7 @@
                 @foreach ($case->budgetRequests as $request)
                     <div class="rounded-box border border-base-300 p-3">
                         <div class="flex flex-wrap items-center gap-2">
-                            <span class="font-medium">V{{ $request->version }} · {{ number_format((float) $request->amount, 2, ',', '.') }} €</span>
+                            <span class="font-medium">V{{ $request->version }} · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $request->amount, 2, withThousandsSeparator: true) }} €</span>
                             <x-status-badge size="xs" outline>{{ __("values.{$request->status}") }}</x-status-badge>
                             <span class="text-xs text-base-content/60">{{ __("values.{$request->cost_kind}") }} · {{ __("values.{$request->financing}") }}</span>
                         </div>
@@ -277,7 +277,7 @@
                             <div class="flex flex-wrap items-center gap-2">
                                 <x-status-badge size="xs" outline>{{ __("values.{$deviation->kind}") }}</x-status-badge>
                                 <span>{{ $deviation->description }}</span>
-                                @if ($deviation->amount_delta !== null)<span class="tabular-nums">Δ {{ number_format((float) $deviation->amount_delta, 2, ',', '.') }} €</span>@endif
+                                @if ($deviation->amount_delta !== null)<span class="tabular-nums">Δ {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $deviation->amount_delta, 2, withThousandsSeparator: true) }} €</span>@endif
                                 <x-status-badge size="xs" :tone="$deviation->status === 'approved' ? 'success' : ($deviation->status === 'rejected' ? 'error' : 'warning')">{{ __("values.{$deviation->status}") }}</x-status-badge>
                             </div>
                             @if ($deviation->status === 'open')

@@ -51,10 +51,10 @@
                             {{-- MVP-413: Genehmiger sieht den Rest des Antragstellers; Warnung bei Überbuchung. --}}
                             @if ($vBalance->remainingAfterPendingDays() < 0)
                                 <span class="tooltip tooltip-right" data-tip="{{ __('Offene Anträge übersteigen den Restanspruch.') }}">
-                                    <x-status-badge size="sm" tone="error">{{ __('Rest :days', ['days' => number_format($vBalance->remainingDays(), 1, ',', '.')]) }}</x-status-badge>
+                                    <x-status-badge size="sm" tone="error">{{ __('Rest :days', ['days' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($vBalance->remainingDays(), 1, withThousandsSeparator: true)]) }}</x-status-badge>
                                 </span>
                             @else
-                                <x-status-badge size="sm" tone="ghost">{{ __('Rest :days', ['days' => number_format($vBalance->remainingDays(), 1, ',', '.')]) }}</x-status-badge>
+                                <x-status-badge size="sm" tone="ghost">{{ __('Rest :days', ['days' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($vBalance->remainingDays(), 1, withThousandsSeparator: true)]) }}</x-status-badge>
                             @endif
                         @endif
                     </td>

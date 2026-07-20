@@ -12,7 +12,7 @@
         <div class="text-sm text-base-content/70">
             {{ __('Fällig seit :date · offen :total :currency · aktuelle Mahnstufe :level.', [
                 'date' => optional($invoice->due_on)->fdate() ?? '—',
-                'total' => number_format((float) $invoice->total, 2, ',', '.'),
+                'total' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $invoice->total, 2, withThousandsSeparator: true),
                 'currency' => $invoice->currency->value,
                 'level' => (int) $invoice->dunning_level,
             ]) }}

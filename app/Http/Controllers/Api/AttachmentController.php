@@ -14,10 +14,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\AttachmentResource;
 use App\Models\{Asset, Attachment, Comment, DiaryEntry, EmergencyAssignment, OnCallShift};
 use App\Services\Attachments\FileAttacher;
-use App\Support\Filename;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
-use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AttachmentController extends Controller {
@@ -63,15 +61,10 @@ class AttachmentController extends Controller {
         if (! in_array($serverMime, self::ALLOWED_MIMES, true)) {
             return response()->json(['message' => __('Dateityp nicht erlaubt.')], 422);
         }
-        $path = $file->storeAs('attachments/' . now()->format('Y/m'), Str::uuid() . '.' . $ext, 'local');
-        $att = $parent->attachments()->create([
-            'user_id' => Auth::id(),
-            'disk' => 'local',
-            'path' => $path,
-            'original_name' => Filename::sanitize($file->getClientOriginalName()),
-            'mime' => $serverMime,
-            'size' => $file->getSize(),
-        ]);
+        // Kanonische Ablage über FileAttacher (M46-Rest, Folgepunkt 2026-07-20);
+        // bringt dem API-Pfad zugleich den H8-Quota-Guard (ValidationException
+        // → 422-JSON), der hier zuvor fehlte.
+        $att = app(FileAttacher::class)->store($parent, $file, Auth::id() !== null ? (int) Auth::id() : null);
 
         return (new AttachmentResource($att->load('uploader:id,name')))->response()->setStatusCode(201);
     }

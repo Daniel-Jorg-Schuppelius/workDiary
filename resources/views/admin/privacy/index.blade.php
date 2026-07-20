@@ -327,7 +327,7 @@
                                         <td class="text-xs text-base-content/70">
                                             @if ($format)<span class="badge badge-sm badge-outline">{{ $format }}</span>@endif
                                             @if ($scope)<span class="ml-1">{{ $scope }}</span>@endif
-                                            @if (is_numeric($bytes))<span class="ml-1 text-base-content/50">({{ number_format((int) $bytes / 1024, 0, ',', '.') }} KB)</span>@endif
+                                            @if (is_numeric($bytes))<span class="ml-1 text-base-content/50">({{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((int) $bytes / 1024, 0, withThousandsSeparator: true) }} KB)</span>@endif
                                         </td>
                                     </tr>
                                 @endforeach

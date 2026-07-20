@@ -43,7 +43,7 @@
                 <td>{{ $account->customer?->name ?? '—' }}</td>
                 <td class="text-right tabular-nums">{{ $account->domains_count }}</td>
                 <td class="text-right tabular-nums">
-                    {{ $account->balance_snapshot !== null ? number_format((float) $account->balance_snapshot, 2, ',', '.') . ' ' . ($account->currency?->value ?? '') : '—' }}
+                    {{ $account->balance_snapshot !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $account->balance_snapshot, 2, withThousandsSeparator: true) . ' ' . ($account->currency?->value ?? '') : '—' }}
                 </td>
                 <td>
                     <x-status-badge :tone="$account->active ? 'success' : 'ghost'" size="sm">

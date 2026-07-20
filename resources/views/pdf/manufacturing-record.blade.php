@@ -96,7 +96,7 @@
                     <td class="right">{{ rtrim(rtrim((string) $material->target_qty, '0'), '.') ?: '0' }} {{ $material->unit_snapshot }}</td>
                     <td class="right">{{ rtrim(rtrim((string) $material->reserved_qty, '0'), '.') ?: '0' }}</td>
                     <td class="right">{{ rtrim(rtrim((string) $material->consumed_qty, '0'), '.') ?: '0' }}</td>
-                    <td class="right">{{ number_format((float) $material->actual_cost, 2, ',', '.') }}</td>
+                    <td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $material->actual_cost, 2, withThousandsSeparator: true) }}</td>
                 </tr>
             @empty
                 <tr><td colspan="5" class="meta">—</td></tr>

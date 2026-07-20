@@ -57,7 +57,7 @@
                         <span class="opacity-50">{{ __('surcharge.field.whole_day') }}</span>
                     @endif
                 </td>
-                <td class="text-right tabular-nums">{{ number_format((float) $rule->percentage, 2, ',', '.') }} %</td>
+                <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $rule->percentage, 2, withThousandsSeparator: true) }} %</td>
                 <td class="font-mono text-sm">{{ $rule->wage_type_code ?? '—' }}</td>
                 <td class="text-right tabular-nums">{{ $rule->priority }}</td>
                 <td class="text-sm tabular-nums">

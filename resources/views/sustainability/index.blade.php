@@ -66,7 +66,7 @@
                         @foreach ($aggregate['co2e_by_scope'] as $scope => $value)
                             <tr>
                                 <td colspan="2" class="text-right text-xs uppercase tracking-wide text-base-content/60">{{ __('Scope :scope', ['scope' => $scope]) }}</td>
-                                <td class="text-right tabular-nums font-medium">{{ number_format($value, 1, ',', '.') }}</td>
+                                <td class="text-right tabular-nums font-medium">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($value, 1, withThousandsSeparator: true) }}</td>
                                 <td></td>
                             </tr>
                         @endforeach
@@ -74,8 +74,8 @@
                     @foreach ($aggregate['activities'] as $code => $activity)
                         <tr>
                             <td>{{ __("values.$code") }}</td>
-                            <td class="text-right tabular-nums">{{ number_format($activity['amount'], 1, ',', '.') }} {{ $activity['unit'] }}</td>
-                            <td class="text-right tabular-nums">{{ $activity['co2e_kg'] !== null ? number_format($activity['co2e_kg'], 1, ',', '.') : '—' }}</td>
+                            <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($activity['amount'], 1, withThousandsSeparator: true) }} {{ $activity['unit'] }}</td>
+                            <td class="text-right tabular-nums">{{ $activity['co2e_kg'] !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($activity['co2e_kg'], 1, withThousandsSeparator: true) : '—' }}</td>
                             <td class="text-xs text-base-content/60">{{ $activity['factor_source'] ?? __('Faktor fehlt') }}</td>
                         </tr>
                     @endforeach
@@ -103,8 +103,8 @@
                     @foreach ($targets as $row)
                         <tr @class(['text-error' => $row['actual'] !== null && $row['actual'] > $row['expected']])>
                             <td>{{ $row['target']->label }} <span class="text-xs text-base-content/60">({{ $row['target']->baseline_year }} → {{ $row['target']->target_year }})</span></td>
-                            <td class="text-right tabular-nums">{{ number_format($row['expected'], 1, ',', '.') }} {{ $row['target']->unit }}</td>
-                            <td class="text-right tabular-nums">{{ $row['actual'] !== null ? number_format($row['actual'], 1, ',', '.') . ' ' . $row['target']->unit : '—' }}</td>
+                            <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['expected'], 1, withThousandsSeparator: true) }} {{ $row['target']->unit }}</td>
+                            <td class="text-right tabular-nums">{{ $row['actual'] !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['actual'], 1, withThousandsSeparator: true) . ' ' . $row['target']->unit : '—' }}</td>
                         </tr>
                     @endforeach
                 </x-table>

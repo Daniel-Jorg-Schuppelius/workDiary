@@ -30,7 +30,7 @@
                 <tr class="day-header{{ $isSunday ? ' sun' : '' }}">
                     <th colspan="4">{{ \Carbon\Carbon::parse($date)->locale(app()->getLocale())->isoFormat('dddd, DD.MM.YYYY') }}</th>
                     <th class="right">{{ $h }}:{{ str_pad((string) $m, 2, '0', STR_PAD_LEFT) }} h</th>
-                    <th class="right">{{ number_format((float) $row['rate'], 2, ',', '.') }} €</th>
+                    <th class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row['rate'], 2, withThousandsSeparator: true) }} €</th>
                 </tr>
                 <tr>
                     <th style="width: 8%">Start</th>
@@ -59,7 +59,7 @@
                             {{ $e->description }}
                         </td>
                         <td class="right">{{ $eh }}:{{ str_pad((string) $em, 2, '0', STR_PAD_LEFT) }}</td>
-                        <td class="right">{{ number_format((float) $e->rate, 2, ',', '.') }}</td>
+                        <td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $e->rate, 2, withThousandsSeparator: true) }}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -76,7 +76,7 @@
         <tr>
             <td class="right" style="width: 70%;"><strong>Monat gesamt:</strong></td>
             <td class="right" style="width: 15%;"><strong>{{ $hM }}:{{ str_pad((string) $mM, 2, '0', STR_PAD_LEFT) }} h</strong></td>
-            <td class="right" style="width: 15%;"><strong>{{ number_format((float) $monthRate, 2, ',', '.') }} €</strong></td>
+            <td class="right" style="width: 15%;"><strong>{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $monthRate, 2, withThousandsSeparator: true) }} €</strong></td>
         </tr>
     </table>
 @endsection

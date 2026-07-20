@@ -158,7 +158,7 @@
                     @foreach ($totals as $wageType => $info)
                         <tr>
                             <td>{{ $wageType }}</td>
-                            <td class="text-right tabular-nums" data-sort-value="{{ $info['quantity'] ?? 0 }}">{{ number_format((float) ($info['quantity'] ?? 0), 4, ',', '.') }}</td>
+                            <td class="text-right tabular-nums" data-sort-value="{{ $info['quantity'] ?? 0 }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($info['quantity'] ?? 0), 4, withThousandsSeparator: true) }}</td>
                             <td>{{ $info['unit'] ?? '' }}</td>
                         </tr>
                     @endforeach
@@ -209,9 +209,9 @@
                             </td>
                             <td class="font-mono text-sm">{{ $row['wage_type_code'] ?? '—' }}</td>
                             <td class="text-right tabular-nums" data-sort-value="{{ $row['percentage'] ?? 0 }}">
-                                {{ $row['percentage'] !== null ? number_format((float) $row['percentage'], 2, ',', '.') . ' %' : '—' }}
+                                {{ $row['percentage'] !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row['percentage'], 2, withThousandsSeparator: true) . ' %' : '—' }}
                             </td>
-                            <td class="text-right tabular-nums" data-sort-value="{{ $row['hours'] }}">{{ number_format($row['hours'], 4, ',', '.') }}</td>
+                            <td class="text-right tabular-nums" data-sort-value="{{ $row['hours'] }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['hours'], 4, withThousandsSeparator: true) }}</td>
                         </tr>
                     @endforeach
                 </x-table>
@@ -259,7 +259,7 @@
                                     {{ $line->cost_center ?? '—' }}
                                 @endif
                             </td>
-                            <td class="text-right tabular-nums" data-sort-value="{{ $line->quantity }}">{{ number_format((float) $line->quantity, 4, ',', '.') }}</td>
+                            <td class="text-right tabular-nums" data-sort-value="{{ $line->quantity }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $line->quantity, 4, withThousandsSeparator: true) }}</td>
                             <td>{{ $line->unit }}</td>
                             <td class="text-xs tabular-nums" data-sort-value="{{ $line->period_start?->format('Y-m-d') ?? '' }}">
                                 {{ $line->period_start?->fdate() }} – {{ $line->period_end?->fdate() }}

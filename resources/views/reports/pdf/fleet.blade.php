@@ -12,8 +12,8 @@
 
 @section('pdf-table')
     @php
-        $money = fn (float $v) => number_format($v, 2, ',', '.') . ' €';
-        $num   = fn (float $v, int $d = 2) => number_format($v, $d, ',', '.');
+        $money = fn (float $v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) . ' €';
+        $num   = fn (float $v, int $d = 2) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, $d, withThousandsSeparator: true);
     @endphp
 
     <table class="kpis">
@@ -59,7 +59,7 @@
                     <td class="right">{{ $r['kwh'] > 0 ? $num($r['kwh'], 2) : '–' }}</td>
                     <td class="right">{{ $money($r['energy_cost']) }}</td>
                     <td class="right">{{ $r['cost_per_km'] !== null ? $num($r['cost_per_km'], 3) . ' €' : '–' }}</td>
-                    <td class="right">{{ $r['last_odometer'] !== null ? number_format((int) $r['last_odometer'], 0, ',', '.') : '–' }}</td>
+                    <td class="right">{{ $r['last_odometer'] !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((int) $r['last_odometer'], 0, withThousandsSeparator: true) : '–' }}</td>
                 </tr>
             @endforeach
             <tr class="totals">

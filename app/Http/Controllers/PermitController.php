@@ -17,7 +17,6 @@ use App\Models\{Event, Permit, User};
 use App\Services\Attachments\FileAttacher;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class PermitController extends Controller {
@@ -163,17 +162,11 @@ class PermitController extends Controller {
             $existing->delete();
         }
 
-        $folder = 'attachments/' . now()->format('Y/m');
-        $path = $file->storeAs($folder, Str::uuid()->toString() . '.' . $ext, 'local');
-
-        $permit->attachments()->create([
+        // Kanonische Ablage über FileAttacher (M46-Rest, Folgepunkt 2026-07-20);
+        // original_name läuft damit über Filename::sanitize statt des lokalen
+        // mb_substr-Zuschnitts (strengerer Kanon, bewusstes Delta).
+        app(FileAttacher::class)->store($permit, $file, Auth::id() !== null ? (int) Auth::id() : null, [
             'organization_id' => $permit->organization_id,
-            'user_id' => Auth::id(),
-            'disk' => 'local',
-            'path' => $path,
-            'original_name' => mb_substr(basename($file->getClientOriginalName()), 0, 255),
-            'mime' => $mime,
-            'size' => $file->getSize(),
             'meta_type' => Permit::EVIDENCE_META,
         ]);
 

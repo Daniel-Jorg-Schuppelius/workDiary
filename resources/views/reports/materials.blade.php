@@ -4,8 +4,8 @@
 
 @section('content')
 @php
-    $num = fn (float $v, int $d = 2) => number_format($v, $d, ',', '.');
-    $eur = fn (float $v) => number_format($v, 2, ',', '.') . ' €';
+    $num = fn (float $v, int $d = 2) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, $d, withThousandsSeparator: true);
+    $eur = fn (float $v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) . ' €';
 @endphp
 
 <x-page-shell>

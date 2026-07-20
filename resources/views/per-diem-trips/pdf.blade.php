@@ -32,7 +32,7 @@
 <body>
 @php
     $fmtEur = static function ($value): string {
-        return number_format((float) $value, 2, ',', '.') . ' €';
+        return \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $value, 2, withThousandsSeparator: true) . ' €';
     };
     $totalBase = $trip->days->sum(fn ($d) => (float) $d->base_amount);
     $totalDeductions = $trip->days->sum(fn ($d) => (float) $d->deductions_total);

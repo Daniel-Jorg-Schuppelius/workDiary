@@ -27,7 +27,7 @@
                             <tr>
                                 <td>{{ __("values.$status") }}</td>
                                 <td class="text-right tabular-nums">{{ $row['count'] }}</td>
-                                <td class="text-right tabular-nums">{{ number_format($row['value'], 2, ',', '.') }} €</td>
+                                <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['value'], 2, withThousandsSeparator: true) }} €</td>
                             </tr>
                         @endforeach
                     </x-table>

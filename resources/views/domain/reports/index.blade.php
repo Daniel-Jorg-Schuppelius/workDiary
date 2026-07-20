@@ -35,7 +35,7 @@
                 @forelse ($forecast as $key => $row)
                     <tr><td class="tabular-nums">{{ explode('|', $key)[0] }}</td>
                         <td class="text-right tabular-nums">{{ $row['count'] }}</td>
-                        <td class="text-right tabular-nums">{{ number_format($row['amount'], 2, ',', '.') }} {{ $row['currency'] }}</td></tr>
+                        <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['amount'], 2, withThousandsSeparator: true) }} {{ $row['currency'] }}</td></tr>
                 @empty
                     <x-table.empty :colspan="3" :title="__('domain.reports.no_forecast')" compact />
                 @endforelse

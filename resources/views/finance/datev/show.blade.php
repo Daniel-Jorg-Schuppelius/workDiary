@@ -57,7 +57,7 @@
             </x-card>
             <x-card>
                 <div class="text-sm text-base-content/60">{{ __('finance.datev.field.total') }}</div>
-                <div class="text-xl font-semibold">{{ number_format($preflight['total'], 2, ',', '.') }}</div>
+                <div class="text-xl font-semibold">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($preflight['total'], 2, withThousandsSeparator: true) }}</div>
             </x-card>
             <x-card>
                 <div class="text-sm text-base-content/60">{{ __('finance.datev.field.lock_flag') }}</div>
@@ -146,7 +146,7 @@
                             —
                         @endif
                     </td>
-                    <td class="text-right">{{ number_format((float) $source->amount, 2, ',', '.') }}</td>
+                    <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $source->amount, 2, withThousandsSeparator: true) }}</td>
                 </tr>
             @empty
                 <x-table.empty :colspan="$canReshape ? 8 : 7" :title="__('finance.datev.empty_sources')" compact />

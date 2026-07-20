@@ -61,9 +61,9 @@
                             <span class="text-base-content/50 text-xs">{{ $r->asset->asset_no }}</span>
                         @endif
                     </td>
-                    <td class="text-right font-mono">{{ number_format((float) $r->value, 4, ',', '.') }}</td>
+                    <td class="text-right font-mono">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $r->value, 4, withThousandsSeparator: true) }}</td>
                     <td class="text-right font-mono text-base-content/70">
-                        {{ $r->consumption !== null ? number_format((float) $r->consumption, 4, ',', '.') : '—' }}
+                        {{ $r->consumption !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $r->consumption, 4, withThousandsSeparator: true) : '—' }}
                     </td>
                     <td>{{ $r->unit }}</td>
                     <td class="text-base-content/70 text-xs">{{ $r->readBy?->name ?: '—' }}</td>

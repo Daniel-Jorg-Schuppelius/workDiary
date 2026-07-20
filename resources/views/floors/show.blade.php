@@ -58,7 +58,7 @@
                 @endif
                 <div>
                     <dt class="text-base-content/60">{{ __('BGF (m²)') }}</dt>
-                    <dd>{{ $floor->gross_area_m2 !== null ? number_format((float) $floor->gross_area_m2, 1, ',', '.') : '—' }}</dd>
+                    <dd>{{ $floor->gross_area_m2 !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $floor->gross_area_m2, 1, withThousandsSeparator: true) : '—' }}</dd>
                 </div>
                 @if ($floor->notes)
                     <div class="md:col-span-3">
@@ -108,7 +108,7 @@
                             </td>
                             <td>{{ $r->cleaningProfile?->label ?? '—' }}</td>
                             <td class="text-end">{{ $r->capacity ?? '—' }}</td>
-                            <td class="text-end" data-sort-value="{{ $r->net_area_m2 !== null ? (float) $r->net_area_m2 : -1 }}">{{ $r->net_area_m2 !== null ? number_format((float) $r->net_area_m2, 1, ',', '.') : '—' }}</td>
+                            <td class="text-end" data-sort-value="{{ $r->net_area_m2 !== null ? (float) $r->net_area_m2 : -1 }}">{{ $r->net_area_m2 !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $r->net_area_m2, 1, withThousandsSeparator: true) : '—' }}</td>
                             <td class="text-end tabular-nums">{{ $r->assets_count ?? 0 }}</td>
                             <td class="text-right">
                                 @can('create', \App\Models\Asset::class)

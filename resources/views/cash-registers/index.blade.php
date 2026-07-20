@@ -48,7 +48,7 @@
                     <a href="{{ route('cash-registers.show', $register) }}" class="link link-hover">{{ $register->name }}</a>
                 </td>
                 <td class="text-right tabular-nums" data-sort-value="{{ $balances[$register->id] ?? 0 }}">
-                    {{ number_format($balances[$register->id] ?? 0, 2, ',', '.') }} {{ $register->currency->value }}
+                    {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($balances[$register->id] ?? 0, 2, withThousandsSeparator: true) }} {{ $register->currency->value }}
                 </td>
                 <td class="whitespace-nowrap">{{ ($lastClosings[$register->id] ?? null)?->fdate() ?? '—' }}</td>
                 <td class="whitespace-nowrap">{{ $register->opened_on->fdate() }}</td>

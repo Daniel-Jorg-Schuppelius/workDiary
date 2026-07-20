@@ -51,19 +51,19 @@
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                         <div>
                             <div class="text-xs opacity-70">{{ __('Soll') }}</div>
-                            <div class="font-medium tabular-nums">{{ number_format($minutes['target'] / 60, 2, ',', '.') }} h</div>
+                            <div class="font-medium tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minutes['target'] / 60, 2, withThousandsSeparator: true) }} h</div>
                         </div>
                         <div>
                             <div class="text-xs opacity-70">{{ __('Ist') }}</div>
-                            <div class="font-medium tabular-nums">{{ number_format($minutes['actual'] / 60, 2, ',', '.') }} h</div>
+                            <div class="font-medium tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minutes['actual'] / 60, 2, withThousandsSeparator: true) }} h</div>
                         </div>
                         <div>
                             <div class="text-xs opacity-70">{{ __('Saldo') }}</div>
-                            <div class="font-medium tabular-nums">{{ number_format($minutes['balance'] / 60, 2, ',', '.') }} h</div>
+                            <div class="font-medium tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minutes['balance'] / 60, 2, withThousandsSeparator: true) }} h</div>
                         </div>
                         <div>
                             <div class="text-xs opacity-70">{{ __('Anwesenheit') }}</div>
-                            <div class="font-medium tabular-nums">{{ number_format($minutes['attendance'] / 60, 2, ',', '.') }} h</div>
+                            <div class="font-medium tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minutes['attendance'] / 60, 2, withThousandsSeparator: true) }} h</div>
                         </div>
                     </div>
                 @else

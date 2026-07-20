@@ -177,7 +177,7 @@
                             @endif
                         </td>
                         <td class="text-right tabular-nums">
-                            {{ $item->purchase_price !== null ? number_format((float) $item->purchase_price, 2, ',', '.') . ' ' . $item->currency->value : '—' }}
+                            {{ $item->purchase_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->purchase_price, 2, withThousandsSeparator: true) . ' ' . $item->currency->value : '—' }}
                             @if (($item->price_tiers_count ?? 0) > 0)
                                 <div class="text-xs opacity-50">+{{ $item->price_tiers_count }} {{ __('procurement.catalog.tiers') }}</div>
                             @endif
@@ -185,7 +185,7 @@
                         @php($sug = $suggestions[$item->id] ?? null)
                         <td class="text-right tabular-nums text-sm">
                             @if ($sug)
-                                <span @class(['text-error font-medium' => $sug['below_min']])>{{ number_format((float) $sug['price'], 2, ',', '.') }}</span>
+                                <span @class(['text-error font-medium' => $sug['below_min']])>{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $sug['price'], 2, withThousandsSeparator: true) }}</span>
                                 <span class="opacity-50 text-xs">({{ $sug['margin'] }}%)</span>
                             @else
                                 —

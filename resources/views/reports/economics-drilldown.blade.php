@@ -22,7 +22,7 @@
 
 @section('content')
 @php
-    $eur = fn($v): string => number_format((float) $v, 2, ',', '.') . ' €';
+    $eur = fn($v): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $v, 2, withThousandsSeparator: true) . ' €';
     $titles = [
         'rework' => __('Nacharbeit — Belege'),
         'goodwill' => __('Kulanz — Belege'),
@@ -141,7 +141,7 @@
                         <tr>
                             <td class="tabular-nums">{{ $usage->timesheet?->work_date?->fdate() ?? '—' }}</td>
                             <td class="max-w-md truncate text-sm">{{ $usage->material->name ?? $usage->description }}</td>
-                            <td class="text-right tabular-nums">{{ rtrim(rtrim(number_format((float) $usage->quantity, 3, ',', '.'), '0'), ',') }}</td>
+                            <td class="text-right tabular-nums">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $usage->quantity, 3, withThousandsSeparator: true), '0'), ',') }}</td>
                             <td>{{ $usage->unit }}</td>
                             <td>{{ $usage->billed ? __('Ja') : __('Nein') }}</td>
                             <td class="text-right tabular-nums">{{ $eur($usage->line_total_net) }}</td>
@@ -179,7 +179,7 @@
                             <td class="tabular-nums">{{ $log->date?->fdate() }}</td>
                             <td>{{ $log->user->name ?? '—' }}</td>
                             <td class="max-w-md truncate text-sm">{{ $log->purpose ?? '—' }}</td>
-                            <td class="text-right tabular-nums">{{ rtrim(rtrim(number_format((float) $log->distance_km, 2, ',', '.'), '0'), ',') }}</td>
+                            <td class="text-right tabular-nums">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $log->distance_km, 2, withThousandsSeparator: true), '0'), ',') }}</td>
                             <td class="text-right tabular-nums">{{ $eur($log->reimbursement_total) }}</td>
                         </tr>
                     @endforeach

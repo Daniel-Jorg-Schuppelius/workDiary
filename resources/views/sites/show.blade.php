@@ -107,7 +107,7 @@
                                 @if ($b->code)<span class="text-base-content/60 ms-1">({{ $b->code }})</span>@endif
                             </td>
                             <td class="text-end">{{ $b->year_built ?? '—' }}</td>
-                            <td class="text-end" data-sort-value="{{ $b->gross_area_m2 ?? '' }}">{{ $b->gross_area_m2 !== null ? number_format((float) $b->gross_area_m2, 1, ',', '.') : '—' }}</td>
+                            <td class="text-end" data-sort-value="{{ $b->gross_area_m2 ?? '' }}">{{ $b->gross_area_m2 !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $b->gross_area_m2, 1, withThousandsSeparator: true) : '—' }}</td>
                             <td class="text-end">{{ $b->floors_count }}</td>
                             <td class="text-end">{{ $b->rooms_count }}</td>
                             <td class="text-right">

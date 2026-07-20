@@ -69,10 +69,10 @@
         @if ($canFinance)
             <x-card :title="__('Konditionen (vertraulich)')">
                 <x-detail-grid class="grid-cols-2">
-                    <x-detail-grid.row :label="__('Rate')" class="font-mono">{{ $contract->rate_amount !== null ? number_format((float) $contract->rate_amount, 2, ',', '.') . ' € / ' . __("values.{$contract->payment_rhythm}") : '—' }}</x-detail-grid.row>
-                    <x-detail-grid.row :label="__('Sonderzahlung')" class="font-mono">{{ $contract->special_payment !== null ? number_format((float) $contract->special_payment, 2, ',', '.') . ' €' : '—' }}</x-detail-grid.row>
-                    <x-detail-grid.row :label="__('Restwertannahme')" class="font-mono">{{ $contract->residual_value !== null ? number_format((float) $contract->residual_value, 2, ',', '.') . ' €' : '—' }}</x-detail-grid.row>
-                    <x-detail-grid.row :label="__('Kaufoption')" class="font-mono">{{ $contract->purchase_option_amount !== null ? number_format((float) $contract->purchase_option_amount, 2, ',', '.') . ' €' : '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Rate')" class="font-mono">{{ $contract->rate_amount !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $contract->rate_amount, 2, withThousandsSeparator: true) . ' € / ' . __("values.{$contract->payment_rhythm}") : '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Sonderzahlung')" class="font-mono">{{ $contract->special_payment !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $contract->special_payment, 2, withThousandsSeparator: true) . ' €' : '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Restwertannahme')" class="font-mono">{{ $contract->residual_value !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $contract->residual_value, 2, withThousandsSeparator: true) . ' €' : '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Kaufoption')" class="font-mono">{{ $contract->purchase_option_amount !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $contract->purchase_option_amount, 2, withThousandsSeparator: true) . ' €' : '—' }}</x-detail-grid.row>
                 </x-detail-grid>
 
                 @if ($contract->terms->isNotEmpty())
@@ -81,7 +81,7 @@
                         @foreach ($contract->terms as $term)
                             <tr>
                                 <td>{{ $term->kind->label() }} — {{ $term->label }}</td>
-                                <td class="text-right font-mono">{{ $term->amount !== null ? number_format((float) $term->amount, 2, ',', '.') . ' €' : '—' }}{{ $term->unit !== null ? ' / ' . $term->unit : '' }}</td>
+                                <td class="text-right font-mono">{{ $term->amount !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $term->amount, 2, withThousandsSeparator: true) . ' €' : '—' }}{{ $term->unit !== null ? ' / ' . $term->unit : '' }}</td>
                             </tr>
                         @endforeach
                     </x-table>
@@ -204,9 +204,9 @@
         <x-card :title="__('Ratenplan (Soll) & Referenz-Ist')" padding="p-0">
             @if ($projection !== null)
                 <div class="grid gap-4 border-b border-base-300 p-3 sm:grid-cols-3">
-                    <x-kpi-tile :label="__('Soll (Raten)')" :value="number_format($projection['planned'], 2, ',', '.') . ' €'" />
-                    <x-kpi-tile :label="__('Referenziert (Eingangsrechnungen)')" :value="number_format($projection['referenced'], 2, ',', '.') . ' €'" />
-                    <x-kpi-tile :label="__('Offen')" :value="number_format($projection['open'], 2, ',', '.') . ' €'" />
+                    <x-kpi-tile :label="__('Soll (Raten)')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($projection['planned'], 2, withThousandsSeparator: true) . ' €'" />
+                    <x-kpi-tile :label="__('Referenziert (Eingangsrechnungen)')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($projection['referenced'], 2, withThousandsSeparator: true) . ' €'" />
+                    <x-kpi-tile :label="__('Offen')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($projection['open'], 2, withThousandsSeparator: true) . ' €'" />
                 </div>
             @endif
             <x-table bare>
@@ -214,7 +214,7 @@
                 @forelse ($contract->rateSchedules as $schedule)
                     <tr>
                         <td>{{ $schedule->due_on->fdate() }}</td>
-                        <td class="text-right font-mono">{{ number_format((float) $schedule->amount, 2, ',', '.') }} €</td>
+                        <td class="text-right font-mono">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $schedule->amount, 2, withThousandsSeparator: true) }} €</td>
                         <td><x-status-badge size="md" outline>{{ __("values.{$schedule->status}") }}</x-status-badge></td>
                         <td>
                             @if ($schedule->incomingEInvoice !== null)
@@ -243,9 +243,9 @@
                 @forelse ($contract->usageLimits as $limit)
                     <tr>
                         <td>{{ $limit->kind->label() }} ({{ __("values.{$limit->period}") }})</td>
-                        <td class="text-right font-mono">{{ number_format((float) $limit->limit_value, 2, ',', '.') }}</td>
-                        <td class="text-right font-mono">{{ $limit->actual_value !== null ? number_format((float) $limit->actual_value, 2, ',', '.') : '—' }}</td>
-                        <td class="text-right font-mono {{ $limit->overrun() > 0 ? 'text-error' : '' }}">{{ $limit->overrun() > 0 ? number_format($limit->overrun(), 2, ',', '.') : '—' }}</td>
+                        <td class="text-right font-mono">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $limit->limit_value, 2, withThousandsSeparator: true) }}</td>
+                        <td class="text-right font-mono">{{ $limit->actual_value !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $limit->actual_value, 2, withThousandsSeparator: true) : '—' }}</td>
+                        <td class="text-right font-mono {{ $limit->overrun() > 0 ? 'text-error' : '' }}">{{ $limit->overrun() > 0 ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($limit->overrun(), 2, withThousandsSeparator: true) : '—' }}</td>
                         <td class="text-right">
                             @can('update', $contract)
                                 <details class="inline-block text-left">
@@ -295,7 +295,7 @@
                                 {{ optional($option->exercisable_from)->fdate() ?? '—' }} – {{ optional($option->exercisable_until)->fdate() ?? '—' }}
                             @endif
                         </td>
-                        <td class="text-right font-mono">{{ $option->amount !== null && $canFinance ? number_format((float) $option->amount, 2, ',', '.') . ' €' : '—' }}</td>
+                        <td class="text-right font-mono">{{ $option->amount !== null && $canFinance ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $option->amount, 2, withThousandsSeparator: true) . ' €' : '—' }}</td>
                         <td class="text-right">
                             @if ($canFinance && $option->isExercisable())
                                 <form method="POST" action="{{ route('asset-finance.options.exercise', $option) }}" class="inline">@csrf
@@ -331,7 +331,7 @@
                         <tr>
                             <td>{{ $endProcess->kind->label() }}</td>
                             <td><x-status-badge size="md" outline>{{ __("values.{$endProcess->status}") }}</x-status-badge></td>
-                            <td class="text-right font-mono">{{ $endProcess->follow_up_amount !== null ? number_format((float) $endProcess->follow_up_amount, 2, ',', '.') . ' €' : '—' }}</td>
+                            <td class="text-right font-mono">{{ $endProcess->follow_up_amount !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $endProcess->follow_up_amount, 2, withThousandsSeparator: true) . ' €' : '—' }}</td>
                             <td class="text-right">
                                 @can('update', $contract)
                                     @if ($endProcess->status !== 'completed')

@@ -16,7 +16,7 @@
                 <td>{{ $invoice->number }}</td>
                 <td class="whitespace-nowrap">{{ optional($invoice->issued_on)->fdate() }}</td>
                 <td>{{ $invoice->status }}</td>
-                <td class="text-right">{{ number_format((float) $invoice->total, 2, ',', '.') }} {{ $invoice->currency->value }}</td>
+                <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $invoice->total, 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
             </tr>
         @empty
             <x-table.empty :colspan="4" :title="__('Keine Rechnungen vorhanden.')" />

@@ -16,7 +16,7 @@
 
 @section('content')
 @php
-    $fmtH = fn (int $minutes): string => number_format($minutes / 60, 1, ',', '.') . ' h';
+    $fmtH = fn (int $minutes): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minutes / 60, 1, withThousandsSeparator: true) . ' h';
 @endphp
 <x-page-shell>
     <x-page-toolbar>

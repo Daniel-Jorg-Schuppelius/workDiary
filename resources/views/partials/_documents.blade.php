@@ -93,7 +93,7 @@
             <div class="flex items-center gap-3">
                 <span class="text-sm text-base-content/60">
                     {{ __('Rechnungssumme') }}:
-                    <span class="font-semibold">{{ number_format((float) $invoiceSum, 2, ',', '.') }}&nbsp;&euro;</span>
+                    <span class="font-semibold">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $invoiceSum, 2, withThousandsSeparator: true) }}&nbsp;&euro;</span>
                 </span>
                 @isset($syncRoute)
                     @if ($lexofficeConnected)
@@ -154,7 +154,7 @@
                         <td>
                             <x-status-badge :tone="$statusTone($row['status'])">{{ $valueLabel($row['status']) }}</x-status-badge>
                         </td>
-                        <td class="text-right tabular-nums" data-sort-value="{{ $row['amount'] }}">{{ number_format($row['amount'], 2, ',', '.') }}&nbsp;{{ $row['currency'] }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ $row['amount'] }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['amount'], 2, withThousandsSeparator: true) }}&nbsp;{{ $row['currency'] }}</td>
                         <td class="text-right">
                             <div class="flex justify-end gap-1">
                                 @if ($row['source'] === 'local')

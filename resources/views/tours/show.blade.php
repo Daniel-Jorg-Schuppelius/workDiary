@@ -26,7 +26,7 @@
         <x-page-toolbar :title="__('Tour') . ' ' . ($tour->name ?? ('#' . $tour->id))" :badge="$tour->status?->label() ?? ''" badge-tone="ghost">
             <div class="text-sm text-base-content/70">
                 {{ $tour->tour_date?->fdate() }} · {{ $tour->user?->name }} · {{ $tour->vehicle?->license_plate ?? '—' }}
-                · {{ number_format((float) $tour->planned_distance_km, 2, ',', '.') }} km · {{ $tour->planned_duration_minutes }} min
+                · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $tour->planned_distance_km, 2, withThousandsSeparator: true) }} km · {{ $tour->planned_duration_minutes }} min
             </div>
             <x-slot:actions>
                 <x-icon-btn icon="edit" size="sm" :href="route('tours.edit', $tour)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>

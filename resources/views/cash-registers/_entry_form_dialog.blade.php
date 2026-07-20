@@ -35,7 +35,7 @@
             <option value="">{{ __('— keine —') }}</option>
             @foreach ($openInvoices as $invoice)
                 @php($isqid = \App\Support\Sqid::encode(\App\Models\Invoice::class, (int) $invoice->id))
-                <option value="{{ $isqid }}" @selected(old('invoice_id') === $isqid)>{{ $invoice->number }} ({{ number_format((float) $invoice->total, 2, ',', '.') }})</option>
+                <option value="{{ $isqid }}" @selected(old('invoice_id') === $isqid)>{{ $invoice->number }} ({{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $invoice->total, 2, withThousandsSeparator: true) }})</option>
             @endforeach
         </x-select-field>
     </x-form-group>

@@ -38,7 +38,7 @@
                     <td>{{ $customerName }}</td>
                     <td></td>
                     <td class="right">{{ $hC }}:{{ str_pad((string) $mC, 2, '0', STR_PAD_LEFT) }}</td>
-                    <td class="right">{{ number_format((float) $row['rate'], 2, ',', '.') }} €</td>
+                    <td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row['rate'], 2, withThousandsSeparator: true) }} €</td>
                 </tr>
                 @foreach ($row['projects'] as $entry)
                     @php
@@ -49,7 +49,7 @@
                         <td>{{ $entry['project']->name }}@if ($entry['project']->foreignCustomer) · {{ $entry['project']->foreignCustomer->name }}@endif</td>
                         <td>{{ $entry['project']->number }}</td>
                         <td class="right">{{ $hp }}:{{ str_pad((string) $mp, 2, '0', STR_PAD_LEFT) }}</td>
-                        <td class="right">{{ number_format((float) $entry['rate'], 2, ',', '.') }} €</td>
+                        <td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $entry['rate'], 2, withThousandsSeparator: true) }} €</td>
                     </tr>
                 @endforeach
             @endforeach
@@ -61,7 +61,7 @@
                 <td>Gesamt</td>
                 <td></td>
                 <td class="right">{{ $hT }}:{{ str_pad((string) $mT, 2, '0', STR_PAD_LEFT) }}</td>
-                <td class="right">{{ number_format((float) $totalRate, 2, ',', '.') }} €</td>
+                <td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $totalRate, 2, withThousandsSeparator: true) }} €</td>
             </tr>
         </tbody>
     </table>

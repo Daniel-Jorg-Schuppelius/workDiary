@@ -19,7 +19,7 @@
 
 @section('content')
 @php
-    $fmtH = fn (int $minutes): string => number_format($minutes / 60, 1, ',', '.') . ' h';
+    $fmtH = fn (int $minutes): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minutes / 60, 1, withThousandsSeparator: true) . ' h';
     $chartSeries = collect($rows->items())
         ->map(fn (array $r): array => [
             'x' => $r['name'],
@@ -90,7 +90,7 @@
                         <td class="text-right tabular-nums">{{ $row['users'] }}</td>
                         <td class="text-right tabular-nums">{{ $fmtH($row['actual_minutes']) }}</td>
                         <td class="text-right tabular-nums">
-                            {{ $totals['actual_minutes'] > 0 ? number_format($row['actual_minutes'] / $totals['actual_minutes'] * 100, 1, ',', '.') . ' %' : '—' }}
+                            {{ $totals['actual_minutes'] > 0 ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['actual_minutes'] / $totals['actual_minutes'] * 100, 1, withThousandsSeparator: true) . ' %' : '—' }}
                         </td>
                     </tr>
                 @endforeach

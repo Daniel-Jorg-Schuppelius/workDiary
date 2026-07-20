@@ -342,13 +342,13 @@
                     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                         <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Spesen eingereicht (Brutto)') }}</p>
                         <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold tabular-nums">
-                            {{ number_format((float) ($finance['month']['expenses_submitted_gross'] ?? 0), 2, ',', '.') }} €
+                            {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($finance['month']['expenses_submitted_gross'] ?? 0), 2, withThousandsSeparator: true) }} €
                         </p>
                     </div>
                     <div class="rounded-box border border-success/40 bg-success/5 p-4">
                         <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Davon erstattet') }}</p>
                         <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold tabular-nums text-success">
-                            {{ number_format((float) ($finance['month']['expenses_reimbursed_gross'] ?? 0), 2, ',', '.') }} €
+                            {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($finance['month']['expenses_reimbursed_gross'] ?? 0), 2, withThousandsSeparator: true) }} €
                         </p>
                     </div>
                     <div class="rounded-box border border-warning/40 bg-warning/5 p-4">
@@ -372,7 +372,7 @@
                         <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold">
                             <span class="text-info">{{ $finance['vacation']['pending'] ?? 0 }}</span>
                             <span class="text-base-content/40 text-base font-normal">/</span>
-                            <span class="opacity-70">{{ rtrim(rtrim(number_format((float) ($finance['vacation']['approved_days_this_year'] ?? 0), 1, ',', '.'), '0'), ',') }} {{ __('Tage') }}</span>
+                            <span class="opacity-70">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($finance['vacation']['approved_days_this_year'] ?? 0), 1, withThousandsSeparator: true), '0'), ',') }} {{ __('Tage') }}</span>
                         </p>
                     </div>
                     @if (! empty($finance['approver_pending']))

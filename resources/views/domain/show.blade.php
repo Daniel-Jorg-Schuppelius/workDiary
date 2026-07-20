@@ -34,7 +34,7 @@
                 <x-detail-grid.row :label="__('domain.field.renewal_mode')" :value="$domain->renewal_mode?->label() ?? '—'" />
                 <x-detail-grid.row :label="__('domain.field.transferlock')" :value="$domain->transferlock ? __('domain.yes') : __('domain.no')" />
                 <x-detail-grid.row :label="__('domain.field.renewal_price')"
-                                   :value="$domain->renewal_price !== null ? number_format((float) $domain->renewal_price, 2, ',', '.') . ' ' . ($domain->renewal_currency?->value ?? '') : '—'" />
+                                   :value="$domain->renewal_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $domain->renewal_price, 2, withThousandsSeparator: true) . ' ' . ($domain->renewal_currency?->value ?? '') : '—'" />
                 <x-detail-grid.row :label="__('domain.field.sync')">
                     <x-status-badge :tone="$domain->sync_status->badge()">{{ $domain->sync_status->label() }}</x-status-badge>
                     <span class="text-xs text-base-content/50">{{ $domain->synced_at?->diffForHumans() }}</span>

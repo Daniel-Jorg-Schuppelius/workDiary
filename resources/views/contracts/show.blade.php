@@ -51,7 +51,7 @@
                 <x-detail-grid.row :label="__('Kündigungsfrist')">{{ $contract->notice_period_days !== null ? $contract->notice_period_days . ' ' . __('Tage') : '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Mindestlaufzeit')">{{ $contract->min_term_months !== null ? $contract->min_term_months . ' ' . __('Monate') : '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Automatische Verlängerung')">{{ $contract->auto_renew ? __('ja, um :n Monate', ['n' => $contract->renew_period_months ?? '—']) : __('nein') }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('Vertragswert')">{{ $contract->value_amount !== null ? number_format((float) $contract->value_amount, 2, ',', '.') . ' ' . $contract->currency->value : '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Vertragswert')">{{ $contract->value_amount !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $contract->value_amount, 2, withThousandsSeparator: true) . ' ' . $contract->currency->value : '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Verantwortlich')">{{ $contract->responsible->name ?? '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Dokument')">{{ $contract->document->title ?? '—' }}</x-detail-grid.row>
             </x-detail-grid>
@@ -59,7 +59,7 @@
                 <div class="font-medium">{{ __('Indexierung') }}: {{ $contract->indexation_method->label() }}</div>
                 @if ($contract->indexation_method !== \App\Enums\Contract\IndexationMethod::None)
                     <div class="text-base-content/70">
-                        {{ $contract->indexation_value !== null ? rtrim(rtrim(number_format((float) $contract->indexation_value, 4, ',', '.'), '0'), ',') : '' }}
+                        {{ $contract->indexation_value !== null ? rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $contract->indexation_value, 4, withThousandsSeparator: true), '0'), ',') : '' }}
                         @if ($contract->indexation_review_on) · {{ __('Stichtag') }} {{ $contract->indexation_review_on->fdate() }} @endif
                         @if ($contract->indexation_note) · {{ $contract->indexation_note }} @endif
                     </div>

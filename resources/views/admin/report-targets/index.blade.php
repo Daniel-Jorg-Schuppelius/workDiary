@@ -47,7 +47,7 @@
             <tr>
                 <td class="font-medium">{{ $t->metric->label() }}</td>
                 <td>{{ $fmtScope($t) }}</td>
-                <td class="text-right tabular-nums">{{ number_format((float) $t->target_value, 2, ',', '.') }}</td>
+                <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $t->target_value, 2, withThousandsSeparator: true) }}</td>
                 <td>{{ $t->period?->label() ?? '–' }}</td>
                 <td>{{ $t->valid_from?->format('d.m.Y') ?? '–' }}</td>
                 <td>{{ $t->valid_until?->format('d.m.Y') ?? '–' }}</td>

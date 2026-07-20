@@ -30,8 +30,8 @@
                             {{ $request->article?->name ?: '—' }}
                             <div class="text-xs opacity-60">{{ $request->item?->external_no }} {{ $request->item?->name }}</div>
                         </td>
-                        <td class="text-right tabular-nums text-sm opacity-70">{{ number_format((float) $request->purchase_price_snapshot, 2, ',', '.') }}</td>
-                        <td class="text-right tabular-nums font-medium">{{ number_format((float) $request->suggested_price, 2, ',', '.') }}</td>
+                        <td class="text-right tabular-nums text-sm opacity-70">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $request->purchase_price_snapshot, 2, withThousandsSeparator: true) }}</td>
+                        <td class="text-right tabular-nums font-medium">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $request->suggested_price, 2, withThousandsSeparator: true) }}</td>
                         <td class="text-right tabular-nums">{{ rtrim(rtrim($request->margin_snapshot, '0'), '.') }} %</td>
                         <td class="text-sm">
                             {{ $request->requestedBy?->name ?: '—' }}

@@ -11,7 +11,7 @@
 
 @section('pdf-table')
     @php
-        $pct = fn (float $v) => number_format($v * 100, 1, ',', '.') . ' %';
+        $pct = fn (float $v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v * 100, 1, withThousandsSeparator: true) . ' %';
     @endphp
 
     <table class="kpis">

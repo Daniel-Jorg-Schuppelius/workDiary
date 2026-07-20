@@ -44,11 +44,11 @@
                     </div>
                     <div class="flex gap-2">
                         <dt class="text-base-content/60">{{ __('finance.field.total_quantity') }}:</dt>
-                        <dd class="tabular-nums">{{ number_format((float) $transfer->total_quantity, 2, ',', '.') }}</dd>
+                        <dd class="tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $transfer->total_quantity, 2, withThousandsSeparator: true) }}</dd>
                     </div>
                     <div class="flex gap-2">
                         <dt class="text-base-content/60">{{ __('finance.field.total_amount') }}:</dt>
-                        <dd class="tabular-nums">{{ number_format((float) $transfer->total_amount, 2, ',', '.') }}</dd>
+                        <dd class="tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $transfer->total_amount, 2, withThousandsSeparator: true) }}</dd>
                     </div>
                     <div class="flex gap-2 sm:col-span-2">
                         <dt class="text-base-content/60">{{ __('finance.field.payload_hash') }}:</dt>
@@ -237,22 +237,22 @@
                         <td>—</td>
                         <td class="text-base-content/50">{{ __('finance.field.source_deleted') }}</td>
                     @endif
-                    <td class="text-right tabular-nums">{{ $item->quantity !== null ? number_format((float) $item->quantity, 2, ',', '.') : '—' }}</td>
+                    <td class="text-right tabular-nums">{{ $item->quantity !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, 2, withThousandsSeparator: true) : '—' }}</td>
                     @if ($isMaterial)
                         <td>{{ $item->unit ?? '—' }}</td>
-                        <td class="text-right tabular-nums">{{ $item->tax_rate !== null ? number_format((float) $item->tax_rate, 2, ',', '.') . ' %' : '—' }}</td>
+                        <td class="text-right tabular-nums">{{ $item->tax_rate !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->tax_rate, 2, withThousandsSeparator: true) . ' %' : '—' }}</td>
                         <td class="font-mono text-xs">{{ $item->cost_position ?? '—' }}</td>
                     @endif
-                    <td class="text-right tabular-nums">{{ $item->amount !== null ? number_format((float) $item->amount, 2, ',', '.') : '—' }}</td>
+                    <td class="text-right tabular-nums">{{ $item->amount !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->amount, 2, withThousandsSeparator: true) : '—' }}</td>
                 </tr>
             @endforeach
             <tr class="font-semibold">
                 <td colspan="2">{{ __('finance.csv.total') }}</td>
-                <td class="text-right tabular-nums">{{ number_format((float) $transfer->total_quantity, 2, ',', '.') }}</td>
+                <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $transfer->total_quantity, 2, withThousandsSeparator: true) }}</td>
                 @if ($isMaterial)
                     <td colspan="3"></td>
                 @endif
-                <td class="text-right tabular-nums">{{ number_format((float) $transfer->total_amount, 2, ',', '.') }}</td>
+                <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $transfer->total_amount, 2, withThousandsSeparator: true) }}</td>
             </tr>
         </x-table>
     </x-card>

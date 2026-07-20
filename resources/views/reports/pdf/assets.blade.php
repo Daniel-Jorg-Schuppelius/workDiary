@@ -26,7 +26,7 @@
                     <td class="num">{{ $row['openIssueCount'] }}</td>
                     <td class="num">{{ $row['escalationCount'] }}</td>
                     <td class="num">{{ $row['defectCount'] }}</td>
-                    <td class="num">{{ number_format($row['defectRate'], 2, ',', '.') }}</td>
+                    <td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['defectRate'], 2, withThousandsSeparator: true) }}</td>
                     <td>{{ $row['lastIncidentAt'] ? \Illuminate\Support\Carbon::parse($row['lastIncidentAt'])->fdate() : '—' }}</td>
                 </tr>
             @endforeach

@@ -40,9 +40,9 @@
 
     {{-- Prüfkosten (MVP-291; Vollaudit 2026-07, M33). --}}
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <x-kpi-tile :label="__('Prüfkosten im Zeitraum')" :value="number_format((float) $totalCost, 2, ',', '.') . ' €'" />
+        <x-kpi-tile :label="__('Prüfkosten im Zeitraum')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $totalCost, 2, withThousandsSeparator: true) . ' €'" />
         @foreach (collect($costByKind)->take(3) as $kind => $kindCost)
-            <x-kpi-tile :label="__('Kosten') . ' · ' . $kind" :value="number_format((float) $kindCost, 2, ',', '.') . ' €'" />
+            <x-kpi-tile :label="__('Kosten') . ' · ' . $kind" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $kindCost, 2, withThousandsSeparator: true) . ' €'" />
         @endforeach
     </div>
 

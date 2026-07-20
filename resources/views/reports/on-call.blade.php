@@ -9,7 +9,7 @@
         $abs = abs($minutes);
         return $sign . intdiv($abs, 60) . ':' . str_pad((string) ($abs % 60), 2, '0', STR_PAD_LEFT) . ' h';
     };
-    $pct = fn (float $v) => number_format($v * 100, 1, ',', '.') . ' %';
+    $pct = fn (float $v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v * 100, 1, withThousandsSeparator: true) . ' %';
 @endphp
 
 <x-page-shell>

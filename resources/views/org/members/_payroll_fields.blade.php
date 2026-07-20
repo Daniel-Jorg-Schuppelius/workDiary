@@ -68,9 +68,9 @@
         @if ($minWage !== null)
             <p class="mt-1 text-xs {{ $belowMin ? 'text-warning font-medium' : 'text-base-content/60' }}">
                 @if ($belowMin)
-                    {{ __('Unter dem aktuellen Mindestlohn von :min €.', ['min' => number_format($minWage, 2, ',', '.')]) }}
+                    {{ __('Unter dem aktuellen Mindestlohn von :min €.', ['min' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minWage, 2, withThousandsSeparator: true)]) }}
                 @else
-                    {{ __('Aktueller Mindestlohn: :min €.', ['min' => number_format($minWage, 2, ',', '.')]) }}
+                    {{ __('Aktueller Mindestlohn: :min €.', ['min' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minWage, 2, withThousandsSeparator: true)]) }}
                 @endif
             </p>
         @endif
@@ -140,7 +140,7 @@
         <label class="fieldset-label">{{ __('Wochenstunden') }}</label>
         @php $ws = $member?->workSchedule(); @endphp
         <input type="text" class="input input-bordered w-full" disabled
-               value="{{ $ws ? number_format($ws->weekly_minutes / 60, 2, ',', '.') . ' h' : __('— kein Arbeitszeit-Modell —') }}">
+               value="{{ $ws ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($ws->weekly_minutes / 60, 2, withThousandsSeparator: true) . ' h' : __('— kein Arbeitszeit-Modell —') }}">
         @can('create', \App\Models\WorkSchedule::class)
             @if ($member)
                 <a href="{{ route('users.work-schedule.edit', $member) }}" data-entry-modal-trigger

@@ -54,12 +54,12 @@
                         <td>{{ $vehicle->defaultUser?->name ?? __('—') }}</td>
                         <td class="text-right">
                             @if ($vehicle->default_rate_per_km !== null)
-                                {{ number_format((float) $vehicle->default_rate_per_km, 4, ',', '') }}
+                                {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $vehicle->default_rate_per_km, 4) }}
                             @else
                                 —
                             @endif
                         </td>
-                        <td class="text-right">{{ $vehicle->odometer_km !== null ? number_format($vehicle->odometer_km, 0, ',', '.') . ' km' : '—' }}</td>
+                        <td class="text-right">{{ $vehicle->odometer_km !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($vehicle->odometer_km, 0, withThousandsSeparator: true) . ' km' : '—' }}</td>
                         <td class="text-right">
                             <x-icon-btn icon="edit"
                                         data-entry-modal-trigger

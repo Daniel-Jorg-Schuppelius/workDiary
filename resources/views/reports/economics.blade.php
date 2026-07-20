@@ -13,10 +13,10 @@
 
 @section('content')
 @php
-    $eur = fn($v): string => number_format((float) $v, 2, ',', '.') . ' €';
-    $pct = fn($v): string => number_format((float) $v, 2, ',', '.') . ' %';
+    $eur = fn($v): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $v, 2, withThousandsSeparator: true) . ' €';
+    $pct = fn($v): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $v, 2, withThousandsSeparator: true) . ' %';
     $min = fn($v): string => $v === null ? '–' : (string) $v;
-    $signEur = fn($v): string => ($v > 0 ? '+' : '') . number_format((float) $v, 2, ',', '.') . ' €';
+    $signEur = fn($v): string => ($v > 0 ? '+' : '') . \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $v, 2, withThousandsSeparator: true) . ' €';
     $contribTone = fn($v): string => $v < 0 ? 'text-error' : ($v > 0 ? 'text-success' : '');
 @endphp
 
@@ -282,7 +282,7 @@
                             @if($multiBill)
                                 <td class="text-sm">{{ $p['billName'] }}</td>
                             @endif
-                            <td class="text-right tabular-nums">{{ number_format($p['measuredQuantity'], 3, ',', '.') }}</td>
+                            <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($p['measuredQuantity'], 3, withThousandsSeparator: true) }}</td>
                             <td>{{ $p['unit'] ?? '—' }}</td>
                             <td class="text-right tabular-nums">{{ $eur($p['revenue']) }}</td>
                             <td class="text-right tabular-nums">{{ $p['timeMinutes'] }}</td>
@@ -303,7 +303,7 @@
                                 @if($multiBill)
                                     <td class="text-sm">{{ $p['billName'] }}</td>
                                 @endif
-                                <td class="text-right tabular-nums">{{ number_format($p['measuredQuantity'], 3, ',', '.') }}</td>
+                                <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($p['measuredQuantity'], 3, withThousandsSeparator: true) }}</td>
                                 <td>{{ $p['unit'] ?? '—' }}</td>
                                 <td class="text-right tabular-nums">{{ $eur($p['revenue']) }}</td>
                                 <td class="text-right tabular-nums">{{ $p['timeMinutes'] }}</td>

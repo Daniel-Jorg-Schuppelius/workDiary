@@ -23,7 +23,7 @@
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <x-kpi-tile :label="__('Verleihvorgänge')" :value="$caseCount" />
         <x-kpi-tile :label="__('Auslastung')" :value="$utilization . ' %'" />
-        <x-kpi-tile :label="__('Umsatz (Positionen)')" :value="number_format($revenueTotal, 2, ',', '.') . ' €'" />
+        <x-kpi-tile :label="__('Umsatz (Positionen)')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($revenueTotal, 2, withThousandsSeparator: true) . ' €'" />
         <x-kpi-tile :label="__('Schadensfälle')" :value="$damageCount" />
     </div>
 
@@ -40,7 +40,7 @@
                 @forelse ($revenueByKind as $kind => $amount)
                     <tr>
                         <td>{{ \App\Enums\Rental\RentalChargeKind::tryFrom($kind)?->label() ?? $kind }}</td>
-                        <td class="text-right font-mono">{{ number_format($amount, 2, ',', '.') }} €</td>
+                        <td class="text-right font-mono">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($amount, 2, withThousandsSeparator: true) }} €</td>
                     </tr>
                 @empty
                     <x-table.empty :colspan="2" :title="__('Keine Umsätze im Zeitraum.')" compact />
@@ -54,7 +54,7 @@
                 @forelse ($revenueByCustomer as $customer => $amount)
                     <tr>
                         <td>{{ $customer }}</td>
-                        <td class="text-right font-mono">{{ number_format($amount, 2, ',', '.') }} €</td>
+                        <td class="text-right font-mono">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($amount, 2, withThousandsSeparator: true) }} €</td>
                     </tr>
                 @empty
                     <x-table.empty :colspan="2" :title="__('Keine Umsätze im Zeitraum.')" compact />
@@ -84,7 +84,7 @@
                 <tr>
                     <td>{{ $snapshot->period_start->fdate() }} – {{ $snapshot->period_end->fdate() }}</td>
                     <td>{{ $snapshot->created_at?->fdatetime() }}</td>
-                    <td class="text-right font-mono">{{ number_format((float) data_get($snapshot->payload, 'revenueTotal', 0), 2, ',', '.') }} €</td>
+                    <td class="text-right font-mono">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) data_get($snapshot->payload, 'revenueTotal', 0), 2, withThousandsSeparator: true) }} €</td>
                     <td class="text-right font-mono">{{ data_get($snapshot->payload, 'utilization', 0) }} %</td>
                 </tr>
             @empty

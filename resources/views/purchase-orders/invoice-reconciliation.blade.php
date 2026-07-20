@@ -6,8 +6,8 @@
     /** @var \App\Models\PurchaseOrder $order */
     /** @var array $result */
     $invoice = $result['invoice'];
-    $money = fn ($v) => $v === null ? '—' : number_format((float) $v, 2, ',', '.') . ' €';
-    $qty = fn ($v) => $v === null ? '—' : rtrim(rtrim(number_format((float) $v, 3, ',', '.'), '0'), ',');
+    $money = fn ($v) => $v === null ? '—' : \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $v, 2, withThousandsSeparator: true) . ' €';
+    $qty = fn ($v) => $v === null ? '—' : rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $v, 3, withThousandsSeparator: true), '0'), ',');
     $tones = ['match' => 'success', 'mismatch' => 'warning', 'invoice_only' => 'error'];
 @endphp
 

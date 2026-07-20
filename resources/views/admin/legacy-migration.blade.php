@@ -41,13 +41,13 @@
                         @php $row = $stats[$key]; $remaining = max(0, $row['legacy'] - $row['imported']); @endphp
                         <tr>
                             <td class="font-medium">{{ $label }}</td>
-                            <td class="text-right">{{ number_format($row['legacy'], 0, ',', '.') }}</td>
-                            <td class="text-right">{{ number_format($row['imported'], 0, ',', '.') }}</td>
+                            <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['legacy'], 0, withThousandsSeparator: true) }}</td>
+                            <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['imported'], 0, withThousandsSeparator: true) }}</td>
                             <td class="text-right" data-sort-value="{{ $remaining }}">
                                 @if ($remaining === 0)
                                     <x-status-badge tone="success" size="sm">{{ __('Vollständig') }}</x-status-badge>
                                 @else
-                                    <span class="text-warning">{{ number_format($remaining, 0, ',', '.') }}</span>
+                                    <span class="text-warning">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($remaining, 0, withThousandsSeparator: true) }}</span>
                                 @endif
                             </td>
                             <td class="text-right">

@@ -28,7 +28,7 @@
             <x-detail-grid.row :label="__('domain.reseller.depth')" class="tabular-nums" :value="$reseller->depth" />
             <x-detail-grid.row :label="__('domain.field.customer')" :value="$reseller->customer?->name ?? '—'" />
             <x-detail-grid.row :label="__('domain.reseller.balance')" class="tabular-nums"
-                               :value="$reseller->balance_snapshot !== null ? number_format((float) $reseller->balance_snapshot, 2, ',', '.') . ' ' . ($reseller->currency?->value ?? '') : '—'" />
+                               :value="$reseller->balance_snapshot !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $reseller->balance_snapshot, 2, withThousandsSeparator: true) . ' ' . ($reseller->currency?->value ?? '') : '—'" />
         </x-detail-grid>
     </x-card>
 
@@ -72,7 +72,7 @@
                         <td class="tabular-nums">{{ $entry->entry_date?->format('d.m.Y') ?? '—' }}</td>
                         <td>{{ $entry->type ?? '—' }}</td>
                         <td>{{ $entry->description ?? '—' }}</td>
-                        <td class="text-right tabular-nums">{{ $entry->net_amount !== null ? number_format((float) $entry->net_amount, 2, ',', '.') . ' ' . ($entry->currency?->value ?? '') : '—' }}</td>
+                        <td class="text-right tabular-nums">{{ $entry->net_amount !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $entry->net_amount, 2, withThousandsSeparator: true) . ' ' . ($entry->currency?->value ?? '') : '—' }}</td>
                     </tr>
                 @empty
                     <x-table.empty :colspan="4" :title="__('domain.accounting.empty')" compact />

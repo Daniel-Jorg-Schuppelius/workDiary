@@ -7,7 +7,7 @@
         <div class="rounded-box border border-base-300 p-3">
             <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Genehmigt') }} ({{ now()->year }})</p>
             <p class="mt-1 text-2xl font-semibold">
-                {{ rtrim(rtrim(number_format((float) ($vacation['approved_days_this_year'] ?? 0), 1, ',', '.'), '0'), ',') }}
+                {{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($vacation['approved_days_this_year'] ?? 0), 1, withThousandsSeparator: true), '0'), ',') }}
                 <span class="text-sm font-normal text-base-content/60">{{ __('Tage') }}</span>
             </p>
         </div>

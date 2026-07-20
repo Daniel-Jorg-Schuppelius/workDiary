@@ -14,15 +14,15 @@
         <div class="flex flex-wrap items-center gap-6">
             <div>
                 <div class="text-xs uppercase opacity-60">{{ __('gaeb.costing.planned') }}</div>
-                <div class="text-lg font-semibold tabular-nums">{{ number_format($costing['planned'], 2, ',', '.') }} {{ $costing['currency'] }}</div>
+                <div class="text-lg font-semibold tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($costing['planned'], 2, withThousandsSeparator: true) }} {{ $costing['currency'] }}</div>
             </div>
             <div>
                 <div class="text-xs uppercase opacity-60">{{ __('gaeb.costing.executed') }}</div>
-                <div class="text-lg font-semibold tabular-nums">{{ number_format($costing['executed'], 2, ',', '.') }} {{ $costing['currency'] }}</div>
+                <div class="text-lg font-semibold tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($costing['executed'], 2, withThousandsSeparator: true) }} {{ $costing['currency'] }}</div>
             </div>
             <div>
                 <div class="text-xs uppercase opacity-60">{{ __('gaeb.costing.remaining') }}</div>
-                <div class="text-lg font-semibold tabular-nums">{{ number_format($costing['remaining'], 2, ',', '.') }} {{ $costing['currency'] }}</div>
+                <div class="text-lg font-semibold tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($costing['remaining'], 2, withThousandsSeparator: true) }} {{ $costing['currency'] }}</div>
             </div>
             <div class="flex-1 min-w-48">
                 <div class="text-xs uppercase opacity-60 mb-1">{{ __('gaeb.costing.progress') }} ({{ round($costing['progress'] * 100) }}%)</div>
@@ -70,11 +70,11 @@
                         @endforeach
                     </td>
                     <td><span class="badge badge-sm badge-ghost">{{ $item->type->label() }}</span></td>
-                    <td class="text-right tabular-nums">{{ $item->quantity !== null ? rtrim(rtrim(number_format((float) $item->quantity, 3, ',', '.'), '0'), ',') : '—' }}</td>
-                    <td class="text-right tabular-nums">{{ rtrim(rtrim(number_format($item->executedQuantity(), 3, ',', '.'), '0'), ',') }}</td>
-                    <td class="text-right tabular-nums">{{ rtrim(rtrim(number_format($item->remainingQuantity(), 3, ',', '.'), '0'), ',') }}</td>
+                    <td class="text-right tabular-nums">{{ $item->quantity !== null ? rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, 3, withThousandsSeparator: true), '0'), ',') : '—' }}</td>
+                    <td class="text-right tabular-nums">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($item->executedQuantity(), 3, withThousandsSeparator: true), '0'), ',') }}</td>
+                    <td class="text-right tabular-nums">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($item->remainingQuantity(), 3, withThousandsSeparator: true), '0'), ',') }}</td>
                     <td>{{ $item->unit ?: '—' }}</td>
-                    <td class="text-right tabular-nums">{{ $item->unit_price !== null ? number_format((float) $item->unit_price, 2, ',', '.') : '—' }}</td>
+                    <td class="text-right tabular-nums">{{ $item->unit_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->unit_price, 2, withThousandsSeparator: true) : '—' }}</td>
                     <td><span class="badge badge-sm badge-ghost">{{ $item->status->label() }}</span></td>
                     @if ($canManage)
                         <td>
@@ -121,7 +121,7 @@
                     <tr>
                         <td class="font-mono text-sm whitespace-nowrap">{{ $item->reference_no }}</td>
                         <td>{{ $item->short_text ?: '—' }}</td>
-                        <td class="text-right tabular-nums">{{ rtrim(rtrim(number_format($item->remainingQuantity(), 3, ',', '.'), '0'), ',') }}</td>
+                        <td class="text-right tabular-nums">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($item->remainingQuantity(), 3, withThousandsSeparator: true), '0'), ',') }}</td>
                         <td>{{ $item->unit ?: '—' }}</td>
                     </tr>
                 @endforeach

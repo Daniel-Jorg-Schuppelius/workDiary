@@ -103,7 +103,7 @@
                                 {{ $row['defectCount'] }}
                             @endif
                         </td>
-                        <td class="text-right tabular-nums">{{ number_format((float) $row['defectRate'], 2, ',', '.') }}</td>
+                        <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row['defectRate'], 2, withThousandsSeparator: true) }}</td>
                         <td @if ($row['lastIncidentAt']) data-sort-value="{{ \Illuminate\Support\Carbon::parse($row['lastIncidentAt'])->format('Y-m-d') }}" @endif>{{ $row['lastIncidentAt'] ? \Illuminate\Support\Carbon::parse($row['lastIncidentAt'])->fdate() : '—' }}</td>
                     </tr>
                 @endforeach

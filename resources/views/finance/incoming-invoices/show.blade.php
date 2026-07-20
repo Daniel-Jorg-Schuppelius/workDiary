@@ -45,9 +45,9 @@
                 <x-detail-grid.row :label="__('Fällig am')">{{ $summary['due_date'] ?? '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Verkäufer')">{{ $summary['seller'] ?? '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('USt-IdNr.')">{{ $summary['seller_vat'] ?? '—' }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('Netto')">{{ number_format((float) ($summary['net'] ?? 0), 2, ',', '.') }} {{ $summary['currency'] }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('Steuer')">{{ number_format((float) ($summary['tax'] ?? 0), 2, ',', '.') }} {{ $summary['currency'] }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('Brutto')">{{ number_format((float) ($summary['gross'] ?? 0), 2, ',', '.') }} {{ $summary['currency'] }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Netto')">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($summary['net'] ?? 0), 2, withThousandsSeparator: true) }} {{ $summary['currency'] }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Steuer')">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($summary['tax'] ?? 0), 2, withThousandsSeparator: true) }} {{ $summary['currency'] }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Brutto')">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($summary['gross'] ?? 0), 2, withThousandsSeparator: true) }} {{ $summary['currency'] }}</x-detail-grid.row>
             </x-detail-grid>
         </x-card>
 
@@ -75,10 +75,10 @@
                                     <p class="text-xs text-base-content/60">{{ $line->getItemDescription() }}</p>
                                 @endif
                             </td>
-                            <td class="text-right tabular-nums">{{ number_format($line->getQuantity(), 2, ',', '.') }}</td>
-                            <td class="text-right tabular-nums">{{ number_format((float) $line->getUnitPrice(), 2, ',', '.') }}</td>
-                            <td class="text-right tabular-nums">{{ number_format((float) ($line->getTaxPercent() ?? 0), 1, ',', '.') }}</td>
-                            <td class="text-right tabular-nums">{{ number_format((float) $line->getNetAmount(), 2, ',', '.') }}</td>
+                            <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($line->getQuantity(), 2, withThousandsSeparator: true) }}</td>
+                            <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $line->getUnitPrice(), 2, withThousandsSeparator: true) }}</td>
+                            <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($line->getTaxPercent() ?? 0), 1, withThousandsSeparator: true) }}</td>
+                            <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $line->getNetAmount(), 2, withThousandsSeparator: true) }}</td>
                         </tr>
                     @endforeach
                 </x-table>

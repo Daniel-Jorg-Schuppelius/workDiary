@@ -83,7 +83,7 @@
                             <td class="tabular-nums">{{ $line->purchaseOrder?->number }}</td>
                             <td class="tabular-nums">{{ $line->purchaseOrder?->ordered_at?->toDateString() }}</td>
                             <td>{{ $line->article?->name ?? $line->description }}</td>
-                            <td class="text-right tabular-nums">{{ number_format((float) $line->unit_price, 2, ',', '.') }} {{ $line->currency->value }}</td>
+                            <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $line->unit_price, 2, withThousandsSeparator: true) }} {{ $line->currency->value }}</td>
                         </tr>
                     @endforeach
                 @endif

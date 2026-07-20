@@ -33,7 +33,7 @@
                 <option value="">{{ __('— ohne Artikel —') }}</option>
                 @foreach ($articles as $art)
                     <option value="{{ $art->external_id }}">
-                        {{ $art->name }}@if ($art->net_unit_price !== null) — {{ number_format((float) $art->net_unit_price, 2, ',', '.') }} €@endif
+                        {{ $art->name }}@if ($art->net_unit_price !== null) — {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $art->net_unit_price, 2, withThousandsSeparator: true) }} €@endif
                     </option>
                 @endforeach
             </select>
