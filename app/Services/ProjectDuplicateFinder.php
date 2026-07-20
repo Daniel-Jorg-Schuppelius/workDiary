@@ -41,13 +41,19 @@ class ProjectDuplicateFinder extends AbstractDuplicateFinder {
 
     protected function fetchCandidates(Organization $organization): EloquentCollection {
         return $this->profile->candidates($organization)
+            ->with(['customer:id,name', 'foreignCustomer:id,name'])
             ->withCount(['diaryEntries', 'timeEntries'])
             ->get();
     }
 
-    /** Nur innerhalb desselben Kunden vergleichen (null => Gruppe "0"). */
+    /**
+     * Nur innerhalb desselben Kunden UND desselben Fremdkunden (Endkunden)
+     * vergleichen (null => "0"). Gleichnamige Projekte verschiedener Endkunden
+     * derselben Firma sind bewusst eigenständig (Toggl-„Als ein Kunde"-Import)
+     * und keine Dubletten.
+     */
     protected function groupKey(Model $model): int|string {
-        return (int) ($model->customer_id ?? 0);
+        return (int) ($model->customer_id ?? 0) . '|' . (int) ($model->foreign_customer_id ?? 0);
     }
 
     /**

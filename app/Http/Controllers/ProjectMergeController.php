@@ -180,16 +180,17 @@ class ProjectMergeController extends Controller {
 
     /**
      * Aktive Projekte des Mandanten für die manuelle Ziel-/Quell-Auswahl, mit
-     * Kunde zum Gruppieren.
+     * Kunde zum Gruppieren und Fremdkunde (Endkunde) zur Unterscheidung
+     * gleichnamiger Projekte.
      *
      * @return \Illuminate\Support\Collection<int, Project>
      */
     private function projectOptions(): \Illuminate\Support\Collection {
         return Project::query()
             ->whereNull('archived_at')
-            ->with('customer:id,name')
+            ->with(['customer:id,name', 'foreignCustomer:id,name'])
             ->orderBy('name')
-            ->get(['id', 'name', 'number', 'customer_id']);
+            ->get(['id', 'name', 'number', 'customer_id', 'foreign_customer_id']);
     }
 
     private function authorizeBilling(): User {

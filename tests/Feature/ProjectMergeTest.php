@@ -157,6 +157,34 @@ class ProjectMergeTest extends TestCase {
         $this->assertNull($crossPair, 'Gleichnamige Projekte verschiedener Kunden werden NICHT gepaart');
     }
 
+    public function test_finder_ignores_cross_foreign_customer_duplicates(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $lds = \App\Models\ForeignCustomer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'name' => 'LDS Endkunde A',
+        ]);
+        $thieme = \App\Models\ForeignCustomer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'name' => 'LDS Endkunde B',
+        ]);
+        // Gleichnamig, gleicher Kunde — aber verschiedene Endkunden → KEIN Paar.
+        Project::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id, 'foreign_customer_id' => $lds->id, 'name' => 'Wartungen']);
+        Project::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id, 'foreign_customer_id' => $thieme->id, 'name' => 'Wartungen']);
+        // Gleicher Endkunde → Paar.
+        Project::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id, 'foreign_customer_id' => $lds->id, 'name' => 'Besprechungen']);
+        Project::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id, 'foreign_customer_id' => $lds->id, 'name' => 'Besprechungen']);
+
+        $candidates = app(ProjectDuplicateFinder::class)->candidates($this->organization);
+
+        $crossPair = $candidates->first(fn(array $p): bool => $p['target']->name === 'Wartungen');
+        $this->assertNull($crossPair, 'Gleichnamige Projekte verschiedener Endkunden werden NICHT gepaart');
+
+        $samePair = $candidates->first(fn(array $p): bool => $p['target']->name === 'Besprechungen');
+        $this->assertNotNull($samePair, 'Gleichnamige Projekte desselben Endkunden werden weiterhin erkannt');
+    }
+
     public function test_finder_skips_parent_child_pairs(): void {
         $parent = $this->project('Wartung');
         $this->project('Wartung', ['parent_id' => $parent->id]);

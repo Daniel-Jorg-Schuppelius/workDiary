@@ -42,8 +42,16 @@
         <x-icon-btn icon="arrow_back" size="sm" :href="route('projects.duplicates.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
     </x-slot:actions>
 
-    <div class="mb-4 text-sm text-base-content/70">
-        {{ __('Kunde') }}: <span class="font-medium">{{ $target->customer?->name ?: __('Intern (ohne Kunde)') }}</span>
+    <div class="mb-4 flex flex-wrap gap-x-6 gap-y-1 text-sm text-base-content/70">
+        <span>{{ __('Kunde') }}: <span class="font-medium">{{ $target->customer?->name ?: __('Intern (ohne Kunde)') }}</span></span>
+        @if ($target->foreignCustomer || $source->foreignCustomer)
+            <span>{{ __('Endkunde') }}:
+                <span class="font-medium">{{ $target->foreignCustomer?->name ?: '—' }}</span>
+                @if (($target->foreign_customer_id ?? null) !== ($source->foreign_customer_id ?? null))
+                    <span class="text-warning">({{ __('Quelle') }}: {{ $source->foreignCustomer?->name ?: '—' }})</span>
+                @endif
+            </span>
+        @endif
     </div>
 
     <form method="POST" action="{{ route('projects.duplicates.merge') }}"

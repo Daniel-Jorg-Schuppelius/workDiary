@@ -31,7 +31,11 @@
 
         return [
             'sqid' => $p->sqid,
-            'label' => $p->name . ($p->number ? ' · ' . $p->number : ''),
+            // Fremdkunde (Endkunde) mit anzeigen — gleichnamige Projekte
+            // verschiedener Endkunden derselben Firma bleiben unterscheidbar.
+            'label' => $p->name
+                . ($p->number ? ' · ' . $p->number : '')
+                . ($p->foreignCustomer ? ' — ' . $p->foreignCustomer->name : ''),
             'ck' => $ck,
         ];
     })->values();
@@ -164,6 +168,9 @@
                             <span class="badge badge-sm badge-outline">{{ $reasonLabels[$reason] ?? $reason }}</span>
                         @endforeach
                         <span class="badge badge-sm badge-ghost">{{ $target->customer?->name ?: __('Intern') }}</span>
+                        @if ($target->foreignCustomer)
+                            <span class="badge badge-sm badge-outline badge-accent">{{ __('Endkunde') }}: {{ $target->foreignCustomer->name }}</span>
+                        @endif
                     </div>
 
                     <x-table>
