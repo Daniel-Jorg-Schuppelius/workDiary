@@ -8852,5 +8852,6 @@
     "Toggl-E-Mail": "Toggl email",
     "Benutzer-Zuordnung anlegen": "Add user mapping",
     "Toggl-E-Mail einem Benutzer zuordnen — für Mitarbeiter, deren Toggl-Adresse von der workDiary-Adresse abweicht.": "Map a Toggl email to a user — for employees whose Toggl address differs from their workDiary address.",
-    "Alle bekannten Toggl-Adressen sind bereits zugeordnet.": "All known Toggl addresses are already mapped."
+    "Alle bekannten Toggl-Adressen sind bereits zugeordnet.": "All known Toggl addresses are already mapped.",
+    "Benutzer-Zuordnungen": "User mappings"
 }
