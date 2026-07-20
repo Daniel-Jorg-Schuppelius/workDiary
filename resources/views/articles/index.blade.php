@@ -31,16 +31,13 @@
         </x-filter-field>
     </x-filter-bar>
 
-    <div role="tablist" class="tabs tabs-box w-full">
-        <a role="tab" href="{{ route('articles.index', ['status' => 'active', 'q' => $search]) }}"
-           class="tab {{ $status === 'active' ? 'tab-active' : '' }}">{{ __('article.status.active') }}</a>
-        <a role="tab" href="{{ route('articles.index', ['status' => 'draft', 'q' => $search]) }}"
-           class="tab {{ $status === 'draft' ? 'tab-active' : '' }}">{{ __('article.status.draft') }}</a>
-        <a role="tab" href="{{ route('articles.index', ['status' => 'retired', 'q' => $search]) }}"
-           class="tab {{ $status === 'retired' ? 'tab-active' : '' }}">{{ __('article.status.retired') }}</a>
-        <a role="tab" href="{{ route('articles.index', ['status' => 'all', 'q' => $search]) }}"
-           class="tab {{ $status === 'all' ? 'tab-active' : '' }}">{{ __('Alle') }}</a>
-    </div>
+    {{-- Status-Tabs über die gemeinsame Komponente (D5; Vollaudit 2026-07, N44). --}}
+    <x-tab-nav :items="[
+        ['label' => __('article.status.active'), 'route' => 'articles.index', 'params' => ['status' => 'active', 'q' => $search], 'active' => $status === 'active'],
+        ['label' => __('article.status.draft'), 'route' => 'articles.index', 'params' => ['status' => 'draft', 'q' => $search], 'active' => $status === 'draft'],
+        ['label' => __('article.status.retired'), 'route' => 'articles.index', 'params' => ['status' => 'retired', 'q' => $search], 'active' => $status === 'retired'],
+        ['label' => __('Alle'), 'route' => 'articles.index', 'params' => ['status' => 'all', 'q' => $search], 'active' => $status === 'all'],
+    ]" />
 
     @if ($articles->total() === 0)
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>'

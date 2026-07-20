@@ -22,9 +22,6 @@ use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
-use PDFToolkit\Entities\PDFContent;
-use PDFToolkit\Registries\PDFWriterRegistry;
-use RuntimeException;
 
 /**
  * Verwaltung des oeffentlichen Meldeportals einer Organisation (eine Instanz pro
@@ -88,16 +85,19 @@ class WhistleblowingPortalController extends Controller {
         $portal = Portal::query()->firstOrFail();
         $link = url('/melden/' . $portal->public_slug);
 
-        $html = view('whistleblowing.internal.poster_pdf', [
-            'organizationName' => $portal->organization?->name,
-            'link' => $link,
-            'qr' => $this->qrDataUri($link),
-        ])->render();
-
-        $bytes = PDFWriterRegistry::getInstance()->createPdfString(
-            PDFContent::fromHtml($html),
+        // View→PDF über den zentralen Renderer (C15; Vollaudit 2026-07, N27) —
+        // Writer-Options werden durchgereicht.
+        $bytes = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->renderPdf(
+            \App\Enums\DocumentDesign\RenderDocumentKind::Report,
+            'whistleblowing.internal.poster_pdf',
+            [
+                'organizationName' => $portal->organization?->name,
+                'link' => $link,
+                'qr' => $this->qrDataUri($link),
+            ],
+            null,
             ['paper_size' => 'a4', 'orientation' => 'portrait'],
-        ) ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (whistleblowing.internal.poster_pdf).');
+        );
 
         return response($bytes, 200, [
             'Content-Type' => 'application/pdf',

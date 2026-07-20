@@ -33,6 +33,7 @@ return [
         'shipment' => 'Expédition',
     ],
     'event' => [
+        'asset_issued' => 'Équipement remis',
         'order_created' => 'Mission créée',
         'order_completed' => 'Mission terminée',
         'status_changed' => 'Statut modifié',
@@ -88,6 +89,11 @@ return [
         'customer' => 'Client',
     ],
     'case' => [
+        'assets' => 'Équipements et actifs',
+        'asset' => 'Actif',
+        'asset_role' => 'Rôle',
+        'asset_subject' => 'Objet de la mission',
+        'asset_issued' => 'Remis (checkout)',
         'generated_at' => 'Généré le',
         'internal_notice' => 'Dossier interne — contient aussi des éléments internes (commentaires, pièces jointes internes, communication). Non destiné à être transmis au client.',
         'order' => 'Mission',

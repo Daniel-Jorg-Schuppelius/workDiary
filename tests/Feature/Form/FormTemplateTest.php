@@ -22,6 +22,40 @@ use Tests\TestCase;
 class FormTemplateTest extends TestCase {
     use RefreshDatabase;
 
+    /** Vollaudit 2026-07 (M11): Gültigkeitszeitraum + Zuordnung (Feature 032 MVP). */
+    public function test_validity_window_gates_active_scope_and_target_matches_subject(): void {
+        $lead = User::factory()->teamleitung()->create();
+        app()->instance('currentOrganization', $lead->organization);
+
+        $expired = FormTemplate::query()->create([
+            'organization_id' => $lead->organization_id,
+            'name' => 'Abgelaufene Vorlage',
+            'status' => FormTemplateStatus::Active->value,
+            'fields' => [],
+            'valid_until' => now()->subDay()->toDateString(),
+            'created_by_user_id' => $lead->id,
+        ]);
+        $current = FormTemplate::query()->create([
+            'organization_id' => $lead->organization_id,
+            'name' => 'Gültige Vorlage',
+            'status' => FormTemplateStatus::Active->value,
+            'fields' => [],
+            'valid_from' => now()->subDay()->toDateString(),
+            'valid_until' => now()->addDay()->toDateString(),
+            'target' => ['customer_id' => 4711],
+            'created_by_user_id' => $lead->id,
+        ]);
+
+        $activeIds = FormTemplate::query()->active()->pluck('id')->all();
+        $this->assertContains($current->id, $activeIds);
+        $this->assertNotContains($expired->id, $activeIds);
+
+        $this->assertTrue($current->matchesSubject(null, 4711));
+        $this->assertFalse($current->matchesSubject(null, 999));
+        $this->assertFalse($current->matchesSubject(null, null));
+        $this->assertTrue($expired->matchesSubject(null, null)); // leere Zuordnung = überall
+    }
+
     public function test_teamleitung_can_create_template_with_normalized_fields(): void {
         $lead = User::factory()->teamleitung()->create();
 

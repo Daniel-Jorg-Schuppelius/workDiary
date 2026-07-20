@@ -35,6 +35,8 @@ abstract class AbstractLlmProvider extends AbstractHttpAiProvider implements Llm
         $system = implode("\n", array_filter([
             'Du formulierst stichwortartige Arbeitsnotizen zu einem sauberen, kundentauglichen Text um (Sprache: ' . $request->language . ').',
             'VERBINDLICH: Verwende ausschließlich Informationen aus der Eingabe. Erfinde keine Leistungen, Mengen, Ergebnisse oder Fakten. Lasse nichts Wesentliches weg.',
+            // Kundennamen-Regel (Feature 084 MVP-402, Vollaudit 2026-07 M35).
+            'VERBINDLICH: Nenne niemals den Namen des Kunden oder Empfängers — formuliere neutral (z. B. „der Kunde"), auch wenn Namen in der Eingabe stehen.',
             'Antworte NUR mit dem umformulierten Text, ohne Anführungszeichen oder Erklärungen.',
             $this->styleBlock($request->styleRules),
             $this->glossaryBlock($request->glossary),
@@ -51,6 +53,7 @@ abstract class AbstractLlmProvider extends AbstractHttpAiProvider implements Llm
         $system = implode("\n", array_filter([
             'Du fasst mehrere Arbeitsnotizen zu EINEM zusammenhängenden, kundentauglichen Leistungstext zusammen (Sprache: ' . $request->language . ').',
             'VERBINDLICH: Nur Informationen aus den Einträgen verwenden — nichts erfinden, keine Einträge unterschlagen.',
+            'VERBINDLICH: Nenne niemals den Namen des Kunden oder Empfängers — formuliere neutral (z. B. „der Kunde").',
             $request->period !== null ? 'Leistungszeitraum: ' . $request->period . ' (im Text nennen).' : null,
             'Antworte NUR mit dem zusammengefassten Text.',
             $this->styleBlock($request->styleRules),

@@ -67,9 +67,21 @@ class AssetFinanceContractController extends Controller {
 
         $canFinance = Gate::allows('finance', $contract);
 
+        // Vollaudit 2026-07 (M32): Prüfstatus der Vertrags-Assets — die
+        // Prüfpflichtenverwaltung (Feature 075) bleibt führend, die Leasingakte
+        // spiegelt nur den abgeleiteten Status.
+        $complianceService = app(\App\Services\AssetCompliance\AssetComplianceService::class);
+        $complianceByAsset = [];
+        foreach ($contract->contractAssets as $contractAsset) {
+            if ($contractAsset->asset !== null) {
+                $complianceByAsset[(int) $contractAsset->asset->id] = $complianceService->statusFor($contractAsset->asset);
+            }
+        }
+
         return view('asset-finance.show', [
             'contract' => $contract,
             'canFinance' => $canFinance,
+            'complianceByAsset' => $complianceByAsset,
             'projection' => $canFinance ? $this->service->projection($contract) : null,
             'investmentLink' => InvestmentLink::query()
                 ->where('linkable_type', $contract->getMorphClass())

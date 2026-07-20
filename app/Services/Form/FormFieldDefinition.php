@@ -11,6 +11,7 @@
 namespace App\Services\Form;
 
 use App\Enums\Form\FormFieldType;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Validation\{Rule, ValidationException};
 
@@ -280,7 +281,7 @@ final class FormFieldDefinition {
 
         if ($type === FormFieldType::Number) {
             $unit = trim((string) ($field['unit'] ?? ''));
-            $number = rtrim(rtrim(number_format((float) $value, 2, ',', '.'), '0'), ',');
+            $number = rtrim(rtrim(NumberHelper::toGermanFormat((float) $value, 2, withThousandsSeparator: true), '0'), ',');
 
             return $unit === '' ? $number : $number . ' ' . $unit;
         }

@@ -94,6 +94,53 @@ return [
             'expected_runtime_minutes' => 15,
         ],
 
+        // Vollaudit 2026-07 (H10): E-Mail-Eingang (MVP-117) — ohne diesen
+        // Eintrag lief der Abruf nie automatisch.
+        'mail.poll' => [
+            'command' => 'mail:poll',
+            'cadence' => ['type' => 'everyFiveMinutes'],
+            'allowed' => ['everyFiveMinutes', 'everyFifteenMinutes', 'everyThirtyMinutes', 'hourly'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 3,
+        ],
+
+        // Vollaudit 2026-07 (H13): Domainverwaltung (Feature 083) — Bestands-
+        // Sync und Provider-Ereignisse liefen nie automatisch.
+        'domain.sync' => [
+            'command' => 'domain:sync',
+            'cadence' => ['type' => 'dailyAt', 'time' => '04:40'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 5,
+        ],
+        'domain.events' => [
+            'command' => 'domain:events',
+            'cadence' => ['type' => 'everyThirtyMinutes'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 3,
+        ],
+
+        // Vollaudit 2026-07 (M19): MHD-Überwachung (Feature 048 E2) —
+        // expiringUntil war zuvor toter Code ohne Aufrufer.
+        'inventory.expiring_lots' => [
+            'command' => 'inventory:expiring-lots',
+            'cadence' => ['type' => 'dailyAt', 'time' => '06:10'],
+            'allowed' => ['dailyAt', 'weeklyOn'],
+            'criticality' => 'housekeeping',
+            'expected_runtime_minutes' => 3,
+        ],
+
+        // Vollaudit 2026-07 (N17): zyklische Inventur (E6) — planbar und
+        // automatisch statt nur manuell.
+        'inventory.cycle_counts' => [
+            'command' => 'inventory:cycle-counts',
+            'cadence' => ['type' => 'weeklyOn', 'day' => 1, 'time' => '05:50'],
+            'allowed' => ['dailyAt', 'weeklyOn', 'monthlyOn'],
+            'criticality' => 'housekeeping',
+            'expected_runtime_minutes' => 5,
+        ],
+
         // --- Kern/Housekeeping (täglich) ---
         'archive.run' => [
             'command' => 'archive:run',

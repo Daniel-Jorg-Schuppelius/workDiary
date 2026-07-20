@@ -112,6 +112,42 @@ class ProtocolSignatureTokenServiceTest extends TestCase {
     /**
      * @return array{0: User, 1: Protocol}
      */
+    /** Vollaudit 2026-07 (M6): Widerruf externer Signatur-Links (Feature 012 MVP). */
+    public function test_revoke_invalidates_open_token_and_records_event(): void {
+        [$creator, $protocol] = $this->makeReviewProtocol();
+        /** @var ProtocolSignatureTokenService $tokens */
+        $tokens = app(ProtocolSignatureTokenService::class);
+        $result = $tokens->issue($protocol, $creator, [
+            'role' => ProtocolSignatureRole::Customer->value,
+            'signer_email' => 'kunde@example.org',
+        ]);
+
+        $tokens->revoke($result['model'], $creator);
+
+        $this->assertFalse($result['model']->refresh()->isUsable());
+        $this->assertDatabaseHas('protocol_events', [
+            'protocol_id' => $protocol->id,
+            'event' => 'protocol.signatureLinkRevoked',
+        ]);
+
+        // Widerrufener Link ist nicht mehr einlösbar.
+        $this->expectException(RuntimeException::class);
+        $tokens->redeem($result['token'], ['signer_name' => 'Max', 'ip' => '127.0.0.1']);
+    }
+
+    public function test_revoke_of_redeemed_token_is_rejected(): void {
+        [$creator, $protocol] = $this->makeReviewProtocol();
+        /** @var ProtocolSignatureTokenService $tokens */
+        $tokens = app(ProtocolSignatureTokenService::class);
+        $result = $tokens->issue($protocol, $creator, [
+            'role' => ProtocolSignatureRole::Customer->value,
+        ]);
+        $tokens->redeem($result['token'], ['signer_name' => 'Max Mustermann', 'ip' => '127.0.0.1']);
+
+        $this->expectException(RuntimeException::class);
+        $tokens->revoke($result['model']->refresh(), $creator);
+    }
+
     private function makeReviewProtocol(): array {
         $creator = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($creator)->create();

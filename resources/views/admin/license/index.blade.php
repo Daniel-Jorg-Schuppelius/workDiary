@@ -341,9 +341,8 @@
             @if (count($features) === 0)
                 <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">flag</span>' :title="__('Diese Lizenz enthält keine expliziten Feature-Flags.')" compact />
             @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table bare>
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('Code') }}</th>
                                 <th>{{ __('Status') }}</th>
@@ -352,8 +351,7 @@
                                     <th class="text-right">{{ __('Aktion') }}</th>
                                 @endif
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($features as $feature)
                                 <tr>
                                     <td class="font-mono text-xs">{{ $feature['code'] }}</td>
@@ -377,9 +375,7 @@
                                     @endif
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             @endif
         </div>
     </article>
@@ -422,29 +418,21 @@
                                                 data-open-dialog="{{ $dialogId }}">
                                             {{ __('Deaktivieren') }}
                                         </button>
-                                        <dialog id="{{ $dialogId }}" class="modal">
-                                            <div class="modal-box">
-                                                <h3 class="text-base font-semibold">{{ __('Modul deaktivieren') }}: {{ $module['label'] }}</h3>
-                                                <p class="mt-2 text-sm text-base-content/70">
-                                                    {{ __('Das Modul verschwindet aus Navigation, Dashboard, Suche, Onboarding und Hilfe. Direkte Aufrufe werden serverseitig gesperrt.') }}
-                                                </p>
-                                                <p class="mt-2 text-sm font-medium text-success">
-                                                    {{ __('Es werden keine Daten gelöscht. Eine Reaktivierung stellt den Zugriff sofort wieder her.') }}
-                                                </p>
-                                                <form method="POST" action="{{ route('admin.license.modules.disable') }}" class="mt-3 space-y-2">
-                                                    @csrf
-                                                    <input type="hidden" name="module" value="{{ $module['code'] }}">
-                                                    <textarea name="reason" rows="2" class="textarea textarea-bordered textarea-sm w-full"
-                                                              placeholder="{{ __('Interne Begründung (optional)') }}"></textarea>
-                                                    <div class="flex justify-end gap-2">
-                                                        <button type="button" class="btn btn-sm btn-ghost"
-                                                                data-entry-modal-close>{{ __('Abbrechen') }}</button>
-                                                        <button type="submit" class="btn btn-sm btn-warning">{{ __('Deaktivieren') }}</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                            <form method="dialog" class="modal-backdrop"><button>{{ __('Schließen') }}</button></form>
-                                        </dialog>
+                                        {{-- Gemeinsamer Dialog-Wrapper statt rohem <dialog> (Vollaudit 2026-07, N57). --}}
+                                        <x-modal :id="$dialogId" :embedded="false" tone="warning" icon="toggle_off"
+                                            :title="__('Modul deaktivieren') . ': ' . $module['label']"
+                                            :action="route('admin.license.modules.disable')"
+                                            :submit-label="__('Deaktivieren')" submit-class="btn-warning">
+                                            <p class="text-sm text-base-content/70">
+                                                {{ __('Das Modul verschwindet aus Navigation, Dashboard, Suche, Onboarding und Hilfe. Direkte Aufrufe werden serverseitig gesperrt.') }}
+                                            </p>
+                                            <p class="mt-2 text-sm font-medium text-success">
+                                                {{ __('Es werden keine Daten gelöscht. Eine Reaktivierung stellt den Zugriff sofort wieder her.') }}
+                                            </p>
+                                            <input type="hidden" name="module" value="{{ $module['code'] }}">
+                                            <textarea name="reason" rows="2" class="textarea textarea-bordered textarea-sm mt-3 w-full"
+                                                      placeholder="{{ __('Interne Begründung (optional)') }}"></textarea>
+                                        </x-modal>
                                     @elseif ($status === \App\Enums\Licensing\ModuleStatus::InactiveByCustomer)
                                         <form method="POST" action="{{ route('admin.license.modules.enable') }}">
                                             @csrf

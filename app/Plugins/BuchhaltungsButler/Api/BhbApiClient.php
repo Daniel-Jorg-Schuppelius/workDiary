@@ -26,6 +26,9 @@ use Illuminate\Http\Client\Response;
  * Endpunkt-Pfade sind konfigurierbar (Doku bot-gesperrt, Pilot-Verifikation).
  */
 class BhbApiClient {
+    // Gemeinsame guard()-Fehlerbehandlung (Vollaudit 2026-07, N33).
+    use \App\Plugins\Support\GuardsPluginApiResponses;
+
     private ?PluginApiClient $api = null;
 
     public function __construct(
@@ -94,16 +97,12 @@ class BhbApiClient {
         return $this->api;
     }
 
-    /** @return array<mixed> */
-    private function guard(Response $response, string $endpoint): array {
-        if (! $response->successful()) {
-            throw new BhbApiException(
-                $response->status(),
-                sprintf('BuchhaltungsButler %s: HTTP %d %s', $endpoint, $response->status(), mb_substr((string) $response->body(), 0, 300)),
-                $endpoint,
-            );
-        }
+    /** @return class-string<\App\Plugins\Support\PluginApiException> */
+    protected function apiExceptionClass(): string {
+        return BhbApiException::class;
+    }
 
-        return (array) ($response->json() ?? []);
+    protected function apiLabel(): string {
+        return 'BuchhaltungsButler';
     }
 }

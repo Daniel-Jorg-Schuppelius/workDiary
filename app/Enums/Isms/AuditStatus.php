@@ -11,7 +11,7 @@
 namespace App\Enums\Isms;
 
 use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
 /**
  * Status eines Audits (Feature 046, Inkrement C): planned → inPreparation
@@ -20,7 +20,7 @@ use App\Enums\Contracts\HasLabel;
  * AUSSCHLIESSLICH über {@see \App\Services\Isms\AuditService::transitionAudit()}
  * — reportIssued erfordert dort Durchführungszeitraum + Zusammenfassung.
  */
-enum AuditStatus: string implements HasLabel {
+enum AuditStatus: string implements HasLabel, HasStatusTransitions {
     use HasOptions;
 
     case Planned = 'planned';

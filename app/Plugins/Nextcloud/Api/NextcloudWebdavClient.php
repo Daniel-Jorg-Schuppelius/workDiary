@@ -168,11 +168,9 @@ class NextcloudWebdavClient {
      * Chunked Upload v2; verifiziert die Remote-Größe und liefert sie zurück.
      */
     public function uploadResumable(string $localPath, string $destServerPath): int {
-        $size = filesize($localPath);
-        $in = @fopen($localPath, 'rb');
-        if ($in === false || $size === false) {
-            throw new RuntimeException("Backup-Teil nicht lesbar: {$localPath}");
-        }
+        // Gemeinsame Chunk-Leseschleife (Vollaudit 2026-07, N31); die
+        // MKCOL/PUT/MOVE-Semantik (Chunked Upload v2) bleibt Nextcloud-spezifisch.
+        $size = \App\Plugins\Support\Backup\ChunkedFileReader::size($localPath);
 
         // MOVE legt keine Ordner an — Zielverzeichnis vorab sicherstellen.
         $parent = trim((string) (str_contains($destServerPath, '/') ? substr($destServerPath, 0, (int) strrpos($destServerPath, '/')) : ''), '/');
@@ -185,41 +183,28 @@ class NextcloudWebdavClient {
         $destUrl = $this->fileUrl($destServerPath);
         $totalHeader = ['Destination' => $destUrl, 'OC-Total-Length' => (string) $size];
 
-        try {
-            // 1. Upload-Session eröffnen (Ziel als Destination-Header).
-            $create = $this->send('MKCOL', $uploadDir, ['headers' => $totalHeader]);
-            if (! in_array($create->getStatusCode(), [201, 405], true)) {
-                throw new RuntimeException('Nextcloud upload session MKCOL failed (HTTP ' . $create->getStatusCode() . ').');
-            }
+        // 1. Upload-Session eröffnen (Ziel als Destination-Header).
+        $create = $this->send('MKCOL', $uploadDir, ['headers' => $totalHeader]);
+        if (! in_array($create->getStatusCode(), [201, 405], true)) {
+            throw new RuntimeException('Nextcloud upload session MKCOL failed (HTTP ' . $create->getStatusCode() . ').');
+        }
 
-            // 2. Chunks als 0-basierten Start-Offset (lexikografisch sortierbar).
-            $offset = 0;
-            while (! feof($in)) {
-                $chunk = fread($in, max(1, $this->chunkSize));
-                if ($chunk === false) {
-                    throw new RuntimeException("Lesefehler in {$localPath}.");
-                }
-                if ($chunk === '') {
-                    continue;
-                }
-                $chunkName = str_pad((string) $offset, 16, '0', STR_PAD_LEFT);
-                $put = $this->send('PUT', $uploadDir . '/' . $chunkName, [
-                    'headers' => ['OC-Total-Length' => (string) $size, 'Content-Type' => 'application/octet-stream'],
-                    'body' => $chunk,
-                ]);
-                if ($put->getStatusCode() < 200 || $put->getStatusCode() >= 300) {
-                    throw new RuntimeException('Nextcloud chunk PUT failed (HTTP ' . $put->getStatusCode() . ').');
-                }
-                $offset += strlen($chunk);
+        // 2. Chunks als 0-basierten Start-Offset (lexikografisch sortierbar).
+        \App\Plugins\Support\Backup\ChunkedFileReader::each($localPath, $this->chunkSize, function (string $chunk, int $offset) use ($uploadDir, $size): void {
+            $chunkName = str_pad((string) $offset, 16, '0', STR_PAD_LEFT);
+            $put = $this->send('PUT', $uploadDir . '/' . $chunkName, [
+                'headers' => ['OC-Total-Length' => (string) $size, 'Content-Type' => 'application/octet-stream'],
+                'body' => $chunk,
+            ]);
+            if ($put->getStatusCode() < 200 || $put->getStatusCode() >= 300) {
+                throw new RuntimeException('Nextcloud chunk PUT failed (HTTP ' . $put->getStatusCode() . ').');
             }
+        });
 
-            // 3. Zusammensetzen: MOVE der Sonderdatei `.file` auf das Ziel.
-            $move = $this->send('MOVE', $uploadDir . '/.file', ['headers' => $totalHeader]);
-            if (! in_array($move->getStatusCode(), [201, 204], true)) {
-                throw new RuntimeException('Nextcloud upload assemble MOVE failed (HTTP ' . $move->getStatusCode() . ').');
-            }
-        } finally {
-            fclose($in);
+        // 3. Zusammensetzen: MOVE der Sonderdatei `.file` auf das Ziel.
+        $move = $this->send('MOVE', $uploadDir . '/.file', ['headers' => $totalHeader]);
+        if (! in_array($move->getStatusCode(), [201, 204], true)) {
+            throw new RuntimeException('Nextcloud upload assemble MOVE failed (HTTP ' . $move->getStatusCode() . ').');
         }
 
         // 4. Remote-Größe verifizieren (Konzept §„über die Größe verifiziert").

@@ -76,6 +76,17 @@ class TimeCorrectionSelfApplyTest extends TestCase {
 
         $att = Attendance::where('user_id', $emp->id)->firstOrFail();
         $this->assertSame(AttendanceSource::Manual, $att->source, 'Nachgetragene Stempelung ist Manual.');
+
+        // Vollaudit 2026-07 (M2): explizites Audit-Event mit Antragsreferenz —
+        // per Antrag angewandte Änderungen bleiben von Direktbearbeitung
+        // unterscheidbar (zeit-korrekturen.md §3.3).
+        $this->assertDatabaseHas('audit_logs', [
+            'event' => 'attendance.correctedByApproval',
+            'auditable_type' => Attendance::class,
+            'auditable_id' => $att->id,
+        ]);
+        $log = \App\Models\AuditLog::query()->where('event', 'attendance.correctedByApproval')->firstOrFail();
+        $this->assertSame((int) $req->id, (int) $log->changes['correction_request_id']);
     }
 
     public function test_requires_approval_by_default(): void {

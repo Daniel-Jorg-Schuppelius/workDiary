@@ -59,6 +59,18 @@ class PlanModuleGatingTest extends TestCase {
             ->assertStatus(423);
     }
 
+    /**
+     * Vollaudit 2026-07 (M28): Der E-Rechnungs-EINGANG hängt am Faktura-Modul
+     * (module.vertrieb, pro-fähig) — nicht am Enterprise-only module.finance
+     * (Empfangspflicht seit 01.01.2025 trifft gerade Pro-Kunden).
+     */
+    public function test_incoming_einvoices_are_not_enterprise_only(): void {
+        $resolver = app(\App\Services\Licensing\FeatureFlagResolver::class);
+
+        $this->assertSame('module.vertrieb', $resolver->moduleForRoute('finance.incoming-invoices.index'));
+        $this->assertSame('module.finance', $resolver->moduleForRoute('finance.transfers.index'), 'Übrige finance.*-Routen bleiben Enterprise-gegatet.');
+    }
+
     public function test_menu_hides_items_without_view_permission(): void {
         $org = Organization::factory()->enterprise()->create();
         $user = $this->userFor($org); // einfacher Nutzer ohne AssetView

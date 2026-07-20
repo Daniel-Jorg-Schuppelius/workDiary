@@ -14,6 +14,7 @@ use App\Enums\Expense\ExpenseStatus;
 use App\Models\Expense;
 use App\Notifications\DirectNotification;
 use App\Support\NotificationText;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Notifications\Messages\MailMessage;
 
 /**
@@ -83,6 +84,6 @@ class ExpenseDecidedNotification extends DirectNotification {
     }
 
     private function formattedAmount(): string {
-        return number_format((float) $this->expense->amount_gross, 2, ',', '.') . ' ' . $this->expense->currency->value;
+        return NumberHelper::toGermanFormat((float) $this->expense->amount_gross, 2, withThousandsSeparator: true) . ' ' . $this->expense->currency->value;
     }
 }

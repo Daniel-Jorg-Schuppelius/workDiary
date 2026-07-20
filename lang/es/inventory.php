@@ -296,4 +296,10 @@ return [
             'deleted' => 'Plantilla eliminada.',
         ],
     ],
+    'error' => [
+        'batch_required' => 'Artículo con lotes: indique el número de lote.',
+        'serial_required' => 'Artículo con número de serie: indique el número de serie.',
+        'serial_qty_one' => 'Los artículos serializados se reciben de uno en uno (cantidad 1).',
+        'tracked_article_manual_move' => 'Artículo con lote/serie: registre mediante entrada de mercancías (pedido) o gestión de lotes/series — no como stock anónimo.',
+    ],
 ];

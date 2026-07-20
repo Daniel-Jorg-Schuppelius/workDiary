@@ -17,10 +17,11 @@
     /** @var array<string, mixed> $filters */
 @endphp
 <div class="flex wd-fill-h flex-col gap-4">
-    <div role="tablist" class="tabs tabs-box flex-none w-full">
-        <a role="tab" href="{{ route('legacy.oncall.index') }}" class="tab tab-active">{{ __('Bereitschaft') }}</a>
-        <a role="tab" href="{{ route('legacy.notdienst.index') }}" class="tab">{{ __('Notdienst') }}</a>
-    </div>
+    {{-- Tab-Strip über die gemeinsame Komponente (D5; Vollaudit 2026-07, N44). --}}
+    <x-tab-nav class="flex-none" :items="[
+        ['label' => __('Bereitschaft'), 'route' => 'legacy.oncall.index', 'active' => true],
+        ['label' => __('Notdienst'), 'route' => 'legacy.notdienst.index', 'active' => false],
+    ]" />
     <x-filter-bar :action="route('legacy.oncall.index')">
             @if ($isAdmin)
                 <div class="flex flex-col min-w-48">

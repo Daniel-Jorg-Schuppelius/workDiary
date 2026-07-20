@@ -236,6 +236,35 @@ class CommunicationNoteService {
     }
 
     /**
+     * Panel-Lesen vertraulicher fremder Notizen auditieren (Vollaudit
+     * 2026-07, N11) — dedupliziert auf 1× je Note+Viewer+Tag.
+     *
+     * @param  \Illuminate\Support\Collection<int, CommunicationNote>  $notes
+     */
+    public function recordConfidentialViews(\Illuminate\Support\Collection $notes, ?User $viewer): void {
+        if (! $viewer instanceof User) {
+            return;
+        }
+
+        foreach ($notes as $note) {
+            if (! $note->confidential || (int) $note->created_by_user_id === (int) $viewer->id) {
+                continue;
+            }
+
+            $already = \App\Models\AuditLog::query()
+                ->where('event', 'communication.confidential.viewed')
+                ->where('auditable_type', CommunicationNote::class)
+                ->where('auditable_id', $note->id)
+                ->where('changes->viewer_user_id', $viewer->id)
+                ->whereDate('created_at', now()->toDateString())
+                ->exists();
+            if (! $already) {
+                $this->recordConfidentialView($note, $viewer);
+            }
+        }
+    }
+
+    /**
      * @param  array<int|string, mixed>  $participants
      */
     private function syncParticipants(CommunicationNote $note, array $participants): void {

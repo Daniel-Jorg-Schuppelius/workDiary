@@ -33,6 +33,7 @@ return [
         'shipment' => 'Spedizione',
     ],
     'event' => [
+        'asset_issued' => 'Attrezzatura consegnata',
         'order_created' => 'Incarico creato',
         'order_completed' => 'Incarico completato',
         'status_changed' => 'Stato modificato',
@@ -88,6 +89,11 @@ return [
         'customer' => 'Cliente',
     ],
     'case' => [
+        'assets' => 'Attrezzature e asset',
+        'asset' => 'Asset',
+        'asset_role' => 'Ruolo',
+        'asset_subject' => "Oggetto dell'incarico",
+        'asset_issued' => 'Consegnato (checkout)',
         'generated_at' => 'Generato il',
         'internal_notice' => 'Fascicolo interno — include anche voci interne (commenti, allegati interni, comunicazione). Non destinato alla consegna al cliente.',
         'order' => 'Incarico',

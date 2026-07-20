@@ -112,47 +112,4 @@
         </div>
 </x-modal>
 
-<script @cspNonce>
-(function () {
-    const root = document.querySelector('[data-contact-persons]');
-    if (!root) return;
-    const rows = root.querySelector('[data-contact-rows]');
-    const addBtn = root.querySelector('[data-contact-add]');
-
-    const renumber = () => {
-        rows.querySelectorAll('[data-contact-row]').forEach((row, idx) => {
-            row.querySelectorAll('input[name]').forEach(inp => {
-                inp.name = inp.name.replace(/contact_persons\[\d+\]/, 'contact_persons[' + idx + ']');
-            });
-        });
-    };
-
-    addBtn?.addEventListener('click', () => {
-        const first = rows.querySelector('[data-contact-row]');
-        if (!first) return;
-        const clone = first.cloneNode(true);
-        clone.querySelectorAll('input').forEach(inp => {
-            if (inp.type === 'checkbox') { inp.checked = false; }
-            else if (inp.type !== 'hidden') { inp.value = ''; }
-        });
-        rows.appendChild(clone);
-        renumber();
-    });
-
-    rows?.addEventListener('click', (e) => {
-        const target = e.target instanceof Element ? e.target : null;
-        if (target && target.matches('[data-contact-remove]')) {
-            const allRows = rows.querySelectorAll('[data-contact-row]');
-            if (allRows.length > 1) {
-                target.closest('[data-contact-row]')?.remove();
-                renumber();
-            } else {
-                target.closest('[data-contact-row]')?.querySelectorAll('input').forEach(inp => {
-                    if (inp.type === 'checkbox') inp.checked = false;
-                    else if (inp.type !== 'hidden') inp.value = '';
-                });
-            }
-        }
-    });
-})();
-</script>
+{{-- Zeileneditor-JS zentral in resources/js/contact-persons.js (Vollaudit 2026-07, N43). --}}

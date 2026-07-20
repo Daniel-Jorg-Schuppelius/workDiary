@@ -18,8 +18,4 @@ use App\Plugins\Support\PluginApiException;
  * Fehler der Billbee-REST-API (MVP-433). Die Message trägt nur Status und
  * gekürzten Body-Auszug — nie API-Key oder API-Passwort.
  */
-class BillbeeApiException extends PluginApiException {
-    public function __construct(int $status, string $message, ?string $endpoint = null) {
-        parent::__construct($message, $status, $endpoint);
-    }
-}
+class BillbeeApiException extends PluginApiException {}

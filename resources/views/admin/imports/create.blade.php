@@ -20,6 +20,12 @@
                 @endforeach
             </x-select-field>
 
+            {{-- Mustervorlage je Entität (Feature 020 MVP; Vollaudit 2026-07, N8). --}}
+            <a class="link link-hover inline-flex items-center gap-1 text-sm" href="{{ route('admin.imports.template', ['entity' => $entity->value]) }}">
+                <span class="material-symbols-outlined text-base" aria-hidden="true">download</span>
+                {{ __('import.template.download') }} ({{ $entity->label() }})
+            </a>
+
             <fieldset class="form-control max-w-xl">
                 <legend class="label-text font-semibold">{{ __('Bei unzuordenbaren Zeilen') }}</legend>
                 <label class="label cursor-pointer justify-start gap-2 py-1">

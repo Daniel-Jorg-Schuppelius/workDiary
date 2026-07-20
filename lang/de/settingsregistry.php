@@ -35,6 +35,7 @@ return [
         'save' => 'Speichern',
         'reset' => 'Auf Default',
         'history' => 'Verlauf',
+        'export' => 'Export (JSON)',
     ],
     'empty' => [
         'title' => 'Keine Einstellungen gefunden',

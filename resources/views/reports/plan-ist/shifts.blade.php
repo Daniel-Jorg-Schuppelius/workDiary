@@ -32,19 +32,16 @@
 
     @include('reports.plan-ist._dimensions')
 
-    <x-card>
-        <form method="GET" class="flex flex-wrap items-end gap-2">
-            <x-date-range :from="$from->toDateString()" :to="$to->toDateString()" class="w-72" />
-            <label class="form-control">
-                <span class="label-text text-xs">{{ __('Gruppierung') }}</span>
-                <select name="group" class="select select-sm select-bordered">
-                    <option value="day" @selected($group === 'day')>{{ __('Tag') }}</option>
-                    <option value="week" @selected($group === 'week')>{{ __('Woche') }}</option>
-                </select>
-            </label>
-            <x-icon-btn icon="filter_alt" tone="primary" size="sm" type="submit" show-label>{{ __('Anwenden') }}</x-icon-btn>
-        </form>
-    </x-card>
+    {{-- Gemeinsame Filterleiste statt freiem GET-Formular (Vollaudit 2026-07, N58). --}}
+    <x-filter-bar :action="route('reports.plan-ist.shifts')" :reset="route('reports.plan-ist.shifts')">
+        <x-date-range :from="$from->toDateString()" :to="$to->toDateString()" class="w-72 shrink-0" />
+        <x-filter-field :label="__('Gruppierung')" for="plan-ist-group">
+            <select id="plan-ist-group" name="group" class="select select-sm select-bordered shrink-0">
+                <option value="day" @selected($group === 'day')>{{ __('Tag') }}</option>
+                <option value="week" @selected($group === 'week')>{{ __('Woche') }}</option>
+            </select>
+        </x-filter-field>
+    </x-filter-bar>
 
     @if ($report['rows'] === [])
         <x-card>

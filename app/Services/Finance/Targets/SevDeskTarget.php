@@ -13,11 +13,11 @@ declare(strict_types=1);
 namespace App\Services\Finance\Targets;
 
 use App\Enums\Finance\{TransferChannel, TransferTarget};
-use App\Models\{Customer, ExternalReference, MaterialUsage, TimeEntry};
+use App\Models\{Customer, ExternalReference, TimeEntry};
 use App\Models\Finance\BillingTransfer;
 use App\Plugins\SevDesk\Api\{SevDeskClient, SevDeskClientFactory};
 use App\Plugins\SevDesk\{SevDeskConfig, SevDeskPlugin};
-use App\Services\Invoicing\{BillableTimeAggregator, BillingBlock};
+use App\Services\Invoicing\{BillableTimeAggregator};
 use GuzzleHttp\Exception\ConnectException;
 use RuntimeException;
 
@@ -39,6 +39,9 @@ use RuntimeException;
  *   die gefundene Rechnung statt doppelt anzulegen.
  */
 class SevDeskTarget implements FacturationTarget {
+    use Concerns\LoadsBillingSources;
+    use Concerns\ReconcilesByMarker;
+
     public const EXT_TYPE_INVOICE = 'sevdesk_invoice';
 
     public const EXT_TYPE_CONTACT = 'contact';
@@ -61,15 +64,8 @@ class SevDeskTarget implements FacturationTarget {
         }
 
         // (1) Bereits übergeben? (harte Idempotenz je Transfer)
-        $existing = ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $transfer->organization_id)
-            ->where('plugin_id', SevDeskPlugin::ID)
-            ->where('external_type', self::EXT_TYPE_INVOICE)
-            ->where('referenceable_type', $transfer->getMorphClass())
-            ->where('referenceable_id', $transfer->getKey())
-            ->first();
-        if ($existing instanceof ExternalReference) {
+        $existing = $this->existingReference($transfer, SevDeskPlugin::ID, self::EXT_TYPE_INVOICE);
+        if ($existing !== null) {
             return new TargetResult(externalReference: $existing);
         }
 
@@ -190,21 +186,8 @@ class SevDeskTarget implements FacturationTarget {
 
     /** @param array<string, mixed> $invoice */
     private function storeReference(BillingTransfer $transfer, array $invoice, string $marker, bool $adopted): ExternalReference {
-        return ExternalReference::create([
-            'organization_id' => $transfer->organization_id,
-            'plugin_id' => SevDeskPlugin::ID,
-            'external_type' => self::EXT_TYPE_INVOICE,
-            'referenceable_type' => $transfer->getMorphClass(),
-            'referenceable_id' => $transfer->getKey(),
-            'external_id' => (string) $invoice['id'],
-            'payload' => [
-                'source' => 'sevdesk',
-                'marker' => $marker,
-                'adopted_via_reconciliation' => $adopted,
-                'invoice' => $invoice,
-            ],
-            'synced_at' => now(),
-        ]);
+        // Nachweis über den gemeinsamen Baustein (Vollaudit 2026-07, M41).
+        return $this->storeMarkerReference($transfer, SevDeskPlugin::ID, self::EXT_TYPE_INVOICE, 'sevdesk', 'invoice', $invoice, $marker, $adopted);
     }
 
     // ── Kontakt-Projektion ──────────────────────────────────────────────
@@ -289,20 +272,8 @@ class SevDeskTarget implements FacturationTarget {
 
     /** @return list<array<string, mixed>> */
     private function timePositions(BillingTransfer $transfer, float $vatRate, int $unityHourId): array {
-        $ids = $transfer->items
-            ->where('source_type', TimeEntry::class)
-            ->pluck('source_id')
-            ->all();
-
-        $entries = TimeEntry::query()
-            ->whereIn('id', $ids)
-            ->with(['project.parent', 'project.customer', 'project.foreignCustomer'])
-            ->orderBy('date')
-            ->get();
-        if ($entries->count() !== count($ids)) {
-            throw new RuntimeException((string) __('finance.error.sources_missing'));
-        }
-
+        // Quellen über das gemeinsame Skelett (Vollaudit 2026-07, M41).
+        $entries = $this->loadTimeEntries($transfer);
         $entriesById = $entries->keyBy('id');
         $positions = [];
 
@@ -319,7 +290,7 @@ class SevDeskTarget implements FacturationTarget {
             $positions[] = [
                 'objectName' => 'InvoicePos',
                 'mapAll' => true,
-                'name' => $this->blockName($block, $transfer),
+                'name' => $block->displayName($transfer),
                 'quantity' => $hours,
                 'price' => round($rate, 2),
                 'taxRate' => $vatRate,
@@ -332,18 +303,8 @@ class SevDeskTarget implements FacturationTarget {
 
     /** @return list<array<string, mixed>> */
     private function materialPositions(BillingTransfer $transfer, float $vatRate, int $unityPieceId): array {
-        $ids = $transfer->items
-            ->where('source_type', MaterialUsage::class)
-            ->pluck('source_id')
-            ->all();
-
-        $usages = MaterialUsage::query()
-            ->whereIn('id', $ids)
-            ->with(['timesheet:id,work_date,project_id', 'timesheet.project:id,name'])
-            ->get();
-        if ($usages->count() !== count($ids)) {
-            throw new RuntimeException((string) __('finance.error.sources_missing'));
-        }
+        // Quellen über das gemeinsame Skelett (Vollaudit 2026-07, M41).
+        $usages = $this->loadMaterialUsages($transfer);
 
         $positions = [];
         foreach ($usages as $usage) {
@@ -367,21 +328,5 @@ class SevDeskTarget implements FacturationTarget {
         }
 
         return $positions;
-    }
-
-    /** Positionsname: Projekt [Tätigkeit] (Zeitraum) — identisch zum Lexoffice-/orgaMAX-Ziel. */
-    private function blockName(BillingBlock $block, BillingTransfer $transfer): string {
-        $projectName = $block->project?->name ?: (string) __('Leistung');
-        $kindSuffix = $block->kind !== null ? ' [' . $block->kind->value . ']' : '';
-
-        $from = $block->firstStart?->format('d.m.Y') ?? $transfer->period_from?->format('d.m.Y');
-        $to = $block->lastEnd?->format('d.m.Y') ?? $transfer->period_to?->format('d.m.Y');
-        $span = match (true) {
-            $from !== null && $to !== null && $from !== $to => sprintf(' (%s – %s)', $from, $to),
-            $from !== null => sprintf(' (%s)', $from),
-            default => '',
-        };
-
-        return $projectName . $kindSuffix . $span;
     }
 }

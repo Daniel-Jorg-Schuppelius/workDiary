@@ -27,17 +27,15 @@
             @if ($webhooks->isEmpty())
                 <p class="text-sm text-base-content/60">{{ __('chat.no_channels') }}</p>
             @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table>
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('chat.field.name') }}</th>
                                 <th>{{ __('chat.field.kind') }}</th>
                                 <th>{{ __('chat.col.status') }}</th>
                                 <th></th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($webhooks as $webhook)
                                 <tr>
                                     <td>{{ $webhook->name }}</td>
@@ -69,9 +67,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             @endif
         </div>
 

@@ -1,6 +1,25 @@
 <?php
 
 return [
+    'billbee' => [
+        'order_state' => [
+            1 => 'Bestellt',
+            2 => 'Bestätigt',
+            3 => 'Bezahlt',
+            4 => 'Versandt',
+            5 => 'Reklamation',
+            6 => 'Gelöscht',
+            7 => 'Abgeschlossen',
+            8 => 'Storniert',
+            9 => 'Archiviert',
+            11 => '1. Mahnung',
+            12 => '2. Mahnung',
+            13 => 'Gepackt',
+            14 => 'Angeboten',
+            15 => 'Zahlungserinnerung',
+            16 => 'Im Fulfillment',
+        ],
+    ],
     'ai' => [
         'family' => ['llm' => 'Sprachmodell (LLM)', 'translation' => 'Übersetzung'],
         'verb' => ['formulate' => 'Formulieren', 'summarize' => 'Zusammenfassen', 'classify' => 'Klassifizieren', 'explain' => 'Erklären', 'find' => 'Finden', 'translate' => 'Übersetzen'],
@@ -329,6 +348,7 @@ return [
             ],
             'monthClosure' => [
                 'submitted' => 'Monatsabschluss eingereicht',
+                'decided' => 'Monatsabschluss entschieden',
             ],
             'isms' => [
                 'certificateExpiring' => 'ISMS-Zertifikat läuft bald ab',
@@ -371,6 +391,24 @@ return [
             'maintenance' => [
                 'dueSoon' => 'Wartung/Prüfung wird fällig',
                 'overdue' => 'Wartung/Prüfung überfällig',
+            ],
+            'domain' => [
+                'expiring' => 'Domain läuft ab / Verlängerung fehlgeschlagen',
+                'transferChanged' => 'Domain-Transferstatus geändert',
+                'syncFailed' => 'Domain-Sync fehlgeschlagen',
+                'highRiskAction' => 'Hochrisiko-Domainaktion freigegeben',
+            ],
+            'finance' => [
+                'transferFailed' => 'Fakturierungs-Übergabe fehlgeschlagen',
+                'bankImportFailed' => 'Bankimport fehlgeschlagen',
+                'reconciliationReview' => 'Zahlungsabgleich braucht Klärung',
+            ],
+            'investment' => [
+                'decisionDue' => 'Investitionsentscheidung fällig',
+                'decided' => 'Investitionsantrag entschieden',
+            ],
+            'inventory' => [
+                'lotExpiring' => 'Charge läuft ab (MHD)',
             ],
             'operations' => [
                 'backupOverdue' => 'Backup überfällig',
@@ -913,6 +951,9 @@ return [
             'sunday' => 'Sonntag',
             'holiday' => 'Feiertag',
             'custom' => 'Benutzerdefiniert',
+            'oncall' => 'Bereitschaft',
+            'standby' => 'Rufbereitschaft',
+            'overtime' => 'Überstunden',
         ],
     ],
     'finance' => [
@@ -985,6 +1026,7 @@ return [
             'overpayment' => 'Überzahlung',
             'reimbursement' => 'Erstattung',
             'chargeback' => 'Rücklastschrift',
+            'skonto' => 'Skonto (Erlösschmälerung)',
         ],
     ],
 

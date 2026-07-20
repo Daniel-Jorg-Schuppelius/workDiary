@@ -92,6 +92,52 @@ class MonthClosureWorkflowTest extends TestCase {
         );
     }
 
+    /**
+     * Vollaudit 2026-07 (N5): sick/holiday sind keine hartkodierten Nullen
+     * mehr — Zählung in Werktagen (Mo–Fr ohne Feiertage), auf den Monat
+     * geclippt; vacation nutzt dieselbe Semantik (statt Kalendertage unclipped).
+     */
+    public function test_snapshot_counts_vacation_sick_and_holiday_days(): void {
+        $user = $this->makeUser();
+
+        \App\Models\Vacation::query()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $user->id,
+            'start_date' => '2023-12-28', // ragt in den Vormonat — geclippt: 02.–03.01. = 2 Werktage
+            'end_date' => '2024-01-03',
+            'type' => \App\Enums\Vacation\VacationType::Vacation,
+            'status' => \App\Enums\Vacation\VacationStatus::Approved,
+        ]);
+        \App\Models\SickLeave::query()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $user->id,
+            'start_date' => '2024-01-05', // Fr + Wochenende + Mo = 2 Werktage
+            'end_date' => '2024-01-08',
+            'kind' => \App\Enums\Sickness\SickLeaveKind::Initial,
+        ]);
+
+        $closure = $this->service->getOrCreate($user, $this->year, $this->month);
+        $submitted = $this->service->submit($closure, $user);
+
+        $days = $submitted->totals['days'];
+        $this->assertSame(2, $days['vacation'], 'Urlaub geclippt auf den Monat, nur Werktage.');
+        $this->assertSame(2, $days['sick'], 'Krank über Wochenende: nur Werktage zählen.');
+        $this->assertGreaterThanOrEqual(1, $days['holiday'], 'Neujahr liegt im Januar 2024.');
+    }
+
+    /** Vollaudit 2026-07 (N4): Genehmigung/Ablehnung erreichen die betroffene Person. */
+    public function test_decisions_notify_the_owner(): void {
+        $user = $this->makeUser();
+        $admin = $this->makeAdminUser();
+        $closure = $this->service->getOrCreate($user, $this->year, $this->month);
+
+        $this->service->approve($this->service->submit($closure, $user), $admin);
+
+        $this->assertSame(1, $user->notifications()->count());
+        $data = (array) $user->notifications()->first()?->data;
+        $this->assertSame(\App\Enums\Notification\NotificationEvent::MonthClosureDecided->value, $data['event'] ?? null);
+    }
+
     public function test_reject_requires_reason_of_min_length(): void {
         $user = $this->makeUser();
         $admin = $this->makeAdminUser();

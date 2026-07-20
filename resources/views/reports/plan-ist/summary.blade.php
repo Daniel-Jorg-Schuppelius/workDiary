@@ -27,25 +27,22 @@
     {{-- Dimension-Umschalter (A14 · MVP-333): Anwesenheit | Schicht | Projekt | Standort. --}}
     @include('reports.plan-ist._dimensions')
 
-    <x-card>
-        <form method="GET" class="flex flex-wrap items-end gap-2">
-            @if ($scope === 'team' && $teams->count() > 1)
-                <label class="form-control">
-                    <span class="label-text text-xs">{{ __('Team') }}</span>
-                    <select name="team" class="select select-sm select-bordered">
-                        @foreach ($teams as $t)
-                            <option value="{{ $t->sqid }}" @selected($team !== null && (int) $t->id === (int) $team->id)>{{ $t->name }}</option>
-                        @endforeach
-                    </select>
-                </label>
-            @endif
-            <x-date-range class="w-80" :label="false"
-                          from-name="from" to-name="to"
-                          :from="$from->toDateString()" :to="$to->toDateString()"
-                          :from-label="__('Von')" :to-label="__('Bis')" />
-            <x-icon-btn icon="filter_alt" tone="primary" size="sm" type="submit" show-label>{{ __('Anwenden') }}</x-icon-btn>
-        </form>
-    </x-card>
+    {{-- Gemeinsame Filterleiste statt freiem GET-Formular (Vollaudit 2026-07, N58). --}}
+    <x-filter-bar :action="url()->current()" :reset="url()->current()">
+        @if ($scope === 'team' && $teams->count() > 1)
+            <x-filter-field :label="__('Team')" for="plan-ist-team">
+                <select id="plan-ist-team" name="team" class="select select-sm select-bordered shrink-0">
+                    @foreach ($teams as $t)
+                        <option value="{{ $t->sqid }}" @selected($team !== null && (int) $t->id === (int) $team->id)>{{ $t->name }}</option>
+                    @endforeach
+                </select>
+            </x-filter-field>
+        @endif
+        <x-date-range class="w-80 shrink-0" :label="false"
+                      from-name="from" to-name="to"
+                      :from="$from->toDateString()" :to="$to->toDateString()"
+                      :from-label="__('Von')" :to-label="__('Bis')" />
+    </x-filter-bar>
 
     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <x-kpi-tile :label="__('Plan')" :value="$fmtH($summary['totals']['plan_minutes'])" tone="info" />

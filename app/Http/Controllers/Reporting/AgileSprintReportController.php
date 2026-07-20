@@ -16,7 +16,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Agile\{AgileBoard, AgileSprint};
 use App\Models\{Milestone, Project};
-use App\Services\Agile\AgileMetricsService;
+use App\Services\Agile\{AgileMetricsService, AgileWorkItemService};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -29,7 +29,10 @@ use Illuminate\View\View;
  * NUR über AgileMetricsService, Rendering über x-charts.*-Komponenten.
  */
 class AgileSprintReportController extends Controller {
-    public function __construct(private readonly AgileMetricsService $metrics) {}
+    public function __construct(
+        private readonly AgileMetricsService $metrics,
+        private readonly AgileWorkItemService $items,
+    ) {}
 
     public function index(Request $request, Project $project): View {
         Gate::authorize(Permission::AgileReportView->value);
@@ -87,6 +90,8 @@ class AgileSprintReportController extends Controller {
             'scope' => $scope,
             'velocity' => $this->metrics->velocity($board),
             'quality' => $this->metrics->qualitySeries($board),
+            // Vollaudit 2026-07 (M25): Epic-Fortschritt (MVP-146).
+            'epicProgress' => $this->items->epicProgress($board),
             'milestones' => Milestone::query()
                 ->where('project_id', $project->id)
                 ->withCount(['tasks', 'tasks as done_tasks_count' => fn($q) => $q->where('status', 'done')])

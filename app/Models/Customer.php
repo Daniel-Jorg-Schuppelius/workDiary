@@ -12,7 +12,7 @@ namespace App\Models;
 
 use App\Enums\Numbering\NumberScope;
 use App\Enums\Project\ProjectStatus;
-use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasClassifications, HasContactAndBankDetails, HasSequentialNumber, HasSqid, HasTags, Searchable};
+use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasClassifications, HasCommunicationNotes, HasContactAndBankDetails, HasSequentialNumber, HasSqid, HasTags, Searchable};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
@@ -66,6 +66,7 @@ class Customer extends Model {
     use HasAttachments;
     use HasClassifications;
 
+    use HasCommunicationNotes;
     use HasContactAndBankDetails;
 
     /** @use HasFactory<Factory<static>> */
@@ -188,14 +189,6 @@ class Customer extends Model {
     /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by');
-    }
-
-    /** @return MorphMany<CommunicationNote, $this> */
-    public function communicationNotes(): MorphMany {
-        /** @var MorphMany<CommunicationNote, $this> $relation */
-        $relation = $this->morphMany(CommunicationNote::class, 'notable')->latest('occurred_at');
-
-        return $relation;
     }
 
     /** @return MorphMany<ContactAddress, $this> */

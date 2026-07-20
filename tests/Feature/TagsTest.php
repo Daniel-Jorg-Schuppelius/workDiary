@@ -156,4 +156,44 @@ class TagsTest extends TestCase {
             ->assertOk()
             ->assertSee('Sichtbar');
     }
+
+    public function test_sync_tags_from_input_drops_foreign_org_tag_ids(): void {
+        // Tenant-Hygiene (Vollaudit 2026-07, M40): numerische tag_ids einer
+        // fremden Organisation dürfen keine Pivot-Zeilen erzeugen — der
+        // OrganizationScope filtert sie zentral in syncTagsFromInput().
+        $user = User::factory()->user()->create();
+        $own = Tag::create(['name' => 'Eigen', 'organization_id' => $user->organization_id]);
+
+        $foreignOrg = \App\Models\Organization::factory()->create();
+        $foreign = Tag::query()->create(['name' => 'Fremd', 'organization_id' => $foreignOrg->id]);
+
+        $this->actingAs($user)
+            ->post(route('diary.store'), [
+                'content' => 'Mit fremder Tag-ID gespeichert',
+                'status' => 2,
+                'start_at' => '2030-01-15 09:00:00',
+                'end_at' => '2030-01-15 10:00:00',
+                'tag_ids' => [$own->id, $foreign->id],
+            ])
+            ->assertRedirect();
+
+        $entry = DiaryEntry::latest('id')->first();
+        $this->assertNotNull($entry);
+        $this->assertSame([$own->id], $entry->tags()->withoutGlobalScopes()->pluck('tags.id')->all());
+    }
+
+    public function test_tag_input_names_uses_canonical_split_and_cap(): void {
+        // Kanonische new_tags-Zerlegung (Vollaudit 2026-07, M40): Komma,
+        // Semikolon UND Zeilenumbruch trennen; Duplikate raus, Deckel 20.
+        $this->assertSame(
+            ['Alpha', 'Beta', 'Gamma'],
+            \App\Support\TagInput::names("Alpha, Beta;Gamma\nAlpha"),
+        );
+
+        $many = implode(',', array_map(fn(int $i) => 'T' . $i, range(1, 25)));
+        $this->assertCount(20, \App\Support\TagInput::names($many));
+
+        $this->assertSame([], \App\Support\TagInput::names('  '));
+        $this->assertSame([], \App\Support\TagInput::names(null));
+    }
 }

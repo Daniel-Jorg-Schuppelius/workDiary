@@ -27,6 +27,14 @@
                 <input id="map-unconfirmed" type="checkbox" name="unconfirmed" value="1"
                        class="toggle toggle-sm" @checked($onlyUnconfirmed) data-autosubmit="request" />
             </x-filter-field>
+            <x-filter-field :label="__('Priorität')" for="map-priority">
+                <select id="map-priority" name="priority" class="select select-sm select-bordered w-36 shrink-0" data-autosubmit="request">
+                    <option value="">{{ __('alle') }}</option>
+                    @foreach ($priorityOptions as $option)
+                        <option value="{{ $option->value }}" @selected($selectedPriority === $option)>{{ $option->label() }}</option>
+                    @endforeach
+                </select>
+            </x-filter-field>
             @if ($selectableUsers !== null)
                 <x-filter-field :label="__('Mitarbeiter')" for="map-user">
                     <select id="map-user" name="user" class="select select-sm select-bordered w-40 shrink-0">

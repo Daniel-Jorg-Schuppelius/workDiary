@@ -226,6 +226,35 @@ class SupportReportBuilder {
             // backup bleibt leer
         }
 
+        // Betriebsaufgaben-Zusammenfassung (Feature 041 P2; Vollaudit 2026-07,
+        // M15): NUR Counts je Typ/Severity — keine Titel/Parameter.
+        try {
+            if (DB::getSchemaBuilder()->hasTable('operations_tasks')) {
+                $openStatuses = ['open', 'snoozed', 'delegated'];
+                $byType = DB::table('operations_tasks')
+                    ->whereIn('status', $openStatuses)
+                    ->selectRaw('type, COUNT(*) AS cnt')
+                    ->groupBy('type')
+                    ->pluck('cnt', 'type')
+                    ->map(static fn($v): int => (int) $v)
+                    ->all();
+                $bySeverity = DB::table('operations_tasks')
+                    ->whereIn('status', $openStatuses)
+                    ->selectRaw('severity, COUNT(*) AS cnt')
+                    ->groupBy('severity')
+                    ->pluck('cnt', 'severity')
+                    ->map(static fn($v): int => (int) $v)
+                    ->all();
+                $out['tasks'] = [
+                    'open_total' => array_sum($byType),
+                    'by_type' => $byType,
+                    'by_severity' => $bySeverity,
+                ];
+            }
+        } catch (Throwable) {
+            // tasks bleibt leer
+        }
+
         return $out;
     }
 

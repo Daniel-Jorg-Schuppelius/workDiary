@@ -120,14 +120,7 @@ class Attachment extends Model {
     }
 
     public function humanSize(): string {
-        $bytes = (int) $this->size;
-        if ($bytes < 1024) {
-            return $bytes . ' B';
-        }
-        if ($bytes < 1024 * 1024) {
-            return round($bytes / 1024, 1) . ' KB';
-        }
-
-        return round($bytes / (1024 * 1024), 1) . ' MB';
+        // Toolkit-Formatter (Vollaudit 2026-07, N41); >= 1 GB erscheint nun als GB.
+        return \CommonToolkit\Helper\Data\NumberHelper::formatBytes((int) $this->size, 1);
     }
 }

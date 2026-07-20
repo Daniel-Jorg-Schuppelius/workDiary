@@ -11,14 +11,14 @@
 namespace App\Enums\Safety;
 
 use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
 /**
  * Statusmaschine eines Sicherheitsereignisses (Feature 013):
  * gemeldet → in Untersuchung → Maßnahmen definiert → geschlossen.
  * Der Abschluss erfordert eine Ursachenanalyse (root_cause).
  */
-enum SafetyEventStatus: string implements HasLabel {
+enum SafetyEventStatus: string implements HasLabel, HasStatusTransitions {
     use HasOptions;
 
     case Reported = 'reported';

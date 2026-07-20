@@ -11,11 +11,15 @@
 namespace App\Services\TimeExport;
 
 use App\Enums\TimeApproval\MonthClosureStatus;
+use App\Enums\TimeEntry\TimeEntryKind;
 use App\Enums\TimeExport\TimeExportStatus;
 use App\Jobs\DeliverTimeExportJob;
-use App\Models\{Attendance, MonthClosure, Organization, TimeExport, TimeExportDeliveryConfig, TimeExportEvent, TimeExportLine, User};
+use App\Models\{Attendance, MonthClosure, OnCallShift, Organization, SickLeave, TimeEntry, TimeExport, TimeExportDeliveryConfig, TimeExportEvent, TimeExportLine, User, Vacation};
 use App\Models\Scopes\OrganizationScope;
 use App\Models\Surcharge\SurchargeRule;
+use App\Services\Concerns\ResolvesActorId;
+use App\Services\Flextime\FlexCalculator;
+use App\Services\HolidayService;
 use App\Services\Surcharge\SurchargeCalculator;
 use App\Services\TimeApproval\MonthClosureService;
 use App\Services\TimeExport\Profiles\ExportProfile;
@@ -44,9 +48,13 @@ use Illuminate\Support\Facades\{Auth, DB, Storage};
  *     sind im ../WorkDiary-Architecture/zeit-export.md vorgesehen und greifen via gleicher Pipeline.
  */
 class TimeExportService {
+    use ResolvesActorId;
+
     public function __construct(
         private readonly MonthClosureService $closureService,
         private readonly SurchargeCalculator $surchargeCalculator,
+        private readonly HolidayService $holidays,
+        private readonly FlexCalculator $flex,
     ) {}
 
     /**
@@ -70,6 +78,20 @@ class TimeExportService {
         $this->assertScopeValid($scope);
 
         $closures = $this->collectClosures($org, $year, $month, $scope, $scopeUserId, $scopeTeamId);
+
+        // Vollaudit 2026-07 (H1): Vollständigkeitsprüfung. MonthClosure-Zeilen
+        // entstehen erst lazy beim Seitenaufruf — wer Zeitdaten im Zeitraum hat,
+        // aber nie eingereicht hat, fehlte sonst still im Export (und die Datei
+        // ginge per Auto-Lieferung sofort raus). Doku zeit-export.md §3/§9.
+        $affected = $this->collectAffectedUserIds($org, $year, $month, $scope, $scopeUserId, $scopeTeamId);
+        $missing = array_values(array_diff($affected, $closures->pluck('user_id')->map(fn($id): int => (int) $id)->all()));
+        if ($missing !== []) {
+            throw new TimeExportException(
+                'missingClosures',
+                __('Mitarbeitende mit Zeitdaten, aber ohne Monatsfreigabe im Zeitraum — Export abgebrochen.'),
+                ['missing' => array_map(fn(int $id): array => ['user_id' => $id, 'status' => 'missing'], $missing)],
+            );
+        }
 
         if ($closures->isEmpty()) {
             throw new TimeExportException(
@@ -415,6 +437,46 @@ class TimeExportService {
         return $q->get();
     }
 
+    /**
+     * Nutzer mit Attendance im Zeitraum innerhalb des Scopes — Grundlage der
+     * Vollständigkeitsprüfung in prepare() (Vollaudit 2026-07, H1). Gleiche
+     * Datenbasis wie aggregateLines(): wer dort Zeilen bekäme, braucht eine
+     * genehmigte Monatsfreigabe.
+     *
+     * @return list<int>
+     */
+    private function collectAffectedUserIds(
+        Organization $org,
+        int $year,
+        int $month,
+        string $scope,
+        ?int $scopeUserId,
+        ?int $scopeTeamId,
+    ): array {
+        $start = CarbonImmutable::create($year, $month, 1);
+        if (! $start instanceof CarbonImmutable) {
+            throw new TimeExportException('invalidPeriod', __('Ungültige Periode :y-:m.', ['y' => $year, 'm' => $month]));
+        }
+        $start = $start->startOfMonth();
+
+        $q = Attendance::query()
+            ->where('organization_id', $org->id)
+            ->whereDate('date', '>=', $start->toDateString())
+            ->whereDate('date', '<=', $start->endOfMonth()->toDateString())
+            ->where('duration_minutes', '>', 0);
+
+        if ($scope === 'user' && $scopeUserId !== null) {
+            $q->where('user_id', $scopeUserId);
+        } elseif ($scope === 'team' && $scopeTeamId !== null) {
+            $q->whereHas('user', fn($u) => $u->where('team_id', $scopeTeamId));
+        }
+
+        /** @var list<int> $ids */
+        $ids = $q->distinct()->pluck('user_id')->map(fn($id): int => (int) $id)->values()->all();
+
+        return $ids;
+    }
+
     /** @param  array<int,int>  $userIds */
     private function aggregateLines(TimeExport $export, array $userIds): int {
         $start = CarbonImmutable::create($export->period_year, $export->period_month, 1);
@@ -440,6 +502,15 @@ class TimeExportService {
 
         $rows = 0;
         foreach ($userIds as $uid) {
+            $costCenter = $costCenters->forUser((int) $uid);
+
+            // Vollaudit 2026-07 (H6/M4): Abwesenheits-, Bereitschafts-, Reise-
+            // und Überstunden-Lohnarten — unabhängig von Attendance (ein voller
+            // Krankheitsmonat hat 0 Arbeitsminuten, gehört aber in die Übergabe).
+            $rows += $this->aggregateAbsenceLines($export, (int) $uid, $start, $end, $costCenter);
+            $rows += $this->aggregateOnCallAndTravelLines($export, (int) $uid, $start, $end, $costCenter);
+            $rows += $this->aggregateNonIntervalSurchargeLines($export, (int) $uid, $start, $end, $surchargeRules, $costCenter);
+
             $minutes = (int) Attendance::query()
                 ->where('user_id', $uid)
                 ->whereDate('date', '>=', $start->toDateString())
@@ -451,7 +522,6 @@ class TimeExportService {
             }
 
             $hours = round($minutes / 60, 4);
-            $costCenter = $costCenters->forUser((int) $uid);
 
             TimeExportLine::query()->create([
                 'time_export_id' => $export->id,
@@ -487,6 +557,245 @@ class TimeExportService {
      * @param  \Illuminate\Support\Collection<int, SurchargeRule>  $rules
      * @return int Anzahl erzeugter Zeilen
      */
+    /**
+     * Urlaubs- und Krankheitstage als Lohnarten-Zeilen (Vollaudit 2026-07, H6):
+     * genehmigte Urlaube bzw. nicht stornierte Krankmeldungen, geclippt auf den
+     * Zeitraum, gezählt in anspruchsrelevanten Werktagen (Mo–Fr ohne Feiertage —
+     * gleiche Semantik wie VacationBalanceService, MVP-413).
+     */
+    private function aggregateAbsenceLines(TimeExport $export, int $uid, CarbonImmutable $start, CarbonImmutable $end, ?string $costCenter): int {
+        $rows = 0;
+
+        $vacationDays = 0.0;
+        $vacations = Vacation::query()
+            ->where('user_id', $uid)
+            ->approved()
+            ->whereDate('start_date', '<=', $end->toDateString())
+            ->whereDate('end_date', '>=', $start->toDateString())
+            ->get(['id', 'start_date', 'end_date']);
+        foreach ($vacations as $vacation) {
+            $vacationDays += $this->workingDaysInPeriod(CarbonImmutable::parse((string) $vacation->start_date), CarbonImmutable::parse((string) $vacation->end_date), $start, $end);
+        }
+        if ($vacationDays > 0) {
+            TimeExportLine::query()->create([
+                'time_export_id' => $export->id,
+                'user_id' => $uid,
+                'wage_type' => 'absence.vacation',
+                'cost_center' => $costCenter,
+                'quantity' => $vacationDays,
+                'unit' => 'd',
+                'period_start' => $start->toDateString(),
+                'period_end' => $end->toDateString(),
+                'note' => null,
+                'source_refs' => ['vacation_ids' => $vacations->pluck('id')->all()],
+            ]);
+            $rows++;
+        }
+
+        $sickDays = 0.0;
+        $sickLeaves = SickLeave::query()
+            ->where('user_id', $uid)
+            ->whereNull('cancelled_at')
+            ->whereDate('start_date', '<=', $end->toDateString())
+            ->whereDate('end_date', '>=', $start->toDateString())
+            ->get(['id', 'start_date', 'end_date']);
+        foreach ($sickLeaves as $sickLeave) {
+            $sickDays += $this->workingDaysInPeriod(CarbonImmutable::parse((string) $sickLeave->start_date), CarbonImmutable::parse((string) $sickLeave->end_date), $start, $end);
+        }
+        if ($sickDays > 0) {
+            TimeExportLine::query()->create([
+                'time_export_id' => $export->id,
+                'user_id' => $uid,
+                'wage_type' => 'absence.sick',
+                'cost_center' => $costCenter,
+                'quantity' => $sickDays,
+                'unit' => 'd',
+                'period_start' => $start->toDateString(),
+                'period_end' => $end->toDateString(),
+                'note' => null,
+                'source_refs' => ['sick_leave_ids' => $sickLeaves->pluck('id')->all()],
+            ]);
+            $rows++;
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Bereitschafts- und Reisezeit-Stunden (Vollaudit 2026-07, H6):
+     * work.oncall aus OnCallShift-Intervallen (auf den Zeitraum geclippt),
+     * travel.time aus TimeEntries mit kind=travel.
+     */
+    private function aggregateOnCallAndTravelLines(TimeExport $export, int $uid, CarbonImmutable $start, CarbonImmutable $end, ?string $costCenter): int {
+        $rows = 0;
+
+        $oncall = $this->onCallMinutes($uid, $start, $end);
+        if ($oncall['minutes'] > 0) {
+            TimeExportLine::query()->create([
+                'time_export_id' => $export->id,
+                'user_id' => $uid,
+                'wage_type' => 'work.oncall',
+                'cost_center' => $costCenter,
+                'quantity' => round($oncall['minutes'] / 60, 4),
+                'unit' => 'h',
+                'period_start' => $start->toDateString(),
+                'period_end' => $end->toDateString(),
+                'note' => null,
+                'source_refs' => ['on_call_shift_ids' => $oncall['ids']],
+            ]);
+            $rows++;
+        }
+
+        $travel = TimeEntry::query()
+            ->where('user_id', $uid)
+            ->where('kind', TimeEntryKind::Travel)
+            ->whereDate('date', '>=', $start->toDateString())
+            ->whereDate('date', '<=', $end->toDateString())
+            ->get(['id', 'minutes']);
+        $travelMinutes = (int) $travel->sum('minutes');
+        if ($travelMinutes > 0) {
+            TimeExportLine::query()->create([
+                'time_export_id' => $export->id,
+                'user_id' => $uid,
+                'wage_type' => 'travel.time',
+                'cost_center' => $costCenter,
+                'quantity' => round($travelMinutes / 60, 4),
+                'unit' => 'h',
+                'period_start' => $start->toDateString(),
+                'period_end' => $end->toDateString(),
+                'note' => null,
+                'source_refs' => ['time_entry_ids' => $travel->pluck('id')->all()],
+            ]);
+            $rows++;
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Zuschlagszeilen der Nicht-Intervall-Arten (Vollaudit 2026-07, M4):
+     * oncall (OnCallShift-Minuten), standby (TimeEntries kind=standby) und
+     * overtime (Monatssoll-Überschreitung laut FlexCalculator). Bewusst ohne
+     * Stacking mit Nacht/Wochenende/Feiertag — eigene Quellzeiten (Doku im
+     * SurchargeKind-Enum).
+     *
+     * @param  \Illuminate\Support\Collection<int, SurchargeRule>  $rules
+     */
+    private function aggregateNonIntervalSurchargeLines(
+        TimeExport $export,
+        int $uid,
+        CarbonImmutable $start,
+        CarbonImmutable $end,
+        \Illuminate\Support\Collection $rules,
+        ?string $costCenter,
+    ): int {
+        $rows = 0;
+        foreach ($rules as $rule) {
+            if ($rule->kind->isIntervalBased() || ! $rule->active) {
+                continue;
+            }
+
+            [$minutes, $refs] = match ($rule->kind) {
+                \App\Enums\Surcharge\SurchargeKind::OnCall => (function () use ($uid, $start, $end): array {
+                    $oncall = $this->onCallMinutes($uid, $start, $end);
+
+                    return [$oncall['minutes'], ['on_call_shift_ids' => $oncall['ids']]];
+                })(),
+                \App\Enums\Surcharge\SurchargeKind::Standby => (function () use ($uid, $start, $end): array {
+                    $entries = TimeEntry::query()
+                        ->where('user_id', $uid)
+                        ->where('kind', TimeEntryKind::Standby)
+                        ->whereDate('date', '>=', $start->toDateString())
+                        ->whereDate('date', '<=', $end->toDateString())
+                        ->get(['id', 'minutes']);
+
+                    return [(int) $entries->sum('minutes'), ['time_entry_ids' => $entries->pluck('id')->all()]];
+                })(),
+                \App\Enums\Surcharge\SurchargeKind::Overtime => (function () use ($uid, $export): array {
+                    $user = User::query()->withoutGlobalScopes()->find($uid);
+                    if (! $user instanceof User) {
+                        return [0, []];
+                    }
+                    $balance = $this->flex->monthlyBalance($user, (int) $export->period_year, (int) $export->period_month);
+
+                    return [max(0, (int) $balance['actual'] - (int) $balance['target']), ['flex' => ['target' => $balance['target'], 'actual' => $balance['actual']]]];
+                })(),
+                default => [0, []],
+            };
+
+            if ($minutes <= 0) {
+                continue;
+            }
+
+            TimeExportLine::query()->create([
+                'time_export_id' => $export->id,
+                'user_id' => $uid,
+                'wage_type' => $rule->wageType(),
+                'cost_center' => $costCenter,
+                'quantity' => round($minutes / 60, 4),
+                'unit' => 'h',
+                'period_start' => $start->toDateString(),
+                'period_end' => $end->toDateString(),
+                'note' => $rule->label ?? null,
+                'source_refs' => [...$refs, 'rule_id' => $rule->id, 'percentage' => (float) $rule->percentage],
+            ]);
+            $rows++;
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Bereitschaftsminuten aus OnCallShifts, geclippt auf [start, end].
+     *
+     * @return array{minutes: int, ids: list<int>}
+     */
+    private function onCallMinutes(int $uid, CarbonImmutable $start, CarbonImmutable $end): array {
+        $periodStart = $start->startOfDay();
+        $periodEnd = $end->endOfDay();
+
+        $shifts = OnCallShift::query()
+            ->where('user_id', $uid)
+            ->where('is_archived', false)
+            ->where('start_at', '<=', $periodEnd)
+            ->where('end_at', '>=', $periodStart)
+            ->get(['id', 'start_at', 'end_at']);
+
+        $minutes = 0;
+        foreach ($shifts as $shift) {
+            $from = CarbonImmutable::parse((string) $shift->start_at)->max($periodStart);
+            $to = CarbonImmutable::parse((string) $shift->end_at)->min($periodEnd);
+            if ($to->greaterThan($from)) {
+                $minutes += (int) $from->diffInMinutes($to);
+            }
+        }
+
+        /** @var list<int> $ids */
+        $ids = $shifts->pluck('id')->map(fn($id): int => (int) $id)->values()->all();
+
+        return ['minutes' => $minutes, 'ids' => $ids];
+    }
+
+    /**
+     * Anspruchsrelevante Werktage (Mo–Fr ohne Feiertage) eines Zeitraums,
+     * geclippt auf den Exportmonat — Zählweise wie VacationBalanceService.
+     */
+    private function workingDaysInPeriod(CarbonImmutable $rangeStart, CarbonImmutable $rangeEnd, CarbonImmutable $periodStart, CarbonImmutable $periodEnd): float {
+        $from = $rangeStart->max($periodStart)->startOfDay();
+        $to = $rangeEnd->min($periodEnd)->startOfDay();
+
+        $days = 0.0;
+        for ($day = $from; $day->lte($to); $day = $day->addDay()) {
+            if ($day->isWeekend() || $this->holidays->isHoliday($day)) {
+                continue;
+            }
+            $days += 1.0;
+        }
+
+        return $days;
+    }
+
+    /** @param  \Illuminate\Support\Collection<int, SurchargeRule>  $rules */
     private function aggregateSurchargeLines(
         TimeExport $export,
         int $uid,
@@ -699,6 +1008,39 @@ class TimeExportService {
     }
 
     /** @param  array<string,mixed>|null  $payload */
+    /**
+     * Löscht einen NICHT übergebenen Export (Vollaudit 2026-07, N6):
+     * Pflicht-Begründung, Datei + Zeilen + Lauf entfernen. Die Spur bleibt
+     * als org-weites `export.deleted`-AuditLog erhalten — die
+     * TimeExportEvent-Kette hängt per FK am Lauf und verschwindet mit ihm.
+     */
+    public function delete(TimeExport $export, string $reason, ?User $actor = null): void {
+        if ($export->status === TimeExportStatus::Delivered) {
+            throw new TimeExportException(
+                'alreadyDelivered',
+                __('Übergebene Exporte können nicht gelöscht werden — Aufbewahrungspflicht.'),
+                ['export_id' => $export->id],
+            );
+        }
+
+        $actorId = $this->resolveActorId($actor);
+        DB::transaction(function () use ($export, $reason, $actorId): void {
+            $export->audit('export.deleted', [
+                'reason' => $reason,
+                'actor_user_id' => $actorId,
+                'period' => sprintf('%04d-%02d', (int) $export->period_year, (int) $export->period_month),
+                'profile' => $export->profile,
+                'file_path' => $export->file_path,
+            ]);
+            if ($export->file_path !== null) {
+                Storage::disk('local')->delete((string) $export->file_path);
+            }
+            $export->lines()->delete();
+            $export->delete();
+        });
+    }
+
+    /** @param  array<string, mixed>|null  $payload */
     private function logEvent(TimeExport $export, string $event, ?int $actorId, ?string $note = null, ?array $payload = null): void {
         TimeExportEvent::query()->create([
             'time_export_id' => $export->id,
@@ -709,12 +1051,4 @@ class TimeExportService {
         ]);
     }
 
-    private function resolveActorId(?User $actor): ?int {
-        if ($actor instanceof User) {
-            return (int) $actor->id;
-        }
-        $id = Auth::id();
-
-        return $id === null ? null : (int) $id;
-    }
 }

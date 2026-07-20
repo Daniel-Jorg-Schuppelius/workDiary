@@ -41,16 +41,17 @@ class FetchProtocolWeatherJob implements ShouldQueue {
             return;
         }
 
-        // Org-Kontext im (request-losen) Queue-Lauf binden, damit
-        // BelongsToOrganization + Setting::get() korrekt auflösen.
+        // Org-Kontext im (request-losen) Queue-Lauf binden — mit Restore über
+        // OrganizationContext (Vollaudit 2026-07, M42): beim sync-Driver blieb
+        // die Bindung sonst bis Request-Ende stehen.
         $org = Organization::query()->find($protocol->organization_id);
-        if ($org instanceof Organization) {
-            app()->instance('currentOrganization', $org);
+        if (! $org instanceof Organization) {
+            return;
         }
 
-        // Bewusst NACH dem Org-Binding aus dem Container auflösen (keine
+        // Bewusst INNERHALB des Org-Bindings aus dem Container auflösen (keine
         // Methoden-Injection): die Provider-Auswahl `weather.provider` liest
         // das Org-Setting bereits beim Auflösen des Bindings (Bauturbo A7).
-        app(WeatherService::class)->snapshotForProtocol($protocol);
+        \App\Support\OrganizationContext::run($org, static fn() => app(WeatherService::class)->snapshotForProtocol($protocol));
     }
 }

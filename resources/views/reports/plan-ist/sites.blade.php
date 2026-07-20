@@ -41,12 +41,10 @@
         <span>{{ __('Für Standorte existieren keine Solldaten (Schichten und Arbeitszeitmodelle sind nicht standortbezogen) — diese Sicht zeigt die Ist-Verteilung der ortsbasiert erfassten Zeiten.') }}</span>
     </div>
 
-    <x-card>
-        <form method="GET" class="flex flex-wrap items-end gap-2">
-            <x-date-range :from="$from->toDateString()" :to="$to->toDateString()" class="w-72" />
-            <x-icon-btn icon="filter_alt" tone="primary" size="sm" type="submit" show-label>{{ __('Anwenden') }}</x-icon-btn>
-        </form>
-    </x-card>
+    {{-- Gemeinsame Filterleiste statt freiem GET-Formular (Vollaudit 2026-07, N58). --}}
+    <x-filter-bar :action="route('reports.plan-ist.sites')" :reset="route('reports.plan-ist.sites')">
+        <x-date-range :from="$from->toDateString()" :to="$to->toDateString()" class="w-72 shrink-0" />
+    </x-filter-bar>
 
     @if ($rows->total() === 0)
         <x-card>

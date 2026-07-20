@@ -144,6 +144,79 @@ class AgileWorkItemService {
         return $item;
     }
 
+    /**
+     * Epic-Zuordnung (Vollaudit 2026-07, M25): nutzt die vorhandene
+     * Eltern-Kind-Beziehung der Aufgaben (task.parent_task_id) — kein zweites
+     * Hierarchiemodell. Kind-Items nur im selben Board (Plan-Regel P2), keine
+     * Epic-Verschachtelung. `null` löst die Zuordnung.
+     */
+    public function assignEpic(AgileWorkItem $item, ?AgileWorkItem $epic, ?User $actor = null): AgileWorkItem {
+        if ($item->item_type === AgileItemType::Epic) {
+            throw new InvalidArgumentException('Epics können keinem Epic zugeordnet werden.');
+        }
+        if ($epic !== null) {
+            if ($epic->item_type !== AgileItemType::Epic) {
+                throw new InvalidArgumentException('Zielelement ist kein Epic.');
+            }
+            if ((int) $epic->board_id !== (int) $item->board_id) {
+                throw new InvalidArgumentException('Epic und Kind müssen auf demselben Board liegen.');
+            }
+        }
+
+        return DB::transaction(function () use ($item, $epic, $actor): AgileWorkItem {
+            $task = $item->task()->firstOrFail();
+            $from = $task->parent_task_id;
+            $task->update(['parent_task_id' => $epic?->task_id]);
+
+            $this->recordEvent($item->board()->firstOrFail(), 'epic.assigned', $actor, $item, [
+                'from_task_id' => $from,
+                'to_task_id' => $epic?->task_id,
+            ]);
+
+            return $item;
+        });
+    }
+
+    /**
+     * Epic-Fortschritt je Board (Vollaudit 2026-07, M25 / MVP-146): Kinder über
+     * task.parent_task_id, „erledigt" = aktuelle Spalte hat Kategorie done.
+     *
+     * @return list<array{epic: AgileWorkItem, total: int, done: int, points_total: int, points_done: int}>
+     */
+    public function epicProgress(AgileBoard $board): array {
+        $epics = AgileWorkItem::query()
+            ->where('board_id', $board->id)
+            ->where('item_type', AgileItemType::Epic->value)
+            ->with('task:id,title')
+            ->orderBy('backlog_rank')
+            ->get();
+        if ($epics->isEmpty()) {
+            return [];
+        }
+
+        $children = AgileWorkItem::query()
+            ->where('board_id', $board->id)
+            ->whereHas('task', fn($q) => $q->whereIn('parent_task_id', $epics->pluck('task_id')))
+            ->with(['task:id,parent_task_id', 'column:id,category'])
+            ->get()
+            ->groupBy(fn(AgileWorkItem $i): int => (int) $i->task?->parent_task_id);
+
+        $progress = [];
+        foreach ($epics as $epic) {
+            $kids = $children->get((int) $epic->task_id, collect());
+            $done = $kids->filter(fn(AgileWorkItem $i): bool => $i->column?->category === \App\Enums\Agile\AgileColumnCategory::Done);
+            $progress[] = [
+                'epic' => $epic,
+                'total' => $kids->count(),
+                'done' => $done->count(),
+                'points_total' => (int) $kids->sum(fn(AgileWorkItem $i): int => (int) ($i->story_points ?? 0)),
+                'points_done' => (int) $done->sum(fn(AgileWorkItem $i): int => (int) ($i->story_points ?? 0)),
+            ];
+        }
+
+        return $progress;
+    }
+
     /** Nächster freier Rang am Backlog-Ende. */
     private function nextRank(AgileBoard $board): int {
         $max = (int) AgileWorkItem::query()->where('board_id', $board->id)->max('backlog_rank');

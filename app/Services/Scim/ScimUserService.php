@@ -47,6 +47,13 @@ class ScimUserService {
             throw new ScimException(409, 'A user with this userName already exists.', 'uniqueness');
         }
 
+        // Vollaudit 2026-07 (H8): Lizenz-Nutzerlimit gilt auch für SCIM-Provisioning.
+        try {
+            app(\App\Services\Licensing\LimitGuard::class)->ensureCanCreateUser($organization);
+        } catch (\App\Exceptions\LimitExceededException $e) {
+            throw new ScimException(403, $e->getMessage());
+        }
+
         $active = $this->activeFlag($payload, default: true);
 
         $user = new User();

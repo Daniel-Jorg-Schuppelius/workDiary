@@ -38,7 +38,29 @@ class ProcessingActivityController extends Controller {
 
         $activities = ProcessingActivity::query()->orderBy('name')->paginate(20);
 
-        return view('privacy.activities.index', ['activities' => $activities]);
+        return view('privacy.activities.index', [
+            'activities' => $activities,
+            // VVT-Vorlagenkatalog (Feature 043 MVP 1; Vollaudit 2026-07, M17).
+            'templates' => Gate::allows('create', ProcessingActivity::class) ? $this->service->templates() : [],
+        ]);
+    }
+
+    /** Anlage aus Vorlage (M17): Entwurf, org-scoped, idempotent. */
+    public function storeFromTemplate(Request $request): RedirectResponse {
+        Gate::authorize('create', ProcessingActivity::class);
+        $org = $request->user()?->organization;
+        abort_unless($org !== null, 403);
+
+        $data = $request->validate(['template' => ['required', 'string', 'max:64']]);
+
+        try {
+            $activity = $this->service->createFromTemplate($org, (string) $data['template'], $request->user());
+        } catch (\InvalidArgumentException) {
+            abort(404);
+        }
+
+        return redirect()->route('dataprotection.activities.show', $activity)
+            ->with('status', __('Verarbeitungstätigkeit aus Vorlage angelegt (Entwurf) — Inhalte bitte organisationsspezifisch prüfen.'));
     }
 
     public function create(): View {

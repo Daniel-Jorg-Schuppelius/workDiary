@@ -32,10 +32,11 @@ class StoreOpenIssueRequest extends BaseFormRequest {
             'title' => ['required', 'string', 'max:180'],
             'description' => ['nullable', 'string', 'max:10000'],
             'category' => ['nullable', 'string', 'max:40'],
-            'severity' => ['nullable', 'string', 'in:' . implode(',', array_column(OpenIssueSeverity::cases(), 'value'))],
+            // Rule::enum statt Handliste (Vollaudit 2026-07, N48).
+            'severity' => ['nullable', 'string', \Illuminate\Validation\Rule::enum(OpenIssueSeverity::class)],
             'assignee_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
             'due_at' => ['nullable', 'date'],
-            'visibility' => ['nullable', 'string', 'in:' . implode(',', array_column(OpenIssueVisibility::cases(), 'value'))],
+            'visibility' => ['nullable', 'string', \Illuminate\Validation\Rule::enum(OpenIssueVisibility::class)],
         ];
     }
 }

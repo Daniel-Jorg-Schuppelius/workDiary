@@ -15,7 +15,6 @@ use App\Models\Concerns\{Auditable, BelongsToOrganization};
 use Database\Factories\ClassificationRequirementFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -55,9 +54,4 @@ class ClassificationRequirement extends Model {
         'max_count' => 'int',
         'only_if_json' => 'array',
     ];
-
-    /** @return BelongsTo<Organization, $this> */
-    public function organization(): BelongsTo {
-        return $this->belongsTo(Organization::class);
-    }
 }

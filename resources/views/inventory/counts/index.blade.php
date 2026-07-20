@@ -28,12 +28,13 @@
             </x-slot:action>
         </x-empty-state>
     @else
-        <div role="tablist" class="tabs tabs-box w-full">
-            @foreach ($warehouses as $wh)
-                <a role="tab" href="{{ route('inventory.counts.index', ['warehouse' => $wh->sqid]) }}"
-                   class="tab {{ $selected && $selected->id === $wh->id ? 'tab-active' : '' }}">{{ $wh->name }}</a>
-            @endforeach
-        </div>
+        {{-- Tab-Strip über die gemeinsame Komponente (D5; Vollaudit 2026-07, N44). --}}
+        <x-tab-nav :items="$warehouses->map(fn($wh) => [
+            'label' => $wh->name,
+            'route' => 'inventory.counts.index',
+            'params' => ['warehouse' => $wh->sqid],
+            'active' => $selected && $selected->id === $wh->id,
+        ])->all()" />
 
         @if (! $selected)
             <x-empty-state framed :title="__('inventory.count_ui.no_selection')" />

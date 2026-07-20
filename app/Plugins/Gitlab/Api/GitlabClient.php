@@ -28,6 +28,9 @@ use Illuminate\Http\Client\Response;
  * `id` wird bewusst nicht als Schlüssel verwendet (Recherche 2026-07).
  */
 class GitlabClient {
+    // Gemeinsame guard()-Fehlerbehandlung (Vollaudit 2026-07, N33).
+    use \App\Plugins\Support\GuardsPluginApiResponses;
+
     public function __construct(
         private readonly PluginHttpFactory $http,
         private readonly string $apiToken,
@@ -79,16 +82,12 @@ class GitlabClient {
             ->requestResponse($method, $this->baseUrl . $path, $options);
     }
 
-    /** @return array<mixed> */
-    private function guard(Response $response, string $endpoint): array {
-        if (! $response->successful()) {
-            throw new GitlabApiException(
-                $response->status(),
-                sprintf('GitLab %s: HTTP %d %s', $endpoint, $response->status(), mb_substr((string) $response->body(), 0, 300)),
-                $endpoint,
-            );
-        }
+    /** @return class-string<\App\Plugins\Support\PluginApiException> */
+    protected function apiExceptionClass(): string {
+        return GitlabApiException::class;
+    }
 
-        return (array) ($response->json() ?? []);
+    protected function apiLabel(): string {
+        return 'GitLab';
     }
 }

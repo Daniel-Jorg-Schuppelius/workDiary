@@ -13,11 +13,11 @@ declare(strict_types=1);
 namespace App\Services\Finance\Targets;
 
 use App\Enums\Finance\{TransferChannel, TransferTarget};
-use App\Models\{ExternalReference, MaterialUsage, OrgaMaxConnection, TimeEntry};
+use App\Models\{ExternalReference, OrgaMaxConnection, TimeEntry};
 use App\Models\Finance\BillingTransfer;
 use App\Plugins\OrgaMax\Api\{OrgaMaxClient, OrgaMaxClientFactory};
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
-use App\Services\Invoicing\{BillableTimeAggregator, BillingBlock};
+use App\Services\Invoicing\{BillableTimeAggregator};
 use GuzzleHttp\Exception\ConnectException;
 use RuntimeException;
 
@@ -36,6 +36,9 @@ use RuntimeException;
  * den gefundenen Auftrag statt doppelt anzulegen.
  */
 class OrgaMaxTarget implements FacturationTarget {
+    use Concerns\LoadsBillingSources;
+    use Concerns\ReconcilesByMarker;
+
     public const EXT_TYPE_ORDER = 'orgamax_order';
 
     public const MARKER_PREFIX = 'workdiary:';
@@ -62,15 +65,8 @@ class OrgaMaxTarget implements FacturationTarget {
         }
 
         // (1) Bereits übergeben? (harte Idempotenz je Transfer)
-        $existing = ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $transfer->organization_id)
-            ->where('plugin_id', OrgaMaxPlugin::ID)
-            ->where('external_type', self::EXT_TYPE_ORDER)
-            ->where('referenceable_type', $transfer->getMorphClass())
-            ->where('referenceable_id', $transfer->getKey())
-            ->first();
-        if ($existing instanceof ExternalReference) {
+        $existing = $this->existingReference($transfer, OrgaMaxPlugin::ID, self::EXT_TYPE_ORDER);
+        if ($existing !== null) {
             return new TargetResult(externalReference: $existing);
         }
 
@@ -159,21 +155,8 @@ class OrgaMaxTarget implements FacturationTarget {
 
     /** @param array<string, mixed> $order */
     private function storeReference(BillingTransfer $transfer, array $order, string $marker, bool $adopted): ExternalReference {
-        return ExternalReference::create([
-            'organization_id' => $transfer->organization_id,
-            'plugin_id' => OrgaMaxPlugin::ID,
-            'external_type' => self::EXT_TYPE_ORDER,
-            'referenceable_type' => $transfer->getMorphClass(),
-            'referenceable_id' => $transfer->getKey(),
-            'external_id' => (string) $order['id'],
-            'payload' => [
-                'source' => 'orgamax',
-                'marker' => $marker,
-                'adopted_via_reconciliation' => $adopted,
-                'order' => $order,
-            ],
-            'synced_at' => now(),
-        ]);
+        // Nachweis über den gemeinsamen Baustein (Vollaudit 2026-07, M41).
+        return $this->storeMarkerReference($transfer, OrgaMaxPlugin::ID, self::EXT_TYPE_ORDER, 'orgamax', 'order', $order, $marker, $adopted);
     }
 
     /** Kundenzuordnung NUR über die bestehende ExternalReference — fehlende Zuordnung ⇒ Inbox statt Schattenstammdaten. */
@@ -198,20 +181,8 @@ class OrgaMaxTarget implements FacturationTarget {
 
     /** @return list<array<string, mixed>> */
     private function timePositions(BillingTransfer $transfer): array {
-        $ids = $transfer->items
-            ->where('source_type', TimeEntry::class)
-            ->pluck('source_id')
-            ->all();
-
-        $entries = TimeEntry::query()
-            ->whereIn('id', $ids)
-            ->with(['project.parent', 'project.customer', 'project.foreignCustomer'])
-            ->orderBy('date')
-            ->get();
-        if ($entries->count() !== count($ids)) {
-            throw new RuntimeException((string) __('finance.error.sources_missing'));
-        }
-
+        // Quellen über das gemeinsame Skelett (Vollaudit 2026-07, M41).
+        $entries = $this->loadTimeEntries($transfer);
         $entriesById = $entries->keyBy('id');
         $positions = [];
 
@@ -226,7 +197,7 @@ class OrgaMaxTarget implements FacturationTarget {
                 ?? (float) ($primary?->hourly_rate ?: $transfer->customer->hourly_rate ?: 0);
 
             $positions[] = [
-                'description' => $this->blockName($block, $transfer),
+                'description' => $block->displayName($transfer),
                 'quantity' => $hours,
                 'unit' => 'h',
                 'unitPrice' => round($rate, 2),
@@ -238,18 +209,8 @@ class OrgaMaxTarget implements FacturationTarget {
 
     /** @return list<array<string, mixed>> */
     private function materialPositions(BillingTransfer $transfer): array {
-        $ids = $transfer->items
-            ->where('source_type', MaterialUsage::class)
-            ->pluck('source_id')
-            ->all();
-
-        $usages = MaterialUsage::query()
-            ->whereIn('id', $ids)
-            ->with(['timesheet:id,work_date,project_id', 'timesheet.project:id,name'])
-            ->get();
-        if ($usages->count() !== count($ids)) {
-            throw new RuntimeException((string) __('finance.error.sources_missing'));
-        }
+        // Quellen über das gemeinsame Skelett (Vollaudit 2026-07, M41).
+        $usages = $this->loadMaterialUsages($transfer);
 
         $positions = [];
         foreach ($usages as $usage) {
@@ -268,21 +229,5 @@ class OrgaMaxTarget implements FacturationTarget {
         }
 
         return $positions;
-    }
-
-    /** Positionsname: Projekt [Tätigkeit] (Zeitraum) — identisch zum Lexoffice-Ziel. */
-    private function blockName(BillingBlock $block, BillingTransfer $transfer): string {
-        $projectName = $block->project?->name ?: (string) __('Leistung');
-        $kindSuffix = $block->kind !== null ? ' [' . $block->kind->value . ']' : '';
-
-        $from = $block->firstStart?->format('d.m.Y') ?? $transfer->period_from?->format('d.m.Y');
-        $to = $block->lastEnd?->format('d.m.Y') ?? $transfer->period_to?->format('d.m.Y');
-        $span = match (true) {
-            $from !== null && $to !== null && $from !== $to => sprintf(' (%s – %s)', $from, $to),
-            $from !== null => sprintf(' (%s)', $from),
-            default => '',
-        };
-
-        return $projectName . $kindSuffix . $span;
     }
 }

@@ -23,7 +23,8 @@ class IssueProtocolSignatureTokenRequest extends BaseFormRequest {
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
-            'role' => ['required', 'string', 'in:' . implode(',', array_column(ProtocolSignatureRole::cases(), 'value'))],
+            // Rule::enum statt Handliste (Vollaudit 2026-07, N48).
+            'role' => ['required', 'string', \Illuminate\Validation\Rule::enum(ProtocolSignatureRole::class)],
             'signer_name' => ['nullable', 'string', 'max:120'],
             'signer_email' => ['required', 'email', 'max:180'],
             'ttl_days' => ['nullable', 'integer', 'min:1', 'max:30'],

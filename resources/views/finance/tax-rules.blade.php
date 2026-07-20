@@ -55,9 +55,8 @@
     </x-card>
 
     <x-card padding="p-0" :title="__('Regeln (Katalog + Org-Overrides)')">
-        <div class="overflow-x-auto">
-            <table class="table table-sm">
-                <thead>
+        <x-table bare>
+            <x-slot:head>
                     <tr>
                         <th>{{ __('Land') }}</th>
                         <th>{{ __('Kategorie') }}</th>
@@ -69,8 +68,7 @@
                         <th>{{ __('Status') }}</th>
                         <th></th>
                     </tr>
-                </thead>
-                <tbody>
+            </x-slot:head>
                     @foreach ($rules as $rule)
                         <tr @class(['opacity-50' => $rule->status !== 'active'])>
                             <td>{{ $rule->country }}@if ($rule->region)/{{ $rule->region }}@endif</td>
@@ -92,9 +90,7 @@
                             </td>
                         </tr>
                     @endforeach
-                </tbody>
-            </table>
-        </div>
+        </x-table>
     </x-card>
 </x-page-shell>
 @endsection

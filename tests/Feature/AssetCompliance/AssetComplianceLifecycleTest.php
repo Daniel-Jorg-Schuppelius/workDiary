@@ -373,4 +373,24 @@ final class AssetComplianceLifecycleTest extends TestCase {
 
         $this->actingAs($freeAdmin)->get(route('asset-compliance.index'))->assertStatus(423);
     }
+
+    /** Vollaudit 2026-07 (M33): Prüfkosten am Ereignis + CSV-Export des Auditberichts. */
+    public function test_inspection_cost_flows_into_report_and_csv_export(): void {
+        $service = app(AssetComplianceService::class);
+        // dguv_v3_portable: ohne Zertifikatspflicht — calibration_annual würde
+        // bei result=passed einen Zertifikatsnachweis verlangen.
+        $assignment = $service->assign($this->globalProfile('dguv_v3_portable'), $this->asset, $this->admin, []);
+        $service->recordInspection($assignment, $this->admin, ['result' => 'passed', 'cost' => '149.50']);
+
+        $report = $this->actingAs($this->admin)
+            ->get(route('asset-compliance.reports.index'))
+            ->assertOk();
+        $this->assertSame(149.5, (float) $report->viewData('totalCost'));
+
+        $csv = $this->actingAs($this->admin)
+            ->get(route('asset-compliance.reports.index', ['export' => 'csv']))
+            ->assertOk();
+        $this->assertStringContainsString('PruefkostenEUR', (string) $csv->getContent());
+        $this->assertStringContainsString('149.50', (string) $csv->getContent());
+    }
 }

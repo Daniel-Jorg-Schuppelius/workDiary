@@ -134,9 +134,8 @@
                         @endforeach
                     </div>
 
-                    <div class="overflow-x-auto">
-                        <table class="table table-sm">
-                            <thead>
+                    <x-table>
+                        <x-slot:head>
                                 <tr>
                                     <th class="w-40">{{ __('Feld') }}</th>
                                     <th>
@@ -148,8 +147,7 @@
                                         <a href="{{ route('customers.show', $source) }}" class="link ml-1">{{ $source->name }}</a>
                                     </th>
                                 </tr>
-                            </thead>
-                            <tbody>
+                        </x-slot:head>
                                 @foreach ($compareFields as $field => $label)
                                     @php
                                         $tv = (string) ($target->getAttribute($field) ?? '');
@@ -168,9 +166,7 @@
                                     <td>{{ (int) ($target->projects_count ?? 0) }}</td>
                                     <td>{{ (int) ($source->projects_count ?? 0) }}</td>
                                 </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    </x-table>
 
                     <div class="mt-3 flex flex-wrap justify-end gap-2">
                         <a href="{{ route('customers.duplicates.compare', ['target' => $target->sqid, 'source' => $source->sqid]) }}"

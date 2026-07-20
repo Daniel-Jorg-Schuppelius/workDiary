@@ -19,6 +19,7 @@ return [
 
     'field' => [
         'title' => 'Titel',
+        'confidential' => 'Vertraulich (nur Erfasser + Verwaltungsrecht)',
         'type' => 'Typ',
         'status' => 'Status',
         'reference' => 'Bezug',

@@ -153,7 +153,10 @@ class QuoteService {
                     'id' => $item->id,
                     'description' => $item->description,
                     'quantity' => (float) $item->quantity,
+                    'unit' => $item->unit,
                     'unit_price' => (float) $item->unit_price,
+                    'discount_percent' => $item->discount_percent !== null ? (float) $item->discount_percent : null,
+                    'discount_amount' => $item->discount_amount !== null ? (float) $item->discount_amount : null,
                     'tax_rate' => $item->tax_rate,
                     'accepted' => (bool) $item->accepted,
                 ])->all(),
@@ -217,14 +220,22 @@ class QuoteService {
                 if (! ($item['accepted'] ?? false)) {
                     continue;
                 }
-                $invoice->items()->create([
+                // Alt-Snapshots (vor MVP-416-Nachtrag) kennen unit/discount_* nicht → null;
+                // invoice_items.unit ist NOT NULL (Default 'h'), daher nur setzen wenn vorhanden.
+                $payload = [
                     'organization_id' => $quote->organization_id,
                     'description' => (string) $item['description'],
                     'quantity' => (string) $item['quantity'],
                     'unit_price' => (string) $item['unit_price'],
+                    'discount_percent' => $item['discount_percent'] ?? null,
+                    'discount_amount' => $item['discount_amount'] ?? null,
                     'tax_rate' => $suppressItemRates ? null : $item['tax_rate'],
                     'position' => ++$position,
-                ]);
+                ];
+                if (($item['unit'] ?? null) !== null) {
+                    $payload['unit'] = (string) $item['unit'];
+                }
+                $invoice->items()->create($payload);
             }
 
             $invoice->load('items');
@@ -270,6 +281,8 @@ class QuoteService {
                     'quantity' => (string) $item->quantity,
                     'unit' => $item->unit,
                     'unit_price' => (string) $item->unit_price,
+                    'discount_percent' => $item->discount_percent,
+                    'discount_amount' => $item->discount_amount,
                     'tax_rate' => $item->tax_rate,
                     'position' => ++$position,
                 ]);

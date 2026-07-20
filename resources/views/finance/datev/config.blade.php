@@ -101,16 +101,14 @@
             @if ($expenseCategories->isNotEmpty())
                 <x-form-group :legend="__('finance.datev.config.expense_group')" icon="receipt" tone="error" cols="1" compact>
                     <p class="text-xs text-base-content/60">{{ __('finance.datev.config.expense_group_hint') }}</p>
-                    <div class="overflow-x-auto">
-                        <table class="table table-sm">
-                            <thead>
+                    <x-table>
+                        <x-slot:head>
                                 <tr>
                                     <th>{{ __('finance.datev.config.expense_category') }}</th>
                                     <th>{{ __('finance.datev.config.expense_account') }}</th>
                                     <th>{{ __('finance.datev.config.expense_tax_key') }}</th>
                                 </tr>
-                            </thead>
-                            <tbody>
+                        </x-slot:head>
                                 @foreach ($expenseCategories as $category)
                                     <tr>
                                         <td>{{ $category->label }}</td>
@@ -128,9 +126,7 @@
                                         </td>
                                     </tr>
                                 @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                    </x-table>
                 </x-form-group>
             @endif
 

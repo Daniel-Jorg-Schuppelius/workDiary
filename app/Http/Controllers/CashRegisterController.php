@@ -12,8 +12,10 @@ namespace App\Http\Controllers;
 
 use App\Enums\User\Permission;
 use App\Models\{CashEntry, CashRegister, Invoice, User};
+use App\Services\Attachments\FileAttacher;
 use App\Services\Finance\CashBookService;
 use App\Support\Sqid;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -45,7 +47,7 @@ class CashRegisterController extends Controller {
         Gate::authorize(Permission::CashView->value);
 
         $entries = $cashRegister->entries()
-            ->with(['invoice:id,number', 'reversalOf:id,seq_no'])
+            ->with(['invoice:id,number', 'reversalOf:id,seq_no', 'attachments'])
             ->orderByDesc('seq_no')
             ->paginate(50);
 
@@ -121,10 +123,11 @@ class CashRegisterController extends Controller {
             'purpose' => ['required', 'string', 'max:500'],
             'counterparty' => ['nullable', 'string', 'max:180'],
             'invoice_id' => ['nullable', new \App\Rules\ExistsInCurrentOrganization('invoices')],
+            'receipt' => ['nullable', ...FileAttacher::rule()],
         ]);
 
         try {
-            $this->cashBook->record($cashRegister, [
+            $entry = $this->cashBook->record($cashRegister, [
                 'booked_on' => (string) $data['booked_on'],
                 'direction' => (string) $data['direction'],
                 'amount' => $data['amount'],
@@ -136,6 +139,13 @@ class CashRegisterController extends Controller {
             ]);
         } catch (InvalidArgumentException $e) {
             return redirect()->route('cash-registers.show', $cashRegister)->with('error', $e->getMessage());
+        }
+
+        // Beleg-Anhang (MVP-414-Datenmodell, Vollaudit 2026-07 M37): append-only —
+        // Löschen ist über die AttachmentPolicy für Kasseneinträge gesperrt.
+        $receipt = $request->file('receipt');
+        if ($receipt !== null) {
+            (new FileAttacher())->store($entry, $receipt, (int) $auth->id);
         }
 
         return redirect()->route('cash-registers.show', $cashRegister)->with('status', __('Buchung erfasst.'));
@@ -203,7 +213,7 @@ class CashRegisterController extends Controller {
 
         $message = (float) $closing->difference === 0.0
             ? __('Tagesabschluss erfasst — Kassensturz ohne Differenz.')
-            : __('Tagesabschluss erfasst — Differenz :diff.', ['diff' => number_format((float) $closing->difference, 2, ',', '.')]);
+            : __('Tagesabschluss erfasst — Differenz :diff.', ['diff' => NumberHelper::toGermanFormat((float) $closing->difference, 2, withThousandsSeparator: true)]);
 
         return redirect()->route('cash-registers.show', $cashRegister)->with('status', $message);
     }

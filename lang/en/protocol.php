@@ -64,6 +64,7 @@ return [
             'uploaded' => 'Photo added.',
             'removed' => 'Photo removed.',
             'captionUpdated' => 'Caption updated.',
+            'reordered' => 'Order updated.',
         ],
     ],
     'validation' => [
@@ -113,6 +114,7 @@ return [
         ],
     ],
     'pdf' => [
+        'photos' => ['more' => ':count more photo(s)'],
         'title' => 'Protocol – :title',
         'state' => 'State',
         'items' => 'Protocol items',
@@ -131,6 +133,12 @@ return [
     ],
     'signature' => [
         'tokenIssued' => 'Signature link has been created.',
+        'tokenRevoked' => 'Signature link revoked.',
+        'tokenList' => 'External signature links',
+        'tokenUsed' => 'redeemed',
+        'tokenOpen' => 'open',
+        'revoke' => 'Revoke link',
+        'externalLink' => 'External link',
         'tokenExpired' => 'The signature link has expired or has already been used.',
         'tokenUnknown' => 'Signature link unknown.',
         'redeemed' => 'Signature has been saved.',

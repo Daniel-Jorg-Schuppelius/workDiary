@@ -100,6 +100,10 @@ class UserSpec extends AbstractEntitySpec {
                 return [ImportOutcome::Updated, null];
             }
 
+            // Vollaudit 2026-07 (H8): Nutzerlimit auch im CSV-Import — der
+            // Throwable-Catch unten macht daraus ImportOutcome::Failed mit Meldung.
+            app(\App\Services\Licensing\LimitGuard::class)->ensureCanCreateUser($organization);
+
             User::create([
                 'organization_id' => $organization->id,
                 'name' => $row['name'],

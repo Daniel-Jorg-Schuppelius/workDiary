@@ -89,4 +89,32 @@ class HolidayServiceRegionTest extends TestCase {
         $this->assertSame('Bayern', HolidayRegions::label('Germany\\Bavaria'));
         $this->assertContains('Germany\\Berlin', HolidayRegions::providers());
     }
+
+    /** Vollaudit 2026-07 (M10): Schweiz inkl. Kantone im DACH-Rechtsraum. */
+    public function test_swiss_cantons_are_selectable_and_resolve_holidays(): void {
+        $this->assertTrue(HolidayRegions::isValid('Switzerland'));
+        $this->assertTrue(HolidayRegions::isValid('Switzerland\\Zurich'));
+        $this->assertSame('Zürich', HolidayRegions::label('Switzerland\\Zurich'));
+
+        // Alle registrierten CH-Provider existieren wirklich in Yasumi
+        // (unbekannte Provider ergäben stillschweigend leere Feiertagslisten).
+        foreach (HolidayRegions::providers() as $provider) {
+            if (! str_starts_with($provider, 'Switzerland')) {
+                continue;
+            }
+            $this->assertTrue(
+                class_exists('Yasumi\\Provider\\' . $provider),
+                "Yasumi-Provider fehlt: {$provider}",
+            );
+        }
+
+        // Zürich: Tag der Arbeit (1. Mai) und Bundesfeier (1. August) sind
+        // Feiertage; der 3. Oktober (DE-Einheit) ist es NICHT.
+        $this->bindOrganizationWithProvider('Switzerland\\Zurich');
+        $service = new HolidayService;
+        $this->assertSame('Switzerland\\Zurich', $service->provider());
+        $this->assertTrue($service->isHoliday(CarbonImmutable::parse('2026-05-01')));
+        $this->assertTrue($service->isHoliday(CarbonImmutable::parse('2026-08-01')));
+        $this->assertFalse($service->isHoliday(CarbonImmutable::parse('2026-10-03')));
+    }
 }

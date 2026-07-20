@@ -161,16 +161,14 @@
     {{-- Feature-Nutzung (30 Tage, aggregiert) --}}
     <x-card :title="__('metrics.section.feature_usage')">
         @if (count($featureUsage) > 0)
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead>
+            <x-table bare>
+                <x-slot:head>
                         <tr>
                             <th>{{ __('metrics.field.feature') }}</th>
                             <th class="text-right">{{ __('metrics.field.usage_total') }}</th>
                             <th class="text-right">{{ __('metrics.field.last_used_on') }}</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                </x-slot:head>
                         @foreach ($featureUsage as $row)
                             <tr>
                                 <td class="font-mono text-xs">{{ $row['feature'] }}</td>
@@ -178,9 +176,7 @@
                                 <td class="text-right font-mono text-xs">{{ $row['last_used_on'] !== null ? \Illuminate\Support\Carbon::parse($row['last_used_on'])->translatedFormat('d.m.Y') : '—' }}</td>
                             </tr>
                         @endforeach
-                    </tbody>
-                </table>
-            </div>
+            </x-table>
         @else
             <x-empty-state
                 icon='<span class="material-symbols-outlined" aria-hidden="true">monitoring</span>'
@@ -203,24 +199,20 @@
             @endcan
         </div>
         <p class="mt-2 text-sm text-base-content/70">{{ __('metrics.transparency.intro') }}</p>
-        <div class="mt-3 overflow-x-auto">
-            <table class="table table-sm">
-                <thead>
+        <x-table class="mt-3">
+            <x-slot:head>
                     <tr>
                         <th>{{ __('metrics.field.feature') }}</th>
                         <th>{{ __('metrics.field.counter_description') }}</th>
                     </tr>
-                </thead>
-                <tbody>
+            </x-slot:head>
                     @foreach (($telemetry['counters'] ?? []) as $counterKey)
                         <tr>
                             <td class="font-mono text-xs">{{ $counterKey }}</td>
                             <td class="text-sm">{{ __('metrics.counter.' . $counterKey) }}</td>
                         </tr>
                     @endforeach
-                </tbody>
-            </table>
-        </div>
+        </x-table>
         <p class="mt-2 text-xs text-base-content/50">{{ __('metrics.transparency.storage') }}</p>
         <p class="text-xs text-base-content/50">{{ __('metrics.transparency.retention') }}</p>
     </x-card>

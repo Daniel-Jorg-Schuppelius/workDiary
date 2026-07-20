@@ -39,17 +39,15 @@
         </x-card>
     @else
         <x-card>
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead>
+            <x-table bare>
+                <x-slot:head>
                         <tr>
                             <th class="sticky left-0 z-10 bg-base-100">{{ __('Mitarbeiter:in') }}</th>
                             @foreach ($required as $qualification)
                                 <th class="text-center">{{ $qualification->abbreviation ?? $qualification->name }}</th>
                             @endforeach
                         </tr>
-                    </thead>
-                    <tbody>
+                </x-slot:head>
                         @foreach ($rows as $row)
                             <tr @class(['bg-base-200/40' => (int) $diary->assigned_user_id === (int) $row['user']->id])>
                                 <td class="sticky left-0 z-10 bg-base-100 font-medium">
@@ -72,9 +70,7 @@
                                 @endforeach
                             </tr>
                         @endforeach
-                    </tbody>
-                </table>
-            </div>
+            </x-table>
             <p class="mt-2 text-xs text-base-content/60">
                 {{ __('„Läuft ab" = gültig am Stichtag, aber Befristung endet binnen 30 Tagen.') }}
             </p>

@@ -24,7 +24,7 @@ trait ManagesUserContactDetails {
     /**
      * Validierungsregeln für Namens-, Kommunikations-, Adress- und Bankfelder.
      *
-     * @return array<string, array<int, string>>
+     * @return array<string, array<int, string|\Illuminate\Contracts\Validation\ValidationRule>>
      */
     protected function contactDetailRules(): array {
         return [
@@ -44,8 +44,9 @@ trait ManagesUserContactDetails {
 
             'bank' => ['sometimes', 'array'],
             'bank.account_holder' => ['nullable', 'string', 'max:200'],
-            'bank.iban' => ['nullable', 'string', 'max:64'],
-            'bank.bic' => ['nullable', 'string', 'max:32'],
+            // Gemeinsame Format-Rules (Vollaudit 2026-07, M39).
+            'bank.iban' => ['nullable', 'string', 'max:64', new \App\Rules\Iban()],
+            'bank.bic' => ['nullable', 'string', 'max:32', new \App\Rules\Bic()],
             'bank.bank_name' => ['nullable', 'string', 'max:200'],
         ];
     }
@@ -112,8 +113,9 @@ trait ManagesUserContactDetails {
     protected function syncUserBankAccount(User $user, array $bank): void {
         $payload = [
             'account_holder' => $this->blankToNull($bank['account_holder'] ?? null),
-            'iban' => $this->blankToNull($bank['iban'] ?? null),
-            'bic' => $this->blankToNull($bank['bic'] ?? null),
+            // Toolkit-Normalisierung (Vollaudit 2026-07, M39/N40).
+            'iban' => \CommonToolkit\Helper\Data\BankHelper::normalizeIBAN((string) ($bank['iban'] ?? '')),
+            'bic' => ($b = strtoupper((string) preg_replace('/\s+/', '', (string) ($bank['bic'] ?? '')))) !== '' ? $b : null,
             'bank_name' => $this->blankToNull($bank['bank_name'] ?? null),
         ];
 

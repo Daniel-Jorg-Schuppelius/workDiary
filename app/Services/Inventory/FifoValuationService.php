@@ -15,6 +15,7 @@ namespace App\Services\Inventory;
 use App\Contracts\Inventory\InventoryValuationStrategy;
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState, ValuationMethod};
 use App\Models\{ArticleVariant, StockLot, StockMovement, StockValuationLayer, Warehouse};
+use App\Support\DecimalQty;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Support\Carbon;
@@ -48,8 +49,8 @@ class FifoValuationService implements InventoryValuationStrategy {
     }
 
     private function applyReceipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency, ?int $actorUserId, ?StockLot $lot, ?Model $source = null): StockMovement {
-        $qty = $this->positive($qty);
-        $unitCost = $this->positive($unitCost);
+        $qty = DecimalQty::positive($qty);
+        $unitCost = DecimalQty::positive($unitCost);
 
         return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $lot, $source): StockMovement {
             $movement = $this->ledger->post(new StockPosting(
@@ -77,7 +78,7 @@ class FifoValuationService implements InventoryValuationStrategy {
     }
 
     public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null): StockMovement {
-        $qty = $this->positive($qty);
+        $qty = DecimalQty::positive($qty);
 
         return DB::transaction(function () use ($variant, $warehouse, $qty, $allowNegative, $actorUserId): StockMovement {
             // Verfügbarkeit gesperrt in der Transaktion prüfen, damit der Schichtverbrauch nicht gegen veralteten Saldo läuft.
@@ -173,15 +174,5 @@ class FifoValuationService implements InventoryValuationStrategy {
             ->where('qty_remaining', '>', 0)
             ->orderBy('acquired_at')
             ->orderBy('id');
-    }
-
-    /** @return numeric-string */
-    private function positive(string $value): string {
-        $value = NumberHelper::normalizeDecimalString($value);
-        if ($value === '' || ! is_numeric($value)) {
-            return '0';
-        }
-
-        return bccomp($value, '0', self::SCALE) < 0 ? bcmul($value, '-1', self::SCALE) : $value;
     }
 }

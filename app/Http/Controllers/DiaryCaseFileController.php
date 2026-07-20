@@ -15,9 +15,6 @@ use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Timeline\DiaryEntryTimelineService;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use PDFToolkit\Entities\PDFContent;
-use PDFToolkit\Registries\PDFWriterRegistry;
-use RuntimeException;
 
 /**
  * Fallakte (MVP-013, ../WorkDiary-Architecture/fallakte.md): zusammenhängende Read-Only-Gesamtsicht
@@ -46,10 +43,14 @@ class DiaryCaseFileController extends Controller {
         /** @var User $viewer */
         $viewer = Auth::user();
 
-        $html = view('diary.case-file-pdf', $this->caseFileData($diary, $viewer, $timeline, $featureFlags))->render();
-
-        $bytes = PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
-            ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (diary.case-file-pdf).');
+        // View→PDF über den zentralen Renderer (C15; Vollaudit 2026-07, N27);
+        // organization: null hält die Ausgabe bewusst design-frei (unverändert).
+        $bytes = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->renderPdf(
+            \App\Enums\DocumentDesign\RenderDocumentKind::Report,
+            'diary.case-file-pdf',
+            $this->caseFileData($diary, $viewer, $timeline, $featureFlags),
+            null,
+        );
 
         $filename = sprintf('fallakte-%s-%s.pdf', $diary->getRouteKey(), now()->format('Y-m-d'));
 
@@ -102,6 +103,16 @@ class DiaryCaseFileController extends Controller {
 
         $openIssues = $diary->openIssues()->with(['assignee:id,name', 'creator:id,name'])->get();
 
+        // Dienstmittel/Assets (Feature 009 Akzeptanz 1; Vollaudit 2026-07, M5):
+        // Gegenstand des Auftrags (diary.asset_id) + beim Checkout auf den
+        // Auftrag gebuchte Ausgaben (asset_assignments.diary_entry_id).
+        $assetAssignments = \App\Models\AssetAssignment::query()
+            ->where('diary_entry_id', $diary->id)
+            ->with(['asset:id,name', 'assignedToUser:id,name'])
+            ->orderByDesc('checked_out_at')
+            ->get();
+        $diary->loadMissing('asset:id,name');
+
         // Kommunikationsnotizen ohne confidential (außer berechtigt) —
         // gleiche Logik wie die Auftrags-Timeline (CommunicationNotePolicy/Scope).
         $communicationNotes = Gate::allows('viewAny', CommunicationNote::class)
@@ -127,6 +138,7 @@ class DiaryCaseFileController extends Controller {
             'materials' => $materials,
             'protocols' => $protocols,
             'openIssues' => $openIssues,
+            'assetAssignments' => $assetAssignments,
             'communicationNotes' => $communicationNotes,
             'documents' => $documents,
             'timelineItems' => $fullTimeline['items'],

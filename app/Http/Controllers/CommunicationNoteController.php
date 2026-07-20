@@ -30,6 +30,10 @@ class CommunicationNoteController extends Controller {
         'diary' => DiaryEntry::class,
         'customer' => Customer::class,
         'project' => Project::class,
+        // Vollaudit 2026-07 (M12): Spec §5 kennt fünf Bezüge — Karte am
+        // Abnahmeprotokoll und am Objekt/Asset.
+        'protocol' => \App\Models\Protocol::class,
+        'asset' => \App\Models\Asset::class,
     ];
 
     public function __construct(

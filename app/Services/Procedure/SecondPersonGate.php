@@ -12,7 +12,7 @@ namespace App\Services\Procedure;
 
 use App\Enums\Procedure\{ProcedureRunEventType, ProcedureStepRunStatus, ProcedureStepType};
 use App\Exceptions\ProcedureSecondPersonException;
-use App\Models\{ProcedureRunEvent, ProcedureStepRun, User};
+use App\Models\{ProcedureStepRun, User};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -22,6 +22,9 @@ use Illuminate\Support\Facades\DB;
  * fuer Request/Take/Sign/Revoke-Aktionen genutzt.
  */
 class SecondPersonGate {
+    // Zentraler Event-Schreiber + stepConfig (Vollaudit 2026-07, N38).
+    use \App\Services\Procedure\Concerns\RecordsProcedureRunEvents;
+
     /**
      * Wirft eine {@see ProcedureSecondPersonException}, wenn der
      * Schritt nicht final werden darf.
@@ -53,7 +56,7 @@ class SecondPersonGate {
     public function request(ProcedureStepRun $stepRun, User $actor): ProcedureStepRun {
         $this->assertRequiresSecondPerson($stepRun);
 
-        $this->recordEvent($stepRun, ProcedureRunEventType::SecondPersonRequested, $actor, [
+        $this->recordStepEvent($stepRun, ProcedureRunEventType::SecondPersonRequested, $actor, [
             'requested_by' => $actor->id,
         ]);
 
@@ -106,7 +109,7 @@ class SecondPersonGate {
             $stepRun->second_person_user_id = $taker->id;
             $stepRun->save();
 
-            $this->recordEvent($stepRun, ProcedureRunEventType::SecondPersonAssigned, $taker, [
+            $this->recordStepEvent($stepRun, ProcedureRunEventType::SecondPersonAssigned, $taker, [
                 'taker_id' => $taker->id,
             ]);
 
@@ -136,7 +139,7 @@ class SecondPersonGate {
             $stepRun->second_person_signed_at = Carbon::now();
             $stepRun->save();
 
-            $this->recordEvent($stepRun, ProcedureRunEventType::SecondPersonSigned, $signer, [
+            $this->recordStepEvent($stepRun, ProcedureRunEventType::SecondPersonSigned, $signer, [
                 'signer_id' => $signer->id,
             ]);
 
@@ -157,7 +160,7 @@ class SecondPersonGate {
             }
             $stepRun->save();
 
-            $this->recordEvent($stepRun, ProcedureRunEventType::SecondPersonRevoked, $actor, [
+            $this->recordStepEvent($stepRun, ProcedureRunEventType::SecondPersonRevoked, $actor, [
                 'previous_signer_id' => $previousSigner,
                 'reason' => $reason,
             ]);
@@ -184,19 +187,6 @@ class SecondPersonGate {
         return (bool) ($config['second_person_self_exclusion'] ?? true);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    private function stepConfig(ProcedureStepRun $stepRun): array {
-        $def = $stepRun->stepDef;
-        if ($def === null) {
-            return [];
-        }
-        $config = $def->config;
-
-        return is_array($config) ? $config : [];
-    }
-
     private function assertRequiresSecondPerson(ProcedureStepRun $stepRun): void {
         if (! $this->requiresSecondPerson($stepRun)) {
             throw new ProcedureSecondPersonException(
@@ -210,19 +200,4 @@ class SecondPersonGate {
     /**
      * @param  array<string, mixed>  $payload
      */
-    private function recordEvent(ProcedureStepRun $stepRun, ProcedureRunEventType $type, User $actor, array $payload): void {
-        $run = $stepRun->run;
-        if ($run === null) {
-            return;
-        }
-
-        ProcedureRunEvent::query()->create([
-            'procedure_run_id' => $run->id,
-            'procedure_step_run_id' => $stepRun->id,
-            'event_type' => $type->value,
-            'payload' => $payload,
-            'actor_user_id' => $actor->id,
-            'created_at' => Carbon::now(),
-        ]);
-    }
 }

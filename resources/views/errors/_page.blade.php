@@ -1,9 +1,23 @@
 {{-- Gemeinsames Gerüst der Fehlerseiten (041-P0, MVP-053): standalone
      ohne App-Layout (funktioniert auch bei kaputter Session/DB), zeigt
      Request-ID für Support-Zuordnung und bietet — sobald das
-     Fehlermeldesystem aktiv ist — den „Problem melden"-Einstieg an. --}}
+     Fehlermeldesystem aktiv ist — den „Problem melden"-Einstieg an.
+
+     Optionale Parameter (Vollaudit 2026-07, N42):
+       safe        true = weder Request-ID-Lookup noch auth()-Checks
+                   (DB-down-Fall: jeder Session-/DB-Zugriff würde erneut werfen)
+       reportable  false = „Problem melden"-Button unterdrücken
+       extraNote   Zusatzzeile unter der Message (kleiner, gedämpfter Text)
+       details     Inhalt eines aufklappbaren Debug-Blocks (Aufrufer gated
+                   selbst auf config('app.debug'))
+       actions     eigene Buttons statt Zurück/Startseite:
+                   list<array{label: string, href?: string, tone?: string,
+                   icon?: string, reload?: bool}> — reload=true rendert den
+                   data-reload-Button (Seite neu laden statt Navigation) --}}
 @php
-    $requestId = app()->bound(\App\Http\Middleware\AssignRequestId::CONTAINER_KEY)
+    $safe = $safe ?? false;
+    $reportable = $reportable ?? true;
+    $requestId = (! $safe && app()->bound(\App\Http\Middleware\AssignRequestId::CONTAINER_KEY))
         ? app(\App\Http\Middleware\AssignRequestId::CONTAINER_KEY)
         : null;
 @endphp
@@ -12,19 +26,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script @cspNonce>
-        (function () {
-            try {
-                var savedTheme = localStorage.getItem('workDiaryTheme');
-                var prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-                var theme = savedTheme || (prefersLight ? 'corporate' : 'dim');
-                document.documentElement.setAttribute('data-theme', theme);
-                document.documentElement.style.colorScheme = theme === 'corporate' ? 'light' : 'dark';
-            } catch (e) {
-                document.documentElement.setAttribute('data-theme', 'corporate');
-            }
-        })();
-    </script>
+    {{-- Anti-Flash-Theme (ein Partial statt 17 Kopien; Vollaudit 2026-07, M51). --}}
+    @include('partials.theme-bootstrap')
     <title>{{ $title }} – {{ config('app.name', 'WorkDiary') }}</title>
     <style>
         .material-symbols-outlined {
@@ -63,20 +66,43 @@
             <p class="text-sm leading-relaxed text-base-content/75">
                 {{ $message }}
             </p>
+            @if (! empty($extraNote))
+                <p class="mt-3 text-xs text-base-content/60">
+                    {{ $extraNote }}
+                </p>
+            @endif
             @if ($requestId !== null)
                 <p class="mt-3 text-xs text-base-content/50">
                     {{ __('errors.request_id') }}: <span class="font-mono select-all">{{ $requestId }}</span>
                 </p>
             @endif
-            <x-button-group center class="mt-6">
-                <x-button href="{{ url()->previous() }}" tone="ghost" size="sm" class="gap-1" icon="arrow_back">{{ __('Zurück') }}</x-button>
-                <x-button href="{{ url('/') }}" tone="primary" size="sm" class="gap-1" icon="home">{{ __('Zur Startseite') }}</x-button>
-                @if (auth()->check() && \Illuminate\Support\Facades\Route::has('problem-reports.create'))
-                    {{-- rid: Request-ID des FEHLGESCHLAGENEN Requests — nur damit findet
-                         der Diagnose-Auszug die zugehörigen Logzeilen wieder. --}}
-                    <x-button href="{{ route('problem-reports.create', ['context' => 'error', 'code' => $code ?? null, 'rid' => $requestId]) }}" tone="warning" size="sm" class="gap-1" icon="flag">{{ __('errors.report_problem') }}</x-button>
-                @endif
-            </x-button-group>
+            @if (! empty($actions))
+                <x-button-group center class="mt-6">
+                    @foreach ($actions as $action)
+                        @if (! empty($action['reload']))
+                            <x-button type="button" data-reload tone="{{ $action['tone'] ?? 'primary' }}" size="sm" class="gap-1" icon="{{ $action['icon'] ?? 'refresh' }}">{{ $action['label'] }}</x-button>
+                        @else
+                            <x-button href="{{ $action['href'] ?? url('/') }}" tone="{{ $action['tone'] ?? 'primary' }}" size="sm" class="gap-1" icon="{{ $action['icon'] ?? 'home' }}">{{ $action['label'] }}</x-button>
+                        @endif
+                    @endforeach
+                </x-button-group>
+            @else
+                <x-button-group center class="mt-6">
+                    <x-button href="{{ url()->previous() }}" tone="ghost" size="sm" class="gap-1" icon="arrow_back">{{ __('Zurück') }}</x-button>
+                    <x-button href="{{ url('/') }}" tone="primary" size="sm" class="gap-1" icon="home">{{ __('Zur Startseite') }}</x-button>
+                    @if (! $safe && $reportable && auth()->check() && \Illuminate\Support\Facades\Route::has('problem-reports.create'))
+                        {{-- rid: Request-ID des FEHLGESCHLAGENEN Requests — nur damit findet
+                             der Diagnose-Auszug die zugehörigen Logzeilen wieder. --}}
+                        <x-button href="{{ route('problem-reports.create', ['context' => 'error', 'code' => $code ?? null, 'rid' => $requestId]) }}" tone="warning" size="sm" class="gap-1" icon="flag">{{ __('errors.report_problem') }}</x-button>
+                    @endif
+                </x-button-group>
+            @endif
+            @if (! empty($details))
+                <details class="mt-6 text-left text-xs">
+                    <summary class="cursor-pointer text-base-content/60">{{ __('Technische Details') }}</summary>
+                    <pre class="mt-2 overflow-auto rounded-md bg-base-200 p-3 text-[0.7rem]">{{ $details }}</pre>
+                </details>
+            @endif
         </div>
     </div>
 </body>

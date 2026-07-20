@@ -132,8 +132,29 @@ class CustomerController extends Controller {
             $timelineLimit,
         );
 
+        // Kundenakte-Reiter „Domains" (Feature 083, MVP-394; Vollaudit 2026-07,
+        // M34): direkt zugeordnete Domains + Domains der zugeordneten
+        // Reseller-Accounts (Subuser); nur mit domain.viewAny sichtbar.
+        $customerDomains = collect();
+        if (Gate::allows(\App\Enums\User\Permission::DomainViewAny->value)) {
+            $resellerAccountIds = \App\Models\Domain\DomainResellerAccount::query()
+                ->where('customer_id', $customer->id)
+                ->pluck('id');
+            $customerDomains = \App\Models\Domain\DomainProjection::query()
+                ->where(function ($q) use ($customer, $resellerAccountIds): void {
+                    $q->where('customer_id', $customer->id);
+                    if ($resellerAccountIds->isNotEmpty()) {
+                        $q->orWhereIn('reseller_account_id', $resellerAccountIds->all());
+                    }
+                })
+                ->orderBy('external_domain')
+                ->limit(200)
+                ->get();
+        }
+
         return view('customers.show', [
             'customer' => $customer,
+            'customerDomains' => $customerDomains,
             'timelineItems' => $timeline['items'],
             'timelineHasMore' => $timeline['hasMore'],
             'timelineType' => $timelineType,
@@ -192,7 +213,7 @@ class CustomerController extends Controller {
         unset($data['tag_ids'], $data['new_tags']);
 
         $customer = Customer::create($data + ['created_by' => Auth::id()]);
-        $customer->syncTagsFromInput($tagIds, array_filter(array_map('trim', explode(',', $newTagsRaw))));
+        $customer->syncTagsFromInput($tagIds, \App\Support\TagInput::names($newTagsRaw));
 
         return redirect()->route('customers.show', $customer)
             ->with('success', __('Kunde angelegt.'));
@@ -217,7 +238,7 @@ class CustomerController extends Controller {
         unset($data['tag_ids'], $data['new_tags']);
 
         $customer->update($data);
-        $customer->syncTagsFromInput($tagIds, array_filter(array_map('trim', explode(',', $newTagsRaw))));
+        $customer->syncTagsFromInput($tagIds, \App\Support\TagInput::names($newTagsRaw));
 
         return redirect()->route('customers.show', $customer)
             ->with('success', __('Kunde aktualisiert.'));
@@ -235,6 +256,13 @@ class CustomerController extends Controller {
             return redirect()->route('customers.show', $customer)
                 ->with('error', __('Kunde kann nicht gelöscht werden: Es existieren externe Referenzen (z. B. Lexoffice). Bitte stattdessen archivieren.'));
         }
+
+        // Vollaudit 2026-07 (M9): KI-Gedächtnis auditiert löschen (Einzel-Audit
+        // je Eintrag + Provider-Glossar-Hook) statt stiller FK-Kaskade.
+        app(\App\Services\Ai\AiMemoryService::class)->deleteForCustomer(
+            $customer->organization()->firstOrFail(),
+            (int) $customer->id,
+        );
 
         // Standardprojekt(e) zusammen mit dem Kunden entfernen.
         $customer->projects()->where('is_default', true)->delete();

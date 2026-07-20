@@ -35,6 +35,7 @@ return [
         'save' => 'Guardar',
         'reset' => 'Restablecer predeterminado',
         'history' => 'Historial',
+        'export' => 'Exportar (JSON)',
     ],
     'empty' => [
         'title' => 'No se encontraron configuraciones',

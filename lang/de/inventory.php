@@ -296,4 +296,10 @@ return [
             'deleted' => 'Vorlage gelöscht.',
         ],
     ],
+    'error' => [
+        'batch_required' => 'Chargenpflichtiger Artikel: Bitte Chargennummer angeben.',
+        'serial_required' => 'Serienpflichtiger Artikel: Bitte Seriennummer angeben.',
+        'serial_qty_one' => 'Serienpflichtige Artikel werden je Seriennummer einzeln gebucht (Menge 1).',
+        'tracked_article_manual_move' => 'Chargen-/serienpflichtiger Artikel: Buchung bitte über Wareneingang (Bestellung) bzw. Chargen-/Serienverwaltung — nicht als anonymer Bestand.',
+    ],
 ];

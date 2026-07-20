@@ -88,6 +88,63 @@ final class QuoteProformaTest extends TestCase {
     }
 
     /**
+     * Vollaudit 2026-07 (H4): Positionsrabatte überleben Snapshot und
+     * Überführung — die konvertierte Rechnung darf nie mehr fordern als
+     * den angenommenen Angebots-Total.
+     */
+    public function test_item_discounts_survive_acceptance_snapshot_and_conversion(): void {
+        $service = app(QuoteService::class);
+        $quote = $service->create([
+            'customer_id' => $this->customer->id,
+            'valid_until' => now()->addWeeks(2)->toDateString(),
+        ], [
+            ['description' => 'Grundpaket', 'quantity' => 1, 'unit' => 'Pausch.', 'unit_price' => 1000, 'tax_rate' => '19.00', 'discount_percent' => '10.00'],
+            ['description' => 'Zusatzmodul', 'quantity' => 1, 'unit_price' => 500, 'tax_rate' => '19.00', 'discount_amount' => '50.00'],
+        ], $this->user);
+
+        // 900 + 450 = 1350 netto rabattiert.
+        $this->assertSame(1350.0, (float) $quote->subtotal);
+
+        $quote = $service->approve($quote, $this->user);
+        ['quote' => $quote, 'acceptance_token' => $token] = $service->send($quote, $this->user);
+        $quote = $service->accept($quote, null, $token);
+
+        $snapshot = $quote->decision_snapshot;
+        $this->assertSame(10.0, (float) $snapshot['items'][0]['discount_percent']);
+        $this->assertSame(50.0, (float) $snapshot['items'][1]['discount_amount']);
+        $this->assertSame('Pausch.', $snapshot['items'][0]['unit']);
+
+        $invoice = $service->convertToInvoice($quote, $this->user);
+        $items = $invoice->items()->orderBy('position')->get();
+        $this->assertSame(10.0, (float) $items[0]->discount_percent);
+        $this->assertSame(50.0, (float) $items[1]->discount_amount);
+        $this->assertSame('Pausch.', $items[0]->unit);
+        $this->assertSame(1350.0, (float) $invoice->subtotal);
+        $this->assertSame((float) $snapshot['total'], (float) $invoice->total, 'Rechnungs-Total == angenommener Angebots-Total.');
+    }
+
+    /** Vollaudit 2026-07 (H4): Alt-Snapshots ohne unit/discount-Felder konvertieren weiter (null-Fallback). */
+    public function test_legacy_snapshot_without_discount_fields_still_converts(): void {
+        $service = app(QuoteService::class);
+        $quote = $service->approve($this->quote(), $this->user);
+        ['quote' => $quote, 'acceptance_token' => $token] = $service->send($quote, $this->user);
+        $quote = $service->accept($quote, null, $token);
+
+        $snapshot = $quote->decision_snapshot;
+        $snapshot['items'] = array_map(
+            fn(array $item): array => array_diff_key($item, array_flip(['unit', 'discount_percent', 'discount_amount'])),
+            $snapshot['items'],
+        );
+        $quote->forceFill(['decision_snapshot' => $snapshot])->save();
+
+        $invoice = $service->convertToInvoice($quote->fresh(), $this->user);
+
+        $this->assertSame(2, $invoice->items()->count());
+        $this->assertNull($invoice->items()->first()->discount_percent);
+        $this->assertSame(1500.0, (float) $invoice->subtotal);
+    }
+
+    /**
      * Whitebox 2026-07-10 (G3/G4): Kleinunternehmer-Org (§ 19 UStG) —
      * das Angebot fällt ohne Positionssatz NICHT auf 19 % zurück, und die
      * Überführung nutzt den TaxResolver statt hartkodierter 19 % (sonst
@@ -159,11 +216,15 @@ final class QuoteProformaTest extends TestCase {
         ]);
         $proforma->items()->create([
             'organization_id' => $this->org->id,
-            'description' => 'Warenmuster', 'quantity' => '1', 'unit' => 'Stk', 'unit_price' => '250.00', 'position' => 1,
+            'description' => 'Warenmuster', 'quantity' => '1', 'unit' => 'Stk', 'unit_price' => '250.00',
+            'discount_percent' => '10.00', 'position' => 1,
         ]);
 
         $invoice = app(QuoteService::class)->proformaToInvoice($proforma->fresh(), $this->user);
 
+        // Vollaudit 2026-07 (H4): Positionsrabatt überlebt auch die Pro-forma-Umwandlung.
+        $this->assertSame(10.0, (float) $invoice->items()->first()->discount_percent);
+        $this->assertSame(225.0, (float) $invoice->subtotal);
         $this->assertSame(Invoice::TYPE_INVOICE, $invoice->type);
         $this->assertStringStartsWith('R', $invoice->number);
         $this->assertNotSame($proforma->number, $invoice->number);
@@ -186,10 +247,22 @@ final class QuoteProformaTest extends TestCase {
             'issued_on' => now(),
         ]);
 
-        // Widerspruch ist Lifecycle — auch nach Ausstellung dokumentierbar.
-        $credit->update(['objection_at' => now(), 'objection_note' => 'Empfänger widerspricht der Gutschrift (§ 14 Abs. 2 UStG).']);
+        // Vollaudit 2026-07 (M27): über die UI-Aktion statt Direkt-Update —
+        // Pflichtnote, Audit-Event, kein Doppel-Widerspruch.
+        $this->actingAs($this->user)
+            ->post(route('invoices.objection', $credit), [
+                'objection_note' => 'Empfänger widerspricht der Gutschrift (§ 14 Abs. 2 UStG).',
+            ])
+            ->assertRedirect();
 
-        $this->assertNotNull($credit->fresh()->objection_at);
-        $this->assertStringContainsString('widerspricht', (string) $credit->fresh()->objection_note);
+        $credit->refresh();
+        $this->assertNotNull($credit->objection_at);
+        $this->assertStringContainsString('widerspricht', (string) $credit->objection_note);
+        $this->assertDatabaseHas('audit_logs', ['event' => 'invoice.objectionDocumented']);
+
+        // Doppelter Widerspruch wird abgewiesen.
+        $this->actingAs($this->user)
+            ->post(route('invoices.objection', $credit), ['objection_note' => 'Noch ein Widerspruch, unzulässig.'])
+            ->assertSessionHas('error');
     }
 }

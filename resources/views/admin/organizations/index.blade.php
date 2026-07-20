@@ -105,42 +105,30 @@
                                         <x-icon name="delete_forever" />
                                     </button>
 
-                                    <dialog id="purge-modal-{{ $org->id }}" class="modal">
-                                        <div class="modal-box wd-modal-box wd-modal-box--standard">
-                                            <h3 class="font-bold text-lg text-error">
-                                                {{ __('Organisation endgültig löschen') }}
-                                            </h3>
-                                            <div class="py-3 space-y-2 text-sm">
-                                                <p>
-                                                    {{ __('Sie sind im Begriff, die Organisation ":name" und ALLE zugehörigen Datensätze und Dateien unwiderruflich zu löschen.', ['name' => $org->name]) }}
-                                                </p>
-                                                <p class="text-warning">
-                                                    {{ __('Diese Aktion kann nicht rückgängig gemacht werden. Erzeugen Sie vorher einen Daten-Export, falls der Kunde die Daten mitnehmen möchte.') }}
-                                                </p>
-                                                <p>
-                                                    {{ __('Zur Bestätigung geben Sie bitte den Slug der Organisation ein:') }}
-                                                    <code class="bg-base-200 px-1.5 py-0.5 rounded text-xs">{{ $org->slug }}</code>
-                                                </p>
-                                            </div>
-                                            <form method="POST" action="{{ route('admin.organizations.purge', $org) }}">
-                                                @csrf @method('DELETE')
-                                                <input type="text"
-                                                       name="confirm_slug"
-                                                       class="input input-bordered w-full font-mono"
-                                                       autocomplete="off"
-                                                       required
-                                                       placeholder="{{ $org->slug }}">
-                                                <div class="modal-action">
-                                                    <x-button type="button" tone="ghost" size="md"
-                                                            data-entry-modal-close>
-                                                        {{ __('Abbrechen') }}
-                                                    </x-button>
-                                                    <x-button type="submit" tone="error" size="md" icon="delete_forever">{{ __('Endgültig löschen') }}</x-button>
-                                                </div>
-                                            </form>
+                                    {{-- Gemeinsamer Dialog-Wrapper statt rohem <dialog> (Vollaudit 2026-07, N57). --}}
+                                    <x-modal :id="'purge-modal-' . $org->id" :embedded="false" tone="error" icon="delete_forever"
+                                        :title="__('Organisation endgültig löschen')"
+                                        :action="route('admin.organizations.purge', $org)" method="DELETE"
+                                        :submit-label="__('Endgültig löschen')" submit-class="btn-error">
+                                        <div class="space-y-2 text-sm">
+                                            <p>
+                                                {{ __('Sie sind im Begriff, die Organisation ":name" und ALLE zugehörigen Datensätze und Dateien unwiderruflich zu löschen.', ['name' => $org->name]) }}
+                                            </p>
+                                            <p class="text-warning">
+                                                {{ __('Diese Aktion kann nicht rückgängig gemacht werden. Erzeugen Sie vorher einen Daten-Export, falls der Kunde die Daten mitnehmen möchte.') }}
+                                            </p>
+                                            <p>
+                                                {{ __('Zur Bestätigung geben Sie bitte den Slug der Organisation ein:') }}
+                                                <code class="bg-base-200 px-1.5 py-0.5 rounded text-xs">{{ $org->slug }}</code>
+                                            </p>
                                         </div>
-                                        <form method="dialog" class="modal-backdrop"><button>close</button></form>
-                                    </dialog>
+                                        <input type="text"
+                                               name="confirm_slug"
+                                               class="input input-bordered mt-3 w-full font-mono"
+                                               autocomplete="off"
+                                               required
+                                               placeholder="{{ $org->slug }}">
+                                    </x-modal>
                                 @else
                                     <span class="text-xs text-base-content/50 self-center"
                                           title="{{ __('Endgültiges Löschen erst :h Stunden nach Deaktivierung möglich.', ['h' => $cooldownHours]) }}">

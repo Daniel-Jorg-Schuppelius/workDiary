@@ -10,11 +10,16 @@
 
 namespace App\Plugins\Lexoffice;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Strategie bei Daten-Konflikten zwischen Lexoffice (Remote) und workDiary
  * (Local) während eines Pull-Syncs. Push überschreibt Lexoffice in jedem Fall.
  */
-enum LexofficeMatchPolicy: string {
+enum LexofficeMatchPolicy: string implements HasLabel {
+    use HasOptions;
+
     /** Lexoffice ist Quelle der Wahrheit — überschreibt lokale Felder. */
     case LexofficeWins = 'lexoffice_wins';
 

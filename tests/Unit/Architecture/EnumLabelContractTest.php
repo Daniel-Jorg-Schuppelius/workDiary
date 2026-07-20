@@ -33,11 +33,22 @@ class EnumLabelContractTest extends TestCase {
      */
     private const WHITELIST = [];
 
+    /**
+     * Gescannte Wurzeln: Verzeichnis (relativ zum Repo) → Namespace-Präfix.
+     * Vollaudit 2026-07 (N54): ganz app/ statt nur app/Enums — gelabelte
+     * Enums leben auch in Scheduling/Settings/Plugins.
+     *
+     * @var array<string, string>
+     */
+    private const SCAN_ROOTS = [
+        'app' => 'App\\',
+    ];
+
     public function test_every_labelled_enum_implements_has_label(): void {
         $root = (string) realpath(__DIR__ . '/../../..');
         $violations = [];
 
-        foreach ($this->enumClasses($root . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'Enums') as $fqcn) {
+        foreach ($this->allEnumClasses($root) as $fqcn) {
             if (array_key_exists($fqcn, self::WHITELIST)) {
                 continue;
             }
@@ -64,11 +75,22 @@ class EnumLabelContractTest extends TestCase {
     }
 
     /**
-     * Alle Enum-FQCNs unter app/Enums (PSR-4: App\Enums\…).
+     * Alle Enum-FQCNs unter den SCAN_ROOTS (PSR-4-Auflösung je Wurzel).
      *
      * @return iterable<class-string>
      */
-    private function enumClasses(string $dir): iterable {
+    private function allEnumClasses(string $root): iterable {
+        foreach (self::SCAN_ROOTS as $dir => $prefix) {
+            yield from $this->enumClasses($root . DIRECTORY_SEPARATOR . $dir, $prefix);
+        }
+    }
+
+    /**
+     * Alle Enum-FQCNs unter $dir (PSR-4: $prefix + relativer Pfad).
+     *
+     * @return iterable<class-string>
+     */
+    private function enumClasses(string $dir, string $prefix = 'App\\Enums\\'): iterable {
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
         );
@@ -80,9 +102,14 @@ class EnumLabelContractTest extends TestCase {
 
             $relative = substr($file->getPathname(), strlen($dir) + 1, -4);
             /** @var class-string $fqcn */
-            $fqcn = 'App\\Enums\\' . str_replace(DIRECTORY_SEPARATOR, '\\', $relative);
+            $fqcn = $prefix . str_replace(DIRECTORY_SEPARATOR, '\\', $relative);
 
-            // Contracts/Concerns (Interfaces/Traits) liegen im selben Baum.
+            // Nicht-Klassendateien (Views/Configs in Plugins) und Interfaces/
+            // Traits fallen durch enum_exists; class_exists-Autoload-Fehler
+            // vermeiden wir über den vorherigen Dateiinhalts-Check.
+            if (! str_contains((string) file_get_contents($file->getPathname()), 'enum ' . basename($relative))) {
+                continue;
+            }
             if (enum_exists($fqcn)) {
                 yield $fqcn;
             }

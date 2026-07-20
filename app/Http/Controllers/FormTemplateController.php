@@ -141,6 +141,11 @@ class FormTemplateController extends Controller {
         return $request->validate([
             'name' => ['required', 'string', 'min:3', 'max:160'],
             'description' => ['nullable', 'string', 'max:2000'],
+            // Gültigkeit + Zuordnung (Feature 032 MVP; Vollaudit 2026-07, M11).
+            'valid_from' => ['nullable', 'date'],
+            'valid_until' => ['nullable', 'date', 'after_or_equal:valid_from'],
+            'target_entry_type' => ['nullable', 'string', 'max:64'],
+            'target_customer' => ['nullable', 'string', 'max:64'],
             'fields' => ['required', 'array'],
             'fields.*' => ['array'],
             'fields.*.label' => ['nullable', 'string', 'max:160'],

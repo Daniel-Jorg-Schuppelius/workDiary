@@ -6,6 +6,10 @@
 @section('content')
 <x-index-page :subtitle="__('Fällige und überfällige Prüfungen, Sperren, Abweichungen und Prüfquote mit Drilldown.')">
     <x-slot:actions>
+        {{-- CSV-Export (MVP-292; Vollaudit 2026-07, M33). --}}
+        <x-icon-btn icon="download" tone="ghost" size="sm"
+                    :href="route('asset-compliance.reports.index', ['export' => 'csv', 'from' => $from->toDateString(), 'to' => $to->toDateString()])"
+                    show-label>{{ __('CSV') }}</x-icon-btn>
         <form method="POST" action="{{ route('asset-compliance.reports.snapshot', ['from' => $from->toDateString(), 'to' => $to->toDateString()]) }}">
             @csrf
             <button type="submit" class="btn btn-sm">{{ __('Snapshot einfrieren') }}</button>
@@ -32,6 +36,14 @@
         <x-kpi-tile :label="__('Nicht bestanden')" :value="$failedCount" />
         <x-kpi-tile :label="__('Zertifikate')" :value="$certificateCount" />
         <x-kpi-tile :label="__('Bald fällig')" :value="$dueSoonCount" />
+    </div>
+
+    {{-- Prüfkosten (MVP-291; Vollaudit 2026-07, M33). --}}
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <x-kpi-tile :label="__('Prüfkosten im Zeitraum')" :value="number_format((float) $totalCost, 2, ',', '.') . ' €'" />
+        @foreach (collect($costByKind)->take(3) as $kind => $kindCost)
+            <x-kpi-tile :label="__('Kosten') . ' · ' . $kind" :value="number_format((float) $kindCost, 2, ',', '.') . ' €'" />
+        @endforeach
     </div>
 
     <div class="grid gap-4 lg:grid-cols-2">

@@ -30,10 +30,11 @@ class TransitionProtocolRequest extends BaseFormRequest {
             'returnToDraft' => ['reason' => ['nullable', 'string', 'max:2000']],
             'supersede' => ['reason' => ['required', 'string', 'max:2000']],
             'sign' => $this->boolean('with_signature') ? [
-                'signature.role' => ['required', 'string', 'in:' . implode(',', array_column(ProtocolSignatureRole::cases(), 'value'))],
+                // Rule::enum statt Handliste (Vollaudit 2026-07, N48).
+                'signature.role' => ['required', 'string', \Illuminate\Validation\Rule::enum(ProtocolSignatureRole::class)],
                 'signature.signer_name' => ['required', 'string', 'max:120'],
                 'signature.signer_email' => ['nullable', 'email', 'max:180'],
-                'signature.method' => ['required', 'string', 'in:' . implode(',', array_column(ProtocolSignatureMethod::cases(), 'value'))],
+                'signature.method' => ['required', 'string', \Illuminate\Validation\Rule::enum(ProtocolSignatureMethod::class)],
                 'signature.signature_image_path' => ['nullable', 'string', 'max:255'],
             ] : [],
             default => [],

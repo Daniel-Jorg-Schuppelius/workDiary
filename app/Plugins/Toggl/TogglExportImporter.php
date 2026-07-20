@@ -437,6 +437,10 @@ class TogglExportImporter {
             return $this->userCache[$cacheKey] = $existing;
         }
 
+        // Vollaudit 2026-07 (H8): Lizenz-Nutzerlimit gilt auch für den Import
+        // (Abbruch mit klarer Meldung statt stiller Limit-Überschreitung).
+        app(\App\Services\Licensing\LimitGuard::class)->ensureCanCreateUser($organization);
+
         $user = User::query()->create([
             'organization_id' => $organization->id,
             'name' => trim((string) $name) ?: $email,

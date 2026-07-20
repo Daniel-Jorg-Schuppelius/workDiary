@@ -28,6 +28,35 @@ class ServiceTicketPolicy extends PermissionPolicy {
         'delete' => P::ServiceTicketClose,
     ];
 
+    /**
+     * Vollaudit 2026-07 (M30): vertrauliche Tickets (confidentiality=restricted)
+     * sind nur für Bearbeiter, Watcher und das Queue-Team sichtbar — zusätzlich
+     * zur allgemeinen View-Berechtigung (Admins via HasAdminBypass).
+     */
+    public function view(User $user, mixed $model = null): bool {
+        if (! $this->allows($user, 'view')) {
+            return false;
+        }
+        if (! $model instanceof ServiceTicket || $model->confidentiality !== 'restricted') {
+            return true;
+        }
+        $ticket = $model;
+
+        if ((int) $ticket->assigned_to_user_id === (int) $user->id) {
+            return true;
+        }
+        if ($ticket->watchers()->where('user_id', $user->id)->exists()) {
+            return true;
+        }
+
+        if ($ticket->queue_id === null) {
+            return false;
+        }
+        $queueTeamId = $ticket->queue?->team_id;
+
+        return $queueTeamId !== null && $user->teams()->whereKey($queueTeamId)->exists();
+    }
+
     public function transition(User $user, ServiceTicket $ticket): bool {
         return $this->allows($user, 'transition');
     }

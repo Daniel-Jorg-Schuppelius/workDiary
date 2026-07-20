@@ -36,9 +36,8 @@
                 </x-slot:action>
             </x-empty-state>
         @else
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead>
+            <x-table>
+                <x-slot:head>
                         <tr>
                             <th>{{ __('Quelle') }}</th>
                             <th>{{ __('Typ') }}</th>
@@ -47,8 +46,7 @@
                             <th>{{ __('Zuletzt synchronisiert') }}</th>
                             <th class="text-right">{{ __('Aktion') }}</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                </x-slot:head>
                         @foreach ($references as $ref)
                             @php $target = $ref->referenceable; @endphp
                             <tr>
@@ -73,9 +71,7 @@
                                 </td>
                             </tr>
                         @endforeach
-                    </tbody>
-                </table>
-            </div>
+            </x-table>
             <x-pagination :paginator="$references" standing />
         @endif
     </div>

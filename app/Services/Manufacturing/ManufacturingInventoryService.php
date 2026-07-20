@@ -15,7 +15,7 @@ namespace App\Services\Manufacturing;
 use App\Enums\Inventory\{StockMovementType, StockState};
 use App\Models\{ArticleVariant, ManufacturingOrder, ManufacturingOrderMaterial, Organization, Warehouse};
 use App\Services\Inventory\{InventoryLedger, InventoryValuationManager, ReservationService, SerialService, StockPosting};
-use CommonToolkit\Helper\Data\NumberHelper;
+use App\Support\DecimalQty;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -35,6 +35,7 @@ class ManufacturingInventoryService {
         private readonly InventoryLedger $ledger,
         private readonly SerialService $serials,
         private readonly InventoryValuationManager $valuation,
+        private readonly ShortageService $shortages,
     ) {}
 
     /**
@@ -60,27 +61,71 @@ class ManufacturingInventoryService {
                 }
 
                 $reservation = $this->reservations->reserveUpToAvailable($variant, $warehouse, $open, source: $order);
-                if ($reservation === null) {
-                    continue;
+
+                $reserved = $reservation?->openQuantity() ?? '0';
+                if ($reservation !== null) {
+                    $material->reserved_qty = bcadd($material->reserved_qty, $reserved, self::SCALE);
+                    $material->stock_reservation_id = $reservation->id;
+                    $material->save();
                 }
 
-                $material->reserved_qty = bcadd($material->reserved_qty, $reservation->openQuantity(), self::SCALE);
-                $material->stock_reservation_id = $reservation->id;
-                $material->save();
+                // Vollaudit 2026-07 (M20): Fehlmengen nicht still übergehen —
+                // Unterdeckung erzeugt einen Beschaffungsbedarf (048: „aus
+                // Fehlmengen einen Beschaffungsbedarf oder offenen Punkt").
+                $shortage = bcsub($open, $reserved, self::SCALE);
+                if (bccomp($shortage, '0', self::SCALE) > 0) {
+                    $this->recordShortage($order, $material, $variant, $warehouse, $shortage);
+                }
             }
         });
 
         return $order;
     }
 
-    /** Bucht den tatsächlichen Verbrauch einer Materialposition (über die Reservierung). */
-    public function consume(ManufacturingOrderMaterial $material, string $qty): ManufacturingOrderMaterial {
-        $qty = $this->positive($qty);
+    /**
+     * Beschaffungsbedarf aus einer Reservierungs-Fehlmenge (Vollaudit 2026-07,
+     * M20) — idempotent je Auftrag+Variante (kein Doppel-Bedarf bei erneutem
+     * Reservierungslauf).
+     */
+    private function recordShortage(ManufacturingOrder $order, ManufacturingOrderMaterial $material, ArticleVariant $variant, Warehouse $warehouse, string $shortage): void {
+        $article = $material->article;
+        if ($article === null) {
+            return;
+        }
+
+        $exists = \App\Models\ProcurementRequest::query()
+            ->where('organization_id', $order->organization_id)
+            ->where('article_variant_id', $variant->id)
+            ->where('source_type', $order->getMorphClass())
+            ->where('source_id', $order->getKey())
+            ->where('status', \App\Enums\Manufacturing\ProcurementStatus::Open->value)
+            ->exists();
+        if ($exists) {
+            return;
+        }
+
+        $this->shortages->createProcurementRequest(
+            $article,
+            $variant,
+            $shortage,
+            $warehouse,
+            $order,
+            note: (string) __('Fehlmenge bei Materialreservierung (Auftrag :number).', ['number' => (string) $order->number]),
+        );
+    }
+
+    /**
+     * Bucht den tatsächlichen Verbrauch einer Materialposition (über die
+     * Reservierung). Ohne Reservierung ist die Negativ-Entnahme seit Vollaudit
+     * 2026-07 (M20) NICHT mehr still — sie erfordert die explizite Freigabe.
+     */
+    public function consume(ManufacturingOrderMaterial $material, string $qty, bool $allowNegative = false): ManufacturingOrderMaterial {
+        $qty = DecimalQty::positive($qty);
         if (bccomp($qty, '0', self::SCALE) <= 0) {
             return $material;
         }
 
-        return DB::transaction(function () use ($material, $qty): ManufacturingOrderMaterial {
+        return DB::transaction(function () use ($material, $qty, $allowNegative): ManufacturingOrderMaterial {
             $variant = $this->resolveVariant($material->article_id, $material->article_variant_id);
             $warehouse = $material->order?->warehouse;
 
@@ -97,7 +142,9 @@ class ManufacturingInventoryService {
             if ($reservation !== null) {
                 $this->reservations->fulfill($reservation, $qty);
             } elseif ($variant instanceof ArticleVariant && $warehouse instanceof Warehouse) {
-                $this->ledger->issue($variant, $warehouse, $qty, allowNegative: true);
+                // Vollaudit 2026-07 (M20): keine stille Negativ-Entnahme mehr —
+                // allowNegative kommt jetzt als explizite Freigabe vom Aufrufer.
+                $this->ledger->issue($variant, $warehouse, $qty, allowNegative: $allowNegative);
             }
 
             $material->consumed_qty = bcadd($material->consumed_qty, $qty, self::SCALE);
@@ -152,13 +199,13 @@ class ManufacturingInventoryService {
         // schlägt die Seriengenerierung fehl, darf die Gutmenge nicht eingebucht
         // bleiben (sonst Bestand ohne zugehörige Seriennummern).
         DB::transaction(function () use ($order, $variant, $warehouse, $qty): void {
-            $this->ledger->finishedGoodReceipt($variant, $warehouse, $this->positive($qty));
+            $this->ledger->finishedGoodReceipt($variant, $warehouse, DecimalQty::positive($qty));
 
             // Eigenfertigung: für seriennummernpflichtige Erzeugnisse je Stück eine
             // Seriennummer erzeugen (E2). Greift nur bei ganzzahligen Stückmengen.
             $article = $order->article;
             if ($article->serial_required) {
-                $count = (int) $this->positive($qty);
+                $count = (int) DecimalQty::positive($qty);
                 if ($count > 0) {
                     $this->serials->generate($variant, $count, $warehouse, $order, $order->created_by);
                 }
@@ -175,7 +222,7 @@ class ManufacturingInventoryService {
      * dokumentiert.
      */
     public function recordScrap(ManufacturingOrder $order, string $qty, ?int $reportId = null): void {
-        $qty = $this->positive($qty);
+        $qty = DecimalQty::positive($qty);
         if (bccomp($qty, '0', self::SCALE) <= 0) {
             return;
         }
@@ -208,15 +255,5 @@ class ManufacturingInventoryService {
             ->orderByDesc('is_default')
             ->orderBy('id')
             ->first();
-    }
-
-    /** @return numeric-string */
-    private function positive(string $value): string {
-        $value = NumberHelper::normalizeDecimalString($value);
-        if ($value === '' || ! is_numeric($value)) {
-            return '0';
-        }
-
-        return bccomp($value, '0', self::SCALE) < 0 ? bcmul($value, '-1', self::SCALE) : $value;
     }
 }

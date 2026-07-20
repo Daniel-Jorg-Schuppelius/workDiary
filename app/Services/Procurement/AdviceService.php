@@ -14,7 +14,7 @@ namespace App\Services\Procurement;
 
 use App\Enums\Procurement\AdviceStatus;
 use App\Models\{PurchaseOrder, PurchaseOrderAdvice, PurchaseOrderLine};
-use CommonToolkit\Helper\Data\NumberHelper;
+use App\Support\DecimalQty;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -36,7 +36,7 @@ class AdviceService {
      * @param  array<string, mixed>  $options
      */
     public function announce(PurchaseOrder $order, array $lines, array $options = []): PurchaseOrderAdvice {
-        $relevant = array_values(array_filter($lines, fn (array $l): bool => bccomp($this->positive($l['qty']), '0', self::SCALE) > 0));
+        $relevant = array_values(array_filter($lines, fn (array $l): bool => bccomp(DecimalQty::positive($l['qty']), '0', self::SCALE) > 0));
         if ($relevant === []) {
             throw new RuntimeException('Lieferavis ohne Positionen.');
         }
@@ -58,7 +58,7 @@ class AdviceService {
                 $advice->lines()->create([
                     'organization_id' => $order->organization_id,
                     'purchase_order_line_id' => $item['line']->id,
-                    'qty' => $this->positive($item['qty']),
+                    'qty' => DecimalQty::positive($item['qty']),
                 ]);
             }
 
@@ -90,15 +90,5 @@ class AdviceService {
         $advice->forceFill(['status' => AdviceStatus::Cancelled])->save();
 
         return $advice;
-    }
-
-    /** @return numeric-string */
-    private function positive(string $value): string {
-        $value = NumberHelper::normalizeDecimalString($value);
-        if ($value === '' || ! is_numeric($value)) {
-            return '0';
-        }
-
-        return bccomp($value, '0', self::SCALE) < 0 ? bcmul($value, '-1', self::SCALE) : $value;
     }
 }

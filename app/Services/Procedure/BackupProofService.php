@@ -12,7 +12,7 @@ namespace App\Services\Procedure;
 
 use App\Enums\Procedure\{ProcedureBackupScope, ProcedureBackupStorageTarget, ProcedureBackupVerifyMethod, ProcedureRunEventType, ProcedureStepRunStatus, ProcedureStepType};
 use App\Exceptions\{ProcedureBackupValidationException, ProcedureStepBlockedException};
-use App\Models\{ProcedureBackupProof, ProcedureRunEvent, ProcedureStepRun, User};
+use App\Models\{ProcedureBackupProof, ProcedureStepRun, User};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -22,6 +22,9 @@ use Illuminate\Support\Facades\DB;
  * erfolgreich verifiziert wurde.
  */
 class BackupProofService {
+    // Zentraler Event-Schreiber + stepConfig (Vollaudit 2026-07, N38).
+    use \App\Services\Procedure\Concerns\RecordsProcedureRunEvents;
+
     /**
      * @param  array{
      *     backup_scope: string,
@@ -94,7 +97,7 @@ class BackupProofService {
                 'created_at' => Carbon::now(),
             ]);
 
-            $this->recordEvent($stepRun, ProcedureRunEventType::BackupRegistered, $actor, [
+            $this->recordStepEvent($stepRun, ProcedureRunEventType::BackupRegistered, $actor, [
                 'proof_id' => $proof->id,
                 'verify_method' => $verifyMethod->value,
             ]);
@@ -128,7 +131,7 @@ class BackupProofService {
 
             $stepRun = $proof->stepRun;
             if ($stepRun instanceof ProcedureStepRun) {
-                $this->recordEvent($stepRun, ProcedureRunEventType::BackupVerified, $verifier, [
+                $this->recordStepEvent($stepRun, ProcedureRunEventType::BackupVerified, $verifier, [
                     'proof_id' => $proof->id,
                 ]);
             }
@@ -191,19 +194,6 @@ class BackupProofService {
         return $query->exists();
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    private function stepConfig(ProcedureStepRun $stepRun): array {
-        $def = $stepRun->stepDef;
-        if ($def === null) {
-            return [];
-        }
-        $config = $def->config;
-
-        return is_array($config) ? $config : [];
-    }
-
     private function assertBackupStep(ProcedureStepRun $stepRun): void {
         $def = $stepRun->stepDef;
         if ($def === null || $def->step_type !== ProcedureStepType::Backup) {
@@ -217,19 +207,4 @@ class BackupProofService {
     /**
      * @param  array<string, mixed>  $payload
      */
-    private function recordEvent(ProcedureStepRun $stepRun, ProcedureRunEventType $type, User $actor, array $payload): void {
-        $run = $stepRun->run;
-        if ($run === null) {
-            return;
-        }
-
-        ProcedureRunEvent::query()->create([
-            'procedure_run_id' => $run->id,
-            'procedure_step_run_id' => $stepRun->id,
-            'event_type' => $type->value,
-            'payload' => $payload,
-            'actor_user_id' => $actor->id,
-            'created_at' => Carbon::now(),
-        ]);
-    }
 }

@@ -44,10 +44,9 @@ class ImportController extends Controller {
             'state' => $request->string('state')->toString(),
         ];
 
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'id';
-        $dir = $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc';
+        // Whitelist-Auflösung zentral (C21; Vollaudit 2026-07, N26) — bei
+        // ungültigem Key fallen Key UND Richtung auf die Defaults zurück.
+        [$sort, $dir] = \App\Support\SortableQuery::resolve($request, self::ALLOWED_SORTS, 'id');
 
         $runs = ImportRun::query()
             ->where('organization_id', $organization->id)
@@ -81,6 +80,36 @@ class ImportController extends Controller {
             'entity' => $entity,
             'entities' => ImportEntity::cases(),
             'supportsInboxFirst' => $supportsInboxFirst,
+        ]);
+    }
+
+    /**
+     * CSV-Mustervorlage je Entität (Feature 020 MVP; Vollaudit 2026-07, N8):
+     * Header direkt aus Spec::columns() plus eine Beispielzeile, die
+     * Pflichtspalten (Spec::requiredColumns()) markiert. Semikolon-Delimiter —
+     * der Preflight erkennt das Trennzeichen ohnehin automatisch.
+     */
+    public function template(string $entity): Response {
+        $entityEnum = ImportEntity::tryFrom($entity);
+        abort_if($entityEnum === null, 404);
+        $this->authorizeImport($entityEnum);
+
+        $spec = app(\App\Services\Import\EntitySpecRegistry::class)->for($entityEnum);
+        $columns = $spec->columns();
+        $required = $spec->requiredColumns();
+
+        $example = array_map(
+            static fn(string $column): string => in_array($column, $required, true)
+                ? (string) __('import.template.example_required')
+                : (string) __('import.template.example_optional'),
+            $columns,
+        );
+
+        $csv = CsvFacade::buildCsv($columns, [array_combine($columns, $example)]);
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="import-vorlage-' . $entityEnum->value . '.csv"',
         ]);
     }
 

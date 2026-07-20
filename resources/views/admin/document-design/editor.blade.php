@@ -19,10 +19,6 @@
 @endphp
 
 <x-page-shell>
-    <x-slot:actions>
-        <a href="{{ route('admin.document-design.index') }}" class="btn btn-sm btn-ghost">{{ __('Zurück zur Übersicht') }}</a>
-    </x-slot:actions>
-
     <div class="space-y-4" x-data="designEditor" data-config="{{ json_encode($editorConfig) }}"
          @pointermove.window="onPointerMove($event)" @pointerup.window="endDrag()" @keydown.window="nudge($event)">
 
@@ -43,6 +39,9 @@
                     </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
+                    {{-- Vollaudit 2026-07 (N3): x-page-shell hat keinen actions-Slot —
+                         der Zurück-Link gehört in die Kopf-Karte. --}}
+                    <a href="{{ route('admin.document-design.index') }}" class="btn btn-sm btn-ghost">{{ __('Zurück zur Übersicht') }}</a>
                     <span class="text-xs text-base-content/50" x-show="dirty">{{ __('document_design.editor.unsaved') }}</span>
                     <template x-if="message && message.tone === 'error'">
                         <span class="badge badge-error badge-sm" x-text="message.text"></span>

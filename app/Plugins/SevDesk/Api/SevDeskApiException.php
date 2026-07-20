@@ -18,8 +18,4 @@ use App\Plugins\Support\PluginApiException;
  * Fehler der sevDesk-REST-API (MVP-125). Die Message trägt nur Status und
  * gekürzten Body-Auszug — nie den API-Token.
  */
-class SevDeskApiException extends PluginApiException {
-    public function __construct(int $status, string $message, ?string $endpoint = null) {
-        parent::__construct($message, $status, $endpoint);
-    }
-}
+class SevDeskApiException extends PluginApiException {}

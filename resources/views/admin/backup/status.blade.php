@@ -59,9 +59,8 @@
     {{-- Letzte Sicherung je Quelle --}}
     <x-card :title="__('backup.section.last_per_source')" icon="backup">
         @if (count($sources) > 0)
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead>
+            <x-table bare>
+                <x-slot:head>
                         <tr>
                             <th>{{ __('backup.field.source') }}</th>
                             <th>{{ __('backup.field.occurred_at') }}</th>
@@ -70,8 +69,7 @@
                             <th>{{ __('backup.field.manifest_hash') }}</th>
                             <th>{{ __('backup.field.state') }}</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                </x-slot:head>
                         @foreach ($sources as $src)
                             <tr>
                                 <td class="font-mono text-xs">{{ $src['source'] ?? '—' }}</td>
@@ -94,9 +92,7 @@
                                 </td>
                             </tr>
                         @endforeach
-                    </tbody>
-                </table>
-            </div>
+            </x-table>
         @else
             <x-empty-state
                 icon='<span class="material-symbols-outlined" aria-hidden="true">cloud_off</span>'
@@ -127,9 +123,8 @@
         </div>
 
         @if ($restoreTests->total() > 0)
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead>
+            <x-table>
+                <x-slot:head>
                         <tr>
                             <th>{{ __('backup.field.tested_on') }}</th>
                             <th>{{ __('backup.field.source') }}</th>
@@ -140,8 +135,7 @@
                             <th>{{ __('backup.field.next_due') }}</th>
                             <th>{{ __('backup.field.performed_by') }}</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                </x-slot:head>
                         @foreach ($restoreTests as $test)
                             <tr>
                                 <td class="text-sm">{{ $test->tested_on?->translatedFormat('d.m.Y') ?? '—' }}</td>
@@ -160,9 +154,7 @@
                                 <td class="text-sm text-base-content/70">{{ $test->performedBy?->name ?? '—' }}</td>
                             </tr>
                         @endforeach
-                    </tbody>
-                </table>
-            </div>
+            </x-table>
             <div class="mt-3">
                 <x-pagination :paginator="$restoreTests" standing />
             </div>

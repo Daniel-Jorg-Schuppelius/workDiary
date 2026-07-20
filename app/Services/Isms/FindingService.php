@@ -13,7 +13,7 @@ namespace App\Services\Isms;
 use App\Enums\Isms\{CorrectiveActionStatus, FindingKind, FindingStatus};
 use App\Models\Isms\{IsmsAudit, IsmsAuditFinding, IsmsCorrectiveAction};
 use App\Models\User;
-use App\Services\Isms\Concerns\{AssignsSequentialNo, ResolvesAuditReferences};
+use App\Services\Isms\Concerns\{AssertsIsmsTransition, AssignsSequentialNo, ResolvesAuditReferences};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -26,6 +26,8 @@ use Illuminate\Validation\ValidationException;
  * zusätzlich mindestens EINE wirksame Maßnahme.
  */
 class FindingService {
+    use AssertsIsmsTransition;
+
     use AssignsSequentialNo;
     use ResolvesAuditReferences;
 
@@ -97,14 +99,8 @@ class FindingService {
             return $finding;
         }
 
-        if (! in_array($target, $finding->status->allowedTransitions(), true)) {
-            throw ValidationException::withMessages([
-                'status' => __('isms.error.invalid_transition', [
-                    'from' => $finding->status->label(),
-                    'to' => $target->label(),
-                ]),
-            ]);
-        }
+        // Gemeinsamer ISMS-Guard (Vollaudit 2026-07, M44).
+        $this->assertIsmsTransition($finding->status, $target);
 
         if ($target === FindingStatus::Closed) {
             $this->assertFindingClosable($finding);

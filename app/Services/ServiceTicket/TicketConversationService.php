@@ -16,10 +16,8 @@ use App\Enums\ServiceTicket\{ServiceTicketStatus, TicketMessageKind};
 use App\Jobs\ServiceTicketReplyMailJob;
 use App\Models\{ServiceTicket, ServiceTicketMessage, User};
 use App\Services\Mail\MailAttachmentStore;
-use App\Support\Filename;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{DB, Storage};
-use Illuminate\Support\Str;
 
 /**
  * Konversation am Ticket (Feature 065, MVP-152). Öffentlich vs. intern
@@ -202,20 +200,16 @@ class TicketConversationService {
                 continue; // schon übernommen (Doppelverarbeitung)
             }
 
-            $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
-            $target = 'attachments/' . now()->format('Y/m') . '/' . Str::uuid()->toString() . ($ext !== '' ? '.' . $ext : '');
-            Storage::disk('local')->put($target, (string) Storage::disk($disk)->get($source));
-
+            // Ablage über den kanonischen FileAttacher (Vollaudit 2026-07, M46).
             $mime = trim((string) ($meta['mime'] ?? ''));
-            $message->attachments()->create([
-                'organization_id' => $message->organization_id,
-                'disk' => 'local',
-                'path' => $target,
-                'original_name' => $originalName,
-                'mime' => $mime !== '' ? $mime : null,
-                'size' => $size,
-                'customer_visible' => true,
-            ]);
+            app(\App\Services\Attachments\FileAttacher::class)->storeContent(
+                $message,
+                (string) Storage::disk($disk)->get($source),
+                $originalName,
+                $mime !== '' ? $mime : null,
+                null,
+                ['organization_id' => $message->organization_id, 'customer_visible' => true],
+            );
             $count++;
         }
 
@@ -232,20 +226,11 @@ class TicketConversationService {
      * @param list<UploadedFile> $files
      */
     public function attachUploadedFiles(ServiceTicket|ServiceTicketMessage $target, array $files, ?User $author, bool $customerVisible): void {
+        // Ablage über den kanonischen FileAttacher (Vollaudit 2026-07, M46).
+        $attacher = app(\App\Services\Attachments\FileAttacher::class);
         foreach ($files as $file) {
-            $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
-            $folder = 'attachments/' . now()->format('Y/m');
-            $filename = Str::uuid()->toString() . ($ext !== '' ? '.' . $ext : '');
-            $path = $file->storeAs($folder, $filename, 'local');
-
-            $target->attachments()->create([
+            $attacher->store($target, $file, $author?->id, [
                 'organization_id' => $target->organization_id,
-                'user_id' => $author?->id,
-                'disk' => 'local',
-                'path' => $path,
-                'original_name' => Filename::sanitize($file->getClientOriginalName()),
-                'mime' => $file->getMimeType(),
-                'size' => $file->getSize(),
                 'customer_visible' => $customerVisible,
             ]);
         }

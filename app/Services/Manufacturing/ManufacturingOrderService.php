@@ -110,8 +110,44 @@ class ManufacturingOrderService {
                 'released_at' => Carbon::now(),
             ])->save();
 
+            // Vollaudit 2026-07 (M23): Reservierung „bei Freigabe" (Default).
+            $this->applyReservationTiming($order, 'release');
+
             return $order;
         });
+    }
+
+    /**
+     * Reservierungsstrategie (Feature 048; Vollaudit 2026-07, M23): Zeitpunkt
+     * org-konfigurierbar über das Setting `inventory.reservation_timing`
+     * (release|start, Default release — „bestätigte Terminierung" fällt ohne
+     * eigenen Terminierungs-Status bewusst auf release zurück); der Auftrag
+     * friert Modus + Zeitpunkt als Snapshot ein. Der manuelle Button bleibt
+     * für Nachreservierungen erhalten.
+     */
+    private function applyReservationTiming(ManufacturingOrder $order, string $phase): void {
+        if ($order->reservation_applied_at !== null) {
+            return;
+        }
+        // Ohne Lagerort keine Auto-Reservierung (z. B. reine Leistungs-/
+        // Fremdfertigungsaufträge) — der manuelle Button bleibt verfügbar.
+        if ($order->warehouse === null) {
+            return;
+        }
+
+        $mode = (string) \App\Support\Setting::get('inventory.reservation_timing', 'release');
+        if (! in_array($mode, ['release', 'start'], true)) {
+            $mode = 'release';
+        }
+        if ($mode !== $phase) {
+            return;
+        }
+
+        app(ManufacturingInventoryService::class)->reserveMaterials($order);
+        $order->forceFill([
+            'reservation_mode' => $mode,
+            'reservation_applied_at' => Carbon::now(),
+        ])->save();
     }
 
     /** Statusübergang gemäß Statusmaschine. */
@@ -155,6 +191,9 @@ class ManufacturingOrderService {
                 'started_at' => Carbon::now(),
                 'created_by_user_id' => $assignedUserId,
             ]);
+
+            // Vollaudit 2026-07 (M23): Reservierung „bei Start", falls konfiguriert.
+            $this->applyReservationTiming($order, 'start');
 
             $order->forceFill([
                 'status' => ManufacturingOrderStatus::InProgress,

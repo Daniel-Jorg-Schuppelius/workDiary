@@ -296,4 +296,10 @@ return [
             'deleted' => 'Template deleted.',
         ],
     ],
+    'error' => [
+        'batch_required' => 'Batch-tracked article: please provide a lot number.',
+        'serial_required' => 'Serial-tracked article: please provide a serial number.',
+        'serial_qty_one' => 'Serial-tracked articles are received one serial at a time (quantity 1).',
+        'tracked_article_manual_move' => 'Batch-/serial-tracked article: post via goods receipt (purchase order) or lot/serial management — not as anonymous stock.',
+    ],
 ];

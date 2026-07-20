@@ -96,9 +96,8 @@
                 @if (! empty($u['sessions']))
                     <div>
                         <h3 class="mb-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">{{ __('sessions.section.sessions') }}</h3>
-                        <div class="overflow-x-auto">
-                            <table class="table table-sm">
-                                <thead>
+                        <x-table>
+                            <x-slot:head>
                                     <tr>
                                         <th>{{ __('sessions.col.device') }}</th>
                                         <th>{{ __('sessions.col.ip') }}</th>
@@ -107,8 +106,7 @@
                                             <th class="text-right">{{ __('sessions.col.action') }}</th>
                                         @endif
                                     </tr>
-                                </thead>
-                                <tbody>
+                            </x-slot:head>
                                     @foreach ($u['sessions'] as $s)
                                         <tr @class(['bg-success/5' => $s['is_online']])>
                                             <td class="max-w-xs">
@@ -147,9 +145,7 @@
                                             @endif
                                         </tr>
                                     @endforeach
-                                </tbody>
-                            </table>
-                        </div>
+                        </x-table>
                     </div>
                 @endif
 
@@ -157,9 +153,8 @@
                 @if (! empty($u['tokens']))
                     <div>
                         <h3 class="mb-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">{{ __('sessions.section.tokens') }}</h3>
-                        <div class="overflow-x-auto">
-                            <table class="table table-sm">
-                                <thead>
+                        <x-table>
+                            <x-slot:head>
                                     <tr>
                                         <th>{{ __('sessions.col.name') }}</th>
                                         <th>{{ __('sessions.col.created') }}</th>
@@ -168,8 +163,7 @@
                                             <th class="text-right">{{ __('sessions.col.action') }}</th>
                                         @endif
                                     </tr>
-                                </thead>
-                                <tbody>
+                            </x-slot:head>
                                     @foreach ($u['tokens'] as $t)
                                         <tr>
                                             <td class="font-medium">{{ $t['name'] }}</td>
@@ -189,9 +183,7 @@
                                             @endif
                                         </tr>
                                     @endforeach
-                                </tbody>
-                            </table>
-                        </div>
+                        </x-table>
                     </div>
                 @endif
 
@@ -199,9 +191,8 @@
                 @if (! empty($u['location_devices']))
                     <div>
                         <h3 class="mb-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">{{ __('sessions.section.devices') }}</h3>
-                        <div class="overflow-x-auto">
-                            <table class="table table-sm">
-                                <thead>
+                        <x-table>
+                            <x-slot:head>
                                     <tr>
                                         <th>{{ __('sessions.col.name') }}</th>
                                         <th>{{ __('sessions.col.last_used') }}</th>
@@ -209,8 +200,7 @@
                                             <th class="text-right">{{ __('sessions.col.action') }}</th>
                                         @endif
                                     </tr>
-                                </thead>
-                                <tbody>
+                            </x-slot:head>
                                     @foreach ($u['location_devices'] as $d)
                                         <tr>
                                             <td class="font-medium">{{ $d['label'] }}</td>
@@ -229,9 +219,7 @@
                                             @endif
                                         </tr>
                                     @endforeach
-                                </tbody>
-                            </table>
-                        </div>
+                        </x-table>
                     </div>
                 @endif
             </div>
@@ -252,9 +240,8 @@
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('sessions.section.terminals') }}</h2>
                 </header>
                 <p class="text-xs text-base-content/50">{{ __('sessions.hint.terminals') }}</p>
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table bare>
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('sessions.col.terminal') }}</th>
                                 <th>{{ __('sessions.col.status') }}</th>
@@ -263,8 +250,7 @@
                                     <th class="text-right">{{ __('sessions.col.action') }}</th>
                                 @endif
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($overview['terminals'] as $term)
                                 <tr>
                                     <td class="font-medium">{{ $term['name'] }}</td>
@@ -296,9 +282,7 @@
                                     @endif
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             </div>
         </article>
     @endif
@@ -312,17 +296,15 @@
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('sessions.section.remote_support') }}</h2>
                 </header>
                 <p class="text-xs text-base-content/50">{{ __('sessions.hint.remote_support') }}</p>
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table bare>
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('sessions.col.provider') }}</th>
                                 <th>{{ __('sessions.col.remote') }}</th>
                                 <th>{{ __('sessions.col.started') }}</th>
                                 <th>{{ __('sessions.col.ended') }}</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($overview['remote_support'] as $rs)
                                 <tr>
                                     <td class="font-medium capitalize">{{ $rs['provider'] }}</td>
@@ -331,9 +313,7 @@
                                     <td class="text-xs">{{ $fmtDate($rs['ended_at']) }}</td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             </div>
         </article>
     @endif

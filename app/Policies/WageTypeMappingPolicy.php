@@ -11,7 +11,6 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\{User, WageTypeMapping};
 use App\Policies\Concerns\HasAdminBypass;
 
 /**
@@ -20,26 +19,13 @@ use App\Policies\Concerns\HasAdminBypass;
  * wageTypeMapping.viewAny/manage — gleiche Zielgruppe wie Zuschlags- und
  * Kostenstellen-Regeln.
  */
-class WageTypeMappingPolicy {
+class WageTypeMappingPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::WageTypeMappingViewAny->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::WageTypeMappingManage->value);
-    }
-
-    public function update(User $user, WageTypeMapping $mapping): bool {
-        unset($mapping);
-
-        return $user->can(P::WageTypeMappingManage->value);
-    }
-
-    public function delete(User $user, WageTypeMapping $mapping): bool {
-        unset($mapping);
-
-        return $user->can(P::WageTypeMappingManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::WageTypeMappingViewAny,
+        'create' => P::WageTypeMappingManage,
+        'update' => P::WageTypeMappingManage,
+        'delete' => P::WageTypeMappingManage,
+    ];
 }

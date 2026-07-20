@@ -104,16 +104,14 @@
         </x-filter-bar>
 
         {{-- Tabs --}}
-        <div role="tablist" class="tabs tabs-box w-full">
-            @foreach ($tabs as $key => $info)
-                <a role="tab"
-                   href="{{ route('archive.index', array_merge($tabFilters, ['tab' => $key])) }}"
-                   class="tab {{ $tab === $key ? 'tab-active' : '' }}">
-                    {{ $info['label'] }}
-                    <span class="badge badge-sm ml-2">{{ $info['count'] }}</span>
-                </a>
-            @endforeach
-        </div>
+        {{-- Tab-Strip über die gemeinsame Komponente (D5; Vollaudit 2026-07, N44). --}}
+        <x-tab-nav :items="collect($tabs)->map(fn($info, $key) => [
+            'label' => $info['label'],
+            'count' => $info['count'],
+            'route' => 'archive.index',
+            'params' => array_merge($tabFilters, ['tab' => $key]),
+            'active' => $tab === $key,
+        ])->values()->all()" />
 
         {{-- KPI-Kacheln --}}
         <div class="flex-none grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

@@ -20,9 +20,6 @@ use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-use PDFToolkit\Entities\PDFContent;
-use PDFToolkit\Registries\PDFWriterRegistry;
-use RuntimeException;
 
 /**
  * Etikettendruck (Feature 048, E5): erzeugt ein druckbares Etikett (PDF) für
@@ -65,16 +62,19 @@ class LabelController extends Controller {
             $fields = LabelTemplate::FIELDS;
         }
 
-        $html = view('inventory.labels.label', [
-            'label' => $data,
-            'qr' => $withQr ? $this->qrDataUri($data['code']) : null,
-            'fields' => $fields,
-        ])->render();
-
-        $bytes = PDFWriterRegistry::getInstance()->createPdfString(
-            PDFContent::fromHtml($html),
+        // View→PDF über den zentralen Renderer (C15; Vollaudit 2026-07, N27) —
+        // Writer-Options (Papierformat der Etikettenvorlage) werden durchgereicht.
+        $bytes = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->renderPdf(
+            \App\Enums\DocumentDesign\RenderDocumentKind::Report,
+            'inventory.labels.label',
+            [
+                'label' => $data,
+                'qr' => $withQr ? $this->qrDataUri($data['code']) : null,
+                'fields' => $fields,
+            ],
+            null,
             ['paper_size' => $paper, 'orientation' => $orientation],
-        ) ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (inventory.labels.label).');
+        );
 
         return response($bytes, 200, [
             'Content-Type' => 'application/pdf',

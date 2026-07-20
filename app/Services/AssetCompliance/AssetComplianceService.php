@@ -124,6 +124,8 @@ class AssetComplianceService {
                 'signed_at' => ! empty($data['signature_name']) ? now() : null,
                 'note' => $data['note'] ?? null,
                 'supersedes_id' => $data['supersedes_id'] ?? null,
+                // Prüfkosten (MVP-291; Vollaudit 2026-07, M33).
+                'cost' => $data['cost'] ?? null,
             ]);
 
             // Ergebniszeilen: Grenzwerte der Anforderungen als P2-Snapshot.

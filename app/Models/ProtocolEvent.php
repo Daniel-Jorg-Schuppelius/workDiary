@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AppendOnly;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -22,6 +23,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon $created_at
  */
 class ProtocolEvent extends Model {
+    // Append-only jetzt technisch erzwungen statt nur dokumentiert (Vollaudit 2026-07, M52).
+    use AppendOnly;
+
     public $timestamps = false;
 
     protected $fillable = [

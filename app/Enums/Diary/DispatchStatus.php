@@ -11,7 +11,7 @@
 namespace App\Enums\Diary;
 
 use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
 /**
  * Dispositionsstatus eines Auftrags (Feature 028 — Terminierung/Disposition).
@@ -25,7 +25,9 @@ use App\Enums\Contracts\HasLabel;
  * Planungsfeldern abgeleitet bzw. aus der Spalte diary_entries.dispatch_status
  * gelesen, ohne dass die WIP-Modellklasse DiaryEntry angefasst werden muss.
  */
-enum DispatchStatus: string implements HasLabel {
+enum DispatchStatus: string implements HasLabel, HasStatusTransitions {
+    use \App\Enums\Concerns\HasTransitions;
+
     use HasOptions;
 
     case Unplanned = 'unplanned';
@@ -74,7 +76,4 @@ enum DispatchStatus: string implements HasLabel {
         };
     }
 
-    public function canTransitionTo(self $target): bool {
-        return in_array($target, $this->allowedTransitions(), true);
-    }
 }

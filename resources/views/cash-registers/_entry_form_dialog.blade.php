@@ -14,6 +14,7 @@
     tone="primary"
     :action="route('cash-registers.entries.store', $register)"
     method="POST"
+    enctype="multipart/form-data"
     :form-data="['data-entry-form' => '']"
     :submit-label="__('Buchen')"
     size="md">
@@ -28,6 +29,8 @@
         <x-input-field name="tax_rate" type="number" :label="__('USt-Satz % (informativ)')" min="0" max="99.99" step="0.01" :value="old('tax_rate', '')" />
         <x-input-field name="purpose" :label="__('Zweck / Belegtext')" required maxlength="500" span="2" :value="old('purpose', '')" />
         <x-input-field name="counterparty" :label="__('Gegenpartei')" maxlength="180" :value="old('counterparty', '')" />
+        <x-input-field name="receipt" type="file" :label="__('Beleg (optional)')" span="2"
+            :hint="__('Max. :mb MB — der Beleg ist nach dem Buchen nicht mehr löschbar (GoBD).', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()])" />
         <x-select-field name="invoice_id" :label="__('Barzahlung zu Rechnung (optional)')" :hint="__('Volle Deckung setzt die Rechnung auf bezahlt.')">
             <option value="">{{ __('— keine —') }}</option>
             @foreach ($openInvoices as $invoice)

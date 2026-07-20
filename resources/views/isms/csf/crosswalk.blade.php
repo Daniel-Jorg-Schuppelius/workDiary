@@ -56,16 +56,14 @@
             </div>
 
             <x-card>
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table bare>
+                    <x-slot:head>
                             <tr>
                                 <th class="w-64">{{ __('isms.csf.crosswalk_source') }}</th>
                                 <th>{{ __('isms.csf.crosswalk_targets') }}</th>
                                 <th class="w-56">{{ __('isms.csf.crosswalk_coverage') }}</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($crosswalk['rows'] as $row)
                                 @php
                                     $cov = $row['coverage'];
@@ -98,9 +96,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             </x-card>
         @endif
     </x-index-page>

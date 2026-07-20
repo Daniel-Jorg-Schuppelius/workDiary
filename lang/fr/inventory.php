@@ -296,4 +296,10 @@ return [
             'deleted' => 'Modèle supprimé.',
         ],
     ],
+    'error' => [
+        'batch_required' => 'Article suivi par lot : veuillez indiquer un numéro de lot.',
+        'serial_required' => 'Article suivi par numéro de série : veuillez indiquer un numéro de série.',
+        'serial_qty_one' => 'Les articles sérialisés se réceptionnent numéro par numéro (quantité 1).',
+        'tracked_article_manual_move' => 'Article suivi par lot/série : enregistrer via la réception (commande) ou la gestion des lots/séries — pas en stock anonyme.',
+    ],
 ];

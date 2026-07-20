@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketSource, ServiceTicketStatus, SlaStatus};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, Searchable};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid, Searchable};
 use App\Services\ServiceTicket\SlaTimer;
 use Database\Factories\ServiceTicketFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -53,6 +53,7 @@ use Illuminate\Support\Carbon;
 class ServiceTicket extends Model {
     use Auditable;
     use BelongsToOrganization;
+    use HasAttachments;
     /** @use HasFactory<ServiceTicketFactory> */
     use HasFactory;
 
@@ -183,15 +184,8 @@ class ServiceTicket extends Model {
         return $this->hasMany(SlaClockSegment::class, 'service_ticket_id');
     }
 
-    /**
-     * Ticket-Anhänge (MVP-152, z. B. Portal-Uploads bei Ticketanlage);
-     * Nachrichten-Anhänge hängen an der jeweiligen {@see ServiceTicketMessage}.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\MorphMany<Attachment, $this>
-     */
-    public function attachments(): \Illuminate\Database\Eloquent\Relations\MorphMany {
-        return $this->morphMany(Attachment::class, 'attachable')->latest();
-    }
+    // Ticket-Anhänge (MVP-152) kommen aus HasAttachments (Vollaudit 2026-07,
+    // N29); Nachrichten-Anhänge hängen an der jeweiligen ServiceTicketMessage.
 
     /** @return BelongsTo<Asset, $this> */
     public function asset(): BelongsTo {

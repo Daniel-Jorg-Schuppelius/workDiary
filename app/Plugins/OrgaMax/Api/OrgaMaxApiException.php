@@ -18,8 +18,4 @@ use App\Plugins\Support\PluginApiException;
  * Fehler der orgaMAX-OpenAPI (Feature 077). Die Message trägt nur Status und
  * gekürzten Body-Auszug — nie API-Key, Secret, ownershipId oder Token.
  */
-class OrgaMaxApiException extends PluginApiException {
-    public function __construct(int $status, string $message, ?string $endpoint = null) {
-        parent::__construct($message, $status, $endpoint);
-    }
-}
+class OrgaMaxApiException extends PluginApiException {}

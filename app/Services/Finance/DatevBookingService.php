@@ -13,13 +13,14 @@ namespace App\Services\Finance;
 use App\Enums\Finance\DatevBatchStatus;
 use App\Models\{Expense, Invoice, Organization, User};
 use App\Models\Finance\{DatevBookingBatch, DatevBookingEvent, DatevBookingSource};
+use App\Services\Concerns\ResolvesActorId;
 use App\Services\Export\ExportRunner;
 use App\Services\Finance\Datev\{DatevBookingAdapter, DatevBookingConfig};
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Helper\Data\CryptoHelper;
 use DateTimeImmutable;
 use Illuminate\Support\{Carbon, Collection};
-use Illuminate\Support\Facades\{Auth, DB, Storage};
+use Illuminate\Support\Facades\{DB, Storage};
 
 /**
  * DATEV-Buchungsstapel (Feature 045): stellt gestellte Rechnungen/Gutschriften
@@ -50,6 +51,8 @@ use Illuminate\Support\Facades\{Auth, DB, Storage};
  * }
  */
 class DatevBookingService {
+    use ResolvesActorId;
+
     public const DISK = ExportRunner::DISK;
 
     public const BASE_PATH = 'exports/finance/datev';
@@ -612,6 +615,9 @@ class DatevBookingService {
                 'roundtrip_ok' => $roundtrip['ok'],
             ]);
 
+            // Feature-Nutzungszähler (036; Vollaudit 2026-07, N14).
+            app(\App\Services\Metrics\OperationsMetricsService::class)->increment('finance.datev_export', (int) $batch->organization_id);
+
             return $batch->refresh();
         });
     }
@@ -753,12 +759,6 @@ class DatevBookingService {
         $value = trim($value);
 
         return mb_strlen($value) > $max ? mb_substr($value, 0, $max) : $value;
-    }
-
-    private function resolveActorId(?User $actor): ?int {
-        $id = $actor->id ?? Auth::id();
-
-        return $id !== null ? (int) $id : null;
     }
 
     /** @param  array<string, mixed>  $payload */

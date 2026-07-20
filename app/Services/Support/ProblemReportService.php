@@ -94,20 +94,12 @@ class ProblemReportService {
         ]);
         $report->save();
 
+        // Ablage über den kanonischen FileAttacher (Vollaudit 2026-07, M46) —
+        // vereinheitlicht nebenbei uniqid('pr_') → UUID + Leere-Extension-Guard.
+        $attacher = app(\App\Services\Attachments\FileAttacher::class);
         foreach ($attachments as $file) {
-            $path = $file->storeAs(
-                'attachments/' . now()->format('Y/m'),
-                uniqid('pr_', true) . '.' . $file->getClientOriginalExtension(),
-                'local',
-            );
-            $report->attachments()->create([
+            $attacher->store($report, $file, $reporter->id, [
                 'organization_id' => $report->organization_id,
-                'user_id' => $reporter->id,
-                'disk' => 'local',
-                'path' => $path,
-                'original_name' => \App\Support\Filename::sanitize($file->getClientOriginalName()),
-                'mime' => $file->getMimeType(),
-                'size' => $file->getSize(),
             ]);
         }
 

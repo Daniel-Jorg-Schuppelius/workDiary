@@ -686,6 +686,34 @@ class InvoiceTest extends TestCase {
         $this->assertNotNull($invoice->due_on);
     }
 
+    /**
+     * Vollaudit 2026-07 (M26): Der Zustellnachweis bleibt nicht auf „queued"
+     * stehen — beim tatsächlichen Versand (Sync-Queue + array-Mailer) schreibt
+     * der MessageSent-Listener sent + Message-ID + Dateihash.
+     */
+    public function test_send_invoice_records_delivery_proof(): void {
+        $template = $this->makeDefaultTemplate();
+        $invoice = $this->makeInvoice(Invoice::STATUS_DRAFT);
+
+        $this->postAsAdmin('invoices.send', [
+            'template_id' => $template->id,
+            'to' => ['kunde@example.test'],
+        ], $invoice)->assertRedirect();
+
+        $dispatch = \App\Models\InvoiceDispatch::query()
+            ->where('invoice_id', $invoice->id)
+            ->where('channel', \App\Models\InvoiceDispatch::CHANNEL_EMAIL)
+            ->latest('id')
+            ->firstOrFail();
+
+        $this->assertSame('sent', $dispatch->status, 'MessageSent-Listener schreibt queued→sent.');
+        // Der array-Test-Mailer liefert keine Message-ID; belastbar sind
+        // Status, Sendezeitpunkt und der PDF-Hash (aus den versendeten Bytes).
+        $this->assertArrayHasKey('message_id', (array) $dispatch->meta);
+        $this->assertNotNull($dispatch->meta['sent_at'] ?? null);
+        $this->assertNotNull($dispatch->sha256, 'PDF-Hash wird beim Versand festgehalten.');
+    }
+
     public function test_send_invoice_validates_emails(): void {
         $template = $this->makeDefaultTemplate();
         $invoice = $this->makeInvoice(Invoice::STATUS_ISSUED);

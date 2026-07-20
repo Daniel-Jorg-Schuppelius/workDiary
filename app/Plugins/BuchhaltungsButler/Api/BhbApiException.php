@@ -18,8 +18,4 @@ use App\Plugins\Support\PluginApiException;
  * Fehler der BuchhaltungsButler-REST-API (MVP-432). Die Message trägt nur
  * Status und gekürzten Body-Auszug — nie Secret oder api_key.
  */
-class BhbApiException extends PluginApiException {
-    public function __construct(int $status, string $message, ?string $endpoint = null) {
-        parent::__construct($message, $status, $endpoint);
-    }
-}
+class BhbApiException extends PluginApiException {}

@@ -35,6 +35,7 @@ return [
         'save' => 'Salva',
         'reset' => 'Ripristina predefinito',
         'history' => 'Cronologia',
+        'export' => 'Esporta (JSON)',
     ],
     'empty' => [
         'title' => 'Nessuna impostazione trovata',

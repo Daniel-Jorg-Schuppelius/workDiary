@@ -10,7 +10,12 @@
       icon     Material-Symbol · count Badge-Zahl · when false blendet den Tab aus
 --}}
 @props(['items' => []])
-<div role="tablist" {{ $attributes->merge(['class' => 'tabs tabs-box w-full']) }}>
+@php
+    // w-full nur als Default: Aufrufer mit eigener Breitenklasse (w-fit,
+    // w-auto, …) bekommen keinen w-full-Konflikt (Vollaudit 2026-07, N44).
+    $tabNavHasWidth = preg_match('/(^|\s)w-\S+/', (string) $attributes->get('class', '')) === 1;
+@endphp
+<div role="tablist" {{ $attributes->merge(['class' => 'tabs tabs-box' . ($tabNavHasWidth ? '' : ' w-full')]) }}>
     @foreach ($items as $item)
         @continue(($item['when'] ?? true) === false)
         @php

@@ -109,17 +109,15 @@
                     @if ($readiness['soa']->isEmpty())
                         <p class="text-sm text-base-content/60">{{ __('isms.dashboard.empty_soa') }}</p>
                     @else
-                        <div class="overflow-x-auto">
-                        <table class="table table-sm">
-                            <thead>
+                        <x-table bare>
+                            <x-slot:head>
                                 <tr>
                                     <th>{{ __('isms.field.norm') }}</th>
                                     <th class="text-center">{{ __('isms.dashboard.soa_total') }}</th>
                                     <th class="text-center">{{ __('isms.dashboard.soa_applicable') }}</th>
                                     <th class="w-44">{{ __('isms.dashboard.soa_quote') }}</th>
                                 </tr>
-                            </thead>
-                            <tbody>
+                            </x-slot:head>
                                 @foreach ($readiness['soa'] as $norm)
                                     <tr>
                                         <td class="font-medium">{{ $norm['norm'] }}</td>
@@ -134,9 +132,7 @@
                                         </td>
                                     </tr>
                                 @endforeach
-                            </tbody>
-                        </table>
-                        </div>
+                        </x-table>
                     @endif
                 </x-card>
 

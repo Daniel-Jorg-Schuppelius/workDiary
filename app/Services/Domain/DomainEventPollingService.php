@@ -63,6 +63,24 @@ class DomainEventPollingService {
             }
             $event->save(); // DURABLE STORE zuerst
 
+            // Vollaudit 2026-07 (H12): Transfer-Statusänderungen an die Admins —
+            // Registrar-Transfers sind zeitkritisch (FOA/ACK-Fristen).
+            $classAction = strtolower((string) $event->event_class . ' ' . (string) $event->event_action);
+            if ($isNew && str_contains($classAction, 'transfer')) {
+                app(\App\Services\Notification\NotificationDispatcher::class)->notify(
+                    \App\Enums\Notification\NotificationEvent::DomainTransferChanged,
+                    $event,
+                    null,
+                    [
+                        'title' => (string) __('notification.message.domain_transfer_changed_title', ['domain' => (string) ($event->object ?? '—')]),
+                        'title_key' => 'notification.message.domain_transfer_changed_title',
+                        'title_params' => ['domain' => (string) ($event->object ?? '—')],
+                        'message' => trim((string) $event->event_class . ' / ' . (string) $event->event_action),
+                        'url' => route('domains.index'),
+                    ],
+                );
+            }
+
             if ($event->status !== 'acknowledged') {
                 try {
                     $ack = $adapter->execute('DeleteEvent', ['event' => $eventId], DomainCapabilityArea::Events);

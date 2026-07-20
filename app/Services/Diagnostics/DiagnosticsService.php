@@ -26,7 +26,29 @@ use Throwable;
  * Fehlermeldung zurückgegeben, wenn ein Check unerwartet wirft.
  */
 class DiagnosticsService {
-    public const SECTIONS = ['version', 'license', 'modules', 'queue', 'scheduler', 'mail', 'storage', 'backup', 'security', 'terminals'];
+    public const SECTIONS = ['version', 'license', 'modules', 'queue', 'scheduler', 'mail', 'connections', 'operations', 'storage', 'backup', 'security', 'terminals'];
+
+    /**
+     * Konnektor-Registry für die connections-Sektion (Vollaudit 2026-07, M15):
+     * alle Modelle mit {@see \App\Models\Concerns\HasConnectionHealth}.
+     *
+     * @var array<string, class-string<\Illuminate\Database\Eloquent\Model>>
+     */
+    public const CONNECTION_MODELS = [
+        'email' => \App\Models\EmailConnection::class,
+        'msgraph' => \App\Models\MsgraphConnection::class,
+        'sharepoint' => \App\Models\SharepointConnection::class,
+        'webdav' => \App\Models\WebdavConnection::class,
+        'caldav' => \App\Models\CalDavConnection::class,
+        'carddav' => \App\Models\CardDavConnection::class,
+        'google_calendar' => \App\Models\GoogleCalendarConnection::class,
+        'cti' => \App\Models\CtiConnection::class,
+        'carrier' => \App\Models\CarrierConnection::class,
+        'cloud_documents' => \App\Models\CloudIntake\CloudDocumentConnection::class,
+        'domain_provider' => \App\Models\Domain\DomainProviderConnection::class,
+        'ai_provider' => \App\Models\Ai\AiProviderConnection::class,
+        'backup_target' => \App\Models\Backup\BackupTargetConnection::class,
+    ];
 
     /** Warnschwelle: aktives Terminal ohne Kontakt seit … Stunden gilt als „stale". */
     public const TERMINAL_STALE_HOURS = 24;
@@ -65,6 +87,8 @@ class DiagnosticsService {
                 'queue' => $this->checkQueue(),
                 'scheduler' => $this->checkScheduler(),
                 'mail' => $this->checkMail(),
+                'connections' => $this->checkConnections(),
+                'operations' => $this->checkOperations(),
                 'storage' => $this->checkStorage(),
                 'backup' => $this->checkBackup(),
                 'security' => $this->checkSecurity(),
@@ -77,16 +101,158 @@ class DiagnosticsService {
     }
 
     public function checkVersion(): DiagnosticSection {
+        $metrics = [
+            'app_version' => (string) config('app.version', 'dev'),
+            'php_version' => PHP_VERSION,
+            'laravel_version' => app()->version(),
+            'environment' => (string) app()->environment(),
+        ];
+        $messages = [];
+
+        // Update-Zielstand (Feature 041 P5; Vollaudit 2026-07, M15): Modus,
+        // letzte Prüfung, offene/zurückgestellte Komponenten-Updates.
+        try {
+            $updates = app(\App\Services\Updates\UpdateCheckService::class);
+            $now = CarbonImmutable::now();
+            $open = \App\Models\ComponentUpdate::query()
+                ->whereNull('acknowledged_at')
+                ->where(fn($q) => $q->whereNull('snoozed_until')->orWhere('snoozed_until', '<=', $now))
+                ->count();
+            $snoozed = \App\Models\ComponentUpdate::query()
+                ->where('snoozed_until', '>', $now)
+                ->count();
+            $metrics['update_mode'] = $updates->mode();
+            $metrics['update_last_check_at'] = $updates->lastCheckedAt()?->toIso8601String();
+            $metrics['updates_open'] = $open;
+            $metrics['updates_snoozed'] = $snoozed;
+            if ($open > 0) {
+                $messages[] = sprintf('%d offene Komponenten-Meldung(en) — Admin → Komponenten prüfen.', $open);
+            }
+        } catch (Throwable) {
+            // Update-Registry nicht verfügbar (z. B. vor Migration) — Basissektion bleibt Ok.
+        }
+
         return new DiagnosticSection(
             code: 'version',
             status: DiagnosticStatus::Ok,
+            metrics: $metrics,
+            messages: $messages,
+            checkedAt: CarbonImmutable::now(),
+        );
+    }
+
+    /**
+     * Integrations-Gesundheit (Feature 041 P4, MVP-044 „Integrationen";
+     * Vollaudit 2026-07, M15): je Konnektor-Typ Gesamt/gestört/deaktiviert aus
+     * den {@see \App\Models\Concerns\HasConnectionHealth}-Spalten. Der
+     * ExpiryScanner meldet Störungen zusätzlich als Betriebsaufgabe — hier
+     * zählt der Live-Zustand.
+     */
+    public function checkConnections(): DiagnosticSection {
+        $total = 0;
+        $failing = 0;
+        $disabled = 0;
+        /** @var array<string, array{total:int, failing:int, disabled:int}> $detail */
+        $detail = [];
+        $messages = [];
+
+        foreach (self::CONNECTION_MODELS as $key => $class) {
+            try {
+                /** @var \Illuminate\Support\Collection<int, \Illuminate\Database\Eloquent\Model> $rows */
+                $rows = $class::query()->get(['id', 'last_error', 'disabled_at']);
+            } catch (Throwable) {
+                continue; // Tabelle fehlt (Modul nicht migriert) — Konnektor auslassen.
+            }
+            if ($rows->isEmpty()) {
+                continue;
+            }
+            $rowFailing = $rows->filter(static fn($r): bool => $r->getAttribute('last_error') !== null || $r->getAttribute('disabled_at') !== null)->count();
+            $rowDisabled = $rows->filter(static fn($r): bool => $r->getAttribute('disabled_at') !== null)->count();
+            $detail[$key] = ['total' => $rows->count(), 'failing' => $rowFailing, 'disabled' => $rowDisabled];
+            $total += $rows->count();
+            $failing += $rowFailing;
+            $disabled += $rowDisabled;
+            if ($rowFailing > 0) {
+                $messages[] = sprintf('%s: %d von %d Verbindung(en) gestört.', $key, $rowFailing, $rows->count());
+            }
+        }
+
+        if ($total === 0) {
+            return new DiagnosticSection(
+                code: 'connections',
+                status: DiagnosticStatus::Unknown,
+                metrics: ['total' => 0],
+                messages: ['Keine Integrations-Verbindungen konfiguriert.'],
+                checkedAt: CarbonImmutable::now(),
+            );
+        }
+
+        return new DiagnosticSection(
+            code: 'connections',
+            status: $failing > 0 ? DiagnosticStatus::Warn : DiagnosticStatus::Ok,
             metrics: [
-                'app_version' => (string) config('app.version', 'dev'),
-                'php_version' => PHP_VERSION,
-                'laravel_version' => app()->version(),
-                'environment' => (string) app()->environment(),
+                'total' => $total,
+                'failing' => $failing,
+                'disabled' => $disabled,
+                'detail' => JsonHelper::encode($detail, JSON_UNESCAPED_UNICODE),
             ],
-            messages: [],
+            messages: $messages,
+            checkedAt: CarbonImmutable::now(),
+        );
+    }
+
+    /**
+     * Betriebsaufgaben-Zusammenfassung (Feature 041 P2; Vollaudit 2026-07,
+     * M15): offene/zurückgestellte Aufgaben mit Counts je Typ und Severity —
+     * dieselben Zahlen erhält der Supportbericht.
+     */
+    public function checkOperations(): DiagnosticSection {
+        $open = [];
+        try {
+            /** @var \Illuminate\Support\Collection<int, \App\Models\OperationsTask> $tasks */
+            $tasks = \App\Models\OperationsTask::query()
+                ->whereIn('status', [
+                    \App\Enums\Operations\OperationsTaskStatus::Open->value,
+                    \App\Enums\Operations\OperationsTaskStatus::Snoozed->value,
+                    \App\Enums\Operations\OperationsTaskStatus::Delegated->value,
+                ])
+                ->get(['id', 'type', 'severity', 'status']);
+        } catch (Throwable) {
+            return new DiagnosticSection(
+                code: 'operations',
+                status: DiagnosticStatus::Unknown,
+                metrics: [],
+                messages: ['Betriebsaufgaben-Tabelle nicht verfügbar.'],
+                checkedAt: CarbonImmutable::now(),
+            );
+        }
+
+        $bySeverity = ['info' => 0, 'warning' => 0, 'critical' => 0];
+        /** @var array<string, int> $byType */
+        $byType = [];
+        foreach ($tasks as $task) {
+            $bySeverity[$task->severity->value]++;
+            $byType[$task->type->value] = ($byType[$task->type->value] ?? 0) + 1;
+        }
+
+        $messages = [];
+        $status = DiagnosticStatus::Ok;
+        if ($bySeverity['critical'] > 0) {
+            $status = DiagnosticStatus::Warn;
+            $messages[] = sprintf('%d kritische offene Betriebsaufgabe(n) — Admin → Betrieb prüfen.', $bySeverity['critical']);
+        }
+
+        return new DiagnosticSection(
+            code: 'operations',
+            status: $status,
+            metrics: [
+                'open_total' => $tasks->count(),
+                'severity_info' => $bySeverity['info'],
+                'severity_warning' => $bySeverity['warning'],
+                'severity_critical' => $bySeverity['critical'],
+                'by_type' => JsonHelper::encode($byType, JSON_UNESCAPED_UNICODE),
+            ],
+            messages: $messages,
             checkedAt: CarbonImmutable::now(),
         );
     }

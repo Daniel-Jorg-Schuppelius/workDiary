@@ -34,6 +34,12 @@
                 <x-action-form :action="route('projects.timesheets.magic-link', [$project, $timesheet])">
                     <x-icon-btn icon="link" tone="secondary" size="sm" type="submit" show-label>{{ __('Sign-Link an Kunden') }}</x-icon-btn>
                 </x-action-form>
+                {{-- Magic-Link widerrufen (Feature 012 MVP; Vollaudit 2026-07, M6). --}}
+                @if ($timesheet->magic_token !== null)
+                    <x-action-form method="DELETE" :action="route('projects.timesheets.magic-link.revoke', [$project, $timesheet])">
+                        <x-icon-btn icon="link_off" tone="ghost" size="sm" type="submit" show-label>{{ __('Sign-Link widerrufen') }}</x-icon-btn>
+                    </x-action-form>
+                @endif
                 <x-action-form :action="route('projects.timesheets.submit', [$project, $timesheet])">
                     <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Einreichen') }}</x-icon-btn>
                 </x-action-form>

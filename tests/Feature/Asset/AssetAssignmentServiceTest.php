@@ -13,7 +13,7 @@ namespace Tests\Feature\Asset;
 use App\Enums\Asset\{AssetStatus, DefectSeverity, DefectStatus};
 use App\Exceptions\AssetValidationException;
 use App\Models\{Asset, Organization, User};
-use App\Services\Asset\{AssetAssignmentService, AssetStatusMachine};
+use App\Services\Asset\AssetAssignmentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
@@ -30,7 +30,9 @@ class AssetAssignmentServiceTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
 
-        $this->service = new AssetAssignmentService(new AssetStatusMachine);
+        // Vollaudit 2026-07 (H2/H3): Service hat jetzt den AssetUsageGuard als
+        // Abhängigkeit — über den Container auflösen statt hart konstruieren.
+        $this->service = app(AssetAssignmentService::class);
         $this->org = Organization::factory()->create();
         app()->instance('currentOrganization', $this->org);
         $this->actor = User::factory()->create(['organization_id' => $this->org->id]);

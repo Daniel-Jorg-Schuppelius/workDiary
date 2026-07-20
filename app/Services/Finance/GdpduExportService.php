@@ -90,6 +90,12 @@ class GdpduExportService {
                     ['name' => 'USt_Satz', 'type' => 'numeric', 'accuracy' => 2],
                     ['name' => 'USt_Betrag', 'type' => 'numeric', 'accuracy' => 2],
                     ['name' => 'Brutto', 'type' => 'numeric', 'accuracy' => 2],
+                    // Vollaudit 2026-07 (H11): Formatmetadaten der E-Rechnung
+                    // (066→063) — letzter Versand: Format/Kanal/Zeitpunkt/Hash.
+                    ['name' => 'ERechnung_Format', 'type' => 'alpha'],
+                    ['name' => 'Versandkanal', 'type' => 'alpha'],
+                    ['name' => 'Versandt_am', 'type' => 'alpha'],
+                    ['name' => 'Datei_SHA256', 'type' => 'alpha'],
                 ],
             ],
             'invoice_items' => [
@@ -206,6 +212,42 @@ class GdpduExportService {
                     ['name' => 'Storno_zu', 'type' => 'alpha'],
                     ['name' => 'Erfasst_am', 'type' => 'alpha'],
                     ['name' => 'Hash', 'type' => 'alpha'],
+                ],
+            ],
+            // Vollaudit 2026-07 (M38): Kassensturz-Nachweis — Tagesabschlüsse
+            // mit Soll/Ist/Differenz plus Kassenstammdaten.
+            'cash_daily_closings' => [
+                'file' => 'kassenabschluss.csv',
+                'name' => 'Kassen-Tagesabschlüsse',
+                'description' => 'Tagesabschlüsse mit Kassensturz (Soll/Ist/Differenz) je Kasse im Prüfungszeitraum, inkl. Kassenstammdaten (MVP-414).',
+                'columns' => [
+                    ['name' => 'Kasse', 'type' => 'alpha'],
+                    ['name' => 'Waehrung', 'type' => 'alpha'],
+                    ['name' => 'Anfangsbestand', 'type' => 'numeric', 'accuracy' => 2],
+                    ['name' => 'Eroeffnet_am', 'type' => 'date'],
+                    ['name' => 'Abschlussdatum', 'type' => 'date'],
+                    ['name' => 'Sollbestand', 'type' => 'numeric', 'accuracy' => 2],
+                    ['name' => 'Istbestand', 'type' => 'numeric', 'accuracy' => 2],
+                    ['name' => 'Differenz', 'type' => 'numeric', 'accuracy' => 2],
+                    ['name' => 'Notiz', 'type' => 'alpha'],
+                    ['name' => 'Abgeschlossen_von', 'type' => 'alpha'],
+                    ['name' => 'Erfasst_am', 'type' => 'alpha'],
+                ],
+            ],
+            // Vollaudit 2026-07 (H11): Eingangs-E-Rechnungen samt Formatmetadaten
+            // (066→063) — Hash, Quelle, Status, Übergabezeitpunkt.
+            'incoming_einvoices' => [
+                'file' => 'eingangsrechnungen.csv',
+                'name' => 'Eingangs-E-Rechnungen',
+                'description' => 'Eingegangene E-Rechnungen des Prüfungszeitraums (nach Eingangsdatum) mit SHA-256, Quelle, Validierungs-/Freigabestatus und Übergabezeitpunkt.',
+                'columns' => [
+                    ['name' => 'Eingegangen_am', 'type' => 'alpha'],
+                    ['name' => 'Quelle', 'type' => 'alpha'],
+                    ['name' => 'Status', 'type' => 'alpha'],
+                    ['name' => 'SHA256', 'type' => 'alpha'],
+                    ['name' => 'Entschieden_am', 'type' => 'alpha'],
+                    ['name' => 'Entscheidungsnotiz', 'type' => 'alpha'],
+                    ['name' => 'Uebergeben_am', 'type' => 'alpha'],
                 ],
             ],
             'expenses' => [
@@ -367,11 +409,14 @@ class GdpduExportService {
             ->where('organization_id', $organization->id)
             ->whereBetween('issued_on', [$from->toDateString(), $to->toDateString()])
             ->with('customer:id,number,name,company,vat_id,tax_number,address_street,address_zip,address_city,country,email')
+            ->with('dispatches')
             ->orderBy('id')
             ->get();
 
         $invoiceRows = [];
         foreach ($invoices as $inv) {
+            // Vollaudit 2026-07 (H11): Formatmetadaten des letzten Versands.
+            $dispatch = $inv->dispatches->sortByDesc('id')->first();
             $invoiceRows[] = [
                 $this->str($inv->number),
                 $this->str($inv->type),
@@ -386,6 +431,10 @@ class GdpduExportService {
                 $this->num($inv->tax_rate, 2),
                 $this->num($inv->tax_amount, 2),
                 $this->num($inv->total, 2),
+                $this->str($dispatch?->format),
+                $this->str($dispatch?->channel),
+                $this->dateTime($dispatch?->created_at),
+                $this->str($dispatch?->sha256),
             ];
         }
 
@@ -465,8 +514,73 @@ class GdpduExportService {
             'booking_batch_items' => $batchItemRows,
             'payment_allocations' => $this->collectPaymentAllocationRows($organization, $from, $to),
             'cash_entries' => $this->collectCashEntryRows($organization, $from, $to),
+            'cash_daily_closings' => $this->collectCashClosingRows($organization, $from, $to),
+            'incoming_einvoices' => $this->collectIncomingEInvoiceRows($organization, $from, $to),
             'expenses' => $this->collectExpenseRows($organization, $from, $to),
         ];
+    }
+
+    /**
+     * Kassen-Tagesabschlüsse (Vollaudit 2026-07, M38): Kassensturz-Nachweis
+     * mit Soll/Ist/Differenz + Kassenstammdaten je Prüfungszeitraum.
+     *
+     * @return list<list<string>>
+     */
+    private function collectCashClosingRows(Organization $organization, CarbonInterface $from, CarbonInterface $to): array {
+        $rows = [];
+        \App\Models\CashDailyClosing::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->whereBetween('closing_date', [$from->toDateString(), $to->toDateString()])
+            ->with(['register:id,name,currency,opening_balance,opened_on', 'closedBy:id,name'])
+            ->orderBy('cash_register_id')->orderBy('closing_date')
+            ->get()
+            ->each(function (\App\Models\CashDailyClosing $closing) use (&$rows): void {
+                $rows[] = [
+                    $this->str($closing->register?->name),
+                    $this->str($closing->register?->currency),
+                    $this->num($closing->register?->opening_balance, 2),
+                    $this->date($closing->register?->opened_on),
+                    $this->date($closing->closing_date),
+                    $this->num($closing->expected_balance, 2),
+                    $this->num($closing->counted_balance, 2),
+                    $this->num($closing->difference, 2),
+                    $this->str($closing->note),
+                    $this->str($closing->closedBy?->name),
+                    $this->dateTime($closing->created_at),
+                ];
+            });
+
+        return $rows;
+    }
+
+    /**
+     * Eingangs-E-Rechnungen (Vollaudit 2026-07, H11): Formatmetadaten des
+     * Eingangskanals — SHA-256, Quelle, Status, Übergabe (066→063).
+     *
+     * @return list<list<string>>
+     */
+    private function collectIncomingEInvoiceRows(Organization $organization, CarbonInterface $from, CarbonInterface $to): array {
+        $rows = [];
+        \App\Models\IncomingEInvoice::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->whereBetween('received_at', [$from->toDateString() . ' 00:00:00', $to->toDateString() . ' 23:59:59'])
+            ->orderBy('received_at')
+            ->get()
+            ->each(function (\App\Models\IncomingEInvoice $incoming) use (&$rows): void {
+                $rows[] = [
+                    $this->dateTime($incoming->received_at),
+                    $this->str($incoming->source),
+                    $this->str($incoming->status),
+                    $this->str($incoming->sha256),
+                    $this->dateTime($incoming->decided_at),
+                    $this->str($incoming->decision_note),
+                    $this->dateTime($incoming->transferred_at),
+                ];
+            });
+
+        return $rows;
     }
 
     /**

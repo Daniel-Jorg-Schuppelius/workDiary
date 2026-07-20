@@ -135,9 +135,8 @@
     <x-card :title="__('security.section.tokens')">
         <p class="mb-2 text-xs italic text-base-content/50">{{ __('security.hint.tokens_no_secret') }}</p>
         @if (! empty($tokens['recent']))
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead>
+            <x-table bare>
+                <x-slot:head>
                         <tr>
                             <th>{{ __('security.field.token_name') }}</th>
                             <th>{{ __('security.field.user') }}</th>
@@ -146,8 +145,7 @@
                             <th>{{ __('security.field.expires_at') }}</th>
                             <th>{{ __('security.field.created_at') }}</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                </x-slot:head>
                         @foreach ($tokens['recent'] as $token)
                             <tr>
                                 <td class="font-mono text-xs">{{ $token['name'] }}</td>
@@ -168,9 +166,7 @@
                                 <td class="font-mono text-xs">{{ $fmt($token['created_at']) }}</td>
                             </tr>
                         @endforeach
-                    </tbody>
-                </table>
-            </div>
+            </x-table>
         @else
             <x-empty-state icon="key_off" :title="__('security.empty.tokens')" />
         @endif
@@ -180,17 +176,15 @@
     @if (($sessions['available'] ?? false) === true)
         <x-card :title="__('security.section.sessions')">
             @if (! empty($sessions['recent']))
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table bare>
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('security.field.user') }}</th>
                                 <th>{{ __('security.field.ip') }}</th>
                                 <th>{{ __('security.field.user_agent') }}</th>
                                 <th>{{ __('security.field.last_activity') }}</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($sessions['recent'] as $session)
                                 <tr>
                                     <td class="text-xs">
@@ -204,9 +198,7 @@
                                     <td class="font-mono text-xs">{{ $fmt($session['last_activity']) }}</td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             @else
                 <x-empty-state icon="devices_off" :title="__('security.empty.sessions')" />
             @endif
@@ -216,9 +208,8 @@
     {{-- ── Letzte Exporte ─────────────────────────────────────────────── --}}
     <x-card :title="__('security.section.exports')">
         @if (! empty($exports['recent']))
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead>
+            <x-table bare>
+                <x-slot:head>
                         <tr>
                             <th>{{ __('security.field.export_kind') }}</th>
                             <th>{{ __('security.field.export_subject') }}</th>
@@ -228,8 +219,7 @@
                             <th>{{ __('security.field.user') }}</th>
                             <th>{{ __('security.field.created_at') }}</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                </x-slot:head>
                         @foreach ($exports['recent'] as $export)
                             <tr>
                                 <td class="text-xs">{{ $export['kind'] }}</td>
@@ -241,9 +231,7 @@
                                 <td class="font-mono text-xs">{{ $fmt($export['created_at']) }}</td>
                             </tr>
                         @endforeach
-                    </tbody>
-                </table>
-            </div>
+            </x-table>
         @else
             <x-empty-state icon="download_done" :title="__('security.empty.exports')" />
         @endif
@@ -253,9 +241,8 @@
     <x-card :title="__('security.section.support_access')">
         <p class="mb-2 text-xs italic text-base-content/50">{{ __('security.hint.support_access') }}</p>
         @if (! empty($supportAccess['recent']))
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead>
+            <x-table bare>
+                <x-slot:head>
                         <tr>
                             <th>{{ __('security.field.event') }}</th>
                             <th>{{ __('security.field.user') }}</th>
@@ -263,8 +250,7 @@
                             <th>{{ __('security.field.ip') }}</th>
                             <th>{{ __('security.field.created_at') }}</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                </x-slot:head>
                         @foreach ($supportAccess['recent'] as $access)
                             <tr>
                                 <td class="font-mono text-xs">{{ $access['event'] }}</td>
@@ -274,9 +260,7 @@
                                 <td class="font-mono text-xs">{{ $fmt($access['created_at']) }}</td>
                             </tr>
                         @endforeach
-                    </tbody>
-                </table>
-            </div>
+            </x-table>
         @else
             <x-empty-state icon="support_agent" :title="__('security.empty.support_access')" />
         @endif
@@ -300,9 +284,8 @@
             </form>
         </div>
         @if ($advisories->isNotEmpty())
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead>
+            <x-table bare>
+                <x-slot:head>
                         <tr>
                             <th>{{ __('security.field.severity') }}</th>
                             <th>{{ __('security.field.package') }}</th>
@@ -310,8 +293,7 @@
                             <th>{{ __('security.field.fixed_in') }}</th>
                             <th>{{ __('security.field.statement') }}</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                </x-slot:head>
                         @foreach ($advisories as $advisory)
                             <tr>
                                 <td>
@@ -349,9 +331,7 @@
                                 </td>
                             </tr>
                         @endforeach
-                    </tbody>
-                </table>
-            </div>
+            </x-table>
         @else
             <x-empty-state icon="verified_user" :title="__('security.empty.advisories')" />
         @endif
@@ -371,15 +351,13 @@
             {{ __('security.hint.encryption', ['command' => $encryption['command'] ?? 'security:encrypt-existing']) }}
         </p>
         @if (! empty($encryption['fields']))
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead>
+            <x-table bare>
+                <x-slot:head>
                         <tr>
                             <th>{{ __('security.field.table') }}</th>
                             <th>{{ __('security.field.fields') }}</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                </x-slot:head>
                         @foreach ($encryption['fields'] as $table => $columns)
                             <tr>
                                 <td class="font-mono text-xs">{{ $table }}</td>
@@ -392,9 +370,7 @@
                                 </td>
                             </tr>
                         @endforeach
-                    </tbody>
-                </table>
-            </div>
+            </x-table>
         @endif
     </x-card>
 

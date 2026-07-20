@@ -17,8 +17,6 @@ use App\Models\Privacy\{Dpia, DpiaStep, ProcessingActivity};
 use App\Services\Privacy\DpiaWorkflowService;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\Gate;
-use PDFToolkit\Entities\PDFContent;
-use PDFToolkit\Registries\PDFWriterRegistry;
 use RuntimeException;
 
 /**
@@ -106,13 +104,13 @@ class DpiaController extends Controller {
         $dpia = Dpia::query()->where('activity_id', $activity->id)->firstOrFail();
         $dpia->load(['steps.completedBy', 'activity']);
 
-        $html = view('privacy.dpias.report-pdf', [
-            'dpia' => $dpia,
-            'activity' => $activity,
-        ])->render();
-
-        $bytes = PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
-            ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen.');
+        // View→PDF über den zentralen Renderer (C15; Vollaudit 2026-07, N27) — design-frei.
+        $bytes = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->renderPdf(
+            \App\Enums\DocumentDesign\RenderDocumentKind::Report,
+            'privacy.dpias.report-pdf',
+            ['dpia' => $dpia, 'activity' => $activity],
+            null,
+        );
 
         return response($bytes, 200, [
             'Content-Type' => 'application/pdf',

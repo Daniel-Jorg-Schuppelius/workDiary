@@ -32,10 +32,9 @@ class MeterReadingController extends Controller {
         $assetFilter = Sqid::decodeOrNumeric(Asset::class, $rawAsset, 0);
 
         $search = $request->string('q')->toString();
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'read_at';
-        $dir = $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc';
+        // Whitelist-Auflösung zentral (C21; Vollaudit 2026-07, N26) — bei
+        // ungültigem Key fallen Key UND Richtung auf die Defaults zurück.
+        [$sort, $dir] = \App\Support\SortableQuery::resolve($request, self::ALLOWED_SORTS, 'read_at');
 
         $query = MeterReading::query()
             ->with(['asset:id,name,asset_no', 'readBy:id,name'])

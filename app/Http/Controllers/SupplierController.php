@@ -116,7 +116,7 @@ class SupplierController extends Controller {
         unset($data['tag_ids'], $data['new_tags']);
 
         $supplier = Supplier::create($data + ['created_by' => Auth::id()]);
-        $supplier->syncTagsFromInput($tagIds, array_filter(array_map('trim', explode(',', $newTagsRaw))));
+        $supplier->syncTagsFromInput($tagIds, \App\Support\TagInput::names($newTagsRaw));
 
         return redirect()->route('suppliers.show', $supplier)
             ->with('success', __('Lieferant angelegt.'));
@@ -141,7 +141,7 @@ class SupplierController extends Controller {
         unset($data['tag_ids'], $data['new_tags']);
 
         $supplier->update($data);
-        $supplier->syncTagsFromInput($tagIds, array_filter(array_map('trim', explode(',', $newTagsRaw))));
+        $supplier->syncTagsFromInput($tagIds, \App\Support\TagInput::names($newTagsRaw));
 
         return redirect()->route('suppliers.show', $supplier)
             ->with('success', __('Lieferant aktualisiert.'));

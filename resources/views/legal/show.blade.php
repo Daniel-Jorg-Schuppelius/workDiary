@@ -3,16 +3,8 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <script @cspNonce>
-            (function () {
-                var savedTheme = localStorage.getItem('workDiaryTheme');
-                var prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-                var theme = savedTheme || (prefersLight ? 'corporate' : 'dim');
-                var root = document.documentElement;
-                root.setAttribute('data-theme', theme);
-                root.style.colorScheme = theme === 'corporate' ? 'light' : 'dark';
-            })();
-        </script>
+        {{-- Anti-Flash-Theme (ein Partial statt 17 Kopien; Vollaudit 2026-07, M51). --}}
+        @include('partials.theme-bootstrap')
         <title>{{ $title }} – {{ config('app.name', 'WorkDiary') }}</title>
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
             @vite(['resources/css/app.css', 'resources/js/app.js'])

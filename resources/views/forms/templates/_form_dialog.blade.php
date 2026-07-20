@@ -51,6 +51,25 @@
     <x-form-group :legend="__('form.title.template')" icon="assignment" tone="primary" cols="2">
         <x-input-field name="name" :label="__('form.field.name')" required minlength="3" maxlength="160" span="2" :value="old('name', $template?->name)" />
         <x-textarea-field name="description" :label="__('form.field.description')" rows="2" maxlength="2000" span="2" :value="old('description', $template?->description)" />
+        {{-- Gültigkeit + Zuordnung (Feature 032 MVP; Vollaudit 2026-07, M11). --}}
+        <x-input-field name="valid_from" type="date" :label="__('form.field.valid_from')" :value="old('valid_from', $template?->valid_from?->toDateString())" />
+        <x-input-field name="valid_until" type="date" :label="__('form.field.valid_until')" :value="old('valid_until', $template?->valid_until?->toDateString())" />
+        @php
+            $targetEntryTypeId = old('target_entry_type') !== null ? null : ($template?->target['entry_type_id'] ?? null);
+            $targetCustomerId = old('target_customer') !== null ? null : ($template?->target['customer_id'] ?? null);
+        @endphp
+        <x-select-field name="target_entry_type" :label="__('form.field.target_entry_type')">
+            <option value="">{{ __('alle') }}</option>
+            @foreach (\App\Models\EntryType::query()->orderBy('label')->get(['id', 'label']) as $entryType)
+                <option value="{{ $entryType->sqid }}" @selected($targetEntryTypeId === $entryType->id)>{{ $entryType->label }}</option>
+            @endforeach
+        </x-select-field>
+        <x-select-field name="target_customer" :label="__('form.field.target_customer')">
+            <option value="">{{ __('alle') }}</option>
+            @foreach (\App\Models\Customer::query()->orderBy('name')->limit(500)->get(['id', 'name']) as $targetCustomer)
+                <option value="{{ $targetCustomer->sqid }}" @selected($targetCustomerId === $targetCustomer->id)>{{ $targetCustomer->name }}</option>
+            @endforeach
+        </x-select-field>
     </x-form-group>
 
     <x-form-group :legend="__('form.field.fields')" icon="list_alt" tone="info">

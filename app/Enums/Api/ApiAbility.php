@@ -59,6 +59,12 @@ enum ApiAbility: string implements HasLabel {
     case CustomersWrite = 'customers:write';
     case ProjectsRead = 'projects:read';
     case ProjectsWrite = 'projects:write';
+    // Vollaudit 2026-07 (M3): Kernobjekte Abwesenheiten/Spesen/Rechnungen/
+    // Schichtplan — read-first (Feature 008 MVP).
+    case AbsencesRead = 'absences:read';
+    case ExpensesRead = 'expenses:read';
+    case InvoicesRead = 'invoices:read';
+    case ScheduledShiftsRead = 'scheduled-shifts:read';
 
     public function label(): string {
         return match ($this) {
@@ -91,6 +97,10 @@ enum ApiAbility: string implements HasLabel {
             self::CustomersWrite => (string) __('Kunden anlegen/ändern'),
             self::ProjectsRead => (string) __('Projekte lesen'),
             self::ProjectsWrite => (string) __('Projekte anlegen/ändern'),
+            self::AbsencesRead => (string) __('Abwesenheiten lesen'),
+            self::ExpensesRead => (string) __('Spesen lesen'),
+            self::InvoicesRead => (string) __('Rechnungen lesen'),
+            self::ScheduledShiftsRead => (string) __('Schichtplan lesen'),
         };
     }
 }

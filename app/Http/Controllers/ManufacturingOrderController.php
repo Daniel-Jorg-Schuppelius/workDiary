@@ -101,6 +101,13 @@ class ManufacturingOrderController extends Controller {
             // Aktive Versandanbindungen für die „Versandauftrag erzeugen"-Aktion (Rang 20).
             'carriers' => CarrierConnection::query()->where('active', true)->orderBy('name')->get(),
             'quality' => $order->reports->isNotEmpty() ? $quality->metricsFor($order) : null,
+            // Vollaudit 2026-07 (M20): Ersatzmaterialprozess (MVP-068).
+            'substitutes' => \App\Models\MaterialSubstitute::query()
+                ->where('manufacturing_order_id', $order->id)
+                ->with(['substituteArticle:id,name', 'plannedArticle:id,name'])
+                ->orderByDesc('id')
+                ->get(),
+            'substituteArticles' => \App\Models\Article::query()->orderBy('name')->limit(500)->get(['id', 'name']),
         ]);
     }
 
@@ -211,6 +218,68 @@ class ManufacturingOrderController extends Controller {
         }
 
         return back()->with('success', __('manufacturing.order.flash.consumed'));
+    }
+
+    /**
+     * Ersatzmaterial beantragen (Feature 048 MVP-068; Vollaudit 2026-07, M20):
+     * der ShortageService hatte zuvor keinen UI-Aufrufer.
+     */
+    public function requestSubstitute(Request $request, ManufacturingOrder $order): RedirectResponse {
+        Gate::authorize('update', $order);
+
+        $data = $request->validate([
+            'material' => ['required', 'integer'],
+            'substitute_article' => ['required', 'string'],
+            'quantity' => ['required', 'numeric', 'gt:0'],
+            'reason' => ['required', 'string', 'min:5', 'max:500'],
+        ]);
+
+        $material = ManufacturingOrderMaterial::query()
+            ->where('manufacturing_order_id', $order->id)
+            ->find((int) $data['material']);
+        if ($material === null) {
+            return back()->with('error', __('Unbekannte Materialposition.'));
+        }
+
+        $articleId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Article::class, (string) $data['substitute_article']);
+        $article = $articleId !== null
+            ? \App\Models\Article::query()->where('organization_id', $order->organization_id)->find($articleId)
+            : null;
+        if ($article === null) {
+            return back()->with('error', __('Unbekannter Ersatzartikel.'));
+        }
+
+        app(\App\Services\Manufacturing\ShortageService::class)->requestSubstitute(
+            $material,
+            $article,
+            null,
+            (string) $data['quantity'],
+            (string) $data['reason'],
+            Auth::id() !== null ? (int) Auth::id() : null,
+        );
+
+        return back()->with('success', __('Ersatzmaterial beantragt — Entscheidung ausstehend.'));
+    }
+
+    /** Ersatzmaterial-Antrag entscheiden — eigenes Recht (Vollaudit 2026-07, M22). */
+    public function decideSubstitute(Request $request, ManufacturingOrder $order, \App\Models\MaterialSubstitute $substitute): RedirectResponse {
+        Gate::authorize(\App\Enums\User\Permission::InventorySubstituteApprove->value);
+        abort_unless($substitute->manufacturing_order_id === $order->id, 404);
+
+        $data = $request->validate(['decision' => ['required', 'in:approve,reject']]);
+
+        $shortages = app(\App\Services\Manufacturing\ShortageService::class);
+        $actor = Auth::id() !== null ? (int) Auth::id() : null;
+
+        try {
+            $data['decision'] === 'approve'
+                ? $shortages->approveSubstitute($substitute, $actor)
+                : $shortages->rejectSubstitute($substitute, $actor);
+        } catch (RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', __('Ersatzmaterial-Antrag entschieden.'));
     }
 
     /** Liefert die Auslieferung als Lieferschein-PDF (Feature 047, MVP-074). */

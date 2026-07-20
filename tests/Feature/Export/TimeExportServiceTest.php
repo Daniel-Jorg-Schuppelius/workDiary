@@ -61,6 +61,38 @@ class TimeExportServiceTest extends TestCase {
         );
     }
 
+    /**
+     * Vollaudit 2026-07 (H1): Wer Zeitdaten hat, aber nie eingereicht hat
+     * (MonthClosure entsteht nur lazy beim Seitenaufruf), darf nicht still
+     * im Org-Export fehlen — Abbruch mit Blockerliste (zeit-export.md §3/§9).
+     */
+    public function test_prepare_aborts_with_blocker_list_when_user_with_data_has_no_closure(): void {
+        $admin = $this->makeAdmin();
+        $submitted = $this->makeUser();
+        $silent = $this->makeUser();
+        $this->seedAttendance($submitted, 8 * 60);
+        $this->seedAttendance($silent, 6 * 60);
+        $this->approvedClosureFor($submitted, $admin);
+        $this->actingAs($admin);
+
+        try {
+            $this->service->prepare($this->organization, $this->year, $this->month, 'generic', 'organization', actor: $admin);
+            $this->fail('Export ohne Monatsfreigabe des zweiten Nutzers wurde nicht abgebrochen.');
+        } catch (TimeExportException $e) {
+            $this->assertSame('missingClosures', $e->reasonCode);
+            $this->assertSame(
+                [['user_id' => (int) $silent->id, 'status' => 'missing']],
+                $e->context['missing'],
+            );
+        }
+
+        // Nach Einreichung + Genehmigung des zweiten Nutzers läuft prepare durch.
+        $this->approvedClosureFor($silent, $admin);
+        $this->actingAs($admin);
+        $export = $this->service->prepare($this->organization, $this->year, $this->month, 'generic', 'organization', actor: $admin);
+        $this->assertSame(TimeExportStatus::Preparing, $export->status);
+    }
+
     public function test_prepare_fails_when_closure_not_approved(): void {
         $admin = $this->makeAdmin();
         $user = $this->makeUser();
@@ -281,6 +313,108 @@ class TimeExportServiceTest extends TestCase {
     }
 
     // ── Helfer ─────────────────────────────────────────────────────────
+
+    /**
+     * Vollaudit 2026-07 (H6/M4): Der Export erzeugt Zeilen für
+     * absence.vacation/absence.sick (Werktage), work.oncall/travel.time
+     * (Stunden) sowie Zuschläge der Nicht-Intervall-Arten oncall/standby —
+     * vorher entstand ausschließlich work.normal + Intervall-Zuschläge.
+     */
+    public function test_build_aggregates_absence_oncall_and_travel_wage_types(): void {
+        $admin = $this->makeAdmin();
+        $user = $this->makeUser();
+        $this->seedAttendance($user, 8 * 60); // Mo 15.01.2024
+
+        \App\Models\Vacation::query()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $user->id,
+            'start_date' => '2024-01-02', // Di–Mi → 2 Werktage
+            'end_date' => '2024-01-03',
+            'type' => \App\Enums\Vacation\VacationType::Vacation,
+            'status' => \App\Enums\Vacation\VacationStatus::Approved,
+        ]);
+        \App\Models\SickLeave::query()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $user->id,
+            'start_date' => '2024-01-08', // Mo–Di → 2 Werktage
+            'end_date' => '2024-01-09',
+            'kind' => \App\Enums\Sickness\SickLeaveKind::Initial,
+        ]);
+        \App\Models\OnCallShift::query()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $user->id,
+            'start_at' => '2024-01-20 08:00:00', // 8 h Bereitschaft
+            'end_at' => '2024-01-20 16:00:00',
+        ]);
+        $project = \App\Models\Project::query()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Reisen',
+            'status' => \App\Enums\Project\ProjectStatus::Active->value,
+        ]);
+        \App\Models\TimeEntry::query()->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $project->id,
+            'user_id' => $user->id,
+            'date' => '2024-01-15',
+            'minutes' => 90,
+            'kind' => \App\Enums\TimeEntry\TimeEntryKind::Travel,
+        ]);
+        \App\Models\Surcharge\SurchargeRule::query()->create([
+            'organization_id' => $this->organization->id,
+            'code' => 'oncall25',
+            'label' => 'Bereitschaft 25 %',
+            'kind' => \App\Enums\Surcharge\SurchargeKind::OnCall,
+            'percentage' => '25.00',
+            'priority' => 0,
+            'active' => true,
+        ]);
+
+        $this->approvedClosureFor($user, $admin);
+        $this->actingAs($admin);
+        $export = $this->service->prepare($this->organization, $this->year, $this->month, 'generic', 'organization', actor: $admin);
+        $built = $this->service->build($export, $admin);
+
+        $lines = $built->lines()->where('user_id', $user->id)->get()->keyBy('wage_type');
+        $this->assertEqualsWithDelta(8.0, (float) $lines['work.normal']->quantity, 0.001);
+        $this->assertEqualsWithDelta(2.0, (float) $lines['absence.vacation']->quantity, 0.001);
+        $this->assertSame('d', $lines['absence.vacation']->unit);
+        $this->assertEqualsWithDelta(2.0, (float) $lines['absence.sick']->quantity, 0.001);
+        $this->assertEqualsWithDelta(8.0, (float) $lines['work.oncall']->quantity, 0.001);
+        $this->assertEqualsWithDelta(1.5, (float) $lines['travel.time']->quantity, 0.001);
+        $this->assertEqualsWithDelta(8.0, (float) $lines['surcharge.oncall25']->quantity, 0.001, 'Nicht-Intervall-Zuschlag aus OnCallShift-Minuten.');
+        $this->assertSame((int) $built->rows_count, $built->lines()->count());
+    }
+
+    /**
+     * Vollaudit 2026-07 (N6): Lösch-Pfad — nur nicht übergebene Läufe, Datei +
+     * Zeilen verschwinden, die Spur bleibt als export.deleted-AuditLog.
+     */
+    public function test_delete_removes_run_but_keeps_audit_trail(): void {
+        $admin = $this->makeAdmin();
+        $user = $this->makeUser();
+        $this->seedAttendance($user, 8 * 60);
+        $this->approvedClosureFor($user, $admin);
+        $this->actingAs($admin);
+
+        $export = $this->service->prepare($this->organization, $this->year, $this->month, 'generic', 'organization', actor: $admin);
+        $built = $this->service->build($export, $admin);
+        $file = (string) $built->file_path;
+
+        $this->service->delete($built, 'Fehlerhafte Periode, Neuaufbau folgt.', $admin);
+
+        $this->assertDatabaseMissing('time_exports', ['id' => $built->id]);
+        $this->assertSame(0, \App\Models\TimeExportLine::query()->where('time_export_id', $built->id)->count());
+        Storage::disk('local')->assertMissing($file);
+        $log = \App\Models\AuditLog::query()->where('event', 'export.deleted')->firstOrFail();
+        $this->assertSame('Fehlerhafte Periode, Neuaufbau folgt.', $log->changes['reason']);
+
+        // Übergebene Läufe sind tabu (Aufbewahrungspflicht).
+        $export2 = $this->service->prepare($this->organization, $this->year, $this->month, 'generic', 'organization', actor: $admin);
+        $built2 = $this->service->build($export2, $admin);
+        $built2->forceFill(['status' => TimeExportStatus::Delivered])->save();
+        $this->expectException(TimeExportException::class);
+        $this->service->delete($built2->refresh(), 'Versuch', $admin);
+    }
 
     private function seedAttendance(User $user, int $minutes, int $day = 15): void {
         $date = CarbonImmutable::create($this->year, $this->month, $day) ?? CarbonImmutable::now();

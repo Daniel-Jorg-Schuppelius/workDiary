@@ -68,6 +68,77 @@ class AppServiceProvider extends ServiceProvider {
         $this->app->singleton(\App\Services\Privacy\Retention\RetentionRegistry::class, function (): \App\Services\Privacy\Retention\RetentionRegistry {
             $registry = new \App\Services\Privacy\Retention\RetentionRegistry;
 
+            // CTI-Anrufmetadaten (Vollaudit 2026-07, M18): Rufnummer aus
+            // Referenz-Payload und Notiz-Betreff anonymisieren; Richtung/
+            // Zeitpunkt/Dauer bleiben als Vorgangsnachweis.
+            $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
+                area: 'cti_calls',
+                modelClass: \App\Models\ExternalReference::class,
+                overdueQuery: fn($organization, $cutoff) => \App\Models\ExternalReference::query()
+                    ->withoutGlobalScopes()
+                    ->where('organization_id', $organization->id)
+                    ->where('plugin_id', \App\Services\Cti\CtiCallService::PLUGIN_ID)
+                    ->where('external_type', \App\Services\Cti\CtiCallService::EXTERNAL_TYPE)
+                    ->where('synced_at', '<', $cutoff)
+                    ->whereRaw("json_extract(payload, '$.anonymized') is null"),
+                purge: function (\App\Models\ExternalReference $subject): void {
+                    $payload = (array) $subject->payload;
+                    unset($payload['number']);
+                    $subject->forceFill(['payload' => [...$payload, 'anonymized' => true]])->save();
+                    $note = $subject->referenceable;
+                    if ($note instanceof \App\Models\CommunicationNote) {
+                        $note->forceFill(['subject' => (string) __('Anruf (anonymisiert)')])->save();
+                    }
+                },
+            ));
+
+            // Ideenkarten im Papierkorb (Vollaudit 2026-07, M21): soft-gelöschte
+            // Karten nach Frist endgültig entfernen (Knoten/Links/Shares kaskadieren).
+            $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
+                area: 'idea_maps',
+                modelClass: \App\Models\IdeaMap::class,
+                overdueQuery: fn($organization, $cutoff) => \App\Models\IdeaMap::query()
+                    ->withoutGlobalScopes()
+                    ->onlyTrashed()
+                    ->where('organization_id', $organization->id)
+                    ->where('deleted_at', '<', $cutoff),
+                purge: function (\App\Models\IdeaMap $subject): void {
+                    $subject->forceDelete();
+                },
+            ));
+
+            // Fehlerberichte mit Seitenkontext-PII (Vollaudit 2026-07, N15).
+            $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
+                area: 'problem_reports',
+                modelClass: \App\Models\ProblemReport::class,
+                overdueQuery: fn($organization, $cutoff) => \App\Models\ProblemReport::query()
+                    ->withoutGlobalScopes()
+                    ->where('organization_id', $organization->id)
+                    ->where('status', \App\Enums\Support\ProblemReportStatus::Closed->value)
+                    ->where('updated_at', '<', $cutoff),
+                purge: function (\App\Models\ProblemReport $subject): void {
+                    foreach ($subject->attachments()->get() as $attachment) {
+                        \Illuminate\Support\Facades\Storage::disk($attachment->disk)->delete((string) $attachment->path);
+                        $attachment->delete();
+                    }
+                    $subject->delete();
+                },
+            ));
+
+            // Führerscheinkontrollen (Vollaudit 2026-07, N24): nach Nachweisfrist
+            // löschen — Vorschlag über den Review-Scan, keine Direktlöschung.
+            $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
+                area: 'driver_license_checks',
+                modelClass: \App\Models\DriverLicenseCheck::class,
+                overdueQuery: fn($organization, $cutoff) => \App\Models\DriverLicenseCheck::query()
+                    ->withoutGlobalScopes()
+                    ->where('organization_id', $organization->id)
+                    ->where('checked_at', '<', $cutoff),
+                purge: function (\App\Models\DriverLicenseCheck $subject): void {
+                    $subject->delete();
+                },
+            ));
+
             // Abgeschlossene Betroffenenanfragen nach Nachweisfrist.
             $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
                 area: 'privacy_requests',
@@ -132,7 +203,8 @@ class AppServiceProvider extends ServiceProvider {
                 },
             ));
 
-            // Lohn-/Zeitexporte inkl. abgelegter Dateien.
+            // Lohn-/Zeitexporte inkl. abgelegter Dateien. Vollaudit 2026-07
+            // (N6): Purge auditiert jetzt als export.deleted und räumt Zeilen mit.
             $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
                 area: 'exports',
                 modelClass: \App\Models\TimeExport::class,
@@ -140,11 +212,13 @@ class AppServiceProvider extends ServiceProvider {
                     ->withoutGlobalScopes()
                     ->where('organization_id', $organization->id)
                     ->where('created_at', '<', $cutoff),
-                purge: function ($subject): void {
-                    $path = (string) ($subject->getAttribute('file_path') ?? '');
+                purge: function (\App\Models\TimeExport $subject): void {
+                    $subject->audit('export.deleted', ['reason' => 'retention', 'file_path' => $subject->file_path]);
+                    $path = (string) ($subject->file_path ?? '');
                     if ($path !== '') {
                         \Illuminate\Support\Facades\Storage::disk('local')->delete($path);
                     }
+                    $subject->lines()->delete();
                     $subject->delete();
                 },
             ));
@@ -354,6 +428,13 @@ class AppServiceProvider extends ServiceProvider {
                 $now->toIso8601String(),
             );
         });
+
+        // Zustellnachweis für Rechnungs-/Mahnmails (Vollaudit 2026-07, M26):
+        // queued → sent + Message-ID, sobald der Mailer wirklich versendet.
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Mail\Events\MessageSent::class,
+            \App\Listeners\RecordInvoiceMailDelivery::class,
+        );
 
         // Laufzeit-Nachweise der Registry-Jobs (Feature 067, MVP-177):
         // Start/Erfolg/Fehler/Skip je Schedule-Event → runs/states.

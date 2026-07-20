@@ -27,10 +27,19 @@ trait HasTags {
      * @param  array<string>  $newNames  Names of tags to create on the fly.
      */
     public function syncTagsFromInput(array $tagIds = [], array $newNames = []): void {
-        $ids = collect($tagIds)
+        // Tenant-Hygiene (Vollaudit 2026-07, M40): nur Tags der aktuellen
+        // Organisation zulassen — der OrganizationScope auf Tag filtert
+        // fremde IDs heraus, bevor Pivot-Zeilen entstehen. Fremde/unbekannte
+        // IDs werden still verworfen (bewusst kein Validierungsfehler, da
+        // dieser Pfad auch API- und Alt-Formulare bedient).
+        $requested = collect($tagIds)
             ->filter(fn($v) => is_numeric($v))
             ->map(fn($v) => (int) $v)
+            ->unique()
             ->all();
+        $ids = $requested === []
+            ? []
+            : Tag::query()->whereIn('id', $requested)->pluck('id')->map(fn($v) => (int) $v)->all();
 
         foreach ($newNames as $name) {
             $name = trim((string) $name);

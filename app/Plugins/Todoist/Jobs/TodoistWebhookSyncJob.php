@@ -44,9 +44,18 @@ class TodoistWebhookSyncJob implements ShouldQueue {
         if (! $org instanceof Organization) {
             return;
         }
-        // Org-Kontext für nachgelagerte (scoped) Operationen binden.
-        app()->instance('currentOrganization', $org);
+        // Org-Kontext für nachgelagerte (scoped) Operationen binden — mit
+        // Restore über OrganizationContext (Vollaudit 2026-07, M42).
+        \App\Support\OrganizationContext::run($org, function () use ($imports, $org): void {
+            $this->syncWithinContext($imports, $org);
+        });
 
+        if ($this->deliveryId !== null) {
+            TodoistWebhookDelivery::query()->whereKey($this->deliveryId)->update(['processed_at' => now()]);
+        }
+    }
+
+    private function syncWithinContext(TodoistImportService $imports, Organization $org): void {
         $connection = TodoistConnection::query()
             ->where('organization_id', $org->id)
             ->first();
@@ -67,8 +76,5 @@ class TodoistWebhookSyncJob implements ShouldQueue {
             }
         }
 
-        if ($this->deliveryId !== null) {
-            TodoistWebhookDelivery::query()->whereKey($this->deliveryId)->update(['processed_at' => now()]);
-        }
     }
 }

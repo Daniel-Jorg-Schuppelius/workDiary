@@ -139,10 +139,33 @@ class StockController extends Controller {
         $qty = (string) $data['qty'];
         $actor = Auth::id() !== null ? (int) Auth::id() : null;
 
+        // Vollaudit 2026-07 (M19, E2): chargen-/serienpflichtige Artikel nicht
+        // still als anonymer Bestand buchen (Reservierung/Freigabe bleibt zulässig).
+        $article = $variant->article;
+        if (in_array((string) $data['movement'], ['receipt', 'issue'], true)
+            && (($article->batch_required ?? false) || ($article->serial_required ?? false))) {
+            return back()->with('error', __('inventory.error.tracked_article_manual_move'));
+        }
+
+        // Vollaudit 2026-07 (M22): negative Bestände sind eine eigene,
+        // rollenbasierte und auditierte Freigabe — nicht Teil von inventory.post.
+        $allowNegative = (bool) ($data['allow_negative'] ?? false);
+        if ($allowNegative) {
+            Gate::authorize(P::InventoryNegative->value);
+            \App\Models\AuditLog::query()->create([
+                'organization_id' => $variant->organization_id,
+                'user_id' => $actor,
+                'event' => 'inventory.negativeApproved',
+                'auditable_type' => ArticleVariant::class,
+                'auditable_id' => $variant->id,
+                'changes' => ['warehouse_id' => $warehouse->id, 'qty' => $qty],
+            ]);
+        }
+
         try {
             match ((string) $data['movement']) {
                 'receipt' => $this->ledger->receipt($variant, $warehouse, $qty, $ownership, actorUserId: $actor),
-                'issue' => $this->ledger->issue($variant, $warehouse, $qty, $ownership, allowNegative: (bool) ($data['allow_negative'] ?? false), actorUserId: $actor),
+                'issue' => $this->ledger->issue($variant, $warehouse, $qty, $ownership, allowNegative: $allowNegative, actorUserId: $actor),
                 'reserve' => $this->ledger->reserve($variant, $warehouse, $qty, $ownership, actorUserId: $actor),
                 'release' => $this->ledger->releaseReservation($variant, $warehouse, $qty, $ownership, actorUserId: $actor),
                 default => throw new RuntimeException('Unbekannte Bewegungsart.'),

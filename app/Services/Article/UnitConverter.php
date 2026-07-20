@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Article;
 
 use App\Models\{Article, ArticleUnit};
-use CommonToolkit\Helper\Data\NumberHelper;
+use App\Support\DecimalQty;
 use RuntimeException;
 
 /**
@@ -31,7 +31,7 @@ class UnitConverter {
     public function toBase(Article $article, string $quantity, string $unitCode): string {
         $factor = $this->factor($article, $unitCode);
 
-        return $this->round(bcmul($this->normalize($quantity), $factor, self::SCALE + 4));
+        return $this->round(bcmul(DecimalQty::sanitize($quantity), $factor, self::SCALE + 4));
     }
 
     /** Rechnet eine Menge aus der Basiseinheit in die angegebene Einheit um. */
@@ -41,7 +41,7 @@ class UnitConverter {
             throw new RuntimeException('Einheiten-Faktor 0 ist ungültig.');
         }
 
-        return $this->round(bcdiv($this->normalize($quantity), $factor, self::SCALE + 4));
+        return $this->round(bcdiv(DecimalQty::sanitize($quantity), $factor, self::SCALE + 4));
     }
 
     /**
@@ -67,13 +67,6 @@ class UnitConverter {
         $factor = (string) $unit->factor_to_base;
 
         return is_numeric($factor) ? $factor : '1';
-    }
-
-    /** @return numeric-string */
-    private function normalize(string $value): string {
-        $value = NumberHelper::normalizeDecimalString($value);
-
-        return $value === '' || ! is_numeric($value) ? '0' : $value;
     }
 
     /**

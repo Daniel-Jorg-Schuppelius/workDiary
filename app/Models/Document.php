@@ -39,6 +39,7 @@ use Illuminate\Support\Carbon;
  * @property bool $customer_visible
  * @property Carbon|null $customer_released_at
  * @property int|null $customer_released_by
+ * @property bool $confidential
  */
 class Document extends Model {
     use Auditable;
@@ -67,6 +68,7 @@ class Document extends Model {
         'customer_visible',
         'customer_released_at',
         'customer_released_by',
+        'confidential',
     ];
 
     protected $casts = [
@@ -78,6 +80,7 @@ class Document extends Model {
         'sharepoint_mirror_detached' => 'boolean',
         'customer_visible' => 'boolean',
         'customer_released_at' => 'datetime',
+        'confidential' => 'boolean',
     ];
 
     /** @return MorphTo<Model, $this> */
@@ -175,6 +178,29 @@ class Document extends Model {
      * Gültigkeit läuft innerhalb der nächsten $days Tage ab
      * (heute eingeschlossen, bereits abgelaufene ausgenommen).
      *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    /**
+     * Blendet vertrauliche Dokumente anderer Erfasser aus, sofern der Benutzer
+     * keine `document.confidential.manage`-Permission besitzt — Muster
+     * Kommunikationsnotizen (Vollaudit 2026-07, N10).
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeVisibleTo(Builder $query, User $user): Builder {
+        if ($user->isAdmin() || $user->can(\App\Enums\User\Permission::DocumentConfidentialManage->value)) {
+            return $query;
+        }
+
+        return $query->where(function (Builder $q) use ($user): void {
+            $q->where('confidential', false)
+                ->orWhere('created_by_user_id', $user->id);
+        });
+    }
+
+    /**
      * @param  Builder<self>  $query
      * @return Builder<self>
      */

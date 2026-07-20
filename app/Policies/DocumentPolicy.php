@@ -22,6 +22,10 @@ use App\Policies\Concerns\HasAdminBypass;
  * - „Eigene": Erfasser darf mit `document.update` nur seine eigenen
  *   Dokumente bearbeiten; wer zusätzlich `document.archive` oder
  *   `document.delete` trägt (Verwaltungsrollen), darf alle bearbeiten.
+ * - Vertraulich (Vollaudit 2026-07, N10): vertrauliche Dokumente sehen nur
+ *   Erfasser + Inhaber von `document.confidential.manage` (Muster
+ *   Kommunikationsnotizen); Fremdzugriff der Verwalter wird im Controller
+ *   auditiert.
  */
 class DocumentPolicy {
     use HasAdminBypass;
@@ -31,7 +35,8 @@ class DocumentPolicy {
     }
 
     public function view(User $user, Document $document): bool {
-        return $user->can(P::DocumentView->value);
+        return $user->can(P::DocumentView->value)
+            && $this->canSeeConfidential($user, $document);
     }
 
     public function create(User $user): bool {
@@ -39,7 +44,7 @@ class DocumentPolicy {
     }
 
     public function update(User $user, Document $document): bool {
-        if (! $user->can(P::DocumentUpdate->value)) {
+        if (! $user->can(P::DocumentUpdate->value) || ! $this->canSeeConfidential($user, $document)) {
             return false;
         }
 
@@ -63,10 +68,21 @@ class DocumentPolicy {
     }
 
     public function archive(User $user, Document $document): bool {
-        return $user->can(P::DocumentArchive->value);
+        return $user->can(P::DocumentArchive->value)
+            && $this->canSeeConfidential($user, $document);
     }
 
     public function delete(User $user, Document $document): bool {
-        return $user->can(P::DocumentDelete->value);
+        return $user->can(P::DocumentDelete->value)
+            && $this->canSeeConfidential($user, $document);
+    }
+
+    private function canSeeConfidential(User $user, Document $document): bool {
+        if (! $document->confidential) {
+            return true;
+        }
+
+        return (int) $document->created_by_user_id === (int) $user->id
+            || $user->can(P::DocumentConfidentialManage->value);
     }
 }

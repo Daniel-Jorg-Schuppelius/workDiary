@@ -76,11 +76,17 @@ class ProtocolItemValidator {
      * @return list<string>
      */
     public function missingPhotoPhases(ProtocolItem $item): array {
-        if ($item->item_type !== ProtocolItemType::Photo) {
-            return [];
-        }
         $value = (array) ($item->value_json ?? []);
         $min = (array) ($value['min_per_phase'] ?? []);
+
+        // Vollaudit 2026-07 (H7): defect-Punkte erzwingen automatisch
+        // mindestens ein Mängel-Foto (protokoll-fotos.md §5).
+        if ($item->item_type === ProtocolItemType::Defect) {
+            $min['defect'] = max(1, (int) ($min['defect'] ?? 0));
+        } elseif ($item->item_type !== ProtocolItemType::Photo) {
+            return [];
+        }
+
         if ($min === []) {
             return [];
         }

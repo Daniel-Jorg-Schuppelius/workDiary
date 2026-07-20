@@ -51,6 +51,12 @@ class CustomerExportSpec extends AbstractExportSpec {
             'comment',
             'invoice_text',
             'billable',
+            // Roundtrip-Parität zum Import (Vollaudit 2026-07, N55); Export ⊆
+            // Import erzwingt der SpecColumnContractTest. `external_id` wird
+            // bewusst NICHT exportiert: Import löst sie als Fremd-ID über
+            // ExternalReferences auf (mehrere Provider je Kunde möglich) —
+            // eine einzelne Export-Spalte wäre mehrdeutig.
+            'tags',
         ];
     }
 
@@ -59,6 +65,7 @@ class CustomerExportSpec extends AbstractExportSpec {
         $search = trim((string) ($filters['q'] ?? ''));
 
         return Customer::query()
+            ->with('tags:id,name')
             ->where('organization_id', $organization->id)
             ->when($status === 'active', fn($q) => $q->whereNull('archived_at'))
             ->when($status === 'archived', fn($q) => $q->whereNotNull('archived_at'))
@@ -97,6 +104,8 @@ class CustomerExportSpec extends AbstractExportSpec {
             'comment' => $this->str($model->comment),
             'invoice_text' => $this->str($model->invoice_text),
             'billable' => $this->boolCell($model->billable),
+            // Kommagetrennt — der Import splittet an ,/; (AppliesValueMappings).
+            'tags' => $model->tags->pluck('name')->implode(', '),
         ];
     }
 }

@@ -21,9 +21,7 @@ use Illuminate\Http\{RedirectResponse, Request, Response as HttpResponse};
 use Illuminate\Support\Facades\{DB, Gate};
 use Illuminate\View\View;
 use Laravel\Sanctum\PersonalAccessToken;
-use PDFToolkit\Entities\PDFContent;
 use PDFToolkit\Registries\PDFWriterRegistry;
-use RuntimeException;
 use Symfony\Component\HttpFoundation\{Response, StreamedResponse};
 
 /**
@@ -94,9 +92,13 @@ class PrivacyController extends Controller {
         $payload['categories'] = $this->categoriesWithDynamicRetention();
         $payload['dpaUrl'] = config('privacy.dpa_document_url');
 
-        $html = view('admin.privacy.report-pdf', $payload)->render();
-        $bytes = PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
-            ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (Datenschutzbericht).');
+        // View→PDF über den zentralen Renderer (C15; Vollaudit 2026-07, N27) — design-frei.
+        $bytes = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->renderPdf(
+            \App\Enums\DocumentDesign\RenderDocumentKind::Report,
+            'admin.privacy.report-pdf',
+            $payload,
+            null,
+        );
 
         AuditLog::query()->create([
             'organization_id' => $organization->id,

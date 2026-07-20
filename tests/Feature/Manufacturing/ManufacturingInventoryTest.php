@@ -85,6 +85,57 @@ final class ManufacturingInventoryTest extends TestCase {
         $this->assertSame('0.0000', $this->ledger->available($this->materialVariant, $this->warehouse));
     }
 
+    /**
+     * Vollaudit 2026-07 (M20): Fehlmengen werden nicht mehr still übergangen —
+     * Unterdeckung erzeugt (idempotent) einen offenen Beschaffungsbedarf.
+     */
+    public function test_shortage_creates_open_procurement_request_once(): void {
+        $this->ledger->receipt($this->materialVariant, $this->warehouse, '5'); // Bedarf: 20
+        $order = $this->releasedOrder('10');
+
+        $this->link->reserveMaterials($order);
+        $this->link->reserveMaterials($order); // zweiter Lauf → kein Doppel-Bedarf
+
+        $requests = \App\Models\ProcurementRequest::query()
+            ->where('source_type', $order->getMorphClass())
+            ->where('source_id', $order->id)
+            ->get();
+        $this->assertCount(1, $requests);
+        $this->assertSame('15.0000', (string) $requests->first()->quantity);
+    }
+
+    /**
+     * Vollaudit 2026-07 (M20): keine stille Negativ-Entnahme mehr ohne
+     * Reservierung — allowNegative ist eine explizite Freigabe.
+     */
+    public function test_consume_without_reservation_requires_explicit_negative_approval(): void {
+        $order = $this->releasedOrder('10'); // kein Bestand, keine Reservierung
+        $material = $order->materials()->first();
+
+        try {
+            $this->link->consume($material, '3');
+            $this->fail('Stille Negativ-Entnahme wurde nicht blockiert.');
+        } catch (\RuntimeException) {
+        }
+
+        $this->link->consume($material, '3', allowNegative: true);
+        $this->assertSame('3.0000', $order->materials()->first()->consumed_qty);
+    }
+
+    /**
+     * Vollaudit 2026-07 (M23): Default-Strategie „Reservierung bei Freigabe"
+     * mit Modus-/Zeitpunkt-Snapshot am Auftrag.
+     */
+    public function test_release_auto_reserves_and_snapshots_mode(): void {
+        $this->ledger->receipt($this->materialVariant, $this->warehouse, '100');
+        $order = $this->releasedOrder('10');
+
+        $order->refresh();
+        $this->assertSame('release', $order->reservation_mode);
+        $this->assertNotNull($order->reservation_applied_at);
+        $this->assertSame('20.0000', $order->materials()->first()->reserved_qty);
+    }
+
     public function test_consume_books_actual_usage_via_reservation(): void {
         $this->ledger->receipt($this->materialVariant, $this->warehouse, '100');
         $order = $this->releasedOrder('10');

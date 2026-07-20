@@ -296,4 +296,10 @@ return [
             'deleted' => 'Modello eliminato.',
         ],
     ],
+    'error' => [
+        'batch_required' => 'Articolo a lotti: indicare il numero di lotto.',
+        'serial_required' => 'Articolo serializzato: indicare il numero di serie.',
+        'serial_qty_one' => 'Gli articoli serializzati si ricevono un numero alla volta (quantità 1).',
+        'tracked_article_manual_move' => 'Articolo a lotti/serializzato: registrare tramite entrata merci (ordine) o gestione lotti/serie — non come stock anonimo.',
+    ],
 ];

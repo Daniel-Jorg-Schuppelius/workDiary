@@ -16,6 +16,7 @@ use App\Models\{Expense, Invoice};
 use App\Models\Finance\{BankAccount, BankStatement, BankTransaction, PaymentAllocation};
 use App\Services\Finance\{BankImportException, BankImportService, FinancialFormatsSupport, MatchingService, ReconciliationService};
 use App\Support\Sqid;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\View\View;
@@ -163,7 +164,7 @@ class PaymentReconciliationController extends Controller {
         foreach ($invoices as $invoice) {
             $options[] = [
                 'value' => 'invoice:' . $invoice->sqid,
-                'label' => $invoice->number . ' · ' . number_format((float) $invoice->total, 2, ',', '.'),
+                'label' => $invoice->number . ' · ' . NumberHelper::toGermanFormat((float) $invoice->total, 2, withThousandsSeparator: true),
             ];
         }
 
@@ -174,7 +175,7 @@ class PaymentReconciliationController extends Controller {
         foreach ($expenses as $expense) {
             $options[] = [
                 'value' => 'expense:' . $expense->sqid,
-                'label' => \App\Support\EntityType::label(Expense::class) . ' #' . $expense->id . ' · ' . number_format((float) $expense->amount_gross, 2, ',', '.'),
+                'label' => \App\Support\EntityType::label(Expense::class) . ' #' . $expense->id . ' · ' . NumberHelper::toGermanFormat((float) $expense->amount_gross, 2, withThousandsSeparator: true),
             ];
         }
 

@@ -455,7 +455,9 @@ class XRechnungGenerator {
             'contact_name' => $get('contact_name'),
             'contact_email' => $get('contact_email'),
             'contact_phone' => $get('contact_phone'),
-            'iban' => strtoupper((string) preg_replace('/\s+/', '', $get('iban'))),
+            // Toolkit-Normalisierung (Vollaudit 2026-07, N40); '' statt null
+            // erhält die bisherige Ausgabe-Semantik der Pflichtfeld-Prüfung.
+            'iban' => \CommonToolkit\Helper\Data\BankHelper::normalizeIBAN($get('iban')) ?? '',
             'bic' => strtoupper((string) preg_replace('/\s+/', '', $get('bic'))),
             'account_holder' => $get('account_holder'),
             'payment_terms_days' => $days > 0 ? $days : self::DEFAULT_PAYMENT_TERMS_DAYS,

@@ -35,6 +35,7 @@ return [
         'save' => 'Enregistrer',
         'reset' => 'Rétablir la valeur par défaut',
         'history' => 'Historique',
+        'export' => 'Export (JSON)',
     ],
     'empty' => [
         'title' => 'Aucun paramètre trouvé',

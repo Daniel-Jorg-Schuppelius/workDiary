@@ -19,15 +19,14 @@
 
     {{-- ── Preview table ── --}}
     <div class="mb-6 overflow-x-auto rounded-box border border-base-300">
-        <table class="table table-sm w-full">
-            <thead>
+        <x-table>
+            <x-slot:head>
                 <tr>
                     @foreach ($headers as $h)
                         <th class="bg-base-200 font-mono text-xs">{{ $h }}</th>
                     @endforeach
                 </tr>
-            </thead>
-            <tbody>
+            </x-slot:head>
                 @foreach (array_slice($rows, 0, 5) as $row)
                     <tr>
                         @foreach ($row as $cell)
@@ -35,8 +34,7 @@
                         @endforeach
                     </tr>
                 @endforeach
-            </tbody>
-        </table>
+        </x-table>
         @if (count($rows) > 5)
             <p class="px-4 py-2 text-xs text-base-content/50">… {{ count($rows) - 5 }} {{ __('weitere Zeilen') }}</p>
         @endif

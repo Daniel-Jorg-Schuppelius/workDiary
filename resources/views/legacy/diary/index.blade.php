@@ -20,16 +20,14 @@
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex flex-wrap items-center gap-3">
                 <x-status-badge tone="primary" size="md">{{ __('Aktiv') }}</x-status-badge>
-                <div role="tablist" class="tabs tabs-box flex-none">
-                @foreach ($tabs as $key => $info)
-                    <a role="tab"
-                       href="{{ route('legacy.diary.index', ['tab' => $key]) }}"
-                       class="tab {{ $tab === $key ? 'tab-active' : '' }}">
-                        {{ $info['label'] }}
-                        <span class="badge badge-sm ml-2">{{ $info['count'] }}</span>
-                    </a>
-                @endforeach
-                </div>{{-- tablist --}}
+                {{-- Tab-Strip über die gemeinsame Komponente (D5; Vollaudit 2026-07, N44). --}}
+                <x-tab-nav class="flex-none w-auto" :items="collect($tabs)->map(fn($info, $key) => [
+                    'label' => $info['label'],
+                    'count' => $info['count'],
+                    'route' => 'legacy.diary.index',
+                    'params' => ['tab' => $key],
+                    'active' => $tab === $key,
+                ])->values()->all()" />
             </div>{{-- badge+tabs --}}
             <div class="flex items-center gap-2">
                 @if ($tab === 'auftraege')

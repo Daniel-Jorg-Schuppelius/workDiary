@@ -9,9 +9,8 @@
 
     {{-- ── Existing types table ── --}}
     <x-form-group :legend="__('Vorhandene Schichttypen')" icon="list" tone="primary">
-        <div class="overflow-x-auto rounded-box border border-base-300">
-            <table class="table table-sm w-full" data-sortable>
-                <thead>
+        <x-table table-sort="client">
+            <x-slot:head>
                     <tr>
                         <th class="w-6"></th>
                         <th data-sort data-sort-default="asc">{{ __('Kürzel') }}</th>
@@ -21,8 +20,7 @@
                         <th data-sort>{{ __('Aktiv') }}</th>
                         <th></th>
                     </tr>
-                </thead>
-                <tbody id="shift-type-table-body">
+            </x-slot:head>
                     @forelse ($shiftTypes as $t)
                         <tr data-type-row="{{ $t->sqid }}">
                             <td>
@@ -58,9 +56,7 @@
                     @empty
                         <x-table.empty :colspan="7" icon='<span class="material-symbols-outlined" aria-hidden="true">schedule</span>' :title="__('Noch keine Schichttypen angelegt.')" compact />
                     @endforelse
-                </tbody>
-            </table>
-        </div>
+        </x-table>
     </x-form-group>
 
     {{-- ── Create / edit form ── --}}

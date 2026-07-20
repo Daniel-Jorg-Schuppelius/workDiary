@@ -43,6 +43,34 @@ class AiMemoryServiceTest extends TestCase {
         return Customer::factory()->create(['organization_id' => $this->organization->id]);
     }
 
+    /**
+     * Vollaudit 2026-07 (M35): ausgelieferte Default-Regeln (Kundennamen-
+     * Verbot, Nominalstil) je Fakturierungs-Capability — idempotent gesät,
+     * als editierbare Einträge (origin=default).
+     */
+    public function test_seed_defaults_creates_editable_style_rules_once(): void {
+        $service = app(\App\Services\Ai\AiMemoryService::class);
+
+        $created = $service->seedDefaults($this->organization);
+        $this->assertSame(6, $created, '2 Regeln × 3 Fakturierungs-Capabilities.');
+        $this->assertSame(0, $service->seedDefaults($this->organization), 'Idempotent.');
+
+        $entry = \App\Models\Ai\AiMemoryEntry::query()
+            ->where('organization_id', $this->organization->id)
+            ->where('origin', \App\Models\Ai\AiMemoryEntry::ORIGIN_DEFAULT)
+            ->firstOrFail();
+        $this->assertTrue($entry->active);
+        $this->assertNull($entry->customer_id);
+
+        // Default-Regeln fließen in die Stilregeln der Capability ein.
+        $rules = $service->styleRulesFor(
+            $this->organization,
+            \App\Services\Ai\Suggestions\ItemTextSuggestionService::CAPABILITY_ITEM,
+            null,
+        );
+        $this->assertNotEmpty(array_filter($rules, fn(string $r): bool => str_contains($r, 'Nominalstil')));
+    }
+
     public function test_customer_entries_rank_before_org_and_capability_defaults(): void {
         $customer = $this->customer();
 

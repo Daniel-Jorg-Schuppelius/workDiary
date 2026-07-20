@@ -115,14 +115,38 @@
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('Assets')" padding="p-0">
             <x-table bare>
-                <x-slot:head><tr><th>{{ __('Asset') }}</th><th>{{ __('Notiz') }}</th></tr></x-slot:head>
+                <x-slot:head><tr><th>{{ __('Asset') }}</th><th>{{ __('Prüfstatus') }}</th><th>{{ __('Notiz') }}</th></tr></x-slot:head>
                 @forelse ($contract->contractAssets as $contractAsset)
                     <tr>
-                        <td>{{ $contractAsset->asset->name ?? '—' }}</td>
+                        <td>
+                            @if ($contractAsset->asset !== null)
+                                <a href="{{ route('assets.show', $contractAsset->asset) }}" class="link link-hover">{{ $contractAsset->asset->name }}</a>
+                            @else
+                                —
+                            @endif
+                        </td>
+                        <td>
+                            {{-- Prüfstatus aus der führenden Prüfpflichtenverwaltung (Vollaudit M32). --}}
+                            @php $complianceStatus = $contractAsset->asset !== null ? ($complianceByAsset[$contractAsset->asset->id] ?? null) : null; @endphp
+                            @if ($complianceStatus !== null)
+                                @php
+                                    $complianceTone = match ($complianceStatus) {
+                                        \App\Enums\AssetCompliance\AssetComplianceStatus::Valid => 'success',
+                                        \App\Enums\AssetCompliance\AssetComplianceStatus::DueSoon => 'warning',
+                                        \App\Enums\AssetCompliance\AssetComplianceStatus::Restricted => 'warning',
+                                        \App\Enums\AssetCompliance\AssetComplianceStatus::Overdue, \App\Enums\AssetCompliance\AssetComplianceStatus::Blocked => 'error',
+                                        \App\Enums\AssetCompliance\AssetComplianceStatus::NotApplicable => 'neutral',
+                                    };
+                                @endphp
+                                <x-status-badge :tone="$complianceTone" size="xs">{{ $complianceStatus->label() }}</x-status-badge>
+                            @else
+                                —
+                            @endif
+                        </td>
                         <td class="text-sm">{{ $contractAsset->note ?? '—' }}</td>
                     </tr>
                 @empty
-                    <x-table.empty :colspan="2" :title="__('Keine Assets zugeordnet.')" compact />
+                    <x-table.empty :colspan="3" :title="__('Keine Assets zugeordnet.')" compact />
                 @endforelse
             </x-table>
         </x-card>

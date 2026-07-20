@@ -99,9 +99,8 @@
             @if ($case->options->isEmpty())
                 <x-empty-state icon="compare" :title="__('Noch keine Varianten.')" compact />
             @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table>
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('Variante') }}</th>
                                 <th class="text-right">{{ __('Einmalig') }}</th>
@@ -110,8 +109,7 @@
                                 <th>{{ __('Qualität') }}</th>
                                 <th></th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($case->options as $option)
                                 <tr @class(['bg-success/10' => $option->recommended])>
                                     <td>
@@ -135,9 +133,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             @endif
         </x-card>
     </div>

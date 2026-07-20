@@ -356,6 +356,12 @@ return [
 
         'isms.*' => 'module.isms',
 
+        // E-Rechnungs-EINGANG (Feature 066 §Lizenzierung; Vollaudit 2026-07,
+        // M28): Empfangen/Lesen gehört zum lokalen Fakturapaket und darf nicht
+        // allein Enterprise vorbehalten sein (Empfangspflicht seit 01.01.2025) —
+        // spezifische Regel VOR dem finance.*-Gate, gleiches Modul wie invoices.*.
+        'finance.incoming-invoices.*' => 'module.vertrieb',
+
         // Finanzschnittstelle (Feature 045): Routen kommen in Teil B —
         // das Mapping ist bereits eingetragen, damit EnforcePlanModules
         // neue finance.*-Routen sofort gated.

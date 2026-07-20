@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use CommonToolkit\Helper\Data\IPHelper;
+use RuntimeException;
 
 /**
  * SSRF-Schutz für ausgehende, von Nutzern konfigurierte Ziel-URLs (z. B.
@@ -52,6 +53,35 @@ final class UrlSafety {
         }
 
         return true; // Hostname: finale Prüfung (DNS) erfolgt zur Laufzeit.
+    }
+
+    /**
+     * Gemeinsamer Basis-URL-Guard der Plugins mit allow_private_network-Toggle
+     * (Vollaudit 2026-07, M48) — ersetzt drei Kopien (JTL/CardDAV/GitLab).
+     * AUS (Default): Ziel muss öffentlich routbar sein (DNS-Rebinding-sicher);
+     * AN: private/interne Adressen sind bewusst freigegeben, es bleiben
+     * Schema- (http/https), Host- und FILTER_VALIDATE_URL-Grundprüfung.
+     */
+    public static function assertAcceptableExternalBaseUrl(
+        string $url,
+        bool $allowPrivateNetwork,
+        string $errorPrefix,
+        string $subject = 'Basis-URL',
+        ?string $privateHint = null,
+    ): void {
+        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+        $host = (string) parse_url($url, PHP_URL_HOST);
+
+        if (! in_array($scheme, ['http', 'https'], true) || $host === '' || filter_var($url, FILTER_VALIDATE_URL) === false) {
+            throw new RuntimeException($errorPrefix . ': Die ' . $subject . ' ist keine gültige http(s)-Adresse.');
+        }
+
+        if (! $allowPrivateNetwork && ! self::isPubliclyRoutableHttpUrl($url)) {
+            throw new RuntimeException(
+                $errorPrefix . ': Die ' . $subject . ' zeigt auf eine private/interne Adresse. '
+                . ($privateHint ?? 'Die Freigabe privater Adressen muss ausdrücklich aktiviert werden.')
+            );
+        }
     }
 
     /**

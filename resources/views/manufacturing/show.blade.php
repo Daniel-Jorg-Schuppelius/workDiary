@@ -108,6 +108,59 @@
         </x-table>
     </x-card>
 
+    {{-- Vollaudit 2026-07 (M20): Fehlmaterial-/Ersatzmaterialprozess (MVP-068). --}}
+    @if ($canManage && in_array($status, ['released', 'in_progress'], true))
+        <x-card :title="__('Ersatzmaterial')" icon="swap_horiz" :count="$substitutes->count()">
+            <form method="POST" action="{{ route('manufacturing-orders.substitutes.request', $order) }}" class="mb-3 flex flex-wrap items-end gap-2">
+                @csrf
+                <div class="fieldset"><label class="fieldset-label">{{ __('Materialposition') }}</label>
+                    <select name="material" class="select select-sm select-bordered" required>
+                        @foreach ($order->materials->where('is_tool', false) as $material)
+                            <option value="{{ $material->id }}">{{ $material->name_snapshot }}</option>
+                        @endforeach
+                    </select></div>
+                <div class="fieldset grow"><label class="fieldset-label">{{ __('Ersatzartikel') }}</label>
+                    <select name="substitute_article" class="select select-sm select-bordered w-full" required>
+                        @foreach ($substituteArticles as $subArticle)
+                            <option value="{{ $subArticle->sqid }}">{{ $subArticle->name }}</option>
+                        @endforeach
+                    </select></div>
+                <div class="fieldset"><label class="fieldset-label">{{ __('manufacturing.order.field.quantity') }}</label>
+                    <input name="quantity" type="number" step="0.0001" min="0.0001" required class="input input-sm input-bordered w-24"></div>
+                <div class="fieldset grow"><label class="fieldset-label">{{ __('Begründung') }}</label>
+                    <input name="reason" required minlength="5" maxlength="500" class="input input-sm input-bordered w-full"></div>
+                <button type="submit" class="btn btn-sm">{{ __('Ersatz beantragen') }}</button>
+            </form>
+
+            @if ($substitutes->isNotEmpty())
+                <ul class="divide-y divide-base-300 text-sm">
+                    @foreach ($substitutes as $substitute)
+                        <li class="flex flex-wrap items-center justify-between gap-2 py-2">
+                            <span>
+                                {{ $substitute->plannedArticle?->name ?? '—' }} → <strong>{{ $substitute->substituteArticle?->name ?? '—' }}</strong>
+                                · {{ $substitute->quantity }} · {{ $substitute->reason }}
+                            </span>
+                            @if ($substitute->status->value === 'requested')
+                                <span class="flex items-center gap-1">
+                                    <x-action-form :action="route('manufacturing-orders.substitutes.decide', [$order, $substitute])">
+                                        <input type="hidden" name="decision" value="approve">
+                                        <button type="submit" class="btn btn-xs btn-success">{{ __('Genehmigen') }}</button>
+                                    </x-action-form>
+                                    <x-action-form :action="route('manufacturing-orders.substitutes.decide', [$order, $substitute])">
+                                        <input type="hidden" name="decision" value="reject">
+                                        <button type="submit" class="btn btn-xs btn-error">{{ __('Ablehnen') }}</button>
+                                    </x-action-form>
+                                </span>
+                            @else
+                                <x-status-badge size="sm" :tone="$substitute->status->value === 'approved' ? 'success' : 'error'">{{ $substitute->status->value }}</x-status-badge>
+                            @endif
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </x-card>
+    @endif
+
     {{-- Fremdfertigung (E7) --}}
     @if ($canManage && $status === 'draft' && $suppliers->isNotEmpty())
         <x-card>

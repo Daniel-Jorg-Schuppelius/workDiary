@@ -217,6 +217,14 @@
             <option value="{{ $u->sqid }}" @selected((string) old('assigned_user_id', \App\Support\Sqid::encode(\App\Models\User::class, $entry?->assigned_user_id)) === $u->sqid)>{{ $u->name }}</option>
         @endforeach
     </x-select-field>
+
+    {{-- Gegenstand des Auftrags (Feature 009; Vollaudit 2026-07, M5). --}}
+    <x-select-field name="asset_id" :label="__('Objekt/Asset')">
+        <option value="">—</option>
+        @foreach (\App\Models\Asset::query()->orderBy('name')->limit(500)->get(['id', 'name']) as $formAsset)
+            <option value="{{ $formAsset->sqid }}" @selected((string) old('asset_id', \App\Support\Sqid::encode(\App\Models\Asset::class, $entry?->asset_id)) === $formAsset->sqid)>{{ $formAsset->name }}</option>
+        @endforeach
+    </x-select-field>
 </x-form-group>
 
 {{-- Termin / Zeitfenster / Servicedauer --}}

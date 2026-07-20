@@ -15,6 +15,7 @@ use App\Models\{Customer, ForeignCustomer, Invoice, MaterialUsage, Project, Time
 use App\Services\Finance\{BillingModeLockedException, BillingModeResolver};
 use App\Services\Numbering\NumberSequenceService;
 use Carbon\CarbonInterface;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{Auth, DB};
 
@@ -608,7 +609,7 @@ class InvoiceGenerator {
                         'date' => optional($dp->issued_on)->format('d.m.Y'),
                     ]);
                     if ($rows->count() > 1) {
-                        $description .= sprintf(' (%s %%)', number_format((float) $row['rate'], 2, ',', '.'));
+                        $description .= sprintf(' (%s %%)', NumberHelper::toGermanFormat((float) $row['rate'], 2, withThousandsSeparator: true));
                     }
 
                     $draft->items()->create([

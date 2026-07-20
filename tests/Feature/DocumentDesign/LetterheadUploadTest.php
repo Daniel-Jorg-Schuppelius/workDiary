@@ -115,6 +115,14 @@ class LetterheadUploadTest extends TestCase {
         if (! is_file('/usr/bin/pdftoppm') && ! is_file('/usr/local/bin/pdftoppm')) {
             $this->markTestSkipped('pdftoppm nicht verfügbar.');
         }
+        // Dev-Umgebungs-Guard (bekannter pdfbox-Fall, s. ZugferdTest): wirft
+        // die PDF-Toolkit-Konfiguration, bricht PDFHelper::getPageCount() ab
+        // und der Upload legt kein Asset an.
+        try {
+            \PDFToolkit\Config\Config::getInstance();
+        } catch (\Throwable $e) {
+            $this->markTestSkipped('PDF-Toolkit-Konfiguration unvollständig (Dev-Umgebung, z. B. pdfbox-Jar fehlt): ' . $e->getMessage());
+        }
 
         $org = $this->makeOrg();
         $admin = User::factory()->admin()->create(['organization_id' => $org->id]);

@@ -70,6 +70,20 @@ final class RetentionReviewTest extends TestCase {
         $this->assertSame(1, RetentionProposal::query()->count());
     }
 
+    /**
+     * Vollaudit 2026-07 (W2.4 — M18/M21/N15/N24): die vier neuen
+     * Retention-Bereiche sind registriert und tragen Fristen je Rechtsraum.
+     */
+    public function test_vollaudit_areas_are_registered_with_periods(): void {
+        $org = $this->makeOrg();
+        $registry = app(RetentionRegistry::class);
+
+        foreach (['cti_calls', 'idea_maps', 'problem_reports', 'driver_license_checks'] as $area) {
+            $this->assertNotNull($registry->policy($area), "Policy fehlt: {$area}");
+            $this->assertNotNull($registry->yearsFor($org, $area), "Frist fehlt: {$area}");
+        }
+    }
+
     public function test_gobd_exemption_blocks_active_invoice_documents(): void {
         $org = $this->makeOrg();
         $user = User::factory()->create(['organization_id' => $org->id]);

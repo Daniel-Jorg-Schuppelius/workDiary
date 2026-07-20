@@ -46,8 +46,9 @@ trait PartyFormFields {
             'color' => ['nullable', 'string', 'max:16'],
             'comment' => ['nullable', 'string', 'max:5000'],
             'bank_account_holder' => ['nullable', 'string', 'max:200'],
-            'bank_iban' => ['nullable', 'string', 'max:64', 'regex:/^[A-Z]{2}[0-9A-Z\s]{10,40}$/i'],
-            'bank_bic' => ['nullable', 'string', 'max:32', 'regex:/^[A-Z0-9]{8}([A-Z0-9]{3})?$/i'],
+            // Gemeinsame Format-Rules (Vollaudit 2026-07, M39).
+            'bank_iban' => ['nullable', 'string', 'max:64', new \App\Rules\Iban()],
+            'bank_bic' => ['nullable', 'string', 'max:32', new \App\Rules\Bic()],
             'bank_name' => ['nullable', 'string', 'max:200'],
             'contact_persons' => ['nullable', 'array', 'max:20'],
             'contact_persons.*.name' => ['nullable', 'string', 'max:200'],
@@ -96,14 +97,16 @@ trait PartyFormFields {
      * @return array<string, mixed>
      */
     protected function partyNormalizedData(): array {
-        $iban = (string) preg_replace('/\s+/', '', (string) $this->input('bank_iban', ''));
+        // IBAN über den Toolkit-Normalisierer (Vollaudit 2026-07, N40) —
+        // identische Semantik (Whitespace-Strip + Uppercase, leer → null);
+        // BIC bleibt manuell (kein Toolkit-Pendant).
         $bic = (string) preg_replace('/\s+/', '', (string) $this->input('bank_bic', ''));
 
         return [
             'currency' => $this->string('currency')->upper()->value() ?: 'EUR',
             'country' => $this->string('country')->upper()->value() ?: null,
             'contact_persons' => $this->normalizedContactPersons(),
-            'bank_iban' => $iban !== '' ? strtoupper($iban) : null,
+            'bank_iban' => \CommonToolkit\Helper\Data\BankHelper::normalizeIBAN((string) $this->input('bank_iban', '')),
             'bank_bic' => $bic !== '' ? strtoupper($bic) : null,
         ];
     }

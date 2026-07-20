@@ -120,6 +120,29 @@
             </x-card>
         @endif
 
+        {{-- Epic-Fortschritt (Vollaudit 2026-07, M25 / MVP-146): Kinder über
+             task.parent_task_id, erledigt = Spalte mit Kategorie done. --}}
+        @if ($epicProgress !== [])
+            <x-card :title="__('Epic-Fortschritt')">
+                <x-table bare>
+                    <x-slot:head>
+                        <tr>
+                            <th>{{ __('Epic') }}</th>
+                            <th class="text-right">{{ __('Elemente erledigt') }}</th>
+                            <th class="text-right">{{ __('Punkte erledigt') }}</th>
+                        </tr>
+                    </x-slot:head>
+                    @foreach ($epicProgress as $row)
+                        <tr>
+                            <td>{{ $row['epic']->task?->title }}</td>
+                            <td class="text-right tabular-nums">{{ $row['done'] }}/{{ $row['total'] }}</td>
+                            <td class="text-right tabular-nums">{{ $row['points_done'] }}/{{ $row['points_total'] }}</td>
+                        </tr>
+                    @endforeach
+                </x-table>
+            </x-card>
+        @endif
+
         @if ($milestones->isNotEmpty())
             <x-card :title="__('Meilenstein-Fortschritt')">
                 <x-table bare>

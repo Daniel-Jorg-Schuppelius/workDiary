@@ -50,6 +50,32 @@ class NotificationDispatcherTest extends TestCase {
         return ['title' => 'Testpunkt', 'message' => 'Testnachricht', 'url' => null];
     }
 
+    /**
+     * Vollaudit 2026-07 (W3.2 — H12/M16/M31/N4): die zehn neuen Registry-
+     * Events tragen Labels in allen Sprachen und die geplanten Default-Rollen.
+     */
+    public function test_vollaudit_events_are_registered_with_labels_and_roles(): void {
+        $expected = [
+            ['event' => \App\Enums\Notification\NotificationEvent::MonthClosureDecided, 'roles' => []],
+            ['event' => \App\Enums\Notification\NotificationEvent::DomainExpiring, 'roles' => ['admin']],
+            ['event' => \App\Enums\Notification\NotificationEvent::DomainTransferChanged, 'roles' => ['admin']],
+            ['event' => \App\Enums\Notification\NotificationEvent::DomainSyncFailed, 'roles' => ['admin']],
+            ['event' => \App\Enums\Notification\NotificationEvent::DomainHighRiskAction, 'roles' => ['admin']],
+            ['event' => \App\Enums\Notification\NotificationEvent::FinanceTransferFailed, 'roles' => ['buchhaltung']],
+            ['event' => \App\Enums\Notification\NotificationEvent::FinanceBankImportFailed, 'roles' => ['buchhaltung']],
+            ['event' => \App\Enums\Notification\NotificationEvent::FinanceReconciliationReview, 'roles' => ['buchhaltung']],
+            ['event' => \App\Enums\Notification\NotificationEvent::InvestmentDecisionDue, 'roles' => ['teamleitung', 'buchhaltung']],
+            ['event' => \App\Enums\Notification\NotificationEvent::InvestmentDecided, 'roles' => []],
+        ];
+
+        foreach ($expected as $row) {
+            $label = $row['event']->label();
+            $this->assertNotSame('enums.notification.event.' . $row['event']->value, $label, 'Label fehlt: ' . $row['event']->value);
+            $this->assertSame($row['roles'], $row['event']->defaultRecipientRoles(), 'Rollen: ' . $row['event']->value);
+            $this->assertNotSame('', $row['event']->icon());
+        }
+    }
+
     public function test_default_rule_sends_in_app_and_mail_to_affected(): void {
         Notification::fake();
 

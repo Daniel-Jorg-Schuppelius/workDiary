@@ -18,7 +18,10 @@ use Carbon\CarbonImmutable;
 /**
  * Auftragstyp-/Gewerkeanalyse (MVP-040): Plan/Ist, Durchschnitts- und
  * Median-/P90-Dauer, Überschreitungs-, Nacharbeits- und Eskalationsquote
- * je Auftragstyp.
+ * je Auftragstyp. Vollaudit 2026-07 (N7): zusätzlich Erlös/Kosten/
+ * Deckungsbeitrag je Typ aus den TimeEntry-Snapshots (rate/internal_rate) —
+ * gleiche Formel wie {@see EconomicsReportBuilder} (Zeit-Dimension), damit
+ * Auftragstypen nach Wirtschaftlichkeit gerankt werden können.
  *
  * Reine Datenaufbereitung, getrennt vom Controller (HTTP-Filter, CSV/PDF,
  * Audit), Muster wie {@see PlanIstReportBuilder}.
@@ -40,7 +43,11 @@ class EntryTypeAnalysisReportBuilder {
      *   escalationShare:float,
      *   firstTimeRightShare:float,
      *   medianActualMinutes:float,
-     *   p90ActualMinutes:float
+     *   p90ActualMinutes:float,
+     *   revenue:float,
+     *   cost:float,
+     *   contribution:float,
+     *   contributionPerEntry:float
      * }>
      */
     public function build(
@@ -74,6 +81,15 @@ class EntryTypeAnalysisReportBuilder {
             ->map(static fn($v): int => (int) $v)
             ->all();
 
+        // N7: Erlös (abrechenbare rate-Snapshots) und Kosten (internal_rate)
+        // je Auftrag — Formel identisch zur Zeit-Dimension der Nachkalkulation.
+        $moneyByEntry = TimeEntry::query()
+            ->whereIn('diary_entry_id', $entryIds)
+            ->selectRaw('diary_entry_id, COALESCE(SUM(CASE WHEN billable THEN rate ELSE 0 END), 0) AS revenue, COALESCE(SUM(internal_rate), 0) AS cost')
+            ->groupBy('diary_entry_id')
+            ->get()
+            ->keyBy('diary_entry_id');
+
         /** @var list<int> $reworkEntryIds */
         $reworkEntryIds = Protocol::query()
             ->where('subject_type', DiaryEntry::class)
@@ -102,7 +118,7 @@ class EntryTypeAnalysisReportBuilder {
             ->pluck('label', 'id')
             ->all();
 
-        /** @var array<int, array{entryTypeId:int,entryTypeName:string,entryCount:int,plannedSum:int,plannedKnownCount:int,actualValues:list<int>,overrunCount:int,reworkCount:int,escalationCount:int}> $bucket */
+        /** @var array<int, array{entryTypeId:int,entryTypeName:string,entryCount:int,plannedSum:int,plannedKnownCount:int,actualValues:list<int>,overrunCount:int,reworkCount:int,escalationCount:int,revenue:float,cost:float}> $bucket */
         $bucket = [];
 
         foreach ($entries as $entry) {
@@ -118,6 +134,8 @@ class EntryTypeAnalysisReportBuilder {
                     'overrunCount' => 0,
                     'reworkCount' => 0,
                     'escalationCount' => 0,
+                    'revenue' => 0.0,
+                    'cost' => 0.0,
                 ];
             }
 
@@ -131,6 +149,10 @@ class EntryTypeAnalysisReportBuilder {
 
             $actual = (int) ($actualByEntry[$entry->id] ?? 0);
             $bucket[$typeId]['actualValues'][] = $actual;
+
+            $money = $moneyByEntry->get($entry->id);
+            $bucket[$typeId]['revenue'] += $money !== null ? (float) $money->getAttribute('revenue') : 0.0;
+            $bucket[$typeId]['cost'] += $money !== null ? (float) $money->getAttribute('cost') : 0.0;
 
             if ($planned !== null && $planned > 0 && $actual > (int) round($planned * 1.2)) {
                 $bucket[$typeId]['overrunCount']++;
@@ -177,6 +199,10 @@ class EntryTypeAnalysisReportBuilder {
                 'firstTimeRightShare' => $firstTimeRightShare,
                 'medianActualMinutes' => $this->percentile($actualValues, 50),
                 'p90ActualMinutes' => $this->percentile($actualValues, 90),
+                'revenue' => round($row['revenue'], 2),
+                'cost' => round($row['cost'], 2),
+                'contribution' => round($row['revenue'] - $row['cost'], 2),
+                'contributionPerEntry' => round(($row['revenue'] - $row['cost']) / $entryCount, 2),
             ];
         }
 

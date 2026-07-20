@@ -39,9 +39,8 @@
             @if ($connections->isEmpty())
                 <p class="text-sm text-base-content/60">{{ __('mail.no_connections') }}</p>
             @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table>
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('mail.field.name') }}</th>
                                 <th>{{ __('mail.col.host') }}</th>
@@ -49,8 +48,7 @@
                                 <th>{{ __('mail.col.last_polled') }}</th>
                                 <th></th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($connections as $connection)
                                 <tr>
                                     <td>{{ $connection->name }}</td>
@@ -74,9 +72,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             @endif
         </div>
 

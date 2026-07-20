@@ -75,6 +75,9 @@ class AssetCheckoutController extends Controller {
             );
         } catch (AssetValidationException $exception) {
             return back()->withInput()->withErrors(['assigned_to_user_id' => __($exception->getMessage())]);
+        } catch (\App\Exceptions\AssetNotUsableException $exception) {
+            // Vollaudit 2026-07 (H2/H3): D12-Sperre (asset_blocks) blockt die Ausgabe.
+            return back()->withInput()->withErrors(['assigned_to_user_id' => $exception->getMessage()]);
         }
 
         return redirect()->route('assets.show', $asset)->with('success', __('Asset ausgegeben.'));

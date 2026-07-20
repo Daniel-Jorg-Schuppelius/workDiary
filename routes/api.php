@@ -146,6 +146,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('tasks/{task}', [TaskController::class, 'destroy'])->middleware('ability:tasks:write')->name('api.tasks.destroy');
     Route::post('projects/{project}/tasks', [TaskController::class, 'store'])->middleware('ability:tasks:write')->name('api.tasks.store');
 
+    // ── Kernobjekte Abwesenheiten/Spesen/Rechnungen/Schichtplan ────────────
+    // (Feature 008 MVP; Vollaudit 2026-07, M3) — read-first: Erzeugung bleibt
+    // den Web-Workflows vorbehalten (Genehmigung, GoBD).
+    Route::get('absences', [\App\Http\Controllers\Api\AbsenceController::class, 'index'])->middleware('ability:absences:read')->name('api.absences.index');
+    Route::get('expenses', [\App\Http\Controllers\Api\ExpenseApiController::class, 'index'])->middleware('ability:expenses:read')->name('api.expenses.index');
+    Route::get('expenses/{expense}', [\App\Http\Controllers\Api\ExpenseApiController::class, 'show'])->middleware('ability:expenses:read')->name('api.expenses.show');
+    Route::get('invoices', [\App\Http\Controllers\Api\InvoiceApiController::class, 'index'])->middleware('ability:invoices:read')->name('api.invoices.index');
+    Route::get('invoices/{invoice}', [\App\Http\Controllers\Api\InvoiceApiController::class, 'show'])->middleware('ability:invoices:read')->name('api.invoices.show');
+    Route::get('scheduled-shifts', [\App\Http\Controllers\Api\ScheduledShiftApiController::class, 'index'])->middleware('ability:scheduled-shifts:read')->name('api.scheduled-shifts.index');
+
     // ── REST-Hooks für n8n/Make/Zapier (Feature 008 → Rang 61) ─────────────
     // Eigene Ability `hooks:manage`; Zustellung/Signatur/Auto-Disable liegen in
     // der bestehenden Webhook-Infrastruktur. `events` VOR `{hook}` registrieren.

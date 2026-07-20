@@ -29,6 +29,28 @@ use Illuminate\View\View;
  * löschbar; gelernte Einträge sind als solche gekennzeichnet.
  */
 class AiMemoryController extends Controller {
+    /**
+     * DSGVO-Export des KI-Gedächtnisses (Vollaudit 2026-07, M9): JSON-Download,
+     * optional auf einen Kunden gescopt — macht AiMemoryService::exportFor für
+     * Betroffenenauskünfte (Feature 025, MVP-401) tatsächlich erreichbar.
+     */
+    public function export(Request $request, \App\Services\Ai\AiMemoryService $memory): \Illuminate\Http\JsonResponse {
+        Gate::authorize('viewAny', AiMemoryEntry::class);
+
+        /** @var \App\Models\Organization $org */
+        $org = app('currentOrganization');
+        $customerId = $request->query('kunde') !== null ? (int) $request->query('kunde') : null;
+
+        return response()
+            ->json([
+                'organization_id' => (int) $org->id,
+                'customer_id' => $customerId,
+                'exported_at' => now()->toIso8601String(),
+                'entries' => $memory->exportFor($org, $customerId),
+            ], 200, [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
+            ->header('Content-Disposition', 'attachment; filename="ki-gedaechtnis-export.json"');
+    }
+
     public function index(Request $request): View {
         Gate::authorize('viewAny', AiMemoryEntry::class);
 

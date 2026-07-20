@@ -38,13 +38,13 @@ class ProcessLocationBatch implements ShouldQueue {
             return;
         }
 
-        // Org-Kontext für nachgelagerte (scoped) Operationen binden.
+        // Org-Kontext für nachgelagerte (scoped) Operationen binden — mit
+        // Restore über OrganizationContext (Vollaudit 2026-07, M42).
         $org = Organization::query()->find($user->organization_id);
-        if ($org instanceof Organization) {
-            app()->instance('currentOrganization', $org);
-        }
-
-        $builder->rebuildForUser($user);
-        $materializer->materializeForUser($user);
+        $work = static function () use ($builder, $materializer, $user): void {
+            $builder->rebuildForUser($user);
+            $materializer->materializeForUser($user);
+        };
+        $org instanceof Organization ? \App\Support\OrganizationContext::run($org, $work) : $work();
     }
 }

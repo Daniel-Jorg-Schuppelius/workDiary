@@ -65,6 +65,8 @@ class ManufacturingOrder extends Model {
         'procedure_run_id',
         'created_by',
         'released_at',
+        'reservation_mode',
+        'reservation_applied_at',
         'completed_at',
     ];
 
@@ -78,6 +80,7 @@ class ManufacturingOrder extends Model {
         'planned_start' => 'date',
         'due_at' => 'datetime',
         'released_at' => 'datetime',
+        'reservation_applied_at' => 'datetime',
         'completed_at' => 'datetime',
         'bom_snapshot' => 'array',
         'variant_snapshot' => 'array',

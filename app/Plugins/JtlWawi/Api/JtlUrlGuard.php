@@ -49,18 +49,12 @@ final class JtlUrlGuard {
 
     /** Konfigurations- und Laufzeitprüfung einer OnPremise-Basis-URL. */
     public static function assertAcceptable(string $url, bool $allowPrivateNetwork): void {
-        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
-        $host = (string) parse_url($url, PHP_URL_HOST);
-
-        if (! in_array($scheme, ['http', 'https'], true) || $host === '' || filter_var($url, FILTER_VALIDATE_URL) === false) {
-            throw new RuntimeException('JTL-Wawi: Die Basis-URL ist keine gültige http(s)-Adresse.');
-        }
-
-        if (! $allowPrivateNetwork && ! UrlSafety::isPubliclyRoutableHttpUrl($url)) {
-            throw new RuntimeException(
-                'JTL-Wawi: Die Basis-URL zeigt auf eine private/interne Adresse. '
-                . 'Für eine OnPremise-Wawi im eigenen Netz muss die Freigabe privater Adressen ausdrücklich aktiviert werden.'
-            );
-        }
+        // Gemeinsamer Guard (Vollaudit 2026-07, M48) — Meldungstexte unverändert.
+        UrlSafety::assertAcceptableExternalBaseUrl(
+            $url,
+            $allowPrivateNetwork,
+            'JTL-Wawi',
+            privateHint: 'Für eine OnPremise-Wawi im eigenen Netz muss die Freigabe privater Adressen ausdrücklich aktiviert werden.',
+        );
     }
 }

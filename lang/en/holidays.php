@@ -12,5 +12,6 @@ return [
     'region' => [
         'de_federal' => 'Nationwide (without regional holidays)',
         'at_federal' => 'Austria (nationwide)',
+        'ch_federal' => 'Switzerland (nationwide)',
     ],
 ];

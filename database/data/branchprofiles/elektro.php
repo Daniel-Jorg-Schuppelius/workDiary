@@ -265,4 +265,11 @@ return [
         '#nacharbeit',
         '#kundenabnahme',
     ],
+    // Qualifikationen/Unterweisungen je Gewerk (Vollaudit 2026-07, N13).
+    'qualifications_seed' => [
+        ['name' => 'Elektrofachkraft (EFK)', 'abbreviation' => 'EFK', 'description' => 'Ausgebildete Elektrofachkraft nach DIN VDE 1000-10.'],
+        ['name' => 'DGUV Vorschrift 3 — Unterweisung', 'abbreviation' => 'DGUV V3', 'description' => 'Jährliche Unterweisung zum sicheren Arbeiten an elektrischen Anlagen.'],
+        ['name' => 'Schaltberechtigung bis 30 kV', 'abbreviation' => 'SchaltB', 'description' => 'Benannte Schaltberechtigung für Mittelspannungsanlagen (befristet, auffrischungspflichtig).'],
+        ['name' => 'Arbeiten unter Spannung (AuS)', 'abbreviation' => 'AuS', 'description' => 'Qualifikation für Arbeiten unter Spannung nach DIN VDE 0105-100.'],
+    ],
 ];

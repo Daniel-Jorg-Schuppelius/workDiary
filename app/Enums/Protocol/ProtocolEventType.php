@@ -31,6 +31,8 @@ final class ProtocolEventType {
     public const SignatureRequested = 'protocol.signatureRequested';
     public const SignatureLinkOpened = 'protocol.signatureLinkOpened';
     public const SignatureRejected = 'protocol.signatureRejected';
+    // Widerruf externer Signatur-Links (Feature 012 MVP; Vollaudit 2026-07, M6).
+    public const SignatureLinkRevoked = 'protocol.signatureLinkRevoked';
     public const CustomerQueryRaised = 'protocol.customerQueryRaised';
     public const CustomerQueryAnswered = 'protocol.customerQueryAnswered';
     public const PdfRendered = 'protocol.pdfRendered';

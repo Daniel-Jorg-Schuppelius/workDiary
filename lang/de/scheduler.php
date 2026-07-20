@@ -90,8 +90,13 @@ return [
             'dispatch_reminders' => 'Event-Erinnerungen versenden',
             'materialize_recurrences' => 'Wiederkehrende Events anlegen',
         ],
+        'domain' => [
+            'sync' => 'Domain-Bestandsabgleich',
+            'events' => 'Domain-Ereignisse abrufen',
+        ],
         'easybill' => ['sync' => 'easybill-Belegabruf'],
         'integration' => ['purge_inbox' => 'Integrations-Inbox bereinigen'],
+        'inventory' => ['cycle_counts' => 'Zyklische Inventur anstoßen', 'expiring_lots' => 'MHD-Überwachung (ablaufende Chargen)'],
         'invoicing' => ['recurring' => 'Wiederkehrende Rechnungsentwürfe erzeugen'],
         'jtl' => ['sync' => 'JTL-Wawi-Abgleich'],
         'lexoffice' => [
@@ -100,6 +105,7 @@ return [
             'sync_vouchers' => 'Lexoffice-Belege synchronisieren',
         ],
         'location' => ['purge_points' => 'Standort-Rohpunkte bereinigen'],
+        'mail' => ['poll' => 'Mail-Eingang abrufen'],
         'maintenance' => ['scan_due' => 'Wartungspläne auf Fälligkeit prüfen'],
         'notifications' => ['scan_deadlines' => 'Fristen prüfen und erinnern'],
         'openproject' => [

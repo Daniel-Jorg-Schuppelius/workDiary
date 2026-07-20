@@ -86,6 +86,9 @@
                         <x-table.th sort type="number" align="right">{{ __('First-Time-Right %') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Median Ist') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('P90 Ist') }}</x-table.th>
+                        {{-- Wirtschaftlichkeits-Ranking (Vollaudit 2026-07, N7). --}}
+                        <x-table.th sort type="number" align="right">{{ __('DB') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('DB je Auftrag') }}</x-table.th>
                     </tr>
                 </x-slot:head>
                 @foreach($rows as $row)
@@ -126,6 +129,8 @@
                         <td class="text-right tabular-nums">{{ number_format($row['firstTimeRightShare'], 2, ',', '.') }}</td>
                         <td class="text-right tabular-nums">{{ number_format($row['medianActualMinutes'], 2, ',', '.') }}</td>
                         <td class="text-right tabular-nums">{{ number_format($row['p90ActualMinutes'], 2, ',', '.') }}</td>
+                        <td class="text-right tabular-nums {{ $row['contribution'] < 0 ? 'text-error' : '' }}" title="{{ __('Erlös :revenue · Kosten :cost', ['revenue' => number_format($row['revenue'], 2, ',', '.') . ' €', 'cost' => number_format($row['cost'], 2, ',', '.') . ' €']) }}">{{ number_format($row['contribution'], 2, ',', '.') }} €</td>
+                        <td class="text-right tabular-nums {{ $row['contributionPerEntry'] < 0 ? 'text-error' : '' }}">{{ number_format($row['contributionPerEntry'], 2, ',', '.') }} €</td>
                     </tr>
                 @endforeach
             </x-table>

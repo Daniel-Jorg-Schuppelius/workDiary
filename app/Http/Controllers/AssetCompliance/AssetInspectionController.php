@@ -121,6 +121,8 @@ class AssetInspectionController extends Controller {
             'external_inspector_name' => ['nullable', 'string', 'max:255'],
             'signature_name' => ['nullable', 'string', 'max:255'],
             'note' => ['nullable', 'string', 'max:4000'],
+            // Prüfkosten (MVP-291; Vollaudit 2026-07, M33).
+            'cost' => ['nullable', 'numeric', 'min:0', 'max:9999999'],
             'results' => ['sometimes', 'array'],
             'results.*.requirement_id' => ['nullable', 'integer'],
             'results.*.label' => ['nullable', 'string', 'max:255'],

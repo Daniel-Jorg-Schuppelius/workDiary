@@ -90,8 +90,13 @@ return [
             'dispatch_reminders' => 'Envoyer les rappels d\'événements',
             'materialize_recurrences' => 'Matérialiser les événements récurrents',
         ],
+        'domain' => [
+            'sync' => 'Synchronisation des domaines',
+            'events' => 'Récupérer les événements de domaine',
+        ],
         'easybill' => ['sync' => 'Récupération de documents easybill'],
         'integration' => ['purge_inbox' => 'Purger la boîte de réception d\'intégration'],
+        'inventory' => ['cycle_counts' => 'Lancer l\'inventaire tournant', 'expiring_lots' => 'Surveillance DLUO (lots expirants)'],
         'invoicing' => ['recurring' => 'Générer les brouillons de factures récurrentes'],
         'jtl' => ['sync' => 'Synchronisation JTL Wawi'],
         'lexoffice' => [
@@ -100,6 +105,7 @@ return [
             'sync_vouchers' => 'Synchroniser les pièces Lexoffice',
         ],
         'location' => ['purge_points' => 'Purger les points de localisation bruts'],
+        'mail' => ['poll' => 'Relever la boîte mail entrante'],
         'maintenance' => ['scan_due' => 'Vérifier les plans de maintenance échus'],
         'notifications' => ['scan_deadlines' => 'Contrôler les échéances et notifier'],
         'openproject' => [

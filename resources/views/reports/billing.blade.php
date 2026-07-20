@@ -161,6 +161,24 @@
                 @endforeach
             </x-detail-grid>
         </x-card>
+
+        {{-- Vollaudit 2026-07 (N18): Angebots-/Belegketten-Kennzahlen. --}}
+        <x-card>
+            <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Angebote & Belegkette (im Zeitraum)') }}</h3>
+            <x-detail-grid>
+                @forelse ($documentChain['quotes'] as $st => $count)
+                    <x-detail-grid.row :label="__('Angebote: :status', ['status' => $st])">{{ $count }}</x-detail-grid.row>
+                @empty
+                    <x-detail-grid.row :label="__('Angebote')">{{ __('Keine im Zeitraum.') }}</x-detail-grid.row>
+                @endforelse
+                <x-detail-grid.row :label="__('Annahmequote')">{{ $documentChain['acceptance_rate'] !== null ? number_format($documentChain['acceptance_rate'], 1, ',', '.') . ' %' : '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Median Erstellung → Entscheidung')">{{ $documentChain['decision_median_days'] !== null ? number_format($documentChain['decision_median_days'], 1, ',', '.') . ' ' . __('Tage') : '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Angebot → Rechnung')">{{ $documentChain['conversions']['quote_to_invoice'] }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Pro-forma → Rechnung')">{{ $documentChain['conversions']['proforma_to_invoice'] }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Stornos / Gutschriften')">{{ $documentChain['correction']['cancellations'] }} / {{ $documentChain['correction']['credit_notes'] }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Korrekturquote')">{{ $documentChain['correction']['rate'] !== null ? number_format($documentChain['correction']['rate'], 1, ',', '.') . ' %' : '—' }}</x-detail-grid.row>
+            </x-detail-grid>
+        </x-card>
     </div>
 </x-page-shell>
 @endsection

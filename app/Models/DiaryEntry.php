@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Diary\{LocationMode, Mode, Priority, Status};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid, HasTags, Searchable};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasCommunicationNotes, HasSqid, HasTags, Searchable};
 use Database\Factories\DiaryEntryFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -78,6 +78,7 @@ class DiaryEntry extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
+    use HasCommunicationNotes;
 
     /** @use HasFactory<DiaryEntryFactory> */
     use HasFactory;
@@ -314,14 +315,6 @@ class DiaryEntry extends Model {
     public function openIssues(): MorphMany {
         /** @var MorphMany<OpenIssue, $this> $relation */
         $relation = $this->morphMany(OpenIssue::class, 'subject')->latest('id');
-
-        return $relation;
-    }
-
-    /** @return MorphMany<CommunicationNote, $this> */
-    public function communicationNotes(): MorphMany {
-        /** @var MorphMany<CommunicationNote, $this> $relation */
-        $relation = $this->morphMany(CommunicationNote::class, 'notable')->latest('occurred_at');
 
         return $relation;
     }

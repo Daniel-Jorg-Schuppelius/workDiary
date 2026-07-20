@@ -25,6 +25,10 @@ return [
 
     'field' => [
         'name' => 'Nom',
+        'valid_from' => 'Valable à partir du',
+        'valid_until' => "Valable jusqu'au",
+        'target_entry_type' => 'Affectation : type de mission',
+        'target_customer' => 'Affectation : client',
         'description' => 'Description',
         'status' => 'Statut',
         'fields' => 'Champs',

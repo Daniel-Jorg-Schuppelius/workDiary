@@ -102,6 +102,9 @@ class InvestmentService {
             ]);
             $case->update(['status' => 'approved']);
             $case->audit('investment.budget_approved', ['version' => $request->version, 'amount' => $request->amount]);
+
+            // Vollaudit 2026-07 (M31): Entscheidung an den Antragsteller.
+            $this->notifyDecision($case, $request, 'investment_approved_title');
         }
 
         return $result;
@@ -124,6 +127,32 @@ class InvestmentService {
         $case = $request->investmentCase()->firstOrFail();
         $case->update(['status' => 'rejected']);
         $case->audit('investment.budget_rejected', ['version' => $request->version, 'reason' => $reason]);
+
+        // Vollaudit 2026-07 (M31): Ablehnung inkl. Begründung an den Antragsteller.
+        $this->notifyDecision($case, $request, 'investment_rejected_title', $reason);
+    }
+
+    /**
+     * Vollaudit 2026-07 (M31): Budget-Entscheidung an den Antragsteller
+     * melden (Feature 069, MVP-209 — Benachrichtigungsschiene).
+     */
+    private function notifyDecision(InvestmentCase $case, InvestmentBudgetRequest $request, string $titleKey, ?string $reason = null): void {
+        $requester = $request->requested_by !== null
+            ? User::query()->withoutGlobalScopes()->find((int) $request->requested_by)
+            : null;
+
+        app(\App\Services\Notification\NotificationDispatcher::class)->notify(
+            \App\Enums\Notification\NotificationEvent::InvestmentDecided,
+            $case,
+            $requester,
+            [
+                'title' => (string) __('notification.message.' . $titleKey, ['title' => (string) $case->title]),
+                'title_key' => 'notification.message.' . $titleKey,
+                'title_params' => ['title' => (string) $case->title],
+                'message' => $reason,
+                'url' => route('investments.show', $case),
+            ],
+        );
     }
 
     /**

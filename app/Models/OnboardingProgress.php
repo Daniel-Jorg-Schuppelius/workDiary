@@ -41,11 +41,6 @@ class OnboardingProgress extends Model {
         'done_at' => 'datetime',
     ];
 
-    /** @return BelongsTo<Organization, $this> */
-    public function organization(): BelongsTo {
-        return $this->belongsTo(Organization::class);
-    }
-
     /** @return BelongsTo<User, $this> */
     public function doneBy(): BelongsTo {
         return $this->belongsTo(User::class, 'done_by_user_id');

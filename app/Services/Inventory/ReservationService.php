@@ -14,7 +14,7 @@ namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{OwnershipType, ReservationStatus};
 use App\Models\{ArticleVariant, StockReservation, Warehouse};
-use CommonToolkit\Helper\Data\NumberHelper;
+use App\Support\DecimalQty;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -46,7 +46,7 @@ class ReservationService {
         ?int $createdBy = null,
     ): StockReservation {
         return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $priority, $source, $createdBy): StockReservation {
-            $qty = $this->positive($qty);
+            $qty = DecimalQty::positive($qty);
             if (bccomp($this->ledger->available($variant, $warehouse), $qty, self::SCALE) < 0) {
                 throw new RuntimeException('Reservierung übersteigt die verfügbare Menge.');
             }
@@ -71,7 +71,7 @@ class ReservationService {
     ): ?StockReservation {
         return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $priority, $source, $createdBy): ?StockReservation {
             $available = $this->ledger->available($variant, $warehouse);
-            $want = $this->positive($qty);
+            $want = DecimalQty::positive($qty);
             $take = bccomp($available, $want, self::SCALE) < 0 ? $available : $want;
 
             if (bccomp($take, '0', self::SCALE) <= 0) {
@@ -84,7 +84,7 @@ class ReservationService {
 
     /** Erfüllt (verbraucht) einen Teil der Reservierung: reserviert → entnommen. */
     public function fulfill(StockReservation $reservation, string $qty): StockReservation {
-        $qty = $this->positive($qty);
+        $qty = DecimalQty::positive($qty);
         if (bccomp($qty, $reservation->openQuantity(), self::SCALE) > 0) {
             throw new RuntimeException('Erfüllung übersteigt die offene reservierte Menge.');
         }
@@ -108,7 +108,7 @@ class ReservationService {
     public function release(StockReservation $reservation, ?string $qty = null): StockReservation {
         return DB::transaction(function () use ($reservation, $qty): StockReservation {
             $open = $reservation->openQuantity();
-            $amount = $qty === null ? $open : $this->positive($qty);
+            $amount = $qty === null ? $open : DecimalQty::positive($qty);
             if (bccomp($amount, $open, self::SCALE) > 0) {
                 $amount = $open;
             }
@@ -163,15 +163,5 @@ class ReservationService {
         }
 
         return [$variant, $warehouse];
-    }
-
-    /** @return numeric-string */
-    private function positive(string $qty): string {
-        $qty = NumberHelper::normalizeDecimalString($qty);
-        if ($qty === '' || ! is_numeric($qty)) {
-            return '0';
-        }
-
-        return bccomp($qty, '0', self::SCALE) < 0 ? bcmul($qty, '-1', self::SCALE) : $qty;
     }
 }

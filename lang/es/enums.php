@@ -1,6 +1,25 @@
 <?php
 
 return [
+    'billbee' => [
+        'order_state' => [
+            1 => 'Pedido',
+            2 => 'Confirmado',
+            3 => 'Pagado',
+            4 => 'Enviado',
+            5 => 'Reclamación',
+            6 => 'Eliminado',
+            7 => 'Completado',
+            8 => 'Cancelado',
+            9 => 'Archivado',
+            11 => '1er recordatorio',
+            12 => '2º recordatorio',
+            13 => 'Empaquetado',
+            14 => 'Ofertado',
+            15 => 'Recordatorio de pago',
+            16 => 'En fulfillment',
+        ],
+    ],
     'ai' => [
         'family' => ['llm' => 'Modelo de lenguaje (LLM)', 'translation' => 'Traducción'],
         'verb' => ['formulate' => 'Formular', 'summarize' => 'Resumir', 'classify' => 'Clasificar', 'explain' => 'Explicar', 'find' => 'Buscar', 'translate' => 'Traducir'],
@@ -329,6 +348,7 @@ return [
             ],
             'monthClosure' => [
                 'submitted' => 'Cierre mensual enviado',
+                'decided' => 'Cierre mensual decidido',
             ],
             'isms' => [
                 'certificateExpiring' => 'Certificado ISMS próximo a vencer',
@@ -371,6 +391,24 @@ return [
             'maintenance' => [
                 'dueSoon' => 'Mantenimiento/inspección próximo',
                 'overdue' => 'Mantenimiento/inspección vencido',
+            ],
+            'domain' => [
+                'expiring' => 'Dominio por expirar / renovación fallida',
+                'transferChanged' => 'Estado de transferencia de dominio cambiado',
+                'syncFailed' => 'Sincronización de dominio fallida',
+                'highRiskAction' => 'Acción de dominio de alto riesgo aprobada',
+            ],
+            'finance' => [
+                'transferFailed' => 'Transferencia de facturación fallida',
+                'bankImportFailed' => 'Importación bancaria fallida',
+                'reconciliationReview' => 'Conciliación de pagos requiere revisión',
+            ],
+            'investment' => [
+                'decisionDue' => 'Decisión de inversión pendiente',
+                'decided' => 'Solicitud de inversión decidida',
+            ],
+            'inventory' => [
+                'lotExpiring' => 'Lote por caducar (consumo preferente)',
             ],
             'operations' => [
                 'backupOverdue' => 'Copia de seguridad atrasada',
@@ -913,6 +951,9 @@ return [
             'sunday' => 'Domingo',
             'holiday' => 'Día festivo',
             'custom' => 'Personalizado',
+            'oncall' => 'Guardia presencial',
+            'standby' => 'Guardia localizada',
+            'overtime' => 'Horas extra',
         ],
     ],
     'finance' => [
@@ -984,6 +1025,7 @@ return [
             'overpayment' => 'Sobrepago',
             'reimbursement' => 'Reembolso',
             'chargeback' => 'Devolución de adeudo',
+            'skonto' => 'Descuento por pronto pago (reducción de ingresos)',
         ],
     ],
 

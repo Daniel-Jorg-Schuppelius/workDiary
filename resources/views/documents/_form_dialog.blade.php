@@ -54,6 +54,13 @@
             <textarea name="description" rows="3" maxlength="4000"
                       class="textarea textarea-bordered w-full">{{ old('description', $document?->description) }}</textarea>
         </label>
+        {{-- Vertraulichkeitsmerkmal (Vollaudit 2026-07, N10). --}}
+        <label class="label cursor-pointer justify-start gap-2 sm:col-span-2">
+            <input type="hidden" name="confidential" value="0">
+            <input type="checkbox" name="confidential" value="1" class="checkbox checkbox-sm"
+                   @checked((bool) old('confidential', $document?->confidential ?? false))>
+            <span class="label-text">{{ __('document.field.confidential') }}</span>
+        </label>
     </x-form-group>
 
     <x-form-group :legend="__('document.field.validity')" icon="event_available" tone="info">

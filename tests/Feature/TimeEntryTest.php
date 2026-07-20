@@ -64,6 +64,25 @@ class TimeEntryTest extends TestCase {
         ]);
     }
 
+    /**
+     * Vollaudit 2026-07 (N2): kaputte datetime-local-Eingaben (z. B. manipuliertes
+     * POST) müssen als Validierungsfehler enden — vorher warf die ungeschützte
+     * Tz-Umrechnung in prepareForValidation() einen 500er.
+     */
+    public function test_invalid_range_input_yields_validation_error_not_500(): void {
+        $this->actingAs($this->user)
+            ->from(route('projects.time-entries.create', $this->project))
+            ->post(route('projects.time-entries.store', $this->project), [
+                'started_at' => 'kein-datum-99:99',
+                'ended_at' => '2030-01-15T18:00',
+                'description' => 'Range kaputt',
+            ])
+            ->assertRedirect(route('projects.time-entries.create', $this->project))
+            ->assertSessionHasErrors(['started_at']);
+
+        $this->assertDatabaseMissing('time_entries', ['description' => 'Range kaputt']);
+    }
+
     public function test_owner_can_update_time_entry(): void {
         $entry = TimeEntry::create([
             'organization_id' => $this->organization->id,

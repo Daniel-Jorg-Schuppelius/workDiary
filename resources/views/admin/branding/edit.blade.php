@@ -135,17 +135,15 @@
         </x-form-group>
 
         <x-form-group :legend="__('PDF-Konfiguration je Dokumenttyp')" icon="picture_as_pdf" tone="ghost" cols="1">
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead>
+            <x-table>
+                <x-slot:head>
                         <tr>
                             <th>{{ __('Dokumenttyp') }}</th>
                             <th>{{ __('Logo') }}</th>
                             <th>{{ __('Kontakt im Header') }}</th>
                             <th>{{ __('Fußzeile') }}</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                </x-slot:head>
                         @foreach ($pdfTypes as $type)
                             @php
                                 $cur = (array) data_get($organization->settings, 'branding.pdf.'.$type, []);
@@ -173,9 +171,7 @@
                                 </td>
                             </tr>
                         @endforeach
-                    </tbody>
-                </table>
-            </div>
+            </x-table>
         </x-form-group>
 
         <div class="flex justify-end gap-2">

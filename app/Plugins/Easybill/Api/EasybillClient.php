@@ -28,6 +28,9 @@ use Illuminate\Http\Client\Response;
  * Toolkit-Drossel zwischen den Requests greift.
  */
 class EasybillClient {
+    // Gemeinsame guard()-Fehlerbehandlung (Vollaudit 2026-07, N33).
+    use \App\Plugins\Support\GuardsPluginApiResponses;
+
     private ?PluginApiClient $api = null;
 
     public function __construct(
@@ -169,16 +172,12 @@ class EasybillClient {
         return $this->api;
     }
 
-    /** @return array<mixed> */
-    private function guard(Response $response, string $endpoint): array {
-        if (! $response->successful()) {
-            throw new EasybillApiException(
-                $response->status(),
-                sprintf('easybill %s: HTTP %d %s', $endpoint, $response->status(), mb_substr((string) $response->body(), 0, 300)),
-                $endpoint,
-            );
-        }
+    /** @return class-string<\App\Plugins\Support\PluginApiException> */
+    protected function apiExceptionClass(): string {
+        return EasybillApiException::class;
+    }
 
-        return (array) ($response->json() ?? []);
+    protected function apiLabel(): string {
+        return 'easybill';
     }
 }

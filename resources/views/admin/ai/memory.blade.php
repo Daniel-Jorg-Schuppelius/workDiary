@@ -19,6 +19,10 @@
                         :href="route('admin.ai.memory.create')"
                         show-label>{{ __('ai.memory.new') }}</x-icon-btn>
         @endif
+        {{-- Vollaudit 2026-07 (M9): DSGVO-Export, respektiert den Kundenfilter. --}}
+        <x-icon-btn icon="download" size="sm"
+                    :href="route('admin.ai.memory.export', array_filter(['kunde' => request()->query('kunde')]))"
+                    show-label>{{ __('Export (JSON)') }}</x-icon-btn>
         <x-icon-btn icon="smart_toy" size="sm" :href="route('admin.ai.index')" show-label>{{ __('ai.title.connections') }}</x-icon-btn>
     </x-slot:actions>
 

@@ -26,6 +26,8 @@ use Illuminate\Support\Facades\DB;
  * syncRequirements() — org-sicher analog RiskService::syncControls().
  */
 class ControlService {
+    use \App\Services\Isms\Concerns\SyncsScopedRelations;
+
     /**
      * Legt eine Maßnahme an.
      *
@@ -43,7 +45,7 @@ class ControlService {
             ]);
 
             if (array_key_exists('requirement_ids', $attributes)) {
-                $this->syncRequirements($control, $this->normalizeIds($attributes['requirement_ids']));
+                $this->syncRequirements($control, $attributes['requirement_ids']);
             }
 
             return $control;
@@ -69,7 +71,7 @@ class ControlService {
             ]);
 
             if (array_key_exists('requirement_ids', $attributes)) {
-                $this->syncRequirements($control, $this->normalizeIds($attributes['requirement_ids']));
+                $this->syncRequirements($control, $attributes['requirement_ids']);
             }
 
             return $control;
@@ -92,26 +94,9 @@ class ControlService {
      * können dadurch nicht verknüpft werden (Pivot trägt bewusst keine
      * eigene organization_id, siehe Migration).
      *
-     * @param  list<int|string>  $requirementIds
+     * Gemeinsamer org-gescopter Sync (Vollaudit 2026-07, N36).
      */
-    public function syncRequirements(IsmsControl $control, array $requirementIds): void {
-        $ids = IsmsRequirement::query()
-            ->whereIn('id', array_map(intval(...), $requirementIds))
-            ->pluck('id')
-            ->all();
-
-        $control->requirements()->sync($ids);
-    }
-
-    /**
-     * Normalisiert rohe Request-Werte zu einer ID-Liste (nur int/string).
-     *
-     * @return list<int|string>
-     */
-    private function normalizeIds(mixed $value): array {
-        return array_values(array_filter(
-            (array) $value,
-            static fn(mixed $id): bool => is_int($id) || is_string($id),
-        ));
+    public function syncRequirements(IsmsControl $control, mixed $requirementIds): void {
+        $this->syncScopedIds($control->requirements(), IsmsRequirement::class, $requirementIds);
     }
 }

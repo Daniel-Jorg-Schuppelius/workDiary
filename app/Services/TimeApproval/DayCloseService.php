@@ -13,11 +13,12 @@ namespace App\Services\TimeApproval;
 use App\Enums\TimeApproval\{DayClosureStatus, DayCorrectionStatus};
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
 use App\Models\{Attendance, DayClosure, DayCorrectionRequest, TimeEntry, User};
+use App\Services\Concerns\ResolvesActorId;
 use App\Services\Flextime\FlexCalculator;
 use App\Services\Timekeeping\BreakRuleEvaluator;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Support\Facades\DB;
 
 /**
  * Statusmaschine für Tagesabschlüsse (MVP-015, ../WorkDiary-Architecture/tagesabschluss.md §3/§5).
@@ -32,6 +33,8 @@ use Illuminate\Support\Facades\{Auth, DB};
  * geworfen, damit Controller fachlich sprechende Antworten erzeugen.
  */
 class DayCloseService {
+    use ResolvesActorId;
+
     public const REASON_MIN_LENGTH = 20;
 
     public function __construct(
@@ -508,16 +511,6 @@ class DayCloseService {
         }
 
         return $owner;
-    }
-
-    private function resolveActorId(?User $actor): ?int {
-        if ($actor instanceof User) {
-            return (int) $actor->id;
-        }
-
-        $id = Auth::id();
-
-        return $id === null ? null : (int) $id;
     }
 
     private function closureOf(DayCorrectionRequest $request): DayClosure {

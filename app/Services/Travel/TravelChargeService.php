@@ -13,6 +13,7 @@ namespace App\Services\Travel;
 use App\Enums\Tour\TourStatus;
 use App\Models\{Customer, ForeignCustomer, Project, TimeEntry, Tour, TravelLog};
 use App\Support\Setting;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\{Carbon, Collection};
 
 /**
@@ -81,6 +82,10 @@ class TravelChargeService {
      * @param  bool  $pureMaterialOnly  nur Touren an Tagen ohne abrechenbare Zeit
      *                                  (reine Materialtage) — reserviert die
      *                                  Anfahrt von Leistungstagen der Leistungsrechnung
+     * @param  bool  $includeBilled  auch bereits abgerechnete Touren einbeziehen
+     *                               (Erlös-Projektion im Wirtschaftlichkeits-
+     *                               report, Vollaudit 2026-07 M7) — die
+     *                               Fakturierung selbst bleibt auf travel_billed=false
      * @return Collection<int, TravelCharge>
      */
     public function chargesForRange(
@@ -89,6 +94,7 @@ class TravelChargeService {
         array $range,
         ?ForeignCustomer $foreignCustomer,
         bool $pureMaterialOnly,
+        bool $includeBilled = false,
     ): Collection {
         $config = $this->resolveConfig($customer);
         if (! $config['enabled']) {
@@ -96,7 +102,7 @@ class TravelChargeService {
         }
 
         $tours = Tour::query()
-            ->where('travel_billed', false)
+            ->when(! $includeBilled, fn($q) => $q->where('travel_billed', false))
             ->where('status', '!=', TourStatus::Cancelled->value)
             ->when(! empty($range['from']), fn($q) => $q->whereDate('tour_date', '>=', Carbon::parse($range['from'])->toDateString()))
             ->when(! empty($range['to']), fn($q) => $q->whereDate('tour_date', '<=', Carbon::parse($range['to'])->toDateString()))
@@ -177,7 +183,7 @@ class TravelChargeService {
             quantity: $km,
             unit: 'km',
             unitPrice: round($rate, 4),
-            description: sprintf('%s %s km am %s', $config['label'], rtrim(rtrim(number_format($km, 2, ',', '.'), '0'), ','), $dateLabel),
+            description: sprintf('%s %s km am %s', $config['label'], rtrim(rtrim(NumberHelper::toGermanFormat($km, 2, withThousandsSeparator: true), '0'), ','), $dateLabel),
         );
     }
 

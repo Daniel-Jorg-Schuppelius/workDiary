@@ -15,7 +15,8 @@ namespace App\Services\Finance;
 use App\Enums\Finance\{AllocationKind, MatchStatus};
 use App\Models\{Expense, Invoice, User};
 use App\Models\Finance\{BankTransaction, PaymentAllocation, PaymentReconciliationEvent};
-use Illuminate\Support\Facades\{Auth, DB};
+use App\Services\Concerns\ResolvesActorId;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Bestätigung und Rücknahme von Zahlungszuordnungen (Feature 045, „Priorität 3").
@@ -26,6 +27,8 @@ use Illuminate\Support\Facades\{Auth, DB};
  * Jede Aktion schreibt ein {@see PaymentReconciliationEvent} (Hash-Kette).
  */
 class ReconciliationService {
+    use ResolvesActorId;
+
     public function __construct(private readonly MatchingService $matching) {}
 
     /**
@@ -62,7 +65,7 @@ class ReconciliationService {
                     'confirmed_at' => now(),
                 ]);
 
-                $this->applyEffect($target, $transaction);
+                $this->applyEffect($target, $transaction, $actorId);
 
                 $payloadTargets[] = [
                     'allocation_id' => $allocation->id,
@@ -248,9 +251,9 @@ class ReconciliationService {
         });
     }
 
-    private function applyEffect(Invoice|Expense $target, BankTransaction $transaction): void {
+    private function applyEffect(Invoice|Expense $target, BankTransaction $transaction, ?int $actorId = null): void {
         if ($target instanceof Invoice) {
-            $this->applyInvoiceEffect($target, $transaction);
+            $this->applyInvoiceEffect($target, $transaction, $actorId);
         } else {
             $this->applyExpenseEffect($target, $transaction);
         }
@@ -261,7 +264,7 @@ class ReconciliationService {
      * Rechnungsbetrag (abzüglich Skonto-Toleranz) deckt — dann status=paid und
      * paid_on=Buchungsdatum. Teilzahlung lässt den Status offen.
      */
-    private function applyInvoiceEffect(Invoice $invoice, BankTransaction $transaction): void {
+    private function applyInvoiceEffect(Invoice $invoice, BankTransaction $transaction, ?int $actorId = null): void {
         $allocated = $this->allocatedSum($invoice);
         // MVP-416: beleggenaue Skonto-Kondition (Frist gegen Buchungsdatum) statt Pauschale.
         $minWithSkonto = $this->matching->minAcceptableFor($invoice, $transaction->booking_date);
@@ -272,6 +275,28 @@ class ReconciliationService {
             $invoice->status = Invoice::STATUS_PAID;
             $invoice->paid_on = $transaction->booking_date;
             $invoice->saveQuietly();
+
+            // Vollaudit 2026-07 (N12): akzeptierter Skontoabzug strukturiert als
+            // Erlösschmälerung festhalten — eigener AllocationKind::Skonto-Satz,
+            // Teil der Hash-Kette (skonto_accepted) und des Z3-Nachweises.
+            $skonto = round((float) $invoice->total - $allocated, 2);
+            if ($skonto > MatchingService::CENT_TOLERANCE) {
+                PaymentAllocation::query()->create([
+                    'organization_id' => $invoice->organization_id,
+                    'bank_transaction_id' => $transaction->id,
+                    'allocatable_type' => Invoice::class,
+                    'allocatable_id' => $invoice->id,
+                    'amount' => (string) $skonto,
+                    'kind' => AllocationKind::Skonto,
+                    'note' => (string) __('Skonto (Erlösschmälerung, automatisch bei Bezahlt-Setzung)'),
+                    'confirmed_by_user_id' => $actorId,
+                    'confirmed_at' => now(),
+                ]);
+                $this->recordEvent($transaction, 'skonto_accepted', $actorId, [
+                    'invoice_id' => $invoice->id,
+                    'amount' => (string) $skonto,
+                ]);
+            }
         } elseif (
             // Teilzahlung (MVP-162): sichtbarer Zwischenstatus statt „offen".
             $allocated > 0
@@ -308,6 +333,16 @@ class ReconciliationService {
             return; // weiterhin gedeckt — Status bleibt bestehen.
         }
 
+        // Vollaudit 2026-07 (N12): der automatische Skonto-Satz existiert nur
+        // wegen der Deckung — fällt sie, wird er mit zurückgenommen (SoftDelete).
+        PaymentAllocation::query()
+            ->where('allocatable_type', Invoice::class)
+            ->where('allocatable_id', $invoice->id)
+            ->where('kind', AllocationKind::Skonto)
+            ->get()
+            ->each(static fn(PaymentAllocation $skonto) => $skonto->delete());
+
+        $allocated = $this->allocatedSum($invoice);
         $invoice->status = $allocated > 0 ? Invoice::STATUS_PARTIALLY_PAID : Invoice::STATUS_ISSUED;
         $invoice->paid_on = null;
         $invoice->saveQuietly();
@@ -331,6 +366,9 @@ class ReconciliationService {
         return (float) PaymentAllocation::query()
             ->where('allocatable_type', Invoice::class)
             ->where('allocatable_id', $invoice->id)
+            // Vollaudit 2026-07 (N12): Skonto-Sätze sind Erlösschmälerung,
+            // keine Zahlungsdeckung — sonst würde der Auto-Satz die Deckung verfälschen.
+            ->where('kind', '!=', AllocationKind::Skonto->value)
             ->sum('amount');
     }
 
@@ -376,9 +414,4 @@ class ReconciliationService {
         ]);
     }
 
-    private function resolveActorId(?User $actor): ?int {
-        $id = $actor->id ?? Auth::id();
-
-        return $id !== null ? (int) $id : null;
-    }
 }

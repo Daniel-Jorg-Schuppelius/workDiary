@@ -23,10 +23,14 @@ use App\Plugins\Support\PluginHttpFactory;
  * clientId/clientSecret → JWT (~24 h). Token + Ablauf werden verschlüsselt
  * an der Verbindung gehalten und mit Sicherheitsfenster erneuert.
  *
- * Hinweis Toolkit-first: das `php-api-toolkit` bietet derzeit nur einen
- * Authorization-Code-Grant — der Client-Credentials-Grant ist ein
- * Erweiterungskandidat (Klasse C); bis zum Toolkit-Release lebt der
- * Austausch bewusst hier im Plugin.
+ * Hinweis Toolkit-first (korrigiert, Vollaudit 2026-07, N32): das
+ * `php-api-toolkit` BIETET inzwischen einen Client-Credentials-Grant
+ * (`PluginHttpFactory::clientCredentialsGrant` + AUTH_METHOD_BASIC,
+ * OAuth2ClientCredentialsAuthentication) — dieser Handaustausch ist also
+ * KEINE Vorlage für neue Plugins. Die Migration (inkl. TokenStore-Adapter
+ * nach dem Muster CarrierConnectionTokenStore und Abgleich Sicherheits-
+ * fenster vs. Toolkit-Leeway 60 s) steht bewusst zurück, bis der
+ * JTL-Wawi-Pilot mit echten Credentials läuft — mit dem Nutzer abstimmen.
  */
 class JtlCloudTokenService {
     public function __construct(private readonly PluginHttpFactory $http) {}

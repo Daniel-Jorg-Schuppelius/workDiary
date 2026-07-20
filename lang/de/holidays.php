@@ -12,5 +12,6 @@ return [
     'region' => [
         'de_federal' => 'Bundesweit (ohne regionale Feiertage)',
         'at_federal' => 'Österreich (bundesweit)',
+        'ch_federal' => 'Schweiz (landesweit)',
     ],
 ];

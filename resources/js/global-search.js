@@ -68,7 +68,7 @@ const renderHint = (root, message) => {
     activeIndex = -1;
 };
 
-const renderResults = (root, groups) => {
+const renderResults = (root, groups, allUrl = null) => {
     const results = root.querySelector("[data-global-search-results]");
     if (!results) return;
 
@@ -103,6 +103,18 @@ const renderResults = (root, groups) => {
         });
         html += `</ul>`;
     });
+    // Vollaudit 2026-07 (M8): Link auf die Vollergebnisseite mit Filtern.
+    if (allUrl) {
+        const idx = flatItems.length;
+        flatItems.push({ url: allUrl });
+        html += `<div class="border-t border-base-200 mt-2 px-1 pt-1">
+            <a href="${escapeHtml(allUrl)}" data-gs-item data-gs-index="${idx}"
+               class="flex items-center gap-2 rounded-box px-3 py-2 text-sm font-medium hover:bg-base-200 focus:bg-base-200 focus:outline-none">
+                <span class="material-symbols-outlined text-base" aria-hidden="true">manage_search</span>
+                <span>${escapeHtml(__("alle Treffer →"))}</span>
+            </a>
+        </div>`;
+    }
     results.innerHTML = html;
     activeIndex = -1;
     updateActive(root);
@@ -138,7 +150,7 @@ const fetchResults = async (root, term) => {
         }
         const json = await res.json();
         setStatus(root, "");
-        renderResults(root, json.groups || []);
+        renderResults(root, json.groups || [], json.allUrl || null);
     } catch (e) {
         setStatus(root, __("Suche fehlgeschlagen."));
     }

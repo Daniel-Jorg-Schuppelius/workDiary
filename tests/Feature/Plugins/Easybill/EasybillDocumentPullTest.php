@@ -184,13 +184,22 @@ class EasybillDocumentPullTest extends TestCase {
 
         FakePluginHttp::fake([
             'https://api.easybill.de/rest/v1/documents/inv-9001/download' => FakePluginHttp::response($xml, 200, ['Content-Type' => 'application/xml;format=xrechnung;version=3.0.1']),
+            'https://api.easybill.de/rest/v1/documents/inv-9001/pdf' => FakePluginHttp::response('%PDF-1.4 fake', 200, ['Content-Type' => 'application/pdf']),
             'https://api.easybill.de/rest/v1/documents/inv-9001' => FakePluginHttp::response(['id' => 'inv-9001', 'is_draft' => false, 'number' => 'RE-1001']),
         ]);
 
         $result = app(EasybillDocumentPullService::class)->pull($this->organization->id);
 
         $this->assertSame(1, $result['pulled']);
-        $version = Document::query()->firstOrFail()->versions()->firstOrFail();
-        $this->assertSame('easybill-RE-1001.xml', $version->original_name);
+        // Primärabruf bleibt die XRechnung vom /download-Endpunkt (v1);
+        // seit N25 (Vollaudit 2026-07) wird zusätzlich das PDF als zweite
+        // Dokumentversion archiviert — versions() sortiert version_no DESC.
+        $document = Document::query()->firstOrFail();
+        $xmlVersion = $document->versions()->where('version_no', 1)->firstOrFail();
+        $this->assertSame('easybill-RE-1001.xml', $xmlVersion->original_name);
+        $pdfVersion = $document->versions()->where('version_no', 2)->firstOrFail();
+        $this->assertSame('easybill-RE-1001.pdf', $pdfVersion->original_name);
+        $payload = (array) \App\Models\ExternalReference::query()->firstOrFail()->payload;
+        $this->assertSame(hash('sha256', '%PDF-1.4 fake'), $payload['document_pdf_sha256'] ?? null);
     }
 }

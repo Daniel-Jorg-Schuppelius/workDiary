@@ -134,13 +134,13 @@
         </x-card>
     @endif
 
-    <div role="tablist" class="tabs tabs-box w-fit mb-3">
-        <a role="tab" href="{{ route('supplier-catalogs.show', $source) }}" class="tab {{ $status === 'all' ? 'tab-active' : '' }}">{{ __('Alle') }}</a>
-        @foreach ($statuses as $st)
-            <a role="tab" href="{{ route('supplier-catalogs.show', [$source, 'status' => $st->value]) }}"
-               class="tab {{ $status === $st->value ? 'tab-active' : '' }}">{{ $st->label() }}</a>
-        @endforeach
-    </div>
+    {{-- Tab-Strip über die gemeinsame Komponente (D5; Vollaudit 2026-07, N44). --}}
+    <x-tab-nav class="w-fit mb-3" :items="collect([['label' => __('Alle'), 'href' => route('supplier-catalogs.show', $source), 'active' => $status === 'all']])
+        ->concat(collect($statuses)->map(fn($st) => [
+            'label' => $st->label(),
+            'href' => route('supplier-catalogs.show', [$source, 'status' => $st->value]),
+            'active' => $status === $st->value,
+        ]))->all()" />
 
     @if ($items->total() === 0)
         <x-empty-state framed :title="__('procurement.catalog.no_items')" />

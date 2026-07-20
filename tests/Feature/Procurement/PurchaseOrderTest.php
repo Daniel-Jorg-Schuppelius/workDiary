@@ -76,6 +76,49 @@ final class PurchaseOrderTest extends TestCase {
         $this->assertSame('10.0000', $ledger->available($this->variant, $this->warehouse));
     }
 
+    /**
+     * Vollaudit 2026-07 (M19, E2): chargen-/serienpflichtige Artikel werden
+     * nicht still als anonymer Bestand gebucht — ohne Angabe blockiert der
+     * Wareneingang; mit Angabe entstehen Charge (FEFO-Schicht) bzw. Serie
+     * (inkl. Sperrlistenprüfung via captureForReceipt).
+     */
+    public function test_tracked_articles_require_lot_or_serial_on_receipt(): void {
+        $orders = app(PurchaseOrderService::class);
+        $receipts = app(GoodsReceiptService::class);
+
+        // Chargenpflicht: ohne lot_no blockiert, mit lot_no → StockLot + Schicht.
+        $this->article->forceFill(['batch_required' => true])->save();
+        $po = $orders->createDraft($this->organization, $this->supplier, $this->warehouse);
+        $line = $orders->addLine($po, $this->article, '10', ['variant' => $this->variant, 'unit_price' => '2']);
+        $orders->submit($po);
+
+        try {
+            $receipts->receive($line, '4');
+            $this->fail('Chargenpflichtiger Wareneingang ohne lot_no wurde nicht blockiert.');
+        } catch (\RuntimeException) {
+        }
+
+        $receipts->receive($line, '4', lotNo: 'CH-2026-001', bestBefore: '2027-01-31');
+        $lot = \App\Models\StockLot::query()->where('lot_no', 'CH-2026-001')->firstOrFail();
+        $this->assertSame('2027-01-31', \Illuminate\Support\Carbon::parse((string) $lot->best_before)->toDateString());
+        $this->assertSame('4.0000', app(\App\Services\Inventory\LotService::class)->onHand($lot));
+
+        // Serienpflicht: qty muss 1 sein, Serie wird registriert.
+        $this->article->forceFill(['batch_required' => false, 'serial_required' => true])->save();
+        $po2 = $orders->createDraft($this->organization, $this->supplier, $this->warehouse);
+        $line2 = $orders->addLine($po2, $this->article, '2', ['variant' => $this->variant, 'unit_price' => '5']);
+        $orders->submit($po2);
+
+        try {
+            $receipts->receive($line2, '2', serialNo: 'SN-100');
+            $this->fail('Serienpflichtiger Eingang mit Menge 2 wurde nicht blockiert.');
+        } catch (\RuntimeException) {
+        }
+
+        $receipts->receive($line2, '1', serialNo: 'SN-100');
+        $this->assertDatabaseHas('stock_serials', ['serial_no' => 'SN-100']);
+    }
+
     public function test_receipt_movement_references_purchase_order_line(): void {
         $orders = app(PurchaseOrderService::class);
         $po = $orders->createDraft($this->organization, $this->supplier, $this->warehouse);

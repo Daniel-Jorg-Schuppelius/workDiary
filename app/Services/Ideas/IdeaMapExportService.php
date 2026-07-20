@@ -33,9 +33,10 @@ class IdeaMapExportService {
 
     /** @return array<string, mixed> */
     public function toArray(IdeaMap $map): array {
-        $map->loadMissing(['owner:id,name', 'nodes' => fn ($q) => $q->orderBy('sort_order'), 'nodes.references.target']);
+        $map->loadMissing(['owner:id,name', 'nodes' => fn ($q) => $q->orderBy('sort_order'), 'nodes.references.target', 'links', 'summaries']);
         $byParent = $map->nodes->groupBy('parent_id');
         $root = $map->nodes->firstWhere('is_root', true);
+        $nodeSqids = $map->nodes->keyBy('id')->map(fn (IdeaNode $n): string => (string) $n->sqid);
 
         return [
             'format' => self::FORMAT,
@@ -49,6 +50,20 @@ class IdeaMapExportService {
                 'exported_at' => now()->toIso8601String(),
             ],
             'tree' => $root !== null ? $this->serializeNode($root, $byParent) : null,
+            // Vollaudit 2026-07 (N16): Querverbindungen und Boundaries (Phase D)
+            // gehören zum Format — Sqids statt interner IDs, wie im Baum.
+            'links' => $map->links->map(fn ($link): array => [
+                'source' => $nodeSqids->get($link->source_node_id),
+                'target' => $nodeSqids->get($link->target_node_id),
+                'label' => $link->label,
+                'color' => (string) $link->color,
+            ])->values()->all(),
+            'summaries' => $map->summaries->map(fn ($summary): array => [
+                'parent' => $nodeSqids->get($summary->parent_node_id),
+                'start_index' => (int) $summary->start_index,
+                'end_index' => (int) $summary->end_index,
+                'label' => $summary->label,
+            ])->values()->all(),
         ];
     }
 

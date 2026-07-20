@@ -224,6 +224,11 @@ return [
         '#emergency-change',
         '#planned-change',
     ],
+    // Qualifikationen/Unterweisungen je Gewerk (Vollaudit 2026-07, N13).
+    'qualifications_seed' => [
+        ['name' => 'Datenschutz-Unterweisung (DSGVO)', 'abbreviation' => 'DSGVO-U', 'description' => 'Jährliche Datenschutz-Unterweisung für Mitarbeitende mit Kundendatenzugriff.'],
+        ['name' => 'IT-Sicherheits-Awareness-Schulung', 'abbreviation' => 'SecAware', 'description' => 'Regelmäßige Security-Awareness-Schulung (Phishing, Passworthygiene, Meldewege).'],
+    ],
     'software_seed' => [
         // Betriebssysteme
         ['name' => 'Windows 11 Pro', 'vendor' => 'Microsoft', 'kind' => 'operating_system', 'license_type' => 'oem', 'default_version' => '23H2'],

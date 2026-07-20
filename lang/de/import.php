@@ -16,6 +16,12 @@ return [
         'remote_sessions' => 'Fernwartungs-Sitzungen',
     ],
 
+    'template' => [
+        'example_required' => 'Beispielwert (Pflicht)',
+        'example_optional' => 'Beispielwert (optional)',
+        'download' => 'Mustervorlage herunterladen',
+    ],
+
     'state' => [
         'preflight' => 'Vorprüfung',
         'awaitingApproval' => 'Wartet auf Bestätigung',

@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Protocol\{ProtocolStatus, ProtocolType, ProtocolVisibility};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid, HasTags};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasCommunicationNotes, HasSqid, HasTags};
 use App\Support\Setting;
 use Database\Factories\ProtocolFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -43,6 +43,7 @@ class Protocol extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
+    use HasCommunicationNotes;
 
     /** @use HasFactory<ProtocolFactory> */
     use HasFactory;
@@ -136,6 +137,11 @@ class Protocol extends Model {
     /** @return HasMany<ProtocolSignature, $this> */
     public function signatures(): HasMany {
         return $this->hasMany(ProtocolSignature::class);
+    }
+
+    /** @return HasMany<ProtocolSignatureToken, $this> */
+    public function signatureTokens(): HasMany {
+        return $this->hasMany(ProtocolSignatureToken::class);
     }
 
     /** @return HasMany<ProtocolEvent, $this> */

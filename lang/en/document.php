@@ -19,6 +19,7 @@ return [
 
     'field' => [
         'title' => 'Title',
+        'confidential' => 'Confidential (creator + management right only)',
         'type' => 'Type',
         'status' => 'Status',
         'reference' => 'Reference',

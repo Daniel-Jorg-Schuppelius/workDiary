@@ -46,7 +46,7 @@ class AssetInspectionEvent extends Model {
         'asset_compliance_assignment_id', 'asset_id', 'performed_at',
         'performed_by_user_id', 'external_inspector_name', 'result',
         'valid_until', 'checklist', 'signature_name', 'signed_at', 'note',
-        'supersedes_id',
+        'supersedes_id', 'cost',
     ];
 
     /** @var array<string, string> */
@@ -56,6 +56,7 @@ class AssetInspectionEvent extends Model {
         'valid_until' => 'date',
         'checklist' => 'array',
         'signed_at' => 'datetime',
+        'cost' => 'decimal:2',
     ];
 
     /** @return BelongsTo<AssetInspectionSchedule, $this> */

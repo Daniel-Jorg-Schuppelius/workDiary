@@ -48,6 +48,33 @@ class AttachmentsTest extends TestCase {
         ]);
     }
 
+    /**
+     * Vollaudit 2026-07 (M1): Die Routen-Constraint blockte supplier/knowledge/
+     * service-ticket mit 404, obwohl Controller und Views die Typen unterstützen.
+     * Die whereIn-Liste leitet sich jetzt aus AttachmentController::TYPE_MAP ab.
+     */
+    public function test_all_type_map_targets_are_reachable_for_upload(): void {
+        $admin = User::factory()->admin()->create();
+        $parents = [
+            'supplier' => \App\Models\Supplier::factory()->create(['organization_id' => $admin->organization_id]),
+            'knowledge' => \App\Models\KnowledgeArticle::factory()->create(['organization_id' => $admin->organization_id]),
+            'service-ticket' => \App\Models\ServiceTicket::factory()->create(['organization_id' => $admin->organization_id]),
+        ];
+
+        foreach ($parents as $type => $parent) {
+            $file = UploadedFile::fake()->create('beleg-' . $type . '.pdf', 40, 'application/pdf');
+            $this->actingAs($admin)
+                ->post(route('attachments.store', ['type' => $type, 'id' => $parent->sqid]), ['file' => $file])
+                ->assertRedirect();
+
+            $this->assertDatabaseHas('attachments', [
+                'attachable_type' => $parent::class,
+                'attachable_id' => $parent->id,
+                'original_name' => 'beleg-' . $type . '.pdf',
+            ]);
+        }
+    }
+
     public function test_user_can_upload_attachment_to_diary_entry(): void {
         $owner = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($owner)->create();

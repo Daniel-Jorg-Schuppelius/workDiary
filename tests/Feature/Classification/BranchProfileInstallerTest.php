@@ -97,6 +97,21 @@ class BranchProfileInstallerTest extends TestCase {
         $this->assertGreaterThan(0, $second['skipped']['software']);
     }
 
+    /** Vollaudit 2026-07 (N13): Qualifikations-Seeds je Gewerk, idempotent. */
+    public function test_install_elektro_profile_seeds_qualifications_idempotent(): void {
+        $first = $this->installer->install($this->org, 'elektro', $this->actor);
+        $this->assertGreaterThan(0, $first['created']['qualifications']);
+
+        $this->assertDatabaseHas('qualifications', [
+            'organization_id' => $this->org->id,
+            'abbreviation' => 'DGUV V3',
+        ]);
+
+        $second = $this->installer->install($this->org, 'elektro', $this->actor);
+        $this->assertSame(0, $second['created']['qualifications']);
+        $this->assertGreaterThan(0, $second['skipped']['qualifications']);
+    }
+
     public function test_install_handwerk_profile_creates_expected_domain_entries(): void {
         $result = $this->installer->install($this->org, 'handwerk', $this->actor);
 

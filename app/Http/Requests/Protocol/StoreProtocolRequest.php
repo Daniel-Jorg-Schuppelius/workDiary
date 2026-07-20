@@ -28,12 +28,13 @@ class StoreProtocolRequest extends BaseFormRequest {
         return [
             'subject_kind' => ['required', 'string', 'in:' . implode(',', array_keys(ProtocolController::SUBJECT_MAP))],
             'subject_id' => ['required', 'integer', 'min:1'],
-            'type' => ['required', 'string', 'in:' . implode(',', array_column(ProtocolType::cases(), 'value'))],
+            // Rule::enum statt Handliste (Vollaudit 2026-07, N48).
+            'type' => ['required', 'string', \Illuminate\Validation\Rule::enum(ProtocolType::class)],
             'title' => ['required', 'string', 'max:180'],
             'description' => ['nullable', 'string', 'max:10000'],
             'state_initial' => ['nullable', 'string', 'max:10000'],
             'occurred_at' => ['nullable', 'date'],
-            'visibility' => ['nullable', 'string', 'in:' . implode(',', array_column(ProtocolVisibility::cases(), 'value'))],
+            'visibility' => ['nullable', 'string', \Illuminate\Validation\Rule::enum(ProtocolVisibility::class)],
             'template_id' => ['nullable', 'integer', 'min:1'],
             'template_version' => ['nullable', 'integer', 'min:1'],
             'tag_ids' => ['nullable', 'array'],

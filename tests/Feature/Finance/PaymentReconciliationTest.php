@@ -35,6 +35,10 @@ class PaymentReconciliationTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        // Optionalpaket-Guard (AGENTS.md §9.1) — Muster PaymentReconciliationSplitTest.
+        if (! \App\Services\Finance\FinancialFormatsSupport::isAvailable()) {
+            $this->markTestSkipped('php-financial-formats nicht verfügbar.');
+        }
         $this->setUpOrganization();
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($this->admin);

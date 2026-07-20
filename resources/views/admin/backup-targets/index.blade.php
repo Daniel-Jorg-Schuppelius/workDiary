@@ -119,9 +119,8 @@
             @if ($generations->isEmpty())
                 <p class="text-sm text-base-content/60">{{ __('backup_targets.generations.empty') }}</p>
             @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table bare>
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('backup_targets.generations.snapshot') }}</th>
                                 <th>{{ __('backup_targets.generations.target') }}</th>
@@ -134,8 +133,7 @@
                                 <th>{{ __('backup_targets.generations.hold') }}</th>
                                 <th class="text-right">{{ __('backup_targets.generations.actions') }}</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($generations as $generation)
                                 @php /** @var \App\Models\Backup\BackupGeneration $generation */ @endphp
                                 <tr>
@@ -171,9 +169,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             @endif
         </div>
     </div>

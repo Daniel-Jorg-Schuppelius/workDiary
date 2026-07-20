@@ -131,63 +131,48 @@ class GoogleDriveBackupClient {
 
     /** Resumable Upload einer lokalen Datei; verifiziert die Remote-Größe. */
     public function uploadPart(string $localPath, string $remoteName): string {
-        $size = filesize($localPath);
-        $in = @fopen($localPath, 'rb');
-        if ($in === false || $size === false) {
-            throw new RuntimeException("Backup-Teil nicht lesbar: {$localPath}");
+        // Gemeinsame Chunk-Leseschleife (Vollaudit 2026-07, N31); Resumable-
+        // Session und 308-Semantik bleiben Drive-spezifisch.
+        $size = \App\Plugins\Support\Backup\ChunkedFileReader::size($localPath);
+
+        $folder = str_contains(trim($remoteName, '/'), '/') ? dirname(trim($remoteName, '/')) : '';
+        $parentId = $folder === '' ? 'root' : $this->ensureFolder($folder);
+
+        $session = $this->api->postJson(
+            $this->uploadBase . '/files?uploadType=resumable&fields=id,size',
+            ['name' => basename($remoteName), 'parents' => [$parentId]],
+        );
+        $uploadUrl = (string) $session->header('Location');
+        if (!$session->successful() || $uploadUrl === '') {
+            throw new RuntimeException('Drive-Upload-Session fehlgeschlagen (HTTP ' . $session->status() . ').');
         }
 
-        try {
-            $folder = str_contains(trim($remoteName, '/'), '/') ? dirname(trim($remoteName, '/')) : '';
-            $parentId = $folder === '' ? 'root' : $this->ensureFolder($folder);
-
-            $session = $this->api->postJson(
-                $this->uploadBase . '/files?uploadType=resumable&fields=id,size',
-                ['name' => basename($remoteName), 'parents' => [$parentId]],
-            );
-            $uploadUrl = (string) $session->header('Location');
-            if (!$session->successful() || $uploadUrl === '') {
-                throw new RuntimeException('Drive-Upload-Session fehlgeschlagen (HTTP ' . $session->status() . ').');
+        $fileId = '';
+        $remoteSize = -1;
+        \App\Plugins\Support\Backup\ChunkedFileReader::each($localPath, self::CHUNK_SIZE, function (string $chunk, int $offset) use ($uploadUrl, $size, &$fileId, &$remoteSize): void {
+            $last = $offset + strlen($chunk) - 1;
+            $response = $this->api->requestResponse('put', $uploadUrl, [
+                'headers' => [
+                    'Content-Length' => (string) strlen($chunk),
+                    'Content-Range' => sprintf('bytes %d-%d/%d', $offset, $last, $size),
+                ],
+                'body' => $chunk,
+            ]);
+            // Zwischenchunks: 308 Resume Incomplete; letzter Chunk: 200/201.
+            if (!$response->successful() && $response->status() !== 308) {
+                throw new RuntimeException('Drive-Chunk-Upload fehlgeschlagen (HTTP ' . $response->status() . ').');
             }
-
-            $offset = 0;
-            $fileId = '';
-            $remoteSize = -1;
-            while (!feof($in)) {
-                $chunk = fread($in, self::CHUNK_SIZE);
-                if ($chunk === false) {
-                    throw new RuntimeException("Lesefehler in {$localPath}.");
-                }
-                if ($chunk === '') {
-                    continue;
-                }
-                $last = $offset + strlen($chunk) - 1;
-                $response = $this->api->requestResponse('put', $uploadUrl, [
-                    'headers' => [
-                        'Content-Length' => (string) strlen($chunk),
-                        'Content-Range' => sprintf('bytes %d-%d/%d', $offset, $last, $size),
-                    ],
-                    'body' => $chunk,
-                ]);
-                // Zwischenchunks: 308 Resume Incomplete; letzter Chunk: 200/201.
-                if (!$response->successful() && $response->status() !== 308) {
-                    throw new RuntimeException('Drive-Chunk-Upload fehlgeschlagen (HTTP ' . $response->status() . ').');
-                }
-                if ($response->successful()) {
-                    $fileId = (string) $response->json('id', '');
-                    $remoteSize = (int) $response->json('size', -1);
-                }
-                $offset += strlen($chunk);
+            if ($response->successful()) {
+                $fileId = (string) $response->json('id', '');
+                $remoteSize = (int) $response->json('size', -1);
             }
+        });
 
-            if ($fileId === '' || $remoteSize !== (int) $size) {
-                throw new RuntimeException("Drive-Upload unvollständig: remote {$remoteSize} B, lokal {$size} B.");
-            }
-
-            return $fileId;
-        } finally {
-            fclose($in);
+        if ($fileId === '' || $remoteSize !== $size) {
+            throw new RuntimeException("Drive-Upload unvollständig: remote {$remoteSize} B, lokal {$size} B.");
         }
+
+        return $fileId;
     }
 
     public function download(string $remoteRef): StreamInterface {

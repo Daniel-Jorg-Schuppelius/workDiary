@@ -42,10 +42,9 @@ class TimeExportController extends Controller {
         $statusFilter = (string) $request->input('status', 'all');
         $profileFilter = (string) $request->input('profile', 'all');
         $yearFilter = $request->filled('year') ? (int) $request->input('year') : null;
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'created_at';
-        $dir = $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc';
+        // Whitelist-Auflösung zentral (C21; Vollaudit 2026-07, N26) — bei
+        // ungültigem Key fallen Key UND Richtung auf die Defaults zurück.
+        [$sort, $dir] = \App\Support\SortableQuery::resolve($request, self::ALLOWED_SORTS, 'created_at');
 
         $query = TimeExport::query()
             ->where('organization_id', $user->organization_id)
@@ -245,6 +244,28 @@ class TimeExportController extends Controller {
         }
 
         return back()->with('status', __('Export abgelehnt.'));
+    }
+
+    /**
+     * Löschung mit Pflicht-Begründung (Vollaudit 2026-07, N6) — nur nicht
+     * übergebene Läufe (TimeExportPolicy::delete), Spur im Audit-Protokoll.
+     */
+    public function destroy(Request $request, TimeExport $export): RedirectResponse {
+        Gate::authorize('delete', $export);
+        /** @var User $user */
+        $user = Auth::user();
+
+        $data = $request->validate([
+            'note' => ['required', 'string', 'min:5', 'max:2000'],
+        ]);
+
+        try {
+            $this->service->delete($export, (string) $data['note'], $user);
+        } catch (TimeExportException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('exports.index')->with('status', __('Export gelöscht — Begründung im Audit-Protokoll.'));
     }
 
     /**

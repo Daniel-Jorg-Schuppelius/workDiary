@@ -25,6 +25,10 @@ return [
 
     'field' => [
         'name' => 'Nombre',
+        'valid_from' => 'Válido desde',
+        'valid_until' => 'Válido hasta',
+        'target_entry_type' => 'Asignación: tipo de encargo',
+        'target_customer' => 'Asignación: cliente',
         'description' => 'Descripción',
         'status' => 'Estado',
         'fields' => 'Campos',

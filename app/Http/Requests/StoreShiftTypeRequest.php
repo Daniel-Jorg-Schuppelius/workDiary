@@ -21,6 +21,18 @@ class StoreShiftTypeRequest extends FormRequest {
         return $user instanceof User && $user->isAdmin();
     }
 
+    protected function prepareForValidation(): void {
+        // Farbwert auf #rrggbb normalisieren (Vollaudit 2026-07, N49) — die
+        // gemeinsame Rule akzeptiert die Raute optional, gespeichert wird
+        // weiterhin einheitlich MIT Raute (Views nutzen den Wert direkt).
+        if (is_string($this->input('color'))) {
+            $normalized = \CommonToolkit\Helper\Data\ColorHelper::normalizeHex((string) $this->input('color'));
+            if ($normalized !== null) {
+                $this->merge(['color' => $normalized]);
+            }
+        }
+    }
+
     /** @return array<string, mixed> */
     public function rules(): array {
         return $this->fieldRules(false);
@@ -39,7 +51,8 @@ class StoreShiftTypeRequest extends FormRequest {
         return [
             'name' => [...$req, 'string', 'max:100'],
             'abbreviation' => [...$req, 'string', 'max:5'],
-            'color' => [...$req, 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            // Gemeinsame Farb-Rule (Vollaudit 2026-07, N49); prepareForValidation normalisiert auf #rrggbb.
+            'color' => [...$req, 'string', new \App\Rules\HexColor()],
             'default_start_time' => [...$opt, 'date_format:H:i'],
             'default_end_time' => [...$opt, 'date_format:H:i'],
             'is_active' => ['sometimes', 'boolean'],

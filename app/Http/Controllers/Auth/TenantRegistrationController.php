@@ -39,6 +39,16 @@ class TenantRegistrationController extends Controller {
             'password' => ['required', 'string', 'confirmed', Password::defaults()],
         ]);
 
+        // Vollaudit 2026-07 (H8): max_orgs der Installations-Lizenz gilt auch
+        // für die öffentliche Registrierung — vorher ohne jeden Check erreichbar.
+        try {
+            app(\App\Services\Licensing\LimitGuard::class)->ensureCanCreateOrganization();
+        } catch (\App\Exceptions\LimitExceededException) {
+            return back()->withInput()->withErrors([
+                'org_name' => __('Diese Installation hat ihr Organisations-Limit erreicht — bitte den Betreiber kontaktieren.'),
+            ]);
+        }
+
         $user = DB::transaction(function () use ($data): User {
             // Organisation anlegen (owner_id wird nach User-Erstellung gesetzt)
             $org = Organization::create([

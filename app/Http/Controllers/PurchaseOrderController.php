@@ -341,6 +341,11 @@ class PurchaseOrderController extends Controller {
         $data = $request->validate([
             'line' => ['required', 'string'],
             'qty' => ['required', 'numeric', 'gt:0'],
+            // Vollaudit 2026-07 (M19): Pflichterfassung bei chargen-/
+            // serienpflichtigen Artikeln — der Service erzwingt die Angabe.
+            'lot_no' => ['nullable', 'string', 'max:120'],
+            'best_before' => ['nullable', 'date'],
+            'serial_no' => ['nullable', 'string', 'max:120'],
         ]);
 
         $lineId = app(SqidEncoder::class)->decode(PurchaseOrderLine::class, (string) $data['line']);
@@ -352,7 +357,14 @@ class PurchaseOrderController extends Controller {
         }
 
         try {
-            $this->receipts->receive($line, (string) $data['qty'], actorUserId: Auth::id() !== null ? (int) Auth::id() : null);
+            $this->receipts->receive(
+                $line,
+                (string) $data['qty'],
+                actorUserId: Auth::id() !== null ? (int) Auth::id() : null,
+                lotNo: $data['lot_no'] ?? null,
+                bestBefore: $data['best_before'] ?? null,
+                serialNo: $data['serial_no'] ?? null,
+            );
         } catch (RuntimeException $e) {
             return back()->with('error', $e->getMessage());
         }

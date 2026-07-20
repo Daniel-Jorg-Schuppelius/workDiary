@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AppendOnly;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -26,6 +27,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  */
 class MonthClosureEvent extends Model {
+    // Append-only jetzt technisch erzwungen statt nur dokumentiert (Vollaudit 2026-07, M52).
+    use AppendOnly;
+
     public const UPDATED_AT = null;
 
     protected $fillable = [

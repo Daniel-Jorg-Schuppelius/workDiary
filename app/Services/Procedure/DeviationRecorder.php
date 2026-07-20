@@ -13,7 +13,7 @@ namespace App\Services\Procedure;
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueVisibility};
 use App\Enums\Procedure\{ProcedureDeviationProposedAction, ProcedureDeviationSeverity, ProcedureDeviationType, ProcedureRunEventType, ProcedureStepRunStatus};
 use App\Exceptions\ProcedureDeviationValidationException;
-use App\Models\{ProcedureDeviation, ProcedureRun, ProcedureRunEvent, ProcedureStepRun, User};
+use App\Models\{ProcedureDeviation, ProcedureRun, ProcedureStepRun, User};
 use App\Services\OpenIssue\OpenIssueService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -24,6 +24,9 @@ use Illuminate\Support\Facades\DB;
  * und verlinkt das Ergebnis (z. B. neuer Offener Punkt).
  */
 class DeviationRecorder {
+    // Zentraler Event-Schreiber (Vollaudit 2026-07, N38).
+    use \App\Services\Procedure\Concerns\RecordsProcedureRunEvents;
+
     public const MIN_REASON_LENGTH = 20;
 
     public function __construct(
@@ -82,7 +85,7 @@ class DeviationRecorder {
             $stepRun->executed_at ??= Carbon::now();
             $stepRun->save();
 
-            $this->recordEvent($run, $stepRun, ProcedureRunEventType::DeviationRecorded, $actor, [
+            $this->recordRunEvent($run, ProcedureRunEventType::DeviationRecorded, $actor, $stepRun, [
                 'deviation_id' => $deviation->id,
                 'deviation_type' => $deviation->deviation_type->value,
                 'severity' => $deviation->severity->value,
@@ -105,7 +108,7 @@ class DeviationRecorder {
 
             $run = $deviation->stepRun?->run;
             if ($run instanceof ProcedureRun) {
-                $this->recordEvent($run, $deviation->stepRun, ProcedureRunEventType::CriticalRiskAccepted, $actor, [
+                $this->recordRunEvent($run, ProcedureRunEventType::CriticalRiskAccepted, $actor, $deviation->stepRun, [
                     'deviation_id' => $deviation->id,
                     'note' => $note,
                 ]);
@@ -171,7 +174,7 @@ class DeviationRecorder {
             }
         }
 
-        $this->recordEvent($run, $stepRun, ProcedureRunEventType::DeviationActionTriggered, $actor, $detail);
+        $this->recordRunEvent($run, ProcedureRunEventType::DeviationActionTriggered, $actor, $stepRun, $detail);
     }
 
     private function mapSeverityToIssue(ProcedureDeviationSeverity $severity): OpenIssueSeverity {
@@ -234,20 +237,4 @@ class DeviationRecorder {
     /**
      * @param  array<string, mixed>  $payload
      */
-    private function recordEvent(
-        ProcedureRun $run,
-        ?ProcedureStepRun $stepRun,
-        ProcedureRunEventType $type,
-        User $actor,
-        array $payload,
-    ): void {
-        ProcedureRunEvent::query()->create([
-            'procedure_run_id' => $run->id,
-            'procedure_step_run_id' => $stepRun?->id,
-            'event_type' => $type->value,
-            'payload' => $payload,
-            'actor_user_id' => $actor->id,
-            'created_at' => Carbon::now(),
-        ]);
-    }
 }

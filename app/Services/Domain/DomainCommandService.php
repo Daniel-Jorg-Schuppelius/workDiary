@@ -84,6 +84,21 @@ class DomainCommandService {
             'status' => DomainProviderCommandStatus::Approved,
         ])->save();
 
+        // Vollaudit 2026-07 (H12): Hochrisiko-Freigaben (Delete/Push/Trade)
+        // an die Admins melden — Vier-Augen-Entscheidungen bleiben sichtbar.
+        app(\App\Services\Notification\NotificationDispatcher::class)->notify(
+            \App\Enums\Notification\NotificationEvent::DomainHighRiskAction,
+            $command,
+            null,
+            [
+                'title' => (string) __('notification.message.domain_high_risk_title', ['command' => (string) $command->command]),
+                'title_key' => 'notification.message.domain_high_risk_title',
+                'title_params' => ['command' => (string) $command->command],
+                'message' => null,
+                'url' => route('domains.index'),
+            ],
+        );
+
         return $command;
     }
 

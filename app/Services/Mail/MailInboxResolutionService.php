@@ -21,7 +21,6 @@ use App\Services\Integration\InboxActionService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use RuntimeException;
 
 /**
@@ -214,20 +213,16 @@ class MailInboxResolutionService {
                 continue;
             }
 
-            $ext = strtolower(pathinfo((string) ($meta['original_name'] ?? ''), PATHINFO_EXTENSION));
-            $target = 'attachments/' . now()->format('Y/m') . '/' . Str::uuid()->toString() . ($ext !== '' ? '.' . $ext : '');
-            Storage::disk('local')->put($target, (string) Storage::disk($disk)->get($source));
-
+            // Ablage über den kanonischen FileAttacher (Vollaudit 2026-07, M46).
             $mime = trim((string) ($meta['mime'] ?? ''));
-            $note->attachments()->create([
-                'organization_id' => $note->organization_id,
-                'user_id' => $actor->id,
-                'disk' => 'local',
-                'path' => $target,
-                'original_name' => (string) ($meta['original_name'] ?? 'anhang'),
-                'mime' => $mime !== '' ? $mime : null,
-                'size' => (int) ($meta['size'] ?? 0),
-            ]);
+            app(\App\Services\Attachments\FileAttacher::class)->storeContent(
+                $note,
+                (string) Storage::disk($disk)->get($source),
+                (string) ($meta['original_name'] ?? 'anhang'),
+                $mime !== '' ? $mime : null,
+                $actor->id,
+                ['organization_id' => $note->organization_id],
+            );
             $count++;
         }
 

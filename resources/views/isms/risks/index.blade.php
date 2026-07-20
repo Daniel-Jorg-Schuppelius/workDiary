@@ -170,8 +170,8 @@
                                 {{-- Bewertungshistorie (046-D): freigegebene Stände statt Überschreiben --}}
                                 <p class="font-semibold">{{ __('isms.assessment.history_title') }}:</p>
                                 @if ($risk->assessments->isNotEmpty())
-                                    <table class="table table-xs">
-                                        <thead>
+                                    <x-table size="xs">
+                                        <x-slot:head>
                                             <tr>
                                                 <th>{{ __('isms.field.risk_no') }}</th>
                                                 <th>{{ __('isms.field.assessment_kind') }}</th>
@@ -182,8 +182,7 @@
                                                 <th>{{ __('isms.field.valid_until') }}</th>
                                                 <th></th>
                                             </tr>
-                                        </thead>
-                                        <tbody>
+                                        </x-slot:head>
                                             @foreach ($risk->assessments as $assessment)
                                                 <tr id="isms-assessment-{{ $assessment->id }}">
                                                     <td class="font-mono">{{ $assessment->displayNo() }}</td>
@@ -239,8 +238,7 @@
                                                     </td>
                                                 </tr>
                                             @endforeach
-                                        </tbody>
-                                    </table>
+                                    </x-table>
                                 @else
                                     <p>{{ __('isms.assessment.empty') }}</p>
                                 @endif

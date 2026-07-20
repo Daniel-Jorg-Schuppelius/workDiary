@@ -30,6 +30,9 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property string|null $description
  * @property FormTemplateStatus $status
  * @property list<array{key: string, label: string, type: string, required: bool, options: list<string>, help: string|null, unit: string|null}> $fields
+ * @property \Illuminate\Support\Carbon|null $valid_from
+ * @property \Illuminate\Support\Carbon|null $valid_until
+ * @property array{entry_type_id?: int|null, customer_id?: int|null}|null $target
  * @property int $created_by_user_id
  */
 class FormTemplate extends Model {
@@ -48,12 +51,18 @@ class FormTemplate extends Model {
         'description',
         'status',
         'fields',
+        'valid_from',
+        'valid_until',
+        'target',
         'created_by_user_id',
     ];
 
     protected $casts = [
         'status' => FormTemplateStatus::class,
         'fields' => 'array',
+        'valid_from' => 'date',
+        'valid_until' => 'date',
+        'target' => 'array',
     ];
 
     /** @return BelongsTo<User, $this> */
@@ -72,7 +81,34 @@ class FormTemplate extends Model {
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
+    /**
+     * Aktiv UND am Stichtag gültig (Vollaudit 2026-07, M11): Vorlagen ohne
+     * Zeitraum gelten unbefristet.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
     public function scopeActive(Builder $query): Builder {
-        return $query->where('status', FormTemplateStatus::Active->value);
+        $today = now()->toDateString();
+
+        return $query->where('status', FormTemplateStatus::Active->value)
+            ->where(fn(Builder $q) => $q->whereNull('valid_from')->orWhereDate('valid_from', '<=', $today))
+            ->where(fn(Builder $q) => $q->whereNull('valid_until')->orWhereDate('valid_until', '>=', $today));
+    }
+
+    /** Passt die Vorlage zur optionalen Zuordnung (M11)? Leere Zuordnung = überall. */
+    public function matchesSubject(?int $entryTypeId, ?int $customerId): bool {
+        $target = $this->target ?? [];
+        $wantedEntryType = $target['entry_type_id'] ?? null;
+        $wantedCustomer = $target['customer_id'] ?? null;
+
+        if ($wantedEntryType !== null && (int) $wantedEntryType !== (int) $entryTypeId) {
+            return false;
+        }
+        if ($wantedCustomer !== null && (int) $wantedCustomer !== (int) $customerId) {
+            return false;
+        }
+
+        return true;
     }
 }

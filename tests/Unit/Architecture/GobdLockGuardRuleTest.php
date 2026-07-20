@@ -57,6 +57,14 @@ class GobdLockGuardRuleTest extends TestCase {
         'AgileEvent' => ['file' => 'app/Models/Agile/AgileEvent.php', 'table' => 'agile_events'],
         'AssetInspectionEvent' => ['file' => 'app/Models/AssetCompliance/AssetInspectionEvent.php', 'table' => 'asset_inspection_events'],
         'AssetCalibrationCertificate' => ['file' => 'app/Models/AssetCompliance/AssetCalibrationCertificate.php', 'table' => 'asset_calibration_certificates'],
+        'CashDailyClosing' => ['file' => 'app/Models/CashDailyClosing.php', 'table' => 'cash_daily_closings'], // Vollaudit 2026-07, H14: verankert die Buchungssperre
+        // Vollaudit 2026-07 (M56): ISMS-Freeze-Guards (046 — finalisiert/genehmigt = eingefroren)
+        'IsmsAuditPackage' => ['file' => 'app/Models/Isms/IsmsAuditPackage.php', 'table' => 'isms_audit_packages'],
+        'IsmsRiskAssessment' => ['file' => 'app/Models/Isms/IsmsRiskAssessment.php', 'table' => 'isms_risk_assessments'],
+        // Vollaudit 2026-07 (M52): GoBD-nahe Nachweis-Events, jetzt mit AppendOnly-Trait
+        'MonthClosureEvent' => ['file' => 'app/Models/MonthClosureEvent.php', 'table' => 'month_closure_events'],
+        'TimeExportEvent' => ['file' => 'app/Models/TimeExportEvent.php', 'table' => 'time_export_events'],
+
         // HashChained-Ereignisketten (append-only, Hash-Kette)
         'CashEntry' => ['file' => 'app/Models/CashEntry.php', 'table' => 'cash_entries'], // MVP-414 Kassenbuch
         'AuditLog' => ['file' => 'app/Models/AuditLog.php', 'table' => 'audit_logs'],
@@ -83,6 +91,10 @@ class GobdLockGuardRuleTest extends TestCase {
         'movement',
         'stockMovement',
         'auditLog',
+        // Vollaudit 2026-07 (M56): Empfänger der neueren Registry-Einträge.
+        'cashEntry',
+        'package',
+        'assessment',
     ];
 
     /**

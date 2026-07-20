@@ -13,6 +13,12 @@ return [
         'tours' => 'Tournées',
         'remote_sessions' => 'Sessions de maintenance à distance',
     ],
+    'template' => [
+        'example_required' => "Valeur d'exemple (obligatoire)",
+        'example_optional' => "Valeur d'exemple (optionnelle)",
+        'download' => 'Télécharger le modèle',
+    ],
+
     'state' => [
         'preflight' => 'Contrôle préalable',
         'awaitingApproval' => 'En attente d\'approbation',

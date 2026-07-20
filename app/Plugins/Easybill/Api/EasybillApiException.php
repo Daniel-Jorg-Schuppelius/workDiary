@@ -18,8 +18,4 @@ use App\Plugins\Support\PluginApiException;
  * Fehler der easybill-REST-API (MVP-431). Die Message trägt nur Status und
  * gekürzten Body-Auszug — nie den API-Key.
  */
-class EasybillApiException extends PluginApiException {
-    public function __construct(int $status, string $message, ?string $endpoint = null) {
-        parent::__construct($message, $status, $endpoint);
-    }
-}
+class EasybillApiException extends PluginApiException {}

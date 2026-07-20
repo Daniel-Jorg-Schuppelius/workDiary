@@ -53,6 +53,11 @@ class StockValuationLayer extends Model {
         'best_before' => 'date',
     ];
 
+    /** @return BelongsTo<StockLot, $this> */
+    public function lot(): BelongsTo {
+        return $this->belongsTo(StockLot::class, 'stock_lot_id');
+    }
+
     /** @return BelongsTo<ArticleVariant, $this> */
     public function variant(): BelongsTo {
         return $this->belongsTo(ArticleVariant::class, 'article_variant_id');

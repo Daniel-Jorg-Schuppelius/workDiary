@@ -28,8 +28,9 @@ class UpdateProtocolRequest extends BaseFormRequest {
             'state_initial' => ['sometimes', 'nullable', 'string', 'max:10000'],
             'state_final' => ['sometimes', 'nullable', 'string', 'max:10000'],
             'occurred_at' => ['sometimes', 'nullable', 'date'],
-            'visibility' => ['sometimes', 'nullable', 'string', 'in:' . implode(',', array_column(ProtocolVisibility::cases(), 'value'))],
-            'type' => ['sometimes', 'nullable', 'string', 'in:' . implode(',', array_column(ProtocolType::cases(), 'value'))],
+            // Rule::enum statt Handliste (Vollaudit 2026-07, N48).
+            'visibility' => ['sometimes', 'nullable', 'string', \Illuminate\Validation\Rule::enum(ProtocolVisibility::class)],
+            'type' => ['sometimes', 'nullable', 'string', \Illuminate\Validation\Rule::enum(ProtocolType::class)],
             'tag_ids' => ['sometimes', 'nullable', 'array'],
             'tag_ids.*' => ['nullable', 'string', 'max:64'],
             'new_tags' => ['sometimes', 'nullable', 'string', 'max:500'],

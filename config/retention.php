@@ -72,6 +72,38 @@ return [
             'basis' => ['DE' => 'Art. 5 Abs. 2 DSGVO / §195 BGB', 'AT' => 'Art. 5 Abs. 2 DSGVO / §1489 ABGB', 'CH' => 'Art. 127 OR'],
         ],
 
+        // CTI-Anrufmetadaten (Feature 056, MVP-118; Vollaudit 2026-07 M18):
+        // Verbindungsdaten (Rufnummer) werden anonymisiert, die Notiz-Zeile
+        // (Richtung/Zeitpunkt/Dauer) bleibt als Vorgangsnachweis.
+        'cti_calls' => [
+            'label' => 'CTI-Anrufmetadaten',
+            'years' => ['DE' => 1, 'AT' => 1, 'CH' => 1],
+            'basis' => ['DE' => 'Art. 5 Abs. 1 lit. e DSGVO (Speicherbegrenzung)', 'AT' => 'Art. 5 DSGVO', 'CH' => 'DSG (Zweckbindung)'],
+        ],
+
+        // Ideenkarten im Papierkorb (Feature 054, MVP-110; Vollaudit 2026-07
+        // M21): soft-gelöschte Karten werden nach Frist endgültig entfernt.
+        'idea_maps' => [
+            'label' => 'Ideenkarten (Papierkorb)',
+            'years' => ['DE' => 1, 'AT' => 1, 'CH' => 1],
+            'basis' => ['DE' => 'Art. 17 DSGVO (Löschkonzept)', 'AT' => 'Art. 17 DSGVO', 'CH' => 'DSG'],
+        ],
+
+        // Fehlerberichte mit Seitenkontext-PII (Vollaudit 2026-07, N15).
+        'problem_reports' => [
+            'label' => 'Fehlerberichte (geschlossen)',
+            'years' => ['DE' => 2, 'AT' => 2, 'CH' => 2],
+            'basis' => ['DE' => 'Art. 5 Abs. 1 lit. e DSGVO', 'AT' => 'Art. 5 DSGVO', 'CH' => 'DSG'],
+        ],
+
+        // Führerscheinkontrollen (Phase 38, MVP-417; Vollaudit 2026-07 N24):
+        // Halterhaftungs-Nachweis, danach Löschvorschlag über den Review-Scan.
+        'driver_license_checks' => [
+            'label' => 'Führerscheinkontrollen',
+            'years' => ['DE' => 2, 'AT' => 2, 'CH' => 2],
+            'basis' => ['DE' => '§ 21 StVG (Halterhaftung, Nachweis)', 'AT' => '§ 103 KFG', 'CH' => 'SVG Art. 95'],
+        ],
+
         // Eingangsrechnungen im DMS (DocumentType::Invoice).
         'documents_invoice' => [
             'label' => 'Rechnungen (DMS)',

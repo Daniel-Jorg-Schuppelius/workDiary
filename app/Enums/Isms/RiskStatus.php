@@ -11,14 +11,14 @@
 namespace App\Enums\Isms;
 
 use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
 /**
  * Lebenszyklus eines ISMS-Risikos:
  * identified → analyzed → treated → accepted → closed
  * (mit Rücksprüngen zur Neubewertung, siehe allowedTransitions()).
  */
-enum RiskStatus: string implements HasLabel {
+enum RiskStatus: string implements HasLabel, HasStatusTransitions {
     use HasOptions;
 
     case Identified = 'identified';

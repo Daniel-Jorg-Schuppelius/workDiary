@@ -187,9 +187,8 @@
                                :title="__('Keine Software')"
                                :message="__('Noch keine Software hinterlegt.')" />
             @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table>
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('Name') }}</th>
                                 <th>{{ __('Version') }}</th>
@@ -198,8 +197,7 @@
                                 <th>{{ __('Läuft ab') }}</th>
                                 <th></th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($apps as $inst)
                                 <tr class="hover">
                                     <td class="font-medium">{{ $inst->software?->name }}<div class="text-xs text-base-content/60">{{ $inst->software?->vendor }}</div></td>
@@ -219,9 +217,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             @endif
         </x-card>
 
@@ -241,9 +237,8 @@
                                :title="__('Keine Wartungspläne')"
                                :message="__('Noch keine Wartungspläne hinterlegt.')" />
             @else
-                <div class="overflow-x-auto">
-                    <table class="table table-zebra">
-                        <thead>
+                <x-table bare :size="null">
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('Plan') }}</th>
                                 <th>{{ __('Intervall') }}</th>
@@ -252,8 +247,7 @@
                                 <th>{{ __('Status') }}</th>
                                 <th class="text-end">{{ __('Aktionen') }}</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($maintenancePlans as $plan)
                                 @php
                                     $kindValue = $plan->interval_kind instanceof \BackedEnum ? $plan->interval_kind->value : (string) $plan->interval_kind;
@@ -304,15 +298,13 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             @endif
         </x-card>
 
         {{-- ── Ausgabe / Rückgabe (Feature 009) ─────────────────────────────── --}}
         <x-card :title="__('Ausgabe / Rückgabe')" icon="swap_horiz">
-            @if ($canCheckout && ! $isCheckedOut && ! $isDefectBlocked)
+            @if ($canCheckout && ! $isCheckedOut && ! $isDefectBlocked && empty($activeBlocks))
                 <x-slot:actions>
                     <x-icon-btn icon="logout" tone="primary" size="sm"
                                 data-entry-modal-trigger
@@ -325,6 +317,16 @@
                 <div class="alert alert-warning mb-3">
                     <x-icon name="lock" />
                     <span>{{ __('Gesperrt wegen Defekt — keine Ausgabe möglich.') }}</span>
+                </div>
+            @endif
+
+            @if (! empty($activeBlocks) && ! $isCheckedOut)
+                {{-- Vollaudit 2026-07 (H2/H3): D12-Sperren sichtbar machen. --}}
+                <div class="alert alert-warning mb-3">
+                    <x-icon name="lock" />
+                    <span>
+                        {{ __('Gesperrt (:reasons) — keine Ausgabe möglich.', ['reasons' => collect($activeBlocks)->pluck('reason_label')->implode(', ')]) }}
+                    </span>
                 </div>
             @endif
 
@@ -372,16 +374,14 @@
             @endif
 
             @if ($assignmentHistory->isNotEmpty())
-                <div class="mt-4 overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table class="mt-4">
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('Empfänger') }}</th>
                                 <th>{{ __('Ausgegeben') }}</th>
                                 <th>{{ __('Zurückgegeben') }}</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($assignmentHistory as $past)
                                 <tr>
                                     <td>{{ $past->assignedToUser?->name ?? $past->assignedToTeam?->name ?? '—' }}</td>
@@ -389,9 +389,7 @@
                                     <td>{{ optional($past->returned_at)->fdatetime() ?: '—' }}</td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             @endif
         </x-card>
 
@@ -411,9 +409,8 @@
                                :title="__('Keine Defekte')"
                                :message="__('Es liegen keine Defektmeldungen vor.')" />
             @else
-                <div class="overflow-x-auto">
-                    <table class="table table-zebra">
-                        <thead>
+                <x-table bare :size="null">
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('Titel') }}</th>
                                 <th>{{ __('Schweregrad') }}</th>
@@ -424,8 +421,7 @@
                                     <th class="text-end">{{ __('Aktionen') }}</th>
                                 @endif
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($defects as $defect)
                                 <tr>
                                     <td>
@@ -479,9 +475,7 @@
                                     @endif
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             @endif
         </x-card>
 
@@ -492,17 +486,15 @@
                                :title="__('Keine Aufträge')"
                                :message="__('Keine verknüpften Aufträge sichtbar.')" />
             @else
-                <div class="overflow-x-auto">
-                    <table class="table table-zebra">
-                        <thead>
+                <x-table bare :size="null">
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('Titel') }}</th>
                                 <th>{{ __('Projekt') }}</th>
                                 <th>{{ __('Mitarbeiter') }}</th>
                                 <th>{{ __('Start') }}</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($diaryEntries as $entry)
                                 <tr>
                                     <td>
@@ -513,9 +505,7 @@
                                     <td>{{ optional($entry->start_at)->fdatetime() ?: '—' }}</td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             @endif
         </x-card>
 
@@ -526,17 +516,15 @@
                                :title="__('Keine Protokolle')"
                                :message="__('Keine verknüpften Protokolle sichtbar.')" />
             @else
-                <div class="overflow-x-auto">
-                    <table class="table table-zebra">
-                        <thead>
+                <x-table bare :size="null">
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('Titel') }}</th>
                                 <th>{{ __('Typ') }}</th>
                                 <th>{{ __('Status') }}</th>
                                 <th>{{ __('Datum') }}</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($protocols as $protocol)
                                 <tr>
                                     <td>{{ $protocol->title }}</td>
@@ -545,9 +533,7 @@
                                     <td>{{ optional($protocol->occurred_at)->fdatetime() ?: '—' }}</td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             @endif
         </x-card>
 
@@ -558,17 +544,15 @@
                                :title="__('Kein Materialeinsatz')"
                                :message="__('Kein verknüpfter Materialeinsatz sichtbar.')" />
             @else
-                <div class="overflow-x-auto">
-                    <table class="table table-zebra">
-                        <thead>
+                <x-table bare :size="null">
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('Beschreibung') }}</th>
                                 <th>{{ __('Menge') }}</th>
                                 <th>{{ __('Nettobetrag') }}</th>
                                 <th>{{ __('Stundenzettel') }}</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($materialUsages as $usage)
                                 <tr>
                                     <td>{{ $usage->description }}</td>
@@ -579,9 +563,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             @endif
         </x-card>
 
@@ -628,6 +610,9 @@
         </div>
 
         @include('documents._panel', ['documentable' => $asset, 'documentableKind' => 'asset'])
+
+        {{-- Vollaudit 2026-07 (M12): Kommunikationsnotizen am Objekt/Asset (Spec §5). --}}
+        @include('communication-notes._panel', ['notable' => $asset, 'notableKind' => 'asset'])
 
         {{-- Wissensbasis (Feature 011): verknüpfte Artikel + Vorschläge zum Asset --}}
         @include('knowledge._context_card', ['subject' => $asset, 'subjectKind' => 'asset', 'texts' => [(string) $asset->name, (string) ($asset->notes ?? '')]])

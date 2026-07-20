@@ -13,7 +13,7 @@ namespace App\Services\Isms;
 use App\Enums\Isms\{CorrectiveActionStatus, FindingStatus};
 use App\Models\Isms\{IsmsAuditFinding, IsmsCorrectiveAction};
 use App\Models\User;
-use App\Services\Isms\Concerns\ResolvesAuditReferences;
+use App\Services\Isms\Concerns\{AssertsIsmsTransition, ResolvesAuditReferences};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -26,6 +26,8 @@ use Illuminate\Validation\ValidationException;
  * Feststellung zurück auf inCorrection.
  */
 class CorrectiveActionService {
+    use AssertsIsmsTransition;
+
     use ResolvesAuditReferences;
 
     /**
@@ -99,14 +101,8 @@ class CorrectiveActionService {
             return $action;
         }
 
-        if (! in_array($target, $action->status->allowedTransitions(), true)) {
-            throw ValidationException::withMessages([
-                'status' => __('isms.error.invalid_transition', [
-                    'from' => $action->status->label(),
-                    'to' => $target->label(),
-                ]),
-            ]);
-        }
+        // Gemeinsamer ISMS-Guard (Vollaudit 2026-07, M44).
+        $this->assertIsmsTransition($action->status, $target);
 
         $isEffectivenessCheck = in_array($target, [CorrectiveActionStatus::Effective, CorrectiveActionStatus::Ineffective], true);
         if ($isEffectivenessCheck && trim((string) $effectivenessNote) === '') {

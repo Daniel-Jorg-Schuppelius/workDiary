@@ -42,6 +42,7 @@ class AgileEvent extends Model {
         'sprint.item_added', 'sprint.item_removed', 'item.blocked',
         'item.unblocked', 'points.changed', 'sprint.started', 'sprint.completed',
         'sprint.cancelled', 'override.wip', 'override.dod', 'override.criteria',
+        'epic.assigned',
     ];
 
     protected $fillable = [

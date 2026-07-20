@@ -182,8 +182,9 @@ class ThemeController extends Controller {
      * Erzwingt zusätzlich den Mindestkontrast neutral ↔ neutral-content.
      */
     private function validateDefinition(Request $request): ThemeDefinition {
-        $hex = ['nullable', 'string', 'regex:/^#?[0-9a-fA-F]{6}$/'];
-        $hexRequired = ['required', 'string', 'regex:/^#?[0-9a-fA-F]{6}$/'];
+        // Gemeinsame Farb-Rule (Vollaudit 2026-07, N49).
+        $hex = ['nullable', 'string', new \App\Rules\HexColor()];
+        $hexRequired = ['required', 'string', new \App\Rules\HexColor()];
         $unit = ['nullable', 'string', 'regex:/^(0|[0-9]{1,2}(\.[0-9]{1,3})?(rem|px))$/'];
 
         $rules = [

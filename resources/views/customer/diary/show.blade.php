@@ -92,5 +92,27 @@
                 </ul>
             @endif
         </section>
+
+        {{-- Vollaudit 2026-07 (H9): freigegebene Kommunikationsnotizen (Spec §4/§11.4). --}}
+        <section class="rounded-box border border-base-300 bg-base-100 p-4">
+            <h2 class="mb-2 font-semibold">{{ __('Kommunikation') }}</h2>
+            @if ($notes->isEmpty())
+                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">forum</span>' :title="__('Keine freigegebenen Notizen.')" compact />
+            @else
+                <ul class="divide-y divide-base-300 text-sm">
+                    @foreach ($notes as $note)
+                        <li class="py-2">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="font-medium">{{ $note->subject ?? $note->type->label() }}</span>
+                                <span class="opacity-70">{{ optional($note->occurred_at)->fdatetime() }}</span>
+                            </div>
+                            @if (filled($note->body))
+                                <p class="mt-1 whitespace-pre-line text-base-content/80">{{ $note->body }}</p>
+                            @endif
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </section>
     </div>
 @endsection

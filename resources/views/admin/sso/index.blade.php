@@ -207,17 +207,15 @@
             @if ($tokens->isEmpty())
                 <p class="text-sm text-base-content/60">{{ __('sso.no_tokens') }}</p>
             @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table>
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('sso.field.label') }}</th>
                                 <th>{{ __('sso.col.status') }}</th>
                                 <th>{{ __('sso.col.last_used') }}</th>
                                 <th></th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($tokens as $token)
                                 <tr>
                                     <td>{{ $token->label }}</td>
@@ -239,9 +237,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             @endif
         </div>
 
@@ -253,16 +249,14 @@
             @if ($groups->isEmpty())
                 <p class="text-sm text-base-content/60">{{ __('sso.no_groups') }}</p>
             @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table>
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('sso.col.group') }}</th>
                                 <th>{{ __('sso.col.members') }}</th>
                                 <th>{{ __('sso.col.team') }}</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($groups as $group)
                                 <tr>
                                     <td>{{ $group->display_name }}</td>
@@ -282,9 +276,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             @endif
         </div>
     </div>

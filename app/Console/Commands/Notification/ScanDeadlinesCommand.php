@@ -73,10 +73,132 @@ class ScanDeadlinesCommand extends Command {
         $sent += $this->scanContractObligations();
         $sent += $this->scanAssetInspections();
         $sent += $this->scanDriverLicenseChecks($dispatcher, $expiringDays);
+        $sent += $this->scanDomainExpiry($dispatcher, $expiringDays);
+        $sent += $this->scanInvestmentDecisions($dispatcher, $dueDays);
 
         $this->info(sprintf('%d Benachrichtigung(en) versendet.', $sent));
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Eskalationskette (Vollaudit 2026-07, N19): Schritte des SLA-Vertrags
+     * (after_minutes/notify) gegen die Überschreitung der Lösungsfrist prüfen;
+     * `escalation_level` schreitet fort und dedupliziert dadurch selbst.
+     * `notify`: numerische User-ID oder Rollen-Slug (erster aktiver Nutzer
+     * der Rolle in der Organisation, deterministisch nach ID).
+     */
+    private function advanceEscalationChain(NotificationDispatcher $dispatcher, ServiceTicket $ticket, Carbon $now): int {
+        $contract = $ticket->slaContract;
+        $chain = $contract !== null ? array_values((array) $contract->escalation_chain) : [];
+        if ($chain === [] || $ticket->resolution_due_at === null) {
+            return 0;
+        }
+
+        $overdueMinutes = (int) $ticket->resolution_due_at->diffInMinutes($now, false);
+        if ($overdueMinutes <= 0) {
+            return 0;
+        }
+
+        $sent = 0;
+        $level = (int) $ticket->escalation_level;
+        foreach ($chain as $index => $step) {
+            $stepNo = $index + 1;
+            if ($stepNo <= $level) {
+                continue;
+            }
+            if ($overdueMinutes < (int) $step['after_minutes']) {
+                break;
+            }
+
+            $recipient = $this->resolveEscalationRecipient($ticket, (string) $step['notify']);
+            $payload = $this->slaPayload($ticket, 'sla_breached');
+            $payload['message'] = (string) __('Eskalationsstufe :level erreicht (:minutes Min. über Lösungsfrist).', [
+                'level' => $stepNo,
+                'minutes' => $overdueMinutes,
+            ]);
+            $sent += $dispatcher->notify(NotificationEvent::SlaBreached, $ticket, $recipient, $payload);
+
+            $ticket->forceFill(['escalation_level' => $stepNo])->save();
+            $level = $stepNo;
+        }
+
+        return $sent;
+    }
+
+    private function resolveEscalationRecipient(ServiceTicket $ticket, string $notify): ?\App\Models\User {
+        if ($notify === '') {
+            return $ticket->assignedTo;
+        }
+        if (ctype_digit($notify)) {
+            return \App\Models\User::query()->withoutGlobalScopes()
+                ->where('organization_id', $ticket->organization_id)
+                ->find((int) $notify);
+        }
+
+        return \App\Models\User::query()->withoutGlobalScopes()
+            ->where('organization_id', $ticket->organization_id)
+            ->whereNull('deactivated_at')
+            ->role($notify)
+            ->orderBy('id')
+            ->first();
+    }
+
+    /**
+     * Vollaudit 2026-07 (H12): ablaufende Domains bzw. fehlgeschlagene
+     * Verlängerungen (failure_at) an die Admins — Feature 083 hatte keinerlei
+     * Benachrichtigungen.
+     */
+    private function scanDomainExpiry(NotificationDispatcher $dispatcher, int $expiringDays): int {
+        return $this->runScan($dispatcher, [
+            'due' => [
+                'query' => fn() => \App\Models\Domain\DomainProjection::query()
+                    ->withoutGlobalScopes()
+                    ->where(fn($q) => $q
+                        ->whereNotNull('failure_at')
+                        ->orWhere(fn($qq) => $qq
+                            ->whereNotNull('expiration_at')
+                            ->whereBetween('expiration_at', [now(), now()->addDays($expiringDays)]))),
+                'event' => NotificationEvent::DomainExpiring,
+                'payload' => fn(\App\Models\Domain\DomainProjection $domain): array => [
+                    'title' => (string) __('notification.message.domain_expiring_title', ['domain' => (string) $domain->external_domain]),
+                    'title_key' => 'notification.message.domain_expiring_title',
+                    'title_params' => ['domain' => (string) $domain->external_domain],
+                    'message' => $domain->failure_at !== null
+                        ? (string) __('Verlängerung fehlgeschlagen am :date.', ['date' => $domain->failure_at->format('d.m.Y')])
+                        : (string) __('Läuft ab am :date.', ['date' => $domain->expiration_at?->format('d.m.Y') ?? '—']),
+                    'url' => route('domains.show', $domain),
+                    'due_at' => $domain->expiration_at?->toIso8601String(),
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * Vollaudit 2026-07 (M31): Budget-Anträge, die länger als :dueDays Tage
+     * in Freigabe hängen — Fristenschiene MVP-209.
+     */
+    private function scanInvestmentDecisions(NotificationDispatcher $dispatcher, int $dueDays): int {
+        return $this->runScan($dispatcher, [
+            'due' => [
+                'query' => fn() => \App\Models\Investments\InvestmentBudgetRequest::query()
+                    ->withoutGlobalScopes()
+                    ->where('status', 'in_approval')
+                    ->where('created_at', '<=', now()->subDays($dueDays)),
+                'event' => NotificationEvent::InvestmentDecisionDue,
+                'payload' => function (\App\Models\Investments\InvestmentBudgetRequest $request): array {
+                    $case = $request->investmentCase()->withoutGlobalScopes()->firstOrFail();
+
+                    return [
+                        'title' => (string) __('notification.message.investment_decision_due_title', ['title' => (string) $case->title]),
+                        'title_key' => 'notification.message.investment_decision_due_title',
+                        'title_params' => ['title' => (string) $case->title],
+                        'message' => null,
+                        'url' => route('investments.show', $case),
+                    ];
+                },
+            ],
+        ]);
     }
 
     // ── Generische Skelette (C18) ──────────────────────────────────────────
@@ -408,6 +530,9 @@ class ScanDeadlinesCommand extends Command {
                             dedup: true,
                         );
                         $sent += $dispatcher->escalateIfDue(NotificationEvent::SlaBreached, $ticket, $payload);
+                        // Vollaudit 2026-07 (N19): konfigurierte Eskalationskette
+                        // des SLA-Vertrags abarbeiten (escalation_level schreitet fort).
+                        $sent += $this->advanceEscalationChain($dispatcher, $ticket, $now);
                     } elseif ($status === \App\Enums\ServiceTicket\SlaStatus::AtRisk) {
                         $sent += $dispatcher->notify(
                             NotificationEvent::SlaAtRisk,

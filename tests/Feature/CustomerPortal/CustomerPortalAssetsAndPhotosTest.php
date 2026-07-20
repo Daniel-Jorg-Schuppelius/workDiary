@@ -41,6 +41,34 @@ class CustomerPortalAssetsAndPhotosTest extends TestCase {
             ->create(['organization_id' => $this->organization->id]);
     }
 
+    /**
+     * Vollaudit 2026-07 (H9): Nur freigegebene Kommunikationsnotizen
+     * (visibility=customer) erscheinen im Portal — interne nie.
+     */
+    public function test_portal_shows_only_published_communication_notes(): void {
+        $diary = $this->ownDiary();
+        \App\Models\CommunicationNote::factory()->create([
+            'organization_id' => $this->organization->id,
+            'notable_type' => DiaryEntry::class,
+            'notable_id' => $diary->id,
+            'subject' => 'Freigegebene Rückmeldung',
+            'visibility' => \App\Enums\Communication\CommunicationVisibility::Customer->value,
+        ]);
+        \App\Models\CommunicationNote::factory()->create([
+            'organization_id' => $this->organization->id,
+            'notable_type' => DiaryEntry::class,
+            'notable_id' => $diary->id,
+            'subject' => 'Interne Einschätzung',
+            'visibility' => \App\Enums\Communication\CommunicationVisibility::Internal->value,
+        ]);
+
+        $this->actingAs($this->portalUser, 'customer')
+            ->get(route('customer.diary.show', $diary))
+            ->assertOk()
+            ->assertSee('Freigegebene Rückmeldung')
+            ->assertDontSee('Interne Einschätzung');
+    }
+
     private function ownDiary(): DiaryEntry {
         return DiaryEntry::factory()->create([
             'organization_id' => $this->organization->id,

@@ -46,6 +46,22 @@ class DomainSyncCommand extends Command {
             } catch (Throwable $e) {
                 $connection->recordConnectionFailure(class_basename($e));
                 $this->warn(sprintf('Verbindung #%d: %s', $connection->id, class_basename($e)));
+
+                // Vollaudit 2026-07 (H12): Syncausfall an die Admins melden
+                // (dedupliziert — ein Dauerausfall spammt nicht je Lauf).
+                app(\App\Services\Notification\NotificationDispatcher::class)->notify(
+                    \App\Enums\Notification\NotificationEvent::DomainSyncFailed,
+                    $connection,
+                    null,
+                    [
+                        'title' => (string) __('notification.message.domain_sync_failed_title', ['name' => (string) $connection->name]),
+                        'title_key' => 'notification.message.domain_sync_failed_title',
+                        'title_params' => ['name' => (string) $connection->name],
+                        'message' => class_basename($e),
+                        'url' => route('admin.domain-provider.index'),
+                    ],
+                    dedup: true,
+                );
             }
         }
 

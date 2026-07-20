@@ -35,12 +35,11 @@
     </x-filter-bar>
 
     {{-- Tabs: Status --}}
-    <div role="tablist" class="tabs tabs-box w-full">
-        <a role="tab" href="{{ route('suppliers.index', ['status' => 'active', 'q' => $search]) }}"
-           class="tab {{ $status === 'active' ? 'tab-active' : '' }}">{{ __('Aktiv') }}</a>
-        <a role="tab" href="{{ route('suppliers.index', ['status' => 'archived', 'q' => $search]) }}"
-           class="tab {{ $status === 'archived' ? 'tab-active' : '' }}">{{ __('Archiv') }}</a>
-    </div>
+    {{-- Status-Tabs über die gemeinsame Komponente (D5; Vollaudit 2026-07, N44). --}}
+    <x-tab-nav :items="[
+        ['label' => __('Aktiv'), 'route' => 'suppliers.index', 'params' => ['status' => 'active', 'q' => $search], 'active' => $status === 'active'],
+        ['label' => __('Archiv'), 'route' => 'suppliers.index', 'params' => ['status' => 'archived', 'q' => $search], 'active' => $status === 'archived'],
+    ]" />
 
     @if ($suppliers->total() === 0)
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">local_shipping</span>' :title="$search !== '' ? __('Keine Lieferanten für „:q“ gefunden.', ['q' => $search]) : __('Noch keine Lieferanten in dieser Ansicht')" />

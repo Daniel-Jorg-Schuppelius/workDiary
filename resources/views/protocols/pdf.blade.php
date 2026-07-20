@@ -77,6 +77,27 @@
             <td>@if ($item->result)<span class="badge {{ $item->result->value }}">{{ $item->result->label() }}</span>@endif</td>
             <td>{{ $item->note }}</td>
         </tr>
+        {{-- Vollaudit 2026-07 (H7): max-4-Vorschau je Punkt mit Phase + Caption
+             (protokoll-fotos.md §3.2, Akzeptanzkriterium 6); Rest als „+n weitere".
+             Daten kommen fertig aus dem Renderer ($itemPhotoPreviews). --}}
+        @if (! empty($itemPhotoPreviews[$item->id]['previews']))
+            <tr>
+                <td></td>
+                <td colspan="5">
+                    @foreach ($itemPhotoPreviews[$item->id]['previews'] as $preview)
+                        <div style="display: inline-block; width: 34mm; margin: 0 2mm 2mm 0; vertical-align: top;">
+                            {!! $preview['src'] ? '<img src="' . e($preview['src']) . '" style="width: 34mm; max-height: 26mm; object-fit: cover;">' : '' !!}
+                            <div style="font-size: 8pt; color: #444;">
+                                {{ $preview['phase'] }}{{ $preview['caption'] ? ': „' . $preview['caption'] . '“' : '' }}
+                            </div>
+                        </div>
+                    @endforeach
+                    @if ($itemPhotoPreviews[$item->id]['more'] > 0)
+                        <div style="font-size: 8pt; color: #666;">{{ __('protocol.pdf.photos.more', ['count' => $itemPhotoPreviews[$item->id]['more']]) }}</div>
+                    @endif
+                </td>
+            </tr>
+        @endif
     @endforeach
     </tbody>
 </table>

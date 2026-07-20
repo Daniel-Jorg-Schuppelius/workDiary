@@ -44,7 +44,11 @@ class LotService {
         return $this->fefo->receiptIntoLot($variant, $warehouse, $qty, $unitCost, $lot, $currency, $actorUserId);
     }
 
-    /** Akkurater Restbestand einer Charge über die Bewertungsschichten. @return numeric-string */
+    /**
+     * Akkurater Restbestand einer Charge über die Bewertungsschichten.
+     *
+     * @return numeric-string
+     */
     public function onHand(StockLot $lot): string {
         $sum = (string) StockValuationLayer::query()->where('stock_lot_id', $lot->id)->sum('qty_remaining');
 

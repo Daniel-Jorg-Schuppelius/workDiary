@@ -391,6 +391,8 @@ enum Permission: string implements HasLabel {
     case DocumentUpdate = 'document.update';
     case DocumentDelete = 'document.delete';
     case DocumentArchive = 'document.archive';
+    // Vertrauliche Dokumente Dritter sehen/verwalten (Vollaudit 2026-07, N10).
+    case DocumentConfidentialManage = 'document.confidential.manage';
 
         // ── Wissensbasis & Problemhistorie (Feature 011) ───────────────────
     case KnowledgeViewAny = 'knowledge.viewAny';
@@ -544,6 +546,10 @@ enum Permission: string implements HasLabel {
     case InventoryViewAny = 'inventory.viewAny';
     case InventoryPost = 'inventory.post';
     case InventoryConfigure = 'inventory.configure';
+    // Vollaudit 2026-07 (M22): getrennte Freigaben — negative Bestände und
+    // Ersatzmaterial-Genehmigung sind eigene, rollenbasierte Rechte.
+    case InventoryNegative = 'inventory.negative';
+    case InventorySubstituteApprove = 'inventory.substituteApprove';
 
         // ── Bewerbungen & Ausschreibungen (Feature 068, MVP-183) ──────────
         // Zwei GETRENNTE Rechtebereiche: Auftragsbewerbungen (tender.*) und

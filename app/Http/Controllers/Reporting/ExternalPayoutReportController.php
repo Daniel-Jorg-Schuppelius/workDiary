@@ -14,6 +14,7 @@ use App\Enums\User\{CompensationModel, FlatInterval, Permission};
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{TimeEntry, User};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -74,15 +75,15 @@ class ExternalPayoutReportController extends Controller {
                 // nicht durch akkumulierte Nachkommastellen abweicht.
                 $amount = round($minutes / 60 * $rate, 2);
                 $basis = __(':hours × :rate', [
-                    'hours' => number_format($minutes / 60, 2, ',', '.') . ' h',
-                    'rate' => number_format($rate, 2, ',', '.') . ' €',
+                    'hours' => NumberHelper::toGermanFormat($minutes / 60, 2, withThousandsSeparator: true) . ' h',
+                    'rate' => NumberHelper::toGermanFormat($rate, 2, withThousandsSeparator: true) . ' €',
                 ]);
             } elseif ($model === CompensationModel::Pauschal) {
                 $flat = (float) ($user->flat_amount ?? 0);
                 $interval = $user->flat_interval;
                 if ($interval === FlatInterval::Monatlich) {
                     $amount = $flat * $monthCount;
-                    $basis = number_format($flat, 2, ',', '.') . ' € × ' . $monthCount . ' ' . __('Monate');
+                    $basis = NumberHelper::toGermanFormat($flat, 2, withThousandsSeparator: true) . ' € × ' . $monthCount . ' ' . __('Monate');
                 } elseif ($interval === FlatInterval::ProEinsatz) {
                     $einsatzDays = TimeEntry::query()
                         ->where('user_id', $user->id)
@@ -90,7 +91,7 @@ class ExternalPayoutReportController extends Controller {
                         ->distinct()
                         ->count('date');
                     $amount = $flat * $einsatzDays;
-                    $basis = number_format($flat, 2, ',', '.') . ' € × ' . $einsatzDays . ' ' . __('Einsätze');
+                    $basis = NumberHelper::toGermanFormat($flat, 2, withThousandsSeparator: true) . ' € × ' . $einsatzDays . ' ' . __('Einsätze');
                 } else { // Einmalig
                     $amount = $flat;
                     $basis = __('Einmalig');

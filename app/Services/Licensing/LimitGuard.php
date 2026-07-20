@@ -59,6 +59,24 @@ class LimitGuard {
     }
 
     /**
+     * Auslastung des Nutzerlimits (Vollaudit 2026-07, N9) — für die
+     * Frühwarnung im ExpiryScanner; null, wenn kein Limit gilt.
+     *
+     * @return array{current: int, max: int}|null
+     */
+    public function userLimitUsage(Organization $organization): ?array {
+        if (! $this->licenses->isEnforced()) {
+            return null;
+        }
+        $max = $this->licenseFor($organization)->payload?->maxUsers;
+        if ($max === null || $max <= 0) {
+            return null;
+        }
+
+        return ['current' => $organization->activeUserCount(), 'max' => $max];
+    }
+
+    /**
      * Org-gebundene Lizenz, falls die Organisation einen eigenen Schlüssel
      * trägt; andernfalls die globale Installations-Lizenz als Fallback.
      */

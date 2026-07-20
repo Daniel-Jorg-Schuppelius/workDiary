@@ -12,11 +12,11 @@ namespace App\Services\Finance\Targets;
 
 use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Enums\Finance\{TransferChannel, TransferTarget};
-use App\Models\{Customer, ExternalReference, MaterialUsage, TimeEntry};
+use App\Models\{Customer, ExternalReference, TimeEntry};
 use App\Models\Finance\BillingTransfer;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeMapper, LexofficePlugin, LexofficeService};
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
-use App\Services\Invoicing\{BillableTimeAggregator, BillingBlock};
+use App\Services\Invoicing\{BillableTimeAggregator};
 use RuntimeException;
 
 /**
@@ -39,6 +39,8 @@ use RuntimeException;
  * hochgereicht; der Controller ruft dann markFailed().
  */
 class LexofficeTarget implements FacturationTarget {
+    use Concerns\LoadsBillingSources;
+
     public const EXT_TYPE_INVOICE = 'invoice';
 
     public function __construct(
@@ -133,20 +135,8 @@ class LexofficeTarget implements FacturationTarget {
      * @return list<array<string, mixed>>
      */
     private function timeLineItems(BillingTransfer $transfer, string $currency, array $defaults): array {
-        $ids = $transfer->items
-            ->where('source_type', TimeEntry::class)
-            ->pluck('source_id')
-            ->all();
-
-        $entries = TimeEntry::query()
-            ->whereIn('id', $ids)
-            ->with(['project.parent', 'project.customer', 'project.foreignCustomer'])
-            ->orderBy('date')
-            ->get();
-
-        if ($entries->count() !== count($ids)) {
-            throw new RuntimeException((string) __('finance.error.sources_missing'));
-        }
+        // Quellen über das gemeinsame Skelett (Vollaudit 2026-07, M41).
+        $entries = $this->loadTimeEntries($transfer);
 
         $vatRate = (float) ($defaults['default_vat_rate'] ?? 19.0);
         $entriesById = $entries->keyBy('id');
@@ -165,7 +155,7 @@ class LexofficeTarget implements FacturationTarget {
 
             $items[] = [
                 'type' => 'custom',
-                'name' => $this->blockName($block, $transfer),
+                'name' => $block->displayName($transfer, withDescription: true),
                 'quantity' => $hours,
                 'unitName' => 'h',
                 'unitPrice' => [
@@ -187,19 +177,8 @@ class LexofficeTarget implements FacturationTarget {
      * @return list<array<string, mixed>>
      */
     private function materialLineItems(BillingTransfer $transfer, string $currency, array $defaults): array {
-        $ids = $transfer->items
-            ->where('source_type', MaterialUsage::class)
-            ->pluck('source_id')
-            ->all();
-
-        $usages = MaterialUsage::query()
-            ->whereIn('id', $ids)
-            ->with(['timesheet:id,work_date,project_id', 'timesheet.project:id,name'])
-            ->get();
-
-        if ($usages->count() !== count($ids)) {
-            throw new RuntimeException((string) __('finance.error.sources_missing'));
-        }
+        // Quellen über das gemeinsame Skelett (Vollaudit 2026-07, M41).
+        $usages = $this->loadMaterialUsages($transfer);
 
         $vatRate = (float) ($defaults['default_vat_rate'] ?? 19.0);
         $items = [];
@@ -225,27 +204,6 @@ class LexofficeTarget implements FacturationTarget {
         }
 
         return $items;
-    }
-
-    /** Positionsname: Projekt [Tätigkeit] (Zeitraum) — analog LexofficeMapper. */
-    private function blockName(BillingBlock $block, BillingTransfer $transfer): string {
-        $projectName = $block->project?->name ?: (string) __('Leistung');
-        $kindSuffix = $block->kind !== null ? ' [' . $block->kind->value . ']' : '';
-
-        $from = $block->firstStart?->format('d.m.Y') ?? $transfer->period_from?->format('d.m.Y');
-        $to = $block->lastEnd?->format('d.m.Y') ?? $transfer->period_to?->format('d.m.Y');
-        $span = match (true) {
-            $from !== null && $to !== null && $from !== $to => sprintf(' (%s – %s)', $from, $to),
-            $from !== null => sprintf(' (%s)', $from),
-            default => '',
-        };
-
-        $name = trim(sprintf('%s%s%s', $projectName, $kindSuffix, $span));
-        if (count($block->entryIds) === 1 && $block->description !== null) {
-            $name = trim($block->description) . ' · ' . $name;
-        }
-
-        return $name;
     }
 
     // ── Kontakt ─────────────────────────────────────────────────────────

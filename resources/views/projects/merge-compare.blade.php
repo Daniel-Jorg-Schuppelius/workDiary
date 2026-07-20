@@ -54,9 +54,8 @@
         <input type="hidden" name="source" value="{{ $source->sqid }}">
         <input type="hidden" name="target" value="{{ $target->sqid }}">
 
-        <div class="overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
-            <table class="table table-sm">
-                <thead>
+        <x-table>
+            <x-slot:head>
                     <tr>
                         <th class="w-44">{{ __('Feld') }}</th>
                         <th>
@@ -69,8 +68,7 @@
                         </th>
                         <th class="w-40 text-center">{{ __('Wert aus Quelle übernehmen') }}</th>
                     </tr>
-                </thead>
-                <tbody>
+            </x-slot:head>
                     @foreach ($identityFields as $field => $label)
                         @php
                             $tv = $fmt($target->getAttribute($field));
@@ -105,9 +103,7 @@
                             </tr>
                         @endif
                     @endforeach
-                </tbody>
-            </table>
-        </div>
+        </x-table>
 
         <div class="mt-4 flex flex-wrap justify-end gap-2">
             <a href="{{ route('projects.duplicates.compare', ['target' => $source->sqid, 'source' => $target->sqid]) }}"

@@ -13,6 +13,12 @@ return [
         'tours' => 'Rutas',
         'remote_sessions' => 'Sesiones de mantenimiento remoto',
     ],
+    'template' => [
+        'example_required' => 'Valor de ejemplo (obligatorio)',
+        'example_optional' => 'Valor de ejemplo (opcional)',
+        'download' => 'Descargar plantilla de ejemplo',
+    ],
+
     'state' => [
         'preflight' => 'Comprobación previa',
         'awaitingApproval' => 'Pendiente de aprobación',

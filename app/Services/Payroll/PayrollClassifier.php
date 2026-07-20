@@ -12,6 +12,7 @@ namespace App\Services\Payroll;
 
 use App\Enums\User\EmploymentType;
 use App\Models\User;
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /**
  * Plausibilitätsprüfung der Beschäftigungsart anhand des geschätzten
@@ -52,7 +53,7 @@ class PayrollClassifier {
         }
 
         $limit = $this->minimumWages->minijobMonthlyLimit();
-        $earningsFmt = number_format($earnings, 2, ',', '.');
+        $earningsFmt = NumberHelper::toGermanFormat($earnings, 2, withThousandsSeparator: true);
 
         return match ($user->employment_type) {
             EmploymentType::Minijob => ($limit !== null && $earnings > $limit)

@@ -13,9 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Whistleblowing;
 
 use App\Models\Concerns\BelongsToOrganization;
-use App\Models\Organization;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Organisationsbezogene Portal-Konfiguration. `public_slug` ist bewusst NICHT
@@ -50,9 +48,4 @@ class Portal extends Model {
         'external_channels' => 'array',
         'retention_months' => 'integer',
     ];
-
-    /** @return BelongsTo<Organization, $this> */
-    public function organization(): BelongsTo {
-        return $this->belongsTo(Organization::class);
-    }
 }

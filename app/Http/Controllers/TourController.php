@@ -18,6 +18,7 @@ use App\Models\{Customer, DiaryEntry, Site, Tour, User, Vehicle};
 use App\Services\Routing\TourService;
 use App\Support\{Setting, SortableQuery};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -229,7 +230,7 @@ class TourController extends Controller {
 
         return redirect()->route('tours.edit', $tour)
             ->with('success', __('Tour optimiert (:km km, :min min).', [
-                'km' => number_format($result['distance_km'], 2, ',', '.'),
+                'km' => NumberHelper::toGermanFormat($result['distance_km'], 2, withThousandsSeparator: true),
                 'min' => $result['duration_minutes'],
             ]));
     }
@@ -321,7 +322,8 @@ class TourController extends Controller {
                     'lat' => (float) $stop->address_lat,
                     'lng' => (float) $stop->address_lng,
                     'label' => ($stop->tour_position ?? ($pos + 1)) . '. ' . $stop->title,
-                    'popup' => $label . '<br>' . e((string) $stop->title) . '<br>' . e((string) $stop->address_city),
+                    // Vollaudit 2026-07 (M14): Kartenpunkt führt zum Auftrag.
+                    'popup' => $label . '<br><a href="' . e(route('diary.show', $stop)) . '" class="link">' . e((string) $stop->title) . '</a><br>' . e((string) $stop->address_city),
                     'layer' => 'tours',
                     'color' => $color,
                 ];
@@ -343,7 +345,8 @@ class TourController extends Controller {
                 'label' => $entry->title,
                 'layer' => 'open',
                 'color' => '#f59e0b',
-                'popup' => __('Offener Auftrag') . '<br>' . e((string) $entry->title),
+                // Vollaudit 2026-07 (M14): Kartenpunkt führt zum Auftrag.
+                'popup' => __('Offener Auftrag') . '<br><a href="' . e(route('diary.show', $entry)) . '" class="link">' . e((string) $entry->title) . '</a>',
             ];
         }
 

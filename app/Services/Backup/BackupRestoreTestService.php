@@ -11,10 +11,9 @@
 namespace App\Services\Backup;
 
 use App\Enums\Backup\RestoreTestResult;
-use App\Models\Backup\{BackupGeneration, BackupTargetConnection};
+use App\Models\Backup\{BackupGeneration};
 use App\Models\RestoreTest;
 use App\Plugins\Contracts\BackupTarget;
-use App\Plugins\PluginManager;
 use App\Services\Backup\Exceptions\BackupPreflightException;
 use Symfony\Component\Process\{ExecutableFinder, Process};
 
@@ -26,6 +25,9 @@ use Symfony\Component\Process\{ExecutableFinder, Process};
  * ins plattformweite Restore-Test-Register (Feature 017) ein.
  */
 class BackupRestoreTestService {
+    // Gemeinsame Adapter-Auflösung (Vollaudit 2026-07, N34).
+    use \App\Services\Backup\Concerns\ResolvesBackupTarget;
+
     public function __construct(
         private readonly BackupDecrypter $decrypter,
     ) {}
@@ -164,14 +166,4 @@ class BackupRestoreTestService {
         return ['rpo_seconds' => $rpo, 'rto_seconds' => $rto, 'restored_size' => $restoredSize, 'target_dir' => $targetDir];
     }
 
-    private function adapter(BackupTargetConnection $connection): BackupTarget {
-        $plugin = app(PluginManager::class)->find($connection->provider->pluginId());
-        if (!$plugin instanceof BackupTarget) {
-            throw new BackupPreflightException(
-                "Kein Backup-Adapter für Provider '{$connection->provider->value}' verfügbar.",
-            );
-        }
-
-        return $plugin;
-    }
 }

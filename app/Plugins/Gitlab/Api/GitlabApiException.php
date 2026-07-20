@@ -18,8 +18,4 @@ use App\Plugins\Support\PluginApiException;
  * Fehler der GitLab-REST-API (MVP-129). Die Message trägt nur Status und
  * gekürzten Body-Auszug — nie den API-Token.
  */
-class GitlabApiException extends PluginApiException {
-    public function __construct(int $status, string $message, ?string $endpoint = null) {
-        parent::__construct($message, $status, $endpoint);
-    }
-}
+class GitlabApiException extends PluginApiException {}

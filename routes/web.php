@@ -304,6 +304,8 @@ Route::middleware('auth')->group(function () {
             Route::get('vvt/neu', [\App\Http\Controllers\Privacy\ProcessingActivityController::class, 'create'])->name('activities.create');
             Route::get('vvt/export', [\App\Http\Controllers\Privacy\ProcessingActivityController::class, 'export'])->name('activities.export');
             Route::post('vvt', [\App\Http\Controllers\Privacy\ProcessingActivityController::class, 'store'])->name('activities.store');
+            // Anlage aus Vorlagenkatalog (Feature 043 MVP 1; Vollaudit 2026-07, M17).
+            Route::post('vvt/vorlage', [\App\Http\Controllers\Privacy\ProcessingActivityController::class, 'storeFromTemplate'])->name('activities.template');
             Route::get('vvt/{activity}', [\App\Http\Controllers\Privacy\ProcessingActivityController::class, 'show'])->name('activities.show');
             Route::post('vvt/{activity}/version', [\App\Http\Controllers\Privacy\ProcessingActivityController::class, 'addVersion'])->name('activities.version');
             Route::post('vvt/{activity}/pruefung', [\App\Http\Controllers\Privacy\ProcessingActivityController::class, 'submitReview'])->name('activities.submit');
@@ -624,6 +626,8 @@ Route::middleware('auth')->group(function () {
 
         // Einstellungs-Registry (Feature 067, MVP-174)
         Route::get('admin/settings', [SettingsController::class, 'index'])->name('admin.settings.index');
+        // Konfigurationsstand-Export (Feature 067 P5; Vollaudit 2026-07, N20).
+        Route::get('admin/settings/export.json', [SettingsController::class, 'export'])->name('admin.settings.export');
         Route::get('admin/settings/{key}/history', [SettingsController::class, 'history'])
             ->where('key', '[A-Za-z0-9_.\-]+')
             ->name('admin.settings.history');
@@ -875,7 +879,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
         Route::post('attachments/{type}/{id}', [AttachmentController::class, 'store'])
-            ->whereIn('type', ['diary', 'comment', 'shift', 'assignment', 'task', 'customer', 'organization', 'user', 'asset'])
+            ->whereIn('type', array_keys(AttachmentController::TYPE_MAP))
             ->name('attachments.store');
         Route::get('attachments/{attachment}/download', [AttachmentController::class, 'download'])->name('attachments.download');
         // Kundenfreigabe je Anhang fürs Portal (Rang 54, Toggle).
@@ -904,6 +908,8 @@ Route::middleware('auth')->group(function () {
             Route::post('backlog/uebernehmen', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'adopt'])->name('items.adopt');
             Route::patch('backlog/{item}/rang', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'rerank'])->name('items.rerank');
             Route::patch('backlog/{item}', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'updateItem'])->name('items.update');
+            // Epic-Zuordnung über task.parent_task_id (Vollaudit 2026-07, M25).
+            Route::patch('backlog/{item}/epic', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'assignEpic'])->name('items.epic');
             Route::post('backlog/{item}/kriterien', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'storeCriterion'])->name('criteria.store');
             Route::patch('backlog/{item}/kriterien/{criterion}', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'toggleCriterion'])->name('criteria.toggle');
             Route::delete('backlog/{item}/kriterien/{criterion}', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'destroyCriterion'])->name('criteria.destroy');
@@ -1123,6 +1129,9 @@ Route::middleware('auth')->group(function () {
         Route::post('manufacturing-orders/{order}/reserve', [\App\Http\Controllers\ManufacturingOrderController::class, 'reserve'])->name('manufacturing-orders.reserve');
         Route::post('manufacturing-orders/{order}/report', [\App\Http\Controllers\ManufacturingOrderController::class, 'report'])->name('manufacturing-orders.report');
         Route::post('manufacturing-orders/{order}/materials/{material}/consume', [\App\Http\Controllers\ManufacturingOrderController::class, 'consumeMaterial'])->name('manufacturing-orders.materials.consume'); // MVP-065 Ist-Verbrauch
+        // Vollaudit 2026-07 (M20): Fehlmaterial-/Ersatzmaterialprozess (MVP-068).
+        Route::post('manufacturing-orders/{order}/substitutes', [\App\Http\Controllers\ManufacturingOrderController::class, 'requestSubstitute'])->name('manufacturing-orders.substitutes.request');
+        Route::post('manufacturing-orders/{order}/substitutes/{substitute}/decide', [\App\Http\Controllers\ManufacturingOrderController::class, 'decideSubstitute'])->name('manufacturing-orders.substitutes.decide');
         Route::get('manufacturing-orders/{order}/record.pdf', [\App\Http\Controllers\ManufacturingOrderController::class, 'recordPdf'])->name('manufacturing-orders.record.pdf'); // MVP-065 Fertigungsnachweis
         Route::post('manufacturing-orders/{order}/deliver', [\App\Http\Controllers\ManufacturingOrderController::class, 'deliver'])->name('manufacturing-orders.deliver');
         Route::post('manufacturing-orders/{order}/deliveries/{delivery}/lexoffice', [\App\Http\Controllers\ManufacturingOrderController::class, 'pushDeliveryNote'])->name('manufacturing-orders.deliveries.lexoffice'); // E4/045 Lieferschein an Lexoffice
@@ -1343,6 +1352,8 @@ Route::middleware('auth')->group(function () {
         Route::post('invoices/{invoice}/approve', [InvoiceController::class, 'approve'])->name('invoices.approve');
         Route::get('invoices/{invoice}/dun', [InvoiceController::class, 'dunForm'])->name('invoices.dun.form');
         Route::post('invoices/{invoice}/dun', [InvoiceController::class, 'dun'])->name('invoices.dun');
+        // Vollaudit 2026-07 (M27): § 14 Abs. 2 UStG — Widerspruch dokumentieren.
+        Route::post('invoices/{invoice}/widerspruch', [InvoiceController::class, 'documentObjection'])->name('invoices.objection');
         Route::post('invoices/{invoice}/proforma-umwandeln', [InvoiceController::class, 'proformaConvert'])->name('invoices.proforma-convert');
         Route::post('invoices/{invoice}/final', [InvoiceController::class, 'makeFinal'])->name('invoices.final');
         Route::post('invoices/{invoice}/pay', [InvoiceController::class, 'pay'])->name('invoices.pay');
@@ -1494,6 +1505,8 @@ Route::middleware('auth')->group(function () {
             Route::post('/', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'store'])->name('store');
             // Statische Segmente VOR dem {connection}-Wildcard.
             Route::get('gedaechtnis', [\App\Http\Controllers\Admin\Ai\AiMemoryController::class, 'index'])->name('memory');
+            // DSGVO-Export des Gedächtnisses (Vollaudit 2026-07, M9), optional ?kunde=<id>.
+            Route::get('gedaechtnis/export', [\App\Http\Controllers\Admin\Ai\AiMemoryController::class, 'export'])->name('memory.export');
             Route::get('gedaechtnis/neu', [\App\Http\Controllers\Admin\Ai\AiMemoryController::class, 'create'])->name('memory.create');
             Route::post('gedaechtnis', [\App\Http\Controllers\Admin\Ai\AiMemoryController::class, 'store'])->name('memory.store');
             Route::post('gedaechtnis/{entry}/umschalten', [\App\Http\Controllers\Admin\Ai\AiMemoryController::class, 'toggle'])->name('memory.toggle');
@@ -1870,6 +1883,8 @@ Route::middleware('auth')->group(function () {
         Route::post('projects/{project}/timesheets/{timesheet}/unlock', [TimesheetSignatureController::class, 'unlock'])->name('projects.timesheets.unlock');
         Route::get('projects/{project}/timesheets/{timesheet}/pdf', [TimesheetSignatureController::class, 'pdf'])->name('projects.timesheets.pdf');
         Route::post('projects/{project}/timesheets/{timesheet}/magic-link', [TimesheetSignatureController::class, 'magicLink'])->name('projects.timesheets.magic-link');
+        // Magic-Link widerrufen (Feature 012 MVP; Vollaudit 2026-07, M6).
+        Route::delete('projects/{project}/timesheets/{timesheet}/magic-link', [TimesheetSignatureController::class, 'revokeMagicLink'])->name('projects.timesheets.magic-link.revoke');
 
         // ── Stoppuhr ────────────────────────────────────────────────────────────
         Route::get('stopwatch', [StopwatchController::class, 'current'])->name('stopwatch.current');
@@ -2076,7 +2091,12 @@ Route::middleware('auth')->group(function () {
         Route::delete('protocol-items/{item}', [ProtocolController::class, 'destroyItem'])->name('protocols.items.destroy');
         Route::post('protocol-items/{item}/photos', [ProtocolController::class, 'uploadPhoto'])->name('protocols.items.photos.store');
         Route::delete('protocol-item-photos/{photo}', [ProtocolController::class, 'destroyPhoto'])->name('protocols.items.photos.destroy');
+        // Vollaudit 2026-07 (H7): Caption-Pflege + Reihenfolge (Service auditiert).
+        Route::patch('protocol-item-photos/{photo}/caption', [ProtocolController::class, 'updatePhotoCaption'])->name('protocols.items.photos.caption');
+        Route::post('protocol-item-photos/{photo}/promote', [ProtocolController::class, 'promotePhoto'])->name('protocols.items.photos.promote');
         Route::post('protocols/{protocol}/signature-tokens', [ProtocolController::class, 'issueSignatureToken'])->name('protocols.signature-tokens.store');
+        // Widerruf externer Signatur-Links (Feature 012 MVP; Vollaudit 2026-07, M6).
+        Route::delete('protocols/{protocol}/signature-tokens/{token}', [ProtocolController::class, 'revokeSignatureToken'])->name('protocols.signature-tokens.destroy');
         Route::get('protocols/{protocol}/pdf', [ProtocolController::class, 'pdf'])->name('protocols.pdf');
         Route::post('protocols/{protocol}/weather', [ProtocolController::class, 'attachWeather'])->name('protocols.weather'); // Feature 062
 
@@ -2175,6 +2195,8 @@ Route::middleware('auth')->group(function () {
         Route::get('service-tickets/{ticket}', [ServiceTicketController::class, 'show'])->name('service-tickets.show');
         Route::post('service-tickets/{ticket}/transition', [ServiceTicketController::class, 'transition'])->name('service-tickets.transition');
         Route::post('service-tickets/{ticket}/assign', [ServiceTicketController::class, 'assign'])->name('service-tickets.assign');
+        // Vollaudit 2026-07 (M29): Incident-Klassifikation (Impact/Urgency → Priorität).
+        Route::post('service-tickets/{ticket}/classify', [ServiceTicketController::class, 'classify'])->name('service-tickets.classify');
         Route::delete('service-tickets/{ticket}', [ServiceTicketController::class, 'destroy'])->name('service-tickets.destroy');
         // Konversation (Feature 065, MVP-152): Antwort vs. Notiz — getrennte
         // Aktionen/Rechte (Typfrage, keine Flagfrage).
@@ -2347,6 +2369,8 @@ Route::middleware('auth')->group(function () {
 
         // ── Globale Suche / Command-Palette ─────────────────────────────────
         Route::get('api/internal/search', GlobalSearchController::class)->name('api.internal.search');
+        // Vollergebnisseite der globalen Suche (globale-suche.md AK 2–3; Vollaudit 2026-07, M8).
+        Route::get('suche', [\App\Http\Controllers\SearchController::class, 'index'])->name('search.index');
 
         // ── Globale Zeitauswahl (Header-Widget) ─────────────────────────────────
         Route::post('ui/date-range', [DateRangeController::class, 'update'])->name('ui.date-range.update');
@@ -2442,6 +2466,9 @@ Route::middleware('auth')->group(function () {
         // Kostenstellen-Override je Zeile im Prüf-UI (Rang 35, nur Status ready).
         Route::patch('exports/{export}/lines/{line}', [\App\Http\Controllers\TimeExportController::class, 'updateLine'])
             ->name('exports.lines.update');
+        // Löschung mit Pflicht-Begründung (Vollaudit 2026-07, N6).
+        Route::delete('exports/{export}', [\App\Http\Controllers\TimeExportController::class, 'destroy'])
+            ->name('exports.destroy');
 
         // ── Plan/Ist-Report (MVP-018) ──────────────────────────────────────────
         Route::get('reports/plan-ist/presence', [\App\Http\Controllers\Reporting\PlanIstReportController::class, 'presence'])
@@ -2616,6 +2643,8 @@ Route::middleware('auth')->group(function () {
         // MVP-049 — CSV-Import Wizard
         Route::get('admin/imports', [ImportController::class, 'index'])->name('admin.imports.index');
         Route::get('admin/imports/create', [ImportController::class, 'create'])->name('admin.imports.create');
+        // CSV-Mustervorlage je Entität (Feature 020 MVP; Vollaudit 2026-07, N8).
+        Route::get('admin/imports/vorlage/{entity}.csv', [ImportController::class, 'template'])->name('admin.imports.template');
         Route::post('admin/imports/preflight', [ImportController::class, 'preflight'])->name('admin.imports.preflight');
         Route::get('admin/imports/{import}', [ImportController::class, 'show'])->name('admin.imports.show');
         Route::post('admin/imports/{import}/confirm', [ImportController::class, 'confirm'])->name('admin.imports.confirm');

@@ -38,8 +38,8 @@
     {{-- Kein eigener Scroll-Container: die .wd-modal-body des Dialogs ist
          der einzige Scrollbereich (sonst doppelte Scrollbalken). --}}
     <div class="rounded-box border border-base-300">
-        <table class="table table-xs table-pin-rows">
-            <thead>
+        <x-table pin-rows size="xs">
+            <x-slot:head>
                 <tr>
                     <th class="w-16">{{ __('isms.field.ref_no') }}</th>
                     <th>{{ __('isms.field.title') }}</th>
@@ -48,8 +48,7 @@
                     <th class="w-28">{{ __('isms.field.implementation_status') }}</th>
                     <th class="w-40">{{ __('isms.soa.controls_risks') }}</th>
                 </tr>
-            </thead>
-            <tbody>
+            </x-slot:head>
                 @forelse ($statements as $statement)
                     @php($requirement = $statement->requirement)
                     <tr @class(['opacity-60' => ! $statement->applicable])>
@@ -82,8 +81,7 @@
                         <td colspan="6" class="text-base-content/50">{{ __('isms.empty_requirements') }}</td>
                     </tr>
                 @endforelse
-            </tbody>
-        </table>
+        </x-table>
     </div>
 
     <p class="mt-3 text-xs text-base-content/60">{{ __('isms.soa.disclaimer') }}</p>

@@ -251,4 +251,10 @@ return [
         '#kundenabnahme',
         '#anlage',
     ],
+    // Qualifikationen/Unterweisungen je Gewerk (Vollaudit 2026-07, N13).
+    'qualifications_seed' => [
+        ['name' => 'Gasgeräte-Sachkunde', 'abbreviation' => 'Gas-SK', 'description' => 'Sachkunde für Arbeiten an Gasgeräten (TRGI).'],
+        ['name' => 'Trinkwasserhygiene-Schulung (VDI 6023)', 'abbreviation' => 'VDI 6023', 'description' => 'Hygieneschulung Kategorie B für Trinkwasserinstallationen.'],
+        ['name' => 'Kälteschein Kategorie I', 'abbreviation' => 'KälteS', 'description' => 'Sachkundebescheinigung nach ChemKlimaschutzV für Arbeiten an Wärmepumpen/Klimaanlagen.'],
+    ],
 ];

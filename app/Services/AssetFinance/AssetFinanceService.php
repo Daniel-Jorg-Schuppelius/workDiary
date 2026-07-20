@@ -17,6 +17,7 @@ use App\Enums\Notification\NotificationEvent;
 use App\Enums\Numbering\NumberScope;
 use App\Models\AssetFinance\{AssetFinanceContract, AssetFinanceContractAsset, AssetFinanceDeadline, AssetFinanceEndProcess, AssetFinanceOption, AssetFinanceRateSchedule, AssetFinanceUsageLimit};
 use App\Models\{IncomingEInvoice, Organization, User};
+use App\Services\Concerns\AssertsStatusTransition;
 use App\Services\Notification\NotificationDispatcher;
 use App\Services\Numbering\NumberSequenceService;
 use Illuminate\Support\Facades\DB;
@@ -29,6 +30,8 @@ use Illuminate\Support\Facades\DB;
  * bleiben beim Rechnungswesen (W11).
  */
 class AssetFinanceService {
+    use AssertsStatusTransition;
+
     public function __construct(
         private readonly NumberSequenceService $numbers,
         private readonly NotificationDispatcher $notifier,
@@ -360,12 +363,8 @@ class AssetFinanceService {
         ];
     }
 
+    /** Gemeinsamer Guard (Vollaudit 2026-07, M44) — Semantik unverändert. */
     private function assertTransition(AssetFinanceContract $contract, AssetFinanceStatus $target): void {
-        if (! in_array($target, $contract->status->allowedTransitions(), true)) {
-            throw new \RuntimeException((string) __('Statuswechsel von :from nach :to ist nicht zulässig.', [
-                'from' => $contract->status->label(),
-                'to' => $target->label(),
-            ]));
-        }
+        $this->assertStatusTransition($contract->status, $target);
     }
 }

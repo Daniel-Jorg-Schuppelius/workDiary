@@ -15,7 +15,7 @@
         </x-slot:actions>
 
         {{-- Ansicht-Umschaltung: Status <-> Mitarbeiter --}}
-        @php $baseQuery = request()->only(['from', 'to', 'user', 'status']); @endphp
+        @php $baseQuery = request()->only(['from', 'to', 'user', 'status', 'priority']); @endphp
         <x-tab-nav :items="[
             ['route' => 'dispatch.board', 'params' => array_merge($baseQuery, ['group' => 'status']),
              'active' => $groupBy === 'status', 'icon' => 'view_column', 'label' => __('Nach Status')],
@@ -31,6 +31,14 @@
                     <option value="">{{ __('alle') }}</option>
                     @foreach ($statusOptions as $option)
                         <option value="{{ $option->value }}" @selected($selectedStatus === $option)>{{ $option->label() }}</option>
+                    @endforeach
+                </select>
+            </x-filter-field>
+            <x-filter-field :label="__('Priorität')" for="board-priority">
+                <select id="board-priority" name="priority" class="select select-bordered select-sm">
+                    <option value="">{{ __('alle') }}</option>
+                    @foreach ($priorityOptions as $option)
+                        <option value="{{ $option->value }}" @selected($selectedPriority === $option)>{{ $option->label() }}</option>
                     @endforeach
                 </select>
             </x-filter-field>

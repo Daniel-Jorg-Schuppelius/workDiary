@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Manufacturing;
 
 use App\Models\{ManufacturingOrder, ManufacturingOrderReport};
-use CommonToolkit\Helper\Data\NumberHelper;
+use App\Support\DecimalQty;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -37,16 +37,16 @@ class ManufacturingReportService {
         ?string $note = null,
         bool $receiveGood = true,
     ): ManufacturingOrderReport {
-        $good = $this->positive($goodQty);
-        $scrap = $this->positive($scrapQty);
+        $good = DecimalQty::positive($goodQty);
+        $scrap = DecimalQty::positive($scrapQty);
 
         return DB::transaction(function () use ($order, $producedQty, $good, $scrap, $reworkQty, $reportedBy, $note, $receiveGood): ManufacturingOrderReport {
             /** @var ManufacturingOrderReport $report */
             $report = $order->reports()->create([
-                'produced_qty' => $this->positive($producedQty),
+                'produced_qty' => DecimalQty::positive($producedQty),
                 'good_qty' => $good,
                 'scrap_qty' => $scrap,
-                'rework_qty' => $this->positive($reworkQty),
+                'rework_qty' => DecimalQty::positive($reworkQty),
                 'note' => $note,
                 'reported_by' => $reportedBy,
                 'reported_at' => Carbon::now(),
@@ -63,15 +63,5 @@ class ManufacturingReportService {
 
             return $report;
         });
-    }
-
-    /** @return numeric-string */
-    private function positive(string $value): string {
-        $value = NumberHelper::normalizeDecimalString($value);
-        if ($value === '' || ! is_numeric($value)) {
-            return '0';
-        }
-
-        return bccomp($value, '0', self::SCALE) < 0 ? bcmul($value, '-1', self::SCALE) : $value;
     }
 }

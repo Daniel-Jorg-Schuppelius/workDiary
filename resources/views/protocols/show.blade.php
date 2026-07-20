@@ -99,6 +99,15 @@
                         <td class="text-sm text-base-content/70">{{ $item->note ?? '—' }}</td>
                         <td class="text-sm tabular-nums">{{ $item->measured_at?->fdatetime() ?? '—' }}</td>
                     </tr>
+                    @php($canManagePhotos = auth()->user()?->can('update', $protocol) && $protocol->status->isEditable())
+                    @if ($item->photos->isNotEmpty() || $canManagePhotos)
+                        {{-- Vollaudit 2026-07 (H7): Foto-Strip je Punkt (MVP-023 §3). --}}
+                        <tr>
+                            <td colspan="4" class="bg-base-200/40">
+                                <x-photo-strip :item="$item" :can-manage="(bool) $canManagePhotos" />
+                            </td>
+                        </tr>
+                    @endif
                     @foreach ($item->children as $child)
                         <tr>
                             <td class="pl-8 text-sm">{{ $child->label }}</td>
@@ -129,6 +138,39 @@
                     @endforeach
                 </ul>
             @endif
+
+            {{-- Externe Signatur-Links (Feature 012 MVP; Vollaudit 2026-07, M6):
+                 offen/eingelöst/abgelaufen mit Widerruf für offene Links. --}}
+            @if ($protocol->signatureTokens->isNotEmpty())
+                <div class="mt-3 border-t border-base-300 pt-2">
+                    <p class="mb-1 text-xs font-semibold uppercase tracking-wider text-base-content/50">{{ __('protocol.signature.tokenList') }}</p>
+                    <ul class="divide-y divide-base-200 text-sm">
+                        @foreach ($protocol->signatureTokens as $token)
+                            <li class="flex items-center justify-between gap-2 py-1.5">
+                                <div class="min-w-0">
+                                    <span>{{ $token->signer_name ?? $token->signer_email ?? __('protocol.signature.externalLink') }}</span>
+                                    <span class="text-base-content/60">· {{ $token->expires_at->fdatetime() }}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    @if ($token->used_at !== null)
+                                        <x-status-badge tone="success" size="xs">{{ __('protocol.signature.tokenUsed') }}</x-status-badge>
+                                    @elseif (! $token->expires_at->isFuture())
+                                        <x-status-badge tone="neutral" size="xs">{{ __('protocol.signature.tokenExpired') }}</x-status-badge>
+                                    @else
+                                        <x-status-badge tone="info" size="xs">{{ __('protocol.signature.tokenOpen') }}</x-status-badge>
+                                        @can(\App\Enums\User\Permission::ProtocolSignatureRequest->value)
+                                            <form method="POST" action="{{ route('protocols.signature-tokens.destroy', [$protocol, $token]) }}">
+                                                @csrf @method('DELETE')
+                                                <x-icon-btn icon="link_off" tone="ghost" size="xs" type="submit" :label="__('protocol.signature.revoke')" />
+                                            </form>
+                                        @endcan
+                                    @endif
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
         </x-card>
 
         <x-attachments-section :attachments="$protocol->attachments" />
@@ -136,6 +178,9 @@
 
     {{-- Externe Beteiligte (Feature 033, Rang 28): Einladen/Widerrufen je Protokoll. --}}
     @include('external-participants._panel', ['subject' => $protocol, 'externalType' => 'protocol'])
+
+    {{-- Vollaudit 2026-07 (M12): Kommunikationsnotizen am Protokoll (Spec §5). --}}
+    @include('communication-notes._panel', ['notable' => $protocol, 'notableKind' => 'protocol'])
 
     <x-card :title="__('Verlauf')" icon="history" :count="$protocol->events->count()">
         @if ($protocol->events->isEmpty())

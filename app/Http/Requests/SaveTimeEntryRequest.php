@@ -10,12 +10,12 @@
 
 namespace App\Http\Requests;
 
-use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Support\Tz;
+use App\Http\Requests\Concerns\{DecodesSqidInputs, ParsesOrgLocalDateTimes};
 use Illuminate\Validation\Rule;
 
 class SaveTimeEntryRequest extends BaseFormRequest {
     use DecodesSqidInputs;
+    use ParsesOrgLocalDateTimes;
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
@@ -74,13 +74,9 @@ class SaveTimeEntryRequest extends BaseFormRequest {
 
         // Die datetime-local-Eingaben (Wanduhrzeit ohne Zeitzone) werden in der
         // aktiven Anzeige-Zeitzone interpretiert und zur Speicherung nach UTC
-        // umgerechnet.
-        foreach (['started_at', 'ended_at'] as $key) {
-            $value = $this->input($key);
-            if (is_string($value) && $value !== '') {
-                $this->merge([$key => Tz::parse($value)->format('Y-m-d H:i:s')]);
-            }
-        }
+        // umgerechnet. Vollaudit 2026-07 (N2): über das gemeinsame Bauteil —
+        // ungültige Eingaben meldet die 'date'-Regel statt eines 500ers.
+        $this->mergeOrgLocalToUtc(['started_at', 'ended_at']);
     }
 
     /** @return array<string, string> */

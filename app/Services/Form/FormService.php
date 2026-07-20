@@ -47,8 +47,36 @@ class FormService {
             'description' => $this->normalizeDescription($attributes['description'] ?? null),
             'status' => FormTemplateStatus::Draft->value,
             'fields' => $fields,
+            // Gültigkeit + Zuordnung (Feature 032 MVP; Vollaudit 2026-07, M11).
+            'valid_from' => $attributes['valid_from'] ?? null,
+            'valid_until' => $attributes['valid_until'] ?? null,
+            'target' => $this->normalizeTarget($attributes),
             'created_by_user_id' => $creator->id,
         ]));
+    }
+
+    /**
+     * Zuordnung aus Formular-Sqids → JSON-Target (M11); leere Auswahl = null.
+     *
+     * @param  array<string, mixed>  $attributes
+     * @return array{entry_type_id?: int, customer_id?: int}|null
+     */
+    private function normalizeTarget(array $attributes): ?array {
+        $target = [];
+        if (($attributes['target_entry_type'] ?? '') !== '') {
+            $id = \App\Support\Sqid::decodeOrNumeric(\App\Models\EntryType::class, (string) $attributes['target_entry_type']);
+            if ($id !== null) {
+                $target['entry_type_id'] = $id;
+            }
+        }
+        if (($attributes['target_customer'] ?? '') !== '') {
+            $id = \App\Support\Sqid::decodeOrNumeric(\App\Models\Customer::class, (string) $attributes['target_customer']);
+            if ($id !== null) {
+                $target['customer_id'] = $id;
+            }
+        }
+
+        return $target === [] ? null : $target;
     }
 
     /**
@@ -69,6 +97,14 @@ class FormService {
         }
         if (array_key_exists('fields', $attributes)) {
             $payload['fields'] = FormFieldDefinition::normalize((array) $attributes['fields']);
+        }
+        // Gültigkeit + Zuordnung (M11): nur ändern, wenn die Felder mitkommen.
+        if (array_key_exists('valid_from', $attributes) || array_key_exists('valid_until', $attributes)) {
+            $payload['valid_from'] = $attributes['valid_from'] ?? null;
+            $payload['valid_until'] = $attributes['valid_until'] ?? null;
+        }
+        if (array_key_exists('target_entry_type', $attributes) || array_key_exists('target_customer', $attributes)) {
+            $payload['target'] = $this->normalizeTarget($attributes);
         }
 
         return DB::transaction(function () use ($template, $actor, $payload): FormTemplate {

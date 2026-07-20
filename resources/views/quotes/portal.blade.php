@@ -40,9 +40,8 @@
         <div class="alert alert-error">{{ session('error') }}</div>
     @endif
 
-    <div class="rounded-box bg-base-100 p-4 shadow overflow-x-auto">
-        <table class="table table-sm">
-            <thead>
+    <x-table>
+        <x-slot:head>
                 <tr>
                     <th>#</th>
                     <th>{{ __('Beschreibung') }}</th>
@@ -50,8 +49,10 @@
                     <th class="text-right">{{ __('Einzelpreis') }}</th>
                     <th>{{ __('Art') }}</th>
                 </tr>
-            </thead>
-            <tbody>
+        </x-slot:head>
+        <x-slot:foot>
+                <tr><td colspan="3" class="text-right font-bold">{{ __('Gesamt (netto zzgl. USt.)') }}</td><td class="text-right font-bold" colspan="2">{{ number_format((float) $quote->subtotal, 2, ',', '.') }} EUR</td></tr>
+        </x-slot:foot>
                 @foreach ($quote->items as $item)
                     <tr>
                         <td>{{ $item->position }}</td>
@@ -61,12 +62,7 @@
                         <td>{{ $item->optional ? __('Option') : __('Pflicht') }}</td>
                     </tr>
                 @endforeach
-            </tbody>
-            <tfoot>
-                <tr><td colspan="3" class="text-right font-bold">{{ __('Gesamt (netto zzgl. USt.)') }}</td><td class="text-right font-bold" colspan="2">{{ number_format((float) $quote->subtotal, 2, ',', '.') }} EUR</td></tr>
-            </tfoot>
-        </table>
-    </div>
+    </x-table>
 
     @if ($quote->terms)
         <div class="rounded-box bg-base-100 p-4 shadow">

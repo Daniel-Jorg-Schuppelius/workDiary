@@ -31,6 +31,24 @@ class ImportControllerTest extends TestCase {
             ->assertForbidden();
     }
 
+    /** Vollaudit 2026-07 (N8): CSV-Mustervorlage je Entität aus Spec::columns(). */
+    public function test_template_download_contains_headers_and_example_row(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin.imports.template', ['entity' => 'customers']))
+            ->assertOk()
+            ->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+
+        $csv = (string) $response->getContent();
+        $this->assertStringContainsString('name', $csv);
+        $this->assertStringContainsString(__('import.template.example_required'), $csv);
+
+        $this->actingAs($admin)
+            ->get(route('admin.imports.template', ['entity' => 'gibts-nicht']))
+            ->assertNotFound();
+    }
+
     public function test_admin_sees_index_with_runs(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
 

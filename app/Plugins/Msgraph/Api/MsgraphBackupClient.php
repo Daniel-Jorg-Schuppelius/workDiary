@@ -158,60 +158,45 @@ class MsgraphBackupClient {
 
     /** Resumable Upload einer lokalen Datei; verifiziert die Remote-Größe. */
     public function uploadPart(string $localPath, string $remoteName): string {
-        $size = filesize($localPath);
-        $in = @fopen($localPath, 'rb');
-        if ($in === false || $size === false) {
-            throw new RuntimeException("Backup-Teil nicht lesbar: {$localPath}");
+        // Gemeinsame Chunk-Leseschleife (Vollaudit 2026-07, N31); Upload-
+        // Session und 202-Semantik bleiben Graph-spezifisch.
+        $size = \App\Plugins\Support\Backup\ChunkedFileReader::size($localPath);
+
+        $session = $this->api->postJson($this->itemUrl(trim($remoteName, '/')) . ':/createUploadSession', [
+            'item' => ['@microsoft.graph.conflictBehavior' => 'replace'],
+        ]);
+        $uploadUrl = (string) $session->json('uploadUrl', '');
+        if (!$session->successful() || $uploadUrl === '') {
+            throw new RuntimeException('Graph createUploadSession fehlgeschlagen (HTTP ' . $session->status() . ').');
         }
 
-        try {
-            $session = $this->api->postJson($this->itemUrl(trim($remoteName, '/')) . ':/createUploadSession', [
-                'item' => ['@microsoft.graph.conflictBehavior' => 'replace'],
+        $itemId = '';
+        $remoteSize = -1;
+        \App\Plugins\Support\Backup\ChunkedFileReader::each($localPath, self::CHUNK_SIZE, function (string $chunk, int $offset) use ($uploadUrl, $size, &$itemId, &$remoteSize): void {
+            $last = $offset + strlen($chunk) - 1;
+            // Session-URL ist selbst-autorisierend — Chunk-PUTs OHNE Auth-Header.
+            $response = $this->uploadApi->requestResponse('put', $uploadUrl, [
+                'headers' => [
+                    'Content-Length' => (string) strlen($chunk),
+                    'Content-Range' => sprintf('bytes %d-%d/%d', $offset, $last, $size),
+                ],
+                'body' => $chunk,
             ]);
-            $uploadUrl = (string) $session->json('uploadUrl', '');
-            if (!$session->successful() || $uploadUrl === '') {
-                throw new RuntimeException('Graph createUploadSession fehlgeschlagen (HTTP ' . $session->status() . ').');
+            // Zwischenchunks: 202 Accepted; letzter Chunk: 200/201 mit Item.
+            if (!$response->successful() && $response->status() !== 202) {
+                throw new RuntimeException('Graph-Chunk-Upload fehlgeschlagen (HTTP ' . $response->status() . ').');
             }
-
-            $offset = 0;
-            $itemId = '';
-            $remoteSize = -1;
-            while (!feof($in)) {
-                $chunk = fread($in, self::CHUNK_SIZE);
-                if ($chunk === false) {
-                    throw new RuntimeException("Lesefehler in {$localPath}.");
-                }
-                if ($chunk === '') {
-                    continue;
-                }
-                $last = $offset + strlen($chunk) - 1;
-                // Session-URL ist selbst-autorisierend — Chunk-PUTs OHNE Auth-Header.
-                $response = $this->uploadApi->requestResponse('put', $uploadUrl, [
-                    'headers' => [
-                        'Content-Length' => (string) strlen($chunk),
-                        'Content-Range' => sprintf('bytes %d-%d/%d', $offset, $last, $size),
-                    ],
-                    'body' => $chunk,
-                ]);
-                // Zwischenchunks: 202 Accepted; letzter Chunk: 200/201 mit Item.
-                if (!$response->successful() && $response->status() !== 202) {
-                    throw new RuntimeException('Graph-Chunk-Upload fehlgeschlagen (HTTP ' . $response->status() . ').');
-                }
-                if ($response->successful() && $response->json('id') !== null) {
-                    $itemId = (string) $response->json('id');
-                    $remoteSize = (int) $response->json('size', -1);
-                }
-                $offset += strlen($chunk);
+            if ($response->successful() && $response->json('id') !== null) {
+                $itemId = (string) $response->json('id');
+                $remoteSize = (int) $response->json('size', -1);
             }
+        });
 
-            if ($itemId === '' || $remoteSize !== (int) $size) {
-                throw new RuntimeException("Graph-Upload unvollständig: remote {$remoteSize} B, lokal {$size} B.");
-            }
-
-            return $itemId;
-        } finally {
-            fclose($in);
+        if ($itemId === '' || $remoteSize !== $size) {
+            throw new RuntimeException("Graph-Upload unvollständig: remote {$remoteSize} B, lokal {$size} B.");
         }
+
+        return $itemId;
     }
 
     public function download(string $remoteRef): StreamInterface {

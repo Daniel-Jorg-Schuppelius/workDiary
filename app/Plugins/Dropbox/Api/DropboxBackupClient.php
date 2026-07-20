@@ -147,55 +147,40 @@ class DropboxBackupClient {
 
     /** Resumable Upload einer lokalen Datei; verifiziert die Remote-Größe. */
     public function uploadPart(string $localPath, string $remoteName): string {
-        $size = filesize($localPath);
-        $in = @fopen($localPath, 'rb');
-        if ($in === false || $size === false) {
-            throw new RuntimeException("Backup-Teil nicht lesbar: {$localPath}");
+        // Gemeinsame Chunk-Leseschleife (Vollaudit 2026-07, N31); Session-/
+        // append-/finish-Semantik bleibt Dropbox-spezifisch.
+        $size = \App\Plugins\Support\Backup\ChunkedFileReader::size($localPath);
+
+        $start = $this->contentCall('/files/upload_session/start', ['close' => false], '');
+        $sessionId = (string) $start->json('session_id', '');
+        if (!$start->successful() || $sessionId === '') {
+            throw new RuntimeException('Dropbox upload_session/start fehlgeschlagen (HTTP ' . $start->status() . ').');
         }
 
-        try {
-            $start = $this->contentCall('/files/upload_session/start', ['close' => false], '');
-            $sessionId = (string) $start->json('session_id', '');
-            if (!$start->successful() || $sessionId === '') {
-                throw new RuntimeException('Dropbox upload_session/start fehlgeschlagen (HTTP ' . $start->status() . ').');
-            }
-
-            $offset = 0;
-            while (!feof($in)) {
-                $chunk = fread($in, self::CHUNK_SIZE);
-                if ($chunk === false) {
-                    throw new RuntimeException("Lesefehler in {$localPath}.");
-                }
-                if ($chunk === '') {
-                    continue;
-                }
-                $append = $this->contentCall('/files/upload_session/append_v2', [
-                    'cursor' => ['session_id' => $sessionId, 'offset' => $offset],
-                    'close' => false,
-                ], $chunk);
-                if (!$append->successful()) {
-                    throw new RuntimeException('Dropbox upload_session/append fehlgeschlagen (HTTP ' . $append->status() . ').');
-                }
-                $offset += strlen($chunk);
-            }
-
-            $finish = $this->contentCall('/files/upload_session/finish', [
+        $total = \App\Plugins\Support\Backup\ChunkedFileReader::each($localPath, self::CHUNK_SIZE, function (string $chunk, int $offset) use ($sessionId): void {
+            $append = $this->contentCall('/files/upload_session/append_v2', [
                 'cursor' => ['session_id' => $sessionId, 'offset' => $offset],
-                'commit' => ['path' => '/' . ltrim($remoteName, '/'), 'mode' => 'overwrite', 'mute' => true],
-            ], '');
-            if (!$finish->successful()) {
-                throw new RuntimeException('Dropbox upload_session/finish fehlgeschlagen (HTTP ' . $finish->status() . ').');
+                'close' => false,
+            ], $chunk);
+            if (!$append->successful()) {
+                throw new RuntimeException('Dropbox upload_session/append fehlgeschlagen (HTTP ' . $append->status() . ').');
             }
+        });
 
-            $remoteSize = (int) $finish->json('size', -1);
-            if ($remoteSize !== (int) $size) {
-                throw new RuntimeException("Dropbox-Upload unvollständig: remote {$remoteSize} B, lokal {$size} B.");
-            }
-
-            return (string) ($finish->json('path_display') ?? '/' . ltrim($remoteName, '/'));
-        } finally {
-            fclose($in);
+        $finish = $this->contentCall('/files/upload_session/finish', [
+            'cursor' => ['session_id' => $sessionId, 'offset' => $total],
+            'commit' => ['path' => '/' . ltrim($remoteName, '/'), 'mode' => 'overwrite', 'mute' => true],
+        ], '');
+        if (!$finish->successful()) {
+            throw new RuntimeException('Dropbox upload_session/finish fehlgeschlagen (HTTP ' . $finish->status() . ').');
         }
+
+        $remoteSize = (int) $finish->json('size', -1);
+        if ($remoteSize !== $size) {
+            throw new RuntimeException("Dropbox-Upload unvollständig: remote {$remoteSize} B, lokal {$size} B.");
+        }
+
+        return (string) ($finish->json('path_display') ?? '/' . ltrim($remoteName, '/'));
     }
 
     public function download(string $remoteRef): StreamInterface {

@@ -47,10 +47,9 @@ class SupportAccessAuditController extends Controller {
         $from = $this->parseDate($filters['from']);
         $to = $this->parseDate($filters['to']);
 
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'created_at';
-        $dir = $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc';
+        // Whitelist-Auflösung zentral (C21; Vollaudit 2026-07, N26) — bei
+        // ungültigem Key fallen Key UND Richtung auf die Defaults zurück.
+        [$sort, $dir] = \App\Support\SortableQuery::resolve($request, self::ALLOWED_SORTS, 'created_at');
 
         $query = AuditLog::query()
             ->where('organization_id', $organization->id)

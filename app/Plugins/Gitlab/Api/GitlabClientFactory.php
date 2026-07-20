@@ -34,16 +34,15 @@ class GitlabClientFactory {
         }
 
         $baseUrl = (string) $config['base_url'];
-        $scheme = strtolower((string) parse_url($baseUrl, PHP_URL_SCHEME));
-        if (! in_array($scheme, ['http', 'https'], true) || (string) parse_url($baseUrl, PHP_URL_HOST) === '') {
-            throw new RuntimeException('GitLab: Die Instanz-URL ist keine gültige http(s)-Adresse.');
-        }
-        if (! $config['allow_private_network'] && ! UrlSafety::isPubliclyRoutableHttpUrl($baseUrl)) {
-            throw new RuntimeException(
-                'GitLab: Die Instanz-URL zeigt auf eine private/interne Adresse. '
-                . 'Für eine On-Premise-Instanz im eigenen Netz muss die Freigabe privater Adressen ausdrücklich aktiviert werden.'
-            );
-        }
+        // Gemeinsamer Guard (Vollaudit 2026-07, M48) — schließt zugleich den
+        // hier zuvor fehlenden FILTER_VALIDATE_URL-Check (belegte Drift).
+        UrlSafety::assertAcceptableExternalBaseUrl(
+            $baseUrl,
+            (bool) $config['allow_private_network'],
+            'GitLab',
+            'Instanz-URL',
+            'Für eine On-Premise-Instanz im eigenen Netz muss die Freigabe privater Adressen ausdrücklich aktiviert werden.',
+        );
 
         return new GitlabClient(
             app(PluginHttpFactory::class),

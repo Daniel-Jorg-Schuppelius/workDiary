@@ -13,7 +13,7 @@ namespace App\Services\Isms;
 use App\Enums\Isms\{AssessmentKind, AssessmentStatus, RiskStatus};
 use App\Models\Isms\{IsmsControl, IsmsRisk, IsmsRiskAssessment};
 use App\Models\User;
-use App\Services\Isms\Concerns\AssignsSequentialNo;
+use App\Services\Isms\Concerns\{AssertsIsmsTransition, AssignsSequentialNo};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -53,6 +53,9 @@ use Illuminate\Validation\ValidationException;
  * gibt es bewusst nicht (Lebenszyklus trivial, analog Wissensbasis).
  */
 class RiskService {
+    use \App\Services\Isms\Concerns\SyncsScopedRelations;
+    use AssertsIsmsTransition;
+
     use AssignsSequentialNo;
 
     public function __construct(
@@ -88,7 +91,7 @@ class RiskService {
             ]);
 
             if (array_key_exists('control_ids', $attributes)) {
-                $this->syncControls($risk, $this->normalizeControlIds($attributes['control_ids']));
+                $this->syncControls($risk, $attributes['control_ids']);
             }
 
             // Direktbewertung: die Erst-Bewertung aus dem Dialog wird als
@@ -131,7 +134,7 @@ class RiskService {
             ]);
 
             if (array_key_exists('control_ids', $attributes)) {
-                $this->syncControls($risk, $this->normalizeControlIds($attributes['control_ids']));
+                $this->syncControls($risk, $attributes['control_ids']);
             }
 
             if ($assessmentChanged) {
@@ -156,14 +159,8 @@ class RiskService {
             return $risk;
         }
 
-        if (! in_array($target, $risk->status->allowedTransitions(), true)) {
-            throw ValidationException::withMessages([
-                'status' => __('isms.error.invalid_transition', [
-                    'from' => $risk->status->label(),
-                    'to' => $target->label(),
-                ]),
-            ]);
-        }
+        // Gemeinsamer ISMS-Guard (Vollaudit 2026-07, M44).
+        $this->assertIsmsTransition($risk->status, $target);
 
         if ($target === RiskStatus::Accepted) {
             $latestNet = $risk->latestApprovedNetAssessment();
@@ -311,27 +308,10 @@ class RiskService {
      * dadurch nicht verknüpft werden (Pivot trägt bewusst keine eigene
      * organization_id, siehe Migration).
      *
-     * @param  list<int|string>  $controlIds
+     * Gemeinsamer org-gescopter Sync (Vollaudit 2026-07, N36).
      */
-    public function syncControls(IsmsRisk $risk, array $controlIds): void {
-        $ids = IsmsControl::query()
-            ->whereIn('id', array_map(intval(...), $controlIds))
-            ->pluck('id')
-            ->all();
-
-        $risk->controls()->sync($ids);
-    }
-
-    /**
-     * Normalisiert rohe Request-Werte zu einer ID-Liste (nur int/string).
-     *
-     * @return list<int|string>
-     */
-    private function normalizeControlIds(mixed $value): array {
-        return array_values(array_filter(
-            (array) $value,
-            static fn(mixed $id): bool => is_int($id) || is_string($id),
-        ));
+    public function syncControls(IsmsRisk $risk, mixed $controlIds): void {
+        $this->syncScopedIds($risk->controls(), IsmsControl::class, $controlIds);
     }
 
     /**

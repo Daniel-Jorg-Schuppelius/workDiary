@@ -36,10 +36,10 @@
                     </form>
                 @endcan
             </div>
-            <div class="overflow-x-auto rounded-box border border-base-300">
-                <table class="table table-sm">
-                    <thead><tr><th>{{ __('Version') }}</th><th>{{ __('Notiz') }}</th><th>{{ __('Freigabe') }}</th><th></th></tr></thead>
-                    <tbody>
+            <x-table>
+                <x-slot:head>
+<tr><th>{{ __('Version') }}</th><th>{{ __('Notiz') }}</th><th>{{ __('Freigabe') }}</th><th></th></tr>
+                </x-slot:head>
                         @foreach ($versions as $v)
                             <tr>
                                 <td>v{{ $v->version_no }}</td>
@@ -57,9 +57,7 @@
                                 </td>
                             </tr>
                         @endforeach
-                    </tbody>
-                </table>
-            </div>
+            </x-table>
         </x-card>
 
         @can('update', $activity)

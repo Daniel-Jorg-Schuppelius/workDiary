@@ -32,10 +32,9 @@ class ServiceTicketController extends Controller {
         $statusFilter = $request->string('status')->toString();
         $priorityFilter = $request->string('priority')->toString();
         $assigneeFilter = $request->string('assignee')->toString();
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'reported_at';
-        $dir = $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc';
+        // Whitelist-Auflösung zentral (C21; Vollaudit 2026-07, N26) — bei
+        // ungültigem Key fallen Key UND Richtung auf die Defaults zurück.
+        [$sort, $dir] = \App\Support\SortableQuery::resolve($request, self::ALLOWED_SORTS, 'reported_at');
 
         $query = ServiceTicket::query()
             ->with(['customer:id,name', 'asset:id,name,asset_no', 'assignedTo:id,name'])
@@ -144,6 +143,9 @@ class ServiceTicketController extends Controller {
 
         $data = $request->validate([
             'status' => ['required', 'string', 'in:' . implode(',', array_column(ServiceTicketStatus::cases(), 'value'))],
+            // Vollaudit 2026-07 (M30): Abschlusscode + Lösungszusammenfassung beim Schließen.
+            'close_code' => ['nullable', 'string', 'in:' . implode(',', array_column(\App\Enums\ServiceTicket\TicketCloseCode::cases(), 'value'))],
+            'resolution_summary' => ['nullable', 'string', 'max:5000'],
         ]);
 
         $user = $request->user();
@@ -151,8 +153,14 @@ class ServiceTicketController extends Controller {
             abort(403);
         }
         $target = ServiceTicketStatus::from($data['status']);
+        $isClosing = in_array($target, [ServiceTicketStatus::Closed, ServiceTicketStatus::Done], true);
         if ($target === ServiceTicketStatus::Closed) {
             Gate::authorize('close', $ticket);
+        }
+
+        // Vollaudit 2026-07 (M30): Abschlusscode ist beim Schließen Pflicht.
+        if ($isClosing && empty($data['close_code'])) {
+            return back()->withErrors(['close_code' => __('Beim Abschluss ist ein Abschlusscode erforderlich.')]);
         }
 
         try {
@@ -161,9 +169,52 @@ class ServiceTicketController extends Controller {
             return back()->withErrors(['status' => __($e->getMessage())]);
         }
 
+        if ($isClosing) {
+            $ticket->forceFill([
+                'close_code' => $data['close_code'],
+                'resolution_summary' => $data['resolution_summary'] ?? $ticket->resolution_summary,
+            ])->save();
+            $ticket->audit('service_ticket.closed', ['close_code' => $data['close_code']]);
+        }
+
         return redirect()
             ->route('service-tickets.show', $ticket)
             ->with('success', __('Ticket-Status aktualisiert.'));
+    }
+
+    /**
+     * Incident-Klassifikation (Vollaudit 2026-07, M29): Impact/Urgency →
+     * Priorität aus der konfigurierbaren Matrix (MVP-155), optionaler Override
+     * mit Grund; dazu Workaround pflegen. Service inkl. Audit existiert bereits.
+     */
+    public function classify(Request $request, ServiceTicket $ticket, \App\Services\ServiceTicket\TicketIncidentService $incidents): RedirectResponse {
+        Gate::authorize('update', $ticket);
+
+        $data = $request->validate([
+            'impact' => ['required', 'integer', 'in:1,2,3'],
+            'urgency' => ['required', 'integer', 'in:1,2,3'],
+            'priority_override' => ['nullable', 'integer', 'in:1,2,3'],
+            'workaround' => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        $user = $request->user();
+        if (! $user instanceof User) {
+            abort(403);
+        }
+
+        $incidents->classify(
+            $ticket,
+            \App\Enums\ServiceTicket\TicketSeverity::from((int) $data['impact']),
+            \App\Enums\ServiceTicket\TicketSeverity::from((int) $data['urgency']),
+            isset($data['priority_override']) ? ServiceTicketPriority::from((int) $data['priority_override']) : null,
+            $user,
+        );
+
+        if (array_key_exists('workaround', $data)) {
+            $ticket->forceFill(['workaround' => $data['workaround']])->save();
+        }
+
+        return back()->with('success', __('Ticket klassifiziert.'));
     }
 
     public function assign(Request $request, ServiceTicket $ticket): RedirectResponse {

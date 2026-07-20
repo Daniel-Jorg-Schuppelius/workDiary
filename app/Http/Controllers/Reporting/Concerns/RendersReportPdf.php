@@ -34,10 +34,9 @@ trait RendersReportPdf {
     abstract protected function auditExport(Request $request, string $reportCode, string $format, array $filters): void;
 
     /**
-     * @param  string  $view
-     * @phpstan-param  view-string  $view
      * @param  array<string, mixed>  $data
      * @param  array<string, mixed>  $filters
+     * @phpstan-param  view-string  $view
      */
     protected function pdfDownload(string $view, array $data, string $filename, string $orientation = 'portrait', ?Request $request = null, ?string $reportCode = null, array $filters = []): SymfonyResponse {
         if ($request !== null && $reportCode !== null) {

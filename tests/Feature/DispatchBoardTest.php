@@ -179,6 +179,52 @@ class DispatchBoardTest extends TestCase {
         $this->assertSame('#dc2626', $markers[0]['color']);
     }
 
+    // ─── Terminmodus-Layer + Popup-Link + Prio-Filter (Vollaudit M13/M14) ───
+
+    public function test_map_markers_separate_mode_layers_and_link_to_entry(): void {
+        $fixed = $this->entry(['address_lat' => 52.52, 'address_lng' => 13.40]);
+        // Window-Einträge matcht der modus-bewusste Zeitraumfilter über die Fenstergrenzen.
+        $window = $this->entry([
+            'mode' => Mode::Window->value,
+            'window_start_date' => '2026-06-29',
+            'window_end_date' => '2026-07-03',
+            'address_lat' => 50.11,
+            'address_lng' => 8.68,
+        ]);
+        $backlog = $this->entry(['mode' => Mode::Backlog->value, 'address_lat' => 48.13, 'address_lng' => 11.58]);
+
+        $response = $this->actingAs($this->dispatcher())
+            ->get(route('dispatch.map', ['from' => '2026-07-01', 'to' => '2026-07-01']))
+            ->assertOk();
+
+        $markers = collect($response->viewData('markers'));
+        $byTitle = fn(DiaryEntry $e) => $markers->firstWhere('label', $e->title);
+
+        $this->assertSame('fixed', $byTitle($fixed)['layer']);
+        $this->assertSame('flexible', $byTitle($window)['layer']);
+        $this->assertSame('backlog', $byTitle($backlog)['layer']);
+        $this->assertStringContainsString(route('diary.show', $fixed), $byTitle($fixed)['popup']);
+
+        $layerKeys = array_column($response->viewData('layers'), 'key');
+        $this->assertSame(['risk', 'fixed', 'flexible', 'backlog'], $layerKeys);
+    }
+
+    public function test_priority_filter_restricts_board_and_map(): void {
+        $urgent = $this->entry(['priority' => 'urgent', 'address_lat' => 52.52, 'address_lng' => 13.40]);
+        $this->entry(['priority' => 'normal', 'address_lat' => 48.13, 'address_lng' => 11.58]);
+
+        $map = $this->actingAs($this->dispatcher())
+            ->get(route('dispatch.map', ['from' => '2026-07-01', 'to' => '2026-07-01', 'priority' => 'urgent']))
+            ->assertOk();
+        $this->assertCount(1, $map->viewData('markers'));
+        $this->assertSame($urgent->title, $map->viewData('markers')[0]['label']);
+
+        $board = $this->actingAs($this->dispatcher())
+            ->get(route('dispatch.board', ['from' => '2026-07-01', 'to' => '2026-07-01', 'priority' => 'urgent']))
+            ->assertOk();
+        $this->assertSame(1, $board->viewData('total'));
+    }
+
     // ─── Cross-Org-Isolation ────────────────────────────────────────────────
 
     public function test_board_does_not_expose_foreign_org_entries(): void {

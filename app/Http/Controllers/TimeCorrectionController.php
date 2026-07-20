@@ -40,10 +40,9 @@ class TimeCorrectionController extends Controller {
 
         $statusFilter = (string) $request->input('status', '');
 
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'scope_date';
-        $dir = $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc';
+        // Whitelist-Auflösung zentral (C21; Vollaudit 2026-07, N26) — bei
+        // ungültigem Key fallen Key UND Richtung auf die Defaults zurück.
+        [$sort, $dir] = \App\Support\SortableQuery::resolve($request, self::ALLOWED_SORTS, 'scope_date');
 
         $query = TimeCorrectionRequest::query()
             ->where('organization_id', $user->organization_id)

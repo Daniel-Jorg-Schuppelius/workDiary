@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\HasSqid;
+use App\Models\Concerns\{AppendOnly, HasSqid};
 use Database\Factories\DocumentVersionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -39,6 +39,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $created_at
  */
 class DocumentVersion extends Model {
+    // Append-only jetzt technisch erzwungen statt nur dokumentiert (Vollaudit 2026-07, M52).
+    use AppendOnly;
+
     /** @use HasFactory<DocumentVersionFactory> */
     use HasFactory;
 
@@ -75,14 +78,7 @@ class DocumentVersion extends Model {
     }
 
     public function humanSize(): string {
-        $bytes = (int) $this->size;
-        if ($bytes < 1024) {
-            return $bytes . ' B';
-        }
-        if ($bytes < 1024 * 1024) {
-            return round($bytes / 1024, 1) . ' KB';
-        }
-
-        return round($bytes / (1024 * 1024), 1) . ' MB';
+        // Toolkit-Formatter (Vollaudit 2026-07, N41); >= 1 GB erscheint nun als GB.
+        return \CommonToolkit\Helper\Data\NumberHelper::formatBytes((int) $this->size, 1);
     }
 }

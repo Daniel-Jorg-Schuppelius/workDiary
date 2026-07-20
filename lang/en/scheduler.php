@@ -90,8 +90,13 @@ return [
             'dispatch_reminders' => 'Send event reminders',
             'materialize_recurrences' => 'Materialize recurring events',
         ],
+        'domain' => [
+            'sync' => 'Domain inventory sync',
+            'events' => 'Fetch domain events',
+        ],
         'easybill' => ['sync' => 'easybill document retrieval'],
         'integration' => ['purge_inbox' => 'Purge integration inbox'],
+        'inventory' => ['cycle_counts' => 'Trigger cycle counts', 'expiring_lots' => 'Best-before monitoring (expiring lots)'],
         'invoicing' => ['recurring' => 'Generate recurring invoice drafts'],
         'jtl' => ['sync' => 'JTL Wawi sync'],
         'lexoffice' => [
@@ -100,6 +105,7 @@ return [
             'sync_vouchers' => 'Sync Lexoffice vouchers',
         ],
         'location' => ['purge_points' => 'Purge raw location points'],
+        'mail' => ['poll' => 'Poll mail intake'],
         'maintenance' => ['scan_due' => 'Check maintenance plans for due work'],
         'notifications' => ['scan_deadlines' => 'Scan deadlines and notify'],
         'openproject' => [

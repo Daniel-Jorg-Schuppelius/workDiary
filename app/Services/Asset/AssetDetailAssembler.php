@@ -130,6 +130,9 @@ class AssetDetailAssembler {
             'defects' => $defects,
             'isCheckedOut' => $currentAssignment !== null,
             'isDefectBlocked' => $this->assignments->isBlocked($asset),
+            // Vollaudit 2026-07 (H3): aktive D12-Sperren sind auf der Akte
+            // sichtbar und blenden den Ausgeben-Button aus (statusSummary).
+            'activeBlocks' => $visibilitySummary['active_blocks'],
             'canCheckout' => Gate::forUser($user)->allows('checkout', $asset),
             'canManageDefects' => Gate::forUser($user)->allows('manageDefects', $asset),
             'canUnblock' => Gate::forUser($user)->allows('update', $asset),

@@ -11,7 +11,7 @@
 namespace App\Enums\Isms;
 
 use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
 /**
  * Status einer Auditfeststellung (Feature 046, Inkrement C): open →
@@ -21,7 +21,7 @@ use App\Enums\Contracts\HasLabel;
  * (closed) ist nur mit erledigten/wirksamen Korrekturmaßnahmen zulässig
  * ({@see \App\Services\Isms\AuditService::transitionFinding()}).
  */
-enum FindingStatus: string implements HasLabel {
+enum FindingStatus: string implements HasLabel, HasStatusTransitions {
     use HasOptions;
 
     case Open = 'open';

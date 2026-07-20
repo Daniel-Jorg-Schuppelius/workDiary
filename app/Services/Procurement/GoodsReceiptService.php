@@ -15,7 +15,7 @@ namespace App\Services\Procurement;
 use App\Enums\Procurement\PurchaseOrderStatus;
 use App\Models\{ArticleVariant, Organization, PurchaseOrder, PurchaseOrderLine, StockMovement, Warehouse};
 use App\Services\Inventory\{InventoryLedger, InventoryValuationManager};
-use CommonToolkit\Helper\Data\NumberHelper;
+use App\Support\DecimalQty;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -31,10 +31,12 @@ class GoodsReceiptService {
     public function __construct(
         private readonly InventoryValuationManager $valuation,
         private readonly InventoryLedger $ledger,
+        private readonly \App\Services\Inventory\LotService $lots,
+        private readonly \App\Services\Inventory\SerialService $serials,
     ) {}
 
-    public function receive(PurchaseOrderLine $line, string $qty, ?string $unitCost = null, ?int $actorUserId = null): StockMovement {
-        $qty = $this->positive($qty);
+    public function receive(PurchaseOrderLine $line, string $qty, ?string $unitCost = null, ?int $actorUserId = null, ?string $lotNo = null, ?string $bestBefore = null, ?string $serialNo = null): StockMovement {
+        $qty = DecimalQty::positive($qty);
         if (bccomp($qty, '0', self::SCALE) <= 0) {
             throw new RuntimeException('Wareneingangsmenge muss positiv sein.');
         }
@@ -52,17 +54,46 @@ class GoodsReceiptService {
             throw new RuntimeException('Bestellzeile ohne bestandsführende Variante/Lager.');
         }
 
+        // Vollaudit 2026-07 (M19, Ausbaustufe E2): chargen-/serienpflichtige
+        // Artikel dürfen nicht still wie gewöhnlicher Bestand gebucht werden —
+        // ohne Lot-/Serienangabe wird der Wareneingang blockiert (048-Regel).
+        $article = $variant->article;
+        if (($article->batch_required ?? false) && trim((string) $lotNo) === '') {
+            throw new RuntimeException((string) __('inventory.error.batch_required'));
+        }
+        if (($article->serial_required ?? false)) {
+            if (trim((string) $serialNo) === '') {
+                throw new RuntimeException((string) __('inventory.error.serial_required'));
+            }
+            if (bccomp($qty, '1', self::SCALE) !== 0) {
+                throw new RuntimeException((string) __('inventory.error.serial_qty_one'));
+            }
+        }
+
         $cost = $unitCost ?? $line->unit_price ?? '0';
         $organization = Organization::query()->find($order->organization_id);
 
-        return DB::transaction(function () use ($line, $order, $variant, $warehouse, $qty, $cost, $organization, $actorUserId): StockMovement {
+        return DB::transaction(function () use ($line, $order, $variant, $warehouse, $qty, $cost, $organization, $actorUserId, $lotNo, $bestBefore, $serialNo): StockMovement {
             // Bestellzeile gesperrt neu laden: paralleler Wareneingang gegen dieselbe
             // Zeile darf das read-modify-write von received_qty nicht überschreiben.
             $line = PurchaseOrderLine::query()->lockForUpdate()->find($line->id) ?? $line;
 
-            $movement = $organization instanceof Organization
-                ? $this->valuation->forVariant($variant, $organization)->receipt($variant, $warehouse, $qty, (string) $cost, $line->currency->value, $actorUserId, $line)
-                : $this->ledger->finishedGoodReceipt($variant, $warehouse, $qty);
+            if (trim((string) $lotNo) !== '') {
+                // Chargen-Eingang über die FEFO-Schicht (M19): Lot anlegen/finden
+                // und bewertet in die Charge buchen — statt anonymem Bestand.
+                $lot = $this->lots->register($variant, (string) $lotNo, $bestBefore);
+                $movement = $this->lots->receiveIntoLot($variant, $warehouse, $qty, (string) $cost, $lot, $line->currency->value, $actorUserId);
+            } else {
+                $movement = $organization instanceof Organization
+                    ? $this->valuation->forVariant($variant, $organization)->receipt($variant, $warehouse, $qty, (string) $cost, $line->currency->value, $actorUserId, $line)
+                    : $this->ledger->finishedGoodReceipt($variant, $warehouse, $qty);
+            }
+
+            if (trim((string) $serialNo) !== '') {
+                // Serien-Erfassung inkl. Sperrlistenprüfung (captureForReceipt
+                // war zuvor toter Code — Vollaudit 2026-07, M19).
+                $this->serials->captureForReceipt($variant, (string) $serialNo, $warehouse, $actorUserId);
+            }
 
             $line->forceFill(['received_qty' => bcadd($line->received_qty, $qty, self::SCALE)])->save();
             $this->recomputeStatus($order);
@@ -106,15 +137,5 @@ class GoodsReceiptService {
             ->orderByDesc('is_default')
             ->orderBy('id')
             ->first();
-    }
-
-    /** @return numeric-string */
-    private function positive(string $value): string {
-        $value = NumberHelper::normalizeDecimalString($value);
-        if ($value === '' || ! is_numeric($value)) {
-            return '0';
-        }
-
-        return bccomp($value, '0', self::SCALE) < 0 ? bcmul($value, '-1', self::SCALE) : $value;
     }
 }

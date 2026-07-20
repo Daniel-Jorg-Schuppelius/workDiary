@@ -28,6 +28,23 @@ class DesignContext {
         return $this->payload !== null;
     }
 
+    /**
+     * Seitenrand-Defaults (mm) als Single-Source für Renderer UND Preflight
+     * (Vollaudit 2026-07, N35) — Drift zwischen Geometrieprüfung und
+     * @page-CSS wäre ein stiller Layoutfehler.
+     *
+     * @param  array<string, mixed>  $m
+     * @return array{top: float, right: float, bottom: float, left: float}
+     */
+    public static function margins(array $m): array {
+        return [
+            'top' => (float) ($m['top'] ?? 20),
+            'right' => (float) ($m['right'] ?? 20),
+            'bottom' => (float) ($m['bottom'] ?? 20),
+            'left' => (float) ($m['left'] ?? 20),
+        ];
+    }
+
     /** Sichtbarkeit eines Blocks: nur `dynamic` wird von WorkDiary gedruckt. */
     public function show(InformationBlock $block): bool {
         if ($this->payload === null) {

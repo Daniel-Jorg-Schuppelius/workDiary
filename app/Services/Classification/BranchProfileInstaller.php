@@ -66,6 +66,7 @@ class BranchProfileInstaller {
             'procedure_templates' => 0,
             'room_requirement_templates' => 0,
             'dataprotection_requirements' => 0,
+            'qualifications' => 0,
         ];
         $created = $counterTemplate;
         $updated = $counterTemplate;
@@ -516,6 +517,37 @@ class BranchProfileInstaller {
                 'requirement_key' => $key,
             ], $payload));
             $created['dataprotection_requirements']++;
+        }
+
+        // Qualifikationen/Unterweisungen je Gewerk (Feature-MVP „Branchenprofile";
+        // Vollaudit 2026-07, N13): idempotent über (org, name); bestehende
+        // Einträge werden nie überschrieben (Stammdaten-Hoheit beim Nutzer).
+        $qualifications = (array) Arr::get($profile, 'qualifications_seed', []);
+        foreach ($qualifications as $row) {
+            $name = (string) ($row['name'] ?? '');
+            if ($name === '') {
+                continue;
+            }
+
+            $exists = \App\Models\Qualification::query()
+                ->where('organization_id', $organization->id)
+                ->where('name', $name)
+                ->exists();
+            if ($exists) {
+                $skipped['qualifications']++;
+
+                continue;
+            }
+
+            \App\Models\Qualification::query()->create([
+                'organization_id' => $organization->id,
+                'name' => $name,
+                'abbreviation' => $row['abbreviation'] ?? null,
+                'description' => $row['description'] ?? null,
+                'is_active' => true,
+                'created_by' => $actor?->id,
+            ]);
+            $created['qualifications']++;
         }
 
         $installedProfileCode = (string) ($profile['code'] ?? $profileCode);

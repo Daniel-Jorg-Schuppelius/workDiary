@@ -71,4 +71,13 @@ class TimesheetSignatureController extends Controller {
 
         return back()->with('success', __('Magic-Link erzeugt.'));
     }
+
+    /** Magic-Link widerrufen (Feature 012 MVP; Vollaudit 2026-07, M6). */
+    public function revokeMagicLink(Project $project, Timesheet $timesheet): RedirectResponse {
+        Gate::authorize('update', $timesheet);
+
+        $this->signatures->revokeMagicToken($timesheet);
+
+        return back()->with('success', __('Magic-Link wurde widerrufen.'));
+    }
 }

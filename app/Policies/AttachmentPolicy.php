@@ -48,6 +48,13 @@ class AttachmentPolicy {
     }
 
     public function delete(User $user, Attachment $attachment): bool {
+        // Kassenbelege (MVP-414) sind GoBD-append-only: der Beleg gehört zur
+        // Hash-Kette des Eintrags und darf nie entfernt werden (Vollaudit
+        // 2026-07, M37) — auch nicht durch den Uploader.
+        if ($attachment->attachable instanceof \App\Models\CashEntry) {
+            return false;
+        }
+
         return $this->sharesOrganization($user, $attachment) && $this->owns($user, $attachment);
     }
 

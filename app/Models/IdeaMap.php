@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Ideas\IdeaMapVisibility;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, HasTags};
+use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, HasSqid, HasTags};
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
@@ -38,6 +38,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $archived_at
  */
 class IdeaMap extends Model {
+    // Gemeinsames Archiv-Concern statt lokaler isArchived()-Kopie (Vollaudit 2026-07, N51).
+    use Archivable;
     use Auditable;
     use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */
@@ -146,9 +148,5 @@ class IdeaMap extends Model {
     /** @return MorphMany<Comment, $this> */
     public function comments(): MorphMany {
         return $this->morphMany(Comment::class, 'commentable');
-    }
-
-    public function isArchived(): bool {
-        return $this->archived_at !== null;
     }
 }

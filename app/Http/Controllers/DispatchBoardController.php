@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Diary\DispatchStatus;
+use App\Enums\Diary\{DispatchStatus, Mode, Priority};
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\{Customer, User};
@@ -58,6 +58,15 @@ class DispatchBoardController extends Controller {
             ));
         }
 
+        // Vollaudit 2026-07 (M13): Prioritäts-Filter (MVP-Filterliste).
+        $priorityFilter = $this->resolvePriorityFilter($request);
+        if ($priorityFilter !== null) {
+            $items = array_values(array_filter(
+                $items,
+                static fn(array $i): bool => $i['entry']->priority === $priorityFilter,
+            ));
+        }
+
         $groupBy = $request->query('group') === 'employee' ? 'employee' : 'status';
 
         return view('dispatch.board', [
@@ -68,6 +77,8 @@ class DispatchBoardController extends Controller {
             'employees' => $this->board->groupByEmployee($items),
             'statusOptions' => DispatchStatus::cases(),
             'selectedStatus' => $statusFilter,
+            'priorityOptions' => Priority::cases(),
+            'selectedPriority' => $priorityFilter,
             'targetUser' => $target,
             'selectableUsers' => $auth->isAdmin() ? $this->loadSelectableUsers() : null,
             'total' => count($items),
@@ -153,6 +164,7 @@ class DispatchBoardController extends Controller {
 
         $onlyRisk = $request->boolean('risk');
         $onlyUnconfirmed = $request->boolean('unconfirmed');
+        $priorityFilter = $this->resolvePriorityFilter($request);
 
         $markers = [];
         foreach ($items as $item) {
@@ -169,14 +181,22 @@ class DispatchBoardController extends Controller {
             if ($onlyUnconfirmed && ! $isUnconfirmed) {
                 continue;
             }
+            if ($priorityFilter !== null && $entry->priority !== $priorityFilter) {
+                continue;
+            }
 
             [$lat, $lng] = $this->coordinatesFor($entry);
             if ($lat === null || $lng === null) {
                 continue;
             }
 
-            $layer = $isRisk ? 'risk' : 'planned';
-            $popup = e((string) $entry->title)
+            // Vollaudit 2026-07 (M13): Layer nach Terminmodus — Disponenten
+            // dürfen harte Kundentermine nicht mit flexiblen verwechseln;
+            // SLA-Risiko bleibt der oberste Layer. (M14): Titel verlinkt den
+            // Auftrag, damit Kartenpunkte zur Akte führen.
+            $layer = $isRisk ? 'risk' : $this->modeLayer($entry->mode);
+            $popup = '<a href="' . e(route('diary.show', $entry)) . '" class="link">' . e((string) $entry->title) . '</a>'
+                . '<br>' . e($entry->mode->label())
                 . '<br>' . e($dispatch->label())
                 . ($isRisk ? '<br><strong>' . e($sla->label()) . '</strong>' : '');
 
@@ -192,7 +212,9 @@ class DispatchBoardController extends Controller {
 
         $layers = [
             ['key' => 'risk', 'label' => __('SLA-Risiko'), 'color' => '#dc2626'],
-            ['key' => 'planned', 'label' => __('Geplante Aufträge'), 'color' => '#2563eb'],
+            ['key' => 'fixed', 'label' => __('Feste Termine'), 'color' => '#2563eb'],
+            ['key' => 'flexible', 'label' => __('Flexible Zeitfenster'), 'color' => '#0d9488'],
+            ['key' => 'backlog', 'label' => __('Backlog-Kandidaten'), 'color' => '#64748b'],
         ];
 
         return view('dispatch.map', [
@@ -202,6 +224,8 @@ class DispatchBoardController extends Controller {
             'layers' => $layers,
             'onlyRisk' => $onlyRisk,
             'onlyUnconfirmed' => $onlyUnconfirmed,
+            'priorityOptions' => Priority::cases(),
+            'selectedPriority' => $priorityFilter,
             'targetUser' => $target,
             'selectableUsers' => $auth->isAdmin() ? $this->loadSelectableUsers() : null,
             'markerCount' => count($markers),
@@ -240,6 +264,23 @@ class DispatchBoardController extends Controller {
         }
 
         return DispatchStatus::tryFrom((string) $request->query('status'));
+    }
+
+    private function resolvePriorityFilter(Request $request): ?Priority {
+        if (! $request->filled('priority')) {
+            return null;
+        }
+
+        return Priority::tryFrom((string) $request->query('priority'));
+    }
+
+    /** Karten-Layer je Terminmodus (M13): fest / flexibel / Backlog. */
+    private function modeLayer(Mode $mode): string {
+        return match ($mode) {
+            Mode::Fixed => 'fixed',
+            Mode::Deadline, Mode::Window, Mode::Recurring => 'flexible',
+            Mode::Backlog => 'backlog',
+        };
     }
 
     /**

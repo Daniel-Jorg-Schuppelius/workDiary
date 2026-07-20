@@ -19,6 +19,7 @@ use App\Models\Claims\{ClaimAssessment, ClaimCase, ClaimDecision};
 use App\Models\Notification\NotificationDispatchLog;
 use App\Models\{Organization, User};
 use App\Notifications\GenericEventNotification;
+use App\Services\Concerns\AssertsStatusTransition;
 use App\Services\Inventory\SerialService;
 use App\Services\Numbering\NumberSequenceService;
 use Illuminate\Support\Collection;
@@ -32,6 +33,8 @@ use Illuminate\Support\Facades\DB;
  * Anspruchsentscheidung — jede Entscheidung ist eine Nutzeraktion.
  */
 class ClaimCaseService {
+    use AssertsStatusTransition;
+
     public function __construct(
         private readonly NumberSequenceService $numbers,
         private readonly SerialService $serials,
@@ -175,14 +178,9 @@ class ClaimCaseService {
         });
     }
 
-    /** Statuswechsel mit Übergangsprüfung (MVP-246). */
+    /** Statuswechsel mit Übergangsprüfung (MVP-246; Guard: Vollaudit 2026-07, M44). */
     public function transition(ClaimCase $case, ClaimStatus $target): ClaimCase {
-        if (! in_array($target, $case->status->allowedTransitions(), true)) {
-            throw new \RuntimeException((string) __('Statuswechsel :from → :to ist nicht erlaubt.', [
-                'from' => $case->status->label(),
-                'to' => $target->label(),
-            ]));
-        }
+        $this->assertStatusTransition($case->status, $target);
         $case->forceFill(['status' => $target->value])->save();
 
         return $case;

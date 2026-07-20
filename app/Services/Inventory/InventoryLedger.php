@@ -14,7 +14,7 @@ namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState};
 use App\Models\{ArticleVariant, StockMovement, Warehouse};
-use CommonToolkit\Helper\Data\NumberHelper;
+use App\Support\DecimalQty;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -30,9 +30,19 @@ use RuntimeException;
 class InventoryLedger {
     public const SCALE = 4;
 
+    /** @var array<int, \App\Enums\Inventory\InventoryMode|null> */
+    private array $modeCache = [];
+
     /** Schreibt eine Buchung append-only; idempotent über (org, idempotency_key). */
     public function post(StockPosting $posting): StockMovement {
         $orgId = $posting->variant->organization_id;
+
+        // Vollaudit 2026-07 (M24, MVP-066): read_only-Modus greift zentral —
+        // eine Org mit gespiegeltem Fremdbestand darf lokal NICHT buchen
+        // (paralleles Schreiben in zwei führende Bestände ist unzulässig).
+        // Der external-Modus bleibt hier bewusst offen: dessen Spiegel-Syncs
+        // buchen über genau diesen Ledger.
+        $this->assertNotReadOnly($orgId);
 
         return DB::transaction(function () use ($posting, $orgId): StockMovement {
             // Idempotenzprüfung in derselben Transaktion wie der Insert; parallele Aufrufe
@@ -86,6 +96,29 @@ class InventoryLedger {
         });
     }
 
+    /**
+     * Zentraler Modus-Guard (Vollaudit 2026-07, M24): blockt lokale Buchungen
+     * im read_only-Modus. Ergebnis je Org auf der Instanz gecacht (nicht
+     * static — Org-IDs wiederholen sich zwischen Requests/Tests) — post()
+     * läuft in Massenpfaden (Import, Fertigung).
+     */
+    private function assertNotReadOnly(?int $orgId): void {
+        if ($orgId === null) {
+            return;
+        }
+
+        if (! array_key_exists($orgId, $this->modeCache)) {
+            $organization = \App\Models\Organization::query()->find($orgId);
+            $this->modeCache[$orgId] = $organization !== null
+                ? app(InventoryProviderResolver::class)->modeFor($organization)
+                : null;
+        }
+
+        if ($this->modeCache[$orgId] === \App\Enums\Inventory\InventoryMode::ReadOnly) {
+            throw new RuntimeException((string) __('Bestandsführung ist read-only — lokale Buchungen sind gesperrt (führendes System ist extern).'));
+        }
+    }
+
     private function findByIdempotencyKey(int $orgId, string $key, bool $lock): ?StockMovement {
         $query = StockMovement::query()
             ->where('organization_id', $orgId)
@@ -114,7 +147,7 @@ class InventoryLedger {
 
         $sum = '0';
         foreach ($query->pluck('qty_base') as $value) {
-            $sum = bcadd($sum, $this->numeric((string) $value), self::SCALE);
+            $sum = bcadd($sum, DecimalQty::sanitize((string) $value), self::SCALE);
         }
 
         return bcadd($sum, '0', self::SCALE);
@@ -158,7 +191,7 @@ class InventoryLedger {
 
         $result = '0';
         foreach ($rows as $row) {
-            $qty = $this->numeric((string) $row->qty_base);
+            $qty = DecimalQty::sanitize((string) $row->qty_base);
             $result = $row->stock_state === StockState::Physical
                 ? bcadd($result, $qty, self::SCALE)
                 : bcsub($result, $qty, self::SCALE);
@@ -170,7 +203,7 @@ class InventoryLedger {
     // ── Semantische Buchungen ───────────────────────────────────────────
 
     public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null): StockMovement {
-        return $this->post(new StockPosting($variant, $warehouse, StockState::Physical, $this->positive($qty), StockMovementType::Receipt, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
+        return $this->post(new StockPosting($variant, $warehouse, StockState::Physical, DecimalQty::positive($qty), StockMovementType::Receipt, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
     }
 
     public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, bool $allowNegative = false, ?string $idempotencyKey = null, ?int $actorUserId = null): StockMovement {
@@ -178,7 +211,7 @@ class InventoryLedger {
         return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $allowNegative, $idempotencyKey, $actorUserId): StockMovement {
             $this->guardSufficient($variant, $warehouse, $qty, $allowNegative);
 
-            return $this->post(new StockPosting($variant, $warehouse, StockState::Physical, $this->negative($qty), StockMovementType::Issue, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
+            return $this->post(new StockPosting($variant, $warehouse, StockState::Physical, DecimalQty::negative($qty), StockMovementType::Issue, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
         });
     }
 
@@ -186,48 +219,30 @@ class InventoryLedger {
         return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $idempotencyKey, $actorUserId): StockMovement {
             $this->guardSufficient($variant, $warehouse, $qty, false);
 
-            return $this->post(new StockPosting($variant, $warehouse, StockState::Reserved, $this->positive($qty), StockMovementType::Reserve, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
+            return $this->post(new StockPosting($variant, $warehouse, StockState::Reserved, DecimalQty::positive($qty), StockMovementType::Reserve, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
         });
     }
 
     public function releaseReservation(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null): StockMovement {
-        return $this->post(new StockPosting($variant, $warehouse, StockState::Reserved, $this->negative($qty), StockMovementType::ReleaseReservation, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
+        return $this->post(new StockPosting($variant, $warehouse, StockState::Reserved, DecimalQty::negative($qty), StockMovementType::ReleaseReservation, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
     }
 
     public function finishedGoodReceipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null): StockMovement {
-        return $this->post(new StockPosting($variant, $warehouse, StockState::Physical, $this->positive($qty), StockMovementType::FinishedGoodReceipt, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
+        return $this->post(new StockPosting($variant, $warehouse, StockState::Physical, DecimalQty::positive($qty), StockMovementType::FinishedGoodReceipt, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
     }
 
     /** Inventurdifferenz/Gegenbuchung: signierte Menge auf einen Zustand. */
     public function correction(ArticleVariant $variant, Warehouse $warehouse, StockState $state, string $signedQty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null): StockMovement {
-        return $this->post(new StockPosting($variant, $warehouse, $state, $this->numeric($signedQty), StockMovementType::Correction, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
+        return $this->post(new StockPosting($variant, $warehouse, $state, DecimalQty::sanitize($signedQty), StockMovementType::Correction, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
     }
 
     private function guardSufficient(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative): void {
         if ($allowNegative) {
             return;
         }
-        if (bccomp($this->availableForUpdate($variant, $warehouse), $this->positive($qty), self::SCALE) < 0) {
+        if (bccomp($this->availableForUpdate($variant, $warehouse), DecimalQty::positive($qty), self::SCALE) < 0) {
             throw new RuntimeException('Nicht genügend verfügbarer Bestand (negativer Bestand nicht freigegeben).');
         }
     }
 
-    /** @return numeric-string */
-    private function positive(string $qty): string {
-        $qty = $this->numeric($qty);
-
-        return bccomp($qty, '0', self::SCALE) < 0 ? bcmul($qty, '-1', self::SCALE) : $qty;
-    }
-
-    /** @return numeric-string */
-    private function negative(string $qty): string {
-        return bcmul($this->positive($qty), '-1', self::SCALE);
-    }
-
-    /** @return numeric-string */
-    private function numeric(string $value): string {
-        $value = NumberHelper::normalizeDecimalString($value);
-
-        return $value === '' || ! is_numeric($value) ? '0' : $value;
-    }
 }

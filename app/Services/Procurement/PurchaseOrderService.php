@@ -16,7 +16,7 @@ use App\Enums\Numbering\NumberScope;
 use App\Enums\Procurement\PurchaseOrderStatus;
 use App\Models\{Article, ArticleVariant, Organization, PurchaseOrder, PurchaseOrderLine, Supplier, Warehouse};
 use App\Services\Numbering\NumberSequenceService;
-use CommonToolkit\Helper\Data\NumberHelper;
+use App\Support\DecimalQty;
 use Illuminate\Support\Carbon;
 use RuntimeException;
 
@@ -56,7 +56,7 @@ class PurchaseOrderService {
             'supplier_sku' => $options['supplier_sku'] ?? null,
             'description' => $options['description'] ?? $article->name,
             'note' => $options['note'] ?? null,
-            'ordered_qty' => $this->positive($qty),
+            'ordered_qty' => DecimalQty::positive($qty),
             'received_qty' => '0',
             'unit' => $options['unit'] ?? $article->base_unit,
             'unit_price' => $options['unit_price'] ?? null,
@@ -86,15 +86,5 @@ class PurchaseOrderService {
         $order->forceFill(['status' => $target])->save();
 
         return $order;
-    }
-
-    /** @return numeric-string */
-    private function positive(string $value): string {
-        $value = NumberHelper::normalizeDecimalString($value);
-        if ($value === '' || ! is_numeric($value)) {
-            return '0';
-        }
-
-        return bccomp($value, '0', self::SCALE) < 0 ? bcmul($value, '-1', self::SCALE) : $value;
     }
 }

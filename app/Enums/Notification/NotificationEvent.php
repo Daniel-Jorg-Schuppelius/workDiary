@@ -121,6 +121,28 @@ enum NotificationEvent: string implements HasLabel {
     // Feature 075: Prüfung fällig/überfällig (MVP-285/288).
     case AssetInspectionDue = 'assetCompliance.inspectionDue';
 
+    // Vollaudit 2026-07 (N4): Entscheidung über die Monatsfreigabe an die
+    // betroffene Person (approve/reject/reopen).
+    case MonthClosureDecided = 'monthClosure.decided';
+
+    // Vollaudit 2026-07 (H12), Feature 083 Domainverwaltung.
+    case DomainExpiring = 'domain.expiring';
+    case DomainTransferChanged = 'domain.transferChanged';
+    case DomainSyncFailed = 'domain.syncFailed';
+    case DomainHighRiskAction = 'domain.highRiskAction';
+
+    // Vollaudit 2026-07 (M16), Feature 045 Finanzschnittstelle.
+    case FinanceTransferFailed = 'finance.transferFailed';
+    case FinanceBankImportFailed = 'finance.bankImportFailed';
+    case FinanceReconciliationReview = 'finance.reconciliationReview';
+
+    // Vollaudit 2026-07 (M19), Feature 048 E2: MHD-Überwachung.
+    case InventoryLotExpiring = 'inventory.lotExpiring';
+
+    // Vollaudit 2026-07 (M31), Feature 069 Investitionen (MVP-209).
+    case InvestmentDecisionDue = 'investment.decisionDue';
+    case InvestmentDecided = 'investment.decided';
+
     case OperationsBackupOverdue = 'operations.backupOverdue';
     case OperationsBackupFailed = 'operations.backupFailed';
     case OperationsRestoreTestOverdue = 'operations.restoreTestOverdue';
@@ -159,7 +181,11 @@ enum NotificationEvent: string implements HasLabel {
             return false;
         }
 
-        return ! in_array($this, [self::TimeCorrectionRequested, self::MonthClosureSubmitted, self::IsmsCertificateExpiring, self::IsmsIncidentCritical, self::SafetyCriticalEvent, self::ShiftExchangeRequested, self::CustomerQueryRaised, self::ShipmentDeliveryProblem, self::SlaQuotaWarning], true);
+        return ! in_array($this, [self::TimeCorrectionRequested, self::MonthClosureSubmitted, self::IsmsCertificateExpiring, self::IsmsIncidentCritical, self::SafetyCriticalEvent, self::ShiftExchangeRequested, self::CustomerQueryRaised, self::ShipmentDeliveryProblem, self::SlaQuotaWarning,
+            // Domain-/Finanz-/Fristereignisse betreffen keine Einzelperson (Vollaudit 2026-07, W3.2).
+            self::DomainExpiring, self::DomainTransferChanged, self::DomainSyncFailed, self::DomainHighRiskAction,
+            self::FinanceTransferFailed, self::FinanceBankImportFailed, self::FinanceReconciliationReview,
+            self::InvestmentDecisionDue, self::InventoryLotExpiring], true);
     }
 
     /**
@@ -245,6 +271,20 @@ enum NotificationEvent: string implements HasLabel {
             // Fällige Wirksamkeitsprüfung (Feature 065, MVP-156): primär der
             // Problem-Owner (notify_affected), Teamleitung als Fallback.
             self::ProblemEffectivenessDue => [UserRole::Teamleitung->value],
+            // Domainverwaltung (H12): Betrieb/Registrar-Themen sind Admin-Sache.
+            self::DomainExpiring,
+            self::DomainTransferChanged,
+            self::DomainSyncFailed,
+            self::DomainHighRiskAction => [UserRole::Admin->value],
+            // Finanzschnittstelle (M16): kaufmännische Klärung.
+            self::FinanceTransferFailed,
+            self::FinanceBankImportFailed,
+            self::FinanceReconciliationReview => [UserRole::Buchhaltung->value],
+            // Investitionsfristen (M31): Entscheidung ist Leitungs-/Kaufmannssache;
+            // die Entscheidung selbst geht an den Antragsteller (notify_affected).
+            self::InvestmentDecisionDue => [UserRole::Teamleitung->value, UserRole::Buchhaltung->value],
+            // MHD-Überwachung (M19): Lagerverantwortung ist Leitungsaufgabe.
+            self::InventoryLotExpiring => [UserRole::Teamleitung->value],
             default => [],
         };
     }
@@ -309,6 +349,17 @@ enum NotificationEvent: string implements HasLabel {
             self::OperationsSchedulerOverdue => 'schedule',
             self::OperationsMaintenanceScheduled => 'engineering',
             self::OperationsProblemReportReceived => 'flag',
+            self::MonthClosureDecided => 'event_available',
+            self::DomainExpiring => 'timer',
+            self::DomainTransferChanged => 'swap_horiz',
+            self::DomainSyncFailed => 'sync_problem',
+            self::DomainHighRiskAction => 'gpp_maybe',
+            self::FinanceTransferFailed => 'money_off',
+            self::FinanceBankImportFailed => 'account_balance',
+            self::FinanceReconciliationReview => 'rule',
+            self::InvestmentDecisionDue => 'pending_actions',
+            self::InvestmentDecided => 'task_alt',
+            self::InventoryLotExpiring => 'hourglass_bottom',
         };
     }
 

@@ -15,9 +15,6 @@ use App\Models\{Attachment, DiaryEntry, MaterialUsage, TimeEntry, User};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, URL};
 use Illuminate\View\View;
-use PDFToolkit\Entities\PDFContent;
-use PDFToolkit\Registries\PDFWriterRegistry;
-use RuntimeException;
 
 /**
  * Portal-Auftragsdetail (Feature 012, Rang 54): read-only Sicht auf den
@@ -52,10 +49,13 @@ class DiaryDetailController extends Controller {
     public function pdf(Request $request, DiaryEntry $diary): \Symfony\Component\HttpFoundation\Response {
         abort_unless($request->hasValidSignature(), 403);
 
-        $html = view('customer.diary.pdf', $this->customerViewData($diary) + ['diary' => $diary])->render();
-
-        $bytes = PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
-            ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (customer.diary.pdf).');
+        // View→PDF über den zentralen Renderer (C15; Vollaudit 2026-07, N27) — design-frei.
+        $bytes = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->renderPdf(
+            \App\Enums\DocumentDesign\RenderDocumentKind::Report,
+            'customer.diary.pdf',
+            $this->customerViewData($diary) + ['diary' => $diary],
+            null,
+        );
 
         return response($bytes, 200, [
             'Content-Type' => 'application/pdf',
@@ -88,10 +88,19 @@ class DiaryDetailController extends Controller {
             ->orderByDesc('occurred_at')
             ->get();
 
+        // Vollaudit 2026-07 (H9): freigegebene Kommunikationsnotizen
+        // (visibility=customer) erreichen jetzt das Portal — der Freigabe-
+        // Workflow (communication.published) lief zuvor ins Leere.
+        $notes = $diary->communicationNotes()
+            ->where('visibility', \App\Enums\Communication\CommunicationVisibility::Customer->value)
+            ->orderByDesc('occurred_at')
+            ->get(['id', 'type', 'direction', 'subject', 'body', 'occurred_at']);
+
         return [
             'photos' => $photos,
             'materials' => $materials,
             'protocols' => $protocols,
+            'notes' => $notes,
         ];
     }
 }

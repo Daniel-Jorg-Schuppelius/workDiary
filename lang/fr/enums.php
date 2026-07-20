@@ -1,6 +1,25 @@
 <?php
 
 return [
+    'billbee' => [
+        'order_state' => [
+            1 => 'Commandée',
+            2 => 'Confirmée',
+            3 => 'Payée',
+            4 => 'Expédiée',
+            5 => 'Réclamation',
+            6 => 'Supprimée',
+            7 => 'Terminée',
+            8 => 'Annulée',
+            9 => 'Archivée',
+            11 => '1re relance',
+            12 => '2e relance',
+            13 => 'Emballée',
+            14 => 'Proposée',
+            15 => 'Rappel de paiement',
+            16 => 'En fulfillment',
+        ],
+    ],
     'ai' => [
         'family' => ['llm' => 'Modèle de langage (LLM)', 'translation' => 'Traduction'],
         'verb' => ['formulate' => 'Formuler', 'summarize' => 'Résumer', 'classify' => 'Classifier', 'explain' => 'Expliquer', 'find' => 'Rechercher', 'translate' => 'Traduire'],
@@ -329,6 +348,7 @@ return [
             ],
             'monthClosure' => [
                 'submitted' => 'Clôture mensuelle soumise',
+                'decided' => 'Clôture mensuelle décidée',
             ],
             'isms' => [
                 'certificateExpiring' => 'Certificat ISMS arrive à expiration',
@@ -371,6 +391,24 @@ return [
             'maintenance' => [
                 'dueSoon' => 'Maintenance/contrôle bientôt dû',
                 'overdue' => 'Maintenance/contrôle en retard',
+            ],
+            'domain' => [
+                'expiring' => 'Domaine expirant / renouvellement échoué',
+                'transferChanged' => 'Statut de transfert de domaine modifié',
+                'syncFailed' => 'Synchronisation de domaine échouée',
+                'highRiskAction' => 'Action de domaine à haut risque approuvée',
+            ],
+            'finance' => [
+                'transferFailed' => 'Transfert de facturation échoué',
+                'bankImportFailed' => 'Import bancaire échoué',
+                'reconciliationReview' => 'Rapprochement des paiements à clarifier',
+            ],
+            'investment' => [
+                'decisionDue' => "Décision d'investissement attendue",
+                'decided' => "Demande d'investissement décidée",
+            ],
+            'inventory' => [
+                'lotExpiring' => 'Lot arrivant à expiration (DLUO)',
             ],
             'operations' => [
                 'backupOverdue' => 'Sauvegarde en retard',
@@ -913,6 +951,9 @@ return [
             'sunday' => 'Dimanche',
             'holiday' => 'Jour férié',
             'custom' => 'Personnalisé',
+            'oncall' => 'Astreinte sur site',
+            'standby' => 'Astreinte téléphonique',
+            'overtime' => 'Heures supplémentaires',
         ],
     ],
     'finance' => [
@@ -984,6 +1025,7 @@ return [
             'overpayment' => 'Trop-perçu',
             'reimbursement' => 'Remboursement',
             'chargeback' => 'Rejet de prélèvement',
+            'skonto' => 'Escompte (réduction de produit)',
         ],
     ],
 

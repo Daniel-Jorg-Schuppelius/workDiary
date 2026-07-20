@@ -1,67 +1,11 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script @cspNonce>
-        (function () {
-            try {
-                var savedTheme = localStorage.getItem('workDiaryTheme');
-                var prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-                var theme = savedTheme || (prefersLight ? 'corporate' : 'dim');
-                document.documentElement.setAttribute('data-theme', theme);
-                document.documentElement.style.colorScheme = theme === 'corporate' ? 'light' : 'dark';
-            } catch (e) {
-                document.documentElement.setAttribute('data-theme', 'corporate');
-            }
-        })();
-    </script>
-    <title>{{ __('Modul nicht im Plan enthalten') }} – {{ config('app.name', 'WorkDiary') }}</title>
-    <style>
-        .material-symbols-outlined {
-            font-family: 'Material Symbols Outlined';
-            font-weight: normal;
-            font-style: normal;
-            line-height: 1;
-            letter-spacing: normal;
-            text-transform: none;
-            display: inline-block;
-            white-space: nowrap;
-            word-wrap: normal;
-            direction: ltr;
-            -webkit-font-feature-settings: 'liga';
-            -webkit-font-smoothing: antialiased;
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            vertical-align: middle;
-        }
-    </style>
-    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
-        @vite(['resources/css/app.css'])
-    @endif
-</head>
-<body class="min-h-screen bg-gradient-to-b from-base-200 to-base-300 text-base-content"
-      style="font-family: 'IBM Plex Sans', system-ui, sans-serif;">
-    <div class="flex min-h-screen items-center justify-center px-4">
-        <div class="w-full max-w-lg rounded-3xl border border-base-300 bg-base-100 p-8 text-center shadow-lg">
-            <img src="{{ asset('img/logo/workdiary-logo-512.png') }}" alt="WorkDiary"
-                 class="mx-auto mb-6 h-12 w-auto object-contain">
-            <div class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/15 text-primary">
-                <span class="material-symbols-outlined" style="font-size: 2rem; font-variation-settings: 'FILL' 1, 'wght' 500;">workspace_premium</span>
-            </div>
-            <h1 class="mb-2 text-2xl font-semibold" style="font-family: 'Space Grotesk', sans-serif;">
-                {{ __('Modul nicht im Plan enthalten') }}
-            </h1>
-            <p class="text-sm leading-relaxed text-base-content/75">
-                {{ ($exception ?? null) && $exception->getMessage() ? $exception->getMessage() : __('Diese Funktion ist in Ihrem aktuellen Plan nicht verfügbar.') }}
-            </p>
-            <p class="mt-3 text-xs text-base-content/60">
-                {{ __('Für den Zugang ist ein höherer Plan erforderlich. Bitte wenden Sie sich an Ihre Administration.') }}
-            </p>
-            <x-button-group center class="mt-6">
-                <x-button href="{{ url()->previous() }}" tone="ghost" size="sm" class="gap-1" icon="arrow_back">{{ __('Zurück') }}</x-button>
-                <x-button href="{{ url('/') }}" tone="primary" size="sm" class="gap-1" icon="home">{{ __('Zur Startseite') }}</x-button>
-            </x-button-group>
-        </div>
-    </div>
-</body>
-</html>
+{{-- errors/_page-Gerüst statt eigener Kopie (Vollaudit 2026-07, N42);
+     reportable=false wie zuvor — ein Lizenz-Block ist kein meldbarer Fehler. --}}
+@include('errors._page', [
+    'code' => 423,
+    'icon' => 'workspace_premium',
+    'tone' => 'primary',
+    'title' => __('Modul nicht im Plan enthalten'),
+    'message' => ($exception ?? null) && $exception->getMessage() ? $exception->getMessage() : __('Diese Funktion ist in Ihrem aktuellen Plan nicht verfügbar.'),
+    'extraNote' => __('Für den Zugang ist ein höherer Plan erforderlich. Bitte wenden Sie sich an Ihre Administration.'),
+    'reportable' => false,
+])

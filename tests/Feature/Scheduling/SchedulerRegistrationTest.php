@@ -39,6 +39,13 @@ class SchedulerRegistrationTest extends TestCase {
         'updates:check' => ['30 6 * * *', true, true],
         // Neu mit Bauturbo A17 (MVP-335): täglicher GoBD-Integritätsnachweis.
         'audit:verify' => ['30 2 * * *', true, true],
+        // Vollaudit 2026-07 (H10/H13/N17): E-Mail-Eingang, Domain-Sync/-Events,
+        // zyklische Inventur — liefen vorher nie automatisch.
+        'mail:poll' => ['*/5 * * * *', true, true],
+        'domain:sync' => ['40 4 * * *', true, true],
+        'domain:events' => ['*/30 * * * *', true, true],
+        'inventory:cycle-counts' => ['50 5 * * 1', true, true],
+        'inventory:expiring-lots' => ['10 6 * * *', true, true],
         'archive:run' => ['0 3 * * *', true, true],
         'plans:purge' => ['30 3 * * *', true, true],
         'privacy:deadlines' => ['0 6 * * *', true, true],

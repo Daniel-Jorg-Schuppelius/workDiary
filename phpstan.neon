@@ -11,3 +11,12 @@ parameters:
         # Plugin-eigene Config-Dateien sind reine config()-Rückgaben (wie config/,
         # das ebenfalls nicht analysiert wird) — env() ist hier zulässig.
         - app/Plugins/*/config.php
+    ignoreErrors:
+        # Optionales privates Paket php-financial-formats (AGENTS.md §9.1):
+        # bewusst NICHT in composer.lock — ohne composer.local.json fehlen die
+        # CommonToolkit\FinancialFormats-Klassen in vendor/. Jede Nutzung ist
+        # zur Laufzeit über FinancialFormatsSupport::isAvailable() geguardet;
+        # die Analyse darf ohne das Paket nicht brechen. Auf Maschinen MIT
+        # Paket matchen diese Ignores nicht (reportUnmatchedIgnoredErrors=false).
+        - '#CommonToolkit\\FinancialFormats#'
+    reportUnmatchedIgnoredErrors: false

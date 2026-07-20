@@ -13,14 +13,14 @@ declare(strict_types=1);
 namespace App\Enums\Rental;
 
 use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
 /**
  * Statusmodell der Verleihakte (MVP-258/261). Verlängerung bleibt im Status
  * handed_over (nur ends_at wandert, auditiert); overdue wird vom
  * Fristen-Scanner gesetzt, sobald ends_at ohne Rückgabe verstrichen ist.
  */
-enum RentalCaseStatus: string implements HasLabel {
+enum RentalCaseStatus: string implements HasLabel, HasStatusTransitions {
     use HasOptions;
 
     case Draft = 'draft';

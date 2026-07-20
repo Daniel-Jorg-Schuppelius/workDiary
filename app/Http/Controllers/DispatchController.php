@@ -46,7 +46,8 @@ class DispatchController extends Controller {
         $this->authorizeManage($diary);
 
         $data = $request->validate([
-            'dispatch_status' => ['required', 'string', 'in:' . implode(',', DispatchStatus::values())],
+            // Rule::enum statt Handliste (Vollaudit 2026-07, N48).
+            'dispatch_status' => ['required', 'string', \Illuminate\Validation\Rule::enum(DispatchStatus::class)],
             'override_reason' => ['nullable', 'string', 'max:2000'],
         ]);
 

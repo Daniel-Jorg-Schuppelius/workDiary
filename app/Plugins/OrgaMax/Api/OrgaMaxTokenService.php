@@ -42,7 +42,7 @@ class OrgaMaxTokenService {
         if ($apiKey === '' || $apiSecret === '' || $ownershipId === '') {
             $this->block($connection, 'credentials_missing');
 
-            throw new OrgaMaxApiException(401, 'orgaMAX-Zugangsdaten unvollständig — Verbindung erneuern.', '/auth/token');
+            throw new OrgaMaxApiException('orgaMAX-Zugangsdaten unvollständig — Verbindung erneuern.', 401, '/auth/token');
         }
 
         try {

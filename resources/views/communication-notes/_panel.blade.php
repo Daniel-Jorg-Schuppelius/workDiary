@@ -21,6 +21,9 @@
         ->visibleTo($panelUser)
         ->with(['creator', 'participants', 'nextActionUser'])
         ->get();
+    /* Vollaudit 2026-07 (N11): Lesen vertraulicher fremder Notizen im Panel
+       serverseitig auditieren (1× je Note+Viewer+Tag, Log-Flut vermieden). */
+    app(\App\Services\Communication\CommunicationNoteService::class)->recordConfidentialViews($notes, $panelUser);
     $openFollowUps = $notes->filter->hasOpenFollowUp()->sortBy('next_action_due_at');
     $canCreate = \Illuminate\Support\Facades\Gate::allows('create', \App\Models\CommunicationNote::class);
     $canPublish = \Illuminate\Support\Facades\Gate::allows('publishToCustomer', \App\Models\CommunicationNote::class);

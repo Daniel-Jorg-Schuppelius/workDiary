@@ -39,8 +39,8 @@
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>'
                            :title="__('Keine Spesen im gewählten Zeitraum.')" />
         @else
-            <table class="table table-sm table-zebra">
-                <thead>
+            <x-table>
+                <x-slot:head>
                     <tr>
                         <th>{{ __('Mitarbeiter') }}</th>
                         <th>{{ __('Kategorie') }}</th>
@@ -49,8 +49,16 @@
                         @endforeach
                         <th class="text-right">{{ __('Summe') }}</th>
                     </tr>
-                </thead>
-                <tbody>
+                </x-slot:head>
+                <x-slot:foot>
+                    <tr class="font-semibold">
+                        <td colspan="2">{{ __('Gesamt') }}</td>
+                        @foreach ($months as $m)
+                            <td class="text-right tabular-nums">{{ number_format($totalsPerMonth[$m] ?? 0, 2, ',', '.') }}</td>
+                        @endforeach
+                        <td class="text-right tabular-nums">{{ number_format($grandTotal, 2, ',', '.') }}</td>
+                    </tr>
+                </x-slot:foot>
                     @foreach ($rows as $row)
                         <tr>
                             <td class="font-semibold whitespace-nowrap">{{ $row['user'] }}</td>
@@ -74,17 +82,7 @@
                             <td class="text-right tabular-nums font-semibold">{{ number_format($row['total'], 2, ',', '.') }}</td>
                         </tr>
                     @endforeach
-                </tbody>
-                <tfoot>
-                    <tr class="font-semibold">
-                        <td colspan="2">{{ __('Gesamt') }}</td>
-                        @foreach ($months as $m)
-                            <td class="text-right tabular-nums">{{ number_format($totalsPerMonth[$m] ?? 0, 2, ',', '.') }}</td>
-                        @endforeach
-                        <td class="text-right tabular-nums">{{ number_format($grandTotal, 2, ',', '.') }}</td>
-                    </tr>
-                </tfoot>
-            </table>
+            </x-table>
         @endif
     </x-card>
 

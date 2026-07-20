@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Invoicing\EInvoice;
 
 use CommonToolkit\Helper\Data\{CryptoHelper, XmlHelper};
+use CommonToolkit\Helper\Data\NumberHelper;
 use ERechnungToolkit\Entities\Document as EInvoiceDocument;
 use ERechnungToolkit\Parsers\{ERechnungParser, ZugferdPdfParser};
 use SimpleXMLElement;
@@ -186,7 +187,7 @@ class IncomingEInvoiceService {
             'document_type' => \App\Enums\Document\DocumentType::Invoice->value,
             'description' => (string) __(':profile · :gross :currency, fällig :due', [
                 'profile' => $summary['profile'],
-                'gross' => number_format((float) ($summary['gross'] ?? 0), 2, ',', '.'),
+                'gross' => NumberHelper::toGermanFormat((float) ($summary['gross'] ?? 0), 2, withThousandsSeparator: true),
                 'currency' => $summary['currency'],
                 'due' => $summary['due_date'] ?? '—',
             ]),
@@ -312,9 +313,9 @@ class IncomingEInvoiceService {
         $gross = $summary['gross'] ?? null;
         if ($net !== null && $tax !== null && $gross !== null && abs(((float) $net + (float) $tax) - (float) $gross) > 0.005) {
             $deviations[] = (string) __('Summen widersprüchlich: Netto + Steuer ≠ Brutto (:net + :tax ≠ :gross).', [
-                'net' => number_format((float) $net, 2, ',', '.'),
-                'tax' => number_format((float) $tax, 2, ',', '.'),
-                'gross' => number_format((float) $gross, 2, ',', '.'),
+                'net' => NumberHelper::toGermanFormat((float) $net, 2, withThousandsSeparator: true),
+                'tax' => NumberHelper::toGermanFormat((float) $tax, 2, withThousandsSeparator: true),
+                'gross' => NumberHelper::toGermanFormat((float) $gross, 2, withThousandsSeparator: true),
             ]);
         }
 

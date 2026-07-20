@@ -11,34 +11,19 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\Surcharge\SurchargeRule;
-use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
 
 /**
  * Zuschlagsregeln (Feature 005): Admin via Bypass; Buchhaltung (Lohnbüro)
  * pflegt Regeln über surchargeRule.viewAny/manage laut Seeder-Matrix.
  */
-class SurchargeRulePolicy {
+class SurchargeRulePolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::SurchargeRuleViewAny->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::SurchargeRuleManage->value);
-    }
-
-    public function update(User $user, SurchargeRule $rule): bool {
-        unset($rule);
-
-        return $user->can(P::SurchargeRuleManage->value);
-    }
-
-    public function delete(User $user, SurchargeRule $rule): bool {
-        unset($rule);
-
-        return $user->can(P::SurchargeRuleManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::SurchargeRuleViewAny,
+        'create' => P::SurchargeRuleManage,
+        'update' => P::SurchargeRuleManage,
+        'delete' => P::SurchargeRuleManage,
+    ];
 }

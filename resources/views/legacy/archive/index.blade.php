@@ -102,16 +102,14 @@
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex flex-wrap items-center gap-3">
                 <x-status-badge tone="neutral" size="md">{{ __('Archiv') }}</x-status-badge>
-                <div role="tablist" class="tabs tabs-box">
-                    @foreach ($tabs as $key => $info)
-                        <a role="tab"
-                           href="{{ route('legacy.archive.index', array_merge($tabFilters, ['tab' => $key])) }}"
-                           class="tab {{ $activeTab === $key ? 'tab-active' : '' }}">
-                            {{ $info['label'] }}
-                            <span class="badge badge-sm ml-2">{{ $info['count'] }}</span>
-                        </a>
-                    @endforeach
-                </div>
+                {{-- Tab-Strip über die gemeinsame Komponente (D5; Vollaudit 2026-07, N44). --}}
+                <x-tab-nav class="w-auto" :items="collect($tabs)->map(fn($info, $key) => [
+                    'label' => $info['label'],
+                    'count' => $info['count'],
+                    'route' => 'legacy.archive.index',
+                    'params' => array_merge($tabFilters, ['tab' => $key]),
+                    'active' => $activeTab === $key,
+                ])->values()->all()" />
             </div>
             <div class="flex flex-wrap items-center gap-2">
                 <x-icon-btn icon="arrow_back" size="sm"

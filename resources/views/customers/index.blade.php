@@ -53,14 +53,12 @@
     </x-filter-bar>
 
     {{-- Tabs: Status --}}
-    <div role="tablist" class="tabs tabs-box w-full">
-        <a role="tab" href="{{ route('customers.index', ['status' => 'active', 'q' => $search]) }}"
-           class="tab {{ $status === 'active' ? 'tab-active' : '' }}">{{ __('Aktiv') }}</a>
-        <a role="tab" href="{{ route('customers.index', ['status' => 'billable_pending', 'q' => $search]) }}"
-           class="tab {{ $status === 'billable_pending' ? 'tab-active' : '' }}">{{ __('Bereit zur Abrechnung') }}</a>
-        <a role="tab" href="{{ route('customers.index', ['status' => 'archived', 'q' => $search]) }}"
-           class="tab {{ $status === 'archived' ? 'tab-active' : '' }}">{{ __('Archiv') }}</a>
-    </div>
+    {{-- Status-Tabs über die gemeinsame Komponente (D5; Vollaudit 2026-07, N44). --}}
+    <x-tab-nav :items="[
+        ['label' => __('Aktiv'), 'route' => 'customers.index', 'params' => ['status' => 'active', 'q' => $search], 'active' => $status === 'active'],
+        ['label' => __('Bereit zur Abrechnung'), 'route' => 'customers.index', 'params' => ['status' => 'billable_pending', 'q' => $search], 'active' => $status === 'billable_pending'],
+        ['label' => __('Archiv'), 'route' => 'customers.index', 'params' => ['status' => 'archived', 'q' => $search], 'active' => $status === 'archived'],
+    ]" />
 
     @if ($customers->total() === 0)
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">business</span>' :title="$search !== '' ? __('Keine Kunden für „:q“ gefunden.', ['q' => $search]) : __('Noch keine Kunden in dieser Ansicht')" />

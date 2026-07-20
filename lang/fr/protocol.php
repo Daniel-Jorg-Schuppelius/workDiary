@@ -56,6 +56,7 @@ return [
             'uploaded' => 'Photo ajoutée.',
             'removed' => 'Photo supprimée.',
             'captionUpdated' => 'Légende mise à jour.',
+            'reordered' => 'Ordre mis à jour.',
         ],
     ],
     'validation' => [
@@ -105,6 +106,7 @@ return [
         ],
     ],
     'pdf' => [
+        'photos' => ['more' => ':count photo(s) supplémentaire(s)'],
         'title' => 'Protocole – :title',
         'state' => 'État',
         'items' => 'Éléments du protocole',
@@ -123,6 +125,12 @@ return [
     ],
     'signature' => [
         'tokenIssued' => 'Le lien de signature a été créé.',
+        'tokenRevoked' => 'Le lien de signature a été révoqué.',
+        'tokenList' => 'Liens de signature externes',
+        'tokenUsed' => 'utilisé',
+        'tokenOpen' => 'ouvert',
+        'revoke' => 'Révoquer le lien',
+        'externalLink' => 'Lien externe',
         'tokenExpired' => 'Le lien de signature a expiré ou a déjà été utilisé.',
         'tokenUnknown' => 'Lien de signature inconnu.',
         'redeemed' => 'La signature a été enregistrée.',

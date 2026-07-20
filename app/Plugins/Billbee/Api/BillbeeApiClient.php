@@ -27,6 +27,9 @@ use Illuminate\Http\Client\Response;
  * `{Data: …, Paging: {Page, TotalPages, …}, ErrorMessage}`.
  */
 class BillbeeApiClient {
+    // Gemeinsame guard()-Fehlerbehandlung (Vollaudit 2026-07, N33).
+    use \App\Plugins\Support\GuardsPluginApiResponses;
+
     private ?PluginApiClient $api = null;
 
     public function __construct(
@@ -128,16 +131,12 @@ class BillbeeApiClient {
         return $this->api;
     }
 
-    /** @return array<mixed> */
-    private function guard(Response $response, string $endpoint): array {
-        if (! $response->successful()) {
-            throw new BillbeeApiException(
-                $response->status(),
-                sprintf('Billbee %s: HTTP %d %s', $endpoint, $response->status(), mb_substr((string) $response->body(), 0, 300)),
-                $endpoint,
-            );
-        }
+    /** @return class-string<\App\Plugins\Support\PluginApiException> */
+    protected function apiExceptionClass(): string {
+        return BillbeeApiException::class;
+    }
 
-        return (array) ($response->json() ?? []);
+    protected function apiLabel(): string {
+        return 'Billbee';
     }
 }

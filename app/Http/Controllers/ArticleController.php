@@ -77,7 +77,7 @@ class ArticleController extends Controller {
 
         $data['created_by'] = Auth::id();
         $article = $this->articles->createArticle($this->currentOrganization(), $data);
-        $article->syncTagsFromInput($tagIds, array_filter(array_map('trim', explode(',', $newTagsRaw))));
+        $article->syncTagsFromInput($tagIds, \App\Support\TagInput::names($newTagsRaw));
 
         return redirect()->route('articles.show', $article)
             ->with('success', __('article.flash.created'));
@@ -127,7 +127,7 @@ class ArticleController extends Controller {
         unset($data['tag_ids'], $data['new_tags']);
 
         $article->update($data);
-        $article->syncTagsFromInput($tagIds, array_filter(array_map('trim', explode(',', $newTagsRaw))));
+        $article->syncTagsFromInput($tagIds, \App\Support\TagInput::names($newTagsRaw));
 
         return redirect()->route('articles.show', $article)
             ->with('success', __('article.flash.updated'));

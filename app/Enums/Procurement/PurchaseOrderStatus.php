@@ -13,13 +13,15 @@ declare(strict_types=1);
 namespace App\Enums\Procurement;
 
 use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
 /**
  * Statusmaschine einer Bestellung (Feature 048, E4):
  * draft → ordered → partially_received → received, jederzeit cancelled.
  */
-enum PurchaseOrderStatus: string implements HasLabel {
+enum PurchaseOrderStatus: string implements HasLabel, HasStatusTransitions {
+    use \App\Enums\Concerns\HasTransitions;
+
     use HasOptions;
 
     case Draft = 'draft';
@@ -37,7 +39,7 @@ enum PurchaseOrderStatus: string implements HasLabel {
     }
 
     /** @return list<self> */
-    public function allowedNext(): array {
+    public function allowedTransitions(): array {
         return match ($this) {
             self::Draft => [self::Ordered, self::Cancelled],
             self::Ordered => [self::PartiallyReceived, self::Received, self::Cancelled],
@@ -46,7 +48,4 @@ enum PurchaseOrderStatus: string implements HasLabel {
         };
     }
 
-    public function canTransitionTo(self $target): bool {
-        return in_array($target, $this->allowedNext(), true);
-    }
 }

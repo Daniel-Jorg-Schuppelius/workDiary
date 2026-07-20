@@ -19,6 +19,7 @@ use App\Services\Finance\{BillingModeResolver, BillingTransferException, Billing
 use App\Services\Finance\Targets\{FacturationTargetRegistry, FileTarget};
 use App\Services\Invoicing\BillableTimeAggregator;
 use App\Support\Sqid;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\Validation\Rule;
@@ -335,10 +336,10 @@ class FinanceTransferController extends Controller {
 
                 $positions[] = [
                     'name' => $projectName . $kindSuffix,
-                    'quantity' => number_format($hours, 2, ',', '.'),
+                    'quantity' => NumberHelper::toGermanFormat($hours, 2, withThousandsSeparator: true),
                     'unit' => 'h',
-                    'unit_price' => number_format($rate, 2, ',', '.'),
-                    'amount' => number_format(round($hours * $rate, 2), 2, ',', '.'),
+                    'unit_price' => NumberHelper::toGermanFormat($rate, 2, withThousandsSeparator: true),
+                    'amount' => NumberHelper::toGermanFormat(round($hours * $rate, 2), 2, withThousandsSeparator: true),
                 ];
             }
 
@@ -350,10 +351,10 @@ class FinanceTransferController extends Controller {
             $usage = $item->source;
             $positions[] = [
                 'name' => $usage !== null ? (trim((string) $usage->description) ?: (string) __('Material')) : (string) __('finance.field.source_deleted'),
-                'quantity' => number_format((float) ($item->quantity ?? 0), 2, ',', '.'),
+                'quantity' => NumberHelper::toGermanFormat((float) ($item->quantity ?? 0), 2, withThousandsSeparator: true),
                 'unit' => $usage->unit ?? '',
-                'unit_price' => number_format((float) ($usage->unit_price ?? 0), 2, ',', '.'),
-                'amount' => number_format((float) ($item->amount ?? 0), 2, ',', '.'),
+                'unit_price' => NumberHelper::toGermanFormat((float) ($usage->unit_price ?? 0), 2, withThousandsSeparator: true),
+                'amount' => NumberHelper::toGermanFormat((float) ($item->amount ?? 0), 2, withThousandsSeparator: true),
             ];
         }
 

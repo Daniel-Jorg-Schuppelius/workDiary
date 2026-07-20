@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Settings;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Herkunft eines effektiven Einstellungswerts (Feature 067, MVP-173/174).
  * Grundlage der "Effektiver Wert + Herkunft"-Anzeige.
  */
-enum SettingSource: string {
+enum SettingSource: string implements HasLabel {
+    use HasOptions;
+
     case Organization = 'organization';
     case System = 'system';
     case Config = 'config';

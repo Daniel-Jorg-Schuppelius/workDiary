@@ -73,6 +73,46 @@ class ProcessingActivityService {
         ]);
     }
 
+    /**
+     * VVT-Vorlagenkatalog (Feature 043 MVP 1; Vollaudit 2026-07, M17).
+     *
+     * @return array<string, array{name: string, purpose: string, controller_role: string, area: string, payload: array<string, string>}>
+     */
+    public function templates(): array {
+        /** @var array<string, array{name: string, purpose: string, controller_role: string, area: string, payload: array<string, string>}> $templates */
+        $templates = require database_path('data/privacy/vvt-templates.php');
+
+        return $templates;
+    }
+
+    /**
+     * Anlage aus Vorlage (M17): Entwurfsstatus, org-scoped, idempotent über
+     * den Vorlagen-Namen — existiert die Tätigkeit bereits, wird sie
+     * unverändert zurückgegeben (keine Dublette, kein Überschreiben).
+     */
+    public function createFromTemplate(Organization $organization, string $templateKey, ?User $actor = null): ProcessingActivity {
+        $template = $this->templates()[$templateKey]
+            ?? throw new \InvalidArgumentException('Unbekannte VVT-Vorlage: ' . $templateKey);
+
+        $existing = ProcessingActivity::query()
+            ->where('organization_id', $organization->id)
+            ->where('name', $template['name'])
+            ->first();
+        if ($existing instanceof ProcessingActivity) {
+            return $existing;
+        }
+
+        return $this->createDraft(
+            $organization,
+            $template['name'],
+            $template['purpose'],
+            ControllerRole::from($template['controller_role']),
+            $template['payload'],
+            $actor,
+            $template['area'],
+        );
+    }
+
     public function submitForReview(ProcessingActivity $activity): ProcessingActivity {
         $activity->forceFill(['status' => ProcessingActivityStatus::InReview])->save();
 

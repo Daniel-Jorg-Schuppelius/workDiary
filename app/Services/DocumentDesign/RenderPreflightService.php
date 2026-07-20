@@ -44,8 +44,8 @@ class RenderPreflightService {
         $minW = (float) config('document_design.min_content_mm.width');
         $minH = (float) config('document_design.min_content_mm.height');
 
-        $first = $this->margins($layout['content_first'] ?? []);
-        $following = $this->margins($layout['content_following'] ?? []);
+        $first = DesignContext::margins((array) ($layout['content_first'] ?? []));
+        $following = DesignContext::margins((array) ($layout['content_following'] ?? []));
 
         foreach (['first' => $first, 'following' => $following] as $page => $m) {
             $label = $page === 'first' ? __('Erste Seite') : __('Folgeseiten');
@@ -172,19 +172,6 @@ class RenderPreflightService {
                 $result->error('contrast', __('Unzureichender Kontrast: :pair (mindestens :min:1).', ['pair' => $label, 'min' => $min]));
             }
         }
-    }
-
-    /**
-     * @param  array<string, mixed>  $m
-     * @return array{top: float, right: float, bottom: float, left: float}
-     */
-    private function margins(array $m): array {
-        return [
-            'top' => (float) ($m['top'] ?? 20),
-            'right' => (float) ($m['right'] ?? 20),
-            'bottom' => (float) ($m['bottom'] ?? 20),
-            'left' => (float) ($m['left'] ?? 20),
-        ];
     }
 
     /**

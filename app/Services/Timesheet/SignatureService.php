@@ -106,6 +106,16 @@ class SignatureService {
         return $timesheet;
     }
 
+    /** Magic-Link explizit ungültig machen (Feature 012 MVP; Vollaudit 2026-07, M6). */
+    public function revokeMagicToken(Timesheet $timesheet): Timesheet {
+        $timesheet->forceFill([
+            'magic_token' => null,
+            'magic_expires_at' => null,
+        ])->save();
+
+        return $timesheet;
+    }
+
     private function decodePng(string $payload): string {
         $payload = trim($payload);
         if (str_starts_with($payload, 'data:image/png;base64,')) {

@@ -56,9 +56,8 @@
         @if ($participants->isEmpty())
             <p class="text-sm text-base-content/60">{{ __('external.panel.empty') }}</p>
         @else
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead>
+            <x-table>
+                <x-slot:head>
                         <tr>
                             <th>{{ __('external.col.name') }}</th>
                             <th>{{ __('external.col.party') }}</th>
@@ -67,8 +66,7 @@
                             <th>{{ __('external.col.expires') }}</th>
                             <th></th>
                         </tr>
-                    </thead>
-                    <tbody>
+                </x-slot:head>
                         @foreach ($participants as $p)
                             <tr>
                                 <td>
@@ -96,9 +94,7 @@
                                 </td>
                             </tr>
                         @endforeach
-                    </tbody>
-                </table>
-            </div>
+            </x-table>
         @endif
     </section>
 @endif

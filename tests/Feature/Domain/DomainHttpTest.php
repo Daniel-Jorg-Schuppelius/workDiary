@@ -91,6 +91,38 @@ class DomainHttpTest extends TestCase {
         $this->actingAs($this->admin)->get(route('domains.show', $foreign))->assertNotFound();
     }
 
+    /** Vollaudit 2026-07 (M34): Kundenakte zeigt zugeordnete Domains (Feature 083, MVP-394). */
+    public function test_customer_file_shows_assigned_domains(): void {
+        $customer = \App\Models\Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'customer_id' => $customer->id,
+            'external_domain' => 'kundendomain.de',
+            'domain_hash' => DomainProjection::hashFor('kundendomain.de'),
+        ]);
+        DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'external_domain' => 'andere.de',
+            'domain_hash' => DomainProjection::hashFor('andere.de'),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->get(route('customers.show', $customer))
+            ->assertOk()
+            ->assertSee('kundendomain.de')
+            ->assertDontSee('andere.de');
+
+        // Ohne domain.viewAny bleibt der Reiter unsichtbar.
+        $stranger = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $this->actingAs($stranger)
+            ->get(route('customers.show', $customer))
+            ->assertOk()
+            ->assertDontSee('kundendomain.de');
+    }
+
     public function test_free_plan_blocks_domain_module(): void {
         $freeOrg = Organization::factory()->free()->create();
         app()->instance('currentOrganization', $freeOrg);

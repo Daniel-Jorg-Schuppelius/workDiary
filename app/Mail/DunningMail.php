@@ -14,6 +14,7 @@ namespace App\Mail;
 
 use App\Models\Invoice;
 use App\Services\Invoicing\InvoicePdfRenderer;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -32,10 +33,30 @@ class DunningMail extends Mailable implements ShouldQueue {
         public Invoice $invoice,
         public int $level,
         public ?string $note = null,
+        public ?int $dispatchId = null,
     ) {}
 
     public function envelope(): Envelope {
         return new Envelope(subject: $this->subjectLine());
+    }
+
+    public function headers(): \Illuminate\Mail\Mailables\Headers {
+        // Vollaudit 2026-07 (M26): Dispatch-Referenz für den Zustellnachweis.
+        return new \Illuminate\Mail\Mailables\Headers(text: array_filter([
+            \App\Listeners\RecordInvoiceMailDelivery::HEADER => $this->dispatchId !== null ? (string) $this->dispatchId : null,
+        ]));
+    }
+
+    /** Queue-Fehlschlag → Zustellnachweis auf failed (Vollaudit 2026-07, M26). */
+    public function failed(\Throwable $exception): void {
+        if ($this->dispatchId === null) {
+            return;
+        }
+        $dispatch = \App\Models\InvoiceDispatch::query()->withoutGlobalScopes()->find($this->dispatchId);
+        $dispatch?->forceFill([
+            'status' => 'failed',
+            'meta' => [...(array) $dispatch->meta, 'error' => mb_substr($exception->getMessage(), 0, 500)],
+        ])->save();
     }
 
     public function subjectLine(): string {
@@ -53,13 +74,13 @@ class DunningMail extends Mailable implements ShouldQueue {
                 ? (string) __('zur Rechnung :number vom :date über :total :currency konnten wir bislang keinen Zahlungseingang feststellen. Sicher handelt es sich um ein Versehen — bitte gleichen Sie den offenen Betrag aus.', [
                     'number' => $this->invoice->number,
                     'date' => optional($this->invoice->issued_on)->isoFormat('L') ?? '—',
-                    'total' => number_format((float) $this->invoice->total, 2, ',', '.'),
+                    'total' => NumberHelper::toGermanFormat((float) $this->invoice->total, 2, withThousandsSeparator: true),
                     'currency' => $this->invoice->currency->value,
                 ])
                 : (string) __('trotz vorheriger Erinnerung ist die Rechnung :number vom :date über :total :currency weiterhin offen (Mahnstufe :level). Bitte begleichen Sie den Betrag umgehend.', [
                     'number' => $this->invoice->number,
                     'date' => optional($this->invoice->issued_on)->isoFormat('L') ?? '—',
-                    'total' => number_format((float) $this->invoice->total, 2, ',', '.'),
+                    'total' => NumberHelper::toGermanFormat((float) $this->invoice->total, 2, withThousandsSeparator: true),
                     'currency' => $this->invoice->currency->value,
                     'level' => $this->level,
                 ]),

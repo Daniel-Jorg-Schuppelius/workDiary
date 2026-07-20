@@ -21,9 +21,6 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Support\Str;
 use Illuminate\View\View;
-use PDFToolkit\Entities\PDFContent;
-use PDFToolkit\Registries\PDFWriterRegistry;
-use RuntimeException;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class PerDiemTripController extends Controller {
@@ -194,9 +191,13 @@ class PerDiemTripController extends Controller {
         $date = $perDiemTrip->started_at->format('Y-m-d');
         $filename = sprintf('verpflegungspauschale-%s-%s-%d.pdf', $date, $slug ?: 'reise', $perDiemTrip->id);
 
-        $html = view('per-diem-trips.pdf', ['trip' => $perDiemTrip])->render();
-        $bytes = PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
-            ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (per-diem-trips.pdf).');
+        // View→PDF über den zentralen Renderer (C15; Vollaudit 2026-07, N27) — design-frei.
+        $bytes = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->renderPdf(
+            \App\Enums\DocumentDesign\RenderDocumentKind::Report,
+            'per-diem-trips.pdf',
+            ['trip' => $perDiemTrip],
+            null,
+        );
 
         return response($bytes, 200, [
             'Content-Type' => 'application/pdf',

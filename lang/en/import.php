@@ -16,6 +16,12 @@ return [
         'remote_sessions' => 'Remote support sessions',
     ],
 
+    'template' => [
+        'example_required' => 'Example value (required)',
+        'example_optional' => 'Example value (optional)',
+        'download' => 'Download sample template',
+    ],
+
     'state' => [
         'preflight' => 'Preflight',
         'awaitingApproval' => 'Awaiting approval',

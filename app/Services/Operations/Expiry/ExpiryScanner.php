@@ -35,6 +35,7 @@ class ExpiryScanner {
     /** @var list<string> Aufgabentypen, die dieser Scanner verantwortet */
     private const MANAGED_TYPES = [
         'license_expiring',
+        'license_limit_near',
         'credential_expiring',
         'connection_failing',
         'component_eol',
@@ -86,6 +87,7 @@ class ExpiryScanner {
     private function collectors(): array {
         return [
             fn(): array => $this->licenseSignals(),
+            fn(): array => $this->licenseLimitSignals(),
             fn(): array => $this->personalAccessTokenSignals(),
             fn(): array => $this->todoistSignals(),
             fn(): array => $this->chatWebhookSignals(),
@@ -164,6 +166,41 @@ class ExpiryScanner {
             params: ['date' => $expiry->toDateString(), 'days' => max(0, $daysLeft)],
             linkRoute: 'admin.license.index',
         )];
+    }
+
+    /**
+     * Vollaudit 2026-07 (N9): Frühwarnung, BEVOR das Nutzerlimit erreicht ist
+     * (ab 90 % Belegung; kritisch bei Vollbelegung) — vorher warnte der Scan
+     * nur vor Ablauf/Grace.
+     *
+     * @return list<OperationsSignal>
+     */
+    private function licenseLimitSignals(): array {
+        $guard = app(\App\Services\Licensing\LimitGuard::class);
+        $signals = [];
+
+        foreach (\App\Models\Organization::query()->withoutGlobalScopes()->get() as $org) {
+            $usage = $guard->userLimitUsage($org);
+            if ($usage === null || $usage['max'] <= 0) {
+                continue;
+            }
+            if ($usage['current'] / $usage['max'] < 0.9) {
+                continue;
+            }
+
+            $signals[] = new OperationsSignal(
+                type: OperationsTaskType::LicenseLimitNear,
+                dedupeKey: 'license_limit_near:' . $org->id,
+                severity: $usage['current'] >= $usage['max']
+                    ? OperationsTaskSeverity::Critical
+                    : OperationsTaskSeverity::Warning,
+                titleKey: 'operations.task.license_limit_near',
+                params: ['org' => (string) $org->name, 'current' => $usage['current'], 'max' => $usage['max']],
+                linkRoute: 'admin.license.index',
+            );
+        }
+
+        return $signals;
     }
 
     /** @return list<OperationsSignal> */

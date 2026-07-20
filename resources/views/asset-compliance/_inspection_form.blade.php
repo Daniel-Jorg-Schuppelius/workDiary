@@ -54,6 +54,8 @@
     </details>
 
     <x-input-field name="signature_name" :label="__('Unterschrift (Name)')" />
+    {{-- Prüfkosten (MVP-291; Vollaudit 2026-07, M33). --}}
+    <x-input-field name="cost" type="number" step="0.01" min="0" :label="__('Prüfkosten (netto, €)')" />
     <x-textarea-field name="note" :label="__('Bemerkung')" rows="2"></x-textarea-field>
 
     <button type="submit" class="btn btn-sm btn-primary">{{ __('Prüfung dokumentieren') }}</button>

@@ -19,22 +19,19 @@ use App\Policies\Concerns\HasAdminBypass;
  * läuft ausschließlich über den öffentlichen Signaturlink bzw. den
  * `customer`-Guard und wird hiervon nicht berührt.
  */
-class CustomerQueryPolicy {
+class CustomerQueryPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::ProtocolCustomerQueryManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::ProtocolCustomerQueryManage,
+        'view' => P::ProtocolCustomerQueryManage,
+        'manage' => P::ProtocolCustomerQueryManage,
+    ];
 
-    public function view(User $user, CustomerQuery $query): bool {
-        unset($query);
-
-        return $user->can(P::ProtocolCustomerQueryManage->value);
-    }
-
+    /** Zusatz-Ability jenseits der Basis-CRUD-Methoden (C11/N28). */
     public function manage(User $user, CustomerQuery $query): bool {
         unset($query);
 
-        return $user->can(P::ProtocolCustomerQueryManage->value);
+        return $this->allows($user, 'manage');
     }
 }

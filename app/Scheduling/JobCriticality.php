@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Scheduling;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Betriebliche Einstufung eines Registry-Jobs (Feature 067, MVP-175).
  * Steuert Anzeige-Gewichtung und Überfälligkeits-Bewertung.
  */
-enum JobCriticality: string {
+enum JobCriticality: string implements HasLabel {
+    use HasOptions;
+
     case Core = 'core';
     case Integration = 'integration';
     case Housekeeping = 'housekeeping';

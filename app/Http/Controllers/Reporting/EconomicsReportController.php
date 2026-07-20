@@ -250,7 +250,7 @@ class EconomicsReportController extends Controller {
         abort_unless($allowed, 403);
 
         $kind = (string) $request->query('kind');
-        abort_unless(in_array($kind, ['rework', 'goodwill', 'time', 'material', 'expense'], true), 404);
+        abort_unless(in_array($kind, ['rework', 'goodwill', 'time', 'material', 'expense', 'travel'], true), 404);
 
         $project = Project::query()->findOrFail(Sqid::decodeOrNumeric(Project::class, $request->query('project')) ?? 0);
         $from = (string) $request->query('from');
@@ -261,6 +261,7 @@ class EconomicsReportController extends Controller {
             'time' => $this->timeDrilldown($project, $from, $to),
             'material' => $this->materialDrilldown($project, $from, $to),
             'expense' => $this->expenseDrilldown($project, $from, $to),
+            'travel' => $this->travelDrilldown($project, $from, $to),
             default => $this->reasonDrilldown($kind, $project, $from, $to),
         };
 
@@ -340,6 +341,28 @@ class EconomicsReportController extends Controller {
             'rows' => $base->clone()
                 ->with(['timesheet:id,work_date', 'material:id,name'])
                 ->orderBy('timesheet_id')->orderBy('id')
+                ->paginate(50)->withQueryString(),
+        ];
+    }
+
+    /**
+     * Belegtiefe Fahrt (Vollaudit 2026-07, M7): erstattungsfähige Fahrten des
+     * Projekts im Zeitraum — identische Abgrenzung wie
+     * {@see EconomicsReportBuilder::travelAggregate()} (Kostenseite).
+     *
+     * @return array<string, mixed>
+     */
+    private function travelDrilldown(Project $project, string $from, string $to): array {
+        $base = \App\Models\TravelLog::query()
+            ->where('project_id', $project->id)
+            ->whereBetween('date', [$from, $to])
+            ->where('reimbursable', true);
+
+        return [
+            'totalCost' => round((float) $base->clone()->sum('reimbursement_total'), 2),
+            'rows' => $base->clone()
+                ->with('user:id,name')
+                ->orderBy('date')->orderBy('id')
                 ->paginate(50)->withQueryString(),
         ];
     }

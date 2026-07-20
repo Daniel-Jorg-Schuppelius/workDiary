@@ -38,17 +38,15 @@
             @if (empty($rows))
                 <x-empty-state icon="request_quote" :title="__('Keine genehmigten Budgets.')" />
             @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table bare>
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('Akte') }}</th>
                                 <th class="text-right">{{ __('Genehmigt') }}</th>
                                 <th class="text-right">{{ __('Ist') }}</th>
                                 <th class="text-right">{{ __('Rest') }}</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($rows as $row)
                                 <tr @class(['text-error' => $row['projection']['remaining'] !== null && $row['projection']['remaining'] < 0])>
                                     <td><a class="link" href="{{ route('investments.show', $row['case']) }}">{{ $row['case']->title }}</a></td>
@@ -57,9 +55,7 @@
                                     <td class="text-right tabular-nums">{{ $row['projection']['remaining'] !== null ? number_format($row['projection']['remaining'], 2, ',', '.') . ' €' : '—' }}</td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             @endif
         </x-card>
     </div>

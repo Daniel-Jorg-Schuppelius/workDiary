@@ -11,7 +11,7 @@
 namespace App\Enums\Isms;
 
 use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
 /**
  * Bearbeitungsstatus einer Lieferantenbewertung (Feature 044, MVP 2/3):
@@ -21,7 +21,7 @@ use App\Enums\Contracts\HasLabel;
  * nicht freigegeben und gehen — bei fälliger Review — in die
  * Auditbereitschafts-Kennzahl „ungeprüfte Lieferanten" ein.
  */
-enum SupplierAssessmentStatus: string implements HasLabel {
+enum SupplierAssessmentStatus: string implements HasLabel, HasStatusTransitions {
     use HasOptions;
 
     case Draft = 'draft';

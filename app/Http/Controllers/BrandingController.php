@@ -58,15 +58,17 @@ class BrandingController extends Controller {
 
             'branding.legal.vat_id' => ['nullable', 'string', 'max:60'],
             'branding.legal.tax_number' => ['nullable', 'string', 'max:60'],
-            'branding.legal.iban' => ['nullable', 'string', 'max:64', 'regex:/^[A-Z]{2}[0-9A-Z\s]{10,40}$/i'],
-            'branding.legal.bic' => ['nullable', 'string', 'max:20', 'regex:/^[A-Z0-9]{8}([A-Z0-9]{3})?$/i'],
+            // Gemeinsame Format-Rules (Vollaudit 2026-07, M39).
+            'branding.legal.iban' => ['nullable', 'string', 'max:64', new \App\Rules\Iban()],
+            'branding.legal.bic' => ['nullable', 'string', 'max:20', new \App\Rules\Bic()],
             'branding.legal.bank_name' => ['nullable', 'string', 'max:200'],
             'branding.legal.account_holder' => ['nullable', 'string', 'max:200'],
             'branding.legal.register' => ['nullable', 'string', 'max:200'],
             'branding.legal.footer_text' => ['nullable', 'string', 'max:500'],
 
-            'branding.colors.primary' => ['nullable', 'string', 'regex:/^#?[0-9a-fA-F]{6}$/'],
-            'branding.colors.accent' => ['nullable', 'string', 'regex:/^#?[0-9a-fA-F]{6}$/'],
+            // Gemeinsame Farb-Rule (Vollaudit 2026-07, N49).
+            'branding.colors.primary' => ['nullable', 'string', new \App\Rules\HexColor()],
+            'branding.colors.accent' => ['nullable', 'string', new \App\Rules\HexColor()],
 
             'branding.pdf' => ['nullable', 'array'],
             'branding.pdf.*.logo' => ['nullable', 'in:light,dark,none'],
@@ -84,12 +86,11 @@ class BrandingController extends Controller {
             }
         }
 
-        // IBAN/BIC normalisieren: Leerzeichen entfernen, Großschreibung erzwingen.
-        foreach (['iban', 'bic'] as $field) {
-            $val = (string) ($data['branding']['legal'][$field] ?? '');
-            $val = (string) preg_replace('/\s+/', '', $val);
-            $data['branding']['legal'][$field] = $val !== '' ? strtoupper($val) : null;
-        }
+        // IBAN über den Toolkit-Normalisierer (Vollaudit 2026-07, M39/N40);
+        // BIC bleibt manuell (kein Toolkit-Pendant).
+        $data['branding']['legal']['iban'] = \CommonToolkit\Helper\Data\BankHelper::normalizeIBAN((string) ($data['branding']['legal']['iban'] ?? ''));
+        $bic = (string) preg_replace('/\s+/', '', (string) ($data['branding']['legal']['bic'] ?? ''));
+        $data['branding']['legal']['bic'] = $bic !== '' ? strtoupper($bic) : null;
 
         $branding = $this->stripEmpty($data['branding']);
 

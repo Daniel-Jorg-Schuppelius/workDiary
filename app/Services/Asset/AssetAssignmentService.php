@@ -39,6 +39,7 @@ class AssetAssignmentService {
 
     public function __construct(
         private readonly AssetStatusMachine $statusMachine,
+        private readonly AssetUsageGuard $usageGuard,
     ) {}
 
     // ── Ausgabe / Rückgabe ─────────────────────────────────────────────────
@@ -56,6 +57,19 @@ class AssetAssignmentService {
         if ($targetUser === null && $targetTeam === null) {
             throw AssetValidationException::assignmentTargetRequired();
         }
+
+        // Blockierender Defekt zuerst (eigene, spezifische Fehlermeldung).
+        if ($this->isBlocked($asset)) {
+            throw AssetValidationException::blockedByDefect();
+        }
+
+        // Vollaudit 2026-07 (H2/H3): D12-Sperrmodell greift auch beim internen
+        // Checkout — Compliance-/Verleih-Sperren (asset_blocks, z. B.
+        // inspection_overdue/inspection_failed) blocken die Ausgabe;
+        // Ausnahmefreigaben (Kontext 'usage') laufen über den Guard. Bewusst
+        // VOR der Transaktion: der Guard schreibt eine Audit-Spur, die bei einem
+        // Rollback (Exception) sonst verloren ginge (wie im Rental-Pfad).
+        $this->usageGuard->ensureUsable($asset, 'checkout');
 
         return DB::transaction(function () use ($asset, $actor, $targetUser, $targetTeam, $expectedReturnAt, $diaryEntry, $conditionOut, $note): AssetAssignment {
             // Asset-Zeile sperren und Verfügbarkeit/offene Zuweisung INNERHALB der Transaktion prüfen. Vorher lagen

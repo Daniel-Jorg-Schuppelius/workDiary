@@ -15,6 +15,7 @@ namespace App\Services\Inventory;
 use App\Contracts\Inventory\InventoryValuationStrategy;
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState, ValuationMethod};
 use App\Models\{ArticleVariant, StockMovement, StockValuation, Warehouse};
+use App\Support\DecimalQty;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -51,8 +52,8 @@ class ValuationService implements InventoryValuationStrategy {
 
     /** Wareneingang mit Einzelkosten: aktualisiert den gleitenden Durchschnitt. */
     public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null): StockMovement {
-        $qty = $this->positive($qty);
-        $unitCost = $this->positive($unitCost);
+        $qty = DecimalQty::positive($qty);
+        $unitCost = DecimalQty::positive($unitCost);
 
         return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $source): StockMovement {
             $valuation = $this->valuationFor($variant, $warehouse);
@@ -82,7 +83,7 @@ class ValuationService implements InventoryValuationStrategy {
 
     /** Abgang zum aktuellen Durchschnitt bewertet (Durchschnitt unverändert). */
     public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null): StockMovement {
-        $qty = $this->positive($qty);
+        $qty = DecimalQty::positive($qty);
 
         return DB::transaction(function () use ($variant, $warehouse, $qty, $allowNegative, $actorUserId): StockMovement {
             // Verfügbarkeit UNTER Zeilensperre in der Transaktion prüfen (wie FifoValuationService): der ungesperrte
@@ -135,15 +136,5 @@ class ValuationService implements InventoryValuationStrategy {
         ]);
 
         return $valuation;
-    }
-
-    /** @return numeric-string */
-    private function positive(string $value): string {
-        $value = NumberHelper::normalizeDecimalString($value);
-        if ($value === '' || ! is_numeric($value)) {
-            return '0';
-        }
-
-        return bccomp($value, '0', self::SCALE) < 0 ? bcmul($value, '-1', self::SCALE) : $value;
     }
 }

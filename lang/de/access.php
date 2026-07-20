@@ -297,6 +297,8 @@ return [
         'inventory.viewAny' => 'Lagerbestand & Bewegungen sehen',
         'inventory.post' => 'Lagerbewegungen buchen',
         'inventory.configure' => 'Bestandsprovider konfigurieren',
+        'inventory.negative' => 'Negative Bestände freigeben',
+        'inventory.substituteApprove' => 'Ersatzmaterial genehmigen',
         'article.lexoffice.sync' => 'Produkte & Leistungen mit Lexoffice synchronisieren',
 
         'voucher.viewAny' => 'Belege auflisten',
@@ -479,6 +481,7 @@ return [
         'document.update' => 'Dokument bearbeiten',
         'document.delete' => 'Dokument löschen',
         'document.archive' => 'Dokument archivieren',
+        'document.confidential.manage' => 'Vertrauliche Dokumente Dritter sehen',
         'knowledge.viewAny' => 'Alle Wissensartikel sehen',
         'knowledge.view' => 'Wissensartikel ansehen',
         'knowledge.create' => 'Wissensartikel anlegen',

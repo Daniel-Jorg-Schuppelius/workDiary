@@ -93,6 +93,34 @@ class AssetCheckoutControllerTest extends TestCase {
         $this->assertDatabaseMissing('asset_assignments', ['asset_id' => $asset->id, 'returned_at' => null]);
     }
 
+    /**
+     * Vollaudit 2026-07 (H2/H3): D12-Sperren (asset_blocks, z. B. Prüfung
+     * überfällig) blocken auch den INTERNEN Checkout — vorher griff das
+     * Sperrmodell nur im Verleih.
+     */
+    public function test_d12_blocked_asset_cannot_be_checked_out_internally(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+        $asset = Asset::factory()->create(['organization_id' => $this->organization->id, 'status' => AssetStatus::Active->value]);
+        $target = User::factory()->create(['organization_id' => $this->organization->id]);
+
+        app(\App\Services\Asset\AssetBlockService::class)->block(
+            $asset,
+            \App\Enums\Asset\AssetBlockReason::InspectionOverdue,
+            $user,
+        );
+
+        $this->actingAs($user)
+            ->post(route('assets.checkout.store', $asset), ['assigned_to_user_id' => $target->sqid])
+            ->assertSessionHasErrors('assigned_to_user_id');
+        $this->assertDatabaseMissing('asset_assignments', ['asset_id' => $asset->id, 'returned_at' => null]);
+
+        // Sperre sichtbar auf der Akte, Audit-Spur des Guards vorhanden.
+        $this->assertDatabaseHas('audit_logs', ['event' => 'asset.useBlockedByGuard']);
+        $summary = app(\App\Services\Asset\AssetStatusVisibilityService::class)->summarize($asset->fresh());
+        $this->assertTrue($summary['is_blocked']);
+        $this->assertNotEmpty($summary['active_blocks']);
+    }
+
     public function test_defect_report_stores_uploaded_photo(): void {
         Storage::fake('local');
         $user = $this->userWithRole(UserRole::Teamleitung->value);

@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Plugins\CardDav\Services;
 
 use App\Support\UrlSafety;
-use RuntimeException;
 
 /**
  * SSRF-Leitplanke der CardDAV-Anbindung (Bauturbo A9, MVP-329). Ein
@@ -29,18 +28,12 @@ use RuntimeException;
 final class CardDavUrlGuard {
     /** Konfigurations- und Laufzeitprüfung einer CardDAV-Basis-URL. */
     public static function assertAcceptable(string $url, bool $allowPrivateNetwork): void {
-        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
-        $host = (string) parse_url($url, PHP_URL_HOST);
-
-        if (! in_array($scheme, ['http', 'https'], true) || $host === '' || filter_var($url, FILTER_VALIDATE_URL) === false) {
-            throw new RuntimeException('CardDAV: Die Basis-URL ist keine gültige http(s)-Adresse.');
-        }
-
-        if (! $allowPrivateNetwork && ! UrlSafety::isPubliclyRoutableHttpUrl($url)) {
-            throw new RuntimeException(
-                'CardDAV: Die Basis-URL zeigt auf eine private/interne Adresse. '
-                . 'Für einen Server im eigenen Netz muss die Freigabe privater Adressen ausdrücklich aktiviert werden.'
-            );
-        }
+        // Gemeinsamer Guard (Vollaudit 2026-07, M48) — Meldungstexte unverändert.
+        UrlSafety::assertAcceptableExternalBaseUrl(
+            $url,
+            $allowPrivateNetwork,
+            'CardDAV',
+            privateHint: 'Für einen Server im eigenen Netz muss die Freigabe privater Adressen ausdrücklich aktiviert werden.',
+        );
     }
 }

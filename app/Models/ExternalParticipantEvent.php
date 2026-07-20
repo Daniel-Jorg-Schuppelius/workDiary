@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AppendOnly;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -33,6 +34,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  */
 class ExternalParticipantEvent extends Model {
+    // Append-only jetzt technisch erzwungen statt nur dokumentiert (Vollaudit 2026-07, M52).
+    use AppendOnly;
+
     /** Append-only-Lebenszyklus: nur created_at (kein updated_at). */
     public const UPDATED_AT = null;
 

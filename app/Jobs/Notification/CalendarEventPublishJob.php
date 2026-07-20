@@ -77,24 +77,16 @@ class CalendarEventPublishJob implements ShouldQueue {
             referenceableId: $this->subjectId,
         );
 
-        // Org-Kontext binden (Plugins brauchen die Ziel-Org); vorherige Bindung
-        // sichern/wiederherstellen, da der sync-Driver im Request läuft.
-        $previous = app()->bound('currentOrganization') ? app('currentOrganization') : null;
-        app()->instance('currentOrganization', $organization);
-
-        try {
+        // Org-Kontext binden (Plugins brauchen die Ziel-Org) mit garantiertem
+        // Restore — zentral über OrganizationContext (Vollaudit 2026-07, M42);
+        // wichtig für den sync-Driver, der im Request läuft.
+        \App\Support\OrganizationContext::run($organization, function () use ($plugins, $organization, $item): void {
             foreach ($plugins->withCapability(PluginCapability::CalendarPublish) as $plugin) {
                 if (! $plugin instanceof CalendarPublisher) {
                     continue;
                 }
                 $plugins->invoke($plugin, fn(): array => $plugin->publishCalendarItem($organization, $item));
             }
-        } finally {
-            if ($previous instanceof Organization) {
-                app()->instance('currentOrganization', $previous);
-            } else {
-                app()->forgetInstance('currentOrganization');
-            }
-        }
+        });
     }
 }

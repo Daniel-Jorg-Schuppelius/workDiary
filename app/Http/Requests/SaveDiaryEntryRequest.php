@@ -25,6 +25,8 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
         'customer_id' => \App\Models\Customer::class,
         'assigned_user_id' => \App\Models\User::class,
         'tour_id' => \App\Models\Tour::class,
+        // Gegenstand des Auftrags (Feature 009; Vollaudit 2026-07, M5).
+        'asset_id' => \App\Models\Asset::class,
     ];
 
     protected function prepareForValidation(): void {
@@ -41,6 +43,9 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
         }
         if ($this->input('assigned_user_id') === '' || $this->input('assigned_user_id') === '0') {
             $this->merge(['assigned_user_id' => null]);
+        }
+        if ($this->input('asset_id') === '' || $this->input('asset_id') === '0') {
+            $this->merge(['asset_id' => null]);
         }
         if ($this->input('priority') === '') {
             $this->merge(['priority' => null]);
@@ -103,6 +108,8 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
             'priority' => ['nullable', Rule::enum(Priority::class)],
             'customer_id' => [$requiresCustomer ? 'required' : 'nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('customers')],
             'assigned_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
+            // Gegenstand des Auftrags (Feature 009; Vollaudit 2026-07, M5).
+            'asset_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('assets')],
 
             'scheduled_for' => [$requiresSchedule ? 'required' : 'nullable', 'date'],
             'time_window_start' => ['nullable', 'date_format:H:i'],

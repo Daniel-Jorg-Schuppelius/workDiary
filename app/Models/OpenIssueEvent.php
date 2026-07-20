@@ -11,6 +11,7 @@
 namespace App\Models;
 
 use App\Enums\OpenIssue\OpenIssueEventType;
+use App\Models\Concerns\AppendOnly;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -23,6 +24,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon $created_at
  */
 class OpenIssueEvent extends Model {
+    // Append-only jetzt technisch erzwungen statt nur dokumentiert (Vollaudit 2026-07, M52).
+    use AppendOnly;
+
     public $timestamps = false;
 
     protected $fillable = [

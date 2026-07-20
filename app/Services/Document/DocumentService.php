@@ -58,6 +58,8 @@ class DocumentService {
                 'valid_until' => $validUntil,
                 'description' => $attributes['description'] ?? null,
                 'created_by_user_id' => $creator->id,
+                // Vertraulichkeitsmerkmal (Vollaudit 2026-07, N10).
+                'confidential' => (bool) ($attributes['confidential'] ?? false),
             ]);
 
             $this->storeVersion($document, $creator, $file, 1, $attributes['version_note'] ?? null);
@@ -159,6 +161,10 @@ class DocumentService {
                 'valid_from' => $validFrom,
                 'valid_until' => $validUntil,
                 'description' => array_key_exists('description', $attributes) ? $attributes['description'] : $document->description,
+                // Vertraulichkeitsmerkmal (Vollaudit 2026-07, N10).
+                'confidential' => array_key_exists('confidential', $attributes)
+                    ? (bool) $attributes['confidential']
+                    : $document->confidential,
             ]);
 
             return $document;

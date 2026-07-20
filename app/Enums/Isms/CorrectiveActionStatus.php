@@ -11,7 +11,7 @@
 namespace App\Enums\Isms;
 
 use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
 /**
  * Status einer Korrekturmaßnahme (Feature 046, Inkrement C): open →
@@ -20,7 +20,7 @@ use App\Enums\Contracts\HasLabel;
  * ineffective → inProgress erlaubt Nachbesserung; gleichzeitig setzt der
  * Service die zugehörige Feststellung zurück auf inCorrection.
  */
-enum CorrectiveActionStatus: string implements HasLabel {
+enum CorrectiveActionStatus: string implements HasLabel, HasStatusTransitions {
     use HasOptions;
 
     case Open = 'open';

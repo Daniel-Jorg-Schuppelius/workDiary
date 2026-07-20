@@ -104,9 +104,8 @@
             <p class="text-xs text-base-content/60">
                 {{ __('Vorschlag nach deutschem Recht (GoBD). Verbindliche Fristen werden im Folge-MVP über organizations.settings[privacy] gesetzt.') }}
             </p>
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead>
+            <x-table bare>
+                <x-slot:head>
                         <tr>
                             <th>{{ __('Kategorie') }}</th>
                             <th>{{ __('Modelle') }}</th>
@@ -114,8 +113,7 @@
                             <th>{{ __('Aufbewahrung') }}</th>
                             <th>{{ __('Löschpfad') }}</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                </x-slot:head>
                         @foreach ($categories as $cat)
                             @php
                                 $sens = (string) ($cat['sensitivity'] ?? 'medium');
@@ -132,9 +130,7 @@
                                 <td class="text-xs text-base-content/70">{{ $cat['delete_path'] ?? '—' }}</td>
                             </tr>
                         @endforeach
-                    </tbody>
-                </table>
-            </div>
+            </x-table>
         </div>
     </article>
 
@@ -145,9 +141,8 @@
             @if ($sessions->isEmpty())
                 <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">devices</span>' :title="__('Keine aktiven Sessions.')" compact />
             @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table bare>
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('Nutzer') }}</th>
                                 <th>{{ __('IP') }}</th>
@@ -157,8 +152,7 @@
                                     <th class="text-right">{{ __('Aktion') }}</th>
                                 @endif
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($sessions as $session)
                                 @php
                                     $sessionUser = $sessionUsers->get($session->user_id);
@@ -185,9 +179,7 @@
                                     @endif
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             @endif
         </div>
     </article>
@@ -199,9 +191,8 @@
             @if ($tokens->isEmpty())
                 <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">key</span>' :title="__('Keine API-Tokens aktiv.')" compact />
             @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table bare>
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('Name') }}</th>
                                 <th>{{ __('Nutzer') }}</th>
@@ -212,8 +203,7 @@
                                     <th class="text-right">{{ __('Aktion') }}</th>
                                 @endif
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($tokens as $token)
                                 @php
                                     $tokenUser = $tokenUsers->get($token->tokenable_id);
@@ -238,9 +228,7 @@
                                     @endif
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             @endif
         </div>
     </article>
@@ -253,9 +241,8 @@
                 <p class="text-xs text-base-content/60">
                     {{ __('Systemweite Dienste mit Datenabfluss sowie die in dieser Organisation aktivierten Plugins. Angezeigt werden nur Identität, Quelle und Status — niemals Zugangsdaten.') }}
                 </p>
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table bare>
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('Integration') }}</th>
                                 <th>{{ __('Quelle') }}</th>
@@ -263,8 +250,7 @@
                                 <th>{{ __('Status') }}</th>
                                 <th>{{ __('Dokumentation') }}</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($integrations as $integration)
                                 @php
                                     $integrationStatus = (string) ($integration['status'] ?? 'not_configured');
@@ -296,9 +282,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
                 <div class="rounded-box border border-base-300 bg-base-200 p-3 text-xs text-base-content/70">
                     <p>{{ __('WorkDiary nutzt keine Tracking-, Analytics- oder Werbe-Dienste.') }}</p>
                     <p>{{ __('Es findet keine produktübergreifende Auswertung von Kundendaten statt.') }}</p>
@@ -318,17 +302,15 @@
                 @if ($exports->isEmpty())
                     <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">download</span>' :title="__('Keine Exporte verzeichnet.')" compact />
                 @else
-                    <div class="overflow-x-auto">
-                        <table class="table table-sm">
-                            <thead>
+                    <x-table bare>
+                        <x-slot:head>
                                 <tr>
                                     <th>{{ __('Zeitpunkt') }}</th>
                                     <th>{{ __('Auslöser') }}</th>
                                     <th>{{ __('Event') }}</th>
                                     <th>{{ __('Format / Scope') }}</th>
                                 </tr>
-                            </thead>
-                            <tbody>
+                        </x-slot:head>
                                 @foreach ($exports as $export)
                                     @php
                                         $actor = $export->user_id ? $auditActors->get($export->user_id) : null;
@@ -349,9 +331,7 @@
                                         </td>
                                     </tr>
                                 @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                    </x-table>
                 @endif
             </div>
         </article>
@@ -368,17 +348,15 @@
                 @if ($supportAccesses->isEmpty())
                     <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">support_agent</span>' :title="__('Keine Supportzugriffe verzeichnet.')" compact />
                 @else
-                    <div class="overflow-x-auto">
-                        <table class="table table-sm">
-                            <thead>
+                    <x-table bare>
+                        <x-slot:head>
                                 <tr>
                                     <th>{{ __('Zeitpunkt') }}</th>
                                     <th>{{ __('Support-Identität') }}</th>
                                     <th>{{ __('Event') }}</th>
                                     <th>{{ __('Ticket / Scope') }}</th>
                                 </tr>
-                            </thead>
-                            <tbody>
+                        </x-slot:head>
                                 @foreach ($supportAccesses as $entry)
                                     @php
                                         $actor = $entry->user_id ? $auditActors->get($entry->user_id) : null;
@@ -397,9 +375,7 @@
                                         </td>
                                     </tr>
                                 @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                    </x-table>
                 @endif
             </div>
         </article>

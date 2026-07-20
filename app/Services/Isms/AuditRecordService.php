@@ -13,7 +13,7 @@ namespace App\Services\Isms;
 use App\Enums\Isms\AuditStatus;
 use App\Models\Isms\{IsmsAudit, IsmsScope};
 use App\Models\User;
-use App\Services\Isms\Concerns\{AssignsSequentialNo, ResolvesAuditReferences};
+use App\Services\Isms\Concerns\{AssertsIsmsTransition, AssignsSequentialNo, ResolvesAuditReferences};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -25,6 +25,8 @@ use Illuminate\Validation\ValidationException;
  * performed_from/to + summary.
  */
 class AuditRecordService {
+    use AssertsIsmsTransition;
+
     use AssignsSequentialNo;
     use ResolvesAuditReferences;
 
@@ -99,14 +101,8 @@ class AuditRecordService {
             return $audit;
         }
 
-        if (! in_array($target, $audit->status->allowedTransitions(), true)) {
-            throw ValidationException::withMessages([
-                'status' => __('isms.error.invalid_transition', [
-                    'from' => $audit->status->label(),
-                    'to' => $target->label(),
-                ]),
-            ]);
-        }
+        // Gemeinsamer ISMS-Guard (Vollaudit 2026-07, M44).
+        $this->assertIsmsTransition($audit->status, $target);
 
         if ($target === AuditStatus::ReportIssued
             && ($audit->performed_from === null || $audit->performed_to === null

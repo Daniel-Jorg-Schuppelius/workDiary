@@ -55,17 +55,38 @@ class AgileBacklogController extends Controller {
             $query->whereHas('task', fn($q) => $q->whereLikeEscaped('title', $search));
         }
 
+        // Epic-Hierarchie (Vollaudit 2026-07, M25): Epics des Boards für
+        // Zuordnungs-Select + optionaler Filter auf die Kinder eines Epics.
+        $epics = AgileWorkItem::query()
+            ->where('board_id', $board->id)
+            ->where('item_type', AgileItemType::Epic->value)
+            ->with('task:id,title')
+            ->orderBy('backlog_rank')
+            ->get();
+
+        $epicFilter = null;
+        if (trim((string) $request->query('epic', '')) !== '') {
+            $epicId = \App\Support\Sqid::decode(AgileWorkItem::class, (string) $request->query('epic'));
+            $epicFilter = $epics->firstWhere('id', $epicId);
+            if ($epicFilter !== null) {
+                $query->whereHas('task', fn($q) => $q->where('parent_task_id', $epicFilter->task_id));
+            }
+        }
+
         return view('agile.backlog', [
             'project' => $project,
             'board' => $board,
             'items' => $query->get(),
+            'epics' => $epics,
+            'epicByTaskId' => $epics->keyBy('task_id'),
+            'epicFilter' => $epicFilter,
             'adoptableTasks' => Task::query()
                 ->where('project_id', $project->id)
                 ->whereDoesntHave('agileWorkItem')
                 ->orderBy('title')
                 ->limit(100)
                 ->get(['id', 'title']),
-            'filters' => ['type' => $type, 'q' => $search, 'blocked' => (string) $request->query('blocked', '')],
+            'filters' => ['type' => $type, 'q' => $search, 'blocked' => (string) $request->query('blocked', ''), 'epic' => $epicFilter->sqid ?? ''],
             'canPrioritize' => Gate::allows(Permission::AgileBacklogPrioritize->value),
             'canManage' => Gate::allows('manage', $board),
         ]);
@@ -158,6 +179,32 @@ class AgileBacklogController extends Controller {
 
         return redirect()->route('agile.backlog', $project)
             ->with('success', __('Arbeitselement aktualisiert.'));
+    }
+
+    /** Epic zuordnen/lösen (Vollaudit 2026-07, M25): epic = Sqid, leer = lösen. */
+    public function assignEpic(Request $request, Project $project, AgileWorkItem $item): RedirectResponse {
+        $this->assertItemOnProject($item, $project);
+        Gate::authorize('prioritize', $item);
+
+        $data = $request->validate(['epic' => ['nullable', 'string', 'max:64']]);
+
+        $epic = null;
+        if (($data['epic'] ?? '') !== '') {
+            $epicId = \App\Support\Sqid::decode(AgileWorkItem::class, (string) $data['epic']);
+            $epic = AgileWorkItem::query()->where('board_id', $item->board_id)->findOrFail($epicId);
+        }
+
+        /** @var User $actor */
+        $actor = Auth::user();
+
+        try {
+            $this->items->assignEpic($item, $epic, $actor);
+        } catch (InvalidArgumentException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('agile.backlog', $project)
+            ->with('success', __('Epic-Zuordnung aktualisiert.'));
     }
 
     public function storeCriterion(Request $request, Project $project, AgileWorkItem $item): RedirectResponse {

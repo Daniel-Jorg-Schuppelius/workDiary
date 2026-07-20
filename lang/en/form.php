@@ -25,6 +25,10 @@ return [
 
     'field' => [
         'name' => 'Name',
+        'valid_from' => 'Valid from',
+        'valid_until' => 'Valid until',
+        'target_entry_type' => 'Assignment: entry type',
+        'target_customer' => 'Assignment: customer',
         'description' => 'Description',
         'status' => 'Status',
         'fields' => 'Fields',

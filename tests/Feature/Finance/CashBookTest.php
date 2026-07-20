@@ -129,6 +129,66 @@ class CashBookTest extends TestCase {
         $this->assertSame('2030-06-01', $invoice->paid_on?->toDateString());
     }
 
+    /** Vollaudit 2026-07 (H14): Tagesabschlüsse sind append-only — die Buchungssperre hängt an dieser Zeile. */
+    public function test_daily_closing_is_append_only(): void {
+        $this->record();
+        $closing = app(CashBookService::class)->closeDay($this->register, Carbon::parse('2030-06-01'), 150.00, null, (int) $this->admin->id);
+
+        try {
+            $closing->update(['closing_date' => '2030-05-01']);
+            $this->fail('Update am Tagesabschluss wurde nicht abgewiesen.');
+        } catch (RuntimeException) {
+        }
+
+        $this->expectException(RuntimeException::class);
+        $closing->delete();
+    }
+
+    /** Vollaudit 2026-07 (M36): Ausgaben über den Bestand hinaus sind unzulässig — eine Barkasse wird nie negativ. */
+    public function test_payout_beyond_balance_is_rejected(): void {
+        $this->record(); // Bestand: 100 Anfangsbestand + 50 Einnahme = 150.
+
+        try {
+            $this->record(['direction' => CashEntry::DIRECTION_OUT, 'amount' => '150.01', 'purpose' => 'Zu viel']);
+            $this->fail('Kassenfehlbetrag wurde nicht abgewiesen.');
+        } catch (InvalidArgumentException) {
+        }
+
+        // Entnahme exakt bis 0 bleibt zulässig.
+        $this->record(['direction' => CashEntry::DIRECTION_OUT, 'amount' => '150.00', 'purpose' => 'Restentnahme']);
+        $this->assertSame(0.00, app(CashBookService::class)->balance($this->register));
+
+        // Storno korrigiert Fehlbuchungen und ist bewusst NICHT saldo-geprüft.
+        $income = CashEntry::query()->where('direction', CashEntry::DIRECTION_IN)->firstOrFail();
+        app(CashBookService::class)->reverse($income, 'Fehlbuchung', (int) $this->admin->id, Carbon::parse('2030-06-02'));
+        $this->assertSame(-50.00, app(CashBookService::class)->balance($this->register));
+    }
+
+    /** Vollaudit 2026-07 (M37): Beleg-Anhang am Eintrag — Upload beim Buchen, danach für niemanden löschbar. */
+    public function test_entry_receipt_upload_is_append_only(): void {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $file = \Illuminate\Http\UploadedFile::fake()->create('quittung.pdf', 12, 'application/pdf');
+
+        $this->actingAs($this->admin)
+            ->post(route('cash-registers.entries.store', $this->register), [
+                'booked_on' => '2030-06-01',
+                'direction' => 'in',
+                'amount' => '25.00',
+                'purpose' => 'Barverkauf mit Beleg',
+                'receipt' => $file,
+            ])
+            ->assertRedirect(route('cash-registers.show', $this->register));
+
+        $entry = CashEntry::query()->latest('id')->firstOrFail();
+        $this->assertCount(1, $entry->attachments);
+        $attachment = $entry->attachments->first();
+
+        $this->actingAs($this->admin)
+            ->delete(route('attachments.destroy', $attachment))
+            ->assertForbidden();
+        $this->assertDatabaseHas('attachments', ['id' => $attachment->id]);
+    }
+
     public function test_permissions_and_tenant_isolation(): void {
         $member = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($member)
@@ -147,6 +207,10 @@ class CashBookTest extends TestCase {
     }
 
     public function test_z3_export_offers_cash_book_section(): void {
-        $this->assertContains('cash_entries', app(GdpduExportService::class)->availableSections());
+        $sections = app(GdpduExportService::class)->availableSections();
+        $this->assertContains('cash_entries', $sections);
+        // Vollaudit 2026-07 (M38/H11): Kassensturz-Nachweis + Eingangs-E-Rechnungen.
+        $this->assertContains('cash_daily_closings', $sections);
+        $this->assertContains('incoming_einvoices', $sections);
     }
 }

@@ -13,6 +13,7 @@ namespace App\Services\Isms;
 use App\Enums\Isms\NormConformityStatus;
 use App\Models\{Document, User};
 use App\Models\Isms\{IsmsCertificate, IsmsNormStatus, IsmsRequirement, IsmsScope};
+use App\Services\Isms\Concerns\AssertsIsmsTransition;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -33,6 +34,8 @@ use Illuminate\Validation\ValidationException;
  *   auditiert via Auditable).
  */
 class ConformityService {
+    use AssertsIsmsTransition;
+
     /**
      * 046-Pflichtfelder des Zertifikats (Norm + Ausgabe ergeben sich aus
      * dem NormStatus; Überwachungstermine sind optional).
@@ -138,14 +141,8 @@ class ConformityService {
             return $status;
         }
 
-        if (! in_array($target, $status->status->allowedTransitions(), true)) {
-            throw ValidationException::withMessages([
-                'status' => __('isms.error.invalid_transition', [
-                    'from' => $status->status->label(),
-                    'to' => $target->label(),
-                ]),
-            ]);
-        }
+        // Gemeinsamer ISMS-Guard (Vollaudit 2026-07, M44).
+        $this->assertIsmsTransition($status->status, $target);
 
         if ($target === NormConformityStatus::Certified) {
             $certificate = $status->activeCertificate();

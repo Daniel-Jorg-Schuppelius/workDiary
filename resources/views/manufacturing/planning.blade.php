@@ -8,28 +8,20 @@
         <x-page-toolbar :subtitle="__('manufacturing.planning.subtitle')" />
     </x-slot:toolbar>
 
-    <x-card>
-        <form method="GET" action="{{ route('manufacturing-planning.index') }}" class="flex flex-wrap items-end gap-3">
-            <div class="fieldset min-w-0 grow">
-                <label class="fieldset-label" for="plan-article">{{ __('Artikel') }}</label>
-                <select id="plan-article" name="article" class="select select-sm select-bordered w-full" data-autosubmit>
-                    @foreach ($articles as $a)
-                        <option value="{{ $a->sqid }}" @selected($article && $article->id === $a->id)>{{ $a->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label" for="plan-qty">{{ __('manufacturing.order.field.target_qty') }}</label>
-                <input id="plan-qty" name="qty" type="number" step="0.0001" min="0.0001" value="{{ $qty }}"
-                       class="input input-sm input-bordered w-28">
-            </div>
-            <div class="fieldset">
-                {{-- Unsichtbarer Label-Platzhalter → Button bündig zu den Feldern. --}}
-                <label class="fieldset-label invisible select-none hidden sm:block" aria-hidden="true">&nbsp;</label>
-                <x-icon-btn icon="account_tree" tone="primary" size="sm" type="submit" show-label>{{ __('manufacturing.planning.explode') }}</x-icon-btn>
-            </div>
-        </form>
-    </x-card>
+    {{-- Gemeinsame Filterleiste statt freiem GET-Formular (Vollaudit 2026-07, N58). --}}
+    <x-filter-bar :action="route('manufacturing-planning.index')" :submit-label="__('manufacturing.planning.explode')">
+        <x-filter-field :label="__('Artikel')" for="plan-article" class="min-w-0 grow" show-label>
+            <select id="plan-article" name="article" class="select select-sm select-bordered w-full" data-autosubmit>
+                @foreach ($articles as $a)
+                    <option value="{{ $a->sqid }}" @selected($article && $article->id === $a->id)>{{ $a->name }}</option>
+                @endforeach
+            </select>
+        </x-filter-field>
+        <x-filter-field :label="__('manufacturing.order.field.target_qty')" for="plan-qty" show-label>
+            <input id="plan-qty" name="qty" type="number" step="0.0001" min="0.0001" value="{{ $qty }}"
+                   class="input input-sm input-bordered w-28 shrink-0">
+        </x-filter-field>
+    </x-filter-bar>
 
     @if ($article)
         <x-card padding="p-0">

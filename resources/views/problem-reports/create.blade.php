@@ -12,19 +12,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script @cspNonce>
-        (function () {
-            try {
-                var savedTheme = localStorage.getItem('workDiaryTheme');
-                var prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-                var theme = savedTheme || (prefersLight ? 'corporate' : 'dim');
-                document.documentElement.setAttribute('data-theme', theme);
-                document.documentElement.style.colorScheme = theme === 'corporate' ? 'light' : 'dark';
-            } catch (e) {
-                document.documentElement.setAttribute('data-theme', 'corporate');
-            }
-        })();
-    </script>
+    {{-- Anti-Flash-Theme (ein Partial statt 17 Kopien; Vollaudit 2026-07, M51). --}}
+    @include('partials.theme-bootstrap')
     <title>{{ __('problemreport.title.create') }} – {{ config('app.name', 'WorkDiary') }}</title>
     <style>
         .material-symbols-outlined {

@@ -26,6 +26,10 @@ use Illuminate\Support\Facades\DB;
  * finalen Status haben.
  */
 class ProcedureExecutionService {
+    // Zentraler Event-Schreiber (Vollaudit 2026-07, N38); der Null-Guard mit
+    // Wurf-Semantik bleibt hier bewusst erhalten (Pflicht-Run).
+    use \App\Services\Procedure\Concerns\RecordsProcedureRunEvents;
+
     public function __construct(
         private readonly ProcedureTemplateService $templates,
         private readonly BackupProofService $backups,
@@ -316,13 +320,6 @@ class ProcedureExecutionService {
             throw new \RuntimeException('Cannot record event without a parent run.');
         }
 
-        return ProcedureRunEvent::query()->create([
-            'procedure_run_id' => $run->id,
-            'procedure_step_run_id' => $stepRun?->id,
-            'event_type' => $type->value,
-            'payload' => $payload,
-            'actor_user_id' => $actor?->id,
-            'created_at' => now(),
-        ]);
+        return $this->recordRunEvent($run, $type, $actor, $stepRun, $payload);
     }
 }

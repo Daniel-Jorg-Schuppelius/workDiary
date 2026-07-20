@@ -142,9 +142,8 @@
         <div class="card bg-base-100 shadow-sm">
             <div class="card-body">
                 <h3 class="font-semibold">{{ __('Vorschau (erste :n Zeilen)', ['n' => count($run->preview)]) }}</h3>
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table bare>
+                    <x-slot:head>
                             <tr>
                                 <th>#</th>
                                 @foreach (($run->preview[0]['data'] ?? []) as $col => $_)
@@ -152,8 +151,7 @@
                                 @endforeach
                                 <th>{{ __('Hinweise') }}</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($run->preview as $entry)
                                 <tr class="{{ ! empty($entry['issues']) ? 'bg-error/10' : '' }}">
                                     <td class="font-mono text-xs">{{ $entry['row'] }}</td>
@@ -167,9 +165,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             </div>
         </div>
     @endif

@@ -17,6 +17,7 @@ use App\Models\{Customer, Project, TravelLog, User};
 use App\Services\Travel\TravelLogService;
 use App\Support\{CsvExport, SortableQuery};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -108,7 +109,7 @@ class TravelLogController extends Controller {
         $log = $this->service->create($data);
 
         return redirect()->route('travel-logs.index')
-            ->with('success', __('Fahrt erfasst (:km km).', ['km' => number_format((float) $log->distance_km, 2, ',', '.')]));
+            ->with('success', __('Fahrt erfasst (:km km).', ['km' => NumberHelper::toGermanFormat((float) $log->distance_km, 2, withThousandsSeparator: true)]));
     }
 
     public function edit(TravelLog $travelLog): View {

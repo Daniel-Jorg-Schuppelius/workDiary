@@ -55,23 +55,67 @@ final class FileAttacher {
 
     /**
      * Legt die Datei als Anhang am Träger an und liefert das Attachment.
+     *
+     * @param  array<string, mixed>  $extra  Zusatzspalten (z. B. organization_id,
+     *                                       customer_visible) — Vollaudit 2026-07, M46.
+     * @param  string|null  $folder  Ablageordner-Präfix (Default attachments/Y/m;
+     *                               z. B. 'protocol-photos' für Protokoll-Fotos).
      */
-    public function store(Model $parent, UploadedFile $file, ?int $userId): Attachment {
+    public function store(Model $parent, UploadedFile $file, ?int $userId, array $extra = [], ?string $folder = null): Attachment {
+        // Vollaudit 2026-07 (H8): storage_quota_gb der Lizenz gilt für alle
+        // Formular-Uploads über dieses Bauteil; als Validierungsfehler gemappt.
+        $orgId = $parent->getAttribute('organization_id');
+        if ($orgId !== null) {
+            try {
+                app(\App\Services\Licensing\LimitGuard::class)->ensureCanStoreAttachment(
+                    \App\Models\Organization::query()->withoutGlobalScopes()->findOrFail((int) $orgId),
+                    (int) $file->getSize(),
+                );
+            } catch (\App\Exceptions\LimitExceededException $e) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['file' => $e->getMessage()]);
+            }
+        }
+
         $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?: 'bin'));
-        $path = $file->storeAs('attachments/' . now()->format('Y/m'), Str::uuid()->toString() . '.' . $ext, 'local');
+        $path = $file->storeAs(($folder ?? 'attachments') . '/' . now()->format('Y/m'), Str::uuid()->toString() . '.' . $ext, 'local');
 
         // Über die generische morphMany-Relation (statt der HasAttachments-
         // Trait-Methode), damit der Service jeden Model-Träger akzeptiert; die
         // Morph-Definition entspricht exakt HasAttachments::attachments().
         /** @var Attachment $attachment */
-        $attachment = $parent->morphMany(Attachment::class, 'attachable')->create([
+        $attachment = $parent->morphMany(Attachment::class, 'attachable')->create(array_merge([
             'user_id' => $userId,
             'disk' => 'local',
             'path' => $path,
             'original_name' => Filename::sanitize($file->getClientOriginalName()),
             'mime' => $file->getMimeType() ?? '',
             'size' => $file->getSize(),
-        ]);
+        ], $extra));
+
+        return $attachment;
+    }
+
+    /**
+     * Content-Variante (Vollaudit 2026-07, M46): legt bereits vorliegende
+     * Roh-Inhalte (z. B. Mail-Intake-Übernahmen) mit demselben Ablage-Rezept
+     * ab — gleicher Ordner, UUID-Name, Filename::sanitize, morphMany-create.
+     *
+     * @param  array<string, mixed>  $extra
+     */
+    public function storeContent(Model $parent, string $content, string $originalName, ?string $mime, ?int $userId, array $extra = [], ?string $folder = null): Attachment {
+        $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION) ?: 'bin');
+        $path = ($folder ?? 'attachments') . '/' . now()->format('Y/m') . '/' . Str::uuid()->toString() . '.' . $ext;
+        \Illuminate\Support\Facades\Storage::disk('local')->put($path, $content);
+
+        /** @var Attachment $attachment */
+        $attachment = $parent->morphMany(Attachment::class, 'attachable')->create(array_merge([
+            'user_id' => $userId,
+            'disk' => 'local',
+            'path' => $path,
+            'original_name' => Filename::sanitize($originalName),
+            'mime' => $mime ?? '',
+            'size' => strlen($content),
+        ], $extra));
 
         return $attachment;
     }

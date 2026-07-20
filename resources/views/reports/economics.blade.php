@@ -218,6 +218,7 @@
                                 <a class="link link-hover" href="{{ $drill('time', (float) $row['costTime']) }}" title="{{ __('Belegtiefe: Zeiteinträge') }}">{{ __('Zeit') }} {{ $eur($row['costTime']) }}</a>
                                 · <a class="link link-hover" href="{{ $drill('material', (float) $row['costMaterial']) }}" title="{{ __('Belegtiefe: Material') }}">{{ __('Material') }} {{ $eur($row['costMaterial']) }}</a>
                                 · <a class="link link-hover" href="{{ $drill('expense', (float) $row['costExpense']) }}" title="{{ __('Belegtiefe: Spesen/Belege') }}">{{ __('Belege') }} {{ $eur($row['costExpense']) }}</a>
+                                · <a class="link link-hover" href="{{ $drill('travel', (float) $row['costTravel']) }}" title="{{ __('Belegtiefe: Fahrten') }}">{{ __('Fahrt') }} {{ $eur($row['costTravel']) }}</a>
                             </div>
                         </td>
                         <td class="text-right tabular-nums font-medium {{ $contribTone($row['contribution']) }}">{{ $eur($row['contribution']) }}</td>

@@ -64,6 +64,7 @@ return [
             'uploaded' => 'Foto hinzugefügt.',
             'removed' => 'Foto entfernt.',
             'captionUpdated' => 'Bildunterschrift aktualisiert.',
+            'reordered' => 'Reihenfolge aktualisiert.',
         ],
     ],
     'validation' => [
@@ -113,6 +114,7 @@ return [
         ],
     ],
     'pdf' => [
+        'photos' => ['more' => ':count weitere Foto(s)'],
         'title' => 'Protokoll – :title',
         'state' => 'Zustand',
         'items' => 'Protokollpunkte',
@@ -131,6 +133,12 @@ return [
     ],
     'signature' => [
         'tokenIssued' => 'Signaturlink wurde erstellt.',
+        'tokenRevoked' => 'Signaturlink wurde widerrufen.',
+        'tokenList' => 'Externe Signaturlinks',
+        'tokenUsed' => 'eingelöst',
+        'tokenOpen' => 'offen',
+        'revoke' => 'Link widerrufen',
+        'externalLink' => 'Externer Link',
         'tokenExpired' => 'Der Signaturlink ist abgelaufen oder bereits eingelöst.',
         'tokenUnknown' => 'Signaturlink unbekannt.',
         'redeemed' => 'Unterschrift wurde gespeichert.',

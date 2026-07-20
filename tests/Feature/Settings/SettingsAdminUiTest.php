@@ -59,6 +59,25 @@ class SettingsAdminUiTest extends TestCase {
         $this->assertDatabaseCount('system_settings', 0);
     }
 
+    /** Vollaudit 2026-07 (N20): Konfigurationsstand-Export als JSON + Audit. */
+    public function test_settings_export_returns_json_and_writes_audit(): void {
+        $response = $this->actingAs($this->admin)
+            ->get(route('admin.settings.export', ['scope' => 'system']))
+            ->assertOk()
+            ->assertHeader('Content-Disposition');
+
+        $payload = $response->json();
+        $this->assertSame('system', $payload['scope']);
+        $this->assertArrayHasKey('settings', $payload);
+        $this->assertNotEmpty($payload['settings']);
+
+        $this->assertDatabaseHas('audit_logs', ['event' => 'settings.exported']);
+
+        // Ohne Recht kein Export.
+        $user = \App\Models\User::factory()->user()->create(['organization_id' => $this->admin->organization_id]);
+        $this->actingAs($user)->get(route('admin.settings.export'))->assertForbidden();
+    }
+
     public function test_validation_error_is_reported_without_saving(): void {
         $this->actingAs($this->admin)->put(route('admin.settings.update', ['key' => 'pagination.customers']), [
             'scope' => 'system',

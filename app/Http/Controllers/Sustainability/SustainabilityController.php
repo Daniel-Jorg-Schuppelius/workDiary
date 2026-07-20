@@ -14,7 +14,7 @@ namespace App\Http\Controllers\Sustainability;
 
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\Sustainability\{SustainabilityActivityRecord, SustainabilityAssessment, SustainabilityCriterion, SustainabilityFactorSet, SustainabilityFrameMapping, SustainabilityMeasure, SustainabilityReportSnapshot, SustainabilityTarget};
 use App\Models\User;
 use App\Services\Sustainability\{EmissionCalculationService, SustainabilityAssessmentService};
@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\{Auth, Gate};
  * Datenqualitätswarnung + Snapshot und VSME-Referenzmatrix.
  */
 class SustainabilityController extends Controller {
+    use RendersReportPdf;
     use WritesReportCsv;
 
     public function __construct(
@@ -37,7 +38,7 @@ class SustainabilityController extends Controller {
         private readonly SustainabilityAssessmentService $assessments,
     ) {}
 
-    public function index(Request $request): View|Response {
+    public function index(Request $request): View|\Symfony\Component\HttpFoundation\Response {
         Gate::authorize('viewAny', SustainabilityAssessment::class);
         $orgId = (int) Auth::user()?->organization_id;
 
@@ -72,6 +73,15 @@ class SustainabilityController extends Controller {
 
         if ($request->query('export') === 'csv') {
             return $this->exportCsv($aggregate, $from, $to, $request);
+        }
+        // Vollaudit 2026-07 (N21): PDF über die 076-Report-Pipeline.
+        if ($request->query('export') === 'pdf') {
+            return $this->pdfDownload('sustainability.pdf.report', [
+                'aggregate' => $aggregate,
+                'factorSetNames' => $this->emissions->activeSetNames($orgId),
+                'from' => $from,
+                'to' => $to,
+            ], sprintf('nachhaltigkeit_%s_%s.pdf', $from, $to), 'portrait', $request, 'sustainability', ['from' => $from, 'to' => $to]);
         }
 
         return view('sustainability.index', [

@@ -14,6 +14,7 @@ namespace App\Services\Import\Specs;
 
 use App\Enums\Import\ImportErrorCode;
 use App\Services\Import\{EntitySpec, ValidationIssue};
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /**
  * Basisklasse mit gemeinsamen Validierungs-Helfern für CSV-Import-Spezifikationen.
@@ -50,25 +51,21 @@ abstract class AbstractEntitySpec implements EntitySpec {
         return $value === null ? null : mb_strtolower($value);
     }
 
+    /**
+     * Dezimalnormalisierung über den Toolkit-Standard (Vollaudit 2026-07,
+     * M49): NumberHelper::normalizeDecimalString entscheidet DE/US über die
+     * LETZTE Separator-Position — die frühere Eigenheuristik verparste
+     * US-Format ("1,234.56" → 1.23456). Randsemantik bleibt App-Sache:
+     * null/leer → null (Toolkit lieferte "0"), nicht Numerisches → null.
+     */
     protected function decimal(?string $value): ?string {
-        if ($value === null) {
-            return null;
-        }
-        $normalized = str_replace([' ', "\u{00A0}"], '', $value);
-        $hasComma = str_contains($normalized, ',');
-        $hasDot = str_contains($normalized, '.');
-        if ($hasComma && $hasDot) {
-            // 1.234,56 → 1234.56
-            $normalized = str_replace('.', '', $normalized);
-            $normalized = str_replace(',', '.', $normalized);
-        } elseif ($hasComma) {
-            $normalized = str_replace(',', '.', $normalized);
-        }
-        if (! is_numeric($normalized)) {
+        if ($value === null || trim($value) === '') {
             return null;
         }
 
-        return $normalized;
+        $normalized = NumberHelper::normalizeDecimalString(str_replace("\u{00A0}", '', $value));
+
+        return is_numeric($normalized) ? $normalized : null;
     }
 
     protected function requiredIssue(string $field): ValidationIssue {

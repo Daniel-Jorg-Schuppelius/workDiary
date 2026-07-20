@@ -13,10 +13,11 @@ namespace App\Services\Finance;
 use App\Enums\Finance\{TransferChannel, TransferStatus, TransferTarget};
 use App\Models\{Customer, ExternalReference, MaterialUsage, TimeEntry, User};
 use App\Models\Finance\{BillingTransfer, BillingTransferEvent, BillingTransferItem};
+use App\Services\Concerns\ResolvesActorId;
 use Carbon\CarbonInterface;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\{Carbon, Collection};
-use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Support\Facades\DB;
 
 /**
  * Statusmaschine für Übergabenachweise (Feature 045, „Freigabe und Aggregation"):
@@ -37,6 +38,8 @@ use Illuminate\Support\Facades\{Auth, DB};
  * revisionssichere Hash-Kette (config('audit.chains'), `audit:verify`).
  */
 class BillingTransferService {
+    use ResolvesActorId;
+
     /**
      * Erzeugt einen Draft-Übergabenachweis und sammelt die übergabefähigen
      * Quellen des Kunden im Zeitraum (Muster aus InvoiceGenerator).
@@ -159,6 +162,9 @@ class BillingTransferService {
                 'payload_hash' => $transfer->payload_hash,
             ]);
 
+            // Feature-Nutzungszähler (036; Vollaudit 2026-07, N14).
+            app(\App\Services\Metrics\OperationsMetricsService::class)->increment('finance.transfer', (int) $transfer->organization_id);
+
             return $transfer->refresh();
         });
     }
@@ -169,7 +175,7 @@ class BillingTransferService {
 
         $actorId = $this->resolveActorId($actor);
 
-        return DB::transaction(function () use ($transfer, $reason, $actorId): BillingTransfer {
+        $transfer = DB::transaction(function () use ($transfer, $reason, $actorId): BillingTransfer {
             $transfer->fill([
                 'status' => TransferStatus::Failed,
                 'failure_reason' => $reason,
@@ -182,6 +188,23 @@ class BillingTransferService {
 
             return $transfer->refresh();
         });
+
+        // Vollaudit 2026-07 (M16): Fehlschlag an die Buchhaltung melden —
+        // die Finanzschnittstelle lief bisher komplett an der Registry vorbei.
+        app(\App\Services\Notification\NotificationDispatcher::class)->notify(
+            \App\Enums\Notification\NotificationEvent::FinanceTransferFailed,
+            $transfer,
+            null,
+            [
+                'title' => (string) __('notification.message.finance_transfer_failed_title', ['id' => $transfer->id]),
+                'title_key' => 'notification.message.finance_transfer_failed_title',
+                'title_params' => ['id' => $transfer->id],
+                'message' => $reason,
+                'url' => route('finance.transfers.show', $transfer),
+            ],
+        );
+
+        return $transfer;
     }
 
     /**
@@ -237,13 +260,6 @@ class BillingTransferService {
     }
 
     // ── intern ─────────────────────────────────────────────────────────
-
-    /** Handelnder Nutzer: explizit übergeben oder eingeloggter User. */
-    private function resolveActorId(?User $actor): ?int {
-        $id = $actor->id ?? Auth::id();
-
-        return $id !== null ? (int) $id : null;
-    }
 
     /**
      * Übergabefähige Zeiteinträge: abrechenbar, noch nicht exportiert, dem

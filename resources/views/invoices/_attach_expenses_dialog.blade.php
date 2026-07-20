@@ -16,9 +16,8 @@
             {{ __('Wähle die Spesen, die als Position der Rechnung hinzugefügt werden sollen. Brutto-Betrag wird als Einzelpreis übernommen.') }}
         </p>
 
-        <div class="mt-3 overflow-x-auto">
-            <table class="table table-sm">
-                <thead>
+        <x-table class="mt-3">
+            <x-slot:head>
                     <tr>
                         <th>
                             <input type="checkbox" class="checkbox checkbox-sm"
@@ -30,8 +29,7 @@
                         <th>{{ __('Beschreibung') }}</th>
                         <th class="text-right">{{ __('Brutto') }}</th>
                     </tr>
-                </thead>
-                <tbody>
+            </x-slot:head>
                     @foreach ($expenses as $expense)
                         <tr>
                             <td>
@@ -60,8 +58,6 @@
                             </td>
                         </tr>
                     @endforeach
-                </tbody>
-            </table>
-        </div>
+        </x-table>
     @endif
 </x-modal>

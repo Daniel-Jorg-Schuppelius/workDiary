@@ -17,7 +17,7 @@ use App\Enums\Manufacturing\DeliveryFacturationStatus;
 use App\Models\{Article, ArticleVariant, Customer, ManufacturingOrder, Organization, StockDelivery, StockSerial, Warehouse};
 use App\Services\Finance\BillingModeResolver;
 use App\Services\Inventory\{ExternalStockMirror, InventoryLedger, InventoryValuationManager, SerialService};
-use CommonToolkit\Helper\Data\NumberHelper;
+use App\Support\DecimalQty;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -53,7 +53,7 @@ class DeliveryService {
         ?int $createdBy = null,
         ?array $serialIds = null,
     ): StockDelivery {
-        $qty = $this->positive($qty);
+        $qty = DecimalQty::positive($qty);
 
         return DB::transaction(function () use ($variant, $warehouse, $qty, $order, $customer, $allowNegative, $createdBy, $serialIds): StockDelivery {
             // Lagerbuchung zuerst — schlägt sie fehl (Unterdeckung), entsteht keine Auslieferung. Abgang über das
@@ -131,15 +131,5 @@ class DeliveryService {
             BillingMode::Easybill => 'easybill',
             BillingMode::Workdiary => 'workdiary',
         };
-    }
-
-    /** @return numeric-string */
-    private function positive(string $value): string {
-        $value = NumberHelper::normalizeDecimalString($value);
-        if ($value === '' || ! is_numeric($value)) {
-            return '0';
-        }
-
-        return bccomp($value, '0', self::SCALE) < 0 ? bcmul($value, '-1', self::SCALE) : $value;
     }
 }

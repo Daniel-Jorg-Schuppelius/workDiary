@@ -23,9 +23,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use PDFToolkit\Entities\PDFContent;
-use PDFToolkit\Registries\PDFWriterRegistry;
-use RuntimeException;
 
 /** Datenschutzvorfaelle (Art. 33/34) mit zeitkritischem 72-h-Workflow. */
 class IncidentController extends Controller {
@@ -265,9 +262,13 @@ class IncidentController extends Controller {
                 ? __('Meldung an die Aufsichtsbehörde (Art. 33 DSGVO)')
                 : __('Benachrichtigung betroffener Personen (Art. 34 DSGVO)');
 
-            $html = view('privacy.incidents.report-pdf', compact('incident', 'title', 'body'))->render();
-            $bytes = PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
-                ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (privacy.incidents.report-pdf).');
+            // View→PDF über den zentralen Renderer (C15; Vollaudit 2026-07, N27) — design-frei.
+            $bytes = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->renderPdf(
+                \App\Enums\DocumentDesign\RenderDocumentKind::Report,
+                'privacy.incidents.report-pdf',
+                compact('incident', 'title', 'body'),
+                null,
+            );
 
             return response($bytes, 200, [
                 'Content-Type' => 'application/pdf',

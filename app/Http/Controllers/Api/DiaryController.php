@@ -13,9 +13,8 @@ namespace App\Http\Controllers\Api;
 use App\Enums\Diary\Status;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DiaryEntryResource;
-use App\Models\{DiaryEntry, Tag, User};
+use App\Models\{DiaryEntry, User};
 use App\Services\Archive\ArchiveService;
-use App\Support\Sqid;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -117,11 +116,7 @@ class DiaryController extends Controller {
      * @return array<int>
      */
     private function decodeTagIds(mixed $raw): array {
-        return collect((array) $raw)
-            ->map(fn($v) => is_scalar($v) ? Sqid::decodeOrNumeric(Tag::class, (string) $v) : null)
-            ->filter()
-            ->unique()
-            ->values()
-            ->all();
+        // Kanonische Dekodierung (Vollaudit 2026-07, M40); Org-Prüfung in HasTags.
+        return \App\Support\TagInput::ids(is_array($raw) ? $raw : (array) $raw);
     }
 }

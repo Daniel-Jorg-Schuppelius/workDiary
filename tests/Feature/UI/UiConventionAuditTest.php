@@ -41,6 +41,27 @@ class UiConventionAuditTest extends TestCase {
         ]);
     }
 
+    /**
+     * Vollaudit 2026-07 (N3): <x-page-shell> hat keinen actions-Slot — ein
+     * direkt darunter platzierter <x-slot:actions> wird verschluckt und die
+     * Aktionen sind unsichtbar. Der Fehler ist zweimal aufgetreten (Dokument-
+     * design Index + Editor); dieses Gate hält ihn app-weit fest.
+     */
+    public function test_no_view_feeds_actions_slot_directly_into_page_shell(): void {
+        $offenders = [];
+        foreach (\Illuminate\Support\Facades\File::allFiles(resource_path('views')) as $file) {
+            if (! str_ends_with($file->getFilename(), '.blade.php')) {
+                continue;
+            }
+            $content = (string) file_get_contents($file->getPathname());
+            if (preg_match('/<x-page-shell[^>]*>\s*<x-slot:actions/', $content) === 1) {
+                $offenders[] = $file->getRelativePathname();
+            }
+        }
+
+        $this->assertSame([], $offenders, 'x-page-shell verschluckt <x-slot:actions> — Aktionen gehören in die Toolbar (<x-slot:toolbar>) oder die Kopf-Karte: ' . implode(', ', $offenders));
+    }
+
     public function test_invoice_template_create_renders_modal_dialog_not_full_page(): void {
         $response = $this->actingAs($this->admin)
             ->get(route('invoice-templates.create'))

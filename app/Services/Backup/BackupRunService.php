@@ -14,7 +14,6 @@ use App\Enums\Backup\{BackupGenerationStatus, BackupRetentionClass, BackupTarget
 use App\Models\Backup\{BackupGeneration, BackupGenerationPart, BackupTargetConnection};
 use App\Models\BackupHeartbeat;
 use App\Plugins\Contracts\BackupTarget;
-use App\Plugins\PluginManager;
 use App\Services\Backup\Exceptions\{BackupKeyMissingException, BackupPreflightException};
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\{Cache, Log};
@@ -30,6 +29,9 @@ use Throwable;
  * (Muster MVP-056); ohne Commit-Manifest zählt nichts als Backup.
  */
 class BackupRunService {
+    // Gemeinsame Adapter-Auflösung (Vollaudit 2026-07, N34).
+    use \App\Services\Backup\Concerns\ResolvesBackupTarget;
+
     /** Sicherheitsaufschlag der Quota-Prüfung (Krypto-Overhead + Manifest). */
     private const QUOTA_SAFETY_FACTOR = 1.05;
 
@@ -385,14 +387,4 @@ class BackupRunService {
         return $workDir . '/' . $generation->snapshot_uuid . '/snapshot.tar.part-' . $partNo . '.enc';
     }
 
-    private function adapter(BackupTargetConnection $connection): BackupTarget {
-        $plugin = app(PluginManager::class)->find($connection->provider->pluginId());
-        if (!$plugin instanceof BackupTarget) {
-            throw new BackupPreflightException(
-                "Kein Backup-Adapter für Provider '{$connection->provider->value}' verfügbar.",
-            );
-        }
-
-        return $plugin;
-    }
 }

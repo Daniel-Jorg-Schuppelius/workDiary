@@ -59,6 +59,37 @@ final class IdeaMapExportTest extends TestCase {
         ]);
     }
 
+    /** Vollaudit 2026-07 (N16): Querverbindungen + Boundaries im JSON-Export (Phase D). */
+    public function test_json_export_includes_links_and_summaries(): void {
+        $root = $this->map->rootNode()->firstOrFail();
+        $child = $this->map->nodes()->where('is_root', false)->firstOrFail();
+
+        \App\Models\IdeaNodeLink::query()->create([
+            'organization_id' => $this->organization->id,
+            'idea_map_id' => $this->map->id,
+            'source_node_id' => $root->id,
+            'target_node_id' => $child->id,
+            'label' => 'hängt zusammen',
+            'color' => '#2563eb',
+        ]);
+        \App\Models\IdeaNodeSummary::query()->create([
+            'organization_id' => $this->organization->id,
+            'idea_map_id' => $this->map->id,
+            'parent_node_id' => $root->id,
+            'start_index' => 0,
+            'end_index' => 0,
+            'label' => 'Block A',
+        ]);
+
+        $this->actingAs($this->owner)->get(route('ideas.export.json', $this->map))
+            ->assertOk()
+            ->assertJsonPath('links.0.source', $root->sqid)
+            ->assertJsonPath('links.0.target', $child->sqid)
+            ->assertJsonPath('links.0.label', 'hängt zusammen')
+            ->assertJsonPath('summaries.0.parent', $root->sqid)
+            ->assertJsonPath('summaries.0.label', 'Block A');
+    }
+
     public function test_pdf_export_renders_for_owner(): void {
         $this->actingAs($this->owner)->get(route('ideas.export.pdf', $this->map))
             ->assertOk()

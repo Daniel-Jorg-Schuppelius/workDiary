@@ -41,6 +41,8 @@ class DiaryEntryTimelineService {
         'communication',
         'document',
         'procedure',
+        // Dienstmittel/Assets (Feature 009 Akzeptanz 1; Vollaudit 2026-07, M5).
+        'asset',
     ];
 
     /**
@@ -96,6 +98,7 @@ class DiaryEntryTimelineService {
             'communication' => fn(): array => $this->communicationItems($entry, $viewer, $cap),
             'document' => fn(): array => $this->documentItems($entry, $viewer, $cap),
             'procedure' => fn(): array => $this->procedureItems($entry, $cap),
+            'asset' => fn(): array => $this->assetItems($entry, $cap),
         ];
 
         foreach ($sources as $type => $loader) {
@@ -588,6 +591,36 @@ class DiaryEntryTimelineService {
                 actor: null,
                 title: (string) __('timeline.event.material_added'),
                 summary: rtrim(rtrim((string) $usage->quantity, '0'), '.') . ' ' . $usage->unit . ' — ' . $usage->description,
+            );
+        }
+
+        return $items;
+    }
+
+    /**
+     * Dienstmittel-Ausgaben auf den Auftrag (asset_assignments.diary_entry_id;
+     * Feature 009 Akzeptanz 1 — Vollaudit 2026-07, M5).
+     *
+     * @return list<TimelineItem>
+     */
+    private function assetItems(DiaryEntry $entry, int $cap): array {
+        $items = [];
+        $assignments = \App\Models\AssetAssignment::query()
+            ->where('diary_entry_id', $entry->id)
+            ->with(['asset:id,name', 'assignedToUser:id,name'])
+            ->latest('checked_out_at')
+            ->limit($cap)
+            ->get();
+
+        foreach ($assignments as $assignment) {
+            $items[] = new TimelineItem(
+                id: 'asset-assignment:' . $assignment->id,
+                type: 'asset',
+                icon: 'construction',
+                occurredAt: $assignment->checked_out_at,
+                actor: $assignment->assignedToUser?->name,
+                title: (string) __('timeline.event.asset_issued'),
+                summary: (string) ($assignment->asset->name ?? '—'),
             );
         }
 

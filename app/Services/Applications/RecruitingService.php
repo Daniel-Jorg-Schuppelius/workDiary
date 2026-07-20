@@ -208,6 +208,12 @@ class RecruitingService {
             throw new \RuntimeException((string) __('Ein Konto mit dieser E-Mail existiert bereits.'));
         }
 
+        // Vollaudit 2026-07 (H8): Lizenz-Nutzerlimit auch bei Übernahme aus dem Recruiting.
+        app(\App\Services\Licensing\LimitGuard::class)->ensureCanCreateUser(
+            \App\Models\Organization::query()->withoutGlobalScopes()->findOrFail((int) $draft->organization_id),
+            $actor,
+        );
+
         return DB::transaction(function () use ($draft, $actor, $email): User {
             $user = User::query()->create([
                 'organization_id' => $draft->organization_id,

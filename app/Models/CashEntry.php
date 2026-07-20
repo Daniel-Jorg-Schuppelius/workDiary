@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{BelongsToOrganization, HasSqid, HashChainable, HashChained};
+use App\Models\Concerns\{BelongsToOrganization, HasAttachments, HasSqid, HashChainable, HashChained};
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -42,6 +42,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class CashEntry extends Model implements HashChainable {
     use BelongsToOrganization;
+    use HasAttachments;
     use HashChained;
     use HasSqid;
 

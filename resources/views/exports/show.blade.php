@@ -118,6 +118,19 @@
                     </form>
                 @endcan
 
+                @can('delete', $export)
+                    {{-- Vollaudit 2026-07 (N6): Löschung mit Pflicht-Begründung, Spur im Audit-Protokoll. --}}
+                    <form method="POST" action="{{ route('exports.destroy', $export) }}" class="space-y-2"
+                          data-confirm="{{ __('Export endgültig löschen? Die Begründung wird auditiert.') }}">
+                        @csrf
+                        @method('DELETE')
+                        <textarea name="note" required minlength="5" maxlength="2000" rows="2"
+                                  class="textarea textarea-bordered w-full text-sm"
+                                  placeholder="{{ __('Löschbegründung (Pflicht)') }}"></textarea>
+                        <x-button type="submit" tone="error" class="w-full" icon="delete">{{ __('Export löschen') }}</x-button>
+                    </form>
+                @endcan
+
                 @cannot('deliver', $export)
                     @cannot('reject', $export)
                         <p class="text-sm text-base-content/60">{{ __('Keine weiteren Aktionen verfügbar.') }}</p>

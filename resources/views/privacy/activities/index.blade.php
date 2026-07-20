@@ -26,6 +26,22 @@
             <div class="alert alert-success">{{ session('status') }}</div>
         @endif
 
+        {{-- VVT-Vorlagenkatalog (Feature 043 MVP 1; Vollaudit 2026-07, M17). --}}
+        @if ($templates !== [])
+            <x-card :title="__('Aus Vorlage anlegen')">
+                <form method="POST" action="{{ route('dataprotection.activities.template') }}" class="flex flex-wrap items-center gap-2">
+                    @csrf
+                    <select name="template" class="select select-sm select-bordered min-w-72" aria-label="{{ __('Vorlage') }}">
+                        @foreach ($templates as $key => $template)
+                            <option value="{{ $key }}">{{ $template['name'] }} ({{ $template['area'] }})</option>
+                        @endforeach
+                    </select>
+                    <x-icon-btn icon="library_add" tone="outline" size="sm" type="submit" show-label>{{ __('Als Entwurf anlegen') }}</x-icon-btn>
+                    <span class="text-xs text-base-content/60">{{ __('Inhalte sind Startpunkte — organisationsspezifisch prüfen.') }}</span>
+                </form>
+            </x-card>
+        @endif
+
         <x-card padding="p-0">
             <x-table>
                 <x-slot:head>

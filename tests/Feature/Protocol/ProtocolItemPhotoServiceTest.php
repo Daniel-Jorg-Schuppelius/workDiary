@@ -57,6 +57,28 @@ class ProtocolItemPhotoServiceTest extends TestCase {
         ]);
     }
 
+    /**
+     * Vollaudit 2026-07 (H5): EXIF-/GPS-Stripping Default-on vor Persistenz
+     * (MVP-023 §4) + Begrenzung der langen Kante (Kriterium 8).
+     */
+    public function test_upload_strips_exif_and_resizes(): void {
+        [$user, $item] = $this->makeFotoItem();
+        $file = UploadedFile::fake()->image('gross.jpg', 4000, 1000);
+
+        $photo = $this->photos->upload($item, $file, ProtocolItemPhotoPhase::Before, $user);
+
+        $attachment = Attachment::query()->findOrFail($photo->attachment_id);
+        $absolute = Storage::disk($attachment->disk)->path((string) $attachment->path);
+        $sizeInfo = getimagesize($absolute);
+        $this->assertNotFalse($sizeInfo);
+        $this->assertLessThanOrEqual(\App\Services\Protocol\ProtocolItemPhotoService::MAX_EDGE_PX, max($sizeInfo[0], $sizeInfo[1]));
+
+        $exif = @exif_read_data($absolute) ?: [];
+        $this->assertArrayNotHasKey('DateTimeOriginal', $exif);
+        $this->assertArrayNotHasKey('GPSLatitude', $exif);
+        $this->assertSame((int) filesize($absolute), (int) $attachment->size, 'Attachment-Größe entspricht der bereinigten Datei.');
+    }
+
     public function test_upload_rejects_invalid_mime(): void {
         [$user, $item] = $this->makeFotoItem();
         $file = UploadedFile::fake()->create('schaden.txt', 10, 'text/plain');

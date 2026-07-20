@@ -31,8 +31,19 @@
         $panelSubmissionsQuery->where('submitted_by_user_id', $panelUser->id);
     }
     $panelSubmissions = $panelSubmissionsQuery->get();
+    // Zuordnungsfilter (Feature 032 MVP; Vollaudit 2026-07, M11): am Bezug nur
+    // Vorlagen anbieten, deren Ziel (Auftragstyp/Kunde) zum Subject passt.
+    $panelEntryTypeId = $subject instanceof \App\Models\DiaryEntry ? ($subject->entry_type_id !== null ? (int) $subject->entry_type_id : null) : null;
+    $panelCustomerId = match (true) {
+        $subject instanceof \App\Models\Customer => (int) $subject->getKey(),
+        $subject instanceof \App\Models\DiaryEntry => $subject->customer_id !== null ? (int) $subject->customer_id : null,
+        $subject instanceof \App\Models\Project => $subject->customer_id !== null ? (int) $subject->customer_id : null,
+        default => null,
+    };
     $panelActiveTemplates = \Illuminate\Support\Facades\Gate::allows('create', \App\Models\FormSubmission::class)
         ? \App\Models\FormTemplate::query()->active()->orderBy('name')->get()
+            ->filter(fn(\App\Models\FormTemplate $t): bool => $t->matchesSubject($panelEntryTypeId, $panelCustomerId))
+            ->values()
         : collect();
 @endphp
 

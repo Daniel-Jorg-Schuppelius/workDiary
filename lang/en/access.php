@@ -297,6 +297,8 @@ return [
         'inventory.viewAny' => 'View stock & movements',
         'inventory.post' => 'Post stock movements',
         'inventory.configure' => 'Configure inventory provider',
+        'inventory.negative' => 'Approve negative stock',
+        'inventory.substituteApprove' => 'Approve substitute material',
         'article.lexoffice.sync' => 'Sync products & services with Lexoffice',
 
         'voucher.viewAny' => 'List vouchers',
@@ -479,6 +481,7 @@ return [
         'document.update' => 'Edit document',
         'document.delete' => 'Delete document',
         'document.archive' => 'Archive document',
+        'document.confidential.manage' => 'View confidential documents of others',
         'knowledge.viewAny' => 'See all knowledge articles',
         'knowledge.view' => 'View knowledge article',
         'knowledge.create' => 'Create knowledge article',

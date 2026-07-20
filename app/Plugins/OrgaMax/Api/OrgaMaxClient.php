@@ -25,6 +25,9 @@ use Illuminate\Http\Client\Response;
  * {@see OrgaMaxApiException} ohne Secrets in der Message.
  */
 class OrgaMaxClient {
+    // Gemeinsame guard()-Fehlerbehandlung (Vollaudit 2026-07, N33).
+    use \App\Plugins\Support\GuardsPluginApiResponses;
+
     public function __construct(
         private readonly PluginHttpFactory $http,
         private readonly OrgaMaxTokenService $tokens,
@@ -48,7 +51,7 @@ class OrgaMaxClient {
 
         $token = (string) ($body['token'] ?? $body['accessToken'] ?? $body['access_token'] ?? '');
         if ($token === '') {
-            throw new OrgaMaxApiException($response->status(), 'orgaMAX /auth/token lieferte keinen Token.', '/auth/token');
+            throw new OrgaMaxApiException('orgaMAX /auth/token lieferte keinen Token.', $response->status(), '/auth/token');
         }
 
         return ['token' => $token, 'expires_at' => OrgaMaxTokenService::expiryFromJwt($token)];
@@ -121,7 +124,7 @@ class OrgaMaxClient {
             'headers' => ['Accept' => 'application/pdf'],
         ]);
         if (! $response->successful()) {
-            throw $this->exception($response, '/invoice/document/{id}');
+            throw $this->apiError($response, '/invoice/document/{id}');
         }
 
         return (string) $response->body();
@@ -205,20 +208,12 @@ class OrgaMaxClient {
         return $this->http->client(OrgaMaxPlugin::ID, $this->baseUrl);
     }
 
-    /** @return array<mixed> */
-    private function guard(Response $response, string $endpoint): array {
-        if (! $response->successful()) {
-            throw $this->exception($response, $endpoint);
-        }
-
-        return (array) ($response->json() ?? []);
+    /** @return class-string<\App\Plugins\Support\PluginApiException> */
+    protected function apiExceptionClass(): string {
+        return OrgaMaxApiException::class;
     }
 
-    private function exception(Response $response, string $endpoint): OrgaMaxApiException {
-        return new OrgaMaxApiException(
-            $response->status(),
-            sprintf('orgaMAX %s: HTTP %d %s', $endpoint, $response->status(), mb_substr((string) $response->body(), 0, 300)),
-            $endpoint,
-        );
+    protected function apiLabel(): string {
+        return 'orgaMAX';
     }
 }

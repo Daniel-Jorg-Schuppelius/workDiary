@@ -37,10 +37,31 @@ class InvoiceMail extends Mailable implements ShouldQueue {
         public string $renderedSubject,
         public string $renderedHtml,
         public string $renderedText,
+        public ?int $dispatchId = null,
     ) {}
 
     public function envelope(): Envelope {
         return new Envelope(subject: $this->renderedSubject);
+    }
+
+    public function headers(): \Illuminate\Mail\Mailables\Headers {
+        // Vollaudit 2026-07 (M26): Dispatch-Referenz für den Zustellnachweis
+        // ({@see \App\Listeners\RecordInvoiceMailDelivery}).
+        return new \Illuminate\Mail\Mailables\Headers(text: array_filter([
+            \App\Listeners\RecordInvoiceMailDelivery::HEADER => $this->dispatchId !== null ? (string) $this->dispatchId : null,
+        ]));
+    }
+
+    /** Queue-Fehlschlag → Zustellnachweis auf failed (Vollaudit 2026-07, M26). */
+    public function failed(\Throwable $exception): void {
+        if ($this->dispatchId === null) {
+            return;
+        }
+        $dispatch = \App\Models\InvoiceDispatch::query()->withoutGlobalScopes()->find($this->dispatchId);
+        $dispatch?->forceFill([
+            'status' => 'failed',
+            'meta' => [...(array) $dispatch->meta, 'error' => mb_substr($exception->getMessage(), 0, 500)],
+        ])->save();
     }
 
     public function content(): Content {
@@ -62,6 +83,15 @@ class InvoiceMail extends Mailable implements ShouldQueue {
         // Geteilter Renderer: Mail-Anhang = exakt das Dokument des Downloads
         // (gleiche Vorlage + Rechtsangaben).
         $bytes = app(InvoicePdfRenderer::class)->output($this->invoice);
+
+        // Vollaudit 2026-07 (M26): Dateihash am Zustellnachweis — wie beim
+        // Download-Kanal, berechnet über exakt die versendeten Bytes.
+        if ($this->dispatchId !== null) {
+            \App\Models\InvoiceDispatch::query()->withoutGlobalScopes()
+                ->whereKey($this->dispatchId)
+                ->whereNull('sha256')
+                ->update(['sha256' => \CommonToolkit\Helper\Data\CryptoHelper::hash($bytes)]);
+        }
 
         $prefix = $this->invoice->isCreditNote() ? 'gutschrift' : 'rechnung';
         $filename = sprintf('%s-%s.pdf', $prefix, $this->invoice->number);

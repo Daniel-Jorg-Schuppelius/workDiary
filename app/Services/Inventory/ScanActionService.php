@@ -14,7 +14,7 @@ namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{OwnershipType, ScanAction, StockMovementType, StockState};
 use App\Models\{ArticleVariant, StockMovement, Warehouse};
-use CommonToolkit\Helper\Data\NumberHelper;
+use App\Support\DecimalQty;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -39,8 +39,18 @@ class ScanActionService {
             throw new RuntimeException('Unbekannter oder nicht bestandsführender Code: ' . trim($code));
         }
 
-        $qty = $this->positive($qty);
+        $qty = DecimalQty::positive($qty);
         $actor = $options['actor'] ?? null;
+
+        // Vollaudit 2026-07 (M19, E2): chargen-/serienpflichtige Artikel nicht
+        // still als anonymer Bestand ein-/ausbuchen — Erfassung läuft über den
+        // Wareneingang (Bestellung) bzw. die Chargen-/Serienverwaltung.
+        // Umlagerung bleibt zulässig (Bestand wechselt nur den Ort).
+        $article = $variant->article;
+        if ($action !== ScanAction::Transfer
+            && (($article->batch_required ?? false) || ($article->serial_required ?? false))) {
+            throw new RuntimeException((string) __('inventory.error.tracked_article_manual_move'));
+        }
 
         return match ($action) {
             ScanAction::Receipt => $this->ledger->receipt($variant, $warehouse, $qty, actorUserId: $actor),
@@ -69,15 +79,5 @@ class ScanActionService {
                 OwnershipType::Own, actorUserId: $actor,
             ));
         });
-    }
-
-    /** @return numeric-string */
-    private function positive(string $value): string {
-        $value = NumberHelper::normalizeDecimalString($value);
-        if ($value === '' || ! is_numeric($value)) {
-            return '0';
-        }
-
-        return bccomp($value, '0', self::SCALE) < 0 ? bcmul($value, '-1', self::SCALE) : $value;
     }
 }

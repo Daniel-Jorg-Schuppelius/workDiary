@@ -14,6 +14,10 @@
             <input type="search" name="q" value="{{ $search }}" placeholder="{{ __('settingsregistry.field.search') }}"
                    class="input input-bordered input-sm w-56">
         </form>
+        {{-- Konfigurationsstand-Export (Feature 067 P5; Vollaudit 2026-07, N20). --}}
+        <x-icon-btn icon="download" tone="ghost" size="sm"
+                    :href="route('admin.settings.export', ['scope' => $scope->value])"
+                    show-label>{{ __('settingsregistry.action.export') }}</x-icon-btn>
     </x-slot:actions>
 
     <div role="alert" class="alert alert-info alert-soft">

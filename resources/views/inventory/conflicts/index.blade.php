@@ -8,12 +8,13 @@
         <x-icon-btn icon="inventory" size="sm" :href="route('inventory.stock')" show-label>{{ __('inventory.stock') }}</x-icon-btn>
     </x-slot:actions>
 
-    <div role="tablist" class="tabs tabs-box w-fit mb-3">
-        @foreach (['open', 'all'] as $tab)
-            <a role="tab" href="{{ route('inventory.conflicts.index', ['status' => $tab]) }}"
-               class="tab {{ ($filters['status'] ?? 'open') === $tab ? 'tab-active' : '' }}">{{ __('inventory.conflict.filter.' . $tab) }}</a>
-        @endforeach
-    </div>
+    {{-- Tab-Strip über die gemeinsame Komponente (D5; Vollaudit 2026-07, N44). --}}
+    <x-tab-nav class="w-fit mb-3" :items="collect(['open', 'all'])->map(fn($tab) => [
+        'label' => __('inventory.conflict.filter.' . $tab),
+        'route' => 'inventory.conflicts.index',
+        'params' => ['status' => $tab],
+        'active' => ($filters['status'] ?? 'open') === $tab,
+    ])->all()" />
 
     @if ($conflicts->isEmpty())
         <x-empty-state framed :title="__('inventory.conflict.empty')" />

@@ -55,6 +55,16 @@ class MaterialSubstitute extends Model {
         'decided_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<Article, $this> */
+    public function substituteArticle(): BelongsTo {
+        return $this->belongsTo(Article::class, 'substitute_article_id');
+    }
+
+    /** @return BelongsTo<Article, $this> */
+    public function plannedArticle(): BelongsTo {
+        return $this->belongsTo(Article::class, 'planned_article_id');
+    }
+
     /** @return BelongsTo<ManufacturingOrder, $this> */
     public function order(): BelongsTo {
         return $this->belongsTo(ManufacturingOrder::class, 'manufacturing_order_id');

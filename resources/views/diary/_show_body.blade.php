@@ -108,6 +108,13 @@
                 <p class="text-base-content">{{ $diary->customer->name }}@if ($diary->customer->company) — {{ $diary->customer->company }}@endif</p>
             </div>
         @endif
+        {{-- Gegenstand des Auftrags (Feature 009; Vollaudit 2026-07, M5). --}}
+        @if ($diary->asset)
+            <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
+                <p class="mb-1 text-xs text-base-content/60">{{ __('Objekt/Asset') }}</p>
+                <p class="text-base-content"><a href="{{ route('assets.show', $diary->asset) }}" class="link link-hover">{{ $diary->asset->name }}</a></p>
+            </div>
+        @endif
         <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
             <p class="mb-1 text-xs text-base-content/60">{{ __('Erstellt') }}</p>
             <p class="text-base-content">{{ $diary->created_at->fdatetime() }}</p>

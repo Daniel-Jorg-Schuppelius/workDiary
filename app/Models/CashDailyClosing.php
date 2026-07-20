@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{AppendOnly, Auditable, BelongsToOrganization, HasSqid};
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,7 +18,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * Tagesabschluss einer Kasse (MVP-414): Kassensturz mit Soll/Ist/Differenz.
  * Nach dem Abschluss nimmt der CashBookService keine Buchungen mit
- * booked_on <= closing_date mehr an.
+ * booked_on <= closing_date mehr an. Append-only (Vollaudit 2026-07, H14):
+ * Die Buchungssperre hängt an dieser Zeile — ein Update/Delete würde
+ * abgeschlossene Tage still wieder öffnen; Korrektur nur als neuer Abschluss.
  *
  * @property int $id
  * @property int $organization_id
@@ -31,6 +33,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $closed_by
  */
 class CashDailyClosing extends Model {
+    use AppendOnly;
     use Auditable;
     use BelongsToOrganization;
     use HasSqid;
@@ -57,5 +60,10 @@ class CashDailyClosing extends Model {
     /** @return BelongsTo<CashRegister, $this> */
     public function register(): BelongsTo {
         return $this->belongsTo(CashRegister::class, 'cash_register_id');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function closedBy(): BelongsTo {
+        return $this->belongsTo(User::class, 'closed_by');
     }
 }

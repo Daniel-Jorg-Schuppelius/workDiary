@@ -33,6 +33,7 @@ return [
         'shipment' => 'Versand',
     ],
     'event' => [
+        'asset_issued' => 'Dienstmittel ausgegeben',
         'order_created' => 'Auftrag angelegt',
         'order_completed' => 'Auftrag abgeschlossen',
         'status_changed' => 'Status geändert',
@@ -88,6 +89,11 @@ return [
         'customer' => 'Kunde',
     ],
     'case' => [
+        'assets' => 'Dienstmittel & Assets',
+        'asset' => 'Asset',
+        'asset_role' => 'Rolle',
+        'asset_subject' => 'Gegenstand des Auftrags',
+        'asset_issued' => 'Ausgegeben (Checkout)',
         'generated_at' => 'Erstellt am',
         'internal_notice' => 'Interne Fallakte — enthält auch interne Einträge (Kommentare, interne Anhänge, Kommunikation). Nicht zur Weitergabe an Kunden bestimmt.',
         'order' => 'Auftrag',

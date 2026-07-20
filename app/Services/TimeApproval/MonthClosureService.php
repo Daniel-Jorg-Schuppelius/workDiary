@@ -12,8 +12,9 @@ namespace App\Services\TimeApproval;
 
 use App\Enums\TimeApproval\MonthClosureStatus;
 use App\Models\{MonthClosure, MonthClosureEvent, User};
+use App\Services\Concerns\ResolvesActorId;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Support\Facades\DB;
 
 /**
  * Statusmaschine für Monatsfreigaben (MVP-016).
@@ -30,6 +31,8 @@ use Illuminate\Support\Facades\{Auth, DB};
  * geworfen, damit Controller fachlich sprechende Antworten erzeugen können.
  */
 class MonthClosureService {
+    use ResolvesActorId;
+
     public const REASON_MIN_LENGTH = 20;
 
     public function __construct(
@@ -164,7 +167,7 @@ class MonthClosureService {
         $snapshot = $this->snapshotter->build($owner, $closure->period_year, $closure->period_month);
         $actorId = $this->resolveActorId($actor);
 
-        return DB::transaction(function () use ($closure, $snapshot, $actorId, $note): MonthClosure {
+        $closure = DB::transaction(function () use ($closure, $snapshot, $actorId, $note): MonthClosure {
             $closure = $this->lockAndAssert($closure, [MonthClosureStatus::Submitted]);
             $closure->fill([
                 'status' => MonthClosureStatus::Approved,
@@ -178,6 +181,11 @@ class MonthClosureService {
 
             return $closure->refresh();
         });
+
+        // Vollaudit 2026-07 (N4): Entscheidung an die betroffene Person.
+        $this->notifyDecision($closure, 'month_approved_title');
+
+        return $closure;
     }
 
     /**
@@ -189,7 +197,7 @@ class MonthClosureService {
 
         $actorId = $this->resolveActorId($actor);
 
-        return DB::transaction(function () use ($closure, $reason, $actorId): MonthClosure {
+        $closure = DB::transaction(function () use ($closure, $reason, $actorId): MonthClosure {
             $closure = $this->lockAndAssert($closure, [MonthClosureStatus::Submitted]);
             $closure->fill([
                 'status' => MonthClosureStatus::Rejected,
@@ -202,6 +210,11 @@ class MonthClosureService {
 
             return $closure->refresh();
         });
+
+        // Vollaudit 2026-07 (N4): Ablehnung inkl. Begründung an die betroffene Person.
+        $this->notifyDecision($closure, 'month_rejected_title');
+
+        return $closure;
     }
 
     /**
@@ -235,7 +248,7 @@ class MonthClosureService {
         $this->assertStatus($closure, [MonthClosureStatus::Approved, MonthClosureStatus::Locked, MonthClosureStatus::Rejected]);
         $this->assertReason($reason ?? '');
 
-        return DB::transaction(function () use ($closure, $reason, $actorId): MonthClosure {
+        $closure = DB::transaction(function () use ($closure, $reason, $actorId): MonthClosure {
             $closure = $this->lockAndAssert($closure, [MonthClosureStatus::Approved, MonthClosureStatus::Locked, MonthClosureStatus::Rejected]);
             $wasLocked = $closure->status === MonthClosureStatus::Locked;
 
@@ -256,6 +269,34 @@ class MonthClosureService {
 
             return $closure->refresh();
         });
+
+        // Vollaudit 2026-07 (N4): Wiedereröffnung durch Admin an die betroffene Person.
+        $this->notifyDecision($closure, 'month_reopened_title');
+
+        return $closure;
+    }
+
+    /**
+     * Vollaudit 2026-07 (N4): Entscheidung (Genehmigung/Ablehnung/Wieder-
+     * eröffnung) an die betroffene Person melden — nach Commit, Muster wie
+     * die Einreichungs-Benachrichtigung an die Entscheider.
+     */
+    private function notifyDecision(MonthClosure $closure, string $titleKey): void {
+        $owner = $this->ownerOf($closure);
+        $period = sprintf('%02d/%d', (int) $closure->period_month, (int) $closure->period_year);
+
+        app(\App\Services\Notification\NotificationDispatcher::class)->notify(
+            \App\Enums\Notification\NotificationEvent::MonthClosureDecided,
+            $closure,
+            $owner,
+            [
+                'title' => (string) __('notification.message.' . $titleKey, ['period' => $period]),
+                'title_key' => 'notification.message.' . $titleKey,
+                'title_params' => ['period' => $period],
+                'message' => $closure->decision_note,
+                'url' => route('month-approval.show', ['year' => $closure->period_year, 'month' => $closure->period_month]),
+            ],
+        );
     }
 
     /**
@@ -358,20 +399,8 @@ class MonthClosureService {
         ]);
     }
 
-    private function resolveActorId(?User $actor): ?int {
-        if ($actor instanceof User) {
-            return (int) $actor->id;
-        }
-
-        $id = Auth::id();
-
-        return $id === null ? null : (int) $id;
-    }
-
     private function actorId(): ?int {
-        $id = Auth::id();
-
-        return $id === null ? null : (int) $id;
+        return $this->resolveActorId(null);
     }
 
     private function ownerOf(MonthClosure $closure): User {

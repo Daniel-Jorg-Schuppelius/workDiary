@@ -92,6 +92,56 @@ class AiMemoryService {
             ->all());
     }
 
+    /**
+     * Ausgelieferte Default-Regeln (Feature 084 MVP-404, Vollaudit 2026-07
+     * M35): editierbare StyleRule-Einträge je Fakturierungs-Capability
+     * (Kundennamen-Verbot + Nominalstil). Idempotent — vorhandene
+     * Default-Einträge gleichen Inhalts werden nicht dupliziert; gesät beim
+     * Anlegen einer KI-Verbindung.
+     */
+    public function seedDefaults(Organization $organization, ?int $userId = null): int {
+        $rules = [
+            __('Nenne niemals den Namen des Kunden oder Empfängers — neutral formulieren (z. B. „der Kunde").'),
+            __('Nominalstil verwenden: knappe, sachliche Leistungsbeschreibungen ohne Ich-/Wir-Form.'),
+        ];
+        $capabilities = [
+            \App\Services\Ai\Suggestions\ItemTextSuggestionService::CAPABILITY_ITEM,
+            \App\Services\Ai\Suggestions\ItemTextSuggestionService::CAPABILITY_BLOCK,
+            \App\Services\Ai\Suggestions\ItemTextSuggestionService::CAPABILITY_QUOTE_ITEM,
+        ];
+
+        $created = 0;
+        foreach ($capabilities as $capability) {
+            foreach ($rules as $content) {
+                $exists = AiMemoryEntry::query()
+                    ->withoutGlobalScopes()
+                    ->where('organization_id', $organization->id)
+                    ->whereNull('customer_id')
+                    ->where('capability', $capability)
+                    ->where('entry_type', AiMemoryEntryType::StyleRule->value)
+                    ->where('content', $content)
+                    ->exists();
+                if ($exists) {
+                    continue;
+                }
+
+                AiMemoryEntry::query()->create([
+                    'organization_id' => $organization->id,
+                    'customer_id' => null,
+                    'capability' => $capability,
+                    'entry_type' => AiMemoryEntryType::StyleRule->value,
+                    'content' => $content,
+                    'origin' => AiMemoryEntry::ORIGIN_DEFAULT,
+                    'active' => true,
+                    'created_by_user_id' => $userId,
+                ]);
+                $created++;
+            }
+        }
+
+        return $created;
+    }
+
     /** @return list<string> */
     public function styleRulesFor(
         Organization $organization,

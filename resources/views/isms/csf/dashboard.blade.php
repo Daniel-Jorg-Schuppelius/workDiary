@@ -83,16 +83,14 @@
                     <h3 class="text-sm font-semibold">{{ __('isms.csf.section_functions') }}</h3>
                     <a class="link text-xs" href="{{ route('isms.csf.crosswalk', ['scope' => $scope->sqid]) }}">{{ __('isms.csf.action_crosswalk') }}</a>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table bare>
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('isms.csf.col_function') }}</th>
                                 <th>{{ __('isms.csf.col_source') }}</th>
                                 <th class="w-56">{{ __('isms.csf.col_coverage') }}</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($readiness['functions'] as $function)
                                 @php
                                     $chosen = $function['mode'] === 'direct' ? $function['direct'] : $function['mapped'];
@@ -133,9 +131,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             </x-card>
         @endif
     </x-index-page>

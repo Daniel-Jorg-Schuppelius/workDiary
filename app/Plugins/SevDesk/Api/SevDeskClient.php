@@ -31,6 +31,9 @@ use Illuminate\Support\Facades\Cache;
  * je Mandant — 2.0 verlangt `taxRule` statt `taxType` am Beleg.
  */
 class SevDeskClient {
+    // Gemeinsame guard()-Fehlerbehandlung (Vollaudit 2026-07, N33).
+    use \App\Plugins\Support\GuardsPluginApiResponses;
+
     public function __construct(
         private readonly PluginHttpFactory $http,
         private readonly string $apiKey,
@@ -200,16 +203,12 @@ class SevDeskClient {
             ->requestResponse($method, $this->baseUrl . $path, $options);
     }
 
-    /** @return array<mixed> */
-    private function guard(Response $response, string $endpoint): array {
-        if (! $response->successful()) {
-            throw new SevDeskApiException(
-                $response->status(),
-                sprintf('sevDesk %s: HTTP %d %s', $endpoint, $response->status(), mb_substr((string) $response->body(), 0, 300)),
-                $endpoint,
-            );
-        }
+    /** @return class-string<\App\Plugins\Support\PluginApiException> */
+    protected function apiExceptionClass(): string {
+        return SevDeskApiException::class;
+    }
 
-        return (array) ($response->json() ?? []);
+    protected function apiLabel(): string {
+        return 'sevDesk';
     }
 }

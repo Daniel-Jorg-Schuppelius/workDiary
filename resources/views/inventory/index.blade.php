@@ -25,12 +25,13 @@
         <x-empty-state framed :title="__('inventory.empty.warehouses')" />
     @else
         {{-- Lagerort-Auswahl --}}
-        <div role="tablist" class="tabs tabs-box w-full">
-            @foreach ($warehouses as $wh)
-                <a role="tab" href="{{ route('inventory.stock', ['warehouse' => $wh->sqid]) }}"
-                   class="tab {{ $selected && $selected->id === $wh->id ? 'tab-active' : '' }}">{{ $wh->name }}</a>
-            @endforeach
-        </div>
+        {{-- Tab-Strip über die gemeinsame Komponente (D5; Vollaudit 2026-07, N44). --}}
+        <x-tab-nav :items="$warehouses->map(fn($wh) => [
+            'label' => $wh->name,
+            'route' => 'inventory.stock',
+            'params' => ['warehouse' => $wh->sqid],
+            'active' => $selected && $selected->id === $wh->id,
+        ])->all()" />
 
         @if (! $selected)
             <x-empty-state framed :title="__('inventory.empty.no_selection')" />

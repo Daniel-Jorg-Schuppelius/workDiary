@@ -70,7 +70,11 @@ class DocumentController extends Controller {
             'expiring' => (string) $request->query('expiring', 'all'),
         ];
 
+        /** @var User $viewer */
+        $viewer = Auth::user();
         $query = Document::query()
+            // Vertrauliche Dokumente Dritter ausblenden (Vollaudit 2026-07, N10).
+            ->visibleTo($viewer)
             ->with(['currentVersion', 'documentable', 'creator'])
             ->latest('updated_at');
 
@@ -112,6 +116,8 @@ class DocumentController extends Controller {
      */
     public function show(Document $document): View {
         Gate::authorize('view', $document);
+
+        $this->auditConfidentialAccess($document);
 
         $document->load([
             'versions.uploader:id,name',
@@ -265,6 +271,8 @@ class DocumentController extends Controller {
     public function download(Document $document, ?DocumentVersion $version = null): BinaryFileResponse {
         Gate::authorize('view', $document);
 
+        $this->auditConfidentialAccess($document);
+
         if ($version === null) {
             /** @var DocumentVersion|null $version */
             $version = $document->currentVersion;
@@ -316,6 +324,8 @@ class DocumentController extends Controller {
             'valid_from' => ['nullable', 'date'],
             'valid_until' => ['nullable', 'date', 'after_or_equal:valid_from'],
             'description' => ['nullable', 'string', 'max:4000'],
+            // Vertraulichkeitsmerkmal (Vollaudit 2026-07, N10).
+            'confidential' => ['nullable', 'boolean'],
         ];
 
         if ($includeFile) {
@@ -326,6 +336,28 @@ class DocumentController extends Controller {
         }
 
         return $request->validate($rules);
+    }
+
+    /**
+     * Fremdzugriff auf vertrauliche Dokumente auditieren (Vollaudit 2026-07,
+     * N10): greift, wenn ein Verwalter (document.confidential.manage/Admin)
+     * ein vertrauliches Dokument eines anderen Erfassers öffnet/herunterlädt.
+     */
+    private function auditConfidentialAccess(Document $document): void {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if ($user === null || ! $document->confidential || (int) $document->created_by_user_id === (int) $user->id) {
+            return;
+        }
+
+        \App\Models\AuditLog::query()->create([
+            'organization_id' => $document->organization_id,
+            'user_id' => $user->id,
+            'event' => 'document.confidentialAccessed',
+            'auditable_type' => Document::class,
+            'auditable_id' => $document->id,
+            'changes' => ['title' => $document->title],
+        ]);
     }
 
     /** Erweiterungs- und Server-MIME-Prüfung analog AttachmentController. */

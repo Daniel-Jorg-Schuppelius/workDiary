@@ -33,6 +33,7 @@ return [
         'shipment' => 'Shipping',
     ],
     'event' => [
+        'asset_issued' => 'Equipment issued',
         'order_created' => 'Order created',
         'order_completed' => 'Order completed',
         'status_changed' => 'Status changed',
@@ -88,6 +89,11 @@ return [
         'customer' => 'Customer',
     ],
     'case' => [
+        'assets' => 'Equipment & assets',
+        'asset' => 'Asset',
+        'asset_role' => 'Role',
+        'asset_subject' => 'Subject of the order',
+        'asset_issued' => 'Issued (checkout)',
         'generated_at' => 'Generated at',
         'internal_notice' => 'Internal case file — also includes internal items (comments, internal attachments, communication). Not intended for sharing with customers.',
         'order' => 'Order',

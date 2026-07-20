@@ -11,7 +11,7 @@
 namespace App\Enums\Finance;
 
 use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
 /**
  * Statusmaschine eines Übergabenachweises (Feature 045):
@@ -23,7 +23,9 @@ use App\Enums\Contracts\HasLabel;
  * `transferred` ist final (Quellen sind verbraucht); Korrekturen laufen über
  * Storno-/Differenzübergaben (Teil B), nie über stilles Zurücksetzen.
  */
-enum TransferStatus: string implements HasLabel {
+enum TransferStatus: string implements HasLabel, HasStatusTransitions {
+    use \App\Enums\Concerns\HasTransitions;
+
     use HasOptions;
 
     case Draft = 'draft';
@@ -61,7 +63,4 @@ enum TransferStatus: string implements HasLabel {
         };
     }
 
-    public function canTransitionTo(self $target): bool {
-        return in_array($target, $this->allowedTransitions(), true);
-    }
 }

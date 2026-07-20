@@ -16,6 +16,8 @@ use App\Enums\Protocol\ProtocolType;
 use App\Models\Asset;
 
 class AssetStatusVisibilityService {
+    public function __construct(private readonly AssetBlockService $blocks) {}
+
     /**
      * @return array<string, mixed>
      */
@@ -31,13 +33,22 @@ class AssetStatusVisibilityService {
         $defectProtocolCount = (clone $defectProtocols)->count();
         $lastDefectProtocolAt = (clone $defectProtocols)->value('occurred_at');
 
-        $isBlocked = $asset->status === AssetStatus::Blocked || $blockedIssueCount > 0;
+        // Vollaudit 2026-07 (H2): auch D12-Sperren (asset_blocks) fließen in
+        // die Sichtbarkeit ein — Banner/Listen zeigten Compliance-Sperren nicht.
+        $activeBlocks = $this->blocks->activeBlocks($asset);
+
+        $isBlocked = $asset->status === AssetStatus::Blocked || $blockedIssueCount > 0 || $activeBlocks->isNotEmpty();
         $hasDefect = $openIssueCount > 0 || $defectProtocolCount > 0;
 
         return [
             'asset_id' => $asset->id,
             'status' => $asset->status->value,
             'is_blocked' => $isBlocked,
+            'active_blocks' => $activeBlocks->map(fn($b): array => [
+                'id' => (int) $b->id,
+                'reason' => $b->reason->value,
+                'reason_label' => $b->reason->label(),
+            ])->all(),
             'has_defect' => $hasDefect,
             'attention_level' => $this->attentionLevel($isBlocked, $criticalIssueCount),
             'open_issues' => [

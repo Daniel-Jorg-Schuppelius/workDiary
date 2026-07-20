@@ -50,10 +50,9 @@ class MonthApprovalInboxController extends Controller {
         $userFilter = Sqid::decode(User::class, $request->input('user'));
         $yearFilter = $request->filled('year') ? (int) $request->input('year') : null;
 
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'period_year';
-        $dir = $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc';
+        // Whitelist-Auflösung zentral (C21; Vollaudit 2026-07, N26) — bei
+        // ungültigem Key fallen Key UND Richtung auf die Defaults zurück.
+        [$sort, $dir] = \App\Support\SortableQuery::resolve($request, self::ALLOWED_SORTS, 'period_year');
 
         $query = MonthClosure::query()
             ->where('organization_id', $admin->organization_id)

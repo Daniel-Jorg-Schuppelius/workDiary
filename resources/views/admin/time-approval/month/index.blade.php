@@ -87,20 +87,15 @@
                                             data-open-dialog="reject-{{ $c->id }}">
                                         <span class="material-symbols-outlined text-base">close</span>
                                     </button>
-                                    <dialog id="reject-{{ $c->id }}" class="modal">
-                                        <form method="POST" action="{{ route('admin.month-approval.reject', $c) }}" class="modal-box space-y-3">
-                                            @csrf
-                                            <h3 class="font-bold">{{ __('Monat ablehnen') }}</h3>
-                                            <textarea name="note" required minlength="20" maxlength="2000" rows="4"
-                                                      class="textarea textarea-bordered w-full"
-                                                      placeholder="{{ __('Begründung (mind. 20 Zeichen)') }}"></textarea>
-                                            <div class="modal-action">
-                                                <x-button type="button" tone="ghost" size="sm"
-                                                        data-entry-modal-close>{{ __('Abbrechen') }}</x-button>
-                                                <x-button type="submit" tone="warning" size="sm">{{ __('Ablehnen') }}</x-button>
-                                            </div>
-                                        </form>
-                                    </dialog>
+                                    {{-- Gemeinsamer Dialog-Wrapper statt rohem <dialog> (Vollaudit 2026-07, N57). --}}
+                                    <x-modal :id="'reject-' . $c->id" :embedded="false" tone="warning" icon="block"
+                                        :title="__('Monat ablehnen')"
+                                        :action="route('admin.month-approval.reject', $c)"
+                                        :submit-label="__('Ablehnen')" submit-class="btn-warning">
+                                        <textarea name="note" required minlength="20" maxlength="2000" rows="4"
+                                                  class="textarea textarea-bordered w-full"
+                                                  placeholder="{{ __('Begründung (mind. 20 Zeichen)') }}"></textarea>
+                                    </x-modal>
                                 @endcan
                                 @can('reopen', $c)
                                     @if (in_array($c->status, [MonthClosureStatus::Approved, MonthClosureStatus::Locked], true))
@@ -109,20 +104,15 @@
                                                 aria-label="{{ __('Wieder öffnen') }}">
                                             <span class="material-symbols-outlined text-base">lock_open</span>
                                         </button>
-                                        <dialog id="reopen-{{ $c->id }}" class="modal">
-                                            <form method="POST" action="{{ route('admin.month-approval.reopen', $c) }}" class="modal-box space-y-3">
-                                                @csrf
-                                                <h3 class="font-bold">{{ __('Monat wieder öffnen') }}</h3>
-                                                <textarea name="note" required minlength="20" maxlength="2000" rows="4"
-                                                          class="textarea textarea-bordered w-full"
-                                                          placeholder="{{ __('Begründung (mind. 20 Zeichen)') }}"></textarea>
-                                                <div class="modal-action">
-                                                    <x-button type="button" tone="ghost" size="sm"
-                                                            data-entry-modal-close>{{ __('Abbrechen') }}</x-button>
-                                                    <x-button type="submit" tone="warning" size="sm">{{ __('Wieder öffnen') }}</x-button>
-                                                </div>
-                                            </form>
-                                        </dialog>
+                                        {{-- Gemeinsamer Dialog-Wrapper statt rohem <dialog> (Vollaudit 2026-07, N57). --}}
+                                        <x-modal :id="'reopen-' . $c->id" :embedded="false" tone="warning" icon="lock_open"
+                                            :title="__('Monat wieder öffnen')"
+                                            :action="route('admin.month-approval.reopen', $c)"
+                                            :submit-label="__('Wieder öffnen')" submit-class="btn-warning">
+                                            <textarea name="note" required minlength="20" maxlength="2000" rows="4"
+                                                      class="textarea textarea-bordered w-full"
+                                                      placeholder="{{ __('Begründung (mind. 20 Zeichen)') }}"></textarea>
+                                        </x-modal>
                                     @endif
                                 @endcan
                                 @can('lock', $c)

@@ -79,19 +79,25 @@ class CloudIntakeRunner {
             return $result;
         }
 
-        // Org-Kontext binden (Scheduler-Lauf) und danach sauber zurückstellen
-        // (Queue-/Scheduler-Org-Hygiene).
-        $previousOrg = app()->bound('currentOrganization') ? app('currentOrganization') : null;
-        app()->instance('currentOrganization', $connection->organization);
+        // Org-Kontext binden (Scheduler-Lauf) mit garantiertem Restore —
+        // zentral über OrganizationContext (Vollaudit 2026-07, M42).
+        $organization = $connection->organization;
+        if (! $organization instanceof \App\Models\Organization) {
+            $lock->release();
+
+            return $result;
+        }
 
         try {
-            $this->pump($connection, $adapter, $actor, $result);
+            // WICHTIG: $result wird von pump() per Referenz gefüllt — der
+            // Callback muss by-reference capturen (fn() würde kopieren).
+            \App\Support\OrganizationContext::run(
+                $organization,
+                function () use ($connection, $adapter, $actor, &$result): void {
+                    $this->pump($connection, $adapter, $actor, $result);
+                },
+            );
         } finally {
-            if ($previousOrg instanceof \App\Models\Organization) {
-                app()->instance('currentOrganization', $previousOrg);
-            } else {
-                app()->forgetInstance('currentOrganization');
-            }
             $lock->release();
         }
 

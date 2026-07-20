@@ -15,11 +15,12 @@ namespace App\Services\Finance;
 use App\Enums\Finance\{BalanceCheck, MatchStatus};
 use App\Models\Finance\{BankAccount, BankStatement, BankTransaction};
 use App\Models\User;
+use App\Services\Concerns\ResolvesActorId;
 use App\Services\Finance\Banking\{BankStatementParser, NormalizedStatement, NormalizedTransaction};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\{BankHelper, CryptoHelper};
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\{Auth, DB, Storage};
+use Illuminate\Support\Facades\{DB, Storage};
 
 /**
  * Bankimport (Feature 045, „Phase 4"): erkennt das Format, parst über den
@@ -34,6 +35,8 @@ use Illuminate\Support\Facades\{Auth, DB, Storage};
  *  - Auto-Zuordnung des eigenen Bankkontos über statement_iban_hash.
  */
 class BankImportService {
+    use ResolvesActorId;
+
     private const STORAGE_DISK = 'local';
 
     private const BASE_PATH = 'imports/bank';
@@ -88,7 +91,63 @@ class BankImportService {
             );
         }
 
+        // Vollaudit 2026-07 (M16): Registry-Anbindung der Finanzschnittstelle —
+        // Saldensprung (Mismatch) und ungeklärte Zahlungseingänge melden.
+        $this->notifyImportFindings($created);
+
+        // Feature-Nutzungszähler (036; Vollaudit 2026-07, N14).
+        app(\App\Services\Metrics\OperationsMetricsService::class)->increment('finance.bank_import', $organizationId);
+
         return $created;
+    }
+
+    /**
+     * Benachrichtigungen nach dem Import (Vollaudit 2026-07, M16): je Auszug
+     * mit Saldenketten-Mismatch ein FinanceBankImportFailed; für ungeklärte
+     * Transaktionen EIN gebündeltes FinanceReconciliationReview.
+     *
+     * @param  list<BankStatement>  $statements
+     */
+    private function notifyImportFindings(array $statements): void {
+        $dispatcher = app(\App\Services\Notification\NotificationDispatcher::class);
+
+        $unmatchedTotal = 0;
+        foreach ($statements as $statement) {
+            $unmatchedTotal += (int) BankTransaction::query()
+                ->where('bank_statement_id', $statement->id)
+                ->where('match_status', MatchStatus::Unmatched)
+                ->count();
+
+            if ($statement->balance_check === BalanceCheck::Mismatch) {
+                $dispatcher->notify(
+                    \App\Enums\Notification\NotificationEvent::FinanceBankImportFailed,
+                    $statement,
+                    null,
+                    [
+                        'title' => (string) __('notification.message.finance_bank_import_failed_title'),
+                        'title_key' => 'notification.message.finance_bank_import_failed_title',
+                        'title_params' => [],
+                        'message' => null,
+                        'url' => route('finance.reconciliation.show', $statement),
+                    ],
+                );
+            }
+        }
+
+        if ($unmatchedTotal > 0 && $statements !== []) {
+            $dispatcher->notify(
+                \App\Enums\Notification\NotificationEvent::FinanceReconciliationReview,
+                $statements[0],
+                null,
+                [
+                    'title' => (string) __('notification.message.finance_reconciliation_review_title', ['count' => $unmatchedTotal]),
+                    'title_key' => 'notification.message.finance_reconciliation_review_title',
+                    'title_params' => ['count' => $unmatchedTotal],
+                    'message' => null,
+                    'url' => route('finance.reconciliation.index'),
+                ],
+            );
+        }
     }
 
     private function persistStatement(
@@ -273,9 +332,4 @@ class BankImportService {
         return $path;
     }
 
-    private function resolveActorId(?User $actor): ?int {
-        $id = $actor->id ?? Auth::id();
-
-        return $id !== null ? (int) $id : null;
-    }
 }

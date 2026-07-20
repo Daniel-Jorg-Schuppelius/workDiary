@@ -40,12 +40,11 @@
         </x-filter-field>
     </x-filter-bar>
 
-    <div role="tablist" class="tabs tabs-box w-full">
-        <a role="tab" href="{{ route('foreign-customers.index', array_filter(['status' => 'active', 'q' => $search, 'customer' => $customerParam])) }}"
-           class="tab {{ $status === 'active' ? 'tab-active' : '' }}">{{ __('Aktiv') }}</a>
-        <a role="tab" href="{{ route('foreign-customers.index', array_filter(['status' => 'archived', 'q' => $search, 'customer' => $customerParam])) }}"
-           class="tab {{ $status === 'archived' ? 'tab-active' : '' }}">{{ __('Archiv') }}</a>
-    </div>
+    {{-- Status-Tabs über die gemeinsame Komponente (D5; Vollaudit 2026-07, N44). --}}
+    <x-tab-nav :items="[
+        ['label' => __('Aktiv'), 'route' => 'foreign-customers.index', 'params' => array_filter(['status' => 'active', 'q' => $search, 'customer' => $customerParam]), 'active' => $status === 'active'],
+        ['label' => __('Archiv'), 'route' => 'foreign-customers.index', 'params' => array_filter(['status' => 'archived', 'q' => $search, 'customer' => $customerParam]), 'active' => $status === 'archived'],
+    ]" />
 
     @if ($foreignCustomers->total() === 0)
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">groups</span>' :title="$search !== '' ? __('Keine Fremdkunden für „:q“ gefunden.', ['q' => $search]) : __('Noch keine Fremdkunden in dieser Ansicht')" />

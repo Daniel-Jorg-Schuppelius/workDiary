@@ -88,6 +88,53 @@ class SettingsController extends Controller {
         return $this->redirectBack($request)->with('status', __('settingsregistry.flash.reset', ['key' => $key]));
     }
 
+    /**
+     * Konfigurationsstand-Export (Feature 067 P5; Vollaudit 2026-07, N20):
+     * alle Registry-Keys des Scopes mit Effektivwert (sensible Werte über
+     * {@see \App\Settings\EffectiveValue::exportValue()} maskiert) als
+     * JSON-Download; der Abruf wird auditiert.
+     */
+    public function export(Request $request): \Symfony\Component\HttpFoundation\Response {
+        Gate::authorize(Permission::PlatformSettingsManage->value);
+
+        $scope = $this->requestedScope($request);
+        $organization = $scope === SettingScope::Organization ? $this->currentOrganization() : null;
+
+        $entries = [];
+        foreach ($this->registry->forScope($scope) as $key => $definition) {
+            $effective = $this->registry->effective($key, $organization);
+            $entries[$key] = [
+                'group' => $definition->group(),
+                'type' => $definition->type->value,
+                'source' => $effective->source->value,
+                'value' => $effective->exportValue(),
+            ];
+        }
+        ksort($entries);
+
+        $user = $request->user();
+        AuditLog::query()->create([
+            'organization_id' => $user?->organization_id,
+            'user_id' => $user?->id,
+            'event' => 'settings.exported',
+            'auditable_type' => SystemSetting::class,
+            'auditable_id' => 0,
+            'changes' => ['scope' => $scope->value, 'keys' => count($entries)],
+        ]);
+
+        $payload = [
+            'exported_at' => now()->toIso8601String(),
+            'scope' => $scope->value,
+            'organization_id' => $organization?->id,
+            'app_version' => (string) config('app.version', 'dev'),
+            'settings' => $entries,
+        ];
+
+        return response()->json($payload, 200, [
+            'Content-Disposition' => 'attachment; filename="settings-' . $scope->value . '-' . now()->format('Ymd_His') . '.json"',
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+
     /** Änderungsverlauf eines System-Keys (Effektivwert-Erklärung, DoD). */
     public function history(string $key): View {
         Gate::authorize(Permission::PlatformSettingsManage->value);

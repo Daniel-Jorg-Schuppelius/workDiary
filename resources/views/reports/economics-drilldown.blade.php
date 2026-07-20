@@ -29,6 +29,7 @@
         'time' => __('Belegtiefe: Zeiteinträge'),
         'material' => __('Belegtiefe: Material'),
         'expense' => __('Belegtiefe: Spesen/Belege'),
+        'travel' => __('Belegtiefe: Fahrten'),
     ];
 @endphp
 <x-page-shell>
@@ -154,6 +155,41 @@
                     </tfoot>
                 </x-table>
                 <p class="mt-2 text-xs text-base-content/60">{{ __('Davon abgerechnet (Erlös): :amount', ['amount' => $eur($totalRevenue)]) }}</p>
+            @endif
+        </x-card>
+        <x-pagination :paginator="$rows" standing />
+    @elseif ($kind === 'travel')
+        {{-- Fahrt-Dimension (Vollaudit 2026-07, M7). --}}
+        <x-card>
+            @if ($rows->total() === 0)
+                <x-empty-state icon="receipt_long" :title="__('Keine Belege im Zeitraum.')" compact />
+            @else
+                <x-table bare>
+                    <x-slot:head>
+                        <tr>
+                            <th>{{ __('Datum') }}</th>
+                            <th>{{ __('Mitarbeiter:in') }}</th>
+                            <th>{{ __('Zweck') }}</th>
+                            <th class="text-right">{{ __('Kilometer') }}</th>
+                            <th class="text-right">{{ __('Erstattung') }}</th>
+                        </tr>
+                    </x-slot:head>
+                    @foreach ($rows as $log)
+                        <tr>
+                            <td class="tabular-nums">{{ $log->date?->fdate() }}</td>
+                            <td>{{ $log->user->name ?? '—' }}</td>
+                            <td class="max-w-md truncate text-sm">{{ $log->purpose ?? '—' }}</td>
+                            <td class="text-right tabular-nums">{{ rtrim(rtrim(number_format((float) $log->distance_km, 2, ',', '.'), '0'), ',') }}</td>
+                            <td class="text-right tabular-nums">{{ $eur($log->reimbursement_total) }}</td>
+                        </tr>
+                    @endforeach
+                    <tfoot>
+                        <tr class="font-semibold">
+                            <td colspan="4">{{ __('Summe') }}</td>
+                            <td class="text-right tabular-nums">{{ $eur($totalCost) }}</td>
+                        </tr>
+                    </tfoot>
+                </x-table>
             @endif
         </x-card>
         <x-pagination :paginator="$rows" standing />

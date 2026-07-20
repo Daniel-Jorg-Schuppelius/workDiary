@@ -51,6 +51,30 @@
         </div>
     @endif
 
+    {{-- Vollaudit 2026-07 (M27): § 14 Abs. 2 UStG — Widerspruch dokumentieren/anzeigen. --}}
+    @if ($invoice->isCreditNote())
+        @if ($invoice->objection_at !== null)
+            <div class="alert alert-warning">
+                <span class="material-symbols-outlined" aria-hidden="true">gavel</span>
+                <div>
+                    {{ __('Widerspruch dokumentiert am :date', ['date' => $invoice->objection_at->fdatetime()]) }}
+                    @if ($invoice->objection_note)<br><span class="text-sm">{{ $invoice->objection_note }}</span>@endif
+                </div>
+            </div>
+        @elseif (auth()->user()?->canManageBilling())
+            <details class="rounded-box border border-base-300 bg-base-100 p-3">
+                <summary class="cursor-pointer text-sm font-medium">{{ __('Widerspruch dokumentieren (§ 14 Abs. 2 UStG)') }}</summary>
+                <form method="POST" action="{{ route('invoices.objection', $invoice) }}" class="mt-2 space-y-2">
+                    @csrf
+                    <textarea name="objection_note" required minlength="10" maxlength="1000" rows="2"
+                              class="textarea textarea-bordered w-full text-sm"
+                              placeholder="{{ __('Begründung des Empfänger-Widerspruchs (Pflicht)') }}"></textarea>
+                    <x-button type="submit" tone="warning" icon="gavel">{{ __('Widerspruch dokumentieren') }}</x-button>
+                </form>
+            </details>
+        @endif
+    @endif
+
     @if ($invoice->isDownPayment() && ($settledByInvoice ?? null) !== null)
         <div class="alert alert-info">
             <span class="material-symbols-outlined" aria-hidden="true">functions</span>
@@ -338,8 +362,8 @@
         <details class="collapse collapse-arrow border border-base-300 bg-base-100">
             <summary class="collapse-title text-sm font-medium">{{ __('Zustellversuche (:count)', ['count' => $dispatches->count()]) }}</summary>
             <div class="collapse-content overflow-x-auto">
-                <table class="table table-sm">
-                    <thead>
+                <x-table>
+                    <x-slot:head>
                         <tr>
                             <th>{{ __('Zeitpunkt') }}</th>
                             <th>{{ __('Kanal') }}</th>
@@ -348,8 +372,7 @@
                             <th>{{ __('Status') }}</th>
                             <th>{{ __('SHA-256') }}</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                    </x-slot:head>
                         @foreach ($dispatches as $dispatch)
                             <tr>
                                 <td>{{ $dispatch->created_at->fdatetime() }}</td>
@@ -360,8 +383,7 @@
                                 <td class="font-mono text-xs">{{ $dispatch->sha256 !== null ? substr($dispatch->sha256, 0, 16) . '…' : '—' }}</td>
                             </tr>
                         @endforeach
-                    </tbody>
-                </table>
+                </x-table>
             </div>
         </details>
     @endif

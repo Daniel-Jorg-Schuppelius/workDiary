@@ -41,7 +41,12 @@ class AttachmentController extends Controller {
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     ];
 
-    private const TYPE_MAP = [
+    /**
+     * Route-Typ → Modell. Öffentlich, damit die attachments.store-Route ihre
+     * whereIn-Constraint hieraus ableitet (eine Wahrheit — Vollaudit 2026-07, M1:
+     * supplier/knowledge/service-ticket liefen zuvor auf 404).
+     */
+    public const TYPE_MAP = [
         'diary' => DiaryEntry::class,
         'comment' => Comment::class,
         'shift' => OnCallShift::class,
@@ -88,6 +93,20 @@ class AttachmentController extends Controller {
         ]);
 
         $file = $request->file('file');
+
+        // Vollaudit 2026-07 (H8): storage_quota_gb der Lizenz durchsetzen —
+        // der Guard existierte, wurde aber nirgends aufgerufen.
+        $orgId = $parent->getAttribute('organization_id');
+        if ($orgId !== null) {
+            try {
+                app(\App\Services\Licensing\LimitGuard::class)->ensureCanStoreAttachment(
+                    Organization::query()->withoutGlobalScopes()->findOrFail((int) $orgId),
+                    (int) $file->getSize(),
+                );
+            } catch (\App\Exceptions\LimitExceededException $e) {
+                return back()->withErrors(['file' => $e->getMessage()]);
+            }
+        }
         $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
         if (! in_array($ext, self::ALLOWED_EXTENSIONS, true)) {
             return back()->withErrors(['file' => __('Dateityp nicht erlaubt.')]);
@@ -211,6 +230,11 @@ class AttachmentController extends Controller {
     }
 
     public function destroy(Attachment $attachment): RedirectResponse {
+        // Kassenbelege (MVP-414) sind GoBD-append-only und auch für Admins nie
+        // löschbar (Vollaudit 2026-07, M37) — der Admin-Bypass der Policy
+        // (HasAdminBypass::before) greift hier bewusst nicht.
+        abort_if($attachment->attachable instanceof \App\Models\CashEntry, 403);
+
         Gate::authorize('delete', $attachment);
 
         Storage::disk($attachment->disk)->delete($attachment->path);

@@ -173,6 +173,9 @@ class SurchargeCalculator {
             SurchargeKind::Sunday => $day->isSunday(),
             SurchargeKind::Holiday => $this->holidays->isHoliday($day),
             SurchargeKind::Night, SurchargeKind::Custom => null,
+            // M4: keine Intervall-Regeln — eigene Quellzeiten, Aggregation im
+            // Zeit-Export; sie zerlegen nie Attendance-Intervalle.
+            SurchargeKind::OnCall, SurchargeKind::Standby, SurchargeKind::Overtime => false,
         };
 
         if ($fullDay === true) {

@@ -92,8 +92,49 @@ class DiagnosticsServiceTest extends TestCase {
         $report = $service->collect();
 
         $codes = array_map(static fn($s) => $s->code, $report->sections);
-        $this->assertSame(['version', 'license', 'modules', 'queue', 'scheduler', 'mail', 'storage', 'backup', 'security', 'terminals'], $codes);
+        $this->assertSame(['version', 'license', 'modules', 'queue', 'scheduler', 'mail', 'connections', 'operations', 'storage', 'backup', 'security', 'terminals'], $codes);
         $this->assertSame(DiagnosticStatus::Critical, $report->overallStatus());
+    }
+
+    /** Vollaudit 2026-07 (M15): Integrations-Sektion meldet gestörte Verbindungen. */
+    public function test_connections_section_warns_on_failing_connection(): void {
+        $section = app(DiagnosticsService::class)->checkConnections();
+        $this->assertSame(DiagnosticStatus::Unknown, $section->status); // keine Konnektoren konfiguriert
+
+        $connection = \App\Models\EmailConnection::query()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Rechnungspostfach',
+            'host' => 'imap.example.test',
+            'username' => 'invoices',
+            'password' => 'secret',
+        ]);
+        $connection->recordConnectionFailure('IMAP-Login fehlgeschlagen');
+
+        $section = app(DiagnosticsService::class)->checkConnections();
+        $this->assertSame(DiagnosticStatus::Warn, $section->status);
+        $this->assertSame(1, $section->metrics['failing']);
+    }
+
+    /** Vollaudit 2026-07 (M15): Betriebsaufgaben-Zusammenfassung je Typ/Severity. */
+    public function test_operations_section_counts_open_tasks_by_severity(): void {
+        $section = app(DiagnosticsService::class)->checkOperations();
+        $this->assertSame(DiagnosticStatus::Ok, $section->status);
+        $this->assertSame(0, $section->metrics['open_total']);
+
+        \App\Models\OperationsTask::query()->create([
+            'organization_id' => $this->organization->id,
+            'type' => \App\Enums\Operations\OperationsTaskType::cases()[0]->value,
+            'severity' => \App\Enums\Operations\OperationsTaskSeverity::Critical->value,
+            'status' => \App\Enums\Operations\OperationsTaskStatus::Open->value,
+            'dedupe_key' => 'diag-test-1',
+            'title_key' => 'operations.task.test',
+            'first_seen_at' => now(),
+            'last_seen_at' => now(),
+        ]);
+
+        $section = app(DiagnosticsService::class)->checkOperations();
+        $this->assertSame(DiagnosticStatus::Warn, $section->status);
+        $this->assertSame(1, $section->metrics['severity_critical']);
     }
 
     public function test_terminals_section_warns_on_stale_active_terminal(): void {

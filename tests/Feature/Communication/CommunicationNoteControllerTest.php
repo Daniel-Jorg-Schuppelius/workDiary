@@ -55,6 +55,37 @@ class CommunicationNoteControllerTest extends TestCase {
         ]);
     }
 
+    /** Vollaudit 2026-07 (M12): Bezüge Protocol und Asset (Spec §5). */
+    public function test_notes_can_be_stored_against_protocol_and_asset(): void {
+        $user = User::factory()->user()->create();
+        app()->instance('currentOrganization', $user->organization);
+        $protocol = \App\Models\Protocol::factory()->create(['organization_id' => $user->organization_id]);
+        $asset = \App\Models\Asset::factory()->create(['organization_id' => $user->organization_id]);
+
+        foreach ([['protocol', \App\Models\Protocol::class, $protocol], ['asset', \App\Models\Asset::class, $asset]] as [$kind, $class, $model]) {
+            $this->actingAs($user)
+                ->post(route('communication-notes.store'), [
+                    'notable_kind' => $kind,
+                    'notable_id' => Sqid::encode($class, (int) $model->id),
+                    'type' => CommunicationNoteType::Call->value,
+                    'direction' => CommunicationDirection::Outbound->value,
+                    'occurred_at' => now()->subMinutes(30)->format('Y-m-d H:i'),
+                    'subject' => 'Rückmeldung zu ' . $kind,
+                    'body' => 'Kundenrückmeldung zum ' . $kind . ' dokumentiert.',
+                    'participants' => [
+                        ['name' => 'Max Kunde', 'role' => 'Auftraggeber', 'party' => ParticipantParty::Customer->value],
+                    ],
+                ])
+                ->assertRedirect();
+
+            $this->assertDatabaseHas('communication_notes', [
+                'notable_type' => $class,
+                'notable_id' => $model->id,
+                'subject' => 'Rückmeldung zu ' . $kind,
+            ]);
+        }
+    }
+
     public function test_can_open_create_dialog(): void {
         $user = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($user)->create();

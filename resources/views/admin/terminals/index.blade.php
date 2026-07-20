@@ -33,9 +33,8 @@
             @if ($terminals->isEmpty())
                 <p class="mb-3 text-sm text-base-content/60">{{ __('terminal.no_terminals') }}</p>
             @else
-                <div class="mb-3 overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table class="mb-3">
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('terminal.field.name') }}</th>
                                 <th>{{ __('terminal.field.site') }}</th>
@@ -43,8 +42,7 @@
                                 <th>{{ __('terminal.col.last_seen') }}</th>
                                 <th></th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($terminals as $terminal)
                                 <tr>
                                     <td>{{ $terminal->name }}</td>
@@ -68,9 +66,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             @endif
 
             <form method="POST" action="{{ route('admin.terminals.store') }}" class="flex flex-wrap items-end gap-2">
@@ -98,17 +94,15 @@
             @if ($badges->isEmpty())
                 <p class="mb-3 text-sm text-base-content/60">{{ __('terminal.no_badges') }}</p>
             @else
-                <div class="mb-3 overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table class="mb-3">
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('terminal.badge.user') }}</th>
                                 <th>{{ __('terminal.badge.label') }}</th>
                                 <th>{{ __('terminal.col.status') }}</th>
                                 <th></th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($badges as $badge)
                                 <tr>
                                     <td>{{ $badge->user?->name ?? '—' }}</td>
@@ -131,9 +125,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             @endif
 
             <form method="POST" action="{{ route('admin.terminals.badges.store') }}" class="flex flex-wrap items-end gap-2">

@@ -11,7 +11,7 @@
 namespace App\Enums\Isms;
 
 use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
 /**
  * Lebenszyklus eines Sicherheitsvorfalls (Feature 044, MVP 2):
@@ -20,7 +20,7 @@ use App\Enums\Contracts\HasLabel;
  * Der Abschluss (closed) erzwingt Ursachenanalyse + Lessons Learned
  * (Regel im SecurityIncidentService).
  */
-enum SecurityIncidentStatus: string implements HasLabel {
+enum SecurityIncidentStatus: string implements HasLabel, HasStatusTransitions {
     use HasOptions;
 
     case Reported = 'reported';

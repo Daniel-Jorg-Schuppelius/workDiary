@@ -33,14 +33,26 @@ class CashBookService {
      */
     public function record(CashRegister $register, array $data): CashEntry {
         $bookedOn = Carbon::parse((string) $data['booked_on']);
-        $this->assertNotClosed($register, $bookedOn);
 
         $amount = round((float) $data['amount'], 2);
         if ($amount <= 0) {
-            throw new InvalidArgumentException('Kassenbetrag muss positiv sein (Richtung über direction).');
+            throw new InvalidArgumentException((string) __('Kassenbetrag muss positiv sein (Richtung über die Buchungsrichtung).'));
         }
 
         return DB::transaction(function () use ($register, $data, $bookedOn, $amount): CashEntry {
+            // Vollaudit 2026-07 (N1): gemeinsame Registersperre mit closeDay() —
+            // Abschluss- und Bestandsprüfung erst NACH Sperrerwerb, sonst Race
+            // Tagesabschluss vs. parallele Buchung.
+            $this->lockRegister($register);
+            $this->assertNotClosed($register, $bookedOn);
+
+            // Vollaudit 2026-07 (M36): eine Barkasse kann physisch nie negativ
+            // sein — Ausgaben über den Bestand zum Buchungstag sind unzulässig.
+            if ($data['direction'] === CashEntry::DIRECTION_OUT
+                && round($this->balanceAsOf($register, $bookedOn) - $amount, 2) < 0.0) {
+                throw new InvalidArgumentException((string) __('Die Ausgabe übersteigt den Kassenbestand — der Bestand darf nicht negativ werden.'));
+            }
+
             $entry = CashEntry::create([
                 'organization_id' => $register->organization_id,
                 'cash_register_id' => $register->id,
@@ -69,33 +81,42 @@ class CashBookService {
      */
     public function reverse(CashEntry $original, string $reason, ?int $userId = null, ?CarbonInterface $bookedOn = null): CashEntry {
         if ($original->reversal_of_id !== null) {
-            throw new InvalidArgumentException('Eine Storno-Buchung kann nicht erneut storniert werden.');
-        }
-        $alreadyReversed = CashEntry::query()
-            ->where('reversal_of_id', $original->id)
-            ->exists();
-        if ($alreadyReversed) {
-            throw new InvalidArgumentException('Dieser Eintrag wurde bereits storniert.');
+            throw new InvalidArgumentException((string) __('Eine Storno-Buchung kann nicht erneut storniert werden.'));
         }
 
         /** @var CashRegister $register */
         $register = $original->register()->firstOrFail();
         $bookedOn = Carbon::parse(($bookedOn ?? Carbon::today())->toDateString());
-        $this->assertNotClosed($register, $bookedOn);
 
-        return DB::transaction(fn(): CashEntry => CashEntry::create([
-            'organization_id' => $original->organization_id,
-            'cash_register_id' => $original->cash_register_id,
-            'seq_no' => $this->nextSeqNo($register),
-            'booked_on' => $bookedOn->toDateString(),
-            'direction' => $original->direction === CashEntry::DIRECTION_IN ? CashEntry::DIRECTION_OUT : CashEntry::DIRECTION_IN,
-            'amount' => (string) $original->amount,
-            'tax_rate' => $original->tax_rate,
-            'purpose' => (string) __('Storno zu Beleg #:seq: :reason', ['seq' => $original->seq_no, 'reason' => $reason]),
-            'counterparty' => $original->counterparty,
-            'reversal_of_id' => $original->id,
-            'created_by' => $userId,
-        ]));
+        // Bewusst KEIN Negativsaldo-Guard: das Storno korrigiert eine
+        // Fehlbuchung — es muss auch dann möglich sein, wenn der rechnerische
+        // Bestand dadurch vorübergehend unter den Ausweis fällt.
+        return DB::transaction(function () use ($original, $register, $bookedOn, $reason, $userId): CashEntry {
+            // Vollaudit 2026-07 (N1): Sperre + Prüfungen innerhalb der Transaktion.
+            $this->lockRegister($register);
+            $this->assertNotClosed($register, $bookedOn);
+
+            $alreadyReversed = CashEntry::query()
+                ->where('reversal_of_id', $original->id)
+                ->exists();
+            if ($alreadyReversed) {
+                throw new InvalidArgumentException((string) __('Dieser Eintrag wurde bereits storniert.'));
+            }
+
+            return CashEntry::create([
+                'organization_id' => $original->organization_id,
+                'cash_register_id' => $original->cash_register_id,
+                'seq_no' => $this->nextSeqNo($register),
+                'booked_on' => $bookedOn->toDateString(),
+                'direction' => $original->direction === CashEntry::DIRECTION_IN ? CashEntry::DIRECTION_OUT : CashEntry::DIRECTION_IN,
+                'amount' => (string) $original->amount,
+                'tax_rate' => $original->tax_rate,
+                'purpose' => (string) __('Storno zu Beleg #:seq: :reason', ['seq' => $original->seq_no, 'reason' => $reason]),
+                'counterparty' => $original->counterparty,
+                'reversal_of_id' => $original->id,
+                'created_by' => $userId,
+            ]);
+        });
     }
 
     /**
@@ -104,23 +125,31 @@ class CashBookService {
      */
     public function closeDay(CashRegister $register, CarbonInterface $closingDate, float $countedBalance, ?string $note = null, ?int $userId = null): CashDailyClosing {
         $closingDate = Carbon::parse($closingDate->toDateString());
-        $last = $register->lastClosingDate();
-        if ($last !== null && $closingDate->lessThanOrEqualTo($last)) {
-            throw new InvalidArgumentException('Für dieses Datum existiert bereits ein Tagesabschluss.');
-        }
 
-        $expected = $this->balanceAsOf($register, $closingDate);
+        return DB::transaction(function () use ($register, $closingDate, $countedBalance, $note, $userId): CashDailyClosing {
+            // Vollaudit 2026-07 (N1): dieselbe Registersperre wie record()/
+            // reverse() — der Sollbestand wird erst unter Sperre ermittelt,
+            // damit keine parallele Buchung zwischen Berechnung und Abschluss rutscht.
+            $this->lockRegister($register);
 
-        return CashDailyClosing::create([
-            'organization_id' => $register->organization_id,
-            'cash_register_id' => $register->id,
-            'closing_date' => $closingDate->toDateString(),
-            'expected_balance' => (string) $expected,
-            'counted_balance' => (string) round($countedBalance, 2),
-            'difference' => (string) round($countedBalance - $expected, 2),
-            'note' => $note,
-            'closed_by' => $userId,
-        ]);
+            $last = $register->lastClosingDate();
+            if ($last !== null && $closingDate->lessThanOrEqualTo($last)) {
+                throw new InvalidArgumentException((string) __('Für dieses Datum existiert bereits ein Tagesabschluss.'));
+            }
+
+            $expected = $this->balanceAsOf($register, $closingDate);
+
+            return CashDailyClosing::create([
+                'organization_id' => $register->organization_id,
+                'cash_register_id' => $register->id,
+                'closing_date' => $closingDate->toDateString(),
+                'expected_balance' => (string) $expected,
+                'counted_balance' => (string) round($countedBalance, 2),
+                'difference' => (string) round($countedBalance - $expected, 2),
+                'note' => $note,
+                'closed_by' => $userId,
+            ]);
+        });
     }
 
     /** Laufender Kassensaldo (Anfangsbestand + Einnahmen − Ausgaben). */
@@ -145,15 +174,24 @@ class CashBookService {
         $last = $register->lastClosingDate();
         if ($last !== null && Carbon::parse($bookedOn->toDateString())->lessThanOrEqualTo($last)) {
             throw new InvalidArgumentException(
-                'Der Tag ist bereits abgeschlossen (letzter Abschluss: ' . $last->format('d.m.Y') . ') — Korrektur nur als Storno mit neuem Datum.',
+                (string) __('Der Tag ist bereits abgeschlossen (letzter Abschluss: :date) — Korrektur nur als Storno mit neuem Datum.', ['date' => $last->format('d.m.Y')]),
             );
         }
+    }
+
+    /**
+     * Gemeinsame Registersperre: serialisiert Buchung, Storno und
+     * Tagesabschluss je Kasse (Vollaudit 2026-07, N1). Nur innerhalb
+     * einer Transaktion aufrufen; wiederholter Erwerb ist wirkungslos.
+     */
+    private function lockRegister(CashRegister $register): void {
+        CashRegister::query()->withoutGlobalScopes()->whereKey($register->id)->lockForUpdate()->first();
     }
 
     /** Lückenlose fortlaufende Belegnummer je Kasse (unter Registersperre). */
     private function nextSeqNo(CashRegister $register): int {
         // Registerzeile sperren, damit parallele Buchungen keine seq_no doppeln.
-        CashRegister::query()->withoutGlobalScopes()->whereKey($register->id)->lockForUpdate()->first();
+        $this->lockRegister($register);
 
         return (int) CashEntry::query()
             ->withoutGlobalScopes()

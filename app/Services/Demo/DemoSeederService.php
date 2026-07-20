@@ -249,6 +249,10 @@ class DemoSeederService {
             // Nachhaltigkeits-Demo (Feature 071, MVP-235).
             $counts['sustainability'] = $showcase->seedSustainability($organization, $users->first());
 
+            // Phase-38-Basics (Vollaudit 2026-07, N23): Urlaubsübertrag, Kasse,
+            // Abrechnungsplan, Rabatt/Skonto-Rechnung, Führerscheinkontrolle.
+            $counts['phase38_basics'] = $showcase->seedPhase38Basics($organization, $mainCustomer, $users);
+
             // Reklamations-Demo (Feature 072, MVP-256).
             $counts['claims'] = $showcase->seedClaims($organization, $users->first());
 
@@ -364,20 +368,8 @@ class DemoSeederService {
      * @return T
      */
     private function withOrganizationContext(Organization $organization, \Closure $callback): mixed {
-        $hadPrevious = app()->bound('currentOrganization');
-        $previous = $hadPrevious ? app('currentOrganization') : null;
-
-        app()->instance('currentOrganization', $organization);
-
-        try {
-            return $callback();
-        } finally {
-            if ($hadPrevious && $previous instanceof Organization) {
-                app()->instance('currentOrganization', $previous);
-            } else {
-                app()->forgetInstance('currentOrganization');
-            }
-        }
+        // Bind+Restore zentral in OrganizationContext (Vollaudit 2026-07, M42).
+        return \App\Support\OrganizationContext::run($organization, $callback);
     }
 
     /** @return Collection<int, User> */

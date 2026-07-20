@@ -101,7 +101,11 @@ class EntryTypeAnalysisReportController extends Controller {
      *   escalationShare:float,
      *   firstTimeRightShare:float,
      *   medianActualMinutes:float,
-     *   p90ActualMinutes:float
+     *   p90ActualMinutes:float,
+     *   revenue:float,
+     *   cost:float,
+     *   contribution:float,
+     *   contributionPerEntry:float
      * }>             $rows
      * @param  array<string, mixed>  $filters
      */
@@ -124,6 +128,10 @@ class EntryTypeAnalysisReportController extends Controller {
             'FirstTimeRightProzent',
             'MedianIstMinuten',
             'P90IstMinuten',
+            'ErloesEUR',
+            'KostenEUR',
+            'DeckungsbeitragEUR',
+            'DBproAuftragEUR',
         ];
 
         foreach ($rows as $row) {
@@ -142,6 +150,10 @@ class EntryTypeAnalysisReportController extends Controller {
                 NumberHelper::toUSFormat((float) $row['firstTimeRightShare'], 2),
                 NumberHelper::toUSFormat((float) $row['medianActualMinutes'], 2),
                 NumberHelper::toUSFormat((float) $row['p90ActualMinutes'], 2),
+                NumberHelper::toUSFormat((float) $row['revenue'], 2),
+                NumberHelper::toUSFormat((float) $row['cost'], 2),
+                NumberHelper::toUSFormat((float) $row['contribution'], 2),
+                NumberHelper::toUSFormat((float) $row['contributionPerEntry'], 2),
             ];
         }
 

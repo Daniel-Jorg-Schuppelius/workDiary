@@ -18,7 +18,7 @@ use App\Services\Archive\ArchiveService;
 use App\Services\SqidEncoder;
 use App\Services\Timeline\DiaryEntryTimelineService;
 use App\Services\UI\DateRangeContext;
-use App\Support\{LookupCache, Sqid};
+use App\Support\LookupCache;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -273,35 +273,20 @@ class DiaryController extends Controller {
         return redirect()->route('diary.index')->with('success', __('Eintrag gelöscht.'));
     }
 
-    /** @return array<int> */
+    /**
+     * Kanonische Tag-Normalisierung (Vollaudit 2026-07, M40) — die frühere
+     * Diary-Semantik (Split auf Komma/Semikolon/Zeilenumbruch, Deckel 20)
+     * ist jetzt die projektweite in {@see \App\Support\TagInput}.
+     *
+     * @return array<int>
+     */
     private function extractTagIds(Request $request): array {
-        $raw = $request->input('tag_ids', []);
-        if (! is_array($raw)) {
-            return [];
-        }
-
-        // tag_ids kommen als opake Sqids aus dem Formular; rohe numerische IDs
-        // werden als Backward-Compat-Fallback weiterhin akzeptiert.
-        return collect($raw)
-            ->map(fn($v) => is_scalar($v) ? Sqid::decodeOrNumeric(Tag::class, (string) $v) : null)
-            ->filter()
-            ->unique()
-            ->values()
-            ->all();
+        return \App\Support\TagInput::ids($request->input('tag_ids', []));
     }
 
     /** @return array<string> */
     private function extractNewTagNames(Request $request): array {
-        $raw = (string) $request->input('new_tags', '');
-        if ($raw === '') {
-            return [];
-        }
-
-        return collect(preg_split('/[,;\n]+/', $raw) ?: [])
-            ->map(fn($v) => trim((string) $v))
-            ->filter()
-            ->take(20)
-            ->all();
+        return \App\Support\TagInput::names($request->input('new_tags', ''));
     }
 
     public function archive(DiaryEntry $diary, ArchiveService $service): RedirectResponse {

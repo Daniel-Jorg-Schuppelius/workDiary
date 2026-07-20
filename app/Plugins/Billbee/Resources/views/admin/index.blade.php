@@ -78,13 +78,12 @@
                                     <span class="badge badge-warning badge-sm">{{ __('billbee.status.open_assignment') }}</span>
                                 @endif
                             </td>
-                            <td class="text-right font-mono text-xs">{{ number_format((float) $order->total_gross, 2, ',', '.') }} {{ $order->currency?->value }}</td>
-                            <td class="text-xs">{{ $order->ordered_at?->format('d.m.Y H:i') ?? '—' }}</td>
+                            {{-- Anzeige-Makros statt Roh-Formatierung (Vollaudit 2026-07, N52). --}}
+                            <td class="text-right font-mono text-xs">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $order->total_gross, 2, withThousandsSeparator: true) }} {{ $order->currency?->value }}</td>
+                            <td class="text-xs">{{ $order->ordered_at?->fdatetime() ?? '—' }}</td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="7" class="py-6 text-center text-sm text-base-content/60">{{ __('billbee.empty') }}</td>
-                        </tr>
+                        <x-table.empty :colspan="7" icon="shopping_cart" :title="__('billbee.empty')" compact />
                     @endforelse
                 </tbody>
             </table>

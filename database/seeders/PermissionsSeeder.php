@@ -344,6 +344,9 @@ class PermissionsSeeder extends Seeder {
             // Lagerwirtschaft (Feature 048): operative Bestandsbuchungen.
             PermissionEnum::InventoryViewAny,
             PermissionEnum::InventoryPost,
+            // Vollaudit 2026-07 (M22): Freigabe-Rechte der Leitung.
+            PermissionEnum::InventoryNegative,
+            PermissionEnum::InventorySubstituteApprove,
             PermissionEnum::DutyPlanViewAny,
             PermissionEnum::DutyPlanCreate,
             PermissionEnum::DutyPlanUpdate,

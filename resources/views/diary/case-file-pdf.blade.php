@@ -196,6 +196,39 @@
         </table>
     @endif
 
+    {{-- Dienstmittel/Assets (Feature 009 Akzeptanz 1; Vollaudit 2026-07, M5). --}}
+    @if ($diary->asset !== null || $assetAssignments->isNotEmpty())
+        <h2>{{ __('timeline.case.assets') }}</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>{{ __('timeline.case.asset') }}</th>
+                    <th>{{ __('timeline.case.asset_role') }}</th>
+                    <th>{{ __('timeline.case.person') }}</th>
+                    <th>{{ __('timeline.case.date') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if ($diary->asset !== null)
+                    <tr>
+                        <td>{{ $diary->asset->name }}</td>
+                        <td>{{ __('timeline.case.asset_subject') }}</td>
+                        <td>—</td>
+                        <td>—</td>
+                    </tr>
+                @endif
+                @foreach ($assetAssignments as $assignment)
+                    <tr>
+                        <td>{{ $assignment->asset->name ?? '—' }}</td>
+                        <td>{{ __('timeline.case.asset_issued') }}</td>
+                        <td>{{ $assignment->assignedToUser?->name ?? '—' }}</td>
+                        <td>{{ $assignment->checked_out_at?->fdate() ?? '—' }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
+
     {{-- Kommunikation (ohne confidential, außer berechtigt) --}}
     @if ($communicationNotes->isNotEmpty())
         <h2>{{ __('timeline.case.communication') }}</h2>

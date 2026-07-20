@@ -14,6 +14,7 @@ namespace App\Services\DocumentDesign;
 
 use App\Enums\DocumentDesign\{InformationBlock, RenderDocumentKind};
 use App\Models\Organization;
+use CommonToolkit\Helper\Data\NumberHelper;
 use PDFToolkit\Entities\PDFContent;
 use PDFToolkit\Registries\PDFWriterRegistry;
 use RuntimeException;
@@ -109,12 +110,12 @@ class SampleDocumentService {
             . '<table><thead><tr><th>' . __('Pos.') . '</th><th>' . __('Bezeichnung') . '</th><th class="num">' . __('Menge') . '</th><th class="num">' . __('Einzelpreis') . '</th><th class="num">' . __('Rabatt') . '</th><th class="num">' . __('Summe') . '</th></tr></thead>'
             . '<tbody>' . $rows . '</tbody>'
             . ($design->show(InformationBlock::Totals) ? '<tfoot>'
-                . '<tr><td colspan="5" class="num">' . __('Zwischensumme (netto)') . '</td><td class="num">' . number_format($net, 2, ',', '.') . ' €</td></tr>'
+                . '<tr><td colspan="5" class="num">' . __('Zwischensumme (netto)') . '</td><td class="num">' . NumberHelper::toGermanFormat($net, 2, withThousandsSeparator: true) . ' €</td></tr>'
                 . ($design->show(InformationBlock::TaxBreakdown)
-                    ? '<tr><td colspan="5" class="num">' . __('USt. 19 %') . '</td><td class="num">' . number_format($tax19, 2, ',', '.') . ' €</td></tr>'
-                    . '<tr><td colspan="5" class="num">' . __('USt. 7 %') . '</td><td class="num">' . number_format($tax7, 2, ',', '.') . ' €</td></tr>'
+                    ? '<tr><td colspan="5" class="num">' . __('USt. 19 %') . '</td><td class="num">' . NumberHelper::toGermanFormat($tax19, 2, withThousandsSeparator: true) . ' €</td></tr>'
+                    . '<tr><td colspan="5" class="num">' . __('USt. 7 %') . '</td><td class="num">' . NumberHelper::toGermanFormat($tax7, 2, withThousandsSeparator: true) . ' €</td></tr>'
                     : '')
-                . '<tr><td colspan="5" class="num">' . __('Gesamtbetrag') . '</td><td class="num">' . number_format($net + $tax19 + $tax7, 2, ',', '.') . ' €</td></tr>'
+                . '<tr><td colspan="5" class="num">' . __('Gesamtbetrag') . '</td><td class="num">' . NumberHelper::toGermanFormat($net + $tax19 + $tax7, 2, withThousandsSeparator: true) . ' €</td></tr>'
                 . '</tfoot>' : '')
             . '</table>'
             . $closing

@@ -258,12 +258,14 @@ class InvoiceController extends Controller {
         // Mahn-Mailversand (MVP-163, Restpaket): eigener Zustellversuch —
         // die Rechnung selbst bleibt unverändert (kein neuer Beleg).
         if (! empty($data['send_mail'])) {
-            $mail = new \App\Mail\DunningMail($invoice, $newLevel, $data['note'] ?? null);
-            Mail::to((string) $data['email'])->queue($mail);
-            $this->recordDispatch($invoice, \App\Models\InvoiceDispatch::CHANNEL_EMAIL, 'pdf', (string) $data['email'], null, [
+            // Vollaudit 2026-07 (M26): Dispatch VOR dem Queuen anlegen — die
+            // Mailable trägt die ID im Header, der Listener schreibt sent/failed.
+            $dispatch = $this->recordDispatch($invoice, \App\Models\InvoiceDispatch::CHANNEL_EMAIL, 'pdf', (string) $data['email'], null, [
                 'kind' => 'dunning',
                 'level' => $newLevel,
             ]);
+            $mail = new \App\Mail\DunningMail($invoice, $newLevel, $data['note'] ?? null, (int) $dispatch->id);
+            Mail::to((string) $data['email'])->queue($mail);
 
             return redirect()->route('invoices.show', $invoice)
                 ->with('status', __('Mahnstufe :level vermerkt und Mahnung an :email versendet.', ['level' => $newLevel, 'email' => $data['email']]));
@@ -277,8 +279,8 @@ class InvoiceController extends Controller {
      *
      * @param  array<string, mixed>  $meta
      */
-    private function recordDispatch(Invoice $invoice, string $channel, ?string $format, ?string $recipient, ?string $sha256, array $meta = []): void {
-        \App\Models\InvoiceDispatch::query()->create([
+    private function recordDispatch(Invoice $invoice, string $channel, ?string $format, ?string $recipient, ?string $sha256, array $meta = []): \App\Models\InvoiceDispatch {
+        return \App\Models\InvoiceDispatch::query()->create([
             'organization_id' => $invoice->organization_id,
             'invoice_id' => $invoice->id,
             'channel' => $channel,
@@ -289,6 +291,34 @@ class InvoiceController extends Controller {
             'meta' => $meta !== [] ? $meta : null,
             'created_by' => Auth::id(),
         ]);
+    }
+
+    /**
+     * Widerspruch gegen eine (umsatzsteuerliche) Gutschrift dokumentieren
+     * (§ 14 Abs. 2 UStG; Feature 066, Vollaudit 2026-07 M27): Lifecycle-
+     * Vermerk mit Pflichtnote — der festgeschriebene Beleg bleibt unverändert.
+     */
+    public function documentObjection(Request $request, Invoice $invoice): RedirectResponse {
+        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+
+        if (! $invoice->isCreditNote()) {
+            return back()->with('error', __('Ein Widerspruch ist nur bei Gutschriften dokumentierbar.'));
+        }
+        if ($invoice->objection_at !== null) {
+            return back()->with('error', __('Für diese Gutschrift ist bereits ein Widerspruch dokumentiert.'));
+        }
+
+        $data = $request->validate([
+            'objection_note' => ['required', 'string', 'min:10', 'max:1000'],
+        ]);
+
+        $invoice->update([
+            'objection_at' => now(),
+            'objection_note' => (string) $data['objection_note'],
+        ]);
+        $invoice->audit('invoice.objectionDocumented', ['note' => (string) $data['objection_note']]);
+
+        return back()->with('status', __('Widerspruch dokumentiert — die Gutschrift verliert ihre Wirkung als Rechnung.'));
     }
 
     public function issue(Invoice $invoice): RedirectResponse {
@@ -700,7 +730,15 @@ class InvoiceController extends Controller {
             }
         }
 
-        $mail = new InvoiceMail($invoice, $rendered['subject'], $rendered['html'], $rendered['text']);
+        // Zustellnachweis (MVP-168): jeder Versand ist ein eigener Versuch.
+        // Vollaudit 2026-07 (M26): Dispatch VOR dem Queuen — Status/Message-ID/
+        // Dateihash schreibt der Versandpfad (Listener + Mailable) nach.
+        $dispatch = $this->recordDispatch($invoice, \App\Models\InvoiceDispatch::CHANNEL_EMAIL, 'pdf', implode(', ', $data['to']), null, [
+            'cc' => $data['cc'] ?? [],
+            'template_id' => $template->id,
+        ]);
+
+        $mail = new InvoiceMail($invoice, $rendered['subject'], $rendered['html'], $rendered['text'], (int) $dispatch->id);
         $pending = Mail::to($data['to']);
         if (! empty($data['cc'])) {
             $pending->cc($data['cc']);
@@ -711,12 +749,6 @@ class InvoiceController extends Controller {
         $pending->queue($mail);
 
         $invoice->markSent();
-
-        // Zustellnachweis (MVP-168): jeder Versand ist ein eigener Versuch.
-        $this->recordDispatch($invoice, \App\Models\InvoiceDispatch::CHANNEL_EMAIL, 'pdf', implode(', ', $data['to']), null, [
-            'cc' => $data['cc'] ?? [],
-            'template_id' => $template->id,
-        ]);
 
         return redirect()->route('invoices.show', $invoice)
             ->with('status', __('Rechnung an :count Empfänger versendet.', [

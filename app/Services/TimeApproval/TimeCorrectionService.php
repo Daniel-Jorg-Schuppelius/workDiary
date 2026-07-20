@@ -15,6 +15,7 @@ use App\Enums\TimeApproval\TimeCorrectionStatus;
 use App\Models\{Attendance, TimeCorrectionItem, TimeCorrectionRequest, TimeEntry, User};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Support\Str;
 
 /**
  * Statusmaschine für Zeit-Korrekturanträge (MVP-017, ../WorkDiary-Architecture/zeit-korrekturen.md).
@@ -282,21 +283,31 @@ class TimeCorrectionService {
             );
         }
 
-        unset($actor); // Audit-Spuren entstehen pro Item-Apply via Auditable.
+        unset($actor); // Akteur kommt im Audit über Auditable::resolveAuditUserId.
 
-        return DB::transaction(function () use ($request): TimeCorrectionRequest {
-            foreach ($request->items()->get() as $item) {
-                /** @var TimeCorrectionItem $item */
-                $this->applyItem($item);
-            }
+        try {
+            return DB::transaction(function () use ($request): TimeCorrectionRequest {
+                foreach ($request->items()->get() as $item) {
+                    /** @var TimeCorrectionItem $item */
+                    $this->applyItem($item);
+                }
 
-            $request->fill([
-                'status' => TimeCorrectionStatus::Applied,
-                'applied_at' => CarbonImmutable::now(),
-            ])->save();
+                $request->fill([
+                    'status' => TimeCorrectionStatus::Applied,
+                    'applied_at' => CarbonImmutable::now(),
+                ])->save();
 
-            return $request->refresh();
-        });
+                return $request->refresh();
+            });
+        } catch (\Throwable $e) {
+            // Vollaudit 2026-07 (M2): Fehlschlag auditieren (zeit-korrekturen.md §6).
+            $request->audit('correction.applyFailed', [
+                'error' => $e->getMessage(),
+                'reason_code' => $e instanceof TimeCorrectionWorkflowException ? $e->reasonCode : null,
+            ]);
+
+            throw $e;
+        }
     }
 
     // ── intern ─────────────────────────────────────────────────────────
@@ -337,9 +348,9 @@ class TimeCorrectionService {
         }
 
         match ($item->action) {
-            'create' => $this->applyCreate($targetType, $after),
-            'update' => $this->applyUpdate($targetType, (int) $item->target_id, $after),
-            'delete' => $this->applyDelete($targetType, (int) $item->target_id),
+            'create' => $this->applyCreate($targetType, $after, $item),
+            'update' => $this->applyUpdate($targetType, (int) $item->target_id, $after, $item),
+            'delete' => $this->applyDelete($targetType, (int) $item->target_id, $item),
             default => throw new TimeCorrectionWorkflowException(
                 'unsupportedAction',
                 __('Aktion :action wird nicht unterstützt.', ['action' => $item->action]),
@@ -349,18 +360,36 @@ class TimeCorrectionService {
     }
 
     /**
-     * @param  class-string<\Illuminate\Database\Eloquent\Model>  $modelClass
-     * @param  array<string, mixed>  $attrs
+     * Explizites Audit-Event je angewandtem Item (Vollaudit 2026-07, M2):
+     * "<target>.correctedByApproval" mit Antragsreferenz — damit bleibt eine
+     * per Antrag angewandte Änderung von einer Direktbearbeitung
+     * unterscheidbar (zeit-korrekturen.md §3.3).
      */
-    private function applyCreate(string $modelClass, array $attrs): void {
-        $modelClass::query()->create($attrs);
+    private function auditApplied(\Illuminate\Database\Eloquent\Model $model, TimeCorrectionItem $item): void {
+        if (! method_exists($model, 'audit')) {
+            return;
+        }
+        $model->audit(Str::camel(class_basename($model)) . '.correctedByApproval', [
+            'correction_request_id' => (int) $item->time_correction_request_id,
+            'correction_item_id' => (int) $item->id,
+            'action' => (string) $item->action,
+        ]);
     }
 
     /**
      * @param  class-string<\Illuminate\Database\Eloquent\Model>  $modelClass
      * @param  array<string, mixed>  $attrs
      */
-    private function applyUpdate(string $modelClass, int $id, array $attrs): void {
+    private function applyCreate(string $modelClass, array $attrs, TimeCorrectionItem $item): void {
+        $model = $modelClass::query()->create($attrs);
+        $this->auditApplied($model, $item);
+    }
+
+    /**
+     * @param  class-string<\Illuminate\Database\Eloquent\Model>  $modelClass
+     * @param  array<string, mixed>  $attrs
+     */
+    private function applyUpdate(string $modelClass, int $id, array $attrs, TimeCorrectionItem $item): void {
         /** @var \Illuminate\Database\Eloquent\Model|null $model */
         $model = $modelClass::query()->find($id);
         if ($model === null) {
@@ -371,11 +400,24 @@ class TimeCorrectionService {
             );
         }
         $model->fill($attrs)->save();
+        $this->auditApplied($model, $item);
     }
 
     /** @param  class-string<\Illuminate\Database\Eloquent\Model>  $modelClass */
-    private function applyDelete(string $modelClass, int $id): void {
-        $modelClass::query()->whereKey($id)->delete();
+    private function applyDelete(string $modelClass, int $id, TimeCorrectionItem $item): void {
+        /** @var \Illuminate\Database\Eloquent\Model|null $model */
+        $model = $modelClass::query()->find($id);
+        if ($model === null) {
+            // Vollaudit 2026-07 (M2): kein stiller No-op mehr — Existenzprüfung
+            // wie bei applyUpdate (zeit-korrekturen.md §4).
+            throw new TimeCorrectionWorkflowException(
+                'targetMissing',
+                __('Quell-Datensatz :id existiert nicht mehr.', ['id' => $id]),
+                ['target_id' => $id, 'target_type' => $modelClass],
+            );
+        }
+        $this->auditApplied($model, $item);
+        $model->delete();
     }
 
     /** @param  list<TimeCorrectionStatus>  $allowed */

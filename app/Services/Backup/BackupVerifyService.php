@@ -13,7 +13,6 @@ namespace App\Services\Backup;
 use App\Enums\Backup\BackupGenerationStatus;
 use App\Models\Backup\{BackupGeneration, BackupGenerationPart, BackupTargetConnection};
 use App\Plugins\Contracts\BackupTarget;
-use App\Plugins\PluginManager;
 use App\Services\Backup\Exceptions\BackupPreflightException;
 use Throwable;
 
@@ -25,6 +24,9 @@ use Throwable;
  * Generation NICHT restorable.
  */
 class BackupVerifyService {
+    // Gemeinsame Adapter-Auflösung (Vollaudit 2026-07, N34).
+    use \App\Services\Backup\Concerns\ResolvesBackupTarget;
+
     public function __construct(
         private readonly BackupDecrypter $decrypter,
     ) {}
@@ -129,14 +131,4 @@ class BackupVerifyService {
         }
     }
 
-    private function adapter(BackupTargetConnection $connection): BackupTarget {
-        $plugin = app(PluginManager::class)->find($connection->provider->pluginId());
-        if (!$plugin instanceof BackupTarget) {
-            throw new BackupPreflightException(
-                "Kein Backup-Adapter für Provider '{$connection->provider->value}' verfügbar.",
-            );
-        }
-
-        return $plugin;
-    }
 }

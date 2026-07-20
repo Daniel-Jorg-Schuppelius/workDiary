@@ -11,7 +11,7 @@
 namespace App\Enums\Isms;
 
 use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
 /**
  * Konformitätsstatus eines Normprofils je Geltungsbereich (Feature 046):
@@ -24,7 +24,7 @@ use App\Enums\Contracts\HasLabel;
  * {@see \App\Services\Isms\ConformityService}. Ein Reifegrad oder eine
  * vollständige Checkliste löst NIE automatisch `certified` aus.
  */
-enum NormConformityStatus: string implements HasLabel {
+enum NormConformityStatus: string implements HasLabel, HasStatusTransitions {
     use HasOptions;
 
     case NotAssessed = 'notAssessed';

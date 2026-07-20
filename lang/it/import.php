@@ -13,6 +13,12 @@ return [
         'tours' => 'Giri',
         'remote_sessions' => 'Sessioni di manutenzione remota',
     ],
+    'template' => [
+        'example_required' => 'Valore di esempio (obbligatorio)',
+        'example_optional' => 'Valore di esempio (facoltativo)',
+        'download' => 'Scarica il modello',
+    ],
+
     'state' => [
         'preflight' => 'Controllo preliminare',
         'awaitingApproval' => 'In attesa di approvazione',

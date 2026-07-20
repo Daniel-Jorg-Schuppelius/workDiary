@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Enums\Manufacturing;
 
 use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
 /**
  * Statusmodell eines Fertigungs-/Montageauftrags (Feature 047):
@@ -24,7 +24,9 @@ use App\Enums\Contracts\HasLabel;
  *
  * Ein abgeschlossener Auftrag ist fachlich unveränderlich.
  */
-enum ManufacturingOrderStatus: string implements HasLabel {
+enum ManufacturingOrderStatus: string implements HasLabel, HasStatusTransitions {
+    use \App\Enums\Concerns\HasTransitions;
+
     use HasOptions;
 
     case Draft = 'draft';
@@ -44,7 +46,7 @@ enum ManufacturingOrderStatus: string implements HasLabel {
     }
 
     /** @return list<self> */
-    public function allowedNext(): array {
+    public function allowedTransitions(): array {
         return match ($this) {
             self::Draft => [self::Released, self::Cancelled],
             self::Released => [self::InProgress, self::Cancelled],
@@ -54,7 +56,4 @@ enum ManufacturingOrderStatus: string implements HasLabel {
         };
     }
 
-    public function canTransitionTo(self $target): bool {
-        return in_array($target, $this->allowedNext(), true);
-    }
 }

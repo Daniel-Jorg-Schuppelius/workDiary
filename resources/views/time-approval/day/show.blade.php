@@ -172,9 +172,8 @@
             @if ($entries->isEmpty())
                 <p class="text-sm opacity-70">{{ __('day-close.hint.no_entries') }}</p>
             @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table>
+                    <x-slot:head>
                             <tr>
                                 <th class="text-right">{{ __('day-close.field.duration') }}</th>
                                 <th>{{ __('day-close.field.project') }}</th>
@@ -182,8 +181,7 @@
                                 <th>{{ __('day-close.field.comment') }}</th>
                                 <th class="text-center">{{ __('day-close.field.billable') }}</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($entries as $entry)
                                 <tr>
                                     <td class="text-right tabular-nums">{{ $fmtMin((int) $entry->minutes) }}</td>
@@ -216,9 +214,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             @endif
         </x-card>
 

@@ -13,13 +13,14 @@
                     :href="route('purchase-orders.create')" show-label>{{ __('procurement.action.create') }}</x-icon-btn>
     </x-slot:actions>
 
-    <div role="tablist" class="tabs tabs-box w-full">
-        <a role="tab" href="{{ route('purchase-orders.index') }}" class="tab {{ $status === 'all' ? 'tab-active' : '' }}">{{ __('Alle') }}</a>
-        @foreach ($statuses as $st)
-            <a role="tab" href="{{ route('purchase-orders.index', ['status' => $st->value]) }}"
-               class="tab {{ $status === $st->value ? 'tab-active' : '' }}">{{ $st->label() }}</a>
-        @endforeach
-    </div>
+    {{-- Tab-Strip über die gemeinsame Komponente (D5; Vollaudit 2026-07, N44). --}}
+    <x-tab-nav :items="collect([['label' => __('Alle'), 'route' => 'purchase-orders.index', 'active' => $status === 'all']])
+        ->concat(collect($statuses)->map(fn($st) => [
+            'label' => $st->label(),
+            'route' => 'purchase-orders.index',
+            'params' => ['status' => $st->value],
+            'active' => $status === $st->value,
+        ]))->all()" />
 
     @if ($orders->total() === 0)
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">shopping_cart</span>'

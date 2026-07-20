@@ -25,6 +25,10 @@ return [
 
     'field' => [
         'name' => 'Name',
+        'valid_from' => 'Gültig ab',
+        'valid_until' => 'Gültig bis',
+        'target_entry_type' => 'Zuordnung: Auftragstyp',
+        'target_customer' => 'Zuordnung: Kunde',
         'description' => 'Beschreibung',
         'status' => 'Status',
         'fields' => 'Felder',

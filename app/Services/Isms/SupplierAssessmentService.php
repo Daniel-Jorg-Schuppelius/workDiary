@@ -14,7 +14,7 @@ use App\Enums\Isms\{IncidentSeverity, SupplierAssessmentStatus};
 use App\Models\Isms\{IsmsScope, IsmsSupplierAssessment};
 use App\Models\Privacy\ProcessingAgreement;
 use App\Models\{Supplier, User};
-use App\Services\Isms\Concerns\AssignsSequentialNo;
+use App\Services\Isms\Concerns\{AssertsIsmsTransition, AssignsSequentialNo};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -38,6 +38,8 @@ use Illuminate\Validation\ValidationException;
  * Statusübergänge.
  */
 class SupplierAssessmentService {
+    use AssertsIsmsTransition;
+
     use AssignsSequentialNo;
 
     /**
@@ -128,14 +130,8 @@ class SupplierAssessmentService {
             return $assessment;
         }
 
-        if (! in_array($target, $assessment->status->allowedTransitions(), true)) {
-            throw ValidationException::withMessages([
-                'status' => __('isms.error.invalid_transition', [
-                    'from' => $assessment->status->label(),
-                    'to' => $target->label(),
-                ]),
-            ]);
-        }
+        // Gemeinsamer ISMS-Guard (Vollaudit 2026-07, M44).
+        $this->assertIsmsTransition($assessment->status, $target);
 
         return DB::transaction(function () use ($assessment, $target, $actor): IsmsSupplierAssessment {
             $from = $assessment->status;

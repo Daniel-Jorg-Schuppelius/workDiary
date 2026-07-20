@@ -11,7 +11,6 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\{CostCenterRule, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 /**
@@ -19,26 +18,13 @@ use App\Policies\Concerns\HasAdminBypass;
  * pflegt Regeln über costCenterRule.viewAny/manage — gleiche Zielgruppe wie
  * die Zuschlagsregeln.
  */
-class CostCenterRulePolicy {
+class CostCenterRulePolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::CostCenterRuleViewAny->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::CostCenterRuleManage->value);
-    }
-
-    public function update(User $user, CostCenterRule $rule): bool {
-        unset($rule);
-
-        return $user->can(P::CostCenterRuleManage->value);
-    }
-
-    public function delete(User $user, CostCenterRule $rule): bool {
-        unset($rule);
-
-        return $user->can(P::CostCenterRuleManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::CostCenterRuleViewAny,
+        'create' => P::CostCenterRuleManage,
+        'update' => P::CostCenterRuleManage,
+        'delete' => P::CostCenterRuleManage,
+    ];
 }

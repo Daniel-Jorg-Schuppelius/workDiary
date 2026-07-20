@@ -31,17 +31,15 @@
     @endif
 
     <x-card>
-        <div class="overflow-x-auto">
-            <table class="table table-sm">
-                <thead>
+        <x-table bare>
+            <x-slot:head>
                     <tr>
                         <th class="sticky left-0 z-10 bg-base-100">{{ __('Mitarbeiter:in') }}</th>
                         @foreach ($days as $day)
                             <th class="min-w-32 text-center tabular-nums">{{ \Illuminate\Support\Carbon::parse($day)->isoFormat('dd DD.MM.') }}</th>
                         @endforeach
                     </tr>
-                </thead>
-                <tbody>
+            </x-slot:head>
                     @forelse ($rows as $row)
                         <tr>
                             <td class="sticky left-0 z-10 bg-base-100 font-medium">{{ $row['name'] }}</td>
@@ -78,9 +76,7 @@
                     @empty
                         <x-table.empty :colspan="count($days) + 1" icon='<span class="material-symbols-outlined" aria-hidden="true">event_busy</span>' :title="__('Keine terminierten Aufträge im Zeitraum.')" compact />
                     @endforelse
-                </tbody>
-            </table>
-        </div>
+        </x-table>
     </x-card>
 </x-page-shell>
 @endsection

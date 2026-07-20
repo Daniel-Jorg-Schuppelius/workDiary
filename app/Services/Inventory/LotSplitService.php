@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Inventory;
 
 use App\Models\{StockLot, StockValuationLayer};
-use CommonToolkit\Helper\Data\NumberHelper;
+use App\Support\DecimalQty;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -26,14 +26,16 @@ use RuntimeException;
 class LotSplitService {
     public const SCALE = 4;
 
+    public function __construct(private readonly LotService $lots) {}
+
     /** Teilt `qty` aus einer Charge in eine neue Charge ab. */
     public function split(StockLot $source, string $qty, string $newLotNo, ?string $bestBefore = null): StockLot {
-        $qty = $this->positive($qty);
+        $qty = DecimalQty::positive($qty);
         $newLotNo = trim($newLotNo);
         if ($newLotNo === '') {
             throw new RuntimeException('Leere Ziel-Chargennummer.');
         }
-        if (bccomp($qty, $this->onHand($source), self::SCALE) > 0) {
+        if (bccomp($qty, $this->lots->onHand($source), self::SCALE) > 0) {
             throw new RuntimeException('Split übersteigt den Chargenbestand.');
         }
 
@@ -100,22 +102,5 @@ class LotSplitService {
 
             return $into;
         });
-    }
-
-    /** @return numeric-string */
-    private function onHand(StockLot $lot): string {
-        $sum = (string) StockValuationLayer::query()->where('stock_lot_id', $lot->id)->sum('qty_remaining');
-
-        return bcadd($sum, '0', self::SCALE);
-    }
-
-    /** @return numeric-string */
-    private function positive(string $value): string {
-        $value = NumberHelper::normalizeDecimalString($value);
-        if ($value === '' || ! is_numeric($value)) {
-            return '0';
-        }
-
-        return bccomp($value, '0', self::SCALE) < 0 ? bcmul($value, '-1', self::SCALE) : $value;
     }
 }

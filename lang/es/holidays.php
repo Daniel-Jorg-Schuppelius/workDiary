@@ -12,5 +12,6 @@ return [
     'region' => [
         'de_federal' => 'A nivel nacional (sin festivos regionales)',
         'at_federal' => 'Austria (nacional)',
+        'ch_federal' => 'Suiza (nacional)',
     ],
 ];

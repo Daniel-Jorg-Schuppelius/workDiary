@@ -14,7 +14,7 @@ namespace App\Services\Manufacturing;
 
 use App\Enums\Manufacturing\{ProcurementStatus, SubstituteStatus};
 use App\Models\{Article, ArticleVariant, ManufacturingOrderMaterial, MaterialSubstitute, ProcurementRequest, Warehouse};
-use CommonToolkit\Helper\Data\NumberHelper;
+use App\Support\DecimalQty;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use RuntimeException;
@@ -47,7 +47,7 @@ class ShortageService {
             'planned_variant_id' => $material->article_variant_id,
             'substitute_article_id' => $substituteArticle->id,
             'substitute_variant_id' => $substituteVariant?->id,
-            'quantity' => $this->positive($qty),
+            'quantity' => DecimalQty::positive($qty),
             'status' => SubstituteStatus::Requested->value,
             'reason' => $reason,
             'requested_by' => $requestedBy,
@@ -77,7 +77,7 @@ class ShortageService {
             'article_id' => $article->id,
             'article_variant_id' => $variant?->id,
             'warehouse_id' => $warehouse?->id,
-            'quantity' => $this->positive($qty),
+            'quantity' => DecimalQty::positive($qty),
             'status' => ProcurementStatus::Open->value,
             'source_type' => $source?->getMorphClass(),
             'source_id' => $source?->getKey(),
@@ -98,15 +98,5 @@ class ShortageService {
         ])->save();
 
         return $substitute;
-    }
-
-    /** @return numeric-string */
-    private function positive(string $value): string {
-        $value = NumberHelper::normalizeDecimalString($value);
-        if ($value === '' || ! is_numeric($value)) {
-            return '0';
-        }
-
-        return bccomp($value, '0', 4) < 0 ? bcmul($value, '-1', 4) : $value;
     }
 }

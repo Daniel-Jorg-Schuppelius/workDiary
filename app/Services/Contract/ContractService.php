@@ -18,6 +18,7 @@ use App\Enums\Numbering\NumberScope;
 use App\Models\AssetFinance\AssetFinanceContract;
 use App\Models\Contract\{Contract, ContractObligation};
 use App\Models\{Organization, User};
+use App\Services\Concerns\AssertsStatusTransition;
 use App\Services\Notification\NotificationDispatcher;
 use App\Services\Numbering\NumberSequenceService;
 use Carbon\CarbonInterface;
@@ -33,6 +34,8 @@ use Illuminate\Support\Facades\DB;
  * modell (Feature 074). Keine externe Index-API — Indexierung ist deskriptiv.
  */
 class ContractService {
+    use AssertsStatusTransition;
+
     public function __construct(
         private readonly NumberSequenceService $numbers,
         private readonly NotificationDispatcher $notifier,
@@ -304,12 +307,8 @@ class ContractService {
         return $assetFinance;
     }
 
+    /** Gemeinsamer Guard (Vollaudit 2026-07, M44) — Semantik unverändert. */
     private function assertTransition(Contract $contract, ContractStatus $target): void {
-        if (! in_array($target, $contract->status->allowedTransitions(), true)) {
-            throw new \RuntimeException((string) __('Statuswechsel von :from nach :to ist nicht zulässig.', [
-                'from' => $contract->status->label(),
-                'to' => $target->label(),
-            ]));
-        }
+        $this->assertStatusTransition($contract->status, $target);
     }
 }

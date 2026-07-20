@@ -74,6 +74,36 @@ class ProtocolSignatureTokenService {
         return ['token' => $token, 'model' => $model];
     }
 
+    /**
+     * Widerruf eines externen Signatur-Links (Feature 012 MVP; Vollaudit
+     * 2026-07, M6): expires_at wird auf jetzt gesetzt — isUsable() greift
+     * damit überall ohne neue Spalte; der Widerruf ist als ProtocolEvent
+     * nachvollziehbar. Eingelöste Links sind nicht widerrufbar.
+     */
+    public function revoke(ProtocolSignatureToken $token, User $actor): ProtocolSignatureToken {
+        if ($token->used_at !== null) {
+            throw new \RuntimeException((string) __('Dieser Link wurde bereits eingelöst und kann nicht widerrufen werden.'));
+        }
+
+        return DB::transaction(function () use ($token, $actor): ProtocolSignatureToken {
+            $token->forceFill(['expires_at' => Carbon::now()])->save();
+
+            ProtocolEvent::query()->create([
+                'protocol_id' => $token->protocol_id,
+                'event' => ProtocolEventType::SignatureLinkRevoked,
+                'actor_user_id' => $actor->id,
+                'payload' => [
+                    'token_id' => $token->id,
+                    'role' => $token->role->value,
+                    'signer_email' => $token->signer_email,
+                ],
+                'created_at' => Carbon::now(),
+            ]);
+
+            return $token;
+        });
+    }
+
     public function find(string $token): ?ProtocolSignatureToken {
         return ProtocolSignatureToken::query()
             ->where('token_hash', CryptoHelper::hash($token))

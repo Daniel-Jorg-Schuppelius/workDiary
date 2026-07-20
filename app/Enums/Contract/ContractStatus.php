@@ -13,13 +13,13 @@ declare(strict_types=1);
 namespace App\Enums\Contract;
 
 use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
 /**
  * Statusmodell des allgemeinen Vertrags (Welle D, CLM). Terminated
  * (gekündigt) läuft bis zum Vertragsende weiter — deshalb noch „offen".
  */
-enum ContractStatus: string implements HasLabel {
+enum ContractStatus: string implements HasLabel, HasStatusTransitions {
     use HasOptions;
 
     case Draft = 'draft';

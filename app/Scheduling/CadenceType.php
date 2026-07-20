@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Scheduling;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Erlaubte Planungsarten der Scheduler-Job-Registry (Feature 067,
  * MVP-175). Freie Cron-Ausdrücke (Cron) bleiben Betreiber-Funktion
  * mit Validierung (MVP-176).
  */
-enum CadenceType: string {
+enum CadenceType: string implements HasLabel {
+    use HasOptions;
+
     case EveryMinute = 'everyMinute';
     case EveryFiveMinutes = 'everyFiveMinutes';
     case EveryFifteenMinutes = 'everyFifteenMinutes';

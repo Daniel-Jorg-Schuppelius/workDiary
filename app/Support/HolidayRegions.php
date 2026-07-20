@@ -54,6 +54,38 @@ final class HolidayRegions {
             'Österreich' => [
                 'Austria' => __('holidays.region.at_federal'),
             ],
+            // Vollaudit 2026-07 (M10): Schweiz inkl. aller 26 Kantone —
+            // DACH-Akzeptanzkriterium; config/retention.php + legal_region
+            // kannten CH bereits, nur die Feiertagsauswahl fehlte.
+            'Schweiz' => [
+                'Switzerland' => __('holidays.region.ch_federal'),
+                'Switzerland\\Aargau' => 'Aargau',
+                'Switzerland\\AppenzellAusserrhoden' => 'Appenzell Ausserrhoden',
+                'Switzerland\\AppenzellInnerrhoden' => 'Appenzell Innerrhoden',
+                'Switzerland\\BaselLandschaft' => 'Basel-Landschaft',
+                'Switzerland\\BaselStadt' => 'Basel-Stadt',
+                'Switzerland\\Bern' => 'Bern',
+                'Switzerland\\Fribourg' => 'Freiburg',
+                'Switzerland\\Geneva' => 'Genf',
+                'Switzerland\\Glarus' => 'Glarus',
+                'Switzerland\\Grisons' => 'Graubünden',
+                'Switzerland\\Jura' => 'Jura',
+                'Switzerland\\Lucerne' => 'Luzern',
+                'Switzerland\\Neuchatel' => 'Neuenburg',
+                'Switzerland\\Nidwalden' => 'Nidwalden',
+                'Switzerland\\Obwalden' => 'Obwalden',
+                'Switzerland\\Schaffhausen' => 'Schaffhausen',
+                'Switzerland\\Schwyz' => 'Schwyz',
+                'Switzerland\\Solothurn' => 'Solothurn',
+                'Switzerland\\StGallen' => 'St. Gallen',
+                'Switzerland\\Thurgau' => 'Thurgau',
+                'Switzerland\\Ticino' => 'Tessin',
+                'Switzerland\\Uri' => 'Uri',
+                'Switzerland\\Valais' => 'Wallis',
+                'Switzerland\\Vaud' => 'Waadt',
+                'Switzerland\\Zug' => 'Zug',
+                'Switzerland\\Zurich' => 'Zürich',
+            ],
         ];
     }
 

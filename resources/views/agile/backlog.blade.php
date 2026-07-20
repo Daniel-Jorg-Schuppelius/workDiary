@@ -36,6 +36,14 @@
                 <option value="{{ $type->value }}" @selected($filters['type'] === $type->value)>{{ $type->label() }}</option>
             @endforeach
         </select>
+        @if ($epics->isNotEmpty())
+            <select name="epic" class="select select-sm select-bordered w-44 shrink-0" aria-label="{{ __('Epic') }}">
+                <option value="">{{ __('Alle Epics') }}</option>
+                @foreach ($epics as $epic)
+                    <option value="{{ $epic->sqid }}" @selected($filters['epic'] === $epic->sqid)>{{ $epic->task?->title }}</option>
+                @endforeach
+            </select>
+        @endif
         <label class="label cursor-pointer gap-2 shrink-0">
             <input type="checkbox" name="blocked" value="1" class="checkbox checkbox-sm" @checked($filters['blocked'] === '1')>
             <span class="label-text text-sm">{{ __('Nur blockierte') }}</span>
@@ -82,6 +90,7 @@
                         <th class="w-20">{{ __('Rang') }}</th>
                         <th>{{ __('Titel') }}</th>
                         <th>{{ __('Typ') }}</th>
+                        <th>{{ __('Epic') }}</th>
                         <th class="text-right"><x-term glossary="story_points">SP</x-term></th>
                         <th>{{ __('Spalte') }}</th>
                         <th></th>
@@ -97,6 +106,26 @@
                             @endif
                         </td>
                         <td><x-status-badge tone="neutral" size="xs">{{ $item->item_type->label() }}</x-status-badge></td>
+                        <td>
+                            {{-- Epic-Zuordnung über task.parent_task_id (Vollaudit M25). --}}
+                            @php $parentEpic = $item->task?->parent_task_id !== null ? $epicByTaskId->get($item->task->parent_task_id) : null; @endphp
+                            @if ($item->item_type === \App\Enums\Agile\AgileItemType::Epic)
+                                <span class="text-base-content/40">—</span>
+                            @elseif ($canPrioritize && $epics->isNotEmpty())
+                                <form method="POST" action="{{ route('agile.items.epic', [$project, $item]) }}">
+                                    @csrf @method('PATCH')
+                                    <select name="epic" class="select select-xs select-bordered max-w-36" data-autosubmit="request"
+                                            aria-label="{{ __('Epic') }}">
+                                        <option value="">{{ __('kein Epic') }}</option>
+                                        @foreach ($epics as $epic)
+                                            <option value="{{ $epic->sqid }}" @selected($parentEpic?->id === $epic->id)>{{ $epic->task?->title }}</option>
+                                        @endforeach
+                                    </select>
+                                </form>
+                            @else
+                                <span class="text-sm text-base-content/60">{{ $parentEpic?->task?->title ?? '—' }}</span>
+                            @endif
+                        </td>
                         <td class="text-right tabular-nums">{{ $item->story_points ?? '—' }}</td>
                         <td class="text-sm text-base-content/60">{{ $item->column?->name ?? __('Produkt-Backlog') }}</td>
                         <td class="text-right">

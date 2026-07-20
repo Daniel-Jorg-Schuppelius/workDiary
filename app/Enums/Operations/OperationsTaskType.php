@@ -31,6 +31,7 @@ enum OperationsTaskType: string implements HasLabel {
     case UpdateAvailable = 'update_available';
     case UpdateSecurity = 'update_security';
     case LicenseExpiring = 'license_expiring';
+    case LicenseLimitNear = 'license_limit_near';
     case CredentialExpiring = 'credential_expiring';
     case ConnectionFailing = 'connection_failing';
     case ComponentEol = 'component_eol';
@@ -61,8 +62,9 @@ enum OperationsTaskType: string implements HasLabel {
             self::MaintenanceScheduled => NotificationEvent::OperationsMaintenanceScheduled,
             self::ProblemReportOpen => NotificationEvent::OperationsProblemReportReceived,
             // Fehlende Konfiguration/offene Supportfreigaben sind reine
-            // Aufgaben (Onboarding-/Grant-UI benachrichtigt bereits selbst).
-            self::ConfigMissing, self::SupportGrantOpen => null,
+            // Aufgaben (Onboarding-/Grant-UI benachrichtigt bereits selbst);
+            // die Limit-Warnung (N9) ist ebenfalls eine reine Betriebsaufgabe.
+            self::ConfigMissing, self::SupportGrantOpen, self::LicenseLimitNear => null,
         };
     }
 

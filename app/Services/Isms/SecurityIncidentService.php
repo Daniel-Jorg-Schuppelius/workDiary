@@ -14,7 +14,7 @@ use App\Enums\Isms\{IncidentSeverity, SecurityIncidentStatus};
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Isms\{IsmsControl, IsmsRisk, IsmsSecurityIncident};
 use App\Models\User;
-use App\Services\Isms\Concerns\AssignsSequentialNo;
+use App\Services\Isms\Concerns\{AssertsIsmsTransition, AssignsSequentialNo};
 use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -42,6 +42,9 @@ use Illuminate\Validation\ValidationException;
  * audit()-Events für Statusübergänge.
  */
 class SecurityIncidentService {
+    use \App\Services\Isms\Concerns\SyncsScopedRelations;
+    use AssertsIsmsTransition;
+
     use AssignsSequentialNo;
 
     public function __construct(
@@ -78,10 +81,10 @@ class SecurityIncidentService {
             ]);
 
             if (array_key_exists('risk_ids', $attributes)) {
-                $this->syncRisks($incident, $this->normalizeIds($attributes['risk_ids']));
+                $this->syncRisks($incident, $attributes['risk_ids']);
             }
             if (array_key_exists('control_ids', $attributes)) {
-                $this->syncControls($incident, $this->normalizeIds($attributes['control_ids']));
+                $this->syncControls($incident, $attributes['control_ids']);
             }
 
             return $incident;
@@ -130,10 +133,10 @@ class SecurityIncidentService {
             ]);
 
             if (array_key_exists('risk_ids', $attributes)) {
-                $this->syncRisks($incident, $this->normalizeIds($attributes['risk_ids']));
+                $this->syncRisks($incident, $attributes['risk_ids']);
             }
             if (array_key_exists('control_ids', $attributes)) {
-                $this->syncControls($incident, $this->normalizeIds($attributes['control_ids']));
+                $this->syncControls($incident, $attributes['control_ids']);
             }
 
             return $incident;
@@ -155,14 +158,8 @@ class SecurityIncidentService {
             return $incident;
         }
 
-        if (! in_array($target, $incident->status->allowedTransitions(), true)) {
-            throw ValidationException::withMessages([
-                'status' => __('isms.error.invalid_transition', [
-                    'from' => $incident->status->label(),
-                    'to' => $target->label(),
-                ]),
-            ]);
-        }
+        // Gemeinsamer ISMS-Guard (Vollaudit 2026-07, M44).
+        $this->assertIsmsTransition($incident->status, $target);
 
         if ($target === SecurityIncidentStatus::Closed) {
             if (trim((string) $incident->root_cause) === '' || trim((string) $incident->lessons_learned) === '') {
@@ -209,41 +206,17 @@ class SecurityIncidentService {
      * org-gescopte Risk-Query aufgelöst — fremde Organisationen können dadurch
      * nicht verknüpft werden (Pivot trägt bewusst keine organization_id).
      *
-     * @param  list<int|string>  $riskIds
+     * Gemeinsamer org-gescopter Sync (Vollaudit 2026-07, N36).
      */
-    public function syncRisks(IsmsSecurityIncident $incident, array $riskIds): void {
-        $ids = IsmsRisk::query()
-            ->whereIn('id', array_map(intval(...), $riskIds))
-            ->pluck('id')
-            ->all();
-
-        $incident->risks()->sync($ids);
+    public function syncRisks(IsmsSecurityIncident $incident, mixed $riskIds): void {
+        $this->syncScopedIds($incident->risks(), IsmsRisk::class, $riskIds);
     }
 
     /**
-     * Synchronisiert die Maßnahmen-Verknüpfung (org-gescopt).
-     *
-     * @param  list<int|string>  $controlIds
+     * Synchronisiert die Maßnahmen-Verknüpfung (org-gescopt, N36).
      */
-    public function syncControls(IsmsSecurityIncident $incident, array $controlIds): void {
-        $ids = IsmsControl::query()
-            ->whereIn('id', array_map(intval(...), $controlIds))
-            ->pluck('id')
-            ->all();
-
-        $incident->controls()->sync($ids);
-    }
-
-    /**
-     * Normalisiert rohe Request-Werte zu einer ID-Liste (nur int/string).
-     *
-     * @return list<int|string>
-     */
-    private function normalizeIds(mixed $value): array {
-        return array_values(array_filter(
-            (array) $value,
-            static fn(mixed $id): bool => is_int($id) || is_string($id),
-        ));
+    public function syncControls(IsmsSecurityIncident $incident, mixed $controlIds): void {
+        $this->syncScopedIds($incident->controls(), IsmsControl::class, $controlIds);
     }
 
 }

@@ -323,6 +323,8 @@
         'placeholder' => true,
     ])
 
+    @include('customers._domains_panel', ['customer' => $customer, 'customerDomains' => $customerDomains])
+
     @include('customers._timeline_panel', ['customer' => $customer])
 
     @include('communication-notes._panel', ['notable' => $customer, 'notableKind' => 'customer'])

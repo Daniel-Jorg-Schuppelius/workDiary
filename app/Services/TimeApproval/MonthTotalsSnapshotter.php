@@ -11,7 +11,7 @@
 namespace App\Services\TimeApproval;
 
 use App\Enums\Attendance\AttendanceStatus;
-use App\Models\{Attendance, User, Vacation};
+use App\Models\{Attendance, User};
 use App\Services\Flextime\FlexCalculator;
 use Carbon\CarbonImmutable;
 
@@ -61,6 +61,20 @@ class MonthTotalsSnapshotter {
         $daysTotal = (int) $start->daysInMonth;
         $workingDays = 0;
         $daily = [];
+
+        // Vollaudit 2026-07 (N5): sick/holiday/vacation aus den Tagesdaten des
+        // FlexCalculator bzw. den Krankmeldungen zählen — auf den Monat geclippt,
+        // gezählt in Werktagen (Mo–Fr ohne Feiertage, Semantik wie MVP-413).
+        $sickRanges = \App\Models\SickLeave::query()
+            ->where('user_id', $user->id)
+            ->whereNull('cancelled_at')
+            ->whereDate('start_date', '<=', $end->toDateString())
+            ->whereDate('end_date', '>=', $start->toDateString())
+            ->get(['start_date', 'end_date']);
+
+        $vacationDays = 0;
+        $sickDays = 0;
+        $holidayDays = 0;
         foreach ($monthly['days'] as $iso => $row) {
             $daily[$iso] = [
                 'target' => (int) $row['target'],
@@ -69,6 +83,21 @@ class MonthTotalsSnapshotter {
             ];
             if ((int) $row['target'] > 0) {
                 $workingDays++;
+            }
+
+            $isHoliday = (bool) $row['is_holiday'];
+            if ($isHoliday) {
+                $holidayDays++;
+            }
+            $day = CarbonImmutable::parse($iso);
+            if ($day->isWeekend() || $isHoliday) {
+                continue;
+            }
+            if ((bool) $row['is_vacation']) {
+                $vacationDays++;
+            }
+            if ($sickRanges->contains(fn($s): bool => $s->start_date->toDateString() <= $iso && $s->end_date->toDateString() >= $iso)) {
+                $sickDays++;
             }
         }
 
@@ -103,27 +132,6 @@ class MonthTotalsSnapshotter {
         $openCount = count($openDates);
         $closedCount = count(array_diff_key($closedDates, $openDates));
 
-        // Vacation/Sick/Holiday: lose gekoppelt; falls Tabellen/Models fehlen,
-        // bleibt der Wert 0. Wir prüfen Klassen-Existenz, damit der Snapshotter
-        // auch in Test-Suiten ohne Vacation-Stack funktioniert.
-        $vacationDays = 0;
-        if (class_exists(Vacation::class)) {
-            $vacationDays = Vacation::query()
-                ->where('user_id', $user->id)
-                ->where(function ($q) use ($start, $end): void {
-                    $q->whereBetween('start_date', [$start->toDateString(), $end->toDateString()])
-                        ->orWhereBetween('end_date', [$start->toDateString(), $end->toDateString()]);
-                })
-                ->get()
-                ->sum(function ($v): int {
-                    /** @var Vacation $v */
-                    $s = $v->start_date->format('Y-m-d');
-                    $e = $v->end_date->format('Y-m-d');
-
-                    return (int) max(1, CarbonImmutable::parse($s)->diffInDays(CarbonImmutable::parse($e)) + 1);
-                });
-        }
-
         $target = (int) $monthly['target'];
         $actual = (int) $monthly['actual'];
         $balance = (int) $monthly['balance'];
@@ -148,8 +156,8 @@ class MonthTotalsSnapshotter {
                 'closed' => $closedCount,
                 'open' => $openCount,
                 'vacation' => $vacationDays,
-                'sick' => 0,
-                'holiday' => 0,
+                'sick' => $sickDays,
+                'holiday' => $holidayDays,
             ],
             'warnings' => [
                 'count' => $openCount,

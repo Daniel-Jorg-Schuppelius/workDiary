@@ -97,6 +97,31 @@ class AiSuggestionFlowTest extends TestCase {
         ]);
     }
 
+    /**
+     * Vollaudit 2026-07 (M35): Namen aus dem eigenen Kundenstamm werden VOR
+     * dem Provider-Aufruf maskiert — Kundennamen dürfen nie an (Cloud-)
+     * Provider gehen (Feature 084, Datenschutz-DoD).
+     */
+    public function test_customer_names_are_masked_before_provider_call(): void {
+        $invoice = $this->draftInvoice();
+        Customer::create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Müller Heizungsbau GmbH',
+            'currency' => 'EUR',
+            'created_by' => $this->user->id,
+        ]);
+        $item = $this->item($invoice, 'Kessel bei Müller Heizungsbau GmbH getauscht, Abnahme erfolgt');
+
+        $this->actingAs($this->user)
+            ->post(route('ai.suggestions.invoice-item', [$invoice, $item]))
+            ->assertRedirect();
+
+        $this->assertNotEmpty($this->fake->calls);
+        $sent = $this->fake->calls[0]['request'];
+        $this->assertStringNotContainsString('Müller Heizungsbau', (string) $sent->text);
+        $this->assertStringContainsString('[Kunde]', (string) $sent->text);
+    }
+
     public function test_single_item_suggestion_flow_with_accept(): void {
         $invoice = $this->draftInvoice();
         $item = $this->item($invoice);

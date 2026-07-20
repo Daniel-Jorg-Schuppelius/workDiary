@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\ServiceTicket\TicketMessageKind;
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{BelongsToOrganization, HasAttachments, HasSqid};
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany, MorphTo};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 
 /**
  * Ticket-Nachricht (Feature 065, MVP-152). Sichtbarkeit leitet sich aus
@@ -38,6 +38,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany, MorphTo};
  */
 class ServiceTicketMessage extends Model {
     use BelongsToOrganization;
+    use HasAttachments;
     use HasSqid;
 
     protected $fillable = [
@@ -73,13 +74,6 @@ class ServiceTicketMessage extends Model {
         return $this->morphTo('author');
     }
 
-    /**
-     * Anhänge der Nachricht (MVP-152): Kundensichtbarkeit regelt das
-     * `customer_visible`-Flag je Anhang — Portal-Uploads setzen es hart.
-     *
-     * @return MorphMany<Attachment, $this>
-     */
-    public function attachments(): MorphMany {
-        return $this->morphMany(Attachment::class, 'attachable')->latest();
-    }
+    // Anhänge (MVP-152) kommen aus HasAttachments (Vollaudit 2026-07, N29);
+    // Kundensichtbarkeit regelt das `customer_visible`-Flag je Anhang.
 }

@@ -11,7 +11,8 @@
 namespace App\Services\Reporting;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Models\{BillOfQuantity, BoqItem, BoqItemMapping, BoqItemProgress, Customer, Expense, Material, MaterialUsage, Project, TimeEntry, Timesheet};
+use App\Models\{BillOfQuantity, BoqItem, BoqItemMapping, BoqItemProgress, Customer, Expense, Material, MaterialUsage, Project, TimeEntry, Timesheet, TravelLog};
+use App\Services\Travel\TravelChargeService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -24,6 +25,8 @@ use Illuminate\Support\Collection;
  *  - TimeEntry.rate   (Snapshot des Abrechnungsbetrags; billable=true)
  *  - MaterialUsage.line_total_net (billed=true; Projektbezug über Timesheet)
  *  - Expense.amount_net (billable=true und freigegeben/erstattet/fakturiert)
+ *  - Anfahrt-Konditionen des {@see TravelChargeService} (Projektion über die
+ *    Touren des Zeitraums inkl. bereits abgerechneter — Vollaudit 2026-07, M7)
  *
  * Kosten-Quellen (direkte Aufwände):
  *  - TimeEntry.internal_rate (Snapshot des internen Kostensatzes × Zeit;
@@ -31,6 +34,7 @@ use Illuminate\Support\Collection;
  *  - MaterialUsage.line_total_net (Einkaufs-/Direktaufwand; es existiert KEIN
  *    separates Materialkosten-Feld → Netto-Wert wird als Direktaufwand geführt)
  *  - Expense.amount_net (Beleg-Direktaufwand)
+ *  - TravelLog.reimbursement_total (Fahrt-Erstattungsaufwand im Zeitraum, M7)
  *
  * Deckungsbeitrag = Erlös − direkte Kosten. Da TimeEntry.internal_rate als
  * echter Kostensatz existiert, ist ein voller Deckungsbeitrag (nicht nur DB I)
@@ -44,6 +48,8 @@ use Illuminate\Support\Collection;
  * Plan-Werte gegen Ist-Minuten und Ist-Kosten.
  */
 class EconomicsReportBuilder {
+    public function __construct(private readonly TravelChargeService $travelCharges = new TravelChargeService()) {}
+
     /**
      * Wirtschaftlichkeit je Projekt im Zeitraum.
      *
@@ -60,10 +66,12 @@ class EconomicsReportBuilder {
      *   revenueTime:float,
      *   revenueMaterial:float,
      *   revenueExpense:float,
+     *   revenueTravel:float,
      *   revenue:float,
      *   costTime:float,
      *   costMaterial:float,
      *   costExpense:float,
+     *   costTravel:float,
      *   cost:float,
      *   contribution:float,
      *   margin:float,
@@ -94,12 +102,14 @@ class EconomicsReportBuilder {
             return [];
         }
 
-        $customerNames = Customer::query()
+        $customers = Customer::query()
             ->whereIn('id', $projects->pluck('customer_id')->filter()->unique()->all())
-            ->pluck('name', 'id');
+            ->get()
+            ->keyBy('id');
+        $customerNames = $customers->map(static fn (Customer $c): string => (string) $c->name);
 
         return array_values($projects
-            ->map(function (Project $project) use ($fromDate, $toDate, $customerNames): array {
+            ->map(function (Project $project) use ($fromDate, $toDate, $customerNames, $customers): array {
                 $time = $this->timeAggregate(
                     TimeEntry::query()
                         ->where('project_id', $project->id)
@@ -108,11 +118,19 @@ class EconomicsReportBuilder {
 
                 $material = $this->materialAggregate($fromDate, $toDate, projectId: (int) $project->id);
                 $expense = $this->expenseAggregate($fromDate, $toDate, projectId: (int) $project->id);
+                $travel = $this->travelAggregate(
+                    $fromDate,
+                    $toDate,
+                    projectId: (int) $project->id,
+                    customer: $customers->get($project->customer_id),
+                    project: $project,
+                );
 
                 $row = $this->composeRow(
                     $time,
                     $material,
                     $expense,
+                    $travel,
                     planMinutes: $project->time_budget !== null ? (int) $project->time_budget : null,
                     planBudget: $project->budget !== null ? (float) $project->budget : null,
                 );
@@ -141,10 +159,12 @@ class EconomicsReportBuilder {
      *   revenueTime:float,
      *   revenueMaterial:float,
      *   revenueExpense:float,
+     *   revenueTravel:float,
      *   revenue:float,
      *   costTime:float,
      *   costMaterial:float,
      *   costExpense:float,
+     *   costTravel:float,
      *   cost:float,
      *   contribution:float,
      *   margin:float,
@@ -189,6 +209,7 @@ class EconomicsReportBuilder {
 
                 $material = $this->materialAggregate($fromDate, $toDate, projectIds: $projectIds);
                 $expense = $this->expenseAggregate($fromDate, $toDate, customerId: (int) $customer->id, projectIds: $projectIds);
+                $travel = $this->travelAggregate($fromDate, $toDate, customerId: (int) $customer->id, customer: $customer, projectIds: $projectIds);
 
                 $planMinutes = $customerProjects->sum(static fn (Project $p): int => (int) $p->time_budget);
                 $planBudget = $customerProjects->sum(static fn (Project $p): float => (float) $p->budget);
@@ -197,6 +218,7 @@ class EconomicsReportBuilder {
                     $time,
                     $material,
                     $expense,
+                    $travel,
                     planMinutes: $planMinutes > 0 ? (int) $planMinutes : null,
                     planBudget: $planBudget > 0 ? (float) $planBudget : null,
                 );
@@ -346,24 +368,69 @@ class EconomicsReportBuilder {
     }
 
     /**
-     * Setzt eine Ergebniszeile aus den drei Aggregaten zusammen.
+     * Fahrt-Dimension (Vollaudit 2026-07, M7): Kosten = Erstattungsaufwand aus
+     * TravelLog.reimbursement_total im Zeitraum (Projekt- bzw. Kunden-Anker;
+     * Fahrten ohne Anker fließen bewusst nirgends ein — kein stilles Raten).
+     * Erlös = Projektion der Anfahrt-Konditionen des {@see TravelChargeService}
+     * über ALLE Touren des Zeitraums (inkl. bereits abgerechneter), analog zur
+     * Material-Logik „abrechenbar = Erlös". Kunden ohne aktivierte
+     * Anfahrt-Konditionen tragen 0 Erlös.
+     *
+     * @param  list<int>|null  $projectIds
+     * @return array{revenue:float, cost:float}
+     */
+    private function travelAggregate(
+        string $from,
+        string $to,
+        ?int $projectId = null,
+        ?int $customerId = null,
+        ?Customer $customer = null,
+        ?Project $project = null,
+        ?array $projectIds = null,
+    ): array {
+        $base = TravelLog::query()->whereBetween('date', [$from, $to]);
+        if ($projectId !== null) {
+            $base->where('project_id', $projectId);
+        } elseif ($customerId !== null) {
+            $base->where(function ($q) use ($customerId, $projectIds): void {
+                $q->where('customer_id', $customerId);
+                if ($projectIds !== null && $projectIds !== []) {
+                    $q->orWhereIn('project_id', $projectIds);
+                }
+            });
+        }
+        $cost = (float) $base->where('reimbursable', true)->sum('reimbursement_total');
+
+        $revenue = 0.0;
+        if ($customer instanceof Customer) {
+            $revenue = (float) $this->travelCharges
+                ->chargesForRange($customer, $project, ['from' => $from, 'to' => $to], null, pureMaterialOnly: false, includeBilled: true)
+                ->sum(static fn(\App\Services\Travel\TravelCharge $c): float => $c->amount());
+        }
+
+        return ['revenue' => round($revenue, 2), 'cost' => round($cost, 2)];
+    }
+
+    /**
+     * Setzt eine Ergebniszeile aus den vier Aggregaten zusammen.
      *
      * @param  array{billableMinutes:int, nonBillableMinutes:int, totalMinutes:int, revenue:float, cost:float, costRateMissing:bool, reworkMinutes:int, goodwillMinutes:int, reworkCost:float, goodwillCost:float}  $time
      * @param  array{revenue:float, cost:float}  $material
      * @param  array{revenue:float, cost:float}  $expense
+     * @param  array{revenue:float, cost:float}  $travel
      * @return array{
      *   billableMinutes:int, nonBillableMinutes:int, totalMinutes:int, nonBillableShare:float,
-     *   revenueTime:float, revenueMaterial:float, revenueExpense:float, revenue:float,
-     *   costTime:float, costMaterial:float, costExpense:float, cost:float,
+     *   revenueTime:float, revenueMaterial:float, revenueExpense:float, revenueTravel:float, revenue:float,
+     *   costTime:float, costMaterial:float, costExpense:float, costTravel:float, cost:float,
      *   contribution:float, margin:float, costRateMissing:bool,
      *   reworkMinutes:int, goodwillMinutes:int, reworkCost:float, goodwillCost:float, reworkShare:float,
      *   planMinutes:int|null, actualMinutes:int, planMinutesDelta:int|null,
      *   planBudget:float|null, actualCost:float, planBudgetDelta:float|null
      * }
      */
-    private function composeRow(array $time, array $material, array $expense, ?int $planMinutes, ?float $planBudget): array {
-        $revenue = round($time['revenue'] + $material['revenue'] + $expense['revenue'], 2);
-        $cost = round($time['cost'] + $material['cost'] + $expense['cost'], 2);
+    private function composeRow(array $time, array $material, array $expense, array $travel, ?int $planMinutes, ?float $planBudget): array {
+        $revenue = round($time['revenue'] + $material['revenue'] + $expense['revenue'] + $travel['revenue'], 2);
+        $cost = round($time['cost'] + $material['cost'] + $expense['cost'] + $travel['cost'], 2);
         $contribution = round($revenue - $cost, 2);
         $margin = $revenue > 0.0 ? round(($contribution / $revenue) * 100, 2) : 0.0;
 
@@ -383,10 +450,12 @@ class EconomicsReportBuilder {
             'revenueTime' => $time['revenue'],
             'revenueMaterial' => $material['revenue'],
             'revenueExpense' => $expense['revenue'],
+            'revenueTravel' => $travel['revenue'],
             'revenue' => $revenue,
             'costTime' => $time['cost'],
             'costMaterial' => $material['cost'],
             'costExpense' => $expense['cost'],
+            'costTravel' => $travel['cost'],
             'cost' => $cost,
             'contribution' => $contribution,
             'margin' => $margin,

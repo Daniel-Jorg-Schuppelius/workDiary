@@ -11,24 +11,17 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\Notification\NotificationRule;
-use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
 
 /**
  * Benachrichtigungsregeln (MVP-018): Admin verwaltet (HasAdminBypass),
  * Teamleitung liest (notificationRule.viewAny via Seeder-Matrix).
  */
-class NotificationRulePolicy {
+class NotificationRulePolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::NotificationRuleViewAny->value);
-    }
-
-    public function update(User $user, ?NotificationRule $rule = null): bool {
-        unset($rule);
-
-        return $user->can(P::NotificationRuleUpdate->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::NotificationRuleViewAny,
+        'update' => P::NotificationRuleUpdate,
+    ];
 }

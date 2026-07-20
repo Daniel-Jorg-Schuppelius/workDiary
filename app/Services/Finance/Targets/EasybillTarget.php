@@ -13,11 +13,11 @@ declare(strict_types=1);
 namespace App\Services\Finance\Targets;
 
 use App\Enums\Finance\{TransferChannel, TransferTarget};
-use App\Models\{Customer, ExternalReference, MaterialUsage, TimeEntry};
+use App\Models\{Customer, ExternalReference, TimeEntry};
 use App\Models\Finance\BillingTransfer;
 use App\Plugins\Easybill\Api\{EasybillClient, EasybillClientFactory};
 use App\Plugins\Easybill\{EasybillConfig, EasybillPlugin};
-use App\Services\Invoicing\{BillableTimeAggregator, BillingBlock};
+use App\Services\Invoicing\{BillableTimeAggregator};
 use GuzzleHttp\Exception\ConnectException;
 use RuntimeException;
 
@@ -38,6 +38,9 @@ use RuntimeException;
  *   Timeout nach dem Senden löst KEINE blinde Wiederholung aus.
  */
 class EasybillTarget implements FacturationTarget {
+    use Concerns\LoadsBillingSources;
+    use Concerns\ReconcilesByMarker;
+
     public const EXT_TYPE_INVOICE = 'easybill_invoice';
 
     public const EXT_TYPE_CUSTOMER = 'contact';
@@ -60,15 +63,8 @@ class EasybillTarget implements FacturationTarget {
         }
 
         // (1) Bereits übergeben? (harte Idempotenz je Transfer)
-        $existing = ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $transfer->organization_id)
-            ->where('plugin_id', EasybillPlugin::ID)
-            ->where('external_type', self::EXT_TYPE_INVOICE)
-            ->where('referenceable_type', $transfer->getMorphClass())
-            ->where('referenceable_id', $transfer->getKey())
-            ->first();
-        if ($existing instanceof ExternalReference) {
+        $existing = $this->existingReference($transfer, EasybillPlugin::ID, self::EXT_TYPE_INVOICE);
+        if ($existing !== null) {
             return new TargetResult(externalReference: $existing);
         }
 
@@ -165,21 +161,8 @@ class EasybillTarget implements FacturationTarget {
 
     /** @param array<string, mixed> $document */
     private function storeReference(BillingTransfer $transfer, array $document, string $marker, bool $adopted): ExternalReference {
-        return ExternalReference::create([
-            'organization_id' => $transfer->organization_id,
-            'plugin_id' => EasybillPlugin::ID,
-            'external_type' => self::EXT_TYPE_INVOICE,
-            'referenceable_type' => $transfer->getMorphClass(),
-            'referenceable_id' => $transfer->getKey(),
-            'external_id' => (string) $document['id'],
-            'payload' => [
-                'source' => 'easybill',
-                'marker' => $marker,
-                'adopted_via_reconciliation' => $adopted,
-                'document' => $document,
-            ],
-            'synced_at' => now(),
-        ]);
+        // Nachweis über den gemeinsamen Baustein (Vollaudit 2026-07, M41).
+        return $this->storeMarkerReference($transfer, EasybillPlugin::ID, self::EXT_TYPE_INVOICE, 'easybill', 'document', $document, $marker, $adopted);
     }
 
     // ── Kunden-Projektion ───────────────────────────────────────────────
@@ -256,20 +239,8 @@ class EasybillTarget implements FacturationTarget {
 
     /** @return list<array<string, mixed>> */
     private function timePositions(BillingTransfer $transfer, float $vatRate): array {
-        $ids = $transfer->items
-            ->where('source_type', TimeEntry::class)
-            ->pluck('source_id')
-            ->all();
-
-        $entries = TimeEntry::query()
-            ->whereIn('id', $ids)
-            ->with(['project.parent', 'project.customer', 'project.foreignCustomer'])
-            ->orderBy('date')
-            ->get();
-        if ($entries->count() !== count($ids)) {
-            throw new RuntimeException((string) __('finance.error.sources_missing'));
-        }
-
+        // Quellen über das gemeinsame Skelett (Vollaudit 2026-07, M41).
+        $entries = $this->loadTimeEntries($transfer);
         $entriesById = $entries->keyBy('id');
         $positions = [];
 
@@ -285,7 +256,7 @@ class EasybillTarget implements FacturationTarget {
 
             $positions[] = [
                 'type' => 'POSITION',
-                'description' => $this->blockName($block, $transfer),
+                'description' => $block->displayName($transfer),
                 'quantity' => $hours,
                 // easybill-Vertrag: Preise in Cents (150 = 1,50 €).
                 'single_price_net' => round($rate * 100, 2),
@@ -299,18 +270,8 @@ class EasybillTarget implements FacturationTarget {
 
     /** @return list<array<string, mixed>> */
     private function materialPositions(BillingTransfer $transfer, float $vatRate): array {
-        $ids = $transfer->items
-            ->where('source_type', MaterialUsage::class)
-            ->pluck('source_id')
-            ->all();
-
-        $usages = MaterialUsage::query()
-            ->whereIn('id', $ids)
-            ->with(['timesheet:id,work_date,project_id', 'timesheet.project:id,name'])
-            ->get();
-        if ($usages->count() !== count($ids)) {
-            throw new RuntimeException((string) __('finance.error.sources_missing'));
-        }
+        // Quellen über das gemeinsame Skelett (Vollaudit 2026-07, M41).
+        $usages = $this->loadMaterialUsages($transfer);
 
         $positions = [];
         foreach ($usages as $usage) {
@@ -331,21 +292,5 @@ class EasybillTarget implements FacturationTarget {
         }
 
         return $positions;
-    }
-
-    /** Positionsname: Projekt [Tätigkeit] (Zeitraum) — identisch zu den übrigen Zielen. */
-    private function blockName(BillingBlock $block, BillingTransfer $transfer): string {
-        $projectName = $block->project?->name ?: (string) __('Leistung');
-        $kindSuffix = $block->kind !== null ? ' [' . $block->kind->value . ']' : '';
-
-        $from = $block->firstStart?->format('d.m.Y') ?? $transfer->period_from?->format('d.m.Y');
-        $to = $block->lastEnd?->format('d.m.Y') ?? $transfer->period_to?->format('d.m.Y');
-        $span = match (true) {
-            $from !== null && $to !== null && $from !== $to => sprintf(' (%s – %s)', $from, $to),
-            $from !== null => sprintf(' (%s)', $from),
-            default => '',
-        };
-
-        return $projectName . $kindSuffix . $span;
     }
 }

@@ -39,12 +39,10 @@
 
     @include('reports.plan-ist._dimensions')
 
-    <x-card>
-        <form method="GET" class="flex flex-wrap items-end gap-2">
-            <x-date-range :from="$from->toDateString()" :to="$to->toDateString()" class="w-72" />
-            <x-icon-btn icon="filter_alt" tone="primary" size="sm" type="submit" show-label>{{ __('Anwenden') }}</x-icon-btn>
-        </form>
-    </x-card>
+    {{-- Gemeinsame Filterleiste statt freiem GET-Formular (Vollaudit 2026-07, N58). --}}
+    <x-filter-bar :action="route('reports.plan-ist.projects')" :reset="route('reports.plan-ist.projects')">
+        <x-date-range :from="$from->toDateString()" :to="$to->toDateString()" class="w-72 shrink-0" />
+    </x-filter-bar>
 
     @if ($allRows === [])
         <x-card>

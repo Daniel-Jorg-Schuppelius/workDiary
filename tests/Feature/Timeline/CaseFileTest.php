@@ -20,6 +20,34 @@ use Tests\TestCase;
 class CaseFileTest extends TestCase {
     use RefreshDatabase;
 
+    /** Vollaudit 2026-07 (M5): Fallakte zeigt Gegenstand + ausgegebene Dienstmittel (Feature 009 AK 1). */
+    public function test_case_file_lists_subject_asset_and_issued_equipment(): void {
+        $user = User::factory()->user()->create();
+        $orgId = (int) $user->organization_id;
+
+        $subjectAsset = \App\Models\Asset::factory()->create(['organization_id' => $orgId, 'name' => 'Heizanlage Keller']);
+        $issuedAsset = \App\Models\Asset::factory()->create(['organization_id' => $orgId, 'name' => 'Messkoffer 7']);
+
+        $entry = DiaryEntry::factory()->for($user)->create([
+            'organization_id' => $orgId,
+            'title' => 'Wartung mit Geräten',
+            'asset_id' => $subjectAsset->id,
+        ]);
+
+        \App\Models\AssetAssignment::factory()->create([
+            'organization_id' => $orgId,
+            'asset_id' => $issuedAsset->id,
+            'diary_entry_id' => $entry->id,
+            'assigned_to_user_id' => $user->id,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('diary.case-file', $entry))
+            ->assertOk()
+            ->assertSee('Heizanlage Keller')
+            ->assertSee('Messkoffer 7');
+    }
+
     public function test_case_file_renders_all_sections(): void {
         $user = User::factory()->user()->create();
         $orgId = (int) $user->organization_id;
@@ -249,6 +277,16 @@ class CaseFileTest extends TestCase {
      * Roh-Bytes wäre wertlos (Muster: ReportPdfTenantTest).
      */
     private function extractPdfText(TestResponse $response): string {
+        // Dev-Umgebungs-Guard (bekannter pdfbox-Fall, s. ZugferdTest): wirft
+        // die PDF-Toolkit-Konfiguration (fehlendes pdfbox-Jar), steht KEIN
+        // Text-Reader zur Verfügung und extractTextOnly liefert immer leer —
+        // dann aussagekräftig überspringen statt dauerhaft rot.
+        try {
+            \PDFToolkit\Config\Config::getInstance();
+        } catch (\Throwable $e) {
+            $this->markTestSkipped('PDF-Toolkit-Konfiguration unvollständig (Dev-Umgebung, z. B. pdfbox-Jar fehlt): ' . $e->getMessage());
+        }
+
         $path = tempnam(sys_get_temp_dir(), 'wd-case-file-') . '.pdf';
         file_put_contents($path, (string) $response->getContent());
 

@@ -37,25 +37,12 @@
                           :from-label="__('Von')" :to-label="__('Bis')" />
         </x-filter-bar>
 
-        <div class="stats bg-base-200 shadow-sm mb-3">
-            <div class="stat">
-                <div class="stat-title">{{ __('Plan') }}</div>
-                <div class="stat-value text-base">{{ $fmt($totals['plan_minutes']) }}</div>
-            </div>
-            <div class="stat">
-                <div class="stat-title">{{ __('Ist') }}</div>
-                <div class="stat-value text-base">{{ $fmt($totals['actual_minutes']) }}</div>
-            </div>
-            <div class="stat">
-                <div class="stat-title">{{ __('Δ') }}</div>
-                <div class="stat-value text-base {{ $totals['delta_minutes'] < 0 ? 'text-error' : 'text-success' }}">
-                    {{ $fmt($totals['delta_minutes']) }}
-                </div>
-            </div>
-            <div class="stat">
-                <div class="stat-title">{{ __('Warnungen') }}</div>
-                <div class="stat-value text-base">{{ $totals['warnings'] }}</div>
-            </div>
+        {{-- KPI-Kacheln statt rohem stats-Block (Katalog §4; Vollaudit 2026-07, N58). --}}
+        <div class="mb-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <x-kpi-tile :label="__('Plan')" :value="$fmt($totals['plan_minutes'])" tone="info" />
+            <x-kpi-tile :label="__('Ist')" :value="$fmt($totals['actual_minutes'])" tone="primary" />
+            <x-kpi-tile :label="__('Δ')" :value="$fmt($totals['delta_minutes'])" :tone="$totals['delta_minutes'] < 0 ? 'error' : 'success'" />
+            <x-kpi-tile :label="__('Warnungen')" :value="$totals['warnings']" :tone="$totals['warnings'] > 0 ? 'error' : 'neutral'" format="int" />
         </div>
 
         <x-table table-sort="client">

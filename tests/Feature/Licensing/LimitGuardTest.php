@@ -143,6 +143,44 @@ class LimitGuardTest extends TestCase {
         ]);
     }
 
+    /**
+     * Vollaudit 2026-07 (H8): max_orgs greift jetzt auch an der öffentlichen
+     * Registrierung — vorher entstand Org+Admin ohne jeden Lizenz-Check.
+     */
+    public function test_public_registration_respects_org_limit(): void {
+        config(['app.registration_enabled' => true]);
+        $this->bindLicense(LicenseResult::ok(LicenseStatus::Valid, $this->payload(
+            maxUsers: null,
+            maxOrgs: Organization::query()->count(), // Limit bereits erreicht
+        )));
+
+        $before = Organization::query()->count();
+        $this->post('/register', [
+            'org_name' => 'Neue Firma',
+            'name' => 'Max Muster',
+            'email' => 'max@example.test',
+            'password' => 'Geheim-Passwort-1234!',
+            'password_confirmation' => 'Geheim-Passwort-1234!',
+        ])->assertSessionHasErrors('org_name');
+
+        $this->assertSame($before, Organization::query()->count());
+        $this->assertDatabaseMissing('users', ['email' => 'max@example.test']);
+    }
+
+    /** Vollaudit 2026-07 (N9): Auslastungs-Snapshot für die Limit-Frühwarnung. */
+    public function test_user_limit_usage_reports_current_and_max(): void {
+        User::factory()->count(2)->create(['organization_id' => $this->organization->id]);
+        $current = $this->organization->activeUserCount();
+        $this->bindLicense(LicenseResult::ok(LicenseStatus::Valid, $this->payload(maxUsers: $current + 1)));
+
+        $usage = app(LimitGuard::class)->userLimitUsage($this->organization);
+
+        $this->assertSame(['current' => $current, 'max' => $current + 1], $usage);
+
+        $this->bindLicense(LicenseResult::ok(LicenseStatus::Valid, $this->payload(maxUsers: null)));
+        $this->assertNull(app(LimitGuard::class)->userLimitUsage($this->organization), 'Ohne Limit keine Warnung.');
+    }
+
     private function bindLicense(LicenseResult $result, bool $enforced = true): void {
         $stub = new class($result, $enforced) extends LicenseService {
             public function __construct(private readonly LicenseResult $result, private readonly bool $enforced) {}

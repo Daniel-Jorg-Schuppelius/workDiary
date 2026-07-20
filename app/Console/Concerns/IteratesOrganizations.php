@@ -54,20 +54,8 @@ trait IteratesOrganizations {
      * @param  callable(Organization): mixed  $fn
      */
     protected function withOrganizationContext(Organization $organization, callable $fn): mixed {
-        $bound = app()->bound('currentOrganization') ? app('currentOrganization') : null;
-        $previous = $bound instanceof Organization ? $bound : null;
-
-        app()->instance('currentOrganization', $organization);
-
-        try {
-            return $fn($organization);
-        } finally {
-            if ($previous !== null) {
-                app()->instance('currentOrganization', $previous);
-            } else {
-                app()->forgetInstance('currentOrganization');
-            }
-        }
+        // Bind+Restore zentral in OrganizationContext (Vollaudit 2026-07, M42).
+        return \App\Support\OrganizationContext::run($organization, static fn(): mixed => $fn($organization));
     }
 
     /**

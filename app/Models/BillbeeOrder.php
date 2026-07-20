@@ -47,14 +47,6 @@ class BillbeeOrder extends Model {
 
     public const INBOX_LINKED = 'linked';
 
-    /** Dokumentierte Billbee-Bestellstatus (Anzeige; unbekannte Werte → #<int>). */
-    private const STATE_LABELS = [
-        1 => 'bestellt', 2 => 'bestätigt', 3 => 'bezahlt', 4 => 'versandt',
-        5 => 'reklamation', 6 => 'gelöscht', 7 => 'abgeschlossen', 8 => 'storniert',
-        9 => 'archiviert', 11 => '1. mahnung', 12 => '2. mahnung', 13 => 'gepackt',
-        14 => 'angeboten', 15 => 'zahlungserinnerung', 16 => 'im fulfillment',
-    ];
-
     protected $fillable = [
         'organization_id',
         'billbee_order_id',
@@ -90,7 +82,11 @@ class BillbeeOrder extends Model {
         return $this->belongsTo(Customer::class);
     }
 
+    /**
+     * Anzeige-Label des Billbee-Status über das Enum + lang-Keys
+     * (Vollaudit 2026-07, M53); unbekannte Werte weiterhin als '#<int>'.
+     */
     public function stateLabel(): string {
-        return self::STATE_LABELS[$this->state] ?? ('#' . $this->state);
+        return \App\Enums\Billbee\BillbeeOrderState::tryFrom($this->state)?->label() ?? ('#' . $this->state);
     }
 }

@@ -16,7 +16,6 @@ use App\Http\Controllers\Concerns\ParsesIndexQuery;
 use App\Http\Requests\SaveAssetRequest;
 use App\Models\{Asset, Product, Tag, User};
 use App\Services\Asset\{AssetDetailAssembler, AssetFormOptions, AssetService};
-use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -79,19 +78,13 @@ class AssetController extends Controller {
      * werden) und normalisiert sie für {@see HasTags::syncTagsFromInput()}.
      *
      * @param  array<string, mixed>  $payload
-     * @return array{0: list<int>, 1: list<string>}
+     * @return array{0: array<int, int>, 1: array<int, string>}
      */
     private function extractTagInput(array &$payload): array {
-        // tag_ids kommen als opake Sqids aus dem Tag-Picker; rohe numerische
-        // IDs werden ebenfalls toleriert (Sqid::decodeOrNumeric).
-        $tagIds = array_values(array_filter(array_map(
-            static fn($v) => is_scalar($v) ? Sqid::decodeOrNumeric(Tag::class, (string) $v) : null,
-            (array) ($payload['tag_ids'] ?? []),
-        ), static fn($v): bool => $v !== null));
-        $newTags = array_values(array_filter(array_map(
-            'trim',
-            explode(',', (string) ($payload['new_tags'] ?? '')),
-        )));
+        // Kanonische Tag-Normalisierung (Vollaudit 2026-07, M40): Sqid-Dekodierung
+        // und new_tags-Zerlegung zentral in TagInput; Org-Prüfung in HasTags.
+        $tagIds = \App\Support\TagInput::ids($payload['tag_ids'] ?? []);
+        $newTags = \App\Support\TagInput::names($payload['new_tags'] ?? '');
 
         unset($payload['tag_ids'], $payload['new_tags']);
 

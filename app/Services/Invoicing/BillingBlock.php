@@ -60,4 +60,32 @@ final class BillingBlock {
 
         return round($this->revenue / ($this->workedMinutes / 60.0), 2);
     }
+
+    /**
+     * Anzeigename der Position (Vollaudit 2026-07, M45): Projektname + [kind]
+     * + Zeitraum-Span — vorher 4× in den Facturation-Targets kopiert (die
+     * Lexoffice-Variante mit Beschreibungs-Präfix bei Einzeleintrag bleibt
+     * als $withDescription-Flag erhalten; die übrigen Ziele behalten bewusst
+     * ihr bisheriges Verhalten ohne Präfix — fachliche Vereinheitlichung wäre
+     * eine eigene Entscheidung).
+     */
+    public function displayName(\App\Models\Finance\BillingTransfer $transfer, bool $withDescription = false): string {
+        $projectName = $this->project?->name ?: (string) __('Leistung');
+        $kindSuffix = $this->kind !== null ? ' [' . $this->kind->value . ']' : '';
+
+        $from = $this->firstStart?->format('d.m.Y') ?? $transfer->period_from?->format('d.m.Y');
+        $to = $this->lastEnd?->format('d.m.Y') ?? $transfer->period_to?->format('d.m.Y');
+        $span = match (true) {
+            $from !== null && $to !== null && $from !== $to => sprintf(' (%s – %s)', $from, $to),
+            $from !== null => sprintf(' (%s)', $from),
+            default => '',
+        };
+
+        $name = trim($projectName . $kindSuffix . $span);
+        if ($withDescription && count($this->entryIds) === 1 && $this->description !== null) {
+            $name = trim($this->description) . ' · ' . $name;
+        }
+
+        return $name;
+    }
 }

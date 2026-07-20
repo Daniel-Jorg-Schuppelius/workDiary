@@ -51,7 +51,10 @@ class ProtocolController extends Controller {
 
         $protocol->load([
             'items.children',
+            'items.photos.attachment',
             'signatures',
+            // Externe Signatur-Links inkl. Widerruf (Vollaudit 2026-07, M6).
+            'signatureTokens',
             'subject',
             'weatherSnapshot',
             'creator:id,name',
@@ -254,6 +257,57 @@ class ProtocolController extends Controller {
         return redirect()->back()->with('success', __('protocol.flash.photo.removed'));
     }
 
+    /** Vollaudit 2026-07 (H7): Caption nachträglich pflegen (Service auditiert). */
+    public function updatePhotoCaption(
+        Request $request,
+        ProtocolItemPhoto $photo,
+        ProtocolItemPhotoService $photos,
+    ): RedirectResponse {
+        $item = $photo->item;
+        if ($item === null) {
+            abort(404);
+        }
+        Gate::authorize('update', $item->protocol);
+        /** @var User $u */
+        $u = Auth::user();
+
+        $data = $request->validate(['caption' => ['nullable', 'string', 'max:180']]);
+        $photos->updateCaption($photo, $data['caption'] ?? null, $u);
+
+        return redirect()->back()->with('success', __('protocol.flash.photo.captionUpdated'));
+    }
+
+    /** Vollaudit 2026-07 (H7): Foto eine Position nach vorn (Service-reorder, auditiert). */
+    public function promotePhoto(
+        ProtocolItemPhoto $photo,
+        ProtocolItemPhotoService $photos,
+    ): RedirectResponse {
+        $item = $photo->item;
+        if ($item === null) {
+            abort(404);
+        }
+        Gate::authorize('update', $item->protocol);
+        /** @var User $u */
+        $u = Auth::user();
+
+        /** @var list<int> $ordered */
+        $ordered = ProtocolItemPhoto::query()
+            ->where('protocol_item_id', $item->id)
+            ->where('phase', $photo->phase->value)
+            ->orderBy('sort_order')
+            ->pluck('id')
+            ->map(fn($id): int => (int) $id)
+            ->values()
+            ->all();
+        $pos = array_search((int) $photo->id, $ordered, true);
+        if (is_int($pos) && $pos > 0) {
+            [$ordered[$pos - 1], $ordered[$pos]] = [$ordered[$pos], $ordered[$pos - 1]];
+            $photos->reorder($item, $photo->phase, array_values($ordered), $u);
+        }
+
+        return redirect()->back()->with('success', __('protocol.flash.photo.reordered'));
+    }
+
     public function issueSignatureToken(
         IssueProtocolSignatureTokenRequest $request,
         Protocol $protocol,
@@ -275,6 +329,29 @@ class ProtocolController extends Controller {
         return redirect()->back()
             ->with('success', __('protocol.signature.tokenIssued'))
             ->with('protocol.signature.token_url', route('protocols.public-sign', ['token' => $result['token']]));
+    }
+
+    /** Widerruf eines externen Signatur-Links (Feature 012 MVP; Vollaudit 2026-07, M6). */
+    public function revokeSignatureToken(
+        Protocol $protocol,
+        \App\Models\ProtocolSignatureToken $token,
+        ProtocolSignatureTokenService $tokens,
+    ): RedirectResponse {
+        Gate::authorize('sign', $protocol);
+        /** @var User|null $u */
+        $u = Auth::user();
+        if (! $u || ! $u->can(Permission::ProtocolSignatureRequest->value)) {
+            abort(403);
+        }
+        abort_unless((int) $token->protocol_id === (int) $protocol->id, 404);
+
+        try {
+            $tokens->revoke($token, $u);
+        } catch (\RuntimeException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+
+        return redirect()->back()->with('success', __('protocol.signature.tokenRevoked'));
     }
 
     public function pdf(
@@ -322,18 +399,12 @@ class ProtocolController extends Controller {
      * (kommaseparierte neue Tag-Namen) — gleiche Mechanik wie bei Kunde/Asset.
      */
     private function syncTags(Protocol $protocol, Request $request): void {
-        // tag_ids kommen als opake Sqids aus dem Tag-Picker; rohe numerische
-        // IDs werden ebenfalls toleriert (Sqid::decodeOrNumeric).
-        $tagIds = array_values(array_filter(array_map(
-            static fn($v) => is_scalar($v) ? \App\Support\Sqid::decodeOrNumeric(\App\Models\Tag::class, (string) $v) : null,
-            (array) $request->input('tag_ids', []),
-        ), static fn($v): bool => $v !== null));
-        $newTags = array_values(array_filter(array_map(
-            'trim',
-            explode(',', (string) $request->input('new_tags', '')),
-        )));
-
-        $protocol->syncTagsFromInput($tagIds, $newTags);
+        // Kanonische Tag-Normalisierung (Vollaudit 2026-07, M40): Sqid-Dekodierung
+        // und new_tags-Zerlegung zentral in TagInput; Org-Prüfung in HasTags.
+        $protocol->syncTagsFromInput(
+            \App\Support\TagInput::ids($request->input('tag_ids', [])),
+            \App\Support\TagInput::names($request->input('new_tags', '')),
+        );
     }
 
     private function actionToAbility(string $action): string {

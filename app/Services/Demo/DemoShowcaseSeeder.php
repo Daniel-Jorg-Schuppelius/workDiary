@@ -684,4 +684,158 @@ class DemoShowcaseSeeder {
             \Illuminate\Support\Carbon::setTestNow();
         }
     }
+
+    /**
+     * Demodaten der fünf Phase-38-Pakete (Vollaudit 2026-07, N23):
+     * Urlaubsanspruch mit Übertrag, Kassenbuch mit Einträgen + Tagesabschluss,
+     * aktiver Abrechnungsplan, Rechnungsentwurf mit Rabatt/Skonto,
+     * Führerscheinkontrolle. Jeder Block ist einzeln robust — ein Fehler
+     * (z. B. deaktiviertes Modul) bricht den Gesamt-Seed nicht ab.
+     *
+     * @param  Collection<int, User>  $users
+     */
+    public function seedPhase38Basics(Organization $organization, Customer $customer, Collection $users): int {
+        /** @var User|null $actor */
+        $actor = $users->first();
+        if ($actor === null) {
+            return 0;
+        }
+        $count = 0;
+
+        // 1) Urlaubsanspruch mit Übertrag aus dem Vorjahr (Verfall 31.03.).
+        try {
+            \App\Models\VacationEntitlement::query()->firstOrCreate([
+                'organization_id' => $organization->id,
+                'user_id' => $actor->id,
+                'year' => (int) \Illuminate\Support\Carbon::now()->year,
+            ], [
+                'entitled_days' => 30,
+                'carryover_days' => 5,
+                'carryover_expires_on' => \Illuminate\Support\Carbon::now()->startOfYear()->addMonths(3)->subDay()->toDateString(),
+                'note' => (string) __('Demo: Resturlaub aus dem Vorjahr, verfällt zum 31.03.'),
+            ]);
+            $count++;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::info('Demo-Seeder: Urlaubsanspruch übersprungen: ' . $e->getMessage());
+        }
+
+        // 2) Barkasse mit zwei Buchungen und Tagesabschluss (MVP-414).
+        try {
+            $register = \App\Models\CashRegister::query()->firstOrCreate([
+                'organization_id' => $organization->id,
+                'name' => (string) __('Demo-Barkasse'),
+            ], [
+                'currency' => 'EUR',
+                'opening_balance' => '150.00',
+                'opened_on' => \Illuminate\Support\Carbon::now()->subDays(10)->toDateString(),
+                'active' => true,
+            ]);
+            if ($register->wasRecentlyCreated) {
+                $cash = app(\App\Services\Finance\CashBookService::class);
+                $bookedOn = \Illuminate\Support\Carbon::now()->subDay();
+                $cash->record($register, [
+                    'booked_on' => $bookedOn->toDateString(),
+                    'direction' => \App\Models\CashEntry::DIRECTION_IN,
+                    'amount' => 250.00,
+                    'purpose' => (string) __('Barverkauf Kleinmaterial (Demo)'),
+                    'tax_rate' => 19,
+                    'created_by' => $actor->id,
+                ]);
+                $cash->record($register, [
+                    'booked_on' => $bookedOn->toDateString(),
+                    'direction' => \App\Models\CashEntry::DIRECTION_OUT,
+                    'amount' => 40.00,
+                    'purpose' => (string) __('Büromaterial (Demo)'),
+                    'tax_rate' => 19,
+                    'created_by' => $actor->id,
+                ]);
+                $cash->closeDay($register, $bookedOn, $cash->balanceAsOf($register, $bookedOn), (string) __('Demo-Tagesabschluss'), $actor->id);
+            }
+            $count++;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::info('Demo-Seeder: Kassenbuch übersprungen: ' . $e->getMessage());
+        }
+
+        // 3) Aktiver Abrechnungsplan (MVP-415) — monatliche Wartungspauschale.
+        try {
+            $schedule = \App\Models\InvoiceSchedule::query()->firstOrCreate([
+                'organization_id' => $organization->id,
+                'customer_id' => $customer->id,
+                'title' => (string) __('Wartungspauschale monatlich (Demo)'),
+            ], [
+                'interval_unit' => \App\Models\InvoiceSchedule::UNIT_MONTH,
+                'interval_count' => 1,
+                'billing_period_mode' => 'previous',
+                'next_run_on' => \Illuminate\Support\Carbon::now()->addMonth()->startOfMonth()->toDateString(),
+                'status' => \App\Models\InvoiceSchedule::STATUS_ACTIVE,
+                'created_by' => $actor->id,
+            ]);
+            if ($schedule->wasRecentlyCreated) {
+                $schedule->items()->create([
+                    'organization_id' => $organization->id,
+                    'position' => 1,
+                    'description' => (string) __('Wartungspauschale {zeitraum}'),
+                    'quantity' => '1',
+                    'unit' => (string) __('Pauschale'),
+                    'unit_price' => '190.00',
+                    'tax_rate' => 19,
+                ]);
+            }
+            $count++;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::info('Demo-Seeder: Abrechnungsplan übersprungen: ' . $e->getMessage());
+        }
+
+        // 4) Rechnungsentwurf mit Positionsrabatt und Skonto (MVP-416).
+        try {
+            $invoice = Invoice::create([
+                'organization_id' => $organization->id,
+                'customer_id' => $customer->id,
+                'number' => app(\App\Services\Invoicing\InvoiceGenerator::class)->nextNumber($organization->id),
+                'status' => Invoice::STATUS_DRAFT,
+                'currency' => $customer->currency,
+                'tax_rate' => 19,
+                'skonto_percent' => '2.00',
+                'skonto_days' => 10,
+                'notes' => (string) __('Demo: Rechnung mit Positionsrabatt und Skonto (2 % bei Zahlung in 10 Tagen).'),
+                'created_by' => $actor->id,
+            ]);
+            $invoice->items()->create([
+                'organization_id' => $organization->id,
+                'service_date' => \Illuminate\Support\Carbon::now()->toDateString(),
+                'description' => (string) __('Serviceeinsatz vor Ort (Demo)'),
+                'quantity' => '3',
+                'unit' => (string) __('invoicing.unit_hour'),
+                'unit_price' => '95.00',
+                'discount_percent' => '10.00',
+                'tax_rate' => 19,
+                'position' => 1,
+            ]);
+            $count++;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::info('Demo-Seeder: Rabatt/Skonto-Rechnung übersprungen: ' . $e->getMessage());
+        }
+
+        // 5) Führerscheinkontrolle (Fuhrpark, Halterhaftung).
+        try {
+            /** @var User $driver */
+            $driver = $users->skip(1)->first() ?? $actor;
+            \App\Models\DriverLicenseCheck::query()->firstOrCreate([
+                'organization_id' => $organization->id,
+                'user_id' => $driver->id,
+            ], [
+                'checked_by' => $actor->id,
+                'checked_at' => \Illuminate\Support\Carbon::now()->toDateString(),
+                'license_classes' => 'B, BE',
+                'license_valid_until' => \Illuminate\Support\Carbon::now()->addYears(3)->toDateString(),
+                'next_due_on' => \Illuminate\Support\Carbon::now()->addMonths(6)->toDateString(),
+                'note' => (string) __('Demo: Sichtkontrolle Original-Führerschein.'),
+            ]);
+            $count++;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::info('Demo-Seeder: Führerscheinkontrolle übersprungen: ' . $e->getMessage());
+        }
+
+        return $count;
+    }
 }

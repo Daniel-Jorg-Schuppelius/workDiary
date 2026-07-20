@@ -32,10 +32,9 @@ class KeyHandoverController extends Controller {
         $rawAsset = (string) $request->query('asset', '');
         $assetFilter = Sqid::decodeOrNumeric(Asset::class, $rawAsset, 0);
         $directionFilter = $request->string('direction')->toString();
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'occurred_at';
-        $dir = $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc';
+        // Whitelist-Auflösung zentral (C21; Vollaudit 2026-07, N26) — bei
+        // ungültigem Key fallen Key UND Richtung auf die Defaults zurück.
+        [$sort, $dir] = \App\Support\SortableQuery::resolve($request, self::ALLOWED_SORTS, 'occurred_at');
 
         $query = KeyHandover::query()
             ->with(['asset:id,name,asset_no', 'handedBy:id,name', 'returnedTo:id,name', 'customer:id,name'])

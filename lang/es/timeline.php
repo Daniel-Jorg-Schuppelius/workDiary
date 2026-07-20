@@ -33,6 +33,7 @@ return [
         'shipment' => 'Envío',
     ],
     'event' => [
+        'asset_issued' => 'Equipo entregado',
         'order_created' => 'Encargo creado',
         'order_completed' => 'Encargo completado',
         'status_changed' => 'Estado modificado',
@@ -88,6 +89,11 @@ return [
         'customer' => 'Cliente',
     ],
     'case' => [
+        'assets' => 'Equipos y activos',
+        'asset' => 'Activo',
+        'asset_role' => 'Rol',
+        'asset_subject' => 'Objeto del encargo',
+        'asset_issued' => 'Entregado (checkout)',
         'generated_at' => 'Generado el',
         'internal_notice' => 'Expediente interno — incluye también entradas internas (comentarios, adjuntos internos, comunicación). No destinado a entregarse al cliente.',
         'order' => 'Encargo',

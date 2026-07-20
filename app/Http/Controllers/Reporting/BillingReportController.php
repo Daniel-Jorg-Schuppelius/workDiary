@@ -47,9 +47,11 @@ class BillingReportController extends Controller {
         $perCustomer = $this->aggregatePerCustomer($from, $to);
         $unbilled = $this->aggregateUnbilled($from, $to);
         $einvoicing = $this->aggregateEInvoicing($from, $to);
+        // Vollaudit 2026-07 (N18): Angebots-/Belegketten-Kennzahlen.
+        $documentChain = $this->aggregateDocumentChain($from, $to);
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($status, $aging, $perCustomer, $unbilled, $einvoicing, $from, $to, $request);
+            return $this->exportCsv($status, $aging, $perCustomer, $unbilled, $einvoicing, $documentChain, $from, $to, $request);
         }
         if ($request->query('export') === 'pdf') {
             return $this->exportPdf($status, $aging, $perCustomer, $unbilled, $from, $to, $request);
@@ -63,6 +65,7 @@ class BillingReportController extends Controller {
             'perCustomer' => $perCustomer,
             'unbilled' => $unbilled,
             'einvoicing' => $einvoicing,
+            'documentChain' => $documentChain,
         ]);
     }
 
@@ -122,6 +125,69 @@ class BillingReportController extends Controller {
             'incoming_transferred' => $transferred,
             'validation' => $validation,
             'dunning' => $dunning,
+        ];
+    }
+
+    /**
+     * Angebots-/Belegketten-Kennzahlen (Vollaudit 2026-07, N18): Quotes je
+     * Status, Annahmequote, Median Versand→Entscheidung, Pro-forma→Rechnung-
+     * Überführungen und Storno-/Korrekturquote nach Belegtyp.
+     *
+     * @return array{
+     *     quotes: array<string, int>,
+     *     acceptance_rate: float|null,
+     *     decision_median_days: float|null,
+     *     conversions: array{quote_to_invoice: int, proforma_to_invoice: int},
+     *     correction: array{invoices: int, cancellations: int, credit_notes: int, rate: float|null}
+     * }
+     */
+    private function aggregateDocumentChain(string $from, string $to): array {
+        $quotes = \App\Models\Quote::query()
+            ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->get(['status', 'decided_at', 'updated_at', 'decision_snapshot', 'created_at']);
+
+        $byStatus = [];
+        /** @var list<float> $decisionDays */
+        $decisionDays = [];
+        foreach ($quotes as $quote) {
+            $byStatus[(string) $quote->status] = ($byStatus[(string) $quote->status] ?? 0) + 1;
+            $decidedAt = $quote->decided_at ?? data_get($quote->decision_snapshot, 'decided_at');
+            if ($decidedAt !== null) {
+                $hours = Carbon::parse((string) $quote->created_at)->diffInHours(Carbon::parse((string) $decidedAt));
+                $decisionDays[] = max(0.0, (float) $hours / 24);
+            }
+        }
+
+        $accepted = ($byStatus['accepted'] ?? 0) + ($byStatus['partially_accepted'] ?? 0);
+        $decided = $accepted + ($byStatus['rejected'] ?? 0) + ($byStatus['expired'] ?? 0);
+        sort($decisionDays);
+        $n = count($decisionDays);
+        $median = $n === 0 ? null : round(
+            $n % 2 === 1 ? $decisionDays[intdiv($n, 2)] : ($decisionDays[$n / 2 - 1] + $decisionDays[$n / 2]) / 2,
+            1,
+        );
+
+        $invoices = Invoice::query()
+            ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->get(['type', 'quote_id', 'parent_invoice_id']);
+        $regular = $invoices->where('type', Invoice::TYPE_INVOICE);
+
+        return [
+            'quotes' => $byStatus,
+            'acceptance_rate' => $decided > 0 ? round($accepted / $decided * 100, 1) : null,
+            'decision_median_days' => $median,
+            'conversions' => [
+                'quote_to_invoice' => $regular->whereNotNull('quote_id')->count(),
+                'proforma_to_invoice' => $regular->whereNotNull('parent_invoice_id')->count(),
+            ],
+            'correction' => [
+                'invoices' => $regular->count(),
+                'cancellations' => $invoices->where('type', Invoice::TYPE_CANCELLATION)->count(),
+                'credit_notes' => $invoices->where('type', Invoice::TYPE_CREDIT_NOTE)->count(),
+                'rate' => $regular->count() > 0
+                    ? round(($invoices->where('type', Invoice::TYPE_CANCELLATION)->count() + $invoices->where('type', Invoice::TYPE_CREDIT_NOTE)->count()) / $regular->count() * 100, 1)
+                    : null,
+            ],
         ];
     }
 
@@ -293,7 +359,15 @@ class BillingReportController extends Controller {
      * @param  array{count:int, minutes:int, projected_revenue:float}  $unbilled
      * @param  array{incoming: array<string, array{count:int, gross:float}>, incoming_transferred: int, validation: array{checked:int, passed:int, failed:int}, dunning: array<int, int>}  $einvoicing
      */
-    private function exportCsv(array $status, array $aging, array $perCustomer, array $unbilled, array $einvoicing, string $from, string $to, Request $request): Response {
+    /**
+     * @param  array<string, mixed>  $status
+     * @param  array<string, mixed>  $aging
+     * @param  array<int, array<string, mixed>>  $perCustomer
+     * @param  array<string, mixed>  $unbilled
+     * @param  array<string, mixed>  $einvoicing
+     * @param  array{quotes: array<string, int>, acceptance_rate: float|null, decision_median_days: float|null, conversions: array{quote_to_invoice: int, proforma_to_invoice: int}, correction: array{invoices: int, cancellations: int, credit_notes: int, rate: float|null}}  $documentChain
+     */
+    private function exportCsv(array $status, array $aging, array $perCustomer, array $unbilled, array $einvoicing, array $documentChain, string $from, string $to, Request $request): Response {
         $filename = sprintf('billing_%s_%s.csv', $from, $to);
         $rows = [];
         $rows[] = ['Bereich', 'Schlüssel', 'Anzahl', 'Wert €'];
@@ -320,6 +394,17 @@ class BillingReportController extends Controller {
         foreach ($einvoicing['dunning'] as $level => $count) {
             $rows[] = ['Mahnstufe', (string) $level, $count, ''];
         }
+        // Vollaudit 2026-07 (N18): Angebots-/Belegketten-Block.
+        foreach ($documentChain['quotes'] as $st => $count) {
+            $rows[] = ['Angebote', $st, $count, ''];
+        }
+        $rows[] = ['Angebote', 'ANNAHMEQUOTE_%', '', $documentChain['acceptance_rate'] !== null ? NumberHelper::toUSFormat($documentChain['acceptance_rate'], 1) : ''];
+        $rows[] = ['Angebote', 'MEDIAN_ENTSCHEIDUNG_TAGE', '', $documentChain['decision_median_days'] !== null ? NumberHelper::toUSFormat($documentChain['decision_median_days'], 1) : ''];
+        $rows[] = ['Belegkette', 'ANGEBOT_ZU_RECHNUNG', $documentChain['conversions']['quote_to_invoice'], ''];
+        $rows[] = ['Belegkette', 'PROFORMA_ZU_RECHNUNG', $documentChain['conversions']['proforma_to_invoice'], ''];
+        $rows[] = ['Korrektur', 'STORNOS', $documentChain['correction']['cancellations'], ''];
+        $rows[] = ['Korrektur', 'GUTSCHRIFTEN', $documentChain['correction']['credit_notes'], ''];
+        $rows[] = ['Korrektur', 'QUOTE_%', '', $documentChain['correction']['rate'] !== null ? NumberHelper::toUSFormat($documentChain['correction']['rate'], 1) : ''];
 
         return $this->csvWithMetadata($rows, $filename, 'billing', ['from' => $from, 'to' => $to], $request);
     }

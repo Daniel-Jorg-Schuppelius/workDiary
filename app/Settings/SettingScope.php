@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 namespace App\Settings;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Erlaubte Ablage-Ebenen einer Einstellung (Feature 067, MVP-173).
  *
@@ -19,7 +22,9 @@ namespace App\Settings;
  * Organization = organizations.settings (Org-Override, auditiert)
  * User         = users.preferences (nur echte Nutzerpräferenzen)
  */
-enum SettingScope: string {
+enum SettingScope: string implements HasLabel {
+    use HasOptions;
+
     case System = 'system';
     case Organization = 'organization';
     case User = 'user';

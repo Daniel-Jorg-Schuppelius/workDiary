@@ -33,6 +33,9 @@ enum AllocationKind: string implements HasLabel {
     case Reimbursement = 'reimbursement';
     case Chargeback = 'chargeback';
 
+    /** Akzeptierter Skontoabzug als Erlösschmälerung (Vollaudit 2026-07, N12). */
+    case Skonto = 'skonto';
+
     public function label(): string {
         return (string) __('enums.finance.allocation-kind.' . $this->value);
     }
@@ -45,6 +48,7 @@ enum AllocationKind: string implements HasLabel {
             self::Overpayment => 'info',
             self::Reimbursement => 'accent',
             self::Chargeback => 'error',
+            self::Skonto => 'ghost',
         };
     }
 }

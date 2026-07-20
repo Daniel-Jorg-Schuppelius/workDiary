@@ -87,6 +87,14 @@ class AiConnectionController extends Controller {
             'created_by_user_id' => Auth::id(),
         ]);
 
+        // Vollaudit 2026-07 (M35): ausgelieferte Default-Gedächtnisregeln
+        // (Kundennamen-Verbot, Nominalstil) beim Einrichten der KI säen —
+        // idempotent, editierbar wie manuelle Einträge.
+        app(\App\Services\Ai\AiMemoryService::class)->seedDefaults(
+            app('currentOrganization'),
+            Auth::id() !== null ? (int) Auth::id() : null,
+        );
+
         $ok = $tester->test($connection);
 
         return redirect()->route('admin.ai.index')->with(

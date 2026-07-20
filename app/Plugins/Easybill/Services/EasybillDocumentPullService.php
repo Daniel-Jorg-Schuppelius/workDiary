@@ -91,14 +91,29 @@ class EasybillDocumentPullService {
             $isXml = str_contains($file['mime'], 'xml');
             $document = $this->storeDocument($transfer, $file['content'], $file['mime'], $number, $isXml);
 
+            // Vollaudit 2026-07 (N25): bei reinem XML-Format (z. B.
+            // xrechnung3_0_xml) zusätzlich das PDF archivieren — zweite
+            // Dokumentversion mit eigenem sha256 in der Nachweis-Payload.
+            $pdfSha = null;
+            if ($isXml) {
+                $pdfContent = $client->downloadPdf((string) $reference->external_id);
+                if ($pdfContent !== null) {
+                    $actor = $transfer->creator ?? User::query()->findOrFail($transfer->created_by_user_id);
+                    $pdfName = 'easybill-' . ($number !== '' ? $number : 'beleg-' . $transfer->getKey()) . '.pdf';
+                    $this->documents->addVersionFromContents($document, $actor, $pdfContent, $pdfName, 'application/pdf');
+                    $pdfSha = CryptoHelper::hash($pdfContent);
+                }
+            }
+
             $reference->forceFill([
-                'payload' => array_merge((array) $reference->payload, [
+                'payload' => array_merge((array) $reference->payload, array_filter([
                     'document' => $remote,
                     'document_pulled_at' => now()->toIso8601String(),
                     'document_sha256' => CryptoHelper::hash($file['content']),
                     'document_mime' => $file['mime'],
+                    'document_pdf_sha256' => $pdfSha,
                     'dms_document_id' => $document->id,
-                ]),
+                ], static fn($v): bool => $v !== null)),
                 'synced_at' => now(),
             ])->save();
             $pulled++;

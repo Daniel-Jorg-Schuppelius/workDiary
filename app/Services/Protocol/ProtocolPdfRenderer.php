@@ -30,7 +30,7 @@ class ProtocolPdfRenderer {
     public function __construct(private readonly ProtocolHasher $hasher) {}
 
     public function render(Protocol $protocol): string {
-        $protocol->loadMissing(['items', 'signatures', 'subject']);
+        $protocol->loadMissing(['items.photos.attachment', 'signatures', 'subject']);
 
         $canonical = $this->hasher->canonicalize($protocol);
         $hash = CryptoHelper::hash($canonical);
@@ -49,6 +49,10 @@ class ProtocolPdfRenderer {
                 'protocol' => $protocol,
                 'hash' => $hash,
                 'generatedAt' => Carbon::now(),
+                // Vollaudit 2026-07 (H7): Foto-Vorschauen (max 4 je Punkt, als
+                // data-URI) im Renderer vorberechnen — hält die Blade dumm und
+                // vermeidet komplexe Inline-@php im PDF-Template.
+                'itemPhotoPreviews' => $this->itemPhotoPreviews($protocol),
             ],
             (int) $protocol->organization_id,
         );
@@ -56,6 +60,44 @@ class ProtocolPdfRenderer {
         $disk->put($relativePath, $bytes);
 
         return $relativePath;
+    }
+
+    /**
+     * Foto-Vorschauen je Protokollpunkt (Vollaudit 2026-07, H7): max. 4 je
+     * Punkt, nach Phase/Reihenfolge, als data-URI eingebettet plus Rest-Zähler.
+     *
+     * @return array<int, array{previews: list<array{src: ?string, phase: string, caption: ?string}>, more: int}>
+     */
+    private function itemPhotoPreviews(Protocol $protocol): array {
+        $disk = Storage::disk(self::DISK);
+        $out = [];
+
+        foreach ($protocol->items as $item) {
+            $photos = $item->photos
+                ->sortBy(fn($p): string => $p->phase->value . '-' . str_pad((string) $p->sort_order, 6, '0', STR_PAD_LEFT))
+                ->values();
+            if ($photos->isEmpty()) {
+                continue;
+            }
+
+            $previews = [];
+            foreach ($photos->take(4) as $photo) {
+                $att = $photo->attachment;
+                $src = null;
+                if ($att !== null && $disk->exists($att->path)) {
+                    $src = 'data:' . $att->mime . ';base64,' . base64_encode((string) $disk->get($att->path));
+                }
+                $previews[] = [
+                    'src' => $src,
+                    'phase' => $photo->phase->label(),
+                    'caption' => $photo->caption,
+                ];
+            }
+
+            $out[(int) $item->id] = ['previews' => $previews, 'more' => max(0, $photos->count() - 4)];
+        }
+
+        return $out;
     }
 
     /**
