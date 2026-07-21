@@ -10,13 +10,18 @@
 
 namespace App\Plugins\Contracts;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Fähigkeiten, die ein Plugin über {@see Plugin::capabilities()} ankündigt.
  * Jede Fähigkeit ist an genau ein Contract-Interface gebunden ({@see interface()}):
  * Ein Plugin, das eine Fähigkeit ankündigt, MUSS das zugehörige Interface
  * implementieren — erzwungen von `plugin:doctor` und {@see \Tests\Unit\Architecture\PluginContractTest}.
  */
-enum PluginCapability: string {
+enum PluginCapability: string implements HasLabel {
+    use HasOptions;
+
     /** Kann Kundenkontakte in ein externes System pushen. */
     case ContactSync = 'contact_sync';
 

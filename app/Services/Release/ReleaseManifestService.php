@@ -16,7 +16,7 @@ use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Licensing\{LicenseSeal, LicenseService};
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{DB, Storage};
 
 /**
  * Signierte/integritätsgesicherte Release-Metadaten (Feature 022, MVP).
@@ -93,6 +93,31 @@ class ReleaseManifestService {
             'modules' => $this->modules(),
             'plugins' => $this->pluginEntries($appVersion),
             'artifacts' => $this->artifactChecksums(),
+            'integrity' => $this->integritySummary(),
+        ];
+    }
+
+    /**
+     * Root-Hash + Zählwerte der Quelltext-Baseline (Feature 095): der Root
+     * wandert damit in den signierten Payload — die Datei-Hashes selbst
+     * bleiben in integrity.json (als Artefakt zusätzlich hash-gedeckt).
+     *
+     * @return array{root: string, source: string, files: int, packages: int}|null
+     */
+    private function integritySummary(): ?array {
+        if (! Storage::disk('local')->exists(CodeIntegrityService::STORAGE_PATH)) {
+            return null;
+        }
+        $manifest = json_decode((string) Storage::disk('local')->get(CodeIntegrityService::STORAGE_PATH), true);
+        if (! is_array($manifest) || ! isset($manifest['root'])) {
+            return null;
+        }
+
+        return [
+            'root' => (string) $manifest['root'],
+            'source' => (string) ($manifest['source'] ?? ''),
+            'files' => count((array) ($manifest['files'] ?? [])),
+            'packages' => count((array) ($manifest['packages'] ?? [])),
         ];
     }
 
@@ -149,10 +174,13 @@ class ReleaseManifestService {
     private function artifactChecksums(): array {
         $artifacts = [];
 
+        // Storage-Artefakte über den Disk-Pfad (Root ist app/private, nicht
+        // app/ — und Storage::fake bleibt in Tests konsistent).
         $candidates = [
             'composer.lock' => base_path('composer.lock'),
             'package-lock.json' => base_path('package-lock.json'),
-            'sbom' => storage_path('app/sbom/' . SbomGenerator::latestAlias()),
+            'sbom' => Storage::disk('local')->path('sbom/' . SbomGenerator::latestAlias()),
+            'integrity' => Storage::disk('local')->path(CodeIntegrityService::STORAGE_PATH),
         ];
 
         foreach ($candidates as $name => $path) {
@@ -176,9 +204,11 @@ class ReleaseManifestService {
     }
 
     private function relativeArtifactPath(string $name, string $path): string {
-        return $name === 'sbom'
-            ? 'storage/app/sbom/' . SbomGenerator::latestAlias()
-            : basename($path);
+        return match ($name) {
+            'sbom' => 'storage/app/private/sbom/' . SbomGenerator::latestAlias(),
+            'integrity' => 'storage/app/private/' . CodeIntegrityService::STORAGE_PATH,
+            default => basename($path),
+        };
     }
 
     /**

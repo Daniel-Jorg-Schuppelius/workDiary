@@ -87,6 +87,18 @@ return [
     ],
 
     'message' => [
+        'new_device_title' => 'Sign-in from new device',
+        'new_device_message' => 'New sign-in with :device from :country. If this wasn’t you, change your password immediately and review your sessions.',
+        'lockout_title' => 'Too many failed attempts — account briefly locked',
+        'lockout_message' => 'Your account was the target of several failed sign-in attempts and was briefly locked. If this wasn’t you, change your password.',
+        'security_threat_title' => 'Possible attack: :event',
+        'security_threat_message' => ':count events in :window minutes (limit :limit, IP :ip).',
+        'security_calm_title' => 'All clear: :event',
+        'security_calm_message' => 'The event rate is back below the limit (:count in :window minutes).',
+        'integrity_deviation_title' => 'Source code integrity violated',
+        'integrity_deviation_message' => 'Deviations: :added new, :modified changed, :deleted deleted, :packages package(s) — baseline: :source.',
+        'integrity_restored_title' => 'Source code integrity restored',
+        'integrity_restored_message' => 'The latest verification run found no deviations (baseline: :source).',
         'issue_assigned' => ':actor assigned this open issue to you.',
         'customer_query_raised' => 'A customer raised a query.',
         'due_soon' => 'Due on :date.',

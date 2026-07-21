@@ -205,6 +205,13 @@ class SsoController extends Controller {
     }
 
     private function failed(string $message): RedirectResponse {
+        // fail2ban-Signal (Feature 096, MVP-443): fehlgeschlagene SSO-Callbacks
+        // (state/Signatur/Flow) — der Meldetext bleibt nutzerneutral.
+        app(\App\Services\Security\SecurityEventLogger::class)->log(
+            \App\Enums\Security\SecurityEventType::SsoFailed,
+            ['reason' => $message],
+        );
+
         return redirect()->route('login')->withErrors(['username' => $message]);
     }
 

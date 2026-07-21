@@ -702,6 +702,20 @@ Route::middleware('auth')->group(function () {
         Route::put('admin/security/advisories/{advisory}/statement', [SecurityController::class, 'updateAdvisoryStatement'])
             ->name('admin.security.advisories.statement');
 
+        // Quelltext-Integrität (Feature 095, MVP-442): Ampel + Befundliste,
+        // Prüf-/Freeze-Läufe als Queue-Jobs — nur Plattform-Admin (Controller).
+        Route::get('admin/integrity', [\App\Http\Controllers\Admin\IntegrityController::class, 'index'])->name('admin.integrity.index');
+        Route::post('admin/integrity/verify', [\App\Http\Controllers\Admin\IntegrityController::class, 'verify'])
+            ->middleware('throttle:6,1')
+            ->name('admin.integrity.verify');
+        Route::post('admin/integrity/freeze', [\App\Http\Controllers\Admin\IntegrityController::class, 'freeze'])
+            ->middleware('throttle:6,1')
+            ->name('admin.integrity.freeze');
+
+        // Angriffserkennung (Feature 096, MVP-445): Security-Events-Dashboard —
+        // nur Plattform-Admin (Controller), plattformweite Daten.
+        Route::get('admin/security-events', [\App\Http\Controllers\Admin\SecurityEventsController::class, 'index'])->name('admin.security-events.index');
+
         // Angemeldete Nutzer / Sitzungen (Feature 085): auflisten + fernabmelden.
         Route::get('admin/sessions', [SessionController::class, 'index'])->name('admin.sessions.index');
         Route::get('admin/sessions/data', [SessionController::class, 'data'])->name('admin.sessions.data');

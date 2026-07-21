@@ -26,6 +26,19 @@ final class WebhookSignature {
      * enthalten sein.
      */
     public static function hmacValid(string $payload, ?string $secret, string $provided, string $algo, string $prefix = '', string $encoding = 'hex'): bool {
+        $valid = self::hmacDigestValid($payload, $secret, $provided, $algo, $prefix, $encoding);
+
+        if (! $valid) {
+            // fail2ban-Signal (Feature 096, MVP-443) — hmacValid ist überall
+            // ein harter Reject (anders als tokenValid, das auch als Matcher
+            // dient und deshalb still bleibt).
+            self::reportInvalid();
+        }
+
+        return $valid;
+    }
+
+    private static function hmacDigestValid(string $payload, ?string $secret, string $provided, string $algo, string $prefix, string $encoding): bool {
         if ($secret === null || $secret === '') {
             return false;
         }
@@ -38,6 +51,17 @@ final class WebhookSignature {
             : hash_hmac($algo, $payload, $secret);
 
         return hash_equals($prefix . $digest, $provided);
+    }
+
+    private static function reportInvalid(): void {
+        try {
+            app(\App\Services\Security\SecurityEventLogger::class)->log(
+                \App\Enums\Security\SecurityEventType::WebhookSignatureInvalid,
+                ['path' => request()->path()],
+            );
+        } catch (\Throwable) {
+            // Signaturprüfung darf nie am Logging scheitern.
+        }
     }
 
     /** Konstantzeit-Vergleich statischer Tokens; leer/fehlend ⇒ false. */

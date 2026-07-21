@@ -124,7 +124,7 @@ return [
         'recurrence' => ['generate' => 'Generar pedidos recurrentes'],
         'remote' => ['sync_sessions' => 'Importar sesiones de asistencia remota'],
         'scheduler' => ['watchdog' => 'Supervisión del planificador'],
-        'security' => ['advisories_pull' => 'Obtener avisos de seguridad'],
+        'security' => ['advisories_pull' => 'Obtener avisos de seguridad', 'integrity' => 'Comprobación de integridad del código fuente', 'evaluate' => 'Evaluar detección de ataques'],
         'tickets' => ['scan_sla_breaches' => 'Detectar incumplimientos de SLA'],
         'todoist' => ['sync' => 'Sincronización de Todoist'],
         'toggl' => ['import' => 'Importación de Toggl'],

@@ -23,6 +23,15 @@ use Tests\TestCase;
 class ReleaseManifestTest extends TestCase {
     use RefreshDatabase;
 
+    protected function setUp(): void {
+        parent::setUp();
+        // Feature 095: release:manifest erzeugt zuerst die Quelltext-Baseline —
+        // für den Test auf einen minimalen Scan-Umfang begrenzen.
+        config()->set('integrity.paths', ['config']);
+        config()->set('integrity.root_files', ['composer.json']);
+        config()->set('integrity.vendor.enabled', false);
+    }
+
     public function test_manifest_contains_versions_and_checksums(): void {
         $document = app(ReleaseManifestService::class)->build();
 

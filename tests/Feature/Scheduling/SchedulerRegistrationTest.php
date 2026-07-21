@@ -96,6 +96,10 @@ class SchedulerRegistrationTest extends TestCase {
         'ai:maintenance' => ['40 5 * * *', true, true],
         // Neu mit Phase 38 (MVP-415): wiederkehrende Rechnungsentwürfe.
         'invoices:generate-recurring' => ['15 5 * * *', true, true],
+        // Neu mit Feature 095 (MVP-441): tägliche Quelltext-Integritätsprüfung.
+        'integrity:verify --trigger=schedule' => ['20 3 * * *', true, true],
+        // Neu mit Feature 096 (MVP-445): Angriffserkennungs-Auswertung.
+        'security:evaluate' => ['*/5 * * * *', true, true],
     ];
 
     /** @return array<string, array{expression: string, onOneServer: bool, withoutOverlapping: bool}> */

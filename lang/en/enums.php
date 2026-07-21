@@ -428,6 +428,12 @@ return [
                 'maintenanceScheduled' => 'Maintenance window announced',
                 'problemReportReceived' => 'New problem report received',
             ],
+            'security' => [
+                'integrity' => 'Source code integrity',
+                'threat' => 'Threat detection',
+                'newDevice' => 'Sign-in from new device',
+                'lockout' => 'Account temporarily locked',
+            ],
         ],
         'channel' => [
             'inApp' => 'In-app',
@@ -1090,6 +1096,16 @@ return [
         'due_action' => [
             'none' => 'Notice only (no record)',
             'ticket' => 'Create a service ticket',
+        ],
+    ],
+
+    'security' => [
+        'integrity_check_status' => [
+            'baseline' => 'Baseline created',
+            'ok' => 'OK',
+            'deviation' => 'Deviation',
+            'missing_baseline' => 'No baseline',
+            'error' => 'Error',
         ],
     ],
 ];

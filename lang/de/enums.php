@@ -428,6 +428,12 @@ return [
                 'maintenanceScheduled' => 'Wartungsfenster angekündigt',
                 'problemReportReceived' => 'Neue Fehlermeldung eingegangen',
             ],
+            'security' => [
+                'integrity' => 'Quelltext-Integrität',
+                'threat' => 'Angriffserkennung',
+                'newDevice' => 'Anmeldung von neuem Gerät',
+                'lockout' => 'Konto vorübergehend gesperrt',
+            ],
         ],
         'channel' => [
             'inApp' => 'In-App',
@@ -1091,6 +1097,16 @@ return [
         'due_action' => [
             'none' => 'Nur Hinweis (kein Vorgang)',
             'ticket' => 'Service-Ticket anlegen',
+        ],
+    ],
+
+    'security' => [
+        'integrity_check_status' => [
+            'baseline' => 'Baseline erzeugt',
+            'ok' => 'In Ordnung',
+            'deviation' => 'Abweichung',
+            'missing_baseline' => 'Keine Baseline',
+            'error' => 'Fehler',
         ],
     ],
 ];

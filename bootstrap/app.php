@@ -41,6 +41,17 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Reverse-Proxy-Betrieb (Feature 096, MVP-443): ohne TrustedProxies
+        // wäre Request::ip() die Proxy-IP — Rate-Limits, Security-Log/fail2ban,
+        // Geo und Sessions liefen auf einer einzigen Adresse zusammen.
+        // TRUSTED_PROXIES: Komma-Liste von IPs/CIDRs oder '*' (LB davor).
+        $trustedProxies = (string) env('TRUSTED_PROXIES', '');
+        if ($trustedProxies !== '') {
+            $middleware->trustProxies(at: $trustedProxies === '*'
+                ? '*'
+                : array_values(array_filter(array_map('trim', explode(',', $trustedProxies)))));
+        }
+
         // Correlation-ID für alle Requests (041-P0, MVP-053): vor allem
         // anderen, damit auch Fehler in frühen Middlewares eine ID tragen.
         $middleware->prepend(AssignRequestId::class);
@@ -75,6 +86,9 @@ return Application::configure(basePath: dirname(__DIR__))
             // Support-Impersonation (Rang 64): Sperrliste + Scope-Grenzen,
             // Ablauf/Widerruf der Freigabe beendet die Sitzung sofort.
             EnforceSupportImpersonation::class,
+            // Optionale IP-Allowlist für Plattform-Admins in admin.*-Routen
+            // (Feature 096, MVP-446); leer = aus.
+            \App\Http\Middleware\EnforcePlatformAdminIpAllowlist::class,
         ]);
 
         // Auch der API-Stack (Sanctum-Tokens) MUSS die Organisation an den
@@ -171,6 +185,20 @@ return Application::configure(basePath: dirname(__DIR__))
         });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // Ungültige/fehlende API-Tokens (Feature 096, MVP-443): fail2ban-Signal
+        // nur für die Token-Oberflächen — Web-Session-Redirects bleiben still.
+        // return null ⇒ Standard-Rendering (401/redirect) bleibt unverändert.
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, Request $request) {
+            if ($request->is('api/*')) {
+                app(\App\Services\Security\SecurityEventLogger::class)->log(
+                    \App\Enums\Security\SecurityEventType::ApiTokenInvalid,
+                    ['surface' => 'api', 'has_token' => $request->bearerToken() !== null ? '1' : '0'],
+                );
+            }
+
+            return null;
+        });
+
         // Datenbank nicht erreichbar (Connection refused / timeout / Auth-Fehler):
         // Zeige eine schlanke, layout-freie Fehlerseite, statt einen
         // generischen Whoops/500-Stack auszuwerfen. Wichtig: die Antwort

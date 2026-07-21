@@ -428,6 +428,12 @@ return [
                 'maintenanceScheduled' => 'Fenêtre de maintenance annoncée',
                 'problemReportReceived' => 'Nouveau signalement de problème reçu',
             ],
+            'security' => [
+                'integrity' => 'Intégrité du code source',
+                'threat' => 'Détection d’attaques',
+                'newDevice' => 'Connexion depuis un nouvel appareil',
+                'lockout' => 'Compte temporairement verrouillé',
+            ],
         ],
         'channel' => [
             'inApp' => 'Dans l’application',
@@ -1090,6 +1096,16 @@ return [
         'due_action' => [
             'none' => 'Simple avis (aucune fiche)',
             'ticket' => 'Créer un ticket de service',
+        ],
+    ],
+
+    'security' => [
+        'integrity_check_status' => [
+            'baseline' => 'Référence créée',
+            'ok' => 'Conforme',
+            'deviation' => 'Écart',
+            'missing_baseline' => 'Aucune référence',
+            'error' => 'Erreur',
         ],
     ],
 ];

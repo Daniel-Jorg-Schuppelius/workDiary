@@ -87,6 +87,18 @@ return [
     ],
 
     'message' => [
+        'new_device_title' => 'Connexion depuis un nouvel appareil',
+        'new_device_message' => 'Nouvelle connexion avec :device depuis :country. Si ce n’était pas vous, changez immédiatement votre mot de passe et vérifiez vos sessions.',
+        'lockout_title' => 'Trop de tentatives échouées — compte brièvement verrouillé',
+        'lockout_message' => 'Votre compte a été la cible de plusieurs tentatives de connexion échouées et a été brièvement verrouillé. Si ce n’était pas vous, changez votre mot de passe.',
+        'security_threat_title' => 'Attaque possible : :event',
+        'security_threat_message' => ':count événements en :window minutes (limite :limit, IP :ip).',
+        'security_calm_title' => 'Fin d’alerte : :event',
+        'security_calm_message' => 'Le taux d’événements est repassé sous la limite (:count en :window minutes).',
+        'integrity_deviation_title' => 'Intégrité du code source violée',
+        'integrity_deviation_message' => 'Écarts : :added nouveaux, :modified modifiés, :deleted supprimés, :packages paquet(s) — référence : :source.',
+        'integrity_restored_title' => 'Intégrité du code source rétablie',
+        'integrity_restored_message' => 'La dernière vérification n’a révélé aucun écart (référence : :source).',
         'issue_assigned' => ':actor vous a assigné ce point ouvert.',
         'customer_query_raised' => 'Un client a posé une question.',
         'due_soon' => 'Échéance le :date.',
