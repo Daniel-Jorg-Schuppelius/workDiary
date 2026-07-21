@@ -71,7 +71,7 @@
                     </td>
                     <td><x-status-badge size="md" outline>{{ $case->status->label() }}</x-status-badge></td>
                     <td>{{ $case->responsible->name ?? '—' }}</td>
-                    <td><x-icon-btn icon="visibility" :href="route('rental.show', $case)" :label="__('Anzeigen')" /></td>
+                    <td class="text-right"><x-icon-btn icon="visibility" :href="route('rental.show', $case)" :label="__('Anzeigen')" /></td>
                 </tr>
             @empty
                 <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">forklift</span>' :colspan="7" :title="__('Keine Verleihakten — leihfähige Geräte im Gerätepool pflegen und die erste Akte anlegen.')" compact />

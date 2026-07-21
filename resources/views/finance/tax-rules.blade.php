@@ -79,7 +79,7 @@
                             <td class="max-w-xs truncate text-xs text-base-content/70" title="{{ $rule->source }}">{{ $rule->source ?? '—' }}</td>
                             <td>{{ $rule->organization_id !== null ? __('Org-Override') : __('Katalog') }}</td>
                             <td><x-status-badge size="xs" outline>{{ __("values.{$rule->status}") }}</x-status-badge></td>
-                            <td>
+                            <td class="text-right">
                                 @if ($rule->organization_id !== null && $rule->status === 'active')
                                     <x-action-form :action="route('finance.tax-rules.retire', $rule)"
                                           :confirm="__('Regel stilllegen (Rollback)? Ältere Regeln/Katalog greifen wieder.')"

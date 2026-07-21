@@ -95,7 +95,7 @@
                         <td>{{ $application->isAnonymized() ? __('(anonymisiert)') : ($application->candidate_name ?? '—') }}</td>
                         <td><x-status-badge size="md" outline>{{ __("values.{$application->status}") }}</x-status-badge></td>
                         <td>{{ optional($application->received_at)->fdate() ?? '—' }}</td>
-                        <td><x-icon-btn icon="visibility" :href="route('recruiting.applications.show', $application)" :label="__('Anzeigen')" /></td>
+                        <td class="text-right"><x-icon-btn icon="visibility" :href="route('recruiting.applications.show', $application)" :label="__('Anzeigen')" /></td>
                     </tr>
                 @endforeach
             </x-table>

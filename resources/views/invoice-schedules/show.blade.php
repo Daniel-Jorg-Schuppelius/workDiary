@@ -120,9 +120,9 @@
                         @endif
                     </td>
                     <td class="text-right tabular-nums">{{ $item->tax_rate !== null ? rtrim(rtrim((string) $item->tax_rate, '0'), '.') . ' %' : __('Standard') }}</td>
-                    <td>
+                    <td class="text-right">
                         @can(\App\Enums\User\Permission::InvoiceUpdate->value)
-                            <div class="flex items-center gap-1">
+                            <div class="flex items-center justify-end gap-1">
                                 <x-icon-btn icon="edit" size="xs"
                                             data-entry-modal-trigger
                                             :href="route('invoice-schedules.items.edit', [$schedule, $item]) . '?dialog=1'"

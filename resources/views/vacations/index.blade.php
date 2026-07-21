@@ -117,8 +117,8 @@
                                 @endif
                             </td>
                             <td class="max-w-xs truncate text-base-content/60 text-xs">{{ $v->note }}</td>
-                            <td>
-                                <div class="flex items-center gap-1">
+                            <td class="text-right">
+                                <div class="flex items-center justify-end gap-1">
                                     @can('decide', $v)
                                         @if ($v->status === \App\Enums\Vacation\VacationStatus::Pending)
                                             <x-action-form :action="route('vacations.approve', $v)" method="PATCH">

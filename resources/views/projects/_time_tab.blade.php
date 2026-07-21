@@ -44,7 +44,7 @@
                         <td class="whitespace-nowrap text-right text-xs font-medium">{{ $entry->hoursFormatted() }}</td>
                         <td class="text-xs text-base-content/70">{{ $entry->task->title ?? '—' }}</td>
                         <td class="max-w-xs truncate text-xs text-base-content/70">{{ $entry->description }}</td>
-                        <td class="whitespace-nowrap">
+                        <td class="text-right whitespace-nowrap">
                             @can('update', $entry)
                                 <x-icon-btn icon="edit"
                                             data-entry-modal-trigger

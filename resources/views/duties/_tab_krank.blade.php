@@ -115,8 +115,8 @@
                     @endif
                 </td>
                 <td class="max-w-xs truncate text-base-content/60 text-xs">{{ $s->note }}</td>
-                <td>
-                    <div class="flex items-center gap-1">
+                <td class="text-right">
+                    <div class="flex items-center justify-end gap-1">
                         @can('update', $s)
                             <x-icon-btn icon="edit"
                                         data-entry-modal-trigger

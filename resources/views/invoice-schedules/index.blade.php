@@ -69,8 +69,8 @@
                         </span>
                     @endif
                 </td>
-                <td>
-                    <div class="flex items-center gap-1">
+                <td class="text-right">
+                    <div class="flex items-center justify-end gap-1">
                         @can(\App\Enums\User\Permission::InvoiceUpdate->value)
                             <x-icon-btn icon="edit"
                                         data-entry-modal-trigger

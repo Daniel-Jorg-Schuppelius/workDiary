@@ -75,7 +75,7 @@
                         <x-table.th sort type="string">{{ __('Auftrag') }}</x-table.th>
                         <x-table.th sort type="date">{{ __('Datum') }}</x-table.th>
                         <x-table.th sort type="string">{{ __('Fehlende Klassifikationen') }}</x-table.th>
-                        <x-table.th>{{ __('Aktion') }}</x-table.th>
+                        <x-table.th align="right">{{ __('Aktion') }}</x-table.th>
                     </tr>
                 </x-slot:head>
                 @foreach ($rows as $row)
@@ -93,7 +93,7 @@
                                 @endforeach
                             </div>
                         </td>
-                        <td>
+                        <td class="text-right">
                             <x-icon-btn icon="edit_note" tone="outline" size="xs"
                                         :href="route('diary.show', $row['sqid'])" show-label>{{ __('Nachtragen') }}</x-icon-btn>
                         </td>

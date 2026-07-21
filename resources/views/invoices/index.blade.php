@@ -69,7 +69,7 @@
                     <td>{{ optional($invoice->issued_on)->fdate() ?? '-' }}</td>
                     <td><x-status-badge size="md" outline>{{ __("values.{$invoice->status}") }}</x-status-badge></td>
                     <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $invoice->total, 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
-                    <td>
+                    <td class="text-right">
                         <x-icon-btn icon="visibility"
                                     :href="route('invoices.show', $invoice)"
                                     :label="__('Anzeigen')" />

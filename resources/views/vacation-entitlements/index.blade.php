@@ -98,8 +98,8 @@
                     @endif
                 </td>
                 <td class="max-w-xs truncate text-base-content/60 text-xs">{{ $entitlement->note }}</td>
-                <td>
-                    <div class="flex items-center gap-1">
+                <td class="text-right">
+                    <div class="flex items-center justify-end gap-1">
                         <x-icon-btn icon="edit"
                                     data-entry-modal-trigger
                                     :href="route('vacation-entitlements.edit', $entitlement) . '?dialog=1'"

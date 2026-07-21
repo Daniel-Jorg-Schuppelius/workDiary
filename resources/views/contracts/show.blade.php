@@ -122,7 +122,7 @@
                             <span class="badge badge-info badge-outline badge-sm">{{ __('offen') }}</span>
                         @endif
                     </td>
-                    <td>
+                    <td class="text-right">
                         @if ($obligation->status !== 'done')
                             @can('update', $contract)
                                 <form method="POST" action="{{ route('contracts.obligations.complete', $obligation) }}">@csrf
