@@ -8889,5 +8889,6 @@
     "Projekt-Zuordnungen": "Associations de projets",
     "Toggl-Client": "Client Toggl",
     "Toggl-Projekt": "Projet Toggl",
-    "Zuordnungen entstehen beim Buchen in der Zuordnungs-Inbox, beim Workspace-Import oder oben über die Benutzer-Zuordnung.": "Les associations sont créées lors de la réservation dans la boîte d’attribution, lors de l’import d’espace de travail ou ci-dessus via l’association d’utilisateur."
+    "Zuordnungen entstehen beim Buchen in der Zuordnungs-Inbox, beim Workspace-Import oder oben über die Benutzer-Zuordnung.": "Les associations sont créées lors de la réservation dans la boîte d’attribution, lors de l’import d’espace de travail ou ci-dessus via l’association d’utilisateur.",
+    "Numerische Lizenz-ID (z. B. 1438129266231705) — nicht der Lizenz-Schlüssel aus Buchstaben\/Ziffern.": "ID de licence numérique (p. ex. 1438129266231705) — pas la clé de licence composée de lettres et de chiffres."
 }

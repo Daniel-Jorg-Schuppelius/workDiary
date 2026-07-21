@@ -8889,5 +8889,6 @@
     "Projekt-Zuordnungen": "Project mappings",
     "Toggl-Client": "Toggl client",
     "Toggl-Projekt": "Toggl project",
-    "Zuordnungen entstehen beim Buchen in der Zuordnungs-Inbox, beim Workspace-Import oder oben über die Benutzer-Zuordnung.": "Mappings are created when booking in the assignment inbox, during the workspace import, or above via the user mapping."
+    "Zuordnungen entstehen beim Buchen in der Zuordnungs-Inbox, beim Workspace-Import oder oben über die Benutzer-Zuordnung.": "Mappings are created when booking in the assignment inbox, during the workspace import, or above via the user mapping.",
+    "Numerische Lizenz-ID (z. B. 1438129266231705) — nicht der Lizenz-Schlüssel aus Buchstaben\/Ziffern.": "Numeric license ID (e.g. 1438129266231705) — not the license key made of letters and digits."
 }

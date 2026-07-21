@@ -93,7 +93,15 @@ class RemoteSupportConfig {
     }
 
     private static function stringOrNull(mixed $value): ?string {
-        return \is_string($value) && $value !== '' ? $value : null;
+        if (! \is_string($value)) {
+            return null;
+        }
+
+        // Credentials kommen per Copy-Paste — unsichtbarer Whitespace würde
+        // die HMAC-Signatur still brechen.
+        $value = trim($value);
+
+        return $value !== '' ? $value : null;
     }
 
     private static function intOrNull(mixed $value): ?int {
