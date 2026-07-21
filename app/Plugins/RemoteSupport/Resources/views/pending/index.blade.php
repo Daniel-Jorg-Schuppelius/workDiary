@@ -23,6 +23,21 @@
                 {{ __('Keine offenen Verbindungen. Alles zugeordnet.') }}
             </p>
         @else
+            @php
+                // Geräte-Auswahl nach Kunde gruppieren: eigene/kundenlose Geräte
+                // zuerst, danach Kunden alphabetisch.
+                $customerNamesById = $customers->keyBy('id');
+                $assetOptionGroups = $assets
+                    ->groupBy(fn ($a): int => (int) ($a->customer_id ?? 0))
+                    ->sortBy(function ($group, int $cid) use ($customerNamesById): string {
+                        if ($cid === 0) {
+                            return ' ';
+                        }
+                        $c = $customerNamesById[$cid] ?? null;
+
+                        return mb_strtolower((string) ($c?->company ?: $c?->name ?: '~'));
+                    });
+            @endphp
             <div class="space-y-3">
                 @foreach ($groups as $group)
                     <div class="relative rounded-box border border-base-300 p-3">
@@ -71,34 +86,40 @@
                         <div class="tabs tabs-box tabs-sm bg-base-200/50 p-2">
                             <input type="radio" name="{{ $tabName }}" class="tab" aria-label="{{ __('Bestehendes Gerät') }}" checked />
                             <div class="tab-content pt-3">
-                                <form method="POST" action="{{ route('admin.remote-support.pending.assign-existing') }}"
-                                      class="flex flex-wrap items-end gap-2">
+                                <form method="POST" action="{{ route('admin.remote-support.pending.assign-existing') }}">
                                     @csrf
                                     <input type="hidden" name="provider" value="{{ $group->provider }}">
                                     <input type="hidden" name="remote_id" value="{{ $group->remote_id }}">
-                                    <label class="flex w-72 max-w-full flex-col gap-1">
-                                        <span class="label-text text-xs">{{ __('Gerät auswählen') }}</span>
+                                    <label class="flex max-w-xl flex-col gap-1">
+                                        <span class="label-text text-xs font-medium text-base-content/70">{{ __('Gerät auswählen') }}</span>
                                         <select name="asset_id" required class="select select-sm select-bordered w-full">
                                             <option value="">{{ __('— Gerät wählen —') }}</option>
-                                            @foreach ($assets as $asset)
-                                                <option value="{{ $asset->sqid }}">{{ $asset->name ?: $asset->asset_no }} ({{ $asset->asset_no }})</option>
+                                            @foreach ($assetOptionGroups as $cid => $customerAssets)
+                                                @php $c = $cid !== 0 ? ($customerNamesById[$cid] ?? null) : null; @endphp
+                                                <optgroup label="{{ $c ? ($c->company ?: $c->name) : __('Eigene Geräte / ohne festen Kunden') }}">
+                                                    @foreach ($customerAssets as $asset)
+                                                        <option value="{{ $asset->sqid }}">{{ $asset->name ?: $asset->asset_no }} ({{ $asset->asset_no }})</option>
+                                                    @endforeach
+                                                </optgroup>
                                             @endforeach
                                         </select>
                                     </label>
-                                    <label class="flex items-center gap-2 pb-2" title="{{ __('Sitzungen werden nicht automatisch gebucht, sondern unten je Kunde zugeordnet.') }}">
-                                        <input type="checkbox" name="shared_remote" value="1" class="checkbox checkbox-sm">
-                                        <span class="label-text text-xs">{{ __('Mehrkundengerät') }}</span>
-                                    </label>
-                                    <button type="submit" class="btn btn-sm btn-primary ml-auto">
-                                        <span class="material-symbols-outlined text-[1.1rem]" aria-hidden="true">link</span>{{ __('Zuordnen') }}
-                                    </button>
+                                    <div class="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-base-300/60 pt-3">
+                                        <label class="flex cursor-pointer items-center gap-2" title="{{ __('Sitzungen werden nicht automatisch gebucht, sondern unten je Kunde zugeordnet.') }}">
+                                            <input type="checkbox" name="shared_remote" value="1" class="checkbox checkbox-sm checkbox-primary">
+                                            <span class="text-xs font-medium">{{ __('Mehrkundengerät') }}</span>
+                                            <span class="material-symbols-outlined text-[1rem] text-base-content/40" aria-hidden="true">help</span>
+                                        </label>
+                                        <button type="submit" class="btn btn-sm btn-primary">
+                                            <span class="material-symbols-outlined text-[1.1rem]" aria-hidden="true">link</span>{{ __('Zuordnen') }}
+                                        </button>
+                                    </div>
                                 </form>
                             </div>
 
                             <input type="radio" name="{{ $tabName }}" class="tab" aria-label="{{ __('Neues Gerät') }}" />
                             <div class="tab-content pt-3">
                                 <form method="POST" action="{{ route('admin.remote-support.pending.assign-new') }}"
-                                      class="flex flex-wrap items-end gap-2"
                                       x-data="{
                                           customer: '',
                                           foreign: '',
@@ -108,44 +129,49 @@
                                     @csrf
                                     <input type="hidden" name="provider" value="{{ $group->provider }}">
                                     <input type="hidden" name="remote_id" value="{{ $group->remote_id }}">
-                                    <label class="flex w-48 flex-col gap-1">
-                                        <span class="label-text text-xs">{{ __('Name') }}</span>
-                                        <input type="text" name="name" required value="{{ $group->alias }}" placeholder="{{ __('z. B. PC Empfang') }}"
-                                               class="input input-sm input-bordered w-full">
-                                    </label>
-                                    <label class="flex w-40 flex-col gap-1">
-                                        <span class="label-text text-xs">{{ __('Kategorie') }}</span>
-                                        <select name="category_code" required class="select select-sm select-bordered w-full">
-                                            @foreach ($categories as $code => $label)
-                                                <option value="{{ $code }}" @selected($code === 'workstation')>{{ __($label) }}</option>
-                                            @endforeach
-                                        </select>
-                                    </label>
-                                    <label class="flex w-48 flex-col gap-1">
-                                        <span class="label-text text-xs">{{ __('Kunde') }}</span>
-                                        <select name="customer_id" x-model="customer" @change="foreign = ''" class="select select-sm select-bordered w-full">
-                                            <option value="">{{ __('— kein fester Kunde (Firmenrechner) —') }}</option>
-                                            @foreach ($customers as $customer)
-                                                <option value="{{ $customer->sqid }}">{{ $customer->company ?: $customer->name }}</option>
-                                            @endforeach
-                                        </select>
-                                    </label>
-                                    <label class="flex w-48 flex-col gap-1" x-show="foreignCustomers.length > 0">
-                                        <span class="label-text text-xs">{{ __('Fremdkunde (Endkunde)') }}</span>
-                                        <select name="foreign_customer_id" x-model="foreign" class="select select-sm select-bordered w-full">
-                                            <option value="">{{ __('— direkt beim Kunden —') }}</option>
-                                            <template x-for="f in foreignCustomers" :key="f.id">
-                                                <option :value="f.id" x-text="f.name"></option>
-                                            </template>
-                                        </select>
-                                    </label>
-                                    <label class="flex items-center gap-2 pb-2" title="{{ __('Sitzungen werden nicht automatisch gebucht, sondern unten je Kunde zugeordnet.') }}">
-                                        <input type="checkbox" name="shared_remote" value="1" class="checkbox checkbox-sm">
-                                        <span class="label-text text-xs">{{ __('Mehrkundengerät') }}</span>
-                                    </label>
-                                    <button type="submit" class="btn btn-sm btn-primary ml-auto">
-                                        <span class="material-symbols-outlined text-[1.1rem]" aria-hidden="true">add</span>{{ __('Anlegen & zuordnen') }}
-                                    </button>
+                                    <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                                        <label class="flex flex-col gap-1">
+                                            <span class="label-text text-xs font-medium text-base-content/70">{{ __('Name') }}</span>
+                                            <input type="text" name="name" required value="{{ $group->alias }}" placeholder="{{ __('z. B. PC Empfang') }}"
+                                                   class="input input-sm input-bordered w-full">
+                                        </label>
+                                        <label class="flex flex-col gap-1">
+                                            <span class="label-text text-xs font-medium text-base-content/70">{{ __('Kategorie') }}</span>
+                                            <select name="category_code" required class="select select-sm select-bordered w-full">
+                                                @foreach ($categories as $code => $label)
+                                                    <option value="{{ $code }}" @selected($code === 'workstation')>{{ __($label) }}</option>
+                                                @endforeach
+                                            </select>
+                                        </label>
+                                        <label class="flex flex-col gap-1">
+                                            <span class="label-text text-xs font-medium text-base-content/70">{{ __('Kunde') }}</span>
+                                            <select name="customer_id" x-model="customer" @change="foreign = ''" class="select select-sm select-bordered w-full">
+                                                <option value="">{{ __('— kein fester Kunde (Firmenrechner) —') }}</option>
+                                                @foreach ($customers as $customer)
+                                                    <option value="{{ $customer->sqid }}">{{ $customer->company ?: $customer->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </label>
+                                        <label class="flex flex-col gap-1" x-show="foreignCustomers.length > 0">
+                                            <span class="label-text text-xs font-medium text-base-content/70">{{ __('Fremdkunde (Endkunde)') }}</span>
+                                            <select name="foreign_customer_id" x-model="foreign" class="select select-sm select-bordered w-full">
+                                                <option value="">{{ __('— direkt beim Kunden —') }}</option>
+                                                <template x-for="f in foreignCustomers" :key="f.id">
+                                                    <option :value="f.id" x-text="f.name"></option>
+                                                </template>
+                                            </select>
+                                        </label>
+                                    </div>
+                                    <div class="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-base-300/60 pt-3">
+                                        <label class="flex cursor-pointer items-center gap-2" title="{{ __('Sitzungen werden nicht automatisch gebucht, sondern unten je Kunde zugeordnet.') }}">
+                                            <input type="checkbox" name="shared_remote" value="1" class="checkbox checkbox-sm checkbox-primary">
+                                            <span class="text-xs font-medium">{{ __('Mehrkundengerät') }}</span>
+                                            <span class="material-symbols-outlined text-[1rem] text-base-content/40" aria-hidden="true">help</span>
+                                        </label>
+                                        <button type="submit" class="btn btn-sm btn-primary">
+                                            <span class="material-symbols-outlined text-[1.1rem]" aria-hidden="true">add</span>{{ __('Anlegen & zuordnen') }}
+                                        </button>
+                                    </div>
                                 </form>
                             </div>
                         </div>

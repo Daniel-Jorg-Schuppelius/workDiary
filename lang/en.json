@@ -8896,5 +8896,6 @@
     "— kein fester Kunde (Firmenrechner) —": "— no fixed customer (company machine) —",
     ":count Sitzung wartet unten auf die Kundenzuordnung.|:count Sitzungen warten unten auf die Kundenzuordnung.": ":count session below is waiting for customer assignment.|:count sessions below are waiting for customer assignment.",
     "Fremdkunde (Endkunde)": "End customer",
-    "— direkt beim Kunden —": "— directly at the customer —"
+    "— direkt beim Kunden —": "— directly at the customer —",
+    "Eigene Geräte \/ ohne festen Kunden": "Own devices \/ no fixed customer"
 }

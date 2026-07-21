@@ -8896,5 +8896,6 @@
     "— kein fester Kunde (Firmenrechner) —": "— sin cliente fijo (ordenador de la empresa) —",
     ":count Sitzung wartet unten auf die Kundenzuordnung.|:count Sitzungen warten unten auf die Kundenzuordnung.": ":count sesión más abajo espera la asignación de cliente.|:count sesiones más abajo esperan la asignación de cliente.",
     "Fremdkunde (Endkunde)": "Cliente final",
-    "— direkt beim Kunden —": "— directamente en el cliente —"
+    "— direkt beim Kunden —": "— directamente en el cliente —",
+    "Eigene Geräte \/ ohne festen Kunden": "Equipos propios \/ sin cliente fijo"
 }

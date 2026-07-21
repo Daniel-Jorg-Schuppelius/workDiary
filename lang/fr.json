@@ -8896,5 +8896,6 @@
     "— kein fester Kunde (Firmenrechner) —": "— pas de client fixe (ordinateur de l’entreprise) —",
     ":count Sitzung wartet unten auf die Kundenzuordnung.|:count Sitzungen warten unten auf die Kundenzuordnung.": ":count session attend l’attribution à un client ci-dessous.|:count sessions attendent l’attribution à un client ci-dessous.",
     "Fremdkunde (Endkunde)": "Client final",
-    "— direkt beim Kunden —": "— directement chez le client —"
+    "— direkt beim Kunden —": "— directement chez le client —",
+    "Eigene Geräte \/ ohne festen Kunden": "Appareils internes \/ sans client fixe"
 }
