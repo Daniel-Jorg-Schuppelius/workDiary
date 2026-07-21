@@ -221,7 +221,8 @@ class RemoteSupportService {
      * auf das interne Wartungsprojekt ({@see internalMaintenanceProject}).
      */
     public function requiresPerSessionAssignment(Asset $asset): bool {
-        return $asset->shared_remote;
+        // Cast: frisch erzeugte Models ohne geladenes Attribut liefern null.
+        return (bool) $asset->shared_remote;
     }
 
     /**
