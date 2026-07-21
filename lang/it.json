@@ -8906,5 +8906,7 @@
     "Keine Treffer für die Suche.": "Nessun risultato per questa ricerca.",
     "Suche: Geräte-ID, Alias, Gerät oder Notiz …": "Ricerca: ID dispositivo, alias, dispositivo o nota …",
     "nur die neuesten :count angezeigt": "mostrate solo le :count più recenti",
-    "Nach dem Buchen oder Verwerfen rücken ältere Sitzungen nach.": "Le sessioni più vecchie subentrano dopo la registrazione o lo scarto."
+    "Nach dem Buchen oder Verwerfen rücken ältere Sitzungen nach.": "Le sessioni più vecchie subentrano dopo la registrazione o lo scarto.",
+    ":count Verbindungsversuch|:count Verbindungsversuche": ":count tentativo di connessione|:count tentativi di connessione",
+    "Verbindungsversuche ohne Dauer (0 Sekunden) — sie ziehen beim Buchen den Beginn der folgenden Sitzung vor.": "Tentativi di connessione senza durata (0 secondi) — anticipano l’inizio della sessione successiva al momento della registrazione."
 }

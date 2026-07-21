@@ -190,6 +190,16 @@ class RemoteSupportService {
      * @return 'created'|'linked'|'skipped'|'unmatched'|'pending'
      */
     public function bookSession(Organization $organization, array $config, RemoteSession $session, int $userId): string {
+        // AnyDesk erzeugt je Verbindungsversuch einen Datensatz — Reconnects/
+        // abgebrochene Versuche kommen als 0-Sekunden-Sitzungen (start == end)
+        // an. Klassifizieren statt buchen: als Verbindungsversuch dokumentieren.
+        if ($session->endedAt <= $session->startedAt) {
+            $attemptAsset = $this->matchAsset($organization, $session->provider, $session->remoteId);
+            $this->recordPending($organization, $session, $attemptAsset?->id, RemotePendingSession::STATUS_ATTEMPT);
+
+            return 'skipped';
+        }
+
         $asset = $this->matchAsset($organization, $session->provider, $session->remoteId);
         if ($asset === null) {
             $this->recordPending($organization, $session);
@@ -296,21 +306,76 @@ class RemoteSupportService {
             $session->note ?? __('Fernwartungssitzung'),
         ));
 
+        // Verbindungsversuche unmittelbar vor der Sitzung belegen den
+        // Tätigkeitsbeginn (Einwahl gehört zur Arbeit): Start vorziehen und
+        // die Versuche dem Eintrag zuordnen.
+        [$startedAt, $usedAttempts] = $this->extendStartByAttempts($organization, $session);
+
         $entry = TimeEntry::query()->create([
             'organization_id' => $organization->id,
             'project_id' => $project->id,
             'user_id' => $userId,
-            'date' => $session->startedAt->toDateString(),
-            'started_at' => $session->startedAt,
+            'date' => $startedAt->toDateString(),
+            'started_at' => $startedAt,
             'ended_at' => $session->endedAt,
             'kind' => TimeEntryKind::Work,
             'description' => $description,
             'billable' => $billable,
         ]);
 
+        foreach ($usedAttempts as $attemptRow) {
+            $attemptRow->update([
+                'status' => RemotePendingSession::STATUS_IMPORTED,
+                'time_entry_id' => $entry->id,
+                'resolved_at' => now(),
+            ]);
+        }
+
         $this->rememberSessionReference($organization, $session, $entry, $asset, linked: false);
 
         return [$entry, false];
+    }
+
+    /**
+     * Zieht den Buchungsbeginn bis zum frühesten Verbindungsversuch vor, der
+     * der Sitzung innerhalb des Toleranzfensters unmittelbar vorausgeht —
+     * kettenfähig (Versuch vor Versuch), mit Iterationsdeckel.
+     *
+     * @return array{0: CarbonImmutable, 1: \Illuminate\Support\Collection<int, RemotePendingSession>}
+     */
+    private function extendStartByAttempts(Organization $organization, RemoteSession $session): array {
+        $windowMinutes = max(0, (int) config('plugins.remote-support.attempt_lead_minutes', 15));
+        $start = $session->startedAt;
+        $used = collect();
+
+        if ($windowMinutes === 0) {
+            return [$start, $used];
+        }
+
+        for ($i = 0; $i < 10; $i++) {
+            $batch = RemotePendingSession::query()
+                ->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->where('status', RemotePendingSession::STATUS_ATTEMPT)
+                ->where('provider', $session->provider)
+                ->where('remote_id', $session->remoteId)
+                ->where('started_at', '>=', $start->subMinutes($windowMinutes))
+                ->where('started_at', '<', $start)
+                ->get();
+
+            if ($batch->isEmpty()) {
+                break;
+            }
+
+            $used = $used->merge($batch);
+            $earliest = CarbonImmutable::parse($batch->min('started_at'));
+            if ($earliest >= $start) {
+                break;
+            }
+            $start = $earliest;
+        }
+
+        return [$start, $used];
     }
 
     /**
@@ -402,7 +467,7 @@ class RemoteSupportService {
      * provider+session_id). Bereits zugewiesene/verworfene Einträge bleiben unberührt.
      * Ist $assetId gesetzt, gehört die Sitzung zu einem bekannten Mehrkundengerät.
      */
-    private function recordPending(Organization $organization, RemoteSession $session, ?int $assetId = null): void {
+    private function recordPending(Organization $organization, RemoteSession $session, ?int $assetId = null, string $status = RemotePendingSession::STATUS_OPEN): void {
         $existing = RemotePendingSession::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
@@ -449,7 +514,7 @@ class RemoteSupportService {
             'started_at' => $session->startedAt,
             'ended_at' => $session->endedAt,
             'note' => $session->note,
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => $status,
         ]);
     }
 
@@ -651,10 +716,21 @@ class RemoteSupportService {
             ->orderByDesc('started_at')
             ->get();
 
+        // Dokumentierte Verbindungsversuche (0-Sekunden-Datensätze) je Gerät —
+        // nur als Zähler, sie sind nicht buchbar.
+        $attemptCounts = RemotePendingSession::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('status', RemotePendingSession::STATUS_ATTEMPT)
+            ->whereNotNull('asset_id')
+            ->selectRaw('asset_id, COUNT(*) AS attempt_count')
+            ->groupBy('asset_id')
+            ->pluck('attempt_count', 'asset_id');
+
         $groups = $rows
             ->filter(fn(RemotePendingSession $s): bool => $s->asset instanceof Asset)
             ->groupBy(fn(RemotePendingSession $s): int => (int) $s->asset_id)
-            ->map(function ($sessions): object {
+            ->map(function ($sessions) use ($attemptCounts): object {
                 /** @var \Illuminate\Support\Collection<int, RemotePendingSession> $sessions */
                 $first = $sessions->first();
                 assert($first instanceof RemotePendingSession);
@@ -664,6 +740,7 @@ class RemoteSupportService {
                 return (object) [
                     'asset' => $asset,
                     'sessions' => $sessions->values(),
+                    'attempts' => (int) ($attemptCounts[(int) $asset->id] ?? 0),
                 ];
             })
             ->values();

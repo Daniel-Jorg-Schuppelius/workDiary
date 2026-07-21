@@ -249,6 +249,12 @@
                                     {{ __('nur die neuesten :count angezeigt', ['count' => $visibleSessions->count()]) }}
                                 </span>
                             @endif
+                            @if (($device->attempts ?? 0) > 0)
+                                <span class="badge badge-sm badge-ghost text-base-content/60"
+                                      title="{{ __('Verbindungsversuche ohne Dauer (0 Sekunden) — sie ziehen beim Buchen den Beginn der folgenden Sitzung vor.') }}">
+                                    {{ trans_choice(':count Verbindungsversuch|:count Verbindungsversuche', (int) $device->attempts, ['count' => $device->attempts]) }}
+                                </span>
+                            @endif
                         </div>
 
                         <div class="overflow-x-auto" x-ref="list">

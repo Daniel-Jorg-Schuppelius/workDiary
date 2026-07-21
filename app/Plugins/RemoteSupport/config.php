@@ -29,6 +29,11 @@ return [
         'api_key' => env('ANYDESK_API_KEY'),
         'base_url' => env('ANYDESK_BASE_URL', 'https://v1.api.anydesk.com:8081'),
     ],
+
+    // Verbindungsversuche (0-Sekunden-Datensätze) bis zu N Minuten vor einer
+    // Sitzung gelten als deren Tätigkeitsbeginn und ziehen den Buchungsstart vor.
+    'attempt_lead_minutes' => (int) env('REMOTE_SUPPORT_ATTEMPT_LEAD_MINUTES', 15),
+
     'teamviewer' => [
         'enabled' => env('TEAMVIEWER_ENABLED', false),
         'api_key' => env('TEAMVIEWER_API_KEY'),

@@ -50,6 +50,12 @@ class RemotePendingSession extends Model {
 
     public const STATUS_DISMISSED = 'dismissed';
 
+    /**
+     * Verbindungsversuch ohne Dauer (start == end, z. B. AnyDesk-Reconnects):
+     * wird dokumentiert, aber nie gebucht und nie in der Inbox angeboten.
+     */
+    public const STATUS_ATTEMPT = 'attempt';
+
     protected $fillable = [
         'organization_id',
         'asset_id',

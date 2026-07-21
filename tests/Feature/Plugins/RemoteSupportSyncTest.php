@@ -768,6 +768,109 @@ class RemoteSupportSyncTest extends TestCase {
         ]);
     }
 
+    public function test_zero_duration_sessions_are_classified_as_attempts(): void {
+        $config = $this->enableTeamViewer();
+
+        // Verbindungsversuch ohne Dauer (start == end) — wird als „attempt"
+        // dokumentiert, aber weder gebucht noch in der Inbox angeboten.
+        $session = new RemoteSession(
+            provider: TeamViewerClient::ID,
+            sessionId: 'tv-zero-1',
+            remoteId: '999888000',
+            startedAt: CarbonImmutable::parse('2026-07-20 12:58:00'),
+            endedAt: CarbonImmutable::parse('2026-07-20 12:58:00'),
+        );
+
+        $result = $this->service()->importSessions($this->organization, $config, [$session]);
+
+        $this->assertSame(1, $result['skipped']);
+        $this->assertSame(0, $result['unmatched']);
+        $this->assertSame(0, TimeEntry::query()->count());
+        $this->assertDatabaseHas('remote_pending_sessions', [
+            'session_id' => 'tv-zero-1',
+            'status' => RemotePendingSession::STATUS_ATTEMPT,
+        ]);
+        $this->assertTrue($this->service()->openPendingGroups($this->organization)->isEmpty());
+
+        // Erneuter Import bleibt idempotent (Dedupe per session_id).
+        $this->service()->importSessions($this->organization, $config, [$session]);
+        $this->assertSame(1, RemotePendingSession::query()->count());
+    }
+
+    public function test_attempts_before_session_extend_booked_start(): void {
+        $config = $this->enableTeamViewer();
+        $asset = $this->deviceAssetWithCustomer('555444333');
+
+        // Einwahl-Kette vor der eigentlichen Sitzung: 12:35 und 12:47.
+        foreach (['12:35:00' => 'tv-att-1', '12:47:00' => 'tv-att-2'] as $time => $sid) {
+            RemotePendingSession::query()->create([
+                'organization_id' => $this->organization->id,
+                'provider' => TeamViewerClient::ID,
+                'remote_id' => '555444333',
+                'session_id' => $sid,
+                'started_at' => CarbonImmutable::parse("2026-07-20 {$time}"),
+                'ended_at' => CarbonImmutable::parse("2026-07-20 {$time}"),
+                'status' => RemotePendingSession::STATUS_ATTEMPT,
+            ]);
+        }
+
+        $session = new RemoteSession(
+            provider: TeamViewerClient::ID,
+            sessionId: 'tv-real-1',
+            remoteId: '555444333',
+            startedAt: CarbonImmutable::parse('2026-07-20 12:50:00'),
+            endedAt: CarbonImmutable::parse('2026-07-20 13:20:00'),
+        );
+
+        $result = $this->service()->importSessions($this->organization, $config, [$session]);
+
+        $this->assertSame(1, $result['created']);
+        $entry = TimeEntry::query()->firstOrFail();
+        $this->assertSame('2026-07-20 12:35:00', $entry->started_at?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-07-20 13:20:00', $entry->ended_at?->format('Y-m-d H:i:s'));
+
+        // Beide Versuche sind dem Eintrag zugeordnet und tauchen nicht mehr als Badge auf.
+        $this->assertSame(2, RemotePendingSession::query()
+            ->where('status', RemotePendingSession::STATUS_IMPORTED)
+            ->where('time_entry_id', $entry->id)
+            ->count());
+    }
+
+    public function test_shared_device_reports_attempt_count(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $asset = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_class' => AssetClass::Device->value,
+            'customer_id' => $customer->id,
+            'shared_remote' => true,
+        ]);
+
+        RemotePendingSession::query()->create([
+            'organization_id' => $this->organization->id,
+            'asset_id' => $asset->id,
+            'provider' => TeamViewerClient::ID,
+            'remote_id' => '777666555',
+            'session_id' => 'tv-open-a',
+            'started_at' => CarbonImmutable::parse('2026-07-20 09:00:00'),
+            'ended_at' => CarbonImmutable::parse('2026-07-20 09:30:00'),
+            'status' => RemotePendingSession::STATUS_OPEN,
+        ]);
+        RemotePendingSession::query()->create([
+            'organization_id' => $this->organization->id,
+            'asset_id' => $asset->id,
+            'provider' => TeamViewerClient::ID,
+            'remote_id' => '777666555',
+            'session_id' => 'tv-attempt-a',
+            'started_at' => CarbonImmutable::parse('2026-07-20 09:31:00'),
+            'ended_at' => CarbonImmutable::parse('2026-07-20 09:31:00'),
+            'status' => RemotePendingSession::STATUS_ATTEMPT,
+        ]);
+
+        $device = $this->service()->openSharedSessions($this->organization)->firstOrFail();
+        $this->assertSame(1, $device->sessions->count());
+        $this->assertSame(1, $device->attempts);
+    }
+
     public function test_open_pending_groups_search_filters_by_alias_id_and_note(): void {
         RemotePendingSession::query()->create([
             'organization_id' => $this->organization->id,
