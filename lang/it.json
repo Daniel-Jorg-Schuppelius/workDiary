@@ -2651,7 +2651,7 @@
     "Asset": "Asset",
     "Asset-Ereignis": "Evento dell'asset",
     "Asset-Nr.": "N. asset",
-    "Asset-Nr., Name, Seriennummer, Standort": "N. asset, nome, numero di serie, ubicazione",
+    "Asset-Nr., Name, Seriennummer, Standort, Kunde": "N. asset, nome, numero di serie, ubicazione, cliente",
     "Asset-Sperre aufgehoben.": "Blocco dell'asset rimosso.",
     "Asset aktualisiert": "Asset aggiornato",
     "Asset angelegt": "Asset creato",

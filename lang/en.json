@@ -2651,7 +2651,7 @@
     "Asset": "Asset",
     "Asset-Ereignis": "Asset event",
     "Asset-Nr.": "Asset no.",
-    "Asset-Nr., Name, Seriennummer, Standort": "Asset no., name, serial number, location",
+    "Asset-Nr., Name, Seriennummer, Standort, Kunde": "Asset no., name, serial number, location, customer",
     "Asset-Sperre aufgehoben.": "Asset lock released.",
     "Asset aktualisiert": "Asset updated",
     "Asset angelegt": "Asset created",

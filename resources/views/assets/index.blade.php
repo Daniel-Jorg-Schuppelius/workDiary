@@ -36,7 +36,7 @@
             <x-filter-field :label="__('Suche')" for="asset-q" class="flex-1 min-w-60">
                 <input id="asset-q" type="search" name="q"
                        value="{{ $activeFilters['q'] }}"
-                       placeholder="{{ __('Asset-Nr., Name, Seriennummer, Standort') }}"
+                       placeholder="{{ __('Asset-Nr., Name, Seriennummer, Standort, Kunde') }}"
                        class="input input-sm input-bordered w-full">
             </x-filter-field>
 

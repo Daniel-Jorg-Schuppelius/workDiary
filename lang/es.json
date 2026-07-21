@@ -2651,7 +2651,7 @@
     "Asset": "Activo",
     "Asset-Ereignis": "Evento de activo",
     "Asset-Nr.": "N.º de activo",
-    "Asset-Nr., Name, Seriennummer, Standort": "N.º de activo, nombre, número de serie, ubicación",
+    "Asset-Nr., Name, Seriennummer, Standort, Kunde": "N.º de activo, nombre, número de serie, ubicación, cliente",
     "Asset-Sperre aufgehoben.": "Bloqueo de activo levantado.",
     "Asset aktualisiert": "Activo actualizado",
     "Asset angelegt": "Activo creado",

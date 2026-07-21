@@ -2651,7 +2651,7 @@
     "Asset": "Actif",
     "Asset-Ereignis": "Événement d’actif",
     "Asset-Nr.": "N° d’actif",
-    "Asset-Nr., Name, Seriennummer, Standort": "N° d’actif, nom, numéro de série, site",
+    "Asset-Nr., Name, Seriennummer, Standort, Kunde": "N° d’actif, nom, numéro de série, emplacement, client",
     "Asset-Sperre aufgehoben.": "Verrouillage de l’actif levé.",
     "Asset aktualisiert": "Actif mis à jour",
     "Asset angelegt": "Actif créé",

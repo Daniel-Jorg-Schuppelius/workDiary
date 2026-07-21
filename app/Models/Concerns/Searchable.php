@@ -27,6 +27,15 @@ trait Searchable {
     }
 
     /**
+     * Optional: durchsuchbare Relationen (Relation => Spalten, via orWhereHas).
+     *
+     * @return array<string, list<string>>
+     */
+    protected function searchableRelations(): array {
+        return [];
+    }
+
+    /**
      * Freitextsuche über searchableColumns(); leerer Term lässt die Query
      * unverändert.
      *
@@ -44,6 +53,18 @@ trait Searchable {
                 $i === 0
                     ? $q->whereLikeEscaped($column, $term)
                     : $q->orWhereLikeEscaped($column, $term);
+            }
+
+            foreach ($this->searchableRelations() as $relation => $columns) {
+                $q->orWhereHas($relation, function (Builder $r) use ($columns, $term): void {
+                    $r->where(function (Builder $w) use ($columns, $term): void {
+                        foreach ($columns as $i => $column) {
+                            $i === 0
+                                ? $w->whereLikeEscaped($column, $term)
+                                : $w->orWhereLikeEscaped($column, $term);
+                        }
+                    });
+                });
             }
         });
     }

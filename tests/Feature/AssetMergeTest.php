@@ -102,6 +102,21 @@ class AssetMergeTest extends TestCase {
         app(AssetMergeService::class)->merge($source, $target);
     }
 
+    public function test_asset_index_search_matches_customer_name(): void {
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Kanzlei Meierhoff',
+        ]);
+        $this->makeAsset(['name' => 'PC-Empfang', 'customer_id' => $customer->id]);
+        $this->makeAsset(['name' => 'PC-Lager']);
+
+        $response = $this->actingAs($this->orgAdmin())->get(route('assets.index', ['q' => 'Meierhoff']));
+
+        $response->assertOk()
+            ->assertSee('PC-Empfang')
+            ->assertDontSee('PC-Lager');
+    }
+
     public function test_merge_endpoint_merges_and_redirects(): void {
         $source = $this->makeAsset(['name' => 'Duplikat']);
         $target = $this->makeAsset(['name' => 'Original']);
