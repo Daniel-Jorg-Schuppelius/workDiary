@@ -48,6 +48,9 @@
                             <x-icon-btn icon="lock_open" tone="success" size="sm" type="submit" show-label>{{ __('Sperre aufheben') }}</x-icon-btn>
                         </x-action-form>
                     @endif
+                    @can('update', $asset)
+                        <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('assets.edit', $asset)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
+                    @endcan
                     <x-icon-btn icon="description" size="sm" :href="route('assets.dossier', $asset)" target="_blank" show-label>{{ __('Objektakte') }}</x-icon-btn>
                     <x-icon-btn icon="arrow_back" size="sm" :href="route('assets.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
                 </div>
@@ -86,12 +89,29 @@
                         <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('assets.edit', $asset)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                     </x-slot:actions>
                 @endif
+                {{-- Kunde/Endkunde immer zeigen — auch ohne physische Verortung
+                     (Fernwartungs-Geräte haben oft keinen Raum). --}}
+                <dl class="grid gap-x-4 gap-y-3 text-sm sm:grid-cols-2 {{ ($room || $site || $building || $floor) ? 'mb-3' : '' }}">
+                    <div>
+                        <dt class="text-xs text-base-content/60">{{ __('Kunde') }}</dt>
+                        <dd>
+                            @if ($asset->customer)
+                                <a class="link link-hover" href="{{ route('customers.show', $asset->customer) }}">{{ $asset->customer->company ?: $asset->customer->name }}</a>
+                            @else
+                                —
+                            @endif
+                        </dd>
+                    </div>
+                    @if ($asset->foreignCustomer)
+                        <div>
+                            <dt class="text-xs text-base-content/60">{{ __('Fremdkunde (Endkunde)') }}</dt>
+                            <dd>{{ $asset->foreignCustomer->name }}</dd>
+                        </div>
+                    @endif
+                </dl>
+
                 @if ($room || $site || $building || $floor)
                     <dl class="grid gap-x-4 gap-y-3 text-sm sm:grid-cols-2">
-                        <div>
-                            <dt class="text-xs text-base-content/60">{{ __('Kunde') }}</dt>
-                            <dd>{{ $asset->customer?->name ?: '—' }}</dd>
-                        </div>
                         <div>
                             <dt class="text-xs text-base-content/60">{{ __('Standort') }}</dt>
                             <dd>{{ $site?->name ?: '—' }}</dd>
