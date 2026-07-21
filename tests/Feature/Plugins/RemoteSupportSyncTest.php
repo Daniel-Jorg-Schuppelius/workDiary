@@ -797,6 +797,31 @@ class RemoteSupportSyncTest extends TestCase {
         $this->assertSame(1, RemotePendingSession::query()->count());
     }
 
+    public function test_teamviewer_device_name_lands_as_alias_in_inbox(): void {
+        $config = $this->enableTeamViewer();
+        $this->fakeConnections([
+            [
+                'id' => 'tvc-alias-1',
+                'deviceid' => 'd987654321',
+                'devicename' => 'KANZLEI-PC01',
+                'username' => 'Support',
+                'start_date' => '2026-05-26T09:00:00Z',
+                'end_date' => '2026-05-26T09:30:00Z',
+            ],
+        ]);
+
+        $this->service()->import(
+            $this->organization,
+            $config,
+            CarbonImmutable::parse('2026-05-25'),
+            CarbonImmutable::parse('2026-05-27'),
+        );
+
+        $group = $this->service()->openPendingGroups($this->organization)->firstOrFail();
+        $this->assertSame('d987654321', $group->remote_id);
+        $this->assertSame('KANZLEI-PC01', $group->alias);
+    }
+
     public function test_multiple_remote_ids_can_point_to_one_asset(): void {
         $config = $this->enableTeamViewer();
         $asset = $this->deviceAssetWithCustomer('111222333');
