@@ -45,8 +45,13 @@ class WatchCommand extends Command {
      */
     private array $watches = [];
 
-    /** inotify-Event-Maske für integritätsrelevante Änderungen. */
-    private const MASK = \IN_CLOSE_WRITE | \IN_CREATE | \IN_DELETE | \IN_MOVED_FROM | \IN_MOVED_TO | \IN_MOVE_SELF | \IN_DELETE_SELF;
+    /**
+     * inotify-Event-Maske — erst in handle() NACH dem hasInotify()-Guard
+     * gesetzt, nie als Klassenkonstante: die IN_*-Konstanten dürfen nur
+     * berührt werden, wenn die Extension nachweislich vollständig geladen ist,
+     * sonst bräche der Befehl kryptisch statt sauber abzubrechen.
+     */
+    private int $mask = 0;
 
     public function handle(CodeIntegrityService $service): int {
         if (! $this->hasInotify()) {
@@ -61,6 +66,10 @@ class WatchCommand extends Command {
             $this->warn('Keine Baseline vorhanden — zuerst `release:manifest` (Herausgeber) oder `integrity:freeze` (lokal) ausführen.');
             $this->line('Der Wächter startet trotzdem; ausgelöste Verify-Läufe melden dann "keine Baseline".');
         }
+
+        // Maske erst hier berechnen — die IN_*-Konstanten werden garantiert
+        // nur nach bestandenem Guard berührt (nie als Klassenkonstante).
+        $this->mask = \IN_CLOSE_WRITE | \IN_CREATE | \IN_DELETE | \IN_MOVED_FROM | \IN_MOVED_TO | \IN_MOVE_SELF | \IN_DELETE_SELF;
 
         $debounce = max(1, (int) ($this->option('debounce') ?? config('integrity.watch.debounce_seconds', 30)));
         $base = $service->basePath();
@@ -130,14 +139,23 @@ class WatchCommand extends Command {
         return self::SUCCESS;
     }
 
-    /** Ext-inotify-Präsenz — als Seam für den „nicht geladen"-Test überschreibbar. */
+    /**
+     * Vollständige ext-inotify-Präsenz — als Seam für den „nicht geladen"-Test
+     * überschreibbar. Prüft Extension, eine repräsentative Funktion UND eine
+     * repräsentative Konstante: manche Umgebungen melden die Extension, ohne
+     * dass die IN_*-Konstanten/Funktionen verfügbar sind (fremder PHP-Pfad,
+     * sudo-/cron-Kontext). Dann bricht der Befehl sauber ab statt kryptisch an
+     * der Event-Maske zu scheitern.
+     */
     protected function hasInotify(): bool {
-        return extension_loaded('inotify');
+        return extension_loaded('inotify')
+            && function_exists('inotify_init')
+            && defined('IN_CLOSE_WRITE');
     }
 
     /** @param  resource  $fd */
     private function addWatch($fd, string $dir): void {
-        $wd = @inotify_add_watch($fd, $dir, self::MASK);
+        $wd = @inotify_add_watch($fd, $dir, $this->mask);
         if ($wd !== false) {
             $this->watches[$wd] = $dir;
         }
