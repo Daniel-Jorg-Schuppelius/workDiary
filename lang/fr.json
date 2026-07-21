@@ -8916,5 +8916,12 @@
     "Zielgerät": "Appareil cible",
     "Übertragen": "Transférer",
     "Quell- und Zielgerät sind identisch.": "L’appareil source et l’appareil cible sont identiques.",
-    ":ids Geräte-ID(s) und :sessions Sitzung(en) an „:name\" übertragen. Das leere Duplikat kann jetzt archiviert werden.": ":ids identifiant(s) et :sessions session(s) transférés vers « :name ». Le doublon vide peut maintenant être archivé."
+    ":ids Geräte-ID(s) und :sessions Sitzung(en) an „:name\" übertragen. Das leere Duplikat kann jetzt archiviert werden.": ":ids identifiant(s) et :sessions session(s) transférés vers « :name ». Le doublon vide peut maintenant être archivé.",
+    "Geräte zusammenführen": "Fusionner des appareils",
+    "Wähle das Zielgerät, in das „:name“ überführt werden soll. Alle Verknüpfungen (Sitzungen, Wartungen, Anhänge, Geräte-IDs …) wandern aufs Ziel; das Duplikat wird gelöscht.": "Choisissez l’appareil cible dans lequel « :name » doit être fusionné. Tous les liens (sessions, maintenances, pièces jointes, identifiants …) passent à la cible ; le doublon est supprimé.",
+    "Wähle pro Feld, ob der Wert des zu löschenden Geräts den Ziel-Wert ersetzen soll. Leere Ziel-Felder werden ohnehin aus der Quelle aufgefüllt; befüllte Ziel-Felder bleiben unangetastet.": "Choisissez champ par champ si la valeur de l’appareil à supprimer doit remplacer celle de la cible. Les champs cibles vides sont de toute façon complétés depuis la source ; les champs remplis restent inchangés.",
+    "„:source“ endgültig in „:target“ zusammenführen? Das Quell-Gerät wird gelöscht.": "Fusionner définitivement « :source » dans « :target » ? L’appareil source sera supprimé.",
+    "Gerät „:source“ wurde in „:target“ zusammengeführt.": "L’appareil « :source » a été fusionné dans « :target ».",
+    "In Betrieb seit": "En service depuis",
+    "Garantie bis": "Garantie jusqu’au"
 }

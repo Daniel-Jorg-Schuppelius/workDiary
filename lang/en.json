@@ -8916,5 +8916,12 @@
     "Zielgerät": "Target device",
     "Übertragen": "Transfer",
     "Quell- und Zielgerät sind identisch.": "Source and target device are identical.",
-    ":ids Geräte-ID(s) und :sessions Sitzung(en) an „:name\" übertragen. Das leere Duplikat kann jetzt archiviert werden.": ":ids device ID(s) and :sessions session(s) transferred to “:name”. The empty duplicate can now be archived."
+    ":ids Geräte-ID(s) und :sessions Sitzung(en) an „:name\" übertragen. Das leere Duplikat kann jetzt archiviert werden.": ":ids device ID(s) and :sessions session(s) transferred to “:name”. The empty duplicate can now be archived.",
+    "Geräte zusammenführen": "Merge devices",
+    "Wähle das Zielgerät, in das „:name“ überführt werden soll. Alle Verknüpfungen (Sitzungen, Wartungen, Anhänge, Geräte-IDs …) wandern aufs Ziel; das Duplikat wird gelöscht.": "Choose the target device into which “:name” should be merged. All links (sessions, maintenance, attachments, device IDs …) move to the target; the duplicate is deleted.",
+    "Wähle pro Feld, ob der Wert des zu löschenden Geräts den Ziel-Wert ersetzen soll. Leere Ziel-Felder werden ohnehin aus der Quelle aufgefüllt; befüllte Ziel-Felder bleiben unangetastet.": "Choose per field whether the value of the device to be deleted should replace the target value. Empty target fields are filled from the source anyway; populated target fields remain untouched.",
+    "„:source“ endgültig in „:target“ zusammenführen? Das Quell-Gerät wird gelöscht.": "Permanently merge “:source” into “:target”? The source device will be deleted.",
+    "Gerät „:source“ wurde in „:target“ zusammengeführt.": "Device “:source” was merged into “:target”.",
+    "In Betrieb seit": "In operation since",
+    "Garantie bis": "Warranty until"
 }

@@ -2150,6 +2150,8 @@ Route::middleware('auth')->group(function () {
         // ── Fuhrpark ───────────────────────────────────────────────────────
         Route::get('assets', [AssetController::class, 'index'])->name('assets.index');
         Route::get('assets/create', [AssetController::class, 'create'])->name('assets.create');
+        Route::get('assets/merge/compare', [\App\Http\Controllers\AssetMergeController::class, 'compare'])->name('assets.merge.compare');
+        Route::post('assets/merge', [\App\Http\Controllers\AssetMergeController::class, 'merge'])->name('assets.merge');
         Route::post('assets', [AssetController::class, 'store'])->name('assets.store');
         Route::get('assets/{asset}/edit', [AssetController::class, 'edit'])->name('assets.edit');
         Route::put('assets/{asset}', [AssetController::class, 'update'])->name('assets.update');

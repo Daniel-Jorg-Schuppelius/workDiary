@@ -51,6 +51,9 @@
                     @can('update', $asset)
                         <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('assets.edit', $asset)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                     @endcan
+                    @can('delete', $asset)
+                        <x-icon-btn icon="merge" size="sm" :href="route('assets.merge.compare', ['source' => $asset->sqid])" show-label>{{ __('Zusammenführen') }}</x-icon-btn>
+                    @endcan
                     <x-icon-btn icon="description" size="sm" :href="route('assets.dossier', $asset)" target="_blank" show-label>{{ __('Objektakte') }}</x-icon-btn>
                     <x-icon-btn icon="arrow_back" size="sm" :href="route('assets.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
                 </div>

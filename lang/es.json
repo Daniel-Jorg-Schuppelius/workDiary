@@ -8916,5 +8916,12 @@
     "Zielgerät": "Equipo de destino",
     "Übertragen": "Transferir",
     "Quell- und Zielgerät sind identisch.": "El equipo de origen y el de destino son idénticos.",
-    ":ids Geräte-ID(s) und :sessions Sitzung(en) an „:name\" übertragen. Das leere Duplikat kann jetzt archiviert werden.": ":ids ID de equipo y :sessions sesión(es) transferidas a «:name». El duplicado vacío ya puede archivarse."
+    ":ids Geräte-ID(s) und :sessions Sitzung(en) an „:name\" übertragen. Das leere Duplikat kann jetzt archiviert werden.": ":ids ID de equipo y :sessions sesión(es) transferidas a «:name». El duplicado vacío ya puede archivarse.",
+    "Geräte zusammenführen": "Fusionar equipos",
+    "Wähle das Zielgerät, in das „:name“ überführt werden soll. Alle Verknüpfungen (Sitzungen, Wartungen, Anhänge, Geräte-IDs …) wandern aufs Ziel; das Duplikat wird gelöscht.": "Elige el equipo de destino en el que se fusionará «:name». Todos los vínculos (sesiones, mantenimientos, adjuntos, ID de equipo …) pasan al destino; el duplicado se elimina.",
+    "Wähle pro Feld, ob der Wert des zu löschenden Geräts den Ziel-Wert ersetzen soll. Leere Ziel-Felder werden ohnehin aus der Quelle aufgefüllt; befüllte Ziel-Felder bleiben unangetastet.": "Elige por campo si el valor del equipo a eliminar debe sustituir al del destino. Los campos de destino vacíos se rellenan de todos modos desde el origen; los campos con datos permanecen intactos.",
+    "„:source“ endgültig in „:target“ zusammenführen? Das Quell-Gerät wird gelöscht.": "¿Fusionar definitivamente «:source» en «:target»? El equipo de origen se eliminará.",
+    "Gerät „:source“ wurde in „:target“ zusammengeführt.": "El equipo «:source» se fusionó en «:target».",
+    "In Betrieb seit": "En funcionamiento desde",
+    "Garantie bis": "Garantía hasta"
 }
