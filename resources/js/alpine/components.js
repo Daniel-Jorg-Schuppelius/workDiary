@@ -646,6 +646,27 @@ export function registerAlpineComponents(Alpine) {
             this.room_id = i.room_id ?? null;
             this.syncFromCurrent();
             this.autoSelectSingles();
+            this.applySelection();
+        },
+        // Selects nach dem Rendern der x-for-Optionen auf den State setzen —
+        // x-model greift sonst, bevor die Optionen existieren (leerer Dialog).
+        applySelection() {
+            this.$nextTick(() => {
+                const pairs = [
+                    ["customerSelect", this.customer_id],
+                    ["foreignSelect", this.foreign_customer_id],
+                    ["siteSelect", this.site_id],
+                    ["buildingSelect", this.building_id],
+                    ["floorSelect", this.floor_id],
+                    ["roomSelect", this.room_id],
+                ];
+                for (const [ref, value] of pairs) {
+                    const el = this.$refs[ref];
+                    if (el) {
+                        el.value = value == null ? "" : String(value);
+                    }
+                }
+            });
         },
         autoSelectSingles() {
             if (this.customer_id != null && this.site_id == null && this.filteredSites.length === 1) {
@@ -759,6 +780,7 @@ export function registerAlpineComponents(Alpine) {
                 }
             }
             this.autoSelectSingles();
+            this.applySelection();
         },
         onSiteChange() {
             if (this.building_id != null) {
@@ -770,6 +792,7 @@ export function registerAlpineComponents(Alpine) {
                 }
             }
             this.autoSelectSingles();
+            this.applySelection();
         },
         onBuildingChange() {
             if (this.floor_id != null) {
@@ -780,6 +803,7 @@ export function registerAlpineComponents(Alpine) {
                 }
             }
             this.autoSelectSingles();
+            this.applySelection();
         },
         onFloorChange() {
             if (this.room_id != null) {
@@ -789,6 +813,7 @@ export function registerAlpineComponents(Alpine) {
                 }
             }
             this.autoSelectSingles();
+            this.applySelection();
         },
     }));
 

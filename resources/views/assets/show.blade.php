@@ -25,6 +25,15 @@
                     <div class="text-sm text-base-content/70">
                         {{ __('Asset-Nr.') }}: <span class="font-mono">{{ $asset->asset_no }}</span>
                     </div>
+                    @if ($asset->customer)
+                        <div class="text-sm text-base-content/70">
+                            {{ __('Kunde') }}:
+                            <a class="link link-hover" href="{{ route('customers.show', $asset->customer) }}">{{ $asset->customer->company ?: $asset->customer->name }}</a>
+                            @if ($asset->foreignCustomer)
+                                · {{ __('Fremdkunde (Endkunde)') }}: {{ $asset->foreignCustomer->name }}
+                            @endif
+                        </div>
+                    @endif
                     <div class="flex flex-wrap items-center gap-2 text-sm">
                         <x-status-badge tone="ghost" outline>{{ $classOptions[$assetClassValue] ?? $assetClassValue }}</x-status-badge>
                         <x-status-badge :tone="$isBlocked ? 'error' : 'ghost'" :outline="! $isBlocked">{{ $statusOptions[$assetStatusValue] ?? $assetStatusValue }}</x-status-badge>
@@ -92,27 +101,6 @@
                         <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('assets.edit', $asset)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                     </x-slot:actions>
                 @endif
-                {{-- Kunde/Endkunde immer zeigen — auch ohne physische Verortung
-                     (Fernwartungs-Geräte haben oft keinen Raum). --}}
-                <dl class="grid gap-x-4 gap-y-3 text-sm sm:grid-cols-2 {{ ($room || $site || $building || $floor) ? 'mb-3' : '' }}">
-                    <div>
-                        <dt class="text-xs text-base-content/60">{{ __('Kunde') }}</dt>
-                        <dd>
-                            @if ($asset->customer)
-                                <a class="link link-hover" href="{{ route('customers.show', $asset->customer) }}">{{ $asset->customer->company ?: $asset->customer->name }}</a>
-                            @else
-                                —
-                            @endif
-                        </dd>
-                    </div>
-                    @if ($asset->foreignCustomer)
-                        <div>
-                            <dt class="text-xs text-base-content/60">{{ __('Fremdkunde (Endkunde)') }}</dt>
-                            <dd>{{ $asset->foreignCustomer->name }}</dd>
-                        </div>
-                    @endif
-                </dl>
-
                 @if ($room || $site || $building || $floor)
                     <dl class="grid gap-x-4 gap-y-3 text-sm sm:grid-cols-2">
                         <div>
