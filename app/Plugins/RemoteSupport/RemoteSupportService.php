@@ -652,7 +652,7 @@ class RemoteSupportService {
      * @param  iterable<RemotePendingSession>  $rows
      * @return array{created: int, skipped: int}
      */
-    public function assignSharedSessions(Organization $organization, iterable $rows, Customer $customer, ?Project $project = null, ?int $userId = null, ?ForeignCustomer $foreignCustomer = null): array {
+    public function assignSharedSessions(Organization $organization, iterable $rows, ?Customer $customer = null, ?Project $project = null, ?int $userId = null, ?ForeignCustomer $foreignCustomer = null): array {
         $userId ??= $this->resolveBookingUserId($organization, RemoteSupportConfig::resolve($organization->id)['default_user_id'] ?? null);
         if ($userId === null) {
             return ['created' => 0, 'skipped' => 0];
@@ -673,18 +673,21 @@ class RemoteSupportService {
     }
 
     /**
-     * Bucht genau eine Sitzung eines Mehrkundengeräts auf einen Kunden. Liefert
-     * false, wenn die Sitzung bereits importiert war (dann nur als imported
-     * markiert). Ohne übergebenes Projekt greift das Projekt des Fremdkunden
-     * (Endkunden) bzw. das Standardprojekt des Kunden.
+     * Bucht genau eine Sitzung eines Mehrkundengeräts. Liefert false, wenn die
+     * Sitzung bereits importiert war (dann nur als imported markiert). Ohne
+     * übergebenes Projekt greift das Projekt des Fremdkunden (Endkunden) bzw.
+     * das Standardprojekt des Kunden — ganz ohne Kunde das interne
+     * Wartungsprojekt (eigene Firma).
      */
-    public function assignSharedSession(Organization $organization, RemotePendingSession $row, Customer $customer, ?Project $project = null, ?int $userId = null, ?ForeignCustomer $foreignCustomer = null): bool {
+    public function assignSharedSession(Organization $organization, RemotePendingSession $row, ?Customer $customer = null, ?Project $project = null, ?int $userId = null, ?ForeignCustomer $foreignCustomer = null): bool {
         $asset = $row->asset;
         if (! $asset instanceof Asset) {
             return false;
         }
 
-        $project ??= $foreignCustomer?->defaultProjectOrCreate() ?? $customer->defaultProjectOrCreate();
+        $project ??= $foreignCustomer?->defaultProjectOrCreate()
+            ?? $customer?->defaultProjectOrCreate()
+            ?? $this->internalMaintenanceProject($organization);
         $userId ??= $this->resolveBookingUserId($organization, RemoteSupportConfig::resolve($organization->id)['default_user_id'] ?? null);
         if ($userId === null) {
             return false;

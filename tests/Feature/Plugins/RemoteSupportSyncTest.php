@@ -731,4 +731,40 @@ class RemoteSupportSyncTest extends TestCase {
             'status' => RemotePendingSession::STATUS_IMPORTED,
         ]);
     }
+
+    public function test_assign_shared_sessions_without_customer_books_internal_project(): void {
+        $this->enableTeamViewer();
+
+        $asset = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_class' => AssetClass::Device->value,
+            'shared_remote' => true,
+        ]);
+
+        $row = RemotePendingSession::query()->create([
+            'organization_id' => $this->organization->id,
+            'asset_id' => $asset->id,
+            'provider' => TeamViewerClient::ID,
+            'remote_id' => '121212121',
+            'session_id' => 'tv-internal-1',
+            'started_at' => CarbonImmutable::parse('2026-07-20 15:00:00'),
+            'ended_at' => CarbonImmutable::parse('2026-07-20 15:25:00'),
+            'status' => RemotePendingSession::STATUS_OPEN,
+        ]);
+
+        $response = $this->actingAs($this->orgAdmin())->post(route('admin.remote-support.pending.assign-internal'), [
+            'pending_ids' => [(string) $row->id],
+        ]);
+
+        $response->assertRedirect();
+        $entry = TimeEntry::query()->firstOrFail();
+        $project = Project::query()->findOrFail($entry->project_id);
+        $this->assertNull($project->customer_id);
+        $this->assertSame('Interne Wartung', $project->name);
+        $this->assertDatabaseHas('remote_pending_sessions', [
+            'id' => $row->id,
+            'status' => RemotePendingSession::STATUS_IMPORTED,
+            'time_entry_id' => $entry->id,
+        ]);
+    }
 }

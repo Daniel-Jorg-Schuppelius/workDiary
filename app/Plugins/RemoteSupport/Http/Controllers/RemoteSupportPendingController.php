@@ -246,6 +246,29 @@ class RemoteSupportPendingController extends Controller {
         return back()->with('status', $this->resultMessage($result));
     }
 
+    /**
+     * Bucht markierte Sitzungen eines Mehrkundengeräts ohne Kunden auf das
+     * interne Wartungsprojekt (eigene Firma).
+     */
+    public function assignSharedInternal(Request $request): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        $validated = $request->validate([
+            'pending_ids' => ['required', 'array', 'min:1'],
+            'pending_ids.*' => ['string'],
+        ]);
+
+        $rows = $this->pendingRowsFromInput($organization, $validated['pending_ids']);
+        if ($rows->isEmpty()) {
+            return back()->with('error', __('Keine gültigen Sitzungen ausgewählt.'));
+        }
+
+        $result = $this->service->assignSharedSessions($organization, $rows);
+
+        return back()->with('status', $this->resultMessage($result));
+    }
+
     /** Verwirft markierte Sitzungen eines Mehrkundengeräts. */
     public function dismissSession(Request $request): RedirectResponse {
         $admin = $this->admin();

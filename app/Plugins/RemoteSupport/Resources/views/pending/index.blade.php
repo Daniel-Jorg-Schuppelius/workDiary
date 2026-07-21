@@ -296,6 +296,12 @@
                             <button type="submit" class="btn btn-sm btn-primary ml-auto">
                                 <span class="material-symbols-outlined text-[1.1rem]" aria-hidden="true">schedule</span>{{ __('Markierte buchen') }}
                             </button>
+                            <button type="submit" formaction="{{ route('admin.remote-support.pending.assign-internal') }}"
+                                    class="btn btn-sm btn-ghost"
+                                    formnovalidate
+                                    title="{{ __('Bucht die markierten Sitzungen ohne Kunden auf das Projekt „Interne Wartung“.') }}">
+                                <span class="material-symbols-outlined text-[1.1rem]" aria-hidden="true">home_repair_service</span>{{ __('Markierte intern buchen') }}
+                            </button>
                             <button type="submit" formaction="{{ route('admin.remote-support.pending.dismiss-session') }}"
                                     class="btn btn-sm btn-ghost text-error"
                                     formnovalidate
