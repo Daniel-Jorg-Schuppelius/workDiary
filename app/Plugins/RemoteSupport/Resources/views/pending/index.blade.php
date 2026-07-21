@@ -83,9 +83,9 @@
 
                         {{-- Zuordnung: Tabs zwischen bestehendem und neuem Gerät --}}
                         @php $tabName = 'assign_'.\CommonToolkit\Helper\Data\CryptoHelper::hash($group->provider.'|'.$group->remote_id, \CommonToolkit\Enums\HashAlgorithm::MD5); @endphp
-                        <div class="tabs tabs-box tabs-sm bg-base-200/50 p-2">
+                        <div class="tabs tabs-lift tabs-sm">
                             <input type="radio" name="{{ $tabName }}" class="tab" aria-label="{{ __('Bestehendes Gerät') }}" checked />
-                            <div class="tab-content pt-3">
+                            <div class="tab-content rounded-box border-base-300 bg-base-100 p-4">
                                 <form method="POST" action="{{ route('admin.remote-support.pending.assign-existing') }}">
                                     @csrf
                                     <input type="hidden" name="provider" value="{{ $group->provider }}">
@@ -118,14 +118,10 @@
                             </div>
 
                             <input type="radio" name="{{ $tabName }}" class="tab" aria-label="{{ __('Neues Gerät') }}" />
-                            <div class="tab-content pt-3">
+                            <div class="tab-content rounded-box border-base-300 bg-base-100 p-4">
                                 <form method="POST" action="{{ route('admin.remote-support.pending.assign-new') }}"
-                                      x-data="{
-                                          customer: '',
-                                          foreign: '',
-                                          foreignMap: @js($foreignMap),
-                                          get foreignCustomers() { return this.foreignMap[this.customer] ?? []; },
-                                      }">
+                                      x-data="remoteAssign"
+                                      data-foreign-map="{{ json_encode($foreignMap, JSON_UNESCAPED_UNICODE) }}">
                                     @csrf
                                     <input type="hidden" name="provider" value="{{ $group->provider }}">
                                     <input type="hidden" name="remote_id" value="{{ $group->remote_id }}">
@@ -145,14 +141,14 @@
                                         </label>
                                         <label class="flex flex-col gap-1">
                                             <span class="label-text text-xs font-medium text-base-content/70">{{ __('Kunde') }}</span>
-                                            <select name="customer_id" x-model="customer" @change="foreign = ''" class="select select-sm select-bordered w-full">
+                                            <select name="customer_id" x-model="customer" @change="resetForeign" class="select select-sm select-bordered w-full">
                                                 <option value="">{{ __('— kein fester Kunde (Firmenrechner) —') }}</option>
                                                 @foreach ($customers as $customer)
                                                     <option value="{{ $customer->sqid }}">{{ $customer->company ?: $customer->name }}</option>
                                                 @endforeach
                                             </select>
                                         </label>
-                                        <label class="flex flex-col gap-1" x-show="foreignCustomers.length > 0">
+                                        <label class="flex flex-col gap-1" x-show="hasForeignCustomers" x-cloak>
                                             <span class="label-text text-xs font-medium text-base-content/70">{{ __('Fremdkunde (Endkunde)') }}</span>
                                             <select name="foreign_customer_id" x-model="foreign" class="select select-sm select-bordered w-full">
                                                 <option value="">{{ __('— direkt beim Kunden —') }}</option>
@@ -195,19 +191,9 @@
                     @php $assetName = $device->asset->name ?: $device->asset->asset_no; @endphp
                     <form method="POST" action="{{ route('admin.remote-support.pending.assign-shared') }}"
                           class="rounded-box border border-base-300 p-3"
-                          x-data="{
-                              customer: '',
-                              foreign: '',
-                              projectMap: @js($projectMap),
-                              foreignMap: @js($foreignMap),
-                              get foreignCustomers() { return this.foreignMap[this.customer] ?? []; },
-                              get projects() { return (this.projectMap[this.customer] ?? []).filter(p => (p.fc ?? null) === (this.foreign === '' ? null : this.foreign)); },
-                              allChecked: false,
-                              toggleAll() {
-                                  this.$refs.list.querySelectorAll('input[type=checkbox][name=&quot;pending_ids[]&quot;]')
-                                      .forEach(cb => cb.checked = this.allChecked);
-                              },
-                          }">
+                          x-data="remoteAssign"
+                          data-project-map="{{ json_encode($projectMap, JSON_UNESCAPED_UNICODE) }}"
+                          data-foreign-map="{{ json_encode($foreignMap, JSON_UNESCAPED_UNICODE) }}">
                         @csrf
 
                         <div class="mb-2 flex flex-wrap items-center gap-2">
@@ -258,14 +244,14 @@
                         <div class="mt-3 flex flex-wrap items-end gap-2">
                             <label class="flex w-48 flex-col gap-1">
                                 <span class="label-text text-xs">{{ __('Kunde') }}</span>
-                                <select name="customer_id" required x-model="customer" @change="foreign = ''" class="select select-sm select-bordered w-full">
+                                <select name="customer_id" required x-model="customer" @change="resetForeign" class="select select-sm select-bordered w-full">
                                     <option value="">{{ __('— Kunde —') }}</option>
                                     @foreach ($customers as $customer)
                                         <option value="{{ $customer->sqid }}">{{ $customer->company ?: $customer->name }}</option>
                                     @endforeach
                                 </select>
                             </label>
-                            <label class="flex w-48 flex-col gap-1" x-show="foreignCustomers.length > 0">
+                            <label class="flex w-48 flex-col gap-1" x-show="hasForeignCustomers" x-cloak>
                                 <span class="label-text text-xs">{{ __('Fremdkunde (Endkunde)') }}</span>
                                 <select name="foreign_customer_id" x-model="foreign" class="select select-sm select-bordered w-full">
                                     <option value="">{{ __('— direkt beim Kunden —') }}</option>
@@ -276,7 +262,7 @@
                             </label>
                             <label class="flex w-48 flex-col gap-1">
                                 <span class="label-text text-xs">{{ __('Projekt') }}</span>
-                                <select name="project_id" class="select select-sm select-bordered w-full" :disabled="! customer">
+                                <select name="project_id" class="select select-sm select-bordered w-full" :disabled="noCustomer">
                                     <option value="">{{ __('— Standardprojekt —') }}</option>
                                     <template x-for="p in projects" :key="p.id">
                                         <option :value="p.id" x-text="p.name"></option>

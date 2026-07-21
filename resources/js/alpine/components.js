@@ -1298,4 +1298,42 @@ export function registerAlpineComponents(Alpine) {
             this.selected = [];
         },
     }));
+
+    // Fernwartungs-Inbox: abhängige Kunde→Fremdkunde→Projekt-Auswahl. Maps als
+    // data-Attribute am x-data-Element:
+    //   data-foreign-map → { kundeSqid: [{id, name}] }
+    //   data-project-map → { kundeSqid: [{id, name, fc}] } (fc = Fremdkunden-Sqid|null)
+    Alpine.data("remoteAssign", () => ({
+        customer: "",
+        foreign: "",
+        allChecked: false,
+        foreignMap: {},
+        projectMap: {},
+        init() {
+            this.foreignMap = JSON.parse(this.$el.dataset.foreignMap || "{}");
+            this.projectMap = JSON.parse(this.$el.dataset.projectMap || "{}");
+        },
+        get foreignCustomers() {
+            return this.foreignMap[this.customer] ?? [];
+        },
+        get hasForeignCustomers() {
+            return this.foreignCustomers.length > 0;
+        },
+        // Ohne Fremdkunden-Wahl nur firmendirekte Projekte (fc = null).
+        get projects() {
+            const fc = this.foreign === "" ? null : this.foreign;
+            return (this.projectMap[this.customer] ?? []).filter((p) => (p.fc ?? null) === fc);
+        },
+        get noCustomer() {
+            return this.customer === "";
+        },
+        resetForeign() {
+            this.foreign = "";
+        },
+        toggleAll() {
+            this.$refs.list
+                ?.querySelectorAll('input[type=checkbox][name="pending_ids[]"]')
+                .forEach((cb) => (cb.checked = this.allChecked));
+        },
+    }));
 }
