@@ -59,47 +59,100 @@ class RemoteSupportService {
     /**
      * Hinterlegt die Geräte-ID eines Anbieters am Asset (Upsert).
      */
+    /**
+     * Hinterlegt eine Geräte-ID additiv: ein Gerät kann mehrere IDs je
+     * Anbieter tragen (Neuinstallation → neue AnyDesk-ID, Zweitinstanz).
+     * Gehörte die ID bisher einem anderen Gerät, wandert sie um — eine ID
+     * zeigt immer auf genau ein Gerät.
+     */
     public function setRemoteId(Asset $asset, string $provider, string $remoteId): void {
         $remoteId = trim($remoteId);
         if ($remoteId === '') {
-            $this->forgetRemoteId($asset, $provider);
-
             return;
         }
 
-        ExternalReference::query()->updateOrCreate(
-            [
-                'plugin_id' => RemoteSupportPlugin::ID,
-                'external_type' => self::deviceType($provider),
-                'referenceable_type' => $asset->getMorphClass(),
-                'referenceable_id' => $asset->getKey(),
-            ],
+        ExternalReference::query()->withoutGlobalScopes()->updateOrCreate(
             [
                 'organization_id' => $asset->organization_id,
+                'plugin_id' => RemoteSupportPlugin::ID,
+                'external_type' => self::deviceType($provider),
                 'external_id' => $remoteId,
+            ],
+            [
+                'referenceable_type' => $asset->getMorphClass(),
+                'referenceable_id' => $asset->getKey(),
                 'synced_at' => now(),
             ],
         );
     }
 
-    public function forgetRemoteId(Asset $asset, string $provider): void {
+    /** Entfernt eine bestimmte Geräte-ID — ohne $remoteId alle IDs des Anbieters. */
+    public function forgetRemoteId(Asset $asset, string $provider, ?string $remoteId = null): void {
         ExternalReference::query()
             ->where('plugin_id', RemoteSupportPlugin::ID)
             ->where('external_type', self::deviceType($provider))
             ->where('referenceable_type', $asset->getMorphClass())
             ->where('referenceable_id', $asset->getKey())
+            ->when($remoteId !== null, fn ($q) => $q->where('external_id', $remoteId))
             ->delete();
     }
 
+    /** Erste hinterlegte Geräte-ID des Anbieters (Kompatibilitäts-Helfer). */
     public function remoteId(Asset $asset, string $provider): ?string {
-        $ref = ExternalReference::query()
+        return $this->remoteIds($asset, $provider)[0] ?? null;
+    }
+
+    /**
+     * Alle Geräte-IDs des Anbieters für dieses Gerät.
+     *
+     * @return array<int, string>
+     */
+    public function remoteIds(Asset $asset, string $provider): array {
+        return ExternalReference::query()
             ->where('plugin_id', RemoteSupportPlugin::ID)
             ->where('external_type', self::deviceType($provider))
             ->where('referenceable_type', $asset->getMorphClass())
             ->where('referenceable_id', $asset->getKey())
-            ->first();
+            ->orderBy('id')
+            ->pluck('external_id')
+            ->map(fn ($id): string => (string) $id)
+            ->values()
+            ->all();
+    }
 
-        return $ref?->external_id;
+    /**
+     * Überführt die Fernwartungsdaten eines (doppelt angelegten) Geräts auf
+     * das Zielgerät: alle Geräte-IDs sowie sämtliche Pending-Sitzungen (offen,
+     * Versuche, Historie). Gebuchte Zeiteinträge bleiben unberührt. Das
+     * Quellgerät selbst wird NICHT gelöscht/archiviert — das entscheidet der
+     * Admin danach.
+     *
+     * @return array{ids: int, sessions: int}
+     */
+    public function mergeRemoteDevice(Asset $source, Asset $target): array {
+        if ($source->getKey() === $target->getKey() || (int) $source->organization_id !== (int) $target->organization_id) {
+            return ['ids' => 0, 'sessions' => 0];
+        }
+
+        $ids = ExternalReference::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $source->organization_id)
+            ->where('plugin_id', RemoteSupportPlugin::ID)
+            ->whereIn('external_type', array_values(self::DEVICE_TYPES))
+            ->where('referenceable_type', $source->getMorphClass())
+            ->where('referenceable_id', $source->getKey())
+            ->update([
+                'referenceable_id' => $target->getKey(),
+                'synced_at' => now(),
+            ]);
+
+        $sessions = RemotePendingSession::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $source->organization_id)
+            ->where('asset_id', $source->getKey())
+            ->update(['asset_id' => $target->getKey()]);
+
+        return ['ids' => (int) $ids, 'sessions' => (int) $sessions];
     }
 
     /**

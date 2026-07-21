@@ -797,6 +797,79 @@ class RemoteSupportSyncTest extends TestCase {
         $this->assertSame(1, RemotePendingSession::query()->count());
     }
 
+    public function test_multiple_remote_ids_can_point_to_one_asset(): void {
+        $config = $this->enableTeamViewer();
+        $asset = $this->deviceAssetWithCustomer('111222333');
+
+        // Zweite ID additiv (Neuinstallation) — die erste bleibt bestehen.
+        $this->service()->setRemoteId($asset, TeamViewerClient::ID, '444555666');
+        $this->assertSame(['111222333', '444555666'], $this->service()->remoteIds($asset, TeamViewerClient::ID));
+
+        foreach ([['111222333', 'tv-mid-1', '10:00', '10:30'], ['444555666', 'tv-mid-2', '11:00', '11:30']] as [$rid, $sid, $from, $to]) {
+            $session = new RemoteSession(
+                provider: TeamViewerClient::ID,
+                sessionId: $sid,
+                remoteId: $rid,
+                startedAt: CarbonImmutable::parse("2026-07-20 {$from}:00"),
+                endedAt: CarbonImmutable::parse("2026-07-20 {$to}:00"),
+            );
+            $this->service()->importSessions($this->organization, $config, [$session]);
+        }
+
+        // Beide IDs matchen dasselbe Gerät → beide Sitzungen gebucht.
+        $this->assertSame(2, TimeEntry::query()->count());
+
+        // Gezieltes Entfernen einer ID lässt die andere stehen.
+        $this->service()->forgetRemoteId($asset, TeamViewerClient::ID, '111222333');
+        $this->assertSame(['444555666'], $this->service()->remoteIds($asset, TeamViewerClient::ID));
+    }
+
+    public function test_merge_remote_device_moves_ids_and_sessions(): void {
+        $target = $this->deviceAssetWithCustomer('999000111');
+
+        $dup = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_class' => AssetClass::Device->value,
+        ]);
+        $this->service()->setRemoteId($dup, TeamViewerClient::ID, '999000222');
+        RemotePendingSession::query()->create([
+            'organization_id' => $this->organization->id,
+            'asset_id' => $dup->id,
+            'provider' => TeamViewerClient::ID,
+            'remote_id' => '999000222',
+            'session_id' => 'tv-dup-1',
+            'started_at' => CarbonImmutable::parse('2026-07-20 08:00:00'),
+            'ended_at' => CarbonImmutable::parse('2026-07-20 08:20:00'),
+            'status' => RemotePendingSession::STATUS_OPEN,
+        ]);
+
+        $result = $this->service()->mergeRemoteDevice($dup, $target);
+
+        $this->assertSame(['ids' => 1, 'sessions' => 1], $result);
+        $this->assertSame([], $this->service()->remoteIds($dup, TeamViewerClient::ID));
+        $this->assertContains('999000222', $this->service()->remoteIds($target, TeamViewerClient::ID));
+        $this->assertDatabaseHas('remote_pending_sessions', [
+            'session_id' => 'tv-dup-1',
+            'asset_id' => $target->id,
+        ]);
+    }
+
+    public function test_merge_endpoint_transfers_and_redirects(): void {
+        $target = $this->deviceAssetWithCustomer('121212000');
+        $dup = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_class' => AssetClass::Device->value,
+        ]);
+        $this->service()->setRemoteId($dup, TeamViewerClient::ID, '343434000');
+
+        $response = $this->actingAs($this->orgAdmin())->post(route('assets.remote-support.merge', $dup), [
+            'target_asset_id' => (string) $target->id,
+        ]);
+
+        $response->assertRedirect(route('assets.show', $target));
+        $this->assertContains('343434000', $this->service()->remoteIds($target, TeamViewerClient::ID));
+    }
+
     public function test_attempts_before_session_extend_booked_start(): void {
         $config = $this->enableTeamViewer();
         $asset = $this->deviceAssetWithCustomer('555444333');

@@ -8908,5 +8908,13 @@
     "nur die neuesten :count angezeigt": "seules les :count plus récentes sont affichées",
     "Nach dem Buchen oder Verwerfen rücken ältere Sitzungen nach.": "Les sessions plus anciennes remontent après comptabilisation ou rejet.",
     ":count Verbindungsversuch|:count Verbindungsversuche": ":count tentative de connexion|:count tentatives de connexion",
-    "Verbindungsversuche ohne Dauer (0 Sekunden) — sie ziehen beim Buchen den Beginn der folgenden Sitzung vor.": "Tentatives de connexion sans durée (0 seconde) — elles avancent le début de la session suivante lors de la comptabilisation."
+    "Verbindungsversuche ohne Dauer (0 Sekunden) — sie ziehen beim Buchen den Beginn der folgenden Sitzung vor.": "Tentatives de connexion sans durée (0 seconde) — elles avancent le début de la session suivante lors de la comptabilisation.",
+    "Weitere Geräte-ID": "Identifiant d’appareil supplémentaire",
+    "Fernwartungsdaten übertragen": "Transférer les données de télémaintenance",
+    "Für doppelt angelegte Geräte: verschiebt alle Geräte-IDs und Pending-Sitzungen auf das Zielgerät. Das leere Duplikat kann danach archiviert werden.": "Pour les appareils créés en double : déplace tous les identifiants et les sessions en attente vers l’appareil cible. Le doublon vide peut ensuite être archivé.",
+    "Alle Geräte-IDs und offenen Sitzungen dieses Geräts auf das gewählte Gerät übertragen?": "Transférer tous les identifiants et les sessions ouvertes de cet appareil vers l’appareil sélectionné ?",
+    "Zielgerät": "Appareil cible",
+    "Übertragen": "Transférer",
+    "Quell- und Zielgerät sind identisch.": "L’appareil source et l’appareil cible sont identiques.",
+    ":ids Geräte-ID(s) und :sessions Sitzung(en) an „:name\" übertragen. Das leere Duplikat kann jetzt archiviert werden.": ":ids identifiant(s) et :sessions session(s) transférés vers « :name ». Le doublon vide peut maintenant être archivé."
 }

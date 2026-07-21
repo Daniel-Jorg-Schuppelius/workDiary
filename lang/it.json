@@ -8908,5 +8908,13 @@
     "nur die neuesten :count angezeigt": "mostrate solo le :count più recenti",
     "Nach dem Buchen oder Verwerfen rücken ältere Sitzungen nach.": "Le sessioni più vecchie subentrano dopo la registrazione o lo scarto.",
     ":count Verbindungsversuch|:count Verbindungsversuche": ":count tentativo di connessione|:count tentativi di connessione",
-    "Verbindungsversuche ohne Dauer (0 Sekunden) — sie ziehen beim Buchen den Beginn der folgenden Sitzung vor.": "Tentativi di connessione senza durata (0 secondi) — anticipano l’inizio della sessione successiva al momento della registrazione."
+    "Verbindungsversuche ohne Dauer (0 Sekunden) — sie ziehen beim Buchen den Beginn der folgenden Sitzung vor.": "Tentativi di connessione senza durata (0 secondi) — anticipano l’inizio della sessione successiva al momento della registrazione.",
+    "Weitere Geräte-ID": "ID dispositivo aggiuntivo",
+    "Fernwartungsdaten übertragen": "Trasferisci i dati di teleassistenza",
+    "Für doppelt angelegte Geräte: verschiebt alle Geräte-IDs und Pending-Sitzungen auf das Zielgerät. Das leere Duplikat kann danach archiviert werden.": "Per i dispositivi creati due volte: sposta tutti gli ID dispositivo e le sessioni in sospeso sul dispositivo di destinazione. Il duplicato vuoto può poi essere archiviato.",
+    "Alle Geräte-IDs und offenen Sitzungen dieses Geräts auf das gewählte Gerät übertragen?": "Trasferire tutti gli ID dispositivo e le sessioni aperte di questo dispositivo al dispositivo selezionato?",
+    "Zielgerät": "Dispositivo di destinazione",
+    "Übertragen": "Trasferisci",
+    "Quell- und Zielgerät sind identisch.": "Il dispositivo di origine e quello di destinazione coincidono.",
+    ":ids Geräte-ID(s) und :sessions Sitzung(en) an „:name\" übertragen. Das leere Duplikat kann jetzt archiviert werden.": ":ids ID dispositivo e :sessions sessione\/i trasferiti a “:name”. Il duplicato vuoto può ora essere archiviato."
 }

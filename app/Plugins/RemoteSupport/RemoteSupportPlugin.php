@@ -168,9 +168,15 @@ class RemoteSupportPlugin implements Plugin, SlotRenderer, TimeImporter {
 
         return view('remote-support::_panel', [
             'asset' => $context,
-            'anydeskId' => $service->remoteId($context, AnyDeskClient::ID),
-            'teamviewerId' => $service->remoteId($context, TeamViewerClient::ID),
+            'anydeskIds' => $service->remoteIds($context, AnyDeskClient::ID),
+            'teamviewerIds' => $service->remoteIds($context, TeamViewerClient::ID),
             'pendingCount' => (int) $pendingCount,
+            // Ziele für „Fernwartungsdaten übertragen" (Duplikat-Bereinigung).
+            'mergeTargets' => \App\Models\Asset::query()
+                ->whereIn('category_code', RemoteSupportService::REMOTE_CATEGORY_CODES)
+                ->whereKeyNot($context->getKey())
+                ->orderBy('name')
+                ->get(['id', 'name', 'asset_no']),
         ])->render();
     }
 }
