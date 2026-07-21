@@ -17,8 +17,10 @@ use LogicException;
 
 /**
  * AnyDesk-HMAC-Authentifizierung für die REST-API v1: jeder Request wird per
- * HMAC-SHA1 mit dem API-Passwort der Lizenz signiert; der request-string
- * bindet Methode, Ressource, Content-Hash, Timestamp und ein Einmal-Token.
+ * HMAC-SHA1 mit dem API-Passwort der Lizenz signiert. Der request-string ist
+ * `METHOD\nRESOURCE\nTIMESTAMP\nCONTENT_HASH`, wobei RESOURCE Pfad **plus
+ * Query-String** ist; der Header hat exakt drei Felder
+ * (`AD LICENSE:TIMESTAMP:TOKEN`) — Referenz: github.com/anydesk/rest-api.
  * Request-abhängig, daher {@see RequestAwareAuthenticationInterface}.
  */
 class AnyDeskAuthentication implements RequestAwareAuthenticationInterface {
@@ -28,19 +30,22 @@ class AnyDeskAuthentication implements RequestAwareAuthenticationInterface {
     ) {}
 
     public function getAuthHeadersFor(string $method, string $uri, ?string $body = null): array {
-        $resource = parse_url($uri, PHP_URL_PATH);
-        $resource = is_string($resource) && $resource !== '' ? $resource : $uri;
+        $path = parse_url($uri, PHP_URL_PATH);
+        $resource = is_string($path) && $path !== '' ? $path : $uri;
 
-        $token = base64_encode(random_bytes(16));
+        $query = parse_url($uri, PHP_URL_QUERY);
+        if (is_string($query) && $query !== '') {
+            $resource .= '?' . $query;
+        }
+
         $timestamp = (string) now()->getTimestamp();
         $contentHash = base64_encode(CryptoHelper::hash($body ?? '', HashAlgorithm::SHA1, true));
 
         $requestString = implode("\n", [
             strtoupper($method),
             $resource,
-            $contentHash,
             $timestamp,
-            $token,
+            $contentHash,
         ]);
 
         $signature = base64_encode(
@@ -48,7 +53,7 @@ class AnyDeskAuthentication implements RequestAwareAuthenticationInterface {
         );
 
         return [
-            'Authorization' => sprintf('AD %s:%s:%s:%s', $this->licenseId, $token, $timestamp, $signature),
+            'Authorization' => sprintf('AD %s:%s:%s', $this->licenseId, $timestamp, $signature),
         ];
     }
 
