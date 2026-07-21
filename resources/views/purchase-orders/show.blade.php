@@ -142,7 +142,8 @@
             </x-card>
         @endif
 
-        @php $openLines = $order->lines->filter(fn ($l) => bccomp($l->openQty(), '0', 4) > 0); @endphp
+        {{-- Inline- statt Block-Form: paart sonst mit der Inline-Form oben (lazy Raw-Block-Regex). --}}
+        @php($openLines = $order->lines->filter(fn ($l) => bccomp($l->openQty(), '0', 4) > 0))
         @if ($canManage && $openLines->isNotEmpty())
             <x-card>
                 <h2 class="font-semibold mb-3">{{ __('procurement.advice.announce') }}</h2>
