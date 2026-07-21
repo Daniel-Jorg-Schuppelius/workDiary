@@ -565,10 +565,10 @@ class RemoteSupportSyncTest extends TestCase {
         $this->assertSame(1, $this->service()->openSharedSessions($this->organization)->count());
     }
 
-    public function test_session_for_customerless_asset_goes_to_per_session_inbox(): void {
+    public function test_session_for_customerless_asset_books_internal_maintenance_project(): void {
         $config = $this->enableTeamViewer();
 
-        // Firmenrechner: eigenes Gerät ohne festen Kunden.
+        // Eigenes Gerät ohne Kunden und ohne Mehrkunden-Flag: interne Wartung.
         $asset = Asset::factory()->create([
             'organization_id' => $this->organization->id,
             'asset_class' => AssetClass::Device->value,
@@ -585,15 +585,13 @@ class RemoteSupportSyncTest extends TestCase {
 
         $result = $this->service()->importSessions($this->organization, $config, [$session]);
 
-        $this->assertSame(1, $result['pending']);
-        $this->assertSame(0, $result['created']);
-        $this->assertSame(0, TimeEntry::query()->count());
-        $this->assertDatabaseHas('remote_pending_sessions', [
-            'organization_id' => $this->organization->id,
-            'session_id' => 'tv-own-1',
-            'asset_id' => $asset->id,
-            'status' => RemotePendingSession::STATUS_OPEN,
-        ]);
+        $this->assertSame(1, $result['created']);
+        $this->assertSame(0, $result['pending']);
+        $entry = TimeEntry::query()->firstOrFail();
+        $project = Project::query()->findOrFail($entry->project_id);
+        $this->assertNull($project->customer_id);
+        $this->assertSame('Interne Wartung', $project->name);
+        $this->assertDatabaseMissing('remote_pending_sessions', ['session_id' => 'tv-own-1']);
     }
 
     public function test_assign_pending_to_shared_asset_parks_sessions_instead_of_booking(): void {
@@ -647,12 +645,14 @@ class RemoteSupportSyncTest extends TestCase {
             'remote_id' => '333222111',
             'name' => 'Büro-PC Empfang',
             'category_code' => 'workstation',
+            'shared_remote' => '1',
         ]);
 
         $response->assertRedirect();
         $asset = Asset::query()->where('name', 'Büro-PC Empfang')->firstOrFail();
         $this->assertNull($asset->customer_id);
         $this->assertSame(\App\Enums\Asset\AssetOwnership::Organization, $asset->owned_by);
+        $this->assertTrue($asset->shared_remote);
         $this->assertSame(0, TimeEntry::query()->count());
         $this->assertDatabaseHas('remote_pending_sessions', [
             'session_id' => 'tv-company-1',

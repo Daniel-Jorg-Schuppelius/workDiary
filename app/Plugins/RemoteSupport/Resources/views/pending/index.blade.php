@@ -3,7 +3,7 @@
 @section('nav-title', __('Fernwartung – Inbox'))
 
 @section('content')
-<x-index-page :subtitle="__('Diese AnyDesk-/TeamViewer-IDs tauchten in den Reports auf, sind aber keinem Gerät zugeordnet. Weise jede ID einem bestehenden Gerät zu oder lege ein neues an — die gespeicherten Sitzungen werden dann sofort als Zeiteinträge gebucht. Bei Mehrkundengeräten und Firmenrechnern ohne festen Kunden bleiben sie offen und werden unten je Kunde zugeordnet.')">
+<x-index-page :subtitle="__('Diese AnyDesk-/TeamViewer-IDs tauchten in den Reports auf, sind aber keinem Gerät zugeordnet. Weise jede ID einem bestehenden Gerät zu oder lege ein neues an — die gespeicherten Sitzungen werden dann sofort als Zeiteinträge gebucht. Bei Mehrkundengeräten bleiben sie offen und werden im Reiter „Sitzungen zuordnen" je Kunde gebucht; Sitzungen eigener Geräte ohne Kunden buchen auf das interne Wartungsprojekt.')">
     <x-slot:actions>
         <a href="{{ route('admin.imports.create', ['entity' => \App\Enums\Import\ImportEntity::RemoteSessions->value]) }}"
            class="btn btn-sm btn-primary">
@@ -16,6 +16,24 @@
         {{ __('AnyDesk-Sitzungen werden im zentralen Import-Wizard eingelesen.') }}
     </x-slot:note>
 
+    @php $sharedSessionCount = $shared->sum(fn ($d): int => $d->sessions->count()); @endphp
+    <div x-data="tabs('ids')" data-tab-persist="remote-support-pending-tab">
+        <div role="tablist" class="tabs tabs-box mb-3 w-fit">
+            <a role="tab" href="#" class="tab gap-2" :class="tabClass('ids')" @click.prevent="setTab('ids')">
+                {{ __('Unzugeordnete Geräte') }}
+                @if ($groups->isNotEmpty())
+                    <span class="badge badge-sm badge-neutral">{{ $groups->count() }}</span>
+                @endif
+            </a>
+            <a role="tab" href="#" class="tab gap-2" :class="tabClass('sessions')" @click.prevent="setTab('sessions')">
+                {{ __('Sitzungen zuordnen') }}
+                @if ($sharedSessionCount > 0)
+                    <span class="badge badge-sm badge-primary">{{ $sharedSessionCount }}</span>
+                @endif
+            </a>
+        </div>
+
+    <div x-show="isTab('ids')">
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
 
         @if ($groups->isEmpty())
@@ -105,7 +123,7 @@
                                         </select>
                                     </label>
                                     <div class="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-base-300/60 pt-3">
-                                        <label class="flex cursor-pointer items-center gap-2" title="{{ __('Sitzungen werden nicht automatisch gebucht, sondern unten je Kunde zugeordnet.') }}">
+                                        <label class="flex cursor-pointer items-center gap-2" title="{{ __('Sitzungen werden nicht automatisch gebucht, sondern im Reiter „Sitzungen zuordnen" je Kunde gebucht.') }}">
                                             <input type="checkbox" name="shared_remote" value="1" class="checkbox checkbox-sm checkbox-primary">
                                             <span class="text-xs font-medium">{{ __('Mehrkundengerät') }}</span>
                                             <span class="material-symbols-outlined text-[1rem] text-base-content/40" aria-hidden="true">help</span>
@@ -159,7 +177,7 @@
                                         </label>
                                     </div>
                                     <div class="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-base-300/60 pt-3">
-                                        <label class="flex cursor-pointer items-center gap-2" title="{{ __('Sitzungen werden nicht automatisch gebucht, sondern unten je Kunde zugeordnet.') }}">
+                                        <label class="flex cursor-pointer items-center gap-2" title="{{ __('Sitzungen werden nicht automatisch gebucht, sondern im Reiter „Sitzungen zuordnen" je Kunde gebucht.') }}">
                                             <input type="checkbox" name="shared_remote" value="1" class="checkbox checkbox-sm checkbox-primary">
                                             <span class="text-xs font-medium">{{ __('Mehrkundengerät') }}</span>
                                             <span class="material-symbols-outlined text-[1rem] text-base-content/40" aria-hidden="true">help</span>
@@ -176,9 +194,10 @@
             </div>
         @endif
     </div>
+    </div>
 
-    @if (! $shared->isEmpty())
-        <div class="mt-4 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <div x-show="isTab('sessions')" x-cloak>
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
             <div class="mb-3">
                 <h2 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Mehrkundengeräte – Sitzungen zuordnen') }}</h2>
                 <p class="text-sm text-base-content/60">
@@ -186,6 +205,11 @@
                 </p>
             </div>
 
+            @if ($shared->isEmpty())
+                <p class="rounded-box border border-base-300 p-6 text-center text-sm text-base-content/60">
+                    {{ __('Keine offenen Sitzungen zur Einzelzuordnung.') }}
+                </p>
+            @else
             <div class="space-y-4">
                 @foreach ($shared as $device)
                     @php $assetName = $device->asset->name ?: $device->asset->asset_no; @endphp
@@ -283,7 +307,9 @@
                     </form>
                 @endforeach
             </div>
+            @endif
         </div>
-    @endif
+    </div>
+    </div>
 </x-index-page>
 @endsection

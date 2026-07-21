@@ -10,6 +10,7 @@
 
 namespace App\Plugins\RemoteSupport;
 
+use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{Asset, Customer, ExternalReference, ForeignCustomer, Organization, Project, RemotePendingSession, TimeEntry};
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, RemoteProvider, RemoteSession, TeamViewerClient};
@@ -200,8 +201,8 @@ class RemoteSupportService {
             return 'skipped';
         }
 
-        // Mehrkunden-/kundenlose Geräte werden nicht automatisch gebucht: Die
-        // Sitzung wandert in die Inbox und wird dort je Sitzung zugeordnet.
+        // Mehrkundengeräte werden nicht automatisch gebucht: Die Sitzung
+        // wandert in die Inbox und wird dort je Sitzung zugeordnet.
         if ($this->requiresPerSessionAssignment($asset)) {
             $this->recordPending($organization, $session, $asset->id);
 
@@ -214,12 +215,32 @@ class RemoteSupportService {
     }
 
     /**
-     * Geräte, deren Sitzungen keinem festen Kunden zugebucht werden können:
-     * Mehrkundengeräte (shared_remote) und Geräte ohne Kunden (eigene
-     * Firmenrechner, Selbstständigen-PCs für mehrere betreute Firmen).
+     * Nur explizit markierte Mehrkundengeräte (shared_remote) laufen über die
+     * Einzelzuordnung — auch eigene Firmenrechner brauchen das Flag. Geräte
+     * ohne Kunden UND ohne Flag sind interne Geräte: deren Sitzungen buchen
+     * auf das interne Wartungsprojekt ({@see internalMaintenanceProject}).
      */
     public function requiresPerSessionAssignment(Asset $asset): bool {
-        return $asset->shared_remote || $asset->customer_id === null;
+        return $asset->shared_remote;
+    }
+
+    /**
+     * Buchungsziel für Sitzungen eigener Geräte ohne Kunden: kundenloses
+     * internes Wartungsprojekt der Organisation (lazy angelegt).
+     */
+    private function internalMaintenanceProject(Organization $organization): Project {
+        return Project::query()->firstOrCreate(
+            [
+                'organization_id' => $organization->id,
+                'customer_id' => null,
+                'name' => 'Interne Wartung',
+            ],
+            [
+                'color' => (string) config('project.default_project.color', '#64748b'),
+                'status' => ProjectStatus::Active->value,
+                'is_default' => false,
+            ],
+        );
     }
 
     private function matchAsset(Organization $organization, string $provider, string $remoteId): ?Asset {
@@ -247,13 +268,12 @@ class RemoteSupportService {
     /** @return array{0: ?TimeEntry, 1: bool}  [Eintrag, true = nur an vorhandene Zeit verknüpft] */
     private function createTimeEntry(Organization $organization, Asset $asset, RemoteSession $session, int $userId, bool $billable, ?Project $project = null): array {
         // Bei Mehrkundengeräten wird das Zielprojekt explizit übergeben; sonst
-        // greift das Projekt des Fremdkunden (Endkunden) bzw. das
-        // Standardprojekt des Asset-Kunden.
-        $project ??= $asset->foreignCustomer?->defaultProjectOrCreate() ?? $asset->customer?->defaultProjectOrCreate();
-        if ($project === null) {
-            // Ohne Kunde/Projekt kann keine projektbezogene Zeit gebucht werden.
-            return [null, false];
-        }
+        // greift das Projekt des Fremdkunden (Endkunden), das Standardprojekt
+        // des Asset-Kunden oder — bei eigenen Geräten ohne Kunden — das
+        // interne Wartungsprojekt.
+        $project ??= $asset->foreignCustomer?->defaultProjectOrCreate()
+            ?? $asset->customer?->defaultProjectOrCreate()
+            ?? $this->internalMaintenanceProject($organization);
 
         // Deckt eine bereits erfasste Zeit DESSELBEN Kunden die Sitzung ab
         // (z. B. Toggl-Import), wird die Sitzung nur als Nachweis verknüpft
@@ -494,9 +514,9 @@ class RemoteSupportService {
             ->where('remote_id', $remoteId)
             ->get();
 
-        // Mehrkunden-/kundenlose Geräte: nichts automatisch buchen. Offene
-        // Sitzungen werden ans Gerät gebunden und bleiben offen — sie
-        // erscheinen im Einzelzuordnungs-Block der Inbox.
+        // Mehrkundengeräte: nichts automatisch buchen. Offene Sitzungen
+        // werden ans Gerät gebunden und bleiben offen — sie erscheinen im
+        // Einzelzuordnungs-Reiter der Inbox.
         if ($this->requiresPerSessionAssignment($asset)) {
             $parked = 0;
             $skipped = 0;

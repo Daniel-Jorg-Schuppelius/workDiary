@@ -8891,11 +8891,14 @@
     "Toggl-Projekt": "Proyecto de Toggl",
     "Zuordnungen entstehen beim Buchen in der Zuordnungs-Inbox, beim Workspace-Import oder oben über die Benutzer-Zuordnung.": "Las asignaciones se crean al reservar en la bandeja de asignación, durante la importación del espacio de trabajo o arriba mediante la asignación de usuario.",
     "Numerische Lizenz-ID (z. B. 1438129266231705) — nicht der Lizenz-Schlüssel aus Buchstaben\/Ziffern.": "ID de licencia numérico (p. ej. 1438129266231705) — no la clave de licencia compuesta por letras y cifras.",
-    "Diese AnyDesk-\/TeamViewer-IDs tauchten in den Reports auf, sind aber keinem Gerät zugeordnet. Weise jede ID einem bestehenden Gerät zu oder lege ein neues an — die gespeicherten Sitzungen werden dann sofort als Zeiteinträge gebucht. Bei Mehrkundengeräten und Firmenrechnern ohne festen Kunden bleiben sie offen und werden unten je Kunde zugeordnet.": "Estos ID de AnyDesk\/TeamViewer aparecieron en los informes pero no están asignados a ningún equipo. Asigna cada ID a un equipo existente o crea uno nuevo — las sesiones guardadas se contabilizan entonces de inmediato como registros de tiempo. En equipos multicliente y ordenadores de la empresa sin cliente fijo permanecen abiertas y se asignan por cliente más abajo.",
-    "Sitzungen werden nicht automatisch gebucht, sondern unten je Kunde zugeordnet.": "Las sesiones no se contabilizan automáticamente, sino que se asignan por cliente más abajo.",
     "— kein fester Kunde (Firmenrechner) —": "— sin cliente fijo (ordenador de la empresa) —",
-    ":count Sitzung wartet unten auf die Kundenzuordnung.|:count Sitzungen warten unten auf die Kundenzuordnung.": ":count sesión más abajo espera la asignación de cliente.|:count sesiones más abajo esperan la asignación de cliente.",
     "Fremdkunde (Endkunde)": "Cliente final",
     "— direkt beim Kunden —": "— directamente en el cliente —",
-    "Eigene Geräte \/ ohne festen Kunden": "Equipos propios \/ sin cliente fijo"
+    "Eigene Geräte \/ ohne festen Kunden": "Equipos propios \/ sin cliente fijo",
+    "Sitzungen werden nicht automatisch gebucht, sondern im Reiter „Sitzungen zuordnen\" je Kunde gebucht.": "Las sesiones no se contabilizan automáticamente, sino que se asignan por cliente en la pestaña «Asignar sesiones».",
+    ":count Sitzung wartet auf die Kundenzuordnung.|:count Sitzungen warten auf die Kundenzuordnung.": ":count sesión espera la asignación de cliente.|:count sesiones esperan la asignación de cliente.",
+    "Unzugeordnete Geräte": "Equipos sin asignar",
+    "Sitzungen zuordnen": "Asignar sesiones",
+    "Keine offenen Sitzungen zur Einzelzuordnung.": "No hay sesiones abiertas pendientes de asignación individual.",
+    "Diese AnyDesk-\/TeamViewer-IDs tauchten in den Reports auf, sind aber keinem Gerät zugeordnet. Weise jede ID einem bestehenden Gerät zu oder lege ein neues an — die gespeicherten Sitzungen werden dann sofort als Zeiteinträge gebucht. Bei Mehrkundengeräten bleiben sie offen und werden im Reiter „Sitzungen zuordnen\" je Kunde gebucht; Sitzungen eigener Geräte ohne Kunden buchen auf das interne Wartungsprojekt.": "Estos ID de AnyDesk\/TeamViewer aparecieron en los informes pero no están asignados a ningún equipo. Asigna cada ID a un equipo existente o crea uno nuevo — las sesiones guardadas se contabilizan entonces de inmediato como registros de tiempo. En equipos multicliente permanecen abiertas y se contabilizan por cliente en la pestaña «Asignar sesiones»; las sesiones de equipos propios sin cliente se contabilizan en el proyecto de mantenimiento interno."
 }

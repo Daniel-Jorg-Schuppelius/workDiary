@@ -29,8 +29,9 @@ use Illuminate\View\View;
  *  - ein neues Gerät anlegen und zuweisen (ohne Kunde = eigenes Firmengerät),
  *  - die Gruppe verwerfen.
  * Beim Zuweisen werden die gespeicherten Sessions sofort als Zeiteinträge
- * gebucht — außer bei Mehrkunden-/kundenlosen Geräten: deren Sitzungen bleiben
- * offen und werden im Einzelzuordnungs-Block je Kunde gebucht.
+ * gebucht — Kundengeräte aufs Kunden-/Endkundenprojekt, eigene Geräte ohne
+ * Kunden aufs interne Wartungsprojekt. Nur Mehrkundengeräte (shared_remote)
+ * bleiben offen und werden im Reiter „Sitzungen zuordnen" je Kunde gebucht.
  */
 class RemoteSupportPendingController extends Controller {
     use ResolvesPluginOrgContext;
@@ -331,7 +332,7 @@ class RemoteSupportPendingController extends Controller {
 
         if (($result['pending'] ?? 0) > 0) {
             $message .= ' ' . trans_choice(
-                ':count Sitzung wartet unten auf die Kundenzuordnung.|:count Sitzungen warten unten auf die Kundenzuordnung.',
+                ':count Sitzung wartet auf die Kundenzuordnung.|:count Sitzungen warten auf die Kundenzuordnung.',
                 (int) $result['pending'],
                 ['count' => $result['pending']],
             );

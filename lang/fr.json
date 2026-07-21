@@ -8891,11 +8891,14 @@
     "Toggl-Projekt": "Projet Toggl",
     "Zuordnungen entstehen beim Buchen in der Zuordnungs-Inbox, beim Workspace-Import oder oben über die Benutzer-Zuordnung.": "Les associations sont créées lors de la réservation dans la boîte d’attribution, lors de l’import d’espace de travail ou ci-dessus via l’association d’utilisateur.",
     "Numerische Lizenz-ID (z. B. 1438129266231705) — nicht der Lizenz-Schlüssel aus Buchstaben\/Ziffern.": "ID de licence numérique (p. ex. 1438129266231705) — pas la clé de licence composée de lettres et de chiffres.",
-    "Diese AnyDesk-\/TeamViewer-IDs tauchten in den Reports auf, sind aber keinem Gerät zugeordnet. Weise jede ID einem bestehenden Gerät zu oder lege ein neues an — die gespeicherten Sitzungen werden dann sofort als Zeiteinträge gebucht. Bei Mehrkundengeräten und Firmenrechnern ohne festen Kunden bleiben sie offen und werden unten je Kunde zugeordnet.": "Ces identifiants AnyDesk\/TeamViewer figurent dans les rapports mais ne sont associés à aucun appareil. Associez chaque identifiant à un appareil existant ou créez-en un nouveau — les sessions enregistrées sont alors immédiatement comptabilisées comme temps. Pour les appareils multi-clients et les ordinateurs de l’entreprise sans client fixe, elles restent ouvertes et sont attribuées par client ci-dessous.",
-    "Sitzungen werden nicht automatisch gebucht, sondern unten je Kunde zugeordnet.": "Les sessions ne sont pas comptabilisées automatiquement mais attribuées par client ci-dessous.",
     "— kein fester Kunde (Firmenrechner) —": "— pas de client fixe (ordinateur de l’entreprise) —",
-    ":count Sitzung wartet unten auf die Kundenzuordnung.|:count Sitzungen warten unten auf die Kundenzuordnung.": ":count session attend l’attribution à un client ci-dessous.|:count sessions attendent l’attribution à un client ci-dessous.",
     "Fremdkunde (Endkunde)": "Client final",
     "— direkt beim Kunden —": "— directement chez le client —",
-    "Eigene Geräte \/ ohne festen Kunden": "Appareils internes \/ sans client fixe"
+    "Eigene Geräte \/ ohne festen Kunden": "Appareils internes \/ sans client fixe",
+    "Sitzungen werden nicht automatisch gebucht, sondern im Reiter „Sitzungen zuordnen\" je Kunde gebucht.": "Les sessions ne sont pas comptabilisées automatiquement mais attribuées par client dans l’onglet « Attribuer les sessions ».",
+    ":count Sitzung wartet auf die Kundenzuordnung.|:count Sitzungen warten auf die Kundenzuordnung.": ":count session attend l’attribution à un client.|:count sessions attendent l’attribution à un client.",
+    "Unzugeordnete Geräte": "Appareils non attribués",
+    "Sitzungen zuordnen": "Attribuer les sessions",
+    "Keine offenen Sitzungen zur Einzelzuordnung.": "Aucune session ouverte à attribuer individuellement.",
+    "Diese AnyDesk-\/TeamViewer-IDs tauchten in den Reports auf, sind aber keinem Gerät zugeordnet. Weise jede ID einem bestehenden Gerät zu oder lege ein neues an — die gespeicherten Sitzungen werden dann sofort als Zeiteinträge gebucht. Bei Mehrkundengeräten bleiben sie offen und werden im Reiter „Sitzungen zuordnen\" je Kunde gebucht; Sitzungen eigener Geräte ohne Kunden buchen auf das interne Wartungsprojekt.": "Ces identifiants AnyDesk\/TeamViewer figurent dans les rapports mais ne sont associés à aucun appareil. Associez chaque identifiant à un appareil existant ou créez-en un nouveau — les sessions enregistrées sont alors immédiatement comptabilisées comme temps. Pour les appareils multi-clients, elles restent ouvertes et sont comptabilisées par client dans l’onglet « Attribuer les sessions » ; les sessions des appareils internes sans client sont imputées au projet de maintenance interne."
 }
