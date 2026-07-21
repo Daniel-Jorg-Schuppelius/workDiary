@@ -8904,5 +8904,7 @@
     "Markierte intern buchen": "Book selected internally",
     "Bucht die markierten Sitzungen ohne Kunden auf das Projekt „Interne Wartung“.": "Books the selected sessions without a customer onto the “Internal maintenance” project.",
     "Keine Treffer für die Suche.": "No results for this search.",
-    "Suche: Geräte-ID, Alias, Gerät oder Notiz …": "Search: device ID, alias, device or note …"
+    "Suche: Geräte-ID, Alias, Gerät oder Notiz …": "Search: device ID, alias, device or note …",
+    "nur die neuesten :count angezeigt": "showing only the latest :count",
+    "Nach dem Buchen oder Verwerfen rücken ältere Sitzungen nach.": "Older sessions move up after booking or dismissing."
 }

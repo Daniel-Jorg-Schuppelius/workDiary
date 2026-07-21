@@ -8904,5 +8904,7 @@
     "Markierte intern buchen": "Registra selezione internamente",
     "Bucht die markierten Sitzungen ohne Kunden auf das Projekt „Interne Wartung“.": "Registra le sessioni selezionate senza cliente sul progetto “Manutenzione interna”.",
     "Keine Treffer für die Suche.": "Nessun risultato per questa ricerca.",
-    "Suche: Geräte-ID, Alias, Gerät oder Notiz …": "Ricerca: ID dispositivo, alias, dispositivo o nota …"
+    "Suche: Geräte-ID, Alias, Gerät oder Notiz …": "Ricerca: ID dispositivo, alias, dispositivo o nota …",
+    "nur die neuesten :count angezeigt": "mostrate solo le :count più recenti",
+    "Nach dem Buchen oder Verwerfen rücken ältere Sitzungen nach.": "Le sessioni più vecchie subentrano dopo la registrazione o lo scarto."
 }

@@ -25,6 +25,12 @@
         </x-filter-field>
     </x-filter-bar>
 
+    {{-- Kunden→Projekt-/Fremdkunden-Maps EINMAL pro Seite; die remoteAssign-
+         Formulare lesen sie von hier statt sie je Karte zu duplizieren. --}}
+    <div id="remote-assign-maps" hidden
+         data-project-map="{{ json_encode($projectMap, JSON_UNESCAPED_UNICODE) }}"
+         data-foreign-map="{{ json_encode($foreignMap, JSON_UNESCAPED_UNICODE) }}"></div>
+
     <div x-data="tabs('ids')" data-tab-persist="remote-support-pending-tab" data-tab-url-sync data-tab-allowed="ids,sessions">
         <div role="tablist" class="tabs tabs-box mb-3 w-fit">
             <a role="tab" href="#" class="tab gap-2" :class="tabClass('ids')" @click.prevent="setTab('ids')">
@@ -146,8 +152,7 @@
                             <input type="radio" name="{{ $tabName }}" class="tab" aria-label="{{ __('Neues Gerät') }}" />
                             <div class="tab-content rounded-box border-base-300 bg-base-100 p-4">
                                 <form method="POST" action="{{ route('admin.remote-support.pending.assign-new') }}"
-                                      x-data="remoteAssign"
-                                      data-foreign-map="{{ json_encode($foreignMap, JSON_UNESCAPED_UNICODE) }}">
+                                      x-data="remoteAssign">
                                     @csrf
                                     <input type="hidden" name="provider" value="{{ $group->provider }}">
                                     <input type="hidden" name="remote_id" value="{{ $group->remote_id }}">
@@ -220,12 +225,15 @@
             @else
             <div class="space-y-4">
                 @foreach ($shared as $device)
-                    @php $assetName = $device->asset->name ?: $device->asset->asset_no; @endphp
+                    @php
+                        $assetName = $device->asset->name ?: $device->asset->asset_no;
+                        // Nur die neuesten Sitzungen rendern — 200+ Zeilen je Karte
+                        // machten die Seite träge; nach Buchen/Verwerfen rücken ältere nach.
+                        $visibleSessions = $device->sessions->take($sharedSessionLimit);
+                    @endphp
                     <form method="POST" action="{{ route('admin.remote-support.pending.assign-shared') }}"
                           class="rounded-box border border-base-300 p-3"
-                          x-data="remoteAssign"
-                          data-project-map="{{ json_encode($projectMap, JSON_UNESCAPED_UNICODE) }}"
-                          data-foreign-map="{{ json_encode($foreignMap, JSON_UNESCAPED_UNICODE) }}">
+                          x-data="remoteAssign">
                         @csrf
 
                         <div class="mb-2 flex flex-wrap items-center gap-2">
@@ -235,6 +243,12 @@
                             <span class="text-sm text-base-content/60">
                                 {{ trans_choice(':count Sitzung|:count Sitzungen', $device->sessions->count(), ['count' => $device->sessions->count()]) }}
                             </span>
+                            @if ($device->sessions->count() > $visibleSessions->count())
+                                <span class="badge badge-sm badge-warning"
+                                      title="{{ __('Nach dem Buchen oder Verwerfen rücken ältere Sitzungen nach.') }}">
+                                    {{ __('nur die neuesten :count angezeigt', ['count' => $visibleSessions->count()]) }}
+                                </span>
+                            @endif
                         </div>
 
                         <div class="overflow-x-auto" x-ref="list">
@@ -253,7 +267,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($device->sessions as $session)
+                                    @foreach ($visibleSessions as $session)
                                         <tr>
                                             <td>
                                                 <input type="checkbox" name="pending_ids[]" value="{{ $session->sqid }}"

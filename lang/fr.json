@@ -8904,5 +8904,7 @@
     "Markierte intern buchen": "Comptabiliser la sélection en interne",
     "Bucht die markierten Sitzungen ohne Kunden auf das Projekt „Interne Wartung“.": "Comptabilise les sessions sélectionnées sans client sur le projet « Maintenance interne ».",
     "Keine Treffer für die Suche.": "Aucun résultat pour cette recherche.",
-    "Suche: Geräte-ID, Alias, Gerät oder Notiz …": "Recherche : ID d’appareil, alias, appareil ou note …"
+    "Suche: Geräte-ID, Alias, Gerät oder Notiz …": "Recherche : ID d’appareil, alias, appareil ou note …",
+    "nur die neuesten :count angezeigt": "seules les :count plus récentes sont affichées",
+    "Nach dem Buchen oder Verwerfen rücken ältere Sitzungen nach.": "Les sessions plus anciennes remontent après comptabilisation ou rejet."
 }

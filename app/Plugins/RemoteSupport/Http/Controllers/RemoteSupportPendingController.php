@@ -54,6 +54,7 @@ class RemoteSupportPendingController extends Controller {
 
         $groups = $this->paginateGroups($groupsAll, (int) Setting::get('pagination.remote_pending_groups', 10), 'ids_page', $request);
         $shared = $this->paginateGroups($sharedAll, (int) Setting::get('pagination.remote_shared_devices', 8), 'sessions_page', $request);
+        $sharedSessionLimit = max(1, (int) Setting::get('pagination.remote_shared_sessions', 30));
 
         // Nur fernwartbare Geräte (Arbeitsplatz/Server/Notebook) können eine ID tragen.
         $assets = Asset::query()
@@ -105,6 +106,7 @@ class RemoteSupportPendingController extends Controller {
             'groups' => $groups,
             'shared' => $shared,
             'sharedSessionCount' => $sharedSessionCount,
+            'sharedSessionLimit' => $sharedSessionLimit,
             'q' => $q,
             'assets' => $assets,
             'customers' => $customers,

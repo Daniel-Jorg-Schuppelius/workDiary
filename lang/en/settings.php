@@ -54,6 +54,7 @@ return [
         'dashboard_recent' => 'Dashboard: recent items',
         'remote_pending_groups' => 'Remote support inbox: unassigned devices',
         'remote_shared_devices' => 'Remote support inbox: multi-customer devices',
+        'remote_shared_sessions' => 'Remote support inbox: sessions per device card',
     ],
     'invoicing' => [
         'heading' => 'Invoicing defaults',

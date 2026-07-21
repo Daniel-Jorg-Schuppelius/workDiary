@@ -57,6 +57,7 @@ return [
         'dashboard_recent' => 'Dashboard: zuletzt verwendete',
         'remote_pending_groups' => 'Fernwartungs-Inbox: unzugeordnete Geräte',
         'remote_shared_devices' => 'Fernwartungs-Inbox: Mehrkundengeräte',
+        'remote_shared_sessions' => 'Fernwartungs-Inbox: Sitzungen je Gerätekarte',
     ],
     'invoicing' => [
         'heading' => 'Rechnungs-Defaults',

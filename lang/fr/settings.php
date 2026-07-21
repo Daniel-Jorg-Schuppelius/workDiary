@@ -46,6 +46,7 @@ return [
         'dashboard_recent' => 'Tableau de bord : éléments récents',
         'remote_pending_groups' => 'Boîte de télémaintenance : appareils non attribués',
         'remote_shared_devices' => 'Boîte de télémaintenance : appareils multi-clients',
+        'remote_shared_sessions' => 'Boîte de télémaintenance : sessions par carte d\'appareil',
     ],
     'invoicing' => [
         'heading' => 'Valeurs par défaut de facturation',

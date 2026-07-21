@@ -1310,8 +1310,12 @@ export function registerAlpineComponents(Alpine) {
         foreignMap: {},
         projectMap: {},
         init() {
-            this.foreignMap = JSON.parse(this.$el.dataset.foreignMap || "{}");
-            this.projectMap = JSON.parse(this.$el.dataset.projectMap || "{}");
+            // Maps liegen EINMAL pro Seite in #remote-assign-maps (statt an
+            // jedem Formular dupliziert); eigene data-Attribute gewinnen.
+            const shared = document.getElementById("remote-assign-maps");
+            const src = { ...(shared?.dataset ?? {}), ...this.$el.dataset };
+            this.foreignMap = JSON.parse(src.foreignMap || "{}");
+            this.projectMap = JSON.parse(src.projectMap || "{}");
         },
         get foreignCustomers() {
             return this.foreignMap[this.customer] ?? [];
