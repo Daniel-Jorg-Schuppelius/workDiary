@@ -8902,5 +8902,7 @@
     "Keine offenen Sitzungen zur Einzelzuordnung.": "No hay sesiones abiertas pendientes de asignación individual.",
     "Diese AnyDesk-\/TeamViewer-IDs tauchten in den Reports auf, sind aber keinem Gerät zugeordnet. Weise jede ID einem bestehenden Gerät zu oder lege ein neues an — die gespeicherten Sitzungen werden dann sofort als Zeiteinträge gebucht. Bei Mehrkundengeräten bleiben sie offen und werden im Reiter „Sitzungen zuordnen“ je Kunde gebucht; Sitzungen eigener Geräte ohne Kunden buchen auf das interne Wartungsprojekt.": "Estos ID de AnyDesk\/TeamViewer aparecieron en los informes pero no están asignados a ningún equipo. Asigna cada ID a un equipo existente o crea uno nuevo — las sesiones guardadas se contabilizan entonces de inmediato como registros de tiempo. En equipos multicliente permanecen abiertas y se contabilizan por cliente en la pestaña «Asignar sesiones»; las sesiones de equipos propios sin cliente se contabilizan en el proyecto de mantenimiento interno.",
     "Markierte intern buchen": "Contabilizar selección internamente",
-    "Bucht die markierten Sitzungen ohne Kunden auf das Projekt „Interne Wartung“.": "Contabiliza las sesiones seleccionadas sin cliente en el proyecto «Mantenimiento interno»."
+    "Bucht die markierten Sitzungen ohne Kunden auf das Projekt „Interne Wartung“.": "Contabiliza las sesiones seleccionadas sin cliente en el proyecto «Mantenimiento interno».",
+    "Keine Treffer für die Suche.": "Sin resultados para esta búsqueda.",
+    "Suche: Geräte-ID, Alias, Gerät oder Notiz …": "Búsqueda: ID de equipo, alias, equipo o nota …"
 }

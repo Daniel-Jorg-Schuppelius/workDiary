@@ -55,6 +55,8 @@ return [
         'tags' => 'Tags',
         'archive' => 'Archiv',
         'dashboard_recent' => 'Dashboard: zuletzt verwendete',
+        'remote_pending_groups' => 'Fernwartungs-Inbox: unzugeordnete Geräte',
+        'remote_shared_devices' => 'Fernwartungs-Inbox: Mehrkundengeräte',
     ],
     'invoicing' => [
         'heading' => 'Rechnungs-Defaults',

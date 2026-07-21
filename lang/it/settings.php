@@ -44,6 +44,8 @@ return [
         'tags' => 'Etichette',
         'archive' => 'Archivio',
         'dashboard_recent' => 'Dashboard: elementi recenti',
+        'remote_pending_groups' => 'Inbox teleassistenza: dispositivi non assegnati',
+        'remote_shared_devices' => 'Inbox teleassistenza: dispositivi multi-cliente',
     ],
     'invoicing' => [
         'heading' => 'Valori predefiniti di fatturazione',

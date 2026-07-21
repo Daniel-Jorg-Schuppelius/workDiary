@@ -52,6 +52,8 @@ return [
         'tags' => 'Tags',
         'archive' => 'Archive',
         'dashboard_recent' => 'Dashboard: recent items',
+        'remote_pending_groups' => 'Remote support inbox: unassigned devices',
+        'remote_shared_devices' => 'Remote support inbox: multi-customer devices',
     ],
     'invoicing' => [
         'heading' => 'Invoicing defaults',

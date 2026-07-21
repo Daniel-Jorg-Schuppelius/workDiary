@@ -767,4 +767,85 @@ class RemoteSupportSyncTest extends TestCase {
             'time_entry_id' => $entry->id,
         ]);
     }
+
+    public function test_open_pending_groups_search_filters_by_alias_id_and_note(): void {
+        RemotePendingSession::query()->create([
+            'organization_id' => $this->organization->id,
+            'provider' => TeamViewerClient::ID,
+            'remote_id' => '111000111',
+            'session_id' => 'tv-search-1',
+            'alias' => 'buero-mueller',
+            'note' => 'Druckertreiber',
+            'started_at' => CarbonImmutable::parse('2026-07-20 08:00:00'),
+            'ended_at' => CarbonImmutable::parse('2026-07-20 08:30:00'),
+            'status' => RemotePendingSession::STATUS_OPEN,
+        ]);
+        RemotePendingSession::query()->create([
+            'organization_id' => $this->organization->id,
+            'provider' => TeamViewerClient::ID,
+            'remote_id' => '222000222',
+            'session_id' => 'tv-search-2',
+            'started_at' => CarbonImmutable::parse('2026-07-20 09:00:00'),
+            'ended_at' => CarbonImmutable::parse('2026-07-20 09:30:00'),
+            'status' => RemotePendingSession::STATUS_OPEN,
+        ]);
+
+        $service = $this->service();
+        $this->assertSame(2, $service->openPendingGroups($this->organization)->count());
+        $this->assertSame(1, $service->openPendingGroups($this->organization, 'MUELLER')->count());
+        $this->assertSame(1, $service->openPendingGroups($this->organization, '222000')->count());
+        $this->assertSame(1, $service->openPendingGroups($this->organization, 'drucker')->count());
+        $this->assertSame(0, $service->openPendingGroups($this->organization, 'nix-da')->count());
+    }
+
+    public function test_open_shared_sessions_search_matches_asset_and_note(): void {
+        $asset = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_class' => AssetClass::Device->value,
+            'shared_remote' => true,
+            'name' => 'Kanzlei-PC',
+        ]);
+        RemotePendingSession::query()->create([
+            'organization_id' => $this->organization->id,
+            'asset_id' => $asset->id,
+            'provider' => TeamViewerClient::ID,
+            'remote_id' => '333000333',
+            'session_id' => 'tv-search-3',
+            'note' => 'Jahresabschluss',
+            'started_at' => CarbonImmutable::parse('2026-07-20 10:00:00'),
+            'ended_at' => CarbonImmutable::parse('2026-07-20 10:30:00'),
+            'status' => RemotePendingSession::STATUS_OPEN,
+        ]);
+
+        $service = $this->service();
+        $this->assertSame(1, $service->openSharedSessions($this->organization, 'kanzlei')->count());
+        $this->assertSame(1, $service->openSharedSessions($this->organization, 'jahresabschluss')->count());
+        $this->assertSame(0, $service->openSharedSessions($this->organization, 'unbekannt')->count());
+    }
+
+    public function test_pending_index_renders_with_search_and_pagination(): void {
+        $this->enableTeamViewer();
+
+        RemotePendingSession::query()->create([
+            'organization_id' => $this->organization->id,
+            'provider' => TeamViewerClient::ID,
+            'remote_id' => '444000444',
+            'session_id' => 'tv-search-4',
+            'started_at' => CarbonImmutable::parse('2026-07-20 11:00:00'),
+            'ended_at' => CarbonImmutable::parse('2026-07-20 11:30:00'),
+            'status' => RemotePendingSession::STATUS_OPEN,
+        ]);
+
+        $admin = $this->orgAdmin();
+
+        $this->actingAs($admin)
+            ->get(route('admin.remote-support.pending.index', ['q' => '444000']))
+            ->assertOk()
+            ->assertSee('444000444');
+
+        $this->actingAs($admin)
+            ->get(route('admin.remote-support.pending.index', ['q' => 'gibt-es-nicht']))
+            ->assertOk()
+            ->assertSee(__('Keine Treffer für die Suche.'));
+    }
 }

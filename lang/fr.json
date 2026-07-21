@@ -8902,5 +8902,7 @@
     "Keine offenen Sitzungen zur Einzelzuordnung.": "Aucune session ouverte à attribuer individuellement.",
     "Diese AnyDesk-\/TeamViewer-IDs tauchten in den Reports auf, sind aber keinem Gerät zugeordnet. Weise jede ID einem bestehenden Gerät zu oder lege ein neues an — die gespeicherten Sitzungen werden dann sofort als Zeiteinträge gebucht. Bei Mehrkundengeräten bleiben sie offen und werden im Reiter „Sitzungen zuordnen“ je Kunde gebucht; Sitzungen eigener Geräte ohne Kunden buchen auf das interne Wartungsprojekt.": "Ces identifiants AnyDesk\/TeamViewer figurent dans les rapports mais ne sont associés à aucun appareil. Associez chaque identifiant à un appareil existant ou créez-en un nouveau — les sessions enregistrées sont alors immédiatement comptabilisées comme temps. Pour les appareils multi-clients, elles restent ouvertes et sont comptabilisées par client dans l’onglet « Attribuer les sessions » ; les sessions des appareils internes sans client sont imputées au projet de maintenance interne.",
     "Markierte intern buchen": "Comptabiliser la sélection en interne",
-    "Bucht die markierten Sitzungen ohne Kunden auf das Projekt „Interne Wartung“.": "Comptabilise les sessions sélectionnées sans client sur le projet « Maintenance interne »."
+    "Bucht die markierten Sitzungen ohne Kunden auf das Projekt „Interne Wartung“.": "Comptabilise les sessions sélectionnées sans client sur le projet « Maintenance interne ».",
+    "Keine Treffer für die Suche.": "Aucun résultat pour cette recherche.",
+    "Suche: Geräte-ID, Alias, Gerät oder Notiz …": "Recherche : ID d’appareil, alias, appareil ou note …"
 }

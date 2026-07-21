@@ -458,7 +458,7 @@ class RemoteSupportService {
      *
      * @return \Illuminate\Support\Collection<int, object{provider: string, remote_id: string, alias: ?string, count: int, minutes: int, first_seen: \Illuminate\Support\Carbon, last_seen: \Illuminate\Support\Carbon, note: ?string, notes: array<int, string>}>
      */
-    public function openPendingGroups(Organization $organization): \Illuminate\Support\Collection {
+    public function openPendingGroups(Organization $organization, ?string $search = null): \Illuminate\Support\Collection {
         $groups = RemotePendingSession::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
@@ -492,8 +492,35 @@ class RemoteSupportService {
             })
             ->values();
 
+        if ($search !== null && trim($search) !== '') {
+            $needle = mb_strtolower(trim($search));
+            $groups = $groups
+                ->filter(fn (object $g): bool => self::matchesSearch($needle, [
+                    (string) $g->remote_id,
+                    (string) ($g->alias ?? ''),
+                    ...$g->notes,
+                ]))
+                ->values();
+        }
+
         /** @var \Illuminate\Support\Collection<int, object{provider: string, remote_id: string, alias: string|null, count: int, minutes: int, first_seen: \Illuminate\Support\Carbon, last_seen: \Illuminate\Support\Carbon, note: string|null, notes: array<int, string>}> $groups */
         return $groups;
+    }
+
+    /**
+     * Case-insensitive Teilstring-Suche über mehrere Felder (In-Memory — die
+     * Inbox-Gruppen sind bereits aggregiert geladen).
+     *
+     * @param  array<int, string|null>  $haystack
+     */
+    private static function matchesSearch(string $needle, array $haystack): bool {
+        foreach ($haystack as $value) {
+            if ($value !== null && $value !== '' && str_contains(mb_strtolower($value), $needle)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -613,7 +640,7 @@ class RemoteSupportService {
      *
      * @return \Illuminate\Support\Collection<int, object{asset: Asset, sessions: \Illuminate\Support\Collection<int, RemotePendingSession>}>
      */
-    public function openSharedSessions(Organization $organization): \Illuminate\Support\Collection {
+    public function openSharedSessions(Organization $organization, ?string $search = null): \Illuminate\Support\Collection {
         /** @var \Illuminate\Database\Eloquent\Collection<int, RemotePendingSession> $rows */
         $rows = RemotePendingSession::query()
             ->withoutGlobalScopes()
@@ -640,6 +667,22 @@ class RemoteSupportService {
                 ];
             })
             ->values();
+
+        if ($search !== null && trim($search) !== '') {
+            $needle = mb_strtolower(trim($search));
+            $groups = $groups
+                ->filter(function (object $device) use ($needle): bool {
+                    $haystack = [(string) $device->asset->name, (string) $device->asset->asset_no];
+                    foreach ($device->sessions as $session) {
+                        $haystack[] = (string) $session->remote_id;
+                        $haystack[] = (string) ($session->alias ?? '');
+                        $haystack[] = (string) ($session->note ?? '');
+                    }
+
+                    return self::matchesSearch($needle, $haystack);
+                })
+                ->values();
+        }
 
         /** @var \Illuminate\Support\Collection<int, object{asset: Asset, sessions: \Illuminate\Support\Collection<int, RemotePendingSession>}> $groups */
         return $groups;

@@ -16,13 +16,21 @@
         {{ __('AnyDesk-Sitzungen werden im zentralen Import-Wizard eingelesen.') }}
     </x-slot:note>
 
-    @php $sharedSessionCount = $shared->sum(fn ($d): int => $d->sessions->count()); @endphp
-    <div x-data="tabs('ids')" data-tab-persist="remote-support-pending-tab">
+    <x-filter-bar class="mb-3" :reset="route('admin.remote-support.pending.index')">
+        <x-filter-field class="w-80 shrink-0">
+            <input type="search" name="q" value="{{ $q }}"
+                   placeholder="{{ __('Suche: Geräte-ID, Alias, Gerät oder Notiz …') }}"
+                   aria-label="{{ __('Suche: Geräte-ID, Alias, Gerät oder Notiz …') }}"
+                   class="input input-sm input-bordered w-full">
+        </x-filter-field>
+    </x-filter-bar>
+
+    <div x-data="tabs('ids')" data-tab-persist="remote-support-pending-tab" data-tab-url-sync data-tab-allowed="ids,sessions">
         <div role="tablist" class="tabs tabs-box mb-3 w-fit">
             <a role="tab" href="#" class="tab gap-2" :class="tabClass('ids')" @click.prevent="setTab('ids')">
                 {{ __('Unzugeordnete Geräte') }}
-                @if ($groups->isNotEmpty())
-                    <span class="badge badge-sm badge-neutral">{{ $groups->count() }}</span>
+                @if ($groups->total() > 0)
+                    <span class="badge badge-sm badge-neutral">{{ $groups->total() }}</span>
                 @endif
             </a>
             <a role="tab" href="#" class="tab gap-2" :class="tabClass('sessions')" @click.prevent="setTab('sessions')">
@@ -36,9 +44,9 @@
     <div x-show="isTab('ids')">
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
 
-        @if ($groups->isEmpty())
+        @if ($groups->total() === 0)
             <p class="rounded-box border border-base-300 p-6 text-center text-sm text-base-content/60">
-                {{ __('Keine offenen Verbindungen. Alles zugeordnet.') }}
+                {{ $q !== '' ? __('Keine Treffer für die Suche.') : __('Keine offenen Verbindungen. Alles zugeordnet.') }}
             </p>
         @else
             @php
@@ -205,9 +213,9 @@
                 </p>
             </div>
 
-            @if ($shared->isEmpty())
+            @if ($shared->total() === 0)
                 <p class="rounded-box border border-base-300 p-6 text-center text-sm text-base-content/60">
-                    {{ __('Keine offenen Sitzungen zur Einzelzuordnung.') }}
+                    {{ $q !== '' ? __('Keine Treffer für die Suche.') : __('Keine offenen Sitzungen zur Einzelzuordnung.') }}
                 </p>
             @else
             <div class="space-y-4">
@@ -316,6 +324,10 @@
             @endif
         </div>
     </div>
+
+    {{-- Stehende Pagination-Panels, je Tab eines (Sichtbarkeit via tabs()/syncTabFooters). --}}
+    <x-pagination :paginator="$groups" standing data-tab-footer="ids" :hidden="request('tab', 'ids') !== 'ids'" />
+    <x-pagination :paginator="$shared" standing data-tab-footer="sessions" :hidden="request('tab', 'ids') !== 'sessions'" />
     </div>
 </x-index-page>
 @endsection

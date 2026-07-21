@@ -18,8 +18,9 @@ use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, TeamViewerClient};
 use App\Plugins\RemoteSupport\RemoteSupportService;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Services\Asset\AssetService;
-use App\Support\Sqid;
+use App\Support\{Setting, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\View\View;
 
 /**
@@ -40,12 +41,19 @@ class RemoteSupportPendingController extends Controller {
 
     public function __construct(private readonly RemoteSupportService $service) {}
 
-    public function index(): View {
+    public function index(Request $request): View {
         $admin = $this->admin();
 
+        $q = trim((string) $request->query('q', ''));
+        $search = $q !== '' ? $q : null;
+
         $organization = $admin->organization;
-        $groups = $organization !== null ? $this->service->openPendingGroups($organization) : collect();
-        $shared = $organization !== null ? $this->service->openSharedSessions($organization) : collect();
+        $groupsAll = $organization !== null ? $this->service->openPendingGroups($organization, $search) : collect();
+        $sharedAll = $organization !== null ? $this->service->openSharedSessions($organization, $search) : collect();
+        $sharedSessionCount = (int) $sharedAll->sum(fn (object $d): int => $d->sessions->count());
+
+        $groups = $this->paginateGroups($groupsAll, (int) Setting::get('pagination.remote_pending_groups', 10), 'ids_page', $request);
+        $shared = $this->paginateGroups($sharedAll, (int) Setting::get('pagination.remote_shared_devices', 8), 'sessions_page', $request);
 
         // Nur fernwartbare Geräte (Arbeitsplatz/Server/Notebook) können eine ID tragen.
         $assets = Asset::query()
@@ -96,12 +104,36 @@ class RemoteSupportPendingController extends Controller {
         return view('remote-support::pending.index', [
             'groups' => $groups,
             'shared' => $shared,
+            'sharedSessionCount' => $sharedSessionCount,
+            'q' => $q,
             'assets' => $assets,
             'customers' => $customers,
             'projectMap' => $projectMap,
             'foreignMap' => $foreignMap,
             'categories' => $categories,
         ]);
+    }
+
+    /**
+     * Paginiert die in PHP aggregierten Inbox-Gruppen (eigener Seitenname je
+     * Tab, damit beide Reiter unabhängig blättern).
+     *
+     * @template TItem of object
+     *
+     * @param  \Illuminate\Support\Collection<int, TItem>  $items
+     * @return LengthAwarePaginator<int, TItem>
+     */
+    private function paginateGroups(\Illuminate\Support\Collection $items, int $perPage, string $pageName, Request $request): LengthAwarePaginator {
+        $perPage = max(1, $perPage);
+        $page = max(1, (int) $request->query($pageName, '1'));
+
+        return new LengthAwarePaginator(
+            $items->forPage($page, $perPage)->values(),
+            $items->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'pageName' => $pageName],
+        );
     }
 
     public function assignExisting(Request $request): RedirectResponse {
