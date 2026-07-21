@@ -11,8 +11,8 @@
 namespace Tests\Feature\Plugins;
 
 use App\Enums\Asset\AssetClass;
-use App\Models\{Asset, Customer, PluginSetting, Project, RemotePendingSession, TimeEntry, User};
-use App\Plugins\RemoteSupport\Providers\TeamViewerClient;
+use App\Models\{Asset, Customer, ForeignCustomer, PluginSetting, Project, RemotePendingSession, TimeEntry, User};
+use App\Plugins\RemoteSupport\Providers\{RemoteSession, TeamViewerClient};
 use App\Plugins\RemoteSupport\{RemoteSupportConfig, RemoteSupportPlugin, RemoteSupportService};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -563,5 +563,172 @@ class RemoteSupportSyncTest extends TestCase {
 
         $this->assertTrue($this->service()->openPendingGroups($this->organization)->isEmpty());
         $this->assertSame(1, $this->service()->openSharedSessions($this->organization)->count());
+    }
+
+    public function test_session_for_customerless_asset_goes_to_per_session_inbox(): void {
+        $config = $this->enableTeamViewer();
+
+        // Firmenrechner: eigenes Gerät ohne festen Kunden.
+        $asset = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_class' => AssetClass::Device->value,
+        ]);
+        $this->service()->setRemoteId($asset, TeamViewerClient::ID, '555000111');
+
+        $session = new RemoteSession(
+            provider: TeamViewerClient::ID,
+            sessionId: 'tv-own-1',
+            remoteId: '555000111',
+            startedAt: CarbonImmutable::parse('2026-07-20 09:00:00'),
+            endedAt: CarbonImmutable::parse('2026-07-20 09:30:00'),
+        );
+
+        $result = $this->service()->importSessions($this->organization, $config, [$session]);
+
+        $this->assertSame(1, $result['pending']);
+        $this->assertSame(0, $result['created']);
+        $this->assertSame(0, TimeEntry::query()->count());
+        $this->assertDatabaseHas('remote_pending_sessions', [
+            'organization_id' => $this->organization->id,
+            'session_id' => 'tv-own-1',
+            'asset_id' => $asset->id,
+            'status' => RemotePendingSession::STATUS_OPEN,
+        ]);
+    }
+
+    public function test_assign_pending_to_shared_asset_parks_sessions_instead_of_booking(): void {
+        $config = $this->enableTeamViewer();
+
+        // Unbekannte ID → Sitzung wartet ohne Asset in der Inbox.
+        $session = new RemoteSession(
+            provider: TeamViewerClient::ID,
+            sessionId: 'tv-shared-park-1',
+            remoteId: '777000222',
+            startedAt: CarbonImmutable::parse('2026-07-20 10:00:00'),
+            endedAt: CarbonImmutable::parse('2026-07-20 10:45:00'),
+        );
+        $this->service()->importSessions($this->organization, $config, [$session]);
+
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $asset = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_class' => AssetClass::Device->value,
+            'customer_id' => $customer->id,
+            'shared_remote' => true,
+        ]);
+
+        $result = $this->service()->assignPending($this->organization, TeamViewerClient::ID, '777000222', $asset);
+
+        $this->assertSame(1, $result['pending']);
+        $this->assertSame(0, $result['created']);
+        $this->assertSame(0, TimeEntry::query()->count());
+        $this->assertDatabaseHas('remote_pending_sessions', [
+            'session_id' => 'tv-shared-park-1',
+            'asset_id' => $asset->id,
+            'status' => RemotePendingSession::STATUS_OPEN,
+        ]);
+        $this->assertSame(1, $this->service()->openSharedSessions($this->organization)->count());
+    }
+
+    public function test_assign_new_without_customer_creates_company_device_and_parks_sessions(): void {
+        $config = $this->enableTeamViewer();
+
+        $session = new RemoteSession(
+            provider: TeamViewerClient::ID,
+            sessionId: 'tv-company-1',
+            remoteId: '333222111',
+            startedAt: CarbonImmutable::parse('2026-07-20 11:00:00'),
+            endedAt: CarbonImmutable::parse('2026-07-20 11:20:00'),
+        );
+        $this->service()->importSessions($this->organization, $config, [$session]);
+
+        $response = $this->actingAs($this->orgAdmin())->post(route('admin.remote-support.pending.assign-new'), [
+            'provider' => TeamViewerClient::ID,
+            'remote_id' => '333222111',
+            'name' => 'Büro-PC Empfang',
+            'category_code' => 'workstation',
+        ]);
+
+        $response->assertRedirect();
+        $asset = Asset::query()->where('name', 'Büro-PC Empfang')->firstOrFail();
+        $this->assertNull($asset->customer_id);
+        $this->assertSame(\App\Enums\Asset\AssetOwnership::Organization, $asset->owned_by);
+        $this->assertSame(0, TimeEntry::query()->count());
+        $this->assertDatabaseHas('remote_pending_sessions', [
+            'session_id' => 'tv-company-1',
+            'asset_id' => $asset->id,
+            'status' => RemotePendingSession::STATUS_OPEN,
+        ]);
+    }
+
+    public function test_auto_booking_targets_foreign_customer_project(): void {
+        $config = $this->enableTeamViewer();
+
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $foreign = ForeignCustomer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+        ]);
+        $asset = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_class' => AssetClass::Device->value,
+            'customer_id' => $customer->id,
+            'foreign_customer_id' => $foreign->id,
+        ]);
+        $this->service()->setRemoteId($asset, TeamViewerClient::ID, '444555666');
+
+        $session = new RemoteSession(
+            provider: TeamViewerClient::ID,
+            sessionId: 'tv-foreign-1',
+            remoteId: '444555666',
+            startedAt: CarbonImmutable::parse('2026-07-20 13:00:00'),
+            endedAt: CarbonImmutable::parse('2026-07-20 13:30:00'),
+        );
+
+        $result = $this->service()->importSessions($this->organization, $config, [$session]);
+
+        $this->assertSame(1, $result['created']);
+        $entry = TimeEntry::query()->firstOrFail();
+        $project = Project::query()->findOrFail($entry->project_id);
+        $this->assertSame($foreign->id, (int) $project->foreign_customer_id);
+        $this->assertSame($customer->id, (int) $project->customer_id);
+    }
+
+    public function test_assign_shared_sessions_with_foreign_customer_books_on_foreign_project(): void {
+        $this->enableTeamViewer();
+
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $foreign = ForeignCustomer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+        ]);
+        $asset = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_class' => AssetClass::Device->value,
+            'customer_id' => $customer->id,
+            'shared_remote' => true,
+        ]);
+
+        $row = RemotePendingSession::query()->create([
+            'organization_id' => $this->organization->id,
+            'asset_id' => $asset->id,
+            'provider' => TeamViewerClient::ID,
+            'remote_id' => '888999000',
+            'session_id' => 'tv-foreign-shared-1',
+            'started_at' => CarbonImmutable::parse('2026-07-20 14:00:00'),
+            'ended_at' => CarbonImmutable::parse('2026-07-20 14:40:00'),
+            'status' => RemotePendingSession::STATUS_OPEN,
+        ]);
+
+        $result = $this->service()->assignSharedSessions($this->organization, [$row], $customer, null, null, $foreign);
+
+        $this->assertSame(1, $result['created']);
+        $entry = TimeEntry::query()->firstOrFail();
+        $project = Project::query()->findOrFail($entry->project_id);
+        $this->assertSame($foreign->id, (int) $project->foreign_customer_id);
+        $this->assertDatabaseHas('remote_pending_sessions', [
+            'id' => $row->id,
+            'status' => RemotePendingSession::STATUS_IMPORTED,
+        ]);
     }
 }

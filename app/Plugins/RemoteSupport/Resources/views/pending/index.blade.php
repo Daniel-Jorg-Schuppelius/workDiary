@@ -3,7 +3,7 @@
 @section('nav-title', __('Fernwartung – Inbox'))
 
 @section('content')
-<x-index-page :subtitle="__('Diese AnyDesk-/TeamViewer-IDs tauchten in den Reports auf, sind aber keinem Gerät zugeordnet. Weise jede ID einem bestehenden Gerät zu oder lege ein neues an — die gespeicherten Sitzungen werden dann sofort als Zeiteinträge gebucht.')">
+<x-index-page :subtitle="__('Diese AnyDesk-/TeamViewer-IDs tauchten in den Reports auf, sind aber keinem Gerät zugeordnet. Weise jede ID einem bestehenden Gerät zu oder lege ein neues an — die gespeicherten Sitzungen werden dann sofort als Zeiteinträge gebucht. Bei Mehrkundengeräten und Firmenrechnern ohne festen Kunden bleiben sie offen und werden unten je Kunde zugeordnet.')">
     <x-slot:actions>
         <a href="{{ route('admin.imports.create', ['entity' => \App\Enums\Import\ImportEntity::RemoteSessions->value]) }}"
            class="btn btn-sm btn-primary">
@@ -85,6 +85,10 @@
                                             @endforeach
                                         </select>
                                     </label>
+                                    <label class="flex items-center gap-2 pb-2" title="{{ __('Sitzungen werden nicht automatisch gebucht, sondern unten je Kunde zugeordnet.') }}">
+                                        <input type="checkbox" name="shared_remote" value="1" class="checkbox checkbox-sm">
+                                        <span class="label-text text-xs">{{ __('Mehrkundengerät') }}</span>
+                                    </label>
                                     <button type="submit" class="btn btn-sm btn-primary ml-auto">
                                         <span class="material-symbols-outlined text-[1.1rem]" aria-hidden="true">link</span>{{ __('Zuordnen') }}
                                     </button>
@@ -94,7 +98,13 @@
                             <input type="radio" name="{{ $tabName }}" class="tab" aria-label="{{ __('Neues Gerät') }}" />
                             <div class="tab-content pt-3">
                                 <form method="POST" action="{{ route('admin.remote-support.pending.assign-new') }}"
-                                      class="flex flex-wrap items-end gap-2">
+                                      class="flex flex-wrap items-end gap-2"
+                                      x-data="{
+                                          customer: '',
+                                          foreign: '',
+                                          foreignMap: @js($foreignMap),
+                                          get foreignCustomers() { return this.foreignMap[this.customer] ?? []; },
+                                      }">
                                     @csrf
                                     <input type="hidden" name="provider" value="{{ $group->provider }}">
                                     <input type="hidden" name="remote_id" value="{{ $group->remote_id }}">
@@ -113,12 +123,25 @@
                                     </label>
                                     <label class="flex w-48 flex-col gap-1">
                                         <span class="label-text text-xs">{{ __('Kunde') }}</span>
-                                        <select name="customer_id" required class="select select-sm select-bordered w-full">
-                                            <option value="">{{ __('— Kunde —') }}</option>
+                                        <select name="customer_id" x-model="customer" @change="foreign = ''" class="select select-sm select-bordered w-full">
+                                            <option value="">{{ __('— kein fester Kunde (Firmenrechner) —') }}</option>
                                             @foreach ($customers as $customer)
                                                 <option value="{{ $customer->sqid }}">{{ $customer->company ?: $customer->name }}</option>
                                             @endforeach
                                         </select>
+                                    </label>
+                                    <label class="flex w-48 flex-col gap-1" x-show="foreignCustomers.length > 0">
+                                        <span class="label-text text-xs">{{ __('Fremdkunde (Endkunde)') }}</span>
+                                        <select name="foreign_customer_id" x-model="foreign" class="select select-sm select-bordered w-full">
+                                            <option value="">{{ __('— direkt beim Kunden —') }}</option>
+                                            <template x-for="f in foreignCustomers" :key="f.id">
+                                                <option :value="f.id" x-text="f.name"></option>
+                                            </template>
+                                        </select>
+                                    </label>
+                                    <label class="flex items-center gap-2 pb-2" title="{{ __('Sitzungen werden nicht automatisch gebucht, sondern unten je Kunde zugeordnet.') }}">
+                                        <input type="checkbox" name="shared_remote" value="1" class="checkbox checkbox-sm">
+                                        <span class="label-text text-xs">{{ __('Mehrkundengerät') }}</span>
                                     </label>
                                     <button type="submit" class="btn btn-sm btn-primary ml-auto">
                                         <span class="material-symbols-outlined text-[1.1rem]" aria-hidden="true">add</span>{{ __('Anlegen & zuordnen') }}
@@ -148,8 +171,11 @@
                           class="rounded-box border border-base-300 p-3"
                           x-data="{
                               customer: '',
+                              foreign: '',
                               projectMap: @js($projectMap),
-                              get projects() { return this.projectMap[this.customer] ?? []; },
+                              foreignMap: @js($foreignMap),
+                              get foreignCustomers() { return this.foreignMap[this.customer] ?? []; },
+                              get projects() { return (this.projectMap[this.customer] ?? []).filter(p => (p.fc ?? null) === (this.foreign === '' ? null : this.foreign)); },
                               allChecked: false,
                               toggleAll() {
                                   this.$refs.list.querySelectorAll('input[type=checkbox][name=&quot;pending_ids[]&quot;]')
@@ -206,11 +232,20 @@
                         <div class="mt-3 flex flex-wrap items-end gap-2">
                             <label class="flex w-48 flex-col gap-1">
                                 <span class="label-text text-xs">{{ __('Kunde') }}</span>
-                                <select name="customer_id" required x-model="customer" class="select select-sm select-bordered w-full">
+                                <select name="customer_id" required x-model="customer" @change="foreign = ''" class="select select-sm select-bordered w-full">
                                     <option value="">{{ __('— Kunde —') }}</option>
                                     @foreach ($customers as $customer)
                                         <option value="{{ $customer->sqid }}">{{ $customer->company ?: $customer->name }}</option>
                                     @endforeach
+                                </select>
+                            </label>
+                            <label class="flex w-48 flex-col gap-1" x-show="foreignCustomers.length > 0">
+                                <span class="label-text text-xs">{{ __('Fremdkunde (Endkunde)') }}</span>
+                                <select name="foreign_customer_id" x-model="foreign" class="select select-sm select-bordered w-full">
+                                    <option value="">{{ __('— direkt beim Kunden —') }}</option>
+                                    <template x-for="f in foreignCustomers" :key="f.id">
+                                        <option :value="f.id" x-text="f.name"></option>
+                                    </template>
                                 </select>
                             </label>
                             <label class="flex w-48 flex-col gap-1">

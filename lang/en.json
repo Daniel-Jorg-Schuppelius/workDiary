@@ -8890,5 +8890,11 @@
     "Toggl-Client": "Toggl client",
     "Toggl-Projekt": "Toggl project",
     "Zuordnungen entstehen beim Buchen in der Zuordnungs-Inbox, beim Workspace-Import oder oben über die Benutzer-Zuordnung.": "Mappings are created when booking in the assignment inbox, during the workspace import, or above via the user mapping.",
-    "Numerische Lizenz-ID (z. B. 1438129266231705) — nicht der Lizenz-Schlüssel aus Buchstaben\/Ziffern.": "Numeric license ID (e.g. 1438129266231705) — not the license key made of letters and digits."
+    "Numerische Lizenz-ID (z. B. 1438129266231705) — nicht der Lizenz-Schlüssel aus Buchstaben\/Ziffern.": "Numeric license ID (e.g. 1438129266231705) — not the license key made of letters and digits.",
+    "Diese AnyDesk-\/TeamViewer-IDs tauchten in den Reports auf, sind aber keinem Gerät zugeordnet. Weise jede ID einem bestehenden Gerät zu oder lege ein neues an — die gespeicherten Sitzungen werden dann sofort als Zeiteinträge gebucht. Bei Mehrkundengeräten und Firmenrechnern ohne festen Kunden bleiben sie offen und werden unten je Kunde zugeordnet.": "These AnyDesk\/TeamViewer IDs appeared in the reports but are not assigned to any device. Assign each ID to an existing device or create a new one — the stored sessions are then booked as time entries right away. For multi-customer devices and company machines without a fixed customer they stay open and are assigned per customer below.",
+    "Sitzungen werden nicht automatisch gebucht, sondern unten je Kunde zugeordnet.": "Sessions are not booked automatically but assigned per customer below.",
+    "— kein fester Kunde (Firmenrechner) —": "— no fixed customer (company machine) —",
+    ":count Sitzung wartet unten auf die Kundenzuordnung.|:count Sitzungen warten unten auf die Kundenzuordnung.": ":count session below is waiting for customer assignment.|:count sessions below are waiting for customer assignment.",
+    "Fremdkunde (Endkunde)": "End customer",
+    "— direkt beim Kunden —": "— directly at the customer —"
 }

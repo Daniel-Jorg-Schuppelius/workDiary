@@ -8890,5 +8890,11 @@
     "Toggl-Client": "Cliente Toggl",
     "Toggl-Projekt": "Progetto Toggl",
     "Zuordnungen entstehen beim Buchen in der Zuordnungs-Inbox, beim Workspace-Import oder oben über die Benutzer-Zuordnung.": "Le associazioni nascono durante la prenotazione nella inbox di assegnazione, con l’import del workspace o sopra tramite l’associazione utente.",
-    "Numerische Lizenz-ID (z. B. 1438129266231705) — nicht der Lizenz-Schlüssel aus Buchstaben\/Ziffern.": "ID di licenza numerico (ad es. 1438129266231705) — non la chiave di licenza composta da lettere e cifre."
+    "Numerische Lizenz-ID (z. B. 1438129266231705) — nicht der Lizenz-Schlüssel aus Buchstaben\/Ziffern.": "ID di licenza numerico (ad es. 1438129266231705) — non la chiave di licenza composta da lettere e cifre.",
+    "Diese AnyDesk-\/TeamViewer-IDs tauchten in den Reports auf, sind aber keinem Gerät zugeordnet. Weise jede ID einem bestehenden Gerät zu oder lege ein neues an — die gespeicherten Sitzungen werden dann sofort als Zeiteinträge gebucht. Bei Mehrkundengeräten und Firmenrechnern ohne festen Kunden bleiben sie offen und werden unten je Kunde zugeordnet.": "Questi ID AnyDesk\/TeamViewer compaiono nei report ma non sono assegnati ad alcun dispositivo. Assegna ogni ID a un dispositivo esistente o creane uno nuovo — le sessioni salvate vengono quindi registrate subito come voci di tempo. Per i dispositivi multi-cliente e i computer aziendali senza cliente fisso restano aperte e vengono assegnate per cliente qui sotto.",
+    "Sitzungen werden nicht automatisch gebucht, sondern unten je Kunde zugeordnet.": "Le sessioni non vengono registrate automaticamente ma assegnate per cliente qui sotto.",
+    "— kein fester Kunde (Firmenrechner) —": "— nessun cliente fisso (computer aziendale) —",
+    ":count Sitzung wartet unten auf die Kundenzuordnung.|:count Sitzungen warten unten auf die Kundenzuordnung.": ":count sessione qui sotto attende l’assegnazione al cliente.|:count sessioni qui sotto attendono l’assegnazione al cliente.",
+    "Fremdkunde (Endkunde)": "Cliente finale",
+    "— direkt beim Kunden —": "— direttamente presso il cliente —"
 }

@@ -13,7 +13,7 @@ namespace App\Plugins\RemoteSupport\Http\Controllers;
 use App\Enums\Asset\{AssetClass, AssetOwnership};
 use App\Enums\Project\ProjectStatus;
 use App\Http\Controllers\Controller;
-use App\Models\{Asset, Customer, Organization, Project, RemotePendingSession};
+use App\Models\{Asset, Customer, ForeignCustomer, Organization, Project, RemotePendingSession};
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, TeamViewerClient};
 use App\Plugins\RemoteSupport\RemoteSupportService;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
@@ -26,9 +26,11 @@ use Illuminate\View\View;
  * Admin-Inbox für Fernwartungs-Verbindungen, deren Geräte-ID noch keinem Asset
  * zugeordnet ist. Pro unbekannter ID kann der Admin:
  *  - sie einem bestehenden Gerät zuweisen,
- *  - ein neues Gerät anlegen und zuweisen,
+ *  - ein neues Gerät anlegen und zuweisen (ohne Kunde = eigenes Firmengerät),
  *  - die Gruppe verwerfen.
- * Beim Zuweisen werden die gespeicherten Sessions sofort als Zeiteinträge gebucht.
+ * Beim Zuweisen werden die gespeicherten Sessions sofort als Zeiteinträge
+ * gebucht — außer bei Mehrkunden-/kundenlosen Geräten: deren Sitzungen bleiben
+ * offen und werden im Einzelzuordnungs-Block je Kunde gebucht.
  */
 class RemoteSupportPendingController extends Controller {
     use ResolvesPluginOrgContext;
@@ -51,22 +53,38 @@ class RemoteSupportPendingController extends Controller {
             ->get(['id', 'name', 'asset_no', 'customer_id', 'category_code']);
 
         $customers = Customer::query()->orderBy('name')->get(['id', 'name', 'company']);
+        $customerSqids = $customers->mapWithKeys(fn (Customer $c): array => [(int) $c->id => $c->sqid])->all();
 
-        // Kunde (Sqid) → aktive Projekte (Sqid + Name) für die abhängige Projektauswahl.
+        // Fremdkunden (Endkunden) je Kunde für die abhängige Auswahl; die
+        // Sqid-Lookup-Tabelle bindet Projekte an ihren Endkunden.
+        $foreignCustomers = ForeignCustomer::query()->orderBy('name')->get(['id', 'name', 'customer_id']);
+        $foreignSqids = $foreignCustomers->mapWithKeys(fn (ForeignCustomer $f): array => [(int) $f->id => $f->sqid])->all();
+        $foreignMap = $foreignCustomers
+            ->groupBy(fn (ForeignCustomer $f): int => (int) $f->customer_id)
+            ->mapWithKeys(fn ($items, int $customerId): array => [
+                $customerSqids[$customerId] ?? (string) $customerId => $items->map(fn (ForeignCustomer $f): array => [
+                    'id' => $f->sqid,
+                    'name' => $f->name,
+                ])->values()->all(),
+            ])
+            ->all();
+
+        // Kunde (Sqid) → aktive Projekte (Sqid + Name + Endkunden-Bindung) für
+        // die abhängige Projektauswahl.
         $projectMap = Project::query()
             ->where('status', ProjectStatus::Active->value)
             ->whereNotNull('customer_id')
             ->orderBy('name')
-            ->get(['id', 'name', 'customer_id'])
+            ->get(['id', 'name', 'customer_id', 'foreign_customer_id'])
             ->groupBy(fn (Project $p): int => (int) $p->customer_id)
-            ->mapWithKeys(function ($projects, int $customerId): array {
+            ->mapWithKeys(function ($projects, int $customerId) use ($customerSqids, $foreignSqids): array {
                 /** @var \Illuminate\Support\Collection<int, Project> $projects */
-                $customer = Customer::query()->find($customerId);
-                $key = $customer instanceof Customer ? $customer->sqid : (string) $customerId;
+                $key = $customerSqids[$customerId] ?? (string) $customerId;
 
                 return [$key => $projects->map(fn (Project $p): array => [
                     'id' => $p->sqid,
                     'name' => $p->name,
+                    'fc' => $p->foreign_customer_id !== null ? ($foreignSqids[(int) $p->foreign_customer_id] ?? null) : null,
                 ])->values()->all()];
             })
             ->all();
@@ -80,6 +98,7 @@ class RemoteSupportPendingController extends Controller {
             'assets' => $assets,
             'customers' => $customers,
             'projectMap' => $projectMap,
+            'foreignMap' => $foreignMap,
             'categories' => $categories,
         ]);
     }
@@ -101,9 +120,14 @@ class RemoteSupportPendingController extends Controller {
             'provider' => ['required', 'string', 'in:' . implode(',', self::PROVIDERS)],
             'remote_id' => ['required', 'string', 'max:191'],
             'asset_id' => ['required', 'integer'],
+            'shared_remote' => ['sometimes', 'boolean'],
         ]);
 
         $asset = Asset::query()->whereKey($validated['asset_id'])->firstOrFail();
+
+        if ($request->boolean('shared_remote') && ! $asset->shared_remote) {
+            $asset->update(['shared_remote' => true]);
+        }
 
         $result = $this->service->assignPending(
             $this->organization($admin),
@@ -126,23 +150,38 @@ class RemoteSupportPendingController extends Controller {
 
         $request->merge([
             'customer_id' => $customerId,
+            'foreign_customer_id' => Sqid::decodeOrNumeric(ForeignCustomer::class, $request->input('foreign_customer_id')),
         ]);
 
         $validated = $request->validate([
             'provider' => ['required', 'string', 'in:' . implode(',', self::PROVIDERS)],
             'remote_id' => ['required', 'string', 'max:191'],
             'name' => ['required', 'string', 'max:191'],
-            'customer_id' => ['required', 'integer'],
+            'customer_id' => ['nullable', 'integer'],
+            'foreign_customer_id' => ['nullable', 'integer'],
             'category_code' => ['required', 'string', 'in:' . implode(',', RemoteSupportService::REMOTE_CATEGORY_CODES)],
+            'shared_remote' => ['sometimes', 'boolean'],
         ]);
+
+        // Ohne Kunde ist es ein eigenes Firmengerät (owned_by=org, Sitzungen
+        // je Kunde einzeln zuordnen); mit Kunde ein Kundengerät, optional beim
+        // Fremdkunden (Endkunden) angesiedelt und/oder als Mehrkundengerät
+        // markiert (Selbstständige für mehrere Firmen).
+        $customerId = $validated['customer_id'] ?? null;
+        $foreignCustomer = $this->foreignCustomerForInput($customerId, $validated['foreign_customer_id'] ?? null);
 
         $asset = $assets->create($admin, [
             'asset_class' => AssetClass::Device->value,
             'category_code' => $validated['category_code'],
             'name' => $validated['name'],
-            'owned_by' => AssetOwnership::Customer->value,
-            'customer_id' => $validated['customer_id'],
+            'owned_by' => $customerId !== null ? AssetOwnership::Customer->value : AssetOwnership::Organization->value,
+            'customer_id' => $customerId,
+            'foreign_customer_id' => $foreignCustomer?->id,
         ]);
+
+        if ($request->boolean('shared_remote')) {
+            $asset->update(['shared_remote' => true]);
+        }
 
         $result = $this->service->assignPending(
             $this->organization($admin),
@@ -164,17 +203,20 @@ class RemoteSupportPendingController extends Controller {
 
         $customerId = Sqid::decodeOrNumeric(Customer::class, $request->input('customer_id'));
         $projectId = Sqid::decodeOrNumeric(Project::class, $request->input('project_id'));
+        $foreignId = Sqid::decodeOrNumeric(ForeignCustomer::class, $request->input('foreign_customer_id'));
 
-        $request->merge(['customer_id' => $customerId, 'project_id' => $projectId]);
+        $request->merge(['customer_id' => $customerId, 'project_id' => $projectId, 'foreign_customer_id' => $foreignId]);
 
         $validated = $request->validate([
             'customer_id' => ['required', 'integer'],
+            'foreign_customer_id' => ['nullable', 'integer'],
             'project_id' => ['nullable', 'integer'],
             'pending_ids' => ['required', 'array', 'min:1'],
             'pending_ids.*' => ['string'],
         ]);
 
         $customer = Customer::query()->whereKey($validated['customer_id'])->firstOrFail();
+        $foreignCustomer = $this->foreignCustomerForInput($customer->id, $validated['foreign_customer_id'] ?? null);
 
         $project = null;
         if (($validated['project_id'] ?? null) !== null) {
@@ -183,6 +225,14 @@ class RemoteSupportPendingController extends Controller {
                 ->where('customer_id', $customer->id)
                 ->first();
             abort_if($project === null, 422, 'Projekt gehört nicht zum gewählten Kunden.');
+
+            // Endkunden-Trennung wie in der Integrations-Inbox: das Projekt
+            // muss zur gewählten Fremdkunden-Ebene passen.
+            if ($foreignCustomer !== null) {
+                abort_unless((int) $project->foreign_customer_id === (int) $foreignCustomer->id, 422, __('Das gewählte Projekt gehört nicht zum gewählten Fremdkunden.'));
+            } else {
+                abort_unless($project->foreign_customer_id === null, 422, __('Das gewählte Projekt gehört zu einem Endkunden — bitte den passenden Fremdkunden auswählen.'));
+            }
         }
 
         $rows = $this->pendingRowsFromInput($organization, $validated['pending_ids']);
@@ -190,7 +240,7 @@ class RemoteSupportPendingController extends Controller {
             return back()->with('error', __('Keine gültigen Sitzungen ausgewählt.'));
         }
 
-        $result = $this->service->assignSharedSessions($organization, $rows, $customer, $project);
+        $result = $this->service->assignSharedSessions($organization, $rows, $customer, $project, foreignCustomer: $foreignCustomer);
 
         return back()->with('status', $this->resultMessage($result));
     }
@@ -225,6 +275,26 @@ class RemoteSupportPendingController extends Controller {
     }
 
     /**
+     * Löst den optionalen Fremdkunden (Endkunden) auf: nur mit Kunde erlaubt,
+     * Zugehörigkeit wird erzwungen (Regel wie in der Integrations-Inbox).
+     */
+    private function foreignCustomerForInput(?int $customerId, ?int $foreignCustomerId): ?ForeignCustomer {
+        if ($foreignCustomerId === null) {
+            return null;
+        }
+
+        abort_if($customerId === null, 422, __('Der gewählte Fremdkunde gehört nicht zum gewählten Kunden.'));
+
+        $foreign = ForeignCustomer::query()
+            ->whereKey($foreignCustomerId)
+            ->where('customer_id', $customerId)
+            ->first();
+        abort_if($foreign === null, 422, __('Der gewählte Fremdkunde gehört nicht zum gewählten Kunden.'));
+
+        return $foreign;
+    }
+
+    /**
      * Lädt offene Pending-Sitzungen eines Mehrkundengeräts aus den übergebenen
      * Sqids (org-scoped, nur asset-gebundene offene Sitzungen).
      *
@@ -251,12 +321,22 @@ class RemoteSupportPendingController extends Controller {
             ->get();
     }
 
-    /** @param array{created: int, skipped: int, linked?: int} $result */
+    /** @param array{created: int, skipped: int, linked?: int, pending?: int} $result */
     private function resultMessage(array $result): string {
-        return (string) __(':created gebucht, :linked mit vorhandenen Zeiten verknüpft, :skipped bereits vorhanden.', [
+        $message = (string) __(':created gebucht, :linked mit vorhandenen Zeiten verknüpft, :skipped bereits vorhanden.', [
             'created' => $result['created'],
             'linked' => $result['linked'] ?? 0,
             'skipped' => $result['skipped'],
         ]);
+
+        if (($result['pending'] ?? 0) > 0) {
+            $message .= ' ' . trans_choice(
+                ':count Sitzung wartet unten auf die Kundenzuordnung.|:count Sitzungen warten unten auf die Kundenzuordnung.',
+                (int) $result['pending'],
+                ['count' => $result['pending']],
+            );
+        }
+
+        return $message;
     }
 }
