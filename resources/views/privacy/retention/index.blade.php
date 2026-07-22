@@ -19,7 +19,6 @@
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar>
-            <x-slot:title>{{ __('Aufbewahrung & Löschung') }}</x-slot:title>
             <x-slot:subtitle>{{ __('Rechtsraum :region — der Scan erzeugt Vorschläge, gelöscht wird erst nach Bestätigung (zweistufig, auditiert).', ['region' => $region]) }}</x-slot:subtitle>
             <x-slot:actions>
                 @if ($canManage)

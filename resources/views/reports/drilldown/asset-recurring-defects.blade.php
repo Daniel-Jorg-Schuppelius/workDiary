@@ -19,7 +19,6 @@
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar>
-            <x-slot:title>{{ __('Wiederholdefekte') }}</x-slot:title>
             <x-slot:subtitle>
                 {{ $label }} · {{ __('Schwelle: :n Defekte in :m Monaten', ['n' => $threshold, 'm' => $windowMonths]) }}
             </x-slot:subtitle>

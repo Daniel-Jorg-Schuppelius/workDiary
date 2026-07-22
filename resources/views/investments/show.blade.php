@@ -6,7 +6,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :title="$case->title" :badge="__('values.' . $case->status)" badge-tone="outline">
+        <x-page-toolbar :badge="__('values.' . $case->status)" badge-tone="outline">
             <div class="text-sm text-base-content/70">
                 {{ __("values.{$case->category}") }} · {{ __('Dringlichkeit: :urgency', ['urgency' => __("values.{$case->urgency}")]) }}
                 @if ($case->costCenterDisplay()) · {{ $case->costCenterDisplay() }} @endif

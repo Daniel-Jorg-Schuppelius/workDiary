@@ -67,7 +67,7 @@ class ComplianceDashboardTest extends TestCase {
             ->get(route('reports.compliance.dashboard'));
 
         $response->assertOk();
-        $response->assertSee(__('Arbeitszeit-Compliance'));
+        $response->assertSee(__('Compliance-Dashboard'));
         // Team-Aggregation nennt das Team, nicht einzelne Personen in der Übersicht.
         $response->assertSee('Montage');
         $response->assertSee('2030-03');

@@ -13,7 +13,7 @@
     @endif
 
     <x-slot:toolbar>
-        <x-page-toolbar :title="$case->title" :badge="__('values.' . $case->status)" badge-tone="outline">
+        <x-page-toolbar :badge="__('values.' . $case->status)" badge-tone="outline">
             <div class="text-sm text-base-content/70">
                 {{ __("values.{$case->category}") }} · {{ __("values.{$case->severity}") }}
                 @if ($case->trigger_source) · {{ __('Auslöser: :source', ['source' => $case->trigger_source]) }} @endif

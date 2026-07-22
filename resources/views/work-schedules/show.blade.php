@@ -4,7 +4,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :title="__('Mein Arbeitszeit-Modell')">
+        <x-page-toolbar :title="$user->name">
             @auth
                 @can('create', \App\Models\WorkSchedule::class)
                     <x-slot:actions>

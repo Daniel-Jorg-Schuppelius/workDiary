@@ -19,7 +19,6 @@
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar>
-            <x-slot:title>{{ __('Auditprogramme') }}</x-slot:title>
             <x-slot:subtitle>{{ __('Mehrjahres-Zyklen (z. B. Erst-/Überwachungs-/Re-Zertifizierung) — Nachweis über die verknüpften Audits.') }}</x-slot:subtitle>
             <x-slot:actions>
                 <x-icon-btn icon="checklist" tone="ghost" size="sm" :href="route('isms.audits.index')" show-label>{{ __('isms.title.audits') }}</x-icon-btn>

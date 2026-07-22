@@ -24,7 +24,7 @@
 
     <x-page-shell>
         <x-slot:toolbar>
-            <x-page-toolbar :title="__('Tour') . ' ' . ($tour->name ?? ('#' . $tour->id))" :badge="$tour->status?->label() ?? ''" badge-tone="ghost">
+            <x-page-toolbar :badge="$tour->status?->label() ?? ''" badge-tone="ghost">
                 <div class="text-sm text-base-content/70">
                     {{ $tour->tour_date?->fdate() }} · {{ $tour->user?->name }} · {{ $tour->vehicle?->license_plate ?? '—' }}
                     · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $tour->planned_distance_km, 2, withThousandsSeparator: true) }} km · {{ $tour->planned_duration_minutes }} min

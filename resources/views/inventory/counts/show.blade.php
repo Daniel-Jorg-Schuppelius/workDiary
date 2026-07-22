@@ -7,7 +7,7 @@
 @section('content')
 <x-page-shell gap="4">
     <x-slot:toolbar>
-        <x-page-toolbar :title="__('inventory.count_ui.title') . ' — ' . $count->warehouse?->name"
+        <x-page-toolbar :title="$count->warehouse?->name"
                         :badge="$count->status->label()" badgeTone="ghost"
                         :subtitle="__('inventory.count_ui.counted_at') . ': ' . $count->counted_at?->format('d.m.Y H:i')">
             <x-slot:actions>

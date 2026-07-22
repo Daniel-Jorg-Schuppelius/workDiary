@@ -19,7 +19,6 @@
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar>
-            <x-slot:title>{{ __('Qualifikationsmatrix') }}</x-slot:title>
             <x-slot:subtitle>
                 {{ $diary->title }}@if ($date !== null) · {{ __('Stichtag') }}: {{ $date->fdate() }}@endif
             </x-slot:subtitle>

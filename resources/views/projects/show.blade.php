@@ -6,7 +6,7 @@
 <x-page-shell>
 
     <x-slot:toolbar>
-        <x-page-toolbar :title="$project->name" :badge="$project->statusLabel()" :badge-tone="$project->statusTone()">
+        <x-page-toolbar :badge="$project->statusLabel()" :badge-tone="$project->statusTone()">
             @if ($project->description)
                 <p class="max-w-prose">{{ $project->description }}</p>
             @endif

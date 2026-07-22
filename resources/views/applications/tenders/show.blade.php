@@ -6,7 +6,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :title="$opportunity->title" :badge="__('values.' . $opportunity->status)" badge-tone="outline">
+        <x-page-toolbar :badge="__('values.' . $opportunity->status)" badge-tone="outline">
             <div class="text-sm text-base-content/70">
                 {{ __("values.{$opportunity->kind}") }}
                 @if ($opportunity->customer) · {{ $opportunity->customer->name }} @endif

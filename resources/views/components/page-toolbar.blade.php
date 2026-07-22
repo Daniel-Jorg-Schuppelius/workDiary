@@ -31,7 +31,7 @@
         @if ($title || $badge)
             <div class="flex items-center gap-2 min-w-0">
                 @if ($title)
-                    <h2 class="font-['Space_Grotesk'] text-lg font-semibold text-base-content truncate">{{ $title }}</h2>
+                    <h2 class="font-['Space_Grotesk'] text-base font-semibold text-base-content truncate">{{ $title }}</h2>
                 @endif
                 @if ($badge)
                     <span class="badge badge-sm badge-{{ $badgeTone }} shrink-0">{{ $badge }}</span>

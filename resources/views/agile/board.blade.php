@@ -19,7 +19,7 @@
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar>
-            <x-slot:title>{{ __('Projektboard') }} — {{ $project->name }}</x-slot:title>
+            <x-slot:title>{{ $project->name }}</x-slot:title>
             <x-slot:subtitle>{{ $board?->description ?? __('Produkt-Backlog, Board und Sprints für dieses Projekt.') }}</x-slot:subtitle>
             <x-slot:actions>
                 <x-icon-btn icon="low_priority" tone="ghost" size="sm" :href="route('agile.backlog', $project)" show-label>{{ __('Produkt-Backlog') }}</x-icon-btn>

@@ -5,7 +5,7 @@
 <x-page-shell>
 
     <x-slot:toolbar>
-        <x-page-toolbar :title="$dutyPlan->title"
+        <x-page-toolbar
                         :badge="$dutyPlan->isPublished() ? __('duty_plan.status.published') : __('duty_plan.status.draft')"
                         :badge-tone="$dutyPlan->isPublished() ? 'success' : 'ghost'">
             <x-slot:actions>

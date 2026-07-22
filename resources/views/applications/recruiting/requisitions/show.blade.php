@@ -6,7 +6,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :title="$requisition->title" :badge="__('values.' . $requisition->status)" badge-tone="outline">
+        <x-page-toolbar :badge="__('values.' . $requisition->status)" badge-tone="outline">
             <div class="text-sm text-base-content/70">
                 {{ __("values.{$requisition->employment_type}") }} · {{ __(':count Stelle(n)', ['count' => $requisition->headcount]) }}
                 @if ($requisition->department) · {{ $requisition->department }} @endif

@@ -6,7 +6,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :title="__('Investitions-Auswertung')">
+        <x-page-toolbar>
             <div class="text-sm text-base-content/70">{{ __('Pipeline, Budgetauslastung und offene Entscheidungen.') }}</div>
             <x-slot:actions>
                 <x-icon-btn icon="download" size="sm" :href="route('investments.report', ['export' => 'csv'])" show-label>{{ __('CSV') }}</x-icon-btn>

@@ -13,7 +13,7 @@
     @endif
 
     <x-slot:toolbar>
-        <x-page-toolbar :title="__('Steuerregelmatrix')">
+        <x-page-toolbar>
             <div class="text-sm text-base-content/70">{{ __('Versionierter Katalog mit Stichtags-Auflösung — Gesetzesänderungen sind Datenpflege, kein Release. Keine Steuerberatung.') }}</div>
         </x-page-toolbar>
     </x-slot:toolbar>

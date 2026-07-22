@@ -19,7 +19,7 @@
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar>
-            <x-slot:title>{{ __('E-Rechnungs-Validierung') }} — {{ $invoice->number }}</x-slot:title>
+            <x-slot:title>{{ $invoice->number }}</x-slot:title>
             <x-slot:subtitle>
                 @if ($report['valid'] && $report['preflight_errors'] === [])
                     <x-status-badge tone="success" size="xs">{{ __('Bereit zur Ausstellung') }}</x-status-badge>

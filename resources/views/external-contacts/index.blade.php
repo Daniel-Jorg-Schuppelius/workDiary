@@ -10,7 +10,6 @@
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar>
-            <x-slot:title>{{ __('external.contact.title') }}</x-slot:title>
             <x-slot:subtitle>{{ __('external.contact.intro') }}</x-slot:subtitle>
             <x-slot:actions>
                 <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger

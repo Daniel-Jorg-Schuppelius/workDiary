@@ -21,7 +21,7 @@
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar>
-            <x-slot:title>{{ __('Produkt-Backlog') }} — {{ $project->name }}</x-slot:title>
+            <x-slot:title>{{ $project->name }}</x-slot:title>
             <x-slot:subtitle>{{ __('Priorisierte Arbeitselemente des Projektboards (:method).', ['method' => $board->method === 'scrum' ? 'Scrum' : 'Kanban']) }}</x-slot:subtitle>
             <x-slot:actions>
                 <x-icon-btn icon="view_kanban" tone="ghost" size="sm" :href="route('agile.board', $project)" show-label>{{ __('Zum Board') }}</x-icon-btn>

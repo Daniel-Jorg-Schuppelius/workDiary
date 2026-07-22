@@ -21,7 +21,7 @@
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar>
-            <x-slot:title>{{ __('Fluss-Bericht') }} — {{ $project->name }}</x-slot:title>
+            <x-slot:title>{{ $project->name }}</x-slot:title>
             <x-slot:subtitle>{{ __('Kennzahlen aus Ereignissen und Snapshots (Definition v:version).', ['version' => $cfd->metricVersion]) }}</x-slot:subtitle>
             <x-slot:actions>
                 <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('agile.reports.export.csv', [$project, 'throughput'])" show-label>{{ __('CSV Durchsatz') }}</x-icon-btn>

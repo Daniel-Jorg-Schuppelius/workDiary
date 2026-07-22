@@ -21,7 +21,6 @@
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar>
-            <x-slot:title>{{ $scope === 'team' ? __('Plan/Ist — Team') : __('Plan/Ist — Organisation') }}</x-slot:title>
             <x-slot:subtitle>{{ $from->fdate() }} – {{ $to->fdate() }}</x-slot:subtitle>
         </x-page-toolbar>
     </x-slot:toolbar>

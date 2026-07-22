@@ -18,7 +18,6 @@
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar>
-            <x-slot:title>{{ __('Datenführerschaft') }}</x-slot:title>
             <x-slot:subtitle>{{ __('Je Datenbereich führt genau ein System. Bei Plugin-Führung landen Schreibversuche anderer Plugins als Inbox-Konflikt statt als Änderung.') }}</x-slot:subtitle>
         </x-page-toolbar>
     </x-slot:toolbar>

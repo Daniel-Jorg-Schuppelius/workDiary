@@ -19,7 +19,6 @@
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar>
-            <x-slot:title>{{ __('Arbeitszeit-Compliance') }}</x-slot:title>
             <x-slot:subtitle>{{ $from }} – {{ $to }}</x-slot:subtitle>
             <x-slot:actions>
                 <x-icon-btn icon="table_view" tone="outline" size="sm" :href="route('reports.arbzg-compliance')" show-label>{{ __('Einzelreport') }}</x-icon-btn>

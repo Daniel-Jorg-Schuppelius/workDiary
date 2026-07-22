@@ -19,7 +19,6 @@
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar>
-            <x-slot:title>{{ __('Helpdesk-Bericht') }}</x-slot:title>
             <x-slot:subtitle>{{ __('Kennzahlen aus Zeitstempeln und SLA-Uhr-Segmenten (Definition v:version).', ['version' => $metricVersion]) }}</x-slot:subtitle>
             <x-slot:actions>
                 <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('helpdesk.reports.csv', ['metric' => 'volume', 'from' => $from->toDateString(), 'to' => $to->toDateString()])" show-label>{{ __('CSV Volumen') }}</x-icon-btn>

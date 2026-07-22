@@ -6,7 +6,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :title="__('Bewerbungen & Ausschreibungen')">
+        <x-page-toolbar>
             <div class="text-sm text-base-content/70">{{ __('Zeitraum: :from – :to · nur aggregierte Kennzahlen, keine Bewerberdetails.', ['from' => $from, 'to' => $to]) }}</div>
             <x-slot:actions>
                 <x-icon-btn icon="download" size="sm" :href="route('applications.report', ['export' => 'csv'])" show-label>{{ __('CSV') }}</x-icon-btn>

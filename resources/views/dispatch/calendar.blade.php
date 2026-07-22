@@ -20,7 +20,6 @@
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar>
-            <x-slot:title>{{ __('Dispositions-Kalender') }}</x-slot:title>
             <x-slot:subtitle>{{ $from->fdate() }} – {{ $to->fdate() }} · {{ $total }} {{ __('Aufträge') }}</x-slot:subtitle>
             <x-slot:actions>
                 <x-icon-btn icon="view_column" tone="outline" size="sm" :href="route('dispatch.board')" show-label>{{ __('Zum Board') }}</x-icon-btn>

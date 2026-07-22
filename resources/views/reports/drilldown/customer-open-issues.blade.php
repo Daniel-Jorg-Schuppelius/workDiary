@@ -15,7 +15,6 @@
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar>
-            <x-slot:title>{{ __('Offene Punkte') }}</x-slot:title>
             <x-slot:subtitle>
                 {{ __('Kunde') }}: {{ $customer?->name ?? ('#' . $customerId) }} · {{ $label }}
                 @if ($escalatedOnly)

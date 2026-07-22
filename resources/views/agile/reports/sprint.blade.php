@@ -21,7 +21,7 @@
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar>
-            <x-slot:title>{{ __('Sprint-Cockpit') }} — {{ $project->name }}</x-slot:title>
+            <x-slot:title>{{ $project->name }}</x-slot:title>
             <x-slot:subtitle>{{ __('Kennzahlen aus Ereignissen und Snapshots (Definition v:version).', ['version' => $velocity->metricVersion]) }}</x-slot:subtitle>
             <x-slot:actions>
                 <x-icon-btn icon="picture_as_pdf" tone="ghost" size="sm" :href="route('agile.reports.export.pdf', $project)" show-label>PDF</x-icon-btn>

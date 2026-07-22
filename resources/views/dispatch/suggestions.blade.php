@@ -10,7 +10,7 @@
     @endif
 
     <x-slot:toolbar>
-        <x-page-toolbar :title="__('Leerzeit-/Lückenfüller-Vorschläge')">
+        <x-page-toolbar>
             <div class="text-sm text-base-content/70">{{ __('Freie Slots aus Schichten, Touren und Disposition — Übernahme bleibt eine bewusste Entscheidung. Keine Standortüberwachung: nur Planungsdaten.') }}</div>
             <x-slot:actions>
                 <x-icon-btn icon="dashboard" size="sm" :href="route('dispatch.board')" show-label>{{ __('Dispo-Board') }}</x-icon-btn>

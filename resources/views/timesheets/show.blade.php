@@ -15,7 +15,7 @@
 <x-page-shell>
 
     <x-slot:toolbar>
-        <x-page-toolbar :title="__('Stundenzettel') . ' – ' . optional($timesheet->work_date)->fdate()"
+        <x-page-toolbar :title="optional($timesheet->work_date)->fdate()"
                         :badge="$timesheet->statusLabel()"
                         :badge-tone="$timesheet->statusTone()">
             <div class="text-sm text-base-content/70">

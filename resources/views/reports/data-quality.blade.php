@@ -18,7 +18,6 @@
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar>
-            <x-slot:title>{{ __('Fehlende Pflichtklassifikationen') }}</x-slot:title>
             <x-slot:subtitle>{{ __('Aufträge im Zeitraum') }} · {{ $label }}</x-slot:subtitle>
         </x-page-toolbar>
     </x-slot:toolbar>

@@ -10,7 +10,7 @@
     @endif
 
     <x-slot:toolbar>
-        <x-page-toolbar :title="__('Ursachen- und Qualitätsauswertung')">
+        <x-page-toolbar>
             <div class="text-sm text-base-content/70">{{ __('Quote, Ursachen, Produkte, Lieferanten, Kosten, Dauer und Wiederholfehler — Zeitraum nach Meldedatum.') }}</div>
             <x-slot:actions>
                 <x-icon-btn icon="download" size="sm" :href="route('claims.reports.index', ['from' => $from->toDateString(), 'to' => $to->toDateString(), 'export' => 'csv'])" show-label>{{ __('CSV') }}</x-icon-btn>
