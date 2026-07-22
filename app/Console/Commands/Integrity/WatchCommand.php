@@ -76,6 +76,11 @@ class WatchCommand extends Command {
         $rootNames = $service->rootWatchNames();
 
         $fd = inotify_init();
+        if ($fd === false) {
+            $this->error('inotify_init() ist fehlgeschlagen (Ressourcen-/Kernel-Limit?) — der Wächter kann nicht starten.');
+
+            return self::FAILURE;
+        }
         stream_set_blocking($fd, false);
 
         foreach ($service->watchableDirectories() as $dir) {
