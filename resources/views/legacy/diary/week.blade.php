@@ -19,8 +19,8 @@
 <div class="wd-fill-h flex flex-col gap-4">
 
 {{-- Toolbar --}}
-<div class="flex-none flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-    <div class="flex flex-wrap items-center gap-2">
+<div class="flex-none flex flex-wrap items-center justify-between gap-3 overflow-x-auto rounded-box border border-base-300 bg-base-100 p-4 shadow-xs md:flex-nowrap">
+    <div class="flex flex-wrap items-center gap-2 md:flex-nowrap md:shrink-0">
         <x-status-badge tone="primary" size="md" class="mr-1">{{ __('Aktiv') }}</x-status-badge>
 
         <a href="{{ route('legacy.diary.week', ['week' => $weekOffset - 1]) }}"
@@ -42,14 +42,14 @@
         </span>
     </div>
 
-    <div class="flex flex-wrap items-center gap-3">
+    <div class="flex flex-wrap items-center gap-3 md:flex-nowrap md:shrink-0">
         {{-- Cross-Link --}}
         @if (\App\Legacy\Support\LegacyRoleResolver::isAdmin(Auth::user()))
             <a href="{{ route('legacy.archive.week', ['week_date' => $selectedWeek ?? $monday->format('o-\\WW')]) }}" class="btn btn-sm btn-ghost">{{ __('Archivwoche') }}</a>
         @endif
 
         {{-- Legende --}}
-        <div class="flex flex-wrap items-center gap-3 text-xs text-base-content/60">
+        <div class="flex flex-wrap items-center gap-3 text-xs text-base-content/60 md:flex-nowrap">
             <span class="inline-flex items-center gap-1.5">
                 <span class="inline-block h-3 w-3 rounded-xs bg-info/30 outline-info outline-1"></span>{{ __('Bereitschaft') }}
             </span>

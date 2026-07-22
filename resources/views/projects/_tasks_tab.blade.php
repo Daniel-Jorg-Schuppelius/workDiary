@@ -33,8 +33,8 @@
 
 <div class="flex flex-col gap-3">
     {{-- Toolbar --}}
-    <div class="flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 bg-base-100 p-3 shadow-xs">
-        <div class="flex flex-wrap gap-2">
+    <div class="flex items-center justify-between gap-2 overflow-x-auto rounded-box border border-base-300 bg-base-100 p-3 shadow-xs">
+        <div class="flex shrink-0 items-center gap-2">
             {{-- Status-Filter --}}
             <div class="join">
                 @php

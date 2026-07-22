@@ -34,17 +34,10 @@
      data-week-tabs
      data-active-week="{{ $activeKey }}">
 
-    {{-- Toolbar --}}
-    <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <div class="flex flex-wrap items-center gap-3">
-            @if ($weekCount > 0)
-                <span class="font-['Space_Grotesk'] text-sm text-base-content/70">
-                    {{ trans_choice('{1} :count Woche|[2,*] :count Wochen', $weekCount, ['count' => $weekCount]) }}
-                </span>
-            @endif
-        </div>
-
-        <div class="flex items-center gap-3">
+    {{-- Toolbar (Standard-Komponente, hier in-flow statt im page-header-Stack,
+         weil die Wochensicht ihr Scroll-Verhalten selbst regelt) --}}
+    <x-page-toolbar :subtitle="$weekCount > 0 ? trans_choice('{1} :count Woche|[2,*] :count Wochen', $weekCount, ['count' => $weekCount]) : null">
+        <x-slot:actions>
             <label class="flex cursor-pointer items-center gap-2 text-sm" title="{{ __('Ansicht an Bildschirm anpassen') }}">
                 <x-icon name="fit_screen" class="text-base-content/70" />
                 <span class="text-sm text-base-content/70">{{ __('Auf Bildschirm') }}</span>
@@ -59,8 +52,8 @@
             </div>
 
             <x-help-button topic="week.overview" />
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-page-toolbar>
 
     {{-- Legend --}}
     <div class="flex flex-wrap items-center gap-4 rounded-box border border-base-300 bg-base-100 px-4 py-2 text-xs text-base-content/70 shadow-xs">

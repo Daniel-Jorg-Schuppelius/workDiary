@@ -1,0 +1,178 @@
+# Backup & Restore — Betriebshandbuch
+
+Zielgruppe: Betreiber einer **selbst gehosteten** WorkDiary-Installation
+(Bare-Metal, VM oder Container) auf Linux. Dieses Handbuch beschreibt die
+beiden Backup-Wege der Plattform und die Wiederherstellung:
+
+1. **Externes Backup + Heartbeat-Überwachung** — das eigentliche Backup läuft
+   außerhalb von WorkDiary (Cron + `scripts/backup.sh`); die App überwacht nur,
+   dass es regelmäßig passiert.
+2. **Verschlüsselte Cloud-Backupziele** — app-internes Snapshot-Backup
+   (Datenbank + Storage) mit Ende-zu-Ende-Verschlüsselung zu Dropbox,
+   OneDrive/SharePoint oder Google Drive.
+
+Der Status beider Wege ist in der App unter **Administration → Backup &
+Restore** sichtbar (letzte Sicherung je Quelle, Frische-Warnungen,
+Restore-Test-Register).
+
+## 1. Was gesichert werden muss
+
+1. **Datenbank** (MySQL/MariaDB oder PostgreSQL).
+2. **Storage-Verzeichnis** `storage/app/` (Belege, Dokumente, Uploads).
+3. **`.env`** — enthält den `APP_KEY`; ohne ihn sind verschlüsselte Felder
+   (PII, 2FA, Datenschutz-Fälle) unwiederbringlich verloren.
+
+Nicht sichern: `vendor/`, `node_modules/` (reproduzierbar),
+`storage/framework/cache/` und andere Laufzeit-Artefakte.
+
+Empfohlene Aufbewahrung: 7 tägliche, 4 wöchentliche, 12 monatliche
+Sicherungen; mindestens ein Offsite-Backup (3-2-1-Regel).
+
+## 2. Externes Backup + Heartbeat
+
+### 2.1 Backup-Skript
+
+`scripts/backup.sh` liegt als **Vorlage** im Repository (DB-Dump,
+Storage-Tar, `.env`-Kopie, SHA-256-Manifest) und muss an die Umgebung
+angepasst werden. Ausführung per Cron, z. B. nightly.
+
+### 2.2 Heartbeat einrichten
+
+Backups werden **nicht manuell in der Oberfläche registriert** — das
+Backup-Skript meldet jeden erfolgreichen Lauf per Heartbeat; danach erscheint
+die Quelle automatisch auf der Statusseite.
+
+- Token erzeugen: `php artisan workdiary:backup:rotate-token` schreibt
+  `BACKUP_HEARTBEAT_TOKEN` in die `.env`. Ohne gesetzten Token ist der
+  Endpoint deaktiviert (HTTP 503).
+- Endpoint: `POST /admin/backup/heartbeat` mit `Authorization: Bearer <Token>`
+  (außerhalb des Login-Stacks, gedrosselt). Felder: `manifest_sha256`
+  (64 Hex-Zeichen), `size_bytes`, `source`, `occurred_at` — siehe
+  Heartbeat-Block in `scripts/backup.sh`.
+- Jeder Eingang landet in `backup_heartbeats` und im Audit-Log
+  (`backup.heartbeatReceived`).
+
+### 2.3 Überwachung
+
+- Frische-Schwelle je Quelle: `BACKUP_HEARTBEAT_FRESHNESS_HOURS`
+  (Default 26 h). Ältere Heartbeats markiert die Statusseite als „überfällig",
+  ganz fehlende als „kein Backup registriert".
+- `php artisan workdiary:backup:check-restore` prüft Alter und Größe des
+  letzten Heartbeats (für Cron/CI); Plausibilitätsgrenzen über
+  `BACKUP_MIN_SIZE_BYTES` und `BACKUP_SIZE_DROP_RATIO`.
+
+## 3. Verschlüsselte Cloud-Backupziele
+
+App-internes Snapshot-Backup mit Client-seitiger Verschlüsselung
+(libsodium secretstream, XChaCha20-Poly1305). Ziele werden unter
+**Administration → Backupziele** verbunden (Dropbox, OneDrive/SharePoint,
+Google Drive); S3/Azure sind spätere Adapter desselben Vertrags.
+
+### 3.1 Schlüssel — vor dem ersten Lauf festlegen
+
+**`BACKUP_MASTER_KEY`** ist der einzige reguläre Entschlüsselungsweg. Er ist
+**kein frei wählbarer Text**, sondern ein base64-kodierter 32-Byte-Schlüssel:
+
+```bash
+php -r "echo base64_encode(random_bytes(32)), PHP_EOL;"
+# oder: openssl rand -base64 32
+```
+
+- Bewusst **nicht** der `APP_KEY` (getrennte Geheimnisse für App- und
+  Backup-Verschlüsselung).
+- **Offline sichern** (Tresor/Passwortmanager) — Verlust ohne Recovery-Key
+  macht alle Backups wertlos; ein neuer Schlüssel kann alte Backups nicht
+  mehr öffnen.
+- Gehört **nie** ins Backup selbst, nie ins Cloudziel, nie in Logs.
+
+**`BACKUP_RECOVERY_PUBLIC_KEY`** (optional, empfohlen): crypto_box-Public-Key
+als Notfall-Zweitweg. Schlüsselpaar erzeugen:
+
+```bash
+php -r '$kp = sodium_crypto_box_keypair();
+echo "public: ", base64_encode(sodium_crypto_box_publickey($kp)), PHP_EOL,
+     "secret: ", base64_encode(sodium_crypto_box_secretkey($kp)), PHP_EOL;'
+```
+
+Der Public-Key kommt in die `.env`, der Secret-Key ausschließlich in den
+Offline-Tresor. Ohne Recovery-Key warnt die Oberfläche dauerhaft.
+
+### 3.2 Betrieb
+
+```bash
+php artisan workdiary:backup:run           # Snapshot erstellen, hochladen, committen, Retention anwenden
+php artisan workdiary:backup:verify        # Commit-Manifest + Stichproben-Teile der jüngsten Generationen prüfen
+php artisan workdiary:backup:restore-test  # Generation isoliert wiederherstellen, Integrität protokollieren
+```
+
+Die Befehle sind bewusst nicht im App-Scheduler — per Cron einplanen
+(z. B. `run` nightly, `verify` wöchentlich, `restore-test` monatlich).
+
+Wichtige Einstellungen (`config/backup_targets.php`):
+
+| Variable | Default | Bedeutung |
+| --- | --- | --- |
+| `BACKUP_PART_SIZE` | 128 MiB | Teil-Größe des Snapshot-Splits |
+| `BACKUP_RETENTION_DAILY/WEEKLY/MONTHLY` | 7 / 4 / 12 | Generationen je Zeitklasse |
+| `BACKUP_FILES_ROOT` | Projektwurzel | Wurzel der Datei-Quellen (`storage/app`) |
+| `BACKUP_DB_CONNECTION` | database.default | Dump-Connection, z. B. Read-Replikat |
+| `BACKUP_WORK_DIR` | `storage/app/backup-work` | lokales Arbeitsverzeichnis |
+| `BACKUP_VERIFY_SAMPLE_PARTS` | 2 | Stichproben-Teile je Verify-Lauf |
+| `BACKUP_TAR_BINARY`, `BACKUP_MYSQLDUMP_BINARY`, `BACKUP_PG_DUMP_BINARY` | `tar`/`mysqldump`/`pg_dump` | Binary-Pfade (Preflight prüft Verfügbarkeit) |
+
+## 4. Restore-Anleitung (externes Backup)
+
+Voraussetzungen: frische DB-Instanz, WorkDiary-Codebase in der Version zum
+Backup-Zeitpunkt, `.env` aus dem Backup (insbesondere `APP_KEY`).
+
+```bash
+# 1) Datenbank
+gunzip < db_YYYYMMDD_HHMMSS.sql.gz | mysql -u root -p "$DB_NAME"
+
+# 2) Storage
+tar -C /var/www/workdiary -xzf storage_YYYYMMDD_HHMMSS.tar.gz
+
+# 3) .env zurückspielen
+cp env_YYYYMMDD_HHMMSS.txt /var/www/workdiary/.env
+chmod 600 /var/www/workdiary/.env
+
+# 4) Caches löschen
+php artisan optimize:clear
+
+# 5) Migrationen (nur bei neuerer Codebase-Version)
+php artisan migrate --force
+
+# 6) Heartbeat-Token erneuern (der alte Token steckt im Backup)
+php artisan workdiary:backup:rotate-token
+
+# 7) Smoke-Test
+php artisan system:health
+```
+
+Cloud-Generationen werden über `php artisan workdiary:backup:restore-test`
+isoliert wiederhergestellt und geprüft; im Notfall (Master-Key verloren)
+lässt sich der Datenschlüssel mit dem Recovery-Secret-Key öffnen.
+
+## 5. Restore-Tests (verpflichtend)
+
+Regelmäßig — mindestens innerhalb von `BACKUP_RESTORE_TEST_OVERDUE_DAYS`
+(Default 180 Tage), empfohlen monatlich — einen Restore in eine separate
+Testumgebung durchführen und anschließend unter **Backup & Restore →
+Restore-Test protokollieren** ins Register eintragen (Datum, Quelle,
+Ergebnis, Umfang, Dauer). Bleibt ein erfolgreicher Test zu lange aus, warnt
+die Statusseite.
+
+## 6. Sicherheitsregeln
+
+- Externe Backups vor Offsite-Transport verschlüsseln (z. B. `age`/GPG);
+  Cloud-Backupziele sind bereits Ende-zu-Ende-verschlüsselt.
+- Zugriff auf den Backup-Speicher mit eigenem Account, **nicht** mit
+  WorkDiary-App-Credentials.
+- `BACKUP_MASTER_KEY`, Recovery-Secret-Key und `APP_KEY` offline und getrennt
+  vom Backup aufbewahren.
+
+## Verweise
+
+- In-App-Hilfe: Topic `admin.backups` (Hilfe-Symbol auf der Statusseite).
+- Konzept/Architektur: Feature 017 im Doku-Repo WorkDiary-Architecture
+  (`backup-restore.md`, `features/017-backup-restore-disaster-recovery.md`).

@@ -165,7 +165,7 @@
         @endif
     </x-card>
 
-    {{-- Retention-Hinweis (Verweis auf ../WorkDiary-Architecture/backup-restore.md, kein Duplikat) --}}
+    {{-- Retention-Hinweis (Verweis auf docs/backup-restore.md, kein Duplikat) --}}
     <x-card :title="__('backup.section.retention')" icon="schedule">
         <p class="text-sm text-base-content/70">{{ __('backup.hint.retention') }}</p>
         <p class="mt-1 text-xs text-base-content/50">{{ __('backup.hint.see_docs') }}</p>
