@@ -19,16 +19,18 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar>
-        <x-slot:title>{{ __('Fluss-Bericht') }} — {{ $project->name }}</x-slot:title>
-        <x-slot:subtitle>{{ __('Kennzahlen aus Ereignissen und Snapshots (Definition v:version).', ['version' => $cfd->metricVersion]) }}</x-slot:subtitle>
-        <x-slot:actions>
-            <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('agile.reports.export.csv', [$project, 'throughput'])" show-label>{{ __('CSV Durchsatz') }}</x-icon-btn>
-            <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('agile.reports.export.csv', [$project, 'cfd'])" show-label>{{ __('CSV CFD') }}</x-icon-btn>
-            <x-icon-btn icon="monitoring" tone="ghost" size="sm" :href="route('agile.reports.sprint', $project)" show-label>{{ __('Sprint-Cockpit') }}</x-icon-btn>
-            <x-icon-btn icon="view_kanban" tone="ghost" size="sm" :href="route('agile.board', $project)" show-label>{{ __('Zum Board') }}</x-icon-btn>
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:title>{{ __('Fluss-Bericht') }} — {{ $project->name }}</x-slot:title>
+            <x-slot:subtitle>{{ __('Kennzahlen aus Ereignissen und Snapshots (Definition v:version).', ['version' => $cfd->metricVersion]) }}</x-slot:subtitle>
+            <x-slot:actions>
+                <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('agile.reports.export.csv', [$project, 'throughput'])" show-label>{{ __('CSV Durchsatz') }}</x-icon-btn>
+                <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('agile.reports.export.csv', [$project, 'cfd'])" show-label>{{ __('CSV CFD') }}</x-icon-btn>
+                <x-icon-btn icon="monitoring" tone="ghost" size="sm" :href="route('agile.reports.sprint', $project)" show-label>{{ __('Sprint-Cockpit') }}</x-icon-btn>
+                <x-icon-btn icon="view_kanban" tone="ghost" size="sm" :href="route('agile.board', $project)" show-label>{{ __('Zum Board') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <x-filter-bar :action="route('agile.reports.flow', $project)" :reset="route('agile.reports.flow', $project)">
         <x-date-range from-name="from" to-name="to" :from="$from->toDateString()" :to="$to->toDateString()" size="sm" />

@@ -17,18 +17,20 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar>
-        <x-slot:title>{{ __('Helpdesk-Bericht') }}</x-slot:title>
-        <x-slot:subtitle>{{ __('Kennzahlen aus Zeitstempeln und SLA-Uhr-Segmenten (Definition v:version).', ['version' => $metricVersion]) }}</x-slot:subtitle>
-        <x-slot:actions>
-            <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('helpdesk.reports.csv', ['metric' => 'volume', 'from' => $from->toDateString(), 'to' => $to->toDateString()])" show-label>{{ __('CSV Volumen') }}</x-icon-btn>
-            <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('helpdesk.reports.csv', ['metric' => 'fcr', 'from' => $from->toDateString(), 'to' => $to->toDateString()])" show-label>{{ __('CSV FCR') }}</x-icon-btn>
-            <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('helpdesk.reports.csv', ['metric' => 'aging', 'from' => $from->toDateString(), 'to' => $to->toDateString()])" show-label>{{ __('CSV Aging') }}</x-icon-btn>
-            <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('helpdesk.reports.csv', ['metric' => 'satisfaction', 'from' => $from->toDateString(), 'to' => $to->toDateString()])" show-label>{{ __('CSV Zufriedenheit') }}</x-icon-btn>
-            <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('helpdesk.reports.csv', ['metric' => 'knowledge', 'from' => $from->toDateString(), 'to' => $to->toDateString()])" show-label>{{ __('CSV Probleme trotz Artikel') }}</x-icon-btn>
-            <x-icon-btn icon="picture_as_pdf" tone="ghost" size="sm" :href="route('helpdesk.reports.pdf', ['from' => $from->toDateString(), 'to' => $to->toDateString()])" show-label>{{ __('PDF-Bericht') }}</x-icon-btn>
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:title>{{ __('Helpdesk-Bericht') }}</x-slot:title>
+            <x-slot:subtitle>{{ __('Kennzahlen aus Zeitstempeln und SLA-Uhr-Segmenten (Definition v:version).', ['version' => $metricVersion]) }}</x-slot:subtitle>
+            <x-slot:actions>
+                <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('helpdesk.reports.csv', ['metric' => 'volume', 'from' => $from->toDateString(), 'to' => $to->toDateString()])" show-label>{{ __('CSV Volumen') }}</x-icon-btn>
+                <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('helpdesk.reports.csv', ['metric' => 'fcr', 'from' => $from->toDateString(), 'to' => $to->toDateString()])" show-label>{{ __('CSV FCR') }}</x-icon-btn>
+                <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('helpdesk.reports.csv', ['metric' => 'aging', 'from' => $from->toDateString(), 'to' => $to->toDateString()])" show-label>{{ __('CSV Aging') }}</x-icon-btn>
+                <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('helpdesk.reports.csv', ['metric' => 'satisfaction', 'from' => $from->toDateString(), 'to' => $to->toDateString()])" show-label>{{ __('CSV Zufriedenheit') }}</x-icon-btn>
+                <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('helpdesk.reports.csv', ['metric' => 'knowledge', 'from' => $from->toDateString(), 'to' => $to->toDateString()])" show-label>{{ __('CSV Probleme trotz Artikel') }}</x-icon-btn>
+                <x-icon-btn icon="picture_as_pdf" tone="ghost" size="sm" :href="route('helpdesk.reports.pdf', ['from' => $from->toDateString(), 'to' => $to->toDateString()])" show-label>{{ __('PDF-Bericht') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <x-filter-bar :action="route('helpdesk.reports.index')" :reset="route('helpdesk.reports.index')">
         <x-date-range from-name="from" to-name="to" :from="$from->toDateString()" :to="$to->toDateString()" size="sm" />

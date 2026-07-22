@@ -5,41 +5,43 @@
 @section('content')
 <x-page-shell>
 
-    <x-page-toolbar :title="$project->name" :badge="$project->statusLabel()" :badge-tone="$project->statusTone()">
-        @if ($project->description)
-            <p class="max-w-prose">{{ $project->description }}</p>
-        @endif
-        <div class="mt-1 flex flex-wrap gap-3 text-xs text-base-content/60">
-            @if ($project->starts_on)
-                <span>{{ __('Start') }}: {{ $project->starts_on->fdate() }}</span>
+    <x-slot:toolbar>
+        <x-page-toolbar :title="$project->name" :badge="$project->statusLabel()" :badge-tone="$project->statusTone()">
+            @if ($project->description)
+                <p class="max-w-prose">{{ $project->description }}</p>
             @endif
-            @if ($project->ends_on)
-                <span>{{ __('Ende') }}: {{ $project->ends_on->fdate() }}</span>
-            @endif
-        </div>
-        <x-slot:actions>
-            <x-icon-btn icon="timeline" size="sm" :href="route('projects.planning', $project)" show-label>{{ __('Projektplanung') }}</x-icon-btn>
-            {{-- Einstieg Feature 064: auch ohne Board sichtbar (Erst-Aktivierung liegt auf der Board-Seite). --}}
-            @if (app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.agile_projects')
-                && \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::AgileView->value))
-                <x-icon-btn icon="view_kanban" size="sm" :href="route('agile.board', $project)" show-label>{{ __('Projektboard') }}</x-icon-btn>
-            @endif
-            @can('update', $project)
-                <x-icon-btn icon="edit" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('projects.edit', $project)"
-                            show-label>{{ __('Bearbeiten') }}</x-icon-btn>
-            @endcan
-            @can('delete', $project)
-                <x-action-form :action="route('projects.destroy', $project)" method="DELETE"
-                      :confirm="__('Verknüpfungen zu Einträgen werden gelöst.')"
-                      :confirm-label="__('Löschen')"
-                      data-confirm-title="{{ __('Projekt löschen') }}">
-                    <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
-                </x-action-form>
-            @endcan
-        </x-slot:actions>
-    </x-page-toolbar>
+            <div class="mt-1 flex flex-wrap gap-3 text-xs text-base-content/60">
+                @if ($project->starts_on)
+                    <span>{{ __('Start') }}: {{ $project->starts_on->fdate() }}</span>
+                @endif
+                @if ($project->ends_on)
+                    <span>{{ __('Ende') }}: {{ $project->ends_on->fdate() }}</span>
+                @endif
+            </div>
+            <x-slot:actions>
+                <x-icon-btn icon="timeline" size="sm" :href="route('projects.planning', $project)" show-label>{{ __('Projektplanung') }}</x-icon-btn>
+                {{-- Einstieg Feature 064: auch ohne Board sichtbar (Erst-Aktivierung liegt auf der Board-Seite). --}}
+                @if (app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.agile_projects')
+                    && \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::AgileView->value))
+                    <x-icon-btn icon="view_kanban" size="sm" :href="route('agile.board', $project)" show-label>{{ __('Projektboard') }}</x-icon-btn>
+                @endif
+                @can('update', $project)
+                    <x-icon-btn icon="edit" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('projects.edit', $project)"
+                                show-label>{{ __('Bearbeiten') }}</x-icon-btn>
+                @endcan
+                @can('delete', $project)
+                    <x-action-form :action="route('projects.destroy', $project)" method="DELETE"
+                          :confirm="__('Verknüpfungen zu Einträgen werden gelöst.')"
+                          :confirm-label="__('Löschen')"
+                          data-confirm-title="{{ __('Projekt löschen') }}">
+                        <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
+                    </x-action-form>
+                @endcan
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     {{-- Tabs --}}
     <div x-data="tabs({{ Js::from(request('tab', 'overview')) }})" data-tab-url-sync

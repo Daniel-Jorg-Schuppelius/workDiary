@@ -21,16 +21,18 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar :subtitle="__('GoBD-konformes Kassenbuch: Buchungen sind unveränderlich, Korrekturen laufen als Storno-Gegenbuchung (kein POS/TSE).')">
-        <x-slot:actions>
-            @can(\App\Enums\User\Permission::CashManage->value)
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('cash-registers.create') . '?dialog=1'"
-                            show-label>{{ __('Kasse anlegen') }}</x-icon-btn>
-            @endcan
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('GoBD-konformes Kassenbuch: Buchungen sind unveränderlich, Korrekturen laufen als Storno-Gegenbuchung (kein POS/TSE).')">
+            <x-slot:actions>
+                @can(\App\Enums\User\Permission::CashManage->value)
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('cash-registers.create') . '?dialog=1'"
+                                show-label>{{ __('Kasse anlegen') }}</x-icon-btn>
+                @endcan
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <x-table table-sort="client" :zebra="true" size="sm">
         <x-slot:head>

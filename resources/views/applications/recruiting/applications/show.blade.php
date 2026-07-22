@@ -12,27 +12,29 @@
         </div>
     @endif
 
-    <x-page-toolbar :title="$application->isAnonymized() ? __('(anonymisiert)') : ($application->candidate_name ?? '—')" :badge="__('values.' . $application->status)" badge-tone="outline">
-        <div class="text-sm text-base-content/70">
-            @if ($application->requisition) {{ $application->requisition->title }} · @endif
-            {{ __('Quelle: :source', ['source' => __("values.{$application->source}")]) }}
-            @if ($application->received_at) · {{ __('eingegangen :date', ['date' => $application->received_at->fdate()]) }} @endif
-        </div>
-        <x-slot:actions>
-            @can('update', $application)
-                @if (in_array($application->status, \App\Models\Applications\JobApplication::PIPELINE_STATUSES, true))
-                    <form method="POST" action="{{ route('recruiting.applications.status', $application) }}" class="flex items-center gap-1">
-                        @csrf
-                        <select name="status" class="select select-sm select-bordered" data-autosubmit aria-label="{{ __('Status') }}">
-                            @foreach (['screened', 'interview_planned', 'interviewed', 'task_open'] as $status)
-                                <option value="{{ $status }}" @selected($application->status === $status)>{{ __("values.$status") }}</option>
-                            @endforeach
-                        </select>
-                    </form>
-                @endif
-            @endcan
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar :title="$application->isAnonymized() ? __('(anonymisiert)') : ($application->candidate_name ?? '—')" :badge="__('values.' . $application->status)" badge-tone="outline">
+            <div class="text-sm text-base-content/70">
+                @if ($application->requisition) {{ $application->requisition->title }} · @endif
+                {{ __('Quelle: :source', ['source' => __("values.{$application->source}")]) }}
+                @if ($application->received_at) · {{ __('eingegangen :date', ['date' => $application->received_at->fdate()]) }} @endif
+            </div>
+            <x-slot:actions>
+                @can('update', $application)
+                    @if (in_array($application->status, \App\Models\Applications\JobApplication::PIPELINE_STATUSES, true))
+                        <form method="POST" action="{{ route('recruiting.applications.status', $application) }}" class="flex items-center gap-1">
+                            @csrf
+                            <select name="status" class="select select-sm select-bordered" data-autosubmit aria-label="{{ __('Status') }}">
+                                @foreach (['screened', 'interview_planned', 'interviewed', 'task_open'] as $status)
+                                    <option value="{{ $status }}" @selected($application->status === $status)>{{ __("values.$status") }}</option>
+                                @endforeach
+                            </select>
+                        </form>
+                    @endif
+                @endcan
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('Kandidat')">

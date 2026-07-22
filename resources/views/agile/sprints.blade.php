@@ -18,14 +18,16 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar>
-        <x-slot:title>{{ __('Sprints') }} — {{ $project->name }}</x-slot:title>
-        <x-slot:subtitle>{{ __('Sprint-Lebenszyklus des Projektboards (:method).', ['method' => $board->method === 'scrum' ? 'Scrum' : 'Kanban']) }}</x-slot:subtitle>
-        <x-slot:actions>
-            <x-icon-btn icon="view_kanban" tone="ghost" size="sm" :href="route('agile.board', $project)" show-label>{{ __('Zum Board') }}</x-icon-btn>
-            <x-icon-btn icon="low_priority" tone="ghost" size="sm" :href="route('agile.backlog', $project)" show-label>{{ __('Produkt-Backlog') }}</x-icon-btn>
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:title>{{ __('Sprints') }} — {{ $project->name }}</x-slot:title>
+            <x-slot:subtitle>{{ __('Sprint-Lebenszyklus des Projektboards (:method).', ['method' => $board->method === 'scrum' ? 'Scrum' : 'Kanban']) }}</x-slot:subtitle>
+            <x-slot:actions>
+                <x-icon-btn icon="view_kanban" tone="ghost" size="sm" :href="route('agile.board', $project)" show-label>{{ __('Zum Board') }}</x-icon-btn>
+                <x-icon-btn icon="low_priority" tone="ghost" size="sm" :href="route('agile.backlog', $project)" show-label>{{ __('Produkt-Backlog') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if ($canManage)
         <x-card :title="__('Sprint planen')">

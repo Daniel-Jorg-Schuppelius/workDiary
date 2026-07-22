@@ -110,127 +110,129 @@
         </div>
     @endif
 
-    <x-page-toolbar :title="$invoice->documentLabel() . ' ' . $invoice->number" :badge="__($invoice->status)" badge-tone="outline">
-        <div class="text-sm text-base-content/70">{{ $invoice->customer->name }}</div>
-        @if ($invoice->hasServicePeriod())
-            <div class="text-sm text-base-content/70">{{ $invoice->dateLabelPeriod() }}: {{ $invoice->serviceDateFrom()->fdate() }} – {{ $invoice->serviceDateTo()->fdate() }}</div>
-        @elseif ($invoice->serviceDateSingle())
-            <div class="text-sm text-base-content/70">{{ $invoice->dateLabelSingle() }}: {{ $invoice->serviceDateSingle()->fdate() }}</div>
-        @endif
-        <x-slot:actions>
-            <x-icon-btn icon="picture_as_pdf" size="sm" :href="route('invoices.pdf', $invoice)" show-label>{{ __('PDF') }}</x-icon-btn>
-            {{-- E-Rechnung (Feature 045): XRechnung nur im Pfad „WorkDiary führt" und für gestellte/bezahlte Rechnungen. --}}
-            @php $einvoiceVisible = in_array($invoice->status, [\App\Models\Invoice::STATUS_ISSUED, \App\Models\Invoice::STATUS_PAID], true) && ! app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($invoice->customer)->isExternal(); @endphp
-            @if ($einvoiceVisible)
-                <x-icon-btn icon="receipt" size="sm" :href="route('invoices.einvoice', $invoice)" show-label
-                            :title="__('invoicing.einvoice.button_title')">{{ __('invoicing.einvoice.button') }}</x-icon-btn>
-                <x-icon-btn icon="receipt" size="sm" :href="route('invoices.zugferd', $invoice)" show-label
-                            :title="__('invoicing.einvoice.zugferd.button_title')">{{ __('invoicing.einvoice.zugferd.button') }}</x-icon-btn>
+    <x-slot:toolbar>
+        <x-page-toolbar :title="$invoice->documentLabel() . ' ' . $invoice->number" :badge="__($invoice->status)" badge-tone="outline">
+            <div class="text-sm text-base-content/70">{{ $invoice->customer->name }}</div>
+            @if ($invoice->hasServicePeriod())
+                <div class="text-sm text-base-content/70">{{ $invoice->dateLabelPeriod() }}: {{ $invoice->serviceDateFrom()->fdate() }} – {{ $invoice->serviceDateTo()->fdate() }}</div>
+            @elseif ($invoice->serviceDateSingle())
+                <div class="text-sm text-base-content/70">{{ $invoice->dateLabelSingle() }}: {{ $invoice->serviceDateSingle()->fdate() }}</div>
             @endif
-            @can('send', $invoice)
-                <x-icon-btn icon="mail" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('invoices.send.form', $invoice)"
-                            show-label>{{ __('Per E-Mail senden') }}</x-icon-btn>
-            @endcan
-            @can('update', $invoice)
-                @if ($invoice->status === \App\Models\Invoice::STATUS_DRAFT)
-                    <x-icon-btn icon="add" tone="primary" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('invoices.items.create', $invoice)"
-                                show-label>{{ __('Position hinzufügen') }}</x-icon-btn>
-                    <x-icon-btn icon="receipt_long" tone="info" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('invoices.expenses.form', $invoice)"
-                                show-label>{{ __('Spesen hinzufügen') }}</x-icon-btn>
-                    {{-- MVP-416: Belegrabatt + Skonto am Entwurf --}}
-                    <x-icon-btn icon="percent" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('invoices.conditions.form', $invoice)"
-                                show-label>{{ __('Konditionen') }}</x-icon-btn>
+            <x-slot:actions>
+                <x-icon-btn icon="picture_as_pdf" size="sm" :href="route('invoices.pdf', $invoice)" show-label>{{ __('PDF') }}</x-icon-btn>
+                {{-- E-Rechnung (Feature 045): XRechnung nur im Pfad „WorkDiary führt" und für gestellte/bezahlte Rechnungen. --}}
+                @php $einvoiceVisible = in_array($invoice->status, [\App\Models\Invoice::STATUS_ISSUED, \App\Models\Invoice::STATUS_PAID], true) && ! app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($invoice->customer)->isExternal(); @endphp
+                @if ($einvoiceVisible)
+                    <x-icon-btn icon="receipt" size="sm" :href="route('invoices.einvoice', $invoice)" show-label
+                                :title="__('invoicing.einvoice.button_title')">{{ __('invoicing.einvoice.button') }}</x-icon-btn>
+                    <x-icon-btn icon="receipt" size="sm" :href="route('invoices.zugferd', $invoice)" show-label
+                                :title="__('invoicing.einvoice.zugferd.button_title')">{{ __('invoicing.einvoice.zugferd.button') }}</x-icon-btn>
                 @endif
-            @endcan
-            @if (! $invoice->isProforma() && ! app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($invoice->customer)->isExternal())
-                <x-icon-btn icon="rule" size="sm" :href="route('invoices.einvoice-validation', $invoice)" show-label
-                            :title="__('Preflight, XSD und KoSIT vor der Ausstellung prüfen')">{{ __('E-Rechnungs-Prüfung') }}</x-icon-btn>
-            @endif
-            @can('issue', $invoice)
-                @if (! $invoice->isProforma())
-                    @if ($invoice->approved_at === null)
-                        <x-action-form :action="route('invoices.approve', $invoice)">
-                            <x-icon-btn icon="verified" tone="info" size="sm" type="submit" show-label
-                                        :title="__('Fachliche Freigabe vor der Ausstellung (Vier-Augen-Option)')">{{ __('Freigeben') }}</x-icon-btn>
+                @can('send', $invoice)
+                    <x-icon-btn icon="mail" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('invoices.send.form', $invoice)"
+                                show-label>{{ __('Per E-Mail senden') }}</x-icon-btn>
+                @endcan
+                @can('update', $invoice)
+                    @if ($invoice->status === \App\Models\Invoice::STATUS_DRAFT)
+                        <x-icon-btn icon="add" tone="primary" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route('invoices.items.create', $invoice)"
+                                    show-label>{{ __('Position hinzufügen') }}</x-icon-btn>
+                        <x-icon-btn icon="receipt_long" tone="info" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route('invoices.expenses.form', $invoice)"
+                                    show-label>{{ __('Spesen hinzufügen') }}</x-icon-btn>
+                        {{-- MVP-416: Belegrabatt + Skonto am Entwurf --}}
+                        <x-icon-btn icon="percent" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route('invoices.conditions.form', $invoice)"
+                                    show-label>{{ __('Konditionen') }}</x-icon-btn>
+                    @endif
+                @endcan
+                @if (! $invoice->isProforma() && ! app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($invoice->customer)->isExternal())
+                    <x-icon-btn icon="rule" size="sm" :href="route('invoices.einvoice-validation', $invoice)" show-label
+                                :title="__('Preflight, XSD und KoSIT vor der Ausstellung prüfen')">{{ __('E-Rechnungs-Prüfung') }}</x-icon-btn>
+                @endif
+                @can('issue', $invoice)
+                    @if (! $invoice->isProforma())
+                        @if ($invoice->approved_at === null)
+                            <x-action-form :action="route('invoices.approve', $invoice)">
+                                <x-icon-btn icon="verified" tone="info" size="sm" type="submit" show-label
+                                            :title="__('Fachliche Freigabe vor der Ausstellung (Vier-Augen-Option)')">{{ __('Freigeben') }}</x-icon-btn>
+                            </x-action-form>
+                        @endif
+                        <x-action-form :action="route('invoices.issue', $invoice)">
+                            <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Stellen') }}</x-icon-btn>
                         </x-action-form>
                     @endif
-                    <x-action-form :action="route('invoices.issue', $invoice)">
-                        <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Stellen') }}</x-icon-btn>
-                    </x-action-form>
+                    {{-- Plugin-Slot: jedes aktive Plugin kann hier eigene Aktionen (z. B. "An Lexoffice senden") einklinken --}}
+                    {!! app(\App\Plugins\PluginManager::class)->renderSlot('invoice-show.actions', $invoice) !!}
+                @endcan
+                @if ($invoice->isProforma())
+                    @can('create', \App\Models\Invoice::class)
+                        <x-action-form :action="route('invoices.proforma-convert', $invoice)"
+                              :confirm="__('Pro-forma :nr in eine echte Rechnung mit neuer Rechnungsnummer umwandeln?', ['nr' => $invoice->number])"
+                              confirm-icon="swap_horiz"
+                              confirm-tone="primary"
+                              :confirm-label="__('Umwandeln')">
+                            <x-icon-btn icon="swap_horiz" tone="primary" size="sm" type="submit" show-label>{{ __('In Rechnung umwandeln') }}</x-icon-btn>
+                        </x-action-form>
+                    @endcan
                 @endif
-                {{-- Plugin-Slot: jedes aktive Plugin kann hier eigene Aktionen (z. B. "An Lexoffice senden") einklinken --}}
-                {!! app(\App\Plugins\PluginManager::class)->renderSlot('invoice-show.actions', $invoice) !!}
-            @endcan
-            @if ($invoice->isProforma())
-                @can('create', \App\Models\Invoice::class)
-                    <x-action-form :action="route('invoices.proforma-convert', $invoice)"
-                          :confirm="__('Pro-forma :nr in eine echte Rechnung mit neuer Rechnungsnummer umwandeln?', ['nr' => $invoice->number])"
-                          confirm-icon="swap_horiz"
-                          confirm-tone="primary"
-                          :confirm-label="__('Umwandeln')">
-                        <x-icon-btn icon="swap_horiz" tone="primary" size="sm" type="submit" show-label>{{ __('In Rechnung umwandeln') }}</x-icon-btn>
+                @if ($invoice->isOverdue() && (int) $invoice->dunning_level < 3 && (auth()->user()?->canManageBilling() ?? false))
+                    <x-icon-btn icon="notification_important" tone="warning" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('invoices.dun.form', $invoice)"
+                                show-label>{{ __('Mahnen') }}</x-icon-btn>
+                @endif
+                @can('pay', $invoice)
+                    <x-action-form :action="route('invoices.pay', $invoice)">
+                        <x-icon-btn icon="check_circle" tone="success" size="sm" type="submit" show-label>{{ __('Bezahlt markieren') }}</x-icon-btn>
                     </x-action-form>
                 @endcan
-            @endif
-            @if ($invoice->isOverdue() && (int) $invoice->dunning_level < 3 && (auth()->user()?->canManageBilling() ?? false))
-                <x-icon-btn icon="notification_important" tone="warning" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('invoices.dun.form', $invoice)"
-                            show-label>{{ __('Mahnen') }}</x-icon-btn>
-            @endif
-            @can('pay', $invoice)
-                <x-action-form :action="route('invoices.pay', $invoice)">
-                    <x-icon-btn icon="check_circle" tone="success" size="sm" type="submit" show-label>{{ __('Bezahlt markieren') }}</x-icon-btn>
-                </x-action-form>
-            @endcan
-            @can('cancel', $invoice)
-                <x-action-form :action="route('invoices.cancel', $invoice)"
-                      :confirm="__('Rechnung wirklich stornieren?')"
-                      confirm-icon="block"
-                      confirm-tone="warning"
-                      :confirm-label="__('Stornieren')">
-                    <x-icon-btn icon="block" tone="warning" size="sm" type="submit" show-label>{{ __('Stornieren') }}</x-icon-btn>
-                </x-action-form>
-            @endcan
-            @can('createCreditNote', $invoice)
-                <x-action-form :action="route('invoices.credit-note', $invoice)"
-                      :confirm="__('Korrekturrechnung (Gutschrift) zu :nr erstellen?', ['nr' => $invoice->number])"
-                      confirm-icon="undo"
-                      confirm-tone="warning"
-                      :confirm-label="__('Korrekturrechnung erstellen')">
-                    <x-icon-btn icon="undo" tone="warning" size="sm" type="submit" show-label>{{ __('Korrekturrechnung') }}</x-icon-btn>
-                </x-action-form>
-            @endcan
-            @can('update', $invoice)
-                @if (($openDownPaymentCount ?? 0) > 0 && $invoice->type === \App\Models\Invoice::TYPE_INVOICE)
-                    <x-action-form :action="route('invoices.final', $invoice)"
-                          :confirm="__('Offene Abschlagsrechnungen (:n) anrechnen und Entwurf :nr zur Schlussrechnung machen?', ['n' => $openDownPaymentCount, 'nr' => $invoice->number])"
-                          confirm-icon="functions"
-                          confirm-tone="primary"
-                          :confirm-label="__('Schlussrechnung erstellen')">
-                        <x-icon-btn icon="functions" tone="primary" size="sm" type="submit" show-label>{{ __('Zur Schlussrechnung (:n Abschläge)', ['n' => $openDownPaymentCount]) }}</x-icon-btn>
+                @can('cancel', $invoice)
+                    <x-action-form :action="route('invoices.cancel', $invoice)"
+                          :confirm="__('Rechnung wirklich stornieren?')"
+                          confirm-icon="block"
+                          confirm-tone="warning"
+                          :confirm-label="__('Stornieren')">
+                        <x-icon-btn icon="block" tone="warning" size="sm" type="submit" show-label>{{ __('Stornieren') }}</x-icon-btn>
                     </x-action-form>
-                @endif
-            @endcan
-            @can('delete', $invoice)
-                <x-action-form :action="route('invoices.destroy', $invoice)" method="DELETE"
-                      :confirm="__('Wirklich löschen?')"
-                      confirm-icon="delete"
-                      confirm-tone="error"
-                      :confirm-label="__('Löschen')">
-                    <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
-                </x-action-form>
-            @endcan
-        </x-slot:actions>
-    </x-page-toolbar>
+                @endcan
+                @can('createCreditNote', $invoice)
+                    <x-action-form :action="route('invoices.credit-note', $invoice)"
+                          :confirm="__('Korrekturrechnung (Gutschrift) zu :nr erstellen?', ['nr' => $invoice->number])"
+                          confirm-icon="undo"
+                          confirm-tone="warning"
+                          :confirm-label="__('Korrekturrechnung erstellen')">
+                        <x-icon-btn icon="undo" tone="warning" size="sm" type="submit" show-label>{{ __('Korrekturrechnung') }}</x-icon-btn>
+                    </x-action-form>
+                @endcan
+                @can('update', $invoice)
+                    @if (($openDownPaymentCount ?? 0) > 0 && $invoice->type === \App\Models\Invoice::TYPE_INVOICE)
+                        <x-action-form :action="route('invoices.final', $invoice)"
+                              :confirm="__('Offene Abschlagsrechnungen (:n) anrechnen und Entwurf :nr zur Schlussrechnung machen?', ['n' => $openDownPaymentCount, 'nr' => $invoice->number])"
+                              confirm-icon="functions"
+                              confirm-tone="primary"
+                              :confirm-label="__('Schlussrechnung erstellen')">
+                            <x-icon-btn icon="functions" tone="primary" size="sm" type="submit" show-label>{{ __('Zur Schlussrechnung (:n Abschläge)', ['n' => $openDownPaymentCount]) }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
+                @endcan
+                @can('delete', $invoice)
+                    <x-action-form :action="route('invoices.destroy', $invoice)" method="DELETE"
+                          :confirm="__('Wirklich löschen?')"
+                          confirm-icon="delete"
+                          confirm-tone="error"
+                          :confirm-label="__('Löschen')">
+                        <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
+                    </x-action-form>
+                @endcan
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @php $showServiceDates = $invoice->hasServicePeriod(); $footColspan = $showServiceDates ? 5 : 4; @endphp
 

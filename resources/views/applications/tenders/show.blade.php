@@ -5,52 +5,54 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar :title="$opportunity->title" :badge="__('values.' . $opportunity->status)" badge-tone="outline">
-        <div class="text-sm text-base-content/70">
-            {{ __("values.{$opportunity->kind}") }}
-            @if ($opportunity->customer) · {{ $opportunity->customer->name }} @endif
-            @if ($opportunity->submission_deadline) · {{ __('Abgabefrist: :date', ['date' => $opportunity->submission_deadline->fdate()]) }} @endif
-        </div>
-        <x-slot:actions>
-            @can('update', $opportunity)
-                <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('tenders.edit', $opportunity)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
-            @endcan
-            @can('decide', $opportunity)
-                @if ($opportunity->go_decision === 'pending' && $opportunity->isOpen())
-                    <x-action-form :action="route('tenders.go', $opportunity)">
-                        <input type="hidden" name="decision" value="go">
-                        <x-icon-btn icon="thumb_up" tone="success" size="sm" type="submit" show-label>{{ __('Go') }}</x-icon-btn>
+    <x-slot:toolbar>
+        <x-page-toolbar :title="$opportunity->title" :badge="__('values.' . $opportunity->status)" badge-tone="outline">
+            <div class="text-sm text-base-content/70">
+                {{ __("values.{$opportunity->kind}") }}
+                @if ($opportunity->customer) · {{ $opportunity->customer->name }} @endif
+                @if ($opportunity->submission_deadline) · {{ __('Abgabefrist: :date', ['date' => $opportunity->submission_deadline->fdate()]) }} @endif
+            </div>
+            <x-slot:actions>
+                @can('update', $opportunity)
+                    <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('tenders.edit', $opportunity)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
+                @endcan
+                @can('decide', $opportunity)
+                    @if ($opportunity->go_decision === 'pending' && $opportunity->isOpen())
+                        <x-action-form :action="route('tenders.go', $opportunity)">
+                            <input type="hidden" name="decision" value="go">
+                            <x-icon-btn icon="thumb_up" tone="success" size="sm" type="submit" show-label>{{ __('Go') }}</x-icon-btn>
+                        </x-action-form>
+                        <x-action-form :action="route('tenders.go', $opportunity)"
+                              :confirm="__('No-go dokumentieren? Die Akte wird als zurückgezogen geschlossen.')"
+                              confirm-icon="thumb_down" confirm-tone="warning" :confirm-label="__('No-go')">
+                            <input type="hidden" name="decision" value="no_go">
+                            <x-icon-btn icon="thumb_down" tone="warning" size="sm" type="submit" show-label>{{ __('No-go') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
+                    @if ($opportunity->go_decision === 'go' && $opportunity->isOpen())
+                        <x-action-form :action="route('tenders.submit', $opportunity)">
+                            <input type="hidden" name="channel" value="portal">
+                            <x-icon-btn icon="outbox" tone="primary" size="sm" type="submit" show-label
+                                        :title="__('Einreichung als versionierten Snapshot mit Hash dokumentieren')">{{ __('Einreichung dokumentieren') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
+                    @if ($opportunity->status === 'won')
+                        <x-action-form :action="route('tenders.transfer', $opportunity)"
+                              :confirm="__('Gewonnene Ausschreibung in ein Projekt überführen?')"
+                              confirm-icon="folder_special" confirm-tone="primary" :confirm-label="__('Überführen')">
+                            <x-icon-btn icon="folder_special" tone="primary" size="sm" type="submit" show-label>{{ __('In Projekt überführen') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
+                @endcan
+                @can('delete', $opportunity)
+                    <x-action-form :action="route('tenders.destroy', $opportunity)" method="DELETE"
+                          :confirm="__('Akte wirklich löschen?')" confirm-icon="delete" confirm-tone="error" :confirm-label="__('Löschen')">
+                        <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
                     </x-action-form>
-                    <x-action-form :action="route('tenders.go', $opportunity)"
-                          :confirm="__('No-go dokumentieren? Die Akte wird als zurückgezogen geschlossen.')"
-                          confirm-icon="thumb_down" confirm-tone="warning" :confirm-label="__('No-go')">
-                        <input type="hidden" name="decision" value="no_go">
-                        <x-icon-btn icon="thumb_down" tone="warning" size="sm" type="submit" show-label>{{ __('No-go') }}</x-icon-btn>
-                    </x-action-form>
-                @endif
-                @if ($opportunity->go_decision === 'go' && $opportunity->isOpen())
-                    <x-action-form :action="route('tenders.submit', $opportunity)">
-                        <input type="hidden" name="channel" value="portal">
-                        <x-icon-btn icon="outbox" tone="primary" size="sm" type="submit" show-label
-                                    :title="__('Einreichung als versionierten Snapshot mit Hash dokumentieren')">{{ __('Einreichung dokumentieren') }}</x-icon-btn>
-                    </x-action-form>
-                @endif
-                @if ($opportunity->status === 'won')
-                    <x-action-form :action="route('tenders.transfer', $opportunity)"
-                          :confirm="__('Gewonnene Ausschreibung in ein Projekt überführen?')"
-                          confirm-icon="folder_special" confirm-tone="primary" :confirm-label="__('Überführen')">
-                        <x-icon-btn icon="folder_special" tone="primary" size="sm" type="submit" show-label>{{ __('In Projekt überführen') }}</x-icon-btn>
-                    </x-action-form>
-                @endif
-            @endcan
-            @can('delete', $opportunity)
-                <x-action-form :action="route('tenders.destroy', $opportunity)" method="DELETE"
-                      :confirm="__('Akte wirklich löschen?')" confirm-icon="delete" confirm-tone="error" :confirm-label="__('Löschen')">
-                    <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
-                </x-action-form>
-            @endcan
-        </x-slot:actions>
-    </x-page-toolbar>
+                @endcan
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('Akte')">

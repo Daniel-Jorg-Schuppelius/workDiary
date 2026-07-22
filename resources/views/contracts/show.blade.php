@@ -10,39 +10,41 @@
     @endif
     <x-validation-errors />
 
-    <x-page-toolbar :title="$contract->number . ' — ' . $contract->title">
-        <div class="flex flex-wrap items-center gap-2 text-sm">
-            <x-status-badge size="md" outline>{{ $contract->status->label() }}</x-status-badge>
-            <span class="badge badge-outline">{{ $contract->kind->label() }}</span>
-            <span class="badge badge-outline">{{ $contract->term_kind->label() }}</span>
-            <span class="badge badge-outline">{{ $contract->starts_on->fdate() }} – {{ optional($contract->ends_on)->fdate() ?? __('unbefristet') }}</span>
-        </div>
-        <x-slot:actions>
-            @can('update', $contract)
-                @if ($contract->status === \App\Enums\Contract\ContractStatus::Draft)
-                    <form method="POST" action="{{ route('contracts.activate', $contract) }}">@csrf
-                        <button type="submit" class="btn btn-sm btn-primary">{{ __('Aktivieren') }}</button>
-                    </form>
-                @endif
-                @if ($contract->status->isOpen())
-                    <form method="POST" action="{{ route('contracts.end', $contract) }}">@csrf
-                        <button type="submit" class="btn btn-sm">{{ __('Beenden') }}</button>
-                    </form>
-                @endif
-                @if (in_array($contract->status, [\App\Enums\Contract\ContractStatus::Draft, \App\Enums\Contract\ContractStatus::Active], true))
-                    <details class="inline-block text-left">
-                        <summary class="btn btn-sm btn-ghost text-error">{{ __('Kündigen') }}</summary>
-                        <form method="POST" action="{{ route('contracts.terminate', $contract) }}" class="mt-2 flex items-end gap-2 rounded-box border border-base-300 p-3">
-                            @csrf
-                            <x-input-field name="reason" :label="__('Begründung (Pflicht)')" required />
-                            <button type="submit" class="btn btn-sm btn-error">{{ __('Kündigen') }}</button>
+    <x-slot:toolbar>
+        <x-page-toolbar :title="$contract->number . ' — ' . $contract->title">
+            <div class="flex flex-wrap items-center gap-2 text-sm">
+                <x-status-badge size="md" outline>{{ $contract->status->label() }}</x-status-badge>
+                <span class="badge badge-outline">{{ $contract->kind->label() }}</span>
+                <span class="badge badge-outline">{{ $contract->term_kind->label() }}</span>
+                <span class="badge badge-outline">{{ $contract->starts_on->fdate() }} – {{ optional($contract->ends_on)->fdate() ?? __('unbefristet') }}</span>
+            </div>
+            <x-slot:actions>
+                @can('update', $contract)
+                    @if ($contract->status === \App\Enums\Contract\ContractStatus::Draft)
+                        <form method="POST" action="{{ route('contracts.activate', $contract) }}">@csrf
+                            <button type="submit" class="btn btn-sm btn-primary">{{ __('Aktivieren') }}</button>
                         </form>
-                    </details>
-                @endif
-            @endcan
-            <x-icon-btn icon="arrow_back" size="sm" :href="route('contracts.index')" show-label>{{ __('Zur Liste') }}</x-icon-btn>
-        </x-slot:actions>
-    </x-page-toolbar>
+                    @endif
+                    @if ($contract->status->isOpen())
+                        <form method="POST" action="{{ route('contracts.end', $contract) }}">@csrf
+                            <button type="submit" class="btn btn-sm">{{ __('Beenden') }}</button>
+                        </form>
+                    @endif
+                    @if (in_array($contract->status, [\App\Enums\Contract\ContractStatus::Draft, \App\Enums\Contract\ContractStatus::Active], true))
+                        <details class="inline-block text-left">
+                            <summary class="btn btn-sm btn-ghost text-error">{{ __('Kündigen') }}</summary>
+                            <form method="POST" action="{{ route('contracts.terminate', $contract) }}" class="mt-2 flex items-end gap-2 rounded-box border border-base-300 p-3">
+                                @csrf
+                                <x-input-field name="reason" :label="__('Begründung (Pflicht)')" required />
+                                <button type="submit" class="btn btn-sm btn-error">{{ __('Kündigen') }}</button>
+                            </form>
+                        </details>
+                    @endif
+                @endcan
+                <x-icon-btn icon="arrow_back" size="sm" :href="route('contracts.index')" show-label>{{ __('Zur Liste') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('Vertragsdaten')">

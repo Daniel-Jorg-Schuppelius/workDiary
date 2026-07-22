@@ -4,46 +4,48 @@
 @section('content')
 <x-page-shell>
 
-    <x-page-toolbar :title="$dutyPlan->title"
-                    :badge="$dutyPlan->isPublished() ? __('duty_plan.status.published') : __('duty_plan.status.draft')"
-                    :badge-tone="$dutyPlan->isPublished() ? 'success' : 'ghost'">
-        <x-slot:actions>
-            <x-icon-btn icon="arrow_back" size="sm" :href="route('duty-plans.index')" show-label>{{ __('Übersicht') }}</x-icon-btn>
-            <div class="dropdown dropdown-end">
-                <label tabindex="0" class="btn btn-outline btn-sm gap-1">
-                    <x-icon name="print" /><span>{{ __('Drucken') }}</span>
-                </label>
-                <ul tabindex="0" class="menu dropdown-content z-1 mt-2 w-72 rounded-box bg-base-100 p-2 shadow">
-                    <li class="menu-title">{{ __('Layout wählen') }}</li>
-                    <li><a href="{{ route('print.duty-plan.roster', $dutyPlan) }}" target="_blank">{{ __('Monats-Aushang (A3 quer)') }}</a></li>
-                    <li><a href="{{ route('print.duty-plan.week', $dutyPlan) }}" target="_blank">{{ __('Wochenplan (A4 quer)') }}</a></li>
-                    <li><a href="{{ route('print.duty-plan.day', [$dutyPlan, 'date' => $dutyPlan->from_date->toDateString()]) }}" target="_blank">{{ __('Tagesbriefing (A4 hoch)') }}</a></li>
-                    <li class="menu-title">{{ __('Datenschutz') }}</li>
-                    <li><a href="{{ route('print.duty-plan.roster', [$dutyPlan, 'anonymous' => 1]) }}" target="_blank">{{ __('Aushang anonymisiert') }}</a></li>
-                </ul>
-            </div>
-            @can('view', $dutyPlan)
-                <x-icon-btn icon="shield_person" tone="outline" size="sm" :href="route('duty-plans.coverage.index', $dutyPlan)" show-label>{{ __('Soll-Besetzung') }}</x-icon-btn>
-            @endcan
-            @can('update', $dutyPlan)
-                <x-icon-btn icon="edit" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('duty-plans.edit', $dutyPlan)"
-                            show-label>{{ __('Bearbeiten') }}</x-icon-btn>
-                @if ($dutyPlan->isDraft())
-                    <form method="POST" action="{{ route('duty-plans.publish', $dutyPlan) }}" class="inline">
-                        @csrf @method('PATCH')
-                        <x-icon-btn icon="publish" tone="success" size="sm" type="submit" show-label>{{ __('Veröffentlichen') }}</x-icon-btn>
-                    </form>
-                @else
-                    <form method="POST" action="{{ route('duty-plans.retract', $dutyPlan) }}" class="inline">
-                        @csrf @method('PATCH')
-                        <x-icon-btn icon="undo" tone="warning" size="sm" type="submit" show-label>{{ __('Zurück zu Entwurf') }}</x-icon-btn>
-                    </form>
-                @endif
-            @endcan
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar :title="$dutyPlan->title"
+                        :badge="$dutyPlan->isPublished() ? __('duty_plan.status.published') : __('duty_plan.status.draft')"
+                        :badge-tone="$dutyPlan->isPublished() ? 'success' : 'ghost'">
+            <x-slot:actions>
+                <x-icon-btn icon="arrow_back" size="sm" :href="route('duty-plans.index')" show-label>{{ __('Übersicht') }}</x-icon-btn>
+                <div class="dropdown dropdown-end">
+                    <label tabindex="0" class="btn btn-outline btn-sm gap-1">
+                        <x-icon name="print" /><span>{{ __('Drucken') }}</span>
+                    </label>
+                    <ul tabindex="0" class="menu dropdown-content z-1 mt-2 w-72 rounded-box bg-base-100 p-2 shadow">
+                        <li class="menu-title">{{ __('Layout wählen') }}</li>
+                        <li><a href="{{ route('print.duty-plan.roster', $dutyPlan) }}" target="_blank">{{ __('Monats-Aushang (A3 quer)') }}</a></li>
+                        <li><a href="{{ route('print.duty-plan.week', $dutyPlan) }}" target="_blank">{{ __('Wochenplan (A4 quer)') }}</a></li>
+                        <li><a href="{{ route('print.duty-plan.day', [$dutyPlan, 'date' => $dutyPlan->from_date->toDateString()]) }}" target="_blank">{{ __('Tagesbriefing (A4 hoch)') }}</a></li>
+                        <li class="menu-title">{{ __('Datenschutz') }}</li>
+                        <li><a href="{{ route('print.duty-plan.roster', [$dutyPlan, 'anonymous' => 1]) }}" target="_blank">{{ __('Aushang anonymisiert') }}</a></li>
+                    </ul>
+                </div>
+                @can('view', $dutyPlan)
+                    <x-icon-btn icon="shield_person" tone="outline" size="sm" :href="route('duty-plans.coverage.index', $dutyPlan)" show-label>{{ __('Soll-Besetzung') }}</x-icon-btn>
+                @endcan
+                @can('update', $dutyPlan)
+                    <x-icon-btn icon="edit" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('duty-plans.edit', $dutyPlan)"
+                                show-label>{{ __('Bearbeiten') }}</x-icon-btn>
+                    @if ($dutyPlan->isDraft())
+                        <form method="POST" action="{{ route('duty-plans.publish', $dutyPlan) }}" class="inline">
+                            @csrf @method('PATCH')
+                            <x-icon-btn icon="publish" tone="success" size="sm" type="submit" show-label>{{ __('Veröffentlichen') }}</x-icon-btn>
+                        </form>
+                    @else
+                        <form method="POST" action="{{ route('duty-plans.retract', $dutyPlan) }}" class="inline">
+                            @csrf @method('PATCH')
+                            <x-icon-btn icon="undo" tone="warning" size="sm" type="submit" show-label>{{ __('Zurück zu Entwurf') }}</x-icon-btn>
+                        </form>
+                    @endif
+                @endcan
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if ($dutyPlan->note)
         <div class="alert alert-info text-sm">{{ $dutyPlan->note }}</div>

@@ -23,32 +23,34 @@
     @endphp
 
     <x-page-shell>
-        <x-page-toolbar :title="__('Tour') . ' ' . ($tour->name ?? ('#' . $tour->id))" :badge="$tour->status?->label() ?? ''" badge-tone="ghost">
-            <div class="text-sm text-base-content/70">
-                {{ $tour->tour_date?->fdate() }} · {{ $tour->user?->name }} · {{ $tour->vehicle?->license_plate ?? '—' }}
-                · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $tour->planned_distance_km, 2, withThousandsSeparator: true) }} km · {{ $tour->planned_duration_minutes }} min
-            </div>
-            <x-slot:actions>
-                <x-icon-btn icon="edit" size="sm" :href="route('tours.edit', $tour)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
-                @if (in_array($tour->status, [\App\Enums\Tour\TourStatus::Draft, \App\Enums\Tour\TourStatus::Planned], true))
-                    <x-action-form :action="route('tours.start', $tour)">
-                        <x-icon-btn icon="play_arrow" tone="primary" size="sm" type="submit" show-label>{{ __('Starten') }}</x-icon-btn>
-                    </x-action-form>
-                @endif
-                @if (in_array($tour->status, [\App\Enums\Tour\TourStatus::Planned, \App\Enums\Tour\TourStatus::InProgress], true))
-                    <x-action-form :action="route('tours.complete', $tour)">
-                        <x-icon-btn icon="check_circle" tone="success" size="sm" type="submit" show-label>{{ __('Abschließen') }}</x-icon-btn>
-                    </x-action-form>
-                @endif
-                @if (in_array($tour->status, [\App\Enums\Tour\TourStatus::InProgress, \App\Enums\Tour\TourStatus::Completed], true))
-                    <x-action-form :action="route('tours.materialize', $tour)"
-                          :confirm="__('Stopps als Fahrten ins Fahrtenbuch übernehmen?')"
-                          :confirm-label="__('Übernehmen')">
-                        <x-icon-btn icon="directions_car" size="sm" type="submit" show-label>{{ __('Als Fahrten übernehmen') }}</x-icon-btn>
-                    </x-action-form>
-                @endif
-            </x-slot:actions>
-        </x-page-toolbar>
+        <x-slot:toolbar>
+            <x-page-toolbar :title="__('Tour') . ' ' . ($tour->name ?? ('#' . $tour->id))" :badge="$tour->status?->label() ?? ''" badge-tone="ghost">
+                <div class="text-sm text-base-content/70">
+                    {{ $tour->tour_date?->fdate() }} · {{ $tour->user?->name }} · {{ $tour->vehicle?->license_plate ?? '—' }}
+                    · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $tour->planned_distance_km, 2, withThousandsSeparator: true) }} km · {{ $tour->planned_duration_minutes }} min
+                </div>
+                <x-slot:actions>
+                    <x-icon-btn icon="edit" size="sm" :href="route('tours.edit', $tour)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
+                    @if (in_array($tour->status, [\App\Enums\Tour\TourStatus::Draft, \App\Enums\Tour\TourStatus::Planned], true))
+                        <x-action-form :action="route('tours.start', $tour)">
+                            <x-icon-btn icon="play_arrow" tone="primary" size="sm" type="submit" show-label>{{ __('Starten') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
+                    @if (in_array($tour->status, [\App\Enums\Tour\TourStatus::Planned, \App\Enums\Tour\TourStatus::InProgress], true))
+                        <x-action-form :action="route('tours.complete', $tour)">
+                            <x-icon-btn icon="check_circle" tone="success" size="sm" type="submit" show-label>{{ __('Abschließen') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
+                    @if (in_array($tour->status, [\App\Enums\Tour\TourStatus::InProgress, \App\Enums\Tour\TourStatus::Completed], true))
+                        <x-action-form :action="route('tours.materialize', $tour)"
+                              :confirm="__('Stopps als Fahrten ins Fahrtenbuch übernehmen?')"
+                              :confirm-label="__('Übernehmen')">
+                            <x-icon-btn icon="directions_car" size="sm" type="submit" show-label>{{ __('Als Fahrten übernehmen') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
+                </x-slot:actions>
+            </x-page-toolbar>
+        </x-slot:toolbar>
 
         <div class="grid gap-4 lg:grid-cols-2">
             <div class="rounded-box border border-base-300 bg-base-100">

@@ -19,16 +19,18 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar>
-        <x-slot:title>{{ __('Sprint-Cockpit') }} — {{ $project->name }}</x-slot:title>
-        <x-slot:subtitle>{{ __('Kennzahlen aus Ereignissen und Snapshots (Definition v:version).', ['version' => $velocity->metricVersion]) }}</x-slot:subtitle>
-        <x-slot:actions>
-            <x-icon-btn icon="picture_as_pdf" tone="ghost" size="sm" :href="route('agile.reports.export.pdf', $project)" show-label>PDF</x-icon-btn>
-            <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('agile.reports.export.csv', [$project, 'velocity'])" show-label>{{ __('CSV Velocity') }}</x-icon-btn>
-            <x-icon-btn icon="view_kanban" tone="ghost" size="sm" :href="route('agile.board', $project)" show-label>{{ __('Zum Board') }}</x-icon-btn>
-            <x-icon-btn icon="sprint" tone="ghost" size="sm" :href="route('agile.sprints', $project)" show-label>{{ __('Sprints') }}</x-icon-btn>
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:title>{{ __('Sprint-Cockpit') }} — {{ $project->name }}</x-slot:title>
+            <x-slot:subtitle>{{ __('Kennzahlen aus Ereignissen und Snapshots (Definition v:version).', ['version' => $velocity->metricVersion]) }}</x-slot:subtitle>
+            <x-slot:actions>
+                <x-icon-btn icon="picture_as_pdf" tone="ghost" size="sm" :href="route('agile.reports.export.pdf', $project)" show-label>PDF</x-icon-btn>
+                <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('agile.reports.export.csv', [$project, 'velocity'])" show-label>{{ __('CSV Velocity') }}</x-icon-btn>
+                <x-icon-btn icon="view_kanban" tone="ghost" size="sm" :href="route('agile.board', $project)" show-label>{{ __('Zum Board') }}</x-icon-btn>
+                <x-icon-btn icon="sprint" tone="ghost" size="sm" :href="route('agile.sprints', $project)" show-label>{{ __('Sprints') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if ($sprints->isNotEmpty())
         <form method="GET" action="{{ route('agile.reports.sprint', $project) }}" class="flex items-center gap-2">

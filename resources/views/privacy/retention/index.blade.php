@@ -17,19 +17,21 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar>
-        <x-slot:title>{{ __('Aufbewahrung & Löschung') }}</x-slot:title>
-        <x-slot:subtitle>{{ __('Rechtsraum :region — der Scan erzeugt Vorschläge, gelöscht wird erst nach Bestätigung (zweistufig, auditiert).', ['region' => $region]) }}</x-slot:subtitle>
-        <x-slot:actions>
-            @if ($canManage)
-                <form method="POST" action="{{ route('dataprotection.retention.scan') }}">
-                    @csrf
-                    <x-icon-btn icon="radar" tone="primary" size="sm" type="submit"
-                                show-label>{{ __('Jetzt scannen') }}</x-icon-btn>
-                </form>
-            @endif
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:title>{{ __('Aufbewahrung & Löschung') }}</x-slot:title>
+            <x-slot:subtitle>{{ __('Rechtsraum :region — der Scan erzeugt Vorschläge, gelöscht wird erst nach Bestätigung (zweistufig, auditiert).', ['region' => $region]) }}</x-slot:subtitle>
+            <x-slot:actions>
+                @if ($canManage)
+                    <form method="POST" action="{{ route('dataprotection.retention.scan') }}">
+                        @csrf
+                        <x-icon-btn icon="radar" tone="primary" size="sm" type="submit"
+                                    show-label>{{ __('Jetzt scannen') }}</x-icon-btn>
+                    </form>
+                @endif
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <x-card :title="__('Fristen je Bereich')">
         <x-table bare>

@@ -19,17 +19,19 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar :subtitle="__('Dokumentierte Sichtprüfungen je Fahrer (Halterhaftung); überfällige Kontrollen sperren die Fahrzeugreservierung.')">
-        <x-slot:actions>
-            <x-icon-btn icon="arrow_back" size="sm" :href="route('vehicles.index')" show-label>{{ __('Fuhrpark') }}</x-icon-btn>
-            @can(\App\Enums\User\Permission::VehicleManage->value)
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('driver-license-checks.create') . '?dialog=1'"
-                            show-label>{{ __('Kontrolle dokumentieren') }}</x-icon-btn>
-            @endcan
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Dokumentierte Sichtprüfungen je Fahrer (Halterhaftung); überfällige Kontrollen sperren die Fahrzeugreservierung.')">
+            <x-slot:actions>
+                <x-icon-btn icon="arrow_back" size="sm" :href="route('vehicles.index')" show-label>{{ __('Fuhrpark') }}</x-icon-btn>
+                @can(\App\Enums\User\Permission::VehicleManage->value)
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('driver-license-checks.create') . '?dialog=1'"
+                                show-label>{{ __('Kontrolle dokumentieren') }}</x-icon-btn>
+                @endcan
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <x-table :zebra="true" size="sm">
         <x-slot:head>

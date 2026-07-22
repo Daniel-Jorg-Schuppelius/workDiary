@@ -4,16 +4,18 @@
 
 @section('content')
     <?php $legacyUsers = collect($users ?? []); ?>
-    <div class="flex wd-fill-h flex-col gap-4">
-        <x-page-toolbar :subtitle="__('Legacy-Mitarbeiterliste aus dem Altsystem.')">
-            <span class="text-sm text-base-content/60">{{ trans_choice(':n Mitarbeiter|:n Mitarbeiter', $legacyUsers->count(), ['n' => $legacyUsers->count()]) }}</span>
-            <x-slot:actions>
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('legacy.users.create')"
-                            show-label>{{ __('Neuer Mitarbeiter') }}</x-icon-btn>
-            </x-slot:actions>
-        </x-page-toolbar>
+    <x-page-shell overflow="clip">
+        <x-slot:toolbar>
+            <x-page-toolbar :subtitle="__('Legacy-Mitarbeiterliste aus dem Altsystem.')">
+                <span class="text-sm text-base-content/60">{{ trans_choice(':n Mitarbeiter|:n Mitarbeiter', $legacyUsers->count(), ['n' => $legacyUsers->count()]) }}</span>
+                <x-slot:actions>
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('legacy.users.create')"
+                                show-label>{{ __('Neuer Mitarbeiter') }}</x-icon-btn>
+                </x-slot:actions>
+            </x-page-toolbar>
+        </x-slot:toolbar>
         <div class="flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
         <x-table table-sort="client" bare scroll="none" size="xs" :pinRows="true">
             <x-slot:head>
@@ -47,5 +49,5 @@
             @endforelse
         </x-table>
         </div>
-    </div>
+    </x-page-shell>
 @endsection

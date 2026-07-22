@@ -16,10 +16,12 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar>
-        <x-slot:title>{{ __('Fehlende Pflichtklassifikationen') }}</x-slot:title>
-        <x-slot:subtitle>{{ __('Aufträge im Zeitraum') }} · {{ $label }}</x-slot:subtitle>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:title>{{ __('Fehlende Pflichtklassifikationen') }}</x-slot:title>
+            <x-slot:subtitle>{{ __('Aufträge im Zeitraum') }} · {{ $label }}</x-slot:subtitle>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <div class="grid gap-4 sm:grid-cols-3">
         <x-kpi-tile :label="__('Aufträge mit Lücken')" :value="$entries_with_gaps"

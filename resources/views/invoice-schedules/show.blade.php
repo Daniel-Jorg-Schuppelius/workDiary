@@ -20,40 +20,42 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar :subtitle="__('Abrechnungsplan') . ' · ' . ($schedule->customer?->company ?: $schedule->customer?->name ?? '—')">
-        <x-slot:actions>
-            <x-icon-btn icon="arrow_back" size="sm" :href="route('invoice-schedules.index')" show-label>{{ __('Alle Pläne') }}</x-icon-btn>
-            @can(\App\Enums\User\Permission::InvoiceUpdate->value)
-                <x-icon-btn icon="edit" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('invoice-schedules.edit', $schedule) . '?dialog=1'"
-                            show-label>{{ __('Bearbeiten') }}</x-icon-btn>
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('invoice-schedules.items.create', $schedule) . '?dialog=1'"
-                            show-label>{{ __('Position hinzufügen') }}</x-icon-btn>
-                @if ($schedule->status === \App\Models\InvoiceSchedule::STATUS_ACTIVE)
-                    <x-action-form :action="route('invoice-schedules.status', $schedule)" method="PATCH">
-                        <input type="hidden" name="status" value="paused">
-                        <x-icon-btn icon="pause" tone="warning" size="sm" type="submit" show-label>{{ __('Aussetzen') }}</x-icon-btn>
-                    </x-action-form>
-                @elseif ($schedule->status === \App\Models\InvoiceSchedule::STATUS_PAUSED)
-                    <x-action-form :action="route('invoice-schedules.status', $schedule)" method="PATCH">
-                        <input type="hidden" name="status" value="active">
-                        <x-icon-btn icon="play_arrow" tone="success" size="sm" type="submit" show-label>{{ __('Fortsetzen') }}</x-icon-btn>
-                    </x-action-form>
-                @endif
-                @if ($schedule->status !== \App\Models\InvoiceSchedule::STATUS_ENDED)
-                    <x-action-form :action="route('invoice-schedules.status', $schedule)" method="PATCH"
-                          :confirm="__('Plan endgültig beenden? Ein beendeter Plan kann nicht reaktiviert werden.')"
-                          :confirm-label="__('Beenden')">
-                        <input type="hidden" name="status" value="ended">
-                        <x-icon-btn icon="stop" tone="error" size="sm" type="submit" show-label>{{ __('Beenden') }}</x-icon-btn>
-                    </x-action-form>
-                @endif
-            @endcan
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Abrechnungsplan') . ' · ' . ($schedule->customer?->company ?: $schedule->customer?->name ?? '—')">
+            <x-slot:actions>
+                <x-icon-btn icon="arrow_back" size="sm" :href="route('invoice-schedules.index')" show-label>{{ __('Alle Pläne') }}</x-icon-btn>
+                @can(\App\Enums\User\Permission::InvoiceUpdate->value)
+                    <x-icon-btn icon="edit" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('invoice-schedules.edit', $schedule) . '?dialog=1'"
+                                show-label>{{ __('Bearbeiten') }}</x-icon-btn>
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('invoice-schedules.items.create', $schedule) . '?dialog=1'"
+                                show-label>{{ __('Position hinzufügen') }}</x-icon-btn>
+                    @if ($schedule->status === \App\Models\InvoiceSchedule::STATUS_ACTIVE)
+                        <x-action-form :action="route('invoice-schedules.status', $schedule)" method="PATCH">
+                            <input type="hidden" name="status" value="paused">
+                            <x-icon-btn icon="pause" tone="warning" size="sm" type="submit" show-label>{{ __('Aussetzen') }}</x-icon-btn>
+                        </x-action-form>
+                    @elseif ($schedule->status === \App\Models\InvoiceSchedule::STATUS_PAUSED)
+                        <x-action-form :action="route('invoice-schedules.status', $schedule)" method="PATCH">
+                            <input type="hidden" name="status" value="active">
+                            <x-icon-btn icon="play_arrow" tone="success" size="sm" type="submit" show-label>{{ __('Fortsetzen') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
+                    @if ($schedule->status !== \App\Models\InvoiceSchedule::STATUS_ENDED)
+                        <x-action-form :action="route('invoice-schedules.status', $schedule)" method="PATCH"
+                              :confirm="__('Plan endgültig beenden? Ein beendeter Plan kann nicht reaktiviert werden.')"
+                              :confirm-label="__('Beenden')">
+                            <input type="hidden" name="status" value="ended">
+                            <x-icon-btn icon="stop" tone="error" size="sm" type="submit" show-label>{{ __('Beenden') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
+                @endcan
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if ($isBlocked)
         <div class="alert alert-error text-sm">

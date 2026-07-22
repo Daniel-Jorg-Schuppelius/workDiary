@@ -12,9 +12,11 @@
         <div class="alert alert-error">{{ session('error') }}</div>
     @endif
 
-    <x-page-toolbar :title="__('Steuerregelmatrix')">
-        <div class="text-sm text-base-content/70">{{ __('Versionierter Katalog mit Stichtags-Auflösung — Gesetzesänderungen sind Datenpflege, kein Release. Keine Steuerberatung.') }}</div>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar :title="__('Steuerregelmatrix')">
+            <div class="text-sm text-base-content/70">{{ __('Versionierter Katalog mit Stichtags-Auflösung — Gesetzesänderungen sind Datenpflege, kein Release. Keine Steuerberatung.') }}</div>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @foreach ($gaps as $gap)
         <div class="alert alert-warning text-sm">

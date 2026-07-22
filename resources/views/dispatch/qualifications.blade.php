@@ -17,15 +17,17 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar>
-        <x-slot:title>{{ __('Qualifikationsmatrix') }}</x-slot:title>
-        <x-slot:subtitle>
-            {{ $diary->title }}@if ($date !== null) · {{ __('Stichtag') }}: {{ $date->fdate() }}@endif
-        </x-slot:subtitle>
-        <x-slot:actions>
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('diary.show', $diary)" show-label>{{ __('Zum Auftrag') }}</x-icon-btn>
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:title>{{ __('Qualifikationsmatrix') }}</x-slot:title>
+            <x-slot:subtitle>
+                {{ $diary->title }}@if ($date !== null) · {{ __('Stichtag') }}: {{ $date->fdate() }}@endif
+            </x-slot:subtitle>
+            <x-slot:actions>
+                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('diary.show', $diary)" show-label>{{ __('Zum Auftrag') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if ($required->isEmpty())
         <x-card>

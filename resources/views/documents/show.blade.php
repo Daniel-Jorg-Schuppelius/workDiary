@@ -21,19 +21,21 @@
     $refLabel = $documentable?->title ?? $documentable?->name;
 @endphp
 <x-page-shell>
-    <x-page-toolbar>
-        <x-slot:title>{{ $document->title }}</x-slot:title>
-        <x-slot:subtitle>
-            {{ $document->document_type->label() }}@if ($refLabel !== null) · {{ \App\Support\EntityType::label($document->documentable_type) }}: {{ $refLabel }}@endif
-        </x-slot:subtitle>
-        <x-slot:actions>
-            <x-status-badge size="sm" :tone="$document->effectiveStatus()->tone()">{{ $document->effectiveStatus()->label() }}</x-status-badge>
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('documents.index')" show-label>{{ __('Zur Übersicht') }}</x-icon-btn>
-            @if ($document->currentVersion)
-                <x-icon-btn icon="download" tone="outline" size="sm" :href="route('documents.download', $document)" show-label>{{ __('Herunterladen') }}</x-icon-btn>
-            @endif
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:title>{{ $document->title }}</x-slot:title>
+            <x-slot:subtitle>
+                {{ $document->document_type->label() }}@if ($refLabel !== null) · {{ \App\Support\EntityType::label($document->documentable_type) }}: {{ $refLabel }}@endif
+            </x-slot:subtitle>
+            <x-slot:actions>
+                <x-status-badge size="sm" :tone="$document->effectiveStatus()->tone()">{{ $document->effectiveStatus()->label() }}</x-status-badge>
+                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('documents.index')" show-label>{{ __('Zur Übersicht') }}</x-icon-btn>
+                @if ($document->currentVersion)
+                    <x-icon-btn icon="download" tone="outline" size="sm" :href="route('documents.download', $document)" show-label>{{ __('Herunterladen') }}</x-icon-btn>
+                @endif
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if (session('status'))
         <div class="alert alert-success text-sm">{{ session('status') }}</div>

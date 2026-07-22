@@ -37,14 +37,16 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar>
-        <x-slot:title>{{ $supplier->name }}</x-slot:title>
-        <x-slot:subtitle>{{ __('scorecard.detail_subtitle', ['version' => $card['metric_version'], 'label' => $label]) }}</x-slot:subtitle>
-        <x-slot:actions>
-            <x-icon-btn icon="list" tone="ghost" size="sm" :href="route('supplier-scorecards.index')" show-label>{{ __('scorecard.back_to_ranking') }}</x-icon-btn>
-            <x-icon-btn icon="local_shipping" tone="ghost" size="sm" :href="route('suppliers.show', $supplier)" show-label>{{ __('scorecard.supplier_master') }}</x-icon-btn>
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:title>{{ $supplier->name }}</x-slot:title>
+            <x-slot:subtitle>{{ __('scorecard.detail_subtitle', ['version' => $card['metric_version'], 'label' => $label]) }}</x-slot:subtitle>
+            <x-slot:actions>
+                <x-icon-btn icon="list" tone="ghost" size="sm" :href="route('supplier-scorecards.index')" show-label>{{ __('scorecard.back_to_ranking') }}</x-icon-btn>
+                <x-icon-btn icon="local_shipping" tone="ghost" size="sm" :href="route('suppliers.show', $supplier)" show-label>{{ __('scorecard.supplier_master') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     {{-- Gesamt-Score --}}
     <x-card :title="__('scorecard.overall_title')">

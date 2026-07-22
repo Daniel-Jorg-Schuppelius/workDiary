@@ -5,13 +5,15 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar :title="$template->exists ? __('Template bearbeiten') : __('Neues Template')">
-        <x-slot:actions>
-            <x-icon-btn icon="arrow_back" size="sm"
-                        :href="route('admin.invoice-mail-templates.index')"
-                        show-label>{{ __('Zurück') }}</x-icon-btn>
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar :title="$template->exists ? __('Template bearbeiten') : __('Neues Template')">
+            <x-slot:actions>
+                <x-icon-btn icon="arrow_back" size="sm"
+                            :href="route('admin.invoice-mail-templates.index')"
+                            show-label>{{ __('Zurück') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <form method="POST"
           action="{{ $template->exists ? route('admin.invoice-mail-templates.update', $template) : route('admin.invoice-mail-templates.store') }}"
