@@ -32,9 +32,23 @@ Sicherungen; mindestens ein Offsite-Backup (3-2-1-Regel).
 
 ### 2.1 Backup-Skript
 
-`scripts/backup.sh` liegt als **Vorlage** im Repository (DB-Dump,
-Storage-Tar, `.env`-Kopie, SHA-256-Manifest) und muss an die Umgebung
-angepasst werden. Ausführung per Cron, z. B. nightly.
+`scripts/backup.sh` (DB-Dump inkl. Routinen/Trigger, Storage-Tar,
+`.env`-Kopie, SHA-256-Manifest) ermittelt seine Konfiguration **selbst** aus
+der Installation: `APP_DIR` aus dem eigenen Skriptpfad, DB-Zugang, `APP_URL`
+und Heartbeat-Token aus der App-`.env`. Ein Cron-Eintrag genügt:
+
+```cron
+0 23 * * * root /pfad/zur/app/scripts/backup.sh >> /var/log/workdiary-backup.log 2>&1
+```
+
+Der Zeitpunkt muss in die Betriebszeit des Servers fallen (kein
+Nachhol-Verhalten bei ausgeschaltetem Server). Optionale Overrides
+(`BACKUP_DIR`, `BACKUP_KEEP_DAYS` = Retention in Tagen, Default 14,
+`BACKUP_HEARTBEAT_URL`/`-TOKEN`) per Env oder `/etc/workdiary-backup.conf`
+(chmod 600). Sicherheitsverhalten: DB-Passwort nur über eine temporäre
+`defaults-extra-file` (nie in der Prozessliste), `flock`-Überlappungsschutz,
+fehlgeschlagene Läufe räumen ihre unvollständigen Dateien weg — nur Läufe
+mit Manifest sind vollständig.
 
 ### 2.2 Heartbeat einrichten
 
