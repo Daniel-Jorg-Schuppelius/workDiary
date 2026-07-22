@@ -170,9 +170,11 @@
         <p class="text-sm text-base-content/70">{{ __('backup.hint.retention') }}</p>
         <p class="mt-1 text-xs text-base-content/50">{{ __('backup.hint.see_docs') }}</p>
         <p class="mt-2">
-            <a href="{{ route('help.topics.show', ['topic' => 'admin.backups']) }}" class="link link-primary text-sm">
+            {{-- Öffnet den Hilfe-Drawer; route('help.topics.show') ist ein JSON-Endpunkt, kein Link-Ziel. --}}
+            <button type="button" class="link link-primary text-sm"
+                    data-help-trigger data-help-topic="admin.backups">
                 <x-icon name="help" class="align-text-bottom" /> {{ __('backup.action.open_help') }}
-            </a>
+            </button>
         </p>
     </x-card>
 
