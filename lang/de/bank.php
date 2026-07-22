@@ -92,6 +92,7 @@ return [
             'empty_file' => 'Die Datei ist leer.',
             'duplicate_file' => 'Diese Datei wurde bereits importiert (Dublette).',
             'unavailable' => 'Der Bankimport ist ein optionales, kostenpflichtiges Zusatzmodul und in dieser Installation nicht aktiviert. Eine Freischaltung ist auf Anfrage unter :contact möglich.',
+            'unavailable_badge' => 'Zusatzmodul nicht aktiviert',
         ],
     ],
     'reconcile' => [

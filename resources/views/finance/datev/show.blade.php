@@ -16,7 +16,10 @@
 @section('nav-title', __('finance.datev.menu'))
 
 @section('content')
-    <x-index-page :subtitle="$batch->period_from?->toDateString() . ' – ' . $batch->period_to?->toDateString()">
+    <x-index-page :subtitle="$batch->period_from?->toDateString() . ' – ' . $batch->period_to?->toDateString()"
+                  :badge="$importAvailable ? null : __('finance.datev.error.unavailable_badge')"
+                  badge-tone="warning"
+                  :badge-title="$importAvailable ? null : \App\Services\Finance\FinancialFormatsSupport::unavailableMessage('finance.datev.error.unavailable')">
         <x-slot:actions>
             @if ($batch->file_path)
                 <x-icon-btn icon="download" tone="ghost" size="sm"
@@ -41,10 +44,6 @@
                 </form>
             @endif
         </x-slot:actions>
-
-        @if (! $importAvailable)
-            <div class="alert alert-warning text-sm mb-4">{{ \App\Services\Finance\FinancialFormatsSupport::unavailableMessage('finance.datev.error.unavailable') }}</div>
-        @endif
 
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-4">
             <x-card>

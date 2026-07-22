@@ -3,6 +3,7 @@
     'subtitle' => null,
     'badge'    => null,
     'badgeTone' => 'primary',
+    'badgeTitle' => null,
     'gap'      => 4,
     'overflow' => 'auto',
     'height'   => 'standard',
@@ -52,7 +53,7 @@
 
 <x-page-shell :gap="$gap" :overflow="$overflow" :height="$height">
     <x-slot:toolbar>
-        <x-page-toolbar :title="$title" :subtitle="$subtitle" :badge="$badge" :badgeTone="$badgeTone">
+        <x-page-toolbar :title="$title" :subtitle="$subtitle" :badge="$badge" :badgeTone="$badgeTone" :badgeTitle="$badgeTitle">
             @isset($actions)
                 <x-slot:actions>{{ $actions }}</x-slot:actions>
             @endisset

@@ -218,6 +218,7 @@ return [
             'already_finalized' => 'El lote de asientos ya está finalizado y es inmutable.',
             'storage_failed' => 'No se pudo guardar el archivo DATEV.',
             'unavailable' => 'La exportación DATEV es un módulo adicional opcional y de pago, no activado en esta instalación. Su activación es posible bajo petición en :contact.',
+            'unavailable_badge' => 'Módulo adicional no activado',
             'preflight_failed' => 'El lote no puede finalizarse debido a errores de verificación previa.',
             'no_organization' => 'No se pudo resolver ninguna organización.',
             'roundtrip_failed' => 'El archivo DATEV generado no superó la comprobación de relectura: :errors',

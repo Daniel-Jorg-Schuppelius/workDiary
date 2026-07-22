@@ -3,6 +3,7 @@
     'subtitle' => null,
     'badge' => null,
     'badgeTone' => 'primary',
+    'badgeTitle' => null,
 ])
 
 {{--
@@ -34,7 +35,9 @@
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold text-base-content truncate">{{ $title }}</h2>
                 @endif
                 @if ($badge)
-                    <span class="badge badge-sm badge-{{ $badgeTone }} shrink-0">{{ $badge }}</span>
+                    {{-- badgeTitle: optionaler Volltext als Tooltip (z. B. Modul-Hinweis) --}}
+                    <span class="badge badge-sm badge-{{ $badgeTone }} shrink-0"
+                          @if ($badgeTitle) title="{{ $badgeTitle }}" @endif>{{ $badge }}</span>
                 @endif
             </div>
         @endif
