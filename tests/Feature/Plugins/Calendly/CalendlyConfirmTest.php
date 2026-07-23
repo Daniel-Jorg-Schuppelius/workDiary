@@ -109,11 +109,11 @@ final class CalendlyConfirmTest extends TestCase {
     public function test_decline_marks_request_declined_without_entry(): void {
         $request = $this->pendingRequest();
 
-        $this->service()->decline($request, $this->admin, 'Kein Kapazität');
+        $this->service()->decline($request, $this->admin, 'Keine Kapazität');
 
         $request->refresh();
         $this->assertSame(AppointmentRequest::STATUS_DECLINED, $request->status);
-        $this->assertSame('Kein Kapazität', $request->decline_reason);
+        $this->assertSame('Keine Kapazität', $request->decline_reason);
         $this->assertSame(0, DiaryEntry::query()->count());
     }
 }
