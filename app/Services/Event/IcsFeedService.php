@@ -142,7 +142,7 @@ class IcsFeedService {
      * Invitee-Bestätigung eines bestätigten Calendly-Termins.
      */
     public static function appointmentUid(AppointmentRequest $appointment): string {
-        return 'appointment-' . $appointment->getKey() . '@workdiary';
+        return 'appointment-' . $appointment->sqid . '@workdiary';
     }
 
     /**
