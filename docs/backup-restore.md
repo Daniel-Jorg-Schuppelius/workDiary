@@ -32,10 +32,13 @@ Sicherungen; mindestens ein Offsite-Backup (3-2-1-Regel).
 
 ### 2.1 Backup-Skript
 
-`scripts/backup.sh` (DB-Dump inkl. Routinen/Trigger, Storage-Tar,
-`.env`-Kopie, SHA-256-Manifest) ermittelt seine Konfiguration **selbst** aus
-der Installation: `APP_DIR` aus dem eigenen Skriptpfad, DB-Zugang, `APP_URL`
-und Heartbeat-Token aus der App-`.env`. Ein Cron-Eintrag genügt:
+`scripts/backup.sh` (DB-Sicherung, Storage-Tar, `.env`-Kopie,
+SHA-256-Manifest) ermittelt seine Konfiguration **selbst** aus der
+Installation: `APP_DIR` aus dem eigenen Skriptpfad, DB-Zugang, `APP_URL` und
+Heartbeat-Token aus der App-`.env`. MySQL/MariaDB wird per Dump gesichert
+(inkl. Routinen/Trigger, Endung `.sql.gz`), SQLite per konsistentem
+Online-Backup der DB-Datei (`sqlite3 .backup`, Endung `.sqlite.gz`). Ein
+Cron-Eintrag genügt:
 
 ```cron
 0 23 * * * root /pfad/zur/app/scripts/backup.sh >> /var/log/workdiary-backup.log 2>&1
@@ -165,6 +168,7 @@ Backup-Zeitpunkt, `.env` aus dem Backup (insbesondere `APP_KEY`).
 ```bash
 # 1) Datenbank  (<name> = Instanzname, siehe Abschnitt 2.1)
 gunzip < <name>_db_YYYYMMDD_HHMMSS.sql.gz | mysql -u root -p "$DB_NAME"
+# SQLite stattdessen: gunzip < <name>_db_….sqlite.gz > pfad/aus/DB_DATABASE
 
 # 2) Storage
 tar -C /var/www/workdiary -xzf <name>_storage_YYYYMMDD_HHMMSS.tar.gz
@@ -194,10 +198,29 @@ lässt sich der Datenschlüssel mit dem Recovery-Secret-Key öffnen.
 
 Regelmäßig — mindestens innerhalb von `BACKUP_RESTORE_TEST_OVERDUE_DAYS`
 (Default 180 Tage), empfohlen monatlich — einen Restore in eine separate
-Testumgebung durchführen und anschließend unter **Backup & Restore →
-Restore-Test protokollieren** ins Register eintragen (Datum, Quelle,
-Ergebnis, Umfang, Dauer). Bleibt ein erfolgreicher Test zu lange aus, warnt
-die Statusseite.
+Testumgebung durchführen und protokollieren. Bleibt ein erfolgreicher Test
+zu lange aus, warnt die Statusseite.
+
+Der einfachste Weg ist das mitgelieferte Skript (als root, lokaler
+MySQL/MariaDB):
+
+```bash
+scripts/restore-test.sh                                  # jüngster Stand: prüfen + protokollieren
+scripts/restore-test.sh --stamp 20260723_230000 --keep   # bestimmter Stand, Umgebung stehen lassen
+```
+
+Es stellt den Backup-Stand isoliert unter `/var/tmp` mit eigener Test-DB und
+temporärem DB-User wieder her (die laufende Installation bleibt unberührt),
+prüft Manifest, Migrationsstand, Datenbestand und die
+APP_KEY-Entschlüsselung und trägt das Ergebnis automatisch ins Register ein
+— Fehlschläge ebenso; dann bleiben Test-DB und Arbeitsverzeichnis zur
+Diagnose stehen. Mit `--keep` lässt sich die wiederhergestellte Kopie danach
+per `artisan serve` anschauen.
+
+Manuelle Tests (z. B. auf einer anderen Maschine, §4) unter
+**Backup & Restore → Restore-Test protokollieren** ins Register eintragen
+(Datum, Quelle, Ergebnis, Umfang, Dauer) — oder per CLI:
+`php artisan workdiary:backup:record-restore-test --source=... --result=passed`.
 
 ## 6. Sicherheitsregeln
 

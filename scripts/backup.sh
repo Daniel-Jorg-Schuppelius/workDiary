@@ -67,10 +67,15 @@ BACKUP_NAME=$(printf '%s' "$BACKUP_NAME" | tr '[:upper:]' '[:lower:]' | sed -E '
 BACKUP_NAME="${BACKUP_NAME:-workdiary}"
 
 case "$DB_CONNECTION" in
-  mysql|mariadb) ;;
-  *) echo "FEHLER: DB_CONNECTION='$DB_CONNECTION' — dieses Skript sichert MySQL/MariaDB." >&2; exit 1 ;;
+  mysql|mariadb)
+    [[ -n "$DB_NAME" && -n "$DB_USER" ]] || { echo "FEHLER: DB_DATABASE/DB_USERNAME fehlen in $ENV_FILE." >&2; exit 1; }
+    ;;
+  sqlite)
+    DB_NAME="${DB_NAME:-$APP_DIR/database/database.sqlite}"
+    [[ -f "$DB_NAME" ]] || { echo "FEHLER: SQLite-Datei $DB_NAME nicht gefunden." >&2; exit 1; }
+    ;;
+  *) echo "FEHLER: DB_CONNECTION='$DB_CONNECTION' — unterstützt: mysql, mariadb, sqlite." >&2; exit 1 ;;
 esac
-[[ -n "$DB_NAME" && -n "$DB_USER" ]] || { echo "FEHLER: DB_DATABASE/DB_USERNAME fehlen in $ENV_FILE." >&2; exit 1; }
 
 BACKUP_DIR="${BACKUP_DIR:-/var/backups/workdiary}"
 BACKUP_KEEP_DAYS="${BACKUP_KEEP_DAYS:-14}"
@@ -78,7 +83,12 @@ TS=$(date +%Y%m%d_%H%M%S)
 mkdir -p "$BACKUP_DIR"
 chmod 700 "$BACKUP_DIR"
 
-DB_FILE="$BACKUP_DIR/${BACKUP_NAME}_db_${TS}.sql.gz"
+# SQLite-Backups sind gzippte DB-Dateien (.sqlite.gz), MySQL/MariaDB SQL-Dumps.
+if [[ "$DB_CONNECTION" == "sqlite" ]]; then
+  DB_FILE="$BACKUP_DIR/${BACKUP_NAME}_db_${TS}.sqlite.gz"
+else
+  DB_FILE="$BACKUP_DIR/${BACKUP_NAME}_db_${TS}.sql.gz"
+fi
 STORAGE_FILE="$BACKUP_DIR/${BACKUP_NAME}_storage_${TS}.tar.gz"
 ENV_COPY="$BACKUP_DIR/${BACKUP_NAME}_env_${TS}.txt"
 MANIFEST="$BACKUP_DIR/${BACKUP_NAME}_manifest_${TS}.sha256"
@@ -92,9 +102,10 @@ flock -n 9 || { echo "FEHLER: Es läuft bereits ein Backup (Lock $BACKUP_DIR/.${
 # Bei Fehlschlag zusätzlich die unvollständigen Dateien dieses Laufs entfernen
 # (das Manifest entsteht zuletzt — nur vollständige Läufe haben eines).
 MYCNF=$(mktemp)
+TMP_SQLITE=""
 cleanup() {
   local rc=$?
-  rm -f "$MYCNF"
+  rm -f "$MYCNF" ${TMP_SQLITE:+"$TMP_SQLITE"}
   if [[ $rc -ne 0 ]]; then
     rm -f "$DB_FILE" "$STORAGE_FILE" "$ENV_COPY" "$MANIFEST"
     echo "FEHLER: Backup-Lauf $TS abgebrochen — unvollständige Dateien entfernt." >&2
@@ -105,10 +116,23 @@ PW_ESCAPED="${DB_PASS//\\/\\\\}"; PW_ESCAPED="${PW_ESCAPED//\"/\\\"}"
 printf '[client]\nhost=%s\nport=%s\nuser=%s\npassword="%s"\n' \
   "$DB_HOST" "$DB_PORT" "$DB_USER" "$PW_ESCAPED" > "$MYCNF"
 
-# 1) Datenbank (inkl. Routinen/Trigger/Events)
-mysqldump --defaults-extra-file="$MYCNF" \
-  --single-transaction --quick --routines --triggers --events \
-  "$DB_NAME" | gzip > "$DB_FILE"
+# 1) Datenbank — MySQL/MariaDB per Dump (inkl. Routinen/Trigger/Events),
+#    SQLite per Online-Backup (sqlite3 .backup ist konsistent bei laufender App)
+if [[ "$DB_CONNECTION" == "sqlite" ]]; then
+  TMP_SQLITE=$(mktemp)
+  if command -v sqlite3 >/dev/null 2>&1; then
+    sqlite3 "$DB_NAME" ".backup '$TMP_SQLITE'"
+  else
+    echo "WARNUNG: sqlite3 fehlt — Rohkopie der DB-Datei (bei laufenden Schreibzugriffen inkonsistenzgefährdet)." >&2
+    cp "$DB_NAME" "$TMP_SQLITE"
+  fi
+  gzip < "$TMP_SQLITE" > "$DB_FILE"
+  rm -f "$TMP_SQLITE"; TMP_SQLITE=""
+else
+  mysqldump --defaults-extra-file="$MYCNF" \
+    --single-transaction --quick --routines --triggers --events \
+    "$DB_NAME" | gzip > "$DB_FILE"
+fi
 
 # 2) Storage-Nutzdaten (Anhänge, Dokumente, Exporte)
 tar -C "$APP_DIR" -czf "$STORAGE_FILE" storage/app
@@ -143,7 +167,7 @@ fi
 # 6) Retention: alte Stände DIESER Instanz aufräumen (dazu unpräfixte
 #    Altbestände aus Skriptversionen ohne Instanznamen)
 find "$BACKUP_DIR" -maxdepth 1 -type f \
-  \( -name "${BACKUP_NAME}_db_*.sql.gz" -o -name "${BACKUP_NAME}_storage_*.tar.gz" \
+  \( -name "${BACKUP_NAME}_db_*.sql.gz" -o -name "${BACKUP_NAME}_db_*.sqlite.gz" -o -name "${BACKUP_NAME}_storage_*.tar.gz" \
      -o -name "${BACKUP_NAME}_env_*.txt" -o -name "${BACKUP_NAME}_manifest_*.sha256" \
      -o -name 'db_*.sql.gz' -o -name 'storage_*.tar.gz' -o -name 'env_*.txt' -o -name 'manifest_*.sha256' \) \
   -mtime +"$BACKUP_KEEP_DAYS" -delete

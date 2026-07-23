@@ -112,11 +112,11 @@ class BackupStatusCommand extends Command {
 
         if ($lastPassed === null) {
             $this->flag('HINWEIS', 'Noch kein erfolgreicher Restore-Test registriert.',
-                'Nach einem Test-Restore erfassen: php artisan workdiary:backup:restore-test');
+                'sudo scripts/restore-test.sh probt und protokolliert automatisch (Cloud-Ziele: workdiary:backup:restore-test); manuell: docs/backup-restore.md §4/§5.');
         } elseif ($lastPassed->tested_on->addDays($overdueDays)->isPast()) {
             $this->flag('ÜBERFÄLLIG', sprintf('Letzter erfolgreicher Restore-Test am %s (älter als %d Tage).',
                 $lastPassed->tested_on->format('d.m.Y'), $overdueDays),
-                'Restore nach docs/backup-restore.md §4 proben und erfassen: php artisan workdiary:backup:restore-test');
+                'sudo scripts/restore-test.sh probt und protokolliert automatisch (Cloud-Ziele: workdiary:backup:restore-test); manuell: docs/backup-restore.md §4/§5.');
         } else {
             $this->flag('OK', sprintf('Letzter erfolgreicher Restore-Test am %s.', $lastPassed->tested_on->format('d.m.Y')));
         }
