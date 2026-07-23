@@ -26,7 +26,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $organization_id
  * @property string $source
- * @property string|null $source_uri
+ * @property string $source_uri
  * @property string $status
  * @property int|null $customer_id
  * @property int|null $lead_id

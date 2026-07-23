@@ -27,7 +27,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('organization_id')->constrained('organizations', indexName: 'apreq_org_fk')->cascadeOnDelete();
             $table->string('source', 16)->default('calendly'); // calendly / portal
-            $table->string('source_uri')->nullable();          // Calendly-Invitee-URI (Idempotenz-Anker)
+            $table->string('source_uri');                      // Calendly-Invitee-URI (Idempotenz-Anker)
             $table->string('status', 16)->default('requested'); // requested/confirmed/declined/canceled/superseded
 
             $table->foreignId('customer_id')->nullable()->constrained('customers', indexName: 'apreq_customer_fk')->nullOnDelete();
