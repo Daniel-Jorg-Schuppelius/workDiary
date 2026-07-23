@@ -31,6 +31,7 @@ return new class extends Migration {
             $table->timestamps();
 
             $table->unique(['organization_id', 'delivery_hash'], 'caldel_org_hash_unique');
+        });
     }
 
     public function down(): void {
