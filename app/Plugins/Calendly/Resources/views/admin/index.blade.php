@@ -51,11 +51,9 @@
                         <button type="submit" class="btn btn-sm">{{ __('Jetzt abgleichen') }}</button>
                     </form>
 
-                    <form method="POST" action="{{ route('admin.calendly.disconnect') }}"
-                          onsubmit="return confirm('{{ __('Verbindung wirklich trennen?') }}')">
-                        @csrf
+                    <x-action-form :action="route('admin.calendly.disconnect')" :confirm="__('Verbindung wirklich trennen?')">
                         <button type="submit" class="btn btn-sm btn-ghost">{{ __('Trennen') }}</button>
-                    </form>
+                    </x-action-form>
                 @elseif ($configured)
                     <form method="POST" action="{{ route('admin.calendly.oauth.start') }}">
                         @csrf
