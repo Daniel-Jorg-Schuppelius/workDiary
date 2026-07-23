@@ -57,6 +57,7 @@ use Illuminate\Support\Carbon;
 class AppointmentRequest extends Model {
     use Auditable;
     use BelongsToOrganization;
+    use HasSqid;
 
     public const SOURCE_CALENDLY = 'calendly';
 

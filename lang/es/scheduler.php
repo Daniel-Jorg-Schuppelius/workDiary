@@ -66,7 +66,6 @@ return [
     // Nombres legibles de los trabajos (claves del registro, anidadas por la notación de puntos);
     // añadir los nuevos trabajos aquí en todos los idiomas — si no, respaldo = clave.
     'job' => [
-        'calendly' => ['backfill' => 'Sincronización de citas de Calendly'],
         'ai' => ['maintenance' => 'Mantenimiento de IA (salud de proveedores, limpieza de sugerencias)'],
         'archive' => ['run' => 'Ejecución de archivado'],
         'attendance' => ['close_open' => 'Cerrar fichajes olvidados'],
