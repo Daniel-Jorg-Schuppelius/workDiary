@@ -49,15 +49,19 @@ class CalendlyIngestJob implements ShouldQueue {
         /** @var array<string, mixed> $payload */
         $payload = (array) json_decode($this->rawPayload, true);
 
-        OrganizationContext::run($org, function () use ($ingest, $org, $payload): void {
+        $processed = false;
+
+        OrganizationContext::run($org, function () use ($ingest, $org, $payload, &$processed): void {
             try {
                 $ingest->handlePayload($org, $payload);
+                $processed = true;
             } catch (Throwable) {
                 // bewusst: Polling heilt — Webhook ist nur Impuls
+                $processed = false;
             }
         });
 
-        if ($this->deliveryId !== null) {
+        if ($processed && $this->deliveryId !== null) {
             CalendlyWebhookDelivery::query()->whereKey($this->deliveryId)->update(['processed_at' => now()]);
         }
     }
