@@ -71,7 +71,7 @@
         @csrf
         <label class="flex cursor-pointer items-start gap-3 rounded-box border border-base-300 p-3">
             <input type="checkbox" name="shared_remote" value="1" class="toggle toggle-sm toggle-primary mt-0.5"
-                   @checked($asset->shared_remote) onchange="this.form.submit()">
+                   @checked($asset->shared_remote) data-autosubmit>
             <span>
                 <span class="font-medium">{{ __('Mehrkundengerät') }}</span>
                 <span class="block text-xs text-base-content/60">

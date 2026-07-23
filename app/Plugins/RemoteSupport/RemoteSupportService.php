@@ -42,11 +42,12 @@ class RemoteSupportService {
     /**
      * Asset-Unterkategorien (category_code), die eine Fernwartungs-ID tragen
      * können. Nur für diese Geräte wird das Panel angeboten und nur ihnen lassen
-     * sich offene Verbindungen zuweisen.
+     * sich offene Verbindungen zuweisen (AnyDesk/TeamViewer gibt es auch für
+     * Tablets und Smartphones).
      *
      * @var list<string>
      */
-    public const REMOTE_CATEGORY_CODES = ['workstation', 'server', 'notebook'];
+    public const REMOTE_CATEGORY_CODES = ['workstation', 'server', 'notebook', 'tablet', 'smartphone'];
 
     protected function pluginId(): string {
         return RemoteSupportPlugin::ID;

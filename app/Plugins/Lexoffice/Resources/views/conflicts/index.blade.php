@@ -6,7 +6,7 @@
 <x-index-page :subtitle="__('Im Modus „Manuelle Prüfung“ landen abweichende Remote-Datensätze hier. Pro Konflikt entscheidest du, ob die lokalen oder die Lexoffice-Werte gewinnen.')">
     <x-slot:actions>
         <form method="GET" action="{{ route('admin.lexoffice.conflicts.index') }}" class="flex items-center gap-2">
-            <select name="status" class="select select-sm select-bordered" onchange="this.form.submit()">
+            <select name="status" class="select select-sm select-bordered" data-autosubmit>
                 <option value="open"            @selected($filters['status'] === 'open')>{{ __('Offen') }}</option>
                 <option value="resolved_local"  @selected($filters['status'] === 'resolved_local')>{{ __('Lokal gewählt') }}</option>
                 <option value="resolved_remote" @selected($filters['status'] === 'resolved_remote')>{{ __('Remote gewählt') }}</option>

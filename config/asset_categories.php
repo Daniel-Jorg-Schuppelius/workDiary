@@ -16,6 +16,8 @@ return [
     'workstation'      => 'Arbeitsplatz-PC',
     'server'           => 'Server',
     'notebook'         => 'Notebook',
+    'tablet'           => 'Tablet',
+    'smartphone'       => 'Smartphone',
     'mobile_device'    => 'Mobilgerät',
     'monitor'          => 'Monitor',
     'printer'          => 'Drucker',

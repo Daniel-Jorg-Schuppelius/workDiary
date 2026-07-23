@@ -50,11 +50,12 @@
                                             </x-action-form>
                                         @endif
                                         <button type="button" class="btn btn-ghost btn-xs px-1"
-                                                onclick="this.nextElementSibling.classList.toggle('hidden')"
+                                                data-toggle-hidden="caption-photo-{{ $photo->getRouteKey() }}"
                                                 title="{{ __('Caption bearbeiten') }}">
                                             <x-icon name="edit" class="text-sm" />
                                         </button>
-                                        <form method="POST" action="{{ route('protocols.items.photos.caption', $photo) }}" class="hidden">
+                                        <form method="POST" action="{{ route('protocols.items.photos.caption', $photo) }}" class="hidden"
+                                              id="caption-photo-{{ $photo->getRouteKey() }}">
                                             @csrf
                                             @method('PATCH')
                                             <input name="caption" maxlength="180" value="{{ $photo->caption }}"

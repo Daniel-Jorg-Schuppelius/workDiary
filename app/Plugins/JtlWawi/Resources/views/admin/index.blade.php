@@ -77,7 +77,8 @@
                         </form>
                     @endif
                     <form method="POST" action="{{ route('admin.jtl.connection.disconnect') }}"
-                          onsubmit="return confirm(@js(__('jtl_wawi.confirm.disconnect')));">
+                          data-confirm-dialog
+                          data-confirm-message="{{ __('jtl_wawi.confirm.disconnect') }}">
                         @csrf
                         <button type="submit" class="btn btn-sm btn-ghost">{{ __('jtl_wawi.action.disconnect') }}</button>
                     </form>
@@ -265,7 +266,8 @@
         {{-- Bestandsführung (Moduswechsel) --}}
         @if ($canConfigureInventory)
             <form method="POST" action="{{ route('admin.jtl.mode.update') }}"
-                  onsubmit="return confirm(@js(__('jtl_wawi.confirm.mode_change')));"
+                  data-confirm-dialog
+                  data-confirm-message="{{ __('jtl_wawi.confirm.mode_change') }}"
                   class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-3">
                 @csrf
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('jtl_wawi.inventory.heading') }}</h2>
