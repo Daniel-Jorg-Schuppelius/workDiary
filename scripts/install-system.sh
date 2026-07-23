@@ -8,6 +8,8 @@
 #
 #   immer:              /etc/cron.d/workdiary        (schedule:run minütlich + Backup)
 #                       /etc/workdiary-backup.conf   (Backup-Ziel/Retention, chmod 600)
+#                       BACKUP_HEARTBEAT_TOKEN       (falls er in der App-.env fehlt,
+#                                                     via artisan rotate-token erzeugt)
 #                       workdiary-queue.service      (QUEUE_CONNECTION=database!)
 #   --with-reverb:      workdiary-reverb.service     (WebSocket/Chat)
 #   --with-integrity-watch: workdiary-integrity-watch.service (braucht ext-inotify)
@@ -156,6 +158,31 @@ BACKUP_KEEP_DAYS=$BACKUP_KEEP_DAYS
   fi
 }
 
+# Heartbeat-Token: ohne ihn meldet backup.sh keinen Lauf und die Statusseite
+# zeigt "kein Backup registriert". Fehlt er in der App-.env, direkt erzeugen —
+# als RUN_USER, damit keine root-eigenen Cache-/Logdateien entstehen.
+ensure_heartbeat_token() {
+  local env_file="$APP_DIR/.env"
+  if [[ ! -f "$env_file" ]]; then
+    note "WARNUNG: $env_file fehlt — nach der Web-Installation nachholen: $PHP_BIN $APP_DIR/artisan workdiary:backup:rotate-token"
+    return
+  fi
+  if grep -Eq '^BACKUP_HEARTBEAT_TOKEN=..*' "$env_file"; then
+    note "Heartbeat-Token vorhanden (BACKUP_HEARTBEAT_TOKEN in .env)."
+    return
+  fi
+  if [[ -n "$DESTDIR" || $DRY_RUN -eq 1 ]]; then
+    note "(übersprungen) würde Heartbeat-Token erzeugen: artisan workdiary:backup:rotate-token"
+    return
+  fi
+  if runuser -u "$RUN_USER" -- "$PHP_BIN" "$APP_DIR/artisan" workdiary:backup:rotate-token >/dev/null \
+     && runuser -u "$RUN_USER" -- "$PHP_BIN" "$APP_DIR/artisan" config:clear >/dev/null; then
+    note "Heartbeat-Token erzeugt und in $env_file hinterlegt (Backup-Läufe erscheinen jetzt auf der Statusseite)."
+  else
+    note "WARNUNG: Token-Erzeugung fehlgeschlagen — manuell nachholen: $PHP_BIN $APP_DIR/artisan workdiary:backup:rotate-token"
+  fi
+}
+
 # ---------------------------------------------------------------- Aktionen
 
 status() {
@@ -202,10 +229,11 @@ install() {
     fail "--with-integrity-watch braucht ext-inotify ($PHP_BIN meldet sie nicht). Ubuntu/Debian: apt install php8.4-inotify"
   fi
 
-  # 1) Cron (Herzschlag + optional Backup) + Backup-Konfiguration
+  # 1) Cron (Herzschlag + optional Backup) + Backup-Konfiguration + Token
   if [[ $WITH_BACKUP -eq 1 ]]; then
     render "$APP_DIR/deploy/cron.d/workdiary.template" "$CRON_FILE"
     write_backup_conf
+    ensure_heartbeat_token
   else
     render <(grep -v 'backup.sh' "$APP_DIR/deploy/cron.d/workdiary.template") "$CRON_FILE"
   fi
@@ -243,7 +271,7 @@ install() {
   note "systemctl status ${UNITS[*]}"
   note "$PHP_BIN $APP_DIR/artisan schedule:list   # Scheduler-Herzschlag prüfen"
   [[ $WITH_BACKUP -eq 1 ]] && note "Backup täglich ${BACKUP_TIME} Uhr → /var/log/workdiary-backup.log (Ziel/Retention: /etc/workdiary-backup.conf; Zeit muss in der Server-Betriebszeit liegen!)"
-  note "Heartbeat-Token (Backup-Statusseite): $PHP_BIN $APP_DIR/artisan workdiary:backup:rotate-token"
+  note "Backup-Einrichtung prüfen: $PHP_BIN $APP_DIR/artisan workdiary:backup:status"
 }
 
 case "$ACTION" in

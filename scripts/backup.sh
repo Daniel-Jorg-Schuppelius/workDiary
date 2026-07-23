@@ -136,6 +136,8 @@ if [[ -n "$HEARTBEAT_URL" && -n "$BACKUP_HEARTBEAT_TOKEN" ]]; then
     "$HEARTBEAT_URL" > /dev/null; then
     echo "WARNUNG: Heartbeat an $HEARTBEAT_URL fehlgeschlagen (Backup selbst ok)." >&2
   fi
+else
+  echo "HINWEIS: Heartbeat übersprungen (BACKUP_HEARTBEAT_TOKEN bzw. APP_URL fehlt) — der Lauf erscheint NICHT auf der Backup-Statusseite. Token erzeugen: php artisan workdiary:backup:rotate-token"
 fi
 
 # 6) Retention: alte Stände DIESER Instanz aufräumen (dazu unpräfixte

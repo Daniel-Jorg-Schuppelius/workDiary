@@ -63,8 +63,10 @@ Backup-Skript meldet jeden erfolgreichen Lauf per Heartbeat; danach erscheint
 die Quelle automatisch auf der Statusseite.
 
 - Token erzeugen: `php artisan workdiary:backup:rotate-token` schreibt
-  `BACKUP_HEARTBEAT_TOKEN` in die `.env`. Ohne gesetzten Token ist der
-  Endpoint deaktiviert (HTTP 503).
+  `BACKUP_HEARTBEAT_TOKEN` in die `.env` — `scripts/install-system.sh` führt
+  das automatisch aus, wenn der Token noch fehlt. Ohne gesetzten Token ist der
+  Endpoint deaktiviert (HTTP 503) **und `backup.sh` überspringt den Heartbeat**
+  — Läufe erscheinen dann nicht auf der Statusseite.
 - Endpoint: `POST /admin/backup/heartbeat` mit `Authorization: Bearer <Token>`
   (außerhalb des Login-Stacks, gedrosselt). Felder: `manifest_sha256`
   (64 Hex-Zeichen), `size_bytes`, `source`, `occurred_at` — siehe
@@ -74,6 +76,9 @@ die Quelle automatisch auf der Statusseite.
 
 ### 2.3 Überwachung
 
+- `php artisan workdiary:backup:status` — Gesamtübersicht beider Backup-Wege
+  (Heartbeat, Schlüssel, Ziele, Restore-Test) mit Handlungshinweisen;
+  Exit-Code 1 bei betriebsverhindernden Lücken (Cron-/CI-tauglich).
 - Frische-Schwelle je Quelle: `BACKUP_HEARTBEAT_FRESHNESS_HOURS`
   (Default 26 h). Ältere Heartbeats markiert die Statusseite als „überfällig",
   ganz fehlende als „kein Backup registriert".
@@ -94,9 +99,14 @@ Google Drive); S3/Azure sind spätere Adapter desselben Vertrags.
 **kein frei wählbarer Text**, sondern ein base64-kodierter 32-Byte-Schlüssel:
 
 ```bash
-php -r "echo base64_encode(random_bytes(32)), PHP_EOL;"
-# oder: openssl rand -base64 32
+php artisan workdiary:backup:generate-master-key
 ```
+
+Der Befehl erzeugt den Schlüssel, schreibt ihn in die `.env` und zeigt ihn
+einmalig zum Übertragen in den Tresor an. Einen vorhandenen Schlüssel ersetzt
+er nur mit `--force` (ein neuer Schlüssel öffnet alte Backups nicht mehr).
+Manuelle Alternative: `php -r "echo base64_encode(random_bytes(32)), PHP_EOL;"`
+bzw. `openssl rand -base64 32`, Wert selbst in die `.env` eintragen.
 
 - Bewusst **nicht** der `APP_KEY` (getrennte Geheimnisse für App- und
   Backup-Verschlüsselung).
@@ -109,13 +119,20 @@ php -r "echo base64_encode(random_bytes(32)), PHP_EOL;"
 als Notfall-Zweitweg. Schlüsselpaar erzeugen:
 
 ```bash
+php artisan workdiary:backup:generate-recovery-key
+```
+
+Der Befehl schreibt den Public-Key in die `.env` und zeigt den Secret-Key
+**einmalig** an — sofort in den Offline-Tresor übernehmen, er wird nirgends
+gespeichert. Ohne Recovery-Key warnt die Oberfläche dauerhaft. Wer den
+Secret-Key gar nie auf dem Server haben will, erzeugt das Paar auf dem
+Admin-Rechner und trägt nur den Public-Key in die `.env` ein:
+
+```bash
 php -r '$kp = sodium_crypto_box_keypair();
 echo "public: ", base64_encode(sodium_crypto_box_publickey($kp)), PHP_EOL,
      "secret: ", base64_encode(sodium_crypto_box_secretkey($kp)), PHP_EOL;'
 ```
-
-Der Public-Key kommt in die `.env`, der Secret-Key ausschließlich in den
-Offline-Tresor. Ohne Recovery-Key warnt die Oberfläche dauerhaft.
 
 ### 3.2 Betrieb
 
