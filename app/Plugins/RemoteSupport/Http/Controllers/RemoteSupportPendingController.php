@@ -15,7 +15,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Http\Controllers\Controller;
 use App\Models\{Asset, Customer, ForeignCustomer, Organization, Project, RemotePendingSession};
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, TeamViewerClient};
-use App\Plugins\RemoteSupport\RemoteSupportService;
+use App\Plugins\RemoteSupport\{RemoteSupportService, RemoteSupportSuggestionService};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Services\Asset\AssetService;
 use App\Support\{Setting, Sqid};
@@ -39,7 +39,10 @@ class RemoteSupportPendingController extends Controller {
 
     private const PROVIDERS = [AnyDeskClient::ID, TeamViewerClient::ID];
 
-    public function __construct(private readonly RemoteSupportService $service) {}
+    public function __construct(
+        private readonly RemoteSupportService $service,
+        private readonly RemoteSupportSuggestionService $suggester,
+    ) {}
 
     public function index(Request $request): View {
         $admin = $this->admin();
@@ -55,6 +58,21 @@ class RemoteSupportPendingController extends Controller {
         $groups = $this->paginateGroups($groupsAll, (int) Setting::get('pagination.remote_pending_groups', 10), 'ids_page', $request);
         $shared = $this->paginateGroups($sharedAll, (int) Setting::get('pagination.remote_shared_devices', 8), 'sessions_page', $request);
         $sharedSessionLimit = max(1, (int) Setting::get('pagination.remote_shared_sessions', 30));
+
+        // Zuweisungsvorschläge nur für die sichtbare Seite berechnen (Überlappung
+        // mit erfassten Zeiten + Alias-Abgleich); befüllen ausschließlich vor.
+        $suggestions = [];
+        $sessionSuggestions = [];
+        if ($organization !== null) {
+            $suggestions = $this->suggester->suggestForGroups($organization, $groups->items());
+            $sessionSuggestions = $this->suggester->suggestForSharedSessions(
+                $organization,
+                collect($shared->items())->map(fn (object $d): object => (object) [
+                    'asset' => $d->asset,
+                    'sessions' => $d->sessions->take($sharedSessionLimit),
+                ]),
+            );
+        }
 
         // Nur fernwartbare Geräte (Arbeitsplatz/Server/Notebook) können eine ID tragen.
         $assets = Asset::query()
@@ -113,6 +131,8 @@ class RemoteSupportPendingController extends Controller {
             'projectMap' => $projectMap,
             'foreignMap' => $foreignMap,
             'categories' => $categories,
+            'suggestions' => $suggestions,
+            'sessionSuggestions' => $sessionSuggestions,
         ]);
     }
 
@@ -156,6 +176,7 @@ class RemoteSupportPendingController extends Controller {
             'remote_id' => ['required', 'string', 'max:191'],
             'asset_id' => ['required', 'integer'],
             'shared_remote' => ['sometimes', 'boolean'],
+            'matchcode' => ['nullable', 'string', 'max:16'],
         ]);
 
         $asset = Asset::query()->whereKey($validated['asset_id'])->firstOrFail();
@@ -163,6 +184,8 @@ class RemoteSupportPendingController extends Controller {
         if ($request->boolean('shared_remote') && ! $asset->shared_remote) {
             $asset->update(['shared_remote' => true]);
         }
+
+        $this->persistMatchcode($validated['matchcode'] ?? null, $asset->customer);
 
         $result = $this->service->assignPending(
             $this->organization($admin),
@@ -196,6 +219,7 @@ class RemoteSupportPendingController extends Controller {
             'foreign_customer_id' => ['nullable', 'integer'],
             'category_code' => ['required', 'string', 'in:' . implode(',', RemoteSupportService::REMOTE_CATEGORY_CODES)],
             'shared_remote' => ['sometimes', 'boolean'],
+            'matchcode' => ['nullable', 'string', 'max:16'],
         ]);
 
         // Ohne Kunde ist es ein eigenes Firmengerät (owned_by=org, Sitzungen
@@ -218,6 +242,8 @@ class RemoteSupportPendingController extends Controller {
             $asset->update(['shared_remote' => true]);
         }
 
+        $this->persistMatchcode($validated['matchcode'] ?? null, $asset->customer);
+
         $result = $this->service->assignPending(
             $this->organization($admin),
             $validated['provider'],
@@ -226,6 +252,28 @@ class RemoteSupportPendingController extends Controller {
         );
 
         return back()->with('status', __('Gerät „:name" angelegt. ', ['name' => $asset->name]) . $this->resultMessage($result));
+    }
+
+    /**
+     * Hinterlegt das per Vorschlag übernommene Kürzel am Kunden — nur wenn der
+     * Kunde noch keins hat und das Kürzel org-weit noch frei ist (stille
+     * Kollision statt Fehler: die Zuweisung selbst darf nicht scheitern).
+     */
+    private function persistMatchcode(?string $matchcode, ?Customer $customer): void {
+        $matchcode = trim((string) $matchcode);
+        if ($matchcode === '' || $customer === null || $customer->matchcode !== null) {
+            return;
+        }
+
+        $taken = Customer::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $customer->organization_id)
+            ->where('matchcode', $matchcode)
+            ->exists();
+
+        if (! $taken) {
+            $customer->update(['matchcode' => $matchcode]);
+        }
     }
 
     /**

@@ -40,6 +40,15 @@ class SaveCustomerRequest extends BaseFormRequest {
                     ->where(fn($q) => $q->where('organization_id', $organizationId))
                     ->ignore($customer?->id),
             ],
+            // Kürzel für den Alias-Abgleich der Fernwartungs-Inbox (z. B. GSL).
+            'matchcode' => [
+                'nullable',
+                'string',
+                'max:16',
+                Rule::unique('customers', 'matchcode')
+                    ->where(fn($q) => $q->where('organization_id', $organizationId))
+                    ->ignore($customer?->id),
+            ],
             'hourly_rate' => ['nullable', 'numeric', 'min:0', 'max:99999.99'],
             'internal_rate' => ['nullable', 'numeric', 'min:0', 'max:99999.99'],
             'invoice_text' => ['nullable', 'string', 'max:5000'],

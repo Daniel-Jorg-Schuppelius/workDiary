@@ -72,7 +72,17 @@
             @endphp
             <div class="space-y-3">
                 @foreach ($groups as $group)
-                    <div class="relative rounded-box border border-base-300 p-3">
+                    @php
+                        $sug = $suggestions[$group->provider . '|' . $group->remote_id] ?? null;
+                        $sugData = $sug === null ? null : json_encode([
+                            'shared' => $sug->kind === 'shared',
+                            'customer' => $sug->customerSqid,
+                            'asset' => $sug->assetSqid,
+                            'matchcode' => $sug->matchcode,
+                        ], JSON_UNESCAPED_UNICODE);
+                    @endphp
+                    <div class="relative rounded-box border border-base-300 p-3"
+                         @if ($sugData !== null) x-data="remoteSuggest" data-suggest="{{ $sugData }}" @endif>
                         {{-- Verwerfen: Icon oben rechts --}}
                         <form method="POST" action="{{ route('admin.remote-support.pending.dismiss') }}"
                               class="absolute right-2 top-2"
@@ -113,6 +123,36 @@
                             @endif
                         </div>
 
+                        {{-- Zuweisungsvorschlag (Überlappung/Alias): befüllt nur vor, gebucht wird per Formular. --}}
+                        @if ($sug !== null)
+                            <div class="mb-3 rounded-box border border-primary/30 bg-primary/5 p-3">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="material-symbols-outlined text-[1.2rem] text-primary" aria-hidden="true">lightbulb</span>
+                                    <span class="text-sm font-semibold">
+                                        @if ($sug->kind === 'shared')
+                                            {{ __('Vorschlag: Mehrkundengerät') }}
+                                        @else
+                                            {{ __('Vorschlag: :name', ['name' => $sug->customerName]) }}
+                                            @if ($sug->assetLabel !== null)
+                                                <span class="font-normal text-base-content/70">· {{ __('Gerät „:name"', ['name' => $sug->assetLabel]) }}</span>
+                                            @endif
+                                        @endif
+                                    </span>
+                                    <button type="button" class="btn btn-xs btn-primary ml-auto" @click="apply">
+                                        <span class="material-symbols-outlined text-[1rem]" aria-hidden="true">magic_button</span>{{ __('Übernehmen') }}
+                                    </button>
+                                </div>
+                                <ul class="mt-1.5 list-disc pl-6 text-xs text-base-content/70">
+                                    @foreach ($sug->reasons as $reason)
+                                        <li>{{ $reason }}</li>
+                                    @endforeach
+                                    @if ($sug->matchcode !== null)
+                                        <li>{{ __('Beim Übernehmen wird das Kürzel „:code" am Kunden hinterlegt.', ['code' => $sug->matchcode]) }}</li>
+                                    @endif
+                                </ul>
+                            </div>
+                        @endif
+
                         {{-- Zuordnung: Tabs zwischen bestehendem und neuem Gerät --}}
                         @php $tabName = 'assign_'.\CommonToolkit\Helper\Data\CryptoHelper::hash($group->provider.'|'.$group->remote_id, \CommonToolkit\Enums\HashAlgorithm::MD5); @endphp
                         <div class="tabs tabs-lift tabs-sm">
@@ -122,6 +162,7 @@
                                     @csrf
                                     <input type="hidden" name="provider" value="{{ $group->provider }}">
                                     <input type="hidden" name="remote_id" value="{{ $group->remote_id }}">
+                                    <input type="hidden" name="matchcode" value="">
                                     <label class="flex max-w-xl flex-col gap-1">
                                         <span class="label-text text-xs font-medium text-base-content/70">{{ __('Gerät auswählen') }}</span>
                                         <select name="asset_id" required class="select select-sm select-bordered w-full">
@@ -156,6 +197,7 @@
                                     @csrf
                                     <input type="hidden" name="provider" value="{{ $group->provider }}">
                                     <input type="hidden" name="remote_id" value="{{ $group->remote_id }}">
+                                    <input type="hidden" name="matchcode" value="">
                                     <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                                         <label class="flex flex-col gap-1">
                                             <span class="label-text text-xs font-medium text-base-content/70">{{ __('Name') }}</span>
@@ -270,11 +312,13 @@
                                         <th class="text-right">{{ __('Min.') }}</th>
                                         <th>{{ __('Provider') }}</th>
                                         <th>{{ __('Notiz') }}</th>
+                                        <th>{{ __('Vorschlag') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($visibleSessions as $session)
-                                        <tr>
+                                        @php $rowSug = $sessionSuggestions[$session->id] ?? null; @endphp
+                                        <tr @if ($rowSug !== null) data-suggest-customer="{{ $rowSug->customerSqid }}" @endif>
                                             <td>
                                                 <input type="checkbox" name="pending_ids[]" value="{{ $session->sqid }}"
                                                        class="checkbox checkbox-sm"
@@ -287,6 +331,17 @@
                                             <td class="text-right text-sm">{{ $session->minutes() }}</td>
                                             <td class="text-sm">{{ ucfirst($session->provider) }}</td>
                                             <td class="text-sm text-base-content/70">{{ $session->note }}</td>
+                                            <td>
+                                                @if ($rowSug !== null)
+                                                    <button type="button"
+                                                            class="badge badge-sm badge-outline badge-primary cursor-pointer"
+                                                            data-suggest-customer="{{ $rowSug->customerSqid }}"
+                                                            @click.prevent="applySuggestion"
+                                                            title="{{ __('Überlappt :minutes Min. mit erfassten Zeiten dieses Kunden. Klick wählt den Kunden und markiert alle passenden Sitzungen.', ['minutes' => $rowSug->minutes]) }}">
+                                                        {{ $rowSug->customerName }}
+                                                    </button>
+                                                @endif
+                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>

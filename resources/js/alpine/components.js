@@ -1364,5 +1364,52 @@ export function registerAlpineComponents(Alpine) {
                 ?.querySelectorAll('input[type=checkbox][name="pending_ids[]"]')
                 .forEach((cb) => (cb.checked = this.allChecked));
         },
+        // Vorschlags-Badge einer Sitzungszeile: wählt den Kunden und markiert
+        // alle Zeilen mit demselben vorgeschlagenen Kunden (data-suggest-customer).
+        applySuggestion(evt) {
+            const sqid = evt.currentTarget?.dataset.suggestCustomer ?? "";
+            if (!sqid) return;
+            this.customer = sqid;
+            this.foreign = "";
+            this.$refs.list?.querySelectorAll("tr").forEach((tr) => {
+                const cb = tr.querySelector('input[type=checkbox][name="pending_ids[]"]');
+                if (cb) cb.checked = tr.dataset.suggestCustomer === sqid;
+            });
+        },
+    }));
+
+    // Fernwartungs-Inbox: Zuweisungsvorschlag einer unbekannten Geräte-ID.
+    // data-suggest = {shared, customer(Sqid), asset(Sqid), matchcode}; apply()
+    // befüllt nur die Formulare vor — gebucht wird weiterhin per Submit.
+    Alpine.data("remoteSuggest", () => ({
+        suggest: {},
+        init() {
+            this.suggest = JSON.parse(this.$el.dataset.suggest || "{}");
+        },
+        apply() {
+            const root = this.$el;
+            const s = this.suggest;
+            const tabs = root.querySelectorAll('input[type=radio].tab');
+            if (s.shared) {
+                root.querySelectorAll('input[type=checkbox][name="shared_remote"]').forEach((cb) => (cb.checked = true));
+            }
+            if (s.asset) {
+                const sel = root.querySelector('select[name="asset_id"]');
+                if (sel) {
+                    sel.value = s.asset;
+                    sel.dispatchEvent(new Event("change", { bubbles: true }));
+                }
+                tabs[0]?.click();
+            } else if (s.customer) {
+                root.querySelectorAll('select[name="customer_id"]').forEach((sel) => {
+                    sel.value = s.customer;
+                    sel.dispatchEvent(new Event("change", { bubbles: true }));
+                });
+                tabs[1]?.click();
+            }
+            if (s.matchcode) {
+                root.querySelectorAll('input[name="matchcode"]').forEach((inp) => (inp.value = s.matchcode));
+            }
+        },
     }));
 }
