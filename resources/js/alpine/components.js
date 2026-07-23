@@ -1387,7 +1387,8 @@ export function registerAlpineComponents(Alpine) {
             this.suggest = JSON.parse(this.$el.dataset.suggest || "{}");
         },
         apply() {
-            const root = this.$el;
+            // $root statt $el: in Direktiven zeigt $el auf den Klick-Button.
+            const root = this.$root;
             const s = this.suggest;
             const tabs = root.querySelectorAll('input[type=radio].tab');
             if (s.shared) {

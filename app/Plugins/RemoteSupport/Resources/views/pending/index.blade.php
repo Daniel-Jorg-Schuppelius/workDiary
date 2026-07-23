@@ -138,7 +138,7 @@
                                             @endif
                                         @endif
                                     </span>
-                                    <button type="button" class="btn btn-xs btn-primary ml-auto" @click="apply">
+                                    <button type="button" class="btn btn-xs btn-primary ml-auto" @click="apply()">
                                         <span class="material-symbols-outlined text-[1rem]" aria-hidden="true">magic_button</span>{{ __('Übernehmen') }}
                                     </button>
                                 </div>
@@ -336,7 +336,7 @@
                                                     <button type="button"
                                                             class="badge badge-sm badge-outline badge-primary cursor-pointer"
                                                             data-suggest-customer="{{ $rowSug->customerSqid }}"
-                                                            @click.prevent="applySuggestion"
+                                                            @click.prevent="applySuggestion($event)"
                                                             title="{{ __('Überlappt :minutes Min. mit erfassten Zeiten dieses Kunden. Klick wählt den Kunden und markiert alle passenden Sitzungen.', ['minutes' => $rowSug->minutes]) }}">
                                                         {{ $rowSug->customerName }}
                                                     </button>
