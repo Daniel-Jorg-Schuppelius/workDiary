@@ -67,7 +67,7 @@ class RemoteSupportSuggestionTest extends TestCase {
         ]);
     }
 
-    /** @return array<string, object> */
+    /** @return array<string, object{kind: string, customerSqid: string|null, customerName: string|null, assetSqid: string|null, assetLabel: string|null, matchcode: string|null, matched: int, total: int, reasons: array<int, string>}> */
     private function suggestionsForOpenGroups(): array {
         $groups = (new RemoteSupportService)->openPendingGroups($this->organization);
 
@@ -75,8 +75,8 @@ class RemoteSupportSuggestionTest extends TestCase {
     }
 
     public function test_dominant_overlap_suggests_customer(): void {
-        $customerA = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Alpha GmbH']);
-        $customerB = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Beta AG']);
+        $customerA = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Alpha GmbH', 'company' => null]);
+        $customerB = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Beta AG', 'company' => null]);
 
         // Zwei von drei Sitzungen liegen in erfassten Zeiten für Alpha.
         $this->timeEntryFor($customerA, '2026-07-20 09:00:00', '2026-07-20 12:00:00');
@@ -97,8 +97,8 @@ class RemoteSupportSuggestionTest extends TestCase {
     }
 
     public function test_two_customers_with_substantial_overlap_suggest_shared_device(): void {
-        $customerA = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Alpha GmbH']);
-        $customerB = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Beta AG']);
+        $customerA = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Alpha GmbH', 'company' => null]);
+        $customerB = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Beta AG', 'company' => null]);
 
         $this->timeEntryFor($customerA, '2026-07-20 09:00:00', '2026-07-20 12:00:00');
         $this->timeEntryFor($customerA, '2026-07-21 09:00:00', '2026-07-21 12:00:00');
@@ -119,7 +119,7 @@ class RemoteSupportSuggestionTest extends TestCase {
     }
 
     public function test_learned_alias_token_from_assigned_device_suggests_customer(): void {
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Gebr. Schwabenland Großküchen']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Gebr. Schwabenland Großküchen', 'company' => null]);
         $asset = Asset::factory()->create([
             'organization_id' => $this->organization->id,
             'asset_class' => AssetClass::Device->value,
@@ -143,7 +143,7 @@ class RemoteSupportSuggestionTest extends TestCase {
     }
 
     public function test_matchcode_beats_name_pattern(): void {
-        Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Gebr. Schwabenland Großküchen']);
+        Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Gebr. Schwabenland Großküchen', 'company' => null]);
         $withCode = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Ganz anderer Name', 'matchcode' => 'GSL']);
 
         $this->pendingSession('444000444', 's1', '2026-07-20 09:00:00', '2026-07-20 09:30:00', alias: 'GSL-Kasse');
@@ -158,8 +158,8 @@ class RemoteSupportSuggestionTest extends TestCase {
     }
 
     public function test_subsequence_matches_abbreviated_customer_name(): void {
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Gebr. Schwabenland Großküchen']);
-        Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Beta AG']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Gebr. Schwabenland Großküchen', 'company' => null]);
+        Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Beta AG', 'company' => null]);
 
         $this->pendingSession('555000555', 's1', '2026-07-20 09:00:00', '2026-07-20 09:30:00', alias: 'GSL-Lohn');
 
@@ -173,7 +173,7 @@ class RemoteSupportSuggestionTest extends TestCase {
     }
 
     public function test_no_signals_no_suggestion(): void {
-        Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Alpha GmbH']);
+        Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Alpha GmbH', 'company' => null]);
 
         $this->pendingSession('666000666', 's1', '2026-07-20 09:00:00', '2026-07-20 09:30:00');
 
@@ -181,7 +181,7 @@ class RemoteSupportSuggestionTest extends TestCase {
     }
 
     public function test_single_free_asset_of_customer_is_suggested(): void {
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Alpha GmbH']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Alpha GmbH', 'company' => null]);
         $free = Asset::factory()->create([
             'organization_id' => $this->organization->id,
             'asset_class' => AssetClass::Device->value,
@@ -201,8 +201,8 @@ class RemoteSupportSuggestionTest extends TestCase {
     }
 
     public function test_shared_sessions_get_per_session_customer_suggestion(): void {
-        $customerA = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Alpha GmbH']);
-        $customerB = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Beta AG']);
+        $customerA = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Alpha GmbH', 'company' => null]);
+        $customerB = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Beta AG', 'company' => null]);
         $asset = Asset::factory()->create([
             'organization_id' => $this->organization->id,
             'asset_class' => AssetClass::Device->value,
@@ -226,7 +226,7 @@ class RemoteSupportSuggestionTest extends TestCase {
     }
 
     public function test_assign_new_persists_matchcode_on_customer(): void {
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Gebr. Schwabenland Großküchen']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Gebr. Schwabenland Großküchen', 'company' => null]);
 
         $this->pendingSession('999000999', 's1', '2026-07-20 09:00:00', '2026-07-20 09:30:00', alias: 'GSL-Buchhaltung');
 
@@ -240,12 +240,12 @@ class RemoteSupportSuggestionTest extends TestCase {
         ]);
 
         $response->assertRedirect();
-        $this->assertSame('GSL', $customer->fresh()->matchcode);
+        $this->assertSame('GSL', $customer->refresh()->matchcode);
     }
 
     public function test_assign_new_skips_matchcode_when_already_taken(): void {
         Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Anderer Kunde', 'matchcode' => 'GSL']);
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Gebr. Schwabenland Großküchen']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Gebr. Schwabenland Großküchen', 'company' => null]);
 
         $this->pendingSession('121212121', 's1', '2026-07-20 09:00:00', '2026-07-20 09:30:00');
 
@@ -259,6 +259,6 @@ class RemoteSupportSuggestionTest extends TestCase {
         ]);
 
         $response->assertRedirect();
-        $this->assertNull($customer->fresh()->matchcode);
+        $this->assertNull($customer->refresh()->matchcode);
     }
 }

@@ -75,7 +75,7 @@ class RemoteSupportSuggestionService {
      * Vorschläge je (provider, remote_id)-Gruppe des Unbekannt-Reiters.
      *
      * @param  iterable<int, object{provider: string, remote_id: string, alias: string|null, notes: array<int, string>}>  $groups  aktuell sichtbare Inbox-Gruppen
-     * @return array<string, object> Schlüssel "provider|remote_id"; Werte siehe {@see buildGroupSuggestion()}
+     * @return array<string, object{kind: string, customerSqid: string|null, customerName: string|null, assetSqid: string|null, assetLabel: string|null, matchcode: string|null, matched: int, total: int, reasons: array<int, string>}> Schlüssel "provider|remote_id"
      */
     public function suggestForGroups(Organization $organization, iterable $groups): array {
         $groupList = collect($groups)->values();
@@ -159,6 +159,7 @@ class RemoteSupportSuggestionService {
      * Baut den Vorschlag für eine Inbox-Gruppe aus Überlappungs- und
      * Textsignalen zusammen.
      *
+     * @param  object{provider: string, remote_id: string, alias: string|null, notes: array<int, string>}  $group
      * @param  Collection<int, RemotePendingSession>  $sessions
      * @param  array<int, array<int, int>>  $overlaps  Sitzung → (Kunde → Sekunden)
      * @param  Collection<int, Customer>  $customers
@@ -298,6 +299,7 @@ class RemoteSupportSuggestionService {
      * Bestes Textsignal für eine Gruppe: Matchcode > gelerntes Token >
      * markantes Namenswort > Akronym > eindeutige Subsequenz.
      *
+     * @param  object{provider: string, remote_id: string, alias: string|null, notes: array<int, string>}  $group
      * @param  Collection<int, Customer>  $customers
      * @param  array<string, int>  $learned
      * @return object{customerId: int, reason: string, token: string|null}|null
@@ -320,11 +322,10 @@ class RemoteSupportSuggestionService {
 
         // 2) Gelerntes Token aus früheren Zuordnungen.
         foreach ($tokens as $token) {
-            if (isset($learned[$token]) && $customers->has($learned[$token])) {
-                $customer = $customers->get($learned[$token]);
-
+            $customer = isset($learned[$token]) ? $customers->get($learned[$token]) : null;
+            if ($customer !== null) {
                 return (object) [
-                    'customerId' => (int) $learned[$token],
+                    'customerId' => (int) $customer->id,
                     'reason' => __('Kürzel „:token" wurde bisher immer :name zugeordnet.', ['token' => $token, 'name' => $customer->company ?: $customer->name]),
                     'token' => $token,
                 ];
@@ -346,12 +347,13 @@ class RemoteSupportSuggestionService {
             if (count($wordHits) === 1) {
                 $customerId = (int) array_key_first($wordHits);
                 $customer = $customers->get($customerId);
-
-                return (object) [
-                    'customerId' => $customerId,
-                    'reason' => __('Alias/Notiz enthält „:word" aus dem Namen von :name.', ['word' => mb_convert_case($wordHits[$customerId], MB_CASE_TITLE, 'UTF-8'), 'name' => $customer->company ?: $customer->name]),
-                    'token' => null,
-                ];
+                if ($customer !== null) {
+                    return (object) [
+                        'customerId' => $customerId,
+                        'reason' => __('Alias/Notiz enthält „:word" aus dem Namen von :name.', ['word' => mb_convert_case($wordHits[$customerId], MB_CASE_TITLE, 'UTF-8'), 'name' => $customer->company ?: $customer->name]),
+                        'token' => null,
+                    ];
+                }
             }
         }
 
@@ -365,12 +367,13 @@ class RemoteSupportSuggestionService {
             }
             if (count($acronymHits) === 1) {
                 $customer = $customers->get($acronymHits[0]);
-
-                return (object) [
-                    'customerId' => $acronymHits[0],
-                    'reason' => __('Kürzel „:token" passt zu den Initialen von :name.', ['token' => $token, 'name' => $customer->company ?: $customer->name]),
-                    'token' => $token,
-                ];
+                if ($customer !== null) {
+                    return (object) [
+                        'customerId' => $acronymHits[0],
+                        'reason' => __('Kürzel „:token" passt zu den Initialen von :name.', ['token' => $token, 'name' => $customer->company ?: $customer->name]),
+                        'token' => $token,
+                    ];
+                }
             }
         }
 
@@ -384,12 +387,13 @@ class RemoteSupportSuggestionService {
             }
             if (count($subHits) === 1) {
                 $customer = $customers->get($subHits[0]);
-
-                return (object) [
-                    'customerId' => $subHits[0],
-                    'reason' => __('Kürzel „:token" passt zum Namensmuster von :name.', ['token' => $token, 'name' => $customer->company ?: $customer->name]),
-                    'token' => $token,
-                ];
+                if ($customer !== null) {
+                    return (object) [
+                        'customerId' => $subHits[0],
+                        'reason' => __('Kürzel „:token" passt zum Namensmuster von :name.', ['token' => $token, 'name' => $customer->company ?: $customer->name]),
+                        'token' => $token,
+                    ];
+                }
             }
         }
 
@@ -416,25 +420,22 @@ class RemoteSupportSuggestionService {
             return [];
         }
 
-        // Nur Einträge der betroffenen Tage laden (inkl. Vortag für Einträge,
-        // die über Mitternacht in eine Sitzung hineinreichen).
-        $dates = $sessions
-            ->flatMap(fn (RemotePendingSession $s): array => [
-                $s->started_at->toDateString(),
-                $s->started_at->copy()->subDay()->toDateString(),
-                $s->ended_at->toDateString(),
-            ])
-            ->unique()
-            ->values()
-            ->all();
-
+        // Nur Einträge laden, die mindestens eine Sitzung zeitlich schneiden
+        // (OR-Paar je Sitzung; die Inbox rechnet nur für die sichtbare Seite).
         $entries = TimeEntry::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->where('user_id', $userId)
-            ->whereIn('date', $dates)
             ->whereNotNull('started_at')
             ->whereNotNull('ended_at')
+            ->where(function ($query) use ($sessions): void {
+                foreach ($sessions as $session) {
+                    $query->orWhere(function ($q) use ($session): void {
+                        $q->where('started_at', '<', $session->ended_at)
+                            ->where('ended_at', '>', $session->started_at);
+                    });
+                }
+            })
             ->get(['id', 'project_id', 'started_at', 'ended_at']);
 
         if ($entries->isEmpty()) {
@@ -578,11 +579,10 @@ class RemoteSupportSuggestionService {
             ->flip();
 
         $free = $assets->filter(fn (Asset $a): bool => ! $taken->has((int) $a->id))->values();
-        if ($free->count() !== 1) {
+        $asset = $free->count() === 1 ? $free->first() : null;
+        if (! $asset instanceof Asset) {
             return [null, null];
         }
-
-        $asset = $free->first();
 
         return [(string) $asset->sqid, (string) ($asset->name ?: $asset->asset_no)];
     }
