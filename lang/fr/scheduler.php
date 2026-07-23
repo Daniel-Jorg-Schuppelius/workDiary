@@ -66,6 +66,7 @@ return [
     // Noms lisibles des tâches (clés registry, imbriquées à cause de la notation à points) ;
     // ajouter les nouvelles tâches ici dans toutes les langues — sinon repli = clé.
     'job' => [
+        'calendly' => ['backfill' => 'Synchronisation des rendez-vous Calendly'],
         'ai' => ['maintenance' => 'Maintenance IA (santé des fournisseurs, nettoyage des suggestions)'],
         'archive' => ['run' => 'Exécution de l\'archivage'],
         'attendance' => ['close_open' => 'Clôturer les pointages oubliés'],

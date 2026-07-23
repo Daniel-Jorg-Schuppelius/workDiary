@@ -12,7 +12,7 @@ namespace App\Services\Event;
 
 use App\Enums\Event\EventVisibility;
 use App\Enums\Vacation\VacationStatus;
-use App\Models\{Event, ScheduledShift, User, Vacation};
+use App\Models\{AppointmentRequest, Event, ScheduledShift, User, Vacation};
 use Carbon\CarbonImmutable;
 use DateTimeZone;
 use Spatie\IcalendarGenerator\Components\{Calendar, Event as IcsEvent};
@@ -134,6 +134,34 @@ class IcsFeedService {
         return Calendar::create($event->title)
             ->productIdentifier((string) config('events.ics.product_id', '-//workDiary//Events//DE'))
             ->event($this->toIcsEvent($event, $tz))
+            ->get();
+    }
+
+    /**
+     * Stabile ICS-UID eines Terminwunsches (Feature 095) — für die
+     * Invitee-Bestätigung eines bestätigten Calendly-Termins.
+     */
+    public static function appointmentUid(AppointmentRequest $appointment): string {
+        return 'appointment-' . $appointment->sqid . '@workdiary';
+    }
+
+    /**
+     * Einzel-Termin-ICS-Dokument (VCALENDAR mit genau einem VEVENT) für die
+     * Invitee-Bestätigung eines bestätigten Calendly-Terminwunsches (Feature 095).
+     */
+    public function documentForAppointment(AppointmentRequest $appointment): string {
+        $start = $appointment->start_at?->copy() ?? CarbonImmutable::now();
+        $end = $appointment->end_at?->copy() ?? $start->copy()->addMinutes(30);
+        $title = (string) ($appointment->service_label ?? __('Termin'));
+
+        $event = IcsEvent::create($title)
+            ->uniqueIdentifier(self::appointmentUid($appointment))
+            ->startsAt($start->toDateTimeImmutable())
+            ->endsAt($end->toDateTimeImmutable());
+
+        return Calendar::create($title)
+            ->productIdentifier((string) config('events.ics.product_id', '-//workDiary//Appointments//DE'))
+            ->event($event)
             ->get();
     }
 
