@@ -6,7 +6,7 @@
 {{-- Platz (.with-help-pad im Layout) und bleibt voll bedienbar. --}}
 {{-- Mobil: Drawer mit Backdrop wie bisher. --}}
 <div id="help-drawer"
-     class="wd-badge fixed inset-y-0 right-0 z-60 hidden w-full max-w-md translate-x-full transform overflow-hidden border-l border-base-300 bg-base-100 shadow-lg transition-transform lg:top-(--app-header-h) lg:bottom-(--app-footer-h) lg:z-40 lg:w-(--help-sidebar-w) lg:max-w-(--help-sidebar-w) lg:shadow-xl"
+     class="wd-badge fixed inset-y-0 right-0 z-60 w-full max-w-md translate-x-full transform overflow-hidden border-l border-base-300 bg-base-100 shadow-lg lg:top-(--app-header-h) lg:bottom-(--app-footer-h) lg:z-40 lg:w-(--help-sidebar-w) lg:max-w-(--help-sidebar-w) lg:shadow-xl"
      data-help-drawer
      role="complementary"
      tabindex="-1"
@@ -113,7 +113,7 @@
      wie der Sidebar-Menü-Backdrop – nur auf den CONTENT-Bereich (zwischen
      Header und Footer), damit Header/Footer frei bleiben. --}}
 <div id="help-drawer-backdrop"
-     class="fixed inset-x-0 z-55 hidden bg-base-300/40 backdrop-blur-[2px] lg:hidden!"
+     class="help-backdrop-hidden fixed inset-x-0 z-55 bg-base-300/40 backdrop-blur-[2px] lg:hidden!"
      style="top: var(--app-header-h); bottom: var(--app-footer-h);"
      data-help-backdrop></div>
 

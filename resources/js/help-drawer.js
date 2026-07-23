@@ -111,20 +111,23 @@ function toggleFooter() {
     rememberFooterCollapsed(collapsed);
 }
 
-function setHidden(el, hidden) {
+// Drawer/Backdrop bleiben immer im DOM (kein display-Toggling) — wie die
+// linke Sidebar wird nur die Klasse getogglet, die Transition läuft dadurch
+// in beide Richtungen; visibility kippt per CSS-Delay erst nach dem
+// Slide-out (layout.css).
+function setDrawerHidden(el, hidden) {
     if (!el) return;
-    el.classList.toggle("hidden", hidden);
-    if (!hidden) {
-        // sliding-in
-        requestAnimationFrame(() => el.classList.remove("translate-x-full"));
-    } else {
-        el.classList.add("translate-x-full");
-    }
+    el.classList.toggle("translate-x-full", hidden);
+}
+
+function setBackdropHidden(el, hidden) {
+    if (!el) return;
+    el.classList.toggle("help-backdrop-hidden", hidden);
 }
 
 function isOpen() {
     const drawer = document.querySelector(DRAWER_SELECTOR);
-    return !!drawer && !drawer.classList.contains("hidden");
+    return !!drawer && !drawer.classList.contains("translate-x-full");
 }
 
 function openDrawer(options = {}) {
@@ -133,10 +136,10 @@ function openDrawer(options = {}) {
     const backdrop = document.querySelector(BACKDROP_SELECTOR);
     if (!drawer) return;
 
-    setHidden(drawer, false);
+    setDrawerHidden(drawer, false);
     // Backdrop nur mobil — Desktop-Sidebar ist nicht-modal (zusätzlich per
     // CSS lg:hidden! abgesichert).
-    setHidden(backdrop, isDesktop());
+    setBackdropHidden(backdrop, isDesktop());
     document.body.classList.add("help-sidebar-open");
     rememberOpenState(true);
 
@@ -152,8 +155,8 @@ function closeDrawer(options = {}) {
     const backdrop = document.querySelector(BACKDROP_SELECTOR);
     const hadFocusInside = !!drawer && drawer.contains(document.activeElement);
 
-    setHidden(drawer, true);
-    setHidden(backdrop, true);
+    setDrawerHidden(drawer, true);
+    setBackdropHidden(backdrop, true);
     document.body.classList.remove("help-sidebar-open");
     rememberOpenState(false);
 
@@ -481,7 +484,7 @@ function bindHelpDrawer() {
     if (typeof desktopQuery.addEventListener === "function") {
         desktopQuery.addEventListener("change", () => {
             if (isOpen()) {
-                setHidden(
+                setBackdropHidden(
                     document.querySelector(BACKDROP_SELECTOR),
                     desktopQuery.matches,
                 );
