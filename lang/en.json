@@ -8970,5 +8970,11 @@
     "Vorschlag": "Suggestion",
     "Vorschlag: :name": "Suggestion: :name",
     "Vorschlag: Mehrkundengerät": "Suggestion: multi-customer device",
-    "Überlappt :minutes Min. mit erfassten Zeiten dieses Kunden. Klick wählt den Kunden und markiert alle passenden Sitzungen.": "Overlaps :minutes min. with recorded times of this customer. Clicking selects the customer and checks all matching sessions."
+    "Überlappt :minutes Min. mit erfassten Zeiten dieses Kunden. Klick wählt den Kunden und markiert alle passenden Sitzungen.": "Overlaps :minutes min. with recorded times of this customer. Clicking selects the customer and checks all matching sessions.",
+    "Die überlappenden Zeiten liegen beim Endkunden :name.": "The overlapping times belong to the end customer :name.",
+    "Kürzel „:token\" ist als Matchcode des Endkunden :name hinterlegt.": "Shortcode “:token” is stored as the matchcode of the end customer :name.",
+    "Alias/Notiz enthält „:word\" aus dem Namen des Endkunden :name.": "Alias/note contains “:word” from the name of the end customer :name.",
+    "Kürzel „:token\" passt zu den Initialen des Endkunden :name.": "Shortcode “:token” matches the initials of the end customer :name.",
+    "Kürzel „:token\" passt zum Namensmuster des Endkunden :name.": "Shortcode “:token” matches the name pattern of the end customer :name.",
+    "z. B. GSL": "e.g. GSL"
 }

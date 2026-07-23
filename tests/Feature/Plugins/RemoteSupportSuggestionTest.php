@@ -12,7 +12,7 @@ namespace Tests\Feature\Plugins;
 
 use App\Enums\Asset\AssetClass;
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Asset, Customer, RemotePendingSession, TimeEntry, User};
+use App\Models\{Asset, Customer, ForeignCustomer, RemotePendingSession, TimeEntry, User};
 use App\Plugins\RemoteSupport\Providers\TeamViewerClient;
 use App\Plugins\RemoteSupport\{RemoteSupportService, RemoteSupportSuggestionService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -67,7 +67,7 @@ class RemoteSupportSuggestionTest extends TestCase {
         ]);
     }
 
-    /** @return array<string, object{kind: string, customerSqid: string|null, customerName: string|null, assetSqid: string|null, assetLabel: string|null, matchcode: string|null, matched: int, total: int, reasons: array<int, string>}> */
+    /** @return array<string, object{kind: string, customerSqid: string|null, customerName: string|null, foreignSqid: string|null, foreignName: string|null, assetSqid: string|null, assetLabel: string|null, matchcode: string|null, matchcodeScope: string|null, matched: int, total: int, reasons: array<int, string>}> */
     private function suggestionsForOpenGroups(): array {
         $groups = (new RemoteSupportService)->openPendingGroups($this->organization);
 
@@ -259,6 +259,172 @@ class RemoteSupportSuggestionTest extends TestCase {
         ]);
 
         $response->assertRedirect();
+        $this->assertNull($customer->refresh()->matchcode);
+    }
+
+    public function test_overlap_on_foreign_project_suggests_end_customer(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Systemhaus Müller', 'company' => null]);
+        $foreign = ForeignCustomer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'name' => 'Bäckerei Sonnenschein',
+            'company' => null,
+        ]);
+
+        $project = $foreign->defaultProjectOrCreate();
+        TimeEntry::query()->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $project->id,
+            'user_id' => $this->owner->id,
+            'date' => '2026-07-20',
+            'started_at' => '2026-07-20 09:00:00',
+            'ended_at' => '2026-07-20 12:00:00',
+            'kind' => TimeEntryKind::Work,
+            'description' => 'Endkunden-Arbeit',
+            'billable' => true,
+        ]);
+
+        $this->pendingSession('131313131', 's1', '2026-07-20 09:30:00', '2026-07-20 10:15:00');
+
+        $suggestions = $this->suggestionsForOpenGroups();
+
+        $key = TeamViewerClient::ID . '|131313131';
+        $this->assertArrayHasKey($key, $suggestions);
+        $this->assertSame($customer->sqid, $suggestions[$key]->customerSqid);
+        $this->assertSame($foreign->sqid, $suggestions[$key]->foreignSqid);
+    }
+
+    public function test_foreign_customer_subsequence_suggests_customer_and_end_customer(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Systemhaus Müller', 'company' => null]);
+        $foreign = ForeignCustomer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'name' => 'Gebr. Schwabenland Großküchen',
+            'company' => null,
+        ]);
+
+        $this->pendingSession('141414141', 's1', '2026-07-20 09:00:00', '2026-07-20 09:30:00', alias: 'GSL-Kasse');
+
+        $suggestions = $this->suggestionsForOpenGroups();
+
+        $key = TeamViewerClient::ID . '|141414141';
+        $this->assertArrayHasKey($key, $suggestions);
+        $this->assertSame($customer->sqid, $suggestions[$key]->customerSqid);
+        $this->assertSame($foreign->sqid, $suggestions[$key]->foreignSqid);
+        // Kürzel wird zum Hinterlegen am ENDKUNDEN angeboten.
+        $this->assertSame('GSL', $suggestions[$key]->matchcode);
+        $this->assertSame('foreign', $suggestions[$key]->matchcodeScope);
+    }
+
+    public function test_foreign_customer_matchcode_matches(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Systemhaus Müller', 'company' => null]);
+        $foreign = ForeignCustomer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'name' => 'Ganz anderer Name',
+            'matchcode' => 'GSL',
+        ]);
+
+        $this->pendingSession('151515151', 's1', '2026-07-20 09:00:00', '2026-07-20 09:30:00', alias: 'GSL-Lager');
+
+        $suggestions = $this->suggestionsForOpenGroups();
+
+        $key = TeamViewerClient::ID . '|151515151';
+        $this->assertArrayHasKey($key, $suggestions);
+        $this->assertSame($customer->sqid, $suggestions[$key]->customerSqid);
+        $this->assertSame($foreign->sqid, $suggestions[$key]->foreignSqid);
+        $this->assertNull($suggestions[$key]->matchcode);
+    }
+
+    public function test_learned_token_carries_end_customer(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Systemhaus Müller', 'company' => null]);
+        $foreign = ForeignCustomer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'name' => 'Wäscherei Blank',
+            'company' => null,
+        ]);
+        $asset = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_class' => AssetClass::Device->value,
+            'category_code' => 'workstation',
+            'customer_id' => $customer->id,
+            'foreign_customer_id' => $foreign->id,
+            'name' => 'WBL-KASSE01',
+        ]);
+        (new RemoteSupportService)->setRemoteId($asset, TeamViewerClient::ID, '161616161');
+
+        $this->pendingSession('171717171', 's1', '2026-07-20 09:00:00', '2026-07-20 09:30:00', alias: 'WBL-Büro');
+
+        $suggestions = $this->suggestionsForOpenGroups();
+
+        $key = TeamViewerClient::ID . '|171717171';
+        $this->assertArrayHasKey($key, $suggestions);
+        $this->assertSame($customer->sqid, $suggestions[$key]->customerSqid);
+        $this->assertSame($foreign->sqid, $suggestions[$key]->foreignSqid);
+    }
+
+    public function test_shared_session_suggestion_includes_end_customer(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Systemhaus Müller', 'company' => null]);
+        $foreign = ForeignCustomer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'name' => 'Bäckerei Sonnenschein',
+            'company' => null,
+        ]);
+        $asset = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_class' => AssetClass::Device->value,
+            'customer_id' => null,
+            'shared_remote' => true,
+        ]);
+
+        $project = $foreign->defaultProjectOrCreate();
+        TimeEntry::query()->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $project->id,
+            'user_id' => $this->owner->id,
+            'date' => '2026-07-20',
+            'started_at' => '2026-07-20 09:00:00',
+            'ended_at' => '2026-07-20 12:00:00',
+            'kind' => TimeEntryKind::Work,
+            'description' => 'Endkunden-Arbeit',
+            'billable' => true,
+        ]);
+
+        $session = $this->pendingSession('181818181', 's1', '2026-07-20 09:30:00', '2026-07-20 10:15:00', assetId: $asset->id);
+
+        $devices = (new RemoteSupportService)->openSharedSessions($this->organization);
+        $suggestions = $this->suggester()->suggestForSharedSessions($this->organization, $devices);
+
+        $this->assertSame($customer->sqid, $suggestions[$session->id]->customerSqid ?? null);
+        $this->assertSame($foreign->sqid, $suggestions[$session->id]->foreignSqid ?? null);
+    }
+
+    public function test_assign_new_persists_matchcode_on_foreign_customer(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Systemhaus Müller', 'company' => null]);
+        $foreign = ForeignCustomer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'name' => 'Gebr. Schwabenland Großküchen',
+            'company' => null,
+        ]);
+
+        $this->pendingSession('191919191', 's1', '2026-07-20 09:00:00', '2026-07-20 09:30:00', alias: 'GSL-Buchhaltung');
+
+        $response = $this->actingAs($this->orgAdmin())->post(route('admin.remote-support.pending.assign-new'), [
+            'provider' => TeamViewerClient::ID,
+            'remote_id' => '191919191',
+            'name' => 'GSL-Buchhaltung',
+            'category_code' => 'workstation',
+            'customer_id' => $customer->sqid,
+            'foreign_customer_id' => $foreign->sqid,
+            'matchcode' => 'GSL',
+            'matchcode_scope' => 'foreign',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertSame('GSL', $foreign->refresh()->matchcode);
         $this->assertNull($customer->refresh()->matchcode);
     }
 }

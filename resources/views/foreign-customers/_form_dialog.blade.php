@@ -52,6 +52,14 @@
                    value="{{ old('company', $foreignCustomer?->company) }}">
         </div>
         <div class="fieldset">
+            <label class="fieldset-label">{{ __('Kürzel (Matchcode)') }}</label>
+            <input name="matchcode" type="text" maxlength="16"
+                   class="input input-bordered w-full"
+                   value="{{ old('matchcode', $foreignCustomer?->matchcode) }}"
+                   placeholder="{{ __('z. B. GSL') }}">
+            @error('matchcode')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
+        <div class="fieldset">
             <label class="fieldset-label">{{ __('Farbe') }}</label>
             <input name="color" type="text" maxlength="16"
                    class="input input-bordered w-full"

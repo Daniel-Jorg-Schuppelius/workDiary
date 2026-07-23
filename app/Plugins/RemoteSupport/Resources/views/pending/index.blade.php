@@ -77,8 +77,10 @@
                         $sugData = $sug === null ? null : json_encode([
                             'shared' => $sug->kind === 'shared',
                             'customer' => $sug->customerSqid,
+                            'foreign' => $sug->foreignSqid,
                             'asset' => $sug->assetSqid,
                             'matchcode' => $sug->matchcode,
+                            'matchcodeScope' => $sug->matchcodeScope,
                         ], JSON_UNESCAPED_UNICODE);
                     @endphp
                     <div class="relative rounded-box border border-base-300 p-3"
@@ -132,7 +134,7 @@
                                         @if ($sug->kind === 'shared')
                                             {{ __('Vorschlag: Mehrkundengerät') }}
                                         @else
-                                            {{ __('Vorschlag: :name', ['name' => $sug->customerName]) }}
+                                            {{ __('Vorschlag: :name', ['name' => $sug->customerName]) }}@if ($sug->foreignName !== null) <span class="font-normal">→ {{ $sug->foreignName }}</span>@endif
                                             @if ($sug->assetLabel !== null)
                                                 <span class="font-normal text-base-content/70">· {{ __('Gerät „:name"', ['name' => $sug->assetLabel]) }}</span>
                                             @endif
@@ -163,6 +165,7 @@
                                     <input type="hidden" name="provider" value="{{ $group->provider }}">
                                     <input type="hidden" name="remote_id" value="{{ $group->remote_id }}">
                                     <input type="hidden" name="matchcode" value="">
+                                    <input type="hidden" name="matchcode_scope" value="">
                                     <label class="flex max-w-xl flex-col gap-1">
                                         <span class="label-text text-xs font-medium text-base-content/70">{{ __('Gerät auswählen') }}</span>
                                         <select name="asset_id" required class="select select-sm select-bordered w-full">
@@ -198,6 +201,7 @@
                                     <input type="hidden" name="provider" value="{{ $group->provider }}">
                                     <input type="hidden" name="remote_id" value="{{ $group->remote_id }}">
                                     <input type="hidden" name="matchcode" value="">
+                                    <input type="hidden" name="matchcode_scope" value="">
                                     <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                                         <label class="flex flex-col gap-1">
                                             <span class="label-text text-xs font-medium text-base-content/70">{{ __('Name') }}</span>
@@ -318,7 +322,7 @@
                                 <tbody>
                                     @foreach ($visibleSessions as $session)
                                         @php $rowSug = $sessionSuggestions[$session->id] ?? null; @endphp
-                                        <tr @if ($rowSug !== null) data-suggest-customer="{{ $rowSug->customerSqid }}" @endif>
+                                        <tr @if ($rowSug !== null) data-suggest-customer="{{ $rowSug->customerSqid }}" data-suggest-foreign="{{ $rowSug->foreignSqid ?? '' }}" @endif>
                                             <td>
                                                 <input type="checkbox" name="pending_ids[]" value="{{ $session->sqid }}"
                                                        class="checkbox checkbox-sm"
@@ -336,9 +340,10 @@
                                                     <button type="button"
                                                             class="badge badge-sm badge-outline badge-primary cursor-pointer"
                                                             data-suggest-customer="{{ $rowSug->customerSqid }}"
+                                                            data-suggest-foreign="{{ $rowSug->foreignSqid ?? '' }}"
                                                             @click.prevent="applySuggestion($event)"
                                                             title="{{ __('Überlappt :minutes Min. mit erfassten Zeiten dieses Kunden. Klick wählt den Kunden und markiert alle passenden Sitzungen.', ['minutes' => $rowSug->minutes]) }}">
-                                                        {{ $rowSug->customerName }}
+                                                        {{ $rowSug->customerName }}@if ($rowSug->foreignName !== null) → {{ $rowSug->foreignName }}@endif
                                                     </button>
                                                 @endif
                                             </td>

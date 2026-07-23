@@ -33,6 +33,7 @@ use Illuminate\Support\Carbon;
  * @property int $customer_id
  * @property string $name
  * @property string|null $number
+ * @property string|null $matchcode
  * @property string|null $company
  * @property string|null $contact_name
  * @property string|null $email
@@ -62,6 +63,7 @@ class ForeignCustomer extends Model {
         'customer_id',
         'name',
         'number',
+        'matchcode',
         'company',
         'contact_name',
         'email',

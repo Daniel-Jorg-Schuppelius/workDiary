@@ -8970,5 +8970,11 @@
     "Vorschlag": "Suggestion",
     "Vorschlag: :name": "Suggestion : :name",
     "Vorschlag: Mehrkundengerät": "Suggestion : appareil multi-clients",
-    "Überlappt :minutes Min. mit erfassten Zeiten dieses Kunden. Klick wählt den Kunden und markiert alle passenden Sitzungen.": "Chevauche :minutes min. de temps saisis de ce client. Un clic sélectionne le client et coche toutes les sessions correspondantes."
+    "Überlappt :minutes Min. mit erfassten Zeiten dieses Kunden. Klick wählt den Kunden und markiert alle passenden Sitzungen.": "Chevauche :minutes min. de temps saisis de ce client. Un clic sélectionne le client et coche toutes les sessions correspondantes.",
+    "Die überlappenden Zeiten liegen beim Endkunden :name.": "Les temps qui se chevauchent relèvent du client final :name.",
+    "Kürzel „:token\" ist als Matchcode des Endkunden :name hinterlegt.": "Le sigle « :token » est enregistré comme matchcode du client final :name.",
+    "Alias/Notiz enthält „:word\" aus dem Namen des Endkunden :name.": "L'alias/la note contient « :word » du nom du client final :name.",
+    "Kürzel „:token\" passt zu den Initialen des Endkunden :name.": "Le sigle « :token » correspond aux initiales du client final :name.",
+    "Kürzel „:token\" passt zum Namensmuster des Endkunden :name.": "Le sigle « :token » correspond au motif du nom du client final :name.",
+    "z. B. GSL": "p. ex. GSL"
 }

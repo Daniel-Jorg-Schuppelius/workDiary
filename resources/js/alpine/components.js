@@ -1364,16 +1364,28 @@ export function registerAlpineComponents(Alpine) {
                 ?.querySelectorAll('input[type=checkbox][name="pending_ids[]"]')
                 .forEach((cb) => (cb.checked = this.allChecked));
         },
-        // Vorschlags-Badge einer Sitzungszeile: wählt den Kunden und markiert
-        // alle Zeilen mit demselben vorgeschlagenen Kunden (data-suggest-customer).
-        applySuggestion(evt) {
-            const sqid = evt.currentTarget?.dataset.suggestCustomer ?? "";
-            if (!sqid) return;
-            this.customer = sqid;
+        // Vorbefüllung Kunde → Fremdkunde: der Fremdkunden-Select wird erst
+        // nach der Kundenwahl gerendert (x-for), daher Endkunde im nextTick.
+        applyPreset(customerSqid, foreignSqid) {
+            this.customer = customerSqid;
             this.foreign = "";
+            if (foreignSqid) {
+                this.$nextTick(() => {
+                    this.foreign = foreignSqid;
+                });
+            }
+        },
+        // Vorschlags-Badge einer Sitzungszeile: wählt Kunde (+ Endkunde) und
+        // markiert alle Zeilen mit demselben Vorschlag (data-suggest-*).
+        applySuggestion(evt) {
+            const ds = evt.currentTarget?.dataset ?? {};
+            const sqid = ds.suggestCustomer ?? "";
+            if (!sqid) return;
+            const fc = ds.suggestForeign ?? "";
+            this.applyPreset(sqid, fc);
             this.$refs.list?.querySelectorAll("tr").forEach((tr) => {
                 const cb = tr.querySelector('input[type=checkbox][name="pending_ids[]"]');
-                if (cb) cb.checked = tr.dataset.suggestCustomer === sqid;
+                if (cb) cb.checked = tr.dataset.suggestCustomer === sqid && (tr.dataset.suggestForeign ?? "") === fc;
             });
         },
     }));
@@ -1402,14 +1414,18 @@ export function registerAlpineComponents(Alpine) {
                 }
                 tabs[0]?.click();
             } else if (s.customer) {
-                root.querySelectorAll('select[name="customer_id"]').forEach((sel) => {
-                    sel.value = s.customer;
-                    sel.dispatchEvent(new Event("change", { bubbles: true }));
-                });
+                // Kunde + Endkunde über die remoteAssign-Komponente des
+                // „Neues Gerät"-Formulars setzen (kaskadierende Selects).
+                const form = root.querySelector('form[x-data="remoteAssign"]');
+                const data = form && window.Alpine ? window.Alpine.$data(form) : null;
+                if (data && typeof data.applyPreset === "function") {
+                    data.applyPreset(s.customer, s.foreign || "");
+                }
                 tabs[1]?.click();
             }
             if (s.matchcode) {
                 root.querySelectorAll('input[name="matchcode"]').forEach((inp) => (inp.value = s.matchcode));
+                root.querySelectorAll('input[name="matchcode_scope"]').forEach((inp) => (inp.value = s.matchcodeScope || "customer"));
             }
         },
     }));

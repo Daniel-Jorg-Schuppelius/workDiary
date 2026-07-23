@@ -8970,5 +8970,11 @@
     "Vorschlag": "Proposta",
     "Vorschlag: :name": "Proposta: :name",
     "Vorschlag: Mehrkundengerät": "Proposta: dispositivo multi-cliente",
-    "Überlappt :minutes Min. mit erfassten Zeiten dieses Kunden. Klick wählt den Kunden und markiert alle passenden Sitzungen.": "Si sovrappone per :minutes min. a tempi registrati di questo cliente. Un clic seleziona il cliente e spunta tutte le sessioni corrispondenti."
+    "Überlappt :minutes Min. mit erfassten Zeiten dieses Kunden. Klick wählt den Kunden und markiert alle passenden Sitzungen.": "Si sovrappone per :minutes min. a tempi registrati di questo cliente. Un clic seleziona il cliente e spunta tutte le sessioni corrispondenti.",
+    "Die überlappenden Zeiten liegen beim Endkunden :name.": "I tempi sovrapposti appartengono al cliente finale :name.",
+    "Kürzel „:token\" ist als Matchcode des Endkunden :name hinterlegt.": "La sigla «:token» è registrata come matchcode del cliente finale :name.",
+    "Alias/Notiz enthält „:word\" aus dem Namen des Endkunden :name.": "L'alias/la nota contiene «:word» dal nome del cliente finale :name.",
+    "Kürzel „:token\" passt zu den Initialen des Endkunden :name.": "La sigla «:token» corrisponde alle iniziali del cliente finale :name.",
+    "Kürzel „:token\" passt zum Namensmuster des Endkunden :name.": "La sigla «:token» corrisponde allo schema del nome del cliente finale :name.",
+    "z. B. GSL": "ad es. GSL"
 }

@@ -177,6 +177,7 @@ class RemoteSupportPendingController extends Controller {
             'asset_id' => ['required', 'integer'],
             'shared_remote' => ['sometimes', 'boolean'],
             'matchcode' => ['nullable', 'string', 'max:16'],
+            'matchcode_scope' => ['nullable', 'string', 'in:customer,foreign'],
         ]);
 
         $asset = Asset::query()->whereKey($validated['asset_id'])->firstOrFail();
@@ -185,7 +186,10 @@ class RemoteSupportPendingController extends Controller {
             $asset->update(['shared_remote' => true]);
         }
 
-        $this->persistMatchcode($validated['matchcode'] ?? null, $asset->customer);
+        $this->persistMatchcode(
+            $validated['matchcode'] ?? null,
+            ($validated['matchcode_scope'] ?? null) === 'foreign' ? $asset->foreignCustomer : $asset->customer,
+        );
 
         $result = $this->service->assignPending(
             $this->organization($admin),
@@ -220,6 +224,7 @@ class RemoteSupportPendingController extends Controller {
             'category_code' => ['required', 'string', 'in:' . implode(',', RemoteSupportService::REMOTE_CATEGORY_CODES)],
             'shared_remote' => ['sometimes', 'boolean'],
             'matchcode' => ['nullable', 'string', 'max:16'],
+            'matchcode_scope' => ['nullable', 'string', 'in:customer,foreign'],
         ]);
 
         // Ohne Kunde ist es ein eigenes Firmengerät (owned_by=org, Sitzungen
@@ -242,7 +247,10 @@ class RemoteSupportPendingController extends Controller {
             $asset->update(['shared_remote' => true]);
         }
 
-        $this->persistMatchcode($validated['matchcode'] ?? null, $asset->customer);
+        $this->persistMatchcode(
+            $validated['matchcode'] ?? null,
+            ($validated['matchcode_scope'] ?? null) === 'foreign' ? $foreignCustomer : $asset->customer,
+        );
 
         $result = $this->service->assignPending(
             $this->organization($admin),
@@ -255,24 +263,25 @@ class RemoteSupportPendingController extends Controller {
     }
 
     /**
-     * Hinterlegt das per Vorschlag übernommene Kürzel am Kunden — nur wenn der
-     * Kunde noch keins hat und das Kürzel org-weit noch frei ist (stille
-     * Kollision statt Fehler: die Zuweisung selbst darf nicht scheitern).
+     * Hinterlegt das per Vorschlag übernommene Kürzel am Kunden bzw.
+     * Fremdkunden (Endkunden) — nur wenn das Ziel noch keins hat und das
+     * Kürzel in seiner Tabelle org-weit noch frei ist (stille Kollision statt
+     * Fehler: die Zuweisung selbst darf nicht scheitern).
      */
-    private function persistMatchcode(?string $matchcode, ?Customer $customer): void {
+    private function persistMatchcode(?string $matchcode, Customer|ForeignCustomer|null $target): void {
         $matchcode = trim((string) $matchcode);
-        if ($matchcode === '' || $customer === null || $customer->matchcode !== null) {
+        if ($matchcode === '' || $target === null || $target->matchcode !== null) {
             return;
         }
 
-        $taken = Customer::query()
+        $taken = $target->newQuery()
             ->withoutGlobalScopes()
-            ->where('organization_id', $customer->organization_id)
+            ->where('organization_id', $target->organization_id)
             ->where('matchcode', $matchcode)
             ->exists();
 
         if (! $taken) {
-            $customer->update(['matchcode' => $matchcode]);
+            $target->update(['matchcode' => $matchcode]);
         }
     }
 

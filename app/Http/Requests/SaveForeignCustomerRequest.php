@@ -30,6 +30,15 @@ class SaveForeignCustomerRequest extends BaseFormRequest {
         return [
             'customer_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('customers')],
             'name' => ['required', 'string', 'max:200'],
+            // Kürzel für den Alias-Abgleich der Fernwartungs-Inbox (z. B. GSL).
+            'matchcode' => [
+                'nullable',
+                'string',
+                'max:16',
+                \Illuminate\Validation\Rule::unique('foreign_customers', 'matchcode')
+                    ->where(fn($q) => $q->where('organization_id', $this->user()?->organization_id))
+                    ->ignore($this->route('foreignCustomer') instanceof \App\Models\ForeignCustomer ? $this->route('foreignCustomer')->id : null),
+            ],
             'company' => ['nullable', 'string', 'max:200'],
             'contact_name' => ['nullable', 'string', 'max:200'],
             'email' => ['nullable', 'email', 'max:255'],
