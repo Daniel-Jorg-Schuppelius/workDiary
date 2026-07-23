@@ -1,0 +1,32 @@
+# WorkDiary fail2ban-Jails (Feature 096, MVP-444) — Vorlage.
+#
+# Installation:
+#   cp deploy/fail2ban/filter.d/workdiary*.conf      /etc/fail2ban/filter.d/
+#   cp deploy/fail2ban/jail.d/workdiary.conf.example /etc/fail2ban/jail.d/workdiary.conf
+#   Pfade unten an das Installationsverzeichnis anpassen, dann:
+#   systemctl reload fail2ban && fail2ban-client status workdiary
+#
+# VORAUSSETZUNG hinter Reverse-Proxy: TRUSTED_PROXIES in der WorkDiary-.env,
+# sonst steht im Log die Proxy-IP und fail2ban bannt den eigenen Proxy.
+# Sperren übernimmt ausschließlich das OS (diese Jails) — die App bremst
+# (Rate-Limits) und meldet (security.log, Alarme), sie sperrt nie selbst.
+
+[workdiary]
+# Login-/Auth-Fehlversuche breit: moderat, kurzes Fenster.
+enabled  = true
+filter   = workdiary
+logpath  = /var/www/workdiary/storage/logs/security-*.log
+maxretry = 10
+findtime = 10m
+bantime  = 15m
+backend  = polling
+
+[workdiary-strict]
+# 2FA-/Token-/Signatur-Brute-Force: streng, lange Sperre.
+enabled  = true
+filter   = workdiary-strict
+logpath  = /var/www/workdiary/storage/logs/security-*.log
+maxretry = 5
+findtime = 30m
+bantime  = 24h
+backend  = polling

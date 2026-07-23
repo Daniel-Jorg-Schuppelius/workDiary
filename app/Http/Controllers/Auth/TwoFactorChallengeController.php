@@ -75,6 +75,11 @@ class TwoFactorChallengeController extends Controller {
             $ok = false;
         }
         if (! $ok) {
+            app(\App\Services\Security\SecurityEventLogger::class)->log(
+                \App\Enums\Security\SecurityEventType::TwoFactorFailed,
+                ['user' => $user->email, 'method' => 'webauthn'],
+            );
+
             return response()->json(['message' => __('Sicherheitsschlüssel ungültig.')], 422);
         }
 
@@ -159,6 +164,10 @@ class TwoFactorChallengeController extends Controller {
 
         if (! $passed) {
             RateLimiter::hit($throttleKey, 60);
+            app(\App\Services\Security\SecurityEventLogger::class)->log(
+                \App\Enums\Security\SecurityEventType::TwoFactorFailed,
+                ['user' => $user->email, 'method' => $recovery !== '' ? 'recovery' : ($emailCode !== '' ? 'email' : 'totp')],
+            );
 
             return back()->withErrors(['code' => __('Der Code ist ungültig.')]);
         }

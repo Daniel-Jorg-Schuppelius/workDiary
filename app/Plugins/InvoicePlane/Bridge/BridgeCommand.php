@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\InvoicePlane\Bridge;
 
-use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 
 /**
  * Signierter Befehl an die InvoicePlane-seitige WorkDiary-Bridge (Feature 086,
@@ -42,7 +42,7 @@ final readonly class BridgeCommand {
     ) {}
 
     public function payloadHash(): string {
-        return hash('sha256', JsonHelper::encode($this->payload));
+        return CryptoHelper::hash(JsonHelper::encode($this->payload));
     }
 
     /**

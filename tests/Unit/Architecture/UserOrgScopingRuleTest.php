@@ -118,10 +118,15 @@ class UserOrgScopingRuleTest extends TestCase {
         'app/Http/Controllers/Admin/DemoTenantController.php' => 'Plattform-Admin listet Plattform-Admins (is_platform_admin), Cross-Tenant per Definition.',
         'app/Http/Controllers/Admin/LicenseAdminController.php' => 'Plattformweite Nutzerzahl als Lizenz-Fallback (globaler Betreiber-Kontext).',
         'app/Services/Security/SecurityOverviewService.php' => 'Basis-Query wird org-bedingt gefiltert; NULL-Org = bewusste plattformweite Betreiber-Sicht.',
+        'app/Services/Release/CodeIntegrityService.php' => 'Integritäts-Alarm an ALLE Plattform-Admins (is_platform_admin), installationsweit per Definition (Feature 095).',
         // Org-bedingter Filter; Expense trägt immer organization_id (Fallback ohne Org unerreichbar).
         'app/Services/Expense/ApproverResolver.php' => 'Basis-Query wird bei vorhandener Expense-Org gefiltert (Expense ist tenant-scoped).',
         // Öffentliche, sessionlose Token-Route: Auflösung über den Feed-Token, danach Org-Bindung.
         'app/Http/Controllers/IcsFeedController.php' => 'Persönlicher ICS-Feed: Lookup über calendar_feed_token (Public-Route, bindet danach Org).',
+        // Korrelierte Sortier-Subquery (orderBy): whereColumn bindet users.id an
+        // die bereits org-gescopten time_entries des Projekts — kein Cross-Tenant-Leak,
+        // löst nur den Namen des jeweils sichtbaren Zeiteintrags auf.
+        'app/Http/Controllers/ProjectController.php' => 'Korrelierte orderBy-Subquery über whereColumn an org-gescopte time_entries gebunden (Sortierung nach Nutzername).',
     ];
 
     public function test_no_unscoped_user_list_queries_in_org_contexts(): void {

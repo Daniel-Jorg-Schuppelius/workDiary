@@ -48,7 +48,7 @@
                     <td><span class="badge badge-sm">{{ $run->state->label() }}</span></td>
                     <td class="text-right tabular-nums">{{ $run->rows_created }} / {{ $run->rows_updated }} / {{ $run->rows_skipped }} / {{ $run->rows_failed }}</td>
                     <td class="text-sm" data-sort-value="{{ $run->created_at?->orgTz()->format('Y-m-d H:i') ?? '' }}">{{ $run->created_at?->orgTz()->format('Y-m-d H:i') }}</td>
-                    <td><x-icon-btn icon="visibility" size="sm" :href="route('admin.imports.show', $run)" /></td>
+                    <td class="text-right"><x-icon-btn icon="visibility" size="sm" :href="route('admin.imports.show', $run)" /></td>
                 </tr>
             @endforeach
         </x-table>
@@ -80,7 +80,7 @@
                     <td><span class="badge badge-sm">{{ $run->state->label() }}</span></td>
                     <td class="text-right tabular-nums">{{ $run->rows_total }}</td>
                     <td class="text-sm" data-sort-value="{{ $run->created_at?->orgTz()->format('Y-m-d H:i') ?? '' }}">{{ $run->created_at?->orgTz()->format('Y-m-d H:i') }}</td>
-                    <td>
+                    <td class="text-right">
                         @if ($run->state->canDownload())
                             <x-icon-btn icon="download" size="sm" :href="route('admin.data.download', $run)" />
                         @endif

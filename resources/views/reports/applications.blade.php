@@ -5,12 +5,14 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar :title="__('Bewerbungen & Ausschreibungen')">
-        <div class="text-sm text-base-content/70">{{ __('Zeitraum: :from – :to · nur aggregierte Kennzahlen, keine Bewerberdetails.', ['from' => $from, 'to' => $to]) }}</div>
-        <x-slot:actions>
-            <x-icon-btn icon="download" size="sm" :href="route('applications.report', ['export' => 'csv'])" show-label>{{ __('CSV') }}</x-icon-btn>
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <div class="text-sm text-base-content/70">{{ __('Zeitraum: :from – :to · nur aggregierte Kennzahlen, keine Bewerberdetails.', ['from' => $from, 'to' => $to]) }}</div>
+            <x-slot:actions>
+                <x-icon-btn icon="download" size="sm" :href="route('applications.report', ['export' => 'csv'])" show-label>{{ __('CSV') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if ($tenders !== null)
         <div class="grid gap-4 lg:grid-cols-2">

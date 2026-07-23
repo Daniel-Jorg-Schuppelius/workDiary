@@ -92,6 +92,7 @@ return [
             'empty_file' => 'Le fichier est vide.',
             'duplicate_file' => 'Ce fichier a déjà été importé (doublon).',
             'unavailable' => 'L’import bancaire est un module complémentaire optionnel et payant, non activé dans cette installation. Son activation est possible sur demande à :contact.',
+            'unavailable_badge' => 'Module complémentaire non activé',
         ],
     ],
     'reconcile' => [

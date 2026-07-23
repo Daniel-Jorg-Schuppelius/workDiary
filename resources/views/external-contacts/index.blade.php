@@ -8,14 +8,15 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar>
-        <x-slot:title>{{ __('external.contact.title') }}</x-slot:title>
-        <x-slot:subtitle>{{ __('external.contact.intro') }}</x-slot:subtitle>
-        <x-slot:actions>
-            <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger
-                        :href="route('external-contacts.create')" show-label>{{ __('external.contact.new') }}</x-icon-btn>
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:subtitle>{{ __('external.contact.intro') }}</x-slot:subtitle>
+            <x-slot:actions>
+                <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger
+                            :href="route('external-contacts.create')" show-label>{{ __('external.contact.new') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if (session('success'))
         <div class="alert alert-success text-sm">{{ session('success') }}</div>

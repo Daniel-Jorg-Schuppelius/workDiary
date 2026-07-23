@@ -17,14 +17,15 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar>
-        <x-slot:title>{{ __('Arbeitszeit-Compliance') }}</x-slot:title>
-        <x-slot:subtitle>{{ $from }} – {{ $to }}</x-slot:subtitle>
-        <x-slot:actions>
-            <x-icon-btn icon="table_view" tone="outline" size="sm" :href="route('reports.arbzg-compliance')" show-label>{{ __('Einzelreport') }}</x-icon-btn>
-            <x-icon-btn icon="fact_check" tone="outline" size="sm" :href="route('reports.compliance.history')" show-label>{{ __('compliance.history.nav') }}</x-icon-btn>
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:subtitle>{{ $from }} – {{ $to }}</x-slot:subtitle>
+            <x-slot:actions>
+                <x-icon-btn icon="table_view" tone="outline" size="sm" :href="route('reports.arbzg-compliance')" show-label>{{ __('Einzelreport') }}</x-icon-btn>
+                <x-icon-btn icon="fact_check" tone="outline" size="sm" :href="route('reports.compliance.history')" show-label>{{ __('compliance.history.nav') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <x-kpi-tile :label="__('Befunde gesamt')" :value="$summary['total']" tone="primary" format="int"

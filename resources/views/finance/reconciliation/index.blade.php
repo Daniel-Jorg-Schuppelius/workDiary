@@ -13,7 +13,10 @@
 @section('nav-title', __('bank.title.menu'))
 
 @section('content')
-    <x-index-page :subtitle="__('bank.subtitle.index')">
+    <x-index-page :subtitle="__('bank.subtitle.index')"
+                  :badge="$importAvailable ? null : __('bank.import.error.unavailable_badge')"
+                  badge-tone="warning"
+                  :badge-title="$importAvailable ? null : \App\Services\Finance\FinancialFormatsSupport::unavailableMessage('bank.import.error.unavailable')">
         <x-slot:actions>
             @can('create', \App\Models\Finance\BankStatement::class)
                 @if ($importAvailable)
@@ -21,8 +24,6 @@
                                 data-entry-modal-trigger
                                 :href="route('finance.reconciliation.create')"
                                 show-label>{{ __('bank.action.import') }}</x-icon-btn>
-                @else
-                    <span class="text-sm text-base-content/60">{{ \App\Services\Finance\FinancialFormatsSupport::unavailableMessage('bank.import.error.unavailable') }}</span>
                 @endif
             @endcan
             @can('viewAny', \App\Models\Finance\BankAccount::class)

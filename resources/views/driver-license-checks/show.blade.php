@@ -21,17 +21,19 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar :subtitle="__('Kontrollhistorie (Nachweis)')">
-        <x-slot:actions>
-            <x-icon-btn icon="arrow_back" size="sm" :href="route('driver-license-checks.index')" show-label>{{ __('Übersicht') }}</x-icon-btn>
-            @can(\App\Enums\User\Permission::VehicleManage->value)
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('driver-license-checks.create', ['user' => \App\Support\Sqid::encode(\App\Models\User::class, (int) $driver->id), 'dialog' => 1])"
-                            show-label>{{ __('Kontrolle dokumentieren') }}</x-icon-btn>
-            @endcan
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Kontrollhistorie (Nachweis)')">
+            <x-slot:actions>
+                <x-icon-btn icon="arrow_back" size="sm" :href="route('driver-license-checks.index')" show-label>{{ __('Übersicht') }}</x-icon-btn>
+                @can(\App\Enums\User\Permission::VehicleManage->value)
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('driver-license-checks.create', ['user' => \App\Support\Sqid::encode(\App\Models\User::class, (int) $driver->id), 'dialog' => 1])"
+                                show-label>{{ __('Kontrolle dokumentieren') }}</x-icon-btn>
+                @endcan
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if ($overdue)
         <div class="alert alert-error text-sm">

@@ -38,7 +38,7 @@
                         <td>v{{ $v->version_no }}</td>
                         <td class="text-sm">{{ $v->note ?? '—' }}</td>
                         <td class="text-sm">{{ $v->approved_at?->format('d.m.Y') ?? __('Entwurf') }}</td>
-                        <td>
+                        <td class="text-right">
                             @can('update', $measure)
                                 @unless ($v->approved_at)
                                     <form method="post" action="{{ route('dataprotection.tom.approve', $measure) }}">@csrf <input type="hidden" name="version_id" value="{{ $v->id }}"><x-icon-btn icon="check" tone="primary" size="xs" type="submit" show-label>{{ __('Freigeben') }}</x-icon-btn></form>

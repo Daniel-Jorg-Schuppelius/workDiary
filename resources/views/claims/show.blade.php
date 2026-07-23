@@ -10,33 +10,35 @@
     @endif
     <x-validation-errors />
 
-    <x-page-toolbar :title="$claim->number . ' — ' . $claim->title">
-        <div class="flex flex-wrap items-center gap-2 text-sm">
-            <x-status-badge size="md" outline>{{ $claim->status->label() }}</x-status-badge>
-            <span class="badge badge-outline">{{ $claim->source->label() }}</span>
-            <span class="badge badge-outline">{{ __("values.{$claim->priority}") }}</span>
-            @if ($claim->is_b2b)
-                <span class="badge badge-warning badge-outline">{{ __('B2B (§ 377 HGB)') }}</span>
-            @endif
-            @if ($claim->due_at !== null && $claim->status->isOpen() && $claim->due_at->isPast())
-                <span class="badge badge-error">{{ __('überfällig seit :date', ['date' => $claim->due_at->fdatetime()]) }}</span>
-            @endif
-        </div>
-        <x-slot:actions>
-            @can('update', $claim)
-                <form method="POST" action="{{ route('claims.transition', $claim) }}" class="flex items-center gap-1">
-                    @csrf
-                    <select name="status" class="select select-sm select-bordered" aria-label="{{ __('Status') }}">
-                        @foreach ($claim->status->allowedTransitions() as $target)
-                            <option value="{{ $target->value }}">{{ $target->label() }}</option>
-                        @endforeach
-                    </select>
-                    <button type="submit" class="btn btn-sm">{{ __('Status setzen') }}</button>
-                </form>
-            @endcan
-            <x-icon-btn icon="arrow_back" size="sm" :href="route('claims.index')" show-label>{{ __('Zur Liste') }}</x-icon-btn>
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar :title="$claim->number . ' — ' . $claim->title">
+            <div class="flex flex-wrap items-center gap-2 text-sm">
+                <x-status-badge size="md" outline>{{ $claim->status->label() }}</x-status-badge>
+                <span class="badge badge-outline">{{ $claim->source->label() }}</span>
+                <span class="badge badge-outline">{{ __("values.{$claim->priority}") }}</span>
+                @if ($claim->is_b2b)
+                    <span class="badge badge-warning badge-outline">{{ __('B2B (§ 377 HGB)') }}</span>
+                @endif
+                @if ($claim->due_at !== null && $claim->status->isOpen() && $claim->due_at->isPast())
+                    <span class="badge badge-error">{{ __('überfällig seit :date', ['date' => $claim->due_at->fdatetime()]) }}</span>
+                @endif
+            </div>
+            <x-slot:actions>
+                @can('update', $claim)
+                    <form method="POST" action="{{ route('claims.transition', $claim) }}" class="flex items-center gap-1">
+                        @csrf
+                        <select name="status" class="select select-sm select-bordered" aria-label="{{ __('Status') }}">
+                            @foreach ($claim->status->allowedTransitions() as $target)
+                                <option value="{{ $target->value }}">{{ $target->label() }}</option>
+                            @endforeach
+                        </select>
+                        <button type="submit" class="btn btn-sm">{{ __('Status setzen') }}</button>
+                    </form>
+                @endcan
+                <x-icon-btn icon="arrow_back" size="sm" :href="route('claims.index')" show-label>{{ __('Zur Liste') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if ($duplicates->isNotEmpty())
         <div class="alert alert-warning text-sm">

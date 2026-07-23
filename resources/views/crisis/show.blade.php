@@ -12,53 +12,55 @@
         <div class="alert alert-error">{{ session('error') }}</div>
     @endif
 
-    <x-page-toolbar :title="$case->title" :badge="__('values.' . $case->status)" badge-tone="outline">
-        <div class="text-sm text-base-content/70">
-            {{ __("values.{$case->category}") }} · {{ __("values.{$case->severity}") }}
-            @if ($case->trigger_source) · {{ __('Auslöser: :source', ['source' => $case->trigger_source]) }} @endif
-            @if ($case->activated_at) · {{ __('aktiviert :date', ['date' => $case->activated_at->fdatetime()]) }} @endif
-        </div>
-        <x-slot:actions>
-            @can('approve', $case)
-                @if (in_array($case->status, ['reported', 'assessed'], true))
-                    <x-action-form :action="route('crisis.activate', $case)">
-                        <x-icon-btn icon="emergency_home" tone="error" size="sm" type="submit" show-label>{{ __('Krise aktivieren') }}</x-icon-btn>
+    <x-slot:toolbar>
+        <x-page-toolbar :badge="__('values.' . $case->status)" badge-tone="outline">
+            <div class="text-sm text-base-content/70">
+                {{ __("values.{$case->category}") }} · {{ __("values.{$case->severity}") }}
+                @if ($case->trigger_source) · {{ __('Auslöser: :source', ['source' => $case->trigger_source]) }} @endif
+                @if ($case->activated_at) · {{ __('aktiviert :date', ['date' => $case->activated_at->fdatetime()]) }} @endif
+            </div>
+            <x-slot:actions>
+                @can('approve', $case)
+                    @if (in_array($case->status, ['reported', 'assessed'], true))
+                        <x-action-form :action="route('crisis.activate', $case)">
+                            <x-icon-btn icon="emergency_home" tone="error" size="sm" type="submit" show-label>{{ __('Krise aktivieren') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
+                    @if ($case->isActive())
+                        <x-action-form :action="route('crisis.all-clear', $case)"
+                              :confirm="__('Entwarnung dokumentieren?')" confirm-icon="task_alt" confirm-tone="success" :confirm-label="__('Entwarnen')">
+                            <x-icon-btn icon="task_alt" tone="success" size="sm" type="submit" show-label>{{ __('Entwarnen') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
+                    @if ($case->status === 'post_review')
+                        <x-action-form :action="route('crisis.close', $case)">
+                            <x-icon-btn icon="lock" size="sm" type="submit" show-label>{{ __('Akte schließen') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
+                @endcan
+                @if ($canManage)
+                    <x-action-form :action="route('crisis.alert', $case)">
+                        <x-icon-btn icon="campaign" tone="warning" size="sm" type="submit" show-label
+                                    :title="__('Alarmiert alle unquittierten Stabsmitglieder (überstimmt Ruhezeiten)')">{{ __('Stab alarmieren') }}</x-icon-btn>
                     </x-action-form>
-                @endif
-                @if ($case->isActive())
-                    <x-action-form :action="route('crisis.all-clear', $case)"
-                          :confirm="__('Entwarnung dokumentieren?')" confirm-icon="task_alt" confirm-tone="success" :confirm-label="__('Entwarnen')">
-                        <x-icon-btn icon="task_alt" tone="success" size="sm" type="submit" show-label>{{ __('Entwarnen') }}</x-icon-btn>
+                    <x-action-form :action="route('crisis.alert.escalate', $case)">
+                        <x-icon-btn icon="notification_important" tone="warning" size="sm" type="submit" show-label
+                                    :title="__('Unquittierte Alarme erneut + an Stellvertretungen')">{{ __('Eskalieren') }}</x-icon-btn>
                     </x-action-form>
+                    @if ($case->isActive())
+                        <form method="POST" action="{{ route('crisis.status', $case) }}" class="flex items-center gap-1">
+                            @csrf
+                            <select name="status" class="select select-sm select-bordered" data-autosubmit aria-label="{{ __('Status') }}">
+                                @foreach (['assessed', 'in_progress', 'stabilized', 'recovery'] as $status)
+                                    <option value="{{ $status }}" @selected($case->status === $status)>{{ __("values.$status") }}</option>
+                                @endforeach
+                            </select>
+                        </form>
+                    @endif
                 @endif
-                @if ($case->status === 'post_review')
-                    <x-action-form :action="route('crisis.close', $case)">
-                        <x-icon-btn icon="lock" size="sm" type="submit" show-label>{{ __('Akte schließen') }}</x-icon-btn>
-                    </x-action-form>
-                @endif
-            @endcan
-            @if ($canManage)
-                <x-action-form :action="route('crisis.alert', $case)">
-                    <x-icon-btn icon="campaign" tone="warning" size="sm" type="submit" show-label
-                                :title="__('Alarmiert alle unquittierten Stabsmitglieder (überstimmt Ruhezeiten)')">{{ __('Stab alarmieren') }}</x-icon-btn>
-                </x-action-form>
-                <x-action-form :action="route('crisis.alert.escalate', $case)">
-                    <x-icon-btn icon="notification_important" tone="warning" size="sm" type="submit" show-label
-                                :title="__('Unquittierte Alarme erneut + an Stellvertretungen')">{{ __('Eskalieren') }}</x-icon-btn>
-                </x-action-form>
-                @if ($case->isActive())
-                    <form method="POST" action="{{ route('crisis.status', $case) }}" class="flex items-center gap-1">
-                        @csrf
-                        <select name="status" class="select select-sm select-bordered" data-autosubmit aria-label="{{ __('Status') }}">
-                            @foreach (['assessed', 'in_progress', 'stabilized', 'recovery'] as $status)
-                                <option value="{{ $status }}" @selected($case->status === $status)>{{ __("values.$status") }}</option>
-                            @endforeach
-                        </select>
-                    </form>
-                @endif
-            @endif
-        </x-slot:actions>
-    </x-page-toolbar>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     {{-- Meldefristen (D9) --}}
     @if ($deadlines !== [])

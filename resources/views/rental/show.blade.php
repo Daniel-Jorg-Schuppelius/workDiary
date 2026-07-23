@@ -10,38 +10,40 @@
     @endif
     <x-validation-errors />
 
-    <x-page-toolbar :title="$case->number . ' — ' . ($case->customer->name ?? '')">
-        <div class="flex flex-wrap items-center gap-2 text-sm">
-            <x-status-badge size="md" outline>{{ $case->status->label() }}</x-status-badge>
-            <span class="badge badge-outline">{{ $case->starts_at->fdatetime() }} – {{ $case->ends_at->fdatetime() }}</span>
-            @if ($case->isOverdue())
-                <span class="badge badge-error">{{ __('Rückgabe überfällig') }}</span>
-            @endif
-            @if ($case->rateCard !== null)
-                <span class="badge badge-outline">{{ __('Preisliste :name (v:version)', ['name' => $case->rateCard->name, 'version' => $case->rateCard->version]) }}</span>
-            @endif
-        </div>
-        <x-slot:actions>
-            @can('update', $case)
-                @if ($case->status === \App\Enums\Rental\RentalCaseStatus::Draft)
-                    <form method="POST" action="{{ route('rental.reserve', $case) }}">@csrf
-                        <button type="submit" class="btn btn-sm btn-primary">{{ __('Reservieren') }}</button>
-                    </form>
+    <x-slot:toolbar>
+        <x-page-toolbar :title="$case->number . ' — ' . ($case->customer->name ?? '')">
+            <div class="flex flex-wrap items-center gap-2 text-sm">
+                <x-status-badge size="md" outline>{{ $case->status->label() }}</x-status-badge>
+                <span class="badge badge-outline">{{ $case->starts_at->fdatetime() }} – {{ $case->ends_at->fdatetime() }}</span>
+                @if ($case->isOverdue())
+                    <span class="badge badge-error">{{ __('Rückgabe überfällig') }}</span>
                 @endif
-                @if ($case->status === \App\Enums\Rental\RentalCaseStatus::Returned)
-                    <form method="POST" action="{{ route('rental.close', $case) }}">@csrf
-                        <button type="submit" class="btn btn-sm">{{ __('Abschließen') }}</button>
-                    </form>
+                @if ($case->rateCard !== null)
+                    <span class="badge badge-outline">{{ __('Preisliste :name (v:version)', ['name' => $case->rateCard->name, 'version' => $case->rateCard->version]) }}</span>
                 @endif
-                @if ($case->status->isOpen())
-                    <form method="POST" action="{{ route('rental.cancel', $case) }}" data-confirm="{{ __('Verleihakte wirklich stornieren?') }}">@csrf
-                        <button type="submit" class="btn btn-sm btn-ghost text-error">{{ __('Stornieren') }}</button>
-                    </form>
-                @endif
-            @endcan
-            <x-icon-btn icon="arrow_back" size="sm" :href="route('rental.index')" show-label>{{ __('Zur Liste') }}</x-icon-btn>
-        </x-slot:actions>
-    </x-page-toolbar>
+            </div>
+            <x-slot:actions>
+                @can('update', $case)
+                    @if ($case->status === \App\Enums\Rental\RentalCaseStatus::Draft)
+                        <form method="POST" action="{{ route('rental.reserve', $case) }}">@csrf
+                            <button type="submit" class="btn btn-sm btn-primary">{{ __('Reservieren') }}</button>
+                        </form>
+                    @endif
+                    @if ($case->status === \App\Enums\Rental\RentalCaseStatus::Returned)
+                        <form method="POST" action="{{ route('rental.close', $case) }}">@csrf
+                            <button type="submit" class="btn btn-sm">{{ __('Abschließen') }}</button>
+                        </form>
+                    @endif
+                    @if ($case->status->isOpen())
+                        <form method="POST" action="{{ route('rental.cancel', $case) }}" data-confirm="{{ __('Verleihakte wirklich stornieren?') }}">@csrf
+                            <button type="submit" class="btn btn-sm btn-ghost text-error">{{ __('Stornieren') }}</button>
+                        </form>
+                    @endif
+                @endcan
+                <x-icon-btn icon="arrow_back" size="sm" :href="route('rental.index')" show-label>{{ __('Zur Liste') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('Akte')">

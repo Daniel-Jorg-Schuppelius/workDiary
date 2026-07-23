@@ -17,11 +17,8 @@
 @section('content')
 <x-page-shell overflow="clip">
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Berechtigungen für Gleitzeit-Sonderregeln je Mitarbeiter pflegen.')">
-            <x-slot:title>
-                <h2 class="text-xl font-semibold">{{ $member->name }}</h2>
-                <p class="text-sm text-base-content/60">{{ __('flex.eligibility.subtitle', ['name' => $member->name]) }}</p>
-            </x-slot:title>
+        <x-page-toolbar :title="$member->name"
+                        :subtitle="__('flex.eligibility.subtitle', ['name' => $member->name])">
             <x-slot:actions>
                 @if ($isCurrentlyEligible)
                     <x-status-badge tone="success" size="md" class="gap-2">

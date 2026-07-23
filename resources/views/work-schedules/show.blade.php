@@ -3,18 +3,20 @@
 @section('nav-title', __('Mein Arbeitszeit-Modell'))
 @section('content')
 <x-page-shell>
-    <x-page-toolbar :title="__('Mein Arbeitszeit-Modell')">
-        @auth
-            @can('create', \App\Models\WorkSchedule::class)
-                <x-slot:actions>
-                    <x-icon-btn icon="edit" tone="primary" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('users.work-schedule.edit', $user)"
-                                show-label>{{ __('Bearbeiten') }}</x-icon-btn>
-                </x-slot:actions>
-            @endcan
-        @endauth
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar :title="$user->name">
+            @auth
+                @can('create', \App\Models\WorkSchedule::class)
+                    <x-slot:actions>
+                        <x-icon-btn icon="edit" tone="primary" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route('users.work-schedule.edit', $user)"
+                                    show-label>{{ __('Bearbeiten') }}</x-icon-btn>
+                    </x-slot:actions>
+                @endcan
+            @endauth
+        </x-page-toolbar>
+    </x-slot:toolbar>
     @php
         $s = $schedule ?? (object) $defaults;
         $rawType = $s->schedule_type ?? 'flextime';

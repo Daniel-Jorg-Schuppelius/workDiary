@@ -125,7 +125,7 @@ return [
         'recurrence' => ['generate' => 'Generate recurring orders'],
         'remote' => ['sync_sessions' => 'Import remote support sessions'],
         'scheduler' => ['watchdog' => 'Scheduler watchdog'],
-        'security' => ['advisories_pull' => 'Pull security advisories'],
+        'security' => ['advisories_pull' => 'Pull security advisories', 'integrity' => 'Source code integrity check', 'evaluate' => 'Evaluate threat detection'],
         'tickets' => ['scan_sla_breaches' => 'Scan SLA breaches'],
         'todoist' => ['sync' => 'Todoist sync'],
         'toggl' => ['import' => 'Toggl import'],

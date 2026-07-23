@@ -14,6 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{Asset, Organization};
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, TeamViewerClient};
 use App\Plugins\RemoteSupport\{RemoteSupportConfig, RemoteSupportService};
+use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -32,21 +33,51 @@ class RemoteSupportAssetController extends Controller {
 
         $validated = $request->validate([
             'provider' => ['required', 'string', 'in:' . implode(',', self::PROVIDERS)],
-            'remote_id' => ['nullable', 'string', 'max:191'],
+            'remote_id' => ['required', 'string', 'max:191'],
         ]);
 
-        $this->service->setRemoteId($asset, $validated['provider'], (string) ($validated['remote_id'] ?? ''));
+        $this->service->setRemoteId($asset, $validated['provider'], $validated['remote_id']);
 
         return back()->with('status', __('Geräte-ID gespeichert.'));
     }
 
-    public function forgetId(Asset $asset, string $provider): RedirectResponse {
+    public function forgetId(Request $request, Asset $asset, string $provider): RedirectResponse {
         Gate::authorize('update', $asset);
         abort_unless(in_array($provider, self::PROVIDERS, true), 404);
 
-        $this->service->forgetRemoteId($asset, $provider);
+        $remoteId = trim((string) $request->input('remote_id', ''));
+        $this->service->forgetRemoteId($asset, $provider, $remoteId !== '' ? $remoteId : null);
 
         return back()->with('status', __('Geräte-ID entfernt.'));
+    }
+
+    /**
+     * Überführt IDs + Pending-Sitzungen dieses (Duplikat-)Geräts auf ein
+     * Zielgerät; das leere Duplikat kann der Admin danach archivieren.
+     */
+    public function merge(Request $request, Asset $asset): RedirectResponse {
+        Gate::authorize('update', $asset);
+
+        $request->merge([
+            'target_asset_id' => Sqid::decodeOrNumeric(Asset::class, $request->input('target_asset_id')),
+        ]);
+        $validated = $request->validate([
+            'target_asset_id' => ['required', 'integer'],
+        ]);
+
+        $target = Asset::query()->whereKey($validated['target_asset_id'])->firstOrFail();
+        Gate::authorize('update', $target);
+        abort_if($target->id === $asset->id, 422, __('Quell- und Zielgerät sind identisch.'));
+
+        $result = $this->service->mergeRemoteDevice($asset, $target);
+
+        return redirect()
+            ->route('assets.show', $target)
+            ->with('status', __(':ids Geräte-ID(s) und :sessions Sitzung(en) an „:name" übertragen. Das leere Duplikat kann jetzt archiviert werden.', [
+                'ids' => $result['ids'],
+                'sessions' => $result['sessions'],
+                'name' => $target->name ?: $target->asset_no,
+            ]));
     }
 
     /**

@@ -32,10 +32,11 @@
         ->all();
 @endphp
 <x-page-shell>
-    <x-page-toolbar>
-        <x-slot:title>{{ __('Plan/Ist — Projekte') }}</x-slot:title>
-        <x-slot:subtitle>{{ $from->fdate() }} – {{ $to->fdate() }}</x-slot:subtitle>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:subtitle>{{ $from->fdate() }} – {{ $to->fdate() }}</x-slot:subtitle>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @include('reports.plan-ist._dimensions')
 

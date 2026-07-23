@@ -45,7 +45,7 @@
                                 <td>v{{ $v->version_no }}</td>
                                 <td class="text-sm">{{ $v->note ?? '—' }}</td>
                                 <td class="text-sm">{{ $v->approved_at?->format('d.m.Y') ?? __('Entwurf') }}</td>
-                                <td>
+                                <td class="text-right">
                                     @can('approve', $activity)
                                         @unless ($v->approved_at)
                                             <form method="post" action="{{ route('dataprotection.activities.approve', $activity) }}">

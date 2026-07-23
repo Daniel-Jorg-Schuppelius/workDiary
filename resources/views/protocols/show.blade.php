@@ -22,16 +22,18 @@
     $subjectLabel = $subject?->title ?? $subject?->name;
 @endphp
 <x-page-shell>
-    <x-page-toolbar>
-        <x-slot:title>{{ $protocol->title }}</x-slot:title>
-        <x-slot:subtitle>
-            <x-term :glossary="$protocol->type === \App\Enums\Protocol\ProtocolType::Acceptance ? 'abnahme' : null">{{ $protocol->type->label() }}</x-term> · {{ \App\Support\EntityType::label($protocol->subject_type) }}@if ($subjectLabel !== null): {{ $subjectLabel }}@endif
-        </x-slot:subtitle>
-        <x-slot:actions>
-            <x-status-badge size="sm">{{ $protocol->status->label() }}</x-status-badge>
-            <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm" :href="route('protocols.pdf', $protocol)" show-label>{{ __('PDF') }}</x-icon-btn>
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:title>{{ $protocol->title }}</x-slot:title>
+            <x-slot:subtitle>
+                <x-term :glossary="$protocol->type === \App\Enums\Protocol\ProtocolType::Acceptance ? 'abnahme' : null">{{ $protocol->type->label() }}</x-term> · {{ \App\Support\EntityType::label($protocol->subject_type) }}@if ($subjectLabel !== null): {{ $subjectLabel }}@endif
+            </x-slot:subtitle>
+            <x-slot:actions>
+                <x-status-badge size="sm">{{ $protocol->status->label() }}</x-status-badge>
+                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm" :href="route('protocols.pdf', $protocol)" show-label>{{ __('PDF') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if (session('status'))
         <div class="alert alert-success text-sm">{{ session('status') }}</div>

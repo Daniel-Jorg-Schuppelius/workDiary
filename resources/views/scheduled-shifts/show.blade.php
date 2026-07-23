@@ -4,22 +4,24 @@
 
 @section('content')
     <x-page-shell>
-        <x-page-toolbar :badge="$shift->statusLabel()" :badge-tone="$shift->statusTone()">
-            @if ($shift->user)
-                <span>{{ $shift->user->name }}</span>
-            @endif
-            <x-slot:actions>
-                <x-icon-btn icon="arrow_back" size="sm"
-                            :href="route('schedule.index')"
-                            show-label>{{ __('Zurück') }}</x-icon-btn>
-                @can('update', $shift)
-                    <x-icon-btn icon="edit" tone="primary" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('scheduled-shifts.edit', $shift)"
-                                show-label>{{ __('Bearbeiten') }}</x-icon-btn>
-                @endcan
-            </x-slot:actions>
-        </x-page-toolbar>
+        <x-slot:toolbar>
+            <x-page-toolbar :badge="$shift->statusLabel()" :badge-tone="$shift->statusTone()">
+                @if ($shift->user)
+                    <span>{{ $shift->user->name }}</span>
+                @endif
+                <x-slot:actions>
+                    <x-icon-btn icon="arrow_back" size="sm"
+                                :href="route('schedule.index')"
+                                show-label>{{ __('Zurück') }}</x-icon-btn>
+                    @can('update', $shift)
+                        <x-icon-btn icon="edit" tone="primary" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route('scheduled-shifts.edit', $shift)"
+                                    show-label>{{ __('Bearbeiten') }}</x-icon-btn>
+                    @endcan
+                </x-slot:actions>
+            </x-page-toolbar>
+        </x-slot:toolbar>
 
         <div class="card border border-base-300 bg-base-100 shadow-xs max-w-2xl">
             <div class="card-body grid gap-3 sm:grid-cols-2">

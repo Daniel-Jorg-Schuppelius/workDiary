@@ -101,6 +101,11 @@ class TeamViewerClient implements RemoteProvider {
             isset($record['notes']) ? (string) $record['notes'] : null,
         ])));
 
+        // Klartext-Gerätename — Pendant zum AnyDesk-Alias (Inbox-Badge und
+        // Namensvorschlag beim Anlegen); nur übernehmen, wenn er sich von der ID unterscheidet.
+        $alias = trim((string) ($record['devicename'] ?? ''));
+        $alias = ($alias !== '' && $alias !== $deviceId) ? $alias : null;
+
         return new RemoteSession(
             provider: self::ID,
             sessionId: (string) ($record['id'] ?? ($deviceId . '|' . $start)),
@@ -108,6 +113,7 @@ class TeamViewerClient implements RemoteProvider {
             startedAt: CarbonImmutable::parse($start),
             endedAt: CarbonImmutable::parse($end),
             note: $note !== '' ? $note : null,
+            alias: $alias,
         );
     }
 

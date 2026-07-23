@@ -53,6 +53,13 @@ class TerminalStampService {
 
         $user = $this->resolveUser((int) $terminal->organization_id, $badgeUid);
         if (! $user instanceof User) {
+            // Security-Signal (Feature 096, MVP-443): unbekannte Badges nur
+            // zählen — die Badge-UID selbst bleibt aus dem Log (Hash-Prinzip).
+            app(\App\Services\Security\SecurityEventLogger::class)->log(
+                \App\Enums\Security\SecurityEventType::TerminalBadgeUnknown,
+                ['terminal' => $terminal->name, 'organization_id' => (int) $terminal->organization_id],
+            );
+
             return 'unknown_badge';
         }
 

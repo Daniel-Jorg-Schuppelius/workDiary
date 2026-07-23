@@ -6,7 +6,7 @@
 @section('content')
 <x-index-page :subtitle="__('settingsregistry.title.subtitle')">
     <x-slot:actions>
-        <form method="GET" action="{{ route('admin.settings.index') }}" class="flex flex-wrap items-center gap-2">
+        <form method="GET" action="{{ route('admin.settings.index') }}" class="flex flex-wrap items-center gap-2 md:flex-nowrap">
             <select name="scope" class="select select-bordered select-sm" data-autosubmit>
                 <option value="system" @selected($scope->value === 'system')>{{ __('settingsregistry.scopes.system') }}</option>
                 <option value="organization" @selected($scope->value === 'organization')>{{ __('settingsregistry.scopes.organization') }}</option>

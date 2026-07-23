@@ -61,14 +61,10 @@
     <x-form-group :legend="__('Rhythmus')" icon="event_repeat" tone="ghost" cols="2">
         <div class="fieldset">
             <label class="fieldset-label" for="is-unit">{{ __('Intervall') }} *</label>
-            @php
-                $unitLabels = [
-                    \App\Models\InvoiceSchedule::UNIT_WEEK => __('Woche(n)'),
-                    \App\Models\InvoiceSchedule::UNIT_MONTH => __('Monat(e)'),
-                    \App\Models\InvoiceSchedule::UNIT_QUARTER => __('Quartal(e)'),
-                    \App\Models\InvoiceSchedule::UNIT_YEAR => __('Jahr(e)'),
-                ];
-            @endphp
+            {{-- Inline- statt Block-Form: Blades lazy Raw-Block-Regex paart die
+                 Inline-Form weiter oben sonst mit dem Block-Ende hier und frisst
+                 den halben View (ParseError erst beim Rendern). --}}
+            @php($unitLabels = [\App\Models\InvoiceSchedule::UNIT_WEEK => __('Woche(n)'), \App\Models\InvoiceSchedule::UNIT_MONTH => __('Monat(e)'), \App\Models\InvoiceSchedule::UNIT_QUARTER => __('Quartal(e)'), \App\Models\InvoiceSchedule::UNIT_YEAR => __('Jahr(e)')])
             <select id="is-unit" name="interval_unit" class="select select-bordered w-full" required>
                 @foreach (\App\Models\InvoiceSchedule::UNITS as $unit)
                     <option value="{{ $unit }}" @selected(old('interval_unit', $schedule->interval_unit ?? 'month') === $unit)>{{ $unitLabels[$unit] }}</option>

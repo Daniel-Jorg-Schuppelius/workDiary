@@ -6,7 +6,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :title="__('Lohn & Sozialversicherung')"
+        <x-page-toolbar
                         :subtitle="__('Organisations-Stammdaten, Mindestlohn und betroffene Mitarbeiter.')" />
     </x-slot:toolbar>
 

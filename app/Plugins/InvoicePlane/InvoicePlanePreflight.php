@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\InvoicePlane;
 
 use App\Plugins\InvoicePlane\Schema\{PreflightResult, SchemaReader};
+use CommonToolkit\Helper\Data\CryptoHelper;
 
 /**
  * Schema-Preflight/Healthcheck des InvoicePlane-Plugins (Feature 086, MVP-419).
@@ -136,6 +137,6 @@ class InvoicePlanePreflight {
             $parts['t:' . $table] = implode(',', $columns);
         }
 
-        return hash('sha256', (string) json_encode($parts));
+        return CryptoHelper::hash((string) json_encode($parts));
     }
 }

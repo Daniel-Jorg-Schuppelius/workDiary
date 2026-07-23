@@ -1,0 +1,34 @@
+# WorkDiary Realtime-Integritätswächter (Feature 097, MVP-453) — Supervisor-Vorlage.
+#
+# Optionaler Daemon: überwacht den Quelltext per inotify und löst bei
+# Änderungen `integrity:verify` aus. Voraussetzung: PHP-Erweiterung ext-inotify
+# (Ubuntu/Debian: apt install phpX.Y-inotify). Ohne die Erweiterung bricht der
+# Befehl mit klarem Hinweis ab — der periodische Scan läuft trotzdem weiter.
+#
+# Installation:
+#   cp deploy/supervisor/workdiary-integrity-watch.conf.example \
+#      /etc/supervisor/conf.d/workdiary-integrity-watch.conf
+#   # command/directory/user an die Installation anpassen, dann:
+#   supervisorctl reread && supervisorctl update
+#   supervisorctl status workdiary-integrity-watch
+#
+# Betriebshinweise:
+#   - EIN Wächter-Prozess je Installation genügt (numprocs=1) — er löst nur den
+#     ohnehin plattformweiten Verify aus.
+#   - stopsignal=TERM: der Befehl fängt SIGTERM/SIGINT ab und fährt sauber herunter.
+#   - Der Wächter ersetzt NICHT den täglichen Scheduler-Lauf (security.integrity)
+#     und keine OS-Härtung (AIDE/auditd, read-only Mounts) — er ergänzt sie.
+
+[program:workdiary-integrity-watch]
+command=/usr/bin/php /var/www/workdiary/artisan integrity:watch
+directory=/var/www/workdiary
+user=www-data
+autostart=true
+autorestart=true
+startsecs=3
+stopsignal=TERM
+stopwaitsecs=15
+redirect_stderr=true
+stdout_logfile=/var/log/workdiary/integrity-watch.log
+stdout_logfile_maxbytes=10MB
+stdout_logfile_backups=3

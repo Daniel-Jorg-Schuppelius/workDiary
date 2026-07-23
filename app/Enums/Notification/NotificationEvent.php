@@ -161,6 +161,14 @@ enum NotificationEvent: string implements HasLabel {
     case OperationsMaintenanceScheduled = 'operations.maintenanceScheduled';
     case OperationsProblemReportReceived = 'operations.problemReportReceived';
 
+    // Sicherheitsereignisse (Feature 095/096): Plattform-Ebene, Versand
+    // direkt an Plattform-Admins bzw. den betroffenen Nutzer — nie über
+    // Org-Benachrichtigungsregeln.
+    case SecurityIntegrity = 'security.integrity';
+    case SecurityThreat = 'security.threat';
+    case SecurityNewDevice = 'security.newDevice';
+    case SecurityLockout = 'security.lockout';
+
     public function label(): string {
         return (string) __('enums.notification.event.' . $this->value);
     }
@@ -180,8 +188,9 @@ enum NotificationEvent: string implements HasLabel {
      * der Antragsteller selbst — Empfänger sind hier die Entscheider (Rolle).
      */
     public function defaultNotifyAffected(): bool {
-        // Betriebsereignisse haben keine „betroffene Person" — nur Rollen.
-        if (str_starts_with($this->value, 'operations.')) {
+        // Betriebs-/Sicherheitsereignisse haben keine „betroffene Person" im
+        // Sinne der Org-Regeln (Security-Versand läuft direkt, s. Cases).
+        if (str_starts_with($this->value, 'operations.') || str_starts_with($this->value, 'security.')) {
             return false;
         }
 
@@ -365,6 +374,10 @@ enum NotificationEvent: string implements HasLabel {
             self::InvestmentDecisionDue => 'pending_actions',
             self::InvestmentDecided => 'task_alt',
             self::InventoryLotExpiring => 'hourglass_bottom',
+            self::SecurityIntegrity => 'verified_user',
+            self::SecurityThreat => 'gpp_bad',
+            self::SecurityNewDevice => 'devices',
+            self::SecurityLockout => 'lock_person',
         };
     }
 

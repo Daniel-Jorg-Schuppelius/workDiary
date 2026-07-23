@@ -229,4 +229,12 @@ class Asset extends Model {
     protected function searchableColumns(): array {
         return ['asset_no', 'name', 'serial_no', 'location_text'];
     }
+
+    /** @return array<string, list<string>> */
+    protected function searchableRelations(): array {
+        return [
+            'customer' => ['name', 'company'],
+            'foreignCustomer' => ['name'],
+        ];
+    }
 }

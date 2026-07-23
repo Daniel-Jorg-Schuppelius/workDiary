@@ -43,4 +43,29 @@ return [
         // RFC 9116 empfiehlt Expires < 1 Jahr; wird pro Request gerechnet.
         'expires_days' => (int) env('SECURITY_TXT_EXPIRES_DAYS', 180),
     ],
+
+    /*
+    | Angriffserkennung (Feature 096, MVP-445): Schwellwert-Regeln über die
+    | persistierten security_events. Scope 'global' zählt alle Ereignisse im
+    | Fenster, 'ip' die auffälligste Einzel-IP. Alarme feuern nur beim
+    | Zustandswechsel (security:evaluate, 5-min-Takt).
+    */
+    'events' => [
+        'retention_days' => (int) env('SECURITY_EVENTS_RETENTION_DAYS', 90),
+        'thresholds' => [
+            ['key' => 'auth_failed_global', 'event' => 'auth.failed', 'scope' => 'global', 'window_minutes' => 10, 'limit' => 50],
+            ['key' => 'auth_failed_ip', 'event' => 'auth.failed', 'scope' => 'ip', 'window_minutes' => 10, 'limit' => 20],
+            ['key' => 'two_factor_failed_global', 'event' => 'auth.2fa_failed', 'scope' => 'global', 'window_minutes' => 10, 'limit' => 10],
+            ['key' => 'api_token_invalid_global', 'event' => 'api.token_invalid', 'scope' => 'global', 'window_minutes' => 10, 'limit' => 30],
+            ['key' => 'webhook_signature_global', 'event' => 'webhook.signature_invalid', 'scope' => 'global', 'window_minutes' => 10, 'limit' => 20],
+        ],
+    ],
+
+    /*
+    | Optionale IP-Allowlist für den Plattform-Adminbereich (Feature 096,
+    | MVP-446): Komma-Liste von IPs/CIDRs. Leer = aus. Wirkt NUR auf
+    | Plattform-Admins im admin.*-Bereich — Org-Admins bleiben unberührt
+    | (Aussperr-Risiko begrenzen).
+    */
+    'platform_admin_ip_allowlist' => env('PLATFORM_ADMIN_IP_ALLOWLIST', ''),
 ];

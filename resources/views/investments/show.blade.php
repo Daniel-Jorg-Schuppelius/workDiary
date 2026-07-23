@@ -5,29 +5,31 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar :title="$case->title" :badge="__('values.' . $case->status)" badge-tone="outline">
-        <div class="text-sm text-base-content/70">
-            {{ __("values.{$case->category}") }} · {{ __('Dringlichkeit: :urgency', ['urgency' => __("values.{$case->urgency}")]) }}
-            @if ($case->costCenterDisplay()) · {{ $case->costCenterDisplay() }} @endif
-        </div>
-        <x-slot:actions>
-            @can('update', $case)
-                <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('investments.edit', $case)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
-                @if (in_array($case->status, ['approved', 'in_progress'], true))
-                    <x-action-form :action="route('investments.status', $case)">
-                        <input type="hidden" name="status" value="{{ $case->status === 'approved' ? 'in_progress' : 'completed' }}">
-                        <x-icon-btn icon="task_alt" tone="primary" size="sm" type="submit" show-label>{{ $case->status === 'approved' ? __('Umsetzung starten') : __('Abschließen') }}</x-icon-btn>
+    <x-slot:toolbar>
+        <x-page-toolbar :badge="__('values.' . $case->status)" badge-tone="outline">
+            <div class="text-sm text-base-content/70">
+                {{ __("values.{$case->category}") }} · {{ __('Dringlichkeit: :urgency', ['urgency' => __("values.{$case->urgency}")]) }}
+                @if ($case->costCenterDisplay()) · {{ $case->costCenterDisplay() }} @endif
+            </div>
+            <x-slot:actions>
+                @can('update', $case)
+                    <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('investments.edit', $case)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
+                    @if (in_array($case->status, ['approved', 'in_progress'], true))
+                        <x-action-form :action="route('investments.status', $case)">
+                            <input type="hidden" name="status" value="{{ $case->status === 'approved' ? 'in_progress' : 'completed' }}">
+                            <x-icon-btn icon="task_alt" tone="primary" size="sm" type="submit" show-label>{{ $case->status === 'approved' ? __('Umsetzung starten') : __('Abschließen') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
+                @endcan
+                @can('delete', $case)
+                    <x-action-form :action="route('investments.destroy', $case)" method="DELETE"
+                          :confirm="__('Akte wirklich löschen?')" confirm-icon="delete" confirm-tone="error" :confirm-label="__('Löschen')">
+                        <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
                     </x-action-form>
-                @endif
-            @endcan
-            @can('delete', $case)
-                <x-action-form :action="route('investments.destroy', $case)" method="DELETE"
-                      :confirm="__('Akte wirklich löschen?')" confirm-icon="delete" confirm-tone="error" :confirm-label="__('Löschen')">
-                    <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
-                </x-action-form>
-            @endcan
-        </x-slot:actions>
-    </x-page-toolbar>
+                @endcan
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     {{-- Soll-Ist (MVP-205) --}}
     <div class="grid gap-4 sm:grid-cols-4">

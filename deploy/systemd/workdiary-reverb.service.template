@@ -1,0 +1,24 @@
+# WorkDiary Reverb-WebSocket-Server (MVP-454, optional) — von
+# scripts/install-system.sh gerendert (--with-reverb).
+# Platzhalter: __APP_DIR__, __PHP_BIN__, __RUN_USER__
+#
+# Nur nötig, wenn BROADCAST_CONNECTION=reverb (Chat/Live-Updates);
+# mit dem Default BROADCAST_CONNECTION=log läuft die App ohne.
+# Logs: journalctl -u workdiary-reverb
+
+[Unit]
+Description=WorkDiary Reverb WebSocket-Server
+After=network.target
+StartLimitIntervalSec=300
+StartLimitBurst=10
+
+[Service]
+Type=simple
+User=__RUN_USER__
+WorkingDirectory=__APP_DIR__
+ExecStart=__PHP_BIN__ __APP_DIR__/artisan reverb:start
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

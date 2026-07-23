@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Release;
 
-use App\Services\Release\ReleaseManifestService;
+use App\Services\Release\{CodeIntegrityService, ReleaseManifestService};
 use CommonToolkit\Helper\Data\JsonHelper;
 use CommonToolkit\Helper\FileSystem\{File, Folder};
 use Illuminate\Console\Command;
@@ -33,7 +33,17 @@ class ManifestCommand extends Command {
 
     protected $description = 'Erzeugt das Release-Manifest (release.json) mit Versionen, Prüfsummen und optionaler Ed25519-Signatur.';
 
-    public function handle(ReleaseManifestService $service): int {
+    public function handle(ReleaseManifestService $service, CodeIntegrityService $integrity): int {
+        // Quelltext-Baseline zuerst (Feature 095): integrity.json entsteht vor
+        // dem Release-Manifest, damit Root-Hash + Artefakt-Prüfsumme in den
+        // signierten Payload eingehen. DB-los tolerierbar (Build-Pipeline).
+        $baseline = $integrity->freeze('release', null, requirePersistence: false);
+        $this->info(sprintf(
+            'Quelltext-Baseline erzeugt: %d Dateien, Root %s…',
+            $baseline->files_checked,
+            substr((string) $baseline->baseline_root, 0, 16),
+        ));
+
         $manifest = $service->build();
         $json = JsonHelper::encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 

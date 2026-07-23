@@ -10,12 +10,11 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Concerns\UpdatesEnvFile;
 use App\Models\AuditLog;
 use CommonToolkit\Helper\Data\CryptoHelper;
-use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
-use Throwable;
 
 /**
  * Rotiert den Bearer-Token für POST /admin/backup/heartbeat (MVP-046 §5).
@@ -25,6 +24,8 @@ use Throwable;
  * `backup.tokenRotated` an. Vorhandene Zeile wird ersetzt, sonst angehängt.
  */
 class BackupRotateTokenCommand extends Command {
+    use UpdatesEnvFile;
+
     protected $signature = 'workdiary:backup:rotate-token {--length=64 : Tokenlänge in Zeichen}';
 
     protected $description = 'Erzeugt einen neuen Backup-Heartbeat-Token und schreibt ihn in die .env-Datei.';
@@ -33,28 +34,14 @@ class BackupRotateTokenCommand extends Command {
         $length = max(32, (int) $this->option('length'));
         $token = Str::random($length);
 
-        $envPath = $this->resolveEnvPath();
-        if ($envPath === null || ! is_file($envPath) || ! is_writable($envPath)) {
-            $this->error('.env-Datei nicht gefunden oder nicht beschreibbar: ' . (string) $envPath);
+        $envPath = $this->writableEnvPath();
+        if ($envPath === null) {
+            $this->error('.env-Datei nicht gefunden oder nicht beschreibbar: ' . app()->environmentFilePath());
 
             return self::FAILURE;
         }
 
-        $contents = ToolkitFile::read($envPath);
-        $replacement = 'BACKUP_HEARTBEAT_TOKEN=' . $token;
-
-        if (preg_match('/^BACKUP_HEARTBEAT_TOKEN=.*$/m', $contents) === 1) {
-            $contents = (string) preg_replace('/^BACKUP_HEARTBEAT_TOKEN=.*$/m', $replacement, $contents);
-        } else {
-            if ($contents !== '' && ! str_ends_with($contents, "\n")) {
-                $contents .= "\n";
-            }
-            $contents .= $replacement . "\n";
-        }
-
-        try {
-            ToolkitFile::write($envPath, $contents);
-        } catch (Throwable) {
+        if (! $this->writeEnvValue($envPath, 'BACKUP_HEARTBEAT_TOKEN', $token)) {
             $this->error('Konnte .env nicht schreiben: ' . $envPath);
 
             return self::FAILURE;
@@ -80,11 +67,5 @@ class BackupRotateTokenCommand extends Command {
         $this->comment('Tipp: php artisan config:clear, damit der neue Token sofort greift.');
 
         return self::SUCCESS;
-    }
-
-    private function resolveEnvPath(): ?string {
-        $path = app()->environmentFilePath();
-
-        return $path !== '' ? $path : null;
     }
 }

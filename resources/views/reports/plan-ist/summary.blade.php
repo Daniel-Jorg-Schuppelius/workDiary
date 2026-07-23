@@ -19,10 +19,11 @@
     $fmtH = fn (int $minutes): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minutes / 60, 1, withThousandsSeparator: true) . ' h';
 @endphp
 <x-page-shell>
-    <x-page-toolbar>
-        <x-slot:title>{{ $scope === 'team' ? __('Plan/Ist — Team') : __('Plan/Ist — Organisation') }}</x-slot:title>
-        <x-slot:subtitle>{{ $from->fdate() }} – {{ $to->fdate() }}</x-slot:subtitle>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:subtitle>{{ $from->fdate() }} – {{ $to->fdate() }}</x-slot:subtitle>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     {{-- Dimension-Umschalter (A14 · MVP-333): Anwesenheit | Schicht | Projekt | Standort. --}}
     @include('reports.plan-ist._dimensions')

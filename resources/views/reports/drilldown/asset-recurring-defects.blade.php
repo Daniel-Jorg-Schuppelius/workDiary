@@ -17,19 +17,20 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar>
-        <x-slot:title>{{ __('Wiederholdefekte') }}</x-slot:title>
-        <x-slot:subtitle>
-            {{ $label }} · {{ __('Schwelle: :n Defekte in :m Monaten', ['n' => $threshold, 'm' => $windowMonths]) }}
-        </x-slot:subtitle>
-        <x-slot:actions>
-            <x-icon-btn icon="download" tone="outline" size="sm"
-                        :href="route('reports.assets.drilldown.recurring-defects', ['export' => 'csv'])"
-                        show-label>CSV</x-icon-btn>
-            <x-icon-btn icon="arrow_back" tone="outline" size="sm"
-                        :href="route('reports.assets')" show-label>{{ __('Zur Produktanalyse') }}</x-icon-btn>
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:subtitle>
+                {{ $label }} · {{ __('Schwelle: :n Defekte in :m Monaten', ['n' => $threshold, 'm' => $windowMonths]) }}
+            </x-slot:subtitle>
+            <x-slot:actions>
+                <x-icon-btn icon="download" tone="outline" size="sm"
+                            :href="route('reports.assets.drilldown.recurring-defects', ['export' => 'csv'])"
+                            show-label>CSV</x-icon-btn>
+                <x-icon-btn icon="arrow_back" tone="outline" size="sm"
+                            :href="route('reports.assets')" show-label>{{ __('Zur Produktanalyse') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <x-card>
         @if (empty($rows))

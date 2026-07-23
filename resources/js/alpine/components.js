@@ -646,6 +646,27 @@ export function registerAlpineComponents(Alpine) {
             this.room_id = i.room_id ?? null;
             this.syncFromCurrent();
             this.autoSelectSingles();
+            this.applySelection();
+        },
+        // Selects nach dem Rendern der x-for-Optionen auf den State setzen —
+        // x-model greift sonst, bevor die Optionen existieren (leerer Dialog).
+        applySelection() {
+            this.$nextTick(() => {
+                const pairs = [
+                    ["customerSelect", this.customer_id],
+                    ["foreignSelect", this.foreign_customer_id],
+                    ["siteSelect", this.site_id],
+                    ["buildingSelect", this.building_id],
+                    ["floorSelect", this.floor_id],
+                    ["roomSelect", this.room_id],
+                ];
+                for (const [ref, value] of pairs) {
+                    const el = this.$refs[ref];
+                    if (el) {
+                        el.value = value == null ? "" : String(value);
+                    }
+                }
+            });
         },
         autoSelectSingles() {
             if (this.customer_id != null && this.site_id == null && this.filteredSites.length === 1) {
@@ -759,6 +780,7 @@ export function registerAlpineComponents(Alpine) {
                 }
             }
             this.autoSelectSingles();
+            this.applySelection();
         },
         onSiteChange() {
             if (this.building_id != null) {
@@ -770,6 +792,7 @@ export function registerAlpineComponents(Alpine) {
                 }
             }
             this.autoSelectSingles();
+            this.applySelection();
         },
         onBuildingChange() {
             if (this.floor_id != null) {
@@ -780,6 +803,7 @@ export function registerAlpineComponents(Alpine) {
                 }
             }
             this.autoSelectSingles();
+            this.applySelection();
         },
         onFloorChange() {
             if (this.room_id != null) {
@@ -789,6 +813,7 @@ export function registerAlpineComponents(Alpine) {
                 }
             }
             this.autoSelectSingles();
+            this.applySelection();
         },
     }));
 
@@ -1296,6 +1321,112 @@ export function registerAlpineComponents(Alpine) {
         },
         clear() {
             this.selected = [];
+        },
+    }));
+
+    // Fernwartungs-Inbox: abhängige Kunde→Fremdkunde→Projekt-Auswahl. Maps als
+    // data-Attribute am x-data-Element:
+    //   data-foreign-map → { kundeSqid: [{id, name}] }
+    //   data-project-map → { kundeSqid: [{id, name, fc}] } (fc = Fremdkunden-Sqid|null)
+    Alpine.data("remoteAssign", () => ({
+        customer: "",
+        foreign: "",
+        allChecked: false,
+        foreignMap: {},
+        projectMap: {},
+        init() {
+            // Maps liegen EINMAL pro Seite in #remote-assign-maps (statt an
+            // jedem Formular dupliziert); eigene data-Attribute gewinnen.
+            const shared = document.getElementById("remote-assign-maps");
+            const src = { ...(shared?.dataset ?? {}), ...this.$el.dataset };
+            this.foreignMap = JSON.parse(src.foreignMap || "{}");
+            this.projectMap = JSON.parse(src.projectMap || "{}");
+        },
+        get foreignCustomers() {
+            return this.foreignMap[this.customer] ?? [];
+        },
+        get hasForeignCustomers() {
+            return this.foreignCustomers.length > 0;
+        },
+        // Ohne Fremdkunden-Wahl nur firmendirekte Projekte (fc = null).
+        get projects() {
+            const fc = this.foreign === "" ? null : this.foreign;
+            return (this.projectMap[this.customer] ?? []).filter((p) => (p.fc ?? null) === fc);
+        },
+        get noCustomer() {
+            return this.customer === "";
+        },
+        resetForeign() {
+            this.foreign = "";
+        },
+        toggleAll() {
+            this.$refs.list
+                ?.querySelectorAll('input[type=checkbox][name="pending_ids[]"]')
+                .forEach((cb) => (cb.checked = this.allChecked));
+        },
+        // Vorbefüllung Kunde → Fremdkunde: der Fremdkunden-Select wird erst
+        // nach der Kundenwahl gerendert (x-for), daher Endkunde im nextTick.
+        applyPreset(customerSqid, foreignSqid) {
+            this.customer = customerSqid;
+            this.foreign = "";
+            if (foreignSqid) {
+                this.$nextTick(() => {
+                    this.foreign = foreignSqid;
+                });
+            }
+        },
+        // Vorschlags-Badge einer Sitzungszeile: wählt Kunde (+ Endkunde) und
+        // markiert alle Zeilen mit demselben Vorschlag (data-suggest-*).
+        applySuggestion(evt) {
+            const ds = evt.currentTarget?.dataset ?? {};
+            const sqid = ds.suggestCustomer ?? "";
+            if (!sqid) return;
+            const fc = ds.suggestForeign ?? "";
+            this.applyPreset(sqid, fc);
+            this.$refs.list?.querySelectorAll("tr").forEach((tr) => {
+                const cb = tr.querySelector('input[type=checkbox][name="pending_ids[]"]');
+                if (cb) cb.checked = tr.dataset.suggestCustomer === sqid && (tr.dataset.suggestForeign ?? "") === fc;
+            });
+        },
+    }));
+
+    // Fernwartungs-Inbox: Zuweisungsvorschlag einer unbekannten Geräte-ID.
+    // data-suggest = {shared, customer(Sqid), asset(Sqid), matchcode}; apply()
+    // befüllt nur die Formulare vor — gebucht wird weiterhin per Submit.
+    Alpine.data("remoteSuggest", () => ({
+        suggest: {},
+        init() {
+            this.suggest = JSON.parse(this.$el.dataset.suggest || "{}");
+        },
+        apply() {
+            // $root statt $el: in Direktiven zeigt $el auf den Klick-Button.
+            const root = this.$root;
+            const s = this.suggest;
+            const tabs = root.querySelectorAll('input[type=radio].tab');
+            if (s.shared) {
+                root.querySelectorAll('input[type=checkbox][name="shared_remote"]').forEach((cb) => (cb.checked = true));
+            }
+            if (s.asset) {
+                const sel = root.querySelector('select[name="asset_id"]');
+                if (sel) {
+                    sel.value = s.asset;
+                    sel.dispatchEvent(new Event("change", { bubbles: true }));
+                }
+                tabs[0]?.click();
+            } else if (s.customer) {
+                // Kunde + Endkunde über die remoteAssign-Komponente des
+                // „Neues Gerät"-Formulars setzen (kaskadierende Selects).
+                const form = root.querySelector('form[x-data="remoteAssign"]');
+                const data = form && window.Alpine ? window.Alpine.$data(form) : null;
+                if (data && typeof data.applyPreset === "function") {
+                    data.applyPreset(s.customer, s.foreign || "");
+                }
+                tabs[1]?.click();
+            }
+            if (s.matchcode) {
+                root.querySelectorAll('input[name="matchcode"]').forEach((inp) => (inp.value = s.matchcode));
+                root.querySelectorAll('input[name="matchcode_scope"]').forEach((inp) => (inp.value = s.matchcodeScope || "customer"));
+            }
         },
     }));
 }

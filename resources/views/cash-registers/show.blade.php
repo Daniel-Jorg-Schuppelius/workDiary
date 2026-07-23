@@ -103,7 +103,7 @@
                 </td>
                 <td class="text-right tabular-nums">{{ $entry->direction === \App\Models\CashEntry::DIRECTION_IN ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $entry->amount, 2, withThousandsSeparator: true) : '' }}</td>
                 <td class="text-right tabular-nums">{{ $entry->direction === \App\Models\CashEntry::DIRECTION_OUT ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $entry->amount, 2, withThousandsSeparator: true) : '' }}</td>
-                <td>
+                <td class="text-right">
                     @can(\App\Enums\User\Permission::CashManage->value)
                         @if (! $isReversed && $entry->reversal_of_id === null)
                             <x-icon-btn icon="undo" tone="warning" size="xs"

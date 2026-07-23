@@ -18,9 +18,10 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar :subtitle="__('Alle Treffer der globalen Suche — gefiltert nach Domäne, Zeitraum, Person und Kunde.')">
-        <x-slot:title>{{ __('Suche') }}@if($q !== '') — „{{ $q }}“@endif</x-slot:title>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Alle Treffer der globalen Suche — gefiltert nach Domäne, Zeitraum, Person und Kunde.')">
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <x-filter-bar :action="route('search.index')" :reset="route('search.index')">
         <input type="search" name="q" value="{{ $q }}" required minlength="2" maxlength="120"

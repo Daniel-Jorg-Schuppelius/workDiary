@@ -36,7 +36,7 @@
         <form method="GET" action="{{ route('admin.billbee.index') }}" class="flex flex-wrap items-end gap-2">
             <label class="form-control">
                 <span class="label-text text-xs">{{ __('billbee.field.channel') }}</span>
-                <select name="channel" class="select select-sm select-bordered" onchange="this.form.submit()">
+                <select name="channel" class="select select-sm select-bordered" data-autosubmit>
                     <option value="">{{ __('billbee.filter.all_channels') }}</option>
                     @foreach ($channels as $option)
                         <option value="{{ $option }}" @selected($channel === $option)>{{ $option }}</option>

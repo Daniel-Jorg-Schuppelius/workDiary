@@ -18,10 +18,11 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar>
-        <x-slot:title>{{ __('Agile Management-Übersicht') }}</x-slot:title>
-        <x-slot:subtitle>{{ __('Alle Projektboards mit Sichtrecht — Velocity, Blockierungen und empirische Prognose.') }}</x-slot:subtitle>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:subtitle>{{ __('Alle Projektboards mit Sichtrecht — Velocity, Blockierungen und empirische Prognose.') }}</x-slot:subtitle>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if ($rows->isEmpty())
         <x-empty-state icon="space_dashboard" framed :title="__('Keine Projektboards mit Sichtrecht vorhanden.')" />

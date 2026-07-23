@@ -1,0 +1,27 @@
+# WorkDiary Realtime-Integritätswächter (Feature 097/MVP-453, optional) —
+# von scripts/install-system.sh gerendert (--with-integrity-watch).
+# Platzhalter: __APP_DIR__, __PHP_BIN__, __RUN_USER__
+#
+# Voraussetzung: PHP-Erweiterung ext-inotify (der Installer prüft das).
+# Der Wächter löst bei Quelltext-Änderungen integrity:verify aus; der
+# tägliche Scheduler-Lauf bleibt davon unberührt.
+# Logs: journalctl -u workdiary-integrity-watch
+
+[Unit]
+Description=WorkDiary Realtime-Integritätswächter (inotify)
+After=network.target
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=__RUN_USER__
+WorkingDirectory=__APP_DIR__
+ExecStart=__PHP_BIN__ __APP_DIR__/artisan integrity:watch
+Restart=always
+RestartSec=10
+TimeoutStopSec=20
+KillSignal=SIGTERM
+
+[Install]
+WantedBy=multi-user.target

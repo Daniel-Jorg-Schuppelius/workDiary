@@ -44,6 +44,11 @@ class ReporterMailboxController extends Controller {
         $case = $mailbox->authenticate((string) $request->input('secret'));
 
         if ($case === null) {
+            // fail2ban-Signal — landet NUR in der rotierten Datei, nie in der
+            // DB (SecurityEventType::persist, Anonymitätsschutz HinSchG).
+            app(\App\Services\Security\SecurityEventLogger::class)
+                ->log(\App\Enums\Security\SecurityEventType::WbLoginFailed);
+
             // Konstante Fehlermeldung – keine Information ueber Existenz.
             return back()->withErrors(['secret' => __('Zugang nicht möglich. Bitte prüfen Sie Ihr Geheimnis.')]);
         }

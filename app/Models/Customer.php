@@ -24,6 +24,7 @@ use Illuminate\Support\Carbon;
  * @property string $name
  * @property string|null $slug
  * @property string|null $number
+ * @property string|null $matchcode
  * @property string|null $lexoffice_contact_number
  * @property string $number_source
  * @property string|null $company
@@ -81,6 +82,7 @@ class Customer extends Model {
         'name',
         'slug',
         'number',
+        'matchcode',
         'lexoffice_contact_number',
         'number_source',
         'company',

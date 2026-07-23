@@ -65,7 +65,7 @@
                     <td class="text-right tabular-nums">{{ $run->rows_total }}</td>
                     <td class="text-right tabular-nums">{{ $run->rows_created }} / {{ $run->rows_updated }} / {{ $run->rows_skipped }} / {{ $run->rows_failed }}</td>
                     <td class="text-sm">{{ optional($run->created_at)->format('Y-m-d H:i') }}</td>
-                    <td>
+                    <td class="text-right">
                         <x-icon-btn icon="visibility" size="sm" :href="route('admin.imports.show', $run)" />
                     </td>
                 </tr>

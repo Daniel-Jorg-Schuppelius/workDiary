@@ -92,6 +92,7 @@ return [
             'empty_file' => 'Il file è vuoto.',
             'duplicate_file' => 'Questo file è già stato importato (duplicato).',
             'unavailable' => 'L’importazione bancaria è un modulo aggiuntivo opzionale e a pagamento, non attivato in questa installazione. L’attivazione è possibile su richiesta a :contact.',
+            'unavailable_badge' => 'Modulo aggiuntivo non attivato',
         ],
     ],
     'reconcile' => [

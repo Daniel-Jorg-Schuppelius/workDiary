@@ -52,7 +52,7 @@
                     <td><x-status-badge size="md" :tone="$case->severity === 'critical' ? 'error' : ($case->severity === 'major' ? 'warning' : 'outline')">{{ __("values.{$case->severity}") }}</x-status-badge></td>
                     <td><x-status-badge size="md" outline>{{ __("values.{$case->status}") }}</x-status-badge></td>
                     <td>{{ optional($case->activated_at)->fdatetime() ?? '—' }}</td>
-                    <td><x-icon-btn icon="visibility" :href="route('crisis.show', $case)" :label="__('Anzeigen')" /></td>
+                    <td class="text-right"><x-icon-btn icon="visibility" :href="route('crisis.show', $case)" :label="__('Anzeigen')" /></td>
                 </tr>
             @empty
                 <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">emergency_home</span>' :colspan="6" :title="__('Keine Krisenakten — hoffentlich bleibt es so.')" compact />

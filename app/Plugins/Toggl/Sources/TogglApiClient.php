@@ -279,7 +279,7 @@ class TogglApiClient {
     /**
      * Workspace-Benutzer, Format wie der Ordner-Reader.
      *
-     * @return array<int, array{email: string, name: string, timezone: ?string}>
+     * @return array<int, array{id: ?int, email: string, name: string, timezone: ?string}>
      */
     public function workspaceUsers(int $workspaceId): array {
         $response = $this->api()
@@ -296,6 +296,7 @@ class TogglApiClient {
                 continue;
             }
             $out[] = [
+                'id' => isset($row['id']) ? (int) $row['id'] : null,
                 'email' => $email,
                 'name' => trim((string) ($row['fullname'] ?? $row['name'] ?? $email)),
                 'timezone' => isset($row['timezone']) && trim((string) $row['timezone']) !== '' ? trim((string) $row['timezone']) : null,
@@ -318,6 +319,15 @@ class TogglApiClient {
     public function workspaceEntries(int $workspaceId, ?CarbonImmutable $from = null, ?CarbonImmutable $to = null): array {
         if (! $this->isConfigured()) {
             return [];
+        }
+
+        // Reports-Zeilen tragen nur user_id/username, keine E-Mail — die
+        // Workspace-Benutzerliste liefert die Auflösung für die Zuordnung.
+        $emailsByUserId = [];
+        foreach ($this->workspaceUsers($workspaceId) as $user) {
+            if ($user['id'] !== null) {
+                $emailsByUserId[(int) $user['id']] = $user['email'];
+            }
         }
 
         // Stammdaten für die Namensauflösung (Projekt/Client).
@@ -352,7 +362,7 @@ class TogglApiClient {
             }
 
             foreach ($this->fetchReportWindow($workspaceId, $windowStart, $windowEnd) as $row) {
-                foreach ($this->mapReportRow((array) $row, $projects, $workspaceId) as $entry) {
+                foreach ($this->mapReportRow((array) $row, $projects, $workspaceId, $emailsByUserId) as $entry) {
                     $entries[] = $entry;
                 }
             }
@@ -407,9 +417,10 @@ class TogglApiClient {
      *
      * @param  array<string, mixed>  $row
      * @param  array<int, array{name: string, client_name: ?string, client_id: ?int}>  $projects
+     * @param  array<int, string>  $emailsByUserId  Toggl-User-ID → E-Mail
      * @return array<int, TogglEntry>
      */
-    private function mapReportRow(array $row, array $projects, ?int $workspaceId = null): array {
+    private function mapReportRow(array $row, array $projects, ?int $workspaceId = null, array $emailsByUserId = []): array {
         $items = $row['time_entries'] ?? null;
         if (! is_array($items) || $items === []) {
             return [];
@@ -423,7 +434,8 @@ class TogglApiClient {
 
         $description = isset($row['description']) ? trim((string) $row['description']) : null;
         $billable = (bool) ($row['billable'] ?? false);
-        $userEmail = $this->reportUserEmail($row);
+        $userEmail = $this->reportUserEmail($row)
+            ?? (isset($row['user_id']) ? ($emailsByUserId[(int) $row['user_id']] ?? null) : null);
 
         $entries = [];
         foreach ($items as $item) {

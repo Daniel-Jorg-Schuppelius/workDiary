@@ -21,6 +21,8 @@
     <x-form-group :legend="__('Stammdaten')" icon="badge" tone="primary" cols="2">
             <x-input-field name="name" :label="__('Name')" required maxlength="200" :value="old('name', $customer?->name)" />
             <x-input-field name="number" :label="__('Kundennummer')" maxlength="64" :value="old('number', $customer?->number)" />
+            <x-input-field name="matchcode" :label="__('Kürzel (Matchcode)')" maxlength="16" :value="old('matchcode', $customer?->matchcode)"
+                           :hint="__('Für den Alias-Abgleich der Fernwartungs-Inbox, z. B. GSL.')" />
             <x-input-field name="company" :label="__('Firma')" maxlength="200" :value="old('company', $customer?->company)" />
             <x-input-field name="vat_id" :label="__('USt-IdNr.')" maxlength="64" :value="old('vat_id', $customer?->vat_id)" />
         </x-form-group>

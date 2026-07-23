@@ -5,12 +5,14 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar :title="__('Investitions-Auswertung')">
-        <div class="text-sm text-base-content/70">{{ __('Pipeline, Budgetauslastung und offene Entscheidungen.') }}</div>
-        <x-slot:actions>
-            <x-icon-btn icon="download" size="sm" :href="route('investments.report', ['export' => 'csv'])" show-label>{{ __('CSV') }}</x-icon-btn>
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <div class="text-sm text-base-content/70">{{ __('Pipeline, Budgetauslastung und offene Entscheidungen.') }}</div>
+            <x-slot:actions>
+                <x-icon-btn icon="download" size="sm" :href="route('investments.report', ['export' => 'csv'])" show-label>{{ __('CSV') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <div class="grid gap-4 sm:grid-cols-4">
         <x-kpi-tile :label="__('Genehmigt gesamt')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totals['approved'], 2, withThousandsSeparator: true) . ' €'" />

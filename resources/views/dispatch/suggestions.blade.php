@@ -9,12 +9,14 @@
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif
 
-    <x-page-toolbar :title="__('Leerzeit-/Lückenfüller-Vorschläge')">
-        <div class="text-sm text-base-content/70">{{ __('Freie Slots aus Schichten, Touren und Disposition — Übernahme bleibt eine bewusste Entscheidung. Keine Standortüberwachung: nur Planungsdaten.') }}</div>
-        <x-slot:actions>
-            <x-icon-btn icon="dashboard" size="sm" :href="route('dispatch.board')" show-label>{{ __('Dispo-Board') }}</x-icon-btn>
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <div class="text-sm text-base-content/70">{{ __('Freie Slots aus Schichten, Touren und Disposition — Übernahme bleibt eine bewusste Entscheidung. Keine Standortüberwachung: nur Planungsdaten.') }}</div>
+            <x-slot:actions>
+                <x-icon-btn icon="dashboard" size="sm" :href="route('dispatch.board')" show-label>{{ __('Dispo-Board') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <x-filter-bar :action="route('dispatch.suggestions')" :reset="route('dispatch.suggestions')">
         <select name="user_id" class="select select-sm select-bordered w-56 shrink-0" aria-label="{{ __('Mitarbeiter') }}">

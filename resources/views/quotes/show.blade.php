@@ -30,59 +30,61 @@
         </div>
     @endif
 
-    <x-page-toolbar :title="__('Angebot') . ' ' . $quote->number . ' · V' . $quote->version" :badge="__('values.' . $quote->status)" badge-tone="outline">
-        <div class="text-sm text-base-content/70">{{ $quote->customer->name }}</div>
-        @if ($quote->valid_until)
-            <div class="text-sm text-base-content/70">{{ __('Bindefrist: :date', ['date' => $quote->valid_until->fdate()]) }}</div>
-        @endif
-        <x-slot:actions>
-            @can('update', $quote)
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('quotes.items.create', $quote)"
-                            show-label>{{ __('Position hinzufügen') }}</x-icon-btn>
-            @endcan
-            @can('approve', $quote)
-                <x-action-form :action="route('quotes.approve', $quote)">
-                    <x-icon-btn icon="verified" tone="info" size="sm" type="submit" show-label>{{ __('Freigeben') }}</x-icon-btn>
-                </x-action-form>
-            @endcan
-            @can('send', $quote)
-                <x-action-form :action="route('quotes.send', $quote)"
-                      :confirm="__('Angebot als versendet markieren? Danach sind Änderungen nur noch als neue Version möglich.')"
-                      confirm-icon="send"
-                      confirm-tone="primary"
-                      :confirm-label="__('Versenden')">
-                    <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Versenden') }}</x-icon-btn>
-                </x-action-form>
-            @endcan
-            @if (in_array($quote->status, ['sent', 'rejected', 'expired'], true))
-                @can('decide', $quote)
-                    <x-action-form :action="route('quotes.new-version', $quote)">
-                        <x-icon-btn icon="difference" tone="info" size="sm" type="submit" show-label>{{ __('Neue Version') }}</x-icon-btn>
+    <x-slot:toolbar>
+        <x-page-toolbar :title="__('Angebot') . ' ' . $quote->number . ' · V' . $quote->version" :badge="__('values.' . $quote->status)" badge-tone="outline">
+            <div class="text-sm text-base-content/70">{{ $quote->customer->name }}</div>
+            @if ($quote->valid_until)
+                <div class="text-sm text-base-content/70">{{ __('Bindefrist: :date', ['date' => $quote->valid_until->fdate()]) }}</div>
+            @endif
+            <x-slot:actions>
+                @can('update', $quote)
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('quotes.items.create', $quote)"
+                                show-label>{{ __('Position hinzufügen') }}</x-icon-btn>
+                @endcan
+                @can('approve', $quote)
+                    <x-action-form :action="route('quotes.approve', $quote)">
+                        <x-icon-btn icon="verified" tone="info" size="sm" type="submit" show-label>{{ __('Freigeben') }}</x-icon-btn>
                     </x-action-form>
                 @endcan
-            @endif
-            @can('convert', $quote)
-                <x-action-form :action="route('quotes.convert', $quote)"
-                      :confirm="__('Angenommene Positionen in eine Entwurfsrechnung überführen?')"
-                      confirm-icon="receipt_long"
-                      confirm-tone="primary"
-                      :confirm-label="__('Überführen')">
-                    <x-icon-btn icon="receipt_long" tone="primary" size="sm" type="submit" show-label>{{ __('In Rechnung überführen') }}</x-icon-btn>
-                </x-action-form>
-            @endcan
-            @can('delete', $quote)
-                <x-action-form :action="route('quotes.destroy', $quote)" method="DELETE"
-                      :confirm="__('Angebots-Entwurf wirklich löschen?')"
-                      confirm-icon="delete"
-                      confirm-tone="error"
-                      :confirm-label="__('Löschen')">
-                    <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
-                </x-action-form>
-            @endcan
-        </x-slot:actions>
-    </x-page-toolbar>
+                @can('send', $quote)
+                    <x-action-form :action="route('quotes.send', $quote)"
+                          :confirm="__('Angebot als versendet markieren? Danach sind Änderungen nur noch als neue Version möglich.')"
+                          confirm-icon="send"
+                          confirm-tone="primary"
+                          :confirm-label="__('Versenden')">
+                        <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Versenden') }}</x-icon-btn>
+                    </x-action-form>
+                @endcan
+                @if (in_array($quote->status, ['sent', 'rejected', 'expired'], true))
+                    @can('decide', $quote)
+                        <x-action-form :action="route('quotes.new-version', $quote)">
+                            <x-icon-btn icon="difference" tone="info" size="sm" type="submit" show-label>{{ __('Neue Version') }}</x-icon-btn>
+                        </x-action-form>
+                    @endcan
+                @endif
+                @can('convert', $quote)
+                    <x-action-form :action="route('quotes.convert', $quote)"
+                          :confirm="__('Angenommene Positionen in eine Entwurfsrechnung überführen?')"
+                          confirm-icon="receipt_long"
+                          confirm-tone="primary"
+                          :confirm-label="__('Überführen')">
+                        <x-icon-btn icon="receipt_long" tone="primary" size="sm" type="submit" show-label>{{ __('In Rechnung überführen') }}</x-icon-btn>
+                    </x-action-form>
+                @endcan
+                @can('delete', $quote)
+                    <x-action-form :action="route('quotes.destroy', $quote)" method="DELETE"
+                          :confirm="__('Angebots-Entwurf wirklich löschen?')"
+                          confirm-icon="delete"
+                          confirm-tone="error"
+                          :confirm-label="__('Löschen')">
+                        <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
+                    </x-action-form>
+                @endcan
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if ($previousVersion !== null || $newerVersions->isNotEmpty() || $invoices->isNotEmpty())
         <div class="flex flex-wrap gap-4 text-sm text-base-content/70">

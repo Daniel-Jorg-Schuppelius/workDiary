@@ -15,10 +15,11 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar>
-        <x-slot:title>{{ __('SLA-Verträge') }}</x-slot:title>
-        <x-slot:subtitle>{{ __('Reaktions-/Lösungsfristen, Geschäftszeiten, Eskalation und Inklusivzeit-Kontingente je Vertrag.') }}</x-slot:subtitle>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:subtitle>{{ __('Reaktions-/Lösungsfristen, Geschäftszeiten, Eskalation und Inklusivzeit-Kontingente je Vertrag.') }}</x-slot:subtitle>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if ($canManage ?? false)
         {{-- SLA-CRUD (Feature 065, P3): kompaktes Admin-Formular. --}}

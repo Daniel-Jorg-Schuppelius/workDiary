@@ -44,6 +44,12 @@ class AuthenticateScim {
             ->whereNull('revoked_at')
             ->first();
         if (! $token instanceof ScimToken) {
+            // fail2ban-Signal (Feature 096, MVP-443): Brute-Force auf SCIM-Tokens.
+            app(\App\Services\Security\SecurityEventLogger::class)->log(
+                \App\Enums\Security\SecurityEventType::ApiTokenInvalid,
+                ['surface' => 'scim'],
+            );
+
             return ScimResponse::error(401, 'Invalid or revoked token.');
         }
 

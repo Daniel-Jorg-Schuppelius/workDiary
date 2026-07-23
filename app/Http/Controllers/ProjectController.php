@@ -119,8 +119,8 @@ class ProjectController extends Controller {
                     });
             })
             ->orderByDesc('updated_at')
-            ->limit(50)
-            ->get();
+            ->paginate(50, ['*'], 'diary_page')
+            ->withQueryString();
 
         // Milestones mit Tasks (Tab 1 + 2)
         $milestones = $project->milestones()
@@ -226,7 +226,7 @@ class ProjectController extends Controller {
             'monthMinutes' => (int) $monthMinutes,
             'myMinutes' => (int) $myMinutes,
             'nextMilestone' => $nextMilestone,
-            'timesheets' => $project->timesheets()->with('user:id,name')->latest('work_date')->limit(50)->get(),
+            'timesheets' => $project->timesheets()->with('user:id,name')->latest('work_date')->paginate(50, ['*'], 'sheets_page')->withQueryString(),
             'recurrenceRules' => $recurrenceRules,
             'timeline' => $timeline['items'],
             'timelineHasMore' => $timeline['hasMore'],

@@ -25,6 +25,15 @@
                     <div class="text-sm text-base-content/70">
                         {{ __('Asset-Nr.') }}: <span class="font-mono">{{ $asset->asset_no }}</span>
                     </div>
+                    @if ($asset->customer)
+                        <div class="text-sm text-base-content/70">
+                            {{ __('Kunde') }}:
+                            <a class="link link-hover" href="{{ route('customers.show', $asset->customer) }}">{{ $asset->customer->company ?: $asset->customer->name }}</a>
+                            @if ($asset->foreignCustomer)
+                                · {{ __('Fremdkunde (Endkunde)') }}: {{ $asset->foreignCustomer->name }}
+                            @endif
+                        </div>
+                    @endif
                     <div class="flex flex-wrap items-center gap-2 text-sm">
                         <x-status-badge tone="ghost" outline>{{ $classOptions[$assetClassValue] ?? $assetClassValue }}</x-status-badge>
                         <x-status-badge :tone="$isBlocked ? 'error' : 'ghost'" :outline="! $isBlocked">{{ $statusOptions[$assetStatusValue] ?? $assetStatusValue }}</x-status-badge>
@@ -48,6 +57,12 @@
                             <x-icon-btn icon="lock_open" tone="success" size="sm" type="submit" show-label>{{ __('Sperre aufheben') }}</x-icon-btn>
                         </x-action-form>
                     @endif
+                    @can('update', $asset)
+                        <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('assets.edit', $asset)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
+                    @endcan
+                    @can('delete', $asset)
+                        <x-icon-btn icon="merge" size="sm" :href="route('assets.merge.compare', ['source' => $asset->sqid])" show-label>{{ __('Zusammenführen') }}</x-icon-btn>
+                    @endcan
                     <x-icon-btn icon="description" size="sm" :href="route('assets.dossier', $asset)" target="_blank" show-label>{{ __('Objektakte') }}</x-icon-btn>
                     <x-icon-btn icon="arrow_back" size="sm" :href="route('assets.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
                 </div>
@@ -88,10 +103,6 @@
                 @endif
                 @if ($room || $site || $building || $floor)
                     <dl class="grid gap-x-4 gap-y-3 text-sm sm:grid-cols-2">
-                        <div>
-                            <dt class="text-xs text-base-content/60">{{ __('Kunde') }}</dt>
-                            <dd>{{ $asset->customer?->name ?: '—' }}</dd>
-                        </div>
                         <div>
                             <dt class="text-xs text-base-content/60">{{ __('Standort') }}</dt>
                             <dd>{{ $site?->name ?: '—' }}</dd>

@@ -126,7 +126,8 @@
         ]
     },
     "suggest": {
-        "daniel-jorg-schuppelius/php-financial-formats": "Optionale DATEV-/Banking-Formate (CAMT, MT940, PAIN, SWIFT, OFX/QIF) — privat; Einbindung via composer.local.json, siehe AGENTS.md §9.1"
+        "daniel-jorg-schuppelius/php-financial-formats": "Optionale DATEV-/Banking-Formate (CAMT, MT940, PAIN, SWIFT, OFX/QIF) — privat; Einbindung via composer.local.json, siehe AGENTS.md §9.1",
+        "ext-inotify": "Optionaler Realtime-Integritätswächter (Feature 095, MVP-453: integrity:watch). Ohne die Extension läuft der periodische Scan (integrity:verify) unverändert weiter; nur der inotify-Daemon braucht sie. Installation: apt install php8.4-inotify"
     },
     "extra": {
         "laravel": {

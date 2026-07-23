@@ -17,15 +17,17 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar>
-        <x-slot:title>{{ __('Projektboard') }} — {{ $project->name }}</x-slot:title>
-        <x-slot:subtitle>{{ $board?->description ?? __('Produkt-Backlog, Board und Sprints für dieses Projekt.') }}</x-slot:subtitle>
-        <x-slot:actions>
-            <x-icon-btn icon="low_priority" tone="ghost" size="sm" :href="route('agile.backlog', $project)" show-label>{{ __('Produkt-Backlog') }}</x-icon-btn>
-            <x-icon-btn icon="sprint" tone="ghost" size="sm" :href="route('agile.sprints', $project)" show-label>{{ __('Sprints') }}</x-icon-btn>
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('projects.show', $project)" show-label>{{ __('Zum Projekt') }}</x-icon-btn>
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:title>{{ $project->name }}</x-slot:title>
+            <x-slot:subtitle>{{ $board?->description ?? __('Produkt-Backlog, Board und Sprints für dieses Projekt.') }}</x-slot:subtitle>
+            <x-slot:actions>
+                <x-icon-btn icon="low_priority" tone="ghost" size="sm" :href="route('agile.backlog', $project)" show-label>{{ __('Produkt-Backlog') }}</x-icon-btn>
+                <x-icon-btn icon="sprint" tone="ghost" size="sm" :href="route('agile.sprints', $project)" show-label>{{ __('Sprints') }}</x-icon-btn>
+                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('projects.show', $project)" show-label>{{ __('Zum Projekt') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if ($board !== null && $sprints->isNotEmpty())
         {{-- Sprint-Kontext: Board zeigt dann nur die Items des Sprints. --}}

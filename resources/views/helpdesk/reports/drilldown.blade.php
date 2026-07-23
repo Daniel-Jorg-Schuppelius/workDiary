@@ -19,13 +19,15 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar>
-        <x-slot:title>{{ $title }}</x-slot:title>
-        <x-slot:subtitle>{{ __('Helpdesk-Bericht') }}</x-slot:subtitle>
-        <x-slot:actions>
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('helpdesk.reports.index')" show-label>{{ __('Zum Helpdesk-Bericht') }}</x-icon-btn>
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:title>{{ $title }}</x-slot:title>
+            <x-slot:subtitle>{{ __('Helpdesk-Bericht') }}</x-slot:subtitle>
+            <x-slot:actions>
+                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('helpdesk.reports.index')" show-label>{{ __('Zum Helpdesk-Bericht') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @unless ($consistent)
         <div class="alert alert-warning">

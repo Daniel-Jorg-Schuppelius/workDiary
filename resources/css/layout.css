@@ -57,6 +57,42 @@ body.sidebar-collapsed {
 #help-drawer {
     border-radius: 0;
 }
+/* Auf-/Zuklappen wie die linke Sidebar (#app-sidebar): der Drawer bleibt im
+               DOM, help-drawer.js togglet nur .translate-x-full — die Transition läuft
+               dadurch in BEIDE Richtungen und synchron zu den 200ms der
+               .with-help-pad-Padding-Transition. visibility kippt beim Schließen erst
+               nach dem Slide-out (Delay), beim Öffnen sofort — geschlossen ist nichts
+               fokussier-/klickbar. */
+#help-drawer {
+    visibility: visible;
+    transition:
+        translate 200ms ease,
+        transform 200ms ease,
+        visibility 0s;
+}
+#help-drawer.translate-x-full {
+    visibility: hidden;
+    transition:
+        translate 200ms ease,
+        transform 200ms ease,
+        visibility 0s 200ms;
+}
+/* Mobiler Backdrop: weicher Fade statt display-Toggling (Klasse togglet
+               help-drawer.js), gleiches visibility-Delay-Muster. */
+#help-drawer-backdrop {
+    visibility: visible;
+    opacity: 1;
+    transition:
+        opacity 200ms ease,
+        visibility 0s;
+}
+#help-drawer-backdrop.help-backdrop-hidden {
+    visibility: hidden;
+    opacity: 0;
+    transition:
+        opacity 200ms ease,
+        visibility 0s 200ms;
+}
 /* Mobil/Tablet/iPad (< lg): Hilfe als SCHWEBENDER Drawer wie das linke
                Sidebar-Menü — Abstand zu allen Rändern + Rundung statt vollhoch am
                Rand. Bleibt ein Drawer (slide-in + Backdrop via help-drawer.js); die
@@ -90,9 +126,19 @@ body.sidebar-collapsed {
         bottom: calc(var(--app-footer-h) + var(--sidebar-gap));
         right: var(--sidebar-gap);
         width: var(--help-rail-w);
+        transition:
+            opacity 150ms ease,
+            visibility 0s;
     }
+    /* Fade statt display:none — die aufklappende Sidebar schiebt sich über
+                   die ausblendende Rail (weicher Übergang statt hartem Wegspringen). */
     body.help-sidebar-open #help-rail {
-        display: none;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition:
+            opacity 150ms ease,
+            visibility 0s 150ms;
     }
 }
 /* Rail-Button: btn-ghost erbt sonst die dunkle body-base-content-Farbe

@@ -6,6 +6,10 @@ parameters:
     level: 8
     paths:
         - app
+    # ext-inotify (integrity:watch) ist in der CI nicht installiert — der Stub
+    # liefert PHPStan die IN_*-Konstanten/inotify_*-Funktionen symbolisch.
+    scanFiles:
+        - stubs/inotify.php
     excludePaths:
         - app/Legacy/Models/*
         # Plugin-eigene Config-Dateien sind reine config()-Rückgaben (wie config/,

@@ -125,7 +125,7 @@ return [
         'recurrence' => ['generate' => 'Wiederkehrende Aufträge erzeugen'],
         'remote' => ['sync_sessions' => 'Fernwartungs-Sitzungen importieren'],
         'scheduler' => ['watchdog' => 'Scheduler-Überwachung'],
-        'security' => ['advisories_pull' => 'Sicherheitshinweise abrufen'],
+        'security' => ['advisories_pull' => 'Sicherheitshinweise abrufen', 'integrity' => 'Quelltext-Integritätsprüfung', 'evaluate' => 'Angriffserkennung auswerten'],
         'tickets' => ['scan_sla_breaches' => 'SLA-Verletzungen prüfen'],
         'todoist' => ['sync' => 'Todoist-Abgleich'],
         'toggl' => ['import' => 'Toggl-Import'],

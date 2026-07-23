@@ -10,11 +10,13 @@
 
 namespace App\Plugins\RemoteSupport;
 
+use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Asset, Customer, ExternalReference, Organization, Project, RemotePendingSession, TimeEntry};
+use App\Models\{Asset, Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, Organization, Project, RemotePendingSession, TimeEntry};
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, RemoteProvider, RemoteSession, TeamViewerClient};
 use App\Plugins\Support\PersistsTimeImportInbox;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\DateHelper;
 
 /**
  * Kernlogik des Fernwartungs-Plugins:
@@ -40,11 +42,12 @@ class RemoteSupportService {
     /**
      * Asset-Unterkategorien (category_code), die eine Fernwartungs-ID tragen
      * können. Nur für diese Geräte wird das Panel angeboten und nur ihnen lassen
-     * sich offene Verbindungen zuweisen.
+     * sich offene Verbindungen zuweisen (AnyDesk/TeamViewer gibt es auch für
+     * Tablets und Smartphones).
      *
      * @var list<string>
      */
-    public const REMOTE_CATEGORY_CODES = ['workstation', 'server', 'notebook'];
+    public const REMOTE_CATEGORY_CODES = ['workstation', 'server', 'notebook', 'tablet', 'smartphone'];
 
     protected function pluginId(): string {
         return RemoteSupportPlugin::ID;
@@ -58,47 +61,201 @@ class RemoteSupportService {
     /**
      * Hinterlegt die Geräte-ID eines Anbieters am Asset (Upsert).
      */
+    /**
+     * Hinterlegt eine Geräte-ID additiv: ein Gerät kann mehrere IDs je
+     * Anbieter tragen (Neuinstallation → neue AnyDesk-ID, Zweitinstanz).
+     * `extref_unique` erlaubt je Gerät nur EINE Primär-Referenz je Typ —
+     * weitere IDs laufen als {@see ExternalReferenceAlias} (gleiches Muster
+     * wie bei Session-Referenzen). Eine ID zeigt immer auf genau ein Gerät.
+     */
     public function setRemoteId(Asset $asset, string $provider, string $remoteId): void {
         $remoteId = trim($remoteId);
         if ($remoteId === '') {
-            $this->forgetRemoteId($asset, $provider);
-
             return;
         }
 
-        ExternalReference::query()->updateOrCreate(
-            [
-                'plugin_id' => RemoteSupportPlugin::ID,
-                'external_type' => self::deviceType($provider),
-                'referenceable_type' => $asset->getMorphClass(),
-                'referenceable_id' => $asset->getKey(),
-            ],
-            [
-                'organization_id' => $asset->organization_id,
-                'external_id' => $remoteId,
-                'synced_at' => now(),
-            ],
-        );
-    }
-
-    public function forgetRemoteId(Asset $asset, string $provider): void {
-        ExternalReference::query()
-            ->where('plugin_id', RemoteSupportPlugin::ID)
-            ->where('external_type', self::deviceType($provider))
-            ->where('referenceable_type', $asset->getMorphClass())
-            ->where('referenceable_id', $asset->getKey())
-            ->delete();
-    }
-
-    public function remoteId(Asset $asset, string $provider): ?string {
-        $ref = ExternalReference::query()
+        $primary = ExternalReference::query()
+            ->withoutGlobalScopes()
             ->where('plugin_id', RemoteSupportPlugin::ID)
             ->where('external_type', self::deviceType($provider))
             ->where('referenceable_type', $asset->getMorphClass())
             ->where('referenceable_id', $asset->getKey())
             ->first();
 
-        return $ref?->external_id;
+        if ($primary === null) {
+            ExternalReference::query()->withoutGlobalScopes()->create([
+                'organization_id' => $asset->organization_id,
+                'plugin_id' => RemoteSupportPlugin::ID,
+                'external_type' => self::deviceType($provider),
+                'external_id' => $remoteId,
+                'referenceable_type' => $asset->getMorphClass(),
+                'referenceable_id' => $asset->getKey(),
+                'synced_at' => now(),
+            ]);
+
+            // Die ID ist jetzt Primär-Referenz — ein etwaiger Alias derselben
+            // ID (früheres Ziel) wäre widersprüchlich.
+            $this->deviceAliasQuery($asset->organization_id, $provider)
+                ->where('external_id', $remoteId)
+                ->delete();
+
+            return;
+        }
+
+        if ((string) $primary->external_id === $remoteId) {
+            $primary->update(['synced_at' => now()]);
+
+            return;
+        }
+
+        ExternalReferenceAlias::query()->withoutGlobalScopes()->updateOrCreate(
+            [
+                'organization_id' => $asset->organization_id,
+                'plugin_id' => RemoteSupportPlugin::ID,
+                'external_type' => self::deviceType($provider),
+                'external_id' => $remoteId,
+            ],
+            [
+                'referenceable_type' => $asset->getMorphClass(),
+                'referenceable_id' => $asset->getKey(),
+            ],
+        );
+    }
+
+    /**
+     * Basis-Query für Geräte-ID-Aliasse eines Anbieters (mandanten-gefiltert).
+     *
+     * @return \Illuminate\Database\Eloquent\Builder<ExternalReferenceAlias>
+     */
+    private function deviceAliasQuery(?int $organizationId, string $provider): \Illuminate\Database\Eloquent\Builder {
+        return ExternalReferenceAlias::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organizationId)
+            ->where('plugin_id', RemoteSupportPlugin::ID)
+            ->where('external_type', self::deviceType($provider));
+    }
+
+    /** Entfernt eine bestimmte Geräte-ID — ohne $remoteId alle IDs des Anbieters. */
+    public function forgetRemoteId(Asset $asset, string $provider, ?string $remoteId = null): void {
+        ExternalReference::query()
+            ->where('plugin_id', RemoteSupportPlugin::ID)
+            ->where('external_type', self::deviceType($provider))
+            ->where('referenceable_type', $asset->getMorphClass())
+            ->where('referenceable_id', $asset->getKey())
+            ->when($remoteId !== null, fn ($q) => $q->where('external_id', $remoteId))
+            ->delete();
+
+        $this->deviceAliasQuery($asset->organization_id, $provider)
+            ->where('referenceable_type', $asset->getMorphClass())
+            ->where('referenceable_id', $asset->getKey())
+            ->when($remoteId !== null, fn ($q) => $q->where('external_id', $remoteId))
+            ->delete();
+    }
+
+    /** Erste hinterlegte Geräte-ID des Anbieters (Kompatibilitäts-Helfer). */
+    public function remoteId(Asset $asset, string $provider): ?string {
+        return $this->remoteIds($asset, $provider)[0] ?? null;
+    }
+
+    /**
+     * Alle Geräte-IDs des Anbieters für dieses Gerät: Primär-Referenz zuerst,
+     * danach Alias-IDs (Zusatz-IDs aus Neuinstallation/Merge).
+     *
+     * @return array<int, string>
+     */
+    public function remoteIds(Asset $asset, string $provider): array {
+        $primary = ExternalReference::query()
+            ->where('plugin_id', RemoteSupportPlugin::ID)
+            ->where('external_type', self::deviceType($provider))
+            ->where('referenceable_type', $asset->getMorphClass())
+            ->where('referenceable_id', $asset->getKey())
+            ->orderBy('id')
+            ->pluck('external_id');
+
+        $aliases = $this->deviceAliasQuery($asset->organization_id, $provider)
+            ->where('referenceable_type', $asset->getMorphClass())
+            ->where('referenceable_id', $asset->getKey())
+            ->orderBy('id')
+            ->pluck('external_id');
+
+        return $primary
+            ->merge($aliases)
+            ->map(fn ($id): string => (string) $id)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Überführt die Fernwartungsdaten eines (doppelt angelegten) Geräts auf
+     * das Zielgerät: alle Geräte-IDs (Primär-Referenzen wandern um; kollidiert
+     * die Primär-Referenz mit einer vorhandenen des Ziels, wird die Quell-ID
+     * zum Alias) sowie sämtliche Pending-Sitzungen. Gebuchte Zeiteinträge
+     * bleiben unberührt; das Quellgerät wird NICHT gelöscht/archiviert.
+     *
+     * @return array{ids: int, sessions: int}
+     */
+    public function mergeRemoteDevice(Asset $source, Asset $target): array {
+        if ($source->getKey() === $target->getKey() || (int) $source->organization_id !== (int) $target->organization_id) {
+            return ['ids' => 0, 'sessions' => 0];
+        }
+
+        $ids = 0;
+
+        $primaries = ExternalReference::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $source->organization_id)
+            ->where('plugin_id', RemoteSupportPlugin::ID)
+            ->whereIn('external_type', array_values(self::DEVICE_TYPES))
+            ->where('referenceable_type', $source->getMorphClass())
+            ->where('referenceable_id', $source->getKey())
+            ->get();
+
+        foreach ($primaries as $ref) {
+            $targetHasPrimary = ExternalReference::query()
+                ->withoutGlobalScopes()
+                ->where('plugin_id', RemoteSupportPlugin::ID)
+                ->where('external_type', $ref->external_type)
+                ->where('referenceable_type', $target->getMorphClass())
+                ->where('referenceable_id', $target->getKey())
+                ->exists();
+
+            if ($targetHasPrimary) {
+                ExternalReferenceAlias::query()->withoutGlobalScopes()->updateOrCreate(
+                    [
+                        'organization_id' => $source->organization_id,
+                        'plugin_id' => RemoteSupportPlugin::ID,
+                        'external_type' => $ref->external_type,
+                        'external_id' => $ref->external_id,
+                    ],
+                    [
+                        'referenceable_type' => $target->getMorphClass(),
+                        'referenceable_id' => $target->getKey(),
+                    ],
+                );
+                $ref->delete();
+            } else {
+                $ref->update(['referenceable_id' => $target->getKey(), 'synced_at' => now()]);
+            }
+            $ids++;
+        }
+
+        $ids += ExternalReferenceAlias::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $source->organization_id)
+            ->where('plugin_id', RemoteSupportPlugin::ID)
+            ->whereIn('external_type', array_values(self::DEVICE_TYPES))
+            ->where('referenceable_type', $source->getMorphClass())
+            ->where('referenceable_id', $source->getKey())
+            ->update(['referenceable_id' => $target->getKey()]);
+
+        $sessions = RemotePendingSession::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $source->organization_id)
+            ->where('asset_id', $source->getKey())
+            ->update(['asset_id' => $target->getKey()]);
+
+        return ['ids' => (int) $ids, 'sessions' => (int) $sessions];
     }
 
     /**
@@ -189,6 +346,16 @@ class RemoteSupportService {
      * @return 'created'|'linked'|'skipped'|'unmatched'|'pending'
      */
     public function bookSession(Organization $organization, array $config, RemoteSession $session, int $userId): string {
+        // AnyDesk erzeugt je Verbindungsversuch einen Datensatz — Reconnects/
+        // abgebrochene Versuche kommen als 0-Sekunden-Sitzungen (start == end)
+        // an. Klassifizieren statt buchen: als Verbindungsversuch dokumentieren.
+        if ($session->endedAt <= $session->startedAt) {
+            $attemptAsset = $this->matchAsset($organization, $session->provider, $session->remoteId);
+            $this->recordPending($organization, $session, $attemptAsset?->id, RemotePendingSession::STATUS_ATTEMPT);
+
+            return 'skipped';
+        }
+
         $asset = $this->matchAsset($organization, $session->provider, $session->remoteId);
         if ($asset === null) {
             $this->recordPending($organization, $session);
@@ -200,9 +367,9 @@ class RemoteSupportService {
             return 'skipped';
         }
 
-        // Mehrkundengeräte werden nicht automatisch gebucht: Die Sitzung wandert
-        // in die Inbox und wird dort je Sitzung einem Kunden zugeordnet.
-        if ($asset->shared_remote) {
+        // Mehrkundengeräte werden nicht automatisch gebucht: Die Sitzung
+        // wandert in die Inbox und wird dort je Sitzung zugeordnet.
+        if ($this->requiresPerSessionAssignment($asset)) {
             $this->recordPending($organization, $session, $asset->id);
 
             return 'pending';
@@ -211,6 +378,36 @@ class RemoteSupportService {
         [, $linked] = $this->createTimeEntry($organization, $asset, $session, $userId, (bool) $config['default_billable']);
 
         return $linked ? 'linked' : 'created';
+    }
+
+    /**
+     * Nur explizit markierte Mehrkundengeräte (shared_remote) laufen über die
+     * Einzelzuordnung — auch eigene Firmenrechner brauchen das Flag. Geräte
+     * ohne Kunden UND ohne Flag sind interne Geräte: deren Sitzungen buchen
+     * auf das interne Wartungsprojekt ({@see internalMaintenanceProject}).
+     */
+    public function requiresPerSessionAssignment(Asset $asset): bool {
+        // Cast: frisch erzeugte Models ohne geladenes Attribut liefern null.
+        return (bool) $asset->shared_remote;
+    }
+
+    /**
+     * Buchungsziel für Sitzungen eigener Geräte ohne Kunden: kundenloses
+     * internes Wartungsprojekt der Organisation (lazy angelegt).
+     */
+    private function internalMaintenanceProject(Organization $organization): Project {
+        return Project::query()->firstOrCreate(
+            [
+                'organization_id' => $organization->id,
+                'customer_id' => null,
+                'name' => 'Interne Wartung',
+            ],
+            [
+                'color' => (string) config('project.default_project.color', '#64748b'),
+                'status' => ProjectStatus::Active->value,
+                'is_default' => false,
+            ],
+        );
     }
 
     private function matchAsset(Organization $organization, string $provider, string $remoteId): ?Asset {
@@ -222,13 +419,22 @@ class RemoteSupportService {
             ->where('external_id', $remoteId)
             ->first();
 
-        if ($ref === null) {
-            return null;
+        if ($ref !== null) {
+            $asset = $ref->referenceable;
+            if ($asset instanceof Asset) {
+                return $asset;
+            }
         }
 
-        $asset = $ref->referenceable;
+        // Zusatz-IDs (Neuinstallation, Merge) liegen als Alias.
+        $model = ExternalReferenceAlias::resolveModel(
+            (int) $organization->id,
+            RemoteSupportPlugin::ID,
+            self::deviceType($provider),
+            $remoteId,
+        );
 
-        return $asset instanceof Asset ? $asset : null;
+        return $model instanceof Asset ? $model : null;
     }
 
     private function sessionAlreadyImported(Organization $organization, RemoteSession $session): bool {
@@ -238,12 +444,12 @@ class RemoteSupportService {
     /** @return array{0: ?TimeEntry, 1: bool}  [Eintrag, true = nur an vorhandene Zeit verknüpft] */
     private function createTimeEntry(Organization $organization, Asset $asset, RemoteSession $session, int $userId, bool $billable, ?Project $project = null): array {
         // Bei Mehrkundengeräten wird das Zielprojekt explizit übergeben; sonst
-        // greift das Standardprojekt des Asset-Kunden.
-        $project ??= $asset->customer?->defaultProjectOrCreate();
-        if ($project === null) {
-            // Ohne Kunde/Projekt kann keine projektbezogene Zeit gebucht werden.
-            return [null, false];
-        }
+        // greift das Projekt des Fremdkunden (Endkunden), das Standardprojekt
+        // des Asset-Kunden oder — bei eigenen Geräten ohne Kunden — das
+        // interne Wartungsprojekt.
+        $project ??= $asset->foreignCustomer?->defaultProjectOrCreate()
+            ?? $asset->customer?->defaultProjectOrCreate()
+            ?? $this->internalMaintenanceProject($organization);
 
         // Deckt eine bereits erfasste Zeit DESSELBEN Kunden die Sitzung ab
         // (z. B. Toggl-Import), wird die Sitzung nur als Nachweis verknüpft
@@ -265,21 +471,141 @@ class RemoteSupportService {
             $session->note ?? __('Fernwartungssitzung'),
         ));
 
+        // Verbindungsversuche unmittelbar vor der Sitzung belegen den
+        // Tätigkeitsbeginn (Einwahl gehört zur Arbeit): Start vorziehen und
+        // die Versuche dem Eintrag zuordnen.
+        [$startedAt, $usedAttempts] = $this->extendStartByAttempts($organization, $session);
+
+        // Zeit-Kürzel in der Sitzungsnotiz („+1h", „2h extra", „seit 8h")
+        // ziehen den Beginn weiter vor — die Notiz bleibt als Beleg in der
+        // Beschreibung stehen.
+        $startedAt = $this->applyNoteTimeShorthand($startedAt, $session);
+
         $entry = TimeEntry::query()->create([
             'organization_id' => $organization->id,
             'project_id' => $project->id,
             'user_id' => $userId,
-            'date' => $session->startedAt->toDateString(),
-            'started_at' => $session->startedAt,
+            'date' => $startedAt->toDateString(),
+            'started_at' => $startedAt,
             'ended_at' => $session->endedAt,
             'kind' => TimeEntryKind::Work,
             'description' => $description,
             'billable' => $billable,
         ]);
 
+        foreach ($usedAttempts as $attemptRow) {
+            $attemptRow->update([
+                'status' => RemotePendingSession::STATUS_IMPORTED,
+                'time_entry_id' => $entry->id,
+                'resolved_at' => now(),
+            ]);
+        }
+
         $this->rememberSessionReference($organization, $session, $entry, $asset, linked: false);
 
         return [$entry, false];
+    }
+
+    /**
+     * Zieht den Buchungsbeginn bis zum frühesten Verbindungsversuch vor, der
+     * der Sitzung innerhalb des Toleranzfensters unmittelbar vorausgeht —
+     * kettenfähig (Versuch vor Versuch), mit Iterationsdeckel.
+     *
+     * @return array{0: CarbonImmutable, 1: \Illuminate\Support\Collection<int, RemotePendingSession>}
+     */
+    private function extendStartByAttempts(Organization $organization, RemoteSession $session): array {
+        $windowMinutes = max(0, (int) config('plugins.remote-support.attempt_lead_minutes', 15));
+        $start = $session->startedAt;
+        $used = collect();
+
+        if ($windowMinutes === 0) {
+            return [$start, $used];
+        }
+
+        for ($i = 0; $i < 10; $i++) {
+            $batch = RemotePendingSession::query()
+                ->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->where('status', RemotePendingSession::STATUS_ATTEMPT)
+                ->where('provider', $session->provider)
+                ->where('remote_id', $session->remoteId)
+                ->where('started_at', '>=', $start->subMinutes($windowMinutes))
+                ->where('started_at', '<', $start)
+                ->get();
+
+            if ($batch->isEmpty()) {
+                break;
+            }
+
+            $used = $used->merge($batch);
+            $earliest = CarbonImmutable::parse($batch->min('started_at'));
+            if ($earliest >= $start) {
+                break;
+            }
+            $start = $earliest;
+        }
+
+        return [$start, $used];
+    }
+
+    /**
+     * Wendet Zeit-Kürzel aus der Sitzungsnotiz auf den Buchungsbeginn an:
+     *
+     *  - „seit 8h" / „seit 8:30": absolute Uhrzeit am Tag des Sitzungsbeginns
+     *    (die Arbeit lief schon vor der Verbindung). Gewinnt gegen
+     *    Dauer-Kürzel; ignoriert, wenn sie nicht VOR dem Beginn liegt.
+     *  - „+1h" / „+30min" bzw. „2h extra" / „extra 2h": notierte Zusatzzeit,
+     *    mehrere Kürzel summieren sich. Deckel: note_extra_max_minutes.
+     */
+    private function applyNoteTimeShorthand(CarbonImmutable $start, RemoteSession $session): CarbonImmutable {
+        $note = trim((string) $session->note);
+        if ($note === '') {
+            return $start;
+        }
+
+        // Absolute Angabe: „seit 8h" — bezogen auf den Tag des Sitzungsbeginns.
+        if (preg_match('/\bseit\s+(\d[\d:.]*\s*(?:h|uhr)?)/iu', $note, $match) === 1) {
+            $clock = DateHelper::parseClockTimeShorthand(trim($match[1]));
+            if ($clock !== null) {
+                $candidate = $session->startedAt->setTime($clock[0], $clock[1]);
+                if ($candidate < $start) {
+                    return $candidate;
+                }
+            }
+        }
+
+        $duration = '(?:\d+(?:[.,]\d+)?\s*(?:std|min|m|h)(?:\d{1,2})?)';
+        $extraMinutes = 0;
+
+        // Plus-Form: „+1h", „+30min", „+1,5h".
+        if (preg_match_all('/\+\s*(' . $duration . ')/iu', $note, $matches) > 0) {
+            foreach ($matches[1] as $token) {
+                $extraMinutes += (int) DateHelper::parseDurationToMinutes($token);
+            }
+        }
+
+        // Wort-Form: „2h extra" bzw. „extra 2h" (Plus-Treffer nicht doppelt zählen).
+        if (preg_match_all('/(?<![+\d,.])(' . $duration . ')\s+extra\b/iu', $note, $matches) > 0) {
+            foreach ($matches[1] as $token) {
+                $extraMinutes += (int) DateHelper::parseDurationToMinutes($token);
+            }
+        }
+        if (preg_match_all('/\bextra\s+(' . $duration . ')/iu', $note, $matches) > 0) {
+            foreach ($matches[1] as $token) {
+                $extraMinutes += (int) DateHelper::parseDurationToMinutes($token);
+            }
+        }
+
+        if ($extraMinutes <= 0) {
+            return $start;
+        }
+
+        $cap = max(0, (int) config('plugins.remote-support.note_extra_max_minutes', 480));
+        if ($cap > 0) {
+            $extraMinutes = min($extraMinutes, $cap);
+        }
+
+        return $start->subMinutes($extraMinutes);
     }
 
     /**
@@ -371,7 +697,7 @@ class RemoteSupportService {
      * provider+session_id). Bereits zugewiesene/verworfene Einträge bleiben unberührt.
      * Ist $assetId gesetzt, gehört die Sitzung zu einem bekannten Mehrkundengerät.
      */
-    private function recordPending(Organization $organization, RemoteSession $session, ?int $assetId = null): void {
+    private function recordPending(Organization $organization, RemoteSession $session, ?int $assetId = null, string $status = RemotePendingSession::STATUS_OPEN): void {
         $existing = RemotePendingSession::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
@@ -418,7 +744,7 @@ class RemoteSupportService {
             'started_at' => $session->startedAt,
             'ended_at' => $session->endedAt,
             'note' => $session->note,
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => $status,
         ]);
     }
 
@@ -427,7 +753,7 @@ class RemoteSupportService {
      *
      * @return \Illuminate\Support\Collection<int, object{provider: string, remote_id: string, alias: ?string, count: int, minutes: int, first_seen: \Illuminate\Support\Carbon, last_seen: \Illuminate\Support\Carbon, note: ?string, notes: array<int, string>}>
      */
-    public function openPendingGroups(Organization $organization): \Illuminate\Support\Collection {
+    public function openPendingGroups(Organization $organization, ?string $search = null): \Illuminate\Support\Collection {
         $groups = RemotePendingSession::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
@@ -461,8 +787,35 @@ class RemoteSupportService {
             })
             ->values();
 
+        if ($search !== null && trim($search) !== '') {
+            $needle = mb_strtolower(trim($search));
+            $groups = $groups
+                ->filter(fn (object $g): bool => self::matchesSearch($needle, [
+                    (string) $g->remote_id,
+                    (string) ($g->alias ?? ''),
+                    ...$g->notes,
+                ]))
+                ->values();
+        }
+
         /** @var \Illuminate\Support\Collection<int, object{provider: string, remote_id: string, alias: string|null, count: int, minutes: int, first_seen: \Illuminate\Support\Carbon, last_seen: \Illuminate\Support\Carbon, note: string|null, notes: array<int, string>}> $groups */
         return $groups;
+    }
+
+    /**
+     * Case-insensitive Teilstring-Suche über mehrere Felder (In-Memory — die
+     * Inbox-Gruppen sind bereits aggregiert geladen).
+     *
+     * @param  array<int, string|null>  $haystack
+     */
+    private static function matchesSearch(string $needle, array $haystack): bool {
+        foreach ($haystack as $value) {
+            if ($value !== null && $value !== '' && str_contains(mb_strtolower($value), $needle)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -475,15 +828,6 @@ class RemoteSupportService {
     public function assignPending(Organization $organization, string $provider, string $remoteId, Asset $asset, ?int $userId = null): array {
         $this->setRemoteId($asset, $provider, $remoteId);
 
-        $userId ??= $this->resolveBookingUserId($organization, RemoteSupportConfig::resolve($organization->id)['default_user_id'] ?? null);
-        if ($userId === null) {
-            return ['created' => 0, 'linked' => 0, 'skipped' => 0];
-        }
-
-        $created = 0;
-        $linked = 0;
-        $skipped = 0;
-
         /** @var \Illuminate\Database\Eloquent\Collection<int, RemotePendingSession> $pending */
         $pending = RemotePendingSession::query()
             ->withoutGlobalScopes()
@@ -492,6 +836,50 @@ class RemoteSupportService {
             ->where('provider', $provider)
             ->where('remote_id', $remoteId)
             ->get();
+
+        // Mehrkundengeräte: nichts automatisch buchen. Offene Sitzungen
+        // werden ans Gerät gebunden und bleiben offen — sie erscheinen im
+        // Einzelzuordnungs-Reiter der Inbox.
+        if ($this->requiresPerSessionAssignment($asset)) {
+            $parked = 0;
+            $skipped = 0;
+
+            /** @var RemotePendingSession $row */
+            foreach ($pending as $row) {
+                $session = new RemoteSession(
+                    provider: $row->provider,
+                    sessionId: $row->session_id,
+                    remoteId: $row->remote_id,
+                    startedAt: CarbonImmutable::parse($row->started_at),
+                    endedAt: CarbonImmutable::parse($row->ended_at),
+                    note: $row->note,
+                );
+
+                if ($this->sessionAlreadyImported($organization, $session)) {
+                    $row->update([
+                        'status' => RemotePendingSession::STATUS_IMPORTED,
+                        'resolved_at' => now(),
+                    ]);
+                    $skipped++;
+
+                    continue;
+                }
+
+                $row->update(['asset_id' => $asset->id]);
+                $parked++;
+            }
+
+            return ['created' => 0, 'linked' => 0, 'skipped' => $skipped, 'pending' => $parked];
+        }
+
+        $userId ??= $this->resolveBookingUserId($organization, RemoteSupportConfig::resolve($organization->id)['default_user_id'] ?? null);
+        if ($userId === null) {
+            return ['created' => 0, 'linked' => 0, 'skipped' => 0];
+        }
+
+        $created = 0;
+        $linked = 0;
+        $skipped = 0;
 
         /** @var RemotePendingSession $row */
         foreach ($pending as $row) {
@@ -547,7 +935,7 @@ class RemoteSupportService {
      *
      * @return \Illuminate\Support\Collection<int, object{asset: Asset, sessions: \Illuminate\Support\Collection<int, RemotePendingSession>}>
      */
-    public function openSharedSessions(Organization $organization): \Illuminate\Support\Collection {
+    public function openSharedSessions(Organization $organization, ?string $search = null): \Illuminate\Support\Collection {
         /** @var \Illuminate\Database\Eloquent\Collection<int, RemotePendingSession> $rows */
         $rows = RemotePendingSession::query()
             ->withoutGlobalScopes()
@@ -558,10 +946,21 @@ class RemoteSupportService {
             ->orderByDesc('started_at')
             ->get();
 
+        // Dokumentierte Verbindungsversuche (0-Sekunden-Datensätze) je Gerät —
+        // nur als Zähler, sie sind nicht buchbar.
+        $attemptCounts = RemotePendingSession::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('status', RemotePendingSession::STATUS_ATTEMPT)
+            ->whereNotNull('asset_id')
+            ->selectRaw('asset_id, COUNT(*) AS attempt_count')
+            ->groupBy('asset_id')
+            ->pluck('attempt_count', 'asset_id');
+
         $groups = $rows
             ->filter(fn(RemotePendingSession $s): bool => $s->asset instanceof Asset)
             ->groupBy(fn(RemotePendingSession $s): int => (int) $s->asset_id)
-            ->map(function ($sessions): object {
+            ->map(function ($sessions) use ($attemptCounts): object {
                 /** @var \Illuminate\Support\Collection<int, RemotePendingSession> $sessions */
                 $first = $sessions->first();
                 assert($first instanceof RemotePendingSession);
@@ -571,9 +970,26 @@ class RemoteSupportService {
                 return (object) [
                     'asset' => $asset,
                     'sessions' => $sessions->values(),
+                    'attempts' => (int) ($attemptCounts[(int) $asset->id] ?? 0),
                 ];
             })
             ->values();
+
+        if ($search !== null && trim($search) !== '') {
+            $needle = mb_strtolower(trim($search));
+            $groups = $groups
+                ->filter(function (object $device) use ($needle): bool {
+                    $haystack = [(string) $device->asset->name, (string) $device->asset->asset_no];
+                    foreach ($device->sessions as $session) {
+                        $haystack[] = (string) $session->remote_id;
+                        $haystack[] = (string) ($session->alias ?? '');
+                        $haystack[] = (string) ($session->note ?? '');
+                    }
+
+                    return self::matchesSearch($needle, $haystack);
+                })
+                ->values();
+        }
 
         /** @var \Illuminate\Support\Collection<int, object{asset: Asset, sessions: \Illuminate\Support\Collection<int, RemotePendingSession>}> $groups */
         return $groups;
@@ -586,7 +1002,7 @@ class RemoteSupportService {
      * @param  iterable<RemotePendingSession>  $rows
      * @return array{created: int, skipped: int}
      */
-    public function assignSharedSessions(Organization $organization, iterable $rows, Customer $customer, ?Project $project = null, ?int $userId = null): array {
+    public function assignSharedSessions(Organization $organization, iterable $rows, ?Customer $customer = null, ?Project $project = null, ?int $userId = null, ?ForeignCustomer $foreignCustomer = null): array {
         $userId ??= $this->resolveBookingUserId($organization, RemoteSupportConfig::resolve($organization->id)['default_user_id'] ?? null);
         if ($userId === null) {
             return ['created' => 0, 'skipped' => 0];
@@ -596,7 +1012,7 @@ class RemoteSupportService {
         $skipped = 0;
 
         foreach ($rows as $row) {
-            if ($this->assignSharedSession($organization, $row, $customer, $project, $userId)) {
+            if ($this->assignSharedSession($organization, $row, $customer, $project, $userId, $foreignCustomer)) {
                 $created++;
             } else {
                 $skipped++;
@@ -607,17 +1023,21 @@ class RemoteSupportService {
     }
 
     /**
-     * Bucht genau eine Sitzung eines Mehrkundengeräts auf einen Kunden. Liefert
-     * false, wenn die Sitzung bereits importiert war (dann nur als imported
-     * markiert). Ohne übergebenes Projekt greift das Standardprojekt des Kunden.
+     * Bucht genau eine Sitzung eines Mehrkundengeräts. Liefert false, wenn die
+     * Sitzung bereits importiert war (dann nur als imported markiert). Ohne
+     * übergebenes Projekt greift das Projekt des Fremdkunden (Endkunden) bzw.
+     * das Standardprojekt des Kunden — ganz ohne Kunde das interne
+     * Wartungsprojekt (eigene Firma).
      */
-    public function assignSharedSession(Organization $organization, RemotePendingSession $row, Customer $customer, ?Project $project = null, ?int $userId = null): bool {
+    public function assignSharedSession(Organization $organization, RemotePendingSession $row, ?Customer $customer = null, ?Project $project = null, ?int $userId = null, ?ForeignCustomer $foreignCustomer = null): bool {
         $asset = $row->asset;
         if (! $asset instanceof Asset) {
             return false;
         }
 
-        $project ??= $customer->defaultProjectOrCreate();
+        $project ??= $foreignCustomer?->defaultProjectOrCreate()
+            ?? $customer?->defaultProjectOrCreate()
+            ?? $this->internalMaintenanceProject($organization);
         $userId ??= $this->resolveBookingUserId($organization, RemoteSupportConfig::resolve($organization->id)['default_user_id'] ?? null);
         if ($userId === null) {
             return false;

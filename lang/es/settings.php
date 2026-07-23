@@ -44,6 +44,9 @@ return [
         'tags' => 'Etiquetas',
         'archive' => 'Archivo',
         'dashboard_recent' => 'Panel: elementos recientes',
+        'remote_pending_groups' => 'Bandeja de mantenimiento remoto: equipos sin asignar',
+        'remote_shared_devices' => 'Bandeja de mantenimiento remoto: equipos multicliente',
+        'remote_shared_sessions' => 'Bandeja de mantenimiento remoto: sesiones por tarjeta de equipo',
     ],
     'invoicing' => [
         'heading' => 'Valores predeterminados de facturación',

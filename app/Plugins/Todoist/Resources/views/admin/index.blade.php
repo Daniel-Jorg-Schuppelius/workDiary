@@ -59,7 +59,8 @@
                     <button type="submit" class="btn btn-sm">{{ __('todoist.connection.reconnect') }}</button>
                 </form>
                 <form method="POST" action="{{ route('admin.todoist.disconnect') }}"
-                      onsubmit="return confirm('{{ __('todoist.connection.confirm_disconnect') }}')">
+                      data-confirm-dialog
+                      data-confirm-message="{{ __('todoist.connection.confirm_disconnect') }}">
                     @csrf
                     <button type="submit" class="btn btn-sm btn-outline btn-error">{{ __('todoist.connection.disconnect') }}</button>
                 </form>
@@ -116,7 +117,8 @@
                                     </form>
                                 @endif
                                 <form method="POST" action="{{ route('admin.todoist.links.destroy', $link) }}"
-                                      onsubmit="return confirm('{{ __('todoist.links.confirm_remove') }}')">
+                                      data-confirm-dialog
+                                      data-confirm-message="{{ __('todoist.links.confirm_remove') }}">
                                     @csrf @method('DELETE')
                                     <x-icon-btn icon="delete" size="xs" tone="error" type="submit" :title="__('todoist.links.remove')" />
                                 </form>

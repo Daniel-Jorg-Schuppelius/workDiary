@@ -5,28 +5,32 @@
 
 @section('content')
 <x-index-page :subtitle="__('operations.title.subtitle')">
-    <x-slot:actions>
-        <form method="GET" action="{{ route('admin.operations.index') }}" class="flex flex-wrap items-center gap-2">
-            <select name="status" class="select select-bordered select-sm" data-autosubmit>
+    <x-filter-bar :action="route('admin.operations.index')" :reset="route('admin.operations.index')">
+        <x-filter-field :label="__('operations.field.status')" for="op-status" class="min-w-44 shrink-0">
+            <select id="op-status" name="status" class="select select-sm select-bordered w-full" data-autosubmit>
                 <option value="">{{ __('operations.filter.active') }}</option>
                 @foreach (\App\Enums\Operations\OperationsTaskStatus::cases() as $status)
                     <option value="{{ $status->value }}" @selected($statusFilter === $status)>{{ $status->label() }}</option>
                 @endforeach
             </select>
-            <select name="severity" class="select select-bordered select-sm" data-autosubmit>
+        </x-filter-field>
+        <x-filter-field :label="__('operations.field.severity')" for="op-severity" class="min-w-44 shrink-0">
+            <select id="op-severity" name="severity" class="select select-sm select-bordered w-full" data-autosubmit>
                 <option value="">{{ __('operations.filter.all_severities') }}</option>
                 @foreach (\App\Enums\Operations\OperationsTaskSeverity::cases() as $severity)
                     <option value="{{ $severity->value }}" @selected($severityFilter === $severity)>{{ $severity->label() }}</option>
                 @endforeach
             </select>
-            <select name="type" class="select select-bordered select-sm" data-autosubmit>
+        </x-filter-field>
+        <x-filter-field :label="__('Typ')" for="op-type" class="min-w-52 shrink-0">
+            <select id="op-type" name="type" class="select select-sm select-bordered w-full" data-autosubmit>
                 <option value="">{{ __('operations.filter.all_types') }}</option>
                 @foreach (\App\Enums\Operations\OperationsTaskType::cases() as $type)
                     <option value="{{ $type->value }}" @selected($typeFilter === $type)>{{ $type->label() }}</option>
                 @endforeach
             </select>
-        </form>
-    </x-slot:actions>
+        </x-filter-field>
+    </x-filter-bar>
 
     @if ($tasks->isEmpty())
         <x-empty-state framed icon="task_alt" :title="__('operations.empty.title')" :message="__('operations.empty.message')" />

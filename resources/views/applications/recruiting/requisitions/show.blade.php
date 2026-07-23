@@ -5,25 +5,27 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar :title="$requisition->title" :badge="__('values.' . $requisition->status)" badge-tone="outline">
-        <div class="text-sm text-base-content/70">
-            {{ __("values.{$requisition->employment_type}") }} · {{ __(':count Stelle(n)', ['count' => $requisition->headcount]) }}
-            @if ($requisition->department) · {{ $requisition->department }} @endif
-        </div>
-        <x-slot:actions>
-            @can('update', $requisition)
-                <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('recruiting.requisitions.edit', $requisition)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
-                <form method="POST" action="{{ route('recruiting.requisitions.status', $requisition) }}" class="flex items-center gap-1">
-                    @csrf
-                    <select name="status" class="select select-sm select-bordered" data-autosubmit aria-label="{{ __('Status') }}">
-                        @foreach (\App\Models\Applications\JobRequisition::STATUSES as $status)
-                            <option value="{{ $status }}" @selected($requisition->status === $status)>{{ __("values.$status") }}</option>
-                        @endforeach
-                    </select>
-                </form>
-            @endcan
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar :badge="__('values.' . $requisition->status)" badge-tone="outline">
+            <div class="text-sm text-base-content/70">
+                {{ __("values.{$requisition->employment_type}") }} · {{ __(':count Stelle(n)', ['count' => $requisition->headcount]) }}
+                @if ($requisition->department) · {{ $requisition->department }} @endif
+            </div>
+            <x-slot:actions>
+                @can('update', $requisition)
+                    <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('recruiting.requisitions.edit', $requisition)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
+                    <form method="POST" action="{{ route('recruiting.requisitions.status', $requisition) }}" class="flex items-center gap-1">
+                        @csrf
+                        <select name="status" class="select select-sm select-bordered" data-autosubmit aria-label="{{ __('Status') }}">
+                            @foreach (\App\Models\Applications\JobRequisition::STATUSES as $status)
+                                <option value="{{ $status }}" @selected($requisition->status === $status)>{{ __("values.$status") }}</option>
+                            @endforeach
+                        </select>
+                    </form>
+                @endcan
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('Profil')">
@@ -95,7 +97,7 @@
                         <td>{{ $application->isAnonymized() ? __('(anonymisiert)') : ($application->candidate_name ?? '—') }}</td>
                         <td><x-status-badge size="md" outline>{{ __("values.{$application->status}") }}</x-status-badge></td>
                         <td>{{ optional($application->received_at)->fdate() ?? '—' }}</td>
-                        <td><x-icon-btn icon="visibility" :href="route('recruiting.applications.show', $application)" :label="__('Anzeigen')" /></td>
+                        <td class="text-right"><x-icon-btn icon="visibility" :href="route('recruiting.applications.show', $application)" :label="__('Anzeigen')" /></td>
                     </tr>
                 @endforeach
             </x-table>

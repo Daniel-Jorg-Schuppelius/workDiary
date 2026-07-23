@@ -295,6 +295,16 @@ class TenantTraitCoverageTest extends TestCase {
         // getestet in OperationsTaskCenterTest/MaintenanceWindowTest).
         \App\Models\OperationsTask::class,
         \App\Models\MaintenanceWindow::class,
+        // Quelltext-Integritätsprüfungen (Feature 095) und Sicherheitsereignisse
+        // (Feature 096): installationsweite Nachweise ohne Mandantenbezug — die
+        // Baseline und die Angriffserkennung gelten je Installation, Zugriff nur
+        // über Plattform-Admin (isGlobalAdmin), nie über fachliche Mandanten-Views.
+        \App\Models\IntegrityCheck::class,
+        \App\Models\SecurityEvent::class,
+        // Bekannte Anmelde-Geräte (Feature 096): über user_id (FK cascade) an den
+        // User gebunden und damit transitiv mandantenfähig — analog UserBookmark;
+        // Zugriff ausschließlich über den eigenen User beim Login.
+        \App\Models\UserKnownDevice::class,
     ];
 
     public function test_every_model_uses_tenant_trait_or_is_allow_listed(): void {

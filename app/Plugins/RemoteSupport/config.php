@@ -27,8 +27,17 @@ return [
         'enabled' => env('ANYDESK_ENABLED', false),
         'license_id' => env('ANYDESK_LICENSE_ID'),
         'api_key' => env('ANYDESK_API_KEY'),
-        'base_url' => env('ANYDESK_BASE_URL', 'https://v1.api.anydesk.com'),
+        'base_url' => env('ANYDESK_BASE_URL', 'https://v1.api.anydesk.com:8081'),
     ],
+
+    // Verbindungsversuche (0-Sekunden-Datensätze) bis zu N Minuten vor einer
+    // Sitzung gelten als deren Tätigkeitsbeginn und ziehen den Buchungsstart vor.
+    'attempt_lead_minutes' => (int) env('REMOTE_SUPPORT_ATTEMPT_LEAD_MINUTES', 15),
+
+    // Deckel für Zeit-Kürzel in Sitzungsnotizen („+1h", „2h extra"), die den
+    // Buchungsbeginn vorziehen — schützt vor Tippfehlern wie „+100h".
+    'note_extra_max_minutes' => (int) env('REMOTE_SUPPORT_NOTE_EXTRA_MAX_MINUTES', 480),
+
     'teamviewer' => [
         'enabled' => env('TEAMVIEWER_ENABLED', false),
         'api_key' => env('TEAMVIEWER_API_KEY'),

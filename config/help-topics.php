@@ -398,6 +398,8 @@ return [
         'license.show' => 'admin.license',
         'admin.imports.*' => 'admin.import',
         'admin.security.*' => 'admin.security',
+        // Quelltext-Integrität (Feature 095): eigene Seite, eigenes Topic.
+        'admin.integrity.*' => 'admin.integrity',
         'admin.sessions.*' => 'admin.security', // Sitzungs-/Token-Verwaltung = Sicherheitsseite
         'admin.components.*' => 'admin.security',
         'admin.support.report.*' => 'admin.support',

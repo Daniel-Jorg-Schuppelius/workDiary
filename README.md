@@ -566,7 +566,7 @@ Vor dem Produktiv-Deployment:
   lazy pro Request kompilieren, weil gecachte Sammelkompilierung bei
   `@forelse`-Views zu fehlerhaften internen Counter-Namen fuehren kann.
 - Queue-Worker, Scheduler, Backup, Restore-Test und Storage-Sicherung
-  einrichten.
+  einrichten (Anleitung: [`docs/backup-restore.md`](docs/backup-restore.md)).
 - `storage/app/attachments/` in die Sicherung aufnehmen.
 - Mail, Push, Lizenz, Plugins und externe Integrationen separat pruefen.
 

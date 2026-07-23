@@ -61,7 +61,7 @@
                     <td>{{ $contract->starts_on->fdate() }} – {{ optional($contract->ends_on)->fdate() ?? __('unbefristet') }}</td>
                     <td>{{ optional($nextTermination[$contract->id] ?? null)->fdate() ?? '—' }}</td>
                     <td><x-status-badge size="md" outline>{{ $contract->status->label() }}</x-status-badge></td>
-                    <td><x-icon-btn icon="visibility" :href="route('contracts.show', $contract)" :label="__('Anzeigen')" /></td>
+                    <td class="text-right"><x-icon-btn icon="visibility" :href="route('contracts.show', $contract)" :label="__('Anzeigen')" /></td>
                 </tr>
             @empty
                 <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">contract</span>' :colspan="8" :title="__('Keine Verträge — über den Dialog anlegen.')" compact />

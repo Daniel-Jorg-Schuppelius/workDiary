@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Enums\Project\ProjectStatus;
 use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, HasSqid, Searchable};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -32,6 +33,7 @@ use Illuminate\Support\Carbon;
  * @property int $customer_id
  * @property string $name
  * @property string|null $number
+ * @property string|null $matchcode
  * @property string|null $company
  * @property string|null $contact_name
  * @property string|null $email
@@ -61,6 +63,7 @@ class ForeignCustomer extends Model {
         'customer_id',
         'name',
         'number',
+        'matchcode',
         'company',
         'contact_name',
         'email',
@@ -102,6 +105,30 @@ class ForeignCustomer extends Model {
     /** @return HasMany<Asset, $this> */
     public function assets(): HasMany {
         return $this->hasMany(Asset::class)->orderBy('name');
+    }
+
+    /**
+     * Buchungsprojekt des Fremdkunden oder lazy anlegen — Pendant zu
+     * {@see Customer::defaultProjectOrCreate()}. `is_default` bleibt dem
+     * Kunden-Standardprojekt vorbehalten.
+     */
+    public function defaultProjectOrCreate(): Project {
+        $existing = $this->projects()->first();
+        if ($existing instanceof Project) {
+            return $existing;
+        }
+
+        /** @var Project $project */
+        $project = $this->projects()->create([
+            'organization_id' => $this->organization_id,
+            'customer_id' => $this->customer_id,
+            'name' => (string) config('project.default_project.name', 'Wartung'),
+            'color' => (string) config('project.default_project.color', '#64748b'),
+            'status' => ProjectStatus::Active->value,
+            'is_default' => false,
+        ]);
+
+        return $project;
     }
 
     /** @return BelongsTo<User, $this> */

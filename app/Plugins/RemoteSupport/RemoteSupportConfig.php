@@ -35,7 +35,7 @@ class RemoteSupportConfig {
             'enabled' => (bool) config('plugins.remote-support.anydesk.enabled', false),
             'license_id' => self::stringOrNull(config('plugins.remote-support.anydesk.license_id')),
             'api_key' => self::stringOrNull(config('plugins.remote-support.anydesk.api_key')),
-            'base_url' => (string) config('plugins.remote-support.anydesk.base_url', 'https://v1.api.anydesk.com'),
+            'base_url' => (string) config('plugins.remote-support.anydesk.base_url', 'https://v1.api.anydesk.com:8081'),
         ];
         $teamviewer = [
             'enabled' => (bool) config('plugins.remote-support.teamviewer.enabled', false),
@@ -93,7 +93,15 @@ class RemoteSupportConfig {
     }
 
     private static function stringOrNull(mixed $value): ?string {
-        return \is_string($value) && $value !== '' ? $value : null;
+        if (! \is_string($value)) {
+            return null;
+        }
+
+        // Credentials kommen per Copy-Paste — unsichtbarer Whitespace würde
+        // die HMAC-Signatur still brechen.
+        $value = trim($value);
+
+        return $value !== '' ? $value : null;
     }
 
     private static function intOrNull(mixed $value): ?int {

@@ -87,6 +87,18 @@ return [
     ],
 
     'message' => [
+        'new_device_title' => 'Inicio de sesión desde un dispositivo nuevo',
+        'new_device_message' => 'Nuevo inicio de sesión con :device desde :country. Si no fue usted, cambie su contraseña de inmediato y revise sus sesiones.',
+        'lockout_title' => 'Demasiados intentos fallidos — cuenta bloqueada brevemente',
+        'lockout_message' => 'Su cuenta fue objetivo de varios intentos de inicio de sesión fallidos y se bloqueó brevemente. Si no fue usted, cambie su contraseña.',
+        'security_threat_title' => 'Posible ataque: :event',
+        'security_threat_message' => ':count eventos en :window minutos (límite :limit, IP :ip).',
+        'security_calm_title' => 'Fin de alerta: :event',
+        'security_calm_message' => 'La tasa de eventos vuelve a estar por debajo del límite (:count en :window minutos).',
+        'integrity_deviation_title' => 'Integridad del código fuente vulnerada',
+        'integrity_deviation_message' => 'Desviaciones: :added nuevos, :modified modificados, :deleted eliminados, :packages paquete(s) — línea base: :source.',
+        'integrity_restored_title' => 'Integridad del código fuente restablecida',
+        'integrity_restored_message' => 'La última verificación no detectó desviaciones (línea base: :source).',
         'issue_assigned' => ':actor te ha asignado este punto abierto.',
         'customer_query_raised' => 'Un cliente ha planteado una consulta.',
         'due_soon' => 'Vence el :date.',

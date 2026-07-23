@@ -14,7 +14,8 @@ use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use Carbon\CarbonImmutable;
 
 /**
- * Client für die AnyDesk REST-API v1 (https://v1.api.anydesk.com).
+ * Client für die AnyDesk REST-API v1 (https://v1.api.anydesk.com:8081 —
+ * die API lauscht nur auf Port 8081, Port 443 ist dort geschlossen).
  *
  * AnyDesk signiert jeden Request per HMAC-SHA1 mit dem API-Passwort der Lizenz;
  * der Lizenz-Schlüssel wandert mit in den Authorization-Header. Das Signieren
@@ -30,7 +31,7 @@ class AnyDeskClient implements RemoteProvider {
     public function __construct(
         private readonly ?string $licenseId,
         private readonly ?string $apiPassword,
-        private readonly string $baseUrl = 'https://v1.api.anydesk.com',
+        private readonly string $baseUrl = 'https://v1.api.anydesk.com:8081',
     ) {}
 
     public function id(): string {
@@ -57,20 +58,21 @@ class AnyDeskClient implements RemoteProvider {
             return [];
         }
 
-        $resource = '/sessions';
-        $query = [
+        // Query gehört in die URI: die HMAC-Signatur deckt Pfad + Query-String
+        // ab, eine Guzzle-query-Option sähe die Auth-Klasse nicht.
+        $resource = '/sessions?' . http_build_query([
             'from' => $from->getTimestamp(),
             'to' => $to->getTimestamp(),
-        ];
+        ]);
 
-        $response = $this->api()->getResponse($this->baseUrl . $resource, $query, ['timeout' => 15]);
+        $response = $this->api()->getResponse($this->baseUrl . $resource, [], ['timeout' => 15]);
 
         if (! $response->successful()) {
             return [];
         }
 
         $sessions = [];
-        foreach ((array) ($response->json('sessions') ?? []) as $record) {
+        foreach ((array) ($response->json('list') ?? []) as $record) {
             $session = $this->mapRecord((array) $record);
             if ($session !== null) {
                 $sessions[] = $session;
@@ -88,8 +90,8 @@ class AnyDeskClient implements RemoteProvider {
         // ist die am Asset hinterlegte Geräte-ID.
         $to = (array) ($record['to'] ?? []);
         $remoteId = (string) ($to['cid'] ?? $to['alias'] ?? '');
-        $start = $record['start_time'] ?? null;
-        $end = $record['end_time'] ?? null;
+        $start = $record['start-time'] ?? null;
+        $end = $record['end-time'] ?? null;
         if ($remoteId === '' || $start === null || $end === null) {
             return null;
         }

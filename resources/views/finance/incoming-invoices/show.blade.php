@@ -17,20 +17,22 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar>
-        <x-slot:title>{{ $document->title }}</x-slot:title>
-        <x-slot:subtitle>{{ $document->description }}</x-slot:subtitle>
-        <x-slot:actions>
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('finance.incoming-invoices.index')" show-label>{{ __('Zur Liste') }}</x-icon-btn>
-            <x-icon-btn icon="download" tone="outline" size="sm"
-                        :href="route('documents.download', $document)"
-                        show-label>{{ __('Original (XML/PDF)') }}</x-icon-btn>
-            <x-icon-btn icon="code" tone="outline" size="sm"
-                        :href="route('finance.incoming-invoices.xml', $document)"
-                        :title="__('Extrahierte Rechnungs-XML (bei ZUGFeRD aus dem PDF)')"
-                        show-label>{{ __('Rechnungs-XML') }}</x-icon-btn>
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:title>{{ $document->title }}</x-slot:title>
+            <x-slot:subtitle>{{ $document->description }}</x-slot:subtitle>
+            <x-slot:actions>
+                <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('finance.incoming-invoices.index')" show-label>{{ __('Zur Liste') }}</x-icon-btn>
+                <x-icon-btn icon="download" tone="outline" size="sm"
+                            :href="route('documents.download', $document)"
+                            show-label>{{ __('Original (XML/PDF)') }}</x-icon-btn>
+                <x-icon-btn icon="code" tone="outline" size="sm"
+                            :href="route('finance.incoming-invoices.xml', $document)"
+                            :title="__('Extrahierte Rechnungs-XML (bei ZUGFeRD aus dem PDF)')"
+                            show-label>{{ __('Rechnungs-XML') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if ($parsed === null || $summary === null)
         <x-empty-state icon="report" tone="warning" framed

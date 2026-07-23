@@ -25,4 +25,7 @@ return [
     'archive' => (int) env('PAGINATION_ARCHIVE', 25),
     'dashboard_recent' => (int) env('PAGINATION_DASHBOARD_RECENT', 5),
     'notifications' => (int) env('PAGINATION_NOTIFICATIONS', 25),
+    'remote_pending_groups' => (int) env('PAGINATION_REMOTE_PENDING_GROUPS', 10),
+    'remote_shared_devices' => (int) env('PAGINATION_REMOTE_SHARED_DEVICES', 8),
+    'remote_shared_sessions' => (int) env('PAGINATION_REMOTE_SHARED_SESSIONS', 30),
 ];

@@ -56,12 +56,32 @@ return [
     |
     */
 
+    // Security-Log zusätzlich an Syslog spiegeln (SIEM-Anbindung, Feature 096).
+    'security_syslog' => env('SECURITY_LOG_SYSLOG', false),
+
     'channels' => [
 
         'stack' => [
             'driver' => 'stack',
             'channels' => explode(',', (string) env('LOG_STACK', 'single')),
             'ignore_exceptions' => false,
+        ],
+
+        // Security-Event-Log (Feature 096, MVP-443): dediziert + einzeilig —
+        // Format-Vertrag mit deploy/fail2ban (Filter ankern auf
+        // "security.<LEVEL>: <event> … ip=<HOST>"). Nur über den
+        // SecurityEventLogger beschreiben.
+        'security' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/security.log'),
+            'level' => env('SECURITY_LOG_LEVEL', 'info'),
+            'days' => (int) env('SECURITY_LOG_DAYS', 30),
+            'formatter' => Monolog\Formatter\LineFormatter::class,
+            'formatter_with' => [
+                'format' => "[%datetime%] security.%level_name%: %message%\n",
+                'dateFormat' => 'Y-m-d H:i:s',
+                'allowInlineLineBreaks' => false,
+            ],
         ],
 
         'single' => [

@@ -14,49 +14,51 @@
 
 <x-page-shell>
 
-    <x-page-toolbar :title="__('Stundenzettel') . ' – ' . optional($timesheet->work_date)->fdate()"
-                    :badge="$timesheet->statusLabel()"
-                    :badge-tone="$timesheet->statusTone()">
-        <div class="text-sm text-base-content/70">
-            <a href="{{ route('projects.show', $project) }}#timesheets" class="link">{{ $project->name }}</a>
-            · {{ $timesheet->user?->name }}
-        </div>
-        <x-slot:actions>
-            <x-icon-btn icon="picture_as_pdf" size="sm"
-                        :href="route('projects.timesheets.pdf', [$project, $timesheet])"
-                        target="_blank"
-                        show-label>{{ __('PDF') }}</x-icon-btn>
-            @if($editable)
-                <x-icon-btn icon="edit" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('projects.timesheets.edit', [$project, $timesheet])"
-                            show-label>{{ __('Kopfdaten') }}</x-icon-btn>
-                <x-action-form :action="route('projects.timesheets.magic-link', [$project, $timesheet])">
-                    <x-icon-btn icon="link" tone="secondary" size="sm" type="submit" show-label>{{ __('Sign-Link an Kunden') }}</x-icon-btn>
-                </x-action-form>
-                {{-- Magic-Link widerrufen (Feature 012 MVP; Vollaudit 2026-07, M6). --}}
-                @if ($timesheet->magic_token !== null)
-                    <x-action-form method="DELETE" :action="route('projects.timesheets.magic-link.revoke', [$project, $timesheet])">
-                        <x-icon-btn icon="link_off" tone="ghost" size="sm" type="submit" show-label>{{ __('Sign-Link widerrufen') }}</x-icon-btn>
+    <x-slot:toolbar>
+        <x-page-toolbar :title="optional($timesheet->work_date)->fdate()"
+                        :badge="$timesheet->statusLabel()"
+                        :badge-tone="$timesheet->statusTone()">
+            <div class="text-sm text-base-content/70">
+                <a href="{{ route('projects.show', $project) }}#timesheets" class="link">{{ $project->name }}</a>
+                · {{ $timesheet->user?->name }}
+            </div>
+            <x-slot:actions>
+                <x-icon-btn icon="picture_as_pdf" size="sm"
+                            :href="route('projects.timesheets.pdf', [$project, $timesheet])"
+                            target="_blank"
+                            show-label>{{ __('PDF') }}</x-icon-btn>
+                @if($editable)
+                    <x-icon-btn icon="edit" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('projects.timesheets.edit', [$project, $timesheet])"
+                                show-label>{{ __('Kopfdaten') }}</x-icon-btn>
+                    <x-action-form :action="route('projects.timesheets.magic-link', [$project, $timesheet])">
+                        <x-icon-btn icon="link" tone="secondary" size="sm" type="submit" show-label>{{ __('Sign-Link an Kunden') }}</x-icon-btn>
+                    </x-action-form>
+                    {{-- Magic-Link widerrufen (Feature 012 MVP; Vollaudit 2026-07, M6). --}}
+                    @if ($timesheet->magic_token !== null)
+                        <x-action-form method="DELETE" :action="route('projects.timesheets.magic-link.revoke', [$project, $timesheet])">
+                            <x-icon-btn icon="link_off" tone="ghost" size="sm" type="submit" show-label>{{ __('Sign-Link widerrufen') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
+                    <x-action-form :action="route('projects.timesheets.submit', [$project, $timesheet])">
+                        <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Einreichen') }}</x-icon-btn>
                     </x-action-form>
                 @endif
-                <x-action-form :action="route('projects.timesheets.submit', [$project, $timesheet])">
-                    <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Einreichen') }}</x-icon-btn>
-                </x-action-form>
-            @endif
-            @can('lock', $timesheet)
-                @if(! $timesheet->isLocked())
-                    <x-action-form :action="route('projects.timesheets.lock', [$project, $timesheet])">
-                        <x-icon-btn icon="lock" tone="warning" size="sm" type="submit" show-label>{{ __('Sperren') }}</x-icon-btn>
-                    </x-action-form>
-                @else
-                    <x-action-form :action="route('projects.timesheets.unlock', [$project, $timesheet])">
-                        <x-icon-btn icon="lock_open" size="sm" type="submit" show-label>{{ __('Entsperren') }}</x-icon-btn>
-                    </x-action-form>
-                @endif
-            @endcan
-        </x-slot:actions>
-    </x-page-toolbar>
+                @can('lock', $timesheet)
+                    @if(! $timesheet->isLocked())
+                        <x-action-form :action="route('projects.timesheets.lock', [$project, $timesheet])">
+                            <x-icon-btn icon="lock" tone="warning" size="sm" type="submit" show-label>{{ __('Sperren') }}</x-icon-btn>
+                        </x-action-form>
+                    @else
+                        <x-action-form :action="route('projects.timesheets.unlock', [$project, $timesheet])">
+                            <x-icon-btn icon="lock_open" size="sm" type="submit" show-label>{{ __('Entsperren') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
+                @endcan
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <x-kpi-tile :label="__('Arbeit')"         :value="$fmtMin((int)$timesheet->total_work_minutes) . ' h'" />

@@ -17,10 +17,12 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar>
-        <x-slot:title>{{ $title }} — {{ $supplier->name }}</x-slot:title>
-        <x-slot:subtitle>{{ $from->toDateString() }} – {{ $to->toDateString() }}</x-slot:subtitle>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:title>{{ $title }} — {{ $supplier->name }}</x-slot:title>
+            <x-slot:subtitle>{{ $from->toDateString() }} – {{ $to->toDateString() }}</x-slot:subtitle>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     @if ($rows->total() === 0)
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>' :title="__('scorecard.no_data')" />

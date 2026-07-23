@@ -74,6 +74,25 @@ return [
             'expected_runtime_minutes' => 2,
         ],
 
+        // --- Quelltext-Integritätsprüfung (Feature 095, MVP-441) ---
+        // Abschaltbar via INTEGRITY_CHECK_ENABLED (der Command prüft selbst).
+        'security.integrity' => [
+            'command' => 'integrity:verify --trigger=schedule',
+            'cadence' => ['type' => 'dailyAt', 'time' => '03:20'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 5,
+        ],
+
+        // --- Angriffserkennung: Schwellwert-Auswertung (Feature 096, MVP-445) ---
+        'security.evaluate' => [
+            'command' => 'security:evaluate',
+            'cadence' => ['type' => 'everyFiveMinutes'],
+            'allowed' => ['everyFiveMinutes', 'everyFifteenMinutes', 'everyThirtyMinutes', 'hourly'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 1,
+        ],
+
         // --- Scheduler-Selbstüberwachung (MVP-177) ---
         'scheduler.watchdog' => [
             'command' => 'scheduler:watchdog',

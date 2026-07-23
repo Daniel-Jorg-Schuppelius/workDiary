@@ -25,6 +25,8 @@ Route::middleware(['web', 'auth'])->group(function (): void {
         ->name('assets.remote-support.shared');
     Route::post('assets/{asset}/remote-support/sync', [RemoteSupportAssetController::class, 'sync'])
         ->name('assets.remote-support.sync');
+    Route::post('assets/{asset}/remote-support/merge', [RemoteSupportAssetController::class, 'merge'])
+        ->name('assets.remote-support.merge');
 
     // Inbox: Verbindungen ohne zugeordnetes Gerät
     Route::get('admin/remote-support/pending', [RemoteSupportPendingController::class, 'index'])
@@ -35,6 +37,8 @@ Route::middleware(['web', 'auth'])->group(function (): void {
         ->name('admin.remote-support.pending.assign-new');
     Route::post('admin/remote-support/pending/assign-shared', [RemoteSupportPendingController::class, 'assignShared'])
         ->name('admin.remote-support.pending.assign-shared');
+    Route::post('admin/remote-support/pending/assign-internal', [RemoteSupportPendingController::class, 'assignSharedInternal'])
+        ->name('admin.remote-support.pending.assign-internal');
     Route::post('admin/remote-support/pending/dismiss-session', [RemoteSupportPendingController::class, 'dismissSession'])
         ->name('admin.remote-support.pending.dismiss-session');
     Route::post('admin/remote-support/pending/dismiss', [RemoteSupportPendingController::class, 'dismiss'])

@@ -13,7 +13,10 @@
 @section('nav-title', __('finance.datev.menu'))
 
 @section('content')
-    <x-index-page :subtitle="__('finance.datev.subtitle')">
+    <x-index-page :subtitle="__('finance.datev.subtitle')"
+                  :badge="$importAvailable ? null : __('finance.datev.error.unavailable_badge')"
+                  badge-tone="warning"
+                  :badge-title="$importAvailable ? null : \App\Services\Finance\FinancialFormatsSupport::unavailableMessage('finance.datev.error.unavailable')">
         <x-slot:actions>
             @if ($canConfigure)
                 <x-icon-btn icon="settings" tone="ghost" size="sm"
@@ -34,15 +37,11 @@
                                 show-label>{{ __('Sachkonten (EXTF)') }}</x-icon-btn>
                 </form>
             @endif
-            @if ($canCreate)
-                @if ($importAvailable)
-                    <x-icon-btn icon="add" tone="primary" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('finance.datev.create')"
-                                show-label>{{ __('finance.datev.action.create') }}</x-icon-btn>
-                @else
-                    <span class="text-sm text-base-content/60">{{ \App\Services\Finance\FinancialFormatsSupport::unavailableMessage('finance.datev.error.unavailable') }}</span>
-                @endif
+            @if ($canCreate && $importAvailable)
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('finance.datev.create')"
+                            show-label>{{ __('finance.datev.action.create') }}</x-icon-btn>
             @endif
         </x-slot:actions>
 

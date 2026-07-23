@@ -10,41 +10,43 @@
     @endif
     <x-validation-errors />
 
-    <x-page-toolbar :title="$contract->number . ' — ' . $contract->partner_name">
-        <div class="flex flex-wrap items-center gap-2 text-sm">
-            <x-status-badge size="md" outline>{{ $contract->status->label() }}</x-status-badge>
-            <span class="badge badge-outline">{{ $contract->kind->label() }}</span>
-            <span class="badge badge-outline">{{ $contract->starts_on->fdate() }} – {{ optional($contract->ends_on)->fdate() ?? __('unbefristet') }}</span>
-            @if ($investmentLink !== null)
-                <a class="badge badge-info badge-outline" href="{{ route('investments.show', $investmentLink->investmentCase) }}">{{ __('Investition: :title', ['title' => $investmentLink->investmentCase->title ?? '—']) }}</a>
-            @endif
-        </div>
-        <x-slot:actions>
-            @if ($canFinance && $contract->status === \App\Enums\AssetFinance\AssetFinanceStatus::Draft)
-                <form method="POST" action="{{ route('asset-finance.activate', $contract) }}">@csrf
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Aktivieren (Konditionen einfrieren)') }}</button>
-                </form>
-            @endif
-            @can('update', $contract)
-                @if (in_array($contract->status, [\App\Enums\AssetFinance\AssetFinanceStatus::Returned, \App\Enums\AssetFinance\AssetFinanceStatus::Purchased, \App\Enums\AssetFinance\AssetFinanceStatus::Terminated], true))
-                    <form method="POST" action="{{ route('asset-finance.close', $contract) }}">@csrf
-                        <button type="submit" class="btn btn-sm">{{ __('Abschließen') }}</button>
+    <x-slot:toolbar>
+        <x-page-toolbar :title="$contract->number . ' — ' . $contract->partner_name">
+            <div class="flex flex-wrap items-center gap-2 text-sm">
+                <x-status-badge size="md" outline>{{ $contract->status->label() }}</x-status-badge>
+                <span class="badge badge-outline">{{ $contract->kind->label() }}</span>
+                <span class="badge badge-outline">{{ $contract->starts_on->fdate() }} – {{ optional($contract->ends_on)->fdate() ?? __('unbefristet') }}</span>
+                @if ($investmentLink !== null)
+                    <a class="badge badge-info badge-outline" href="{{ route('investments.show', $investmentLink->investmentCase) }}">{{ __('Investition: :title', ['title' => $investmentLink->investmentCase->title ?? '—']) }}</a>
+                @endif
+            </div>
+            <x-slot:actions>
+                @if ($canFinance && $contract->status === \App\Enums\AssetFinance\AssetFinanceStatus::Draft)
+                    <form method="POST" action="{{ route('asset-finance.activate', $contract) }}">@csrf
+                        <button type="submit" class="btn btn-sm btn-primary">{{ __('Aktivieren (Konditionen einfrieren)') }}</button>
                     </form>
                 @endif
-                @if ($contract->status->isOpen() && $contract->status !== \App\Enums\AssetFinance\AssetFinanceStatus::Draft)
-                    <details class="inline-block text-left">
-                        <summary class="btn btn-sm btn-ghost text-error">{{ __('Kündigen') }}</summary>
-                        <form method="POST" action="{{ route('asset-finance.terminate', $contract) }}" class="mt-2 flex items-end gap-2 rounded-box border border-base-300 p-3">
-                            @csrf
-                            <x-input-field name="reason" :label="__('Begründung (Pflicht)')" required />
-                            <button type="submit" class="btn btn-sm btn-error">{{ __('Kündigen') }}</button>
+                @can('update', $contract)
+                    @if (in_array($contract->status, [\App\Enums\AssetFinance\AssetFinanceStatus::Returned, \App\Enums\AssetFinance\AssetFinanceStatus::Purchased, \App\Enums\AssetFinance\AssetFinanceStatus::Terminated], true))
+                        <form method="POST" action="{{ route('asset-finance.close', $contract) }}">@csrf
+                            <button type="submit" class="btn btn-sm">{{ __('Abschließen') }}</button>
                         </form>
-                    </details>
-                @endif
-            @endcan
-            <x-icon-btn icon="arrow_back" size="sm" :href="route('asset-finance.index')" show-label>{{ __('Zur Liste') }}</x-icon-btn>
-        </x-slot:actions>
-    </x-page-toolbar>
+                    @endif
+                    @if ($contract->status->isOpen() && $contract->status !== \App\Enums\AssetFinance\AssetFinanceStatus::Draft)
+                        <details class="inline-block text-left">
+                            <summary class="btn btn-sm btn-ghost text-error">{{ __('Kündigen') }}</summary>
+                            <form method="POST" action="{{ route('asset-finance.terminate', $contract) }}" class="mt-2 flex items-end gap-2 rounded-box border border-base-300 p-3">
+                                @csrf
+                                <x-input-field name="reason" :label="__('Begründung (Pflicht)')" required />
+                                <button type="submit" class="btn btn-sm btn-error">{{ __('Kündigen') }}</button>
+                            </form>
+                        </details>
+                    @endif
+                @endcan
+                <x-icon-btn icon="arrow_back" size="sm" :href="route('asset-finance.index')" show-label>{{ __('Zur Liste') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('Akte')">

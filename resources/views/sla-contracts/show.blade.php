@@ -22,22 +22,24 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar>
-        <x-slot:title>{{ $contract->label }}</x-slot:title>
-        <x-slot:subtitle>
-            <span class="font-mono">{{ $contract->code }}</span> ·
-            {{ $contract->customer?->name ?? __('Standard (alle Kunden)') }}
-        </x-slot:subtitle>
-        <x-slot:actions>
-            @if ($contract->is_default)
-                <x-status-badge tone="info" size="sm">{{ __('Standard') }}</x-status-badge>
-            @endif
-            <x-status-badge :tone="$contract->is_active ? 'success' : 'ghost'" size="sm" outline>
-                {{ $contract->is_active ? __('Aktiv') : __('Inaktiv') }}
-            </x-status-badge>
-            <x-icon-btn icon="arrow_back" tone="outline" size="sm" :href="route('sla-contracts.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
-        </x-slot:actions>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:title>{{ $contract->label }}</x-slot:title>
+            <x-slot:subtitle>
+                <span class="font-mono">{{ $contract->code }}</span> ·
+                {{ $contract->customer?->name ?? __('Standard (alle Kunden)') }}
+            </x-slot:subtitle>
+            <x-slot:actions>
+                @if ($contract->is_default)
+                    <x-status-badge tone="info" size="sm">{{ __('Standard') }}</x-status-badge>
+                @endif
+                <x-status-badge :tone="$contract->is_active ? 'success' : 'ghost'" size="sm" outline>
+                    {{ $contract->is_active ? __('Aktiv') : __('Inaktiv') }}
+                </x-status-badge>
+                <x-icon-btn icon="arrow_back" tone="outline" size="sm" :href="route('sla-contracts.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <div class="grid gap-4 lg:grid-cols-2">
         {{-- Fristen je Priorität --}}

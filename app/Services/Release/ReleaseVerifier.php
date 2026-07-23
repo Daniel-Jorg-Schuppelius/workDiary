@@ -143,7 +143,8 @@ class ReleaseVerifier {
         return match ($name) {
             'composer.lock' => base_path('composer.lock'),
             'package-lock.json' => base_path('package-lock.json'),
-            'sbom' => storage_path('app/sbom/' . SbomGenerator::latestAlias()),
+            'sbom' => \Illuminate\Support\Facades\Storage::disk('local')->path('sbom/' . SbomGenerator::latestAlias()),
+            'integrity' => \Illuminate\Support\Facades\Storage::disk('local')->path(CodeIntegrityService::STORAGE_PATH),
             default => null,
         };
     }

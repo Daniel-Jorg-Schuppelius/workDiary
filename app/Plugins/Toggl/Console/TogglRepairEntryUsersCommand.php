@@ -11,9 +11,10 @@
 namespace App\Plugins\Toggl\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\{ExternalReference, TimeEntry};
-use App\Plugins\Toggl\Sources\TogglCsvParser;
-use App\Plugins\Toggl\{TogglImportService, TogglPlugin};
+use App\Models\{ExternalReference, Organization, TimeEntry};
+use App\Plugins\Toggl\Sources\{TogglApiClient, TogglCsvParser};
+use App\Plugins\Toggl\{TogglConfig, TogglImportService, TogglPlugin};
+use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
 /**
@@ -27,25 +28,29 @@ use Illuminate\Console\Command;
 class TogglRepairEntryUsersCommand extends Command {
     use IteratesOrganizations;
 
-    protected $signature = 'toggl:repair-entry-users {csv : Pfad zur Toggl-Detailed-Report-CSV} '
+    protected $signature = 'toggl:repair-entry-users {csv? : Pfad zur Toggl-Detailed-Report-CSV (ohne Angabe: Reports-API)} '
         . self::ORGANIZATION_OPTION
+        . ' {--days=90 : API-Modus — Zeitraum rückwärts in Tagen}'
         . ' {--apply : Änderungen schreiben (sonst Dry-Run)}';
 
-    protected $description = 'Setzt die Benutzer bereits importierter Toggl-CSV-Zeiten anhand der E-Mail-Spalte der CSV um.';
+    protected $description = 'Setzt die Benutzer bereits importierter Toggl-Zeiten um — aus einer Detailed-Report-CSV oder (ohne CSV) über die Reports-API.';
 
     public function handle(TogglImportService $service): int {
-        $path = (string) $this->argument('csv');
-        if (! is_file($path) || ! is_readable($path)) {
-            $this->error("CSV nicht lesbar: {$path}");
+        $path = (string) ($this->argument('csv') ?? '');
+        $csvEntries = null;
+        if ($path !== '') {
+            if (! is_file($path) || ! is_readable($path)) {
+                $this->error("CSV nicht lesbar: {$path}");
 
-            return self::FAILURE;
-        }
+                return self::FAILURE;
+            }
 
-        $entries = (new TogglCsvParser)->parse((string) file_get_contents($path));
-        if ($entries === []) {
-            $this->warn('Keine Einträge in der CSV gefunden.');
+            $csvEntries = (new TogglCsvParser)->parse((string) file_get_contents($path));
+            if ($csvEntries === []) {
+                $this->warn('Keine Einträge in der CSV gefunden.');
 
-            return self::SUCCESS;
+                return self::SUCCESS;
+            }
         }
 
         $apply = (bool) $this->option('apply');
@@ -57,6 +62,13 @@ class TogglRepairEntryUsersCommand extends Command {
         }
 
         foreach ($organizations as $org) {
+            $entries = $csvEntries ?? $this->apiEntries($org);
+            if ($entries === []) {
+                $this->warn("Organisation #{$org->id} ({$org->name}): keine Einträge (API nicht konfiguriert oder Zeitraum leer).");
+
+                continue;
+            }
+
             $fixed = 0;
             $ok = 0;
             $noEmail = 0;
@@ -118,5 +130,31 @@ class TogglRepairEntryUsersCommand extends Command {
         }
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Einträge über die Reports-API (alle Workspaces des Tokens) — trägt die
+     * Benutzer-E-Mails über die Workspace-Benutzerliste.
+     *
+     * @return array<int, \App\Plugins\Toggl\Sources\TogglEntry>
+     */
+    private function apiEntries(Organization $organization): array {
+        $config = TogglConfig::resolve($organization->id);
+        if (! $config['enabled'] || $config['api_token'] === null) {
+            return [];
+        }
+
+        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id']);
+        $to = CarbonImmutable::now();
+        $from = $to->subDays(max(1, (int) $this->option('days')));
+
+        $entries = [];
+        foreach ($client->workspaces() as $workspace) {
+            foreach ($client->workspaceEntries((int) $workspace['id'], $from, $to) as $entry) {
+                $entries[] = $entry;
+            }
+        }
+
+        return $entries;
     }
 }

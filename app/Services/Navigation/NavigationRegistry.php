@@ -1185,6 +1185,12 @@ class NavigationRegistry {
                 if (Gate::allows(Permission::SecuritySessionsView->value)) {
                     $adminNavItems[] = ['route' => 'admin.sessions.index', 'label' => __('sessions.title.index'), 'icon' => 'devices', 'modal' => false, 'matches' => ['admin.sessions.*']];
                 }
+                // Quelltext-Integrität (095) + Angriffserkennung (096):
+                // installationsweit, daher nur für Plattform-Admins sichtbar.
+                if (\Illuminate\Support\Facades\Auth::user()?->isGlobalAdmin() === true) {
+                    $adminNavItems[] = ['route' => 'admin.integrity.index', 'label' => __('Quelltext-Integrität'), 'icon' => 'verified_user', 'modal' => false];
+                    $adminNavItems[] = ['route' => 'admin.security-events.index', 'label' => __('Angriffserkennung'), 'icon' => 'gpp_bad', 'modal' => false];
+                }
                 if (Gate::allows(Permission::BackupView->value)) {
                     $adminNavItems[] = ['route' => 'admin.backup.status', 'label' => __('backup.title.status'), 'icon' => 'backup', 'modal' => false];
                 }

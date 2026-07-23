@@ -87,6 +87,18 @@ return [
     ],
 
     'message' => [
+        'new_device_title' => 'Accesso da nuovo dispositivo',
+        'new_device_message' => 'Nuovo accesso con :device da :country. Se non eri tu, cambia subito la password e controlla le tue sessioni.',
+        'lockout_title' => 'Troppi tentativi falliti — account bloccato brevemente',
+        'lockout_message' => 'Il tuo account è stato oggetto di più tentativi di accesso falliti ed è stato bloccato brevemente. Se non eri tu, cambia la password.',
+        'security_threat_title' => 'Possibile attacco: :event',
+        'security_threat_message' => ':count eventi in :window minuti (limite :limit, IP :ip).',
+        'security_calm_title' => 'Cessato allarme: :event',
+        'security_calm_message' => 'La frequenza degli eventi è tornata sotto il limite (:count in :window minuti).',
+        'integrity_deviation_title' => 'Integrità del codice sorgente violata',
+        'integrity_deviation_message' => 'Scostamenti: :added nuovi, :modified modificati, :deleted eliminati, :packages pacchetto/i — baseline: :source.',
+        'integrity_restored_title' => 'Integrità del codice sorgente ripristinata',
+        'integrity_restored_message' => 'L’ultima verifica non ha rilevato scostamenti (baseline: :source).',
         'issue_assigned' => ':actor ti ha assegnato questo punto aperto.',
         'customer_query_raised' => 'Un cliente ha posto una domanda.',
         'due_soon' => 'In scadenza il :date.',

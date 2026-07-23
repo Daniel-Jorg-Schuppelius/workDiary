@@ -16,10 +16,11 @@
 
 @section('content')
 <x-page-shell>
-    <x-page-toolbar>
-        <x-slot:title>{{ __('Fehlende Pflichtklassifikationen') }}</x-slot:title>
-        <x-slot:subtitle>{{ __('Aufträge im Zeitraum') }} · {{ $label }}</x-slot:subtitle>
-    </x-page-toolbar>
+    <x-slot:toolbar>
+        <x-page-toolbar>
+            <x-slot:subtitle>{{ __('Aufträge im Zeitraum') }} · {{ $label }}</x-slot:subtitle>
+        </x-page-toolbar>
+    </x-slot:toolbar>
 
     <div class="grid gap-4 sm:grid-cols-3">
         <x-kpi-tile :label="__('Aufträge mit Lücken')" :value="$entries_with_gaps"
@@ -75,7 +76,7 @@
                         <x-table.th sort type="string">{{ __('Auftrag') }}</x-table.th>
                         <x-table.th sort type="date">{{ __('Datum') }}</x-table.th>
                         <x-table.th sort type="string">{{ __('Fehlende Klassifikationen') }}</x-table.th>
-                        <x-table.th>{{ __('Aktion') }}</x-table.th>
+                        <x-table.th align="right">{{ __('Aktion') }}</x-table.th>
                     </tr>
                 </x-slot:head>
                 @foreach ($rows as $row)
@@ -93,7 +94,7 @@
                                 @endforeach
                             </div>
                         </td>
-                        <td>
+                        <td class="text-right">
                             <x-icon-btn icon="edit_note" tone="outline" size="xs"
                                         :href="route('diary.show', $row['sqid'])" show-label>{{ __('Nachtragen') }}</x-icon-btn>
                         </td>

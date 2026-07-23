@@ -12,17 +12,38 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Enums\Notification\NotificationEvent;
+use App\Enums\Security\SecurityEventType;
 use App\Models\{AuditLog, User};
-use Illuminate\Auth\Events\{Failed, Lockout, Login, Logout, PasswordReset};
+use App\Notifications\GenericEventNotification;
+use App\Services\Security\{KnownDeviceService, SecurityEventLogger};
+use Illuminate\Auth\Events\{Failed, Lockout, Login, Logout, PasswordReset, PasswordResetLinkSent};
 use Illuminate\Support\Facades\{Log, Request};
 
 /**
- * Persistiert Auth-Events ins Audit-Log (sofern ein User-Bezug existiert)
- * und protokolliert anonyme Events (Failed-Login, Lockout) im Application-Log.
+ * Persistiert Auth-Events ins Audit-Log (sofern ein User-Bezug existiert),
+ * schreibt Fehlversuche/Lockouts in das fail2ban-taugliche Security-Log
+ * (Feature 096, MVP-443) und erkennt Anmeldungen von neuen Geräten
+ * (MVP-446). Beim Lockout wird der betroffene Nutzer benachrichtigt —
+ * er könnte gerade angegriffen werden.
  */
 class AuthEventSubscriber {
+    public function __construct(
+        private readonly SecurityEventLogger $security,
+        private readonly KnownDeviceService $devices,
+    ) {}
+
     public function handleLogin(Login $event): void {
         $this->logForUser($event->user, 'auth.login');
+
+        if ($event->user instanceof User) {
+            try {
+                $this->devices->touch($event->user, Request::userAgent(), Request::ip());
+            } catch (\Throwable $e) {
+                // Geräte-Erkennung darf den Login nie brechen.
+                Log::warning('auth.known_device_failed', ['error' => $e->getMessage()]);
+            }
+        }
     }
 
     public function handleLogout(Logout $event): void {
@@ -33,13 +54,18 @@ class AuthEventSubscriber {
         $this->logForUser($event->user, 'auth.password_reset');
     }
 
+    public function handleResetLinkSent(PasswordResetLinkSent $event): void {
+        $email = (string) ($event->credentials['email'] ?? 'unknown');
+        $this->security->log(SecurityEventType::PasswordResetRequested, ['user' => $email]);
+    }
+
     public function handleFailed(Failed $event): void {
         $email = (string) ($event->credentials['email'] ?? $event->credentials['username'] ?? 'unknown');
 
-        Log::warning('auth.failed', [
-            'email' => $email,
-            'ip' => Request::ip(),
-            'ua' => substr((string) Request::userAgent(), 0, 255),
+        $this->security->log(SecurityEventType::AuthFailed, [
+            'user' => $email,
+            'guard' => $event->guard,
+            'ua' => substr((string) Request::userAgent(), 0, 120),
         ]);
 
         if ($event->user instanceof User) {
@@ -48,10 +74,35 @@ class AuthEventSubscriber {
     }
 
     public function handleLockout(Lockout $event): void {
-        Log::warning('auth.lockout', [
-            'ip' => Request::ip(),
-            'ua' => substr((string) Request::userAgent(), 0, 255),
+        $email = (string) $event->request->input('email', $event->request->input('username', ''));
+
+        $this->security->log(SecurityEventType::AuthLockout, [
+            'user' => $email !== '' ? $email : 'unknown',
+            'ua' => substr((string) Request::userAgent(), 0, 120),
         ]);
+
+        // Betroffenen Nutzer informieren (MVP-446): sein Konto wird gerade
+        // per Brute-Force attackiert — auch wenn der Angriff scheitert.
+        if ($email !== '') {
+            $user = User::query()->where('email', $email)->first();
+            if ($user instanceof User) {
+                try {
+                    $user->notify(new GenericEventNotification(
+                        NotificationEvent::SecurityLockout,
+                        [
+                            'title' => (string) __('notification.message.lockout_title'),
+                            'title_key' => 'notification.message.lockout_title',
+                            'message' => (string) __('notification.message.lockout_message'),
+                            'message_key' => 'notification.message.lockout_message',
+                            'url' => route('account.password.edit'),
+                        ],
+                        ['database', 'mail'],
+                    ));
+                } catch (\Throwable $e) {
+                    Log::warning('auth.lockout_notify_failed', ['error' => $e->getMessage()]);
+                }
+            }
+        }
     }
 
     /**
@@ -62,6 +113,7 @@ class AuthEventSubscriber {
             Login::class => 'handleLogin',
             Logout::class => 'handleLogout',
             PasswordReset::class => 'handlePasswordReset',
+            PasswordResetLinkSent::class => 'handleResetLinkSent',
             Failed::class => 'handleFailed',
             Lockout::class => 'handleLockout',
         ];

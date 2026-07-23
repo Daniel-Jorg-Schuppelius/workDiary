@@ -17,6 +17,7 @@ use App\Models\Applications\{JobApplication, JobPosting};
 use App\Models\Organization;
 use App\Services\Applications\{CareerApplicationUploadService, CareerFormState, RecruitingService};
 use App\Support\Setting;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -69,7 +70,7 @@ class PublicApplicationController extends Controller {
         }
 
         $emailHash = JobApplication::hashEmail((string) $data['email']);
-        $intakeRef = hash('sha256', $model->id . '|' . $emailHash . '|' . $nonce);
+        $intakeRef = CryptoHelper::hash($model->id . '|' . $emailHash . '|' . $nonce);
         $privacyVersion = $this->privacyVersion();
 
         try {
@@ -134,7 +135,7 @@ class PublicApplicationController extends Controller {
         $text = (string) Setting::get('applications.portal.privacy_notice_text', '');
         $url = (string) Setting::get('applications.portal.privacy_notice_url', '');
 
-        return substr(hash('sha256', $text . '|' . $url), 0, 40);
+        return substr(CryptoHelper::hash($text . '|' . $url), 0, 40);
     }
 
     private function isDuplicateIntake(QueryException $e): bool {

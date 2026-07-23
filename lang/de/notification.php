@@ -87,6 +87,18 @@ return [
     ],
 
     'message' => [
+        'new_device_title' => 'Anmeldung von neuem Gerät',
+        'new_device_message' => 'Neue Anmeldung mit :device aus :country. Waren Sie das nicht, ändern Sie sofort Ihr Passwort und prüfen Sie Ihre Sitzungen.',
+        'lockout_title' => 'Zu viele Fehlversuche — Konto kurzzeitig gesperrt',
+        'lockout_message' => 'Ihr Konto war Ziel mehrerer fehlgeschlagener Anmeldeversuche und wurde kurzzeitig gesperrt. Waren Sie das nicht, ändern Sie Ihr Passwort.',
+        'security_threat_title' => 'Angriffsverdacht: :event',
+        'security_threat_message' => ':count Ereignisse in :window Minuten (Limit :limit, IP :ip).',
+        'security_calm_title' => 'Entwarnung: :event',
+        'security_calm_message' => 'Die Ereignisrate liegt wieder unter dem Limit (:count in :window Minuten).',
+        'integrity_deviation_title' => 'Quelltext-Integrität verletzt',
+        'integrity_deviation_message' => 'Abweichungen: :added neu, :modified geändert, :deleted gelöscht, :packages Paket(e) — Baseline: :source.',
+        'integrity_restored_title' => 'Quelltext-Integrität wiederhergestellt',
+        'integrity_restored_message' => 'Der letzte Prüflauf war ohne Befund (Baseline: :source).',
         'issue_assigned' => ':actor hat dir diesen Offenen Punkt zugewiesen.',
         'customer_query_raised' => 'Ein Kunde hat eine Rückfrage gestellt.',
         'due_soon' => 'Fällig am :date.',

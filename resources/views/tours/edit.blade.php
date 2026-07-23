@@ -23,20 +23,22 @@
     @endphp
 
     <x-page-shell>
-        <x-page-toolbar :title="__('Tour') . ' ' . ($tour->name ?? ('#' . $tour->id))" :badge="$tour->status?->label() ?? ''" badge-tone="ghost">
-            <div class="text-sm text-base-content/70">
-                {{ $tour->tour_date?->fdate() }} ·
-                {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $tour->planned_distance_km, 2, withThousandsSeparator: true) }} km ·
-                {{ $tour->planned_duration_minutes }} min
-            </div>
-            <x-slot:actions>
-                <x-icon-btn icon="visibility" size="sm" :href="route('tours.show', $tour)" show-label>{{ __('Ansicht') }}</x-icon-btn>
-                <form method="POST" action="{{ route('tours.optimize', $tour) }}" class="inline">
-                    @csrf
-                    <x-icon-btn icon="auto_awesome" size="sm" type="submit" show-label>{{ __('Optimieren') }}</x-icon-btn>
-                </form>
-            </x-slot:actions>
-        </x-page-toolbar>
+        <x-slot:toolbar>
+            <x-page-toolbar :title="__('Tour') . ' ' . ($tour->name ?? ('#' . $tour->id))" :badge="$tour->status?->label() ?? ''" badge-tone="ghost">
+                <div class="text-sm text-base-content/70">
+                    {{ $tour->tour_date?->fdate() }} ·
+                    {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $tour->planned_distance_km, 2, withThousandsSeparator: true) }} km ·
+                    {{ $tour->planned_duration_minutes }} min
+                </div>
+                <x-slot:actions>
+                    <x-icon-btn icon="visibility" size="sm" :href="route('tours.show', $tour)" show-label>{{ __('Ansicht') }}</x-icon-btn>
+                    <form method="POST" action="{{ route('tours.optimize', $tour) }}" class="inline">
+                        @csrf
+                        <x-icon-btn icon="auto_awesome" size="sm" type="submit" show-label>{{ __('Optimieren') }}</x-icon-btn>
+                    </form>
+                </x-slot:actions>
+            </x-page-toolbar>
+        </x-slot:toolbar>
 
         <div class="grid gap-4 lg:grid-cols-2">
             <form method="POST" action="{{ route('tours.update', $tour) }}"
