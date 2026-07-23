@@ -104,13 +104,26 @@
                                                 @csrf
                                                 <button type="submit" class="btn btn-xs btn-primary">{{ __('Bestätigen') }}</button>
                                             </form>
-                                            <form method="POST" action="{{ route('admin.calendly.requests.decline', $request) }}">
-                                                @csrf
-                                                <button type="submit" class="btn btn-xs btn-ghost">{{ __('Ablehnen') }}</button>
-                                            </form>
+                                            <button type="button" class="btn btn-xs btn-ghost"
+                                                    data-open-dialog="decline-dialog-{{ $request->getKey() }}">{{ __('Ablehnen') }}</button>
                                         </div>
                                     </td>
                                 </tr>
+                                <x-modal id="decline-dialog-{{ $request->getKey() }}" :embedded="false"
+                                         tone="error" icon="cancel"
+                                         :eyebrow="__('Terminwunsch')" :title="__('Terminwunsch ablehnen')"
+                                         :action="route('admin.calendly.requests.decline', $request)"
+                                         :submit-label="__('Ablehnen')" submit-class="btn-error">
+                                    <x-form-group :legend="__('Ablehnung')" icon="cancel" tone="error">
+                                        <div class="fieldset">
+                                            <label class="fieldset-label" for="decline-reason-{{ $request->getKey() }}">{{ __('Grund') }}</label>
+                                            <textarea id="decline-reason-{{ $request->getKey() }}" name="reason"
+                                                      rows="3" maxlength="500"
+                                                      class="textarea textarea-sm textarea-bordered w-full"
+                                                      placeholder="{{ __('Optional: Begründung für die Ablehnung') }}"></textarea>
+                                        </div>
+                                    </x-form-group>
+                                </x-modal>
                             @endforeach
                         </tbody>
                     </table>
