@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', 'Calendly')
-@section('nav-title', 'Calendly')
+@section('title', __('Calendly'))
+@section('nav-title', __('Calendly'))
 
 @section('content')
 <x-page-shell>
