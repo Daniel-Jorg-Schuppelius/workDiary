@@ -16,6 +16,7 @@ use App\Models\{Asset, Customer, ExternalReference, ExternalReferenceAlias, Fore
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, RemoteProvider, RemoteSession, TeamViewerClient};
 use App\Plugins\Support\PersistsTimeImportInbox;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\DateHelper;
 
 /**
  * Kernlogik des Fernwartungs-Plugins:
@@ -474,6 +475,11 @@ class RemoteSupportService {
         // die Versuche dem Eintrag zuordnen.
         [$startedAt, $usedAttempts] = $this->extendStartByAttempts($organization, $session);
 
+        // Zeit-Kürzel in der Sitzungsnotiz („+1h", „2h extra", „seit 8h")
+        // ziehen den Beginn weiter vor — die Notiz bleibt als Beleg in der
+        // Beschreibung stehen.
+        $startedAt = $this->applyNoteTimeShorthand($startedAt, $session);
+
         $entry = TimeEntry::query()->create([
             'organization_id' => $organization->id,
             'project_id' => $project->id,
@@ -539,6 +545,66 @@ class RemoteSupportService {
         }
 
         return [$start, $used];
+    }
+
+    /**
+     * Wendet Zeit-Kürzel aus der Sitzungsnotiz auf den Buchungsbeginn an:
+     *
+     *  - „seit 8h" / „seit 8:30": absolute Uhrzeit am Tag des Sitzungsbeginns
+     *    (die Arbeit lief schon vor der Verbindung). Gewinnt gegen
+     *    Dauer-Kürzel; ignoriert, wenn sie nicht VOR dem Beginn liegt.
+     *  - „+1h" / „+30min" bzw. „2h extra" / „extra 2h": notierte Zusatzzeit,
+     *    mehrere Kürzel summieren sich. Deckel: note_extra_max_minutes.
+     */
+    private function applyNoteTimeShorthand(CarbonImmutable $start, RemoteSession $session): CarbonImmutable {
+        $note = trim((string) $session->note);
+        if ($note === '') {
+            return $start;
+        }
+
+        // Absolute Angabe: „seit 8h" — bezogen auf den Tag des Sitzungsbeginns.
+        if (preg_match('/\bseit\s+(\d[\d:.]*\s*(?:h|uhr)?)/iu', $note, $match) === 1) {
+            $clock = DateHelper::parseClockTimeShorthand(trim($match[1]));
+            if ($clock !== null) {
+                $candidate = $session->startedAt->setTime($clock[0], $clock[1]);
+                if ($candidate < $start) {
+                    return $candidate;
+                }
+            }
+        }
+
+        $duration = '(?:\d+(?:[.,]\d+)?\s*(?:std|min|m|h)(?:\d{1,2})?)';
+        $extraMinutes = 0;
+
+        // Plus-Form: „+1h", „+30min", „+1,5h".
+        if (preg_match_all('/\+\s*(' . $duration . ')/iu', $note, $matches) > 0) {
+            foreach ($matches[1] as $token) {
+                $extraMinutes += (int) DateHelper::parseDurationToMinutes($token);
+            }
+        }
+
+        // Wort-Form: „2h extra" bzw. „extra 2h" (Plus-Treffer nicht doppelt zählen).
+        if (preg_match_all('/(?<![+\d,.])(' . $duration . ')\s+extra\b/iu', $note, $matches) > 0) {
+            foreach ($matches[1] as $token) {
+                $extraMinutes += (int) DateHelper::parseDurationToMinutes($token);
+            }
+        }
+        if (preg_match_all('/\bextra\s+(' . $duration . ')/iu', $note, $matches) > 0) {
+            foreach ($matches[1] as $token) {
+                $extraMinutes += (int) DateHelper::parseDurationToMinutes($token);
+            }
+        }
+
+        if ($extraMinutes <= 0) {
+            return $start;
+        }
+
+        $cap = max(0, (int) config('plugins.remote-support.note_extra_max_minutes', 480));
+        if ($cap > 0) {
+            $extraMinutes = min($extraMinutes, $cap);
+        }
+
+        return $start->subMinutes($extraMinutes);
     }
 
     /**

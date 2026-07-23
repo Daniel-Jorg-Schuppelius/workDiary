@@ -34,6 +34,10 @@ return [
     // Sitzung gelten als deren Tätigkeitsbeginn und ziehen den Buchungsstart vor.
     'attempt_lead_minutes' => (int) env('REMOTE_SUPPORT_ATTEMPT_LEAD_MINUTES', 15),
 
+    // Deckel für Zeit-Kürzel in Sitzungsnotizen („+1h", „2h extra"), die den
+    // Buchungsbeginn vorziehen — schützt vor Tippfehlern wie „+100h".
+    'note_extra_max_minutes' => (int) env('REMOTE_SUPPORT_NOTE_EXTRA_MAX_MINUTES', 480),
+
     'teamviewer' => [
         'enabled' => env('TEAMVIEWER_ENABLED', false),
         'api_key' => env('TEAMVIEWER_API_KEY'),
