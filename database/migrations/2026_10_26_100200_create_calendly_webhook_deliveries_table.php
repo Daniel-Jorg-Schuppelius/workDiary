@@ -30,8 +30,7 @@ return new class extends Migration {
             $table->timestamp('processed_at')->nullable();
             $table->timestamps();
 
-            $table->unique('delivery_hash', 'caldel_hash_unique');
-        });
+            $table->unique(['organization_id', 'delivery_hash'], 'caldel_org_hash_unique');
     }
 
     public function down(): void {
