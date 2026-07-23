@@ -62,9 +62,11 @@ class CalendlyClient {
 
     /**
      * `GET /scheduled_events` (eine Seite). Liefert `collection` +
-     * `next_page_token` (null = letzte Seite).
+     * `next_page_token` (null = letzte Seite) + `success` (false bei
+     * HTTP-Fehler oder Exception, damit Aufrufer Connection-Health korrekt
+     * setzen können).
      *
-     * @return array{collection: list<array<string, mixed>>, next_page_token: ?string}
+     * @return array{collection: list<array<string, mixed>>, next_page_token: ?string, success: bool}
      */
     public function listScheduledEvents(string $organizationUri, string $minStartTime, string $maxStartTime, ?string $pageToken = null): array {
         $query = [
@@ -80,15 +82,16 @@ class CalendlyClient {
         try {
             $response = $this->api->getResponse($this->base . '/scheduled_events', $query);
         } catch (Throwable) {
-            return ['collection' => [], 'next_page_token' => null];
+            return ['collection' => [], 'next_page_token' => null, 'success' => false];
         }
         if (! $response->successful()) {
-            return ['collection' => [], 'next_page_token' => null];
+            return ['collection' => [], 'next_page_token' => null, 'success' => false];
         }
 
         return [
             'collection' => $this->collection($response->json('collection')),
             'next_page_token' => $this->pageToken($response->json('pagination')),
+            'success' => true,
         ];
     }
 

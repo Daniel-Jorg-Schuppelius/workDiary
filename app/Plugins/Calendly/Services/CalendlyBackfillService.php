@@ -52,8 +52,13 @@ class CalendlyBackfillService {
 
         $pageToken = null;
         $pages = 0;
+        $apiSuccess = true;
         do {
             $page = $client->listScheduledEvents($organizationUri, $min, $max, $pageToken);
+            if (! $page['success']) {
+                $apiSuccess = false;
+                break;
+            }
             foreach ($page['collection'] as $event) {
                 $eventUri = is_string($event['uri'] ?? null) ? $event['uri'] : '';
                 if ($eventUri === '') {
@@ -79,8 +84,12 @@ class CalendlyBackfillService {
             $pages++;
         } while ($pageToken !== null && $pages < self::MAX_PAGES);
 
-        $connection->forceFill(['last_synced_at' => now()])->save();
-        $connection->recordConnectionSuccess();
+        if ($apiSuccess) {
+            $connection->forceFill(['last_synced_at' => now()])->save();
+            $connection->recordConnectionSuccess();
+        } else {
+            $connection->recordConnectionFailure(__('Calendly API-Abfrage fehlgeschlagen.'));
+        }
 
         return $stats;
     }
