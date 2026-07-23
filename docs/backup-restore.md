@@ -42,10 +42,16 @@ und Heartbeat-Token aus der App-`.env`. Ein Cron-Eintrag genügt:
 ```
 
 Der Zeitpunkt muss in die Betriebszeit des Servers fallen (kein
-Nachhol-Verhalten bei ausgeschaltetem Server). Optionale Overrides
-(`BACKUP_DIR`, `BACKUP_KEEP_DAYS` = Retention in Tagen, Default 14,
+Nachhol-Verhalten bei ausgeschaltetem Server). Die Dateinamen tragen den
+Instanznamen aus `APP_NAME` (kleingeschrieben/slugifiziert, z. B.
+`workdiary_db_20260723_230000.sql.gz`) — so bleiben Backups mehrerer
+Installationen im selben Zielverzeichnis unterscheidbar. Optionale Overrides
+(`BACKUP_DIR`, `BACKUP_NAME` = Instanzname im Dateinamen,
+`BACKUP_KEEP_DAYS` = Retention in Tagen, Default 14,
 `BACKUP_HEARTBEAT_URL`/`-TOKEN`) per Env oder `/etc/workdiary-backup.conf`
-(chmod 600). Sicherheitsverhalten: DB-Passwort nur über eine temporäre
+(chmod 600) — Cron-Eintrag und Konfigurationsdatei legt
+[`scripts/install-system.sh`](systemdienste.md) an (`--backup-time`,
+`--backup-dir`, `--backup-keep-days`). Sicherheitsverhalten: DB-Passwort nur über eine temporäre
 `defaults-extra-file` (nie in der Prozessliste), `flock`-Überlappungsschutz,
 fehlgeschlagene Läufe räumen ihre unvollständigen Dateien weg — nur Läufe
 mit Manifest sind vollständig.
@@ -140,14 +146,14 @@ Voraussetzungen: frische DB-Instanz, WorkDiary-Codebase in der Version zum
 Backup-Zeitpunkt, `.env` aus dem Backup (insbesondere `APP_KEY`).
 
 ```bash
-# 1) Datenbank
-gunzip < db_YYYYMMDD_HHMMSS.sql.gz | mysql -u root -p "$DB_NAME"
+# 1) Datenbank  (<name> = Instanzname, siehe Abschnitt 2.1)
+gunzip < <name>_db_YYYYMMDD_HHMMSS.sql.gz | mysql -u root -p "$DB_NAME"
 
 # 2) Storage
-tar -C /var/www/workdiary -xzf storage_YYYYMMDD_HHMMSS.tar.gz
+tar -C /var/www/workdiary -xzf <name>_storage_YYYYMMDD_HHMMSS.tar.gz
 
 # 3) .env zurückspielen
-cp env_YYYYMMDD_HHMMSS.txt /var/www/workdiary/.env
+cp <name>_env_YYYYMMDD_HHMMSS.txt /var/www/workdiary/.env
 chmod 600 /var/www/workdiary/.env
 
 # 4) Caches löschen

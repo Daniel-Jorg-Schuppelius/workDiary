@@ -7,6 +7,7 @@
 # Skriptpfad, PHP-Binary, Betriebs-User aus dem storage/-Owner):
 #
 #   immer:              /etc/cron.d/workdiary        (schedule:run minütlich + Backup)
+#                       /etc/workdiary-backup.conf   (Backup-Ziel/Retention, chmod 600)
 #                       workdiary-queue.service      (QUEUE_CONNECTION=database!)
 #   --with-reverb:      workdiary-reverb.service     (WebSocket/Chat)
 #   --with-integrity-watch: workdiary-integrity-watch.service (braucht ext-inotify)
@@ -15,11 +16,14 @@
 # Aufruf (als root):
 #   scripts/install-system.sh [--with-reverb] [--with-integrity-watch]
 #                             [--with-fail2ban] [--backup-time HH:MM]
+#                             [--backup-dir PFAD] [--backup-keep-days N]
 #                             [--no-backup] [--dry-run] [--status] [--uninstall]
 #
 # Idempotent: erneutes Ausführen überschreibt die erzeugten Dateien und lädt
-# die Dienste neu. --uninstall entfernt alles wieder. DESTDIR (Paketbau/Test)
-# schreibt unter ein Präfix und überspringt systemctl/fail2ban-Aufrufe.
+# die Dienste neu — nur /etc/workdiary-backup.conf bleibt unangetastet, außer
+# eine --backup-dir/--backup-keep-days-Option wird explizit übergeben.
+# --uninstall entfernt alles wieder. DESTDIR (Paketbau/Test) schreibt unter
+# ein Präfix und überspringt systemctl/fail2ban-Aufrufe.
 
 set -euo pipefail
 
@@ -32,6 +36,9 @@ WITH_WATCH=0
 WITH_FAIL2BAN=0
 WITH_BACKUP=1
 BACKUP_TIME="23:00"
+BACKUP_DIR="/var/backups/workdiary"
+BACKUP_KEEP_DAYS=14
+BACKUP_CONF_OPTS=0
 DRY_RUN=0
 ACTION="install"
 
@@ -44,6 +51,8 @@ while [[ $# -gt 0 ]]; do
     --with-fail2ban) WITH_FAIL2BAN=1 ;;
     --no-backup) WITH_BACKUP=0 ;;
     --backup-time) shift; BACKUP_TIME="${1:?--backup-time braucht HH:MM}" ;;
+    --backup-dir) shift; BACKUP_DIR="${1:?--backup-dir braucht einen Pfad}"; BACKUP_CONF_OPTS=1 ;;
+    --backup-keep-days) shift; BACKUP_KEEP_DAYS="${1:?--backup-keep-days braucht eine Zahl}"; BACKUP_CONF_OPTS=1 ;;
     --dry-run) DRY_RUN=1 ;;
     --status) ACTION="status" ;;
     --uninstall) ACTION="uninstall" ;;
@@ -85,8 +94,12 @@ RUN_USER="${RUN_USER:-$(stat -c %U "$APP_DIR/storage" 2>/dev/null || echo www-da
 BACKUP_HOUR="${BACKUP_TIME%%:*}"; BACKUP_HOUR=$((10#$BACKUP_HOUR))
 BACKUP_MIN="${BACKUP_TIME##*:}";  BACKUP_MIN=$((10#$BACKUP_MIN))
 
+[[ "$BACKUP_DIR" == /* ]] || fail "--backup-dir erwartet einen absoluten Pfad (bekam: $BACKUP_DIR)."
+[[ "$BACKUP_KEEP_DAYS" =~ ^[1-9][0-9]*$ ]] || fail "--backup-keep-days erwartet eine positive Zahl (bekam: $BACKUP_KEEP_DAYS)."
+
 SYSTEMD_DIR="$DESTDIR/etc/systemd/system"
 CRON_FILE="$DESTDIR/etc/cron.d/workdiary"
+BACKUP_CONF="$DESTDIR/etc/workdiary-backup.conf"
 F2B_DIR="$DESTDIR/etc/fail2ban"
 
 UNITS=(workdiary-queue)
@@ -115,6 +128,34 @@ render() { # $1 Template, $2 Ziel
   fi
 }
 
+# Backup-Konfiguration: chmod 600 (darf den Heartbeat-Token aufnehmen), daher
+# nicht über render(). Bestehende Datei bleibt erhalten, außer --backup-*
+# wurde explizit übergeben.
+write_backup_conf() {
+  if [[ -f "$BACKUP_CONF" && $BACKUP_CONF_OPTS -eq 0 ]]; then
+    note "vorhanden, unverändert: $BACKUP_CONF"
+    return
+  fi
+  local content
+  content="# WorkDiary-Backup-Konfiguration — wird von scripts/backup.sh gelesen.
+# Erzeugt von scripts/install-system.sh; Änderungen hier überleben erneute
+# Installer-Läufe (nur explizite --backup-*-Optionen schreiben die Datei neu).
+BACKUP_DIR=\"$BACKUP_DIR\"
+BACKUP_KEEP_DAYS=$BACKUP_KEEP_DAYS
+# BACKUP_NAME=\"meine-instanz\"                              # Instanzname in den Dateinamen; Default: APP_NAME aus der App-.env
+# BACKUP_HEARTBEAT_URL=\"https://…/admin/backup/heartbeat\"  # Default: <APP_URL>/admin/backup/heartbeat aus der App-.env
+# BACKUP_HEARTBEAT_TOKEN=\"…\"                               # Default: BACKUP_HEARTBEAT_TOKEN aus der App-.env"
+  if [[ $DRY_RUN -eq 1 ]]; then
+    echo "--- würde schreiben: $BACKUP_CONF"
+    echo "$content" | sed 's/^/    /'
+  else
+    mkdir -p "$(dirname "$BACKUP_CONF")"
+    printf '%s\n' "$content" > "$BACKUP_CONF"
+    chmod 600 "$BACKUP_CONF"
+    note "geschrieben: $BACKUP_CONF (chmod 600)"
+  fi
+}
+
 # ---------------------------------------------------------------- Aktionen
 
 status() {
@@ -127,6 +168,7 @@ status() {
     fi
   done
   [[ -f /etc/cron.d/workdiary ]] && echo "  /etc/cron.d/workdiary        vorhanden" || echo "  /etc/cron.d/workdiary        nicht installiert"
+  [[ -f /etc/workdiary-backup.conf ]] && echo "  /etc/workdiary-backup.conf   vorhanden" || echo "  /etc/workdiary-backup.conf   nicht installiert (backup.sh nutzt Defaults)"
   [[ -f /etc/fail2ban/jail.d/workdiary.conf ]] && echo "  fail2ban-Jail                vorhanden" || echo "  fail2ban-Jail                nicht installiert"
 }
 
@@ -140,6 +182,7 @@ uninstall() {
   done
   sysctl_do daemon-reload || true
   [[ -f "$CRON_FILE" ]] && { rm -f "$CRON_FILE"; note "entfernt: $CRON_FILE"; }
+  [[ -f "$BACKUP_CONF" ]] && { rm -f "$BACKUP_CONF"; note "entfernt: $BACKUP_CONF"; }
   if [[ -f "$F2B_DIR/jail.d/workdiary.conf" ]]; then
     rm -f "$F2B_DIR/jail.d/workdiary.conf" "$F2B_DIR/filter.d/workdiary.conf" "$F2B_DIR/filter.d/workdiary-strict.conf"
     note "entfernt: fail2ban-Filter/-Jail"
@@ -159,9 +202,10 @@ install() {
     fail "--with-integrity-watch braucht ext-inotify ($PHP_BIN meldet sie nicht). Ubuntu/Debian: apt install php8.4-inotify"
   fi
 
-  # 1) Cron (Herzschlag + optional Backup)
+  # 1) Cron (Herzschlag + optional Backup) + Backup-Konfiguration
   if [[ $WITH_BACKUP -eq 1 ]]; then
     render "$APP_DIR/deploy/cron.d/workdiary.template" "$CRON_FILE"
+    write_backup_conf
   else
     render <(grep -v 'backup.sh' "$APP_DIR/deploy/cron.d/workdiary.template") "$CRON_FILE"
   fi
@@ -198,7 +242,7 @@ install() {
   echo "Fertig. Kontrolle:"
   note "systemctl status ${UNITS[*]}"
   note "$PHP_BIN $APP_DIR/artisan schedule:list   # Scheduler-Herzschlag prüfen"
-  [[ $WITH_BACKUP -eq 1 ]] && note "Backup täglich ${BACKUP_TIME} Uhr → /var/log/workdiary-backup.log (Zeit muss in der Server-Betriebszeit liegen!)"
+  [[ $WITH_BACKUP -eq 1 ]] && note "Backup täglich ${BACKUP_TIME} Uhr → /var/log/workdiary-backup.log (Ziel/Retention: /etc/workdiary-backup.conf; Zeit muss in der Server-Betriebszeit liegen!)"
   note "Heartbeat-Token (Backup-Statusseite): $PHP_BIN $APP_DIR/artisan workdiary:backup:rotate-token"
 }
 

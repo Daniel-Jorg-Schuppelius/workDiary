@@ -15,6 +15,7 @@ Skriptpfad, PHP-Binary, Betriebs-User aus dem `storage/`-Owner) und richtet ein:
 | Komponente | Zweck | immer? |
 | --- | --- | --- |
 | `/etc/cron.d/workdiary` | `schedule:run` minütlich (Herzschlag ALLER wiederkehrenden Jobs) + tägliches Backup (`scripts/backup.sh`) | ja |
+| `/etc/workdiary-backup.conf` | Backup-Konfiguration (Zielverzeichnis, Retention; chmod 600) — eine vorhandene Datei bleibt bei erneutem Lauf erhalten | ja (außer `--no-backup`) |
 | `workdiary-queue.service` | Queue-Worker — `QUEUE_CONNECTION=database`: ohne ihn bleiben Benachrichtigungen, Importe und Hintergrund-Jobs liegen | ja |
 | `workdiary-reverb.service` | WebSocket-Server (Chat/Live-Updates, `BROADCAST_CONNECTION=reverb`) | `--with-reverb` |
 | `workdiary-integrity-watch.service` | Realtime-Integritätswächter (braucht ext-inotify; der Installer prüft das) | `--with-integrity-watch` |
@@ -28,14 +29,18 @@ Skriptpfad, PHP-Binary, Betriebs-User aus dem `storage/`-Owner) und richtet ein:
 --with-fail2ban          fail2ban-Filter/-Jails installieren (fail2ban nötig)
 --backup-time HH:MM      Backup-Uhrzeit (Default 23:00) — MUSS in der
                          Betriebszeit des Servers liegen (kein Nachholen!)
---no-backup              keinen Backup-Cron eintragen
+--backup-dir PFAD        Backup-Zielverzeichnis (Default /var/backups/workdiary)
+--backup-keep-days N     Retention in Tagen (Default 14)
+--no-backup              keinen Backup-Cron und keine Backup-Konfiguration anlegen
 --dry-run                nur zeigen, was geschrieben würde
 --status                 Zustand der eingerichteten Komponenten anzeigen
 --uninstall              alles wieder entfernen (App/Backups bleiben)
 ```
 
 Erneutes Ausführen ist gefahrlos (idempotent): Dateien werden überschrieben,
-Dienste neu geladen. Overrides per Env: `APP_DIR`, `PHP_BIN`, `RUN_USER`.
+Dienste neu geladen. Ausnahme: eine vorhandene `/etc/workdiary-backup.conf`
+bleibt unangetastet — nur explizite `--backup-dir`/`--backup-keep-days`
+schreiben sie neu. Overrides per Env: `APP_DIR`, `PHP_BIN`, `RUN_USER`.
 
 ## Nach der Einrichtung prüfen
 
