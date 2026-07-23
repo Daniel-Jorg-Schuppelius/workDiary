@@ -17,7 +17,7 @@ verweist auf dieses Dokument; beide werden von VS Code automatisch geladen.
 - **Frontend:** Tailwind v4 + DaisyUI v5 + Material Symbols Outlined (lokal via npm/Vite gebündelt, keine CDN-Fonts).
 - **Autorisierung:** Spatie Permissions.
 - **IDs in URLs:** Sqid-kodiert (Validierung dual: `Sqid::decode(...)` **plus** `is_numeric(...)`-Fallback für Legacy-Links).
-- **Sprache:** Anwendungssprache ist **ausschließlich Deutsch**; alle Labels/Microcopy in `lang/de/`.
+- **Sprache:** UI ist **ausschließlich Deutsch**. Muster: inline `__('Deutscher Text')` (der deutsche Text **ist der Übersetzungsschlüssel**) bzw. namespaced Keys in `lang/de/*.php`. **Jeder** Schlüssel muss zusätzlich in `lang/en|fr|it|es.json` (bzw. den Namespace-Dateien) mit Übersetzung existieren — **deutscher Text in `en.json` ist korrekt und Pflicht, NIEMALS „aufräumen"** (§12).
 
 ### Qualitäts-Gates (vor jedem Commit/PR)
 
@@ -351,3 +351,35 @@ sonst läuft ein reproduzierbarer `composer install` aus der (paketfreien) Lock.
   dann mit `--recreate-databases` neu starten.
 - **Globalen Header-Zeitraum** in Tests über `Tests\Concerns\WithGlobalDateRange`
   bzw. `app(DateRangeContext::class)->set(...)` setzen (siehe §8).
+
+---
+
+## 12. Internationalisierung (i18n) — Übersetzungs-Keys NIEMALS löschen
+
+**Muster:** Der Quellcode nutzt inline `__('Deutscher Quelltext')`. Der **deutsche
+Text IST der Übersetzungsschlüssel** — nicht der Anzeigewert einer einzelnen
+Sprache. `de` ist die Quellsprache (Fallback = der Schlüssel selbst); es gibt
+**kein** `lang/de.json`.
+
+**Invariante (erzwungen von `Tests\Unit\Architecture\TranslationParityTest`):**
+
+- Jeder `__('…')`-Schlüssel MUSS als Key in **allen** JSON-Locales existieren:
+  `lang/en.json`, `lang/fr.json`, `lang/it.json`, `lang/es.json` — dort mit der
+  jeweiligen **Übersetzung** als Wert.
+- **Deutscher Text in `lang/en.json` (etc.) ist KORREKT und PFLICHT.** Der Key ist
+  deutsch, der Wert daneben ist die englische/französische/… Übersetzung.
+  ➜ **NIEMALS** „non-German locale"-Strings aus en/fr/it/es.json entfernen oder
+  „aufräumen" — das bricht die CI sofort. Genau das ist wiederholt fälschlich
+  passiert.
+- Namespaced Keys (`lang/de/foo.php`) ⇒ dieselbe Datei muss in en/fr/it/es
+  existieren (echte Übersetzung oder en-Stub) und **alle** en-Keys abdecken.
+- Neuer Job in `config/scheduler.php` ⇒ Label `scheduler.job.<key>` in **allen 5**
+  `lang/*/scheduler.php` ergänzen (auch `de`).
+- Fehlende Keys füllt `php artisan lang:sync --fill`. Prüfen mit
+  `php artisan test tests/Unit/Architecture/TranslationParityTest.php`.
+
+**Findings NICHT durch Löschen „lösen":** Ein CodeQL-/PR-Review-Finding wird durch
+Verstehen und korrekte Anpassung behoben — niemals durch Entfernen von
+Übersetzungen, Tests, Sicherheits-Guards oder Funktionalität. **Macht ein „Fix"
+ein Qualitäts-Gate (Tests/PHPStan/Pint) rot, ist der Fix falsch** — den Fix
+zurücknehmen, nicht das Gate.
