@@ -16,9 +16,9 @@ use GuzzleHttp\Client as GuzzleClient;
 
 /**
  * Baut den OAuth2-Authorization-Code-Grant (+ PKCE) für Calendly (Feature 095)
- * aus der installationsweiten Konfiguration. `offline_access` (Scope) sichert
- * das Refresh-Token. Als Container-Singleton der Austauschpunkt für Tests:
- * dort wird ein Guzzle-`MockHandler`-Client injiziert (Google-/Todoist-Muster).
+ * aus der installationsweiten Konfiguration. Die Scopes kommen aus
+ * `plugins.calendly.scopes` (ENV) und müssen ggf. `offline_access` enthalten,
+ * damit Calendly ein Refresh-Token liefert.
  */
 class CalendlyOAuth {
     public function __construct(private readonly ?GuzzleClient $httpClient = null) {}
