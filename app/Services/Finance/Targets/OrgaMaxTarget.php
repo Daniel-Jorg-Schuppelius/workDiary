@@ -17,7 +17,7 @@ use App\Models\{ExternalReference, OrgaMaxConnection, TimeEntry};
 use App\Models\Finance\BillingTransfer;
 use App\Plugins\OrgaMax\Api\{OrgaMaxClient, OrgaMaxClientFactory};
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
-use App\Services\Invoicing\{BillableTimeAggregator};
+use App\Services\Invoicing\BillableTimeAggregator;
 use GuzzleHttp\Exception\ConnectException;
 use RuntimeException;
 

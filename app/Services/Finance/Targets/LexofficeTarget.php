@@ -16,7 +16,7 @@ use App\Models\{Customer, ExternalReference, TimeEntry};
 use App\Models\Finance\BillingTransfer;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeMapper, LexofficePlugin, LexofficeService};
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
-use App\Services\Invoicing\{BillableTimeAggregator};
+use App\Services\Invoicing\BillableTimeAggregator;
 use RuntimeException;
 
 /**

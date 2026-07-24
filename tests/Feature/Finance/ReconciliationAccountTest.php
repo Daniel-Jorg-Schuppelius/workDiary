@@ -12,8 +12,8 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Billing\AccountPaymentSource;
 use App\Models\Billing\{CustomerAccountPayment, CustomerBillingAgreement};
-use App\Models\Finance\{BankStatement, BankTransaction, PaymentAllocation};
 use App\Models\{Customer, User};
+use App\Models\Finance\{BankStatement, BankTransaction, PaymentAllocation};
 use App\Services\Finance\{BankImportException, MatchingService, ReconciliationService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

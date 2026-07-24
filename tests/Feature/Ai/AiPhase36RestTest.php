@@ -11,13 +11,11 @@
 namespace Tests\Feature\Ai;
 
 use App\Enums\User\Permission;
-use App\Models\Ai\AiCapabilitySetting;
-use App\Models\Ai\AiProviderConnection;
+use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection};
 use App\Models\{Customer, CustomerQuery, Invoice, User};
 use App\Services\Ai\Suggestions\CoveringTextSuggestionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\Concerns\RegistersAiCapabilities;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{RegistersAiCapabilities, WithOrganization};
 use Tests\Support\{FakeAiProvider, FakeAiProviderFactory};
 use Tests\TestCase;
 

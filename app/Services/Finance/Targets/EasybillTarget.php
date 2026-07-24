@@ -17,7 +17,7 @@ use App\Models\{Customer, ExternalReference, TimeEntry};
 use App\Models\Finance\BillingTransfer;
 use App\Plugins\Easybill\Api\{EasybillClient, EasybillClientFactory};
 use App\Plugins\Easybill\{EasybillConfig, EasybillPlugin};
-use App\Services\Invoicing\{BillableTimeAggregator};
+use App\Services\Invoicing\BillableTimeAggregator;
 use GuzzleHttp\Exception\ConnectException;
 use RuntimeException;
 

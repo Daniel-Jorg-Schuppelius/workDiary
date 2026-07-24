@@ -17,7 +17,7 @@ use App\Models\{Customer, ExternalReference, TimeEntry};
 use App\Models\Finance\BillingTransfer;
 use App\Plugins\SevDesk\Api\{SevDeskClient, SevDeskClientFactory};
 use App\Plugins\SevDesk\{SevDeskConfig, SevDeskPlugin};
-use App\Services\Invoicing\{BillableTimeAggregator};
+use App\Services\Invoicing\BillableTimeAggregator;
 use GuzzleHttp\Exception\ConnectException;
 use RuntimeException;
 

@@ -12,10 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Ai\Suggestions;
 
-use App\Models\Invoice;
-use App\Models\Organization;
-use App\Services\Ai\AiInvocationService;
-use App\Services\Ai\AiMemoryService;
+use App\Models\{Invoice, Organization};
+use App\Services\Ai\{AiInvocationService, AiMemoryService};
 use App\Services\Ai\Dto\{AiTextResult, AiTranslationResult, FormulateRequest, TranslateRequest};
 use CommonToolkit\Helper\Data\NumberHelper;
 

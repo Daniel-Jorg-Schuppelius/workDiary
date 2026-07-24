@@ -11,8 +11,8 @@
 namespace Tests\Feature\Billing;
 
 use App\Enums\Billing\AccountPaymentSource;
-use App\Models\Billing\{CustomerBillingAgreement, CustomerBillingRate};
 use App\Models\{ActivityCategory, Customer, Project, TimeEntry, User};
+use App\Models\Billing\{CustomerBillingAgreement, CustomerBillingRate};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
