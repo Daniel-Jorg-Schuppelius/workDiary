@@ -261,6 +261,11 @@ jobs:
       - name: Prepare application environment
         run: |
           cp .env.testing .env
+          # pa11y soll die öffentlichen Zielseiten (Login/Impressum/Datenschutz)
+          # prüfen. Ohne Installations-Marker leitet RedirectIfNotInstalled sonst
+          # jede Route auf den Web-Installer (/install) um — dann prüft pa11y nur
+          # den Installer statt der eigentlichen Seiten.
+          echo "APP_INSTALLED=true" >> .env
           mkdir -p /dev/shm
           touch /dev/shm/workdiary-testing.sqlite
           php artisan migrate --force --no-interaction
