@@ -116,6 +116,11 @@ class TenantTraitCoverageTest extends TestCase {
         // signierte, aber unzuordenbare Zustellungen ausblenden. Siehe
         // Allow-List im Audit-Doc.
         \App\Models\TodoistWebhookDelivery::class,
+        // Calendly-Webhook-Dedup (Feature 095): analog TodoistWebhookDelivery ein
+        // Betriebsprotokoll, das VOR der Org-Zuordnung entsteht (Token→Org+
+        // signing_key, dann Signaturprüfung); nullable organization_id, kein
+        // Global-Scope. Siehe Allow-List im Audit-Doc.
+        \App\Models\CalendlyWebhookDelivery::class,
         // Restore-Test-Register (Feature 017): plattformweites Protokoll der
         // Wiederherstellungs-Tests — analog BackupHeartbeat findet der
         // Restore-Vorgang ohne Tenant-Kontext statt. Siehe Allow-List im Audit-Doc.

@@ -63,6 +63,8 @@ class SchedulerRegistrationTest extends TestCase {
         'toggl:import' => ['0 * * * *', true, true],
         'openproject:import' => ['0 * * * *', true, true],
         'todoist:sync' => ['0 * * * *', true, true],
+        // Neu mit Feature 095: Calendly-Termin-Backfill (Polling/Reconciliation).
+        'calendly:backfill' => ['0 * * * *', true, true],
         // Neu mit Feature 080 (MVP-359): Cloud-Dokumenteingang-Delta-Lauf.
         'cloud-intake:sync' => ['*/15 * * * *', true, true],
         // Neu mit Feature 017 Phase 32 (MVP-364/365): Cloud-Backup + Verify.

@@ -63,6 +63,7 @@ final class WebhookTenantTest extends TestCase {
         'api/webhooks/gitlab/{setting}',
         'api/webhooks/zammad/{connection}',
         'api/webhooks/todoist',
+        'api/webhooks/calendly/{token}',
         'api/cti/webhook/{token}',
         'api/terminal/ingest/{token}',
         'api/location/ingest/{token}',
