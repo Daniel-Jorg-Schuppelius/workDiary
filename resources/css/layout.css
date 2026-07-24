@@ -57,26 +57,6 @@ body.sidebar-collapsed {
 #help-drawer {
     border-radius: 0;
 }
-/* Auf-/Zuklappen wie die linke Sidebar (#app-sidebar): der Drawer bleibt im
-               DOM, help-drawer.js togglet nur .translate-x-full — die Transition läuft
-               dadurch in BEIDE Richtungen und synchron zu den 200ms der
-               .with-help-pad-Padding-Transition. visibility kippt beim Schließen erst
-               nach dem Slide-out (Delay), beim Öffnen sofort — geschlossen ist nichts
-               fokussier-/klickbar. */
-#help-drawer {
-    visibility: visible;
-    transition:
-        translate 200ms ease,
-        transform 200ms ease,
-        visibility 0s;
-}
-#help-drawer.translate-x-full {
-    visibility: hidden;
-    transition:
-        translate 200ms ease,
-        transform 200ms ease,
-        visibility 0s 200ms;
-}
 /* Mobiler Backdrop: weicher Fade statt display-Toggling (Klasse togglet
                help-drawer.js), gleiches visibility-Delay-Muster. */
 #help-drawer-backdrop {
@@ -104,13 +84,32 @@ body.sidebar-collapsed {
         right: var(--sidebar-gap);
         border-radius: var(--panel-radius);
         border-left: 0;
+        /* Slide-Drawer wie die linke Sidebar mobil: Element bleibt im DOM,
+                       help-drawer.js togglet nur .translate-x-full. visibility kippt
+                       beim Schließen erst nach dem Slide-out (Delay), beim Öffnen
+                       sofort — geschlossen ist nichts fokussier-/klickbar. */
+        visibility: visible;
+        transition:
+            translate 200ms ease,
+            transform 200ms ease,
+            visibility 0s;
     }
     /* Geschlossen vollständig ausblenden trotz Floating-Abstand
                    (analog linke Sidebar; +100 % allein ließe einen Streifen). */
     #help-drawer.translate-x-full {
         --tw-translate-x: calc(100% + var(--sidebar-gap) + 0.25rem);
+        visibility: hidden;
+        transition:
+            translate 200ms ease,
+            transform 200ms ease,
+            visibility 0s 200ms;
     }
 }
+/* Ab lg klappt die Hilfe wie die linke Sidebar auf: der Drawer ist IMMER
+               sichtbar und animiert seine BREITE zwischen Rail (--help-rail-w) und
+               voller Sidebar (--help-sidebar-w) — kein Slide von außerhalb. Die
+               200ms laufen synchron zur padding-Transition von .with-help-pad,
+               Panelkante und Inhalt bewegen sich also gemeinsam. */
 @media (min-width: 1024px) {
     #help-drawer {
         top: calc(var(--app-header-h) + var(--sidebar-gap));
@@ -118,23 +117,50 @@ body.sidebar-collapsed {
         right: var(--sidebar-gap);
         border-radius: var(--panel-radius);
         border-left: 0;
-    }
-    /* Minimierte Hilfe-Rail: schwebt wie die volle Sidebar, ist immer
-                   sichtbar — solange die volle Hilfe zu ist. */
-    #help-rail {
-        top: calc(var(--app-header-h) + var(--sidebar-gap));
-        bottom: calc(var(--app-footer-h) + var(--sidebar-gap));
-        right: var(--sidebar-gap);
         width: var(--help-rail-w);
+        max-width: var(--help-sidebar-w);
+        /* Mobile Slide-Klasse (.translate-x-full) ist hier wirkungslos. */
+        translate: none;
+        transform: none;
+        visibility: visible;
+        transition: width 200ms ease;
+    }
+    body.help-sidebar-open #help-drawer {
+        width: var(--help-sidebar-w);
+    }
+    /* Hilfe-Inhalt: rechts verankert in voller Breite, damit der Text beim
+                   Aufklappen nicht umbricht — die wachsende Panelkante gibt ihn von
+                   links frei. Zugeklappt unsichtbar/unfokussierbar (visibility kippt
+                   nach dem Fade). */
+    #help-drawer [data-help-main] {
+        position: absolute;
+        inset: 0 0 0 auto;
+        width: var(--help-sidebar-w);
+        visibility: hidden;
+        opacity: 0;
+        transition:
+            opacity 150ms ease,
+            visibility 0s 150ms;
+    }
+    body.help-sidebar-open #help-drawer [data-help-main] {
+        visibility: visible;
+        opacity: 1;
         transition:
             opacity 150ms ease,
             visibility 0s;
     }
-    /* Fade statt display:none — die aufklappende Sidebar schiebt sich über
-                   die ausblendende Rail (weicher Übergang statt hartem Wegspringen). */
-    body.help-sidebar-open #help-rail {
-        opacity: 0;
+    /* Rail-Ansicht: sichtbar solange zugeklappt, blendet beim Aufklappen
+                   gegen den Inhalt über (Crossfade statt hartem Wegspringen). */
+    #help-drawer [data-help-railmode] {
+        visibility: visible;
+        opacity: 1;
+        transition:
+            opacity 150ms ease,
+            visibility 0s;
+    }
+    body.help-sidebar-open #help-drawer [data-help-railmode] {
         visibility: hidden;
+        opacity: 0;
         pointer-events: none;
         transition:
             opacity 150ms ease,
@@ -144,7 +170,7 @@ body.sidebar-collapsed {
 /* Rail-Button: btn-ghost erbt sonst die dunkle body-base-content-Farbe
                (Corporate) → unsichtbares Icon auf dunklem Grund. Helle Sidebar-
                Textfarbe explizit setzen (ohne --btn-color, sonst weißer Fond). */
-#help-rail [data-help-trigger] {
+#help-drawer [data-help-railmode] [data-help-trigger] {
     color: var(--color-base-content);
 }
 /* 3-stufiger Header über CSS Container Queries statt Viewport-

@@ -61,6 +61,7 @@ return [
         'iban' => 'IBAN match',
         'date' => 'Date proximity',
         'foreign_currency' => 'Foreign currency – review manually',
+        'customer_name' => 'Customer name',
     ],
     'action' => [
         'import' => 'Import bank file',

@@ -3,10 +3,12 @@
 {{-- Seitenkontext (body[data-help-context]) gefüllt. JS in resources/js/help-drawer.js. --}}
 {{-- Desktop (lg+): nicht-modale rechte Sidebar unterhalb des Headers, ohne --}}
 {{-- Backdrop — der Seiteninhalt bekommt über body.help-sidebar-open rechts --}}
-{{-- Platz (.with-help-pad im Layout) und bleibt voll bedienbar. --}}
-{{-- Mobil: Drawer mit Backdrop wie bisher. --}}
+{{-- Platz (.with-help-pad im Layout) und bleibt voll bedienbar. Zugeklappt --}}
+{{-- ist der Drawer selbst die schmale Rail; die Breite animiert wie bei der --}}
+{{-- linken Sidebar (width-Transition in layout.css). --}}
+{{-- Mobil: Drawer mit Slide-in + Backdrop wie bisher. --}}
 <div id="help-drawer"
-     class="wd-badge fixed inset-y-0 right-0 z-60 w-full max-w-md translate-x-full transform overflow-hidden border-l border-base-300 bg-base-100 shadow-lg lg:top-(--app-header-h) lg:bottom-(--app-footer-h) lg:z-40 lg:w-(--help-sidebar-w) lg:max-w-(--help-sidebar-w) lg:shadow-xl"
+     class="wd-badge fixed inset-y-0 right-0 z-60 w-full max-w-md translate-x-full transform overflow-hidden border-l border-base-300 bg-base-100 shadow-lg lg:top-(--app-header-h) lg:bottom-(--app-footer-h) lg:z-40 lg:shadow-xl"
      data-help-drawer
      role="complementary"
      tabindex="-1"
@@ -14,7 +16,7 @@
      aria-labelledby="help-drawer-title"
      data-text-error="{{ __('Hilfe konnte nicht geladen werden.') }}"
      data-text-missing="{{ __('Kein Hilfetext verfügbar.') }}">
-    <div class="flex h-full flex-col">
+    <div class="flex h-full flex-col" data-help-main>
         {{-- Schlanker Header: links Label, rechts Schließen — beide gleich
              hoch (items-center). Die Topic-Überschrift sitzt im
              Inhaltsbereich darunter. --}}
@@ -90,23 +92,23 @@
             </div>
         </footer>
     </div>
-</div>
 
-{{-- Minimierte Hilfe-Rail (Feature 039): ab lg IMMER sichtbare schmale Schiene
-     rechts. Klick (data-help-trigger ohne Topic → JS öffnet Seitenkontext-Hilfe)
-     klappt die volle Hilfe-Sidebar auf; deren Schließen-Button minimiert wieder
-     auf die Rail. Auf Mobil ausgeblendet — dort bleibt der Header-Button. --}}
-<div id="help-rail"
-     class="wd-badge fixed z-40 hidden flex-col items-center gap-2 py-3 shadow-xl lg:flex"
-     aria-label="{{ __('Hilfe') }}">
-    <x-icon-btn icon="help"
-                tone="ghost"
-                size="sm"
-                class="btn-square"
-                label="{{ __('Hilfe öffnen') }}"
-                data-help-trigger
-                aria-haspopup="dialog"
-                aria-controls="help-drawer" />
+    {{-- Minimierte Rail-Ansicht (Feature 039): ab lg ist der ZUGEKLAPPTE Drawer
+         selbst die schmale Schiene (Breite animiert in layout.css wie bei der
+         linken Sidebar). Klick (data-help-trigger ohne Topic → JS öffnet
+         Seitenkontext-Hilfe) klappt auf; der Schließen-Button minimiert wieder.
+         Auf Mobil ausgeblendet — dort bleibt der Header-Button. --}}
+    <div class="absolute inset-y-0 right-0 hidden w-(--help-rail-w) flex-col items-center gap-2 py-3 lg:flex"
+         data-help-railmode>
+        <x-icon-btn icon="help"
+                    tone="ghost"
+                    size="sm"
+                    class="btn-square"
+                    label="{{ __('Hilfe öffnen') }}"
+                    data-help-trigger
+                    aria-haspopup="dialog"
+                    aria-controls="help-drawer" />
+    </div>
 </div>
 
 {{-- Backdrop nur mobil (<lg): Desktop-Sidebar ist nicht-modal. Bezieht sich –

@@ -179,6 +179,23 @@ class PaymentReconciliationController extends Controller {
             ];
         }
 
+        // Kundenkonten (Feature 098, Konto-Modus): Gutschriften lassen sich
+        // direkt als Konto-Zahlung zuordnen — Label mit erwartetem Abschlag.
+        $agreements = \App\Models\Billing\CustomerBillingAgreement::query()
+            ->where('active', true)
+            ->where('mode', \App\Enums\Billing\BillingAgreementMode::Account->value)
+            ->with('customer:id,name')
+            ->get();
+        foreach ($agreements as $agreement) {
+            $expected = $agreement->expected_monthly_amount !== null
+                ? ' · ~' . NumberHelper::toGermanFormat((float) $agreement->expected_monthly_amount, 2, withThousandsSeparator: true)
+                : '';
+            $options[] = [
+                'value' => 'account:' . $agreement->sqid,
+                'label' => __('customer-billing.panel_title') . ': ' . ($agreement->customer->name ?? '#' . $agreement->customer_id) . $expected,
+            ];
+        }
+
         return $options;
     }
 
@@ -215,7 +232,7 @@ class PaymentReconciliationController extends Controller {
 
         $validated = $request->validate([
             'allocations' => ['required', 'array', 'min:1'],
-            'allocations.*.type' => ['required', 'string', 'in:invoice,expense'],
+            'allocations.*.type' => ['required', 'string', 'in:invoice,expense,account'],
             'allocations.*.id' => ['required', 'string'],
             'allocations.*.amount' => ['required', 'numeric', 'min:0.01'],
             'allocations.*.kind' => ['nullable', 'string'],
@@ -224,7 +241,11 @@ class PaymentReconciliationController extends Controller {
 
         $allocations = [];
         foreach ($validated['allocations'] as $row) {
-            $targetClass = $row['type'] === 'invoice' ? Invoice::class : Expense::class;
+            $targetClass = match ($row['type']) {
+                'invoice' => Invoice::class,
+                'account' => \App\Models\Billing\CustomerBillingAgreement::class,
+                default => Expense::class,
+            };
             $targetId = Sqid::decode($targetClass, (string) $row['id']);
             if ($targetId === null) {
                 return back()->with('error', __('bank.reconcile.error.target_not_found'));

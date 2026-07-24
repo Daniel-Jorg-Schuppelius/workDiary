@@ -15,7 +15,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasClassifications, HasCommunicationNotes, HasContactAndBankDetails, HasSequentialNumber, HasSqid, HasTags, Searchable};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne, MorphMany};
 use Illuminate\Support\Carbon;
 
 /**
@@ -268,6 +268,11 @@ class Customer extends Model {
     /** @return MorphMany<ExternalReference, $this> */
     public function externalReferences(): MorphMany {
         return $this->morphMany(ExternalReference::class, 'referenceable');
+    }
+
+    /** @return HasOne<\App\Models\Billing\CustomerBillingAgreement, $this> */
+    public function billingAgreement(): HasOne {
+        return $this->hasOne(\App\Models\Billing\CustomerBillingAgreement::class);
     }
 
     public function hasProjects(): bool {

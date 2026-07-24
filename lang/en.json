@@ -8976,5 +8976,6 @@
     "Alias/Notiz enthält „:word\" aus dem Namen des Endkunden :name.": "Alias/note contains “:word” from the name of the end customer :name.",
     "Kürzel „:token\" passt zu den Initialen des Endkunden :name.": "Shortcode “:token” matches the initials of the end customer :name.",
     "Kürzel „:token\" passt zum Namensmuster des Endkunden :name.": "Shortcode “:token” matches the name pattern of the end customer :name.",
-    "z. B. GSL": "e.g. GSL"
+    "z. B. GSL": "e.g. GSL",
+    "Monatspauschale": "Monthly retainer"
 }

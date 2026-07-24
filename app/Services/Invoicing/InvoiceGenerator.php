@@ -56,6 +56,7 @@ class InvoiceGenerator {
      */
     public function fromTimeEntries(Customer $customer, ?Project $project, array $range = [], ?ForeignCustomer $foreignCustomer = null): Invoice {
         $this->assertLocalBillingAllowed($customer);
+        $this->assertNotAccountManaged($customer);
 
         return DB::transaction(function () use ($customer, $project, $range, $foreignCustomer): Invoice {
             // Per-Kunde serialisieren: verhindert, dass zwei parallele
@@ -366,6 +367,23 @@ class InvoiceGenerator {
     }
 
     /**
+     * Kundenkonto-Guard (Feature 098, E5): führt der Kunde ein saldenbasiertes
+     * Abrechnungsprofil (Konto- ODER Retainer-Modus), würde ein Zeiten-
+     * Rechnungslauf dieselben Leistungen doppelt abrechnen (Saldo UND Beleg).
+     * Zusätzlich schützt exported=true aus dem Monatsabschluss vor Altdaten-
+     * Nebenpfaden. Die Retainer-Pauschale läuft über retainerChargeFor (kein
+     * Zeitbezug) und ist davon nicht betroffen.
+     */
+    private function assertNotAccountManaged(Customer $customer): void {
+        $agreement = $customer->billingAgreement;
+        if ($agreement !== null && $agreement->keepsLedger()) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'customer_id' => (string) __('customer-billing.account_mode_invoice_blocked'),
+            ]);
+        }
+    }
+
+    /**
      * Stellt der Buchungszeile (Positionsbeschreibung) den abgerechneten
      * Endkunden (Fremdkunden) voran, sofern vorhanden. So ist auf der Rechnung
      * je Position erkennbar, für welchen Endkunden abgerechnet wird — auch wenn
@@ -511,6 +529,62 @@ class InvoiceGenerator {
                 'tax_rate' => $tax['rate'],
                 'is_reverse_charge' => $tax['reverse_charge'],
                 'notes' => $notes,
+                'created_by' => Auth::id(),
+            ]);
+
+            $invoice->items()->create([
+                'organization_id' => $customer->organization_id,
+                'service_date' => $serviceDate?->toDateString(),
+                'description' => $description,
+                'quantity' => '1',
+                'unit' => (string) __('invoicing.unit_flat'),
+                'unit_price' => $netAmount,
+                'tax_category' => $tax['category'],
+                'position' => 1,
+            ]);
+
+            $invoice->load('items');
+            $invoice->recalculate();
+            $invoice->save();
+
+            return $invoice;
+        });
+    }
+
+    /**
+     * Pauschal-/Ausgleichsbeleg für die externe Übergabe an das führende
+     * Buchhaltungsprogramm (Feature 098, Retainer-Modus mit Lexoffice-Hoheit).
+     * Eine einzige custom-Position; überspringt BEWUSST assertLocalBillingAllowed,
+     * weil die Rechnung sofort mit finalize=true an Lexoffice geht (Nummernkreis/
+     * Festschreibung/Zahlung liegen dort). Die übergebene $placeholderNumber ist
+     * transient — {@see \App\Plugins\Lexoffice\LexofficeInvoiceService::publish}
+     * überschreibt sie mit der Lexoffice-Belegnummer. NICHT für lokale Faktura.
+     */
+    public function retainerChargeFor(
+        Customer $customer,
+        string $description,
+        string $netAmount,
+        string $placeholderNumber,
+        string $type = Invoice::TYPE_RETAINER,
+        ?CarbonInterface $serviceDate = null,
+    ): Invoice {
+        return DB::transaction(function () use ($customer, $description, $netAmount, $placeholderNumber, $type, $serviceDate): Invoice {
+            $tax = app(TaxResolver::class)->resolve(
+                $customer->organization()->firstOrFail(),
+                $customer,
+                $serviceDate,
+            );
+
+            $invoice = Invoice::create([
+                'organization_id' => $customer->organization_id,
+                'customer_id' => $customer->id,
+                'number' => $placeholderNumber,
+                'status' => Invoice::STATUS_DRAFT,
+                'type' => $type,
+                'currency' => $customer->currency,
+                'tax_rate' => $tax['rate'],
+                'is_reverse_charge' => $tax['reverse_charge'],
+                'notes' => $tax['note'],
                 'created_by' => Auth::id(),
             ]);
 

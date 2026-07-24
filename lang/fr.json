@@ -8976,5 +8976,6 @@
     "Alias/Notiz enthält „:word\" aus dem Namen des Endkunden :name.": "L'alias/la note contient « :word » du nom du client final :name.",
     "Kürzel „:token\" passt zu den Initialen des Endkunden :name.": "Le sigle « :token » correspond aux initiales du client final :name.",
     "Kürzel „:token\" passt zum Namensmuster des Endkunden :name.": "Le sigle « :token » correspond au motif du nom du client final :name.",
-    "z. B. GSL": "p. ex. GSL"
+    "z. B. GSL": "p. ex. GSL",
+    "Monatspauschale": "Forfait mensuel"
 }

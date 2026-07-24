@@ -56,12 +56,64 @@ class MatchingService {
      */
     public function suggestFor(BankTransaction $transaction, int $limit = 5): array {
         $suggestions = $transaction->isCredit()
-            ? $this->suggestInvoices($transaction)
+            ? array_merge($this->suggestInvoices($transaction), $this->suggestAccountAgreements($transaction))
             : $this->suggestExpenses($transaction);
 
         usort($suggestions, static fn(array $a, array $b): int => $b['score'] <=> $a['score']);
 
         return array_slice($suggestions, 0, $limit);
+    }
+
+    /**
+     * Kundenkonten (Feature 098, Konto-Modus): Gutschriften matchen gegen den
+     * erwarteten Monatsabschlag und den Kundennamen in Gegenpartei/Verwendungszweck.
+     *
+     * @return list<array{target: Model, kind: AllocationKind, score: int, reasons: list<string>, open_amount: float, foreign_currency: bool}>
+     */
+    private function suggestAccountAgreements(BankTransaction $transaction): array {
+        $amount = (float) $transaction->amount;
+        $results = [];
+
+        $agreements = \App\Models\Billing\CustomerBillingAgreement::query()
+            ->where('active', true)
+            ->where('mode', \App\Enums\Billing\BillingAgreementMode::Account->value)
+            ->with('customer:id,name')
+            ->get();
+
+        foreach ($agreements as $agreement) {
+            $score = 0;
+            $reasons = [];
+
+            $expected = $agreement->expected_monthly_amount !== null ? (float) $agreement->expected_monthly_amount : null;
+            if ($expected !== null && abs($amount - $expected) <= self::CENT_TOLERANCE) {
+                $score += self::SCORE_AMOUNT_EXACT;
+                $reasons[] = 'amount';
+            }
+
+            $customerName = trim((string) ($agreement->customer->name ?? ''));
+            $haystack = mb_strtolower(($transaction->counterparty_name ?? '') . ' ' . ($transaction->purpose ?? ''));
+            if ($customerName !== '' && mb_strlen($customerName) >= 4 && str_contains($haystack, mb_strtolower($customerName))) {
+                $score += self::SCORE_IBAN; // gleiche Gewichtung wie ein Kontoinhaber-Treffer
+                $reasons[] = 'customer_name';
+            }
+
+            if ($score <= 0) {
+                continue;
+            }
+
+            $latest = $agreement->statements()->orderByDesc('year')->orderByDesc('month')->first();
+
+            $results[] = [
+                'target' => $agreement,
+                'kind' => AllocationKind::Payment,
+                'score' => $score,
+                'reasons' => array_values(array_unique($reasons)),
+                'open_amount' => $latest !== null ? round((float) $latest->balance, 2) : 0.0,
+                'foreign_currency' => false,
+            ];
+        }
+
+        return $results;
     }
 
     /**

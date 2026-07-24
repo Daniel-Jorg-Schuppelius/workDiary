@@ -111,10 +111,10 @@ function toggleFooter() {
     rememberFooterCollapsed(collapsed);
 }
 
-// Drawer/Backdrop bleiben immer im DOM (kein display-Toggling) — wie die
-// linke Sidebar wird nur die Klasse getogglet, die Transition läuft dadurch
-// in beide Richtungen; visibility kippt per CSS-Delay erst nach dem
-// Slide-out (layout.css).
+// Drawer/Backdrop bleiben immer im DOM (kein display-Toggling), getogglet
+// werden nur Klassen — die Animation macht CSS (layout.css): mobil Slide via
+// .translate-x-full, ab lg Breiten-Transition Rail↔Sidebar via
+// body.help-sidebar-open (dort ist .translate-x-full nur Zustandsmarker).
 function setDrawerHidden(el, hidden) {
     if (!el) return;
     el.classList.toggle("translate-x-full", hidden);

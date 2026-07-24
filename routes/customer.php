@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Controllers\CustomerPortal\{AssetController, DashboardController, DiaryController, DiaryDetailController, DocumentController, InvoiceController, LoginController, OpenIssueController, PhotoConfirmationController, TimeEntryController, TwoFactorChallengeController, TwoFactorController};
+use App\Http\Controllers\CustomerPortal\{AssetController, BillingController, DashboardController, DiaryController, DiaryDetailController, DocumentController, InvoiceController, LoginController, OpenIssueController, PhotoConfirmationController, TimeEntryController, TwoFactorChallengeController, TwoFactorController};
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -33,6 +33,10 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
     // strikt kundensichtbar.
     Route::get('/diary/{diary}/pdf', [DiaryDetailController::class, 'pdf'])->name('diary.pdf');
 
+    // Anwesenheitsnachweis-PDF (Feature 098): signierter 24-h-Link, Muster wie
+    // die Fallakte — bewusst außerhalb des auth-Guards, Inhalt strikt kundensichtbar.
+    Route::get('/billing/statement/{statement}/pdf', [BillingController::class, 'pdf'])->name('billing.pdf');
+
     Route::middleware(['auth:customer', 'two-factor.setup:customer'])->group(function (): void {
         Route::get('/', DashboardController::class)->name('dashboard');
         Route::get('/diary', [DiaryController::class, 'index'])->name('diary.index');
@@ -42,6 +46,11 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
         Route::post('/diary/{diary}/photos/{attachment}/complain', [PhotoConfirmationController::class, 'complain'])->name('diary.photos.complain');
         Route::get('/time-entries', [TimeEntryController::class, 'index'])->name('time-entries.index');
         Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
+        // Abrechnungskonto (Feature 098): Monatsübersicht + Monatsdetail, nur
+        // für Kunden mit aktivem Konto-Modus-Abrechnungsprofil (sonst 404).
+        Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
+        Route::get('/billing/{year}/{month}', [BillingController::class, 'show'])
+            ->whereNumber('year')->whereNumber('month')->name('billing.show');
         Route::get('/open-issues', [OpenIssueController::class, 'index'])->name('open-issues.index');
         // Portal-Tickets (Feature 065, MVP-160): nur eigene, nur public.
         Route::get('/tickets', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'index'])->name('tickets.index');

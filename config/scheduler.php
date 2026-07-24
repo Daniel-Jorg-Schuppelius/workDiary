@@ -47,6 +47,29 @@ return [
             'expected_runtime_minutes' => 2,
         ],
 
+        // --- Kunden-Sonderkonditionen: Monatsrechnungen (Feature 098) ---
+        // Fakturiert am Monatsersten den Vormonat aller invoice-Mode-Profile;
+        // idempotent über exported — Nachläufe erzeugen keine Doppelbelege.
+        'billing.account-invoices' => [
+            'command' => 'customer-billing:generate-invoices',
+            'cadence' => ['type' => 'cron', 'expression' => '25 5 1 * *'],
+            'allowed' => ['cron', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 2,
+        ],
+
+        // --- Kunden-Sonderkonditionen: Retainer-Pauschalen an Lexoffice (Feature 098) ---
+        // Erzeugt am Monatsersten die Vormonats-Pauschale je Retainer-Agreement
+        // und übergibt sie an Lexoffice; idempotent über retainer_invoice_id.
+        'billing.push-retainers' => [
+            'command' => 'customer-billing:push-retainers',
+            'plugin' => 'lexoffice',
+            'cadence' => ['type' => 'cron', 'expression' => '35 5 1 * *'],
+            'allowed' => ['cron', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 5,
+        ],
+
         // --- KI-Betriebslauf (Feature 025/084, MVP-411) ---
         'ai.maintenance' => [
             'command' => 'ai:maintenance',

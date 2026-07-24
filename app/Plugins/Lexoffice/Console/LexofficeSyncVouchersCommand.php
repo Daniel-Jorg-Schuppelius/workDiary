@@ -12,6 +12,7 @@ namespace App\Plugins\Lexoffice\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeVoucherSync};
+use App\Services\Billing\RetainerVoucherReconciler;
 use Illuminate\Console\Command;
 
 class LexofficeSyncVouchersCommand extends Command {
@@ -40,6 +41,10 @@ class LexofficeSyncVouchersCommand extends Command {
             try {
                 $result = (new LexofficeVoucherSync($config['api_key'], $config['base_url']))->sync($org);
                 $this->line("  Kontakte: {$result['contacts']}, created: {$result['created']}, updated: {$result['updated']}, archived: {$result['archived']}");
+
+                // Feature 098: Retainer-Zahlstatus in den Leistungssaldo spiegeln.
+                $retainer = app(RetainerVoucherReconciler::class)->reconcile($org);
+                $this->line("  Retainer-Zahlungen: gebucht {$retainer['booked']}, storniert {$retainer['revoked']}");
             } catch (\Throwable $e) {
                 $this->error("  Fehler: {$e->getMessage()}");
             }

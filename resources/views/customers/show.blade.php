@@ -358,6 +358,11 @@
 
     @include('customers._domains_panel', ['customer' => $customer, 'customerDomains' => $customerDomains])
 
+    {{-- Sonderkonditionen & Abrechnungskonto (Feature 098) — nur mit update-Recht. --}}
+    @can('update', $customer)
+        @include('customers._billing_panel')
+    @endcan
+
     @include('customers._timeline_panel', ['customer' => $customer])
 
     @include('communication-notes._panel', ['notable' => $customer, 'notableKind' => 'customer'])

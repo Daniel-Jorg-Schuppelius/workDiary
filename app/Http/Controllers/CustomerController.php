@@ -153,9 +153,42 @@ class CustomerController extends Controller {
                 ->get();
         }
 
+        // Kunden-Sonderkonditionen & Abrechnungskonto (Feature 098): Panel nur
+        // mit update-Recht; im saldenführenden Modus (Konto/Retainer) offene
+        // Monate frisch durchrechnen. Retainer zeigt zusätzlich die Lexoffice-
+        // Pauschalbelege je Monat.
+        $billingAgreement = null;
+        $billingStatements = collect();
+        $billingPayments = collect();
+        $billingStrayEntries = [];
+        if (Gate::allows('update', $customer)) {
+            $billingAgreement = $customer->billingAgreement()->with('rates.activityCategory')->first();
+            if ($billingAgreement !== null && $billingAgreement->keepsLedger()) {
+                $warnings = app(\App\Services\Billing\CustomerAccountStatementService::class)
+                    ->recalculateOpen($billingAgreement);
+                $billingStrayEntries = $warnings['stray_entries'];
+                $billingStatements = $billingAgreement->statements()
+                    ->with('retainerInvoice')
+                    ->orderByDesc('year')->orderByDesc('month')
+                    ->limit(13)
+                    ->get();
+                $billingPayments = $billingAgreement->payments()
+                    ->orderByDesc('paid_on')
+                    ->limit(12)
+                    ->get();
+            }
+        }
+
         return view('customers.show', [
             'customer' => $customer,
             'customerDomains' => $customerDomains,
+            'billingAgreement' => $billingAgreement,
+            'billingStatements' => $billingStatements,
+            'billingPayments' => $billingPayments,
+            'billingStrayEntries' => $billingStrayEntries,
+            'billingActivityCategories' => Gate::allows('update', $customer)
+                ? \App\Models\ActivityCategory::query()->active()->orderBy('label')->get()
+                : collect(),
             'timelineItems' => $timeline['items'],
             'timelineHasMore' => $timeline['hasMore'],
             'timelineType' => $timelineType,

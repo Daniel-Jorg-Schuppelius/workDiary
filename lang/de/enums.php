@@ -965,6 +965,24 @@ return [
             'overtime' => 'Überstunden',
         ],
     ],
+    // Kunden-Sonderkonditionen & Abrechnungskonto (Feature 098).
+    'billing' => [
+        'agreement-mode' => [
+            'account' => 'Kundenkonto (rechnungslos)',
+            'invoice' => 'Monatliche Rechnung',
+            'retainer' => 'Pauschale (Lexoffice)',
+        ],
+        'rate-day-type' => [
+            'weekday' => 'Werktag',
+            'weekend' => 'Wochenende',
+        ],
+        'account-payment-source' => [
+            'manual' => 'Manuell',
+            'bank' => 'Bank',
+            'import' => 'Import',
+            'lexoffice' => 'Lexoffice',
+        ],
+    ],
     'finance' => [
         'billing-mode' => [
             'workdiary' => 'WorkDiary (lokal)',

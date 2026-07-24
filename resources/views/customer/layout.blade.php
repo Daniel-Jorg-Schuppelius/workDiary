@@ -26,6 +26,10 @@
                     <a href="{{ route('customer.documents.index') }}" class="hover:underline">{{ __('document.customer.portal.title') }}</a>
                     <a href="{{ route('customer.time-entries.index') }}" class="hover:underline">{{ __('Zeiten') }}</a>
                     <a href="{{ route('customer.invoices.index') }}" class="hover:underline">{{ __('Rechnungen') }}</a>
+                    {{-- Abrechnungskonto (Feature 098): nur bei aktivem Konto-Modus-Profil. --}}
+                    @if (\Illuminate\Support\Facades\Auth::guard('customer')->user()?->customer?->billingAgreement?->keepsLedger())
+                        <a href="{{ route('customer.billing.index') }}" class="hover:underline">{{ __('customer-billing.portal_title') }}</a>
+                    @endif
                     <a href="{{ route('customer.catalog.index') }}" class="hover:underline">{{ __('Servicekatalog') }}</a>
                     <a href="{{ route('customer.known-errors.index') }}" class="hover:underline">{{ __('Bekannte Fehler') }}</a>
                     <a href="{{ route('customer.2fa.show') }}" class="hover:underline" title="{{ __('Zwei-Faktor-Authentifizierung') }}">{{ __('Sicherheit') }}</a>

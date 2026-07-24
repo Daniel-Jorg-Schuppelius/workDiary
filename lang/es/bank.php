@@ -61,6 +61,7 @@ return [
         'iban' => 'Coincidencia de IBAN',
         'date' => 'Proximidad de fecha',
         'foreign_currency' => 'Moneda extranjera – revisar manualmente',
+        'customer_name' => 'Nombre del cliente',
     ],
     'action' => [
         'import' => 'Importar archivo bancario',

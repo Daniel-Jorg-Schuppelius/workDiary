@@ -61,6 +61,7 @@ return [
         'iban' => 'IBAN-Treffer',
         'date' => 'Datumsnähe',
         'foreign_currency' => 'Fremdwährung – manuell prüfen',
+        'customer_name' => 'Kundenname',
     ],
     'action' => [
         'import' => 'Bankdatei importieren',

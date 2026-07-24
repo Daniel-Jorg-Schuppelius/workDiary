@@ -1,0 +1,154 @@
+<?php
+/*
+ * Created on   : Thu Jul 23 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : BillingAdminTest.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace Tests\Feature\Customers;
+
+use App\Enums\Billing\{AccountPaymentSource, BillingAgreementMode};
+use App\Models\ActivityCategory;
+use App\Models\Billing\{CustomerAccountPayment, CustomerBillingAgreement, CustomerBillingRate};
+use App\Models\{Customer, User};
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\WithOrganization;
+use Tests\TestCase;
+
+/**
+ * Feature 098: Admin-Flows an der Kundenakte — Profil speichern (inkl.
+ * Satzzeilen mit Sqid-Kategorien), Zahlung buchen/stornieren, Panel sichtbar.
+ */
+class BillingAdminTest extends TestCase {
+    use RefreshDatabase;
+    use WithOrganization;
+
+    private User $admin;
+
+    private Customer $customer;
+
+    protected function setUp(): void {
+        parent::setUp();
+        $this->setUpOrganization();
+        $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+    }
+
+    public function test_agreement_can_be_created_with_rates(): void {
+        $category = ActivityCategory::factory()->create(['organization_id' => $this->organization->id]);
+
+        $response = $this->actingAs($this->admin)->post(route('customers.billing.agreement.save', $this->customer), [
+            'mode' => 'account',
+            'currency' => 'EUR',
+            'expected_monthly_amount' => '550',
+            'workdays_per_week' => 6,
+            'opening_balance' => '2852.37',
+            'opening_balance_date' => '2024-12-31',
+            'active' => '1',
+            'rate_activity_category_id' => ['', $category->sqid, ''],
+            'rate_day_type' => ['weekday', 'weekday', 'weekend'],
+            'rate_hourly_rate' => ['16.50', '20.00', '17.50'],
+        ]);
+
+        $response->assertRedirect(route('customers.show', $this->customer));
+
+        $agreement = $this->customer->billingAgreement()->firstOrFail();
+        $this->assertTrue($agreement->mode === BillingAgreementMode::Account);
+        $this->assertSame('2852.37', $agreement->opening_balance);
+        $this->assertSame(3, $agreement->rates()->count());
+        $this->assertSame(
+            $category->id,
+            $agreement->rates()->where('day_type', 'weekday')->where('hourly_rate', 20.00)->firstOrFail()->activity_category_id
+        );
+    }
+
+    public function test_saving_replaces_rate_rows(): void {
+        $agreement = CustomerBillingAgreement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+        ]);
+        CustomerBillingRate::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_billing_agreement_id' => $agreement->id,
+            'hourly_rate' => 10.00,
+        ]);
+
+        $this->actingAs($this->admin)->post(route('customers.billing.agreement.save', $this->customer), [
+            'mode' => 'account',
+            'currency' => 'EUR',
+            'workdays_per_week' => 5,
+            'active' => '1',
+            'rate_activity_category_id' => [''],
+            'rate_day_type' => ['weekday'],
+            'rate_hourly_rate' => ['22.00'],
+        ])->assertRedirect();
+
+        $agreement->refresh();
+        $this->assertSame(5, $agreement->workdays_per_week);
+        $this->assertSame(1, $agreement->rates()->count());
+        $this->assertSame('22.00', $agreement->rates()->firstOrFail()->hourly_rate);
+    }
+
+    public function test_payment_can_be_booked_and_voided(): void {
+        CustomerBillingAgreement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+        ]);
+
+        $this->actingAs($this->admin)->post(route('customers.billing.payments.store', $this->customer), [
+            'paid_on' => '2026-07-01',
+            'amount' => '550',
+            'note' => 'Monatsabschlag',
+        ])->assertRedirect();
+
+        $payment = CustomerAccountPayment::query()->firstOrFail();
+        $this->assertTrue($payment->source === AccountPaymentSource::Manual);
+        $this->assertSame('550.00', $payment->amount);
+
+        $this->actingAs($this->admin)
+            ->delete(route('customers.billing.payments.destroy', [$this->customer, $payment]))
+            ->assertRedirect();
+
+        $this->assertSoftDeleted('customer_account_payments', ['id' => $payment->id]);
+    }
+
+    public function test_non_admin_cannot_save_agreement(): void {
+        $member = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($member)->post(route('customers.billing.agreement.save', $this->customer), [
+            'mode' => 'account',
+            'currency' => 'EUR',
+            'workdays_per_week' => 6,
+        ])->assertForbidden();
+    }
+
+    public function test_customer_show_renders_billing_panel(): void {
+        CustomerBillingAgreement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->get(route('customers.show', $this->customer))
+            ->assertOk()
+            ->assertSee(__('customer-billing.panel_title'));
+    }
+
+    public function test_dialog_fragments_render(): void {
+        $this->actingAs($this->admin)
+            ->get(route('customers.billing.agreement.edit', $this->customer))
+            ->assertOk();
+
+        CustomerBillingAgreement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->get(route('customers.billing.payments.create', $this->customer))
+            ->assertOk();
+    }
+}

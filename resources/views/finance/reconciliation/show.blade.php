@@ -210,15 +210,22 @@
                                     @csrf
                                     <div class="space-y-1">
                                         @foreach ($txSuggestions as $index => $suggestion)
-                                            @php $target = $suggestion['target']; @endphp
+                                            @php
+                                                $target = $suggestion['target'];
+                                                // Kundenkonto (Feature 098) als dritter Zieltyp neben Invoice/Expense.
+                                                $isAccount = $target instanceof \App\Models\Billing\CustomerBillingAgreement;
+                                                $targetLabel = match (true) {
+                                                    $target instanceof \App\Models\Invoice => $target->number,
+                                                    $isAccount => __('customer-billing.panel_title') . ': ' . ($target->customer?->name ?? '#' . $target->customer_id),
+                                                    default => __('bank.title.menu') . ' #' . $target->id,
+                                                };
+                                            @endphp
                                             <div class="flex flex-wrap items-center gap-2 py-1">
                                                 <label class="flex items-center gap-2 cursor-pointer">
                                                     <input type="checkbox" class="checkbox checkbox-xs"
                                                            x-model="picked[{{ $index }}]">
                                                     <span class="text-sm">
-                                                        <span class="font-medium">
-                                                            {{ $target instanceof \App\Models\Invoice ? $target->number : (__('bank.title.menu') . ' #' . $target->id) }}
-                                                        </span>
+                                                        <span class="font-medium">{{ $targetLabel }}</span>
                                                         · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($suggestion['open_amount'], 2, withThousandsSeparator: true) }}
                                                         @foreach ($suggestion['reasons'] as $reason)
                                                             <span class="badge badge-xs badge-ghost">{{ __('bank.reason.' . $reason) }}</span>
@@ -226,13 +233,13 @@
                                                     </span>
                                                 </label>
                                                 <input type="hidden" name="allocations[{{ $index }}][type]"
-                                                       value="{{ $target instanceof \App\Models\Invoice ? 'invoice' : 'expense' }}"
+                                                       value="{{ $target instanceof \App\Models\Invoice ? 'invoice' : ($isAccount ? 'account' : 'expense') }}"
                                                        :disabled="unpicked({{ $index }})">
                                                 <input type="hidden" name="allocations[{{ $index }}][id]" value="{{ $target->sqid }}"
                                                        :disabled="unpicked({{ $index }})">
                                                 <input type="number" step="0.01" min="0.01"
                                                        name="allocations[{{ $index }}][amount]"
-                                                       value="{{ number_format(min((float) $transaction->amount, $suggestion['open_amount']), 2, '.', '') }}"
+                                                       value="{{ number_format($isAccount ? (float) $transaction->amount : min((float) $transaction->amount, $suggestion['open_amount']), 2, '.', '') }}"
                                                        :disabled="unpicked({{ $index }})"
                                                        class="input input-bordered input-xs w-28"
                                                        aria-label="{{ __('bank.field.amount') }}">

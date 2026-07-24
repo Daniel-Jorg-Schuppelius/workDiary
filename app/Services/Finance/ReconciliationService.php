@@ -12,9 +12,12 @@ declare(strict_types=1);
 
 namespace App\Services\Finance;
 
+use App\Enums\Billing\AccountPaymentSource;
 use App\Enums\Finance\{AllocationKind, MatchStatus};
+use App\Models\Billing\{CustomerAccountPayment, CustomerBillingAgreement};
 use App\Models\{Expense, Invoice, User};
 use App\Models\Finance\{BankTransaction, PaymentAllocation, PaymentReconciliationEvent};
+use App\Services\Billing\CustomerAccountStatementService;
 use App\Services\Concerns\ResolvesActorId;
 use Illuminate\Support\Facades\DB;
 
@@ -35,7 +38,7 @@ class ReconciliationService {
      * Bestätigt eine oder mehrere Zuordnungen für einen Bankumsatz und setzt die
      * Wirkung auf die Ziele.
      *
-     * @param  list<array{type: class-string<Invoice>|class-string<Expense>, id: int, amount: float, kind?: AllocationKind, note?: string|null}>  $allocations
+     * @param  list<array{type: class-string<Invoice>|class-string<Expense>|class-string<CustomerBillingAgreement>, id: int, amount: float, kind?: AllocationKind, note?: string|null}>  $allocations
      */
     public function confirm(BankTransaction $transaction, array $allocations, ?User $actor = null): BankTransaction {
         if ($allocations === []) {
@@ -65,7 +68,7 @@ class ReconciliationService {
                     'confirmed_at' => now(),
                 ]);
 
-                $this->applyEffect($target, $transaction, $actorId);
+                $this->applyEffect($target, $transaction, $actorId, $allocation);
 
                 $payloadTargets[] = [
                     'allocation_id' => $allocation->id,
@@ -103,6 +106,8 @@ class ReconciliationService {
                 $this->revertInvoice($target);
             } elseif ($target instanceof Expense) {
                 $this->revertExpense($target, $allocation);
+            } elseif ($target instanceof CustomerBillingAgreement) {
+                $this->revertAccount($allocation);
             }
 
             // Verbleiben keine aktiven Zuordnungen, ist der Umsatz wieder offen.
@@ -185,7 +190,7 @@ class ReconciliationService {
 
         return DB::transaction(function () use ($returnTransaction, $original, $reason, $actorId): BankTransaction {
             $target = $original->allocatable;
-            if (! $target instanceof Invoice && ! $target instanceof Expense) {
+            if (! $target instanceof Invoice && ! $target instanceof Expense && ! $target instanceof CustomerBillingAgreement) {
                 throw new BankImportException('targetNotFound', (string) __('bank.reconcile.error.target_not_found'), [
                     'allocation_id' => $original->id,
                 ]);
@@ -208,6 +213,17 @@ class ReconciliationService {
 
             if ($target instanceof Invoice) {
                 $this->revertInvoice($target);
+            } elseif ($target instanceof CustomerBillingAgreement) {
+                // GoBD-Symmetrie: Original-Zahlung bleibt, der Rückläufer wird
+                // als NEGATIVE Konto-Zahlung gebucht (Saldo öffnet sich wieder).
+                app(CustomerAccountStatementService::class)->bookPayment($target, [
+                    'paid_on' => $returnTransaction->booking_date,
+                    'amount' => round(-abs((float) $original->amount), 2),
+                    'source' => AccountPaymentSource::Bank,
+                    'bank_transaction_id' => $returnTransaction->id,
+                    'payment_allocation_id' => $compensation->id,
+                    'note' => trim('RET#' . $original->id . ' ' . (string) $reason),
+                ]);
             } else {
                 $this->revertExpense($target, $original);
             }
@@ -251,12 +267,30 @@ class ReconciliationService {
         });
     }
 
-    private function applyEffect(Invoice|Expense $target, BankTransaction $transaction, ?int $actorId = null): void {
+    private function applyEffect(Invoice|Expense|CustomerBillingAgreement $target, BankTransaction $transaction, ?int $actorId = null, ?PaymentAllocation $allocation = null): void {
         if ($target instanceof Invoice) {
             $this->applyInvoiceEffect($target, $transaction, $actorId);
+        } elseif ($target instanceof CustomerBillingAgreement) {
+            $this->applyAccountEffect($target, $transaction, $allocation);
         } else {
             $this->applyExpenseEffect($target, $transaction);
         }
+    }
+
+    /**
+     * Kundenkonto (Feature 098): die Wirkung einer bestätigten Zuordnung ist
+     * eine Zahlung auf dem Konto (source=bank); die Sperr-Prüfung des
+     * Zielmonats übernimmt bookPayment (ValidationException rollt die
+     * gesamte Bestätigung zurück — erst Monat wiedereröffnen).
+     */
+    private function applyAccountEffect(CustomerBillingAgreement $agreement, BankTransaction $transaction, ?PaymentAllocation $allocation): void {
+        app(CustomerAccountStatementService::class)->bookPayment($agreement, [
+            'paid_on' => $transaction->booking_date,
+            'amount' => $allocation !== null ? (float) $allocation->amount : 0.0,
+            'source' => AccountPaymentSource::Bank,
+            'bank_transaction_id' => $transaction->id,
+            'payment_allocation_id' => $allocation?->id,
+        ]);
     }
 
     /**
@@ -348,6 +382,41 @@ class ReconciliationService {
         $invoice->saveQuietly();
     }
 
+    /**
+     * Kundenkonto (Feature 098): die aus DIESER Zuordnung entstandene Zahlung
+     * zurücknehmen (SoftDelete) und den Saldo neu rechnen. In gesperrten
+     * Monaten nicht erlaubt — erst wiedereröffnen, sonst würde der
+     * eingefrorene Snapshot stillschweigend falsch.
+     */
+    private function revertAccount(PaymentAllocation $allocation): void {
+        $payment = CustomerAccountPayment::query()
+            ->where('payment_allocation_id', $allocation->id)
+            ->first();
+        if ($payment === null) {
+            return;
+        }
+
+        $agreement = $payment->agreement()->first();
+        if ($agreement !== null) {
+            $locked = $agreement->statements()
+                ->where('year', $payment->paid_on->year)
+                ->where('month', $payment->paid_on->month)
+                ->where('locked', true)
+                ->exists();
+            if ($locked) {
+                throw new BankImportException('invalidReturn', (string) __('customer-billing.confirm_reopen_first'), [
+                    'allocation_id' => $allocation->id,
+                ]);
+            }
+        }
+
+        $payment->delete();
+
+        if ($agreement !== null) {
+            app(CustomerAccountStatementService::class)->recalculateOpen($agreement);
+        }
+    }
+
     private function revertExpense(Expense $expense, PaymentAllocation $allocation): void {
         if ($expense->reimbursed_at === null) {
             return;
@@ -372,9 +441,12 @@ class ReconciliationService {
             ->sum('amount');
     }
 
-    private function deriveKind(Invoice|Expense $target, float $amount): AllocationKind {
+    private function deriveKind(Invoice|Expense|CustomerBillingAgreement $target, float $amount): AllocationKind {
         if ($target instanceof Expense) {
             return AllocationKind::Reimbursement;
+        }
+        if ($target instanceof CustomerBillingAgreement) {
+            return AllocationKind::Payment;
         }
 
         return $this->matching->kindForInvoice($amount, (float) $target->total);
@@ -388,11 +460,15 @@ class ReconciliationService {
         return $transaction->end_to_end_id ?? ('TX-' . $transaction->id);
     }
 
-    private function resolveTarget(?int $organizationId, string $type, int $id): Invoice|Expense {
-        /** @var Invoice|Expense|null $target */
+    private function resolveTarget(?int $organizationId, string $type, int $id): Invoice|Expense|CustomerBillingAgreement {
+        /** @var Invoice|Expense|CustomerBillingAgreement|null $target */
         $target = $type::query()->where('organization_id', $organizationId)->find($id);
 
-        if (! $target instanceof Invoice && ! $target instanceof Expense) {
+        if ($target instanceof CustomerBillingAgreement && ! $target->active) {
+            $target = null; // inaktives Kundenkonto nie bebuchen
+        }
+
+        if (! $target instanceof Invoice && ! $target instanceof Expense && ! $target instanceof CustomerBillingAgreement) {
             throw new BankImportException('targetNotFound', (string) __('bank.reconcile.error.target_not_found'), [
                 'type' => $type,
                 'id' => $id,

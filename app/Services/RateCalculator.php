@@ -10,22 +10,41 @@
 
 namespace App\Services;
 
+use App\Models\Billing\CustomerBillingRate;
 use App\Models\TimeEntry;
+use App\Services\Billing\AgreementRateResolver;
 
 /**
  * Calculates billable revenue and internal cost for a TimeEntry following the
- * Kimai rate hierarchy: TimeEntry override -> User -> Activity (Task) -> Project -> Customer.
+ * Kimai rate hierarchy: TimeEntry override -> Kundenkondition (Feature 098)
+ * -> User -> Activity (Task) -> Project -> Customer.
  *
  * A non-null fixed_rate on the entry overrides hourly calculation and yields a
  * flat fee regardless of duration.
  */
 class RateCalculator {
     /**
+     * Sonderkonditions-Satz (Feature 098); greift nur ohne Entry-Override und
+     * VOR dem User-Satz, sonst würde ein Mitarbeiter-Satz die Kondition schlagen.
+     */
+    private function resolveAgreementRate(TimeEntry $entry): ?CustomerBillingRate {
+        if ($entry->hourly_rate !== null) {
+            return null;
+        }
+
+        return app(AgreementRateResolver::class)->rateFor($entry);
+    }
+
+    /**
      * Resolve the effective hourly rate for the given entry.
      */
-    private function resolveHourlyRate(TimeEntry $entry): ?float {
+    private function resolveHourlyRate(TimeEntry $entry, ?CustomerBillingRate $agreementRate = null): ?float {
         if ($entry->hourly_rate !== null) {
             return (float) $entry->hourly_rate;
+        }
+
+        if ($agreementRate !== null) {
+            return (float) $agreementRate->hourly_rate;
         }
 
         $user = $entry->user;
@@ -102,18 +121,21 @@ class RateCalculator {
 
     /**
      * Compute revenue (rate) and internal cost for the entry. Returns array
-     * with keys `rate`, `internal_rate`, `hourly_rate` (resolved snapshot).
+     * with keys `rate`, `internal_rate`, `hourly_rate` (resolved snapshot) and
+     * `agreement_rate_id` (Feature 098: gesetzt, wenn eine Kundenkondition den
+     * Satz geliefert hat).
      *
-     * @return array{rate: float, internal_rate: float, hourly_rate: float|null}
+     * @return array{rate: float, internal_rate: float, hourly_rate: float|null, agreement_rate_id: int|null}
      */
     public function compute(TimeEntry $entry): array {
         $hours = ((int) $entry->minutes) / 60.0;
+        $agreementRate = $this->resolveAgreementRate($entry);
 
         if ($entry->fixed_rate !== null) {
             $revenue = $this->isBillable($entry) ? (float) $entry->fixed_rate : 0.0;
-            $hourly = $this->resolveHourlyRate($entry);
+            $hourly = $this->resolveHourlyRate($entry, $agreementRate);
         } else {
-            $hourly = $this->resolveHourlyRate($entry);
+            $hourly = $this->resolveHourlyRate($entry, $agreementRate);
             $revenue = ($hourly !== null && $this->isBillable($entry)) ? round($hours * $hourly, 2) : 0.0;
         }
 
@@ -124,6 +146,7 @@ class RateCalculator {
             'rate' => $revenue,
             'internal_rate' => $internal,
             'hourly_rate' => $hourly,
+            'agreement_rate_id' => $agreementRate?->id,
         ];
     }
 }

@@ -44,6 +44,7 @@ use Illuminate\Support\Carbon;
  * @property float|null $rate
  * @property float|null $internal_rate
  * @property bool $exported
+ * @property int|null $customer_billing_rate_id
  */
 class TimeEntry extends Model {
     use Auditable;
@@ -119,6 +120,7 @@ class TimeEntry extends Model {
         'rate',
         'internal_rate',
         'exported',
+        'customer_billing_rate_id',
     ];
 
     /** @var array<string, string> */
@@ -169,6 +171,8 @@ class TimeEntry extends Model {
             }
 
             // Recalculate billing snapshot whenever a relevant field changes.
+            // date/started_at/activity_category_id gehören dazu, weil Kunden-
+            // konditionen (Feature 098) Tagtyp- und Kategorie-abhängig sind.
             if ($entry->isDirty([
                 'minutes',
                 'billable',
@@ -177,7 +181,23 @@ class TimeEntry extends Model {
                 'project_id',
                 'task_id',
                 'user_id',
+                'date',
+                'started_at',
+                'activity_category_id',
             ]) || ! $entry->exists) {
+                if ($entry->isDirty('hourly_rate') && $entry->hourly_rate !== null) {
+                    // Manueller Satz-Override löst den Konditions-Marker ab (E2).
+                    $entry->customer_billing_rate_id = null;
+                } elseif (
+                    $entry->customer_billing_rate_id !== null
+                    && $entry->isDirty(['date', 'started_at', 'activity_category_id', 'project_id'])
+                ) {
+                    // Konditions-Snapshot neu auflösen: Tagtyp (Sa→So), Kategorie
+                    // oder Kunde können sich geändert haben. Manuelle Overrides
+                    // (FK=NULL) bleiben unangetastet.
+                    $entry->hourly_rate = null;
+                    $entry->customer_billing_rate_id = null;
+                }
                 $calc = app(RateCalculator::class);
                 $result = $calc->compute($entry);
                 $entry->rate = $result['rate'];
@@ -185,6 +205,7 @@ class TimeEntry extends Model {
                 if ($entry->hourly_rate === null && $result['hourly_rate'] !== null) {
                     // Snapshot resolved hourly rate so historical entries stay stable.
                     $entry->hourly_rate = $result['hourly_rate'];
+                    $entry->customer_billing_rate_id = $result['agreement_rate_id'];
                 }
             }
         });
@@ -193,6 +214,16 @@ class TimeEntry extends Model {
     /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo {
         return $this->belongsTo(Project::class);
+    }
+
+    /**
+     * Angewendeter Sonderkonditions-Satz (Feature 098); NULL = normale
+     * Hierarchie oder manueller Override.
+     *
+     * @return BelongsTo<\App\Models\Billing\CustomerBillingRate, $this>
+     */
+    public function customerBillingRate(): BelongsTo {
+        return $this->belongsTo(\App\Models\Billing\CustomerBillingRate::class);
     }
 
     /** @return BelongsTo<Timesheet, $this> */

@@ -1066,6 +1066,19 @@ Route::middleware('auth')->group(function () {
         Route::post('customers/{customer}/archive', [CustomerController::class, 'archive'])->name('customers.archive');
         Route::post('customers/{customer}/restore', [CustomerController::class, 'restore'])->name('customers.restore');
 
+        // ── Kunden-Sonderkonditionen & Abrechnungskonto (Feature 098) ───────────
+        Route::get('customers/{customer}/billing/agreement/edit', [\App\Http\Controllers\Customers\BillingAgreementController::class, 'edit'])->name('customers.billing.agreement.edit');
+        Route::get('customers/{customer}/billing/payments/create', [\App\Http\Controllers\Customers\AccountPaymentController::class, 'create'])->name('customers.billing.payments.create');
+        Route::post('customers/{customer}/billing/agreement', [\App\Http\Controllers\Customers\BillingAgreementController::class, 'save'])->name('customers.billing.agreement.save');
+        Route::post('customers/{customer}/billing/recalculate', [\App\Http\Controllers\Customers\BillingStatementController::class, 'recalculate'])->name('customers.billing.recalculate');
+        Route::post('customers/{customer}/billing/statements/{statement}/close', [\App\Http\Controllers\Customers\BillingStatementController::class, 'close'])->name('customers.billing.statements.close');
+        Route::post('customers/{customer}/billing/statements/{statement}/reopen', [\App\Http\Controllers\Customers\BillingStatementController::class, 'reopen'])->name('customers.billing.statements.reopen');
+        Route::post('customers/{customer}/billing/payments', [\App\Http\Controllers\Customers\AccountPaymentController::class, 'store'])->name('customers.billing.payments.store');
+        Route::delete('customers/{customer}/billing/payments/{payment}', [\App\Http\Controllers\Customers\AccountPaymentController::class, 'destroy'])->name('customers.billing.payments.destroy');
+        // Retainer-Modus (Feature 098): Pauschale an Lexoffice senden + Spitzabrechnung.
+        Route::post('customers/{customer}/billing/retainer/push', [\App\Http\Controllers\Customers\RetainerBillingController::class, 'pushMonth'])->name('customers.billing.retainer.push');
+        Route::post('customers/{customer}/billing/retainer/trueup', [\App\Http\Controllers\Customers\RetainerBillingController::class, 'trueUp'])->name('customers.billing.retainer.trueup');
+
         // ── Fremdkunden (Endkunden einer Firma) ──────────────────────────────────
         Route::resource('foreign-customers', ForeignCustomerController::class)->parameters(['foreign-customers' => 'foreignCustomer']);
         Route::post('foreign-customers/{foreignCustomer}/archive', [ForeignCustomerController::class, 'archive'])->name('foreign-customers.archive');

@@ -84,6 +84,12 @@ class Invoice extends Model {
 
     public const TYPE_PROFORMA = 'proforma';
 
+    // Feature 098: monatliche Pauschale eines Retainer-Kunden, die an das
+    // führende Buchhaltungsprogramm (Lexoffice) übergeben wird. Bewusst KEIN
+    // TYPE_DOWN_PAYMENT: keine §14-Abs.-5-Anrechnung, kein lokaler Nummernkreis
+    // (Lexoffice finalisiert), aus Bank-Reko/DATEV/Umsatzreport ausgeschlossen.
+    public const TYPE_RETAINER = 'retainer';
+
     public const CATEGORY_SERVICE = 'service';
 
     public const CATEGORY_MATERIAL = 'material';
@@ -95,7 +101,7 @@ class Invoice extends Model {
     public const STATUSES = [self::STATUS_DRAFT, self::STATUS_ISSUED, self::STATUS_PARTIALLY_PAID, self::STATUS_PAID, self::STATUS_CANCELLED];
 
     /** @var array<int, string> */
-    public const TYPES = [self::TYPE_INVOICE, self::TYPE_CREDIT_NOTE, self::TYPE_CANCELLATION, self::TYPE_DOWN_PAYMENT, self::TYPE_PARTIAL, self::TYPE_FINAL, self::TYPE_PROFORMA];
+    public const TYPES = [self::TYPE_INVOICE, self::TYPE_CREDIT_NOTE, self::TYPE_CANCELLATION, self::TYPE_DOWN_PAYMENT, self::TYPE_PARTIAL, self::TYPE_FINAL, self::TYPE_PROFORMA, self::TYPE_RETAINER];
 
     /**
      * Nach der Ausstellung fachlich unveränderlich (MVP-162) — nur diese
@@ -412,12 +418,17 @@ class Invoice extends Model {
             $this->isDownPayment() => (string) __('Abschlagsrechnung'),
             $this->type === self::TYPE_PARTIAL => (string) __('Teilrechnung'),
             $this->type === self::TYPE_FINAL => (string) __('Schlussrechnung'),
+            $this->type === self::TYPE_RETAINER => (string) __('Monatspauschale'),
             default => (string) __('Rechnung'),
         };
     }
 
     public function isDownPayment(): bool {
         return $this->type === self::TYPE_DOWN_PAYMENT;
+    }
+
+    public function isRetainer(): bool {
+        return $this->type === self::TYPE_RETAINER;
     }
 
     public function isFinal(): bool {

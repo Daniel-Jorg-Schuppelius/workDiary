@@ -293,6 +293,8 @@ return [
         'communication-notes.*' => 'communication.notes',
 
         // Stammdaten und operative Fachmodule
+        // Sonderkonditionen & Abrechnungskonto (Feature 098) — VOR customers.*.
+        'customers.billing.*' => 'customers.billing',
         'customers.*' => 'contacts.manage',
         'suppliers.*' => 'contacts.manage',
         'projects.*' => 'projects.manage',
@@ -447,6 +449,7 @@ return [
         'customer.dashboard' => 'customer-portal.overview',
         'customer.diary.*' => 'customer-portal.diary',
         'customer.invoices.*' => 'customer-portal.invoices',
+        'customer.billing.*' => 'customer-portal.billing',
         'customer.open-issues.*' => 'customer-portal.issues',
         'customer.time-entries.*' => 'customer-portal.time',
         'customer.login' => 'customer-portal.access',

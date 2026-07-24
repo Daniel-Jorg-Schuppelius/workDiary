@@ -61,6 +61,7 @@ return [
         'iban' => 'Corrispondenza IBAN',
         'date' => 'Prossimità di data',
         'foreign_currency' => 'Valuta estera – verificare manualmente',
+        'customer_name' => 'Nome cliente',
     ],
     'action' => [
         'import' => 'Importa file bancario',
