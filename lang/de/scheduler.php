@@ -66,6 +66,10 @@ return [
     // Lesbare Job-Namen (Registry-Keys, geschachtelt wegen Punkt-Notation);
     // neue Registry-Jobs hier in allen Locales ergänzen — sonst Fallback = Key.
     'job' => [
+        'billing' => [
+            'account-invoices' => 'Monatsrechnungen aus Sonderkonditionen erzeugen',
+            'push-retainers' => 'Retainer-Pauschalen an Lexoffice übergeben',
+        ],
         'calendly' => ['backfill' => 'Calendly-Terminabgleich'],
         'ai' => ['maintenance' => 'KI-Wartungslauf (Provider-Health, Vorschlags-Bereinigung)'],
         'archive' => ['run' => 'Archivierungslauf'],

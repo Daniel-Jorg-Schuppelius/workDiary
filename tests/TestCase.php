@@ -42,6 +42,12 @@ abstract class TestCase extends BaseTestCase {
         // PDOExceptions ausl\u00f6sen (z. B. DatabaseUnavailableTest), w\u00fcrden
         // sonst nachfolgende Tests pauschal in 503 laufen lassen.
         DatabaseHealth::reset();
+
+        // Statischer Per-Request-Cache des LegacyRoleResolver (user-id →
+        // legacy-id). In Produktion prozess-/request-stabil, aber in Tests
+        // resetten die IDs pro Methode — ohne Reset läuft ein späterer Test im
+        // selben Worker auf eine stale legacy-id (falsche Admin-Auflösung).
+        \App\Legacy\Support\LegacyRoleResolver::flush();
     }
 
     protected function tearDown(): void {

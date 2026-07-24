@@ -21,13 +21,19 @@ use Carbon\CarbonInterface;
  * Kategorie-Satz vor Kategorie-Fallback (activity_category_id=NULL), fehlt der
  * Wochenendsatz greift der Werktagssatz. Wird vom {@see \App\Services\RateCalculator}
  * VOR dem User-Satz befragt.
+ *
+ * Als `scoped` gebunden (AppServiceProvider): der Cache lebt pro Request bzw.
+ * pro Queue-Job und wird zwischen Jobs verworfen — ein langlebiger Worker
+ * rechnet so nie mit veralteten Konditionen. Innerhalb desselben Request/Jobs
+ * invalidieren die saved/deleted-Hooks von Agreement/Rate den Cache via
+ * {@see self::flush()}.
  */
 class AgreementRateResolver {
-    /** @var array<int, CustomerBillingAgreement|null> Request-Cache je customer_id (Rates eager geladen). */
-    private static array $cache = [];
+    /** @var array<int, CustomerBillingAgreement|null> Request-/Job-Cache je customer_id (Rates eager geladen). */
+    private array $cache = [];
 
-    public static function flush(): void {
-        self::$cache = [];
+    public function flush(): void {
+        $this->cache = [];
     }
 
     public function agreementFor(?int $customerId): ?CustomerBillingAgreement {
@@ -35,15 +41,15 @@ class AgreementRateResolver {
             return null;
         }
 
-        if (! array_key_exists($customerId, self::$cache)) {
-            self::$cache[$customerId] = CustomerBillingAgreement::query()
+        if (! array_key_exists($customerId, $this->cache)) {
+            $this->cache[$customerId] = CustomerBillingAgreement::query()
                 ->where('customer_id', $customerId)
                 ->where('active', true)
                 ->with('rates')
                 ->first();
         }
 
-        return self::$cache[$customerId];
+        return $this->cache[$customerId];
     }
 
     public function rateFor(TimeEntry $entry): ?CustomerBillingRate {

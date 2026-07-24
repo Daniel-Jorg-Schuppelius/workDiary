@@ -66,6 +66,10 @@ return [
     // Nomi leggibili dei job (chiavi registry, annidate per via della notazione a punti);
     // aggiungere i nuovi job qui in tutte le lingue — altrimenti fallback = chiave.
     'job' => [
+        'billing' => [
+            'account-invoices' => 'Generare le fatture mensili a condizioni speciali',
+            'push-retainers' => 'Trasmettere i forfait retainer a Lexoffice',
+        ],
         'calendly' => ['backfill' => 'Sincronizzazione appuntamenti Calendly'],
         'ai' => ['maintenance' => 'Manutenzione IA (stato dei provider, pulizia dei suggerimenti)'],
         'archive' => ['run' => 'Esecuzione archiviazione'],

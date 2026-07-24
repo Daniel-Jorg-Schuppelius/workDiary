@@ -24,6 +24,19 @@ class LegacyRoleResolver {
      */
     private static ?array $fallbackList = null;
 
+    /**
+     * Setzt den prozessweiten Per-Request-Cache zurück. In Produktion sind
+     * app-User-IDs stabil und global eindeutig (kein Staleness-Bug); in Tests
+     * resetten die IDs pro Testmethode über RefreshDatabase, weshalb der
+     * statische Cache zwischen Tests desselben Workers geleert werden muss
+     * (zentral in {@see \Tests\TestCase::setUp()}). Scoped-Binding scheidet aus,
+     * da die Klasse rein statische Utility-Methoden anbietet.
+     */
+    public static function flush(): void {
+        self::$idCache = [];
+        self::$fallbackList = null;
+    }
+
     public static function resolveLegacyUserId(?User $authUser): int {
         if (! $authUser instanceof User) {
             return 0;

@@ -269,6 +269,13 @@ class AppServiceProvider extends ServiceProvider {
             ]);
         });
 
+        // Kunden-Sonderkonditionen (Feature 098): scoped, damit der interne
+        // Agreement-Cache pro Request bzw. pro Queue-Job lebt und zwischen Jobs
+        // verworfen wird — ein langlebiger Worker rechnet sonst mit veralteten
+        // Konditionen. Invalidierung im selben Request/Job über die
+        // saved/deleted-Hooks von CustomerBillingAgreement/CustomerBillingRate.
+        $this->app->scoped(\App\Services\Billing\AgreementRateResolver::class);
+
         $this->app->scoped(OsrmRouter::class, function (): OsrmRouter {
             return new OsrmRouter([
                 'base_url' => Setting::get('routing.osrm.base_url'),
@@ -346,9 +353,13 @@ class AppServiceProvider extends ServiceProvider {
             return new \App\Services\Help\HelpTopicLoader(\App\Services\Help\HelpTopicLoader::defaultPath());
         });
 
-        // Feature-Flags (Folge zu MVP-047): einmal pro Request, damit
-        // @feature und requires-feature dieselbe Auflösung sehen.
-        $this->app->singleton(\App\Services\Licensing\FeatureFlagResolver::class);
+        // Feature-Flags (Folge zu MVP-047): scoped statt singleton — einmal pro
+        // Request/Queue-Job, damit @feature und requires-feature dieselbe
+        // Auflösung sehen. Der interne $resolved-Cache hängt am
+        // currentOrganization-Kontext OHNE Org-Key; als singleton würde ein
+        // langlebiger Worker die Flags der ersten Org auf Jobs anderer Orgs
+        // anwenden (Cross-Tenant-Leck). scoped wird pro Job verworfen.
+        $this->app->scoped(\App\Services\Licensing\FeatureFlagResolver::class);
 
         // Widget-Dashboard (Phase G): Registry als Singleton; Default-Widgets
         // werden in boot() registriert.

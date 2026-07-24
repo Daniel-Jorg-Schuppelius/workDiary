@@ -42,8 +42,8 @@ class CustomerBillingRate extends Model {
     use HasSqid;
 
     protected static function booted(): void {
-        static::saved(fn () => \App\Services\Billing\AgreementRateResolver::flush());
-        static::deleted(fn () => \App\Services\Billing\AgreementRateResolver::flush());
+        static::saved(fn () => app(\App\Services\Billing\AgreementRateResolver::class)->flush());
+        static::deleted(fn () => app(\App\Services\Billing\AgreementRateResolver::class)->flush());
     }
 
     protected $fillable = [

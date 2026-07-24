@@ -66,6 +66,10 @@ return [
     // Noms lisibles des tâches (clés registry, imbriquées à cause de la notation à points) ;
     // ajouter les nouvelles tâches ici dans toutes les langues — sinon repli = clé.
     'job' => [
+        'billing' => [
+            'account-invoices' => 'Générer les factures mensuelles à conditions spéciales',
+            'push-retainers' => 'Transmettre les forfaits de retainer à Lexoffice',
+        ],
         'calendly' => ['backfill' => 'Synchronisation des rendez-vous Calendly'],
         'ai' => ['maintenance' => 'Maintenance IA (santé des fournisseurs, nettoyage des suggestions)'],
         'archive' => ['run' => 'Exécution de l\'archivage'],

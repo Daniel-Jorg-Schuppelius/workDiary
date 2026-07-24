@@ -100,6 +100,12 @@ class SchedulerRegistrationTest extends TestCase {
         'integrity:verify --trigger=schedule' => ['20 3 * * *', true, true],
         // Neu mit Feature 096 (MVP-445): Angriffserkennungs-Auswertung.
         'security:evaluate' => ['*/5 * * * *', true, true],
+        // Neu mit Feature 098: Kunden-Sonderkonditionen — Monatsrechnungen +
+        // Retainer-Pauschalen an Lexoffice (jeweils am Monatsersten).
+        'customer-billing:generate-invoices' => ['25 5 1 * *', true, true],
+        'customer-billing:push-retainers' => ['35 5 1 * *', true, true],
+        // Neu mit Feature 095: stündlicher Calendly-Terminabgleich.
+        'calendly:backfill' => ['0 * * * *', true, true],
     ];
 
     /** @return array<string, array{expression: string, onOneServer: bool, withoutOverlapping: bool}> */

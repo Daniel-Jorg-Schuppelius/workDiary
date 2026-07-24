@@ -46,10 +46,10 @@ class CustomerBillingAgreement extends Model {
     use HasSqid;
 
     protected static function booted(): void {
-        // Request-Cache des Rate-Resolvers invalidieren, sonst rechnet der
-        // laufende Request/Test mit veralteten Konditionen.
-        static::saved(fn () => \App\Services\Billing\AgreementRateResolver::flush());
-        static::deleted(fn () => \App\Services\Billing\AgreementRateResolver::flush());
+        // Request-/Job-Cache des scoped Rate-Resolvers invalidieren, sonst
+        // rechnet der laufende Request/Job mit veralteten Konditionen.
+        static::saved(fn () => app(\App\Services\Billing\AgreementRateResolver::class)->flush());
+        static::deleted(fn () => app(\App\Services\Billing\AgreementRateResolver::class)->flush());
     }
 
     protected $fillable = [

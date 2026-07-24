@@ -122,6 +122,11 @@ class GobdLockGuardRuleTest extends TestCase {
         // Rechnungen — bewusste Umgehung des Ausstellungs-Guards, dokumentiert
         // in Invoice.php (MUTABLE_AFTER_ISSUE/saveQuietly-Hinweis).
         'app/Services/Finance/ReconciliationService.php' => 'Zahlungsabgleich aktualisiert Zahlfelder ausgestellter Rechnungen (dokumentierte Guard-Ausnahme).',
+        // Retainer-Voucher-Abgleich (Feature 098) markiert Pauschal-Rechnungen
+        // nach Lexoffice-Rückmeldung als bezahlt — schreibt ausschließlich die
+        // MUTABLE_AFTER_ISSUE-Whitelist (status, paid_on), identisch zum
+        // ReconciliationService-Fall oben.
+        'app/Services/Billing/RetainerVoucherReconciler.php' => 'Retainer-Zahlungsabgleich aktualisiert status/paid_on ausgestellter Pauschal-Rechnungen (dokumentierte Guard-Ausnahme).',
     ];
 
     public function test_guarded_models_register_lock_guards(): void {
