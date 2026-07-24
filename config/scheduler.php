@@ -362,6 +362,15 @@ return [
             'criticality' => 'integration',
             'expected_runtime_minutes' => 15,
         ],
+        // --- Calendly-Terminbuchung (Feature 095) ---
+        'calendly.backfill' => [
+            'command' => 'calendly:backfill',
+            'plugin' => 'calendly',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 10,
+        ],
         // --- Cloud-Dokumenteingang (Feature 080, MVP-359) ---
         'cloud-intake.sync' => [
             'command' => 'cloud-intake:sync',

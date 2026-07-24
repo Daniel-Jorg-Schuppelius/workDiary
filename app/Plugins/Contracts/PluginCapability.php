@@ -52,6 +52,9 @@ enum PluginCapability: string implements HasLabel {
     /** Kann Domains bei einem Registrar-/Reseller-Provider projizieren und kontrolliert verwalten (Feature 083). */
     case DomainRegistrar = 'domain_registrar';
 
+    /** Kann extern gebuchte Termine empfangen und Buchungslinks erzeugen (Feature 095, z. B. Calendly). */
+    case AppointmentSync = 'appointment_sync';
+
     /** Übersetztes UI-Label (Badge in der Plugin-Übersicht). */
     public function label(): string {
         return match ($this) {
@@ -65,6 +68,7 @@ enum PluginCapability: string implements HasLabel {
             self::DocumentIntake => __('Dokumenteingang'),
             self::BackupTarget => __('Backupziel'),
             self::DomainRegistrar => __('Domain-Registrar'),
+            self::AppointmentSync => __('Terminsynchronisation'),
         };
     }
 
@@ -85,6 +89,7 @@ enum PluginCapability: string implements HasLabel {
             self::DocumentIntake => DocumentIntakeSource::class,
             self::BackupTarget => BackupTarget::class,
             self::DomainRegistrar => DomainRegistrar::class,
+            self::AppointmentSync => AppointmentSyncer::class,
         };
     }
 }
