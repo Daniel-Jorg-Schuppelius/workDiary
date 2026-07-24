@@ -25,7 +25,14 @@ class WebhookEndpointFactory extends Factory {
         return [
             'organization_id' => Organization::factory(),
             'label' => fake()->words(2, true),
-            'url' => 'https://' . fake()->domainName() . '/hooks/workdiary',
+            // Feste reservierte Doku-Domain (RFC 2606) statt fake()->domainName():
+            // Der Delivery-Job löst den Host zur Laufzeit über den SSRF-Guard
+            // (UrlSafety::isPubliclyRoutableHttpUrl → echtes DNS) auf. Eine
+            // Zufallsdomain kann (je nach Resolver/NXDOMAIN-Hijack) auf eine
+            // nicht-öffentliche IP zeigen → Guard blockt → Delivery „Failed"
+            // (flaky, ordnungsunabhängig). example.com löst stets auf eine
+            // öffentliche IP auf (oder offline gar nicht → Guard lässt durch).
+            'url' => 'https://example.com/hooks/workdiary',
             'secret' => WebhookEndpoint::generateSecret(),
             'events' => [WebhookEvent::OpenIssueAssigned->value],
             'active' => true,

@@ -116,7 +116,12 @@ jobs:
   tests:
     name: Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # Die volle Suite (~5900 Tests) läuft auf dem 4-vCPU-ubuntu-latest-Runner
+    # ~180 min (lokal 16 Kerne = 45 min). Bei 60 min brach der Job bei ~34 %
+    # ab („operation canceled") — der Timeout, nicht ein Testfehler. Bewusst
+    # großzügig, bis der Test-Job per Sharding (balancierte phpunit-Testsuites)
+    # in parallele Shards zerlegt wird; dann wieder deutlich senken.
+    timeout-minutes: 210
 
     steps:
       - name: Checkout repository

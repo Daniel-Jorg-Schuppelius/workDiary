@@ -1550,16 +1550,16 @@
         },
         {
             "name": "dschuppelius/php-error-toolkit",
-            "version": "v2.6",
+            "version": "v2.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DSchuppelius/php-error-toolkit.git",
-                "reference": "1ad672447ee459a386b98ffc7b2772dd2cc5f12d"
+                "reference": "be583e14f29ba50143afca9eac44cf28291c0c3a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DSchuppelius/php-error-toolkit/zipball/1ad672447ee459a386b98ffc7b2772dd2cc5f12d",
-                "reference": "1ad672447ee459a386b98ffc7b2772dd2cc5f12d",
+                "url": "https://api.github.com/repos/DSchuppelius/php-error-toolkit/zipball/be583e14f29ba50143afca9eac44cf28291c0c3a",
+                "reference": "be583e14f29ba50143afca9eac44cf28291c0c3a",
                 "shasum": ""
             },
             "require": {
@@ -1603,9 +1603,9 @@
             "description": "Logging and error handling foundation for the Schuppelius PHP toolkits (PSR-3 loggers, global error handler, LoggerRegistry, Laravel bridge)",
             "support": {
                 "issues": "https://github.com/DSchuppelius/php-error-toolkit/issues",
-                "source": "https://github.com/DSchuppelius/php-error-toolkit/tree/v2.6"
+                "source": "https://github.com/DSchuppelius/php-error-toolkit/tree/v2.6.1"
             },
-            "time": "2026-07-22T19:50:00+00:00"
+            "time": "2026-07-24T22:05:01+00:00"
         },
         {
             "name": "egulias/email-validator",
@@ -2273,16 +2273,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v13.21.1",
+            "version": "v13.22.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "303b5f8dc899f89e8c38c350b639b8fbd193ed16"
+                "reference": "d354afa45334cdac523fbc015f203a78d7e2f5c6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/303b5f8dc899f89e8c38c350b639b8fbd193ed16",
-                "reference": "303b5f8dc899f89e8c38c350b639b8fbd193ed16",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/d354afa45334cdac523fbc015f203a78d7e2f5c6",
+                "reference": "d354afa45334cdac523fbc015f203a78d7e2f5c6",
                 "shasum": ""
             },
             "require": {
@@ -2496,7 +2496,7 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2026-07-21T14:27:35+00:00"
+            "time": "2026-07-24T20:38:48+00:00"
         },
         {
             "name": "laravel/prompts",
