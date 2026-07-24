@@ -63,6 +63,8 @@ class SchedulerRegistrationTest extends TestCase {
         'toggl:import' => ['0 * * * *', true, true],
         'openproject:import' => ['0 * * * *', true, true],
         'todoist:sync' => ['0 * * * *', true, true],
+        // Neu mit Feature 095: Calendly-Termin-Backfill (Polling/Reconciliation).
+        'calendly:backfill' => ['0 * * * *', true, true],
         // Neu mit Feature 080 (MVP-359): Cloud-Dokumenteingang-Delta-Lauf.
         'cloud-intake:sync' => ['*/15 * * * *', true, true],
         // Neu mit Feature 017 Phase 32 (MVP-364/365): Cloud-Backup + Verify.
@@ -104,8 +106,6 @@ class SchedulerRegistrationTest extends TestCase {
         // Retainer-Pauschalen an Lexoffice (jeweils am Monatsersten).
         'customer-billing:generate-invoices' => ['25 5 1 * *', true, true],
         'customer-billing:push-retainers' => ['35 5 1 * *', true, true],
-        // Neu mit Feature 095: stündlicher Calendly-Terminabgleich.
-        'calendly:backfill' => ['0 * * * *', true, true],
     ];
 
     /** @return array<string, array{expression: string, onOneServer: bool, withoutOverlapping: bool}> */
