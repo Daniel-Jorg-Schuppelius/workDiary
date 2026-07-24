@@ -285,6 +285,13 @@ jobs:
       - name: Install pa11y-ci (on-demand)
         run: npm install --no-save "pa11y-ci@^4.1.1"
 
+      # Puppeteer lädt bei der on-demand-Installation seinen Chrome nicht
+      # automatisch mit; der von pa11y-ci gezogene Puppeteer erwartet aber einen
+      # exakt gepinnten Build. Ohne Version installiert der Befehl genau diesen
+      # nach ~/.cache/puppeteer — sonst: "Could not find Chrome (ver. …)".
+      - name: Install Chrome for pa11y (Puppeteer)
+        run: npx puppeteer browsers install chrome
+
       - name: Run pa11y accessibility checks
         run: npm run a11y
 
