@@ -21,11 +21,12 @@ verweist auf dieses Dokument; beide werden von VS Code automatisch geladen.
 
 ### Qualitäts-Gates (vor jedem Commit/PR)
 
-| Zweck             | Befehl                       |
-| ----------------- | ---------------------------- |
-| Tests             | `composer test`              |
-| Statische Analyse | `vendor/bin/phpstan analyse` |
-| Code-Style        | `vendor/bin/pint`            |
+| Zweck                | Befehl                       |
+| -------------------- | ---------------------------- |
+| Tests                | `composer test`              |
+| Statische Analyse    | `vendor/bin/phpstan analyse` |
+| Code-Style           | `vendor/bin/pint`            |
+| Frontend-Typecheck   | `npm run typecheck`          |
 
 ---
 
@@ -149,6 +150,13 @@ begründen (siehe `../WorkDiary-Architecture/ui-unification-audit.md`).
 
 - In Komponenten-Tags (`<x-…>`) funktioniert `@if (...) attr="..." @endif` **nicht** (führt zu `syntax error, unexpected token "endif"`). Stattdessen gebundenes Attribut: `:style="$cond ? '...' : null"`. In normalen HTML-Tags (`<span>`, `<td>`) ist die `@if`-Direktive im Attribut weiterhin ok.
 - `&` in `__()`-Strings **einfach so** notieren — Blade `{{ }}` escapt korrekt. Niemals `&amp;` im PHP-Quellcode (sonst Doppel-Escape, sichtbar als `&amp;` im UI).
+
+### JavaScript: HTML-Erzeugung (HART)
+
+- **Niemals `innerHTML` direkt zuweisen.** Einzige Schreibstelle ist `setHtml()` aus [`resources/js/lib/html.js`](resources/js/lib/html.js); sie nimmt ausschließlich `SafeHtml`. Ein roher String bricht `npm run typecheck` und wirft zur Laufzeit.
+- **Kein eigener Escaper.** Escaping ist kontextabhängig: `escHtml` (Text/Attribut), `escCssValue` (`style="…"`), `safeUrl` (`href`/`src` — gegen `javascript:` hilft HTML-Escaping *nicht*). Standardweg ist das Tagged Template `` html`…` ``, das automatisch escaped.
+- **`trustedServerHtml()` nur für Blade-gerendertes Markup** (Dialog-Fragmente, Chat-Nachrichten, Hilfetexte) — nie für Werte aus einer JSON-Nutzlast, auch nicht vom eigenen Server. Jeder Aufruf braucht eine Zeile Begründung.
+- Details und Herleitung: [frontend-escaping-konvention.md](../WorkDiary-Architecture/security/frontend-escaping-konvention.md).
 
 ---
 

@@ -9,6 +9,7 @@
  */
 
 import { __ } from "./i18n.js";
+import { escHtml, escCssValue, html, setHtml, clearHtml } from "./lib/html.js";
 
 /* ──────────────────────────── State ──────────────────────────── */
 
@@ -247,34 +248,34 @@ function renderStaffingSuggestions(date, shiftTypeSqid, typeName, suggestions) {
         document.body.appendChild(dlg);
     }
     const rows = suggestions.length
-        ? suggestions
-              .map((s) => {
-                  const reasons = (s.reasons || []).map(escHtml).join(", ");
-                  const warnings = (s.warnings || []).length
-                      ? `<div class="text-warning text-[0.7rem]">⚠ ${(s.warnings || []).map(escHtml).join("; ")}</div>`
-                      : "";
-                  return `<tr class="hover">
-                    <td>${escHtml(s.name)}</td>
+        ? suggestions.map((s) => {
+              const reasons = (s.reasons || []).map((r) => escHtml(r));
+              const warnings = (s.warnings || []).length
+                  ? html`<div class="text-warning text-[0.7rem]">⚠ ${(s.warnings || []).map((w) => escHtml(w))}</div>`
+                  : "";
+              return html`<tr class="hover">
+                    <td>${s.name}</td>
                     <td class="text-right"><span class="badge badge-sm">${Number(s.score)}</span></td>
                     <td class="text-[0.7rem] opacity-80">${reasons}${warnings}</td>
                     <td class="text-right">
                       <button type="button" class="btn btn-primary btn-xs"
                         data-assign-suggest
-                        data-date="${escAttr(date)}"
-                        data-slot-type-sqid="${escAttr(shiftTypeSqid)}"
-                        data-user-sqid="${escAttr(s.user_sqid)}">
+                        data-date="${date}"
+                        data-slot-type-sqid="${shiftTypeSqid}"
+                        data-user-sqid="${s.user_sqid}">
                         Zuweisen
                       </button>
                     </td>
                   </tr>`;
-              })
-              .join("")
-        : `<tr><td colspan="4" class="text-center text-sm opacity-60">Keine geeigneten Kandidaten</td></tr>`;
+          })
+        : html`<tr><td colspan="4" class="text-center text-sm opacity-60">Keine geeigneten Kandidaten</td></tr>`;
 
-    dlg.innerHTML = `
+    setHtml(
+        dlg,
+        html`
       <div class="modal-box max-w-2xl">
         <h3 class="text-lg font-semibold mb-1">Besetzungsvorschläge</h3>
-        <p class="text-sm opacity-70 mb-3">${escHtml(typeName)} · ${escHtml(date)}</p>
+        <p class="text-sm opacity-70 mb-3">${typeName} · ${date}</p>
         <table class="table table-sm table-zebra">
           <thead><tr><th>Mitarbeiter</th><th class="text-right">Score</th><th>Begründung</th><th></th></tr></thead>
           <tbody>${rows}</tbody>
@@ -283,7 +284,8 @@ function renderStaffingSuggestions(date, shiftTypeSqid, typeName, suggestions) {
           <form method="dialog"><button class="btn btn-sm">Schließen</button></form>
         </div>
       </div>
-      <form method="dialog" class="modal-backdrop"><button>close</button></form>`;
+      <form method="dialog" class="modal-backdrop"><button>close</button></form>`,
+    );
     dlg.showModal();
 }
 
@@ -439,7 +441,7 @@ function showComplianceWarnings(violations, allowOverride) {
     const compList = document.getElementById("shift-dialog-compliance-list");
     const overrideRow = document.getElementById("shift-dialog-override-row");
     if (!compEl || !compList) return;
-    compList.innerHTML = "";
+    clearHtml(compList);
     for (const v of violations) {
         const li = document.createElement("li");
         li.textContent =
@@ -655,17 +657,23 @@ function addTypeRow(type) {
     if (!tbody) return;
     const tr = document.createElement("tr");
     tr.setAttribute("data-type-row", type.id);
-    tr.innerHTML = `
-        <td><span class="inline-block h-4 w-4 rounded" style="background:${escHtml(type.color)};"></span></td>
-        <td class="font-mono font-bold" id="type-abbr-${type.id}">${escHtml(type.abbreviation)}</td>
-        <td id="type-name-${type.id}">${escHtml(type.name)}</td>
-        <td id="type-start-${type.id}">${escHtml(type.default_start_time ?? "–")}</td>
-        <td id="type-end-${type.id}">${escHtml(type.default_end_time ?? "–")}</td>
+    // escCssValue statt escHtml: `color` landet im style-Attribut, also im
+    // CSS-Kontext — dort schützt Entity-Escaping nicht vor eingeschleusten
+    // Deklarationen. Eine Wert-Allowlist entscheidet.
+    setHtml(
+        tr,
+        html`
+        <td><span class="inline-block h-4 w-4 rounded" style="background:${escCssValue(type.color)};"></span></td>
+        <td class="font-mono font-bold" id="type-abbr-${type.id}">${type.abbreviation}</td>
+        <td id="type-name-${type.id}">${type.name}</td>
+        <td id="type-start-${type.id}">${type.default_start_time ?? "–"}</td>
+        <td id="type-end-${type.id}">${type.default_end_time ?? "–"}</td>
         <td><span class="badge badge-sm ${type.is_active ? "badge-success" : "badge-ghost"}">${type.is_active ? "ja" : "nein"}</span></td>
         <td class="text-right">
-            <button type="button" data-type-edit="${escAttr(type.id)}" data-type-payload="${escAttr(JSON.stringify(type))}" class="btn btn-sm btn-ghost">Bearbeiten</button>
-            <button type="button" data-type-delete="${escAttr(type.id)}" class="btn btn-sm btn-ghost text-error">Löschen</button>
-        </td>`;
+            <button type="button" data-type-edit="${type.id}" data-type-payload="${JSON.stringify(type)}" class="btn btn-sm btn-ghost">Bearbeiten</button>
+            <button type="button" data-type-delete="${type.id}" class="btn btn-sm btn-ghost text-error">Löschen</button>
+        </td>`,
+    );
     tbody.appendChild(tr);
 }
 
@@ -713,18 +721,6 @@ function _t(key) {
     return key;
 }
 
-/** Escape for HTML text nodes */
-function escHtml(str) {
-    return String(str ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
-}
-
-/** Escape for HTML attribute values (single-quoted context) */
-function escAttr(str) {
-    return String(str ?? "")
-        .replace(/'/g, "&#039;")
-        .replace(/"/g, "&quot;");
-}
+// Escaping läuft zentral über lib/html.js (siehe Import am Dateikopf).
+// Die früheren lokalen escHtml/escAttr hatten Lücken: escHtml escapte kein
+// einfaches Anführungszeichen, escAttr kein kaufmännisches Und.

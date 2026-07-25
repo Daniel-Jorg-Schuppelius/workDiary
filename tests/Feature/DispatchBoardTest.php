@@ -37,11 +37,19 @@ class DispatchBoardTest extends TestCase {
         return User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }
 
+    /**
+     * Laufende Nummer für eindeutige Titel: Die Marker-Assertions suchen über
+     * `firstWhere('label', $e->title)`. fake()->word() zieht aus einem Pool von
+     * wenigen hundert Wörtern — zogen zwei Einträge dasselbe, traf die Suche den
+     * falschen Marker und der Test schlug sporadisch fehl (~1 % der Läufe).
+     */
+    private int $entrySequence = 0;
+
     private function entry(array $overrides = []): DiaryEntry {
         return DiaryEntry::factory()->create(array_replace([
             'organization_id' => $this->organization->id,
             'user_id' => $this->worker()->id,
-            'title' => 'Auftrag ' . fake()->word(),
+            'title' => 'Auftrag ' . (++$this->entrySequence) . ' ' . fake()->word(),
             'mode' => Mode::Fixed->value,
             'status' => Status::Open->value,
             'start_at' => Carbon::parse('2026-07-01 09:00'),

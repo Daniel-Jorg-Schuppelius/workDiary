@@ -93,24 +93,17 @@ class AzureTranslatorProvider extends AbstractHttpAiProvider implements Translat
      * @param list<array<string, string>> $body
      */
     private function post(string $path, array $body): Response {
+        $url = $this->url($path);
+
         try {
-            $response = $this->api()->requestResponse('post', $this->baseUrl() . $path, [
-                'json' => $body,
-            ]);
+            $response = $this->api()->requestResponse('post', $url, ['json' => $body]);
         } catch (AiProviderCallException $e) {
             throw $e;
         } catch (Throwable) {
-            throw AiProviderCallException::transport($this->providerName(), 'Transportfehler bei /translate');
+            throw AiProviderCallException::transport($this->providerName(), 'Transportfehler bei ' . self::redactUrl($url));
         }
 
-        if ($response->status() >= 400) {
-            throw AiProviderCallException::transport(
-                $this->providerName(),
-                sprintf('HTTP %d bei /translate', $response->status())
-            );
-        }
-
-        return $response;
+        return $this->assertOk($response, $url);
     }
 
     /** @param list<GlossaryEntry> $entries */

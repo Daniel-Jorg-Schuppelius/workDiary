@@ -18,6 +18,7 @@ import { bindPushToggle } from "./push.js";
 import { registerServiceWorker, bindInstallPrompt } from "./pwa.js";
 import { initOfflineSync } from "./offline-sync.js";
 import { __ } from "./i18n.js";
+import { html, setHtml, safeUrl, trustedServerHtml } from "./lib/html.js";
 import "./sortable-tables.js";
 import "./bulk-selection.js";
 import "./inline-actions.js";
@@ -484,14 +485,17 @@ document.addEventListener("click", (event) => {
         dialog = document.createElement("dialog");
         dialog.id = "entry-modal";
         dialog.className = "modal";
-        dialog.innerHTML = `
+        setHtml(
+            dialog,
+            html`
             <div class="modal-box wd-modal-box wd-modal-box--standard p-0">
                 <div id="entry-modal-body"></div>
             </div>
             <form method="dialog" class="modal-backdrop">
                 <button aria-label="Close">close</button>
             </form>
-        `;
+        `,
+        );
         document.body.appendChild(dialog);
         dialogBody = dialog.querySelector("#entry-modal-body");
 
@@ -883,10 +887,11 @@ document.addEventListener("click", (event) => {
                         return;
                     }
 
-                    // Fallback: Falls ein Controller HTML statt JSON zurückgibt
-                    const html = await response.text();
+                    // Fallback: Falls ein Controller HTML statt JSON zurückgibt.
+                    // Blade-gerendertes Dialog-Fragment, daher als Markup gesetzt.
+                    const markup = await response.text();
                     if (dialogBody) {
-                        dialogBody.innerHTML = html;
+                        setHtml(dialogBody, trustedServerHtml(markup));
                         initDynamicFields(dialogBody);
                         bindDialogForms(dialogBody);
                     }
@@ -911,23 +916,29 @@ document.addEventListener("click", (event) => {
 
         const loadingMsg = __("js.dialog.loading");
         const loadFailedMsg = __("js.dialog.load_failed");
-        body.innerHTML = `
+        setHtml(
+            body,
+            html`
             <div class="flex flex-col items-center justify-center gap-3 p-12 text-base-content/70">
                 <span class="loading loading-spinner loading-lg text-primary" aria-hidden="true"></span>
                 <span class="text-sm">${loadingMsg}</span>
             </div>
-        `;
+        `,
+        );
         if (typeof modal.showModal === "function") {
             modal.showModal();
         }
 
         const renderLoadError = () => {
-            body.innerHTML = `
+            setHtml(
+                body,
+                html`
                 <div class="p-6 space-y-3">
                     <p class="text-sm text-error">${loadFailedMsg}</p>
-                    <a href="${rawUrl}" target="_blank" rel="noopener" class="btn btn-sm btn-ghost">${__("js.dialog.open_in_new_tab")}</a>
+                    <a href="${safeUrl(rawUrl)}" target="_blank" rel="noopener" class="btn btn-sm btn-ghost">${__("js.dialog.open_in_new_tab")}</a>
                 </div>
-            `;
+            `,
+            );
         };
 
         // Modus-Konflikt (HTTP 409 aus EnsureNewSystemAccess bzw.
@@ -943,12 +954,17 @@ document.addEventListener("click", (event) => {
                 mode === "legacy"
                     ? __("js.dialog.switch_to_legacy")
                     : __("js.dialog.switch_to_new");
-            body.innerHTML = `
+            // `message` stammt aus der 409-JSON-Nutzlast und wird escaped —
+            // eine JSON-Antwort ist kein gerendertes Blade-Markup.
+            setHtml(
+                body,
+                html`
                 <div class="p-6 space-y-3">
                     <p class="text-sm text-warning">${message}</p>
                     <button type="button" data-mode-switch-retry class="btn btn-sm btn-primary">${label}</button>
                 </div>
-            `;
+            `,
+            );
             const retryBtn = body.querySelector("[data-mode-switch-retry]");
             if (!retryBtn) return;
             retryBtn.addEventListener("click", async () => {
@@ -986,14 +1002,14 @@ document.addEventListener("click", (event) => {
                     "X-Requested-With": "XMLHttpRequest",
                 },
             });
-            const html = await response.text();
+            const markup = await response.text();
 
             if (!response.ok) {
                 if (response.status === 409) {
                     let message = "";
                     let targetMode = "new";
                     try {
-                        const parsed = JSON.parse(html);
+                        const parsed = JSON.parse(markup);
                         message = parsed?.message ?? "";
                         targetMode = parsed?.target_mode ?? "new";
                     } catch (_e) {
@@ -1008,7 +1024,8 @@ document.addEventListener("click", (event) => {
                 return;
             }
 
-            body.innerHTML = html;
+            // Blade-gerendertes Dialog-Fragment (siehe openEntryDialog-Kommentar).
+            setHtml(body, trustedServerHtml(markup));
             initDynamicFields(body);
             bindDialogForms(body);
         } catch (_error) {

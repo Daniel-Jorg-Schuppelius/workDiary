@@ -51,48 +51,92 @@ abstract class AbstractHttpAiProvider {
     }
 
     /**
+     * Volle Ziel-URL aus Basis + Endpunktpfad. Pfade gehen — wie im Haus
+     * üblich (vgl. TodoistApiClient) — als volle URL an den Toolkit-Client,
+     * damit Basis-URLs mit Pfadanteil (z. B. `…/v1`) erhalten bleiben.
+     *
+     * Basis-URLs werden in der Praxis aber auch als *Endpunkt*-URL
+     * eingetragen (`https://api.openai.com/v1/responses`); stures Anhängen
+     * ergäbe dann `/v1/responses/v1/models` → 404. Taucht das erste
+     * Pfadsegment schon im Basis-Pfad auf, wird die Basis ab dessen
+     * letztem Vorkommen gekappt (letztes = so wenig wie möglich kappen,
+     * damit Gateway-Präfixe wie `…/proxy/v1` heil bleiben).
+     */
+    protected function url(string $path): string {
+        $base = rtrim($this->baseUrl(), '/');
+        $suffix = ltrim($path, '/');
+        if ($suffix === '') {
+            return $base;
+        }
+
+        $basePath = trim((string) parse_url($base, PHP_URL_PATH), '/');
+        if ($basePath !== '') {
+            $baseSegments = explode('/', $basePath);
+            $hits = array_keys($baseSegments, explode('/', explode('?', $suffix, 2)[0])[0], true);
+
+            if ($hits !== []) {
+                $drop = '/' . implode('/', array_slice($baseSegments, (int) end($hits)));
+                if (str_ends_with($base, $drop)) {
+                    $base = substr($base, 0, -strlen($drop));
+                }
+            }
+        }
+
+        return $base . '/' . $suffix;
+    }
+
+    /**
      * POST mit JSON-Body; wirft AiProviderCallException bei Transport-
-     * oder HTTP-Fehlern (redigiert). Pfade werden — wie im Haus üblich
-     * (vgl. TodoistApiClient) — als volle URL an den Toolkit-Client
-     * gegeben, damit Basis-URLs mit Pfadanteil (z. B. `…/v1`) erhalten
-     * bleiben.
+     * oder HTTP-Fehlern (redigiert).
      *
      * @param array<string, mixed> $payload
      */
     protected function postJson(string $path, array $payload): Response {
+        $url = $this->url($path);
+
         try {
-            $response = $this->api()->postJson($this->baseUrl() . $path, $payload);
+            $response = $this->api()->postJson($url, $payload);
         } catch (AiProviderCallException $e) {
             throw $e; // z. B. Konfigurations-/Tarif-Sperren aus headers()
         } catch (Throwable) {
-            throw AiProviderCallException::transport($this->providerName(), 'Transportfehler bei ' . $path);
+            throw AiProviderCallException::transport($this->providerName(), 'Transportfehler bei ' . self::redactUrl($url));
         }
 
-        return $this->assertOk($response, $path);
+        return $this->assertOk($response, $url);
     }
 
     /** @param array<string, mixed> $query */
     protected function getJson(string $path, array $query = []): Response {
+        $url = $this->url($path);
+
         try {
-            $response = $this->api()->getResponse($this->baseUrl() . $path, $query);
+            $response = $this->api()->getResponse($url, $query);
         } catch (AiProviderCallException $e) {
             throw $e;
         } catch (Throwable) {
-            throw AiProviderCallException::transport($this->providerName(), 'Transportfehler bei ' . $path);
+            throw AiProviderCallException::transport($this->providerName(), 'Transportfehler bei ' . self::redactUrl($url));
         }
 
-        return $this->assertOk($response, $path);
+        return $this->assertOk($response, $url);
     }
 
-    private function assertOk(Response $response, string $path): Response {
+    protected function assertOk(Response $response, string $url): Response {
         if ($response->status() >= 400) {
             throw AiProviderCallException::transport(
                 $this->providerName(),
-                sprintf('HTTP %d bei %s', $response->status(), $path)
+                sprintf('HTTP %d bei %s', $response->status(), self::redactUrl($url))
             );
         }
 
         return $response;
+    }
+
+    /**
+     * Meldungstauglicher Endpunkt: volle URL ohne Query — der Host gehört
+     * zur Diagnose (falsche Basis-URL), Query-Parameter nicht.
+     */
+    protected static function redactUrl(string $url): string {
+        return explode('?', $url, 2)[0];
     }
 
     /** Pflichtwert aus der Verbindung (Modell/Deployment/Basis-URL). */

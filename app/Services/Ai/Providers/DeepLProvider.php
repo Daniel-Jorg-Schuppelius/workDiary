@@ -112,7 +112,7 @@ class DeepLProvider extends AbstractHttpAiProvider implements TranslationProvide
         if (is_string($glossaryId) && $glossaryId !== '') {
             // Dictionary des Sprachpaars voll ersetzen (idempotent).
             try {
-                $response = $this->api()->putJson($this->baseUrl() . '/v3/glossaries/' . $glossaryId . '/dictionaries', $dictionary);
+                $response = $this->api()->putJson($this->url('/v3/glossaries/' . $glossaryId . '/dictionaries'), $dictionary);
                 if ($response->status() < 400) {
                     return $glossaryId;
                 }

@@ -1,6 +1,7 @@
 // Chat-Client: lädt/sendet Nachrichten, Echtzeit via Reverb/Echo, Aktionen über
 // Event-Delegation (Nachrichten-HTML wird serverseitig gerendert eingefügt).
 import { initEcho } from "./echo.js";
+import { escHtml, html, setHtml, clearHtml, trustedServerHtml } from "./lib/html.js";
 
 const root = document.getElementById("chat-root");
 if (root) {
@@ -19,7 +20,8 @@ function initSidebar(root) {
             headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
         })
             .then((r) => (r.ok ? r.json() : null))
-            .then((d) => { if (d && d.html != null) listEl.innerHTML = d.html; })
+            // Serverseitig gerenderte Kanalliste (Blade escaped Nutzerdaten).
+            .then((d) => { if (d && d.html != null) setHtml(listEl, trustedServerHtml(d.html)); })
             .catch(() => {});
     };
     window.refreshChatChannelList = refresh;
@@ -39,21 +41,23 @@ function initSearch() {
     const input = document.getElementById("chat-search");
     const results = document.getElementById("chat-search-results");
     if (!input || !results) return;
-    const esc = (s) => { const d = document.createElement("div"); d.textContent = String(s ?? ""); return d.innerHTML; };
     const hide = () => { results.classList.add("hidden"); };
     let timer;
     input.addEventListener("input", () => {
         clearTimeout(timer);
         const q = input.value.trim();
-        if (q.length < 2) { hide(); results.innerHTML = ""; return; }
+        if (q.length < 2) { hide(); clearHtml(results); return; }
         timer = setTimeout(async () => {
             const r = await fetch(`/chat/search?q=${encodeURIComponent(q)}`, { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" } });
             if (!r.ok) return;
             const d = await r.json();
             results.classList.remove("hidden");
-            results.innerHTML = d.results.length
-                ? d.results.map((x) => `<a href="/chat/${x.channel_id}#chat-msg-${x.message_id}" class="block border-b border-base-200 px-3 py-2 text-sm last:border-b-0 hover:bg-base-200"><div class="truncate font-medium">${esc(x.channel)} · <span class="text-base-content/60">${esc(x.user || "")}</span></div><div class="truncate text-base-content/70">${esc(x.snippet)}</div></a>`).join("")
-                : `<p class="px-3 py-4 text-sm text-base-content/50">${esc(input.dataset.empty || "Keine Treffer.")}</p>`;
+            setHtml(
+                results,
+                d.results.length
+                    ? html`${d.results.map((x) => html`<a href="/chat/${x.channel_id}#chat-msg-${x.message_id}" class="block border-b border-base-200 px-3 py-2 text-sm last:border-b-0 hover:bg-base-200"><div class="truncate font-medium">${x.channel} · <span class="text-base-content/60">${x.user || ""}</span></div><div class="truncate text-base-content/70">${x.snippet}</div></a>`)}`
+                    : html`<p class="px-3 py-4 text-sm text-base-content/50">${input.dataset.empty || "Keine Treffer."}</p>`,
+            );
         }, 300);
     });
     // Dropdown schließen bei Klick außerhalb.
@@ -161,7 +165,7 @@ function initChat(root) {
     async function loadInitial() {
         const d = await getJson(`/chat/${channelId}/messages`);
         if (!d) return;
-        list.innerHTML = "";
+        clearHtml(list);
         d.messages.forEach((m) => append(m.html));
         if (d.messages.length) { oldest = d.messages[0].id; newest = d.messages.at(-1).id; }
         insertDateDividers();
@@ -286,11 +290,12 @@ function initChat(root) {
         const files = [...(fileInput.files || [])];
         filePreview.classList.toggle("hidden", !files.length);
         filePreview.classList.toggle("flex", files.length > 0);
-        filePreview.innerHTML = files.map((f) => {
+        // Dateinamen werden escaped statt (wie früher) um Sonderzeichen
+        // beschnitten — der angezeigte Name bleibt so der tatsächliche.
+        setHtml(filePreview, html`${files.map((f) => {
             const icon = (f.type || "").startsWith("image/") ? "image" : "description";
-            const name = f.name.replace(/[<>&"]/g, "");
-            return `<span class="badge badge-ghost max-w-40 gap-1 truncate" title="${name}"><span class="material-symbols-outlined" style="font-size:0.9rem" aria-hidden="true">${icon}</span>${name}</span>`;
-        }).join("");
+            return html`<span class="badge badge-ghost max-w-40 gap-1 truncate" title="${f.name}"><span class="material-symbols-outlined" style="font-size:0.9rem" aria-hidden="true">${icon}</span>${f.name}</span>`;
+        })}`);
     };
     const addFiles = (fileList) => {
         if (!fileInput || !fileList?.length) return;
@@ -444,7 +449,7 @@ function initChat(root) {
         const ph = pollOptions.dataset.optPlaceholder || "Option";
         const row = document.createElement("div");
         row.className = "flex items-center gap-1";
-        row.innerHTML = `<input type="text" name="options[]" maxlength="200" class="input input-bordered input-sm w-full" placeholder="${ph} ${count + 1}"><button type="button" class="chat-poll-remove btn btn-ghost btn-sm btn-square" tabindex="-1"><span class="material-symbols-outlined" style="font-size:1rem" aria-hidden="true">close</span></button>`;
+        setHtml(row, html`<input type="text" name="options[]" maxlength="200" class="input input-bordered input-sm w-full" placeholder="${ph} ${count + 1}"><button type="button" class="chat-poll-remove btn btn-ghost btn-sm btn-square" tabindex="-1"><span class="material-symbols-outlined" style="font-size:1rem" aria-hidden="true">close</span></button>`);
         pollOptions.appendChild(row);
         row.querySelector("input")?.focus();
     });
@@ -490,7 +495,8 @@ function initChat(root) {
         const r = await fetch(`/chat/messages/${id}/replies`, { headers: headers() });
         if (!r.ok) return;
         const d = await r.json();
-        body.innerHTML = d.parent.html + '<hr class="my-2 border-base-300">' + d.replies.map((x) => x.html).join("");
+        // Nachrichten-HTML kommt serverseitig gerendert (siehe Dateikopf).
+        setHtml(body, html`${trustedServerHtml(d.parent.html)}<hr class="my-2 border-base-300">${d.replies.map((x) => trustedServerHtml(x.html))}`);
         drawer.classList.remove("hidden");
         drawer.classList.add("flex");
         const tf = document.getElementById("chat-thread-form");

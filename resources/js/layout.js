@@ -5,6 +5,8 @@
  * data-confirm-dialog-Form-Interception. Blade-Werte (Theme-Update-URL,
  * Übersetzungen) kommen über window.__layout (inline gesetzt, vor diesem Modul).
  */
+import { html, setHtml } from "./lib/html.js";
+
 (function () {
     var cfg = window.__layout || {};
     var I = cfg.i18n || {};
@@ -119,8 +121,10 @@
                     function renderIcon(el, value) {
                         if (!el) return;
                         var v = (value == null) ? '' : String(value);
+                        // Regex-Guard bleibt die eigentliche Absicherung; das
+                        // Escaping deckt den Rest ab.
                         if (v !== '' && /^[a-z0-9_]+$/.test(v)) {
-                            el.innerHTML = '<span class="material-symbols-outlined">' + v + '</span>';
+                            setHtml(el, html`<span class="material-symbols-outlined">${v}</span>`);
                         } else {
                             el.textContent = v;
                         }

@@ -11,6 +11,8 @@
 // Seitenwechsel (volle Page-Loads, kein SPA) öffnet die Sidebar dann mit dem
 // NEUEN Seitenkontext, nie mit veraltetem Inhalt.
 
+import { html, setHtml, clearHtml, trustedServerHtml } from "./lib/html.js";
+
 const DRAWER_SELECTOR = "[data-help-drawer]";
 const BACKDROP_SELECTOR = "[data-help-backdrop]";
 const FALLBACK_TEMPLATE_SELECTOR = "template[data-help-fallback]";
@@ -196,7 +198,7 @@ function renderFallback(message = null) {
     if (template) {
         setTitle(template.getAttribute("data-fallback-title") || "");
         if (bodyEl) {
-            bodyEl.innerHTML = "";
+            clearHtml(bodyEl);
             bodyEl.appendChild(template.content.cloneNode(true));
             if (message) {
                 const messageEl = bodyEl.querySelector(
@@ -208,7 +210,7 @@ function renderFallback(message = null) {
     } else {
         setTitle("—");
         if (bodyEl && message) {
-            bodyEl.innerHTML = "";
+            clearHtml(bodyEl);
             const p = document.createElement("p");
             p.className = "text-base-content/60";
             p.textContent = message;
@@ -224,7 +226,7 @@ async function runFallbackSearch(form) {
     const query = input ? input.value.trim() : "";
     if (!resultsEl || query === "") return;
 
-    resultsEl.innerHTML = "";
+    clearHtml(resultsEl);
     try {
         const response = await fetch(
             `/help/search?q=${encodeURIComponent(query)}`,
@@ -275,13 +277,14 @@ function renderTopic(payload) {
     const thanksEl = document.querySelector("[data-help-feedback-thanks]");
 
     setTitle(payload.title || payload.topic);
-    if (bodyEl) bodyEl.innerHTML = payload.body_html || "";
+    // body_html kommt serverseitig gerendert aus der Help-Registry.
+    if (bodyEl) setHtml(bodyEl, trustedServerHtml(payload.body_html || ""));
     if (footerEl) footerEl.classList.remove("hidden");
     if (thanksEl) thanksEl.classList.add("hidden");
     feedbackSent = false;
 
     if (relatedWrap && relatedList) {
-        relatedList.innerHTML = "";
+        clearHtml(relatedList);
         const related = Array.isArray(payload.related) ? payload.related : [];
         if (related.length === 0) {
             relatedWrap.classList.add("hidden");
@@ -317,7 +320,7 @@ async function loadTopic(topic, options = {}) {
     const titleEl = document.querySelector("[data-help-title]");
     const bodyEl = document.querySelector("[data-help-body]");
     if (titleEl) titleEl.textContent = "…";
-    if (bodyEl) bodyEl.innerHTML = `<p class="text-base-content/60">…</p>`;
+    if (bodyEl) setHtml(bodyEl, html`<p class="text-base-content/60">…</p>`);
 
     openDrawer(options);
 

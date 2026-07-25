@@ -91,7 +91,7 @@ return [
         'provider' => 'Provider',
         'provider_help' => 'Adapter für Cloud-Provider und Übersetzungsdienste folgen in MVP-407–410; Verbindungen lassen sich bereits anlegen, aktiv werden sie erst nach bestandenem Preflight.',
         'base_url' => 'Basis-URL',
-        'base_url_help' => 'Nur für lokale/kompatible Endpunkte (Ollama, OpenAI-kompatibel, LibreTranslate, Azure).',
+        'base_url_help' => 'Nur für lokale/kompatible Endpunkte (Ollama, OpenAI-kompatibel, LibreTranslate, Azure). Nur Host bzw. Versionspräfix angeben (z. B. https://host/v1), keine vollständige Endpunkt-URL.',
         'api_key' => 'API-Schlüssel',
         'api_key_help' => 'Wird verschlüsselt gespeichert, erscheint nie in Logs, Audit oder Supportberichten.',
         'model' => 'Modell/Deployment',

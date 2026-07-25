@@ -113,6 +113,19 @@ jobs:
       - name: Code style (pint)
         run: composer format
 
+      # Frontend-Typecheck über JSDoc + checkJs (TypeScript 7, nativer Go-Port).
+      # Gegen typecheck-baseline.json geprüft, analog phpstan-baseline.neon:
+      # das gewachsene DOM-Typrauschen ist eingefroren, neue Befunde brechen.
+      # Setzt insbesondere die SafeHtml-Grenze aus resources/js/lib/html.js
+      # durch — rohe Strings an setHtml() sind hier ein Fehler, kein Review-Fund.
+      - name: Frontend typecheck (tsc)
+        run: npm run typecheck
+
+      # Verhalten der Escaping-Bibliothek selbst (Escaper, Protokoll-Allowlist,
+      # Laufzeit-Guard). Ohne Test-Framework — reines Node.
+      - name: Frontend security lib tests
+        run: npm run test:frontend
+
   tests:
     name: Tests (shard ${{ matrix.shard }}/4)
     runs-on: ubuntu-latest

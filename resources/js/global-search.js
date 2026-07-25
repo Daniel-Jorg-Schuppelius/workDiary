@@ -11,6 +11,7 @@
  */
 
 import { __ } from "./i18n.js";
+import { escHtml, safeUrl, html, setHtml, clearHtml } from "./lib/html.js";
 
 const DIALOG_ID = "global-search-dialog";
 const DEBOUNCE_MS = 220;
@@ -36,34 +37,32 @@ const setStatus = (root, text, { loading = false } = {}) => {
     if (!el) return;
     if (!text) {
         el.classList.add("hidden");
-        el.innerHTML = "";
+        clearHtml(el);
         return;
     }
     if (loading) {
-        el.innerHTML = `
+        setHtml(
+            el,
+            html`
             <span class="inline-flex items-center gap-2">
                 <span class="loading loading-spinner loading-xs text-primary" aria-hidden="true"></span>
-                <span>${escapeHtml(text)}</span>
+                <span>${text}</span>
             </span>
-        `;
+        `,
+        );
     } else {
         el.textContent = text;
     }
     el.classList.remove("hidden");
 };
 
-const escapeHtml = (s) =>
-    String(s ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-
 const renderHint = (root, message) => {
     const results = root.querySelector("[data-global-search-results]");
     if (!results) return;
-    results.innerHTML = `<div class="px-4 py-8 text-center text-sm text-base-content/50">${escapeHtml(message)}</div>`;
+    setHtml(
+        results,
+        html`<div class="px-4 py-8 text-center text-sm text-base-content/50">${message}</div>`,
+    );
     flatItems = [];
     activeIndex = -1;
 };
@@ -77,45 +76,46 @@ const renderResults = (root, groups, allUrl = null) => {
         return;
     }
 
-    let html = "";
+    const parts = [];
     flatItems = [];
     groups.forEach((group) => {
-        html += `<div class="px-4 pt-3 pb-1 text-[0.65rem] uppercase tracking-[0.15em] text-base-content/50 flex items-center gap-1.5">
-            <span class="material-symbols-outlined text-[0.95rem]" aria-hidden="true">${escapeHtml(group.icon || "search")}</span>
-            <span>${escapeHtml(group.label)}</span>
-        </div>`;
-        html += `<ul class="px-1">`;
-        group.items.forEach((item) => {
+        parts.push(html`<div class="px-4 pt-3 pb-1 text-[0.65rem] uppercase tracking-[0.15em] text-base-content/50 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[0.95rem]" aria-hidden="true">${group.icon || "search"}</span>
+            <span>${group.label}</span>
+        </div>`);
+        const items = group.items.map((item) => {
             const idx = flatItems.length;
             flatItems.push(item);
-            html += `<li>
-                <a href="${escapeHtml(item.url)}"
+            // safeUrl statt HTML-Escaping: gegen `javascript:` schützt nur eine
+            // Protokoll-Allowlist, Entity-Escaping greift im href-Kontext nicht.
+            return html`<li>
+                <a href="${safeUrl(item.url)}"
                    data-gs-item
                    data-gs-index="${idx}"
                    class="flex items-start gap-3 rounded-box px-3 py-2 hover:bg-base-200 focus:bg-base-200 focus:outline-none">
-                    <span class="material-symbols-outlined text-base text-base-content/60" aria-hidden="true">${escapeHtml(group.icon || "search")}</span>
+                    <span class="material-symbols-outlined text-base text-base-content/60" aria-hidden="true">${group.icon || "search"}</span>
                     <span class="flex-1 min-w-0">
-                        <span class="block text-sm font-medium truncate">${escapeHtml(item.title)}</span>
-                        ${item.subtitle ? `<span class="block text-xs text-base-content/60 truncate">${escapeHtml(item.subtitle)}</span>` : ""}
+                        <span class="block text-sm font-medium truncate">${item.title}</span>
+                        ${item.subtitle ? html`<span class="block text-xs text-base-content/60 truncate">${item.subtitle}</span>` : ""}
                     </span>
                 </a>
             </li>`;
         });
-        html += `</ul>`;
+        parts.push(html`<ul class="px-1">${items}</ul>`);
     });
     // Vollaudit 2026-07 (M8): Link auf die Vollergebnisseite mit Filtern.
     if (allUrl) {
         const idx = flatItems.length;
         flatItems.push({ url: allUrl });
-        html += `<div class="border-t border-base-200 mt-2 px-1 pt-1">
-            <a href="${escapeHtml(allUrl)}" data-gs-item data-gs-index="${idx}"
+        parts.push(html`<div class="border-t border-base-200 mt-2 px-1 pt-1">
+            <a href="${safeUrl(allUrl)}" data-gs-item data-gs-index="${idx}"
                class="flex items-center gap-2 rounded-box px-3 py-2 text-sm font-medium hover:bg-base-200 focus:bg-base-200 focus:outline-none">
                 <span class="material-symbols-outlined text-base" aria-hidden="true">manage_search</span>
-                <span>${escapeHtml(__("alle Treffer →"))}</span>
+                <span>${__("alle Treffer →")}</span>
             </a>
-        </div>`;
+        </div>`);
     }
-    results.innerHTML = html;
+    setHtml(results, html`${parts}`);
     activeIndex = -1;
     updateActive(root);
 };
