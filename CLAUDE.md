@@ -47,6 +47,22 @@ Rückwärtskompatibilität vergleichen. Nach einer Migration: betroffene Tests +
 nur, erzeugt keine Prüfziffer). Begründungen:
 [toolkit-konsolidierung-2026-06.md](../WorkDiary-Architecture/toolkit-konsolidierung-2026-06.md).
 
+### Shell-Kommandos: CommandBuilder escaped selbst — NICHT caller-seitig escapen
+
+Der `ConfigToolkit\CommandBuilder` escaped die eingesetzten Platzhalterwerte
+**selbst** (config-toolkit ≥ 0.5). Aufrufer (`PdfFile`, `TifFile`,
+`OfficeHelper`, `ImageCropHelper`, `MediaHelper`, …) übergeben daher **Rohwerte**.
+**Kein** caller-seitiges `escapeshellarg()` an Einzelwert-Platzhaltern (z. B.
+`[OUTPUT]`) ergänzen — das ist redundant. Ein Static-Audit meldet die scheinbare
+„Asymmetrie" (`TifFile::merge`: `[INPUT]` escaped, `[OUTPUT]` roh) fälschlich als
+Bug: **ist keiner.** `[OUTPUT]` (Einzelwert) bleibt roh, der CommandBuilder
+escaped ihn einmal; `[INPUT]` beim Multi-Datei-Merge muss pro Datei vor-escaped
+werden (sonst würden alle Dateien zu *einem* Token verklebt) — `CommandBuilder::isShellQuotedSequence()`
+erkennt die vor-escapte Sequenz und reicht sie mehrteilig durch. Also: bei
+Shell-Command-Findings zuerst prüfen, ob der Wert über den CommandBuilder läuft;
+wenn ja, Rohwerte übergeben, kein caller-Escaping (Ausnahme: bewusstes
+Multi-Wert-Vor-Escaping).
+
 ## Verweise
 
 Die gesamte Entwicklungs-/Architekturdoku liegt im Schwester-Repo
