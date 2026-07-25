@@ -110,10 +110,9 @@ class MrpService {
 
     /** @return numeric-string */
     private function numeric(string $value): string {
+        // normalizeDecimalString() garantiert numeric-string ('0' bei leerem
+        // oder nicht-numerischem Input); die Negativ-Klemme bleibt fachlich.
         $value = NumberHelper::normalizeDecimalString($value);
-        if ($value === '' || ! is_numeric($value)) {
-            return '0';
-        }
 
         return bccomp($value, '0', self::SCALE) < 0 ? '0' : bcadd($value, '0', self::SCALE);
     }

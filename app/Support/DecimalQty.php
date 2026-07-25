@@ -38,9 +38,10 @@ final class DecimalQty {
      * @return numeric-string
      */
     public static function sanitize(string $value): string {
-        $value = NumberHelper::normalizeDecimalString($value);
-
-        return ($value === '' || ! is_numeric($value)) ? '0' : $value;
+        // normalizeDecimalString() setzt numeric-string zur Laufzeit durch
+        // (leerer Input und alles nicht-Numerische ergeben '0'), eine erneute
+        // Prüfung wäre toter Code.
+        return NumberHelper::normalizeDecimalString($value);
     }
 
     /**

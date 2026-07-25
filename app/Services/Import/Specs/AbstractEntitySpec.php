@@ -63,9 +63,9 @@ abstract class AbstractEntitySpec implements EntitySpec {
             return null;
         }
 
-        $normalized = NumberHelper::normalizeDecimalString(str_replace("\u{00A0}", '', $value));
-
-        return is_numeric($normalized) ? $normalized : null;
+        // OrNull-Variante: unterscheidet nicht deutbaren Input ("n/a") von einer
+        // echten Null. normalizeDecimalString() würde beides zu '0' machen.
+        return NumberHelper::normalizeDecimalStringOrNull(str_replace("\u{00A0}", '', $value));
     }
 
     protected function requiredIssue(string $field): ValidationIssue {

@@ -90,8 +90,8 @@ class MaterialDemandCalculator {
 
     /** @return numeric-string */
     private function numeric(string $value): string {
-        $value = NumberHelper::normalizeDecimalString($value);
-
-        return $value === '' || ! is_numeric($value) ? '0' : $value;
+        // normalizeDecimalString() garantiert numeric-string (nicht-numerischer
+        // und leerer Input ergeben '0') — eine Nachprüfung wäre toter Code.
+        return NumberHelper::normalizeDecimalString($value);
     }
 }

@@ -178,7 +178,10 @@ class BMEcatImportService {
             return number_format((float) $raw, 4, '.', '');
         }
         $normalized = NumberHelper::normalizeDecimalString($raw);
-        if (! is_numeric($normalized) || stripos($normalized, 'e') !== false) {
+        // is_numeric() entfällt: normalizeDecimalString() setzt numeric-string
+        // durch. Die Exponential-Prüfung bleibt — bcadd() unten kann keine
+        // E-Notation verarbeiten.
+        if (stripos($normalized, 'e') !== false) {
             return null;
         }
         $halfStep = str_starts_with($normalized, '-') ? '-0.00005' : '0.00005';

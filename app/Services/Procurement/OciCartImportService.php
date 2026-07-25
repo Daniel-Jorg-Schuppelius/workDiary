@@ -87,8 +87,11 @@ class OciCartImportService {
 
     /** @return numeric-string */
     private function positive(string $value): string {
+        // Leer-/is_numeric-Prüfung entfällt: normalizeDecimalString() setzt
+        // numeric-string durch ('0' als Fallback). Die Positiv-Prüfung bleibt
+        // fachlich — Mengen <= 0 werden auf 1 gehoben.
         $value = NumberHelper::normalizeDecimalString($value);
-        if ($value === '' || ! is_numeric($value) || (float) $value <= 0) {
+        if ((float) $value <= 0) {
             return '1';
         }
 

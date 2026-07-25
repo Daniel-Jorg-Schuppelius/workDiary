@@ -208,7 +208,10 @@ class DwdProvider implements WeatherProvider {
         foreach ($document->toAssoc() as $row) {
             $clean = [];
             foreach ($row as $column => $value) {
-                $clean[trim((string) $column)] = $value === null ? null : trim((string) $value);
+                // toAssoc() liefert list<array<string,string>> — Werte sind nie
+                // null (array_combine bricht bei Spalten-Mismatch, statt Lücken
+                // zu füllen), die frühere null-Weiche war toter Code.
+                $clean[trim((string) $column)] = trim((string) $value);
             }
             if (($clean['MESS_DATUM'] ?? null) === $needle) {
                 return $clean;

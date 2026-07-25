@@ -309,9 +309,10 @@ class GaebDaXmlParser {
         if ($value === '') {
             return null;
         }
-        $value = NumberHelper::normalizeDecimalString($value);
-
-        return is_numeric($value) ? $value : null;
+        // OrNull-Variante: nicht deutbarer Müll ("abc") bleibt null und wird
+        // nicht als Betrag 0 importiert. In einem Leistungsverzeichnis ist das
+        // ein fachlicher Unterschied.
+        return NumberHelper::normalizeDecimalStringOrNull($value);
     }
 
     /** Default-Namespace entfernen, damit SimpleXML ohne Präfixe arbeitet. */
