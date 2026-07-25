@@ -114,14 +114,20 @@ jobs:
         run: composer format
 
   tests:
-    name: Tests
+    name: Tests (shard ${{ matrix.shard }}/4)
     runs-on: ubuntu-latest
-    # Die volle Suite (~5900 Tests) läuft auf dem 4-vCPU-ubuntu-latest-Runner
-    # ~180 min (lokal 16 Kerne = 45 min). Bei 60 min brach der Job bei ~34 %
-    # ab („operation canceled") — der Timeout, nicht ein Testfehler. Bewusst
-    # großzügig, bis der Test-Job per Sharding (balancierte phpunit-Testsuites)
-    # in parallele Shards zerlegt wird; dann wieder deutlich senken.
-    timeout-minutes: 210
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    # Die volle Suite (~5900 Tests) braucht auf dem 4-vCPU-Runner ~4,3 h am
+    # Stück (60-/210-min-Timeouts brachen bei 34 %/81 % ab). Daher als Matrix
+    # in 4 parallele Shards zerlegt: paratest --shard=N/4 verteilt die Tests
+    # selbst-balancierend über die Test-Anzahl, die DB-Isolation bleibt über
+    # --parallel --recreate-databases erhalten (ohne Pfad-Argument!). Jeder
+    # Shard läuft ~1 h. fail-fast:false, damit ein roter Shard die anderen
+    # nicht abwürgt — sonst fehlt deren ERRORS-Ausgabe.
+    timeout-minutes: 90
 
     steps:
       - name: Checkout repository
@@ -170,8 +176,10 @@ jobs:
           cp .env.testing .env
           touch /dev/shm/workdiary-testing.sqlite
 
-      - name: Run tests
-        run: composer test
+      - name: Run tests (shard ${{ matrix.shard }}/4)
+        run: |
+          php artisan config:clear --ansi
+          XDEBUG_MODE=off php artisan test --parallel --recreate-databases --shard=${{ matrix.shard }}/4
 
       # Bauturbo A17 (MVP-335): GoBD-Integritätsnachweis (gobd-gap-analyse.md,
       # "audit:verify in CI/Cron einhängen"). Die Parallel-Testsuite lässt die
@@ -179,6 +187,8 @@ jobs:
       # demo-geseedeten Datenbank — demo:seed schreibt echte, hash-verkettete
       # audit_logs, sodass die Ketten-Nachrechnung nicht trivial leer ist.
       - name: Verify audit hash chains (audit:verify)
+        # Unabhängig von den Shards — nur einmal (an Shard 1) statt 4× redundant.
+        if: matrix.shard == '1'
         run: |
           rm -f /dev/shm/workdiary-testing.sqlite
           touch /dev/shm/workdiary-testing.sqlite
