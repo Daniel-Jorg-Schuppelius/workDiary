@@ -12,6 +12,7 @@ namespace App\Services\Invoicing\EInvoice;
 
 use App\Models\{Invoice, InvoiceItem};
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Money;
 use ERechnungToolkit\Builders\ERechnungDocumentBuilder;
 use ERechnungToolkit\Entities\{Document, PaymentTerms, TaxSubtotal, TaxTotal};
 use ERechnungToolkit\Enums\{ERechnungProfile, InvoiceType, PaymentMeansCode, TaxCategory, UnitCode};
@@ -164,22 +165,25 @@ class XRechnungGenerator {
         // (Toleranz 0,5 ct).
         if ($invoice->items->isNotEmpty()) {
             $totals = app(\App\Services\Invoicing\InvoiceTotalsCalculator::class)->compute($invoice);
-            $builderLineSum = round($invoice->items->sum(
-                fn(InvoiceItem $i): float => \App\Services\Invoicing\InvoiceTotalsCalculator::lineNet(
+            $documentCurrency = $invoice->currency ?? CurrencyCode::Euro;
+            $builderLineSum = Money::sum($invoice->items->map(
+                fn (InvoiceItem $i): Money => \App\Services\Invoicing\InvoiceTotalsCalculator::lineNet(
                     (float) $i->quantity,
-                    (float) $i->unit_price,
+                    (string) $i->unit_price,
                     $i->discount_percent !== null ? (float) $i->discount_percent : null,
-                    $i->discount_amount !== null ? (float) $i->discount_amount : null,
+                    $i->discount_amount !== null ? (string) $i->discount_amount : null,
+                    $documentCurrency,
                 ),
-            ), 2);
-            $subtotal = round((float) $invoice->subtotal, 2);
-            $total = round((float) $invoice->total, 2);
-            $taxAmount = round((float) $invoice->tax_amount, 2);
+            )->all(), $documentCurrency);
+            $subtotal = Money::of((string) $invoice->subtotal, $documentCurrency);
+            $total = Money::of((string) $invoice->total, $documentCurrency);
+            $taxAmount = Money::of((string) $invoice->tax_amount, $documentCurrency);
+            // Money rechnet exakt — Abweichung heißt Abweichung, keine Toleranz.
             if (
-                abs($totals['subtotal'] - $subtotal) > 0.005
-                || abs($builderLineSum - $totals['line_net_sum']) > 0.005
-                || abs($totals['tax_amount'] - $taxAmount) > 0.005
-                || abs(($subtotal + $taxAmount) - $total) > 0.005
+                !$totals['subtotal']->equals($subtotal)
+                || !$builderLineSum->equals($totals['line_net_sum'])
+                || !$totals['tax_amount']->equals($taxAmount)
+                || !$subtotal->plus($taxAmount)->equals($total)
             ) {
                 $errors[] = (string) __('invoicing.einvoice.error.totals_mismatch');
             }
@@ -357,15 +361,17 @@ class XRechnungGenerator {
                 id: (string) $lineNo,
                 quantity: (float) $item->quantity,
                 unitCode: $this->unitCode((string) $item->unit),
-                netAmount: (float) $item->amount,
+                netAmount: Money::of((string) $item->amount, $currency),
                 itemName: $name,
-                unitPrice: (float) $item->unit_price,
+                unitPrice: Money::of((string) $item->unit_price, $currency),
                 taxCategory: $itemCategory,
                 taxPercent: $itemRate,
                 itemDescription: mb_strlen($description) > 100 ? $description : null,
             );
-            $lineDiscount = round(round((float) $item->quantity * (float) $item->unit_price, 2) - (float) $item->amount, 2);
-            if ($lineDiscount > 0) {
+            $lineDiscount = Money::of((string) $item->unit_price, $currency)
+                ->times((float) $item->quantity)
+                ->minus(Money::of((string) $item->amount, $currency));
+            if ($lineDiscount->isPositive()) {
                 $line->addAllowanceCharge(\ERechnungToolkit\Entities\AllowanceCharge::discount(
                     $lineDiscount,
                     (string) __('Rabatt'),
@@ -382,14 +388,14 @@ class XRechnungGenerator {
         // anteilig (derselbe Kalkulator wie Invoice::recalculate/Preflight);
         // addAllowanceCharge() rechnet TaxTotal/MonetaryTotal selbst neu.
         $totals = app(\App\Services\Invoicing\InvoiceTotalsCalculator::class)->compute($invoice);
-        if ($totals['document_discount'] > 0) {
+        if ($totals['document_discount']->isPositive()) {
             $categoriesByRate = [];
             foreach ($invoice->items as $item) {
                 $rateKey = number_format($item->tax_rate !== null ? (float) $item->tax_rate : $taxRate, 2, '.', '');
                 $categoriesByRate[$rateKey] ??= $this->itemTaxCategory($item, $category);
             }
             foreach ($totals['by_rate'] as $rateKey => $group) {
-                if ($group['allowance'] <= 0) {
+                if (!$group['allowance']->isPositive()) {
                     continue;
                 }
                 $document->addAllowanceCharge(\ERechnungToolkit\Entities\AllowanceCharge::discount(

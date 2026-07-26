@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
@@ -77,8 +79,10 @@ class Quote extends Model {
     }
 
     public function recalculate(): void {
-        $sub = 0.0;
-        $tax = 0.0;
+        // Angebote führen keine eigene Währungsspalte — Belegwährung ist der Euro.
+        $currency = CurrencyCode::Euro;
+        $sub = Money::zero($currency);
+        $tax = Money::zero($currency);
         $fallbackRate = null;
         foreach ($this->items as $item) {
             // Vor der Entscheidung (accepted=null) zählen Pflichtpositionen,
@@ -89,18 +93,18 @@ class Quote extends Model {
             }
             // MVP-416: Zeilennetto inkl. Positionsrabatt.
             $net = $item->netAmount();
-            $sub += $net;
+            $sub = $sub->plus($net);
             // Positionen ohne eigenen Satz: Satz aus dem TaxResolver
             // (§ 19 UStG → 0, Org-Override, Länderkatalog) statt hart 19 % —
             // sonst zeigt eine Kleinunternehmer-Org falsche Bruttopreise.
             $rate = $item->tax_rate !== null
                 ? (float) $item->tax_rate
                 : ($fallbackRate ??= $this->defaultTaxRate());
-            $tax += round($net * $rate / 100, 2);
+            $tax = $tax->plus($net->percentage($rate));
         }
-        $this->subtotal = round($sub, 2);
-        $this->tax_amount = round($tax, 2);
-        $this->total = round($sub + $tax, 2);
+        $this->subtotal = $sub->toFloat();
+        $this->tax_amount = $tax->toFloat();
+        $this->total = $sub->plus($tax)->toFloat();
     }
 
     /** Steuersatz-Fallback für Positionen ohne eigenen Satz (s. recalculate). */

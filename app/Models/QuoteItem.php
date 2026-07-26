@@ -36,12 +36,13 @@ class QuoteItem extends Model {
     ];
 
     /** Zeilennetto inkl. Positionsrabatt (MVP-416) — Quelle für Quote::recalculate(). */
-    public function netAmount(): float {
+    public function netAmount(): \CommonToolkit\ValueObjects\Money {
         return \App\Services\Invoicing\InvoiceTotalsCalculator::lineNet(
             (float) $this->quantity,
-            (float) $this->unit_price,
+            (string) $this->unit_price,
             $this->discount_percent !== null ? (float) $this->discount_percent : null,
-            $this->discount_amount !== null ? (float) $this->discount_amount : null,
+            $this->discount_amount !== null ? (string) $this->discount_amount : null,
+            \CommonToolkit\Enums\CurrencyCode::Euro,
         );
     }
 

@@ -75,12 +75,13 @@ class InvoiceItem extends Model {
     protected static function booted(): void {
         static::saving(function (InvoiceItem $i): void {
             // MVP-416: Zeilennetto inkl. Positionsrabatt (Prozent XOR Betrag).
-            $i->amount = (string) \App\Services\Invoicing\InvoiceTotalsCalculator::lineNet(
+            $i->amount = \App\Services\Invoicing\InvoiceTotalsCalculator::lineNet(
                 (float) $i->quantity,
-                (float) $i->unit_price,
+                (string) $i->unit_price,
                 $i->discount_percent !== null ? (float) $i->discount_percent : null,
-                $i->discount_amount !== null ? (float) $i->discount_amount : null,
-            );
+                $i->discount_amount !== null ? (string) $i->discount_amount : null,
+                $i->invoice->currency ?? \CommonToolkit\Enums\CurrencyCode::Euro,
+            )->getAmount();
         });
 
         // Beim Löschen alle Quellposten wieder freigeben (Spese→Approved, Zeiten→exported=false,

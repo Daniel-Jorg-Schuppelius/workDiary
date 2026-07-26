@@ -11,6 +11,8 @@
 namespace App\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\{Collection, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -235,23 +237,32 @@ class Invoice extends Model {
 
         $breakdown = [];
         foreach ($totals['by_rate'] as $group) {
-            $breakdown[] = ['rate' => $group['rate'], 'net' => $group['taxable'], 'tax' => $group['tax']];
+            $breakdown[] = [
+                'rate' => $group['rate'],
+                'net' => $group['taxable']->getAmount(),
+                'tax' => $group['tax']->getAmount(),
+            ];
         }
 
-        $this->subtotal = (string) $totals['subtotal'];
-        $this->tax_amount = (string) $totals['tax_amount'];
-        $this->total = (string) $totals['total'];
+        $this->subtotal = $totals['subtotal']->getAmount();
+        $this->tax_amount = $totals['tax_amount']->getAmount();
+        $this->total = $totals['total']->getAmount();
         $this->tax_breakdown = $breakdown;
     }
 
     /** Positionssumme vor Belegrabatt (MVP-416). */
-    public function lineSubtotal(): float {
-        return round((float) $this->subtotal + $this->documentDiscountTotal(), 2);
+    public function lineSubtotal(): Money {
+        return Money::of((string) $this->subtotal, $this->currency ?? CurrencyCode::Euro)
+            ->plus($this->documentDiscountTotal());
     }
 
-    /** Belegrabatt in EUR (Prozent XOR Betrag), 0 ohne Rabatt. */
-    public function documentDiscountTotal(): float {
-        $lineNetSum = round($this->items->sum(fn(InvoiceItem $i): float => (float) $i->amount), 2);
+    /** Belegrabatt in Belegwährung (Prozent XOR Betrag), 0 ohne Rabatt. */
+    public function documentDiscountTotal(): Money {
+        $currency = $this->currency ?? CurrencyCode::Euro;
+        $lineNetSum = Money::sum(
+            $this->items->map(fn (InvoiceItem $i): Money => Money::of((string) $i->amount, $currency))->all(),
+            $currency
+        );
 
         return app(\App\Services\Invoicing\InvoiceTotalsCalculator::class)->documentDiscount($this, $lineNetSum);
     }

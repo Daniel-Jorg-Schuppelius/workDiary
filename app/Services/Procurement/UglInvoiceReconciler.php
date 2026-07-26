@@ -11,6 +11,8 @@
 namespace App\Services\Procurement;
 
 use App\Models\{PurchaseOrder, PurchaseOrderLine};
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Money;
 use ERechnungToolkit\Entities\{OrderLine, UglInvoice};
 
 /**
@@ -25,15 +27,16 @@ use ERechnungToolkit\Entities\{OrderLine, UglInvoice};
  * verglichen.
  */
 class UglInvoiceReconciler {
-    private const TOLERANCE = 0.01;
+    /** Mengen bleiben skalar — Beträge vergleicht Money exakt. */
+    private const QUANTITY_TOLERANCE = 0.01;
 
     /**
      * @return array{
      *     invoice: UglInvoice,
-     *     lines: list<array{sku: string, name: string, invoice_qty: float, invoice_net: float,
-     *                        order_qty: float|null, order_net: float|null, status: string}>,
-     *     missing: list<array{sku: string, name: string, order_qty: float, order_net: float}>,
-     *     totals: array{invoice_net: float, order_net: float, matches: bool},
+     *     lines: list<array{sku: string, name: string, invoice_qty: float, invoice_net: Money,
+     *                        order_qty: float|null, order_net: Money|null, status: string}>,
+     *     missing: list<array{sku: string, name: string, order_qty: float, order_net: Money}>,
+     *     totals: array{invoice_net: Money, order_net: Money, matches: bool},
      *     ok: bool
      * }
      */
@@ -62,10 +65,11 @@ class UglInvoiceReconciler {
         }
 
         $missing = [];
-        $orderNet = 0.0;
+        $currency = $invoice->getCurrency();
+        $orderNet = Money::zero($currency);
         foreach ($order->lines as $line) {
-            $net = $this->orderLineNet($line);
-            $orderNet += $net;
+            $net = $this->orderLineNet($line, $currency);
+            $orderNet = $orderNet->plus($net);
             if (! isset($matchedIds[$line->id])) {
                 $missing[] = [
                     'sku' => $this->lineSku($line),
@@ -75,9 +79,8 @@ class UglInvoiceReconciler {
                 ];
             }
         }
-        $orderNet = round($orderNet, 2);
-
-        $totalsMatch = abs($invoice->getNetTotal() - $orderNet) <= self::TOLERANCE;
+        // Money rechnet exakt — Netto-Summen müssen übereinstimmen, keine Toleranz.
+        $totalsMatch = $invoice->getNetTotal()->equals($orderNet);
         $allLinesMatch = array_reduce($lines, fn (bool $ok, array $l): bool => $ok && $l['status'] === 'match', true);
 
         return [
@@ -94,11 +97,11 @@ class UglInvoiceReconciler {
     }
 
     /**
-     * @return array{sku: string, name: string, invoice_qty: float, invoice_net: float,
-     *               order_qty: float|null, order_net: float|null, status: string}
+     * @return array{sku: string, name: string, invoice_qty: float, invoice_net: Money,
+     *               order_qty: float|null, order_net: Money|null, status: string}
      */
     private function compareLine(OrderLine $invLine, ?PurchaseOrderLine $poLine): array {
-        $invoiceNet = round($invLine->getNetAmount(), 2);
+        $invoiceNet = $invLine->getNetAmount();
 
         if ($poLine === null) {
             $status = 'invoice_only';
@@ -106,9 +109,9 @@ class UglInvoiceReconciler {
             $orderNet = null;
         } else {
             $orderQty = (float) $poLine->ordered_qty;
-            $orderNet = $this->orderLineNet($poLine);
-            $qtyOk = abs($invLine->getQuantity() - $orderQty) <= self::TOLERANCE;
-            $netOk = abs($invoiceNet - $orderNet) <= self::TOLERANCE;
+            $orderNet = $this->orderLineNet($poLine, $invoiceNet->getCurrency());
+            $qtyOk = abs($invLine->getQuantity() - $orderQty) <= self::QUANTITY_TOLERANCE;
+            $netOk = $invoiceNet->equals($orderNet);
             $status = $qtyOk && $netOk ? 'match' : 'mismatch';
         }
 
@@ -127,8 +130,8 @@ class UglInvoiceReconciler {
         return trim((string) $line->supplier_sku) ?: trim((string) $line->variant?->sku);
     }
 
-    private function orderLineNet(PurchaseOrderLine $line): float {
-        return round((float) $line->ordered_qty * (float) ($line->unit_price ?? 0), 2);
+    private function orderLineNet(PurchaseOrderLine $line, CurrencyCode $currency): Money {
+        return Money::of((string) ($line->unit_price ?? 0), $currency)->times((float) $line->ordered_qty);
     }
 
     private function orderLineName(PurchaseOrderLine $line): string {

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Invoicing\EInvoice;
 
 use App\Models\Invoice;
+use CommonToolkit\ValueObjects\Money;
 use ERechnungToolkit\Validators\{KositValidator, UblSchemaValidator};
 
 /**
@@ -136,23 +137,25 @@ class EInvoiceValidationService {
     /** @return array<int, string> */
     private function compareTotals(Invoice $invoice, \ERechnungToolkit\Entities\Document $parsed, string $label): array {
         $errors = [];
+        $currency = $parsed->getCurrency();
         $expected = [
-            'net' => round((float) $invoice->subtotal, 2),
-            'tax' => round((float) $invoice->tax_amount, 2),
-            'gross' => round((float) $invoice->total, 2),
+            'net' => Money::of((string) $invoice->subtotal, $currency),
+            'tax' => Money::of((string) $invoice->tax_amount, $currency),
+            'gross' => Money::of((string) $invoice->total, $currency),
         ];
         $actual = [
             'net' => $parsed->getNetAmount(),
             'tax' => $parsed->getTaxAmount(),
             'gross' => $parsed->getGrossAmount(),
         ];
+        // Money rechnet exakt — Abweichung heißt Abweichung, keine Toleranzschwelle.
         foreach ($expected as $key => $value) {
-            if (abs($actual[$key] - $value) > 0.005) {
+            if (!$actual[$key]->equals($value)) {
                 $errors[] = (string) __(':format: :field weicht ab (Beleg :expected, XML :actual).', [
                     'format' => $label,
                     'field' => $key,
-                    'expected' => number_format($value, 2, '.', ''),
-                    'actual' => number_format($actual[$key], 2, '.', ''),
+                    'expected' => $value->getAmount(),
+                    'actual' => $actual[$key]->getAmount(),
                 ]);
             }
         }

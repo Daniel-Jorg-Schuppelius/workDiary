@@ -78,9 +78,9 @@
                                 @endif
                             </td>
                             <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($line->getQuantity(), 2, withThousandsSeparator: true) }}</td>
-                            <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $line->getUnitPrice(), 2, withThousandsSeparator: true) }}</td>
+                            <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($line->getUnitPrice()->toFloat(), 2, withThousandsSeparator: true) }}</td>
                             <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($line->getTaxPercent() ?? 0), 1, withThousandsSeparator: true) }}</td>
-                            <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $line->getNetAmount(), 2, withThousandsSeparator: true) }}</td>
+                            <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($line->getNetAmount()->toFloat(), 2, withThousandsSeparator: true) }}</td>
                         </tr>
                     @endforeach
                 </x-table>

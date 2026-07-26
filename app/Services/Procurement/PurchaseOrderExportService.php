@@ -11,6 +11,7 @@
 namespace App\Services\Procurement;
 
 use App\Models\{PurchaseOrder, PurchaseOrderLine, Supplier};
+use CommonToolkit\ValueObjects\Money;
 use CommonToolkit\Enums\CurrencyCode;
 use DateTimeImmutable;
 use ERechnungToolkit\Builders\OrderBuilder;
@@ -174,14 +175,14 @@ class PurchaseOrderExportService {
         $position = 0;
         foreach ($order->lines as $line) {
             $position++;
-            $builder->addOrderLine($this->mapLine($line, (string) $position));
+            $builder->addOrderLine($this->mapLine($line, (string) $position, $currency));
         }
 
         $document = $builder->build();
 
         // Frachtkosten → Zuschlag (UGL POZ Typ 07; UBL/Order-X als ChargeTotal).
-        $freight = (float) ($order->freight_cost ?? 0);
-        if ($freight > 0) {
+        $freight = Money::of((string) ($order->freight_cost ?? 0), $document->getCurrency());
+        if ($freight->isPositive()) {
             $document->addAllowanceCharge(AllowanceCharge::shipping($freight));
         }
 
@@ -193,7 +194,7 @@ class PurchaseOrderExportService {
      * Lieferanten-SKU (Verkäufer-Artikel), eigener Artikelnummer (Käufer-Artikel)
      * und GTIN.
      */
-    private function mapLine(PurchaseOrderLine $line, string $id): OrderLine {
+    private function mapLine(PurchaseOrderLine $line, string $id, CurrencyCode $currency): OrderLine {
         $article = $line->article;
         $variant = $line->variant;
 
@@ -213,13 +214,13 @@ class PurchaseOrderExportService {
         $gtin = trim((string) $variant?->gtin) ?: trim((string) $article->gtin) ?: null;
 
         $quantity = (float) $line->ordered_qty;
-        $unitPrice = (float) ($line->unit_price ?? 0);
+        $unitPrice = Money::of((string) ($line->unit_price ?? 0), $currency);
 
         return new OrderLine(
             id: $id,
             quantity: $quantity,
             unitCode: $this->unitCode((string) $line->unit),
-            netAmount: round($quantity * $unitPrice, 2),
+            netAmount: $unitPrice->times($quantity),
             itemName: $name,
             unitPrice: $unitPrice,
             itemDescription: $description,

@@ -470,20 +470,21 @@
         },
         {
             "name": "daniel-jorg-schuppelius/datev-php-sdk",
-            "version": "v1.0",
+            "version": "v1.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/datev-php-sdk.git",
-                "reference": "2460d9282ad18f94bee30a8a4f72123741d49638"
+                "reference": "68f971dc1c710919b77f4f865219b28a87d0f862"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/datev-php-sdk/zipball/2460d9282ad18f94bee30a8a4f72123741d49638",
-                "reference": "2460d9282ad18f94bee30a8a4f72123741d49638",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/datev-php-sdk/zipball/68f971dc1c710919b77f4f865219b28a87d0f862",
+                "reference": "68f971dc1c710919b77f4f865219b28a87d0f862",
                 "shasum": ""
             },
             "require": {
                 "daniel-jorg-schuppelius/php-api-toolkit": "^2.2",
+                "dschuppelius/php-common-toolkit": "^1.20",
                 "php": ">=8.2 <8.5"
             },
             "require-dev": {
@@ -510,26 +511,27 @@
             "description": "DATEV SDK for PHP",
             "support": {
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/datev-php-sdk/issues",
-                "source": "https://github.com/Daniel-Jorg-Schuppelius/datev-php-sdk/tree/v1.0"
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/datev-php-sdk/tree/v1.1.1"
             },
-            "time": "2026-07-03T11:42:19+00:00"
+            "time": "2026-07-26T10:33:37+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/lexoffice-php-sdk",
-            "version": "v1.0.2",
+            "version": "v1.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/lexoffice-php-sdk.git",
-                "reference": "8e7b6cd7f3165ce958d720c2a827478b34f22c42"
+                "reference": "6838875667ae3e89ac5bf5e36f369af6f31c411a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/lexoffice-php-sdk/zipball/8e7b6cd7f3165ce958d720c2a827478b34f22c42",
-                "reference": "8e7b6cd7f3165ce958d720c2a827478b34f22c42",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/lexoffice-php-sdk/zipball/6838875667ae3e89ac5bf5e36f369af6f31c411a",
+                "reference": "6838875667ae3e89ac5bf5e36f369af6f31c411a",
                 "shasum": ""
             },
             "require": {
                 "daniel-jorg-schuppelius/php-api-toolkit": "^2.2",
+                "dschuppelius/php-common-toolkit": "^1.20",
                 "php": ">=8.2 <8.5"
             },
             "require-dev": {
@@ -556,22 +558,22 @@
             "description": "Lexoffice SDK for PHP",
             "support": {
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/lexoffice-php-sdk/issues",
-                "source": "https://github.com/Daniel-Jorg-Schuppelius/lexoffice-php-sdk/tree/v1.0.2"
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/lexoffice-php-sdk/tree/v1.1.1"
             },
-            "time": "2026-06-23T20:37:28+00:00"
+            "time": "2026-07-26T10:33:43+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/php-api-toolkit",
-            "version": "v2.4",
+            "version": "v2.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/php-api-toolkit.git",
-                "reference": "774f7dbaf0795daa7af9d0756b322c791047d1a9"
+                "reference": "47075af3afc763b754eb7bcc32c124d2b6a0142a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-api-toolkit/zipball/774f7dbaf0795daa7af9d0756b322c791047d1a9",
-                "reference": "774f7dbaf0795daa7af9d0756b322c791047d1a9",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-api-toolkit/zipball/47075af3afc763b754eb7bcc32c124d2b6a0142a",
+                "reference": "47075af3afc763b754eb7bcc32c124d2b6a0142a",
                 "shasum": ""
             },
             "require": {
@@ -606,9 +608,9 @@
             "description": "Reused codes for my api php sdks",
             "support": {
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/php-api-toolkit/issues",
-                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-api-toolkit/tree/v2.4"
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-api-toolkit/tree/v2.5"
             },
-            "time": "2026-07-22T19:52:58+00:00"
+            "time": "2026-07-26T07:08:07+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/php-erechnung-toolkit",
@@ -1458,16 +1460,16 @@
         },
         {
             "name": "dschuppelius/php-common-toolkit",
-            "version": "v1.19.1",
+            "version": "v1.22",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DSchuppelius/php-common-toolkit.git",
-                "reference": "2b0b2a8073c3d11822e090ac26a4d5aeadbb0c87"
+                "reference": "c1238e259e053f035fd9add0540101aca3eed949"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/2b0b2a8073c3d11822e090ac26a4d5aeadbb0c87",
-                "reference": "2b0b2a8073c3d11822e090ac26a4d5aeadbb0c87",
+                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/c1238e259e053f035fd9add0540101aca3eed949",
+                "reference": "c1238e259e053f035fd9add0540101aca3eed949",
                 "shasum": ""
             },
             "require": {
@@ -1503,22 +1505,22 @@
             "description": "Project description.",
             "support": {
                 "issues": "https://github.com/DSchuppelius/php-common-toolkit/issues",
-                "source": "https://github.com/DSchuppelius/php-common-toolkit/tree/v1.19.1"
+                "source": "https://github.com/DSchuppelius/php-common-toolkit/tree/v1.22"
             },
-            "time": "2026-07-25T20:30:22+00:00"
+            "time": "2026-07-26T09:14:35+00:00"
         },
         {
             "name": "dschuppelius/php-config-toolkit",
-            "version": "v0.5",
+            "version": "v0.5.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DSchuppelius/php-config-toolkit.git",
-                "reference": "eeeb4ad1defb2fdfb3ea00214d9604178f7ca8b0"
+                "reference": "f8d643a4f562c5c51c522a1f19e591533b549b52"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DSchuppelius/php-config-toolkit/zipball/eeeb4ad1defb2fdfb3ea00214d9604178f7ca8b0",
-                "reference": "eeeb4ad1defb2fdfb3ea00214d9604178f7ca8b0",
+                "url": "https://api.github.com/repos/DSchuppelius/php-config-toolkit/zipball/f8d643a4f562c5c51c522a1f19e591533b549b52",
+                "reference": "f8d643a4f562c5c51c522a1f19e591533b549b52",
                 "shasum": ""
             },
             "require": {
@@ -1549,22 +1551,22 @@
             "description": "Ein Toolkit für JSON-basierte Konfigurationsverwaltung",
             "support": {
                 "issues": "https://github.com/DSchuppelius/php-config-toolkit/issues",
-                "source": "https://github.com/DSchuppelius/php-config-toolkit/tree/v0.5"
+                "source": "https://github.com/DSchuppelius/php-config-toolkit/tree/v0.5.2"
             },
-            "time": "2026-07-25T11:52:51+00:00"
+            "time": "2026-07-26T11:15:11+00:00"
         },
         {
             "name": "dschuppelius/php-error-toolkit",
-            "version": "v2.7",
+            "version": "v2.7.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DSchuppelius/php-error-toolkit.git",
-                "reference": "c80b10a99d6f29f81758c165b2de8a80def7a3d8"
+                "reference": "f88fe42f0d90aac1479ca65f588d41253970532f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DSchuppelius/php-error-toolkit/zipball/c80b10a99d6f29f81758c165b2de8a80def7a3d8",
-                "reference": "c80b10a99d6f29f81758c165b2de8a80def7a3d8",
+                "url": "https://api.github.com/repos/DSchuppelius/php-error-toolkit/zipball/f88fe42f0d90aac1479ca65f588d41253970532f",
+                "reference": "f88fe42f0d90aac1479ca65f588d41253970532f",
                 "shasum": ""
             },
             "require": {
@@ -1608,9 +1610,9 @@
             "description": "Logging and error handling foundation for the Schuppelius PHP toolkits (PSR-3 loggers, global error handler, LoggerRegistry, Laravel bridge)",
             "support": {
                 "issues": "https://github.com/DSchuppelius/php-error-toolkit/issues",
-                "source": "https://github.com/DSchuppelius/php-error-toolkit/tree/v2.7"
+                "source": "https://github.com/DSchuppelius/php-error-toolkit/tree/v2.7.2"
             },
-            "time": "2026-07-25T12:39:00+00:00"
+            "time": "2026-07-26T11:10:17+00:00"
         },
         {
             "name": "egulias/email-validator",

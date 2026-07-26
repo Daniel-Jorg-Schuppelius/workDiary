@@ -11,6 +11,7 @@
 namespace Tests\Feature\Procurement;
 
 use App\Models\{Article, ArticleVariant, PurchaseOrder, Supplier, User, Warehouse};
+use CommonToolkit\ValueObjects\Money;
 use App\Services\Procurement\{PurchaseOrderService, UglInvoiceReconciler};
 use CommonToolkit\Enums\CurrencyCode;
 use DateTimeImmutable;
@@ -61,9 +62,12 @@ final class PurchaseOrderReconcileTest extends TestCase {
         return new UglInvoice(
             number: 'RE-1', documentType: UglInvoice::TYPE_INVOICE,
             date: new DateTimeImmutable('2026-06-28'), currency: CurrencyCode::Euro,
-            grossTotal: $net * 1.19, vatAmount: $net * 0.19, netTotal: $net,
+            grossTotal: Money::ofFloat($net * 1.19, CurrencyCode::Euro),
+            vatAmount: Money::ofFloat($net * 0.19, CurrencyCode::Euro),
+            netTotal: Money::ofFloat($net, CurrencyCode::Euro),
             lines: [new OrderLine(id: '1', quantity: $qty, unitCode: \ERechnungToolkit\Enums\UnitCode::PIECE,
-                netAmount: $net, itemName: 'Pumpe', unitPrice: $qty > 0 ? $net / $qty : 0.0, sellersItemId: $sku)]
+                netAmount: Money::ofFloat($net, CurrencyCode::Euro), itemName: 'Pumpe',
+                unitPrice: Money::ofFloat($qty > 0 ? $net / $qty : 0.0, CurrencyCode::Euro), sellersItemId: $sku)]
         );
     }
 

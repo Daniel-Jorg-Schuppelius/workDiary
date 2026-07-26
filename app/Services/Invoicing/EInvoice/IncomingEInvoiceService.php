@@ -111,7 +111,7 @@ class IncomingEInvoiceService {
      * Kernfelder für Anzeige/Flash — die Detailseite parst das Original
      * bei jedem Aufruf erneut (kein eigenes Schema, Quelle bleibt die Datei).
      *
-     * @return array{number: string, issue_date: ?string, due_date: ?string, seller: ?string, seller_vat: ?string, currency: string, net: ?float, tax: ?float, gross: ?float, profile: string, lines: int, order_reference: ?string, buyer_reference: ?string, project_reference: ?string}
+     * @return array{number: string, issue_date: ?string, due_date: ?string, seller: ?string, seller_vat: ?string, currency: string, net: string, tax: string, gross: string, profile: string, lines: int, order_reference: ?string, buyer_reference: ?string, project_reference: ?string}
      */
     public function summary(EInvoiceDocument $document): array {
         return [
@@ -121,9 +121,9 @@ class IncomingEInvoiceService {
             'seller' => $document->getSeller()->getName(),
             'seller_vat' => $document->getSeller()->getVatId(),
             'currency' => $document->getCurrency()->value,
-            'net' => $document->getNetAmount(),
-            'tax' => $document->getTaxAmount(),
-            'gross' => $document->getGrossAmount(),
+            'net' => $document->getNetAmount()->getAmount(),
+            'tax' => $document->getTaxAmount()->getAmount(),
+            'gross' => $document->getGrossAmount()->getAmount(),
             'profile' => $document->getProfile()->label(),
             'lines' => $document->countLines(),
             'order_reference' => $document->getOrderReference(),
@@ -187,7 +187,7 @@ class IncomingEInvoiceService {
             'document_type' => \App\Enums\Document\DocumentType::Invoice->value,
             'description' => (string) __(':profile · :gross :currency, fällig :due', [
                 'profile' => $summary['profile'],
-                'gross' => NumberHelper::toGermanFormat((float) ($summary['gross'] ?? 0), 2, withThousandsSeparator: true),
+                'gross' => NumberHelper::toGermanFormat($summary['gross'], 2, withThousandsSeparator: true),
                 'currency' => $summary['currency'],
                 'due' => $summary['due_date'] ?? '—',
             ]),
