@@ -43,6 +43,8 @@
         @endif
     </x-entity-header>
 
+    <x-identifier-issues :issues="$identifierIssues ?? []" />
+
     {{-- KPI --}}
     @php $timeFormatted = intdiv($totalMinutes, 60) . ':' . str_pad((string) ($totalMinutes % 60), 2, '0', STR_PAD_LEFT) . ' h'; @endphp
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">

@@ -43,6 +43,8 @@
         @endif
     </x-entity-header>
 
+    <x-identifier-issues :issues="$identifierIssues ?? []" />
+
     {{-- KPI-Kacheln (analog Kunden-Detailseite); nur mit aktivem Lager-Modul. --}}
     @if (($procurementStats ?? null) !== null)
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">

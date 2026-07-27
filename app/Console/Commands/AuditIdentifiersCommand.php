@@ -12,7 +12,7 @@ namespace App\Console\Commands;
 
 use App\Models\{Article, ArticleVariant, ContactBankAccount, Customer, LexofficeArticle, Supplier, SupplierCatalogItem, User};
 use App\Models\Finance\BankAccount;
-use CommonToolkit\ValueObjects\{Bic, GermanTaxId, GermanTaxNumber, Gtin, Iban, VatNumber};
+use App\Services\Stammdaten\IdentifierIssueDetector;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
 
@@ -33,28 +33,16 @@ class AuditIdentifiersCommand extends Command {
     protected $description = 'Prüft USt-IdNr., Steuernummern, Steuer-IDs, IBAN/BIC und GTIN auf Gültigkeit (vor der VO-Umstellung)';
 
     /**
-     * Model-Klasse => [Spalte => Prüfer].
+     * Geprüfte Models — welche Spalten ein Datensatz trägt, entscheidet der
+     * {@see IdentifierIssueDetector}.
      *
-     * @return array<class-string<Model>, array<string, callable(string): bool>>
+     * @return list<class-string<Model>>
      */
-    private function checks(): array {
-        $iban = static fn (string $v): bool => Iban::tryFrom($v) !== null;
-        $bic = static fn (string $v): bool => Bic::tryFrom($v) !== null;
-        $vat = static fn (string $v): bool => VatNumber::tryFrom($v) !== null;
-        $taxNo = static fn (string $v): bool => GermanTaxNumber::tryFrom($v) !== null;
-        $taxId = static fn (string $v): bool => GermanTaxId::tryFrom($v) !== null;
-        $gtin = static fn (string $v): bool => Gtin::tryFrom($v) !== null;
-
+    private function models(): array {
         return [
-            Customer::class => ['vat_id' => $vat, 'tax_number' => $taxNo, 'bank_iban' => $iban, 'bank_bic' => $bic],
-            Supplier::class => ['vat_id' => $vat, 'tax_number' => $taxNo, 'bank_iban' => $iban, 'bank_bic' => $bic],
-            User::class => ['tax_identification_number' => $taxId],
-            BankAccount::class => ['iban' => $iban, 'bic' => $bic],
-            ContactBankAccount::class => ['iban' => $iban, 'bic' => $bic],
-            Article::class => ['gtin' => $gtin],
-            ArticleVariant::class => ['gtin' => $gtin],
-            LexofficeArticle::class => ['gtin' => $gtin],
-            SupplierCatalogItem::class => ['gtin' => $gtin],
+            Customer::class, Supplier::class, User::class,
+            BankAccount::class, ContactBankAccount::class,
+            Article::class, ArticleVariant::class, LexofficeArticle::class, SupplierCatalogItem::class,
         ];
     }
 
@@ -63,33 +51,30 @@ class AuditIdentifiersCommand extends Command {
         $findings = [];
         $checked = 0;
 
-        foreach ($this->checks() as $class => $fields) {
-            /** @var class-string<Model> $class */
-            $class::query()->chunkById(500, function ($rows) use ($fields, &$findings, &$checked, $class): void {
+        $detector = app(IdentifierIssueDetector::class);
+
+        foreach ($this->models() as $class) {
+            $class::query()->chunkById(500, function ($rows) use ($detector, &$findings, &$checked, $class): void {
                 foreach ($rows as $row) {
-                    foreach ($fields as $field => $isValid) {
-                        $raw = $row->getAttribute($field);
-                        if (!is_string($raw) || trim($raw) === '') {
-                            continue;
-                        }
-                        $checked++;
-                        if (!$isValid(trim($raw))) {
-                            $findings[] = [
-                                'model' => class_basename($class),
-                                'id' => $row->getKey(),
-                                'field' => $field,
-                                'value' => trim($raw),
-                            ];
-                        }
+                    $checked++;
+                    foreach ($detector->forModel($row) as $issue) {
+                        $findings[] = [
+                            'model' => class_basename($class),
+                            'id' => $row->getKey(),
+                            'field' => $issue['field'],
+                            'value' => $issue['value'],
+                            'reason' => $issue['reason'],
+                            'suggestion' => $issue['suggestion'] ?? '',
+                        ];
                     }
                 }
             });
         }
 
-        $this->info(sprintf('%d belegte Identifikatoren geprüft, %d ungültig.', $checked, count($findings)));
+        $this->info(sprintf('%d Datensätze geprüft, %d beanstandete Identifikatoren.', $checked, count($findings)));
 
         if ($findings !== []) {
-            $this->table(['Model', 'ID', 'Feld', 'Wert'], array_map(array_values(...), array_slice($findings, 0, 50)));
+            $this->table(['Model', 'ID', 'Feld', 'Wert', 'Grund', 'Vorschlag'], array_map(array_values(...), array_slice($findings, 0, 50)));
             if (count($findings) > 50) {
                 $this->line(sprintf('… und %d weitere.', count($findings) - 50));
             }
@@ -103,7 +88,7 @@ class AuditIdentifiersCommand extends Command {
 
                 return self::FAILURE;
             }
-            fputcsv($handle, ['model', 'id', 'field', 'value'], ';');
+            fputcsv($handle, ['model', 'id', 'field', 'value', 'reason', 'suggestion'], ';');
             foreach ($findings as $f) {
                 fputcsv($handle, array_values($f), ';');
             }

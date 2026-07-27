@@ -16,6 +16,7 @@ use App\Models\{AuditLog, ExternalReference, LexofficeVoucher, Supplier, Tag};
 use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
+use App\Services\Stammdaten\{ContactMasterDataPusher, IdentifierIssueDetector};
 use App\Support\{CsvExport, Setting};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -86,6 +87,7 @@ class SupplierController extends Controller {
         }
 
         return view('suppliers.show', [
+            'identifierIssues' => app(IdentifierIssueDetector::class)->forModel($supplier),
             'supplier' => $supplier,
             'procurementStats' => $procurementStats,
             'lexofficePlugin' => $lexoffice,
@@ -158,11 +160,20 @@ class SupplierController extends Controller {
         $newTagsRaw = (string) ($data['new_tags'] ?? '');
         unset($data['tag_ids'], $data['new_tags']);
 
-        $supplier->update($data);
+        // fill() vor save(): getDirty() kennt die Änderungen erst danach.
+        $supplier->fill($data);
+        $changed = array_keys($supplier->getDirty());
+        $supplier->save();
+
+        // Korrigierte Stammdaten zurück an Lexoffice — sonst holt der nächste
+        // Abgleich den alten Wert wieder.
+        $pushed = app(ContactMasterDataPusher::class)->pushIfLinked($supplier, $changed);
         $supplier->syncTagsFromInput($tagIds, \App\Support\TagInput::names($newTagsRaw));
 
         return redirect()->route('suppliers.show', $supplier)
-            ->with('success', __('Lieferant aktualisiert.'));
+            ->with('success', $pushed
+                ? __('Lieferant aktualisiert und an Lexoffice übertragen.')
+                : __('Lieferant aktualisiert.'));
     }
 
     public function destroy(Supplier $supplier): RedirectResponse {

@@ -19,6 +19,7 @@ use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
 use App\Services\CustomerStatsService;
 use App\Services\Import\DirectCsvImportService;
+use App\Services\Stammdaten\{ContactMasterDataPusher, IdentifierIssueDetector};
 use App\Support\{CsvExport, Setting};
 // HINWEIS: Lexoffice-Push liegt im Plugin (LexofficeCustomerController); Imports oben nur noch für die Show-View.
 use Illuminate\Http\{RedirectResponse, Request};
@@ -180,6 +181,7 @@ class CustomerController extends Controller {
         }
 
         return view('customers.show', [
+            'identifierIssues' => app(IdentifierIssueDetector::class)->forModel($customer),
             'customer' => $customer,
             'customerDomains' => $customerDomains,
             'billingAgreement' => $billingAgreement,
@@ -272,11 +274,20 @@ class CustomerController extends Controller {
         $newTagsRaw = (string) ($data['new_tags'] ?? '');
         unset($data['tag_ids'], $data['new_tags']);
 
-        $customer->update($data);
+        // fill() vor save(): getDirty() kennt die Änderungen erst danach.
+        $customer->fill($data);
+        $changed = array_keys($customer->getDirty());
+        $customer->save();
         $customer->syncTagsFromInput($tagIds, \App\Support\TagInput::names($newTagsRaw));
 
+        // Korrigierte Stammdaten zurück an Lexoffice — sonst holt der nächste
+        // Abgleich den alten Wert wieder.
+        $pushed = app(ContactMasterDataPusher::class)->pushIfLinked($customer, $changed);
+
         return redirect()->route('customers.show', $customer)
-            ->with('success', __('Kunde aktualisiert.'));
+            ->with('success', $pushed
+                ? __('Kunde aktualisiert und an Lexoffice übertragen.')
+                : __('Kunde aktualisiert.'));
     }
 
     public function destroy(Customer $customer): RedirectResponse {
