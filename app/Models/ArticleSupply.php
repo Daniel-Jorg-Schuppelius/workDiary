@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -26,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property numeric-string $moq
  * @property numeric-string $pack_size
  * @property int $lead_time_days
- * @property numeric-string|null $purchase_price
+ * @property \CommonToolkit\ValueObjects\Money|null $purchase_price
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property bool $is_preferred
  */
@@ -53,7 +54,7 @@ class ArticleSupply extends Model {
         'moq' => 'decimal:4',
         'pack_size' => 'decimal:4',
         'lead_time_days' => 'integer',
-        'purchase_price' => 'decimal:4',
+        'purchase_price' => MoneyCast::class . ':currency,4',
         'is_preferred' => 'boolean',
     ];
 

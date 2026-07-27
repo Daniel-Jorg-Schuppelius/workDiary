@@ -82,7 +82,7 @@ class BhbOutboxDispatcher implements IntegrationOutboxDispatcher {
             ->uploadReceipt($pdf, $filename, array_filter([
                 'number' => $number !== '' ? $number : null,
                 'date' => $invoice->issued_on?->format('Y-m-d'),
-                'amount' => (string) $invoice->total,
+                'amount' => $invoice->total?->getAmount(),
             ], static fn($value): bool => $value !== null));
 
         // Antwort-ID tolerant lesen; ohne ID trägt der Inhalts-Hash die

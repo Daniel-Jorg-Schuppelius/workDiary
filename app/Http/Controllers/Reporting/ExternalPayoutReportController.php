@@ -69,7 +69,7 @@ class ExternalPayoutReportController extends Controller {
                     ->where('user_id', $user->id)
                     ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
                     ->sum('minutes');
-                $rate = (float) ($user->compensation_rate ?? 0);
+                $rate = ($user->compensation_rate?->toFloat() ?? 0.0);
                 // Auf 2 Dezimalstellen runden (Geldbetrag), damit die Summe der
                 // Zeilen mit dem ausgewiesenen Gesamtbetrag übereinstimmt und
                 // nicht durch akkumulierte Nachkommastellen abweicht.
@@ -79,7 +79,7 @@ class ExternalPayoutReportController extends Controller {
                     'rate' => NumberHelper::toGermanFormat($rate, 2, withThousandsSeparator: true) . ' €',
                 ]);
             } elseif ($model === CompensationModel::Pauschal) {
-                $flat = (float) ($user->flat_amount ?? 0);
+                $flat = ($user->flat_amount?->toFloat() ?? 0.0);
                 $interval = $user->flat_interval;
                 if ($interval === FlatInterval::Monatlich) {
                     $amount = $flat * $monthCount;

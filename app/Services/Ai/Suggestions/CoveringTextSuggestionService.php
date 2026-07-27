@@ -50,7 +50,7 @@ class CoveringTextSuggestionService {
 
         $facts = [
             'Rechnung ' . $invoice->number,
-            'Betrag ' . NumberHelper::toGermanFormat((float) $invoice->total, 2, withThousandsSeparator: true) . ' ' . $invoice->currency->value,
+            'Betrag ' . NumberHelper::toGermanFormat(($invoice->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) . ' ' . $invoice->currency->value,
         ];
         if ($invoice->due_on !== null) {
             $facts[] = 'zahlbar bis ' . $invoice->due_on->format('d.m.Y');
@@ -76,7 +76,7 @@ class CoveringTextSuggestionService {
         $kind = $level <= 1 ? 'freundliche Zahlungserinnerung' : $level . '. Mahnung, bestimmter Ton';
         $facts = [
             'Rechnung ' . $invoice->number,
-            'offener Betrag ' . NumberHelper::toGermanFormat((float) $invoice->total, 2, withThousandsSeparator: true) . ' ' . $invoice->currency->value,
+            'offener Betrag ' . NumberHelper::toGermanFormat(($invoice->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) . ' ' . $invoice->currency->value,
         ];
         if ($invoice->due_on !== null) {
             $facts[] = 'fällig seit ' . $invoice->due_on->format('d.m.Y');

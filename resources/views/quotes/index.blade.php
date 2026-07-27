@@ -60,7 +60,7 @@
                     <td>{{ $quote->customer->name ?? '-' }}</td>
                     <td><x-status-badge size="md" outline>{{ __("values.{$quote->status}") }}</x-status-badge></td>
                     <td>{{ optional($quote->valid_until)->fdate() ?? '—' }}</td>
-                    <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $quote->total, 2, withThousandsSeparator: true) }} EUR</td>
+                    <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($quote->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} EUR</td>
                     <td class="text-right">
                         <x-icon-btn icon="visibility"
                                     :href="route('quotes.show', $quote)"

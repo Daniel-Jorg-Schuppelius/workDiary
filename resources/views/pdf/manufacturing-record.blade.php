@@ -37,7 +37,7 @@
         </thead>
         <tbody>
             <tr>
-                <td class="right">{{ rtrim(rtrim((string) $order->target_qty, '0'), '.') }} {{ $order->unit }}</td>
+                <td class="right">{{ rtrim(rtrim(($order->target_qty?->getNumericValue() ?? '0'), '0'), '.') }} {{ $order->unit }}</td>
                 <td class="right">{{ rtrim(rtrim($quality['produced'], '0'), '.') ?: '0' }}</td>
                 <td class="right">{{ rtrim(rtrim($quality['good'], '0'), '.') ?: '0' }}</td>
                 <td class="right">{{ rtrim(rtrim($quality['scrap'], '0'), '.') ?: '0' }}</td>
@@ -93,10 +93,10 @@
             @forelse ($order->materials as $material)
                 <tr>
                     <td>{{ $material->name_snapshot }}</td>
-                    <td class="right">{{ rtrim(rtrim((string) $material->target_qty, '0'), '.') ?: '0' }} {{ $material->unit_snapshot }}</td>
+                    <td class="right">{{ rtrim(rtrim(($material->target_qty?->getNumericValue() ?? '0'), '0'), '.') ?: '0' }} {{ $material->unit_snapshot }}</td>
                     <td class="right">{{ rtrim(rtrim((string) $material->reserved_qty, '0'), '.') ?: '0' }}</td>
                     <td class="right">{{ rtrim(rtrim((string) $material->consumed_qty, '0'), '.') ?: '0' }}</td>
-                    <td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $material->actual_cost, 2, withThousandsSeparator: true) }}</td>
+                    <td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($material->actual_cost?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}</td>
                 </tr>
             @empty
                 <tr><td colspan="5" class="meta">—</td></tr>

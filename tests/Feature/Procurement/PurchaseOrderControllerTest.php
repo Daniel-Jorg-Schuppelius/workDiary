@@ -71,7 +71,7 @@ final class PurchaseOrderControllerTest extends TestCase {
             'article' => $this->article->sqid, 'qty' => '10', 'unit_price' => '2',
         ])->assertRedirect();
         $line = $order->lines()->firstOrFail();
-        $this->assertSame('10.0000', $line->ordered_qty);
+        $this->assertSame('10.0000', $line->ordered_qty?->getNumericValue());
 
         $this->actingAs($this->admin)->post(route('purchase-orders.submit', $order))->assertRedirect();
         $this->assertSame(PurchaseOrderStatus::Ordered, $order->fresh()->status);
@@ -80,7 +80,7 @@ final class PurchaseOrderControllerTest extends TestCase {
             'line' => $line->sqid, 'qty' => '10',
         ])->assertRedirect();
         $this->assertSame(PurchaseOrderStatus::Received, $order->fresh()->status);
-        $this->assertSame('10.0000', $line->fresh()->received_qty);
+        $this->assertSame('10.0000', $line->fresh()->received_qty?->getNumericValue());
     }
 
     public function test_suggestions_page_renders(): void {
@@ -146,7 +146,7 @@ final class PurchaseOrderControllerTest extends TestCase {
             ->assertRedirect()
             ->assertSessionHas('success');
 
-        $this->assertSame('25.5000', $po->fresh()->freight_cost);
+        $this->assertSame('25.5000', $po->fresh()->freight_cost?->getAmount());
     }
 
     public function test_download_order_xml_ugl_format(): void {

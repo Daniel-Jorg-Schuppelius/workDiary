@@ -10,8 +10,10 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Enums\Article\ArticleStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany};
@@ -28,6 +30,9 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany};
  * @property string $option_signature
  * @property ArticleStatus $status
  * @property bool $is_default
+ * @property \CommonToolkit\ValueObjects\Money|null $purchase_price
+ * @property \CommonToolkit\ValueObjects\Money|null $sale_price
+ * @property string|null $gtin
  */
 class ArticleVariant extends Model {
     use Auditable;
@@ -56,8 +61,8 @@ class ArticleVariant extends Model {
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'status' => ArticleStatus::class,
         'is_default' => 'boolean',
-        'purchase_price' => 'decimal:4',
-        'sale_price' => 'decimal:4',
+        'purchase_price' => MoneyCast::class . ':currency,4',
+        'sale_price' => MoneyCast::class . ':currency,4',
     ];
 
     /** @return BelongsTo<Article, $this> */
@@ -81,9 +86,7 @@ class ArticleVariant extends Model {
     }
 
     /** Effektiver Verkaufspreis: Variante überschreibt den Artikelstandard. */
-    public function effectiveSalePrice(): ?string {
-        $own = $this->getAttribute('sale_price');
-
-        return $own !== null ? (string) $own : $this->article?->getAttribute('default_sale_price');
+    public function effectiveSalePrice(): ?Money {
+        return $this->sale_price ?? $this->article?->default_sale_price;
     }
 }

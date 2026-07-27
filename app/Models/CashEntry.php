@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\{MoneyCast, PercentageCast};
 use App\Models\Concerns\{BelongsToOrganization, HasAttachments, HasSqid, HashChainable, HashChained};
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
@@ -28,8 +29,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $seq_no
  * @property Carbon $booked_on
  * @property string $direction
- * @property string $amount
- * @property string|null $tax_rate
+ * @property \CommonToolkit\ValueObjects\Money|null $amount
+ * @property \CommonToolkit\ValueObjects\Percentage|null $tax_rate
  * @property string $purpose
  * @property string|null $counterparty
  * @property int|null $invoice_id
@@ -72,8 +73,8 @@ class CashEntry extends Model implements HashChainable {
     protected $casts = [
         'seq_no' => 'integer',
         'booked_on' => 'date',
-        'amount' => 'decimal:2',
-        'tax_rate' => 'decimal:2',
+        'amount' => MoneyCast::class . ':currency,2',
+        'tax_rate' => PercentageCast::class . ':2',
         'created_at' => 'datetime',
     ];
 
@@ -94,7 +95,9 @@ class CashEntry extends Model implements HashChainable {
 
     /** Betrag mit Vorzeichen (Einnahme +, Ausgabe −) für Saldenbildung. */
     public function signedAmount(): float {
-        return $this->direction === self::DIRECTION_IN ? (float) $this->amount : -1 * (float) $this->amount;
+        $amount = $this->amount?->toFloat() ?? 0.0;
+
+        return $this->direction === self::DIRECTION_IN ? $amount : -1 * $amount;
     }
 
     /**

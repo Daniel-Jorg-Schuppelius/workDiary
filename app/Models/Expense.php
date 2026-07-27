@@ -10,8 +10,11 @@
 
 namespace App\Models;
 
+use App\Casts\{MoneyCast, PercentageCast};
 use App\Enums\Expense\{ExpenseStatus, PaymentMethod};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\{Money, Percentage};
 use Database\Factories\ExpenseFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -32,10 +35,10 @@ use Illuminate\Support\Carbon;
  * @property string $description
  * @property PaymentMethod $payment_method
  * @property \CommonToolkit\Enums\CurrencyCode $currency
- * @property string $amount_net
- * @property string $tax_rate
- * @property string $tax_amount
- * @property string $amount_gross
+ * @property \CommonToolkit\ValueObjects\Money|null $amount_net
+ * @property \CommonToolkit\ValueObjects\Percentage|null $tax_rate
+ * @property \CommonToolkit\ValueObjects\Money|null $tax_amount
+ * @property \CommonToolkit\ValueObjects\Money|null $amount_gross
  * @property bool $billable
  * @property ExpenseStatus $status
  * @property int|null $decided_by
@@ -89,10 +92,10 @@ class Expense extends Model {
     protected $casts = [
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'date' => 'date',
-        'amount_net' => 'decimal:2',
-        'tax_rate' => 'decimal:2',
-        'tax_amount' => 'decimal:2',
-        'amount_gross' => 'decimal:2',
+        'amount_net' => MoneyCast::class . ':currency,2',
+        'tax_rate' => PercentageCast::class . ':2',
+        'tax_amount' => MoneyCast::class . ':currency,2',
+        'amount_gross' => MoneyCast::class . ':currency,2',
         'billable' => 'boolean',
         'decided_at' => 'datetime',
         'reimbursed_at' => 'datetime',
@@ -112,18 +115,23 @@ class Expense extends Model {
      * Netto aus Brutto rückgerechnet.
      */
     public function recalculateAmounts(): void {
-        $net = (float) $this->amount_net;
-        $rate = (float) $this->tax_rate;
-        $gross = (float) $this->amount_gross;
+        $currency = $this->currency ?? CurrencyCode::Euro;
+        $zero = Money::zero($currency);
+        $net = $this->amount_net ?? $zero;
+        $rate = $this->tax_rate ?? Percentage::of('0');
+        $gross = $this->amount_gross ?? $zero;
 
-        if ($net <= 0.0 && $gross > 0.0) {
-            $net = $rate > 0.0 ? $gross / (1 + $rate / 100) : $gross;
-            $this->amount_net = (string) round($net, 2);
+        // Nur brutto erfasst: Netto herausrechnen (Bruttobetrag ÷ (1 + Satz)).
+        if (!$net->isPositive() && $gross->isPositive()) {
+            $net = $rate->isPositive()
+                ? $gross->dividedBy(1 + (float) $rate->getNumericValue() / 100)
+                : $gross;
+            $this->amount_net = $net;
         }
 
-        $tax = round($net * ($rate / 100), 2);
-        $this->tax_amount = (string) $tax;
-        $this->amount_gross = (string) round($net + $tax, 2);
+        $tax = $rate->amountOf($net);
+        $this->tax_amount = $tax;
+        $this->amount_gross = $net->plus($tax);
     }
 
     /** @return BelongsTo<User, $this> */

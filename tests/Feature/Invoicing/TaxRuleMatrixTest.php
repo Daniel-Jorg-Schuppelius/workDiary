@@ -54,8 +54,8 @@ final class TaxRuleMatrixTest extends TestCase {
         // AT-W1-Testfall: media reduced 10 % → 4,9 % zum 01.07.2026.
         $before = $resolver->ruleFor($this->org->id, 'AT', 'media', 'reduced', new \DateTimeImmutable('2026-06-30'));
         $after = $resolver->ruleFor($this->org->id, 'AT', 'media', 'reduced', new \DateTimeImmutable('2026-07-01'));
-        $this->assertSame('10.00', (string) $before?->rate);
-        $this->assertSame('4.90', (string) $after?->rate);
+        $this->assertSame('10.00', $before?->rate?->getNumericValue());
+        $this->assertSame('4.90', $after?->rate?->getNumericValue());
         $this->assertStringContainsString('W1', (string) $after?->source);
     }
 
@@ -124,7 +124,7 @@ final class TaxRuleMatrixTest extends TestCase {
         TaxRule::query()->whereNull('organization_id')->where('country', 'DE')->update(['rate' => '25.00']);
         $after = $invoice->fresh();
         $this->assertSame('19.00', (string) data_get($after->tax_context, 'rate'));
-        $this->assertSame('19.00', (string) $after->tax_rate);
+        $this->assertSame('19.00', $after->tax_rate?->getNumericValue());
 
         // Und der eingefrorene Kontext ist unveränderlich (Model-Guard).
         $this->expectException(\RuntimeException::class);

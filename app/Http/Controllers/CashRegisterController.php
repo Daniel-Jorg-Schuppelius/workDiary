@@ -211,9 +211,9 @@ class CashRegisterController extends Controller {
             return redirect()->route('cash-registers.show', $cashRegister)->with('error', $e->getMessage());
         }
 
-        $message = (float) $closing->difference === 0.0
+        $message = ($closing->difference?->toFloat() ?? 0.0) === 0.0
             ? __('Tagesabschluss erfasst — Kassensturz ohne Differenz.')
-            : __('Tagesabschluss erfasst — Differenz :diff.', ['diff' => NumberHelper::toGermanFormat((float) $closing->difference, 2, withThousandsSeparator: true)]);
+            : __('Tagesabschluss erfasst — Differenz :diff.', ['diff' => NumberHelper::toGermanFormat(($closing->difference?->toFloat() ?? 0.0), 2, withThousandsSeparator: true)]);
 
         return redirect()->route('cash-registers.show', $cashRegister)->with('status', $message);
     }

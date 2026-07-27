@@ -89,7 +89,7 @@ class BillbeeOrderImportTest extends TestCase {
         $this->assertSame('ORD-1001', $amazon->order_number);
         $this->assertSame(BillbeeOrder::INBOX_OPEN, $amazon->inbox_status);
         $this->assertNull($amazon->customer_id);
-        $this->assertSame('49.90', $amazon->total_gross);
+        $this->assertSame('49.90', $amazon->total_gross?->getAmount());
 
         // Kein Blind-Import: Käufer landen als Inbox-Vorschläge.
         $this->assertSame(2, IntegrationInboxItem::query()

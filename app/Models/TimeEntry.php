@@ -10,9 +10,12 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Services\RateCalculator;
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Money;
 use Database\Factories\TimeEntryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -39,10 +42,10 @@ use Illuminate\Support\Carbon;
  * @property int $minutes
  * @property string|null $description
  * @property bool $billable
- * @property float|null $hourly_rate
- * @property float|null $fixed_rate
- * @property float|null $rate
- * @property float|null $internal_rate
+ * @property \CommonToolkit\ValueObjects\Money|null $hourly_rate
+ * @property \CommonToolkit\ValueObjects\Money|null $fixed_rate
+ * @property \CommonToolkit\ValueObjects\Money|null $rate
+ * @property \CommonToolkit\ValueObjects\Money|null $internal_rate
  * @property bool $exported
  * @property int|null $customer_billing_rate_id
  */
@@ -132,13 +135,38 @@ class TimeEntry extends Model {
         'break_minutes' => 'integer',
         'billable' => 'boolean',
         'exported' => 'boolean',
-        'hourly_rate' => 'decimal:2',
-        'fixed_rate' => 'decimal:2',
-        'rate' => 'decimal:2',
-        'internal_rate' => 'decimal:2',
+        'hourly_rate' => MoneyCast::class . ':currency,2',
+        'fixed_rate' => MoneyCast::class . ':currency,2',
+        'rate' => MoneyCast::class . ':currency,2',
+        'internal_rate' => MoneyCast::class . ':currency,2',
         'kind' => TimeEntryKind::class,
         'activity_type' => TimeEntryActivityType::class,
     ];
+
+    /**
+     * Wurde der Stundensatz manuell überschrieben?
+     *
+     * Nicht über isDirty(): der Money-Cast schreibt die kanonische Form
+     * ("16.50") zurück, während die Spalte je nach Treiber "16.5" liefert —
+     * das Attribut gälte damit bei jedem Speichern als geändert und jeder
+     * Beleg verlöre seinen Konditions-Bezug.
+     */
+    public function hourlyRateWasOverridden(): bool {
+        if (! $this->isDirty('hourly_rate')) {
+            return false;
+        }
+
+        // getRawOriginal: getOriginal() liefert bei Casts das Value Object zurück.
+        $original = $this->getRawOriginal('hourly_rate');
+        if ($original === null || $original === '' || $this->hourly_rate === null) {
+            return ($original === null || $original === '') !== ($this->hourly_rate === null);
+        }
+
+        $originalAmount = (string) $original;
+
+        return ! is_numeric($originalAmount)
+            || bccomp($this->hourly_rate->getAmount(), $originalAmount, 4) !== 0;
+    }
 
     protected static function booted(): void {
         static::saving(function (TimeEntry $entry): void {
@@ -185,7 +213,7 @@ class TimeEntry extends Model {
                 'started_at',
                 'activity_category_id',
             ]) || ! $entry->exists) {
-                if ($entry->isDirty('hourly_rate') && $entry->hourly_rate !== null) {
+                if ($entry->hourlyRateWasOverridden() && $entry->hourly_rate !== null) {
                     // Manueller Satz-Override löst den Konditions-Marker ab (E2).
                     $entry->customer_billing_rate_id = null;
                 } elseif (
@@ -200,11 +228,12 @@ class TimeEntry extends Model {
                 }
                 $calc = app(RateCalculator::class);
                 $result = $calc->compute($entry);
-                $entry->rate = $result['rate'];
-                $entry->internal_rate = $result['internal_rate'];
+                $currency = CurrencyCode::Euro;
+                $entry->rate = Money::ofFloat($result['rate'], $currency);
+                $entry->internal_rate = Money::ofFloat($result['internal_rate'], $currency);
                 if ($entry->hourly_rate === null && $result['hourly_rate'] !== null) {
                     // Snapshot resolved hourly rate so historical entries stay stable.
-                    $entry->hourly_rate = $result['hourly_rate'];
+                    $entry->hourly_rate = Money::ofFloat($result['hourly_rate'], $currency);
                     $entry->customer_billing_rate_id = $result['agreement_rate_id'];
                 }
             }

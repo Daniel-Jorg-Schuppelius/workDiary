@@ -54,9 +54,9 @@
                 <td>{{ $rate->region_label ?? '—' }}</td>
                 <td>{{ \Illuminate\Support\Carbon::parse($rate->valid_from)->fdate() }}</td>
                 <td>{{ $rate->valid_to ? \Illuminate\Support\Carbon::parse($rate->valid_to)->fdate() : '—' }}</td>
-                <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $rate->full_day_amount, 2, withThousandsSeparator: true) }}</td>
-                <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $rate->partial_day_amount, 2, withThousandsSeparator: true) }}</td>
-                <td class="text-right tabular-nums">{{ $rate->overnight_amount !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $rate->overnight_amount, 2, withThousandsSeparator: true) : '—' }}</td>
+                <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($rate->full_day_amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}</td>
+                <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($rate->partial_day_amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}</td>
+                <td class="text-right tabular-nums">{{ $rate->overnight_amount !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($rate->overnight_amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) : '—' }}</td>
                 <td>{{ $rate->currency->value }}</td>
                 <td class="text-base-content/60 text-sm">{{ $rate->source ?? '—' }}</td>
                 <td class="text-right">

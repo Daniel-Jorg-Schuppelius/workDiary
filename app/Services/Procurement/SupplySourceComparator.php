@@ -44,7 +44,7 @@ class SupplySourceComparator {
             return $aHasPrice ? -1 : 1;
         }
         if ($aHasPrice && $bHasPrice) {
-            $cmp = bccomp((string) $a->purchase_price, (string) $b->purchase_price, 4);
+            $cmp = bccomp($a->purchase_price->getAmount(), $b->purchase_price->getAmount(), 4);
             if ($cmp !== 0) {
                 return $cmp;
             }

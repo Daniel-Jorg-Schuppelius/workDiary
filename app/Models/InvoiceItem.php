@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\{MoneyCast, PercentageCast};
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -27,8 +28,11 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
  * @property string $description
  * @property string $quantity
  * @property string $unit
- * @property string $unit_price
- * @property string $amount
+ * @property \CommonToolkit\ValueObjects\Money|null $unit_price
+ * @property \CommonToolkit\ValueObjects\Percentage|null $discount_percent
+ * @property \CommonToolkit\ValueObjects\Money|null $discount_amount
+ * @property \CommonToolkit\ValueObjects\Money|null $amount
+ * @property \CommonToolkit\ValueObjects\Percentage|null $tax_rate
  * @property int $position
  */
 class InvoiceItem extends Model {
@@ -66,10 +70,13 @@ class InvoiceItem extends Model {
         'service_date' => 'date',
         // Mengen-/Preispräzision der Quellposten erhalten (Material 3 NK, km-Satz 4 NK); Zeilenbetrag 2 NK.
         'quantity' => 'decimal:3',
-        'unit_price' => 'decimal:4',
-        'discount_percent' => 'decimal:2',
-        'discount_amount' => 'decimal:2',
-        'amount' => 'decimal:2',
+        // Währung kommt vom Beleg — Positionen haben keine eigene Spalte.
+        // Einzelpreis mit 4 NK (Migration widen_invoice_item_precision).
+        'unit_price' => MoneyCast::class . ':invoice.currency,4',
+        'discount_percent' => PercentageCast::class . ':2',
+        'discount_amount' => MoneyCast::class . ':invoice.currency',
+        'amount' => MoneyCast::class . ':invoice.currency',
+        'tax_rate' => PercentageCast::class . ':2',
     ];
 
     protected static function booted(): void {
@@ -77,11 +84,13 @@ class InvoiceItem extends Model {
             // MVP-416: Zeilennetto inkl. Positionsrabatt (Prozent XOR Betrag).
             $i->amount = \App\Services\Invoicing\InvoiceTotalsCalculator::lineNet(
                 (float) $i->quantity,
-                (string) $i->unit_price,
-                $i->discount_percent !== null ? (float) $i->discount_percent : null,
-                $i->discount_amount !== null ? (string) $i->discount_amount : null,
+                $i->unit_price,
+                $i->discount_percent,
+                $i->discount_amount,
                 $i->invoice->currency ?? \CommonToolkit\Enums\CurrencyCode::Euro,
-            )->getAmount();
+                // Zeilenbetrag in Spaltenpräzision (2 NK) — der Einzelpreis
+                // rechnet mit seinen 4 NK, gespeichert wird auf Cent gerundet.
+            )->withScale(2);
         });
 
         // Beim Löschen alle Quellposten wieder freigeben (Spese→Approved, Zeiten→exported=false,

@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\QuantityCast;
 use App\Enums\Manufacturing\{ManufacturingOrderStatus, ProcurementMode};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -22,7 +23,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property int $id
  * @property int|null $organization_id
  * @property string|null $number
- * @property numeric-string $target_qty
+ * @property \CommonToolkit\ValueObjects\Quantity|null $target_qty
  * @property ManufacturingOrderStatus $status
  * @property array<string, mixed>|null $bom_snapshot
  * @property int|null $customer_id
@@ -72,7 +73,7 @@ class ManufacturingOrder extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
-        'target_qty' => 'decimal:4',
+        'target_qty' => QuantityCast::class . ':unit,4',
         'status' => ManufacturingOrderStatus::class,
         'procurement_mode' => ProcurementMode::class,
         'priority' => 'integer',
@@ -154,7 +155,7 @@ class ManufacturingOrder extends Model {
 
     /** Noch offene Gutmenge gegen die Sollmenge. @return numeric-string */
     public function openQuantity(): string {
-        return bcsub($this->target_qty, $this->goodTotal(), 4);
+        return bcsub($this->target_qty?->getNumericValue() ?? '0', $this->goodTotal(), 4);
     }
 
     /** @return numeric-string */

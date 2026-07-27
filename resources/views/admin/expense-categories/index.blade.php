@@ -53,7 +53,7 @@
                     @endif
                 </td>
                 <td class="font-mono text-sm text-base-content/60">{{ $cat->slug }}</td>
-                <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $cat->default_tax_rate, 2, withThousandsSeparator: true) }} %</td>
+                <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(((float) ($cat->default_tax_rate?->getNumericValue() ?? '0')), 2, withThousandsSeparator: true) }} %</td>
                 <td>
                     <div class="flex flex-wrap gap-1">
                         @if ($cat->default_billable) <x-status-badge size="xs" tone="info">{{ __('Berechenbar') }}</x-status-badge> @endif

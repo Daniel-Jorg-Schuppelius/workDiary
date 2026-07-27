@@ -40,7 +40,7 @@ class RateCalculator {
      */
     private function resolveHourlyRate(TimeEntry $entry, ?CustomerBillingRate $agreementRate = null): ?float {
         if ($entry->hourly_rate !== null) {
-            return (float) $entry->hourly_rate;
+            return $entry->hourly_rate->toFloat();
         }
 
         if ($agreementRate !== null) {
@@ -49,22 +49,22 @@ class RateCalculator {
 
         $user = $entry->user;
         if ($user && $user->hourly_rate !== null) {
-            return (float) $user->hourly_rate;
+            return $user->hourly_rate->toFloat();
         }
 
         $task = $entry->task;
         if ($task && $task->hourly_rate !== null) {
-            return (float) $task->hourly_rate;
+            return $task->hourly_rate->toFloat();
         }
 
         $project = $entry->project;
         if ($project && $project->hourly_rate !== null) {
-            return (float) $project->hourly_rate;
+            return $project->hourly_rate->toFloat();
         }
 
         $customer = $project?->customer;
         if ($customer && $customer->hourly_rate !== null) {
-            return (float) $customer->hourly_rate;
+            return $customer->hourly_rate->toFloat();
         }
 
         return null;
@@ -76,22 +76,22 @@ class RateCalculator {
     private function resolveInternalRate(TimeEntry $entry): ?float {
         $user = $entry->user;
         if ($user && $user->internal_rate !== null) {
-            return (float) $user->internal_rate;
+            return $user->internal_rate->toFloat();
         }
 
         $task = $entry->task;
         if ($task && $task->internal_rate !== null) {
-            return (float) $task->internal_rate;
+            return $task->internal_rate->toFloat();
         }
 
         $project = $entry->project;
         if ($project && $project->internal_rate !== null) {
-            return (float) $project->internal_rate;
+            return $project->internal_rate->toFloat();
         }
 
         $customer = $project?->customer;
         if ($customer && $customer->internal_rate !== null) {
-            return (float) $customer->internal_rate;
+            return $customer->internal_rate->toFloat();
         }
 
         return null;
@@ -132,7 +132,7 @@ class RateCalculator {
         $agreementRate = $this->resolveAgreementRate($entry);
 
         if ($entry->fixed_rate !== null) {
-            $revenue = $this->isBillable($entry) ? (float) $entry->fixed_rate : 0.0;
+            $revenue = $this->isBillable($entry) ? $entry->fixed_rate->toFloat() : 0.0;
             $hourly = $this->resolveHourlyRate($entry, $agreementRate);
         } else {
             $hourly = $this->resolveHourlyRate($entry, $agreementRate);

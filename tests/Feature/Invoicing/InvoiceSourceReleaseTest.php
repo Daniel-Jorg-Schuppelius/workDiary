@@ -116,7 +116,7 @@ class InvoiceSourceReleaseTest extends TestCase {
         $this->assertSame(2, Invoice::query()->count());
         $second = Invoice::query()->orderByDesc('id')->firstOrFail();
         $this->assertSame(1, $second->items()->count());
-        $this->assertSame('90.00', $second->subtotal);
+        $this->assertSame('90.00', $second->subtotal?->getAmount());
         $this->assertTrue($may->fresh()->exported);
     }
 

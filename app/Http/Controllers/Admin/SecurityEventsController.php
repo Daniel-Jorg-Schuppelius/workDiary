@@ -48,7 +48,7 @@ class SecurityEventsController extends Controller {
             ->limit(10)
             ->get()
             ->map(fn(SecurityEvent $row): array => [
-                'ip' => (string) $row->ip,
+                'ip' => $row->ip?->getValue() ?? '',
                 'count' => (int) $row->getAttribute('cnt'),
             ]);
 

@@ -61,8 +61,8 @@ class ExpenseWorkflowTest extends TestCase {
         ]);
 
         $this->assertSame(ExpenseStatus::Draft, $expense->status);
-        $this->assertEquals(19.00, (float) $expense->tax_amount);
-        $this->assertEquals(119.00, (float) $expense->amount_gross);
+        $this->assertEquals(19.00, $expense->tax_amount?->toFloat());
+        $this->assertEquals(119.00, $expense->amount_gross?->toFloat());
     }
 
     public function test_submit_changes_status_and_sends_notification(): void {

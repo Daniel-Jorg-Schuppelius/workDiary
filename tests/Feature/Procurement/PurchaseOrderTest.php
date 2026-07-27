@@ -52,7 +52,7 @@ final class PurchaseOrderTest extends TestCase {
 
         $this->assertSame(PurchaseOrderStatus::Draft, $po->status);
         $this->assertStringStartsWith('BE-', $po->number);
-        $this->assertSame('10.0000', $line->ordered_qty);
+        $this->assertSame('10.0000', $line->ordered_qty?->getNumericValue());
         $this->assertSame('Stk', $line->unit);
     }
 
@@ -67,7 +67,7 @@ final class PurchaseOrderTest extends TestCase {
         $this->assertSame(PurchaseOrderStatus::Ordered, $po->fresh()->status);
 
         $receipts->receive($line, '4');
-        $this->assertSame('4.0000', $line->fresh()->received_qty);
+        $this->assertSame('4.0000', $line->fresh()->received_qty?->getNumericValue());
         $this->assertSame(PurchaseOrderStatus::PartiallyReceived, $po->fresh()->status);
         $this->assertSame('4.0000', $ledger->available($this->variant, $this->warehouse));
 
@@ -144,7 +144,7 @@ final class PurchaseOrderTest extends TestCase {
         $orders->submit($po);
         $receipts->receive($line, '7');
 
-        $this->assertSame('7.0000', $line->fresh()->received_qty);
+        $this->assertSame('7.0000', $line->fresh()->received_qty?->getNumericValue());
         $this->assertSame(PurchaseOrderStatus::Received, $po->fresh()->status);
     }
 
@@ -189,7 +189,7 @@ final class PurchaseOrderTest extends TestCase {
 
         $this->assertCount(1, $orders);
         $this->assertSame($this->supplier->id, $orders[0]->supplier_id);
-        $this->assertSame('7.0000', $orders[0]->lines()->firstOrFail()->ordered_qty);
+        $this->assertSame('7.0000', $orders[0]->lines()->firstOrFail()->ordered_qty?->getNumericValue());
         $this->assertSame(ProcurementStatus::Ordered, $request->fresh()->status);
     }
 }

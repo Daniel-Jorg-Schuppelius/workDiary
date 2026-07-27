@@ -78,10 +78,10 @@ final class InvoiceTaxModelTest extends TestCase {
         $invoice->recalculate();
         $invoice->save();
 
-        $this->assertSame('200.00', number_format((float) $invoice->subtotal, 2, '.', ''));
+        $this->assertSame('200.00', $invoice->subtotal?->getAmount());
         // 100×19 % = 19,00 + 100×7 % = 7,00 → 26,00
-        $this->assertSame('26.00', number_format((float) $invoice->tax_amount, 2, '.', ''));
-        $this->assertSame('226.00', number_format((float) $invoice->total, 2, '.', ''));
+        $this->assertSame('26.00', $invoice->tax_amount?->getAmount());
+        $this->assertSame('226.00', $invoice->total?->getAmount());
         $breakdown = collect($invoice->tax_breakdown)->keyBy('rate');
         $this->assertSame(7.0, $breakdown[7]['tax'] + 0.0);
         $this->assertSame(19.0, $breakdown[19]['tax'] + 0.0);
@@ -137,9 +137,9 @@ final class InvoiceTaxModelTest extends TestCase {
 
         $this->assertSame(Invoice::TYPE_CANCELLATION, $cancellation->type);
         $this->assertStringStartsWith('S', $cancellation->number);
-        $this->assertSame(-200.0, (float) $cancellation->subtotal);
+        $this->assertSame(-200.0, $cancellation->subtotal?->toFloat());
         $this->assertTrue($cancellation->is_reverse_charge, 'Steuerkontext des Originals übernommen (§ 14c).');
-        $this->assertSame(0.0, (float) $cancellation->tax_amount, 'Reverse Charge → keine Steuer.');
+        $this->assertSame(0.0, $cancellation->tax_amount?->toFloat(), 'Reverse Charge → keine Steuer.');
         $this->assertSame((int) $invoice->id, (int) $cancellation->parent_invoice_id);
         $this->assertSame(Invoice::STATUS_CANCELLED, $invoice->fresh()->status);
     }
@@ -154,6 +154,6 @@ final class InvoiceTaxModelTest extends TestCase {
         $credit = app(InvoiceGenerator::class)->creditNoteFor($invoice->fresh(), $this->user->id);
 
         $this->assertTrue($credit->is_reverse_charge);
-        $this->assertSame(0.0, (float) $credit->tax_amount);
+        $this->assertSame(0.0, $credit->tax_amount?->toFloat());
     }
 }

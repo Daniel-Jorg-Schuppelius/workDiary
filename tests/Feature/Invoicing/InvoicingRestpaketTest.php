@@ -164,7 +164,7 @@ final class InvoicingRestpaketTest extends TestCase {
         $this->actingAs($this->user)->post(route('quotes.items.store', $quote), [
             'description' => 'Wartung', 'quantity' => '2', 'unit' => 'Std.', 'unit_price' => '90.00',
         ])->assertRedirect();
-        $this->assertEqualsWithDelta(180.0, (float) $quote->fresh()->subtotal, 0.01);
+        $this->assertEqualsWithDelta(180.0, $quote->fresh()->subtotal?->toFloat(), 0.01);
 
         $this->actingAs($this->user)->post(route('quotes.approve', $quote))->assertRedirect();
         $response = $this->actingAs($this->user)->post(route('quotes.send', $quote));
@@ -189,7 +189,7 @@ final class InvoicingRestpaketTest extends TestCase {
         $this->actingAs($this->user)->post(route('quotes.convert', $quote))->assertRedirect();
         $invoice = Invoice::query()->where('quote_id', $quote->id)->firstOrFail();
         $this->assertSame(Invoice::STATUS_DRAFT, $invoice->status);
-        $this->assertEqualsWithDelta(180.0, (float) $invoice->subtotal, 0.01);
+        $this->assertEqualsWithDelta(180.0, $invoice->subtotal?->toFloat(), 0.01);
     }
 
     public function test_quote_index_and_dialog_render(): void {

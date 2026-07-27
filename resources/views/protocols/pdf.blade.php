@@ -108,7 +108,7 @@
         <div class="signature">
             <strong>{{ $sig->signer_name }}</strong> — {{ $sig->role->label() }}<br>
             {{ $sig->method->label() }} • {{ $sig->signed_at->fdatetime() }}
-            @if ($sig->ip)<br><small>{{ $sig->ip }}</small>@endif
+            @if ($sig->ip)<br><small>{{ $sig->ip?->getValue() }}</small>@endif
         </div>
     @endforeach
 @endif

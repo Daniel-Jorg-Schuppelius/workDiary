@@ -106,10 +106,10 @@ class MaterialReportController extends Controller {
                     'usage_count' => 0,
                 ];
             }
-            $byKey[$key]['quantity'] += (float) $u->quantity;
-            $byKey[$key]['line_total_net'] += (float) $u->line_total_net;
+            $byKey[$key]['quantity'] += ($u->quantity?->getValue()->toFloat() ?? 0.0);
+            $byKey[$key]['line_total_net'] += ($u->line_total_net?->toFloat() ?? 0.0);
             $byKey[$key]['usage_count']++;
-            $sumNet += (float) $u->line_total_net;
+            $sumNet += ($u->line_total_net?->toFloat() ?? 0.0);
         }
 
         $rows = array_values($byKey);

@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -21,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @property int $id
  * @property int|null $organization_id
- * @property numeric-string $avg_cost
+ * @property \CommonToolkit\ValueObjects\Money|null $avg_cost
  * @property numeric-string $qty_on_hand
  */
 class StockValuation extends Model {
@@ -41,7 +42,7 @@ class StockValuation extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
-        'avg_cost' => 'decimal:4',
+        'avg_cost' => MoneyCast::class . ':currency,4',
         'qty_on_hand' => 'decimal:4',
     ];
 

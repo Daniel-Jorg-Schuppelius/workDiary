@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Database\Factories\MinimumWageFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -23,7 +24,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $organization_id
  * @property Carbon $valid_from
- * @property string $hourly_amount
+ * @property \CommonToolkit\ValueObjects\Money|null $hourly_amount
  * @property string|null $note
  * @property int|null $created_by
  */
@@ -47,7 +48,7 @@ class MinimumWage extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'valid_from' => 'date',
-        'hourly_amount' => 'decimal:2',
+        'hourly_amount' => MoneyCast::class . ':currency,2',
     ];
 
     /** @return BelongsTo<User, $this> */

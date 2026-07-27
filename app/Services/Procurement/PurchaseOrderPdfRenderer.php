@@ -30,7 +30,7 @@ class PurchaseOrderPdfRenderer {
 
         $total = '0';
         foreach ($order->lines as $line) {
-            $total = bcadd($total, bcmul((string) $line->ordered_qty, (string) ($line->unit_price ?? '0'), self::SCALE), self::SCALE);
+            $total = bcadd($total, bcmul($line->ordered_qty?->getNumericValue() ?? '0', $line->unit_price?->getAmount() ?? '0', self::SCALE), self::SCALE);
         }
 
         // C15: gemeinsamer View→Design→PDF-Dreischritt (Dokumentdesign ohne Profil No-Op).

@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\{MoneyCast, QuantityCast};
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -23,10 +24,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $purchase_order_id
  * @property int $article_id
  * @property int|null $article_variant_id
- * @property numeric-string $ordered_qty
- * @property numeric-string $received_qty
+ * @property \CommonToolkit\ValueObjects\Quantity|null $ordered_qty
+ * @property \CommonToolkit\ValueObjects\Quantity|null $received_qty
  * @property string $unit
- * @property numeric-string|null $unit_price
+ * @property \CommonToolkit\ValueObjects\Money|null $unit_price
  * @property-read Article $article
  * @property-read ArticleVariant|null $variant
  */
@@ -53,14 +54,14 @@ class PurchaseOrderLine extends Model {
 
     protected $casts = [
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
-        'ordered_qty' => 'decimal:4',
-        'received_qty' => 'decimal:4',
-        'unit_price' => 'decimal:4',
+        'ordered_qty' => QuantityCast::class . ':unit,4',
+        'received_qty' => QuantityCast::class . ':unit,4',
+        'unit_price' => MoneyCast::class . ':currency,4',
     ];
 
     /** Noch offene Bestellmenge (>= 0). @return numeric-string */
     public function openQty(): string {
-        $open = bcsub($this->ordered_qty, $this->received_qty, 4);
+        $open = bcsub($this->ordered_qty?->getNumericValue() ?? '0', $this->received_qty?->getNumericValue() ?? '0', 4);
 
         return bccomp($open, '0', 4) < 0 ? '0.0000' : $open;
     }

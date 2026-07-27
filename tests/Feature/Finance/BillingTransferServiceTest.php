@@ -201,7 +201,7 @@ class BillingTransferServiceTest extends TestCase {
         $item = $transfer->items->first();
         $this->assertSame('m', $item->unit);
         $this->assertSame('2.5000', (string) $item->unit_price);
-        $this->assertSame('19.00', (string) $item->tax_rate);
+        $this->assertSame('19.00', $item->tax_rate);
         $this->assertSame('KAB-001', $item->cost_position);
     }
 

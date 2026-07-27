@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\{MoneyCast, QuantityCast};
 use App\Enums\Manufacturing\DeliveryFacturationStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -22,9 +23,10 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasOne};
  *
  * @property int $id
  * @property int|null $organization_id
- * @property numeric-string $quantity
+ * @property \CommonToolkit\ValueObjects\Quantity|null $quantity
  * @property string $stock_status
  * @property DeliveryFacturationStatus $facturation_status
+ * @property \CommonToolkit\ValueObjects\Money|null $unit_price_snapshot
  */
 class StockDelivery extends Model {
     use Auditable;
@@ -56,8 +58,8 @@ class StockDelivery extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
-        'quantity' => 'decimal:4',
-        'unit_price_snapshot' => 'decimal:4',
+        'quantity' => QuantityCast::class . ':unit,4',
+        'unit_price_snapshot' => MoneyCast::class . ':currency,4',
         'facturation_status' => DeliveryFacturationStatus::class,
         'delivered_at' => 'datetime',
     ];

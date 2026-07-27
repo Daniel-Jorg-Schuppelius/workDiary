@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\{MoneyCast, PercentageCast};
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,10 +26,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $description
  * @property string $quantity
  * @property string|null $unit
- * @property string $unit_price
- * @property string|null $discount_percent
- * @property string|null $discount_amount
- * @property string|null $tax_rate
+ * @property \CommonToolkit\ValueObjects\Money|null $unit_price
+ * @property \CommonToolkit\ValueObjects\Percentage|null $discount_percent
+ * @property \CommonToolkit\ValueObjects\Money|null $discount_amount
+ * @property \CommonToolkit\ValueObjects\Percentage|null $tax_rate
  * @property string|null $tax_category
  */
 class InvoiceScheduleItem extends Model {
@@ -53,10 +54,11 @@ class InvoiceScheduleItem extends Model {
     protected $casts = [
         'position' => 'integer',
         'quantity' => 'decimal:3',
-        'unit_price' => 'decimal:4',
-        'discount_percent' => 'decimal:2',
-        'discount_amount' => 'decimal:2',
-        'tax_rate' => 'decimal:2',
+        // Rechnungspläne führen keine Währungsspalte — Euro wie beim Angebot.
+        'unit_price' => MoneyCast::class . ':currency,4',
+        'discount_percent' => PercentageCast::class . ':2',
+        'discount_amount' => MoneyCast::class . ':currency',
+        'tax_rate' => PercentageCast::class . ':2',
     ];
 
     /** @return BelongsTo<InvoiceSchedule, $this> */

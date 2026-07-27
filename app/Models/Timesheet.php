@@ -169,7 +169,8 @@ class Timesheet extends Model {
     public function recalcTotals(): void {
         $this->loadMissing(['entries', 'materialUsages']);
         $minutes = (int) $this->entries->sum('minutes');
-        $material = (float) $this->materialUsages->sum('line_total_net');
+        // Collection-sum kann VO-Attribute nicht addieren — Betrag je Zeile entnehmen.
+        $material = (float) $this->materialUsages->sum(fn (MaterialUsage $u): float => $u->line_total_net?->toFloat() ?? 0.0);
         $this->totals_minutes = $minutes;
         $this->entries_total_minutes = $minutes;
         $this->untracked_minutes = max(0, (int) $this->attendance_total_minutes - $minutes);

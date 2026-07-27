@@ -313,7 +313,7 @@ class ReconciliationService {
             // Vollaudit 2026-07 (N12): akzeptierter Skontoabzug strukturiert als
             // Erlösschmälerung festhalten — eigener AllocationKind::Skonto-Satz,
             // Teil der Hash-Kette (skonto_accepted) und des Z3-Nachweises.
-            $skonto = round((float) $invoice->total - $allocated, 2);
+            $skonto = round(($invoice->total?->toFloat() ?? 0.0) - $allocated, 2);
             if ($skonto > MatchingService::CENT_TOLERANCE) {
                 PaymentAllocation::query()->create([
                     'organization_id' => $invoice->organization_id,
@@ -449,7 +449,7 @@ class ReconciliationService {
             return AllocationKind::Payment;
         }
 
-        return $this->matching->kindForInvoice($amount, (float) $target->total);
+        return $this->matching->kindForInvoice($amount, $target->total?->toFloat() ?? 0.0);
     }
 
     private function transactionReference(?BankTransaction $transaction): ?string {

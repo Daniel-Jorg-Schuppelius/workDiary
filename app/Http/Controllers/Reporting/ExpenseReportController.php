@@ -99,7 +99,7 @@ class ExpenseReportController extends Controller {
             $color = $expense->category?->color;
             $icon = $expense->category?->icon;
             $month = $expense->date->format('Y-m');
-            $amount = (float) $expense->amount_gross;
+            $amount = ($expense->amount_gross?->toFloat() ?? 0.0);
 
             $rowKey = $userName . '||' . $categoryLabel;
             if (! isset($rows[$rowKey])) {

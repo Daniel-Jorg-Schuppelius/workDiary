@@ -110,7 +110,7 @@ final class CatalogPricingTest extends TestCase {
 
         $this->pricing->applyToArticle($item->fresh());
 
-        $this->assertSame('160.0000', $article->fresh()->default_sale_price);
+        $this->assertSame('160.0000', $article->fresh()->default_sale_price?->getAmount());
     }
 
     public function test_apply_throws_when_not_linked(): void {
@@ -142,6 +142,6 @@ final class CatalogPricingTest extends TestCase {
             ->assertRedirect()
             ->assertSessionHas('success');
 
-        $this->assertSame('160.0000', $article->fresh()->default_sale_price);
+        $this->assertSame('160.0000', $article->fresh()->default_sale_price?->getAmount());
     }
 }

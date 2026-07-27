@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\{MoneyCast, QuantityCast};
 use App\Enums\Gaeb\{BoqItemStatus, BoqItemType};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -31,10 +32,10 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property BoqItemStatus $status
  * @property string|null $short_text
  * @property string|null $long_text
- * @property string|null $quantity
+ * @property \CommonToolkit\ValueObjects\Quantity|null $quantity
  * @property string|null $unit
- * @property string|null $unit_price
- * @property string|null $total_price
+ * @property \CommonToolkit\ValueObjects\Money|null $unit_price
+ * @property \CommonToolkit\ValueObjects\Money|null $total_price
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property bool $is_addendum
  * @property string|null $external_id
@@ -71,9 +72,9 @@ class BoqItem extends Model {
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'type' => BoqItemType::class,
         'status' => BoqItemStatus::class,
-        'quantity' => 'decimal:4',
-        'unit_price' => 'decimal:4',
-        'total_price' => 'decimal:4',
+        'quantity' => QuantityCast::class . ':unit,4',
+        'unit_price' => MoneyCast::class . ':currency,4',
+        'total_price' => MoneyCast::class . ':currency,4',
         'is_addendum' => 'boolean',
         'position' => 'integer',
     ];
@@ -110,6 +111,6 @@ class BoqItem extends Model {
 
     /** Restmenge gegenüber der Sollmenge (nie negativ). */
     public function remainingQuantity(): float {
-        return max(0.0, (float) $this->quantity - $this->executedQuantity());
+        return max(0.0, ($this->quantity?->getValue()->toFloat() ?? 0.0)- $this->executedQuantity());
     }
 }

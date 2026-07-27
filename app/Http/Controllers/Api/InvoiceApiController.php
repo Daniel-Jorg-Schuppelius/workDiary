@@ -82,9 +82,9 @@ class InvoiceApiController extends Controller {
             'issued_on' => $invoice->issued_on?->toDateString(),
             'due_on' => $invoice->due_on?->toDateString(),
             'paid_on' => $invoice->paid_on?->toDateString(),
-            'subtotal' => (string) $invoice->subtotal,
-            'tax_amount' => (string) $invoice->tax_amount,
-            'total' => (string) $invoice->total,
+            'subtotal' => $invoice->subtotal?->getAmount(),
+            'tax_amount' => $invoice->tax_amount?->getAmount(),
+            'total' => $invoice->total?->getAmount(),
         ];
     }
 }

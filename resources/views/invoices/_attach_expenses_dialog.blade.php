@@ -54,7 +54,7 @@
                                 @endif
                             </td>
                             <td class="text-right whitespace-nowrap">
-                                {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $expense->amount_gross, 2, withThousandsSeparator: true) }} {{ $expense->currency->value }}
+                                {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($expense->amount_gross?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $expense->currency->value }}
                             </td>
                         </tr>
                     @endforeach

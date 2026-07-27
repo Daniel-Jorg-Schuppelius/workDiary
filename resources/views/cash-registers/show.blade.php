@@ -136,9 +136,9 @@
                 @foreach ($closings as $closing)
                     <tr>
                         <td class="whitespace-nowrap">{{ $closing->closing_date->fdate() }}</td>
-                        <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $closing->expected_balance, 2, withThousandsSeparator: true) }}</td>
-                        <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $closing->counted_balance, 2, withThousandsSeparator: true) }}</td>
-                        <td @class(['text-right tabular-nums', 'text-error font-semibold' => (float) $closing->difference !== 0.0])>{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $closing->difference, 2, withThousandsSeparator: true) }}</td>
+                        <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($closing->expected_balance?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}</td>
+                        <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($closing->counted_balance?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}</td>
+                        <td @class(['text-right tabular-nums', 'text-error font-semibold' => ($closing->difference?->toFloat() ?? 0.0)!== 0.0])>{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($closing->difference?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}</td>
                         <td class="max-w-xs truncate text-base-content/60 text-xs">{{ $closing->note }}</td>
                     </tr>
                 @endforeach

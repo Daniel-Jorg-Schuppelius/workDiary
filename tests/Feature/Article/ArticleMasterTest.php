@@ -131,10 +131,10 @@ final class ArticleMasterTest extends TestCase {
         $resolver = app(VariantResolver::class);
 
         $inherits = $resolver->createVariant($article, [$values['red']->id]);
-        $this->assertSame(10.0, (float) $inherits->effectiveSalePrice());
+        $this->assertSame(10.0, $inherits->effectiveSalePrice()?->toFloat());
 
         $overrides = $resolver->createVariant($article, [$values['blue']->id], ['sale_price' => '12.5000']);
-        $this->assertSame(12.5, (float) $overrides->effectiveSalePrice());
+        $this->assertSame(12.5, $overrides->effectiveSalePrice()?->toFloat());
     }
 
     public function test_articles_are_isolated_per_organization(): void {

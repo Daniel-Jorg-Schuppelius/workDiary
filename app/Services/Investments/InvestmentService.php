@@ -244,7 +244,7 @@ class InvestmentService {
                 $committed += (float) $target->lines()->get()->sum(
                     fn($line): float => (float) $line->getAttribute('quantity') * (float) $line->getAttribute('unit_price')
                 );
-                $committed += (float) $target->freight_cost;
+                $committed += $target->freight_cost?->toFloat() ?? 0.0;
             } elseif ($target instanceof \App\Models\IncomingEInvoice) {
                 $actual += (float) data_get($target->summary, 'gross', 0);
             } elseif ($target instanceof \App\Models\Asset) {

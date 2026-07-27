@@ -370,7 +370,7 @@ class CustomerAccountStatementService {
 
         $payments = $this->paymentsFor($agreement, $start, $end);
 
-        $gross = round((float) $entries->sum(fn (TimeEntry $e): float => (float) $e->rate), 2);
+        $gross = round((float) $entries->sum(fn (TimeEntry $e): float => $e->rate?->toFloat() ?? 0.0), 2);
         $paid = round((float) $payments->sum(fn (CustomerAccountPayment $p): float => (float) $p->amount), 2);
 
         $statement->fill([
@@ -413,8 +413,8 @@ class CustomerAccountStatementService {
                 'start' => $localStart?->format('H:i'),
                 'end' => $localEnd?->format('H:i'),
                 'minutes' => (int) $entry->minutes,
-                'hourly_rate' => $entry->hourly_rate !== null ? (float) $entry->hourly_rate : null,
-                'amount' => (float) $entry->rate,
+                'hourly_rate' => $entry->hourly_rate?->toFloat(),
+                'amount' => ($entry->rate?->toFloat() ?? 0.0),
             ];
         })->values()->all();
 

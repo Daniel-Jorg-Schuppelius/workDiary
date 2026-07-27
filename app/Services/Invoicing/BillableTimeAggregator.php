@@ -148,7 +148,7 @@ class BillableTimeAggregator {
 
         $rawMinutes = $workedMinutes + $bridgedGaps;
         $billedMinutes = $this->ceilToIncrement($rawMinutes, $increment);
-        $revenue = round((float) $chunk->sum(fn(TimeEntry $e): float => (float) $e->rate), 2);
+        $revenue = round((float) $chunk->sum(fn(TimeEntry $e): float => $e->rate?->toFloat() ?? 0.0), 2);
 
         $description = $chunk->count() === 1
             ? ($firstEntry->description !== null ? trim((string) $firstEntry->description) : null)

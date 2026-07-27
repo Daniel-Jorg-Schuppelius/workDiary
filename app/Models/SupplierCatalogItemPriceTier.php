@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,7 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $supplier_catalog_item_id
  * @property numeric-string $min_qty
- * @property numeric-string $unit_price
+ * @property \CommonToolkit\ValueObjects\Money|null $unit_price
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  */
 class SupplierCatalogItemPriceTier extends Model {
@@ -38,7 +39,7 @@ class SupplierCatalogItemPriceTier extends Model {
     protected $casts = [
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'min_qty' => 'decimal:4',
-        'unit_price' => 'decimal:4',
+        'unit_price' => MoneyCast::class . ':currency,4',
     ];
 
     /** @return BelongsTo<SupplierCatalogItem, $this> */

@@ -65,7 +65,7 @@ class MonthByUserTeamReportController extends Controller {
             }
             $byUser[$uid]['months'][$monthIdx] += (int) $entry->minutes;
             $byUser[$uid]['total'] += (int) $entry->minutes;
-            $byUser[$uid]['rate'] += (float) $entry->rate;
+            $byUser[$uid]['rate'] += ($entry->rate?->toFloat() ?? 0.0);
         }
 
         /** @var Collection<int, User> $users */

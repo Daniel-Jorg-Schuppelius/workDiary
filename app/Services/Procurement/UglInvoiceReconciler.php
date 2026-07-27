@@ -74,7 +74,7 @@ class UglInvoiceReconciler {
                 $missing[] = [
                     'sku' => $this->lineSku($line),
                     'name' => $this->orderLineName($line),
-                    'order_qty' => (float) $line->ordered_qty,
+                    'order_qty' => ($line->ordered_qty?->getValue()->toFloat() ?? 0.0),
                     'order_net' => $net,
                 ];
             }
@@ -108,7 +108,7 @@ class UglInvoiceReconciler {
             $orderQty = null;
             $orderNet = null;
         } else {
-            $orderQty = (float) $poLine->ordered_qty;
+            $orderQty = ($poLine->ordered_qty?->getValue()->toFloat() ?? 0.0);
             $orderNet = $this->orderLineNet($poLine, $invoiceNet->getCurrency());
             $qtyOk = abs($invLine->getQuantity() - $orderQty) <= self::QUANTITY_TOLERANCE;
             $netOk = $invoiceNet->equals($orderNet);
@@ -131,7 +131,7 @@ class UglInvoiceReconciler {
     }
 
     private function orderLineNet(PurchaseOrderLine $line, CurrencyCode $currency): Money {
-        return Money::of((string) ($line->unit_price ?? 0), $currency)->times((float) $line->ordered_qty);
+        return ($line->unit_price ?? Money::zero($currency))->times($line->ordered_qty?->getValue()->toFloat() ?? 0.0);
     }
 
     private function orderLineName(PurchaseOrderLine $line): string {

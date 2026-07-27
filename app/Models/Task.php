@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Models\Concerns\{BelongsToOrganization, HasAttachments, HasSqid, Searchable};
 use Database\Factories\TaskFactory;
@@ -33,10 +34,10 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $due_date
  * @property Carbon|null $start_date
  * @property int|null $position
- * @property string|null $hourly_rate
- * @property string|null $internal_rate
+ * @property \CommonToolkit\ValueObjects\Money|null $hourly_rate
+ * @property \CommonToolkit\ValueObjects\Money|null $internal_rate
  * @property int|null $time_budget
- * @property string|null $budget
+ * @property \CommonToolkit\ValueObjects\Money|null $budget
  * @property string|null $budget_type
  * @property bool $billable
  * @property bool $is_global
@@ -85,9 +86,9 @@ class Task extends Model {
         'due_date' => 'date',
         'start_date' => 'date',
         'archived_at' => 'datetime',
-        'hourly_rate' => 'decimal:2',
-        'internal_rate' => 'decimal:2',
-        'budget' => 'decimal:2',
+        'hourly_rate' => MoneyCast::class . ':currency,2',
+        'internal_rate' => MoneyCast::class . ':currency,2',
+        'budget' => MoneyCast::class . ':currency,2',
         'time_budget' => 'integer',
         'billable' => 'boolean',
         'is_global' => 'boolean',

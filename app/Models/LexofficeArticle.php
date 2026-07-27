@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\{MoneyCast, PercentageCast};
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Support\Carbon;
@@ -26,13 +27,15 @@ use Illuminate\Support\Carbon;
  * @property ?string $description
  * @property string $type
  * @property ?string $unit_name
- * @property ?string $net_unit_price
+ * @property \CommonToolkit\ValueObjects\Money|null $net_unit_price
  * @property \CommonToolkit\Enums\CurrencyCode $currency
- * @property ?string $vat_rate
+ * @property \CommonToolkit\ValueObjects\Percentage|null $vat_rate
  * @property ?Carbon $synced_at
  * @property bool $is_dirty
  * @property ?Carbon $last_pushed_at
  * @property ?Carbon $archived_at
+ * @property \CommonToolkit\ValueObjects\Money|null $gross_unit_price
+ * @property string|null $gtin
  */
 class LexofficeArticle extends Model {
     use BelongsToOrganization;
@@ -63,9 +66,9 @@ class LexofficeArticle extends Model {
     protected $casts = [
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'external_version' => 'integer',
-        'net_unit_price' => 'decimal:4',
-        'gross_unit_price' => 'decimal:4',
-        'vat_rate' => 'decimal:2',
+        'net_unit_price' => MoneyCast::class . ':currency,4',
+        'gross_unit_price' => MoneyCast::class . ':currency,4',
+        'vat_rate' => PercentageCast::class . ':2',
         'synced_at' => 'datetime',
         'is_dirty' => 'boolean',
         'last_pushed_at' => 'datetime',

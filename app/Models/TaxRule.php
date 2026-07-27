@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Casts\PercentageCast;
 use App\Models\Concerns\{Auditable, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 
@@ -30,7 +31,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $region
  * @property string $category
  * @property string $rate_type
- * @property string $rate
+ * @property \CommonToolkit\ValueObjects\Percentage|null $rate
  * @property \Illuminate\Support\Carbon $valid_from
  * @property \Illuminate\Support\Carbon|null $valid_to
  * @property string|null $source
@@ -52,7 +53,7 @@ class TaxRule extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
-        'rate' => 'decimal:2',
+        'rate' => PercentageCast::class . ':2',
         'valid_from' => 'date',
         'valid_to' => 'date',
     ];

@@ -104,7 +104,7 @@
                     <td>{{ $eventLabel($log->event) }}</td>
                     <td class="small">{{ $shortType($log->auditable_type) }}</td>
                     <td class="right">{{ $log->auditable_id }}</td>
-                    <td class="small">{{ $log->ip }}</td>
+                    <td class="small">{{ $log->ip?->getValue() }}</td>
                 </tr>
             @empty
                 <tr><td colspan="6" style="text-align:center; padding:12px; color:#888;">{{ __('Keine Events.') }}</td></tr>

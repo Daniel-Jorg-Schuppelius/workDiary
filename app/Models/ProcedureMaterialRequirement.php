@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\QuantityCast;
 use App\Enums\Manufacturing\QuantityKind;
 use CommonToolkit\Enums\RoundingMode;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -24,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $procedure_template_version_id
  * @property string $position_code
  * @property QuantityKind $quantity_kind
- * @property numeric-string $quantity
+ * @property \CommonToolkit\ValueObjects\Quantity|null $quantity
  * @property numeric-string|null $ratio_part
  * @property numeric-string|null $waste_surcharge
  * @property string $unit
@@ -55,7 +56,7 @@ class ProcedureMaterialRequirement extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'quantity_kind' => QuantityKind::class,
-        'quantity' => 'decimal:4',
+        'quantity' => QuantityCast::class . ':unit,4',
         'ratio_part' => 'decimal:4',
         'waste_surcharge' => 'decimal:3',
         'rounding' => RoundingMode::class,

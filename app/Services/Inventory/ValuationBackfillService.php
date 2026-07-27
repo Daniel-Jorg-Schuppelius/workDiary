@@ -46,7 +46,7 @@ class ValuationBackfillService {
                 'article_variant_id' => $valuation->article_variant_id,
                 'warehouse_id' => $valuation->warehouse_id,
                 'qty_remaining' => bcadd($valuation->qty_on_hand, '0', self::SCALE),
-                'unit_cost' => bcadd($valuation->avg_cost, '0', self::SCALE),
+                'unit_cost' => bcadd($valuation->avg_cost?->getAmount() ?? '0', '0', self::SCALE),
                 'currency' => $valuation->currency,
                 'acquired_at' => Carbon::now(),
             ]);

@@ -61,7 +61,7 @@ class BackupCheckRestoreCommand extends Command {
             $messages[] = 'Kein Backup-Heartbeat vorhanden.';
         } else {
             $lastAt = $last->occurred_at;
-            $sizeBytes = $last->size_bytes;
+            $sizeBytes = $last->size_bytes?->getBytes();
             $manifestHash = $last->manifest_hash;
             $ageHours = (int) CarbonImmutable::parse($lastAt)->diffInHours($now, true);
 
@@ -182,7 +182,7 @@ class BackupCheckRestoreCommand extends Command {
             ->orderByDesc('occurred_at')
             ->limit($window)
             ->pluck('size_bytes')
-            ->map(static fn($v) => (int) $v)
+            ->map(static fn ($v): int => $v instanceof \CommonToolkit\ValueObjects\ByteSize ? $v->getBytes() : (int) $v)
             ->sort()
             ->values()
             ->all();

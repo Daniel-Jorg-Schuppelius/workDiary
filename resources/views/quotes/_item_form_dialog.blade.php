@@ -19,11 +19,11 @@
         <x-input-field name="description" :label="__('Beschreibung')" required maxlength="1000" span="2" :value="old('description', $item->description ?? '')" />
         <x-input-field name="quantity" type="number" :label="__('Menge')" required min="0.001" step="0.001" :value="old('quantity', (string) ($item->quantity ?? '1.00'))" />
         <x-input-field name="unit" :label="__('Einheit')" maxlength="20" :value="old('unit', $item->unit ?? __('invoicing.unit_hour'))" />
-        <x-input-field name="unit_price" type="number" :label="__('Einzelpreis (EUR)')" required step="0.01" :value="old('unit_price', (string) ($item->unit_price ?? '0.00'))" />
+        <x-input-field name="unit_price" type="number" :label="__('Einzelpreis (EUR)')" required step="0.01" :value="old('unit_price', ($item->unit_price?->getAmount() ?? '0.00'))" />
         {{-- MVP-416: Positionsrabatt — Prozent ODER Betrag, nie beides. --}}
-        <x-input-field name="discount_percent" type="number" :label="__('Rabatt %')" min="0" max="100" step="0.01" :value="old('discount_percent', $item->discount_percent ?? '')" :hint="__('Prozent oder Betrag — nicht beides.')" />
-        <x-input-field name="discount_amount" type="number" :label="__('Rabatt (Betrag)')" min="0" step="0.01" :value="old('discount_amount', $item->discount_amount ?? '')" />
-        <x-input-field name="tax_rate" type="number" :label="__('USt-Satz % (leer = Standard)')" min="0" max="99" step="0.01" :value="old('tax_rate', $item->tax_rate ?? '')" />
+        <x-input-field name="discount_percent" type="number" :label="__('Rabatt %')" min="0" max="100" step="0.01" :value="old('discount_percent', $item->discount_percent?->getNumericValue() ?? '')" :hint="__('Prozent oder Betrag — nicht beides.')" />
+        <x-input-field name="discount_amount" type="number" :label="__('Rabatt (Betrag)')" min="0" step="0.01" :value="old('discount_amount', $item->discount_amount?->getAmount() ?? '')" />
+        <x-input-field name="tax_rate" type="number" :label="__('USt-Satz % (leer = Standard)')" min="0" max="99" step="0.01" :value="old('tax_rate', $item->tax_rate?->getNumericValue() ?? '')" />
         <label class="label cursor-pointer justify-start gap-2" style="grid-column: span 2;">
             <input type="hidden" name="optional" value="0">
             <input type="checkbox" name="optional" value="1" class="checkbox checkbox-sm" @checked(old('optional', (bool) ($item->optional ?? false)))>

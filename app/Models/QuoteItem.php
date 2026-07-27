@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Casts\{MoneyCast, PercentageCast};
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,7 +25,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $quote_id
  * @property bool $optional
  * @property bool|null $accepted
- * @property string|null $tax_rate
+ * @property \CommonToolkit\ValueObjects\Percentage|null $tax_rate
+ * @property \CommonToolkit\ValueObjects\Money|null $unit_price
+ * @property \CommonToolkit\ValueObjects\Percentage|null $discount_percent
+ * @property \CommonToolkit\ValueObjects\Money|null $discount_amount
  */
 class QuoteItem extends Model {
     use BelongsToOrganization;
@@ -39,15 +43,23 @@ class QuoteItem extends Model {
     public function netAmount(): \CommonToolkit\ValueObjects\Money {
         return \App\Services\Invoicing\InvoiceTotalsCalculator::lineNet(
             (float) $this->quantity,
-            (string) $this->unit_price,
-            $this->discount_percent !== null ? (float) $this->discount_percent : null,
-            $this->discount_amount !== null ? (string) $this->discount_amount : null,
+            $this->unit_price,
+            $this->discount_percent,
+            $this->discount_amount,
             \CommonToolkit\Enums\CurrencyCode::Euro,
         );
     }
 
     /** @var array<string, string> */
-    protected $casts = ['optional' => 'boolean', 'accepted' => 'boolean'];
+    protected $casts = [
+        'optional' => 'boolean',
+        'accepted' => 'boolean',
+        // Angebote rechnen in Euro (s. Quote::recalculate()).
+        'unit_price' => MoneyCast::class,
+        'discount_percent' => PercentageCast::class . ':2',
+        'discount_amount' => MoneyCast::class,
+        'tax_rate' => PercentageCast::class . ':2',
+    ];
 
     /** @return BelongsTo<Quote, $this> */
     public function quote(): BelongsTo {

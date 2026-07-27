@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\{MoneyCast, PercentageCast};
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -27,11 +28,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $article_id
  * @property int|null $supplier_id
  * @property string $type
- * @property numeric-string|null $old_purchase_price
- * @property numeric-string|null $new_purchase_price
- * @property numeric-string|null $sale_price
- * @property numeric-string|null $new_margin
- * @property numeric-string|null $min_margin
+ * @property \CommonToolkit\ValueObjects\Money|null $old_purchase_price
+ * @property \CommonToolkit\ValueObjects\Money|null $new_purchase_price
+ * @property \CommonToolkit\ValueObjects\Money|null $sale_price
+ * @property \CommonToolkit\ValueObjects\Percentage|null $new_margin
+ * @property \CommonToolkit\ValueObjects\Percentage|null $min_margin
  * @property array<string, mixed>|null $impacts
  * @property string $status
  */
@@ -67,11 +68,11 @@ class PricingChangeAlert extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
-        'old_purchase_price' => 'decimal:4',
-        'new_purchase_price' => 'decimal:4',
-        'sale_price' => 'decimal:4',
-        'new_margin' => 'decimal:3',
-        'min_margin' => 'decimal:3',
+        'old_purchase_price' => MoneyCast::class . ':currency,4',
+        'new_purchase_price' => MoneyCast::class . ':currency,4',
+        'sale_price' => MoneyCast::class . ':currency,4',
+        'new_margin' => PercentageCast::class . ':3',
+        'min_margin' => PercentageCast::class . ':3',
         'impacts' => 'array',
         'acknowledged_at' => 'datetime',
     ];

@@ -146,7 +146,7 @@ class LexofficeDeliveryNoteService {
             'lineItems' => [[
                 'type' => 'custom',
                 'name' => $name,
-                'quantity' => round((float) $delivery->quantity, 4),
+                'quantity' => round(($delivery->quantity?->getValue()->toFloat() ?? 0.0), 4),
                 'unitName' => trim((string) $delivery->unit) ?: (string) __('invoicing.unit_piece'),
             ]],
             'deliveryConditions' => ['deliveryDate' => $deliveredAt->format('Y-m-d\TH:i:s.vP')],

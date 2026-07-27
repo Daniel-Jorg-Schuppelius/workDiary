@@ -106,7 +106,7 @@
                         </td>
                         <td class="text-right tabular-nums">
                             @if ($customer->hourly_rate !== null)
-                                {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $customer->hourly_rate, 2, withThousandsSeparator: true) }} {{ $customer->currency->value }}
+                                {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($customer->hourly_rate?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $customer->currency->value }}
                             @else
                                 <span class="text-base-content/40">—</span>
                             @endif

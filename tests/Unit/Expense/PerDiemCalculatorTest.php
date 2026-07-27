@@ -51,7 +51,7 @@ class PerDiemCalculatorTest extends TestCase {
         $this->assertSame(PerDiemDayKind::FullDay, $days[1]->kind);
         $this->assertSame(PerDiemDayKind::ReturnDay, $days[2]->kind);
 
-        $total = array_sum(array_map(fn($d) => (float) $d->amount, $days));
+        $total = array_sum(array_map(fn($d) => $d->amount?->toFloat() ?? 0.0, $days));
         $this->assertEqualsWithDelta(14.0 + 28.0 + 14.0, $total, 0.001);
     }
 
@@ -69,7 +69,7 @@ class PerDiemCalculatorTest extends TestCase {
         $days = $this->calculator->buildDays($trip);
         $this->assertCount(1, $days);
         $this->assertSame(PerDiemDayKind::SingleDay, $days[0]->kind);
-        $this->assertEqualsWithDelta(14.0, (float) $days[0]->amount, 0.001);
+        $this->assertEqualsWithDelta(14.0, ($days[0]->amount?->toFloat() ?? 0.0), 0.001);
     }
 
     public function test_day_boundaries_use_local_timezone_not_utc(): void {
@@ -92,7 +92,7 @@ class PerDiemCalculatorTest extends TestCase {
         $this->assertCount(1, $days);
         $this->assertSame(PerDiemDayKind::SingleDay, $days[0]->kind);
         $this->assertSame('2025-03-11', $days[0]->date instanceof \Carbon\CarbonInterface ? $days[0]->date->toDateString() : (string) $days[0]->date);
-        $this->assertEqualsWithDelta(14.0, (float) $days[0]->amount, 0.001);
+        $this->assertEqualsWithDelta(14.0, ($days[0]->amount?->toFloat() ?? 0.0), 0.001);
     }
 
     public function test_short_single_day_yields_no_days(): void {
@@ -127,9 +127,9 @@ class PerDiemCalculatorTest extends TestCase {
         $day->meal_lunch = true;     // -40% of 28 = 11.20
         $this->calculator->recalculateDay($day);
 
-        $this->assertEqualsWithDelta(16.80, (float) $day->deductions_total, 0.001);
+        $this->assertEqualsWithDelta(16.80, $day->deductions_total?->toFloat(), 0.001);
         // amount must not go below 0
-        $this->assertGreaterThanOrEqual(0, (float) $day->amount);
+        $this->assertGreaterThanOrEqual(0, ($day->amount?->toFloat() ?? 0.0));
     }
 
     public function test_missing_rate_throws(): void {

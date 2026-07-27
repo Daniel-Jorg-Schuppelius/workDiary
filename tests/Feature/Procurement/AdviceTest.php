@@ -45,7 +45,7 @@ final class AdviceTest extends TestCase {
         app(AdviceService::class)->receive($advice);
 
         $this->assertSame(AdviceStatus::Received, $advice->fresh()->status);
-        $this->assertSame('4.0000', $line->fresh()->received_qty);
+        $this->assertSame('4.0000', $line->fresh()->received_qty?->getNumericValue());
         $this->assertSame(PurchaseOrderStatus::PartiallyReceived, $po->fresh()->status);
     }
 

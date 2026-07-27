@@ -10,6 +10,7 @@
 
 namespace App\Automation;
 
+use CommonToolkit\ValueObjects\{Decimal, Money, Percentage};
 use Illuminate\Support\Arr;
 
 /**
@@ -59,7 +60,7 @@ class ConditionEvaluator {
         $field = (string) ($predicate['field'] ?? '');
         $op = (string) ($predicate['op'] ?? '=');
         $expected = $predicate['value'] ?? null;
-        $actual = Arr::get($context, $field);
+        $actual = $this->scalar(Arr::get($context, $field));
 
         return match ($op) {
             '=', '==' => $this->loose($actual) === $this->loose($expected),
@@ -73,6 +74,19 @@ class ConditionEvaluator {
             'contains' => is_string($actual) && is_string($expected) && str_contains($actual, $expected),
             'starts_with' => is_string($actual) && is_string($expected) && str_starts_with($actual, $expected),
             default => false,
+        };
+    }
+
+    /**
+     * Value Objects auf ihren Zahlwert bringen — Regeln vergleichen Beträge und
+     * Sätze numerisch, ein Money/Percentage-Objekt fiele sonst durch is_numeric().
+     */
+    private function scalar(mixed $value): mixed {
+        return match (true) {
+            $value instanceof Money => $value->getAmount(),
+            $value instanceof Percentage => $value->getNumericValue(),
+            $value instanceof Decimal => $value->getValue(),
+            default => $value,
         };
     }
 

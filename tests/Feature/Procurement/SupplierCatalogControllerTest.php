@@ -80,7 +80,7 @@ final class SupplierCatalogControllerTest extends TestCase {
             ->assertSessionHas('success');
 
         $this->assertSame(2, SupplierCatalogItem::query()->where('supplier_catalog_source_id', $source->id)->count());
-        $this->assertSame('1.5000', SupplierCatalogItem::query()->where('external_no', 'A-1')->firstOrFail()->purchase_price);
+        $this->assertSame('1.5000', SupplierCatalogItem::query()->where('external_no', 'A-1')->firstOrFail()->purchase_price?->getAmount());
     }
 
     public function test_import_requires_post_permission(): void {

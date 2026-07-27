@@ -228,8 +228,8 @@ class LexofficeMapper {
 
                 $type = $rule?->item_type ?: 'service';
                 $unitName = $rule?->unit_name ?: 'Stunde';
-                $taxRate = $rule?->vat_rate !== null ? (float) $rule->vat_rate : $vatRate;
-                $netAmount = $rule?->net_unit_price !== null ? (float) $rule->net_unit_price : $unitPrice;
+                $taxRate = $rule?->vat_rate !== null ? (float) $rule->vat_rate->getNumericValue() : $vatRate;
+                $netAmount = $rule?->net_unit_price !== null ? $rule->net_unit_price->toFloat() : $unitPrice;
 
                 $kindSuffix = $kind !== null ? ' [' . $kind->value . ']' : '';
                 // Endkunde (Fremdkunde) mit in die Buchungszeile übernehmen.

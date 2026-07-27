@@ -52,7 +52,7 @@ final class ValuationTest extends TestCase {
 
         $movement = $this->valuation->issue($this->variant, $this->warehouse, '5');
 
-        $this->assertSame('15.0000', $movement->cost_total); // 5 × 3
+        $this->assertSame('15.0000', $movement->cost_total?->getAmount()); // 5 × 3
         $this->assertSame('3.0000', $this->valuation->average($this->variant, $this->warehouse));
         $this->assertSame('45.0000', $this->valuation->totalValue($this->variant, $this->warehouse));
     }
@@ -60,8 +60,8 @@ final class ValuationTest extends TestCase {
     public function test_receipt_stamps_cost_snapshot_on_movement(): void {
         $movement = $this->valuation->receipt($this->variant, $this->warehouse, '10', '2.5');
 
-        $this->assertSame('2.5000', $movement->cost_unit);
-        $this->assertSame('25.0000', $movement->cost_total);
+        $this->assertSame('2.5000', $movement->cost_unit?->getAmount());
+        $this->assertSame('25.0000', $movement->cost_total?->getAmount());
     }
 
     public function test_historical_cost_snapshot_stays_unchanged_after_price_change(): void {
@@ -73,7 +73,7 @@ final class ValuationTest extends TestCase {
         $this->assertNotSame('2.0000', $this->valuation->average($this->variant, $this->warehouse));
 
         // … aber der Kostensnapshot der alten Abgangsbewegung bleibt unverändert.
-        $this->assertSame('8.0000', $issue->fresh()->cost_total);
+        $this->assertSame('8.0000', $issue->fresh()->cost_total?->getAmount());
     }
 
     public function test_issue_blocks_negative_stock(): void {

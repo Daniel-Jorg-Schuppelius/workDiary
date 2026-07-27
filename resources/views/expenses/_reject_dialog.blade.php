@@ -18,7 +18,7 @@
             <div class="font-semibold">{{ $expense->user?->name }}</div>
             <div class="text-base-content/70">
                 {{ $expense->date->fdate() }} ·
-                {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $expense->amount_gross, 2, withThousandsSeparator: true) }} {{ $expense->currency->value }}
+                {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($expense->amount_gross?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $expense->currency->value }}
             </div>
             @if ($expense->description)
                 <div class="mt-1">{{ $expense->description }}</div>

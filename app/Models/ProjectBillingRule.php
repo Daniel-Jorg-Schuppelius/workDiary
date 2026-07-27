@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\{MoneyCast, PercentageCast};
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -36,8 +37,8 @@ class ProjectBillingRule extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
-        'vat_rate' => 'decimal:2',
-        'net_unit_price' => 'decimal:4',
+        'vat_rate' => PercentageCast::class . ':2',
+        'net_unit_price' => MoneyCast::class . ':currency,4',
         'priority' => 'integer',
     ];
 

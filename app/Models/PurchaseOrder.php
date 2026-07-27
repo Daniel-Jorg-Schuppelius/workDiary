@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Enums\Procurement\PurchaseOrderStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -26,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property int $warehouse_id
  * @property PurchaseOrderStatus $status
  * @property \CommonToolkit\Enums\CurrencyCode $currency
+ * @property \CommonToolkit\ValueObjects\Money|null $freight_cost
  */
 class PurchaseOrder extends Model {
     use Auditable;
@@ -51,7 +53,7 @@ class PurchaseOrder extends Model {
     protected $casts = [
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'status' => PurchaseOrderStatus::class,
-        'freight_cost' => 'decimal:4',
+        'freight_cost' => MoneyCast::class . ':currency,4',
         'ordered_at' => 'datetime',
         'expected_at' => 'date',
     ];

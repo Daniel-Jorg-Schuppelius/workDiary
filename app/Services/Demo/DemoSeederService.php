@@ -640,7 +640,7 @@ class DemoSeederService {
                 'description' => $material->name,
                 'quantity' => $spec['quantity'],
                 'unit' => $material->unit,
-                'unit_price' => (string) $material->default_unit_price,
+                'unit_price' => $material->default_unit_price,
                 'tax_rate' => '19.00',
                 'billed' => false,
             ]);

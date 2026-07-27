@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Enums\Gaeb\GaebPhase;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -24,8 +25,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $boq_item_id
  * @property int|null $gaeb_import_id
  * @property GaebPhase|null $phase
- * @property string|null $unit_price
- * @property string|null $total_price
+ * @property \CommonToolkit\ValueObjects\Money|null $unit_price
+ * @property \CommonToolkit\ValueObjects\Money|null $total_price
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property \Illuminate\Support\Carbon $captured_at
  */
@@ -46,8 +47,8 @@ class BoqItemPriceSnapshot extends Model {
     protected $casts = [
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'phase' => GaebPhase::class,
-        'unit_price' => 'decimal:4',
-        'total_price' => 'decimal:4',
+        'unit_price' => MoneyCast::class . ':currency,4',
+        'total_price' => MoneyCast::class . ':currency,4',
         'captured_at' => 'datetime',
     ];
 

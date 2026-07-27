@@ -139,9 +139,9 @@ class EInvoiceValidationService {
         $errors = [];
         $currency = $parsed->getCurrency();
         $expected = [
-            'net' => Money::of((string) $invoice->subtotal, $currency),
-            'tax' => Money::of((string) $invoice->tax_amount, $currency),
-            'gross' => Money::of((string) $invoice->total, $currency),
+            'net' => $invoice->subtotal ?? Money::zero($currency),
+            'tax' => $invoice->tax_amount ?? Money::zero($currency),
+            'gross' => $invoice->total ?? Money::zero($currency),
         ];
         $actual = [
             'net' => $parsed->getNetAmount(),

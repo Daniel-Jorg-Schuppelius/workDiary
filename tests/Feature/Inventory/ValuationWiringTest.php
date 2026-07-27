@@ -54,7 +54,7 @@ final class ValuationWiringTest extends TestCase {
 
         $layer = StockValuationLayer::query()->firstOrFail();
         $this->assertSame('10.0000', $layer->qty_remaining);
-        $this->assertSame('2.0000', $layer->unit_cost);
+        $this->assertSame('2.0000', $layer->unit_cost?->getAmount());
 
         $this->assertSame(0, app(ValuationBackfillService::class)->backfill($this->organization));
     }
@@ -70,6 +70,6 @@ final class ValuationWiringTest extends TestCase {
         app(DeliveryService::class)->deliver($this->variant, $this->warehouse, '5');
 
         $issue = StockMovement::query()->where('movement_type', 'issue')->latest('id')->firstOrFail();
-        $this->assertSame('10.0000', $issue->cost_total); // 5 × 2
+        $this->assertSame('10.0000', $issue->cost_total?->getAmount()); // 5 × 2
     }
 }

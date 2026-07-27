@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\{MoneyCast, PercentageCast};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -20,8 +21,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $sku
  * @property string $name
  * @property string $unit
- * @property string|null $default_unit_price
- * @property string|null $tax_rate
+ * @property \CommonToolkit\ValueObjects\Money|null $default_unit_price
+ * @property \CommonToolkit\ValueObjects\Percentage|null $tax_rate
  * @property string|null $external_provider
  * @property string|null $external_id
  * @property bool $is_active
@@ -54,8 +55,8 @@ class Material extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
-        'default_unit_price' => 'decimal:4',
-        'tax_rate' => 'decimal:2',
+        'default_unit_price' => MoneyCast::class . ':currency,4',
+        'tax_rate' => PercentageCast::class . ':2',
         'is_active' => 'boolean',
     ];
 }

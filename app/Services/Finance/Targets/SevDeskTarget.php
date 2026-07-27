@@ -284,8 +284,10 @@ class SevDeskTarget implements FacturationTarget {
             }
             /** @var TimeEntry|null $primary */
             $primary = $entriesById->get($block->primaryEntryId);
-            $rate = $block->hourlyRate()
-                ?? (float) ($primary?->hourly_rate ?: $transfer->customer->hourly_rate ?: 0);
+            $fallbackRate = $primary !== null && $primary->hourly_rate !== null
+                ? $primary->hourly_rate
+                : $transfer->customer->hourly_rate;
+            $rate = $block->hourlyRate() ?? $fallbackRate?->toFloat() ?? 0.0;
 
             $positions[] = [
                 'objectName' => 'InvoicePos',
@@ -318,9 +320,9 @@ class SevDeskTarget implements FacturationTarget {
                 'objectName' => 'InvoicePos',
                 'mapAll' => true,
                 'name' => $name,
-                'quantity' => round((float) $usage->quantity, 2),
-                'price' => round((float) ($usage->unit_price ?? 0), 2),
-                'taxRate' => $usage->tax_rate !== null ? round((float) $usage->tax_rate, 2) : $vatRate,
+                'quantity' => round(($usage->quantity?->getValue()->toFloat() ?? 0.0), 2),
+                'price' => round($usage->unit_price?->toFloat() ?? 0.0, 2),
+                'taxRate' => $usage->tax_rate !== null ? round((float) $usage->tax_rate->getNumericValue(), 2) : $vatRate,
                 // sevDesk verlangt eine Katalog-Unity; freie Einheitstexte gibt
                 // der Vertrag nicht her — Standard: Stück (Pilot verifiziert).
                 'unity' => ['id' => $unityPieceId, 'objectName' => 'Unity'],

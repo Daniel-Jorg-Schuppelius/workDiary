@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\QuantityCast;
 use App\Enums\Manufacturing\{BomOverrideAction, QuantityKind};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -24,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $position_code
  * @property BomOverrideAction $action
  * @property QuantityKind|null $quantity_kind
- * @property numeric-string|null $quantity
+ * @property \CommonToolkit\ValueObjects\Quantity|null $quantity
  * @property bool $is_tool
  */
 class ArticleVariantBomOverride extends Model {
@@ -48,7 +49,7 @@ class ArticleVariantBomOverride extends Model {
     protected $casts = [
         'action' => BomOverrideAction::class,
         'quantity_kind' => QuantityKind::class,
-        'quantity' => 'decimal:4',
+        'quantity' => QuantityCast::class . ':unit,4',
         'ratio_part' => 'decimal:4',
         'waste_surcharge' => 'decimal:3',
         'is_tool' => 'boolean',

@@ -130,7 +130,7 @@ final class DatevBookingConfig {
         $mapping = $this->expenseAccounts[(int) ($expense->expense_category_id ?? 0)] ?? null;
         $account = trim((string) ($mapping['account'] ?? ''));
 
-        return $account !== '' ? $account : $this->revenueAccountFor((float) $expense->tax_rate);
+        return $account !== '' ? $account : $this->revenueAccountFor(($expense->tax_rate !== null ? (float) $expense->tax_rate->getNumericValue() : 0.0));
     }
 
     /**
@@ -141,7 +141,7 @@ final class DatevBookingConfig {
         $mapping = $this->expenseAccounts[(int) ($expense->expense_category_id ?? 0)] ?? null;
         $taxKey = trim((string) ($mapping['tax_key'] ?? ''));
 
-        return $taxKey !== '' ? $taxKey : $this->taxKeyFor((float) $expense->tax_rate);
+        return $taxKey !== '' ? $taxKey : $this->taxKeyFor(($expense->tax_rate !== null ? (float) $expense->tax_rate->getNumericValue() : 0.0));
     }
 
     /**

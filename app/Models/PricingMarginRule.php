@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\{MoneyCast, PercentageCast};
 use App\Enums\Procurement\PriceRounding;
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -24,10 +25,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $name
  * @property int|null $supplier_id
  * @property string|null $category
- * @property numeric-string|null $markup_percent
- * @property numeric-string|null $target_margin
- * @property numeric-string|null $min_margin
- * @property numeric-string|null $min_sale_price
+ * @property \CommonToolkit\ValueObjects\Percentage|null $markup_percent
+ * @property \CommonToolkit\ValueObjects\Percentage|null $target_margin
+ * @property \CommonToolkit\ValueObjects\Percentage|null $min_margin
+ * @property \CommonToolkit\ValueObjects\Money|null $min_sale_price
  * @property PriceRounding $rounding
  * @property int $priority
  * @property bool $active
@@ -53,10 +54,10 @@ class PricingMarginRule extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
-        'markup_percent' => 'decimal:3',
-        'target_margin' => 'decimal:3',
-        'min_margin' => 'decimal:3',
-        'min_sale_price' => 'decimal:4',
+        'markup_percent' => PercentageCast::class . ':3',
+        'target_margin' => PercentageCast::class . ':3',
+        'min_margin' => PercentageCast::class . ':3',
+        'min_sale_price' => MoneyCast::class . ':currency,4',
         'rounding' => PriceRounding::class,
         'priority' => 'integer',
         'active' => 'boolean',

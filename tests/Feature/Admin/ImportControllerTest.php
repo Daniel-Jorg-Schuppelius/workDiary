@@ -258,7 +258,7 @@ class ImportControllerTest extends TestCase {
         $customer = Customer::query()->where('number', 'K-1')->firstOrFail();
         $this->assertSame('ACME', $customer->name);
         $this->assertSame('2026-07-01', $customer->comment);
-        $this->assertEqualsWithDelta(25.5, (float) $customer->hourly_rate, 0.001);
+        $this->assertEqualsWithDelta(25.5, $customer->hourly_rate?->toFloat(), 0.001);
     }
 
     public function test_corrupt_xlsx_fails_preflight_with_readable_error(): void {

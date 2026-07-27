@@ -30,7 +30,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $organization_id
  * @property string $label
- * @property string $iban
+ * @property string|null $iban
  * @property string $iban_hash
  * @property string|null $bic
  * @property string|null $account_holder

@@ -59,12 +59,12 @@ final class DeliveryTest extends TestCase {
         $delivery = $this->deliveries->deliver($this->variant, $this->warehouse, '3');
 
         $this->assertSame('7.0000', $this->ledger->balance($this->variant, $this->warehouse, StockState::Physical));
-        $this->assertSame('3.0000', $delivery->quantity);
+        $this->assertSame('3.0000', $delivery->quantity?->getNumericValue());
         $this->assertSame('delivered', $delivery->stock_status);
         $this->assertSame(DeliveryFacturationStatus::Pending, $delivery->facturation_status);
         $this->assertSame('Widget rot', $delivery->name_snapshot);
         $this->assertSame('WID-ROT', $delivery->sku_snapshot);
-        $this->assertSame('12.0000', $delivery->unit_price_snapshot);
+        $this->assertSame('12.0000', $delivery->unit_price_snapshot?->getAmount());
         $this->assertSame('workdiary', $delivery->facturation_target);
     }
 

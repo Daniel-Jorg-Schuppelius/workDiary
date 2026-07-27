@@ -119,7 +119,7 @@
                                 @endif
                             </td>
                             <td class="text-right tabular-nums">{{ $fmt((int) $e->minutes) }}</td>
-                            <td class="text-right tabular-nums">{{ $money((float) $e->rate) }}</td>
+                            <td class="text-right tabular-nums">{{ $money($e->rate?->toFloat() ?? 0.0) }}</td>
                         </tr>
                     @endforeach
                 @endforeach

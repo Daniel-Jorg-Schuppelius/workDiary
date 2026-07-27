@@ -22,8 +22,8 @@ class ExpenseRecalculateAmountsTest extends TestCase {
 
         $expense->recalculateAmounts();
 
-        $this->assertEquals(19.00, (float) $expense->tax_amount);
-        $this->assertEquals(119.00, (float) $expense->amount_gross);
+        $this->assertEquals(19.00, $expense->tax_amount?->toFloat());
+        $this->assertEquals(119.00, $expense->amount_gross?->toFloat());
     }
 
     public function test_derives_net_from_gross_when_net_is_zero(): void {
@@ -34,9 +34,9 @@ class ExpenseRecalculateAmountsTest extends TestCase {
 
         $expense->recalculateAmounts();
 
-        $this->assertEqualsWithDelta(100.0, (float) $expense->amount_net, 0.01);
-        $this->assertEqualsWithDelta(19.0, (float) $expense->tax_amount, 0.01);
-        $this->assertEqualsWithDelta(119.0, (float) $expense->amount_gross, 0.01);
+        $this->assertEqualsWithDelta(100.0, $expense->amount_net?->toFloat(), 0.01);
+        $this->assertEqualsWithDelta(19.0, $expense->tax_amount?->toFloat(), 0.01);
+        $this->assertEqualsWithDelta(119.0, $expense->amount_gross?->toFloat(), 0.01);
     }
 
     public function test_zero_tax_rate_leaves_net_equal_to_gross(): void {
@@ -47,8 +47,8 @@ class ExpenseRecalculateAmountsTest extends TestCase {
 
         $expense->recalculateAmounts();
 
-        $this->assertEquals(0.0, (float) $expense->tax_amount);
-        $this->assertEquals(50.0, (float) $expense->amount_gross);
+        $this->assertEquals(0.0, $expense->tax_amount?->toFloat());
+        $this->assertEquals(50.0, $expense->amount_gross?->toFloat());
     }
 
     public function test_seven_percent_reduced_rate(): void {
@@ -59,7 +59,7 @@ class ExpenseRecalculateAmountsTest extends TestCase {
 
         $expense->recalculateAmounts();
 
-        $this->assertEquals(14.00, (float) $expense->tax_amount);
-        $this->assertEquals(214.00, (float) $expense->amount_gross);
+        $this->assertEquals(14.00, $expense->tax_amount?->toFloat());
+        $this->assertEquals(214.00, $expense->amount_gross?->toFloat());
     }
 }

@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Carbon\Carbon;
 use CommonToolkit\Enums\CurrencyCode;
@@ -26,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $organization_id
  * @property string $name
  * @property CurrencyCode $currency
- * @property string $opening_balance
+ * @property \CommonToolkit\ValueObjects\Money|null $opening_balance
  * @property Carbon $opened_on
  * @property bool $active
  */
@@ -47,7 +48,7 @@ class CashRegister extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'currency' => CurrencyCode::class,
-        'opening_balance' => 'decimal:2',
+        'opening_balance' => MoneyCast::class . ':currency,2',
         'opened_on' => 'date',
         'active' => 'boolean',
     ];

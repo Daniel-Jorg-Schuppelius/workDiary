@@ -88,7 +88,7 @@ class ExpenseInvoicingService {
                     'description' => $description,
                     'quantity' => '1.00',
                     'unit' => (string) __('invoicing.unit_piece'),
-                    'unit_price' => (string) $expense->amount_gross,
+                    'unit_price' => $expense->amount_gross,
                     'position' => ++$position,
                 ]);
 

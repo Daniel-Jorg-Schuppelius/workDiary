@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Applications;
 
+use App\Casts\ByteSizeCast;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $storage_key
  * @property string $original_name
  * @property string $mime
- * @property int $size_bytes
+ * @property \CommonToolkit\ValueObjects\ByteSize|null $size_bytes
  * @property string $sha256
  * @property string $scan_status
  */
@@ -45,7 +46,7 @@ class JobApplicationUpload extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
-        'size_bytes' => 'integer',
+        'size_bytes' => ByteSizeCast::class,
     ];
 
     /** @return BelongsTo<JobApplication, $this> */

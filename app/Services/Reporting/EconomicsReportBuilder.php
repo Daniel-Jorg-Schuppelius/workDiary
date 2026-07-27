@@ -132,7 +132,7 @@ class EconomicsReportBuilder {
                     $expense,
                     $travel,
                     planMinutes: $project->time_budget !== null ? (int) $project->time_budget : null,
-                    planBudget: $project->budget !== null ? (float) $project->budget : null,
+                    planBudget: $project->budget?->toFloat(),
                 );
 
                 return array_merge([
@@ -212,7 +212,7 @@ class EconomicsReportBuilder {
                 $travel = $this->travelAggregate($fromDate, $toDate, customerId: (int) $customer->id, customer: $customer, projectIds: $projectIds);
 
                 $planMinutes = $customerProjects->sum(static fn (Project $p): int => (int) $p->time_budget);
-                $planBudget = $customerProjects->sum(static fn (Project $p): float => (float) $p->budget);
+                $planBudget = $customerProjects->sum(static fn (Project $p): float => ($p->budget?->toFloat() ?? 0.0));
 
                 $row = $this->composeRow(
                     $time,
@@ -262,12 +262,12 @@ class EconomicsReportBuilder {
             $minutes = (int) $e->minutes;
             if ($e->billable) {
                 $billableMinutes += $minutes;
-                $revenue += (float) $e->rate;
+                $revenue += ($e->rate?->toFloat() ?? 0.0);
             } else {
                 $nonBillableMinutes += $minutes;
             }
 
-            $internal = (float) $e->internal_rate;
+            $internal = ($e->internal_rate?->toFloat() ?? 0.0);
             $cost += $internal;
             if ($minutes > 0 && $internal <= 0.0) {
                 $costRateMissing = true;
@@ -584,10 +584,10 @@ class EconomicsReportBuilder {
                 : null;
             if ($itemId !== null) {
                 $timeMinutes[$itemId] += (int) $entry->minutes;
-                $costTime[$itemId] += (float) $entry->internal_rate;
+                $costTime[$itemId] += ($entry->internal_rate?->toFloat() ?? 0.0);
             } else {
                 $unassigned['timeMinutes'] += (int) $entry->minutes;
-                $unassigned['costTime'] += (float) $entry->internal_rate;
+                $unassigned['costTime'] += ($entry->internal_rate?->toFloat() ?? 0.0);
             }
         }
 
@@ -607,9 +607,9 @@ class EconomicsReportBuilder {
                 $itemId = $this->uniqueTarget($usageToItems[(int) $usage->id] ?? [])
                     ?? ($usage->material_id !== null ? $this->uniqueTarget($materialToItems[(int) $usage->material_id] ?? []) : null);
                 if ($itemId !== null) {
-                    $costMaterial[$itemId] += (float) $usage->line_total_net;
+                    $costMaterial[$itemId] += $usage->line_total_net?->toFloat() ?? 0.0;
                 } else {
-                    $unassigned['costMaterial'] += (float) $usage->line_total_net;
+                    $unassigned['costMaterial'] += $usage->line_total_net?->toFloat() ?? 0.0;
                 }
             }
         }
@@ -625,7 +625,7 @@ class EconomicsReportBuilder {
         foreach ($items as $item) {
             $id = (int) $item->id;
             $quantity = (float) ($measured[$id] ?? 0.0);
-            $unitPrice = $item->unit_price !== null ? (float) $item->unit_price : null;
+            $unitPrice = $item->unit_price?->toFloat();
             $revenue = $item->type->isBillable() && $unitPrice !== null
                 ? round($quantity * $unitPrice, 2)
                 : 0.0;

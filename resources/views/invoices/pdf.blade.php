@@ -110,8 +110,8 @@
             @if ($showServiceDates)<td>{{ optional($item->service_date)->fdate() ?: '—' }}</td>@endif
             {{-- 3./4. NK nur zeigen, wenn signifikant: die Rechnung muss aus Menge × Preis nachrechenbar sein --}}
             <td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, ((int) round((float) $item->quantity * 1000)) % 10 !== 0 ? 3 : 2, withThousandsSeparator: true) }} {{ $item->unit }}</td>
-            <td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->unit_price, ((int) round((float) $item->unit_price * 10000)) % 100 !== 0 ? 4 : 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
-            <td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->amount, 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
+            <td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->unit_price?->toFloat() ?? 0.0), ((int) round(($item->unit_price?->toFloat() ?? 0.0) * 10000)) % 100 !== 0 ? 4 : 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
+            <td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
         </tr>
     @endforeach
     </tbody>
@@ -121,24 +121,24 @@
         // Positions-Steuersätzen MUSS jeder Satz einzeln ausgewiesen werden —
         // ein einzelner Kopfsatz wäre ein falscher Steuerausweis.
         $taxRows = collect($invoice->tax_breakdown ?? []);
-        $fmtRate = fn($rate) => rtrim(rtrim(number_format((float) $rate, 2, '.', ''), '0'), '.');
+        $fmtRate = fn($rate) => rtrim(rtrim(number_format((float) ($rate instanceof \CommonToolkit\ValueObjects\Percentage ? $rate->getNumericValue() : $rate), 2, '.', ''), '0'), '.');
     @endphp
     <tfoot>
         @php $docDiscount = $invoice->documentDiscountTotal(); @endphp
-        @if ($docDiscount != 0.0)
+        @if (!$docDiscount->isZero())
             {{-- MVP-416: Positionssumme, Belegrabatt, Netto getrennt ausweisen. --}}
-            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Zwischensumme') }}</td><td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($invoice->lineSubtotal(), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
-            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Rabatt') }}@if ($invoice->discount_percent !== null) ({{ $fmtRate($invoice->discount_percent) }}%)@endif</td><td class="num">−{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(abs($docDiscount), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
-            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Netto') }}</td><td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $invoice->subtotal, 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Zwischensumme') }}</td><td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($invoice->lineSubtotal()->toFloat(), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Rabatt') }}@if ($invoice->discount_percent !== null) ({{ $fmtRate($invoice->discount_percent) }}%)@endif</td><td class="num">−{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(abs($docDiscount->toFloat()), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Netto') }}</td><td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->subtotal?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
         @else
-            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Zwischensumme') }}</td><td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $invoice->subtotal, 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Zwischensumme') }}</td><td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->subtotal?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
         @endif
         @if ($taxRows->count() > 1)
             @foreach ($taxRows as $row)
                 <tr><td colspan="{{ $footColspan }}" class="num">{{ __('USt.') }} {{ $fmtRate($row['rate']) }}% ({{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row['net'], 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }})</td><td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row['tax'], 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
             @endforeach
         @else
-            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('USt.') }} {{ $fmtRate($invoice->tax_rate) }}%</td><td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $invoice->tax_amount, 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('USt.') }} {{ $fmtRate($invoice->tax_rate) }}%</td><td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->tax_amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
         @endif
         @if ($invoice->is_reverse_charge)
             <tr><td colspan="{{ $footColspan + 1 }}" class="num" style="font-size: 8pt; color: #6b7280;">{{ __('Steuerschuldnerschaft des Leistungsempfängers (Reverse Charge).') }}</td></tr>
@@ -149,17 +149,17 @@
             // manuell angelegten Belegen ohne TaxResolver-Notiz.
             $smallBusiness = (string) data_get((array) ($invoice->organization?->settings ?? []), 'einvoice.small_business', '0') === '1'
                 && ! $invoice->is_reverse_charge
-                && (float) $invoice->tax_rate === 0.0
+                && ($invoice->tax_rate?->isZero() ?? true)
                 && ! str_contains((string) $invoice->notes, '§ 19');
         @endphp
         @if ($smallBusiness)
             <tr><td colspan="{{ $footColspan + 1 }}" class="num" style="font-size: 8pt; color: #6b7280;">{{ __('Keine Umsatzsteuer gemäß § 19 UStG (Kleinunternehmerregelung).') }}</td></tr>
         @endif
-        <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Gesamt') }}</td><td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $invoice->total, 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+        <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Gesamt') }}</td><td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
         @if ($invoice->hasSkonto())
             {{-- MVP-416: Skonto-Kondition mit Frist und Zahlbetrag. --}}
             <tr><td colspan="{{ $footColspan + 1 }}" class="num" style="font-size: 8pt; color: #6b7280;">
-                {{ __(':percent % Skonto bei Zahlung innerhalb von :days Tagen', ['percent' => $fmtRate($invoice->skonto_percent), 'days' => (int) $invoice->skonto_days]) }}@if ($invoice->skontoDeadline() !== null) — {{ __('bis :date', ['date' => $invoice->skontoDeadline()->fdate()]) }}: {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $invoice->total - $invoice->skontoAmount(), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}@endif
+                {{ __(':percent % Skonto bei Zahlung innerhalb von :days Tagen', ['percent' => $fmtRate($invoice->skonto_percent), 'days' => (int) $invoice->skonto_days]) }}@if ($invoice->skontoDeadline() !== null) — {{ __('bis :date', ['date' => $invoice->skontoDeadline()->fdate()]) }}: {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->total?->toFloat() ?? 0.0) - $invoice->skontoAmount()->toFloat(), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}@endif
             </td></tr>
         @endif
     </tfoot>

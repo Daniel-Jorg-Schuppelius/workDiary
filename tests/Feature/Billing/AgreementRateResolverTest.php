@@ -84,13 +84,13 @@ class AgreementRateResolverTest extends TestCase {
         $sunday = $this->makeEntry('2026-07-19')->fresh();
 
         // workdays_per_week=6 ⇒ Samstag ist Werktag, nur Sonntag Wochenende.
-        $this->assertSame('16.50', $saturday->hourly_rate);
+        $this->assertSame('16.50', $saturday->hourly_rate?->getAmount());
         $this->assertSame($weekday->id, $saturday->customer_billing_rate_id);
-        $this->assertSame('33.00', $saturday->rate);
+        $this->assertSame('33.00', $saturday->rate?->getAmount());
 
-        $this->assertSame('17.50', $sunday->hourly_rate);
+        $this->assertSame('17.50', $sunday->hourly_rate?->getAmount());
         $this->assertSame($weekend->id, $sunday->customer_billing_rate_id);
-        $this->assertSame('35.00', $sunday->rate);
+        $this->assertSame('35.00', $sunday->rate?->getAmount());
     }
 
     public function test_five_workdays_make_saturday_a_weekend(): void {
@@ -100,7 +100,7 @@ class AgreementRateResolverTest extends TestCase {
 
         $saturday = $this->makeEntry('2026-07-18')->fresh();
 
-        $this->assertSame('17.50', $saturday->hourly_rate);
+        $this->assertSame('17.50', $saturday->hourly_rate?->getAmount());
     }
 
     public function test_category_rate_beats_category_fallback(): void {
@@ -110,7 +110,7 @@ class AgreementRateResolverTest extends TestCase {
 
         $entry = $this->makeEntry('2026-07-17', ['activity_category_id' => $category->id])->fresh();
 
-        $this->assertSame('20.00', $entry->hourly_rate);
+        $this->assertSame('20.00', $entry->hourly_rate?->getAmount());
         $this->assertSame($categoryRate->id, $entry->customer_billing_rate_id);
     }
 
@@ -119,7 +119,7 @@ class AgreementRateResolverTest extends TestCase {
 
         $sunday = $this->makeEntry('2026-07-19')->fresh();
 
-        $this->assertSame('16.50', $sunday->hourly_rate);
+        $this->assertSame('16.50', $sunday->hourly_rate?->getAmount());
         $this->assertSame($weekday->id, $sunday->customer_billing_rate_id);
     }
 
@@ -128,7 +128,7 @@ class AgreementRateResolverTest extends TestCase {
 
         $entry = $this->makeEntry('2026-07-17', ['hourly_rate' => 50.00])->fresh();
 
-        $this->assertSame('50.00', $entry->hourly_rate);
+        $this->assertSame('50.00', $entry->hourly_rate?->getAmount());
         $this->assertNull($entry->customer_billing_rate_id);
     }
 
@@ -138,7 +138,7 @@ class AgreementRateResolverTest extends TestCase {
 
         $entry = $this->makeEntry('2026-07-17')->fresh();
 
-        $this->assertSame('16.50', $entry->hourly_rate);
+        $this->assertSame('16.50', $entry->hourly_rate?->getAmount());
     }
 
     public function test_redating_saturday_to_sunday_reapplies_weekend_rate(): void {
@@ -146,7 +146,7 @@ class AgreementRateResolverTest extends TestCase {
         $weekend = $this->rate(17.50, 'weekend');
 
         $entry = $this->makeEntry('2026-07-18')->fresh();
-        $this->assertSame('16.50', $entry->hourly_rate);
+        $this->assertSame('16.50', $entry->hourly_rate?->getAmount());
 
         $entry->update([
             'started_at' => '2026-07-19 10:00:00',
@@ -155,9 +155,9 @@ class AgreementRateResolverTest extends TestCase {
         ]);
         $entry->refresh();
 
-        $this->assertSame('17.50', $entry->hourly_rate);
+        $this->assertSame('17.50', $entry->hourly_rate?->getAmount());
         $this->assertSame($weekend->id, $entry->customer_billing_rate_id);
-        $this->assertSame('35.00', $entry->rate);
+        $this->assertSame('35.00', $entry->rate?->getAmount());
     }
 
     public function test_manual_override_survives_redating(): void {
@@ -173,7 +173,7 @@ class AgreementRateResolverTest extends TestCase {
         ]);
         $entry->refresh();
 
-        $this->assertSame('50.00', $entry->hourly_rate);
+        $this->assertSame('50.00', $entry->hourly_rate?->getAmount());
         $this->assertNull($entry->customer_billing_rate_id);
     }
 
@@ -184,7 +184,7 @@ class AgreementRateResolverTest extends TestCase {
 
         $entry = $this->makeEntry('2026-07-17')->fresh();
 
-        $this->assertSame('80.00', $entry->hourly_rate);
+        $this->assertSame('80.00', $entry->hourly_rate?->getAmount());
         $this->assertNull($entry->customer_billing_rate_id);
     }
 }

@@ -50,7 +50,7 @@ final class ActualCostingTest extends TestCase {
         app(ManufacturingInventoryService::class)->consume($material, '5');
 
         $this->assertSame('5.0000', $material->fresh()->consumed_qty);
-        $this->assertSame('10.0000', $material->fresh()->actual_cost); // 5 × 2 (Ist)
+        $this->assertSame('10.0000', $material->fresh()->actual_cost?->getAmount()); // 5 × 2 (Ist)
         $this->assertSame('10.0000', app(ManufacturingCostingService::class)->costing($order)['actual']);
     }
 }

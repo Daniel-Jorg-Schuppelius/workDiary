@@ -120,7 +120,7 @@
                         <td>{{ $eventLabel($log->event) }}</td>
                         <td class="text-xs">{{ $shortType($log->auditable_type) }}</td>
                         <td class="tabular-nums">{{ $log->auditable_id }}</td>
-                        <td class="text-xs text-base-content/60">{{ $log->ip }}</td>
+                        <td class="text-xs text-base-content/60">{{ $log->ip?->getValue() }}</td>
                     </tr>
                 @endforeach
             </x-table>

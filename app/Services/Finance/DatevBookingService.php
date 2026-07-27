@@ -239,8 +239,8 @@ class DatevBookingService {
      * @return array{source_type: class-string, source_id: int, debtor_account: string, revenue_account: string, soll_haben: string, amount: float, tax_rate: float, tax_key: ?string, document_ref: string, text: string, date: string, is_credit_note: bool, is_reversal: bool}
      */
     private function invoiceRow(Invoice $invoice, DatevBookingConfig $config): array {
-        $taxRate = (float) $invoice->tax_rate;
-        $gross = (float) $invoice->total;
+        $taxRate = $invoice->tax_rate !== null ? (float) $invoice->tax_rate->getNumericValue() : 0.0;
+        $gross = $invoice->total?->toFloat() ?? 0.0;
         $isCredit = $invoice->isCreditNote();
         // Storno-Nachreichung (MVP-334): identischer Satz wie das Original,
         // die Umkehr übernimmt das Generalumkehr-Kennzeichen im Export.
@@ -278,8 +278,8 @@ class DatevBookingService {
      * @return array{source_type: class-string, source_id: int, debtor_account: string, revenue_account: string, soll_haben: string, amount: float, tax_rate: float, tax_key: ?string, document_ref: string, text: string, date: string, is_credit_note: bool, is_reversal: bool}
      */
     private function expenseRow(Expense $expense, DatevBookingConfig $config): array {
-        $taxRate = (float) $expense->tax_rate;
-        $gross = (float) $expense->amount_gross;
+        $taxRate = ($expense->tax_rate !== null ? (float) $expense->tax_rate->getNumericValue() : 0.0);
+        $gross = ($expense->amount_gross?->toFloat() ?? 0.0);
 
         return [
             'source_type' => Expense::class,

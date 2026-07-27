@@ -70,7 +70,7 @@ class GoodsReceiptService {
             }
         }
 
-        $cost = $unitCost ?? $line->unit_price ?? '0';
+        $cost = $unitCost ?? $line->unit_price?->getAmount() ?? '0';
         $organization = Organization::query()->find($order->organization_id);
 
         return DB::transaction(function () use ($line, $order, $variant, $warehouse, $qty, $cost, $organization, $actorUserId, $lotNo, $bestBefore, $serialNo): StockMovement {
@@ -95,7 +95,7 @@ class GoodsReceiptService {
                 $this->serials->captureForReceipt($variant, (string) $serialNo, $warehouse, $actorUserId);
             }
 
-            $line->forceFill(['received_qty' => bcadd($line->received_qty, $qty, self::SCALE)])->save();
+            $line->forceFill(['received_qty' => bcadd($line->received_qty?->getNumericValue() ?? '0', $qty, self::SCALE)])->save();
             $this->recomputeStatus($order);
 
             return $movement;
@@ -110,10 +110,10 @@ class GoodsReceiptService {
 
         $lines = $order->lines()->get();
         $allReceived = $lines->isNotEmpty() && $lines->every(
-            fn (PurchaseOrderLine $l): bool => bccomp($l->received_qty, $l->ordered_qty, self::SCALE) >= 0
+            fn (PurchaseOrderLine $l): bool => bccomp($l->received_qty?->getNumericValue() ?? '0', $l->ordered_qty?->getNumericValue() ?? '0', self::SCALE) >= 0
         );
         $anyReceived = $lines->contains(
-            fn (PurchaseOrderLine $l): bool => bccomp($l->received_qty, '0', self::SCALE) > 0
+            fn (PurchaseOrderLine $l): bool => bccomp($l->received_qty?->getNumericValue() ?? '0', '0', self::SCALE) > 0
         );
 
         $target = match (true) {

@@ -443,7 +443,7 @@ class CustomersReportTest extends TestCase {
         $this->assertSame($auditableType, $log->auditable_type);
         $this->assertSame($this->organization->id, $log->organization_id);
         $this->assertSame($this->user->id, $log->user_id);
-        $this->assertSame('127.0.0.1', $log->ip);
+        $this->assertSame('127.0.0.1', $log->ip?->getValue());
         $this->assertTrue(is_string($log->user_agent));
         $this->assertIsArray($log->changes ?? null);
         $this->assertSame($reportCode, $log->changes['report_code'] ?? null);

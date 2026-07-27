@@ -95,7 +95,7 @@ class WeekByUserReportController extends Controller {
             }
             $byUser[$uid]['days'][$idx] += (int) $e->minutes;
             $byUser[$uid]['total'] += (int) $e->minutes;
-            $byUser[$uid]['rate'] += (float) $e->rate;
+            $byUser[$uid]['rate'] += ($e->rate?->toFloat() ?? 0.0);
         }
 
         // User-Modelle für Anzeigenamen.

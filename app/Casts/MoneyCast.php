@@ -29,7 +29,17 @@ use Illuminate\Database\Eloquent\Model;
  * @implements CastsAttributes<Money|null, Money|string|float|int|null>
  */
 class MoneyCast implements CastsAttributes {
-    public function __construct(private readonly ?string $currencyColumn = null) {}
+    /**
+     * @param  string|null  $currencyColumn  Währungsquelle: Spalte oder „relation.spalte“
+     * @param  string|null  $scale  Nachkommastellen der Spalte; ohne Angabe die
+     *                              der Währung (2). Spalten mit feinerer Auflösung
+     *                              (Einzelpreise `decimal(12,4)`) MÜSSEN sie setzen,
+     *                              sonst rundet der Cast beim Lesen auf Cent.
+     */
+    public function __construct(
+        private readonly ?string $currencyColumn = null,
+        private readonly ?string $scale = null,
+    ) {}
 
     /**
      * @param  array<string, mixed>  $attributes
@@ -39,7 +49,7 @@ class MoneyCast implements CastsAttributes {
             return null;
         }
 
-        return Money::of((string) $value, $this->currency($model, $attributes));
+        return Money::of((string) $value, $this->currency($model, $attributes), $this->scale());
     }
 
     /**
@@ -53,24 +63,33 @@ class MoneyCast implements CastsAttributes {
 
         $money = $value instanceof Money
             ? $value
-            : Money::of((string) $value, $this->currency($model, $attributes));
+            : Money::of((string) $value, $this->currency($model, $attributes), $this->scale());
 
         return [$key => $money->getAmount()];
     }
 
     /**
-     * Währung der Spalte: erst die konfigurierte Schwesterspalte, dann eine
+     * Währung der Spalte: erst die konfigurierte Quelle, dann eine
      * `currency`-Spalte, zuletzt der Euro.
+     *
+     * Positionen ohne eigene Währungsspalte holen sie über einen Relationspfad
+     * vom Beleg: `MoneyCast::class . ':invoice.currency'`. Ausgewertet wird nur
+     * eine **bereits geladene** Relation — ein Lazy-Load pro Zeile würde in
+     * Listen N+1 Abfragen auslösen. Fremdwährungsbelege deshalb mit
+     * `with('invoice')` laden.
      *
      * @param  array<string, mixed>  $attributes
      */
     private function currency(Model $model, array $attributes): CurrencyCode {
-        foreach ([$this->currencyColumn, 'currency', 'currency_code'] as $column) {
-            if ($column === null) {
+        foreach ([$this->currencyColumn, 'currency', 'currency_code'] as $source) {
+            if ($source === null) {
                 continue;
             }
 
-            $raw = $attributes[$column] ?? $model->getAttribute($column);
+            $raw = str_contains($source, '.')
+                ? $this->fromRelation($model, $source)
+                : ($attributes[$source] ?? $model->getAttribute($source));
+
             if ($raw instanceof CurrencyCode) {
                 return $raw;
             }
@@ -83,5 +102,23 @@ class MoneyCast implements CastsAttributes {
         }
 
         return CurrencyCode::Euro;
+    }
+
+    /** Nachkommastellen der Spalte; null = Währungsvorgabe (2). */
+    private function scale(): ?int {
+        return $this->scale !== null && ctype_digit($this->scale) ? (int) $this->scale : null;
+    }
+
+    /** Währung aus einer geladenen Relation („invoice.currency“); sonst null. */
+    private function fromRelation(Model $model, string $path): mixed {
+        [$relation, $column] = explode('.', $path, 2);
+
+        if (!$model->relationLoaded($relation)) {
+            return null;
+        }
+
+        $related = $model->getRelation($relation);
+
+        return $related instanceof Model ? $related->getAttribute($column) : null;
     }
 }

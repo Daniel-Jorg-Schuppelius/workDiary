@@ -192,7 +192,7 @@
                         <td>{{ $proof->source_label }}</td>
                         <td>{{ $proof->backup_scope->label() }}</td>
                         <td>{{ $proof->taken_at->format('Y-m-d H:i') }}</td>
-                        <td>{{ number_format($proof->size_bytes / 1024, 1) }} KB</td>
+                        <td>{{ $proof->size_bytes?->format() ?? '—' }}</td>
                         <td>
                             @if ($proof->verified)
                                 <span class="badge badge-done">{{ __('procedure.print.verifiedYes') }}</span>

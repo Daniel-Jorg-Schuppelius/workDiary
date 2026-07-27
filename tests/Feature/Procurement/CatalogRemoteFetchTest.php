@@ -57,7 +57,7 @@ final class CatalogRemoteFetchTest extends TestCase {
             ->assertSessionHas('success');
 
         $this->assertSame(2, SupplierCatalogItem::query()->where('supplier_catalog_source_id', $source->id)->count());
-        $this->assertSame('45.0000', SupplierCatalogItem::query()->where('external_no', '900001')->firstOrFail()->purchase_price);
+        $this->assertSame('45.0000', SupplierCatalogItem::query()->where('external_no', '900001')->firstOrFail()->purchase_price?->getAmount());
         Http::assertSent(fn ($request) => $request->url() === 'https://feed.example.com/cat.001');
     }
 
@@ -72,7 +72,7 @@ final class CatalogRemoteFetchTest extends TestCase {
             ->post(route('supplier-catalogs.fetch', $source))
             ->assertRedirect()->assertSessionHas('success');
 
-        $this->assertSame('2.4000', SupplierCatalogItem::query()->where('external_no', 'C-1')->firstOrFail()->purchase_price);
+        $this->assertSame('2.4000', SupplierCatalogItem::query()->where('external_no', 'C-1')->firstOrFail()->purchase_price?->getAmount());
     }
 
     public function test_remote_password_is_stored_encrypted(): void {

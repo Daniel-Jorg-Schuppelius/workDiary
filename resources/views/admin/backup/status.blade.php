@@ -145,7 +145,7 @@
                                 </td>
                                 <td class="text-sm text-base-content/70">{{ $test->scope ?? '—' }}</td>
                                 <td class="text-right font-mono text-xs">
-                                    {{ $test->restored_size_bytes !== null ? $fmtBytes((int) $test->restored_size_bytes) : '—' }}
+                                    {{ $test->restored_size_bytes?->format() ?? '—' }}
                                 </td>
                                 <td class="text-right font-mono text-xs">
                                     {{ $test->duration_minutes !== null ? __('backup.value.minutes', ['n' => $test->duration_minutes]) : '—' }}

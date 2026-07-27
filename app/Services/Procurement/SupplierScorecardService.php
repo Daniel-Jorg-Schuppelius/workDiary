@@ -385,7 +385,7 @@ class SupplierScorecardService {
             if ($order === null || $order->ordered_at === null || $line->unit_price === null) {
                 continue;
             }
-            $price = (float) $line->unit_price;
+            $price = $line->unit_price->toFloat();
             if ($price <= 0.0) {
                 continue;
             }

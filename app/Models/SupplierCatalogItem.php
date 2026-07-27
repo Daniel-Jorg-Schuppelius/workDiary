@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Enums\Procurement\CatalogItemStatus;
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -33,7 +34,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property string|null $image_url
  * @property string|null $datasheet_url
  * @property string $name
- * @property numeric-string|null $purchase_price
+ * @property \CommonToolkit\ValueObjects\Money|null $purchase_price
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property CatalogItemStatus $status
  * @property string $raw_hash
@@ -80,7 +81,7 @@ class SupplierCatalogItem extends Model {
     protected $casts = [
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'status' => CatalogItemStatus::class,
-        'purchase_price' => 'decimal:4',
+        'purchase_price' => MoneyCast::class . ':currency,4',
         'pack_size' => 'decimal:4',
         'base_qty' => 'decimal:4',
         'lead_time_days' => 'integer',

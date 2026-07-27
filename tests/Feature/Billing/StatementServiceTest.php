@@ -171,13 +171,13 @@ class StatementServiceTest extends TestCase {
     public function test_reapply_rates_respects_manual_overrides(): void {
         $agreementEntry = $this->makeEntry('2026-02-10');
         $manualEntry = $this->makeEntry('2026-02-11', 2, ['hourly_rate' => 50.00]);
-        $this->assertSame('20.00', $agreementEntry->fresh()->hourly_rate);
+        $this->assertSame('20.00', $agreementEntry->fresh()->hourly_rate?->getAmount());
 
         $this->weekdayRate->update(['hourly_rate' => 25.00]);
         $this->service->reapplyRates($this->agreement);
 
-        $this->assertSame('25.00', $agreementEntry->fresh()->hourly_rate);
-        $this->assertSame('50.00', $manualEntry->fresh()->hourly_rate);
+        $this->assertSame('25.00', $agreementEntry->fresh()->hourly_rate?->getAmount());
+        $this->assertSame('50.00', $manualEntry->fresh()->hourly_rate?->getAmount());
 
         $feb = $this->statement(2026, 2);
         $this->assertSame('150.00', $feb->gross_value); // 2h×25 + 2h×50

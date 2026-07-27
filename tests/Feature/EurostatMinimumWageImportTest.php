@@ -49,7 +49,7 @@ class EurostatMinimumWageImportTest extends TestCase {
         $this->assertFalse(MinimumWageReference::where('country', 'EU27_2020')->exists());
 
         $de1 = MinimumWageReference::where('country', 'DE')->whereDate('valid_from', '2024-01-01')->first();
-        $this->assertSame('1500.00', (string) $de1->monthly_amount);
+        $this->assertSame('1500.00', $de1->monthly_amount?->getAmount());
         // S2 → 01.07.
         $this->assertTrue(MinimumWageReference::where('country', 'DE')->whereDate('valid_from', '2024-07-01')->exists());
     }

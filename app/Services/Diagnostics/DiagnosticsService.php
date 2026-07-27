@@ -559,7 +559,7 @@ class DiagnosticsService {
                 if ($last !== null) {
                     $lastBackupAt = $last->occurred_at;
                     $manifestHash = $last->manifest_hash;
-                    $sizeBytes = $last->size_bytes;
+                    $sizeBytes = $last->size_bytes?->getBytes();
                     $source = $last->source;
                 }
             }

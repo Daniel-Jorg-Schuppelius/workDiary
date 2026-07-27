@@ -76,7 +76,7 @@ class AccountInvoiceRunnerTest extends TestCase {
     public function test_run_due_invoices_previous_month_with_agreement_rates(): void {
         $previous = Carbon::now(Tz::current())->startOfMonth()->subMonthNoOverflow();
         $entry = $this->makeEntry($previous->copy()->addDays(9)->toDateString());
-        $this->assertSame('16.50', $entry->fresh()->hourly_rate);
+        $this->assertSame('16.50', $entry->fresh()->hourly_rate?->getAmount());
 
         $result = app(AccountInvoiceRunner::class)->runDue();
 
@@ -84,7 +84,7 @@ class AccountInvoiceRunnerTest extends TestCase {
         $invoice = Invoice::query()->firstOrFail();
         $this->assertSame($this->customer->id, $invoice->customer_id);
         $this->assertTrue(
-            $invoice->items()->get()->contains(fn ($item): bool => (float) $item->unit_price === 16.50),
+            $invoice->items()->get()->contains(fn ($item): bool => $item->unit_price?->toFloat() === 16.50),
             'Rechnungsposition muss den Sonderkonditions-Satz tragen.'
         );
         $this->assertTrue($entry->fresh()->exported);

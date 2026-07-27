@@ -119,8 +119,8 @@
                         </td>
                         <td class="text-xs">{{ $itemTypes[$rule->item_type] ?? $rule->item_type }}</td>
                         <td class="text-xs">{{ $rule->unit_name ?: '—' }}</td>
-                        <td class="text-right text-xs tabular-nums">{{ $rule->vat_rate !== null ? rtrim(rtrim((string) $rule->vat_rate, '0'), '.') : '—' }}</td>
-                        <td class="text-right text-xs tabular-nums">{{ $rule->net_unit_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $rule->net_unit_price, 2, withThousandsSeparator: true) . ' €' : '—' }}</td>
+                        <td class="text-right text-xs tabular-nums">{{ $rule->vat_rate !== null ? rtrim(rtrim(($rule->vat_rate?->getNumericValue() ?? '0'), '0'), '.') : '—' }}</td>
+                        <td class="text-right text-xs tabular-nums">{{ $rule->net_unit_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($rule->net_unit_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) . ' €' : '—' }}</td>
                         <td class="text-right text-xs tabular-nums">{{ $rule->priority }}</td>
                         <td class="whitespace-nowrap text-right">
                             <x-action-form :action="route('projects.billing-rules.destroy', [$project, $rule])" method="DELETE"

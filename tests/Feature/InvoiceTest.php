@@ -76,9 +76,9 @@ class InvoiceTest extends TestCase {
 
         $invoice = Invoice::firstOrFail();
         $this->assertSame(1, $invoice->items()->count());
-        $this->assertSame('180.00', $invoice->subtotal);
-        $this->assertSame('34.20', $invoice->tax_amount);
-        $this->assertSame('214.20', $invoice->total);
+        $this->assertSame('180.00', $invoice->subtotal?->getAmount());
+        $this->assertSame('34.20', $invoice->tax_amount?->getAmount());
+        $this->assertSame('214.20', $invoice->total?->getAmount());
     }
 
     public function test_billing_increment_and_grouping_consolidate_entries(): void {
@@ -121,10 +121,10 @@ class InvoiceTest extends TestCase {
         /** @var \App\Models\InvoiceItem $item */
         $item = $invoice->items()->first();
         $this->assertSame('1.000', $item->quantity);
-        $this->assertSame('90.0000', $item->unit_price);
-        $this->assertSame('90.00', $item->amount);
+        $this->assertSame('90.0000', $item->unit_price?->getAmount());
+        $this->assertSame('90.00', $item->amount?->getAmount());
         $this->assertSame(2, $item->timeEntries()->count());
-        $this->assertSame('90.00', $invoice->subtotal);
+        $this->assertSame('90.00', $invoice->subtotal?->getAmount());
     }
 
     public function test_single_service_date_is_set_and_not_a_period(): void {
@@ -210,7 +210,7 @@ class InvoiceTest extends TestCase {
         /** @var \App\Models\InvoiceItem $item */
         $item = $invoice->items()->first();
         $this->assertSame('2030-05-10', $item->service_date?->toDateString());
-        $this->assertSame('30.00', $item->amount);
+        $this->assertSame('30.00', $item->amount?->getAmount());
         $this->assertSame('2030-05-10', $invoice->serviceDateSingle()?->toDateString());
 
         // Material ist als abgerechnet markiert ⇒ keine Doppelberechnung.
@@ -252,7 +252,7 @@ class InvoiceTest extends TestCase {
         $invoice = Invoice::firstOrFail()->load('items');
         $travel = $invoice->items->firstWhere('tour_id', '!=', null);
         $this->assertNotNull($travel);
-        $this->assertSame('20.00', $travel->amount);
+        $this->assertSame('20.00', $travel->amount?->getAmount());
         $this->assertStringContainsString('Anfahrt', $travel->description);
         $this->assertTrue(\App\Models\Tour::firstOrFail()->travel_billed);
 
@@ -298,7 +298,7 @@ class InvoiceTest extends TestCase {
         $invoice = Invoice::firstOrFail()->load('items');
         $travel = $invoice->items->firstWhere('tour_id', '!=', null);
         $this->assertNotNull($travel);
-        $this->assertSame('15.00', $travel->amount);
+        $this->assertSame('15.00', $travel->amount?->getAmount());
         $this->assertTrue(\App\Models\Tour::firstOrFail()->travel_billed);
     }
 
@@ -641,8 +641,8 @@ class InvoiceTest extends TestCase {
         /** @var \App\Models\InvoiceItem $item */
         $item = $credit->items()->first();
         $this->assertSame('-2.000', $item->quantity);
-        $this->assertSame('-180.00', $credit->subtotal);
-        $this->assertSame('-214.20', $credit->total);
+        $this->assertSame('-180.00', $credit->subtotal?->getAmount());
+        $this->assertSame('-214.20', $credit->total?->getAmount());
     }
 
     public function test_credit_note_cannot_be_created_twice(): void {

@@ -151,7 +151,7 @@ class XRechnungGeneratorTest extends TestCase {
         $invoice->save();
         $invoice = $invoice->fresh(['items', 'customer']);
 
-        $this->assertSame('26.00', $invoice->tax_amount);
+        $this->assertSame('26.00', $invoice->tax_amount?->getAmount());
 
         $result = app(XRechnungGenerator::class)->preflight($invoice);
         $this->assertSame([], $result['errors'], 'Mischsatz-Rechnung darf nicht an totals_mismatch scheitern.');

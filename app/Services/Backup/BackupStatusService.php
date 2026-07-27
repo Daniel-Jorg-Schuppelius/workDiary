@@ -88,7 +88,7 @@ class BackupStatusService {
                 'source' => $key === '' ? null : $key,
                 'occurred_at' => $occurredAt,
                 'age_hours' => (int) $occurredAt->diffInHours($now),
-                'size_bytes' => $hb->size_bytes,
+                'size_bytes' => $hb->size_bytes?->getBytes(),
                 'manifest_hash' => $hb->manifest_hash,
                 'overdue' => $occurredAt->lessThan($threshold),
             ];

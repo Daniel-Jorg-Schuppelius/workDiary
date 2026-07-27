@@ -64,7 +64,7 @@ final class CatalogCsvImportTest extends TestCase {
         $this->assertSame(['rows' => 2, 'created' => 2, 'updated' => 0, 'unchanged' => 0, 'price_changed' => 0, 'discontinued' => 0], $summary);
 
         $item = SupplierCatalogItem::query()->where('external_no', 'A-1')->firstOrFail();
-        $this->assertSame('1.5000', $item->purchase_price);
+        $this->assertSame('1.5000', $item->purchase_price?->getAmount());
         $this->assertSame('4001234567890', $item->gtin);
         $this->assertSame(CatalogItemStatus::New, $item->status);
         $this->assertSame(1, $item->prices()->count());
@@ -91,7 +91,7 @@ final class CatalogCsvImportTest extends TestCase {
         $this->assertSame(1, $summary['unchanged']);
 
         $item = SupplierCatalogItem::query()->where('external_no', 'A-1')->firstOrFail();
-        $this->assertSame('1.8000', $item->purchase_price);
+        $this->assertSame('1.8000', $item->purchase_price?->getAmount());
         $this->assertSame(2, $item->prices()->count());
     }
 

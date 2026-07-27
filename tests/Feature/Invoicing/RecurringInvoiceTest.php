@@ -77,7 +77,7 @@ class RecurringInvoiceTest extends TestCase {
         $this->assertSame(Invoice::STATUS_DRAFT, $invoice->status);
         // Modus previous: Mai 2030.
         $this->assertSame('Wartung 01.05.2030 bis 31.05.2030', (string) $invoice->items->first()->description);
-        $this->assertSame('250.00', (string) $invoice->subtotal);
+        $this->assertSame('250.00', $invoice->subtotal?->getAmount());
 
         $schedule->refresh();
         $this->assertSame('2030-07-01', $schedule->next_run_on->toDateString());

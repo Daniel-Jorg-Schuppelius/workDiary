@@ -131,7 +131,7 @@ class TimesheetTest extends TestCase {
             'tax_rate' => $material->tax_rate,
         ]);
 
-        $this->assertSame('15.00', (string) $usage->fresh()->line_total_net);
+        $this->assertSame('15.00', $usage->fresh()->line_total_net?->getAmount());
         $this->assertSame('15.00', (string) $ts->fresh()->totals_material_net);
     }
 

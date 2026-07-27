@@ -19,7 +19,7 @@
     $type = $filters['type'] ?? '';
     $party = $filters['party'] ?? '';
     $status = $filters['status'] ?? 'active';
-    $sum = $vouchers->getCollection()->sum(static fn ($v) => (float) $v->total_amount);
+    $sum = $vouchers->getCollection()->sum(static fn ($v) => $v->total_amount?->toFloat() ?? 0.0);
     $statusTone = static fn (?string $s): string => match ($s) {
         'paid' => 'success',
         'paidoff' => 'success',
@@ -128,7 +128,7 @@
                     </x-status-badge>
                 </td>
                 <td class="text-right tabular-nums">
-                    {{ number_format((float) $voucher->total_amount, 2, ',', '.') }} {{ $voucher->currency->value }}
+                    {{ number_format($voucher->total_amount?->toFloat() ?? 0.0, 2, ',', '.') }} {{ $voucher->currency->value }}
                 </td>
                 <td class="text-right">
                     <div class="flex justify-end gap-1">

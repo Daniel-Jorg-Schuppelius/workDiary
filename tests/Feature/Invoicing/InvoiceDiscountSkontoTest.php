@@ -115,9 +115,9 @@ class InvoiceDiscountSkontoTest extends TestCase {
             ['quantity' => '1.00', 'unit_price' => '100.00', 'discount_amount' => '15.00'],
         ]);
 
-        $this->assertSame('180.00', (string) $invoice->items[0]->amount);
-        $this->assertSame('85.00', (string) $invoice->items[1]->amount);
-        $this->assertSame('265.00', (string) $invoice->subtotal);
+        $this->assertSame('180.00', $invoice->items[0]->amount?->getAmount());
+        $this->assertSame('85.00', $invoice->items[1]->amount?->getAmount());
+        $this->assertSame('265.00', $invoice->subtotal?->getAmount());
     }
 
     public function test_document_discount_allocates_per_tax_rate_with_exact_sum(): void {
@@ -127,13 +127,13 @@ class InvoiceDiscountSkontoTest extends TestCase {
         ], ['discount_amount' => '10.00']);
 
         // 10 € anteilig: 6,67 (19 %) + 3,33 (7 %); Steuer auf die rabattierte Basis.
-        $this->assertSame('140.00', (string) $invoice->subtotal);
-        $this->assertSame(140.00, round($invoice->lineSubtotal() - 10.00, 2));
+        $this->assertSame('140.00', $invoice->subtotal?->getAmount());
+        $this->assertSame(140.00, round($invoice->lineSubtotal()->toFloat() - 10.00, 2));
         $breakdown = collect($invoice->tax_breakdown);
         $this->assertEqualsWithDelta(46.67, (float) $breakdown->firstWhere('rate', 7.0)['net'], 0.001);
         $this->assertEqualsWithDelta(93.33, (float) $breakdown->firstWhere('rate', 19.0)['net'], 0.001);
-        $this->assertSame('21.00', (string) $invoice->tax_amount);
-        $this->assertSame('161.00', (string) $invoice->total);
+        $this->assertSame('21.00', $invoice->tax_amount?->getAmount());
+        $this->assertSame('161.00', $invoice->total?->getAmount());
     }
 
     public function test_cancellation_mirrors_discounted_totals_exactly(): void {
@@ -144,9 +144,9 @@ class InvoiceDiscountSkontoTest extends TestCase {
 
         $cancellation = app(InvoiceGenerator::class)->cancellationFor($invoice, 'Test', (int) $this->admin->id);
 
-        $this->assertEqualsWithDelta(-1 * (float) $invoice->total, (float) $cancellation->total, 0.001);
-        $this->assertEqualsWithDelta(-1 * (float) $invoice->subtotal, (float) $cancellation->subtotal, 0.001);
-        $this->assertEqualsWithDelta(-1 * (float) $invoice->tax_amount, (float) $cancellation->tax_amount, 0.001);
+        $this->assertEqualsWithDelta(-1 * $invoice->total?->toFloat(), $cancellation->total?->toFloat(), 0.001);
+        $this->assertEqualsWithDelta(-1 * $invoice->subtotal?->toFloat(), $cancellation->subtotal?->toFloat(), 0.001);
+        $this->assertEqualsWithDelta(-1 * $invoice->tax_amount?->toFloat(), $cancellation->tax_amount?->toFloat(), 0.001);
     }
 
     // ── Konditionen-Endpoint ───────────────────────────────────────────────
@@ -163,7 +163,7 @@ class InvoiceDiscountSkontoTest extends TestCase {
             ->assertRedirect(route('invoices.show', $invoice));
 
         $invoice->refresh();
-        $this->assertSame('90.00', (string) $invoice->subtotal);
+        $this->assertSame('90.00', $invoice->subtotal?->getAmount());
         $this->assertTrue($invoice->hasSkonto());
         $this->assertSame('2026-06-15', $invoice->skontoDeadline()?->toDateString());
     }

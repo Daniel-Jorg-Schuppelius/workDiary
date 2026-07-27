@@ -140,7 +140,7 @@ class MatchingService {
                 $reasons[] = 'reference';
             }
 
-            $total = (float) $invoice->total;
+            $total = $invoice->total?->toFloat() ?? 0.0;
             $minAcceptable = $this->minAcceptableFor($invoice, $transaction->booking_date);
             [$amountScore, $amountReason] = $this->scoreAmount($amount, $total, $minAcceptable);
             if ($amountScore > 0) {
@@ -206,7 +206,7 @@ class MatchingService {
                 $reasons[] = 'reference';
             }
 
-            $gross = (float) $expense->amount_gross;
+            $gross = ($expense->amount_gross?->toFloat() ?? 0.0);
             [$amountScore, $amountReason] = $this->scoreAmount($amount, $gross);
             if ($amountScore > 0) {
                 $score += $amountScore;
@@ -405,12 +405,12 @@ class MatchingService {
      * pauschale SKONTO_PERCENT-Toleranz als Fallback.
      */
     public function minAcceptableFor(Invoice $invoice, ?\Carbon\CarbonInterface $paymentDate = null): float {
-        $total = (float) $invoice->total;
+        $total = $invoice->total?->toFloat() ?? 0.0;
         if ($invoice->hasSkonto()) {
             $deadline = $invoice->skontoDeadline();
             $withinDeadline = $deadline === null || $paymentDate === null || $paymentDate->lessThanOrEqualTo($deadline);
 
-            return $withinDeadline ? round($total - $invoice->skontoAmount(), 2) : $total;
+            return $withinDeadline ? round($total - $invoice->skontoAmount()->toFloat(), 2) : $total;
         }
 
         return $total * (1 - self::SKONTO_PERCENT / 100);

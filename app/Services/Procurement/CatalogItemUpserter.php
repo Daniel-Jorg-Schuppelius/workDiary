@@ -93,7 +93,7 @@ class CatalogItemUpserter {
                     continue;
                 }
 
-                $oldPrice = $item->purchase_price;
+                $oldPrice = $item->purchase_price?->getAmount();
                 $oldGtin = $item->gtin;
                 $oldAvailability = $item->availability;
                 $wasLinked = $item->article_id !== null;
@@ -109,11 +109,11 @@ class CatalogItemUpserter {
                 }
                 $item->save();
 
-                if ($this->priceChanged($oldPrice, $item->purchase_price)) {
+                if ($this->priceChanged($oldPrice, $item->purchase_price?->getAmount())) {
                     $this->snapshotPrice($item, $now);
                     $summary['price_changed']++;
                     ($this->alerts ?? app(PriceChangeAlertService::class))
-                        ->evaluate($item, $oldPrice, (string) $item->purchase_price);
+                        ->evaluate($item, $oldPrice, $item->purchase_price?->getAmount() ?? '0');
                 }
 
                 // Verfügbarkeitsänderung eines verknüpften Artikels → Warnung,

@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\PercentageCast;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Database\Factories\ExpenseCategoryFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -25,7 +26,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $icon
  * @property string $color
  * @property string|null $description
- * @property string $default_tax_rate
+ * @property \CommonToolkit\ValueObjects\Percentage|null $default_tax_rate
  * @property bool $default_billable
  * @property bool $requires_receipt
  * @property int $sort
@@ -73,7 +74,7 @@ class ExpenseCategory extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
-        'default_tax_rate' => 'decimal:2',
+        'default_tax_rate' => PercentageCast::class . ':2',
         'default_billable' => 'boolean',
         'requires_receipt' => 'boolean',
         'sort' => 'integer',

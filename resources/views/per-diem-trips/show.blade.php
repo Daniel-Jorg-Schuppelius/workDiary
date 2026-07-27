@@ -93,7 +93,7 @@
                     <tr>
                         <td class="whitespace-nowrap" data-sort-value="{{ $day->date->format('Y-m-d') }}">{{ $day->date->fdate() }}</td>
                         <td><x-status-badge tone="ghost" size="sm">{{ $day->kind->label() }}</x-status-badge></td>
-                        <td class="text-right whitespace-nowrap" data-sort-value="{{ $day->base_amount }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $day->base_amount, 2, withThousandsSeparator: true) }} €</td>
+                        <td class="text-right whitespace-nowrap" data-sort-value="{{ $day->base_amount }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($day->base_amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} €</td>
                         <td class="text-center">
                             <input type="hidden" name="meal_breakfast" value="0" form="{{ $fid }}">
                             <input type="checkbox" name="meal_breakfast" value="1" form="{{ $fid }}"
@@ -116,13 +116,13 @@
                                    @cannot('update', $trip) disabled @endcannot>
                         </td>
                         <td class="text-right whitespace-nowrap text-warning" data-sort-value="{{ $day->deductions_total }}">
-                            @if ((float) $day->deductions_total > 0)
-                                − {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $day->deductions_total, 2, withThousandsSeparator: true) }} €
+                            @if (($day->deductions_total?->toFloat() ?? 0.0)> 0)
+                                − {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($day->deductions_total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} €
                             @else
                                 —
                             @endif
                         </td>
-                        <td class="text-right whitespace-nowrap font-semibold" data-sort-value="{{ $day->amount }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $day->amount, 2, withThousandsSeparator: true) }} €</td>
+                        <td class="text-right whitespace-nowrap font-semibold" data-sort-value="{{ $day->amount }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($day->amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} €</td>
                         <td class="text-right whitespace-nowrap">
                             @can('update', $trip)
                                 <x-button type="submit" form="{{ $fid }}" tone="primary" icon="save">{{ __('Speichern') }}</x-button>

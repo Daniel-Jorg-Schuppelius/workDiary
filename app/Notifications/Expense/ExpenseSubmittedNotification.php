@@ -67,6 +67,6 @@ class ExpenseSubmittedNotification extends DirectNotification {
     }
 
     private function formattedAmount(): string {
-        return NumberHelper::toGermanFormat((float) $this->expense->amount_gross, 2, withThousandsSeparator: true) . ' ' . $this->expense->currency->value;
+        return NumberHelper::toGermanFormat(($this->expense->amount_gross?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) . ' ' . $this->expense->currency->value;
     }
 }

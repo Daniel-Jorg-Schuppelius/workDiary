@@ -150,8 +150,10 @@ class LexofficeTarget implements FacturationTarget {
 
             /** @var TimeEntry|null $primary */
             $primary = $entriesById->get($block->primaryEntryId);
-            $rate = $block->hourlyRate()
-                ?? (float) ($primary?->hourly_rate ?: $transfer->customer->hourly_rate ?: 0);
+            $fallbackRate = $primary !== null && $primary->hourly_rate !== null
+                ? $primary->hourly_rate
+                : $transfer->customer->hourly_rate;
+            $rate = $block->hourlyRate() ?? $fallbackRate?->toFloat() ?? 0.0;
 
             $items[] = [
                 'type' => 'custom',
@@ -193,11 +195,11 @@ class LexofficeTarget implements FacturationTarget {
             $items[] = [
                 'type' => 'custom',
                 'name' => $name,
-                'quantity' => round((float) $usage->quantity, 2),
+                'quantity' => round(($usage->quantity?->getValue()->toFloat() ?? 0.0), 2),
                 'unitName' => $usage->unit !== '' ? (string) $usage->unit : (string) __('invoicing.unit_piece'),
                 'unitPrice' => [
                     'currency' => $currency,
-                    'netAmount' => round((float) ($usage->unit_price ?? 0), 2),
+                    'netAmount' => round($usage->unit_price?->toFloat() ?? 0.0, 2),
                     'taxRatePercentage' => $vatRate,
                 ],
             ];

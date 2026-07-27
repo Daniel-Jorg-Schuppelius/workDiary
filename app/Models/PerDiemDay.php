@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Enums\Expense\PerDiemDayKind;
 use App\Models\Concerns\BelongsToOrganization;
 use Database\Factories\PerDiemDayFactory;
@@ -26,12 +27,12 @@ use Illuminate\Support\Carbon;
  * @property PerDiemDayKind $kind
  * @property string $country
  * @property int|null $per_diem_rate_id
- * @property string $base_amount
- * @property string $deduction_breakfast
- * @property string $deduction_lunch
- * @property string $deduction_dinner
- * @property string $deductions_total
- * @property string $amount
+ * @property \CommonToolkit\ValueObjects\Money|null $base_amount
+ * @property \CommonToolkit\ValueObjects\Money|null $deduction_breakfast
+ * @property \CommonToolkit\ValueObjects\Money|null $deduction_lunch
+ * @property \CommonToolkit\ValueObjects\Money|null $deduction_dinner
+ * @property \CommonToolkit\ValueObjects\Money|null $deductions_total
+ * @property \CommonToolkit\ValueObjects\Money|null $amount
  * @property bool $meal_breakfast
  * @property bool $meal_lunch
  * @property bool $meal_dinner
@@ -69,12 +70,12 @@ class PerDiemDay extends Model {
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'date' => 'date',
         'kind' => PerDiemDayKind::class,
-        'base_amount' => 'decimal:2',
-        'deduction_breakfast' => 'decimal:2',
-        'deduction_lunch' => 'decimal:2',
-        'deduction_dinner' => 'decimal:2',
-        'deductions_total' => 'decimal:2',
-        'amount' => 'decimal:2',
+        'base_amount' => MoneyCast::class . ':currency,2',
+        'deduction_breakfast' => MoneyCast::class . ':currency,2',
+        'deduction_lunch' => MoneyCast::class . ':currency,2',
+        'deduction_dinner' => MoneyCast::class . ':currency,2',
+        'deductions_total' => MoneyCast::class . ':currency,2',
+        'amount' => MoneyCast::class . ':currency,2',
         'meal_breakfast' => 'boolean',
         'meal_lunch' => 'boolean',
         'meal_dinner' => 'boolean',

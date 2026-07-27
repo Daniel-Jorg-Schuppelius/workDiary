@@ -87,7 +87,7 @@ class PerDiemTrip extends Model {
 
     /** Summe aller Tagesbeträge (nach Kürzungen). */
     public function totalAmount(): string {
-        return number_format((float) $this->days->sum(fn(PerDiemDay $d): float => (float) $d->amount), 2, '.', '');
+        return number_format((float) $this->days->sum(fn(PerDiemDay $d): float => $d->amount?->toFloat() ?? 0.0), 2, '.', '');
     }
 
     /** @return BelongsTo<User, $this> */

@@ -80,7 +80,7 @@ class ImportBillingExcelCommandTest extends TestCase {
         // 3 Zeiteinträge mit Konditions-Sätzen (Grund → Tätigkeitskategorie).
         $entries = TimeEntry::query()->orderBy('started_at')->get();
         $this->assertCount(3, $entries);
-        $this->assertSame(['16.50', '17.50', '16.50'], $entries->pluck('hourly_rate')->all());
+        $this->assertSame(['16.50', '17.50', '16.50'], $entries->map(fn (TimeEntry $e): ?string => $e->hourly_rate?->getAmount())->all());
         $this->assertSame('2025-01-03', $entries[0]->date->toDateString());
         // 10:00 Europe/Berlin (CET) = 09:00 UTC.
         $this->assertSame('09:00', $entries[0]->started_at->format('H:i'));

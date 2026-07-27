@@ -31,7 +31,7 @@ class CycleCountPlanner {
         $total = '0';
 
         foreach (StockValuation::query()->where('warehouse_id', $warehouse->id)->get() as $valuation) {
-            $value = bcmul($valuation->qty_on_hand, $valuation->avg_cost, self::SCALE);
+            $value = bcmul($valuation->qty_on_hand, $valuation->avg_cost?->getAmount() ?? '0', self::SCALE);
             if (bccomp($value, '0', self::SCALE) <= 0) {
                 continue;
             }

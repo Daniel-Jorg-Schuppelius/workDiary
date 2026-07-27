@@ -68,7 +68,7 @@ class BackupHeartbeatEndpointTest extends TestCase {
         $row = BackupHeartbeat::query()->first();
         $this->assertNotNull($row);
         $this->assertSame($hash, $row->manifest_hash);
-        $this->assertSame(4096, $row->size_bytes);
+        $this->assertSame(4096, $row->size_bytes?->getBytes());
         $this->assertSame('backup-host', $row->source);
 
         $audit = AuditLog::query()->where('event', 'backup.heartbeatReceived')->first();

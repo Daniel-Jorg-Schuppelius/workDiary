@@ -38,7 +38,7 @@ class PayrollClassifier {
 
         $monthlyHours = ($schedule->weekly_minutes / 60) * (13 / 3);
 
-        return round((float) $wage * $monthlyHours, 2);
+        return round($wage->toFloat() * $monthlyHours, 2);
     }
 
     /**

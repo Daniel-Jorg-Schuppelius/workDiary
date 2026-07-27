@@ -79,9 +79,9 @@ class ProjectExportSpec extends AbstractExportSpec {
             'status' => $this->str($model->status),
             'starts_on' => $this->dateCell($model->starts_on),
             'ends_on' => $this->dateCell($model->ends_on),
-            'hourly_rate' => $this->decimalCell($model->hourly_rate),
-            'internal_rate' => $this->decimalCell($model->internal_rate),
-            'budget' => $this->decimalCell($model->budget),
+            'hourly_rate' => $this->decimalCell($model->hourly_rate?->getAmount()),
+            'internal_rate' => $this->decimalCell($model->internal_rate?->getAmount()),
+            'budget' => $this->decimalCell($model->budget?->getAmount()),
             'time_budget' => $this->str($model->time_budget),
             'billable' => $this->boolCell($model->billable),
         ];

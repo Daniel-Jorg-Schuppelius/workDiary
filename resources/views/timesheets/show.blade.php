@@ -142,10 +142,10 @@
             @forelse($timesheet->materialUsages as $u)
                 <tr>
                     <td>{{ $u->description }}</td>
-                    <td class="text-right tabular-nums" data-sort-value="{{ (float) $u->quantity }}">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float)$u->quantity, 3, withThousandsSeparator: true), '0'), ',') }}</td>
+                    <td class="text-right tabular-nums" data-sort-value="{{ ($u->quantity?->getValue()->toFloat() ?? 0.0) }}">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($u->quantity?->getValue()->toFloat() ?? 0.0), 3, withThousandsSeparator: true), '0'), ',') }}</td>
                     <td>{{ $u->unit }}</td>
-                    <td class="text-right tabular-nums" data-sort-value="{{ (float) ($u->unit_price ?? 0) }}">{{ $u->unit_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float)$u->unit_price, 4, withThousandsSeparator: true).' €' : '—' }}</td>
-                    <td class="text-right tabular-nums" data-sort-value="{{ (float) $u->line_total_net }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float)$u->line_total_net, 2, withThousandsSeparator: true) }} €</td>
+                    <td class="text-right tabular-nums" data-sort-value="{{ ($u->unit_price?->toFloat() ?? 0.0) }}">{{ $u->unit_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($u->unit_price?->toFloat() ?? 0.0), 4, withThousandsSeparator: true).' €' : '—' }}</td>
+                    <td class="text-right tabular-nums" data-sort-value="{{ ($u->line_total_net?->toFloat() ?? 0.0) }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($u->line_total_net?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} €</td>
                     <td class="text-right">
                         @if($editable)
                             <x-action-form :action="route('projects.timesheets.materials.destroy', [$project, $timesheet, $u])" method="DELETE"

@@ -49,10 +49,10 @@ class TaskActivityTest extends TestCase {
         $task = Task::where('title', 'Backend-Arbeit')->firstOrFail();
         $this->assertSame($this->project->id, $task->project_id);
         $this->assertFalse($task->is_global);
-        $this->assertSame('95.50', (string) $task->hourly_rate);
-        $this->assertSame('40.00', (string) $task->internal_rate);
+        $this->assertSame('95.50', $task->hourly_rate?->getAmount());
+        $this->assertSame('40.00', $task->internal_rate?->getAmount());
         $this->assertSame(600, $task->time_budget);
-        $this->assertSame('2000.00', (string) $task->budget);
+        $this->assertSame('2000.00', $task->budget?->getAmount());
         $this->assertSame('month', $task->budget_type);
         $this->assertTrue($task->billable);
     }

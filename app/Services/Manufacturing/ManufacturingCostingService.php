@@ -41,7 +41,7 @@ class ManufacturingCostingService {
 
             // Echte Ist-Kosten (beim Verbrauch erfasst) bevorzugen; sonst auf
             // Menge × Stammkosten zurückfallen.
-            $captured = $this->num($material->actual_cost);
+            $captured = $this->num($material->actual_cost?->getAmount());
             $materialActual = bccomp($captured, '0', self::SCALE) > 0
                 ? $captured
                 : bcmul($this->num($material->consumed_qty), $unit, self::SCALE);
@@ -51,7 +51,7 @@ class ManufacturingCostingService {
         $labor = '0';
         foreach ($order->timeEntries()->get() as $entry) {
             $hours = bcdiv((string) $entry->minutes, '60', 6);
-            $labor = bcadd($labor, bcmul($hours, $this->num($entry->internal_rate), self::SCALE), self::SCALE);
+            $labor = bcadd($labor, bcmul($hours, $this->num($entry->internal_rate?->getAmount()), self::SCALE), self::SCALE);
         }
 
         $total = bcadd($actual, $labor, self::SCALE);
@@ -63,7 +63,7 @@ class ManufacturingCostingService {
 
     /** @return numeric-string */
     private function unitCost(ManufacturingOrderMaterial $material): string {
-        $snapshot = $this->num($material->cost_snapshot);
+        $snapshot = $this->num($material->cost_snapshot?->getAmount());
         if (bccomp($snapshot, '0', self::SCALE) > 0) {
             return $snapshot;
         }
@@ -71,7 +71,7 @@ class ManufacturingCostingService {
         if ($material->article_variant_id !== null) {
             $variant = ArticleVariant::query()->find($material->article_variant_id);
             if ($variant instanceof ArticleVariant) {
-                $price = $this->num($variant->purchase_price);
+                $price = $this->num($variant->purchase_price?->getAmount());
                 if (bccomp($price, '0', self::SCALE) > 0) {
                     return $price;
                 }
@@ -80,7 +80,7 @@ class ManufacturingCostingService {
 
         $article = Article::query()->find($material->article_id);
         if ($article instanceof Article) {
-            return $this->num($article->default_purchase_price);
+            return $this->num($article->default_purchase_price?->getAmount());
         }
 
         return '0';

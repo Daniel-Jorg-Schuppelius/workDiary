@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\ByteSizeCast;
 use App\Enums\Procedure\{ProcedureBackupScope, ProcedureBackupStorageTarget, ProcedureBackupVerifyMethod};
 use Database\Factories\ProcedureBackupProofFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,7 +27,7 @@ use Illuminate\Support\Carbon;
  * @property ProcedureBackupScope $backup_scope
  * @property string $source_label
  * @property Carbon $taken_at
- * @property int $size_bytes
+ * @property \CommonToolkit\ValueObjects\ByteSize|null $size_bytes
  * @property string|null $checksum_algo
  * @property string|null $checksum_value
  * @property ProcedureBackupStorageTarget $storage_target
@@ -72,7 +73,7 @@ class ProcedureBackupProof extends Model {
         'verified_at' => 'datetime',
         'created_at' => 'datetime',
         'verified' => 'bool',
-        'size_bytes' => 'int',
+        'size_bytes' => ByteSizeCast::class,
     ];
 
     /** @return BelongsTo<ProcedureStepRun, $this> */

@@ -55,7 +55,7 @@ final class QuoteProformaTest extends TestCase {
 
         $this->assertStringStartsWith('AN-', $quote->number);
         // Optionen zählen im Entwurf nicht mit: 1500 netto.
-        $this->assertSame(1500.0, (float) $quote->subtotal);
+        $this->assertSame(1500.0, $quote->subtotal?->toFloat());
 
         $quote = $service->approve($quote, $this->user);
         ['quote' => $quote, 'acceptance_token' => $token] = $service->send($quote, $this->user);
@@ -72,13 +72,13 @@ final class QuoteProformaTest extends TestCase {
         $items = $quote->items()->get();
         $quote = $service->accept($quote, [(int) $items[0]->id, (int) $items[2]->id], $token);
         $this->assertSame('partially_accepted', $quote->status);
-        $this->assertSame(1300.0, (float) $quote->total - (float) $quote->tax_amount);
+        $this->assertSame(1300.0, $quote->total?->toFloat() - $quote->tax_amount?->toFloat());
         $this->assertNotNull($quote->decision_snapshot);
 
         // Überführung: nur angenommene Positionen, Angebot bleibt unverändert.
         $invoice = $service->convertToInvoice($quote, $this->user);
         $this->assertSame(2, $invoice->items()->count());
-        $this->assertSame(1300.0, (float) $invoice->subtotal);
+        $this->assertSame(1300.0, $invoice->subtotal?->toFloat());
         $this->assertSame((int) $quote->id, (int) $invoice->quote_id);
         $this->assertSame('partially_accepted', $quote->fresh()->status, 'Keine Rückwirkung.');
 
@@ -103,7 +103,7 @@ final class QuoteProformaTest extends TestCase {
         ], $this->user);
 
         // 900 + 450 = 1350 netto rabattiert.
-        $this->assertSame(1350.0, (float) $quote->subtotal);
+        $this->assertSame(1350.0, $quote->subtotal?->toFloat());
 
         $quote = $service->approve($quote, $this->user);
         ['quote' => $quote, 'acceptance_token' => $token] = $service->send($quote, $this->user);
@@ -116,11 +116,11 @@ final class QuoteProformaTest extends TestCase {
 
         $invoice = $service->convertToInvoice($quote, $this->user);
         $items = $invoice->items()->orderBy('position')->get();
-        $this->assertSame(10.0, (float) $items[0]->discount_percent);
-        $this->assertSame(50.0, (float) $items[1]->discount_amount);
+        $this->assertSame(10.0, (float) $items[0]->discount_percent?->getNumericValue());
+        $this->assertSame(50.0, $items[1]->discount_amount?->toFloat());
         $this->assertSame('Pausch.', $items[0]->unit);
-        $this->assertSame(1350.0, (float) $invoice->subtotal);
-        $this->assertSame((float) $snapshot['total'], (float) $invoice->total, 'Rechnungs-Total == angenommener Angebots-Total.');
+        $this->assertSame(1350.0, $invoice->subtotal?->toFloat());
+        $this->assertSame((float) $snapshot['total'], $invoice->total?->toFloat(), 'Rechnungs-Total == angenommener Angebots-Total.');
     }
 
     /** Vollaudit 2026-07 (H4): Alt-Snapshots ohne unit/discount-Felder konvertieren weiter (null-Fallback). */
@@ -141,7 +141,7 @@ final class QuoteProformaTest extends TestCase {
 
         $this->assertSame(2, $invoice->items()->count());
         $this->assertNull($invoice->items()->first()->discount_percent);
-        $this->assertSame(1500.0, (float) $invoice->subtotal);
+        $this->assertSame(1500.0, $invoice->subtotal?->toFloat());
     }
 
     /**
@@ -161,9 +161,9 @@ final class QuoteProformaTest extends TestCase {
             ['description' => 'Grundpaket', 'quantity' => 1, 'unit_price' => 1000], // bewusst OHNE tax_rate
         ], $this->user);
 
-        $this->assertSame(1000.0, (float) $quote->subtotal);
-        $this->assertSame(0.0, (float) $quote->tax_amount, 'Kein 19-%-Fallback für die §-19-Org.');
-        $this->assertSame(1000.0, (float) $quote->total);
+        $this->assertSame(1000.0, $quote->subtotal?->toFloat());
+        $this->assertSame(0.0, $quote->tax_amount?->toFloat(), 'Kein 19-%-Fallback für die §-19-Org.');
+        $this->assertSame(1000.0, $quote->total?->toFloat());
 
         $quote = $service->approve($quote, $this->user);
         ['quote' => $quote, 'acceptance_token' => $token] = $service->send($quote, $this->user);
@@ -171,9 +171,9 @@ final class QuoteProformaTest extends TestCase {
 
         $invoice = $service->convertToInvoice($quote, $this->user);
 
-        $this->assertSame('0.00', (string) $invoice->tax_rate);
-        $this->assertSame(0.0, (float) $invoice->tax_amount);
-        $this->assertSame(1000.0, (float) $invoice->total);
+        $this->assertSame('0.00', $invoice->tax_rate?->getNumericValue());
+        $this->assertSame(0.0, $invoice->tax_amount?->toFloat());
+        $this->assertSame(1000.0, $invoice->total?->toFloat());
         $this->assertStringContainsString('§ 19', (string) $invoice->notes);
     }
 
@@ -223,8 +223,8 @@ final class QuoteProformaTest extends TestCase {
         $invoice = app(QuoteService::class)->proformaToInvoice($proforma->fresh(), $this->user);
 
         // Vollaudit 2026-07 (H4): Positionsrabatt überlebt auch die Pro-forma-Umwandlung.
-        $this->assertSame(10.0, (float) $invoice->items()->first()->discount_percent);
-        $this->assertSame(225.0, (float) $invoice->subtotal);
+        $this->assertSame(10.0, (float) $invoice->items()->first()->discount_percent?->getNumericValue());
+        $this->assertSame(225.0, $invoice->subtotal?->toFloat());
         $this->assertSame(Invoice::TYPE_INVOICE, $invoice->type);
         $this->assertStringStartsWith('R', $invoice->number);
         $this->assertNotSame($proforma->number, $invoice->number);

@@ -76,7 +76,7 @@ final class PriceApprovalTest extends TestCase {
             ->post(route('supplier-catalogs.items.apply-price', $item))
             ->assertRedirect()->assertSessionHas('success');
 
-        $this->assertSame('100.0000', $this->article->fresh()->default_sale_price);
+        $this->assertSame('100.0000', $this->article->fresh()->default_sale_price?->getAmount());
         $this->assertSame(0, PriceChangeRequest::query()->count());
     }
 
@@ -89,10 +89,10 @@ final class PriceApprovalTest extends TestCase {
             ->assertRedirect()->assertSessionHas('success');
 
         // Preis unverändert, offener Antrag mit Snapshot vorhanden.
-        $this->assertSame('80.0000', $this->article->fresh()->default_sale_price);
+        $this->assertSame('80.0000', $this->article->fresh()->default_sale_price?->getAmount());
         $request = PriceChangeRequest::query()->firstOrFail();
         $this->assertSame(PriceChangeRequest::STATUS_REQUESTED, $request->status);
-        $this->assertSame('100.0000', $request->suggested_price);
+        $this->assertSame('100.0000', $request->suggested_price?->getAmount());
         $this->assertSame($this->admin->id, (int) $request->requested_by);
     }
 
@@ -117,7 +117,7 @@ final class PriceApprovalTest extends TestCase {
             ->assertRedirect()->assertSessionHas('error');
 
         $this->assertSame(PriceChangeRequest::STATUS_REQUESTED, $request->fresh()->status);
-        $this->assertSame('80.0000', $this->article->fresh()->default_sale_price);
+        $this->assertSame('80.0000', $this->article->fresh()->default_sale_price?->getAmount());
     }
 
     public function test_second_person_approval_applies_price(): void {
@@ -130,7 +130,7 @@ final class PriceApprovalTest extends TestCase {
             ->post(route('pricing-margin-rules.approvals.approve', $request))
             ->assertRedirect()->assertSessionHas('success');
 
-        $this->assertSame('100.0000', $this->article->fresh()->default_sale_price);
+        $this->assertSame('100.0000', $this->article->fresh()->default_sale_price?->getAmount());
         $fresh = $request->fresh();
         $this->assertSame(PriceChangeRequest::STATUS_APPROVED, $fresh->status);
         $this->assertSame($this->approver->id, (int) $fresh->decided_by);
@@ -150,7 +150,7 @@ final class PriceApprovalTest extends TestCase {
             ->assertRedirect()->assertSessionHas('error');
 
         $this->assertSame(PriceChangeRequest::STATUS_EXPIRED, $request->fresh()->status);
-        $this->assertSame('80.0000', $this->article->fresh()->default_sale_price);
+        $this->assertSame('80.0000', $this->article->fresh()->default_sale_price?->getAmount());
     }
 
     public function test_reject_records_note_and_keeps_price(): void {
@@ -166,7 +166,7 @@ final class PriceApprovalTest extends TestCase {
         $fresh = $request->fresh();
         $this->assertSame(PriceChangeRequest::STATUS_REJECTED, $fresh->status);
         $this->assertSame('Marge zu knapp', $fresh->decision_note);
-        $this->assertSame('80.0000', $this->article->fresh()->default_sale_price);
+        $this->assertSame('80.0000', $this->article->fresh()->default_sale_price?->getAmount());
     }
 
     public function test_approvals_page_renders_open_requests(): void {

@@ -21,17 +21,17 @@ class PiiEncryptionTest extends TestCase {
     public function test_user_tax_fields_are_encrypted_at_rest(): void {
         $user = User::factory()->user()->create();
         $user->forceFill([
-            'tax_identification_number' => '12345678901',
+            'tax_identification_number' => '86095742719',
             'social_security_number' => '65170539W001',
         ])->save();
 
         // Über das Model entschlüsselt gelesen.
-        $this->assertSame('12345678901', $user->fresh()->tax_identification_number);
+        $this->assertSame('86095742719', $user->fresh()->tax_identification_number);
 
         // Roh in der DB liegt KEIN Klartext, aber ein entschlüsselbarer Cipher.
         $raw = DB::table('users')->where('id', $user->id)->value('tax_identification_number');
-        $this->assertNotSame('12345678901', $raw);
-        $this->assertSame('12345678901', Crypt::decryptString((string) $raw));
+        $this->assertNotSame('86095742719', $raw);
+        $this->assertSame('86095742719', Crypt::decryptString((string) $raw));
     }
 
     public function test_bank_account_iban_is_encrypted_at_rest(): void {

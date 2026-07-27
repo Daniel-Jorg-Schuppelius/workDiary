@@ -122,7 +122,7 @@ class RetainerLexofficeTest extends TestCase {
         $this->assertSame(Invoice::TYPE_RETAINER, $invoice->type);
         $this->assertSame('RE-2025-0001', $invoice->number); // von Lexoffice übernommen
         $this->assertSame(Invoice::STATUS_ISSUED, $invoice->status);
-        $this->assertSame('550.0000', $invoice->items()->firstOrFail()->unit_price);
+        $this->assertSame('550.0000', $invoice->items()->firstOrFail()->unit_price?->getAmount());
 
         $statement = $this->agreement->statements()->where('year', 2026)->where('month', 3)->firstOrFail();
         $this->assertSame($invoice->id, $statement->retainer_invoice_id);
@@ -170,7 +170,7 @@ class RetainerLexofficeTest extends TestCase {
         $invoice = app(RetainerLexofficeService::class)->pushTrueUp($this->agreement);
 
         $this->assertSame(Invoice::TYPE_RETAINER, $invoice->type);
-        $this->assertSame('165.0000', $invoice->items()->firstOrFail()->unit_price);
+        $this->assertSame('165.0000', $invoice->items()->firstOrFail()->unit_price?->getAmount());
         $fake->assertSent(fn (RequestInterface $r) => str_contains((string) $r->getUri(), '/invoices'));
     }
 

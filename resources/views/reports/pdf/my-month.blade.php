@@ -59,7 +59,7 @@
                             {{ $e->description }}
                         </td>
                         <td class="right">{{ $eh }}:{{ str_pad((string) $em, 2, '0', STR_PAD_LEFT) }}</td>
-                        <td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $e->rate, 2, withThousandsSeparator: true) }}</td>
+                        <td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($e->rate?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}</td>
                     </tr>
                 @endforeach
             </tbody>

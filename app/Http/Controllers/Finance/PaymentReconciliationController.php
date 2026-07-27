@@ -164,7 +164,7 @@ class PaymentReconciliationController extends Controller {
         foreach ($invoices as $invoice) {
             $options[] = [
                 'value' => 'invoice:' . $invoice->sqid,
-                'label' => $invoice->number . ' · ' . NumberHelper::toGermanFormat((float) $invoice->total, 2, withThousandsSeparator: true),
+                'label' => $invoice->number . ' · ' . NumberHelper::toGermanFormat($invoice->total?->toFloat() ?? 0.0, 2, withThousandsSeparator: true),
             ];
         }
 
@@ -175,7 +175,7 @@ class PaymentReconciliationController extends Controller {
         foreach ($expenses as $expense) {
             $options[] = [
                 'value' => 'expense:' . $expense->sqid,
-                'label' => \App\Support\EntityType::label(Expense::class) . ' #' . $expense->id . ' · ' . NumberHelper::toGermanFormat((float) $expense->amount_gross, 2, withThousandsSeparator: true),
+                'label' => \App\Support\EntityType::label(Expense::class) . ' #' . $expense->id . ' · ' . NumberHelper::toGermanFormat(($expense->amount_gross?->toFloat() ?? 0.0), 2, withThousandsSeparator: true),
             ];
         }
 

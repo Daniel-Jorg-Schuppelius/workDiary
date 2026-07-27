@@ -328,8 +328,10 @@ class FinanceTransferController extends Controller {
                     continue;
                 }
                 $primary = $entriesById->get($block->primaryEntryId);
-                $rate = $block->hourlyRate()
-                    ?? (float) ($primary?->hourly_rate ?: $transfer->customer->hourly_rate ?: 0);
+                $fallbackRate = $primary !== null && $primary->hourly_rate !== null
+                    ? $primary->hourly_rate
+                    : $transfer->customer->hourly_rate;
+                $rate = $block->hourlyRate() ?? $fallbackRate?->toFloat() ?? 0.0;
 
                 $projectName = $block->project?->name ?: (string) __('Leistung');
                 $kindSuffix = $block->kind !== null ? ' [' . $block->kind->value . ']' : '';
@@ -353,7 +355,7 @@ class FinanceTransferController extends Controller {
                 'name' => $usage !== null ? (trim((string) $usage->description) ?: (string) __('Material')) : (string) __('finance.field.source_deleted'),
                 'quantity' => NumberHelper::toGermanFormat((float) ($item->quantity ?? 0), 2, withThousandsSeparator: true),
                 'unit' => $usage->unit ?? '',
-                'unit_price' => NumberHelper::toGermanFormat((float) ($usage->unit_price ?? 0), 2, withThousandsSeparator: true),
+                'unit_price' => NumberHelper::toGermanFormat(($usage->unit_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true),
                 'amount' => NumberHelper::toGermanFormat((float) ($item->amount ?? 0), 2, withThousandsSeparator: true),
             ];
         }

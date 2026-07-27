@@ -79,7 +79,7 @@ class CashBookTest extends TestCase {
         $reversal = app(CashBookService::class)->reverse($entry, 'Falscher Betrag', (int) $this->admin->id, Carbon::parse('2030-06-02'));
 
         $this->assertSame(CashEntry::DIRECTION_OUT, $reversal->direction);
-        $this->assertSame((string) $entry->amount, (string) $reversal->amount);
+        $this->assertSame($entry->amount?->getAmount(), $reversal->amount?->getAmount());
         $this->assertSame($entry->id, $reversal->reversal_of_id);
         $this->assertSame(100.00, app(CashBookService::class)->balance($this->register));
 
@@ -93,8 +93,8 @@ class CashBookTest extends TestCase {
 
         $closing = $service->closeDay($this->register, Carbon::parse('2030-06-01'), 145.00, 'Zählung', (int) $this->admin->id);
 
-        $this->assertSame('150.00', (string) $closing->expected_balance);
-        $this->assertSame('-5.00', (string) $closing->difference);
+        $this->assertSame('150.00', $closing->expected_balance?->getAmount());
+        $this->assertSame('-5.00', $closing->difference?->getAmount());
 
         // Buchung in den abgeschlossenen Tag wird abgelehnt.
         $this->expectException(InvalidArgumentException::class);

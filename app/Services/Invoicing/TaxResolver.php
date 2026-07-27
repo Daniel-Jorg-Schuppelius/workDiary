@@ -66,7 +66,7 @@ class TaxResolver {
             $rule = $this->ruleFor((int) $organization->id, $sellerCountry, $category, 'standard', $onDate);
             if ($rule !== null) {
                 return [
-                    'rate' => (string) $rule->rate,
+                    'rate' => $rule->rate?->getNumericValue() ?? '0.00',
                     'reverse_charge' => false,
                     'note' => $rule->note,
                     'category' => 'S',
@@ -100,7 +100,7 @@ class TaxResolver {
             $rule = $this->ruleFor((int) $organization->id, $sellerCountry, $category, 'standard', $onDate);
 
             return [
-                'rate' => $rule !== null ? (string) $rule->rate : $this->standardRate($sellerCountry),
+                'rate' => $rule?->rate?->getNumericValue() ?? $this->standardRate($sellerCountry),
                 'reverse_charge' => false,
                 'note' => $rule?->note,
                 'category' => 'S',

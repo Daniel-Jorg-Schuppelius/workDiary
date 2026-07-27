@@ -137,10 +137,10 @@ abstract class LexofficeOrderDocumentService {
         $variant = $order->variant;
 
         $name = trim((string) $variant?->name) ?: trim((string) $article->name) ?: (string) __('invoicing.service');
-        $quantity = (float) $order->target_qty;
+        $quantity = ($order->target_qty?->getValue()->toFloat() ?? 0.0);
         $unit = trim((string) $order->unit) ?: trim((string) $article->base_unit) ?: (string) __('invoicing.unit_piece');
 
-        $netPrice = (float) ($variant?->effectiveSalePrice() ?? 0);
+        $netPrice = $variant?->effectiveSalePrice()?->toFloat() ?? 0.0;
         $currency = (string) ($defaults['default_currency'] ?? 'EUR');
         $vatRate = (float) ($defaults['default_vat_rate'] ?? 19.0);
         $taxType = (string) ($defaults['default_tax_type'] ?? 'net');

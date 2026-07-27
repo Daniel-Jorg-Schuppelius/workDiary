@@ -401,7 +401,7 @@ class InvoiceController extends Controller {
             'due_on' => now()->addDays($invoice->payment_terms_days ?? 14),
             'tax_context' => [
                 'resolved_on' => ($invoice->serviceDateTo() ?? now())->toDateString(),
-                'rate' => (string) $invoice->tax_rate,
+                'rate' => $invoice->tax_rate?->getNumericValue() ?? '',
                 'is_reverse_charge' => (bool) $invoice->is_reverse_charge,
                 'breakdown' => $invoice->tax_breakdown,
                 'category' => $taxResolution['category'] ?? null,

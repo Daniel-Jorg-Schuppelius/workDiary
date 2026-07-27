@@ -58,7 +58,7 @@ class ValuationService implements InventoryValuationStrategy {
         return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $source): StockMovement {
             $valuation = $this->valuationFor($variant, $warehouse);
             $oldQty = $valuation->exists ? $valuation->qty_on_hand : '0';
-            $oldAvg = $valuation->exists ? $valuation->avg_cost : '0';
+            $oldAvg = $valuation->exists ? ($valuation->avg_cost?->getAmount() ?? '0') : '0';
 
             $newQty = bcadd($oldQty, $qty, self::SCALE);
             $oldValue = bcmul($oldQty, $oldAvg, self::SCALE);
@@ -93,7 +93,7 @@ class ValuationService implements InventoryValuationStrategy {
             }
 
             $valuation = $this->valuationFor($variant, $warehouse);
-            $avg = $valuation->exists ? $valuation->avg_cost : '0';
+            $avg = $valuation->exists ? ($valuation->avg_cost?->getAmount() ?? '0') : '0';
             $costTotal = bcmul($qty, $avg, self::SCALE);
 
             $valuation->fill([
@@ -115,7 +115,7 @@ class ValuationService implements InventoryValuationStrategy {
     public function average(ArticleVariant $variant, Warehouse $warehouse): string {
         $valuation = $this->valuationFor($variant, $warehouse);
 
-        return $valuation->exists ? $valuation->avg_cost : '0';
+        return $valuation->exists ? ($valuation->avg_cost?->getAmount() ?? '0') : '0';
     }
 
     /** Bewerteter Gesamtbestand = Durchschnitt × Menge. @return numeric-string */
@@ -125,7 +125,7 @@ class ValuationService implements InventoryValuationStrategy {
             return '0';
         }
 
-        return bcmul($valuation->qty_on_hand, $valuation->avg_cost, self::SCALE);
+        return bcmul($valuation->qty_on_hand, $valuation->avg_cost?->getAmount() ?? '0', self::SCALE);
     }
 
     private function valuationFor(ArticleVariant $variant, Warehouse $warehouse): StockValuation {

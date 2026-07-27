@@ -84,7 +84,7 @@ class LexofficeVoucherSyncTest extends TestCase {
         ]);
 
         $voucher = LexofficeVoucher::query()->where('external_id', 'voucher-1')->firstOrFail();
-        $this->assertSame('119.00', $voucher->total_amount);
+        $this->assertSame('119.00', $voucher->total_amount?->getAmount());
         $this->assertSame('2026-05-01', $voucher->voucher_date?->toDateString());
     }
 

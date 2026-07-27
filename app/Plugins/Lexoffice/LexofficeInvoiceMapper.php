@@ -35,7 +35,7 @@ class LexofficeInvoiceMapper {
             'voucherDate' => $issuedOn->format('Y-m-d') . 'T00:00:00.000+01:00',
             'dueDate' => $dueOn->format('Y-m-d') . 'T00:00:00.000+01:00',
             'address' => $this->addressForCustomer($invoice->customer, $externalContactId),
-            'lineItems' => $invoice->items->map(fn(InvoiceItem $i) => $this->mapItem($i, $currency, (float) $invoice->tax_rate))->values()->all(),
+            'lineItems' => $invoice->items->map(fn(InvoiceItem $i) => $this->mapItem($i, $currency, $invoice->tax_rate !== null ? (float) $invoice->tax_rate->getNumericValue() : 0.0))->values()->all(),
             'totalPrice' => [
                 'currency' => $currency,
             ],
@@ -82,7 +82,7 @@ class LexofficeInvoiceMapper {
             'unitName' => $item->unit ?: 'h',
             'unitPrice' => [
                 'currency' => $currency,
-                'netAmount' => (float) $item->unit_price,
+                'netAmount' => $item->unit_price?->toFloat() ?? 0.0,
                 'taxRatePercentage' => $taxRate,
             ],
         ], static fn($v) => $v !== '');

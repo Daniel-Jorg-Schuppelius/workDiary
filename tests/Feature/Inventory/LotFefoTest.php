@@ -68,7 +68,7 @@ final class LotFefoTest extends TestCase {
         $movement = $this->fefo->issue($this->variant, $this->warehouse, '5');
 
         // FEFO entnimmt aus SOON (3,00) trotz späteren Zugangs: 5 × 3 = 15.
-        $this->assertSame('15.0000', $movement->cost_total);
+        $this->assertSame('15.0000', $movement->cost_total?->getAmount());
         $this->assertSame('5.0000', $this->layerQty($soon));
         $this->assertSame('10.0000', $this->layerQty($late));
     }

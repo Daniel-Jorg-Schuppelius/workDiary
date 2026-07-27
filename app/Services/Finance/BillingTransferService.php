@@ -293,7 +293,7 @@ class BillingTransferService {
             'id' => (int) $entry->id,
             'date' => $entry->date?->toDateString(),
             'quantity' => round(((int) $entry->minutes) / 60, 2),
-            'amount' => round((float) $entry->rate, 2),
+            'amount' => round(($entry->rate?->toFloat() ?? 0.0), 2),
             // Zeit-Positionen tragen keine Material-Felder (einheitliche Snapshot-Shape).
             'unit' => null,
             'unit_price' => null,
@@ -334,13 +334,13 @@ class BillingTransferService {
             'type' => MaterialUsage::class,
             'id' => (int) $usage->id,
             'date' => $usage->timesheet?->work_date?->toDateString(),
-            'quantity' => round((float) $usage->quantity, 2),
-            'amount' => round((float) $usage->line_total_net, 2),
+            'quantity' => round(($usage->quantity?->getValue()->toFloat() ?? 0.0), 2),
+            'amount' => round($usage->line_total_net?->toFloat() ?? 0.0, 2),
             // Materialpositions-Snapshot (Kriterium 6): Einheit, Einzelpreis,
             // Steuersatz und DATEV-Kostenposition (Material-SKU) zum Übergabezeitpunkt.
             'unit' => $usage->unit !== '' ? (string) $usage->unit : null,
-            'unit_price' => $usage->unit_price !== null ? round((float) $usage->unit_price, 4) : null,
-            'tax_rate' => $usage->tax_rate !== null ? round((float) $usage->tax_rate, 2) : null,
+            'unit_price' => $usage->unit_price !== null ? round($usage->unit_price->toFloat(), 4) : null,
+            'tax_rate' => $usage->tax_rate !== null ? round((float) $usage->tax_rate->getNumericValue(), 2) : null,
             'cost_position' => ($sku = trim((string) data_get($usage->material, 'sku', ''))) !== '' ? $sku : null,
         ])->values();
     }

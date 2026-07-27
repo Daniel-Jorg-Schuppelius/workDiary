@@ -119,7 +119,7 @@
                             @endif
                         </td>
                         <td class="text-right whitespace-nowrap">
-                            {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $expense->amount_gross, 2, withThousandsSeparator: true) }} {{ $expense->currency->value }}
+                            {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($expense->amount_gross?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $expense->currency->value }}
                             @if ($expense->billable)
                                 <x-status-badge tone="ghost" size="xs" class="ml-1">{{ __('weiterberechnet') }}</x-status-badge>
                             @endif

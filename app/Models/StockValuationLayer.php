@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -23,7 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $article_variant_id
  * @property int $warehouse_id
  * @property numeric-string $qty_remaining
- * @property numeric-string $unit_cost
+ * @property \CommonToolkit\ValueObjects\Money|null $unit_cost
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property int|null $source_movement_id
  */
@@ -48,7 +49,7 @@ class StockValuationLayer extends Model {
     protected $casts = [
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'qty_remaining' => 'decimal:4',
-        'unit_cost' => 'decimal:4',
+        'unit_cost' => MoneyCast::class . ':currency,4',
         'acquired_at' => 'datetime',
         'best_before' => 'date',
     ];

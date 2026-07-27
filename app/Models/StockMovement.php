@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\{MoneyCast, QuantityCast};
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState};
 use App\Models\Concerns\{AppendOnly, BelongsToOrganization};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -30,6 +31,9 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
  * @property OwnershipType $ownership_type
  * @property StockMovementType $movement_type
  * @property string $qty_base
+ * @property \CommonToolkit\ValueObjects\Money|null $cost_unit
+ * @property \CommonToolkit\ValueObjects\Money|null $cost_total
+ * @property \CommonToolkit\ValueObjects\Quantity|null $original_qty
  */
 class StockMovement extends Model {
     // Korrekturen nur über referenzierte Gegenbuchung (StockMovementType::Correction).
@@ -69,9 +73,9 @@ class StockMovement extends Model {
         'ownership_type' => OwnershipType::class,
         'movement_type' => StockMovementType::class,
         'qty_base' => 'decimal:4',
-        'original_qty' => 'decimal:4',
-        'cost_unit' => 'decimal:4',
-        'cost_total' => 'decimal:4',
+        'original_qty' => QuantityCast::class . ':original_unit,4',
+        'cost_unit' => MoneyCast::class . ':currency,4',
+        'cost_total' => MoneyCast::class . ':currency,4',
         'occurred_at' => 'datetime',
     ];
 

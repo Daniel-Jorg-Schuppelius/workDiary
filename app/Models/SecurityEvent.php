@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\IpAddressCast;
 use App\Enums\Security\SecurityEventType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @property int $id
  * @property SecurityEventType $event
- * @property string|null $ip
+ * @property \CommonToolkit\ValueObjects\IpAddress|null $ip
  * @property int|null $user_id
  * @property int|null $organization_id
  * @property array<string, mixed>|null $meta
@@ -42,6 +43,7 @@ class SecurityEvent extends Model {
         'event' => SecurityEventType::class,
         'meta' => 'array',
         'occurred_at' => 'datetime',
+        'ip' => IpAddressCast::class,
     ];
 
     /** @return BelongsTo<User, $this> */

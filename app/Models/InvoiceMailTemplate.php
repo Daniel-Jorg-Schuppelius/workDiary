@@ -126,7 +126,7 @@ class InvoiceMailTemplate extends Model {
             'invoice_number' => (string) $invoice->number,
             'invoice_date' => optional($invoice->issued_on ?? $invoice->created_at)->format('d.m.Y') ?? '',
             'due_date' => optional($invoice->due_on)->format('d.m.Y') ?? '',
-            'total' => NumberHelper::toGermanFormat((float) $invoice->total, 2, withThousandsSeparator: true),
+            'total' => NumberHelper::toGermanFormat($invoice->total?->toFloat() ?? 0.0, 2, withThousandsSeparator: true),
             'currency' => $invoice->currency->value,
             'company_name' => $companyName,
             'document_label' => $invoice->documentLabel(),

@@ -56,8 +56,8 @@ class UserExportSpec extends AbstractExportSpec {
             'name' => $this->str($model->name),
             'personnel_number' => $this->str($model->personnel_number),
             'email' => $this->str($model->email),
-            'hourly_rate' => $this->decimalCell($model->hourly_rate),
-            'internal_rate' => $this->decimalCell($model->internal_rate),
+            'hourly_rate' => $this->decimalCell($model->hourly_rate?->getAmount()),
+            'internal_rate' => $this->decimalCell($model->internal_rate?->getAmount()),
             'home_address' => $this->str($model->home_address),
         ];
     }

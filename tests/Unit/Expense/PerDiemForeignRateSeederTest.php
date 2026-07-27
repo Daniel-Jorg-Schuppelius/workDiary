@@ -40,9 +40,9 @@ class PerDiemForeignRateSeederTest extends TestCase {
             ->first();
 
         $this->assertNotNull($fr);
-        $this->assertSame('50.00', $fr->full_day_amount);
-        $this->assertSame('33.00', $fr->partial_day_amount);
-        $this->assertSame('123.00', $fr->overnight_amount);
+        $this->assertSame('50.00', $fr->full_day_amount?->getAmount());
+        $this->assertSame('33.00', $fr->partial_day_amount?->getAmount());
+        $this->assertSame('123.00', $fr->overnight_amount?->getAmount());
         $this->assertSame('EUR', $fr->currency->value);
     }
 
@@ -54,8 +54,8 @@ class PerDiemForeignRateSeederTest extends TestCase {
             ->first();
 
         $this->assertNotNull($london);
-        $this->assertSame('66.00', $london->full_day_amount);
-        $this->assertSame('235.00', $london->overnight_amount);
+        $this->assertSame('66.00', $london->full_day_amount?->getAmount());
+        $this->assertSame('235.00', $london->overnight_amount?->getAmount());
     }
 
     public function test_lookup_returns_region_match_when_region_provided(): void {
@@ -63,7 +63,7 @@ class PerDiemForeignRateSeederTest extends TestCase {
 
         $this->assertNotNull($rate);
         $this->assertSame('New York', $rate->region_label);
-        $this->assertSame('72.00', $rate->full_day_amount);
+        $this->assertSame('72.00', $rate->full_day_amount?->getAmount());
     }
 
     public function test_lookup_falls_back_to_country_default_for_unknown_region(): void {
@@ -71,7 +71,7 @@ class PerDiemForeignRateSeederTest extends TestCase {
 
         $this->assertNotNull($rate);
         $this->assertNull($rate->region_label);
-        $this->assertSame('64.00', $rate->full_day_amount);
+        $this->assertSame('64.00', $rate->full_day_amount?->getAmount());
     }
 
     public function test_lookup_without_region_returns_country_default(): void {
@@ -79,7 +79,7 @@ class PerDiemForeignRateSeederTest extends TestCase {
 
         $this->assertNotNull($rate);
         $this->assertNull($rate->region_label);
-        $this->assertSame('50.00', $rate->full_day_amount);
+        $this->assertSame('50.00', $rate->full_day_amount?->getAmount());
     }
 
     public function test_seeder_is_idempotent(): void {

@@ -217,7 +217,7 @@ class SupportReportBuilder {
                     ->count();
                 $out['backup'] = [
                     'last_heartbeat_at' => $latest->occurred_at ?? null,
-                    'last_size_bytes' => isset($latest->size_bytes) ? (int) $latest->size_bytes : null,
+                    'last_size_bytes' => $latest->size_bytes?->getBytes(),
                     'last_source' => $latest->source ?? null,
                     'count_30d' => $count30d,
                 ];

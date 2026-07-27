@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Procurement;
 
 use App\Models\{Article, PriceChangeRequest, SupplierCatalogItem, User};
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -59,7 +61,7 @@ class PriceApprovalService {
                 'supplier_catalog_item_id' => $item->id,
                 'article_id' => $item->article_id,
                 'pricing_margin_rule_id' => $suggestion['rule']->id,
-                'purchase_price_snapshot' => (string) $item->purchase_price,
+                'purchase_price_snapshot' => $item->purchase_price,
                 'suggested_price' => $suggestion['price'],
                 'margin_snapshot' => (string) $suggestion['margin'],
                 'status' => PriceChangeRequest::STATUS_REQUESTED,
@@ -85,7 +87,7 @@ class PriceApprovalService {
 
         $item = $request->item;
         $suggestion = $item instanceof SupplierCatalogItem ? $this->pricing->suggestForItem($item) : null;
-        if ($suggestion === null || bccomp($this->numeric($suggestion['price']), $this->numeric((string) $request->suggested_price), 4) !== 0) {
+        if ($suggestion === null || bccomp($this->numeric($suggestion['price']), $this->numeric($request->suggested_price?->getAmount() ?? '0'), 4) !== 0) {
             $request->forceFill([
                 'status' => PriceChangeRequest::STATUS_EXPIRED,
                 'decided_by' => $approver->id,
@@ -98,7 +100,7 @@ class PriceApprovalService {
 
         return DB::transaction(function () use ($request, $approver, $suggestion): PriceChangeRequest {
             $article = Article::query()->findOrFail($request->article_id);
-            $article->default_sale_price = $suggestion['price'];
+            $article->default_sale_price = Money::of((string) $suggestion['price'], $article->currency ?? CurrencyCode::Euro, 4);
             $article->save();
 
             $request->forceFill([

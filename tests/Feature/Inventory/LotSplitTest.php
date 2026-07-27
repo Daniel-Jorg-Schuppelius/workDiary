@@ -51,7 +51,7 @@ final class LotSplitTest extends TestCase {
 
         $this->assertSame('6.0000', $this->lots->onHand($source));
         $this->assertSame('4.0000', $this->lots->onHand($target));
-        $this->assertSame('2.0000', StockValuationLayer::query()->where('stock_lot_id', $target->id)->value('unit_cost'));
+        $this->assertSame('2.0000', StockValuationLayer::query()->where('stock_lot_id', $target->id)->value('unit_cost')?->getAmount());
     }
 
     public function test_split_beyond_stock_throws(): void {

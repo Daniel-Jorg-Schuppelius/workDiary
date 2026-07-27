@@ -140,8 +140,10 @@ class InvoiceGenerator {
                 // aufgerundeten billedHours angewendet erhöht die Taktung den
                 // Betrag. Fallback auf Eintrags-/Kunden-Stundensatz.
                 $primary = $entriesById->get($block->primaryEntryId);
-                $rate = $block->hourlyRate()
-                    ?? (float) ($primary?->hourly_rate ?: $customer->hourly_rate ?: 0);
+                $fallbackRate = $primary !== null && $primary->hourly_rate !== null
+                    ? $primary->hourly_rate
+                    : $customer->hourly_rate;
+                $rate = $block->hourlyRate() ?? $fallbackRate?->toFloat() ?? 0.0;
 
                 $description = $this->bookingLine(
                     $this->describeBlock($block, $primary),
@@ -290,7 +292,7 @@ class InvoiceGenerator {
 
             $position = 0;
             foreach ($usages as $usage) {
-                if ((float) $usage->line_total_net <= 0 && (float) ($usage->unit_price ?? 0) <= 0) {
+                if (($usage->line_total_net?->toFloat() ?? 0.0) <= 0 && ($usage->unit_price?->toFloat() ?? 0.0) <= 0) {
                     continue;
                 }
 
@@ -300,9 +302,9 @@ class InvoiceGenerator {
                     'material_usage_id' => $usage->id,
                     'service_date' => optional($usage->timesheet?->work_date)->toDateString(),
                     'description' => $this->bookingLine($materialDesc, $usage->timesheet?->project?->foreignCustomer),
-                    'quantity' => (string) $usage->quantity,
+                    'quantity' => $usage->quantity?->getNumericValue() ?? '0',
                     'unit' => $usage->unit ?: (string) __('invoicing.unit_piece'),
-                    'unit_price' => (string) ($usage->unit_price ?? '0'),
+                    'unit_price' => $usage->unit_price?->getAmount() ?? '0',
                     'position' => ++$position,
                 ]);
 
@@ -452,11 +454,11 @@ class InvoiceGenerator {
                 'category' => $original->category,
                 'parent_invoice_id' => $original->id,
                 'currency' => $original->currency,
-                'tax_rate' => (string) $original->tax_rate,
+                'tax_rate' => $original->tax_rate,
                 'is_reverse_charge' => (bool) $original->is_reverse_charge,
                 // MVP-416: Belegrabatt spiegeln (Prozent skaliert selbst, fester Betrag negiert) — sonst negiert die Summe nicht exakt.
                 'discount_percent' => $original->discount_percent,
-                'discount_amount' => $original->discount_amount !== null ? (string) (-1 * (float) $original->discount_amount) : null,
+                'discount_amount' => $original->discount_amount?->negated(),
                 'notes' => __('Stornorechnung zu Rechnung :nr vom :date', [
                     'nr' => $original->number,
                     'date' => optional($original->issued_on ?? $original->created_at)->format('d.m.Y'),
@@ -472,10 +474,10 @@ class InvoiceGenerator {
                     'description' => $item->description,
                     'quantity' => (string) (-1 * (float) $item->quantity),
                     'unit' => $item->unit,
-                    'unit_price' => (string) $item->unit_price,
+                    'unit_price' => $item->unit_price,
                     // MVP-416: Positionsrabatt spiegeln (Prozent skaliert, Betrag negiert).
                     'discount_percent' => $item->discount_percent,
-                    'discount_amount' => $item->discount_amount !== null ? (string) (-1 * (float) $item->discount_amount) : null,
+                    'discount_amount' => $item->discount_amount?->negated(),
                     'tax_rate' => $item->tax_rate,
                     'position' => ++$position,
                 ]);
@@ -674,7 +676,7 @@ class InvoiceGenerator {
                     ->filter(fn(array $row): bool => abs((float) ($row['net'] ?? 0)) > 0.0)
                     ->values();
                 if ($rows->isEmpty()) {
-                    $rows = collect([['rate' => (float) $dp->tax_rate, 'net' => (float) $dp->subtotal]]);
+                    $rows = collect([['rate' => $dp->tax_rate !== null ? (float) $dp->tax_rate->getNumericValue() : 0.0, 'net' => $dp->subtotal?->toFloat() ?? 0.0]]);
                 }
 
                 foreach ($rows as $row) {
@@ -703,7 +705,7 @@ class InvoiceGenerator {
             $draft->load('items');
             $draft->recalculate();
 
-            if ((float) $draft->total < 0) {
+            if ($draft->total !== null && $draft->total->isNegative()) {
                 throw \Illuminate\Validation\ValidationException::withMessages([
                     'invoice' => (string) __('Die Anrechnung der Abschläge übersteigt den Rechnungsbetrag — die Schlussrechnung wäre negativ.'),
                 ]);
@@ -738,13 +740,13 @@ class InvoiceGenerator {
                 'category' => $original->category,
                 'parent_invoice_id' => $original->id,
                 'currency' => $original->currency,
-                'tax_rate' => (string) $original->tax_rate,
+                'tax_rate' => $original->tax_rate,
                 // MVP-162/172: Steuerkontext des ORIGINALS übernehmen — sonst
                 // droht unrichtiger Steuerausweis in der Korrektur (§ 14c).
                 'is_reverse_charge' => (bool) $original->is_reverse_charge,
                 // MVP-416: Belegrabatt spiegeln (Prozent skaliert selbst, fester Betrag negiert).
                 'discount_percent' => $original->discount_percent,
-                'discount_amount' => $original->discount_amount !== null ? (string) (-1 * (float) $original->discount_amount) : null,
+                'discount_amount' => $original->discount_amount?->negated(),
                 'notes' => __('Korrekturrechnung zu Rechnung :nr vom :date', [
                     'nr' => $original->number,
                     'date' => optional($original->issued_on ?? $original->created_at)->format('d.m.Y'),
@@ -760,10 +762,10 @@ class InvoiceGenerator {
                     'description' => $item->description,
                     'quantity' => (string) (-1 * (float) $item->quantity),
                     'unit' => $item->unit,
-                    'unit_price' => (string) $item->unit_price,
+                    'unit_price' => $item->unit_price,
                     // MVP-416: Positionsrabatt spiegeln (Prozent skaliert, Betrag negiert).
                     'discount_percent' => $item->discount_percent,
-                    'discount_amount' => $item->discount_amount !== null ? (string) (-1 * (float) $item->discount_amount) : null,
+                    'discount_amount' => $item->discount_amount?->negated(),
                     'tax_rate' => $item->tax_rate,
                     'position' => ++$position,
                     // bewusst KEINE time_entry_id / expense_id — Zeit/Spese bleibt am Original

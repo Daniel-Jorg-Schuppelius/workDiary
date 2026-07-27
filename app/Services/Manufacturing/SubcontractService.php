@@ -45,7 +45,7 @@ class SubcontractService {
                 'created_by' => $createdBy,
                 'note' => trim('Fremdfertigung ' . ($order->number ?? '')),
             ]);
-            $this->orders->addLine($po, $article, $order->target_qty, ['unit' => $order->unit]);
+            $this->orders->addLine($po, $article, $order->target_qty?->getNumericValue() ?? '0', ['unit' => $order->unit]);
 
             $order->forceFill([
                 'procurement_mode' => ProcurementMode::Subcontract->value,

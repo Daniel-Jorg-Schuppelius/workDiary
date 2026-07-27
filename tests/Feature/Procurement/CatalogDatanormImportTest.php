@@ -60,12 +60,12 @@ final class CatalogDatanormImportTest extends TestCase {
         $this->assertSame(2, $summary['rows']);
 
         $rohr = SupplierCatalogItem::query()->where('external_no', '100123')->firstOrFail();
-        $this->assertSame('8.5000', $rohr->purchase_price);       // 850 Cent / 1
+        $this->assertSame('8.5000', $rohr->purchase_price?->getAmount());       // 850 Cent / 1
         $this->assertStringContainsString('Kupferrohr', (string) $rohr->name);
         $this->assertSame('100', $rohr->category);
 
         // Preis 12500 Cent bei Preiseinheit 100 → 1,25 je Stück.
-        $this->assertSame('1.2500', SupplierCatalogItem::query()->where('external_no', '100124')->firstOrFail()->purchase_price);
+        $this->assertSame('1.2500', SupplierCatalogItem::query()->where('external_no', '100124')->firstOrFail()->purchase_price?->getAmount());
     }
 
     public function test_datanorm_ignores_non_article_records(): void {

@@ -88,8 +88,8 @@ final class DespatchAdviceImportTest extends TestCase {
         app(AdviceService::class)->receive($advice);
 
         $lines = $this->order->lines()->orderBy('id')->get();
-        $this->assertSame('4.0000', $lines[0]->fresh()->received_qty);
-        $this->assertSame('2.0000', $lines[1]->fresh()->received_qty);
+        $this->assertSame('4.0000', $lines[0]->fresh()->received_qty?->getNumericValue());
+        $this->assertSame('2.0000', $lines[1]->fresh()->received_qty?->getNumericValue());
         $this->assertSame(AdviceStatus::Received, $advice->fresh()->status);
         $this->assertSame(PurchaseOrderStatus::PartiallyReceived, $this->order->fresh()->status);
     }

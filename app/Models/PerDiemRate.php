@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use Database\Factories\PerDiemRateFactory;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -22,9 +23,9 @@ use Illuminate\Support\{Carbon, Str};
  * @property string|null $region_label  Stadt/Region für Sondertarife (null = Standard)
  * @property Carbon $valid_from
  * @property Carbon|null $valid_to
- * @property string $full_day_amount
- * @property string $partial_day_amount
- * @property string|null $overnight_amount
+ * @property \CommonToolkit\ValueObjects\Money|null $full_day_amount
+ * @property \CommonToolkit\ValueObjects\Money|null $partial_day_amount
+ * @property \CommonToolkit\ValueObjects\Money|null $overnight_amount
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property string|null $source
  * @property Carbon|null $created_at
@@ -51,9 +52,9 @@ class PerDiemRate extends Model {
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'valid_from' => 'date',
         'valid_to' => 'date',
-        'full_day_amount' => 'decimal:2',
-        'partial_day_amount' => 'decimal:2',
-        'overnight_amount' => 'decimal:2',
+        'full_day_amount' => MoneyCast::class . ':currency,2',
+        'partial_day_amount' => MoneyCast::class . ':currency,2',
+        'overnight_amount' => MoneyCast::class . ':currency,2',
     ];
 
     protected static function booted(): void {

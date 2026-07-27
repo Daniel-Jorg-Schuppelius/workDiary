@@ -109,7 +109,7 @@ class CashBookService {
                 'seq_no' => $this->nextSeqNo($register),
                 'booked_on' => $bookedOn->toDateString(),
                 'direction' => $original->direction === CashEntry::DIRECTION_IN ? CashEntry::DIRECTION_OUT : CashEntry::DIRECTION_IN,
-                'amount' => (string) $original->amount,
+                'amount' => $original->amount,
                 'tax_rate' => $original->tax_rate,
                 'purpose' => (string) __('Storno zu Beleg #:seq: :reason', ['seq' => $original->seq_no, 'reason' => $reason]),
                 'counterparty' => $original->counterparty,
@@ -166,7 +166,7 @@ class CashBookService {
         $in = (float) (clone $query)->where('direction', CashEntry::DIRECTION_IN)->sum('amount');
         $out = (float) (clone $query)->where('direction', CashEntry::DIRECTION_OUT)->sum('amount');
 
-        return round((float) $register->opening_balance + $in - $out, 2);
+        return round(($register->opening_balance?->toFloat() ?? 0.0) + $in - $out, 2);
     }
 
     /** Buchungen in abgeschlossene Tage sind unzulässig (GoBD-Festschreibung). */
@@ -215,7 +215,7 @@ class CashBookService {
             ->where('direction', CashEntry::DIRECTION_IN)
             ->sum('amount');
 
-        if ($paidCash + 0.005 >= (float) $invoice->total) {
+        if ($paidCash + 0.005 >= ($invoice->total?->toFloat() ?? 0.0)) {
             $invoice->status = Invoice::STATUS_PAID;
             $invoice->paid_on = \Illuminate\Support\Carbon::parse($entry->booked_on->toDateString());
             $invoice->save();

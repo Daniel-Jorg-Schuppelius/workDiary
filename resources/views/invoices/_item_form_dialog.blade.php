@@ -22,12 +22,12 @@
         <x-input-field name="service_date" type="date" :label="__('Leistungsdatum')" :value="old('service_date', optional($item->service_date ?? null)->format('Y-m-d'))" :hint="__('Bei mehreren Tagen Pflicht je Position.')" />
         <x-input-field name="quantity" type="number" :label="__('Menge')" required min="0" step="0.01" :value="old('quantity', (string) ($item->quantity ?? '1.00'))" />
         <x-input-field name="unit" :label="__('Einheit')" maxlength="32" :value="old('unit', $item->unit ?? __('invoicing.unit_hour'))" />
-        <x-input-field name="unit_price" :label="__('Einzelpreis') . ' (' . $invoice->currency->value . ')'" type="number" required min="0" step="0.01" :value="old('unit_price', (string) ($item->unit_price ?? '0.00'))" />
+        <x-input-field name="unit_price" :label="__('Einzelpreis') . ' (' . $invoice->currency->value . ')'" type="number" required min="0" step="0.01" :value="old('unit_price', ($item->unit_price?->getAmount() ?? '0.00'))" />
         <x-input-field name="position" type="number" :label="__('Position')" min="0" step="1" :value="old('position', (string) ($item->position ?? ''))" />
         {{-- MVP-416: Positionsrabatt — Prozent ODER Betrag, nie beides. --}}
-        <x-input-field name="discount_percent" type="number" :label="__('Rabatt %')" min="0" max="100" step="0.01" :value="old('discount_percent', $item->discount_percent ?? '')" :hint="__('Prozent oder Betrag — nicht beides.')" />
-        <x-input-field name="discount_amount" type="number" :label="__('Rabatt (Betrag)')" min="0" step="0.01" :value="old('discount_amount', $item->discount_amount ?? '')" />
-        <x-input-field name="tax_rate" type="number" :label="__('USt-Satz % (leer = Kopfsatz)')" min="0" max="99.99" step="0.01" :value="old('tax_rate', $item->tax_rate ?? '')" />
+        <x-input-field name="discount_percent" type="number" :label="__('Rabatt %')" min="0" max="100" step="0.01" :value="old('discount_percent', $item->discount_percent?->getNumericValue() ?? '')" :hint="__('Prozent oder Betrag — nicht beides.')" />
+        <x-input-field name="discount_amount" type="number" :label="__('Rabatt (Betrag)')" min="0" step="0.01" :value="old('discount_amount', $item->discount_amount?->getAmount() ?? '')" />
+        <x-input-field name="tax_rate" type="number" :label="__('USt-Satz % (leer = Kopfsatz)')" min="0" max="99.99" step="0.01" :value="old('tax_rate', $item->tax_rate?->getNumericValue() ?? '')" />
         <x-select-field name="tax_category" :label="__('Steuerkategorie (EN 16931)')" :hint="__('Leer = aus Beleg abgeleitet (S/AE/Z/E/G).')">
             <option value="">{{ __('— automatisch —') }}</option>
             @foreach (['S' => 'S — Standard', 'AE' => 'AE — Reverse Charge', 'Z' => 'Z — Nullsatz', 'E' => 'E — befreit', 'G' => 'G — Export', 'K' => 'K — ig. Lieferung', 'O' => 'O — nicht steuerbar'] as $code => $label)

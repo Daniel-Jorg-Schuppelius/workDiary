@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,8 +30,8 @@ use Illuminate\Support\Carbon;
  * @property ?string $voucher_number
  * @property ?Carbon $voucher_date
  * @property ?Carbon $due_date
- * @property ?string $total_amount
- * @property ?string $open_amount
+ * @property \CommonToolkit\ValueObjects\Money|null $total_amount
+ * @property \CommonToolkit\ValueObjects\Money|null $open_amount
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property bool $archived
  * @property ?array<string, mixed> $payload
@@ -66,8 +67,8 @@ class LexofficeVoucher extends Model {
         'supplier_id' => 'integer',
         'voucher_date' => 'date',
         'due_date' => 'date',
-        'total_amount' => 'decimal:2',
-        'open_amount' => 'decimal:2',
+        'total_amount' => MoneyCast::class . ':currency,2',
+        'open_amount' => MoneyCast::class . ':currency,2',
         'archived' => 'boolean',
         'payload' => 'array',
         'synced_at' => 'datetime',

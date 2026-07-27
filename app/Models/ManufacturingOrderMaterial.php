@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use CommonToolkit\Enums\RoundingMode;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -28,6 +29,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property RoundingMode|null $rounding
  * @property bool $is_tool
  * @property int|null $stock_reservation_id
+ * @property \CommonToolkit\ValueObjects\Money|null $cost_snapshot
+ * @property \CommonToolkit\ValueObjects\Money|null $actual_cost
  */
 class ManufacturingOrderMaterial extends Model {
     /** @use HasFactory<Factory<static>> */
@@ -55,8 +58,8 @@ class ManufacturingOrderMaterial extends Model {
         'target_qty' => 'decimal:4',
         'reserved_qty' => 'decimal:4',
         'consumed_qty' => 'decimal:4',
-        'cost_snapshot' => 'decimal:4',
-        'actual_cost' => 'decimal:4',
+        'cost_snapshot' => MoneyCast::class . ':currency,4',
+        'actual_cost' => MoneyCast::class . ':currency,4',
         'rounding' => RoundingMode::class,
         'is_tool' => 'boolean',
     ];

@@ -65,7 +65,7 @@ class ManufacturingOrderService {
 
         // Basis-Stückliste + Varianten-Overrides der konkreten Variante auflösen.
         $bom = $this->bomResolver->resolve($version, $order->variant);
-        $lines = $this->calculator->calculate($bom, (string) $order->target_qty);
+        $lines = $this->calculator->calculate($bom, $order->target_qty?->getNumericValue() ?? '0');
 
         // Auftragsparameter gegen die Version validieren und einfrieren (MVP-061).
         // Wirft vor der Transaktion bei Pflichtverletzung/ungültigem Wert.

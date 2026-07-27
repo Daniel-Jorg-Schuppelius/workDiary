@@ -251,8 +251,10 @@ class EasybillTarget implements FacturationTarget {
             }
             /** @var TimeEntry|null $primary */
             $primary = $entriesById->get($block->primaryEntryId);
-            $rate = $block->hourlyRate()
-                ?? (float) ($primary?->hourly_rate ?: $transfer->customer->hourly_rate ?: 0);
+            $fallbackRate = $primary !== null && $primary->hourly_rate !== null
+                ? $primary->hourly_rate
+                : $transfer->customer->hourly_rate;
+            $rate = $block->hourlyRate() ?? $fallbackRate?->toFloat() ?? 0.0;
 
             $positions[] = [
                 'type' => 'POSITION',
@@ -284,9 +286,9 @@ class EasybillTarget implements FacturationTarget {
             $positions[] = [
                 'type' => 'POSITION',
                 'description' => $name,
-                'quantity' => round((float) $usage->quantity, 2),
-                'single_price_net' => round((float) ($usage->unit_price ?? 0) * 100, 2),
-                'vat_percent' => $usage->tax_rate !== null ? round((float) $usage->tax_rate, 2) : $vatRate,
+                'quantity' => round(($usage->quantity?->getValue()->toFloat() ?? 0.0), 2),
+                'single_price_net' => round(($usage->unit_price?->toFloat() ?? 0.0) * 100, 2),
+                'vat_percent' => $usage->tax_rate !== null ? round((float) $usage->tax_rate->getNumericValue(), 2) : $vatRate,
                 'unit' => trim((string) ($usage->unit ?? '')) ?: (string) __('finance.easybill.unit_piece'),
             ];
         }

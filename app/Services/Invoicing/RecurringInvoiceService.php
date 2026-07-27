@@ -192,7 +192,7 @@ class RecurringInvoiceService {
                 'description' => $this->replacePlaceholders((string) $item->description, $periodStart, $periodEnd),
                 'quantity' => (string) $item->quantity,
                 'unit' => $item->unit ?? (string) __('invoicing.unit_hour'),
-                'unit_price' => (string) $item->unit_price,
+                'unit_price' => $item->unit_price,
                 'discount_percent' => $item->discount_percent,
                 'discount_amount' => $item->discount_amount,
                 'tax_rate' => $item->tax_rate,

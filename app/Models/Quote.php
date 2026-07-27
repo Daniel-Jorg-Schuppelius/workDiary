@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
@@ -32,9 +33,9 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property \Illuminate\Support\Carbon|null $valid_until
  * @property string|null $acceptance_token_hash
  * @property array<string, mixed>|null $decision_snapshot
- * @property float $subtotal
- * @property float $tax_amount
- * @property float $total
+ * @property Money|null $subtotal
+ * @property Money|null $tax_amount
+ * @property Money|null $total
  * @property int|null $previous_version_id
  * @property int|null $created_by
  */
@@ -58,6 +59,10 @@ class Quote extends Model {
         'decided_at' => 'datetime',
         'decision_snapshot' => 'array',
         'version' => 'integer',
+        // Angebote führen keine Währungsspalte — der Cast fällt auf Euro zurück.
+        'subtotal' => MoneyCast::class,
+        'tax_amount' => MoneyCast::class,
+        'total' => MoneyCast::class,
     ];
 
     /** @var array<string, mixed> */
@@ -98,13 +103,13 @@ class Quote extends Model {
             // (§ 19 UStG → 0, Org-Override, Länderkatalog) statt hart 19 % —
             // sonst zeigt eine Kleinunternehmer-Org falsche Bruttopreise.
             $rate = $item->tax_rate !== null
-                ? (float) $item->tax_rate
+                ? (float) $item->tax_rate->getNumericValue()
                 : ($fallbackRate ??= $this->defaultTaxRate());
             $tax = $tax->plus($net->percentage($rate));
         }
-        $this->subtotal = $sub->toFloat();
-        $this->tax_amount = $tax->toFloat();
-        $this->total = $sub->plus($tax)->toFloat();
+        $this->subtotal = $sub;
+        $this->tax_amount = $tax;
+        $this->total = $sub->plus($tax);
     }
 
     /** Steuersatz-Fallback für Positionen ohne eigenen Satz (s. recalculate). */

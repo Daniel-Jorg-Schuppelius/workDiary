@@ -51,14 +51,14 @@
                 </tr>
         </x-slot:head>
         <x-slot:foot>
-                <tr><td colspan="3" class="text-right font-bold">{{ __('Gesamt (netto zzgl. USt.)') }}</td><td class="text-right font-bold" colspan="2">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $quote->subtotal, 2, withThousandsSeparator: true) }} EUR</td></tr>
+                <tr><td colspan="3" class="text-right font-bold">{{ __('Gesamt (netto zzgl. USt.)') }}</td><td class="text-right font-bold" colspan="2">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($quote->subtotal?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} EUR</td></tr>
         </x-slot:foot>
                 @foreach ($quote->items as $item)
                     <tr>
                         <td>{{ $item->position }}</td>
                         <td>{{ $item->description }}</td>
                         <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, 2, withThousandsSeparator: true) }} {{ $item->unit }}</td>
-                        <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->unit_price, 2, withThousandsSeparator: true) }} EUR</td>
+                        <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->unit_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} EUR</td>
                         <td>{{ $item->optional ? __('Option') : __('Pflicht') }}</td>
                     </tr>
                 @endforeach

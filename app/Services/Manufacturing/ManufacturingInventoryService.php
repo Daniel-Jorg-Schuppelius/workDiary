@@ -16,6 +16,8 @@ use App\Enums\Inventory\{StockMovementType, StockState};
 use App\Models\{ArticleVariant, ManufacturingOrder, ManufacturingOrderMaterial, Organization, Warehouse};
 use App\Services\Inventory\{InventoryLedger, InventoryValuationManager, ReservationService, SerialService, StockPosting};
 use App\Support\DecimalQty;
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -135,7 +137,7 @@ class ManufacturingInventoryService {
             $organization = Organization::query()->find($material->order?->organization_id);
             if ($variant instanceof ArticleVariant && $warehouse instanceof Warehouse && $organization instanceof Organization) {
                 $unit = $this->valuation->forVariant($variant, $organization)->unitCost($variant, $warehouse);
-                $material->actual_cost = bcadd((string) $material->actual_cost, bcmul($qty, $unit, self::SCALE), self::SCALE);
+                $material->actual_cost = Money::of(bcadd($material->actual_cost?->getAmount() ?? '0', bcmul($qty, $unit, self::SCALE), self::SCALE), CurrencyCode::Euro, 4);
             }
 
             $reservation = $material->reservation;

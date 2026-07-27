@@ -68,9 +68,9 @@ class MyMonthReportController extends Controller {
             }
             $byDay[$key]['entries']->push($entry);
             $byDay[$key]['minutes'] += (int) $entry->minutes;
-            $byDay[$key]['rate'] += (float) $entry->rate;
+            $byDay[$key]['rate'] += ($entry->rate?->toFloat() ?? 0.0);
             $monthMinutes += (int) $entry->minutes;
-            $monthRate += (float) $entry->rate;
+            $monthRate += ($entry->rate?->toFloat() ?? 0.0);
         }
         ksort($byDay);
 
@@ -129,7 +129,7 @@ class MyMonthReportController extends Controller {
                 $taskTitle,
                 (string) ($e->description ?? ''),
                 (int) $e->minutes,
-                (float) $e->rate,
+                ($e->rate?->toFloat() ?? 0.0),
             ];
         }
 

@@ -73,7 +73,7 @@
                                     </details>
                                 @endif
                             </td>
-                            <td class="text-xs text-base-content/60">{{ $log->ip }}</td>
+                            <td class="text-xs text-base-content/60">{{ $log->ip?->getValue() }}</td>
                         </tr>
                     @empty
                         <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">history</span>' :colspan="7" :title="__('Keine Einträge')" compact />

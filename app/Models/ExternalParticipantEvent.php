@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\IpAddressCast;
 use App\Models\Concerns\AppendOnly;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,7 +30,7 @@ use Illuminate\Support\Carbon;
  * @property int $external_participant_id
  * @property string $event
  * @property array<string, mixed>|null $payload
- * @property string|null $ip
+ * @property \CommonToolkit\ValueObjects\IpAddress|null $ip
  * @property string|null $user_agent
  * @property Carbon|null $created_at
  */
@@ -52,6 +53,7 @@ class ExternalParticipantEvent extends Model {
     protected $casts = [
         'payload' => 'array',
         'created_at' => 'datetime',
+        'ip' => IpAddressCast::class,
     ];
 
     /** @return BelongsTo<ExternalParticipant, $this> */

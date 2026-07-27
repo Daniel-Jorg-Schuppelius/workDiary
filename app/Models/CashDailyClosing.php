@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Models\Concerns\{AppendOnly, Auditable, BelongsToOrganization, HasSqid};
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
@@ -26,9 +27,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $organization_id
  * @property int $cash_register_id
  * @property Carbon $closing_date
- * @property string $expected_balance
- * @property string $counted_balance
- * @property string $difference
+ * @property \CommonToolkit\ValueObjects\Money|null $expected_balance
+ * @property \CommonToolkit\ValueObjects\Money|null $counted_balance
+ * @property \CommonToolkit\ValueObjects\Money|null $difference
  * @property string|null $note
  * @property int|null $closed_by
  */
@@ -52,9 +53,9 @@ class CashDailyClosing extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'closing_date' => 'date',
-        'expected_balance' => 'decimal:2',
-        'counted_balance' => 'decimal:2',
-        'difference' => 'decimal:2',
+        'expected_balance' => MoneyCast::class . ':currency,2',
+        'counted_balance' => MoneyCast::class . ':currency,2',
+        'difference' => MoneyCast::class . ':currency,2',
     ];
 
     /** @return BelongsTo<CashRegister, $this> */

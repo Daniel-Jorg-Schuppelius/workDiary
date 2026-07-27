@@ -11,8 +11,8 @@
 namespace App\Services\Procurement;
 
 use App\Models\{PurchaseOrder, PurchaseOrderLine, Supplier};
-use CommonToolkit\ValueObjects\Money;
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Money;
 use DateTimeImmutable;
 use ERechnungToolkit\Builders\OrderBuilder;
 use ERechnungToolkit\Entities\{AllowanceCharge, Order, OrderLine};
@@ -181,7 +181,8 @@ class PurchaseOrderExportService {
         $document = $builder->build();
 
         // Frachtkosten → Zuschlag (UGL POZ Typ 07; UBL/Order-X als ChargeTotal).
-        $freight = Money::of((string) ($order->freight_cost ?? 0), $document->getCurrency());
+        // Exportformat bleibt auf Cent gerundet wie bisher (Money::of hatte Skala 2).
+        $freight = $order->freight_cost?->withScale(2) ?? Money::zero($document->getCurrency());
         if ($freight->isPositive()) {
             $document->addAllowanceCharge(AllowanceCharge::shipping($freight));
         }
@@ -213,8 +214,8 @@ class PurchaseOrderExportService {
         $buyersItemId = trim((string) $article->number) ?: null;
         $gtin = trim((string) $variant?->gtin) ?: trim((string) $article->gtin) ?: null;
 
-        $quantity = (float) $line->ordered_qty;
-        $unitPrice = Money::of((string) ($line->unit_price ?? 0), $currency);
+        $quantity = ($line->ordered_qty?->getValue()->toFloat() ?? 0.0);
+        $unitPrice = $line->unit_price?->withScale(2) ?? Money::zero($currency);
 
         return new OrderLine(
             id: $id,

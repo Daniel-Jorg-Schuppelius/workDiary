@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\ByteSizeCast;
 use App\Enums\Backup\RestoreTestResult;
 use App\Models\Concerns\Auditable;
 use Carbon\CarbonImmutable;
@@ -34,7 +35,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonImmutable $tested_on
  * @property RestoreTestResult $result
  * @property string|null $scope
- * @property int|null $restored_size_bytes
+ * @property \CommonToolkit\ValueObjects\ByteSize|null $restored_size_bytes
  * @property int|null $duration_minutes
  * @property string|null $notes
  * @property CarbonImmutable|null $next_due_on
@@ -62,7 +63,7 @@ class RestoreTest extends Model {
     protected $casts = [
         'tested_on' => 'immutable_date',
         'result' => RestoreTestResult::class,
-        'restored_size_bytes' => 'integer',
+        'restored_size_bytes' => ByteSizeCast::class,
         'duration_minutes' => 'integer',
         'next_due_on' => 'immutable_date',
     ];

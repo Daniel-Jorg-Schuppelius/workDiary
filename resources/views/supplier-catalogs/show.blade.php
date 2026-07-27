@@ -177,7 +177,7 @@
                             @endif
                         </td>
                         <td class="text-right tabular-nums">
-                            {{ $item->purchase_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->purchase_price, 2, withThousandsSeparator: true) . ' ' . $item->currency->value : '—' }}
+                            {{ $item->purchase_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->purchase_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) . ' ' . $item->currency->value : '—' }}
                             @if (($item->price_tiers_count ?? 0) > 0)
                                 <div class="text-xs opacity-50">+{{ $item->price_tiers_count }} {{ __('procurement.catalog.tiers') }}</div>
                             @endif

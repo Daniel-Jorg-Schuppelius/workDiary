@@ -78,7 +78,7 @@ XML;
 
         $this->assertSame(2, $summary['created']);
         $item = SupplierCatalogItem::query()->where('external_no', 'BM-1')->firstOrFail();
-        $this->assertSame('1.2500', $item->purchase_price);
+        $this->assertSame('1.2500', $item->purchase_price?->getAmount());
         $this->assertSame('4011111111111', $item->gtin);
         $this->assertSame('MFR-9', $item->manufacturer_no);
         $this->assertStringContainsString('Kabel', (string) $item->name);
@@ -100,7 +100,7 @@ XML;
         $summary = app(BMEcatImportService::class)->import($this->source, $xml);
 
         $this->assertSame(1, $summary['created']);
-        $this->assertSame('9.9000', SupplierCatalogItem::query()->where('external_no', 'P-1')->firstOrFail()->purchase_price);
+        $this->assertSame('9.9000', SupplierCatalogItem::query()->where('external_no', 'P-1')->firstOrFail()->purchase_price?->getAmount());
     }
 
     public function test_invalid_xml_throws(): void {
@@ -161,9 +161,9 @@ XML;
         app(BMEcatImportService::class)->import($this->source, $this->bmecatWithTiers());
 
         $item = SupplierCatalogItem::query()->where('external_no', 'TR-1')->firstOrFail();
-        $this->assertSame('2.0000', $item->purchase_price);       // Basispreis (Bound 1)
+        $this->assertSame('2.0000', $item->purchase_price?->getAmount());       // Basispreis (Bound 1)
         $this->assertSame(2, $item->priceTiers()->count());       // Bounds 10 + 100
-        $this->assertSame('1.8000', $item->priceTiers()->where('min_qty', '10.0000')->firstOrFail()->unit_price);
+        $this->assertSame('1.8000', $item->priceTiers()->where('min_qty', '10.0000')->firstOrFail()->unit_price?->getAmount());
     }
 
     public function test_bmecat_tier_change_resyncs_without_duplicates(): void {
@@ -173,7 +173,7 @@ XML;
 
         $item = SupplierCatalogItem::query()->where('external_no', 'TR-1')->firstOrFail();
         $this->assertSame(2, $item->priceTiers()->count()); // keine Duplikate
-        $this->assertSame('1.7000', $item->priceTiers()->where('min_qty', '10.0000')->firstOrFail()->unit_price);
+        $this->assertSame('1.7000', $item->priceTiers()->where('min_qty', '10.0000')->firstOrFail()->unit_price?->getAmount());
     }
 
     public function test_bmecat_upload_route(): void {

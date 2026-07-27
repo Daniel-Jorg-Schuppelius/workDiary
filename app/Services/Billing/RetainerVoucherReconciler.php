@@ -68,8 +68,8 @@ class RetainerVoucherReconciler {
                 continue;
             }
 
-            $total = (float) ($voucher->total_amount ?? 0);
-            $open = (float) ($voucher->open_amount ?? $total);
+            $total = $voucher->total_amount?->toFloat() ?? 0.0;
+            $open = $voucher->open_amount?->toFloat() ?? $total;
             $paid = round($total - $open, 2);
 
             if ($paid <= 0) {

@@ -31,7 +31,7 @@ class BackupRecordRestoreTestCommandTest extends TestCase {
         $test = RestoreTest::query()->sole();
         $this->assertSame('script-backup:workdiary', $test->source);
         $this->assertSame(RestoreTestResult::Passed, $test->result);
-        $this->assertSame(123456, $test->restored_size_bytes);
+        $this->assertSame(123456, $test->restored_size_bytes?->getBytes());
         $this->assertSame(7, $test->duration_minutes);
         $this->assertNull($test->performed_by_user_id);
         $this->assertTrue($test->tested_on->isToday());

@@ -93,8 +93,8 @@ final class DownPaymentSettlementTest extends TestCase {
         $this->assertSame(Invoice::STATUS_DRAFT, $dp->status);
         $this->assertStringStartsWith('R', $dp->number);
         $this->assertCount(1, $dp->items);
-        $this->assertSame('300.00', number_format((float) $dp->subtotal, 2, '.', ''));
-        $this->assertSame('57.00', number_format((float) $dp->tax_amount, 2, '.', ''));
+        $this->assertSame('300.00', $dp->subtotal?->getAmount());
+        $this->assertSame('57.00', $dp->tax_amount?->getAmount());
         $this->assertStringContainsString('§ 14 Abs. 5 UStG', (string) $dp->notes);
     }
 
@@ -110,12 +110,12 @@ final class DownPaymentSettlementTest extends TestCase {
 
         $deductions = $final->items->whereNotNull('settled_invoice_id')->values();
         $this->assertSame([$dp1->id, $dp2->id], $deductions->pluck('settled_invoice_id')->all());
-        $this->assertSame(['-300.00', '-200.00'], $deductions->map(fn($i) => number_format((float) $i->amount, 2, '.', ''))->all());
+        $this->assertSame(['-300.00', '-200.00'], $deductions->map(fn($i) => $i->amount?->getAmount())->all());
 
         // 1000 − 300 − 200 = 500 netto; 19 % darauf = 95 → 595 brutto.
-        $this->assertSame('500.00', number_format((float) $final->subtotal, 2, '.', ''));
-        $this->assertSame('95.00', number_format((float) $final->tax_amount, 2, '.', ''));
-        $this->assertSame('595.00', number_format((float) $final->total, 2, '.', ''));
+        $this->assertSame('500.00', $final->subtotal?->getAmount());
+        $this->assertSame('95.00', $final->tax_amount?->getAmount());
+        $this->assertSame('595.00', $final->total?->getAmount());
         $this->assertStringContainsString($dp1->number, (string) $final->notes);
         $this->assertStringContainsString($dp2->number, (string) $final->notes);
     }
@@ -175,10 +175,10 @@ final class DownPaymentSettlementTest extends TestCase {
         $deductions = $final->items->whereNotNull('settled_invoice_id')->values();
         $this->assertCount(2, $deductions);
         // tax_breakdown ist je Satz aufsteigend sortiert (ksort in recalculate).
-        $this->assertSame(['7.00', '19.00'], $deductions->map(fn($i) => number_format((float) $i->tax_rate, 2, '.', ''))->all());
+        $this->assertSame(['7.00', '19.00'], $deductions->map(fn($i) => $i->tax_rate?->getNumericValue())->all());
         // Netto: 1000 − 100 − 50 = 850; Steuer: 900×19 % + (−50)×7 % = 171,00 − 3,50.
-        $this->assertSame('850.00', number_format((float) $final->subtotal, 2, '.', ''));
-        $this->assertSame('167.50', number_format((float) $final->tax_amount, 2, '.', ''));
+        $this->assertSame('850.00', $final->subtotal?->getAmount());
+        $this->assertSame('167.50', $final->tax_amount?->getAmount());
     }
 
     public function test_store_endpoint_creates_down_payment_and_partial_mark(): void {
@@ -191,7 +191,7 @@ final class DownPaymentSettlementTest extends TestCase {
 
         $dp = Invoice::query()->where('type', Invoice::TYPE_DOWN_PAYMENT)->firstOrFail();
         $response->assertRedirect(route('invoices.show', $dp));
-        $this->assertSame('250.00', number_format((float) $dp->subtotal, 2, '.', ''));
+        $this->assertSame('250.00', $dp->subtotal?->getAmount());
     }
 
     public function test_make_final_endpoint_converts_draft(): void {

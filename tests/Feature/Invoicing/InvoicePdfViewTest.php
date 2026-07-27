@@ -96,7 +96,7 @@ class InvoicePdfViewTest extends TestCase {
     public function test_pdf_view_renders_tax_breakdown_per_rate(): void {
         $invoice = $this->mixedRateInvoice();
 
-        $this->assertSame('26.00', $invoice->tax_amount);
+        $this->assertSame('26.00', $invoice->tax_amount?->getAmount());
 
         $html = view('invoices.pdf', app(InvoicePdfRenderer::class)->viewData($invoice))->render();
 

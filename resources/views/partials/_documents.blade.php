@@ -51,7 +51,7 @@
             'number' => $invoice->number,
             'date' => $invoice->issued_on,
             'status' => $invoice->status,
-            'amount' => (float) $invoice->total,
+            'amount' => $invoice->total?->toFloat() ?? 0.0,
             'currency' => $invoice->currency->value,
             'model' => $invoice,
         ]);
@@ -64,7 +64,7 @@
             'number' => $voucher->voucher_number,
             'date' => $voucher->voucher_date,
             'status' => $voucher->voucher_status,
-            'amount' => (float) $voucher->total_amount,
+            'amount' => ($voucher->total_amount?->toFloat() ?? 0.0),
             'currency' => $voucher->currency->value,
             'model' => $voucher,
         ]);

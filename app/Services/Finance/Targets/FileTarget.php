@@ -119,7 +119,7 @@ class FileTarget implements FacturationTarget {
                 $entry->project->name ?? '',
                 $entry->kind->label(),
                 self::num($item?->quantity),
-                self::num($entry->hourly_rate),
+                self::num($entry->hourly_rate?->toFloat()),
                 self::num($item?->amount),
                 trim((string) $entry->description),
             ], ';');
@@ -167,7 +167,7 @@ class FileTarget implements FacturationTarget {
                 trim((string) $usage->description),
                 self::num($item?->quantity),
                 (string) $usage->unit,
-                self::num($usage->unit_price),
+                self::num($usage->unit_price?->toFloat()),
                 self::num($item?->amount),
                 $usage->timesheet->project->name ?? '',
             ], ';');

@@ -40,7 +40,7 @@ final class SubcontractTest extends TestCase {
         $this->assertSame($supplier->id, $po->supplier_id);
         $line = $po->lines()->firstOrFail();
         $this->assertSame($product->id, $line->article_id);
-        $this->assertSame('5.0000', $line->ordered_qty);
+        $this->assertSame('5.0000', $line->ordered_qty?->getNumericValue());
 
         $fresh = $order->fresh();
         $this->assertSame(ProcurementMode::Subcontract, $fresh->procurement_mode);

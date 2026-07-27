@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\IpAddressCast;
 use App\Enums\Protocol\{ProtocolSignatureMethod, ProtocolSignatureRole};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon $signed_at
  * @property ProtocolSignatureMethod $method
  * @property string|null $signature_image_path
- * @property string|null $ip
+ * @property \CommonToolkit\ValueObjects\IpAddress|null $ip
  * @property string|null $user_agent
  * @property string $hash
  */
@@ -47,6 +48,7 @@ class ProtocolSignature extends Model {
         'role' => ProtocolSignatureRole::class,
         'method' => ProtocolSignatureMethod::class,
         'signed_at' => 'datetime',
+        'ip' => IpAddressCast::class,
     ];
 
     /** @return BelongsTo<Protocol, $this> */

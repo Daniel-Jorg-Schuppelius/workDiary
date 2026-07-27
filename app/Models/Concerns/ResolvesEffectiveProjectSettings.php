@@ -34,24 +34,24 @@ trait ResolvesEffectiveProjectSettings {
      */
     public function effectiveHourlyRate(): ?float {
         if ($this->hourly_rate !== null) {
-            return (float) $this->hourly_rate;
+            return $this->hourly_rate->toFloat();
         }
         if ($this->parent !== null) {
             return $this->parent->effectiveHourlyRate();
         }
 
-        return $this->customer?->hourly_rate !== null ? (float) $this->customer->hourly_rate : null;
+        return $this->customer?->hourly_rate?->toFloat();
     }
 
     public function effectiveInternalRate(): ?float {
         if ($this->internal_rate !== null) {
-            return (float) $this->internal_rate;
+            return $this->internal_rate->toFloat();
         }
         if ($this->parent !== null) {
             return $this->parent->effectiveInternalRate();
         }
 
-        return $this->customer?->internal_rate !== null ? (float) $this->customer->internal_rate : null;
+        return $this->customer?->internal_rate?->toFloat();
     }
 
     public function effectiveBillable(): bool {

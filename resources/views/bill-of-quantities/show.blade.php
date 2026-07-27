@@ -70,11 +70,11 @@
                         @endforeach
                     </td>
                     <td><span class="badge badge-sm badge-ghost">{{ $item->type->label() }}</span></td>
-                    <td class="text-right tabular-nums">{{ $item->quantity !== null ? rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, 3, withThousandsSeparator: true), '0'), ',') : '—' }}</td>
+                    <td class="text-right tabular-nums">{{ $item->quantity !== null ? rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->quantity?->getValue()->toFloat() ?? 0.0), 3, withThousandsSeparator: true), '0'), ',') : '—' }}</td>
                     <td class="text-right tabular-nums">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($item->executedQuantity(), 3, withThousandsSeparator: true), '0'), ',') }}</td>
                     <td class="text-right tabular-nums">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($item->remainingQuantity(), 3, withThousandsSeparator: true), '0'), ',') }}</td>
                     <td>{{ $item->unit ?: '—' }}</td>
-                    <td class="text-right tabular-nums">{{ $item->unit_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->unit_price, 2, withThousandsSeparator: true) : '—' }}</td>
+                    <td class="text-right tabular-nums">{{ $item->unit_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->unit_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) : '—' }}</td>
                     <td><span class="badge badge-sm badge-ghost">{{ $item->status->label() }}</span></td>
                     @if ($canManage)
                         <td>

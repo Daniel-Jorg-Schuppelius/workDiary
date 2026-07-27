@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Enums\Article\{ArticleStatus, ArticleType};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, HasTags, Searchable};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -31,6 +32,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property ArticleType $type
  * @property string $base_unit
  * @property ArticleStatus $status
+ * @property \CommonToolkit\ValueObjects\Money|null $default_purchase_price
+ * @property \CommonToolkit\ValueObjects\Money|null $default_sale_price
  */
 class Article extends Model {
     use Auditable;
@@ -81,8 +84,8 @@ class Article extends Model {
         'serial_required' => 'boolean',
         'shelf_life_required' => 'boolean',
         'serial_scheme' => 'array',
-        'default_purchase_price' => 'decimal:4',
-        'default_sale_price' => 'decimal:4',
+        'default_purchase_price' => MoneyCast::class . ':currency,4',
+        'default_sale_price' => MoneyCast::class . ':currency,4',
     ];
 
     /** @return HasMany<ArticleVariant, $this> */

@@ -22,7 +22,7 @@
 
 @section('content')
 @php
-    $eur = fn($v): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $v, 2, withThousandsSeparator: true) . ' €';
+    $eur = fn($v): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v instanceof \CommonToolkit\ValueObjects\Money ? $v->toFloat() : (float) $v, 2, withThousandsSeparator: true) . ' €';
     $titles = [
         'rework' => __('Nacharbeit — Belege'),
         'goodwill' => __('Kulanz — Belege'),
@@ -143,7 +143,7 @@
                         <tr>
                             <td class="tabular-nums">{{ $usage->timesheet?->work_date?->fdate() ?? '—' }}</td>
                             <td class="max-w-md truncate text-sm">{{ $usage->material->name ?? $usage->description }}</td>
-                            <td class="text-right tabular-nums">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $usage->quantity, 3, withThousandsSeparator: true), '0'), ',') }}</td>
+                            <td class="text-right tabular-nums">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($usage->quantity?->getValue()->toFloat() ?? 0.0, 3, withThousandsSeparator: true), '0'), ',') }}</td>
                             <td>{{ $usage->unit }}</td>
                             <td>{{ $usage->billed ? __('Ja') : __('Nein') }}</td>
                             <td class="text-right tabular-nums">{{ $eur($usage->line_total_net) }}</td>

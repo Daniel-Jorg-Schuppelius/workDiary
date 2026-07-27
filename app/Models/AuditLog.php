@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\IpAddressCast;
 use App\Models\Concerns\{BelongsToOrganization, HashChainable, HashChained};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
@@ -40,6 +41,7 @@ class AuditLog extends Model implements HashChainable {
     /** @var array<string, string> */
     protected $casts = [
         'changes' => 'array',
+        'ip' => IpAddressCast::class,
     ];
 
     /**

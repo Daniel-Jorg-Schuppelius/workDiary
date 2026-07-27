@@ -78,10 +78,10 @@
                 <x-detail-grid.row :label="__('Währung')" :value="$customer->currency->value" />
                 <x-detail-grid.row :label="__('Zeitzone')" :value="$customer->timezone" />
                 @if ($customer->hourly_rate !== null)
-                    <x-detail-grid.row :label="__('Stundensatz')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $customer->hourly_rate, 2, withThousandsSeparator: true).' '.$customer->currency->value" />
+                    <x-detail-grid.row :label="__('Stundensatz')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($customer->hourly_rate?->toFloat() ?? 0.0), 2, withThousandsSeparator: true).' '.$customer->currency->value" />
                 @endif
                 @if ($customer->internal_rate !== null)
-                    <x-detail-grid.row :label="__('Interner Satz')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $customer->internal_rate, 2, withThousandsSeparator: true).' '.$customer->currency->value" />
+                    <x-detail-grid.row :label="__('Interner Satz')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($customer->internal_rate?->toFloat() ?? 0.0), 2, withThousandsSeparator: true).' '.$customer->currency->value" />
                 @endif
             </x-detail-grid>
             @if ($customer->invoice_text)

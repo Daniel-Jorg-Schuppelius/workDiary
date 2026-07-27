@@ -193,8 +193,10 @@ class OrgaMaxTarget implements FacturationTarget {
             }
             /** @var TimeEntry|null $primary */
             $primary = $entriesById->get($block->primaryEntryId);
-            $rate = $block->hourlyRate()
-                ?? (float) ($primary?->hourly_rate ?: $transfer->customer->hourly_rate ?: 0);
+            $fallbackRate = $primary !== null && $primary->hourly_rate !== null
+                ? $primary->hourly_rate
+                : $transfer->customer->hourly_rate;
+            $rate = $block->hourlyRate() ?? $fallbackRate?->toFloat() ?? 0.0;
 
             $positions[] = [
                 'description' => $block->displayName($transfer),
@@ -222,9 +224,9 @@ class OrgaMaxTarget implements FacturationTarget {
 
             $positions[] = [
                 'description' => $name,
-                'quantity' => round((float) $usage->quantity, 2),
+                'quantity' => round(($usage->quantity?->getValue()->toFloat() ?? 0.0), 2),
                 'unit' => $usage->unit !== '' ? (string) $usage->unit : (string) __('invoicing.unit_piece'),
-                'unitPrice' => round((float) ($usage->unit_price ?? 0), 2),
+                'unitPrice' => round($usage->unit_price?->toFloat() ?? 0.0, 2),
             ];
         }
 

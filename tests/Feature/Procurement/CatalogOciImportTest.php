@@ -64,7 +64,7 @@ final class CatalogOciImportTest extends TestCase {
 
         $order = PurchaseOrder::query()->where('supplier_id', $this->supplier->id)->latest('id')->firstOrFail();
         $this->assertSame(2, PurchaseOrderLine::query()->where('purchase_order_id', $order->id)->count());
-        $this->assertSame('10.0000', $order->lines()->orderBy('id')->first()->ordered_qty);
+        $this->assertSame('10.0000', $order->lines()->orderBy('id')->first()->ordered_qty?->getNumericValue());
     }
 
     public function test_oci_cart_reports_unmatched_lines(): void {

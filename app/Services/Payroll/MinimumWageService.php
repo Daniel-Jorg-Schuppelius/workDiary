@@ -38,7 +38,7 @@ class MinimumWageService {
             ->orderByDesc('valid_from')
             ->first(['hourly_amount']);
 
-        return $this->cache[$key] = $row !== null ? (float) $row->hourly_amount : null;
+        return $this->cache[$key] = $row?->hourly_amount?->toFloat();
     }
 
     /**

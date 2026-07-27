@@ -111,17 +111,17 @@
                     <td>{{ $item->position }}</td>
                     <td>{{ $item->description }}</td>
                     <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, 2, withThousandsSeparator: true) }} {{ $item->unit }}</td>
-                    <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->unit_price, 2, withThousandsSeparator: true) }}</td>
+                    <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->unit_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}</td>
                     <td class="text-right tabular-nums">
                         @if ($item->discount_percent !== null)
-                            {{ rtrim(rtrim((string) $item->discount_percent, '0'), '.') }} %
+                            {{ rtrim(rtrim($item->discount_percent?->getNumericValue() ?? '0', '0'), '.') }} %
                         @elseif ($item->discount_amount !== null)
-                            {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->discount_amount, 2, withThousandsSeparator: true) }}
+                            {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->discount_amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}
                         @else
                             —
                         @endif
                     </td>
-                    <td class="text-right tabular-nums">{{ $item->tax_rate !== null ? rtrim(rtrim((string) $item->tax_rate, '0'), '.') . ' %' : __('Standard') }}</td>
+                    <td class="text-right tabular-nums">{{ $item->tax_rate !== null ? rtrim(rtrim($item->tax_rate?->getNumericValue() ?? '0', '0'), '.') . ' %' : __('Standard') }}</td>
                     <td class="text-right">
                         @can(\App\Enums\User\Permission::InvoiceUpdate->value)
                             <div class="flex items-center justify-end gap-1">
@@ -164,7 +164,7 @@
                             —
                         @endif
                     </td>
-                    <td class="text-right tabular-nums">{{ $run->invoice !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $run->invoice->total, 2, withThousandsSeparator: true) . ' ' . $run->invoice->currency->value : '—' }}</td>
+                    <td class="text-right tabular-nums">{{ $run->invoice !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($run->invoice->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) . ' ' . $run->invoice->currency->value : '—' }}</td>
                     <td>{{ $run->invoice?->status ?? '—' }}</td>
                 </tr>
             @empty

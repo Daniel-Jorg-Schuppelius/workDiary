@@ -217,9 +217,9 @@ class BillingReportController extends Controller {
                 $result[$st] = ['count' => 0, 'subtotal' => 0.0, 'tax' => 0.0, 'total' => 0.0];
             }
             $result[$st]['count']++;
-            $result[$st]['subtotal'] += (float) $inv->subtotal;
-            $result[$st]['tax'] += (float) $inv->tax_amount;
-            $result[$st]['total'] += (float) $inv->total;
+            $result[$st]['subtotal'] += ($inv->subtotal?->toFloat() ?? 0.0);
+            $result[$st]['tax'] += ($inv->tax_amount?->toFloat() ?? 0.0);
+            $result[$st]['total'] += ($inv->total?->toFloat() ?? 0.0);
         }
 
         return $result;
@@ -250,7 +250,7 @@ class BillingReportController extends Controller {
 
         $openTotal = 0.0;
         foreach ($invoices as $inv) {
-            $total = (float) $inv->total;
+            $total = ($inv->total?->toFloat() ?? 0.0);
             $openTotal += $total;
             $reference = $inv->due_on ?? $inv->issued_on;
             if ($reference === null) {
@@ -296,7 +296,7 @@ class BillingReportController extends Controller {
                 $agg[$cid] = ['count' => 0, 'total' => 0.0];
             }
             $agg[$cid]['count']++;
-            $agg[$cid]['total'] += (float) $inv->total;
+            $agg[$cid]['total'] += ($inv->total?->toFloat() ?? 0.0);
         }
 
         if ($agg === []) {
@@ -342,7 +342,7 @@ class BillingReportController extends Controller {
             $minutes += (int) $e->minutes;
             // TimeEntry.rate (kanonischer Abrechnungs-Snapshot vom RateCalculator) summieren
             // statt neu zu rechnen — vermeidet Rundungs-/Tarif-Drift.
-            $revenue += (float) $e->rate;
+            $revenue += ($e->rate?->toFloat() ?? 0.0);
         }
 
         return [

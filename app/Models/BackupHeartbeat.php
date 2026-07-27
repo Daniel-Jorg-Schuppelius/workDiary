@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\{ByteSizeCast, IpAddressCast};
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -17,10 +18,10 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @property int $id
  * @property \Carbon\CarbonImmutable $occurred_at
- * @property int|null $size_bytes
+ * @property \CommonToolkit\ValueObjects\ByteSize|null $size_bytes
  * @property string|null $manifest_hash
  * @property string|null $source
- * @property string|null $ip
+ * @property \CommonToolkit\ValueObjects\IpAddress|null $ip
  */
 class BackupHeartbeat extends Model {
     protected $table = 'backup_heartbeats';
@@ -36,6 +37,7 @@ class BackupHeartbeat extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'occurred_at' => 'immutable_datetime',
-        'size_bytes' => 'integer',
+        'size_bytes' => ByteSizeCast::class,
+        'ip' => IpAddressCast::class,
     ];
 }

@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Enums\Numbering\NumberScope;
 use App\Enums\Project\ProjectStatus;
 use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasClassifications, HasCommunicationNotes, HasContactAndBankDetails, HasSequentialNumber, HasSqid, HasTags, Searchable};
@@ -45,8 +46,8 @@ use Illuminate\Support\Carbon;
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property string|null $timezone
  * @property string|null $color
- * @property string|null $hourly_rate
- * @property string|null $internal_rate
+ * @property \CommonToolkit\ValueObjects\Money|null $hourly_rate
+ * @property \CommonToolkit\ValueObjects\Money|null $internal_rate
  * @property string|null $comment
  * @property string|null $invoice_text
  * @property string|null $bank_account_holder
@@ -131,8 +132,8 @@ class Customer extends Model {
         'billable' => 'boolean',
         'billing_mode' => \App\Enums\Finance\BillingMode::class,
         'archived_at' => 'datetime',
-        'hourly_rate' => 'decimal:2',
-        'internal_rate' => 'decimal:2',
+        'hourly_rate' => MoneyCast::class . ':currency,2',
+        'internal_rate' => MoneyCast::class . ':currency,2',
         'billing_increment_minutes' => 'integer',
         'billing_grouping_gap_minutes' => 'integer',
         'travel_settings' => 'array',

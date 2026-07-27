@@ -172,7 +172,7 @@ class GlobalSearchService {
                         'id' => $e->id,
                         'title' => $e->vendor ?: ($e->description ?: (string) __('Spese #:id', ['id' => $e->id])),
                         'subtitle' => $e->date->format('d.m.Y')
-                            . ' · ' . NumberHelper::toGermanFormat((float) $e->amount_gross, 2, withThousandsSeparator: true) . ' €',
+                            . ' · ' . NumberHelper::toGermanFormat(($e->amount_gross?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) . ' €',
                         'url' => route('expenses.show', $e),
                     ])
                     ->all());

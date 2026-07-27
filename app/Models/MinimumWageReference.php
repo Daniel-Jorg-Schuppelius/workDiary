@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Support\Carbon;
 
@@ -20,7 +21,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property string $country
  * @property Carbon $valid_from
- * @property string $monthly_amount
+ * @property \CommonToolkit\ValueObjects\Money|null $monthly_amount
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property string $source
  */
@@ -37,7 +38,7 @@ class MinimumWageReference extends Model {
     protected $casts = [
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'valid_from' => 'date',
-        'monthly_amount' => 'decimal:2',
+        'monthly_amount' => MoneyCast::class . ':currency,2',
     ];
 
     /**

@@ -12,7 +12,7 @@ namespace App\Services\Invoicing;
 
 use App\Models\Invoice;
 use CommonToolkit\Enums\CurrencyCode;
-use CommonToolkit\ValueObjects\Money;
+use CommonToolkit\ValueObjects\{Money, Percentage};
 
 /**
  * Zentrale Summenlogik (MVP-416): Positionsrabatt → Zeilennetto,
@@ -25,11 +25,12 @@ use CommonToolkit\ValueObjects\Money;
  */
 class InvoiceTotalsCalculator {
     /** Zeilennetto: Menge × Preis, dann Rabatt (Prozent XOR Betrag). */
-    public static function lineNet(float $quantity, Money|string|float $unitPrice, ?float $discountPercent, Money|string|float|null $discountAmount, CurrencyCode $currency = CurrencyCode::Euro): Money {
+    public static function lineNet(float $quantity, Money|string|float|null $unitPrice, Percentage|float|null $discountPercent, Money|string|float|null $discountAmount, CurrencyCode $currency = CurrencyCode::Euro): Money {
         $base = self::money($unitPrice, $currency)->times($quantity);
 
-        if ($discountPercent !== null && $discountPercent > 0) {
-            return $base->minusPercentage($discountPercent);
+        $percent = self::percent($discountPercent);
+        if ($percent !== null && $percent->isPositive()) {
+            return $percent->subtractFrom($base);
         }
 
         $discount = $discountAmount !== null ? self::money($discountAmount, $currency) : null;
@@ -58,8 +59,8 @@ class InvoiceTotalsCalculator {
 
         $byRate = [];
         foreach ($invoice->items as $item) {
-            $rate = $item->tax_rate !== null ? (float) $item->tax_rate : (float) $invoice->tax_rate;
-            $key = number_format($rate, 2, '.', '');
+            $rate = self::percent($item->tax_rate) ?? self::percent($invoice->tax_rate);
+            $key = number_format($rate !== null ? (float) $rate->getNumericValue() : 0.0, 2, '.', '');
             $net = self::money($item->amount, $currency);
             $byRate[$key] = isset($byRate[$key]) ? $byRate[$key]->plus($net) : $net;
         }
@@ -107,9 +108,9 @@ class InvoiceTotalsCalculator {
         $currency = $lineNetSum->getCurrency();
         $zero = Money::zero($currency);
 
-        $percent = $invoice->discount_percent !== null ? (float) $invoice->discount_percent : null;
-        if ($percent !== null && $percent > 0) {
-            return $lineNetSum->percentage($percent);
+        $percent = self::percent($invoice->discount_percent);
+        if ($percent !== null && $percent->isPositive()) {
+            return $percent->amountOf($lineNetSum);
         }
 
         $amount = $invoice->discount_amount !== null ? self::money($invoice->discount_amount, $currency) : null;
@@ -151,5 +152,14 @@ class InvoiceTotalsCalculator {
         }
 
         return $value === null ? Money::zero($currency) : Money::of((string) $value, $currency);
+    }
+
+    /** Rohwert (Spaltenstring, Prozentsatz als Zahl) auf Percentage; null bleibt null. */
+    private static function percent(Percentage|string|float|int|null $value): ?Percentage {
+        if ($value instanceof Percentage || $value === null) {
+            return $value;
+        }
+
+        return Percentage::tryFrom((string) $value);
     }
 }

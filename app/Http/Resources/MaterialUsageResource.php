@@ -29,9 +29,9 @@ class MaterialUsageResource extends JsonResource {
             'description' => $this->description,
             'quantity' => (string) $this->quantity,
             'unit' => $this->unit,
-            'unit_price' => $this->unit_price !== null ? (string) $this->unit_price : null,
-            'tax_rate' => $this->tax_rate !== null ? (string) $this->tax_rate : null,
-            'line_total_net' => (string) $this->line_total_net,
+            'unit_price' => $this->unit_price?->getAmount(),
+            'tax_rate' => $this->tax_rate?->getNumericValue(),
+            'line_total_net' => $this->line_total_net?->getAmount(),
             'created_at' => optional($this->created_at)->toIso8601String(),
         ];
     }

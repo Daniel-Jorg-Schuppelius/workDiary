@@ -422,7 +422,7 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $this->assertArrayHasKey($filterKey, $log->changes['filters'] ?? []);
         $this->assertSame($filterValue, $log->changes['filters'][$filterKey] ?? null);
         $this->assertTrue(is_string($log->changes['filter_hash'] ?? null));
-        $this->assertSame('127.0.0.1', $log->ip);
+        $this->assertSame('127.0.0.1', $log->ip?->getValue());
         $this->assertTrue(is_string($log->user_agent));
     }
 

@@ -152,9 +152,9 @@ class XRechnungGenerator {
             $warnings[] = (string) __('invoicing.einvoice.warning.missing_bic');
         }
 
-        // Steuersatz: die Rechnung trägt genau einen Satz; 0 % ist gültig (Z/E).
-        // (NULL wird durch den String-Cast zu '' — beides fällt hier durch.)
-        if (trim((string) $invoice->tax_rate) === '') {
+        // Steuersatz: die Rechnung trägt genau einen Satz; 0 % ist gültig (Z/E),
+        // nur ein fehlender Satz ist ein Fehler.
+        if ($invoice->tax_rate === null) {
             $errors[] = (string) __('invoicing.einvoice.error.missing_tax_rate');
         }
 
@@ -169,15 +169,15 @@ class XRechnungGenerator {
             $builderLineSum = Money::sum($invoice->items->map(
                 fn (InvoiceItem $i): Money => \App\Services\Invoicing\InvoiceTotalsCalculator::lineNet(
                     (float) $i->quantity,
-                    (string) $i->unit_price,
-                    $i->discount_percent !== null ? (float) $i->discount_percent : null,
-                    $i->discount_amount !== null ? (string) $i->discount_amount : null,
+                    $i->unit_price,
+                    $i->discount_percent,
+                    $i->discount_amount,
                     $documentCurrency,
                 ),
             )->all(), $documentCurrency);
-            $subtotal = Money::of((string) $invoice->subtotal, $documentCurrency);
-            $total = Money::of((string) $invoice->total, $documentCurrency);
-            $taxAmount = Money::of((string) $invoice->tax_amount, $documentCurrency);
+            $subtotal = $invoice->subtotal ?? Money::zero($documentCurrency);
+            $total = $invoice->total ?? Money::zero($documentCurrency);
+            $taxAmount = $invoice->tax_amount ?? Money::zero($documentCurrency);
             // Money rechnet exakt — Abweichung heißt Abweichung, keine Toleranz.
             if (
                 !$totals['subtotal']->equals($subtotal)
@@ -280,7 +280,7 @@ class XRechnungGenerator {
         $customer = $invoice->customer;
         $currency = $invoice->currency ?? CurrencyCode::Euro;
         $category = $this->taxCategory($invoice, $seller);
-        $taxRate = (float) $invoice->tax_rate;
+        $taxRate = $invoice->tax_rate !== null ? (float) $invoice->tax_rate->getNumericValue() : 0.0;
 
         $issuedOn = $invoice->issued_on ?? now();
         $dueOn = $invoice->due_on ?? $issuedOn->copy()->addDays($seller['payment_terms_days']);
@@ -349,7 +349,7 @@ class XRechnungGenerator {
             // zusätzlich in BT-154 (Description).
             $description = trim((string) $item->description);
             $name = Str::limit($description !== '' ? $description : (string) __('invoicing.service'), 100, '…');
-            $itemRate = $item->tax_rate !== null ? (float) $item->tax_rate : $taxRate;
+            $itemRate = $item->tax_rate !== null ? (float) $item->tax_rate->getNumericValue() : $taxRate;
             $itemCategory = $this->itemTaxCategory($item, $category);
 
             // MVP-416: Zeilen mit Rabatt als InvoiceLine mit Line-Allowance (BG-27):
@@ -361,16 +361,16 @@ class XRechnungGenerator {
                 id: (string) $lineNo,
                 quantity: (float) $item->quantity,
                 unitCode: $this->unitCode((string) $item->unit),
-                netAmount: Money::of((string) $item->amount, $currency),
+                netAmount: $item->amount ?? Money::zero($currency),
                 itemName: $name,
-                unitPrice: Money::of((string) $item->unit_price, $currency),
+                unitPrice: $item->unit_price?->withScale(2) ?? Money::zero($currency),
                 taxCategory: $itemCategory,
                 taxPercent: $itemRate,
                 itemDescription: mb_strlen($description) > 100 ? $description : null,
             );
-            $lineDiscount = Money::of((string) $item->unit_price, $currency)
+            $lineDiscount = ($item->unit_price?->withScale(2) ?? Money::zero($currency))
                 ->times((float) $item->quantity)
-                ->minus(Money::of((string) $item->amount, $currency));
+                ->minus($item->amount ?? Money::zero($currency));
             if ($lineDiscount->isPositive()) {
                 $line->addAllowanceCharge(\ERechnungToolkit\Entities\AllowanceCharge::discount(
                     $lineDiscount,
@@ -391,7 +391,7 @@ class XRechnungGenerator {
         if ($totals['document_discount']->isPositive()) {
             $categoriesByRate = [];
             foreach ($invoice->items as $item) {
-                $rateKey = number_format($item->tax_rate !== null ? (float) $item->tax_rate : $taxRate, 2, '.', '');
+                $rateKey = number_format($item->tax_rate !== null ? (float) $item->tax_rate->getNumericValue() : $taxRate, 2, '.', '');
                 $categoriesByRate[$rateKey] ??= $this->itemTaxCategory($item, $category);
             }
             foreach ($totals['by_rate'] as $rateKey => $group) {
@@ -491,7 +491,7 @@ class XRechnungGenerator {
             return $fromContext;
         }
 
-        return (float) $invoice->tax_rate > 0 ? TaxCategory::STANDARD : TaxCategory::ZERO_RATED;
+        return $invoice->tax_rate !== null && $invoice->tax_rate->isPositive() ? TaxCategory::STANDARD : TaxCategory::ZERO_RATED;
     }
 
     /** Positions-Kategorie (D6): expliziter Positions-Code vor Kopf-Kategorie. */
@@ -512,14 +512,16 @@ class XRechnungGenerator {
      */
     private function paymentTerms(Invoice $invoice, int $netDays): PaymentTerms {
         if ($invoice->hasSkonto()) {
+            $skontoPercent = $invoice->skonto_percent !== null ? (float) $invoice->skonto_percent->getNumericValue() : 0.0;
+
             return new PaymentTerms(
                 note: sprintf(
                     '#SKONTO#TAGE=%d#PROZENT=%s#',
                     (int) $invoice->skonto_days,
-                    number_format((float) $invoice->skonto_percent, 2, '.', ''),
+                    number_format($skontoPercent, 2, '.', ''),
                 ),
                 netPaymentDays: $netDays,
-                discountPercent: (float) $invoice->skonto_percent,
+                discountPercent: $skontoPercent,
                 discountDays: (int) $invoice->skonto_days,
             );
         }

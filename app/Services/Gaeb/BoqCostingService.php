@@ -35,8 +35,8 @@ class BoqCostingService {
                 continue;
             }
 
-            $unitPrice = (float) $item->unit_price;
-            $planned += (float) $item->quantity * $unitPrice;
+            $unitPrice = $item->unit_price->toFloat();
+            $planned += ($item->quantity?->getValue()->toFloat() ?? 0.0)* $unitPrice;
             $executed += $item->executedQuantity() * $unitPrice;
         }
 

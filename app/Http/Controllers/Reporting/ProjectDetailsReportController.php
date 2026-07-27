@@ -140,15 +140,15 @@ class ProjectDetailsReportController extends Controller {
             $month = (int) Carbon::parse((string) $e->date)->month;
             $monthMatrix[$month] = [
                 'minutes' => (int) ($monthMatrix[$month]['minutes'] ?? 0) + (int) $e->minutes,
-                'rate' => (float) ($monthMatrix[$month]['rate'] ?? 0.0) + (float) $e->rate,
+                'rate' => (float) ($monthMatrix[$month]['rate'] ?? 0.0) + ($e->rate?->toFloat() ?? 0.0),
             ];
             $uid = (int) $e->user_id;
             $byUser[$uid] = [
                 'minutes' => (int) ($byUser[$uid]['minutes'] ?? 0) + (int) $e->minutes,
-                'rate' => (float) ($byUser[$uid]['rate'] ?? 0.0) + (float) $e->rate,
+                'rate' => (float) ($byUser[$uid]['rate'] ?? 0.0) + ($e->rate?->toFloat() ?? 0.0),
             ];
             $yearMinutes += (int) $e->minutes;
-            $yearRate += (float) $e->rate;
+            $yearRate += ($e->rate?->toFloat() ?? 0.0);
         }
 
         return ['monthMatrix' => $monthMatrix, 'byUser' => $byUser, 'yearMinutes' => $yearMinutes, 'yearRate' => $yearRate];

@@ -39,9 +39,9 @@
                 @foreach($timesheet->materialUsages as $u)
                     <tr>
                         <td>{{ $u->description }}</td>
-                        <td class="text-right">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float)$u->quantity, 3, withThousandsSeparator: true), '0'), ',') }}</td>
+                        <td class="text-right">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($u->quantity?->getValue()->toFloat() ?? 0.0), 3, withThousandsSeparator: true), '0'), ',') }}</td>
                         <td>{{ $u->unit }}</td>
-                        <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float)$u->line_total_net, 2, withThousandsSeparator: true) }} €</td>
+                        <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($u->line_total_net?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} €</td>
                     </tr>
                 @endforeach
             </x-table>

@@ -142,8 +142,8 @@ class PayrollTest extends TestCase {
             ->post(route('payroll.raise-to-minimum'))
             ->assertRedirect(route('payroll.index'));
 
-        $this->assertSame('12.82', (string) $low->fresh()->payroll_hourly_wage);
-        $this->assertSame('15.00', (string) $ok->fresh()->payroll_hourly_wage);
+        $this->assertSame('12.82', $low->fresh()->payroll_hourly_wage?->getAmount());
+        $this->assertSame('15.00', $ok->fresh()->payroll_hourly_wage?->getAmount());
     }
 
     public function test_raise_single_user(): void {
@@ -155,8 +155,8 @@ class PayrollTest extends TestCase {
             ->post(route('payroll.raise-to-minimum'), ['user' => \App\Support\Sqid::encode(User::class, $a->id)])
             ->assertRedirect();
 
-        $this->assertSame('12.82', (string) $a->fresh()->payroll_hourly_wage);
-        $this->assertSame('11.00', (string) $b->fresh()->payroll_hourly_wage); // unverändert
+        $this->assertSame('12.82', $a->fresh()->payroll_hourly_wage?->getAmount());
+        $this->assertSame('11.00', $b->fresh()->payroll_hourly_wage?->getAmount()); // unverändert
     }
 
     // ── Beschäftigungsart + Plausibilität ─────────────────────────────────────

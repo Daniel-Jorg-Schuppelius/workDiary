@@ -77,7 +77,7 @@ class OrgMemberTest extends TestCase {
                 'name' => 'Neue Person',
                 'personnel_number' => 'P-1001',
                 'payroll_hourly_wage' => '22.50',
-                'tax_identification_number' => '12345678901',
+                'tax_identification_number' => '86095742719',
                 'social_security_number' => '12 010170 A 123',
                 'date_of_birth' => '1990-01-15',
                 'health_insurance' => 'Techniker Krankenkasse',
@@ -97,8 +97,8 @@ class OrgMemberTest extends TestCase {
         $this->assertSame($this->organization->id, $new->organization_id);
         $this->assertSame('P-1001', $new->personnel_number);
         // Admin hält user.payroll.manage → darf den Stundenlohn setzen.
-        $this->assertSame('22.50', (string) $new->payroll_hourly_wage);
-        $this->assertSame('12345678901', $new->tax_identification_number);
+        $this->assertSame('22.50', $new->payroll_hourly_wage?->getAmount());
+        $this->assertSame('86095742719', $new->tax_identification_number);
         $this->assertSame('12 010170 A 123', $new->social_security_number);
         $this->assertSame('1990-01-15', $new->date_of_birth?->format('Y-m-d'));
         $this->assertSame('Techniker Krankenkasse', $new->health_insurance);
@@ -189,7 +189,7 @@ class OrgMemberTest extends TestCase {
 
         $this->assertSame('Geändert', $member->fresh()->name);
         $this->assertSame('P-2002', $member->fresh()->personnel_number);
-        $this->assertSame('25.00', (string) $member->fresh()->payroll_hourly_wage);
+        $this->assertSame('25.00', $member->fresh()->payroll_hourly_wage?->getAmount());
         $this->assertSame('98765432109', $member->fresh()->tax_identification_number);
         $this->assertSame('1985-05-20', $member->fresh()->date_of_birth?->format('Y-m-d'));
         $this->assertSame('2025-01-01', $member->fresh()->employment_start_date?->format('Y-m-d'));
@@ -219,7 +219,7 @@ class OrgMemberTest extends TestCase {
 
         $member->refresh();
         // Voller Payroll-Block editierbar (inkl. Lohn).
-        $this->assertSame('24.75', (string) $member->payroll_hourly_wage);
+        $this->assertSame('24.75', $member->payroll_hourly_wage?->getAmount());
         $this->assertSame('11111111111', $member->tax_identification_number);
         // Identität/Rolle unverändert.
         $this->assertSame($originalName, $member->name);
@@ -268,7 +268,7 @@ class OrgMemberTest extends TestCase {
             ->assertRedirect(route('org.members.index'));
 
         $member->refresh();
-        $this->assertSame('19.90', (string) $member->payroll_hourly_wage);
+        $this->assertSame('19.90', $member->payroll_hourly_wage?->getAmount());
         $this->assertSame('3', $member->tax_class);
         $this->assertSame($originalName, $member->name);
         $this->assertTrue($member->hasRole(UserRole::User->value));

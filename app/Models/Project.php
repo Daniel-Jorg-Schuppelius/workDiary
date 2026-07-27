@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Enums\Diary\LocationMode;
 use App\Enums\Project\ProjectStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasCommunicationNotes, HasSqid, ResolvesEffectiveProjectSettings};
@@ -37,10 +38,10 @@ use Illuminate\Support\{Carbon, Collection};
  * @property Carbon|null $ends_on
  * @property Carbon|null $archived_at
  * @property int|null $created_by
- * @property string|null $hourly_rate
- * @property string|null $internal_rate
+ * @property \CommonToolkit\ValueObjects\Money|null $hourly_rate
+ * @property \CommonToolkit\ValueObjects\Money|null $internal_rate
  * @property int|null $time_budget
- * @property string|null $budget
+ * @property \CommonToolkit\ValueObjects\Money|null $budget
  * @property string|null $budget_type
  * @property bool|null $billable
  * @property bool|null $weather_auto_fetch
@@ -100,9 +101,9 @@ class Project extends Model {
         'starts_on' => 'date',
         'ends_on' => 'date',
         'archived_at' => 'datetime',
-        'hourly_rate' => 'decimal:2',
-        'internal_rate' => 'decimal:2',
-        'budget' => 'decimal:2',
+        'hourly_rate' => MoneyCast::class . ':currency,2',
+        'internal_rate' => MoneyCast::class . ':currency,2',
+        'budget' => MoneyCast::class . ':currency,2',
         'time_budget' => 'integer',
         'billing_increment_minutes' => 'integer',
         'billing_grouping_gap_minutes' => 'integer',

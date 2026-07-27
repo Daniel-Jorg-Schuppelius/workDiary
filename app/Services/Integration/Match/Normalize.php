@@ -25,8 +25,14 @@ final class Normalize {
     }
 
     /** Wie text(), aber ohne jegliche Leerzeichen (für IDs/Nummern/PLZ/USt-IdNr.). */
-    public static function id(?string $value): string {
-        return (string) preg_replace('/\s+/', '', mb_strtolower(trim((string) $value)));
+    public static function id(mixed $value): string {
+        // Value Objects (Iban, VatNumber, Gtin, …) tragen ihre Kennung in
+        // getValue() — ohne diese Entnahme verglichen Matcher leere Strings.
+        if (is_object($value) && method_exists($value, 'getValue')) {
+            $value = $value->getValue();
+        }
+
+        return (string) preg_replace('/\s+/', '', mb_strtolower(trim(is_scalar($value) ? (string) $value : '')));
     }
 
     /** Ähnlichkeit zweier Strings als 0..1-Score (similar_text). */

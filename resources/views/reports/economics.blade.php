@@ -13,8 +13,8 @@
 
 @section('content')
 @php
-    $eur = fn($v): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $v, 2, withThousandsSeparator: true) . ' €';
-    $pct = fn($v): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $v, 2, withThousandsSeparator: true) . ' %';
+    $eur = fn($v): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v instanceof \CommonToolkit\ValueObjects\Money ? $v->toFloat() : (float) $v, 2, withThousandsSeparator: true) . ' €';
+    $pct = fn($v): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v instanceof \CommonToolkit\ValueObjects\Money ? $v->toFloat() : (float) $v, 2, withThousandsSeparator: true) . ' %';
     $min = fn($v): string => $v === null ? '–' : (string) $v;
     $signEur = fn($v): string => ($v > 0 ? '+' : '') . \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $v, 2, withThousandsSeparator: true) . ' €';
     $contribTone = fn($v): string => $v < 0 ? 'text-error' : ($v > 0 ? 'text-success' : '');

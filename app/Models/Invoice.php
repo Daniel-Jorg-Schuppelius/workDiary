@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\{MoneyCast, PercentageCast};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
@@ -39,10 +40,14 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $sent_at
  * @property int $sent_count
  * @property \CommonToolkit\Enums\CurrencyCode $currency
- * @property string $subtotal
- * @property string $tax_rate
- * @property string $tax_amount
- * @property string $total
+ * @property Money|null $subtotal
+ * @property \CommonToolkit\ValueObjects\Percentage|null $tax_rate
+ * @property Money|null $tax_amount
+ * @property Money|null $total
+ * @property \CommonToolkit\ValueObjects\Percentage|null $discount_percent
+ * @property Money|null $discount_amount
+ * @property \CommonToolkit\ValueObjects\Percentage|null $skonto_percent
+ * @property int|null $skonto_days
  * @property string|null $notes
  * @property int|null $created_by
  * @property Carbon|null $created_at
@@ -177,14 +182,14 @@ class Invoice extends Model {
         'cancelled_at' => 'datetime',
         'sent_at' => 'datetime',
         'sent_count' => 'integer',
-        'subtotal' => 'decimal:2',
-        'discount_percent' => 'decimal:2',
-        'discount_amount' => 'decimal:2',
-        'tax_rate' => 'decimal:2',
-        'tax_amount' => 'decimal:2',
-        'total' => 'decimal:2',
+        'subtotal' => MoneyCast::class . ':currency',
+        'discount_percent' => PercentageCast::class . ':2',
+        'discount_amount' => MoneyCast::class . ':currency',
+        'tax_rate' => PercentageCast::class . ':2',
+        'tax_amount' => MoneyCast::class . ':currency',
+        'total' => MoneyCast::class . ':currency',
         'tax_context' => 'array',
-        'skonto_percent' => 'decimal:2',
+        'skonto_percent' => PercentageCast::class . ':2',
         'skonto_days' => 'integer',
     ];
 
@@ -244,23 +249,29 @@ class Invoice extends Model {
             ];
         }
 
-        $this->subtotal = $totals['subtotal']->getAmount();
-        $this->tax_amount = $totals['tax_amount']->getAmount();
-        $this->total = $totals['total']->getAmount();
+        $this->subtotal = $totals['subtotal'];
+        $this->tax_amount = $totals['tax_amount'];
+        $this->total = $totals['total'];
         $this->tax_breakdown = $breakdown;
+    }
+
+    /** Belegwährung, mit Euro als Rückfall für Altbestand ohne gesetzte Währung. */
+    public function currencyCode(): CurrencyCode {
+        return $this->currency ?? CurrencyCode::Euro;
     }
 
     /** Positionssumme vor Belegrabatt (MVP-416). */
     public function lineSubtotal(): Money {
-        return Money::of((string) $this->subtotal, $this->currency ?? CurrencyCode::Euro)
-            ->plus($this->documentDiscountTotal());
+        $subtotal = $this->subtotal ?? Money::zero($this->currencyCode());
+
+        return $subtotal->plus($this->documentDiscountTotal());
     }
 
     /** Belegrabatt in Belegwährung (Prozent XOR Betrag), 0 ohne Rabatt. */
     public function documentDiscountTotal(): Money {
-        $currency = $this->currency ?? CurrencyCode::Euro;
+        $currency = $this->currencyCode();
         $lineNetSum = Money::sum(
-            $this->items->map(fn (InvoiceItem $i): Money => Money::of((string) $i->amount, $currency))->all(),
+            $this->items->map(fn (InvoiceItem $i): Money => $i->amount ?? Money::zero($currency))->all(),
             $currency
         );
 
@@ -269,13 +280,17 @@ class Invoice extends Model {
 
     /** Skonto-Kondition vollständig hinterlegt? */
     public function hasSkonto(): bool {
-        return $this->skonto_percent !== null && (float) $this->skonto_percent > 0
+        return $this->skonto_percent !== null && $this->skonto_percent->isPositive()
             && $this->skonto_days !== null && (int) $this->skonto_days > 0;
     }
 
-    /** Skontobetrag auf den Bruttobetrag (2 NK). */
-    public function skontoAmount(): float {
-        return $this->hasSkonto() ? round((float) $this->total * ((float) $this->skonto_percent) / 100, 2) : 0.0;
+    /** Skontobetrag auf den Bruttobetrag. */
+    public function skontoAmount(): Money {
+        $total = $this->total ?? Money::zero($this->currencyCode());
+
+        return $this->hasSkonto() && $this->skonto_percent !== null
+            ? $this->skonto_percent->amountOf($total)
+            : Money::zero($this->currencyCode());
     }
 
     /** Skonto-Frist ab Rechnungsdatum; null ohne Kondition oder vor Ausstellung. */

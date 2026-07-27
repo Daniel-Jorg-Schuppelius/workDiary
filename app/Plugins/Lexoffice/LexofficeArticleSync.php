@@ -350,10 +350,10 @@ class LexofficeArticleSync {
             'note' => $article->note,
             'unitName' => $article->unit_name,
             'price' => array_filter([
-                'netPrice' => $article->net_unit_price !== null ? (float) $article->net_unit_price : null,
-                'grossPrice' => $article->gross_unit_price !== null ? (float) $article->gross_unit_price : null,
+                'netPrice' => $article->net_unit_price?->toFloat(),
+                'grossPrice' => $article->gross_unit_price?->toFloat(),
                 'currency' => $article->currency->value,
-                'taxRate' => $article->vat_rate !== null ? (float) $article->vat_rate : null,
+                'taxRate' => $article->vat_rate !== null ? (float) $article->vat_rate->getNumericValue() : null,
                 'leadingPrice' => $article->leading_price ?: 'NET',
             ], static fn($v) => $v !== null),
         ], static fn($v) => $v !== null && $v !== '');

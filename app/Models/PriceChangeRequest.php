@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\{MoneyCast, PercentageCast};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -26,9 +27,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $supplier_catalog_item_id
  * @property int $article_id
  * @property int|null $pricing_margin_rule_id
- * @property numeric-string $purchase_price_snapshot
- * @property numeric-string $suggested_price
- * @property numeric-string $margin_snapshot
+ * @property \CommonToolkit\ValueObjects\Money|null $purchase_price_snapshot
+ * @property \CommonToolkit\ValueObjects\Money|null $suggested_price
+ * @property \CommonToolkit\ValueObjects\Percentage|null $margin_snapshot
  * @property string $status
  * @property int $requested_by
  * @property int|null $decided_by
@@ -67,9 +68,9 @@ class PriceChangeRequest extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
-        'purchase_price_snapshot' => 'decimal:4',
-        'suggested_price' => 'decimal:4',
-        'margin_snapshot' => 'decimal:3',
+        'purchase_price_snapshot' => MoneyCast::class . ':currency,4',
+        'suggested_price' => MoneyCast::class . ':currency,4',
+        'margin_snapshot' => PercentageCast::class . ':3',
         'decided_at' => 'datetime',
     ];
 

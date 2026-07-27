@@ -60,9 +60,9 @@ class ManualInvoiceItemTest extends TestCase {
 
         $invoice->refresh();
         $this->assertSame(1, $invoice->items()->count());
-        $this->assertSame('300.00', $invoice->subtotal);
-        $this->assertSame('57.00', $invoice->tax_amount);
-        $this->assertSame('357.00', $invoice->total);
+        $this->assertSame('300.00', $invoice->subtotal?->getAmount());
+        $this->assertSame('57.00', $invoice->tax_amount?->getAmount());
+        $this->assertSame('357.00', $invoice->total?->getAmount());
     }
 
     public function test_update_item_recalculates_totals(): void {
@@ -89,7 +89,7 @@ class ManualInvoiceItemTest extends TestCase {
             ->assertRedirect();
 
         $invoice->refresh();
-        $this->assertSame('150.00', $invoice->subtotal);
+        $this->assertSame('150.00', $invoice->subtotal?->getAmount());
         $this->assertSame('Foo angepasst', $invoice->items()->first()?->description);
     }
 
@@ -106,7 +106,7 @@ class ManualInvoiceItemTest extends TestCase {
         $invoice->load('items');
         $invoice->recalculate();
         $invoice->save();
-        $this->assertSame('200.00', $invoice->subtotal);
+        $this->assertSame('200.00', $invoice->subtotal?->getAmount());
 
         $this->actingAs($this->admin)
             ->delete(route('invoices.items.destroy', [$invoice, $item]))
@@ -114,8 +114,8 @@ class ManualInvoiceItemTest extends TestCase {
 
         $invoice->refresh();
         $this->assertSame(0, $invoice->items()->count());
-        $this->assertSame('0.00', $invoice->subtotal);
-        $this->assertSame('0.00', $invoice->total);
+        $this->assertSame('0.00', $invoice->subtotal?->getAmount());
+        $this->assertSame('0.00', $invoice->total?->getAmount());
     }
 
     public function test_cannot_add_item_to_issued_invoice(): void {

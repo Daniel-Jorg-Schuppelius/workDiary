@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Models\Concerns\BelongsToOrganization;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Database\Eloquent\Model;
@@ -31,7 +32,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $channel
  * @property int $state
  * @property CurrencyCode|null $currency
- * @property string $total_gross
+ * @property \CommonToolkit\ValueObjects\Money|null $total_gross
  * @property array<string, mixed>|null $buyer
  * @property array<int, mixed>|null $items
  * @property array<string, mixed>|null $raw
@@ -69,7 +70,7 @@ class BillbeeOrder extends Model {
     protected $casts = [
         'state' => 'integer',
         'currency' => CurrencyCode::class,
-        'total_gross' => 'decimal:2',
+        'total_gross' => MoneyCast::class . ':currency,2',
         'buyer' => 'array',
         'items' => 'array',
         'raw' => 'array',

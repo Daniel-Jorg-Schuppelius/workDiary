@@ -567,8 +567,8 @@
                             @foreach ($materialUsages as $usage)
                                 <tr>
                                     <td>{{ $usage->description }}</td>
-                                    <td>{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $usage->quantity, 3, withThousandsSeparator: true) }} {{ $usage->unit }}</td>
-                                    <td>{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $usage->line_total_net, 2, withThousandsSeparator: true) }} €</td>
+                                    <td>{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($usage->quantity?->getValue()->toFloat() ?? 0.0), 3, withThousandsSeparator: true) }} {{ $usage->unit }}</td>
+                                    <td>{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($usage->line_total_net?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} €</td>
                                     <td>
                                         {{ optional($usage->timesheet?->work_date)->fdate() ?: ($usage->timesheet ? ('#' . $usage->timesheet->id) : '—') }}
                                     </td>

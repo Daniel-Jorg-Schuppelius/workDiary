@@ -96,9 +96,9 @@ class FifoValuationService implements InventoryValuationStrategy {
                 if (bccomp($remaining, '0', self::SCALE) <= 0) {
                     break;
                 }
-                $lastCost = $layer->unit_cost;
+                $lastCost = $layer->unit_cost?->getAmount() ?? '0';
                 $take = bccomp($layer->qty_remaining, $remaining, self::SCALE) <= 0 ? $layer->qty_remaining : $remaining;
-                $costTotal = bcadd($costTotal, bcmul($take, $layer->unit_cost, self::SCALE), self::SCALE);
+                $costTotal = bcadd($costTotal, bcmul($take, $layer->unit_cost?->getAmount() ?? '0', self::SCALE), self::SCALE);
                 $layer->qty_remaining = bcsub($layer->qty_remaining, $take, self::SCALE);
                 $layer->save();
                 $remaining = bcsub($remaining, $take, self::SCALE);
@@ -115,7 +115,7 @@ class FifoValuationService implements InventoryValuationStrategy {
                         ->orderByDesc('id')
                         ->first();
                     if ($historic instanceof StockValuationLayer) {
-                        $lastCost = $historic->unit_cost;
+                        $lastCost = $historic->unit_cost?->getAmount() ?? '0';
                     }
                 }
                 $costTotal = bcadd($costTotal, bcmul($remaining, $lastCost, self::SCALE), self::SCALE);
@@ -135,7 +135,7 @@ class FifoValuationService implements InventoryValuationStrategy {
     public function unitCost(ArticleVariant $variant, Warehouse $warehouse): string {
         $layer = $this->layerQuery($variant, $warehouse)->first();
 
-        return $layer instanceof StockValuationLayer ? bcadd($layer->unit_cost, '0', self::SCALE) : '0';
+        return $layer instanceof StockValuationLayer ? bcadd($layer->unit_cost?->getAmount() ?? '0', '0', self::SCALE) : '0';
     }
 
     public function onHand(ArticleVariant $variant, Warehouse $warehouse): string {
@@ -155,7 +155,7 @@ class FifoValuationService implements InventoryValuationStrategy {
 
         $total = '0';
         foreach ($layers as $layer) {
-            $total = bcadd($total, bcmul($layer->qty_remaining, $layer->unit_cost, self::SCALE), self::SCALE);
+            $total = bcadd($total, bcmul($layer->qty_remaining, $layer->unit_cost?->getAmount() ?? '0', self::SCALE), self::SCALE);
         }
 
         return $total;

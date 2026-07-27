@@ -55,8 +55,8 @@ class MaterialDemandCalculator {
             }
 
             $base = match ($req->quantity_kind) {
-                QuantityKind::PerUnit => bcmul($req->quantity, $target, self::WORK),
-                QuantityKind::Fixed => $this->numeric($req->quantity),
+                QuantityKind::PerUnit => bcmul($req->quantity?->getNumericValue() ?? '0', $target, self::WORK),
+                QuantityKind::Fixed => $this->numeric($req->quantity?->getNumericValue() ?? '0'),
                 QuantityKind::Ratio => bccomp($ratioSum, '0', self::WORK) > 0 && $req->ratio_part !== null
                     ? bcmul($target, bcdiv($req->ratio_part, $ratioSum, self::WORK), self::WORK)
                     : '0',

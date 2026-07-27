@@ -45,14 +45,14 @@ class PriceChangeAlertService {
             return null;
         }
 
-        $sale = (float) $article->default_sale_price;
+        $sale = $article->default_sale_price->toFloat();
         if ($sale <= 0) {
             return null;
         }
 
         $newMargin = ($sale - (float) $newPrice) / $sale * 100;
         $rule = $this->pricing->resolveRule($item->organization_id, $item->supplier_id, $item->category);
-        $minMargin = $rule !== null && $rule->min_margin !== null ? (float) $rule->min_margin : null;
+        $minMargin = $rule !== null && $rule->min_margin !== null ? (float) $rule->min_margin->getNumericValue() : null;
 
         $below = ($minMargin !== null && $newMargin < $minMargin - 0.0001) || $newMargin < 0;
         if (! $below) {

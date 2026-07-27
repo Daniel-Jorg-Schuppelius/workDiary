@@ -153,7 +153,7 @@ class AuditActivityReportController extends Controller {
                 $log->event,
                 $this->shortType((string) $log->auditable_type),
                 (string) $log->auditable_id,
-                (string) ($log->ip ?? ''),
+                $log->ip?->getValue() ?? '',
             ];
         }
 

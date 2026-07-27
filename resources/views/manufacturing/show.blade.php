@@ -88,7 +88,7 @@
                     <td class="text-right tabular-nums">{{ $material->target_qty }} {{ $material->unit_snapshot }}</td>
                     <td class="text-right tabular-nums">{{ $material->reserved_qty }}</td>
                     <td class="text-right tabular-nums">{{ $material->consumed_qty }}</td>
-                    <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $material->actual_cost, 2, withThousandsSeparator: true) }}</td>
+                    <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($material->actual_cost?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}</td>
                     @if ($canConsume)
                         <td class="text-right">
                             @unless ($material->is_tool)

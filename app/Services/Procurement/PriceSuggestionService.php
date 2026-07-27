@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Procurement;
 
 use App\Models\{Article, PricingMarginRule, SupplierCatalogItem};
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Money;
 use RuntimeException;
 
 /**
@@ -55,13 +57,13 @@ class PriceSuggestionService {
 
         $raw = null;
         if ($rule->target_margin !== null) {
-            $m = (float) $rule->target_margin / 100;
+            $m = (float) $rule->target_margin->getNumericValue() / 100;
             if ($m > 0 && $m < 1) {
                 $raw = $p / (1 - $m);
             }
         }
         if ($raw === null && $rule->markup_percent !== null) {
-            $raw = $p * (1 + (float) $rule->markup_percent / 100);
+            $raw = $p * (1 + (float) $rule->markup_percent->getNumericValue() / 100);
         }
         if ($raw === null) {
             return null;
@@ -69,12 +71,12 @@ class PriceSuggestionService {
 
         $price = $rule->rounding->apply($raw);
         if ($rule->min_sale_price !== null) {
-            $price = max($price, (float) $rule->min_sale_price);
+            $price = max($price, $rule->min_sale_price->toFloat());
         }
         $price = round($price, 2);
 
         $margin = $price > 0 ? ($price - $p) / $price * 100 : 0.0;
-        $belowMin = $rule->min_margin !== null && $margin < (float) $rule->min_margin - 0.0001;
+        $belowMin = $rule->min_margin !== null && $margin < (float) $rule->min_margin->getNumericValue() - 0.0001;
 
         return [
             'price' => number_format($price, 2, '.', ''),
@@ -98,7 +100,7 @@ class PriceSuggestionService {
             return null;
         }
 
-        $suggestion = $this->suggest($rule, (string) $item->purchase_price);
+        $suggestion = $this->suggest($rule, $item->purchase_price->getAmount());
 
         return $suggestion === null ? null : ['rule' => $rule] + $suggestion;
     }
@@ -126,7 +128,7 @@ class PriceSuggestionService {
             throw new RuntimeException((string) __('procurement.margin.error.no_suggestion'));
         }
 
-        $article->default_sale_price = $suggestion['price'];
+        $article->default_sale_price = Money::of((string) $suggestion['price'], $article->currency ?? CurrencyCode::Euro, 4);
         $article->save();
 
         return $suggestion;

@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Casts\MoneyCast;
 use App\Enums\User\{CompensationModel, UserRole};
 use App\Legacy\LegacyBridge;
 use App\Legacy\Models\LegacyUser;
@@ -33,7 +34,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property int|null $organization_id
  * @property string $name
  * @property string|null $personnel_number
- * @property string|null $payroll_hourly_wage
+ * @property \CommonToolkit\ValueObjects\Money|null $payroll_hourly_wage
  * @property string|null $tax_identification_number
  * @property string|null $social_security_number
  * @property string|null $cti_extension
@@ -60,8 +61,8 @@ use Spatie\Permission\Traits\HasRoles;
  * @property bool $is_new_system
  * @property bool $is_platform_admin
  * @property bool $must_change_password
- * @property string|null $hourly_rate
- * @property string|null $internal_rate
+ * @property \CommonToolkit\ValueObjects\Money|null $hourly_rate
+ * @property \CommonToolkit\ValueObjects\Money|null $internal_rate
  * @property string|null $home_address
  * @property string|null $home_lat
  * @property string|null $home_lng
@@ -70,6 +71,8 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Permission\Models\Role> $roles
  * @property-read \Illuminate\Database\Eloquent\Collection<int, SpatiePermission> $permissions
+ * @property \CommonToolkit\ValueObjects\Money|null $flat_amount
+ * @property \CommonToolkit\ValueObjects\Money|null $compensation_rate
  *
  * Fachfremde Methoden-Cluster liegen in Concerns (Refactoring Welle 2, B6b):
  * {@see HasPreferences} (Präferenz-Bag/Locale/Zeitzone/Arbeitsmodus),
@@ -281,7 +284,7 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
         'deactivated_at' => 'datetime',
         // Break-Glass (Feature 057): bewusst NICHT fillable — nur Admin-Aktion.
         'sso_exempt' => 'boolean',
-        'payroll_hourly_wage' => 'decimal:2',
+        'payroll_hourly_wage' => MoneyCast::class . ':currency,2',
         'date_of_birth' => 'date',
         'child_allowances' => 'decimal:2',
         'church_tax' => 'boolean',
@@ -289,11 +292,11 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
         'employment_end_date' => 'date',
         'employment_type' => \App\Enums\User\EmploymentType::class,
         'compensation_model' => CompensationModel::class,
-        'flat_amount' => 'decimal:2',
+        'flat_amount' => MoneyCast::class . ':currency,2',
         'flat_interval' => \App\Enums\User\FlatInterval::class,
-        'compensation_rate' => 'decimal:2',
-        'hourly_rate' => 'decimal:2',
-        'internal_rate' => 'decimal:2',
+        'compensation_rate' => MoneyCast::class . ':currency,2',
+        'hourly_rate' => MoneyCast::class . ':currency,2',
+        'internal_rate' => MoneyCast::class . ':currency,2',
         'home_lat' => 'decimal:7',
         'home_lng' => 'decimal:7',
         'preferences' => 'array',

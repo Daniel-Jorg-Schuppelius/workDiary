@@ -39,13 +39,13 @@
         </thead>
         <tbody>
             @foreach ($order->lines as $line)
-                @php($lineTotal = bcmul((string) $line->ordered_qty, (string) ($line->unit_price ?? '0'), 2))
+                @php($lineTotal = bcmul($line->ordered_qty?->getNumericValue() ?? '0', $line->unit_price?->getAmount() ?? '0', 2))
                 <tr>
                     <td>{{ $line->supplier_sku ?: $line->article->sku }}</td>
                     <td>{{ $line->article->name }}</td>
-                    <td style="text-align: right;">{{ rtrim(rtrim((string) $line->ordered_qty, '0'), '.') }}</td>
+                    <td style="text-align: right;">{{ rtrim(rtrim($line->ordered_qty?->getNumericValue() ?? '0', '0'), '.') }}</td>
                     <td>{{ $line->unit }}</td>
-                    <td style="text-align: right;">{{ $line->unit_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $line->unit_price, 2, withThousandsSeparator: true) : '—' }}</td>
+                    <td style="text-align: right;">{{ $line->unit_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($line->unit_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) : '—' }}</td>
                     <td style="text-align: right;">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $lineTotal, 2, withThousandsSeparator: true) }}</td>
                 </tr>
             @endforeach

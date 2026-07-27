@@ -92,7 +92,7 @@ class CustomerProjectReportController extends Controller {
                 $byProject[$pid] = ['minutes' => 0, 'rate' => 0.0];
             }
             $byProject[$pid]['minutes'] += (int) $e->minutes;
-            $byProject[$pid]['rate'] += (float) $e->rate;
+            $byProject[$pid]['rate'] += ($e->rate?->toFloat() ?? 0.0);
         }
 
         return $byProject;

@@ -71,7 +71,7 @@
             <form method="POST" action="{{ route('purchase-orders.conditions', $order) }}" class="flex flex-wrap items-end gap-2 mt-3 pt-3 border-t border-base-300">
                 @csrf
                 <div class="fieldset"><label class="fieldset-label">{{ __('procurement.field.freight_cost') }}</label>
-                    <input name="freight_cost" type="number" step="0.01" min="0" value="{{ $order->freight_cost !== null ? rtrim(rtrim(number_format((float) $order->freight_cost, 2, '.', ''), '0'), '.') : '' }}" class="input input-sm input-bordered w-32"></div>
+                    <input name="freight_cost" type="number" step="0.01" min="0" value="{{ $order->freight_cost !== null ? rtrim(rtrim(number_format(($order->freight_cost?->toFloat() ?? 0.0), 2, '.', ''), '0'), '.') : '' }}" class="input input-sm input-bordered w-32"></div>
                 <x-button type="submit" tone="ghost" size="sm">{{ __('procurement.action.save_conditions') }}</x-button>
             </form>
         </x-card>

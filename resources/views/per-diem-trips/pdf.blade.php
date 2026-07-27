@@ -32,11 +32,15 @@
 <body>
 @php
     $fmtEur = static function ($value): string {
-        return \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $value, 2, withThousandsSeparator: true) . ' €';
+        return \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(
+            $value instanceof \CommonToolkit\ValueObjects\Money ? $value->toFloat() : (float) $value,
+            2,
+            withThousandsSeparator: true
+        ) . ' €';
     };
-    $totalBase = $trip->days->sum(fn ($d) => (float) $d->base_amount);
-    $totalDeductions = $trip->days->sum(fn ($d) => (float) $d->deductions_total);
-    $totalPayout = $trip->days->sum(fn ($d) => (float) $d->amount);
+    $totalBase = $trip->days->sum(fn ($d) => $d->base_amount?->toFloat() ?? 0.0);
+    $totalDeductions = $trip->days->sum(fn ($d) => $d->deductions_total?->toFloat() ?? 0.0);
+    $totalPayout = $trip->days->sum(fn ($d) => $d->amount?->toFloat() ?? 0.0);
 @endphp
 
 <h1>{{ __('Reisekostenabrechnung – Verpflegungspauschale') }}</h1>
@@ -110,7 +114,7 @@
                 <td class="center">{{ $day->meal_breakfast ? '×' : '' }}</td>
                 <td class="center">{{ $day->meal_lunch ? '×' : '' }}</td>
                 <td class="center">{{ $day->meal_dinner ? '×' : '' }}</td>
-                <td class="right">@if ((float) $day->deductions_total > 0)− {{ $fmtEur($day->deductions_total) }}@else —@endif</td>
+                <td class="right">@if (($day->deductions_total?->toFloat() ?? 0.0) > 0)− {{ $fmtEur($day->deductions_total) }}@else —@endif</td>
                 <td class="right"><strong>{{ $fmtEur($day->amount) }}</strong></td>
             </tr>
         @endforeach

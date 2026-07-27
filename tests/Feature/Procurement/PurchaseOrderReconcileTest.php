@@ -11,9 +11,9 @@
 namespace Tests\Feature\Procurement;
 
 use App\Models\{Article, ArticleVariant, PurchaseOrder, Supplier, User, Warehouse};
-use CommonToolkit\ValueObjects\Money;
 use App\Services\Procurement\{PurchaseOrderService, UglInvoiceReconciler};
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Money;
 use DateTimeImmutable;
 use ERechnungToolkit\Entities\{OrderLine, UglInvoice};
 use Illuminate\Foundation\Testing\RefreshDatabase;

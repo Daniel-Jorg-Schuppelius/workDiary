@@ -13,6 +13,8 @@ namespace App\Services\Expense;
 use App\Enums\Expense\PerDiemDayKind;
 use App\Models\{PerDiemDay, PerDiemTrip};
 use Carbon\{CarbonImmutable, CarbonInterface, CarbonPeriod};
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Money;
 use RuntimeException;
 
 /**
@@ -87,10 +89,10 @@ class PerDiemCalculator {
         $day->currency = $rate->currency;
 
         $base = $day->kind->usesFullDayAmount()
-            ? (float) $rate->full_day_amount
-            : (float) $rate->partial_day_amount;
+            ? ($rate->full_day_amount?->toFloat() ?? 0.0)
+            : ($rate->partial_day_amount?->toFloat() ?? 0.0);
 
-        $fullDay = (float) $rate->full_day_amount;
+        $fullDay = ($rate->full_day_amount?->toFloat() ?? 0.0);
         $deductB = $day->meal_breakfast ? round($fullDay * 0.20, 2) : 0.0;
         $deductL = $day->meal_lunch ? round($fullDay * 0.40, 2) : 0.0;
         $deductD = $day->meal_dinner ? round($fullDay * 0.40, 2) : 0.0;
@@ -98,12 +100,13 @@ class PerDiemCalculator {
 
         $amount = round(max(0.0, $base - $deductTotal), 2);
 
-        $day->base_amount = number_format($base, 2, '.', '');
-        $day->deduction_breakfast = number_format($deductB, 2, '.', '');
-        $day->deduction_lunch = number_format($deductL, 2, '.', '');
-        $day->deduction_dinner = number_format($deductD, 2, '.', '');
-        $day->deductions_total = number_format($deductTotal, 2, '.', '');
-        $day->amount = number_format($amount, 2, '.', '');
+        $currency = $day->currency ?? CurrencyCode::Euro;
+        $day->base_amount = Money::ofFloat($base, $currency);
+        $day->deduction_breakfast = Money::ofFloat($deductB, $currency);
+        $day->deduction_lunch = Money::ofFloat($deductL, $currency);
+        $day->deduction_dinner = Money::ofFloat($deductD, $currency);
+        $day->deductions_total = Money::ofFloat($deductTotal, $currency);
+        $day->amount = Money::ofFloat($amount, $currency);
     }
 
     private function buildSingleDay(PerDiemTrip $trip, CarbonImmutable $start): PerDiemDay {

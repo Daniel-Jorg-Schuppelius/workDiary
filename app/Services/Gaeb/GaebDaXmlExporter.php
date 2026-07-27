@@ -101,7 +101,7 @@ class GaebDaXmlExporter {
         $el->setAttribute('RNoPart', $this->localPart($item->reference_no, $parentRef));
 
         if ($item->quantity !== null) {
-            $el->appendChild($dom->createElement('Qty', $this->num($item->quantity)));
+            $el->appendChild($dom->createElement('Qty', $this->num($item->quantity->getNumericValue())));
         }
         if ($item->unit !== null) {
             $el->appendChild($this->textElement($dom, 'QU', $item->unit));
@@ -125,9 +125,9 @@ class GaebDaXmlExporter {
         $el->appendChild($desc);
 
         if ($phase->carriesPrices() && $item->unit_price !== null) {
-            $el->appendChild($dom->createElement('UP', $this->num($item->unit_price)));
+            $el->appendChild($dom->createElement('UP', $this->num($item->unit_price->getAmount())));
             if ($item->total_price !== null) {
-                $el->appendChild($dom->createElement('IT', $this->num($item->total_price)));
+                $el->appendChild($dom->createElement('IT', $this->num($item->total_price->getAmount())));
             }
         }
 

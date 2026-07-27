@@ -43,8 +43,8 @@
                     <td>{{ $m->sku }}</td>
                     <td>{{ $m->name }}</td>
                     <td>{{ $m->unit }}</td>
-                    <td class="text-right">{{ $m->default_unit_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float)$m->default_unit_price, 4, withThousandsSeparator: true) : '—' }}</td>
-                    <td class="text-right">{{ $m->tax_rate !== null ? rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float)$m->tax_rate, 2, withThousandsSeparator: true), '0'), ',') : '—' }}</td>
+                    <td class="text-right">{{ $m->default_unit_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($m->default_unit_price?->toFloat() ?? 0.0), 4, withThousandsSeparator: true) : '—' }}</td>
+                    <td class="text-right">{{ $m->tax_rate !== null ? rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(((float) ($m->tax_rate?->getNumericValue() ?? '0')), 2, withThousandsSeparator: true), '0'), ',') : '—' }}</td>
                     <td>{{ $m->external_provider ?: 'local' }}</td>
                     <td class="text-right">
                         @can('update', $m)
