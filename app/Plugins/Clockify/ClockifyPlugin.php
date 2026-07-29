@@ -120,6 +120,7 @@ class ClockifyPlugin implements Plugin, TimeImporter {
             ['key' => 'base_url', 'label' => __('API-Basis-URL'), 'type' => 'text', 'default' => ClockifyConfig::DEFAULT_BASE_URL, 'help' => __('Regionale Instanzen abweichend, z. B. https://euc1.api.clockify.me/api.')],
             ['key' => 'reports_base_url', 'label' => __('Reports-API-Basis-URL'), 'type' => 'text', 'default' => ClockifyConfig::DEFAULT_REPORTS_BASE_URL],
             ['key' => 'sync_window_days', 'label' => __('Sync-Zeitfenster (Tage)'), 'type' => 'text', 'default' => '30', 'help' => __('Wie viele Tage rückwirkend pro API-Lauf abgefragt werden.')],
+            ['key' => 'writeback', 'label' => __('Korrekturen zurückschreiben'), 'type' => 'boolean', 'default' => false, 'help' => __('Schreibt Korrekturen an bereits importierten Zeiten zurück nach Clockify (Änderung und Löschung). Wurde der Eintrag dort zwischenzeitlich geändert, wird nichts überschrieben — der Fall landet in der Integrations-Inbox. Abgerechnete Zeiten werden nie zurückgeschrieben.')],
         ];
     }
 

@@ -550,6 +550,9 @@ class AppServiceProvider extends ServiceProvider {
         Tag::observe(TagObserver::class);
         User::observe(UserObserver::class);
         TimeEntry::observe(TimeEntryObserver::class);
+        // Rückrichtung der Zeit-Plugins: ein Observer für alle Quellen, statt je
+        // Plugin einer — jeder würde sonst dieselbe Referenz-Abfrage fahren.
+        TimeEntry::observe(\App\Plugins\Support\TimeWritebackObserver::class);
         Timesheet::observe(TimesheetObserver::class);
         MaterialUsage::observe(MaterialUsageObserver::class);
         Organization::observe(OrganizationObserver::class);

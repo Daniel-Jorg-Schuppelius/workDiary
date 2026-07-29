@@ -31,4 +31,6 @@ return [
     'default_activity_id' => env('OPENPROJECT_DEFAULT_ACTIVITY_ID'),
     // Struktur-Sync: fehlende workDiary-Projekte/Aufgaben automatisch anlegen statt nur mappen?
     'create_missing_projects' => (bool) env('OPENPROJECT_CREATE_MISSING_PROJECTS', false),
+    // Korrekturen an importierten Zeiten nach OpenProject zurückschreiben (Änderung/Löschung).
+    'writeback' => (bool) env('OPENPROJECT_WRITEBACK', false),
 ];

@@ -31,6 +31,16 @@ abstract class AbstractPluginDispatcherResolver {
         $this->dispatchers[$dispatcher->pluginId()] = $dispatcher;
     }
 
+    /**
+     * Alle registrierten Dispatcher — für Aufrufer, die nicht die Plugin-Kennung
+     * kennen, sondern eine Fähigkeit suchen (z. B. Zeit-Rückschreibung).
+     *
+     * @return array<string, TDispatcher>
+     */
+    public function all(): array {
+        return $this->dispatchers;
+    }
+
     /** @return TDispatcher|null */
     public function for(?string $pluginId): ?PluginDispatcher {
         if ($pluginId === null || $pluginId === '') {

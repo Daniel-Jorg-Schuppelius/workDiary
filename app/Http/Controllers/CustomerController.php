@@ -181,7 +181,7 @@ class CustomerController extends Controller {
         }
 
         return view('customers.show', [
-            'identifierIssues' => app(IdentifierIssueDetector::class)->forModel($customer),
+            'identifierIssues' => app(IdentifierIssueDetector::class)->forContact($customer),
             'customer' => $customer,
             'customerDomains' => $customerDomains,
             'billingAgreement' => $billingAgreement,

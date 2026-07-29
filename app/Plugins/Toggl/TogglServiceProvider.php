@@ -11,6 +11,8 @@
 namespace App\Plugins\Toggl;
 
 use App\Plugins\Toggl\Console\{TogglBackfillReferencesCommand, TogglImportCommand, TogglRepairEntryUsersCommand};
+use App\Plugins\Toggl\Services\TogglOutboxDispatcher;
+use App\Services\Integration\IntegrationOutboxDispatcherResolver;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -29,6 +31,10 @@ class TogglServiceProvider extends ServiceProvider {
     public function boot(): void {
         $this->loadRoutesFrom(__DIR__ . '/routes.php');
         $this->loadViewsFrom(__DIR__ . '/Resources/views', 'toggl');
+
+        // Rückrichtung (MVP-437): lokale Korrekturen an importierten Zeiten
+        // gehen über die Integrations-Outbox zurück nach Toggl.
+        $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new TogglOutboxDispatcher);
 
         if ($this->app->runningInConsole()) {
             $this->commands([

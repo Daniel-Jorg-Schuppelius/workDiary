@@ -182,7 +182,14 @@ class IntegrationInboxController extends Controller {
 
     public function acceptRemote(IntegrationInboxItem $item, InboxActionService $service): RedirectResponse {
         $this->guard($item);
-        $service->acceptRemote($item);
+
+        try {
+            $service->acceptRemote($item);
+        } catch (\RuntimeException $e) {
+            // Fachliche Sperre (z. B. bereits abgerechnet) — als Meldung zeigen,
+            // nicht als Fehlerseite.
+            return back()->with('error', $e->getMessage());
+        }
 
         return back()->with('success', __('Konflikt zugunsten der Remote-Werte gelöst.'));
     }

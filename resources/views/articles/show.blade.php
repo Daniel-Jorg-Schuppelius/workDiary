@@ -38,6 +38,8 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
+    <x-identifier-issues :issues="$identifierIssues ?? []" />
+
     {{-- Optionen & Werte --}}
     <x-card>
         <h2 class="font-semibold mb-3">{{ __('article.options') }}</h2>

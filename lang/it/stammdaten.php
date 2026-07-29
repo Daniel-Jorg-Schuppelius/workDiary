@@ -13,6 +13,11 @@ return [
         'heading' => 'Anagrafiche da verificare',
         'hint' => 'Questi dati non superano la verifica. Correggili qui — la modifica viene trasmessa ai servizi collegati.',
         'suggestion' => 'Proposta: :value',
+        'context' => [
+            'bank_account' => 'Coordinate bancarie «:label»',
+            'variant' => 'Variante :label',
+            'bank_account_fallback' => 'Coordinate bancarie',
+        ],
         'field' => [
             'vat_id' => 'Partita IVA',
             'tax_number' => 'Codice fiscale (numero fiscale)',

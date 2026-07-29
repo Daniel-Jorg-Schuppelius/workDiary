@@ -14,7 +14,7 @@ namespace App\Plugins\Kimai\Sources;
 
 use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Plugins\Kimai\Exceptions\KimaiApiException;
-use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
+use App\Plugins\Support\{PluginApiClient, PluginHttpFactory, RemoteTimeWriter, StartStopFingerprint};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\Response;
 
@@ -27,7 +27,9 @@ use Illuminate\Http\Client\Response;
  * Tests ersetzen die {@see PluginHttpFactory} durch
  * {@see \Tests\Support\FakePluginHttp}.
  */
-class KimaiApiClient {
+class KimaiApiClient implements RemoteTimeWriter {
+    use StartStopFingerprint;
+
     public const PAGE_SIZE = 500;
 
     private ?PluginApiClient $api = null;
@@ -109,6 +111,77 @@ class KimaiApiClient {
 
         /** @var array<string, mixed> */
         return (array) $response->json();
+    }
+
+    /**
+     * Aktueller Kimai-Stand (Rückrichtung: Konflikterkennung und -anzeige).
+     *
+     * @param  array<string, mixed>  $context
+     * @return array{description: ?string, date: ?CarbonImmutable, started_at: ?CarbonImmutable, ended_at: ?CarbonImmutable, minutes: int, billable: bool}|null
+     */
+    public function fetchRemoteState(string $externalId, array $context): ?array {
+        if (! $this->isConfigured() || ! is_numeric($externalId)) {
+            return null;
+        }
+
+        $response = $this->api()->getResponse($this->url('/api/timesheets/' . (int) $externalId));
+        if (! $response->successful()) {
+            return null;
+        }
+
+        $row = $response->json();
+        if (! is_array($row) || ! isset($row['begin'], $row['end']) || ! is_string($row['begin']) || ! is_string($row['end'])) {
+            return null; // laufender Eintrag (kein Ende) oder unerwartete Form
+        }
+
+        $begin = CarbonImmutable::parse($row['begin']);
+        $end = CarbonImmutable::parse($row['end']);
+
+        return [
+            'description' => isset($row['description']) ? (string) $row['description'] : null,
+            'date' => $begin,
+            'started_at' => $begin,
+            'ended_at' => $end,
+            'minutes' => (int) round($begin->diffInSeconds($end) / 60),
+            'billable' => (bool) ($row['billable'] ?? false),
+        ];
+    }
+
+    /**
+     * Überträgt den lokalen Stand (PATCH). Kimai erwartet Zeiten als
+     * HTML5-datetime-local in der Benutzer-Zeitzone — wie beim Lesen.
+     *
+     * @param  array{description: ?string, date: ?CarbonImmutable, started_at: ?CarbonImmutable, ended_at: ?CarbonImmutable, minutes: int, billable: bool}  $entry
+     * @param  array<string, mixed>  $context
+     */
+    public function pushEntryUpdate(string $externalId, array $entry, array $context): bool {
+        if (! $this->isConfigured() || ! is_numeric($externalId) || $entry['started_at'] === null || $entry['ended_at'] === null) {
+            return false;
+        }
+
+        return $this->api()->requestResponse('patch', $this->url('/api/timesheets/' . (int) $externalId), [
+            'json' => [
+                'begin' => $entry['started_at']->format('Y-m-d\TH:i:s'),
+                'end' => $entry['ended_at']->format('Y-m-d\TH:i:s'),
+                'description' => (string) $entry['description'],
+                'billable' => $entry['billable'],
+            ],
+        ])->successful();
+    }
+
+    /**
+     * Löscht das Timesheet. Ein bereits gelöschtes (404) gilt als erledigt.
+     *
+     * @param  array<string, mixed>  $context
+     */
+    public function pushEntryDeletion(string $externalId, array $context): bool {
+        if (! $this->isConfigured() || ! is_numeric($externalId)) {
+            return false;
+        }
+
+        $response = $this->api()->deleteResponse($this->url('/api/timesheets/' . (int) $externalId));
+
+        return $response->successful() || $response->status() === 404;
     }
 
     private function url(string $path): string {

@@ -87,7 +87,7 @@ class SupplierController extends Controller {
         }
 
         return view('suppliers.show', [
-            'identifierIssues' => app(IdentifierIssueDetector::class)->forModel($supplier),
+            'identifierIssues' => app(IdentifierIssueDetector::class)->forContact($supplier),
             'supplier' => $supplier,
             'procurementStats' => $procurementStats,
             'lexofficePlugin' => $lexoffice,

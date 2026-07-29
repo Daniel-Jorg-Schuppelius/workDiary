@@ -32,6 +32,7 @@ use Illuminate\Support\Collection;
  */
 abstract class MatchingTimeImportService {
     use PersistsTimeImportInbox;
+    use ReconcilesRemoteDeletions;
 
     public const EXT_TYPE_CLIENT = 'client';
 
@@ -65,21 +66,42 @@ abstract class MatchingTimeImportService {
     /**
      * @param  array<int, ImportedTimeEntry>  $entries
      * @param  array<string, mixed>  $config
-     * @return array{created: int, skipped: int, unmatched: int}
+     * @param  RemoteSyncWindow|null  $window  Nur bei vollständigem Lauf — Grundlage der Löschungserkennung
+     * @return array{created: int, skipped: int, unmatched: int, updated: int, conflicts: int, removed: int}
      */
-    protected function ingest(Organization $organization, array $entries, array $config): array {
+    protected function ingest(Organization $organization, array $entries, array $config, ?RemoteSyncWindow $window = null): array {
+        // Der Import darf keine Rückschreibung auslösen — die Einträge kommen ja
+        // gerade von dort, und `syncKnownEntry()` schreibt lokal.
+        return TimeWritebackObserver::suppressed(fn (): array => $this->ingestEntries($organization, $entries, $config, $window));
+    }
+
+    /**
+     * @param  array<int, ImportedTimeEntry>  $entries
+     * @param  array<string, mixed>  $config
+     * @return array{created: int, skipped: int, unmatched: int, updated: int, conflicts: int, removed: int}
+     */
+    private function ingestEntries(Organization $organization, array $entries, array $config, ?RemoteSyncWindow $window): array {
         $created = 0;
         $skipped = 0;
         $unmatched = 0;
+        $updated = 0;
+        $conflicts = 0;
 
         $userId = $this->resolveBookingUserId($organization, isset($config['default_user_id']) && is_numeric($config['default_user_id']) ? (int) $config['default_user_id'] : null);
         if ($userId === null) {
-            return ['created' => 0, 'skipped' => 0, 'unmatched' => 0];
+            return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'updated' => 0, 'conflicts' => 0, 'removed' => 0];
         }
 
         foreach ($entries as $entry) {
             if ($this->alreadyImported($organization, $entry->entryKey)) {
-                $skipped++;
+                // Bekannter Eintrag: nicht blind überspringen, sondern gegen den
+                // beim Import hinterlegten Fingerabdruck prüfen — sonst bleiben
+                // Korrekturen im Fremdsystem hier für immer unsichtbar.
+                match ($this->syncKnownEntry($organization, $entry)) {
+                    'updated' => $updated++,
+                    'conflict' => $conflicts++,
+                    default => $skipped++,
+                };
 
                 continue;
             }
@@ -96,7 +118,114 @@ abstract class MatchingTimeImportService {
             $created++;
         }
 
-        return ['created' => $created, 'skipped' => $skipped, 'unmatched' => $unmatched];
+        return [
+            'created' => $created,
+            'skipped' => $skipped,
+            'unmatched' => $unmatched,
+            'updated' => $updated,
+            'conflicts' => $conflicts,
+            'removed' => $this->reconcileRemoteDeletions(
+                $organization,
+                array_values(array_map(static fn (ImportedTimeEntry $entry): string => $entry->entryKey, $entries)),
+                $window,
+            ),
+        ];
+    }
+
+    /**
+     * Gleicht einen bereits importierten Eintrag mit dem aktuellen Fremdstand ab.
+     *
+     * Abgerechnete/exportierte Zeiten werden nicht mehr überschrieben — deren
+     * Grundlage hängt an Belegen. Die Abweichung landet dann als Konflikt in der
+     * Inbox, wo jemand entscheiden kann.
+     *
+     * @return 'unchanged'|'updated'|'conflict'
+     */
+    protected function syncKnownEntry(Organization $organization, ImportedTimeEntry $entry): string {
+        $reference = ExternalReference::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('plugin_id', $this->pluginId())
+            ->where('external_type', self::EXT_TYPE_ENTRY)
+            ->where('external_id', $entry->entryKey)
+            ->first();
+
+        $known = is_array($reference?->payload) ? (string) ($reference->payload['fingerprint'] ?? '') : '';
+        $current = RemoteTimeFingerprint::of($entry);
+        if ($reference === null || $known === '' || $known === $current) {
+            return 'unchanged'; // Altbestand ohne Fingerabdruck bleibt unberührt
+        }
+
+        $timeEntry = $reference->referenceable;
+        if (! $timeEntry instanceof TimeEntry) {
+            return 'unchanged';
+        }
+
+        if ($timeEntry->exported) {
+            $this->recordRemoteChangeConflict($organization, $reference, $timeEntry, $entry);
+
+            return 'conflict';
+        }
+
+        $timeEntry->forceFill([
+            'started_at' => $entry->startedAt,
+            'ended_at' => $entry->endedAt,
+            'minutes' => $entry->minutes(),
+            'description' => $entry->description,
+        ])->save();
+
+        $reference->payload = array_merge((array) $reference->payload, ['fingerprint' => $current]);
+        $reference->synced_at = now();
+        $reference->save();
+
+        return 'updated';
+    }
+
+    /**
+     * Fremde Änderung an einer bereits abgerechneten Zeit — sichtbar machen,
+     * statt sie zu übernehmen oder zu verschlucken.
+     */
+    protected function recordRemoteChangeConflict(
+        Organization $organization,
+        ExternalReference $reference,
+        TimeEntry $timeEntry,
+        ImportedTimeEntry $entry,
+    ): void {
+        IntegrationInboxItem::query()->withoutGlobalScopes()->updateOrCreate(
+            [
+                'organization_id' => $organization->id,
+                'plugin_id' => $this->pluginId(),
+                'dedupe_key' => $this->pluginId() . '-remote-changed:' . $reference->external_id,
+            ],
+            [
+                'source' => $this->pluginId(),
+                'target_type' => TimeEntry::class,
+                'external_type' => self::EXT_TYPE_ENTRY,
+                'external_id' => (string) $reference->external_id,
+                'case_type' => IntegrationInboxItem::CASE_CONFLICT,
+                'referenceable_type' => $timeEntry->getMorphClass(),
+                'referenceable_id' => $timeEntry->getKey(),
+                'status' => IntegrationInboxItem::STATUS_OPEN,
+                'remote_snapshot' => [
+                    'reason' => 'remote_changed_after_export',
+                    // Die Zeit hängt an einem Beleg: der Fremdstand darf hier
+                    // nicht per Klick übernommen werden (GoBD). Bleibt nur
+                    // Kenntnisnahme bzw. eine Korrektur außerhalb.
+                    'resolution' => IntegrationInboxItem::RESOLUTION_ACKNOWLEDGE_ONLY,
+                    'remote' => [
+                        'started_at' => $entry->startedAt->toIso8601String(),
+                        'ended_at' => $entry->endedAt->toIso8601String(),
+                        'minutes' => $entry->minutes(),
+                        'description' => $entry->description,
+                    ],
+                    'local' => [
+                        'started_at' => $timeEntry->started_at?->toIso8601String(),
+                        'ended_at' => $timeEntry->ended_at?->toIso8601String(),
+                        'minutes' => $timeEntry->minutes,
+                        'description' => $timeEntry->description,
+                    ],
+                ],
+            ],
+        );
     }
 
     public function matchCustomer(Organization $organization, ?string $clientName): ?Customer {
@@ -307,6 +436,13 @@ abstract class MatchingTimeImportService {
                 'client' => $entry->clientName,
                 'project' => $entry->projectName,
                 'activity' => $entry->activity,
+                // Fremd-IDs: die Rückrichtung adressiert damit (Workspace) und
+                // bildet den Fingerabdruck identisch (Projekt).
+                'project_id' => $entry->projectId,
+                'workspace_id' => $entry->workspaceId,
+                // Stand im Fremdsystem zum Importzeitpunkt — Grundlage für die
+                // Konflikterkennung beim Zurückschreiben.
+                'fingerprint' => RemoteTimeFingerprint::of($entry),
             ],
             'synced_at' => now(),
         ]);

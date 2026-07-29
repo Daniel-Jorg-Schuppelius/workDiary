@@ -11,7 +11,8 @@
 namespace App\Plugins\OpenProject;
 
 use App\Plugins\OpenProject\Console\{OpenProjectPushCommand, OpenProjectSyncCommand};
-use App\Plugins\OpenProject\Services\{OpenProjectExportService, OpenProjectImportService, OpenProjectStructureSync};
+use App\Plugins\OpenProject\Services\{OpenProjectExportService, OpenProjectImportService, OpenProjectOutboxDispatcher, OpenProjectStructureSync};
+use App\Services\Integration\IntegrationOutboxDispatcherResolver;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -34,6 +35,7 @@ class OpenProjectServiceProvider extends ServiceProvider {
     public function boot(): void {
         $this->loadRoutesFrom(__DIR__ . '/routes.php');
         $this->loadViewsFrom(__DIR__ . '/Resources/views', 'openproject');
+        $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new OpenProjectOutboxDispatcher);
 
         if ($this->app->runningInConsole()) {
             $this->commands([

@@ -14,7 +14,7 @@ namespace App\Plugins\Clockify\Sources;
 
 use APIToolkit\API\Authentication\ApiKeyAuthentication;
 use App\Plugins\Clockify\Exceptions\ClockifyApiException;
-use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
+use App\Plugins\Support\{PluginApiClient, PluginHttpFactory, RemoteTimeWriter, StartStopFingerprint};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\Response;
 
@@ -27,7 +27,9 @@ use Illuminate\Http\Client\Response;
  * API-Requests/h — 429 wird mit CSV-Hinweis gemeldet. Tests ersetzen die
  * {@see PluginHttpFactory} durch {@see \Tests\Support\FakePluginHttp}.
  */
-class ClockifyApiClient {
+class ClockifyApiClient implements RemoteTimeWriter {
+    use StartStopFingerprint;
+
     public const PAGE_SIZE = 1000;
 
     private ?PluginApiClient $api = null;
@@ -102,6 +104,112 @@ class ClockifyApiClient {
         } while (count($batch) === self::PAGE_SIZE);
 
         return $rows;
+    }
+
+    /**
+     * Aktueller Clockify-Stand (Rückrichtung).
+     *
+     * Clockify-Projekt-IDs sind Zeichenketten und gehen deshalb — wie beim
+     * Import — nicht in den Fingerabdruck ein.
+     *
+     * @param  array<string, mixed>  $context
+     * @return array{description: ?string, date: ?CarbonImmutable, started_at: ?CarbonImmutable, ended_at: ?CarbonImmutable, minutes: int, billable: bool}|null
+     */
+    public function fetchRemoteState(string $externalId, array $context): ?array {
+        $row = $this->fetchEntry($externalId);
+        if ($row === null) {
+            return null;
+        }
+
+        $interval = is_array($row['timeInterval'] ?? null) ? $row['timeInterval'] : [];
+        $start = $interval['start'] ?? null;
+        $end = $interval['end'] ?? null;
+        if (! is_string($start) || ! is_string($end) || $start === '' || $end === '') {
+            return null; // laufender Eintrag
+        }
+
+        $startedAt = CarbonImmutable::parse($start);
+        $endedAt = CarbonImmutable::parse($end);
+
+        return [
+            'description' => isset($row['description']) ? (string) $row['description'] : null,
+            'date' => $startedAt,
+            'started_at' => $startedAt,
+            'ended_at' => $endedAt,
+            'minutes' => (int) round($startedAt->diffInSeconds($endedAt) / 60),
+            'billable' => (bool) ($row['billable'] ?? false),
+        ];
+    }
+
+    /**
+     * Überträgt den lokalen Stand. Clockifys PUT ersetzt den Eintrag —
+     * Projekt, Aufgabe und Tags müssen deshalb aus dem aktuellen Stand
+     * mitgeschickt werden, sonst gehen sie verloren.
+     *
+     * @param  array{description: ?string, date: ?CarbonImmutable, started_at: ?CarbonImmutable, ended_at: ?CarbonImmutable, minutes: int, billable: bool}  $entry
+     * @param  array<string, mixed>  $context
+     */
+    public function pushEntryUpdate(string $externalId, array $entry, array $context): bool {
+        if ($entry['started_at'] === null || $entry['ended_at'] === null) {
+            return false;
+        }
+
+        $current = $this->fetchEntry($externalId);
+        if ($current === null) {
+            return false;
+        }
+
+        $tagIds = [];
+        foreach ((array) ($current['tagIds'] ?? []) as $tagId) {
+            $tagIds[] = (string) $tagId;
+        }
+
+        $response = $this->api()->putJson($this->entryUrl($externalId), array_filter([
+            'start' => $entry['started_at']->utc()->format('Y-m-d\TH:i:s\Z'),
+            'end' => $entry['ended_at']->utc()->format('Y-m-d\TH:i:s\Z'),
+            'billable' => $entry['billable'],
+            'description' => (string) $entry['description'],
+            'projectId' => isset($current['projectId']) ? (string) $current['projectId'] : null,
+            'taskId' => isset($current['taskId']) ? (string) $current['taskId'] : null,
+            'tagIds' => $tagIds,
+        ], static fn ($v): bool => $v !== null));
+
+        return $response->successful();
+    }
+
+    /**
+     * Löscht den Zeiteintrag; ein bereits gelöschter (404) gilt als erledigt.
+     *
+     * @param  array<string, mixed>  $context
+     */
+    public function pushEntryDeletion(string $externalId, array $context): bool {
+        $response = $this->api()->deleteResponse($this->entryUrl($externalId));
+
+        return $response->successful() || $response->status() === 404;
+    }
+
+    /**
+     * Einzelner Zeiteintrag; null wenn nicht erreichbar oder gelöscht.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function fetchEntry(string $externalId): ?array {
+        if (! $this->isConfigured()) {
+            return null;
+        }
+
+        $response = $this->api()->getResponse($this->entryUrl($externalId));
+        if (! $response->successful()) {
+            return null;
+        }
+
+        $row = $response->json();
+
+        return is_array($row) ? $row : null;
+    }
+
+    private function entryUrl(string $externalId): string {
+        return $this->url($this->baseUrl, '/v1/workspaces/' . $this->resolveWorkspaceId() . '/time-entries/' . $externalId);
     }
 
     private function url(string $base, string $path): string {

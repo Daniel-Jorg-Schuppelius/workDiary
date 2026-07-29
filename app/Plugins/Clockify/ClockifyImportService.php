@@ -13,7 +13,7 @@ namespace App\Plugins\Clockify;
 use App\Models\Organization;
 use App\Plugins\Clockify\Exceptions\ClockifyApiException;
 use App\Plugins\Clockify\Sources\{ClockifyApiClient, ClockifyCsvParser};
-use App\Plugins\Support\{ImportedTimeEntry, MatchingTimeImportService};
+use App\Plugins\Support\{ImportedTimeEntry, MatchingTimeImportService, RemoteSyncWindow};
 use Carbon\CarbonImmutable;
 
 /**
@@ -84,7 +84,9 @@ class ClockifyImportService extends MatchingTimeImportService {
             }
         }
 
-        return $this->ingest($organization, $entries, $config);
+        // Der Detailed-Report umfasst alle Benutzer des Workspace — fehlende
+        // Einträge sind drüben gelöscht.
+        return $this->ingest($organization, $entries, $config, new RemoteSyncWindow($from, $to));
     }
 
     /**

@@ -13,6 +13,11 @@ return [
         'heading' => 'Datos maestros por revisar',
         'hint' => 'Estos datos no superan la validación. Corríjalos aquí: el cambio se transmite a los servicios conectados.',
         'suggestion' => 'Sugerencia: :value',
+        'context' => [
+            'bank_account' => 'Cuenta bancaria «:label»',
+            'variant' => 'Variante :label',
+            'bank_account_fallback' => 'Cuenta bancaria',
+        ],
         'field' => [
             'vat_id' => 'NIF-IVA',
             'tax_number' => 'Número fiscal',

@@ -96,6 +96,7 @@ class ArticleController extends Controller {
             'supplies' => $supplies,
             'recommendedSupplyId' => $comparator->recommend($article)?->id,
             'tags' => $article->tags()->get(),
+            'identifierIssues' => app(\App\Services\Stammdaten\IdentifierIssueDetector::class)->forArticle($article),
         ]);
     }
 

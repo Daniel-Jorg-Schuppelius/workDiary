@@ -12,7 +12,7 @@ namespace App\Plugins\Kimai;
 
 use App\Models\Organization;
 use App\Plugins\Kimai\Sources\{KimaiApiClient, KimaiCsvParser};
-use App\Plugins\Support\{ImportedTimeEntry, MatchingTimeImportService};
+use App\Plugins\Support\{ImportedTimeEntry, MatchingTimeImportService, RemoteSyncWindow};
 use Carbon\CarbonImmutable;
 
 /**
@@ -64,7 +64,8 @@ class KimaiImportService extends MatchingTimeImportService {
 
         $from ??= CarbonImmutable::now()->subDays((int) ($config['sync_window_days'] ?? 30))->startOfDay();
 
-        $rows = $client->getTimesheets($from, $to, (bool) ($config['api_all_users'] ?? true));
+        $allUsers = (bool) ($config['api_all_users'] ?? true);
+        $rows = $client->getTimesheets($from, $to, $allUsers);
 
         $entries = [];
         foreach ($rows as $row) {
@@ -74,7 +75,14 @@ class KimaiImportService extends MatchingTimeImportService {
             }
         }
 
-        return $this->ingest($organization, $entries, $config);
+        return $this->ingest(
+            $organization,
+            $entries,
+            $config,
+            // Ohne `user=all` liefert Kimai nur die Zeiten des Token-Benutzers —
+            // fremde Einträge fehlten dann, ohne gelöscht zu sein.
+            RemoteSyncWindow::whenComplete($allUsers, $from, $to ?? CarbonImmutable::now()->endOfDay()),
+        );
     }
 
     /**

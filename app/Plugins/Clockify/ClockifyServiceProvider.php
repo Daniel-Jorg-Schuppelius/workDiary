@@ -10,6 +10,8 @@
 
 namespace App\Plugins\Clockify;
 
+use App\Plugins\Clockify\Services\ClockifyOutboxDispatcher;
+use App\Services\Integration\IntegrationOutboxDispatcherResolver;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -27,5 +29,6 @@ class ClockifyServiceProvider extends ServiceProvider {
     public function boot(): void {
         $this->loadRoutesFrom(__DIR__ . '/routes.php');
         $this->loadViewsFrom(__DIR__ . '/Resources/views', 'clockify');
+        $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new ClockifyOutboxDispatcher);
     }
 }

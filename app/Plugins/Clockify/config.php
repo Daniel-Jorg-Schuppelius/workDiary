@@ -31,4 +31,6 @@ return [
     'reports_base_url' => env('CLOCKIFY_REPORTS_BASE_URL'),
     // Wie viele Tage rückwirkend pro API-Lauf abgefragt werden.
     'sync_window_days' => (int) env('CLOCKIFY_SYNC_WINDOW_DAYS', 30),
+    // Korrekturen an importierten Zeiten nach Clockify zurückschreiben (Änderung/Löschung).
+    'writeback' => (bool) env('CLOCKIFY_WRITEBACK', false),
 ];

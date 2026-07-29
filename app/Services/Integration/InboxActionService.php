@@ -54,6 +54,13 @@ class InboxActionService {
             throw new RuntimeException('Konflikt-Eintrag ohne lokalen Datensatz.');
         }
 
+        // Festgeschriebene Datensätze (abgerechnete Zeiten) dürfen nicht per Klick
+        // auf den Fremdstand gezogen werden — sonst änderte sich die Grundlage
+        // eines Belegs. Klar sagen statt still nichts tun.
+        if (($item->remote_snapshot['resolution'] ?? null) === IntegrationInboxItem::RESOLUTION_ACKNOWLEDGE_ONLY) {
+            throw new RuntimeException((string) __('Dieser Datensatz ist bereits abgerechnet — der Fremdstand kann nicht übernommen werden. Bitte den Fall zur Kenntnis nehmen und die Abweichung über eine Korrektur buchen.'));
+        }
+
         $changes = array_intersect_key(
             $item->mapped_snapshot ?? [],
             array_flip($item->diff_fields ?? []),

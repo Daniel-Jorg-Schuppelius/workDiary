@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Stammdaten;
 
-use App\Models\{Customer, User};
+use App\Models\{Article, ArticleVariant, ContactBankAccount, Customer, User};
 use App\Services\Stammdaten\IdentifierIssueDetector;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -23,6 +23,11 @@ use Tests\TestCase;
 class IdentifierIssueHintTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+
+    protected function setUp(): void {
+        parent::setUp();
+        $this->setUpOrganization();
+    }
 
     private function detector(): IdentifierIssueDetector {
         return app(IdentifierIssueDetector::class);
@@ -84,5 +89,40 @@ class IdentifierIssueHintTest extends TestCase {
             ->assertOk()
             ->assertSee(__('stammdaten.identifier.heading'))
             ->assertSee('16/526/00164');
+    }
+
+    public function test_a_faulty_bank_account_of_the_contact_is_reported_with_its_label(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        ContactBankAccount::query()->create([
+            'organization_id' => $this->organization->id,
+            'accountable_type' => $customer->getMorphClass(),
+            'accountable_id' => $customer->getKey(),
+            'account_holder' => 'Beispiel GmbH',
+            // Realfall aus der Produktion: eine Stelle zu viel.
+            'iban' => 'DE791005000001068540253',
+            'bank_name' => 'Hausbank',
+        ]);
+
+        $issues = $this->detector()->forContact($customer->fresh());
+
+        $this->assertCount(1, $issues, 'die Bankverbindung hat keine eigene Detailseite');
+        $this->assertSame('iban', $issues[0]['field']);
+        $this->assertSame(__('stammdaten.identifier.context.bank_account', ['label' => 'Hausbank']), $issues[0]['context']);
+    }
+
+    public function test_a_faulty_variant_gtin_is_reported_on_the_article(): void {
+        $article = Article::factory()->create(['organization_id' => $this->organization->id, 'gtin' => null]);
+        ArticleVariant::factory()->create([
+            'organization_id' => $this->organization->id,
+            'article_id' => $article->id,
+            'sku' => 'VAR-1',
+            'gtin' => '4006381333932',
+        ]);
+
+        $issues = $this->detector()->forArticle($article->fresh());
+
+        $this->assertCount(1, $issues);
+        $this->assertSame('gtin', $issues[0]['field']);
+        $this->assertSame(__('stammdaten.identifier.context.variant', ['label' => 'VAR-1']), $issues[0]['context']);
     }
 }

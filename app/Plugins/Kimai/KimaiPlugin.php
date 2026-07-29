@@ -121,6 +121,7 @@ class KimaiPlugin implements Plugin, TimeImporter {
             ['key' => 'sync_window_days', 'label' => __('Sync-Zeitfenster (Tage)'), 'type' => 'text', 'default' => '30', 'help' => __('Wie viele Tage rückwirkend pro API-Lauf abgefragt werden.')],
             ['key' => 'export_enabled', 'label' => __('Rückbuchung aktivieren'), 'type' => 'boolean', 'default' => false, 'help' => __('Bucht in workDiary erfasste Zeiten gemappter Projekte als Kimai-Timesheets zurück.')],
             ['key' => 'default_activity_id', 'label' => __('Kimai-Activity-ID für Rückbuchungen'), 'type' => 'text', 'help' => __('Pflicht für die Rückbuchung — Kimai verlangt eine Tätigkeit je Timesheet.')],
+            ['key' => 'writeback', 'label' => __('Korrekturen zurückschreiben'), 'type' => 'boolean', 'default' => false, 'help' => __('Schreibt Korrekturen an bereits importierten Zeiten zurück nach Kimai (Änderung und Löschung). Wurde der Eintrag dort zwischenzeitlich geändert, wird nichts überschrieben — der Fall landet in der Integrations-Inbox. Abgerechnete Zeiten werden nie zurückgeschrieben.')],
         ];
     }
 

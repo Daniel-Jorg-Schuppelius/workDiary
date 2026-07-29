@@ -11,7 +11,7 @@
 namespace App\Plugins\Toggl;
 
 use App\Models\{Customer, ExternalReference, ForeignCustomer, Organization, Project};
-use App\Plugins\Support\{ImportedTimeEntry, MatchingTimeImportService};
+use App\Plugins\Support\{ImportedTimeEntry, MatchingTimeImportService, RemoteSyncWindow};
 use App\Plugins\Toggl\Sources\{TogglApiClient, TogglCsvParser, TogglEntry};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -50,7 +50,7 @@ class TogglImportService extends MatchingTimeImportService {
     public function importFromApi(Organization $organization, array $config, CarbonImmutable $from, CarbonImmutable $to): array {
         $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id']);
         if (! $client->isConfigured()) {
-            return ['created' => 0, 'skipped' => 0, 'unmatched' => 0];
+            return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'updated' => 0, 'conflicts' => 0];
         }
 
         // Workspace-Namen für die Inbox-Anzeige (Gruppen sind je Workspace getrennt).
@@ -74,7 +74,14 @@ class TogglImportService extends MatchingTimeImportService {
             }
         }
 
-        return $this->ingest($organization, $this->mapEntries(array_values($entries), $workspaceNames), $config);
+        return $this->ingest(
+            $organization,
+            $this->mapEntries(array_values($entries), $workspaceNames),
+            $config,
+            // Der Lauf liest /me PLUS alle Workspaces vollständig — fehlende
+            // Einträge sind drüben gelöscht.
+            new RemoteSyncWindow($from, $to),
+        );
     }
 
     /**

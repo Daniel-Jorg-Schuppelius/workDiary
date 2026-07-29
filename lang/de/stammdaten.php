@@ -13,6 +13,11 @@ return [
         'heading' => 'Prüfbedürftige Stammdaten',
         'hint' => 'Diese Angaben halten der Prüfung nicht stand. Korrigieren Sie sie hier — die Änderung wird an die angebundenen Dienste übertragen.',
         'suggestion' => 'Vorschlag: :value',
+        'context' => [
+            'bank_account' => 'Bankverbindung „:label“',
+            'variant' => 'Variante :label',
+            'bank_account_fallback' => 'Bankverbindung',
+        ],
         'field' => [
             'vat_id' => 'USt-IdNr.',
             'tax_number' => 'Steuernummer',

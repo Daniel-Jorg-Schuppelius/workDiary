@@ -12,7 +12,7 @@ namespace App\Plugins\OpenProject\Sources;
 
 use APIToolkit\API\Authentication\BasicAuthentication;
 use App\Plugins\OpenProject\Exceptions\{OpenProjectApiException, OpenProjectRateLimitException};
-use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
+use App\Plugins\Support\{PluginApiClient, PluginHttpFactory, RemoteTimeFingerprint, RemoteTimeWriter};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\Response;
 
@@ -24,7 +24,7 @@ use Illuminate\Http\Client\Response;
  * vollständig eingelesen (`_embedded.elements`, `total`). IDs werden aus den
  * HAL-`_links`-hrefs extrahiert.
  */
-class OpenProjectApiClient {
+class OpenProjectApiClient implements RemoteTimeWriter {
     /** Elemente pro Seite bei Sammel-Abfragen. */
     public const PAGE_SIZE = 200;
 
@@ -265,6 +265,89 @@ class OpenProjectApiClient {
     }
 
     /** Wirft bei Fehlerantworten — 429 separat, damit der Aufrufer Retry/Degraded unterscheidet. */
+    /**
+     * Aktueller OpenProject-Stand (Buchungsdatum + Dauer; Start-/Stoppzeiten
+     * kennt OpenProject nicht).
+     *
+     * @param  array<string, mixed>  $context
+     * @return array{description: ?string, date: ?CarbonImmutable, started_at: ?CarbonImmutable, ended_at: ?CarbonImmutable, minutes: int, billable: bool}|null
+     */
+    public function fetchRemoteState(string $externalId, array $context): ?array {
+        if (! $this->isConfigured() || ! is_numeric($externalId)) {
+            return null;
+        }
+
+        $response = $this->api()->getResponse($this->baseUrl . '/time_entries/' . (int) $externalId, [], ['timeout' => 20]);
+        if (! $response->successful()) {
+            return null;
+        }
+
+        $element = $response->json();
+        $spentOn = is_array($element) ? trim((string) ($element['spentOn'] ?? '')) : '';
+        if ($spentOn === '') {
+            return null;
+        }
+
+        return [
+            'description' => is_array($element['comment'] ?? null) ? (string) ($element['comment']['raw'] ?? '') : null,
+            'date' => CarbonImmutable::parse($spentOn),
+            'started_at' => null,
+            'ended_at' => null,
+            'minutes' => OpenProjectDuration::toMinutes(isset($element['hours']) ? (string) $element['hours'] : null),
+            'billable' => false,
+        ];
+    }
+
+    /**
+     * Überträgt den lokalen Stand (PATCH). OpenProject bucht auf ein Datum mit
+     * Dauer — Start-/Stoppzeiten gibt es dort nicht.
+     *
+     * @param  array{description: ?string, date: ?CarbonImmutable, started_at: ?CarbonImmutable, ended_at: ?CarbonImmutable, minutes: int, billable: bool}  $entry
+     * @param  array<string, mixed>  $context
+     */
+    public function pushEntryUpdate(string $externalId, array $entry, array $context): bool {
+        $spentOn = $entry['date'] ?? $entry['started_at'];
+        if (! $this->isConfigured() || ! is_numeric($externalId) || $spentOn === null || $entry['minutes'] <= 0) {
+            return false;
+        }
+
+        $response = $this->api()->requestResponse('patch', $this->baseUrl . '/time_entries/' . (int) $externalId, [
+            'json' => [
+                'spentOn' => $spentOn->toDateString(),
+                'hours' => OpenProjectDuration::fromMinutes($entry['minutes']),
+                'comment' => ['raw' => (string) $entry['description']],
+            ],
+            'timeout' => 20,
+        ]);
+
+        return $response->successful();
+    }
+
+    /**
+     * @param  array{description: ?string, date: ?CarbonImmutable, started_at: ?CarbonImmutable, ended_at: ?CarbonImmutable, minutes: int, billable: bool}  $entry
+     * @param  array<string, mixed>  $context
+     */
+    public function fingerprintOf(array $entry, array $context): ?string {
+        $spentOn = $entry['date'] ?? $entry['started_at'];
+
+        return $spentOn === null ? null : RemoteTimeFingerprint::fromDuration($spentOn, $entry['minutes']);
+    }
+
+    /**
+     * Löscht den Zeiteintrag; ein bereits gelöschter (404) gilt als erledigt.
+     *
+     * @param  array<string, mixed>  $context
+     */
+    public function pushEntryDeletion(string $externalId, array $context): bool {
+        if (! $this->isConfigured() || ! is_numeric($externalId)) {
+            return false;
+        }
+
+        $response = $this->api()->deleteResponse($this->baseUrl . '/time_entries/' . (int) $externalId, ['timeout' => 20]);
+
+        return $response->successful() || $response->status() === 404;
+    }
+
     private function guard(Response $response, string $context): void {
         if ($response->successful()) {
             return;

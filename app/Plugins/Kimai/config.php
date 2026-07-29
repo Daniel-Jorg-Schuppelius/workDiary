@@ -35,4 +35,6 @@ return [
     'default_activity_id' => env('KIMAI_DEFAULT_ACTIVITY_ID'),
     // Rückbuchung workDiary → Kimai aktivieren.
     'export_enabled' => (bool) env('KIMAI_EXPORT_ENABLED', false),
+    // Korrekturen an IMPORTIERTEN Zeiten nach Kimai zurückschreiben (Änderung/Löschung).
+    'writeback' => (bool) env('KIMAI_WRITEBACK', false),
 ];

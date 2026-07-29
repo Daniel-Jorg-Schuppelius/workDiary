@@ -11,7 +11,7 @@
 namespace App\Plugins\Toggl\Sources;
 
 use APIToolkit\API\Authentication\BasicAuthentication;
-use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
+use App\Plugins\Support\{PluginApiClient, PluginHttpFactory, RemoteTimeWriter, StartStopFingerprint};
 use Carbon\CarbonImmutable;
 
 /**
@@ -26,7 +26,9 @@ use Carbon\CarbonImmutable;
  * `workspace*`-Methoden die Stammdaten je Workspace; {@see workspaceEntries()}
  * holt alle Zeiteinträge (aller Benutzer) über die Reports-API v3.
  */
-class TogglApiClient {
+class TogglApiClient implements RemoteTimeWriter {
+    use StartStopFingerprint;
+
     /** Maximale Historie (Jahre) beim „alles"-Import, falls kein Floor bestimmbar ist. */
     public const MAX_HISTORY_YEARS = 12;
 
@@ -499,6 +501,96 @@ class TogglApiClient {
         $replaced = preg_replace('#/api/v9$#', '/reports/api/v3', $base);
 
         return $replaced ?? ($base . '/reports/api/v3');
+    }
+
+    /**
+     * Einzelnen Zeiteintrag frisch aus Toggl holen — Grundlage der
+     * Konflikterkennung vor dem Zurückschreiben.
+     *
+     * @param  array<string, mixed>  $context
+     * @return array{description: ?string, date: ?CarbonImmutable, started_at: ?CarbonImmutable, ended_at: ?CarbonImmutable, minutes: int, billable: bool}|null
+     */
+    public function fetchRemoteState(string $externalId, array $context): ?array {
+        $url = $this->entryUrl($externalId, $context);
+        if ($url === null) {
+            return null;
+        }
+
+        $response = $this->api()->getResponse($url, [], ['timeout' => 20]);
+        if (! $response->successful()) {
+            return null;
+        }
+
+        $record = $response->json();
+        if (! is_array($record) || ! isset($record['start'], $record['stop'])) {
+            return null;
+        }
+
+        $start = CarbonImmutable::parse((string) $record['start']);
+        $stop = CarbonImmutable::parse((string) $record['stop']);
+
+        return [
+            'description' => isset($record['description']) ? (string) $record['description'] : null,
+            'date' => $start,
+            'started_at' => $start,
+            'ended_at' => $stop,
+            'minutes' => (int) round($start->diffInSeconds($stop) / 60),
+            'billable' => (bool) ($record['billable'] ?? false),
+        ];
+    }
+
+    /**
+     * Zeiteintrag in Toggl aktualisieren (API v9).
+     *
+     * @param  array{description: ?string, date: ?CarbonImmutable, started_at: ?CarbonImmutable, ended_at: ?CarbonImmutable, minutes: int, billable: bool}  $entry
+     * @param  array<string, mixed>  $context
+     */
+    public function pushEntryUpdate(string $externalId, array $entry, array $context): bool {
+        $url = $this->entryUrl($externalId, $context);
+        if ($url === null) {
+            return false;
+        }
+
+        $changes = array_filter([
+            'description' => (string) $entry['description'],
+            'start' => $entry['started_at']?->utc()->toIso8601String(),
+            'stop' => $entry['ended_at']?->utc()->toIso8601String(),
+        ], static fn ($v): bool => $v !== null);
+        $changes['billable'] = $entry['billable'];
+
+        return $this->api()->putJson($url, $changes, ['timeout' => 20])->successful();
+    }
+
+    /**
+     * Zeiteintrag in Toggl löschen (API v9). Ein bereits gelöschter Eintrag
+     * (404) ist für uns erledigt.
+     *
+     * @param  array<string, mixed>  $context
+     */
+    public function pushEntryDeletion(string $externalId, array $context): bool {
+        $url = $this->entryUrl($externalId, $context);
+        if ($url === null) {
+            return false;
+        }
+
+        $response = $this->api()->deleteResponse($url, ['timeout' => 20]);
+
+        return $response->successful() || $response->status() === 404;
+    }
+
+    /**
+     * Der Workspace steht im Referenz-Payload; der konfigurierte ist der
+     * Rückfall für Referenzen aus früheren Importen.
+     *
+     * @param  array<string, mixed>  $context
+     */
+    private function entryUrl(string $externalId, array $context): ?string {
+        $workspaceId = (int) ($context['workspace_id'] ?? $this->workspaceId ?? 0);
+        if (! $this->isConfigured() || $workspaceId <= 0 || ! is_numeric($externalId)) {
+            return null;
+        }
+
+        return $this->baseUrl . '/workspaces/' . $workspaceId . '/time_entries/' . (int) $externalId;
     }
 
     private function api(): PluginApiClient {

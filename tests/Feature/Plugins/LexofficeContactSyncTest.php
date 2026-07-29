@@ -41,13 +41,13 @@ class LexofficeContactSyncTest extends TestCase {
             'organization_id' => $this->organization->id,
             'name' => 'ACME GmbH',
             'company' => 'ACME GmbH',
-            'vat_id' => 'DE123456789',
+            'vat_id' => 'DE111111117',
             'email' => 'info@acme.test',
         ]);
 
         $this->fakeContacts([[
             'id' => 'lex-acme',
-            'company' => ['name' => 'ACME GmbH', 'vatRegistrationId' => 'DE123456789'],
+            'company' => ['name' => 'ACME GmbH', 'vatRegistrationId' => 'DE111111117'],
             'emailAddresses' => ['business' => ['info@acme.test']],
         ]]);
 
@@ -71,13 +71,13 @@ class LexofficeContactSyncTest extends TestCase {
             'organization_id' => $this->organization->id,
             'name' => 'Alte Firma',
             'company' => 'Alte Firma',
-            'vat_id' => 'DE999',
+            'vat_id' => 'DE111111125',
             'email' => 'old@example.test',
         ]);
 
         $this->fakeContacts([[
             'id' => 'lex-2',
-            'company' => ['name' => 'Neue Firma GmbH', 'vatRegistrationId' => 'DE999'],
+            'company' => ['name' => 'Neue Firma GmbH', 'vatRegistrationId' => 'DE111111125'],
             'emailAddresses' => ['business' => ['new@example.test']],
             'addresses' => ['billing' => [[
                 'street' => 'Hauptstr. 1',
@@ -105,13 +105,13 @@ class LexofficeContactSyncTest extends TestCase {
             'organization_id' => $this->organization->id,
             'name' => 'Original AG',
             'company' => 'Original AG',
-            'vat_id' => 'DE111',
+            'vat_id' => 'DE111111133',
             'email' => 'orig@example.test',
         ]);
 
         $this->fakeContacts([[
             'id' => 'lex-3',
-            'company' => ['name' => 'Original AG', 'vatRegistrationId' => 'DE111'],
+            'company' => ['name' => 'Original AG', 'vatRegistrationId' => 'DE111111133'],
             'emailAddresses' => ['business' => ['remote-changed@example.test']],
         ]]);
 
@@ -147,7 +147,7 @@ class LexofficeContactSyncTest extends TestCase {
     public function test_create_missing_local_creates_new_customer_when_no_match_found(): void {
         $this->fakeContacts([[
             'id' => 'lex-4',
-            'company' => ['name' => 'Brandneu UG', 'vatRegistrationId' => 'DE777'],
+            'company' => ['name' => 'Brandneu UG', 'vatRegistrationId' => 'DE777777773'],
             'emailAddresses' => ['business' => ['hello@brandneu.test']],
             'addresses' => ['billing' => [[
                 'street' => 'Neue Str. 5',
@@ -168,7 +168,7 @@ class LexofficeContactSyncTest extends TestCase {
         $this->assertDatabaseHas('customers', [
             'organization_id' => $this->organization->id,
             'company' => 'Brandneu UG',
-            'vat_id' => 'DE777',
+            'vat_id' => 'DE777777773',
             'address_city' => 'Hamburg',
         ]);
     }
@@ -228,7 +228,7 @@ class LexofficeContactSyncTest extends TestCase {
             'organization_id' => $this->organization->id,
             'name' => 'Schon verknüpft',
             'company' => 'Schon verknüpft',
-            'vat_id' => 'DE555',
+            'vat_id' => 'DE777777781',
         ]);
 
         ExternalReference::create([
@@ -243,7 +243,7 @@ class LexofficeContactSyncTest extends TestCase {
 
         $this->fakeContacts([[
             'id' => 'lex-5',
-            'company' => ['name' => 'Schon verknüpft', 'vatRegistrationId' => 'DE555'],
+            'company' => ['name' => 'Schon verknüpft', 'vatRegistrationId' => 'DE777777781'],
         ]]);
 
         $result = (new LexofficeContactSync)->sync(
@@ -262,7 +262,7 @@ class LexofficeContactSyncTest extends TestCase {
             'organization_id' => $this->organization->id,
             'name' => 'Detailfirma',
             'company' => 'Detailfirma',
-            'vat_id' => 'DE424242',
+            'vat_id' => 'DE777777790',
             'tax_number' => null,
             'mobile' => null,
             'fax' => null,
@@ -272,7 +272,7 @@ class LexofficeContactSyncTest extends TestCase {
             'id' => 'lex-detail',
             'company' => [
                 'name' => 'Detailfirma',
-                'vatRegistrationId' => 'DE424242',
+                'vatRegistrationId' => 'DE777777790',
                 'taxNumber' => '21/815/00815',
             ],
             'roles' => ['customer' => ['number' => 10042]],
@@ -326,14 +326,14 @@ class LexofficeContactSyncTest extends TestCase {
             'organization_id' => $this->organization->id,
             'name' => 'Entwurfskunde',
             'company' => 'Entwurfskunde',
-            'vat_id' => 'DE606060',
+            'vat_id' => 'DE811907980',
             'number' => 'ENTWURF-ABCD1234',
             'number_source' => 'lexoffice',
         ]);
 
         $this->fakeContacts([[
             'id' => 'lex-draft',
-            'company' => ['name' => 'Entwurfskunde', 'vatRegistrationId' => 'DE606060'],
+            'company' => ['name' => 'Entwurfskunde', 'vatRegistrationId' => 'DE811907980'],
             'roles' => ['customer' => ['number' => 20055]],
         ]]);
 
@@ -346,5 +346,27 @@ class LexofficeContactSyncTest extends TestCase {
         $customer->refresh();
         $this->assertSame('20055', (string) $customer->lexoffice_contact_number);
         $this->assertSame('20055', (string) $customer->number);
+    }
+
+    public function test_a_mislabelled_vat_id_from_lexoffice_is_not_taken_over(): void {
+        // In Lexoffice steht regelmäßig eine Steuernummer im USt-IdNr.-Feld.
+        // Übernähmen wir sie, stünde sie hier dauerhaft im falschen Feld — und
+        // liefe in jede USt-relevante Ausgabe.
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Fehlbeschriftet GmbH',
+            'company' => 'Fehlbeschriftet GmbH',
+            'vat_id' => null,
+        ]);
+
+        $this->fakeContacts([[
+            'id' => 'lex-mislabelled',
+            'company' => ['name' => 'Fehlbeschriftet GmbH', 'vatRegistrationId' => '16/526/00164'],
+            'roles' => ['customer' => ['number' => 20099]],
+        ]]);
+
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LexofficeWins, 'test-key');
+
+        $this->assertNull($customer->fresh()->vat_id, 'Steuernummer gehört nicht in das USt-IdNr.-Feld');
     }
 }

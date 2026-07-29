@@ -13,6 +13,11 @@ return [
         'heading' => 'Données de base à vérifier',
         'hint' => 'Ces informations échouent à la validation. Corrigez-les ici — la modification est transmise aux services connectés.',
         'suggestion' => 'Proposition : :value',
+        'context' => [
+            'bank_account' => 'Coordonnées bancaires « :label »',
+            'variant' => 'Variante :label',
+            'bank_account_fallback' => 'Coordonnées bancaires',
+        ],
         'field' => [
             'vat_id' => 'N° de TVA',
             'tax_number' => 'Numéro fiscal',

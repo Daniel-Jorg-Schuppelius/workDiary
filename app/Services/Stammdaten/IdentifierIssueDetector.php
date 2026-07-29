@@ -39,6 +39,58 @@ class IdentifierIssueDetector {
     ];
 
     /**
+     * Befunde eines Kontakts **samt** seiner Bankverbindungen.
+     *
+     * Die hinterlegten Bankverbindungen ({@see \App\Models\ContactBankAccount})
+     * haben keine eigene Detailseite — ohne diesen Durchgriff bliebe eine falsche
+     * IBAN dort unsichtbar, obwohl sie im Zahlungsverkehr landet.
+     *
+     * @return list<array{field: string, value: string, reason: string, suggestion: ?string, context: ?string}>
+     */
+    public function forContact(Model $contact): array {
+        $issues = array_map(static fn (array $issue): array => $issue + ['context' => null], $this->forModel($contact));
+
+        if (! method_exists($contact, 'bankAccounts')) {
+            return $issues;
+        }
+
+        foreach ($contact->bankAccounts()->get() as $account) {
+            $label = trim((string) ($account->bank_name ?? ''));
+            foreach ($this->forModel($account) as $issue) {
+                $issues[] = $issue + ['context' => (string) __('stammdaten.identifier.context.bank_account', [
+                    'label' => $label !== '' ? $label : (string) __('stammdaten.identifier.context.bank_account_fallback'),
+                ])];
+            }
+        }
+
+        return $issues;
+    }
+
+    /**
+     * Befunde eines Artikels **samt** seiner Varianten — eine falsche GTIN an
+     * der Variante wandert genauso in Katalog- und Bestell-Exporte wie eine am
+     * Artikel selbst.
+     *
+     * @return list<array{field: string, value: string, reason: string, suggestion: ?string, context: ?string}>
+     */
+    public function forArticle(Model $article): array {
+        $issues = array_map(static fn (array $issue): array => $issue + ['context' => null], $this->forModel($article));
+
+        if (! method_exists($article, 'variants')) {
+            return $issues;
+        }
+
+        foreach ($article->variants()->get() as $variant) {
+            $label = trim((string) ($variant->sku ?? '')) ?: (string) $variant->getKey();
+            foreach ($this->forModel($variant) as $issue) {
+                $issues[] = $issue + ['context' => (string) __('stammdaten.identifier.context.variant', ['label' => $label])];
+            }
+        }
+
+        return $issues;
+    }
+
+    /**
      * @return list<array{field: string, value: string, reason: string, suggestion: ?string}>
      */
     public function forModel(Model $model): array {

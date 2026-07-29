@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "71eb69577ec55492a05ca6cdb2b5611b",
+    "content-hash": "8a8ae0a14f5c8161bad3595e5aba3a79",
     "packages": [
         {
             "name": "azuyalabs/yasumi",
@@ -561,6 +561,52 @@
                 "source": "https://github.com/Daniel-Jorg-Schuppelius/lexoffice-php-sdk/tree/v1.1.1"
             },
             "time": "2026-07-26T10:33:43+00:00"
+        },
+        {
+            "name": "daniel-jorg-schuppelius/orgamax-php-sdk",
+            "version": "v1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Daniel-Jorg-Schuppelius/orgamax-php-sdk.git",
+                "reference": "d2d3d077676d33524a208023118af25694665dd5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/orgamax-php-sdk/zipball/d2d3d077676d33524a208023118af25694665dd5",
+                "reference": "d2d3d077676d33524a208023118af25694665dd5",
+                "shasum": ""
+            },
+            "require": {
+                "daniel-jorg-schuppelius/php-api-toolkit": "^2.2",
+                "php": ">=8.2 <8.5"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.27",
+                "phpstan/phpstan": "^2.1",
+                "phpunit/phpunit": "^11.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Orgamax\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Joerg Schuppelius",
+                    "email": "info@schuppelius.org"
+                }
+            ],
+            "description": "orgaMAX SDK for PHP",
+            "support": {
+                "issues": "https://github.com/Daniel-Jorg-Schuppelius/orgamax-php-sdk/issues",
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/orgamax-php-sdk/tree/v1"
+            },
+            "time": "2026-07-26T11:44:25+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/php-api-toolkit",

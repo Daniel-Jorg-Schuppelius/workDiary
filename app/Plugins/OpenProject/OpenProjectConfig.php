@@ -19,7 +19,7 @@ use App\Plugins\Support\PluginSettingsResolver;
  */
 class OpenProjectConfig {
     /**
-     * @return array{enabled: bool, api_token: ?string, base_url: ?string, sync_window_days: int, default_billable: bool, default_user_id: ?int, default_activity_id: ?int, create_missing_projects: bool}
+     * @return array{enabled: bool, api_token: ?string, base_url: ?string, sync_window_days: int, default_billable: bool, default_user_id: ?int, default_activity_id: ?int, create_missing_projects: bool, writeback: bool}
      */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(OpenProjectPlugin::ID, $organizationId);
@@ -33,6 +33,7 @@ class OpenProjectConfig {
             'default_user_id' => $r->intOrNull('default_user_id'),
             'default_activity_id' => $r->intOrNull('default_activity_id'),
             'create_missing_projects' => $r->bool('create_missing_projects', false),
+            'writeback' => $r->bool('writeback', false),
         ];
     }
 

@@ -8,6 +8,9 @@
             <ul class="mt-2 space-y-1 text-sm">
                 @foreach ($issues as $issue)
                     <li>
+                        @if (! empty($issue['context']))
+                            <span class="opacity-70">{{ $issue['context'] }}:</span>
+                        @endif
                         <span class="font-mono">{{ __('stammdaten.identifier.field.' . $issue['field']) }}</span>
                         <span class="font-mono opacity-70">{{ $issue['value'] }}</span>
                         — {{ $issue['reason'] }}

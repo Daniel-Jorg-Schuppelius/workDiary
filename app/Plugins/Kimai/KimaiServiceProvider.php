@@ -10,12 +10,14 @@
 
 namespace App\Plugins\Kimai;
 
+use App\Plugins\Kimai\Services\KimaiOutboxDispatcher;
+use App\Services\Integration\IntegrationOutboxDispatcherResolver;
 use Illuminate\Support\ServiceProvider;
 
 /**
  * Plugin-eigener ServiceProvider (geladen vom Core-PluginServiceProvider, sobald
  * KimaiPlugin in der Registry steht). Registriert den Import-Service, lädt Routen
- * und Views.
+ * und Views sowie den Rückkanal für importierte Zeiten.
  */
 class KimaiServiceProvider extends ServiceProvider {
     public function register(): void {
@@ -27,5 +29,6 @@ class KimaiServiceProvider extends ServiceProvider {
     public function boot(): void {
         $this->loadRoutesFrom(__DIR__ . '/routes.php');
         $this->loadViewsFrom(__DIR__ . '/Resources/views', 'kimai');
+        $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new KimaiOutboxDispatcher);
     }
 }

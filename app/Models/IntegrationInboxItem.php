@@ -56,6 +56,13 @@ class IntegrationInboxItem extends Model {
 
     // Fall-Typen
     public const CASE_UNMATCHED = 'unmatched';
+    /**
+     * Marker im `remote_snapshot`: dieser Fall lässt sich nur zur Kenntnis
+     * nehmen. Der lokale Datensatz ist festgeschrieben (abgerechnet/exportiert),
+     * ein „Fremdstand übernehmen" wäre eine nachträgliche Belegänderung.
+     */
+    public const RESOLUTION_ACKNOWLEDGE_ONLY = 'acknowledge_only';
+
     public const CASE_CONFLICT = 'conflict';
     public const CASE_AMBIGUOUS = 'ambiguous';
 

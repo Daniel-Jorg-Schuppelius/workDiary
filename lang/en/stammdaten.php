@@ -13,6 +13,11 @@ return [
         'heading' => 'Master data needs review',
         'hint' => 'These entries fail validation. Correct them here — the change is pushed to the connected services.',
         'suggestion' => 'Suggestion: :value',
+        'context' => [
+            'bank_account' => 'Bank account “:label”',
+            'variant' => 'Variant :label',
+            'bank_account_fallback' => 'Bank account',
+        ],
         'field' => [
             'vat_id' => 'VAT ID',
             'tax_number' => 'Tax number',

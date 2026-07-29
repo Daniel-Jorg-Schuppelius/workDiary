@@ -13,6 +13,7 @@ namespace App\Plugins\Lexoffice;
 use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Models\{ContactAddress, Customer, ExternalReference, ExternalReferenceAlias, IntegrationInboxItem, Organization, Supplier};
 use App\Plugins\Support\PluginHttpFactory;
+use CommonToolkit\ValueObjects\VatNumber;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use RuntimeException;
 
@@ -766,7 +767,15 @@ class LexofficeContactSync {
         // NUR die USt-IdNr. — kein Fallback auf company.taxNumber, sonst
         // landet eine Steuernummer im vat_id-Feld (Fehl-Beschriftung) und
         // verschmutzt obendrein den vat_id-Match in findLocalMatch().
-        return (string) data_get($remote, 'company.vatRegistrationId', '');
+        $value = trim((string) data_get($remote, 'company.vatRegistrationId', ''));
+
+        // Auch das Feld selbst ist drüben oft fehlbeschriftet (Steuernummer in
+        // der USt-IdNr.). Ein solcher Wert wird nicht übernommen: bei der
+        // Aktualisierung fällt er aus den Änderungen (Bestand bleibt), bei der
+        // Neuanlage bleibt das Feld leer. Sichtbar wird er über den
+        // Stammdaten-Hinweis am Kontakt; der Rohwert bleibt im
+        // `remote_snapshot` der Inbox-Fälle nachvollziehbar.
+        return $value !== '' && VatNumber::tryFrom($value) === null ? '' : $value;
     }
 
     /**
