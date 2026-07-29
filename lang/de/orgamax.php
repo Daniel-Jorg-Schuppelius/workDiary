@@ -72,6 +72,7 @@ return [
     'invoice.lock_confirm' => 'Rechnung IRREVERSIBEL sperren? Dieser Schritt kann nicht rückgängig gemacht werden und läuft nie automatisch.',
     'invoice.locked' => 'Rechnung gesperrt.',
     'invoice.lock_failed' => 'Sperren fehlgeschlagen (HTTP :status).',
+    'invoice.send_subject_default' => 'Rechnung :number',
     'invoice.send_enqueued' => 'Versand beauftragt.',
     'invoice.payment_enqueued' => 'Zahlung gemeldet (mit Dublettenprüfung).',
     'invoice.pdf_failed' => 'PDF konnte nicht geladen werden.',

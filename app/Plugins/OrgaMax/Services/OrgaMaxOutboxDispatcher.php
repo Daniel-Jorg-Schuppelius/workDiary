@@ -12,10 +12,16 @@ declare(strict_types=1);
 
 namespace App\Plugins\OrgaMax\Services;
 
+use APIToolkit\Entities\ID;
+use APIToolkit\Exceptions\ConflictException;
 use App\Contracts\Integration\IntegrationOutboxDispatcher;
 use App\Models\{ExternalReference, IntegrationOutboxEntry, OrgaMaxConnection};
-use App\Plugins\OrgaMax\Api\{OrgaMaxApiException, OrgaMaxClientFactory};
+use App\Plugins\OrgaMax\Api\OrgaMaxClientFactory;
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
+use Orgamax\API\Client;
+use Orgamax\API\Endpoints\{InvoicesEndpoint, OrdersEndpoint};
+use Orgamax\Entities\Invoices\InvoicePayment;
+use Orgamax\Enums\PaymentType;
 use RuntimeException;
 
 /**
@@ -63,7 +69,7 @@ class OrgaMaxOutboxDispatcher implements IntegrationOutboxDispatcher {
     }
 
     /** @param array<string, mixed> $payload */
-    private function convert(OrgaMaxConnection $connection, \App\Plugins\OrgaMax\Api\OrgaMaxClient $client, IntegrationOutboxEntry $entry, array $payload): bool {
+    private function convert(OrgaMaxConnection $connection, Client $client, IntegrationOutboxEntry $entry, array $payload): bool {
         $orderId = (string) ($payload['order_id'] ?? '');
         if ($orderId === '') {
             throw new RuntimeException('invoice.convert ohne order_id.');
@@ -82,8 +88,9 @@ class OrgaMaxOutboxDispatcher implements IntegrationOutboxDispatcher {
             return true;
         }
 
-        $body = $client->orderToInvoice($orderId);
-        $invoiceId = (string) ($body['id'] ?? $body['invoiceId'] ?? '');
+        $result = (new OrdersEndpoint($client))->createInvoice(new ID($orderId))->getData();
+        $invoice = $result?->getInvoice();
+        $invoiceId = $invoice?->getId() !== null ? (string) $invoice->getId() : '';
 
         ExternalReference::create([
             'organization_id' => $entry->organization_id,
@@ -92,7 +99,12 @@ class OrgaMaxOutboxDispatcher implements IntegrationOutboxDispatcher {
             'referenceable_type' => $connection->getMorphClass(),
             'referenceable_id' => $connection->getKey(),
             'external_id' => 'order:' . $orderId,
-            'payload' => ['source' => 'orgamax', 'invoice_id' => $invoiceId, 'order_id' => $orderId] + $body,
+            'payload' => [
+                'source' => 'orgamax',
+                'invoice_id' => $invoiceId,
+                'invoice_number' => (string) ($invoice?->getNumber() ?? ''),
+                'order_id' => $orderId,
+            ],
             'synced_at' => now(),
         ]);
 
@@ -100,28 +112,38 @@ class OrgaMaxOutboxDispatcher implements IntegrationOutboxDispatcher {
     }
 
     /** @param array<string, mixed> $payload */
-    private function send(\App\Plugins\OrgaMax\Api\OrgaMaxClient $client, array $payload): bool {
+    private function send(Client $client, array $payload): bool {
         $invoiceId = (string) ($payload['invoice_id'] ?? '');
         if ($invoiceId === '') {
             throw new RuntimeException('invoice.send ohne invoice_id.');
         }
 
-        try {
-            $client->sendInvoice($invoiceId, (array) ($payload['message'] ?? []));
-        } catch (OrgaMaxApiException $e) {
-            // Bereits versendete Rechnungen gelten als bestätigt (idempotent).
-            if ($e->status === 409) {
-                return true;
-            }
+        $message = (array) ($payload['message'] ?? []);
+        $recipients = array_values(array_filter(array_map(
+            fn($recipient) => trim((string) $recipient),
+            (array) ($message['recipients'] ?? $message['recipient'] ?? []),
+        ), fn(string $recipient) => $recipient !== ''));
+        if ($recipients === []) {
+            throw new RuntimeException('invoice.send ohne Empfänger.');
+        }
 
-            throw $e;
+        try {
+            (new InvoicesEndpoint($client))->send(
+                new ID($invoiceId),
+                $recipients,
+                (string) ($message['subject'] ?? ''),
+                isset($message['attachment_name']) ? (string) $message['attachment_name'] : null,
+            );
+        } catch (ConflictException) {
+            // Bereits versendete Rechnungen gelten als bestätigt (idempotent).
+            return true;
         }
 
         return true;
     }
 
     /** @param array<string, mixed> $payload */
-    private function pushPayment(OrgaMaxConnection $connection, \App\Plugins\OrgaMax\Api\OrgaMaxClient $client, IntegrationOutboxEntry $entry, array $payload): bool {
+    private function pushPayment(OrgaMaxConnection $connection, Client $client, IntegrationOutboxEntry $entry, array $payload): bool {
         if ($connection->capabilityLeader('payments') !== 'workdiary') {
             throw new RuntimeException('Zahlungen führt orgaMAX — payment.push ist nur bei WorkDiary-geführtem Zahlungseingang zulässig.');
         }
@@ -143,7 +165,12 @@ class OrgaMaxOutboxDispatcher implements IntegrationOutboxDispatcher {
             return true;
         }
 
-        $client->addPayment($invoiceId, array_intersect_key($payload, array_flip(['amount', 'date', 'note'])));
+        (new InvoicesEndpoint($client))->addPayment(new ID($invoiceId), new InvoicePayment([
+            'amount' => (float) ($payload['amount'] ?? 0),
+            // Teilzahlungen kennzeichnet der Aufrufer über `type` (Enum der API).
+            'type' => (PaymentType::tryFrom((string) ($payload['type'] ?? '')) ?? PaymentType::PAYMENT)->value,
+            'date' => (string) ($payload['date'] ?? ''),
+        ]));
 
         ExternalReference::create([
             'organization_id' => $entry->organization_id,

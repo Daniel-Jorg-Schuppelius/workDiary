@@ -12,10 +12,12 @@ declare(strict_types=1);
 
 namespace App\Plugins\OrgaMax\Http\Controllers;
 
+use APIToolkit\Entities\ID;
+use APIToolkit\Exceptions\ApiException;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\{ExternalReference, IntegrationInboxItem, OrgaMaxConnection, Organization, User};
-use App\Plugins\OrgaMax\Api\{OrgaMaxApiException, OrgaMaxClientFactory};
+use App\Plugins\OrgaMax\Api\OrgaMaxClientFactory;
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Plugins\OrgaMax\Services\{OrgaMaxConnectionService, OrgaMaxScopePreflight, OrgaMaxSyncService};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
@@ -24,6 +26,7 @@ use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Orgamax\API\Endpoints\InvoicesEndpoint;
 use RuntimeException;
 use Throwable;
 
@@ -119,9 +122,9 @@ class OrgaMaxAdminController extends Controller {
 
         try {
             $this->connections->handleCallback($organization, $iid, $state);
-        } catch (OrgaMaxApiException $e) {
+        } catch (ApiException $e) {
             return redirect()->route('admin.orgamax.index')
-                ->with('error', __('orgamax.error.token_exchange_failed', ['status' => $e->status]));
+                ->with('error', __('orgamax.error.token_exchange_failed', ['status' => $e->getCode()]));
         } catch (RuntimeException $e) {
             return redirect()->route('admin.orgamax.index')->with('error', $e->getMessage());
         }
@@ -228,9 +231,9 @@ class OrgaMaxAdminController extends Controller {
         $connection = $this->connection($organization);
 
         try {
-            $this->clients->for($connection)->lockInvoice($externalId);
-        } catch (OrgaMaxApiException $e) {
-            return back()->with('error', __('orgamax.invoice.lock_failed', ['status' => $e->status]));
+            (new InvoicesEndpoint($this->clients->for($connection)))->lock(new ID($externalId));
+        } catch (ApiException $e) {
+            return back()->with('error', __('orgamax.invoice.lock_failed', ['status' => $e->getCode()]));
         }
         $connection->audit('orgamax_invoice_locked', ['invoice_id' => $externalId, 'by' => $user->id]);
 
@@ -252,7 +255,17 @@ class OrgaMaxAdminController extends Controller {
             $organization->id,
             OrgaMaxPlugin::ID,
             'invoice.send',
-            ['invoice_id' => $externalId, 'message' => array_filter(['recipient' => $data['recipient'], 'subject' => $data['subject'] ?? null])],
+            [
+                'invoice_id' => $externalId,
+                // Betreff ist im API-Vertrag Pflicht — Standard in der Sprache
+                // des bestätigenden Admins, nicht der des späteren Workers.
+                'message' => [
+                    'recipients' => [(string) $data['recipient']],
+                    'subject' => trim((string) ($data['subject'] ?? '')) !== ''
+                        ? (string) $data['subject']
+                        : (string) __('orgamax.invoice.send_subject_default', ['number' => $externalId]),
+                ],
+            ],
             'orgamax:send:' . $organization->id . ':' . $externalId,
             $connection,
         );
@@ -293,8 +306,9 @@ class OrgaMaxAdminController extends Controller {
         $connection = $this->connection($organization);
 
         try {
-            $pdf = $this->clients->for($connection)->invoicePdf($externalId);
-        } catch (OrgaMaxApiException) {
+            // GET /invoice/document/{id} — die ältere /download-Route ist deprecated.
+            $pdf = (new InvoicesEndpoint($this->clients->for($connection)))->document(new ID($externalId));
+        } catch (ApiException) {
             abort(502, (string) __('orgamax.invoice.pdf_failed'));
         }
         $connection->audit('orgamax_invoice_pdf_fetched', ['invoice_id' => $externalId, 'sha256' => CryptoHelper::hash($pdf)]);

@@ -72,6 +72,7 @@ return [
     'invoice.lock_confirm' => 'Verrouiller la facture de façon IRRÉVERSIBLE ? Cette étape est définitive et jamais automatique.',
     'invoice.locked' => 'Facture verrouillée.',
     'invoice.lock_failed' => 'Échec du verrouillage (HTTP :status).',
+    'invoice.send_subject_default' => 'Facture :number',
     'invoice.send_enqueued' => 'Envoi en file.',
     'invoice.payment_enqueued' => 'Paiement enregistré (avec contrôle des doublons).',
     'invoice.pdf_failed' => 'Le PDF n’a pas pu être chargé.',

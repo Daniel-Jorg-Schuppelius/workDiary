@@ -72,6 +72,7 @@ return [
     'invoice.lock_confirm' => 'Lock invoice IRREVERSIBLY? This step cannot be undone and never runs automatically.',
     'invoice.locked' => 'Invoice locked.',
     'invoice.lock_failed' => 'Locking failed (HTTP :status).',
+    'invoice.send_subject_default' => 'Invoice :number',
     'invoice.send_enqueued' => 'Sending enqueued.',
     'invoice.payment_enqueued' => 'Payment recorded (with duplicate check).',
     'invoice.pdf_failed' => 'PDF could not be loaded.',

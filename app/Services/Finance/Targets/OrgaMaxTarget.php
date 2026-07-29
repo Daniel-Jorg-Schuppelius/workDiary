@@ -15,10 +15,13 @@ namespace App\Services\Finance\Targets;
 use App\Enums\Finance\{TransferChannel, TransferTarget};
 use App\Models\{ExternalReference, OrgaMaxConnection, TimeEntry};
 use App\Models\Finance\BillingTransfer;
-use App\Plugins\OrgaMax\Api\{OrgaMaxClient, OrgaMaxClientFactory};
+use App\Plugins\OrgaMax\Api\OrgaMaxClientFactory;
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Services\Invoicing\BillableTimeAggregator;
 use GuzzleHttp\Exception\ConnectException;
+use Orgamax\API\Client;
+use Orgamax\API\Endpoints\OrdersEndpoint;
+use Orgamax\Entities\Orders\Order;
 use RuntimeException;
 
 /**
@@ -90,60 +93,57 @@ class OrgaMaxTarget implements FacturationTarget {
             throw new RuntimeException((string) __('finance.error.no_sources'));
         }
 
-        $payload = [
-            'customerId' => $customerRef->external_id,
-            // Quellmarker in Referenz UND interner Notiz — Grundlage der
-            // Reconciliation und des Übergabenachweises.
-            'reference' => $marker,
-            'internalNote' => (string) __('orgamax.order.internal_note', [
+        $order = new Order([
+            'customerId' => (int) $customerRef->external_id,
+            // Quellmarker in der Auftragsnotiz — Grundlage der Reconciliation
+            // und des Übergabenachweises.
+            'notes' => (string) __('orgamax.order.internal_note', [
                 'channel' => $transfer->channel->label(),
                 'from' => $transfer->period_from?->format('d.m.Y') ?? '—',
                 'to' => $transfer->period_to?->format('d.m.Y') ?? '—',
             ]) . ' [' . $marker . ']',
             'positions' => $positions,
-        ];
+        ]);
 
         try {
-            $body = $client->createOrder($payload);
+            $created = (new OrdersEndpoint($client))->create($order)->getData();
         } catch (ConnectException) {
             // Timeout/Netzabriss NACH dem Senden: Ausgang unklar — kein
             // blindes Retry; der nächste Lauf reconciled über den Marker.
             throw new RuntimeException((string) __('orgamax.error.outcome_unclear'));
         }
 
-        $externalId = (string) ($body['id'] ?? $body['orderId'] ?? '');
+        $externalId = (string) ($created?->getId() ?? '');
         if ($externalId === '') {
             throw new RuntimeException('orgaMAX order create returned no id.');
         }
 
-        return new TargetResult(externalReference: $this->storeReference($transfer, ['id' => $externalId] + $body, $marker, adopted: false));
+        return new TargetResult(externalReference: $this->storeReference($transfer, ['id' => $externalId], $marker, adopted: false));
     }
 
     // ── Reconciliation ──────────────────────────────────────────────────
 
     /**
      * Jüngste Aufträge nach dem Quellmarker durchsuchen (begrenztes Fenster).
+     * Gesucht wird im serialisierten Auftrag: welches Feld den Marker trägt,
+     * hängt davon ab, was die Liste zurückliefert (Notiz, Positionstext).
      *
      * @return array<string, mixed>|null
      */
-    private function findByMarker(OrgaMaxClient $client, string $marker): ?array {
+    private function findByMarker(Client $client, string $marker): ?array {
         $pageSize = max(1, (int) config('plugins.orgamax.page_size', 100));
         $limit = max($pageSize, (int) config('plugins.orgamax.reconcile_scan_limit', 200));
+        $orders = new OrdersEndpoint($client);
 
         for ($offset = 0; $offset < $limit; $offset += $pageSize) {
-            $rows = $client->orders($offset, $pageSize);
+            $rows = $orders->search(['offset' => $offset, 'limit' => $pageSize])?->getValues() ?? [];
             foreach ($rows as $row) {
-                if (! is_array($row)) {
+                $externalId = $row->getId() !== null ? (string) $row->getId() : '';
+                if ($externalId === '' || ! str_contains((string) json_encode($row->toArray()), $marker)) {
                     continue;
                 }
-                $haystack = implode(' ', array_filter([
-                    (string) ($row['reference'] ?? ''),
-                    (string) ($row['internalNote'] ?? ''),
-                    (string) ($row['note'] ?? ''),
-                ]));
-                if (str_contains($haystack, $marker) && ! empty($row['id'] ?? $row['orderId'] ?? null)) {
-                    return ['id' => (string) ($row['id'] ?? $row['orderId'])] + $row;
-                }
+
+                return ['id' => $externalId, 'number' => (string) ($row->getNumber() ?? '')];
             }
             if (count($rows) < $pageSize) {
                 break;
@@ -198,12 +198,7 @@ class OrgaMaxTarget implements FacturationTarget {
                 : $transfer->customer->hourly_rate;
             $rate = $block->hourlyRate() ?? $fallbackRate?->toFloat() ?? 0.0;
 
-            $positions[] = [
-                'description' => $block->displayName($transfer),
-                'quantity' => $hours,
-                'unit' => 'h',
-                'unitPrice' => round($rate, 2),
-            ];
+            $positions[] = self::position($block->displayName($transfer), $hours, 'h', $rate);
         }
 
         return $positions;
@@ -222,14 +217,31 @@ class OrgaMaxTarget implements FacturationTarget {
                 $name .= ' (' . $date . ')';
             }
 
-            $positions[] = [
-                'description' => $name,
-                'quantity' => round(($usage->quantity?->getValue()->toFloat() ?? 0.0), 2),
-                'unit' => $usage->unit !== '' ? (string) $usage->unit : (string) __('invoicing.unit_piece'),
-                'unitPrice' => round($usage->unit_price?->toFloat() ?? 0.0, 2),
-            ];
+            $positions[] = self::position(
+                $name,
+                round(($usage->quantity?->getValue()->toFloat() ?? 0.0), 2),
+                $usage->unit !== '' ? (string) $usage->unit : (string) __('invoicing.unit_piece'),
+                $usage->unit_price?->toFloat() ?? 0.0,
+            );
         }
 
         return $positions;
+    }
+
+    /**
+     * Freie Auftragsposition im Vertrag der API: Menge in `amount`,
+     * Netto-Einzelpreis in `priceNet`, Kennzeichnung als frei erfasst
+     * (`metaData.type = custom`) statt als Verweis auf einen orgaMAX-Artikel.
+     *
+     * @return array<string, mixed>
+     */
+    private static function position(string $title, float $amount, string $unit, float $unitPrice): array {
+        return [
+            'title' => $title,
+            'amount' => $amount,
+            'unit' => $unit,
+            'priceNet' => round($unitPrice, 2),
+            'metaData' => ['type' => 'custom'],
+        ];
     }
 }

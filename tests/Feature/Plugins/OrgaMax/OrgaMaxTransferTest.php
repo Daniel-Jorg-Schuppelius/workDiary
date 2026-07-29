@@ -31,6 +31,7 @@ use Tests\TestCase;
  * Marker-Reconciliation statt blinder Wiederholung; Quellen werden markiert.
  */
 class OrgaMaxTransferTest extends TestCase {
+    use OrgaMaxApiResponses;
     use RefreshDatabase;
     use WithOrganization;
 
@@ -87,7 +88,7 @@ class OrgaMaxTransferTest extends TestCase {
             'external_type' => 'customer',
             'referenceable_type' => $this->customer->getMorphClass(),
             'referenceable_id' => $this->customer->id,
-            'external_id' => 'om-cust-1',
+            'external_id' => '4711',
             'payload' => [],
             'synced_at' => now(),
         ]);
@@ -126,8 +127,8 @@ class OrgaMaxTransferTest extends TestCase {
 
         $fake = FakePluginHttp::fake([
             // Reconciliation-Scan findet nichts.
-            'https://api.orgamax.de/openapi/order?*' => FakePluginHttp::response([]),
-            'https://api.orgamax.de/openapi/order/*' => FakePluginHttp::response(['id' => 'om-order-1'], 201),
+            'https://api.orgamax.de/openapi/order?*' => self::listResponse([]),
+            'https://api.orgamax.de/openapi/order/' => self::itemResponse(['id' => 'om-order-1']),
         ]);
 
         $this->post(route('finance.transfers.execute', $transfer))
@@ -149,7 +150,20 @@ class OrgaMaxTransferTest extends TestCase {
 
         // Genau ZWEI Requests: lesender Reconciliation-Scan + EIN Order-Create.
         $fake->assertSentCount(2);
-        $fake->assertSent(fn(RequestInterface $r) => $r->getMethod() === 'POST' && str_contains((string) $r->getUri(), '/order/'));
+        // Der Auftrag trägt Kundenreferenz, Marker in der Notiz und die
+        // Positionen im Feldvertrag der API (amount/priceNet).
+        $fake->assertSent(function (RequestInterface $r) use ($transfer) {
+            if ($r->getMethod() !== 'POST' || ! str_contains((string) $r->getUri(), '/order/')) {
+                return false;
+            }
+            $body = json_decode((string) $r->getBody(), true);
+
+            return is_array($body)
+                && ($body['customerId'] ?? null) === 4711
+                && str_contains((string) ($body['notes'] ?? ''), OrgaMaxTarget::MARKER_PREFIX . $transfer->payload_hash)
+                && (float) ($body['positions'][0]['amount'] ?? 0) === 2.0
+                && (float) ($body['positions'][0]['priceNet'] ?? 0) === 90.0;
+        });
     }
 
     public function test_reconciliation_adopts_existing_order_instead_of_duplicating(): void {
@@ -158,8 +172,8 @@ class OrgaMaxTransferTest extends TestCase {
 
         $fake = FakePluginHttp::fake([
             // Ein früherer, unklarer Lauf hat den Auftrag bereits erzeugt.
-            'https://api.orgamax.de/openapi/order?*' => FakePluginHttp::response([
-                ['id' => 'om-order-77', 'reference' => $marker],
+            'https://api.orgamax.de/openapi/order?*' => self::listResponse([
+                ['id' => 77, 'number' => 'AB-2030-77', 'notes' => 'Zeitabrechnung [' . $marker . ']'],
             ]),
         ]);
 
@@ -171,7 +185,7 @@ class OrgaMaxTransferTest extends TestCase {
         $reference = ExternalReference::query()
             ->where('external_type', OrgaMaxTarget::EXT_TYPE_ORDER)
             ->firstOrFail();
-        $this->assertSame('om-order-77', $reference->external_id);
+        $this->assertSame('77', $reference->external_id);
         $this->assertTrue((bool) ($reference->payload['adopted_via_reconciliation'] ?? false));
 
         // KEIN schreibender Create — nur der lesende Scan.
@@ -182,8 +196,8 @@ class OrgaMaxTransferTest extends TestCase {
         $transfer = $this->confirmedTransfer();
 
         FakePluginHttp::fake([
-            'https://api.orgamax.de/openapi/order?*' => FakePluginHttp::response([]),
-            'https://api.orgamax.de/openapi/order/*' => FakePluginHttp::response(['id' => 'om-order-1'], 201),
+            'https://api.orgamax.de/openapi/order?*' => self::listResponse([]),
+            'https://api.orgamax.de/openapi/order/' => self::itemResponse(['id' => 'om-order-1']),
         ]);
         $this->post(route('finance.transfers.execute', $transfer));
 
@@ -200,7 +214,7 @@ class OrgaMaxTransferTest extends TestCase {
         $transfer = $this->confirmedTransfer();
 
         FakePluginHttp::fake([
-            'https://api.orgamax.de/openapi/order?*' => FakePluginHttp::response([]),
+            'https://api.orgamax.de/openapi/order?*' => self::listResponse([]),
         ]);
 
         $this->post(route('finance.transfers.execute', $transfer))->assertRedirect();

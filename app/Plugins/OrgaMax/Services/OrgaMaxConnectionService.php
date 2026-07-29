@@ -16,6 +16,7 @@ use App\Models\{OrgaMaxConnection, Organization, User};
 use App\Plugins\OrgaMax\Api\{OrgaMaxClientFactory, OrgaMaxTokenService};
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Str;
+use Orgamax\API\Endpoints\Settings\AccountSettingEndpoint;
 use RuntimeException;
 
 /**
@@ -99,24 +100,25 @@ class OrgaMaxConnectionService {
             throw new RuntimeException((string) __('orgamax.error.intent_invalid'));
         }
 
-        [$apiKey, $apiSecret] = $this->tokens->credentialsFor($connection);
+        // Token-Bezug über die ownershipId des Callbacks; der TokenService
+        // speichert Token und Ablauf und blockiert bei Auth-Fehlern.
         $connection->ownership_id = $iid;
+        $connection->save();
+        $this->tokens->refresh($connection);
 
-        $result = $this->clients->for($connection)->exchangeToken($apiKey, $apiSecret, $iid);
-        $connection->forceFill([
-            'bearer_token' => $result['token'],
-            'token_expires_at' => $result['expires_at'],
-        ])->save();
-
-        $account = $this->clients->for($connection)->accountSettings();
+        // Rohantwort: der Scope-Preflight wertet Felder aus, welche die
+        // OpenAPI nicht dokumentiert (MVP-306).
+        $snapshot = (new AccountSettingEndpoint($this->clients->for($connection)))->raw();
         $connection->forceFill([
             'status' => OrgaMaxConnection::STATUS_PENDING_CONFIRMATION,
-            'account_snapshot' => $this->redactAccount($account),
-            'granted_scopes' => array_values(array_map('strval', (array) ($account['scopes'] ?? []))),
+            'account_snapshot' => $this->redactAccount($snapshot),
+            'granted_scopes' => array_values(array_map('strval', (array) ($snapshot['scopes'] ?? []))),
             'intent_token_hash' => null,
             'intent_expires_at' => null,
         ])->save();
-        $connection->audit('orgamax_callback_processed', ['account' => (string) ($account['name'] ?? $account['company'] ?? '')]);
+        $connection->audit('orgamax_callback_processed', [
+            'account' => (string) ($snapshot['name'] ?? $snapshot['companyType'] ?? $snapshot['senderEmailName'] ?? ''),
+        ]);
 
         return $connection;
     }

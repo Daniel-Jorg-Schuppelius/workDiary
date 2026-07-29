@@ -27,6 +27,7 @@ use Tests\TestCase;
  * als direkte Nutzeraktion und blockierter Expense-Übergabe.
  */
 class OrgaMaxActionsTest extends TestCase {
+    use OrgaMaxApiResponses;
     use RefreshDatabase;
     use WithOrganization;
 
@@ -70,14 +71,18 @@ class OrgaMaxActionsTest extends TestCase {
 
     public function test_convert_dispatch_is_idempotent(): void {
         $fake = FakePluginHttp::fake([
-            'https://api.orgamax.de/openapi/order/om-1/invoice*' => FakePluginHttp::response(['id' => 'inv-9'], 201),
+            'https://api.orgamax.de/openapi/order/om-1/invoice*' => self::itemResponse([
+                'invoice' => ['id' => 509, 'number' => 'RE-2026-009', 'state' => 'draft'],
+                'order' => ['id' => 77, 'number' => 'AB-2026-77', 'state' => 'accept'],
+            ]),
         ]);
 
         $dispatcher = app(OrgaMaxOutboxDispatcher::class);
         $entry = $this->makeEntry('invoice.convert', ['order_id' => 'om-1'], 'orgamax:convert:1:om-1');
 
         $this->assertTrue($dispatcher->dispatch($entry));
-        $this->assertSame(1, ExternalReference::query()->where('external_type', 'orgamax_converted_invoice')->count());
+        $reference = ExternalReference::query()->where('external_type', 'orgamax_converted_invoice')->sole();
+        $this->assertSame('509', $reference->payload['invoice_id'] ?? null);
 
         // Zweite Zustellung (Retry/unklarer Ausgang): kein zweiter API-Call.
         $this->assertTrue($dispatcher->dispatch($entry));
@@ -86,7 +91,7 @@ class OrgaMaxActionsTest extends TestCase {
 
     public function test_lock_requires_permission_and_calls_api_directly(): void {
         $fake = FakePluginHttp::fake([
-            'https://api.orgamax.de/openapi/invoice/inv-1/lock*' => FakePluginHttp::response(['id' => 'inv-1']),
+            'https://api.orgamax.de/openapi/invoice/inv-1/lock*' => self::itemResponse(['id' => 'inv-1', 'number' => 'RE-2026-001']),
         ]);
 
         $this->post(route('admin.orgamax.invoices.lock', 'inv-1'))
@@ -104,8 +109,9 @@ class OrgaMaxActionsTest extends TestCase {
     public function test_send_enqueues_outbox_and_dispatcher_delivers(): void {
         // Fake VOR dem POST: der Sync-Queue-Worker stellt den Outbox-Eintrag
         // im selben Request zu.
+        // Die Sende-Route antwortet mit text/plain "Ok" (kein JSON-Envelope).
         $fake = FakePluginHttp::fake([
-            'https://api.orgamax.de/openapi/invoice/inv-1/send*' => FakePluginHttp::response(['ok' => true]),
+            'https://api.orgamax.de/openapi/invoice/inv-1/send*' => FakePluginHttp::response('Ok'),
         ]);
 
         $this->post(route('admin.orgamax.invoices.send', 'inv-1'), [
@@ -117,12 +123,17 @@ class OrgaMaxActionsTest extends TestCase {
             ->where('operation', 'invoice.send')
             ->firstOrFail();
         $this->assertSame('inv-1', $entry->payload['invoice_id'] ?? null);
+        $this->assertSame(['kunde@acme.test'], $entry->payload['message']['recipients'] ?? null);
+        $this->assertNotSame('', (string) ($entry->payload['message']['subject'] ?? ''));
         $fake->assertSent(fn(RequestInterface $r) => str_contains((string) $r->getUri(), '/invoice/inv-1/send'));
     }
 
     public function test_payment_push_checks_leader_and_duplicates(): void {
+        // Die Zahlungsroute antwortet mit allen Zahlungen als nacktem Array.
         $fake = FakePluginHttp::fake([
-            'https://api.orgamax.de/openapi/invoice/inv-1/payment*' => FakePluginHttp::response(['ok' => true], 201),
+            'https://api.orgamax.de/openapi/invoice/inv-1/payment*' => FakePluginHttp::response([
+                ['id' => 1, 'amount' => 119.0, 'type' => 'payment', 'date' => '2026-07-01'],
+            ]),
         ]);
         $dispatcher = app(OrgaMaxOutboxDispatcher::class);
 

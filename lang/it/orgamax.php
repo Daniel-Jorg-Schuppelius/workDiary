@@ -72,6 +72,7 @@ return [
     'invoice.lock_confirm' => 'Bloccare la fattura in modo IRREVERSIBILE? Questo passo non è annullabile e non avviene mai automaticamente.',
     'invoice.locked' => 'Fattura bloccata.',
     'invoice.lock_failed' => 'Blocco non riuscito (HTTP :status).',
+    'invoice.send_subject_default' => 'Fattura :number',
     'invoice.send_enqueued' => 'Invio accodato.',
     'invoice.payment_enqueued' => 'Pagamento registrato (con controllo duplicati).',
     'invoice.pdf_failed' => 'Impossibile caricare il PDF.',

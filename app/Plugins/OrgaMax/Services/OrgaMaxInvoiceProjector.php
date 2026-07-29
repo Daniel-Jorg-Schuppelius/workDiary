@@ -13,32 +13,28 @@ declare(strict_types=1);
 namespace App\Plugins\OrgaMax\Services;
 
 use App\Models\{ExternalReference, OrgaMaxConnection};
-use App\Plugins\OrgaMax\Api\OrgaMaxClient;
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
+use Orgamax\API\Client;
+use Orgamax\API\Endpoints\InvoicesEndpoint;
+use Orgamax\Entities\Invoices\Invoice;
 
 /**
- * Rechnungs-/Zahlungs-/Mahnstatus-Projektion (Feature 077, MVP-311):
- * orgaMAX bleibt führend — WorkDiary spiegelt externe Rechnungsnummer,
- * Status, Summen, Kunde, Fälligkeit und letzten Sync als ExternalReference-
- * Payload, ohne den Beleg lokal neu zu erfinden. Teilzahlungsdetails werden
- * aus dem Rechnungsdatensatz abgeleitet (Pilot-Verifikation, MVP-305).
+ * Rechnungs-/Zahlungsstatus-Projektion (Feature 077, MVP-311): orgaMAX bleibt
+ * führend — WorkDiary spiegelt externe Rechnungsnummer, Zustand, Summen,
+ * Kunde, Fälligkeit und letzten Sync als ExternalReference-Payload, ohne den
+ * Beleg lokal neu zu erfinden. Der offene Restbetrag stammt direkt aus dem
+ * Rechnungsdatensatz (`outstandingAmount`).
  */
 class OrgaMaxInvoiceProjector {
     public const EXT_TYPE_INVOICE = 'orgamax_invoice';
 
-    /** Dokumentierte Filterzustände der Rechnungsliste. */
-    public const STATUSES = ['draft', 'locked', 'paid', 'dunned', 'cancelled'];
-
     /** @return array{read: int, updated: int} */
-    public function project(OrgaMaxConnection $connection, OrgaMaxClient $client, int $offset, int $limit): array {
-        $rows = $client->invoices($offset, $limit);
+    public function project(OrgaMaxConnection $connection, Client $client, int $offset, int $limit): array {
+        $rows = (new InvoicesEndpoint($client))->search(['offset' => $offset, 'limit' => $limit])?->getValues() ?? [];
         $updated = 0;
 
-        foreach ($rows as $row) {
-            if (! is_array($row)) {
-                continue;
-            }
-            $externalId = (string) ($row['id'] ?? $row['uuid'] ?? '');
+        foreach ($rows as $invoice) {
+            $externalId = $invoice->getId() !== null ? (string) $invoice->getId() : '';
             if ($externalId === '') {
                 continue;
             }
@@ -53,7 +49,7 @@ class OrgaMaxInvoiceProjector {
                 [
                     'referenceable_type' => $connection->getMorphClass(),
                     'referenceable_id' => $connection->getKey(),
-                    'payload' => $this->projection($row),
+                    'payload' => $this->projection($invoice),
                     'synced_at' => now(),
                 ],
             );
@@ -67,23 +63,25 @@ class OrgaMaxInvoiceProjector {
      * Sichtbare Projektion (Herkunft: orgaMAX) — nur fachliche Felder, keine
      * personenbezogenen Vollpayloads in Supportdiagnosen.
      *
-     * @param array<string, mixed> $row
      * @return array<string, mixed>
      */
-    private function projection(array $row): array {
+    private function projection(Invoice $invoice): array {
+        $customer = $invoice->getCustomerData();
+
         return [
             'source' => 'orgamax',
-            'number' => (string) ($row['invoiceNumber'] ?? $row['number'] ?? ''),
-            'status' => (string) ($row['status'] ?? ''),
-            'total_net' => $row['totalNet'] ?? $row['netAmount'] ?? null,
-            'total_gross' => $row['totalGross'] ?? $row['grossAmount'] ?? null,
-            'currency' => (string) ($row['currency'] ?? 'EUR'),
-            'customer' => (string) ($row['customerName'] ?? $row['customer'] ?? ''),
-            'customer_id' => (string) ($row['customerId'] ?? ''),
-            'order_id' => (string) ($row['orderId'] ?? ''),
-            'due_on' => (string) ($row['dueDate'] ?? ''),
-            'paid_amount' => $row['paidAmount'] ?? null,
-            'dunning_level' => $row['dunningLevel'] ?? null,
+            'number' => (string) ($invoice->getNumber() ?? ''),
+            'status' => $invoice->getState()->value ?? '',
+            'type' => $invoice->getType()->value ?? '',
+            'date' => (string) ($invoice->getDate() ?? ''),
+            'total_net' => $invoice->getTotalNet(),
+            'total_gross' => $invoice->getTotalGross(),
+            // orgaMAX rechnet ausschließlich in Euro — die API führt kein Währungsfeld.
+            'currency' => 'EUR',
+            'customer' => (string) ($customer?->getName() ?? ''),
+            'customer_id' => $invoice->getCustomerId() !== null ? (string) $invoice->getCustomerId() : '',
+            'due_on' => (string) ($invoice->getDueToDate() ?? ''),
+            'outstanding_amount' => $invoice->getOutstandingAmount(),
         ];
     }
 }

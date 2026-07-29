@@ -24,6 +24,7 @@ use Tests\TestCase;
  * Rechnungsprojektion und budgetierter Sweep mit Offset-Checkpoint.
  */
 class OrgaMaxSyncTest extends TestCase {
+    use OrgaMaxApiResponses;
     use RefreshDatabase;
     use WithOrganization;
 
@@ -64,11 +65,11 @@ class OrgaMaxSyncTest extends TestCase {
         ]);
 
         FakePluginHttp::fake([
-            'https://api.orgamax.de/openapi/customer*' => FakePluginHttp::response([
-                ['id' => 'om-1', 'name' => 'ACME GmbH', 'vatId' => 'DE123456789', 'email' => 'billing@acme.test'],
+            'https://api.orgamax.de/openapi/customer*' => self::listResponse([
+                ['id' => 'om-1', 'name' => 'ACME GmbH', 'vatNumber' => 'DE123456789', 'email' => 'billing@acme.test'],
                 ['id' => 'om-2', 'name' => 'Unbekannte Firma XY', 'email' => 'nobody@xy.test'],
             ]),
-            'https://api.orgamax.de/openapi/invoice*' => FakePluginHttp::response([]),
+            'https://api.orgamax.de/openapi/invoice*' => self::listResponse([]),
         ]);
 
         app(OrgaMaxSyncService::class)->run($this->connection);
@@ -91,9 +92,19 @@ class OrgaMaxSyncTest extends TestCase {
 
     public function test_invoice_projection_is_stored_with_source_orgamax(): void {
         FakePluginHttp::fake([
-            'https://api.orgamax.de/openapi/customer*' => FakePluginHttp::response([]),
-            'https://api.orgamax.de/openapi/invoice*' => FakePluginHttp::response([
-                ['id' => 'inv-1', 'invoiceNumber' => 'RE-2026-001', 'status' => 'locked', 'totalGross' => '119.00', 'customerName' => 'ACME'],
+            'https://api.orgamax.de/openapi/customer*' => self::listResponse([]),
+            'https://api.orgamax.de/openapi/invoice*' => self::listResponse([
+                [
+                    'id' => 501,
+                    'number' => 'RE-2026-001',
+                    'state' => 'locked',
+                    'totalNet' => 100.0,
+                    'totalGross' => 119.0,
+                    'outstandingAmount' => 119.0,
+                    'customerId' => 7,
+                    'customerData' => ['name' => 'ACME'],
+                    'dueToDate' => '2026-08-15',
+                ],
             ]),
         ]);
 
@@ -102,11 +113,13 @@ class OrgaMaxSyncTest extends TestCase {
         $projection = ExternalReference::query()
             ->where('plugin_id', OrgaMaxPlugin::ID)
             ->where('external_type', OrgaMaxInvoiceProjector::EXT_TYPE_INVOICE)
-            ->where('external_id', 'inv-1')
+            ->where('external_id', '501')
             ->firstOrFail();
         $this->assertSame('orgamax', $projection->payload['source'] ?? null);
         $this->assertSame('RE-2026-001', $projection->payload['number'] ?? null);
         $this->assertSame('locked', $projection->payload['status'] ?? null);
+        $this->assertSame('ACME', $projection->payload['customer'] ?? null);
+        $this->assertEqualsWithDelta(119.0, (float) ($projection->payload['outstanding_amount'] ?? 0), 0.001);
         $this->assertNotNull($projection->synced_at);
     }
 
@@ -116,11 +129,11 @@ class OrgaMaxSyncTest extends TestCase {
 
         // Erste Seite ist voll (2 Datensätze) → Budget erschöpft, Offset bleibt stehen.
         FakePluginHttp::fake([
-            'https://api.orgamax.de/openapi/customer*' => FakePluginHttp::response([
+            'https://api.orgamax.de/openapi/customer*' => self::listResponse([
                 ['id' => 'om-1', 'name' => 'A'],
                 ['id' => 'om-2', 'name' => 'B'],
             ]),
-            'https://api.orgamax.de/openapi/invoice*' => FakePluginHttp::response([]),
+            'https://api.orgamax.de/openapi/invoice*' => self::listResponse([]),
         ]);
         app(OrgaMaxSyncService::class)->run($this->connection);
 
@@ -129,10 +142,10 @@ class OrgaMaxSyncTest extends TestCase {
 
         // Nächster Lauf: kurze Seite → Vollabgleich abgeschlossen, Offset zurück auf 0.
         FakePluginHttp::fake([
-            'https://api.orgamax.de/openapi/customer*' => FakePluginHttp::response([
+            'https://api.orgamax.de/openapi/customer*' => self::listResponse([
                 ['id' => 'om-3', 'name' => 'C'],
             ]),
-            'https://api.orgamax.de/openapi/invoice*' => FakePluginHttp::response([]),
+            'https://api.orgamax.de/openapi/invoice*' => self::listResponse([]),
         ]);
         app(OrgaMaxSyncService::class)->run($this->connection);
 

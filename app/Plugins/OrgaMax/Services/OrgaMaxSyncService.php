@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\OrgaMax\Services;
 
+use APIToolkit\Exceptions\ApiException;
 use App\Models\OrgaMaxConnection;
-use App\Plugins\OrgaMax\Api\{OrgaMaxApiException, OrgaMaxClientFactory};
+use App\Plugins\OrgaMax\Api\OrgaMaxClientFactory;
 use Illuminate\Support\Carbon;
 use Throwable;
 
@@ -54,8 +55,8 @@ class OrgaMaxSyncService {
             }
             try {
                 $counters += $this->sweep($connection, $capability, $reader, $pageSize, $budget);
-            } catch (OrgaMaxApiException $e) {
-                $errors[] = $capability . ': HTTP ' . $e->status;
+            } catch (ApiException $e) {
+                $errors[] = $capability . ': HTTP ' . $e->getCode();
             } catch (Throwable) {
                 $errors[] = $capability . ': error';
             }
@@ -70,8 +71,8 @@ class OrgaMaxSyncService {
                     $pageSize,
                     $budget,
                 );
-            } catch (OrgaMaxApiException $e) {
-                $errors[] = 'invoices: HTTP ' . $e->status;
+            } catch (ApiException $e) {
+                $errors[] = 'invoices: HTTP ' . $e->getCode();
             } catch (Throwable) {
                 $errors[] = 'invoices: error';
             }

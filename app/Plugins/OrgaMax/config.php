@@ -16,7 +16,8 @@
 return [
     'enabled' => env('ORGAMAX_ENABLED', false),
 
-    'base_url' => env('ORGAMAX_BASE_URL', 'https://api.orgamax.de/openapi'),
+    // Host-Basis; den Pfad /openapi setzt der SDK-Client selbst.
+    'base_url' => env('ORGAMAX_BASE_URL', 'https://api.orgamax.de'),
 
     // Betreibergeheimnis für die veröffentlichte WorkDiary-Erweiterung
     // (Marketplace-Modus); im privaten Pilotmodus je Org verschlüsselt.

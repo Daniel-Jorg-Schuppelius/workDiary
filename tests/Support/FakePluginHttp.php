@@ -11,6 +11,7 @@
 namespace Tests\Support;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2ClientCredentialsGrant;
+use APIToolkit\Contracts\Abstracts\API\ClientAbstract;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use Closure;
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};
@@ -89,6 +90,19 @@ class FakePluginHttp extends PluginHttpFactory {
         $client->setMaxRetryDelay(0);
 
         return $client;
+    }
+
+    /** Provider-SDK-Client gegen den Mock-Handler statt gegen die echte API. */
+    public function sdkClient(string $pluginId, string $baseUrl, callable $make): ClientAbstract {
+        $client = parent::sdkClient($pluginId, $baseUrl, $make);
+        $client->setBaseRetryDelay(0);
+        $client->setMaxRetryDelay(0);
+
+        return $client;
+    }
+
+    protected function sdkTransport(string $baseUrl): GuzzleClient {
+        return $this->mockedGuzzle($baseUrl);
     }
 
     public function clientCredentialsGrant(string $pluginId, string $clientId, string $clientSecret, string $tokenUrl): OAuth2ClientCredentialsGrant {

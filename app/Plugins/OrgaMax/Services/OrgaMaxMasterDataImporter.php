@@ -12,19 +12,24 @@ declare(strict_types=1);
 
 namespace App\Plugins\OrgaMax\Services;
 
+use APIToolkit\Contracts\Abstracts\NamedEntity;
 use App\Enums\Integration\{ConflictFieldPolicy, ImportMatchPolicy};
 use App\Models\{OrgaMaxConnection, Organization};
-use App\Plugins\OrgaMax\Api\OrgaMaxClient;
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Services\Integration\IntegrationResolver;
 use App\Services\Integration\Match\MatchProfile;
 use App\Services\Integration\Profiles\{ArticleMatchProfile, CustomerMatchProfile, SupplierMatchProfile};
+use Orgamax\API\Client;
+use Orgamax\API\Endpoints\{ArticlesEndpoint, CustomersEndpoint, SuppliersEndpoint};
+use Orgamax\Entities\Articles\Article;
+use Orgamax\Entities\Customers\Customer;
+use Orgamax\Entities\Suppliers\Supplier;
 
 /**
  * Stammdaten-Projektionen (Feature 077, MVP-307/308): Kunden, Lieferanten und
- * Artikel werden paginiert gelesen und ausschließlich über den
- * {@see IntegrationResolver} zugeordnet — sichere Treffer verknüpfen per
- * ExternalReference, unsichere/mehrdeutige landen in der Integrations-Inbox.
+ * Artikel werden paginiert über das orgaMAX-SDK gelesen und ausschließlich
+ * über den {@see IntegrationResolver} zugeordnet — sichere Treffer verknüpfen
+ * per ExternalReference, unsichere/mehrdeutige landen in der Integrations-Inbox.
  * Keine automatischen Schattenstammdaten (Policy AutoLinkExactOnly);
  * Preis-/Steuer-/Einheiten-Snapshot der Artikel bleibt im Reference-Payload.
  */
@@ -32,60 +37,67 @@ class OrgaMaxMasterDataImporter {
     public function __construct(private readonly IntegrationResolver $resolver) {}
 
     /** @return array{read: int, linked: int, inboxed: int} */
-    public function importCustomers(OrgaMaxConnection $connection, OrgaMaxClient $client, int $offset, int $limit): array {
-        $rows = $client->customers($offset, $limit);
+    public function importCustomers(OrgaMaxConnection $connection, Client $client, int $offset, int $limit): array {
+        $rows = (new CustomersEndpoint($client))->search(self::page($offset, $limit))?->getValues() ?? [];
 
-        return $this->run($connection, 'customer', new CustomerMatchProfile, $rows, function (array $row): array {
+        return $this->run($connection, 'customer', new CustomerMatchProfile, $rows, function (Customer $customer): array {
+            $address = $customer->getCustomerDefaultAddress()?->getBillingAddress() ?? $customer->getAddress();
+
             return [
-                'name' => $this->personName($row),
-                'company' => (string) ($row['company'] ?? $row['companyName'] ?? ''),
-                'email' => (string) ($row['email'] ?? ''),
-                'vat_id' => (string) ($row['vatId'] ?? $row['ustId'] ?? ''),
-                'address_zip' => (string) ($row['zipCode'] ?? $row['zip'] ?? ''),
-                'address_city' => (string) ($row['city'] ?? ''),
-                'external_number' => (string) ($row['customerNumber'] ?? $row['number'] ?? ''),
+                'name' => self::personName($customer->getName(), $customer->getFirstName(), $customer->getLastName()),
+                'company' => (string) ($customer->getCompanyName() ?? $address?->getCompanyName() ?? ''),
+                'email' => (string) ($customer->getEmail() ?? ''),
+                'vat_id' => (string) ($customer->getVatNumber() ?? ''),
+                'address_zip' => (string) ($address?->getZipCode() ?? ''),
+                'address_city' => (string) ($address?->getCity() ?? ''),
+                'external_number' => (string) ($customer->getNumber() ?? ''),
             ];
         });
     }
 
     /** @return array{read: int, linked: int, inboxed: int} */
-    public function importSuppliers(OrgaMaxConnection $connection, OrgaMaxClient $client, int $offset, int $limit): array {
-        $rows = $client->suppliers($offset, $limit);
+    public function importSuppliers(OrgaMaxConnection $connection, Client $client, int $offset, int $limit): array {
+        $rows = (new SuppliersEndpoint($client))->search(self::page($offset, $limit))?->getValues() ?? [];
 
-        return $this->run($connection, 'supplier', new SupplierMatchProfile, $rows, function (array $row): array {
+        return $this->run($connection, 'supplier', new SupplierMatchProfile, $rows, function (Supplier $supplier): array {
+            $address = $supplier->getAddress();
+
             return [
-                'name' => $this->personName($row),
-                'company' => (string) ($row['company'] ?? $row['companyName'] ?? ''),
-                'email' => (string) ($row['email'] ?? ''),
-                'vat_id' => (string) ($row['vatId'] ?? $row['ustId'] ?? ''),
-                'address_zip' => (string) ($row['zipCode'] ?? $row['zip'] ?? ''),
-                'external_number' => (string) ($row['supplierNumber'] ?? $row['number'] ?? ''),
+                // Die Lieferanten-Ressource führt Name und Firma in einem Feld;
+                // die Firmenangabe steht nur an der Adresse.
+                'name' => self::personName($supplier->getName(), $address?->getFirstName(), $address?->getLastName()),
+                'company' => (string) ($address?->getCompanyName() ?? ''),
+                'email' => (string) ($supplier->getEmail() ?? ''),
+                'address_zip' => (string) ($address?->getZipCode() ?? ''),
+                'address_city' => (string) ($address?->getCity() ?? ''),
+                'external_number' => (string) ($supplier->getNumber() ?? ''),
             ];
         });
     }
 
     /** @return array{read: int, linked: int, inboxed: int} */
-    public function importArticles(OrgaMaxConnection $connection, OrgaMaxClient $client, int $offset, int $limit): array {
-        $rows = $client->articles($offset, $limit);
+    public function importArticles(OrgaMaxConnection $connection, Client $client, int $offset, int $limit): array {
+        $rows = (new ArticlesEndpoint($client))->search(self::page($offset, $limit))?->getValues() ?? [];
 
-        return $this->run($connection, 'article', new ArticleMatchProfile, $rows, function (array $row): array {
+        return $this->run($connection, 'article', new ArticleMatchProfile, $rows, function (Article $article): array {
             return [
-                'number' => (string) ($row['articleNumber'] ?? $row['number'] ?? ''),
-                'name' => (string) ($row['name'] ?? $row['title'] ?? ''),
-                'gtin' => (string) ($row['ean'] ?? $row['gtin'] ?? ''),
+                'number' => (string) ($article->getNumber() ?? ''),
+                'name' => (string) ($article->getTitle() ?? ''),
                 // Snapshot für die Übergabe (MVP-308) — bleibt im Payload der
                 // ExternalReference, WorkDiary-Preise werden nicht überschrieben.
-                'unit' => (string) ($row['unit'] ?? ''),
-                'price_net' => (string) ($row['price'] ?? $row['netPrice'] ?? ''),
-                'tax_rate' => (string) ($row['taxRate'] ?? $row['vatRate'] ?? ''),
-                'account' => (string) ($row['account'] ?? $row['ledgerAccount'] ?? ''),
+                'unit' => (string) ($article->getUnit() ?? ''),
+                'price_net' => $article->getPrice() !== null ? (string) $article->getPrice() : '',
+                'tax_rate' => $article->getVatPercent() !== null ? (string) $article->getVatPercent() : '',
+                'account' => (string) ($article->getBookkeepingAccountId() ?? ''),
             ];
         });
     }
 
     /**
-     * @param array<int, mixed> $rows
-     * @param callable(array<string, mixed>): array<string, mixed> $map
+     * @template TEntity of NamedEntity
+     *
+     * @param  array<int, TEntity>  $rows
+     * @param  callable(TEntity): array<string, mixed>  $map
      * @return array{read: int, linked: int, inboxed: int}
      */
     private function run(OrgaMaxConnection $connection, string $externalType, MatchProfile $profile, array $rows, callable $map): array {
@@ -95,10 +107,7 @@ class OrgaMaxMasterDataImporter {
         $inboxed = 0;
 
         foreach ($rows as $row) {
-            if (! is_array($row)) {
-                continue;
-            }
-            $externalId = (string) ($row['id'] ?? $row['uuid'] ?? '');
+            $externalId = self::externalId($row);
             if ($externalId === '') {
                 continue;
             }
@@ -110,7 +119,7 @@ class OrgaMaxMasterDataImporter {
                 $externalType,
                 $externalId,
                 array_filter($map($row), fn($v) => $v !== ''),
-                $row,
+                $row->toArray(),
                 ImportMatchPolicy::AutoLinkExactOnly,
                 ConflictFieldPolicy::ManualReview,
                 'orgamax:sync',
@@ -122,13 +131,23 @@ class OrgaMaxMasterDataImporter {
         return ['read' => count($rows), 'linked' => $linked, 'inboxed' => $inboxed];
     }
 
-    /** @param array<string, mixed> $row */
-    private function personName(array $row): string {
-        $name = (string) ($row['name'] ?? '');
-        if ($name !== '') {
+    /** @return array{offset: int, limit: int} */
+    private static function page(int $offset, int $limit): array {
+        return ['offset' => $offset, 'limit' => $limit];
+    }
+
+    /** IDs sind je Ressource string oder int typisiert — der Resolver führt sie als String. */
+    private static function externalId(NamedEntity $entity): string {
+        $id = method_exists($entity, 'getId') ? $entity->getId() : null;
+
+        return is_scalar($id) ? (string) $id : '';
+    }
+
+    private static function personName(?string $name, ?string $firstName, ?string $lastName): string {
+        if ($name !== null && $name !== '') {
             return $name;
         }
 
-        return trim(((string) ($row['firstName'] ?? '')) . ' ' . ((string) ($row['lastName'] ?? '')));
+        return trim(((string) $firstName) . ' ' . ((string) $lastName));
     }
 }

@@ -12,11 +12,13 @@ declare(strict_types=1);
 
 namespace App\Plugins\OrgaMax;
 
+use APIToolkit\Exceptions\ApiException;
 use App\Models\{OrgaMaxConnection, Organization, PluginSetting};
 use App\Plugins\Contracts\Plugin;
-use App\Plugins\OrgaMax\Api\{OrgaMaxApiException, OrgaMaxClientFactory};
+use App\Plugins\OrgaMax\Api\OrgaMaxClientFactory;
 use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\PluginOrgContext;
+use Orgamax\API\Endpoints\Settings\AccountSettingEndpoint;
 use Throwable;
 
 /**
@@ -116,16 +118,16 @@ class OrgaMaxPlugin implements Plugin {
 
         try {
             $started = microtime(true);
-            app(OrgaMaxClientFactory::class)->for($connection)->accountSettings();
+            (new AccountSettingEndpoint(app(OrgaMaxClientFactory::class)->for($connection)))->get();
 
             return PluginHealth::ok(__('orgaMAX-API erreichbar.'))
                 ->withLatency((int) ((microtime(true) - $started) * 1000));
-        } catch (OrgaMaxApiException $e) {
-            if ($e->isAuthError()) {
+        } catch (ApiException $e) {
+            if (in_array($e->getCode(), [401, 403], true)) {
                 return PluginHealth::failing(__('Token abgelaufen oder Scopes entzogen — Verbindung erneuern.'), 'auth');
             }
 
-            return PluginHealth::degraded(__('orgaMAX-API antwortet mit Fehlerstatus :status.', ['status' => $e->status]), 'api_error');
+            return PluginHealth::degraded(__('orgaMAX-API antwortet mit Fehlerstatus :status.', ['status' => $e->getCode()]), 'api_error');
         } catch (Throwable) {
             return PluginHealth::failing(__('orgaMAX-API nicht erreichbar.'), 'unreachable');
         }

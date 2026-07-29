@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace App\Plugins\OrgaMax\Api;
 
+use APIToolkit\Exceptions\{ApiException, UnauthorizedException};
 use App\Models\OrgaMaxConnection;
-use App\Plugins\Support\PluginHttpFactory;
 use Illuminate\Support\Carbon;
+use Orgamax\API\Endpoints\AuthEndpoint;
 
 /**
  * Bearer-Token-Verwaltung (Feature 077, MVP-306): orgaMAX dokumentiert
@@ -42,27 +43,31 @@ class OrgaMaxTokenService {
         if ($apiKey === '' || $apiSecret === '' || $ownershipId === '') {
             $this->block($connection, 'credentials_missing');
 
-            throw new OrgaMaxApiException('orgaMAX-Zugangsdaten unvollständig — Verbindung erneuern.', 401, '/auth/token');
+            throw new UnauthorizedException('orgaMAX-Zugangsdaten unvollständig — Verbindung erneuern.', 401);
         }
 
         try {
-            // PluginHttpFactory lazy aus dem Container (Test-Naht FakePluginHttp).
-            $client = new OrgaMaxClient(app(PluginHttpFactory::class), $this, $connection, (string) config('plugins.orgamax.base_url'));
-            $result = $client->exchangeToken($apiKey, $apiSecret, $ownershipId);
-        } catch (OrgaMaxApiException $e) {
-            if ($e->isAuthError()) {
+            // OrgaMaxClientFactory lazy aus dem Container (Test-Naht FakePluginHttp).
+            $client = app(OrgaMaxClientFactory::class)->credentials($apiKey, $apiSecret);
+            $token = (string) (new AuthEndpoint($client))->token($ownershipId)->getToken();
+        } catch (ApiException $e) {
+            if (in_array($e->getCode(), [401, 403], true)) {
                 $this->block($connection, 'token_refresh_failed');
             }
 
             throw $e;
         }
 
+        if ($token === '') {
+            throw new ApiException('orgaMAX /auth/token lieferte keinen Token.', 502);
+        }
+
         $connection->forceFill([
-            'bearer_token' => $result['token'],
-            'token_expires_at' => $result['expires_at'],
+            'bearer_token' => $token,
+            'token_expires_at' => self::expiryFromJwt($token),
         ])->save();
 
-        return $result['token'];
+        return $token;
     }
 
     /**

@@ -11,6 +11,8 @@
 namespace App\Plugins\Support;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2ClientCredentialsGrant;
+use APIToolkit\Contracts\Abstracts\API\ClientAbstract;
+use GuzzleHttp\Client as GuzzleClient;
 
 /**
  * Baut die {@see PluginApiClient}-Instanzen der Plugins. Als Container-
@@ -30,6 +32,42 @@ class PluginHttpFactory {
         if ($requestInterval > 0) {
             $client->setRequestInterval($requestInterval);
         }
+
+        return $client;
+    }
+
+    /**
+     * Baut den Client eines Provider-SDKs (eigene {@see ClientAbstract}-
+     * Ableitung, z. B. `Orgamax\API\Client`) mit denselben Transport-Defaults
+     * wie {@see PluginApiClient}. `$make` erhält den Guzzle-Transport:
+     * produktiv `null` — das Toolkit baut ihn selbst inklusive Redirect-
+     * Politik —, im Test den Mock-Handler aus {@see \Tests\Support\FakePluginHttp}.
+     *
+     * @template TClient of ClientAbstract
+     *
+     * @param  callable(GuzzleClient|null): TClient  $make
+     * @return TClient
+     */
+    public function sdkClient(string $pluginId, string $baseUrl, callable $make): ClientAbstract {
+        return $this->configureSdkClient($make($this->sdkTransport($baseUrl)), $pluginId);
+    }
+
+    /** Produktiv kein eigener Transport — der Test-Fake liefert hier den Mock-Handler. */
+    protected function sdkTransport(string $baseUrl): ?GuzzleClient {
+        return null;
+    }
+
+    /**
+     * @template TClient of ClientAbstract
+     *
+     * @param  TClient  $client
+     * @return TClient
+     */
+    protected function configureSdkClient(ClientAbstract $client, string $pluginId): ClientAbstract {
+        $client->setUserAgent('workDiary-plugin/' . $pluginId);
+        $client->setTimeout(10.0);
+        $client->setRequestInterval(0.0);
+        $client->setMaxRetries(3);
 
         return $client;
     }
