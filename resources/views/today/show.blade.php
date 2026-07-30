@@ -80,6 +80,11 @@
             </div>
         @endif
 
+        {{-- Eingabeleiste (Toggl-artig): Timer/Manuell-Buchung direkt mit Projektwahl. --}}
+        @if (! $isFuture)
+            @include('today._entry_bar')
+        @endif
+
         <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
             <x-kpi-tile :label="__('Soll')" :value="$fmt($targetMinutes)" />
 
@@ -176,11 +181,6 @@
                 @endforelse
             </x-table>
         </x-card>
-
-        {{-- Eingabeleiste (Toggl-artig): Timer/Manuell-Buchung direkt mit Projektwahl. --}}
-        @if (! $isFuture)
-            @include('today._entry_bar')
-        @endif
 
         <x-card as="section" padding="p-0" class="overflow-hidden">
             <header class="flex items-center justify-between gap-2 border-b border-base-300 p-3">

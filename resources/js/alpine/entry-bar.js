@@ -154,6 +154,13 @@ export function registerEntryBar(Alpine) {
             get rangeDisabled() {
                 return !this.isManual || !this.isRange;
             },
+            // Sichtbarkeit der Inline-Zeitfelder (einzeilige Leiste).
+            get showDurationPane() {
+                return this.isManual && this.isDuration;
+            },
+            get showRangePane() {
+                return this.isManual && this.isRange;
+            },
 
             // ── Projekt-Combobox ────────────────────────────────────────────
             get filtered() {

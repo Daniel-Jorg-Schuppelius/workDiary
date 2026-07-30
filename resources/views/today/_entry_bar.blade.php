@@ -1,5 +1,6 @@
 {{-- Eingabeleiste (Toggl-artig) — erwartet: $runningEntry (TimeEntry|null),
      $entryBarProjects (Collection<Project> mit customer), $day, $isToday.
+     Einzeilig: Beschreibung + Projekt + (manuelle Zeitfelder) + Modus + Submit.
      Timer-Modus postet auf stopwatch.start, Manuell auf today.entry-bar.store;
      ohne JS gilt das statische action-Attribut (Manuell). --}}
 <x-card as="section" data-entry-bar>
@@ -47,18 +48,19 @@
               x-data="entryBar"
               data-config="{{ json_encode($entryBarConfig) }}"
               :action="formAction"
-              class="space-y-3">
+              class="space-y-2">
             @csrf
             <input type="hidden" name="project_id" :value="selectedId" value="{{ old('project_id') }}">
 
+            {{-- Alles in einer Zeile (bricht nur auf schmalen Screens um). --}}
             <div class="flex flex-wrap items-center gap-2">
                 <input type="text" name="description" maxlength="500"
-                       class="input input-bordered min-w-40 flex-1"
+                       class="input input-bordered input-sm min-w-40 flex-1"
                        placeholder="{{ __('Woran arbeitest du?') }}"
                        value="{{ old('description') }}">
 
                 {{-- Projekt-Combobox: tippen filtert (zuletzt genutzte zuerst). --}}
-                <div class="relative w-full sm:w-64" @click.outside="closeMenu()">
+                <div class="relative w-full sm:w-56" @click.outside="closeMenu()">
                     <input type="text"
                            x-model="query"
                            @focus="openMenu()"
@@ -68,7 +70,7 @@
                            @keydown.arrow-up.prevent="move(-1)"
                            @keydown.escape="closeMenu()"
                            autocomplete="off"
-                           class="input input-bordered w-full"
+                           class="input input-bordered input-sm w-full"
                            placeholder="{{ __('Projekt suchen…') }}">
                     <ul x-show="showMenu" x-cloak x-transition.opacity
                         class="menu menu-sm absolute z-30 mt-1 w-full max-h-64 flex-nowrap overflow-y-auto rounded-box border border-base-300 bg-base-100 shadow-lg">
@@ -89,6 +91,46 @@
                        class="absolute z-30 mt-1 w-full rounded-box border border-base-300 bg-base-100 px-3 py-2 text-sm text-base-content/60 shadow-lg">
                         {{ __('Kein Projekt gefunden.') }}
                     </p>
+                </div>
+
+                {{-- Manuelle Zeitfelder, inline (inaktive Eingaben disabled → kein Submit). --}}
+                <div class="join" x-cloak x-show="isManual">
+                    <button type="button" class="btn btn-sm join-item" :class="durationBtnClass"
+                            @click="setDuration">{{ __('Dauer') }}</button>
+                    <button type="button" class="btn btn-sm join-item" :class="rangeBtnClass"
+                            @click="setRange">{{ __('Von / Bis') }}</button>
+                </div>
+
+                <input type="date" name="date" class="input input-bordered input-sm w-36"
+                       x-show="isManual"
+                       :disabled="manualDisabled"
+                       aria-label="{{ __('Datum') }}"
+                       value="{{ old('date', $day->toDateString()) }}">
+
+                <input type="text" inputmode="numeric" placeholder="{{ __('Dauer (HH:MM)') }}"
+                       x-show="showDurationPane"
+                       x-model="hhmm" @input="onHhmmInput"
+                       :disabled="durationDisabled"
+                       class="input input-bordered input-sm w-28 text-right tabular-nums"
+                       aria-label="{{ __('Dauer (HH:MM)') }}">
+                <input type="hidden" name="minutes" :value="minutes" :disabled="durationDisabled" value="{{ old('minutes') }}">
+
+                <div class="flex items-center gap-1" x-show="showRangePane">
+                    <input type="time" name="start_time" class="input input-bordered input-sm w-24"
+                           :disabled="rangeDisabled"
+                           aria-label="{{ __('Von') }}"
+                           value="{{ old('start_time') }}">
+                    <span class="text-base-content/60">–</span>
+                    <input type="time" name="end_time" class="input input-bordered input-sm w-24"
+                           :disabled="rangeDisabled"
+                           aria-label="{{ __('Bis') }}"
+                           value="{{ old('end_time') }}">
+                    <input type="number" name="break_minutes" min="0" max="600"
+                           :disabled="rangeDisabled"
+                           class="input input-bordered input-sm w-16 px-2 text-right tabular-nums"
+                           title="{{ __('Pause (Minuten)') }}"
+                           aria-label="{{ __('Pause (Minuten)') }}"
+                           value="{{ old('break_minutes', 0) }}">
                 </div>
 
                 {{-- Modus-Umschalter (nur mit JS nutzbar). --}}
@@ -115,51 +157,6 @@
                         <x-icon name="add_task" /> {{ __('Erfassen') }}
                     </span>
                 </x-button>
-            </div>
-
-            {{-- Manuell: Datum + Dauer ODER Von/Bis (inaktive Eingaben disabled → kein Submit). --}}
-            <div class="flex flex-wrap items-center gap-2" x-show="isManual">
-                <div class="join" x-cloak>
-                    <button type="button" class="btn btn-sm join-item" :class="durationBtnClass"
-                            @click="setDuration">{{ __('Dauer') }}</button>
-                    <button type="button" class="btn btn-sm join-item" :class="rangeBtnClass"
-                            @click="setRange">{{ __('Von / Bis') }}</button>
-                </div>
-
-                <input type="date" name="date" class="input input-bordered input-sm w-36"
-                       :disabled="manualDisabled"
-                       aria-label="{{ __('Datum') }}"
-                       value="{{ old('date', $day->toDateString()) }}">
-
-                <div class="join" x-show="isDuration">
-                    <span class="join-item flex items-center border border-base-300 bg-base-200 px-2 text-xs text-base-content/60">{{ __('Dauer (HH:MM)') }}</span>
-                    <input type="text" inputmode="numeric" placeholder="01:30"
-                           x-model="hhmm" @input="onHhmmInput"
-                           :disabled="durationDisabled"
-                           class="input input-bordered input-sm join-item w-20 text-right tabular-nums"
-                           aria-label="{{ __('Dauer (HH:MM)') }}">
-                    <input type="hidden" name="minutes" :value="minutes" :disabled="durationDisabled" value="{{ old('minutes') }}">
-                </div>
-
-                <div class="flex flex-wrap items-center gap-2" x-show="isRange">
-                    <input type="time" name="start_time" class="input input-bordered input-sm w-28"
-                           :disabled="rangeDisabled"
-                           aria-label="{{ __('Von') }}"
-                           value="{{ old('start_time') }}">
-                    <span class="text-base-content/60">–</span>
-                    <input type="time" name="end_time" class="input input-bordered input-sm w-28"
-                           :disabled="rangeDisabled"
-                           aria-label="{{ __('Bis') }}"
-                           value="{{ old('end_time') }}">
-                    <div class="join">
-                        <span class="join-item flex items-center border border-base-300 bg-base-200 px-2 text-xs text-base-content/60">{{ __('Pause (Minuten)') }}</span>
-                        <input type="number" name="break_minutes" min="0" max="600"
-                               :disabled="rangeDisabled"
-                               class="input input-bordered input-sm join-item w-16 px-2 text-right tabular-nums"
-                               aria-label="{{ __('Pause (Minuten)') }}"
-                               value="{{ old('break_minutes', 0) }}">
-                    </div>
-                </div>
             </div>
 
             {{-- Sekundärfelder: projektabhängig (Fetch nach Projektwahl). --}}
