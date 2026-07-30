@@ -121,7 +121,13 @@ body.sidebar-collapsed {
         border-left: 0;
         width: var(--help-rail-w);
         max-width: var(--help-sidebar-w);
-        /* Mobile Slide-Klasse (.translate-x-full) ist hier wirkungslos. */
+        /* Mobile Slide-Klasse (.translate-x-full) neutralisieren. WICHTIG:
+           zusätzlich die Utility-Variable nullen — Lightning CSS wirft ein
+           nacktes `translate: none` beim Minifizieren weg, dann schiebt die
+           Klasse den Drawer um seine Breite aus dem Viewport (nur noch ein
+           schmaler Streifen am Rand sichtbar). */
+        --tw-translate-x: 0px;
+        --tw-translate-y: 0px;
         translate: none;
         transform: none;
         visibility: visible;
