@@ -9052,5 +9052,12 @@
     ":count ohne Artikel": ":count sans article",
     "Zugeordnet: :name": "Attribué : :name",
     "… Kunde auswählen": "… choisir un client",
-    "Als Auftrag buchen": "Comptabiliser comme commande"
+    "Als Auftrag buchen": "Comptabiliser comme commande",
+    "Woran arbeitest du?": "Sur quoi travaillez-vous ?",
+    "Timer": "Minuteur",
+    "Timer starten": "Démarrer le minuteur",
+    "Es läuft bereits eine Zeiterfassung.": "Un enregistrement de temps est déjà en cours.",
+    "Weitere Felder": "Champs supplémentaires",
+    "Kein Projekt gefunden.": "Aucun projet trouvé.",
+    "Für dieses Projekt gibt es keine Aufgaben oder Aufträge.": "Ce projet n'a ni tâches ni commandes."
 }

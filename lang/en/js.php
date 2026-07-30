@@ -23,4 +23,7 @@ return [
         'not_allowed' => 'You are not authorised to perform this order action.',
         'handover_via_order' => 'Handover requires a signed protocol and is performed directly in the order.',
     ],
+    'entry_bar' => [
+        'options_failed' => 'Tasks/orders could not be loaded.',
+    ],
 ];

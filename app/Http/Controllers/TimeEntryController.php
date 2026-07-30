@@ -11,9 +11,9 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Classification\ClassificationDomain;
-use App\Enums\Task\TaskStatus;
+use App\Http\Controllers\Concerns\BuildsTimeEntryOptions;
 use App\Http\Requests\SaveTimeEntryRequest;
-use App\Models\{DiaryEntry, Project, TimeEntry};
+use App\Models\{Project, TimeEntry};
 use App\Models\User;
 use App\Services\Classification\ClassificationResolver;
 use App\Services\Flextime\CoreTimeValidator;
@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class TimeEntryController extends Controller {
+    use BuildsTimeEntryOptions;
+
     /**
      * Projekt-Picker für die Sidebar-Aktion „Zeiteintrag". Stunden brauchen
      * immer ein Projekt — der User wählt hier zuerst eines aus und landet
@@ -44,15 +46,10 @@ class TimeEntryController extends Controller {
     public function create(Project $project): View {
         Gate::authorize('create', TimeEntry::class);
 
-        $tasks = $project->tasks()
-            ->where('status', '!=', TaskStatus::Done)
-            ->orderBy('title')
-            ->get(['id', 'title']);
-
         return view('projects._time_entry_dialog', [
             'project' => $project,
             'entry' => null,
-            'tasks' => $tasks,
+            'tasks' => $this->taskOptions($project),
             'diaryOptions' => $this->diaryOptions($project),
             'isDialog' => true,
         ] + $this->classificationOptions($project));
@@ -107,36 +104,6 @@ class TimeEntryController extends Controller {
             'reworkOptions' => $resolver->list($orgId, ClassificationDomain::ReworkReason),
             'goodwillOptions' => $resolver->list($orgId, ClassificationDomain::GoodwillReason),
         ];
-    }
-
-    /**
-     * Aufträge, die für die Verbuchung von Stunden auf dieses Projekt sinnvoll
-     * angeboten werden: alle nicht-archivierten offenen Aufträge auf dem Projekt
-     * selbst plus jeder Auftrag, der bereits Stunden auf dieses Projekt gebucht
-     * hat. Der aktuell verknüpfte Auftrag wird immer mit aufgenommen, damit der
-     * Edit-Dialog beim Bearbeiten nichts verliert.
-     *
-     * @return Collection<int, DiaryEntry>
-     */
-    private function diaryOptions(Project $project, ?int $currentId = null): Collection {
-        return DiaryEntry::query()
-            ->select(['id', 'title', 'content', 'mode', 'status', 'project_id'])
-            ->where('is_archived', false)
-            ->where(function ($q) use ($project, $currentId): void {
-                $q->where('project_id', $project->id)
-                    ->orWhereIn('id', function ($sub) use ($project): void {
-                        $sub->select('diary_entry_id')
-                            ->from('time_entries')
-                            ->where('project_id', $project->id)
-                            ->whereNotNull('diary_entry_id');
-                    });
-                if ($currentId !== null) {
-                    $q->orWhere('id', $currentId);
-                }
-            })
-            ->orderByDesc('updated_at')
-            ->limit(50)
-            ->get();
     }
 
     public function update(Project $project, TimeEntry $timeEntry, SaveTimeEntryRequest $request): RedirectResponse {

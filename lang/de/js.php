@@ -23,4 +23,7 @@ return [
         'not_allowed' => 'Keine Berechtigung für diese Auftragsaktion.',
         'handover_via_order' => 'Die Abnahme erfordert ein signiertes Protokoll und wird direkt im Auftrag ausgeführt.',
     ],
+    'entry_bar' => [
+        'options_failed' => 'Aufgaben/Aufträge konnten nicht geladen werden.',
+    ],
 ];

@@ -9052,5 +9052,12 @@
     ":count ohne Artikel": ":count senza articolo",
     "Zugeordnet: :name": "Assegnato: :name",
     "… Kunde auswählen": "… seleziona cliente",
-    "Als Auftrag buchen": "Registra come incarico"
+    "Als Auftrag buchen": "Registra come incarico",
+    "Woran arbeitest du?": "A cosa stai lavorando?",
+    "Timer": "Timer",
+    "Timer starten": "Avvia il timer",
+    "Es läuft bereits eine Zeiterfassung.": "È già in corso una registrazione del tempo.",
+    "Weitere Felder": "Altri campi",
+    "Kein Projekt gefunden.": "Nessun progetto trovato.",
+    "Für dieses Projekt gibt es keine Aufgaben oder Aufträge.": "Questo progetto non ha attività né incarichi."
 }

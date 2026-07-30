@@ -18,4 +18,7 @@ return [
         'not_allowed' => 'Non sei autorizzato a eseguire questa azione sull\'ordine.',
         'handover_via_order' => 'Il collaudo richiede un protocollo firmato e viene eseguito direttamente nell\'ordine.',
     ],
+    'entry_bar' => [
+        'options_failed' => 'Impossibile caricare le attività/gli ordini.',
+    ],
 ];

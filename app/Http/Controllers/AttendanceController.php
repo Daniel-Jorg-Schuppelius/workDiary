@@ -11,10 +11,10 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Attendance\AttendanceStatus;
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\{Attendance, User};
 use App\Services\Attendance\AttendanceClockService;
 use App\Support\{Setting, SortableQuery, Tz};
-use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -23,18 +23,18 @@ use Illuminate\View\View;
 use RuntimeException;
 
 class AttendanceController extends Controller {
+    use ResolvesGlobalDateRange;
+
     public function __construct(protected AttendanceClockService $clock) {}
 
     /**
-     * Lists attendances for the authenticated user (current month by default).
+     * Lists attendances for the authenticated user. Zeitraum: explizite
+     * from/to-Query-Parameter (Bookmarks), sonst der Header-Zeitraumfilter.
      */
     public function index(Request $request): View {
         Gate::authorize('viewAny', Attendance::class);
 
-        $from = $request->date('from')?->startOfDay()
-            ?? CarbonImmutable::now()->startOfMonth();
-        $to = $request->date('to')?->endOfDay()
-            ?? CarbonImmutable::now()->endOfMonth();
+        [$from, $to] = $this->resolveRange($request);
 
         $attendances = Attendance::query()
             ->where('user_id', Auth::id())

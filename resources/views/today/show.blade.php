@@ -177,6 +177,11 @@
             </x-table>
         </x-card>
 
+        {{-- Eingabeleiste (Toggl-artig): Timer/Manuell-Buchung direkt mit Projektwahl. --}}
+        @if (! $isFuture)
+            @include('today._entry_bar')
+        @endif
+
         <x-card as="section" padding="p-0" class="overflow-hidden">
             <header class="flex items-center justify-between gap-2 border-b border-base-300 p-3">
                 <h2 class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Zeiteinträge') }}</h2>

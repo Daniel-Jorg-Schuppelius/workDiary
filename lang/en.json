@@ -9052,5 +9052,12 @@
     ":count ohne Artikel": ":count without article",
     "Zugeordnet: :name": "Assigned: :name",
     "… Kunde auswählen": "… select customer",
-    "Als Auftrag buchen": "Book as order"
+    "Als Auftrag buchen": "Book as order",
+    "Woran arbeitest du?": "What are you working on?",
+    "Timer": "Timer",
+    "Timer starten": "Start timer",
+    "Es läuft bereits eine Zeiterfassung.": "A time entry is already running.",
+    "Weitere Felder": "More fields",
+    "Kein Projekt gefunden.": "No project found.",
+    "Für dieses Projekt gibt es keine Aufgaben oder Aufträge.": "This project has no tasks or orders."
 }

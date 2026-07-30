@@ -30,8 +30,8 @@ class Stopwatch {
             ->first();
     }
 
-    public function start(User $user, Timesheet $timesheet, ?int $taskId = null, ?string $description = null): TimeEntry {
-        return DB::transaction(function () use ($user, $timesheet, $taskId, $description): TimeEntry {
+    public function start(User $user, Timesheet $timesheet, ?int $taskId = null, ?string $description = null, ?int $diaryEntryId = null): TimeEntry {
+        return DB::transaction(function () use ($user, $timesheet, $taskId, $description, $diaryEntryId): TimeEntry {
             // Per-User serialisieren, sonst legen zwei parallele Start-Requests
             // (Doppelklick) beide an current() vorbei zwei laufende Einträge an;
             // stop() beendet dann nur einen.
@@ -51,6 +51,7 @@ class Stopwatch {
                 'project_id' => $timesheet->project_id,
                 'timesheet_id' => $timesheet->id,
                 'task_id' => $taskId,
+                'diary_entry_id' => $diaryEntryId,
                 'user_id' => $user->id,
                 // Kalendertag lokal (Anzeige-Zeitzone), Zeitstempel bleiben UTC.
                 'date' => $now->setTimezone(\App\Support\Tz::current())->toDateString(),

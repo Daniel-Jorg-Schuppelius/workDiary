@@ -21,11 +21,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Laravel\Sanctum\Sanctum;
 use RuntimeException;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\TestCase;
 
 class AttendanceTest extends TestCase {
     use RefreshDatabase;
+    use WithGlobalDateRange;
     use WithOrganization;
 
     private User $user;
@@ -187,6 +188,67 @@ class AttendanceTest extends TestCase {
             ->assertSee(__('Abgeschlossen'));
     }
 
+    public function test_attendance_index_follows_global_header_range(): void {
+        $this->actingAs($this->user);
+
+        $june = Attendance::create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->user->id,
+            'started_at' => CarbonImmutable::parse('2026-06-10 08:00:00'),
+            'ended_at' => CarbonImmutable::parse('2026-06-10 16:00:00'),
+            'date' => '2026-06-10',
+            'status' => AttendanceStatus::Closed->value,
+        ]);
+        $july = Attendance::create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->user->id,
+            'started_at' => CarbonImmutable::parse('2026-07-15 08:00:00'),
+            'ended_at' => CarbonImmutable::parse('2026-07-15 16:00:00'),
+            'date' => '2026-07-15',
+            'status' => AttendanceStatus::Closed->value,
+        ]);
+
+        // Header-Zeitraum Juni → nur die Juni-Stempelung erscheint.
+        $ids = $this->withSession($this->dateRangeMonth(2026, 6))
+            ->get(route('attendance.index'))
+            ->assertOk()
+            ->viewData('attendances')
+            ->pluck('id');
+        $this->assertTrue($ids->contains($june->id));
+        $this->assertFalse($ids->contains($july->id));
+
+        // Explizite from/to-Query (Bookmark) überstimmt den Header-Zeitraum.
+        $ids = $this->withSession($this->dateRangeMonth(2026, 6))
+            ->get(route('attendance.index', ['from' => '2026-07-01', 'to' => '2026-07-31']))
+            ->assertOk()
+            ->viewData('attendances')
+            ->pluck('id');
+        $this->assertTrue($ids->contains($july->id));
+        $this->assertFalse($ids->contains($june->id));
+    }
+
+    public function test_today_follows_header_range_only_for_single_day(): void {
+        $this->actingAs($this->user);
+
+        // Einzeltag im Header → „Heute" zeigt genau diesen Tag.
+        $this->withSession($this->dateRangeSession('2026-07-15', '2026-07-15'))
+            ->get(route('today.show'))
+            ->assertOk()
+            ->assertViewHas('day', fn ($day) => $day->toDateString() === '2026-07-15');
+
+        // Mehrtages-Zeitraum → weiterhin heute.
+        $this->withSession($this->dateRangeMonth(2026, 6))
+            ->get(route('today.show'))
+            ->assertOk()
+            ->assertViewHas('day', fn ($day) => $day->isToday());
+
+        // Explizites ?date= überstimmt den Einzeltag-Header.
+        $this->withSession($this->dateRangeSession('2026-07-15', '2026-07-15'))
+            ->get(route('today.show', ['date' => '2026-07-20']))
+            ->assertOk()
+            ->assertViewHas('day', fn ($day) => $day->toDateString() === '2026-07-20');
+    }
+
     public function test_today_dashboard_renders_with_soll_ist_unverteilt(): void {
         $this->actingAs($this->user);
 
@@ -204,6 +266,8 @@ class AttendanceTest extends TestCase {
             ->assertSee(__('Soll'))
             ->assertSee(__('Anwesenheit'))
             ->assertSee(__('Unverteilt'))
+            // Eingabeleiste (Toggl-artig) auf der Heute-Seite.
+            ->assertSee(__('Woran arbeitest du?'))
             // Zusammenlegung mit dem Tagesabschluss (MVP-015): „Heute" zeigt
             // jetzt auch Warnungen, Bilanz (inkl. Pausen) und die Abschluss-Aktion.
             ->assertSee(__('day-close.section.issues'))

@@ -18,4 +18,7 @@ return [
         'not_allowed' => 'No tienes permiso para esta acción del pedido.',
         'handover_via_order' => 'La recepción requiere un protocolo firmado y se realiza directamente en el pedido.',
     ],
+    'entry_bar' => [
+        'options_failed' => 'No se pudieron cargar las tareas/pedidos.',
+    ],
 ];

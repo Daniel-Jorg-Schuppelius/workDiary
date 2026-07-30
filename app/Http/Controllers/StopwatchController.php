@@ -11,10 +11,11 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Timesheet\TimesheetStatus;
+use App\Http\Requests\StartStopwatchRequest;
 use App\Models\{Project, Timesheet};
 use App\Services\Timesheet\Stopwatch;
 use Carbon\CarbonImmutable;
-use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{Auth, DB, Gate};
 use Illuminate\View\View;
 
@@ -27,13 +28,8 @@ class StopwatchController extends Controller {
         ]);
     }
 
-    public function start(Request $request): RedirectResponse {
-        $data = $request->validate([
-            'project_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('projects')],
-            'task_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('tasks')],
-            'description' => ['nullable', 'string', 'max:500'],
-            'timesheet_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('timesheets')],
-        ]);
+    public function start(StartStopwatchRequest $request): RedirectResponse {
+        $data = $request->validated();
 
         $project = Project::findOrFail((int) $data['project_id']);
 
@@ -59,7 +55,17 @@ class StopwatchController extends Controller {
 
         Gate::authorize('update', $timesheet);
 
-        $this->stopwatch->start($this->authUser(), $timesheet, $data['task_id'] ?? null, $data['description'] ?? null);
+        try {
+            $this->stopwatch->start($this->authUser(), $timesheet, $data['task_id'] ?? null, $data['description'] ?? null, $data['diary_entry_id'] ?? null);
+        } catch (\RuntimeException $e) {
+            // Doppel-Submit-Guard: nur den Läuft-schon-Fall in eine Flash-Meldung
+            // übersetzen; andere Zustände (z. B. signierter Stundenzettel) bleiben hart.
+            if ($e->getMessage() !== 'A running entry already exists.') {
+                throw $e;
+            }
+
+            return back()->with('error', __('Es läuft bereits eine Zeiterfassung.'));
+        }
 
         return back()->with('success', __('Stoppuhr gestartet.'));
     }

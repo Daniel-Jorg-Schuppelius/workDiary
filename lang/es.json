@@ -9052,5 +9052,12 @@
     ":count ohne Artikel": ":count sin artículo",
     "Zugeordnet: :name": "Asignado: :name",
     "… Kunde auswählen": "… seleccionar cliente",
-    "Als Auftrag buchen": "Registrar como pedido"
+    "Als Auftrag buchen": "Registrar como pedido",
+    "Woran arbeitest du?": "¿En qué está trabajando?",
+    "Timer": "Temporizador",
+    "Timer starten": "Iniciar temporizador",
+    "Es läuft bereits eine Zeiterfassung.": "Ya hay un registro de tiempo en curso.",
+    "Weitere Felder": "Más campos",
+    "Kein Projekt gefunden.": "No se encontró ningún proyecto.",
+    "Für dieses Projekt gibt es keine Aufgaben oder Aufträge.": "Este proyecto no tiene tareas ni pedidos."
 }

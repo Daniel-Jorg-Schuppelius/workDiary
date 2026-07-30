@@ -33,12 +33,14 @@ class StopwatchController extends Controller {
         $request->merge([
             'project_id' => Sqid::decode(Project::class, $request->input('project_id')),
             'task_id' => Sqid::decode(\App\Models\Task::class, $request->input('task_id')),
+            'diary_entry_id' => Sqid::decode(\App\Models\DiaryEntry::class, $request->input('diary_entry_id')),
             'timesheet_id' => Sqid::decode(Timesheet::class, $request->input('timesheet_id')),
         ]);
 
         $data = $request->validate([
             'project_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('projects')],
             'task_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('tasks')],
+            'diary_entry_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('diary_entries')],
             'description' => ['nullable', 'string', 'max:500'],
             'timesheet_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('timesheets')],
         ]);
@@ -63,7 +65,7 @@ class StopwatchController extends Controller {
             });
         Gate::authorize('update', $timesheet);
 
-        return new TimeEntryResource($this->stopwatch->start($this->authUser(), $timesheet, $data['task_id'] ?? null, $data['description'] ?? null));
+        return new TimeEntryResource($this->stopwatch->start($this->authUser(), $timesheet, $data['task_id'] ?? null, $data['description'] ?? null, $data['diary_entry_id'] ?? null));
     }
 
     public function stop(): JsonResponse|TimeEntryResource {

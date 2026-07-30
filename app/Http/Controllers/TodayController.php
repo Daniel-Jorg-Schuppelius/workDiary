@@ -11,10 +11,12 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Project\ProjectStatus;
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\{Attendance, Project, TimeEntry, User};
 use App\Services\Attendance\AttendanceClockService;
 use App\Services\Flextime\FlexCalculator;
 use App\Services\TimeApproval\{DayCloseService, UntrackedBlockCalculator};
+use App\Services\Timesheet\Stopwatch;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -28,17 +30,29 @@ use Illuminate\View\View;
  * bleibt für Fremdtage/Admin (`?user=`) erhalten.
  */
 class TodayController extends Controller {
+    use ResolvesGlobalDateRange;
+
     public function __construct(
         protected AttendanceClockService $clock,
         protected FlexCalculator $flex,
         protected DayCloseService $dayClose,
+        protected Stopwatch $stopwatch,
     ) {}
 
     public function show(Request $request): View {
         /** @var User $user */
         $user = Auth::user();
         $rawDay = $request->date('date');
-        $day = $rawDay !== null ? CarbonImmutable::instance($rawDay)->startOfDay() : CarbonImmutable::today();
+        if ($rawDay !== null) {
+            $day = CarbonImmutable::instance($rawDay)->startOfDay();
+        } else {
+            // Header-Zeitraumfilter: umfasst er genau einen Tag (Preset „Heute"
+            // oder Von=Bis), folgt die Seite diesem Tag; Bereiche → heute.
+            $range = $this->globalDateRange();
+            $day = $range['from']->isSameDay($range['to'])
+                ? $range['from']->startOfDay()
+                : CarbonImmutable::today();
+        }
 
         // Tagesabschluss-Kontext (eigener Tag): legt den Abschluss beim ersten
         // Öffnen an (Audit dayClose.opened 1×/Tag) und liefert Checks/Bilanz.
@@ -85,13 +99,16 @@ class TodayController extends Controller {
         $openBlocks = $isFuture
             ? []
             : app(UntrackedBlockCalculator::class)->blocks($attendances, $entries, CarbonImmutable::now());
-        $quickBookProjects = $openBlocks === [] ? collect() : $this->quickBookProjects($user);
+        // Eine Liste für Quick-Buchung UND Eingabeleiste (zuletzt genutzte zuerst).
+        $projects = $isFuture ? collect() : $this->quickBookProjects($user);
 
         return view('today.show', [
             'day' => $day,
             'current' => $current,
             'openBlocks' => $openBlocks,
-            'quickBookProjects' => $quickBookProjects,
+            'quickBookProjects' => $projects,
+            'entryBarProjects' => $projects,
+            'runningEntry' => $this->stopwatch->current($user),
             'attendances' => $attendances,
             'entries' => $entries,
             'targetMinutes' => $targetMinutes,
@@ -136,8 +153,9 @@ class TodayController extends Controller {
 
         return Project::query()
             ->where('status', ProjectStatus::Active)
+            ->with('customer:id,name')
             ->orderBy('name')
-            ->get(['id', 'name'])
+            ->get(['id', 'name', 'customer_id'])
             ->sortBy(fn(Project $p): int => $recentIds->search($p->id) === false ? PHP_INT_MAX : (int) $recentIds->search($p->id))
             ->values();
     }

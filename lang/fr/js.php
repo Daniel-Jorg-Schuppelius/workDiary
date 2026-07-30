@@ -18,4 +18,7 @@ return [
         'not_allowed' => 'Vous n\'êtes pas autorisé à effectuer cette action sur la commande.',
         'handover_via_order' => 'La réception nécessite un protocole signé et s\'effectue directement dans la commande.',
     ],
+    'entry_bar' => [
+        'options_failed' => 'Les tâches/commandes n\'ont pas pu être chargées.',
+    ],
 ];

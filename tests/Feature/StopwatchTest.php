@@ -12,7 +12,7 @@ namespace Tests\Feature;
 
 use App\Enums\Project\ProjectStatus;
 use App\Enums\Timesheet\TimesheetStatus;
-use App\Models\{Project, Timesheet, User};
+use App\Models\{DiaryEntry, Project, TimeEntry, Timesheet, User};
 use App\Services\Timesheet\Stopwatch;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -74,5 +74,74 @@ class StopwatchTest extends TestCase {
 
         $this->expectException(\RuntimeException::class);
         $sw->start($this->user, $ts);
+    }
+
+    public function test_web_start_accepts_sqid_with_description_and_order(): void {
+        $diary = DiaryEntry::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->user->id,
+            'project_id' => $this->project->id,
+            'title' => 'Wartungsauftrag',
+        ]);
+
+        $this->actingAs($this->user)
+            ->post(route('stopwatch.start'), [
+                'project_id' => $this->project->sqid,
+                'description' => 'Doku',
+                'diary_entry_id' => $diary->sqid,
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('time_entries', [
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'diary_entry_id' => $diary->id,
+            'description' => 'Doku',
+            'ended_at' => null,
+        ]);
+    }
+
+    public function test_web_start_double_submit_flashes_error_instead_of_500(): void {
+        $this->actingAs($this->user)
+            ->post(route('stopwatch.start'), ['project_id' => $this->project->sqid])
+            ->assertSessionHas('success');
+
+        $this->actingAs($this->user)
+            ->post(route('stopwatch.start'), ['project_id' => $this->project->sqid])
+            ->assertRedirect()
+            ->assertSessionHas('error');
+
+        $this->assertSame(1, TimeEntry::query()
+            ->where('user_id', $this->user->id)
+            ->whereNull('ended_at')
+            ->count());
+    }
+
+    public function test_today_shows_running_entry_instead_of_idle_bar(): void {
+        $ts = Timesheet::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'work_date' => now()->toDateString(),
+            'status' => TimesheetStatus::Draft->value,
+        ]);
+        app(Stopwatch::class)->start($this->user, $ts, null, 'Doku-Timer');
+
+        $this->actingAs($this->user)
+            ->get(route('today.show'))
+            ->assertOk()
+            ->assertSee('Doku-Timer')
+            ->assertDontSee(__('Woran arbeitest du?'));
+    }
+
+    public function test_web_start_rejects_raw_integer_project_id(): void {
+        // Sqid-Migration: rohe numerische IDs (wie sie ein echter HTTP-Request
+        // als String liefert) werden nicht mehr akzeptiert.
+        $this->actingAs($this->user)
+            ->post(route('stopwatch.start'), ['project_id' => (string) $this->project->id])
+            ->assertSessionHasErrors(['project_id']);
+
+        $this->assertDatabaseCount('time_entries', 0);
     }
 }
