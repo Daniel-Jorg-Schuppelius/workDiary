@@ -762,6 +762,14 @@ class AppServiceProvider extends ServiceProvider {
         // Öffentlicher Karrierebereich (MVP-437): Ansicht großzügig, Bewerbungs-
         // eingang streng gegen Massensendungen — gehashte IP als Cache-Key.
         RateLimiter::for('careers-view', fn(Request $request) => Limit::perMinute(30)->by('crv:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)));
+        // Oeffentlicher OCI-Punchout-Katalog (Feature 099, MVP-457): Browse
+        // grosszuegig (Katalog-Blaettern), der Credential-Einstieg streng gegen
+        // Brute-Force — gehashte IP als Cache-Key (datensparsam).
+        RateLimiter::for('b2b-view', fn(Request $request) => Limit::perMinute(60)->by('b2bv:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)));
+        RateLimiter::for('b2b-login', fn(Request $request) => [
+            Limit::perMinute(5)->by('b2bl:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)),
+            Limit::perHour(30)->by('b2blh:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)),
+        ]);
         RateLimiter::for('careers-submit', fn(Request $request) => [
             Limit::perMinute(5)->by('crs:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)),
             Limit::perHour(20)->by('crsh:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)),

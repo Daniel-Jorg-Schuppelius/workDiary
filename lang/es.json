@@ -9037,5 +9037,12 @@
     "… auswählen": "… seleccionar",
     "… bestehendem zuordnen": "… asignar a existente",
     "… und :count weitere": "… y :count más",
-    "€/km": "€/km"
+    "€/km": "€/km",
+    ":count Position|:count Positionen": ":count posición|:count posiciones",
+    ":count ohne Artikel": ":count sin artículo",
+    "Zugeordnet: :name": "Asignado: :name",
+    "… Kunde auswählen": "… seleccionar cliente",
+    "Als Auftrag buchen": "Registrar como pedido",
+    "Betroffenenanfrage": "Solicitud del interesado",
+    "ohne Projektbezug (kunden-/org-weit)": "sin referencia de proyecto (cliente/organización)"
 }

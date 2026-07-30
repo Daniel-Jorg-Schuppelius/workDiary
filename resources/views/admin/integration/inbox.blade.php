@@ -75,13 +75,21 @@
                         @if ($form === 'asset')
                             <span class="font-semibold">{{ $g['alias'] ?: $g['remote_id'] }}</span>
                             <span class="text-sm text-base-content/60">· {{ $g['provider'] }}</span>
+                        @elseif ($form === 'b2b_order')
+                            <span class="font-semibold">{{ __('Bestellung') }} {{ $g['order_id'] }}</span>
+                            <span class="text-sm text-base-content/60">· {{ $g['customer_name'] ?? $g['buyer_name'] }}</span>
+                            <span class="badge badge-sm badge-outline">{{ $g['source'] }}</span>
                         @else
                             <span class="font-semibold">{{ $g['project_name'] ?: __('(ohne Projekt)') }}</span>
                             @if ($g['client_name'] ?? null)<span class="text-sm text-base-content/60">· {{ $g['client_name'] }}</span>@endif
                             @if ($g['workspace_name'] ?? null)<span class="badge badge-sm badge-outline" title="{{ __('Toggl-Workspace') }}">{{ $g['workspace_name'] }}</span>@endif
                         @endif
                         <span class="ml-auto text-xs text-base-content/50">
-                            {{ trans_choice(':count Eintrag|:count Einträge', $g['count'], ['count' => $g['count']]) }} · {{ $g['minutes'] }} {{ __('Min') }}
+                            @if ($form === 'b2b_order')
+                                {{ trans_choice(':count Position|:count Positionen', $g['count'], ['count' => $g['count']]) }}@if (($g['unmatched'] ?? 0) > 0) · <span class="text-warning">{{ __(':count ohne Artikel', ['count' => $g['unmatched']]) }}</span>@endif @if ($g['total'] ?? null) · {{ $g['total'] }}@endif
+                            @else
+                                {{ trans_choice(':count Eintrag|:count Einträge', $g['count'], ['count' => $g['count']]) }} · {{ $g['minutes'] }} {{ __('Min') }}
+                            @endif
                         </span>
                     </div>
 
@@ -139,6 +147,22 @@
                             </select>
                             <button type="submit" class="btn btn-sm btn-primary">{{ __('An Gerät binden & buchen') }}</button>
                             <a href="{{ route('admin.remote-support.pending.index') }}" class="btn btn-sm btn-ghost">{{ __('Neues Gerät / Mehrkundengerät …') }}</a>
+                            <button type="submit" form="{{ $dismissFormId }}" class="btn btn-sm btn-ghost">{{ __('Gruppe verwerfen') }}</button>
+                        </form>
+                    @elseif ($form === 'b2b_order')
+                        {{-- openTRANS-Bestellung (Feature 099): Kunde bestätigen/wählen,
+                             die Buchung erzeugt den Auftrag (DiaryEntry). --}}
+                        <form method="POST" action="{{ route('admin.integration.inbox.group.book') }}" class="flex flex-wrap items-end gap-2">
+                            @csrf
+                            <input type="hidden" name="plugin" value="{{ $g['plugin_id'] }}">
+                            <input type="hidden" name="group_key" value="{{ $g['group_key'] }}">
+                            <select name="customer" class="select select-sm select-bordered" @if (! ($g['customer_sqid'] ?? null)) required @endif>
+                                <option value="">{{ ($g['customer_name'] ?? null) ? __('Zugeordnet: :name', ['name' => $g['customer_name']]) : __('… Kunde auswählen') }}</option>
+                                @foreach (($assignTargets[\App\Models\Customer::class] ?? []) as $sqid => $label)
+                                    <option value="{{ $sqid }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-primary">{{ __('Als Auftrag buchen') }}</button>
                             <button type="submit" form="{{ $dismissFormId }}" class="btn btn-sm btn-ghost">{{ __('Gruppe verwerfen') }}</button>
                         </form>
                     @else

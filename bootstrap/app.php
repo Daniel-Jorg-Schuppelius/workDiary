@@ -38,6 +38,9 @@ return Application::configure(basePath: dirname(__DIR__))
             // SCIM-2.0-Provisioning (Feature 057): sessionlos, Bearer-Token-Auth
             // je Organisation über AuthenticateScim (kein web/api-Gruppen-Stack).
             Route::middleware(AuthenticateScim::class)->prefix('scim/v2')->group(__DIR__ . '/../routes/scim.php');
+            // Oeffentlicher OCI-Punchout-Katalog (Feature 099, MVP-457):
+            // sessionloser Public-Stack ohne Cookies/CSRF (Token-basiert).
+            Route::middleware('b2b-catalog')->group(__DIR__ . '/../routes/b2b-catalog.php');
         },
     )
     // Legacy-Commands liegen ausserhalb des Auto-Discovery-Pfads
@@ -135,6 +138,15 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\Careers\CareerPortalSecurityHeaders::class,
+        ]);
+
+        // Sessionloser Stack fuer den oeffentlichen OCI-Punchout-Katalog
+        // (Feature 099, MVP-457): KEINE Cookies/Session/CSRF — der Einstieg ist
+        // ein Cross-Site-POST des Einkaufssystems, den Browse-Zustand traegt
+        // ein verschluesseltes, zeitbegrenztes Token durch den Flow.
+        $middleware->group('b2b-catalog', [
+            HandleDatabaseUnavailable::class,
+            \App\Http\Middleware\B2bCatalog\B2bCatalogSecurityHeaders::class,
         ]);
 
         // SetOrganizationContext MUSS vor SubstituteBindings laufen, damit

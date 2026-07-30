@@ -56,7 +56,36 @@ class CloudIntakeRouter {
         return match ($route->target) {
             CloudIntakeRouteTarget::IncomingInvoice => $this->routeInvoice($item, $quarantinePath, $actor),
             CloudIntakeRouteTarget::Document => $this->routeDocument($connection, $route, $variables, $item, $quarantinePath, $actor),
+            CloudIntakeRouteTarget::B2bOrder => $this->routeB2bOrder($connection, $quarantinePath),
         };
+    }
+
+    /**
+     * openTRANS-Bestellungen (Feature 099, MVP-458): Datei als
+     * openTRANS-2.1-ORDER parsen und Inbox-First spiegeln — kein Blind-Import.
+     *
+     * @return array{status: CloudIntakeItemStatus, imported: Model|null, reason: string|null}
+     */
+    private function routeB2bOrder(CloudDocumentConnection $connection, string $quarantinePath): array {
+        $organization = $connection->organization;
+        if ($organization === null
+            || ! app(\App\Services\Licensing\ModuleStatusResolver::class)->isActiveFor($organization, 'module.b2b_katalog')) {
+            return ['status' => CloudIntakeItemStatus::Rejected, 'imported' => null, 'reason' => 'b2b_order_module_inactive'];
+        }
+
+        try {
+            $result = app(\App\Services\B2bCatalog\B2bOrderIntakeService::class)->intake(
+                $organization,
+                (string) file_get_contents($quarantinePath),
+                \App\Models\B2b\B2bOrder::SOURCE_CLOUD,
+            );
+        } catch (\RuntimeException) {
+            return ['status' => CloudIntakeItemStatus::Rejected, 'imported' => null, 'reason' => 'b2b_order_unreadable'];
+        }
+
+        return $result['status'] === 'duplicate'
+            ? ['status' => CloudIntakeItemStatus::Duplicate, 'imported' => $result['order'], 'reason' => 'b2b_order_duplicate']
+            : ['status' => CloudIntakeItemStatus::Imported, 'imported' => $result['order'], 'reason' => null];
     }
 
     /** @return array{status: CloudIntakeItemStatus, imported: Model|null, reason: string|null} */

@@ -27,6 +27,8 @@ return [
     // im FeatureFlagResolver mit deaktiviert (Feature 065).
     'requires' => [
         'module.service_desk' => 'module.helpdesk',
+        // Punchout-Katalog browst den Artikelstamm (Feature 099, E1).
+        'module.b2b_katalog' => 'module.lager',
     ],
 
     // Plan → enthaltene Modul-Codes. Enterprise ist Superset von Pro.
@@ -84,6 +86,7 @@ return [
             'module.isms',
             'module.finance',
             'module.lager',
+            'module.b2b_katalog',
             'module.bau',
             'module.versand',
             'module.standorterfassung',
@@ -141,6 +144,7 @@ return [
         'module.isms' => 'ISMS',
         'module.finance' => 'Finanzschnittstelle',
         'module.lager' => 'Lager & Artikel',
+        'module.b2b_katalog' => 'B2B-Katalogzugang (OCI-Punchout)',
         'module.bau' => 'Bau & GAEB',
         'module.versand' => 'Versand & Logistik',
         'module.standorterfassung' => 'Standorterfassung',
@@ -185,6 +189,7 @@ return [
         'module.isms' => 'Informationssicherheits-Managementsystem (ISO 27001).',
         'module.finance' => 'Finanz-/DATEV-Schnittstelle.',
         'module.lager' => 'Lagerwirtschaft, Artikelstamm und Fertigung.',
+        'module.b2b_katalog' => 'Punchout-Katalog für Einkaufssysteme der B2B-Kunden (OCI 4.0) mit kundenindividuellen Freigaben/Preisen und openTRANS-2.1-Auftragseingang.',
         'module.bau' => 'Bau-/Ausbau: GAEB-Leistungsverzeichnisse, Ordnungszahlen, Aufmaß und Nachträge.',
         'module.versand' => 'Versandlabels erzeugen und Sendungen verfolgen (DHL Paket u. a.).',
         'module.standorterfassung' => 'Standortbasierte Zeiterfassung über Geofences (OwnTracks/Traccar).',
@@ -279,6 +284,7 @@ return [
         'serials.*' => 'module.lager',
         'purchase-orders.*' => 'module.lager',
         'supplier-scorecards.*' => 'module.lager', // Bauturbo Welle D Lieferantenperformance-Scorecards
+        'b2b-catalog.*' => 'module.b2b_katalog', // Feature 099 Zugangs-/Freigabe-Verwaltung + Bestell-Upload (Public-Routen sichert ResolveB2bCatalogOrganization per 404)
         'supplier-catalogs.*' => 'module.lager', // Feature 050 Lieferantenkataloge
         'pricing-margin-rules.*' => 'module.lager', // Feature 050 Margenregeln
         'oci-carts.*' => 'module.lager', // Feature 050 OCI-Warenkorb
@@ -417,6 +423,7 @@ return [
         'module.isms' => false,             // Risikoregister/SoA → Compliance-Nachweise (Auditfähigkeit)
         'module.finance' => false,          // Übergabenachweise/Exportpakete → GoBD / §147 AO (10 J.)
         'module.versand' => false,          // Versandbelege/Labels → Handelsbriefe (§147 AO), nie automatisch purgen
+        'module.b2b_katalog' => false,      // eingegangene Bestellungen → Handelsbriefe (§147 AO), nie automatisch purgen
         'module.ideas' => false,            // Karten werden bei Downgrade NIE gelöscht, nur unzugänglich (DoD Feature 054)
         'module.agile_projects' => false,   // Boards/Backlog bleiben bei Downgrade erhalten (Vorgabe 064)
         'module.helpdesk' => false,         // Tickets sind aufbewahrungspflichtige Kundenhistorie (065)

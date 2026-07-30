@@ -15,14 +15,16 @@ use App\Enums\Contracts\HasLabel;
 
 /**
  * Zielbereich einer Ordnerregel (Feature 080): Eingangsrechnungen laufen in
- * die bestehende E-Rechnungs-Prüfpipeline, alles andere ins DMS. Weitere
- * Ziele sind bewusst NICHT vorgesehen (Konzept §Datenmodell).
+ * die bestehende E-Rechnungs-Prüfpipeline, alles andere ins DMS. Feature 099
+ * ergänzt den openTRANS-Bestelleingang (B2bOrder) als drittes Ziel; weitere
+ * Ziele bleiben bewusst NICHT vorgesehen (Konzept §Datenmodell).
  */
 enum CloudIntakeRouteTarget: string implements HasLabel {
     use HasOptions;
 
     case IncomingInvoice = 'incoming_invoice';
     case Document = 'document';
+    case B2bOrder = 'b2b_order';
 
     public function label(): string {
         return (string) __('enums.cloud_intake.route_target.' . $this->value);

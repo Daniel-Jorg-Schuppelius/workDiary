@@ -245,6 +245,7 @@ class NavigationRegistry {
             'work-centers.index' => 'module.lager',
             'inventory.lots' => 'module.lager',
             'inventory.label-templates.index' => 'module.lager',
+            'b2b-catalog.index' => 'module.b2b_katalog',
             'bill-of-quantities.index' => 'module.bau',
         ];
     }
@@ -456,6 +457,7 @@ class NavigationRegistry {
                         ['route' => 'serials.index', 'label' => __('inventory.serial.title'), 'icon' => 'tag', 'modal' => false, 'matches' => ['serials.*']],
                         ['route' => 'purchase-orders.index', 'label' => __('procurement.title'), 'icon' => 'shopping_cart', 'modal' => false, 'matches' => ['purchase-orders.*']],
                         ['route' => 'supplier-catalogs.index', 'label' => __('procurement.catalog.title'), 'icon' => 'import_export', 'modal' => false, 'matches' => ['supplier-catalogs.*']],
+                        ['route' => 'b2b-catalog.index', 'label' => __('b2b_catalog.title'), 'icon' => 'storefront', 'modal' => false, 'matches' => ['b2b-catalog.*']],
                         ['route' => 'pricing-margin-rules.index', 'label' => __('procurement.margin.title'), 'icon' => 'percent', 'modal' => false, 'matches' => ['pricing-margin-rules.*']],
                         ['route' => 'bill-of-quantities.index', 'label' => __('gaeb.title'), 'icon' => 'request_quote', 'modal' => false, 'matches' => ['bill-of-quantities.*']],
                         ['route' => 'inventory.scan', 'label' => __('inventory.scan.title'), 'icon' => 'qr_code_scanner', 'modal' => false, 'matches' => ['inventory.scan*']],
@@ -1036,6 +1038,7 @@ class NavigationRegistry {
                 ['route' => 'serials.index', 'label' => __('inventory.serial.title'), 'icon' => 'tag', 'modal' => false, 'matches' => ['serials.*']],
                 ['route' => 'purchase-orders.index', 'label' => __('procurement.title'), 'icon' => 'shopping_cart', 'modal' => false, 'matches' => ['purchase-orders.*']],
                 ['route' => 'supplier-catalogs.index', 'label' => __('procurement.catalog.title'), 'icon' => 'import_export', 'modal' => false, 'matches' => ['supplier-catalogs.*']],
+                ['route' => 'b2b-catalog.index', 'label' => __('b2b_catalog.title'), 'icon' => 'storefront', 'modal' => false, 'matches' => ['b2b-catalog.*']],
                 ['route' => 'pricing-margin-rules.index', 'label' => __('procurement.margin.title'), 'icon' => 'percent', 'modal' => false, 'matches' => ['pricing-margin-rules.*']],
                 ['route' => 'bill-of-quantities.index', 'label' => __('gaeb.title'), 'icon' => 'request_quote', 'modal' => false, 'matches' => ['bill-of-quantities.*']],
                 ['route' => 'inventory.scan', 'label' => __('inventory.scan.title'), 'icon' => 'qr_code_scanner', 'modal' => false, 'matches' => ['inventory.scan*']],

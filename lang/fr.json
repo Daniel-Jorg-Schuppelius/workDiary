@@ -9037,5 +9037,12 @@
     "… auswählen": "… choisir",
     "… bestehendem zuordnen": "… affecter à un existant",
     "… und :count weitere": "… et :count autres",
-    "€/km": "€/km"
+    "€/km": "€/km",
+    ":count Position|:count Positionen": ":count position|:count positions",
+    ":count ohne Artikel": ":count sans article",
+    "Zugeordnet: :name": "Attribué : :name",
+    "… Kunde auswählen": "… choisir un client",
+    "Als Auftrag buchen": "Comptabiliser comme commande",
+    "Betroffenenanfrage": "Demande de personne concernée",
+    "ohne Projektbezug (kunden-/org-weit)": "sans référence projet (client/organisation)"
 }

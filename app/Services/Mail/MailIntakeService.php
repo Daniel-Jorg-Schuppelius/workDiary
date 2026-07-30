@@ -37,9 +37,20 @@ class MailIntakeService {
     ) {}
 
     /**
-     * @return 'created'|'skipped'|'ticket_message'|'einvoice'
+     * @return 'created'|'skipped'|'ticket_message'|'einvoice'|'b2b_order'
      */
     public function intake(Organization $organization, EmailConnection $connection, ParsedMessage $message): string {
+        // openTRANS-Bestellungen (Feature 099, MVP-458): XML-Anhänge zuerst als
+        // B2B-Bestellung versuchen — VOR der E-Rechnungs-Pipeline, sonst frisst
+        // die den XML-Anhang. Nur bei aktivem Modul; kein openTRANS → normaler Weg.
+        if ($message->attachments !== []
+            && app(\App\Services\Licensing\ModuleStatusResolver::class)->isActiveFor($organization, 'module.b2b_katalog')) {
+            $result = $this->intakeB2bOrders($organization, $message);
+            if ($result !== null) {
+                return $result;
+            }
+        }
+
         // E-Rechnungs-Postfach (Feature 066, MVP-165): Anhänge laufen durch dieselbe
         // Eingangsverarbeitung wie der Upload; nicht lesbare Nachrichten fallen in die normale Inbox durch.
         if ($connection->einvoice_intake && $message->attachments !== []) {
@@ -141,6 +152,42 @@ class MailIntakeService {
         ])->save();
 
         return 'created';
+    }
+
+    /**
+     * openTRANS-Bestellungen übernehmen (Feature 099, MVP-458, Mail-Kanal):
+     * jede XML-Anlage wird als openTRANS-2.1-ORDER versucht; kein Treffer →
+     * `null` (andere Pipelines/normaler Inbox-Weg). Dubletten (ORDER-ID +
+     * Käufer) erzeugen keinen zweiten Vorschlag.
+     *
+     * @return 'b2b_order'|'skipped'|null
+     */
+    private function intakeB2bOrders(Organization $organization, ParsedMessage $message): ?string {
+        $service = app(\App\Services\B2bCatalog\B2bOrderIntakeService::class);
+        $created = 0;
+        $duplicates = 0;
+        foreach ($message->attachments as $attachment) {
+            $isXml = str_contains($attachment->mime, 'xml')
+                || str_ends_with(strtolower($attachment->filename), '.xml');
+            if (! $isXml) {
+                continue;
+            }
+            try {
+                $result = $service->intake($organization, $attachment->content, \App\Models\B2b\B2bOrder::SOURCE_MAIL);
+            } catch (\RuntimeException) {
+                continue; // kein openTRANS-ORDER → andere Pipelines versuchen
+            }
+            $result['status'] === 'created' ? $created++ : $duplicates++;
+        }
+
+        if ($created > 0) {
+            return 'b2b_order';
+        }
+        if ($duplicates > 0) {
+            return 'skipped'; // bereits erfasst — kein zweiter Vorschlag
+        }
+
+        return null;
     }
 
     /**

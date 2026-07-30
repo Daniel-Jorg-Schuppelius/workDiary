@@ -17,6 +17,7 @@ use App\Plugins\Kimai\KimaiGroupBooker;
 use App\Plugins\OpenProject\OpenProjectGroupBooker;
 use App\Plugins\RemoteSupport\RemoteSupportGroupBooker;
 use App\Plugins\Toggl\TogglGroupBooker;
+use App\Services\B2bCatalog\B2bOrderGroupBooker;
 
 /**
  * Bildet eine plugin_id auf ihren {@see InboxGroupBooker} ab (gruppierte
@@ -31,6 +32,7 @@ class InboxGroupBookerRegistry {
         'clockify' => ClockifyGroupBooker::class,
         'openproject' => OpenProjectGroupBooker::class,
         'remote-support' => RemoteSupportGroupBooker::class,
+        B2bOrderGroupBooker::PLUGIN_ID => B2bOrderGroupBooker::class,
     ];
 
     public function for(string $pluginId): ?InboxGroupBooker {

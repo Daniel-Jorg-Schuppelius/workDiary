@@ -9037,5 +9037,12 @@
     "… auswählen": "… select",
     "… bestehendem zuordnen": "… assign to existing",
     "… und :count weitere": "… and :count more",
-    "€/km": "€/km"
+    "€/km": "€/km",
+    ":count Position|:count Positionen": ":count position|:count positions",
+    ":count ohne Artikel": ":count without article",
+    "Zugeordnet: :name": "Assigned: :name",
+    "… Kunde auswählen": "… select customer",
+    "Als Auftrag buchen": "Book as order",
+    "Betroffenenanfrage": "Data subject request",
+    "ohne Projektbezug (kunden-/org-weit)": "without project reference (customer/org-wide)"
 }

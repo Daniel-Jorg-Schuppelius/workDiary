@@ -210,6 +210,7 @@ return [
         'route_target' => [
             'incoming_invoice' => 'Fatture in entrata',
             'document' => 'Documento (DMS)',
+            'b2b_order' => 'Ordine B2B (openTRANS)',
         ],
         'item_status' => [
             'imported' => 'Importato',

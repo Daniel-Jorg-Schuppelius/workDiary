@@ -9037,5 +9037,12 @@
     "… auswählen": "… seleziona",
     "… bestehendem zuordnen": "… associa a esistente",
     "… und :count weitere": "… e altre :count",
-    "€/km": "€/km"
+    "€/km": "€/km",
+    ":count Position|:count Positionen": ":count posizione|:count posizioni",
+    ":count ohne Artikel": ":count senza articolo",
+    "Zugeordnet: :name": "Assegnato: :name",
+    "… Kunde auswählen": "… seleziona cliente",
+    "Als Auftrag buchen": "Registra come incarico",
+    "Betroffenenanfrage": "Richiesta dell'interessato",
+    "ohne Projektbezug (kunden-/org-weit)": "senza riferimento a progetto (cliente/organizzazione)"
 }

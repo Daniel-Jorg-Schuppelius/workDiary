@@ -1288,6 +1288,17 @@ Route::middleware('auth')->group(function () {
         Route::delete('admin/sso/connections/{connection}', [\App\Http\Controllers\Admin\SsoAdminController::class, 'destroyConnection'])->name('admin.sso.connections.destroy');
         Route::post('admin/sso/break-glass', [\App\Http\Controllers\Admin\SsoAdminController::class, 'toggleBreakGlass'])->name('admin.sso.break-glass.toggle');
 
+        // ── B2B-Katalogzugang (Admin, Feature 099, module.b2b_katalog) ──
+        // Punchout-Zugänge, Artikel-Freigaben und openTRANS-Bestell-Upload.
+        Route::get('admin/b2b-katalog', [\App\Http\Controllers\Admin\B2bCatalogAdminController::class, 'index'])->name('b2b-catalog.index');
+        Route::post('admin/b2b-katalog/zugaenge', [\App\Http\Controllers\Admin\B2bCatalogAdminController::class, 'store'])->name('b2b-catalog.store');
+        Route::get('admin/b2b-katalog/zugaenge/{access}', [\App\Http\Controllers\Admin\B2bCatalogAdminController::class, 'show'])->name('b2b-catalog.show');
+        Route::post('admin/b2b-katalog/zugaenge/{access}/rotate', [\App\Http\Controllers\Admin\B2bCatalogAdminController::class, 'rotate'])->name('b2b-catalog.rotate');
+        Route::post('admin/b2b-katalog/zugaenge/{access}/revoke', [\App\Http\Controllers\Admin\B2bCatalogAdminController::class, 'revoke'])->name('b2b-catalog.revoke');
+        Route::post('admin/b2b-katalog/zugaenge/{access}/artikel', [\App\Http\Controllers\Admin\B2bCatalogAdminController::class, 'storeItem'])->name('b2b-catalog.items.store');
+        Route::delete('admin/b2b-katalog/zugaenge/{access}/artikel/{item}', [\App\Http\Controllers\Admin\B2bCatalogAdminController::class, 'destroyItem'])->name('b2b-catalog.items.destroy');
+        Route::post('admin/b2b-katalog/bestellungen/upload', [\App\Http\Controllers\Admin\B2bCatalogAdminController::class, 'uploadOrder'])->name('b2b-catalog.orders.upload');
+
         // ── PDF-Dokumentdesign / Firmenbogen (Admin, Feature 076, module.dokumentdesign) ──
         Route::get('admin/document-design', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'index'])->name('admin.document-design.index');
         Route::get('admin/document-design/assets/create', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'createAsset'])->name('admin.document-design.assets.create');
