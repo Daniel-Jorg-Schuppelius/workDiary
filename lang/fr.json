@@ -2519,6 +2519,7 @@
     "Export abgelehnt.": "Export refusé.",
     "Export ablehnen": "Refuser l’export",
     "Export als ausgeliefert markiert.": "Export marqué comme livré.",
+    "Export auf dem Handy: Google Maps → Zeitachse → Einstellungen → Zeitachsendaten exportieren.": "Export sur le téléphone : Google Maps → Chronologie → Paramètres → Exporter les données de la chronologie.",
     "Export befindet sich nicht im Status preparing.": "L’export n’est pas au statut preparing.",
     "Export endgültig löschen? Die Begründung wird auditiert.": "Supprimer définitivement cet export ? Le motif sera audité.",
     "Export erstellen": "Créer un export",
@@ -2579,6 +2580,7 @@
     "Fahrten": "Trajets",
     "Fahrten, Tankungen, Energiekosten und Erstattungen je Fahrzeug.": "Trajets, pleins, coûts énergétiques et remboursements par véhicule.",
     "Fahrtenbuch": "Carnet de bord",
+    "Fahrtvermittlung": "Intermédiation de courses",
     "Fahrzeug": "Véhicule",
     "Fahrzeug aktualisiert.": "Véhicule mis à jour.",
     "Fahrzeug archiviert.": "Véhicule archivé.",
@@ -4805,6 +4807,7 @@
     "Mittwoch": "Mercredi",
     "Mo": "Lun",
     "Mobil": "Mobile",
+    "Mobilitätsdaten": "Données de mobilité",
     "Modell": "Modèle",
     "Modelle": "Modèles",
     "Modellwechsel im Zeitraum": "Changement de modèle sur la période",
@@ -7097,6 +7100,7 @@
     "Tauschen": "Échanger",
     "Tauschgerät dokumentiert.": "Appareil de remplacement documenté.",
     "Tauschgeräte sind nur in laufenden Akten möglich.": "Les appareils de remplacement ne sont possibles que dans des dossiers en cours.",
+    "Taxameter-Import": "Import du taximètre",
     "Team": "Team",
     "Team & Personal": "Équipe et personnel",
     "Team anlegen": "Créer une équipe",
@@ -9048,7 +9052,5 @@
     ":count ohne Artikel": ":count sans article",
     "Zugeordnet: :name": "Attribué : :name",
     "… Kunde auswählen": "… choisir un client",
-    "Als Auftrag buchen": "Comptabiliser comme commande",
-    "Betroffenenanfrage": "Demande de personne concernée",
-    "ohne Projektbezug (kunden-/org-weit)": "sans référence projet (client/organisation)"
+    "Als Auftrag buchen": "Comptabiliser comme commande"
 }

@@ -2519,6 +2519,7 @@
     "Export abgelehnt.": "Export rejected.",
     "Export ablehnen": "Reject export",
     "Export als ausgeliefert markiert.": "Export marked as delivered.",
+    "Export auf dem Handy: Google Maps → Zeitachse → Einstellungen → Zeitachsendaten exportieren.": "Export on your phone: Google Maps → Timeline → Settings → Export Timeline data.",
     "Export befindet sich nicht im Status preparing.": "The export is not in the \"preparing\" status.",
     "Export endgültig löschen? Die Begründung wird auditiert.": "Delete this export permanently? The reason will be audited.",
     "Export erstellen": "Create export",
@@ -2579,6 +2580,7 @@
     "Fahrten": "Trips",
     "Fahrten, Tankungen, Energiekosten und Erstattungen je Fahrzeug.": "Trips, refuelings, energy costs and reimbursements per vehicle.",
     "Fahrtenbuch": "Logbook",
+    "Fahrtvermittlung": "Ride dispatch",
     "Fahrzeug": "Vehicle",
     "Fahrzeug aktualisiert.": "Vehicle updated.",
     "Fahrzeug archiviert.": "Vehicle archived.",
@@ -4805,6 +4807,7 @@
     "Mittwoch": "Wednesday",
     "Mo": "Mon",
     "Mobil": "Mobile",
+    "Mobilitätsdaten": "Mobility data",
     "Modell": "Model",
     "Modelle": "Models",
     "Modellwechsel im Zeitraum": "Model change in period",
@@ -7097,6 +7100,7 @@
     "Tauschen": "Swap",
     "Tauschgerät dokumentiert.": "Swap device documented.",
     "Tauschgeräte sind nur in laufenden Akten möglich.": "Swap devices are only possible in active rental files.",
+    "Taxameter-Import": "Taximeter import",
     "Team": "Team",
     "Team & Personal": "Team & staff",
     "Team anlegen": "Create team",
@@ -9048,7 +9052,5 @@
     ":count ohne Artikel": ":count without article",
     "Zugeordnet: :name": "Assigned: :name",
     "… Kunde auswählen": "… select customer",
-    "Als Auftrag buchen": "Book as order",
-    "Betroffenenanfrage": "Data subject request",
-    "ohne Projektbezug (kunden-/org-weit)": "without project reference (customer/org-wide)"
+    "Als Auftrag buchen": "Book as order"
 }
