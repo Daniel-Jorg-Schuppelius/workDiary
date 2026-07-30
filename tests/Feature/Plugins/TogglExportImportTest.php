@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Plugins;
 
+use App\Enums\Project\ProjectStatus;
 use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, Project, TimeEntry, User};
 use App\Plugins\Toggl\TogglExportImporter;
 use App\Services\{CustomerMergeService, ProjectMergeService};
@@ -95,6 +96,11 @@ class TogglExportImportTest extends TestCase {
         $this->assertSame($acme->id, $website->customer_id);
         $this->assertSame($bigcorp->id, $rollout->customer_id);
         $this->assertSame($internal->id, $rollout->foreign_customer_id);
+
+        // Toggl liefert billable für jedes Projekt (Free-Plan: immer false) —
+        // false ist kein Signal und bleibt „erben" (null), nur true wird übernommen.
+        $this->assertNull($website->billable);
+        $this->assertTrue((bool) $rollout->billable);
 
         $dev = User::query()->where('email', 'dev@example.com')->first();
         $this->assertNotNull($dev);
@@ -374,6 +380,58 @@ class TogglExportImportTest extends TestCase {
         $this->actingAs($admin)->get(route('admin.toggl.import-export'))
             ->assertOk()
             ->assertDontSee(__('Vorschau (nicht gespeichert)'));
+    }
+
+    /**
+     * Backfill 2026_11_06: Toggl-referenzierte Projekte mit hartem
+     * billable=false gehen zurück auf null (= erben); explizites true und
+     * Projekte ohne Toggl-Referenz bleiben unangetastet.
+     */
+    public function test_backfill_migration_resets_toggl_billable_false_to_inherit(): void {
+        $makeProject = fn(string $name, ?bool $billable) => Project::create([
+            'organization_id' => $this->organization->id,
+            'name' => $name,
+            'status' => ProjectStatus::Active->value,
+            'billable' => $billable,
+        ]);
+        $togglFalse = $makeProject('Toggl false', false);
+        $togglTrue = $makeProject('Toggl true', true);
+        $aliasFalse = $makeProject('Toggl alias false', false);
+        $manualFalse = $makeProject('Ohne Referenz', false);
+
+        $refType = (new Project)->getMorphClass();
+        ExternalReference::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => 'toggl',
+            'external_type' => 'project',
+            'external_id' => 'acme|toggl false',
+            'referenceable_type' => $refType,
+            'referenceable_id' => $togglFalse->id,
+        ]);
+        ExternalReference::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => 'toggl',
+            'external_type' => 'project',
+            'external_id' => 'acme|toggl true',
+            'referenceable_type' => $refType,
+            'referenceable_id' => $togglTrue->id,
+        ]);
+        ExternalReferenceAlias::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => 'toggl',
+            'external_type' => 'project',
+            'external_id' => 'acme|toggl alias false',
+            'referenceable_type' => $refType,
+            'referenceable_id' => $aliasFalse->id,
+        ]);
+
+        $migration = require database_path('migrations/2026_11_06_100000_backfill_toggl_project_billable_to_inherit.php');
+        $migration->up();
+
+        $this->assertNull($togglFalse->fresh()->billable);
+        $this->assertNull($aliasFalse->fresh()->billable);
+        $this->assertTrue((bool) $togglTrue->fresh()->billable);
+        $this->assertFalse((bool) $manualFalse->fresh()->billable);
     }
 
     // --- Fixtures -----------------------------------------------------------

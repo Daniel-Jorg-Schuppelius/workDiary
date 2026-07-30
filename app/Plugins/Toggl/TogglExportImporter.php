@@ -395,7 +395,10 @@ class TogglExportImporter {
             'foreign_customer_id' => $foreignCustomer?->id,
             'name' => $name,
             'color' => $meta['color'] ?? null,
-            'billable' => \array_key_exists('billable', $meta) ? (bool) $meta['billable'] : null,
+            // Toggl liefert billable für jedes Projekt (Free-Plan: immer false,
+            // das Flag ist dort Premium) — nur ein echtes true ist ein Signal,
+            // sonst erben (null) statt hartem „nicht abrechenbar".
+            'billable' => ($meta['billable'] ?? false) ? true : null,
             'status' => (($meta['active'] ?? true) ? ProjectStatus::Active : ProjectStatus::Archived)->value,
             'starts_on' => $meta['start_date'] ?? null,
             'is_default' => false,
