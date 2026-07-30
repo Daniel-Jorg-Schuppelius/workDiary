@@ -76,15 +76,18 @@
                         class="menu menu-sm absolute z-30 mt-1 w-full max-h-64 flex-nowrap overflow-y-auto rounded-box border border-base-300 bg-base-100 shadow-lg">
                         <template x-for="(p, idx) in filtered" :key="p.id">
                             <li>
+                                {{-- `flex` explizit: daisyUI-5-Menüeinträge sind sonst
+                                     Grid mit Spalten-Autoflow → Projekt und Kunde würden
+                                     nebeneinander gequetscht statt gestapelt. --}}
                                 <button type="button"
-                                        class="flex-col items-start gap-0.5 py-1.5"
+                                        class="flex flex-col items-start gap-1 py-2"
                                         :class="optionClass(idx)"
                                         @mouseenter="setHighlight(idx)"
                                         @click="choose(p)">
-                                    <span class="font-medium" x-text="p.name"></span>
+                                    <span class="font-medium leading-tight" x-text="p.name"></span>
                                     {{-- opacity statt fester Textfarbe: bleibt auf dem
                                          menu-active-Hintergrund der Markierung lesbar. --}}
-                                    <span class="text-xs opacity-60" x-show="p.customer" x-text="p.customer"></span>
+                                    <span class="text-xs leading-tight opacity-60" x-show="p.customer" x-text="p.customer"></span>
                                 </button>
                             </li>
                         </template>
