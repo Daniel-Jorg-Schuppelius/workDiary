@@ -30,7 +30,7 @@ body.sidebar-collapsed {
                gesetzt ist, bekommt der Content-Wrapper rechts Platz und die Seite
                bleibt voll bedienbar (kein Backdrop ab lg). */
 :root {
-    --help-sidebar-w: 28rem;
+    --help-sidebar-w: 18rem;
     /* Gleiche Breite wie die eingeklappte Menü-Sidebar links (4.5rem) —
        die Rail wirkt sonst am Rand gequetscht und der Trigger ist zu klein. */
     --help-rail-w: 4.5rem;
