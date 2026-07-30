@@ -18,6 +18,7 @@ use App\Models\Billing\CustomerBillingAgreement;
 use App\Models\{Customer, TimeEntry, User};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Parsers\XLSXDocumentParser;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -91,7 +92,7 @@ class ExcelHistoryImporter {
      * @param list<array{sheet: \CommonToolkit\Entities\XLSX\Sheet, year: int, month: int}> $sheets
      */
     private function seedOpeningBalance(CustomerBillingAgreement $agreement, array $sheets, string $timezone): void {
-        if ($sheets === [] || (float) $agreement->opening_balance !== 0.0 || $agreement->opening_balance_date !== null) {
+        if ($sheets === [] || ! ($agreement->opening_balance?->isZero() ?? true) || $agreement->opening_balance_date !== null) {
             return;
         }
 
@@ -102,7 +103,8 @@ class ExcelHistoryImporter {
         }
 
         $agreement->update([
-            'opening_balance' => round($carry, 2),
+            // Grenz-Konvertierung: Excel-Rohwert (float) → Money.
+            'opening_balance' => Money::ofFloat($carry, $agreement->currency),
             'opening_balance_date' => $this->monthStart($first['year'], $first['month'], $timezone)
                 ->subDay()->toDateString(),
         ]);

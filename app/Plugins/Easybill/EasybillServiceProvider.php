@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Easybill;
 
 use App\Plugins\Easybill\Console\EasybillSyncCommand;
-use Illuminate\Support\ServiceProvider;
+use App\Plugins\Support\PluginServiceProviderBase;
 
 /**
  * Bootet das easybill-Plugin (MVP-431): Config-Defaults unter
@@ -21,10 +21,12 @@ use Illuminate\Support\ServiceProvider;
  * Routen/Views — Konfiguration über die Auto-Form der Plugin-Karte, die
  * Übergabe über den {@see \App\Services\Finance\Targets\EasybillTarget}.
  */
-class EasybillServiceProvider extends ServiceProvider {
-    public function register(): void {
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . EasybillPlugin::ID);
+class EasybillServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return EasybillPlugin::ID;
+    }
 
+    protected function registerPlugin(): void {
         if ($this->app->runningInConsole()) {
             $this->commands([EasybillSyncCommand::class]);
         }

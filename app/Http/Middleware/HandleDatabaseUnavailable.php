@@ -10,7 +10,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Legacy\Support\LegacyConnectivity;
+use App\Legacy\LegacyBridge;
 use App\Support\DatabaseHealth;
 use Closure;
 use Illuminate\Database\QueryException;
@@ -37,7 +37,7 @@ class HandleDatabaseUnavailable {
         }
 
         // Gleicher Fast-Path für den Legacy-Bereich (hängt vollständig an der legacy-Connection).
-        if ($request->is('legacy', 'legacy/*') && ! DatabaseHealth::isAvailable(LegacyConnectivity::CONNECTION)) {
+        if ($request->is('legacy', 'legacy/*') && ! DatabaseHealth::isAvailable(LegacyBridge::CONNECTION)) {
             return $this->renderUnavailable($request, null);
         }
 

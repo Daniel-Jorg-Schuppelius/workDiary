@@ -39,19 +39,13 @@ class OrgaMaxInvoiceProjector {
                 continue;
             }
 
-            ExternalReference::query()->withoutGlobalScopes()->updateOrCreate(
-                [
-                    'organization_id' => $connection->organization_id,
-                    'plugin_id' => OrgaMaxPlugin::ID,
-                    'external_type' => self::EXT_TYPE_INVOICE,
-                    'external_id' => $externalId,
-                ],
-                [
-                    'referenceable_type' => $connection->getMorphClass(),
-                    'referenceable_id' => $connection->getKey(),
-                    'payload' => $this->projection($invoice),
-                    'synced_at' => now(),
-                ],
+            ExternalReference::link(
+                $connection->organization_id,
+                OrgaMaxPlugin::ID,
+                self::EXT_TYPE_INVOICE,
+                $connection,
+                $externalId,
+                $this->projection($invoice),
             );
             $updated++;
         }

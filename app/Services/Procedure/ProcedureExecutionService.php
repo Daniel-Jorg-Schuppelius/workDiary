@@ -272,15 +272,23 @@ class ProcedureExecutionService {
 
     /**
      * Liefert die IDs offener Pflicht-Step-Runs (leer => alle final).
+     * Durch Bedingung (config.depends_on) entfallene Schritte gelten als
+     * nicht anwendbar (N/A) und blockieren den Abschluss nicht (W5.3).
      *
      * @return list<int>
      */
     public function missingRequiredStepRuns(ProcedureRun $run): array {
+        $stepRuns = $run->stepRuns()->with('stepDef')->get();
+        $byCode = $this->indexByStepCode($stepRuns);
+
         $missing = [];
-        foreach ($run->stepRuns()->with('stepDef')->get() as $stepRun) {
+        foreach ($stepRuns as $stepRun) {
             $def = $stepRun->stepDef;
             if (! $def instanceof ProcedureStepDef) {
                 continue;
+            }
+            if (! $this->isStepApplicable($stepRun, $byCode)) {
+                continue; // N/A per Bedingung → keine Pflicht.
             }
             if ($def->required && ! $stepRun->status->isFinal()) {
                 $missing[] = (int) $stepRun->id;
@@ -290,26 +298,85 @@ class ProcedureExecutionService {
         return $missing;
     }
 
-    private function hasOpenBlockingPredecessor(ProcedureRun $run, ProcedureStepDef $def): bool {
-        $rows = ProcedureStepRun::query()
-            ->where('procedure_run_id', $run->id)
-            ->whereHas('stepDef', function ($q) use ($def): void {
-                $q->where('procedure_template_version_id', $def->procedure_template_version_id)
-                    ->where('blocking', true)
-                    ->where('sort_order', '<', $def->sort_order);
-            })
-            ->pluck('status');
+    /**
+     * Wertet die optionale Bedingung (config.depends_on) eines Schritts gegen
+     * den erfassten Wert des Bezugsschritts aus — EINE Quelle der Wahrheit für
+     * UI (Anzeige als N/A) und Execution-Kern (Pflicht/Reihenfolge, W5.3).
+     * Ohne Bedingung ist der Schritt immer anwendbar.
+     *
+     * @param  array<string, ProcedureStepRun>|null  $valuesByStepCode  Step-Runs des Laufs je Schritt-Code; null = aus dem Lauf laden
+     */
+    public function isStepApplicable(ProcedureStepRun $stepRun, ?array $valuesByStepCode = null): bool {
+        $dependsCode = data_get($stepRun->stepDef?->config, 'depends_on.step_code');
+        if (! is_string($dependsCode) || $dependsCode === '') {
+            return true;
+        }
 
-        foreach ($rows as $status) {
-            $enum = $status instanceof ProcedureStepRunStatus
-                ? $status
-                : ProcedureStepRunStatus::from((string) $status);
-            if (! $enum->isFinal()) {
+        if ($valuesByStepCode === null) {
+            $run = $stepRun->run;
+            $valuesByStepCode = $run instanceof ProcedureRun
+                ? $this->indexByStepCode($run->stepRuns()->with('stepDef')->get())
+                : [];
+        }
+
+        $reference = $valuesByStepCode[$dependsCode] ?? null;
+        if (! $reference instanceof ProcedureStepRun) {
+            return true; // Bezugsschritt unbekannt → nicht künstlich blockieren.
+        }
+
+        $equals = data_get($stepRun->stepDef?->config, 'depends_on.equals');
+        if ($equals === null || $equals === '') {
+            // Reine Existenzbedingung: Bezugsschritt muss erledigt sein.
+            return $reference->status === ProcedureStepRunStatus::Done;
+        }
+
+        return (string) data_get($reference->value_json, 'value') === (string) $equals;
+    }
+
+    private function hasOpenBlockingPredecessor(ProcedureRun $run, ProcedureStepDef $def): bool {
+        $stepRuns = ProcedureStepRun::query()
+            ->where('procedure_run_id', $run->id)
+            ->with('stepDef')
+            ->get();
+        $byCode = $this->indexByStepCode($stepRuns);
+
+        foreach ($stepRuns as $stepRun) {
+            $prevDef = $stepRun->stepDef;
+            if (! $prevDef instanceof ProcedureStepDef) {
+                continue;
+            }
+            if ((int) $prevDef->procedure_template_version_id !== (int) $def->procedure_template_version_id
+                || ! $prevDef->blocking
+                || $prevDef->sort_order >= $def->sort_order) {
+                continue;
+            }
+            if (! $this->isStepApplicable($stepRun, $byCode)) {
+                continue; // Durch Bedingung entfallene Vorgänger (N/A) sperren nicht.
+            }
+            if (! $stepRun->status->isFinal()) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * Indiziert Step-Runs nach Schritt-Code (Basis der Bedingungs-Auswertung).
+     *
+     * @param  iterable<int, ProcedureStepRun>  $stepRuns
+     * @return array<string, ProcedureStepRun>
+     */
+    private function indexByStepCode(iterable $stepRuns): array {
+        $map = [];
+        foreach ($stepRuns as $stepRun) {
+            $code = (string) ($stepRun->stepDef->code ?? '');
+            if ($code !== '') {
+                $map[$code] = $stepRun;
+            }
+        }
+
+        return $map;
     }
 
     /**

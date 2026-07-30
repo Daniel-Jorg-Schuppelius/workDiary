@@ -93,24 +93,24 @@ class ImportBillingExcelCommandTest extends TestCase {
         // Zahlung aus „Abgerechnet" (Monatsultimo) + Anfangssaldo aus „Vormonat".
         $payment = $this->agreement->payments()->firstOrFail();
         $this->assertSame('2025-01-31', $payment->paid_on->toDateString());
-        $this->assertSame('30.00', $payment->amount);
+        $this->assertSame('30.00', $payment->amount?->getAmount());
         $this->assertTrue($payment->source === AccountPaymentSource::Import);
 
         $this->agreement->refresh();
-        $this->assertSame('100.00', $this->agreement->opening_balance);
+        $this->assertSame('100.00', $this->agreement->opening_balance?->getAmount());
         $this->assertSame('2024-12-31', $this->agreement->opening_balance_date->toDateString());
 
         // Saldo-Kette wie in der Excel: Jan Offen 120,50 → Feb Offen 145,25.
         $jan = $this->agreement->statements()->where('year', 2025)->where('month', 1)->firstOrFail();
-        $this->assertSame('100.00', $jan->carry_in);
-        $this->assertSame('50.50', $jan->gross_value);
-        $this->assertSame('30.00', $jan->payments_total);
-        $this->assertSame('120.50', $jan->balance);
+        $this->assertSame('100.00', $jan->carry_in?->getAmount());
+        $this->assertSame('50.50', $jan->gross_value?->getAmount());
+        $this->assertSame('30.00', $jan->payments_total?->getAmount());
+        $this->assertSame('120.50', $jan->balance?->getAmount());
 
         $feb = $this->agreement->statements()->where('year', 2025)->where('month', 2)->firstOrFail();
-        $this->assertSame('120.50', $feb->carry_in);
-        $this->assertSame('24.75', $feb->gross_value);
-        $this->assertSame('145.25', $feb->balance);
+        $this->assertSame('120.50', $feb->carry_in?->getAmount());
+        $this->assertSame('24.75', $feb->gross_value?->getAmount());
+        $this->assertSame('145.25', $feb->balance?->getAmount());
     }
 
     public function test_second_run_is_idempotent(): void {
@@ -120,7 +120,7 @@ class ImportBillingExcelCommandTest extends TestCase {
         $this->assertSame(3, TimeEntry::query()->count());
         $this->assertSame(1, $this->agreement->payments()->count());
         $jan = $this->agreement->statements()->where('year', 2025)->where('month', 1)->firstOrFail();
-        $this->assertSame('120.50', $jan->balance);
+        $this->assertSame('120.50', $jan->balance?->getAmount());
     }
 
     public function test_dry_run_persists_nothing(): void {
@@ -129,7 +129,7 @@ class ImportBillingExcelCommandTest extends TestCase {
         $this->assertSame(0, TimeEntry::query()->count());
         $this->assertSame(0, $this->agreement->payments()->count());
         $this->assertSame(0, $this->agreement->statements()->count());
-        $this->assertSame('0.00', $this->agreement->refresh()->opening_balance);
+        $this->assertSame('0.00', $this->agreement->refresh()->opening_balance?->getAmount());
     }
 
     public function test_import_requires_agreement_rates(): void {

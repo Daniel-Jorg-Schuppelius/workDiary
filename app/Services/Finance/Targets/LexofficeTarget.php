@@ -219,10 +219,8 @@ class LexofficeTarget implements FacturationTarget {
      */
     private function resolveContactId(Customer $customer, array $config): string {
         $existing = ExternalReference::query()
-            ->where('plugin_id', LexofficePlugin::ID)
-            ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
-            ->where('referenceable_type', $customer->getMorphClass())
-            ->where('referenceable_id', $customer->getKey())
+            ->forPlugin($customer->organization_id, LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)
+            ->forReferenceable($customer)
             ->first();
 
         if ($existing !== null) {

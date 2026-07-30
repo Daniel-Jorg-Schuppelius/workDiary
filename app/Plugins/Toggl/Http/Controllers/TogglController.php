@@ -536,9 +536,7 @@ class TogglController extends Controller {
     /** Lädt eine Toggl-Mapping-Reference der Organisation oder bricht mit 404 ab. */
     private function findMapping(Organization $organization, int $id): ExternalReference {
         return ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', TogglPlugin::ID)
+            ->forPlugin($organization->id, TogglPlugin::ID)
             ->whereIn('external_type', [TogglImportService::EXT_TYPE_CLIENT, TogglImportService::EXT_TYPE_PROJECT])
             ->whereKey($id)
             ->firstOrFail();

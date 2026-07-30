@@ -347,7 +347,11 @@ class ServiceTicketTimelineService {
                 actor: $attachment->uploader?->name,
                 title: (string) __('timeline.event.attachment_added'),
                 summary: $attachment->original_name . ' (' . $attachment->humanSize() . ')',
-                url: $customerView ? null : AttachmentController::downloadUrl($attachment),
+                // Portal: Download über den kunden-gescopten Ticket-Endpunkt
+                // (W5.1); intern: signierter Attachment-Link wie gehabt.
+                url: $customerView
+                    ? route('customer.tickets.attachments.download', ['ticket' => $ticket, 'attachment' => $attachment])
+                    : AttachmentController::downloadUrl($attachment),
                 visibility: $attachment->customer_visible
                     ? TimelineItem::VISIBILITY_CUSTOMER
                     : TimelineItem::VISIBILITY_INTERNAL,

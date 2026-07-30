@@ -142,11 +142,9 @@ abstract class MatchingTimeImportService {
      * @return 'unchanged'|'updated'|'conflict'
      */
     protected function syncKnownEntry(Organization $organization, ImportedTimeEntry $entry): string {
-        $reference = ExternalReference::query()->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', $this->pluginId())
-            ->where('external_type', self::EXT_TYPE_ENTRY)
-            ->where('external_id', $entry->entryKey)
+        $reference = ExternalReference::query()
+            ->forPlugin($organization, $this->pluginId(), self::EXT_TYPE_ENTRY)
+            ->forExternalId($entry->entryKey)
             ->first();
 
         $known = is_array($reference?->payload) ? (string) ($reference->payload['fingerprint'] ?? '') : '';
@@ -314,11 +312,8 @@ abstract class MatchingTimeImportService {
         }
 
         $ref = ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', $this->pluginId())
-            ->where('external_type', $externalType)
-            ->where('external_id', $externalId)
+            ->forPlugin($organization, $this->pluginId(), $externalType)
+            ->forExternalId($externalId)
             ->first();
 
         if ($ref?->referenceable instanceof Model) {
@@ -664,12 +659,8 @@ abstract class MatchingTimeImportService {
         // Toggl-Projekte → ein Projekt, Merge, Umbenennung), wird dieser
         // Schlüssel als Alias gemerkt statt zu kollidieren.
         $targetTaken = ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', $this->pluginId())
-            ->where('external_type', $type)
-            ->where('referenceable_type', $target['referenceable_type'])
-            ->where('referenceable_id', $target['referenceable_id'])
+            ->forPlugin($organization, $this->pluginId(), $type)
+            ->forReferenceable($referenceable)
             ->where('external_id', '!=', $externalId)
             ->exists();
 

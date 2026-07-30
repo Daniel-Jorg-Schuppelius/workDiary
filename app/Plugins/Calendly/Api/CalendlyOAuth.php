@@ -10,34 +10,21 @@
 
 namespace App\Plugins\Calendly\Api;
 
-use APIToolkit\API\Authentication\OAuth2\OAuth2AuthorizationCodeGrant;
 use App\Plugins\Calendly\CalendlyConfig;
-use GuzzleHttp\Client as GuzzleClient;
+use App\Plugins\Support\PluginOAuthGrant;
 
 /**
- * Baut den OAuth2-Authorization-Code-Grant (+ PKCE) für Calendly (Feature 095)
- * aus der installationsweiten Konfiguration. Die Scopes kommen aus
- * `plugins.calendly.scopes` (ENV) und müssen ggf. `offline_access` enthalten,
- * damit Calendly ein Refresh-Token liefert.
+ * OAuth2-Authorization-Code-Grant (+ PKCE) für Calendly (Feature 095).
+ * Die Scopes kommen aus `plugins.calendly.scopes` (ENV) und müssen ggf.
+ * `offline_access` enthalten, damit Calendly ein Refresh-Token liefert.
  */
-class CalendlyOAuth {
-    public function __construct(private readonly ?GuzzleClient $httpClient = null) {}
-
-    public function grant(): OAuth2AuthorizationCodeGrant {
-        $config = CalendlyConfig::resolve();
-
-        return new OAuth2AuthorizationCodeGrant(
-            clientId: $config['client_id'],
-            clientSecret: $config['client_secret'],
-            authorizeUrl: $config['authorize_url'],
-            tokenUrl: $config['token_url'],
-            redirectUri: route('admin.calendly.oauth.callback'),
-            httpClient: $this->httpClient,
-        );
+class CalendlyOAuth extends PluginOAuthGrant {
+    /** @return array<string, string|int|bool> */
+    protected function config(): array {
+        return CalendlyConfig::resolve();
     }
 
-    /** @return list<string> */
-    public function scopes(): array {
-        return array_values(array_filter(explode(' ', CalendlyConfig::resolve()['scopes'])));
+    protected function callbackRouteName(): string {
+        return 'admin.calendly.oauth.callback';
     }
 }

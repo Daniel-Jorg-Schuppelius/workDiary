@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Search;
 
-use App\Models\{CommunicationNote, Customer, DiaryEntry, Document, FormSubmission, FormTemplate, KnowledgeArticle, Organization, Project, User};
+use App\Models\{Asset, CommunicationNote, Customer, DiaryEntry, Document, FormSubmission, FormTemplate, KnowledgeArticle, Organization, Project, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -133,6 +133,70 @@ class GlobalSearchControllerTest extends TestCase {
         $this->assertNotNull(
             collect($response->json('groups'))->firstWhere('key', 'diary'),
             'Teamleitung muss alle Aufträge der Organisation finden.'
+        );
+    }
+
+    // ── Objekte & Assets (Vollreview W5.2) ──────────────────────────────────
+
+    public function test_finds_assets_by_name_and_inventory_number(): void {
+        $asset = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Zuluwort Kompressor K42',
+            'inventory_no' => 'INV-77441',
+        ]);
+
+        // Treffer über den Namen …
+        $response = $this->actingAs($this->user)
+            ->getJson(route('api.internal.search', ['q' => 'zuluwort']))
+            ->assertOk();
+        $group = collect($response->json('groups'))->firstWhere('key', 'assets');
+        $this->assertNotNull($group, 'Assets-Gruppe fehlt.');
+        $this->assertSame('Zuluwort Kompressor K42', $group['items'][0]['title']);
+        $this->assertSame(route('assets.show', $asset), $group['items'][0]['url']);
+        $this->assertStringContainsString($asset->asset_no, $group['items'][0]['subtitle']);
+        $this->assertStringContainsString('INV-77441', $group['items'][0]['subtitle']);
+
+        // … und über die Inventarnummer.
+        $response = $this->actingAs($this->user)
+            ->getJson(route('api.internal.search', ['q' => 'INV-77441']))
+            ->assertOk();
+        $group = collect($response->json('groups'))->firstWhere('key', 'assets');
+        $this->assertNotNull($group, 'Asset muss über die Inventarnummer findbar sein.');
+        $this->assertSame('Zuluwort Kompressor K42', $group['items'][0]['title']);
+    }
+
+    public function test_assets_hidden_without_asset_view_permission(): void {
+        Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Zuluwort Kompressor K42',
+        ]);
+        // Buchhaltung trägt KEIN asset.view (nur asset.finance.*, PermissionsSeeder).
+        $buchhaltung = User::factory()->buchhaltung()->create(['organization_id' => $this->organization->id]);
+
+        $response = $this->actingAs($buchhaltung)
+            ->getJson(route('api.internal.search', ['q' => 'zuluwort']))
+            ->assertOk();
+
+        $this->assertNull(
+            collect($response->json('groups'))->firstWhere('key', 'assets'),
+            'Ohne asset.view darf kein Asset-Treffer erscheinen.'
+        );
+    }
+
+    public function test_assets_do_not_leak_across_organizations(): void {
+        $otherOrg = Organization::factory()->create();
+        Asset::factory()->create([
+            'organization_id' => $otherOrg->id,
+            'name' => 'Zuluwort Fremdkompressor',
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->getJson(route('api.internal.search', ['q' => 'zuluwort']))
+            ->assertOk();
+
+        $this->assertNull(
+            collect($response->json('groups'))->firstWhere('key', 'assets'),
+            'Assets fremder Organisationen dürfen nicht erscheinen.'
         );
     }
 

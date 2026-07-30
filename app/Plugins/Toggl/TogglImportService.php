@@ -199,9 +199,7 @@ class TogglImportService extends MatchingTimeImportService {
      */
     public function mappings(Organization $organization): Collection {
         return ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', TogglPlugin::ID)
+            ->forPlugin($organization->id, TogglPlugin::ID)
             ->whereIn('external_type', [self::EXT_TYPE_CLIENT, self::EXT_TYPE_PROJECT, self::EXT_TYPE_USER_EMAIL])
             ->with('referenceable')
             ->orderBy('external_type')

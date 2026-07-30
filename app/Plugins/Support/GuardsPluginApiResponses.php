@@ -20,6 +20,10 @@ use Illuminate\Http\Client\Response;
  * behält seine Exception-Subklasse (catch-Selektivität je Provider, B4-Linie)
  * und liefert sie über apiExceptionClass()/apiLabel(). Die Message trägt nur
  * Status und gekürzten Body-Auszug — nie Secrets.
+ *
+ * Daneben (W3d) die assertOk()-Variante mit Detail-Auszug
+ * (`message` aus dem JSON-Body, sonst Roh-Body) und optionalem
+ * {@see apiErrorHint()}-Zusatz — ersetzt die Kopien in Kimai/Clockify.
  */
 trait GuardsPluginApiResponses {
     /** @return class-string<PluginApiException> */
@@ -27,6 +31,33 @@ trait GuardsPluginApiResponses {
 
     /** Anzeigename des Providers in Fehlermeldungen (z. B. "GitHub"). */
     abstract protected function apiLabel(): string;
+
+    /** Optionaler Zusatzhinweis hinter der Fehlermeldung (z. B. Rate-Limit-Tipp); leer = keiner. */
+    protected function apiErrorHint(Response $response): string {
+        return '';
+    }
+
+    /**
+     * Wirft bei Fehlerantworten die provider-eigene Exception mit
+     * Detail-Auszug: bevorzugt `message` aus dem JSON-Body, sonst der
+     * Roh-Body, auf 300 Zeichen gekürzt — nie Secrets.
+     */
+    protected function assertOk(Response $response, string $context): void {
+        if ($response->successful()) {
+            return;
+        }
+
+        $detail = (string) ($response->json('message') ?? $response->body());
+        $message = sprintf('%s %s: HTTP %d — %s', $this->apiLabel(), $context, $response->status(), mb_substr($detail, 0, 300));
+        $hint = $this->apiErrorHint($response);
+        if ($hint !== '') {
+            $message .= ' ' . $hint;
+        }
+
+        $class = $this->apiExceptionClass();
+
+        throw new $class($message, $response->status());
+    }
 
     /** @return array<mixed> */
     protected function guard(Response $response, string $endpoint): array {

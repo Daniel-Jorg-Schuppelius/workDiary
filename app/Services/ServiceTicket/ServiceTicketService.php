@@ -76,9 +76,10 @@ class ServiceTicketService {
             'reported_at' => $reportedAt,
         ]);
 
-        // Expliziter (org-gescopter) Vertrag aus dem Payload gewinnt, sonst Auflösung über den Kunden (Rang 43).
+        // Expliziter (org-gescopter) Vertrag aus dem Payload gewinnt, sonst Auflösung
+        // Projekt → Kunde → Org-Default (Rang 43; Projektbindung W5.4).
         $contract = $this->resolveExplicitContract($organization, $payload)
-            ?? $this->slaTimer->resolveContract($organization->id, $customerId);
+            ?? $this->slaTimer->resolveContract($organization->id, $customerId, $projectId);
         if ($contract !== null) {
             $ticket->sla_contract_id = $contract->id;
             $deadlines = $this->slaTimer->computeDeadlines($contract, $priority, $reportedAt);

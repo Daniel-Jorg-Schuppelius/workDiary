@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Github;
 
-use Illuminate\Support\ServiceProvider;
+use App\Plugins\Support\PluginServiceProviderBase;
 
 /**
  * Plugin-eigener ServiceProvider (Feature 060, Bauturbo A6). Wird vom Core-
@@ -21,18 +21,16 @@ use Illuminate\Support\ServiceProvider;
  * Der HTTP-Transport kommt aus der {@see \App\Plugins\Support\PluginHttpFactory}
  * (php-api-toolkit) — Tests ersetzen ihn durch FakePluginHttp.
  */
-class GithubServiceProvider extends ServiceProvider {
-    public function register(): void {
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . GithubPlugin::ID);
+class GithubServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return GithubPlugin::ID;
+    }
 
+    protected function registerPlugin(): void {
         if ($this->app->runningInConsole()) {
             $this->commands([
                 Console\GithubSyncCommand::class,
             ]);
         }
-    }
-
-    public function boot(): void {
-        $this->loadRoutesFrom(__DIR__ . '/routes.php');
     }
 }

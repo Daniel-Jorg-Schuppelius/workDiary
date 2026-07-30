@@ -10,6 +10,7 @@
 
 namespace App\Models\Billing;
 
+use App\Casts\MoneyCast;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -29,10 +30,10 @@ use Illuminate\Support\Carbon;
  * @property int $year
  * @property int $month
  * @property int $total_minutes
- * @property float $gross_value
- * @property float $payments_total
- * @property float $carry_in
- * @property float $balance
+ * @property \CommonToolkit\ValueObjects\Money|null $gross_value
+ * @property \CommonToolkit\ValueObjects\Money|null $payments_total
+ * @property \CommonToolkit\ValueObjects\Money|null $carry_in
+ * @property \CommonToolkit\ValueObjects\Money|null $balance
  * @property bool $locked
  * @property Carbon|null $locked_at
  * @property int|null $locked_by_user_id
@@ -72,10 +73,12 @@ class CustomerBillingStatement extends Model {
         'year' => 'integer',
         'month' => 'integer',
         'total_minutes' => 'integer',
-        'gross_value' => 'decimal:2',
-        'payments_total' => 'decimal:2',
-        'carry_in' => 'decimal:2',
-        'balance' => 'decimal:2',
+        // Tabelle ohne Währungsspalte — Cast fällt auf die Standardwährung
+        // zurück; der Statement-Service normiert auf die Agreement-Währung.
+        'gross_value' => MoneyCast::class,
+        'payments_total' => MoneyCast::class,
+        'carry_in' => MoneyCast::class,
+        'balance' => MoneyCast::class,
         'locked' => 'boolean',
         'locked_at' => 'datetime',
         'totals' => 'array',

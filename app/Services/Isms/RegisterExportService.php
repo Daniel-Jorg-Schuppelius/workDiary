@@ -12,7 +12,6 @@ namespace App\Services\Isms;
 
 use App\Models\Isms\{IsmsApplicabilityStatement, IsmsControl, IsmsRequirement, IsmsRisk, IsmsRiskAssessment, IsmsScope};
 use App\Models\User;
-use CommonToolkit\Helper\Data\CSV\StringHelper;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Carbon;
 
@@ -38,8 +37,6 @@ class RegisterExportService {
     public const REGISTER_SOA = 'soa';
 
     public const REGISTER_CONTROLS = 'controls';
-
-    private const BOM = \CommonToolkit\Helper\Data\StringHelper::BOM_UTF8;
 
     // ── Registerstände (Spalten + Zeilen) ──────────────────────────────
 
@@ -210,24 +207,25 @@ class RegisterExportService {
     public function toCsv(string $registerKey, User $actor, ?IsmsScope $scope, array $register): string {
         $meta = $this->meta($registerKey, $actor, $scope);
 
-        $lines = [
-            '# ' . $meta['register'],
-            '# ' . __('isms.export.meta_organisation') . ': ' . $meta['organisation'],
-            '# ' . __('isms.export.meta_scope') . ': ' . ($meta['scope'] ?? '—'),
-            '# ' . __('isms.export.meta_generated_at') . ': ' . $meta['generated_at'],
-            '# ' . __('isms.export.meta_app_version') . ': ' . $meta['app_version'],
-            StringHelper::encodeLine(array_values($register['columns']), ';'),
-        ];
-
+        $rows = [];
         foreach ($register['rows'] as $row) {
             $cells = [];
             foreach (array_keys($register['columns']) as $key) {
                 $cells[] = $row[$key] ?? '';
             }
-            $lines[] = StringHelper::encodeLine($cells, ';');
+            $rows[] = $cells;
         }
 
-        return self::BOM . implode("\r\n", $lines) . "\r\n";
+        // W4.1: gemeinsames Skelett (BOM, Kommentarkopf, Formel-Injektions-
+        // Guard auf den nutzergesteuerten Freitexten) über CsvExport; hier
+        // bleibt nur der fachliche ISMS-Metakopf.
+        return \App\Support\CsvExport::toString(array_values($register['columns']), $rows, ';', [
+            '# ' . $meta['register'],
+            '# ' . __('isms.export.meta_organisation') . ': ' . $meta['organisation'],
+            '# ' . __('isms.export.meta_scope') . ': ' . ($meta['scope'] ?? '—'),
+            '# ' . __('isms.export.meta_generated_at') . ': ' . $meta['generated_at'],
+            '# ' . __('isms.export.meta_app_version') . ': ' . $meta['app_version'],
+        ]);
     }
 
     /** Download-Dateiname, z. B. isms-risks-20260612_101500.csv. */

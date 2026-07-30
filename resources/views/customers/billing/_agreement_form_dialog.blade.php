@@ -42,7 +42,7 @@
         <x-input-field name="expected_monthly_amount" type="number" step="0.01" min="0"
                        :label="__('customer-billing.expected_monthly')"
                        :hint="__('customer-billing.expected_monthly_hint')"
-                       :value="old('expected_monthly_amount', $agreement?->expected_monthly_amount)" />
+                       :value="old('expected_monthly_amount', $agreement?->expected_monthly_amount?->getAmount())" />
         <x-select-field name="currency" :label="__('Währung')" required>
             <x-currency-options :selected="old('currency', $agreement?->currency?->value ?? 'EUR')" />
         </x-select-field>
@@ -53,7 +53,7 @@
                   :description="__('customer-billing.opening_balance_hint')">
         <x-input-field name="opening_balance" type="number" step="0.01"
                        :label="__('customer-billing.opening_balance')"
-                       :value="old('opening_balance', $agreement?->opening_balance ?? 0)" />
+                       :value="old('opening_balance', $agreement?->opening_balance?->getAmount() ?? 0)" />
         <x-input-field name="opening_balance_date" type="date"
                        :label="__('customer-billing.opening_balance_date')"
                        :value="old('opening_balance_date', $agreement?->opening_balance_date?->toDateString())" />
@@ -80,7 +80,7 @@
                     @endforeach
                 </x-select-field>
                 <x-input-field name="rate_hourly_rate[]" type="number" step="0.01" min="0"
-                               :value="$rate->hourly_rate" />
+                               :value="$rate->hourly_rate?->getAmount()" />
             </div>
         @endforeach
         @for ($i = 0; $i < $extraRows; $i++)

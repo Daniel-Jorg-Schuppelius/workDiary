@@ -13,7 +13,6 @@ namespace App\Services\Domain;
 use App\Models\{Customer, ExternalReference, User};
 use App\Models\Domain\{DomainProjection, DomainResellerAccount};
 use App\Plugins\DomainReselling\DomainResellingPlugin;
-use Illuminate\Support\Carbon;
 
 /**
  * Kundenzuordnung von Domains und Subusern (Feature 083, MVP-386). Vorschläge
@@ -37,10 +36,8 @@ class DomainCustomerMappingService {
 
         // 1) Bereits bestätigte ExternalReference auf genau diese Domain.
         $ref = ExternalReference::query()
-            ->where('organization_id', $orgId)
-            ->where('plugin_id', DomainResellingPlugin::ID)
-            ->where('external_type', 'domain')
-            ->where('external_id', $domain)
+            ->forPlugin($orgId, DomainResellingPlugin::ID, 'domain')
+            ->forExternalId($domain)
             ->where('referenceable_type', Customer::class)
             ->first();
         if ($ref !== null) {
@@ -79,19 +76,13 @@ class DomainCustomerMappingService {
     public function assign(DomainProjection $projection, Customer $customer, ?User $actor = null): void {
         $projection->forceFill(['customer_id' => $customer->id])->save();
 
-        ExternalReference::query()->updateOrCreate(
-            [
-                'organization_id' => $projection->organization_id,
-                'plugin_id' => DomainResellingPlugin::ID,
-                'external_type' => 'domain',
-                'external_id' => mb_strtolower($projection->external_domain),
-            ],
-            [
-                'referenceable_type' => Customer::class,
-                'referenceable_id' => $customer->id,
-                'payload' => ['assigned_by' => $actor?->id],
-                'synced_at' => Carbon::now(),
-            ],
+        ExternalReference::link(
+            $projection->organization_id,
+            DomainResellingPlugin::ID,
+            'domain',
+            $customer,
+            mb_strtolower($projection->external_domain),
+            ['assigned_by' => $actor?->id],
         );
     }
 
@@ -100,10 +91,8 @@ class DomainCustomerMappingService {
         $projection->forceFill(['customer_id' => null])->save();
 
         ExternalReference::query()
-            ->where('organization_id', $projection->organization_id)
-            ->where('plugin_id', DomainResellingPlugin::ID)
-            ->where('external_type', 'domain')
-            ->where('external_id', mb_strtolower($projection->external_domain))
+            ->forPlugin($projection->organization_id, DomainResellingPlugin::ID, 'domain')
+            ->forExternalId(mb_strtolower($projection->external_domain))
             ->delete();
     }
 

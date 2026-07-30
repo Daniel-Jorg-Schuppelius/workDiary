@@ -38,4 +38,7 @@ Route::middleware(['web', 'auth'])->group(function (): void {
     // Zweiphasige Bestätigung der Terminwünsche.
     Route::post('admin/calendly/requests/{appointmentRequest}/confirm', [CalendlyAdminController::class, 'confirm'])->name('admin.calendly.requests.confirm');
     Route::post('admin/calendly/requests/{appointmentRequest}/decline', [CalendlyAdminController::class, 'decline'])->name('admin.calendly.requests.decline');
+
+    // Outbound (P5): Einmal-Buchungslink (one_off_event_types) erzeugen.
+    Route::post('admin/calendly/booking-link', [CalendlyAdminController::class, 'createBookingLink'])->name('admin.calendly.booking-link');
 });

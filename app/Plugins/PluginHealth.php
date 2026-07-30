@@ -10,6 +10,8 @@
 
 namespace App\Plugins;
 
+use Throwable;
+
 /**
  * Ergebnis eines Plugin-Health-Checks. Wird vom Plugin selbst zurückgegeben
  * (siehe {@see \App\Plugins\Contracts\Plugin::healthCheck()}) und persistiert
@@ -46,6 +48,48 @@ final class PluginHealth {
 
     public static function failing(string $message = '', ?string $code = null): self {
         return new self(self::STATUS_FAILING, $message, code: $code);
+    }
+
+    /**
+     * Gemeinsamer Rahmen der Ping-basierten Health-Checks (W3d):
+     * Konfigurations-Guard, try/catch und Message-Mapping einmal — die
+     * semantischen Unterschiede (CSV-Modus = ok vs. degraded, degraded vs.
+     * failing) bleiben Parameter beim Plugin.
+     *
+     * @param  callable(): bool  $ping  Verbindungscheck; wirft bei Transport-/API-Fehlern
+     * @param  string  $unreachableMessage  Meldung, wenn der Ping false liefert
+     * @param  bool  $configured  false = Client unkonfiguriert → sofortiges Ergebnis mit $notConfiguredStatus (kein Ping)
+     * @param  class-string<Throwable>|null  $apiExceptionClass  Provider-Exception, deren Message unverändert übernommen wird
+     * @param  (callable(Throwable): string)|null  $throwableMessage  Message-Mapping übriger Ausnahmen (null = getMessage())
+     */
+    public static function pingHealth(
+        callable $ping,
+        string $unreachableMessage,
+        bool $configured = true,
+        string $notConfiguredMessage = '',
+        string $notConfiguredStatus = self::STATUS_OK,
+        string $errorStatus = self::STATUS_DEGRADED,
+        string $okMessage = '',
+        ?string $apiExceptionClass = null,
+        ?callable $throwableMessage = null,
+    ): self {
+        if (! $configured) {
+            return new self($notConfiguredStatus, $notConfiguredMessage);
+        }
+
+        try {
+            return $ping()
+                ? self::ok($okMessage)
+                : new self($errorStatus, $unreachableMessage);
+        } catch (Throwable $e) {
+            // Provider-Exceptions tragen ihre Meldung selbst; alles andere läuft
+            // durch das optionale Mapping (z. B. „<API> nicht erreichbar: …").
+            $message = ($apiExceptionClass !== null && $e instanceof $apiExceptionClass) || $throwableMessage === null
+                ? $e->getMessage()
+                : $throwableMessage($e);
+
+            return new self($errorStatus, $message);
+        }
     }
 
     /** Kopie mit gesetzter Latenz (der Aufrufer misst die Zeit um healthCheck()). */

@@ -10,34 +10,26 @@
 
 namespace App\Plugins\GoogleDrive\Api;
 
-use APIToolkit\API\Authentication\OAuth2\OAuth2AuthorizationCodeGrant;
 use App\Plugins\GoogleDrive\GoogleDriveConfig;
-use GuzzleHttp\Client as GuzzleClient;
+use App\Plugins\Support\PluginOAuthGrant;
 
 /**
- * OAuth2 Authorization-Code-Grant (+ PKCE) für das Google-Drive-BACKUPZIEL
+ * OAuth2-Authorization-Code-Grant (+ PKCE) für das Google-Drive-BACKUPZIEL
  * (Feature 017 Phase 32, MVP-363). Getrennt vom Intake-Flow: eigener
  * Redirect, Scope `drive.file` (sieht NUR app-erzeugte Dateien).
  */
-class GoogleDriveBackupOAuth {
-    public function __construct(private readonly ?GuzzleClient $httpClient = null) {}
-
-    public function grant(): OAuth2AuthorizationCodeGrant {
-        $config = GoogleDriveConfig::resolve();
-
-        return new OAuth2AuthorizationCodeGrant(
-            clientId: $config['client_id'],
-            clientSecret: $config['client_secret'],
-            authorizeUrl: $config['authorize_url'],
-            tokenUrl: $config['token_url'],
-            redirectUri: route('admin.backup-targets.google.oauth.callback'),
-            httpClient: $this->httpClient,
-        );
+class GoogleDriveBackupOAuth extends PluginOAuthGrant {
+    /** @return array<string, string|int|bool> */
+    protected function config(): array {
+        return GoogleDriveConfig::resolve();
     }
 
-    /** @return list<string> */
-    public function scopes(): array {
-        return array_values(array_filter(explode(' ', GoogleDriveConfig::resolve()['backup_scopes'])));
+    protected function callbackRouteName(): string {
+        return 'admin.backup-targets.google.oauth.callback';
+    }
+
+    protected function scopesKey(): string {
+        return 'backup_scopes';
     }
 
     /** Ohne diesen Scope ist das Ziel `blocked` (keine Sonderwege). */

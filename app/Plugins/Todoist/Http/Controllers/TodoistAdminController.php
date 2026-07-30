@@ -10,14 +10,14 @@
 
 namespace App\Plugins\Todoist\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\{ExternalReference, Project, TodoistConnection, TodoistProjectLink, User};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
-use App\Plugins\Support\OAuthStateHandshake;
+use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
 use App\Plugins\Todoist\Api\{TodoistApiClient, TodoistOAuth};
 use App\Plugins\Todoist\Services\TodoistPreflightService;
 use App\Plugins\Todoist\{TodoistConfig, TodoistPlugin};
 use App\Services\SqidEncoder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
@@ -25,12 +25,13 @@ use Throwable;
 
 /**
  * Todoist-Admin-Panel + OAuth-Verbindungsflow (Feature 055, MVP-111/116).
- * Der OAuth-`state` ist kurzlebig, einmalig einlösbar und an Organisation UND
- * Sitzung gebunden; Tokens erscheinen nie in Logs, Fehlermeldungen oder
- * Audit-Payloads. Scope ist bewusst nur `data:read_write` — keine
- * Lösch-Scopes (keine Löschweitergabe, DoD 055).
+ * Der OAuth-Flow (state einmalig, org-/sitzungsgebunden; ohne PKCE — Todoist
+ * unterstützt es nicht) läuft über die gemeinsame Basis
+ * {@see ConnectionOAuthController}; Tokens erscheinen nie in Logs,
+ * Fehlermeldungen oder Audit-Payloads. Scope ist bewusst nur
+ * `data:read_write` — keine Lösch-Scopes (keine Löschweitergabe, DoD 055).
  */
-class TodoistAdminController extends Controller {
+class TodoistAdminController extends ConnectionOAuthController {
     use ResolvesPluginOrgContext;
 
     public function index(): View {
@@ -56,6 +57,68 @@ class TodoistAdminController extends Controller {
             'remoteProjects' => $remoteProjects,
             'projects' => Project::query()->orderBy('name')->limit(500)->get(['id', 'name']),
         ]);
+    }
+
+    // ── OAuth-Flow: Hooks der gemeinsamen Basis (Vollreview W3a) ──
+
+    protected function oauth(): PluginOAuthGrant {
+        return app(TodoistOAuth::class);
+    }
+
+    protected function isConfigured(): bool {
+        return TodoistConfig::isConfigured();
+    }
+
+    protected function connectionModel(): string {
+        return TodoistConnection::class;
+    }
+
+    protected function stateCachePrefix(): string {
+        return 'todoist-oauth-state';
+    }
+
+    protected function overviewRouteName(): string {
+        return 'admin.todoist.index';
+    }
+
+    protected function pluginKey(): string {
+        return 'todoist';
+    }
+
+    protected function connectedStatus(): string {
+        return TodoistConnection::STATUS_ACTIVE;
+    }
+
+    protected function disconnectedStatus(): string {
+        return TodoistConnection::STATUS_DISCONNECTED;
+    }
+
+    /** Ohne PKCE (Todoist unterstützt es nicht); state bleibt Einmal-Token. */
+    protected function usesPkce(): bool {
+        return false;
+    }
+
+    /**
+     * todoist_connections hat keine Health-Spalten (last_error_at & Co.).
+     *
+     * @return array<string, mixed>
+     */
+    protected function connectionErrorResets(): array {
+        return ['last_error' => null];
+    }
+
+    /** Verbundenen Todoist-Benutzer festhalten (für Webhook-Org-Zuordnung, P5). */
+    protected function afterConnected(Model $connection, User $admin): void {
+        /** @var TodoistConnection $connection */
+        try {
+            $user = (new TodoistApiClient($connection))->getUser();
+            $connection->forceFill([
+                'todoist_user_id' => isset($user['id']) ? (string) $user['id'] : null,
+                'todoist_user_email' => isset($user['email']) ? (string) $user['email'] : null,
+            ])->save();
+        } catch (Throwable) {
+            // Verbindungsdaten bleiben gültig; der Health-Check meldet API-Probleme.
+        }
     }
 
     /** Legt eine Projektzuordnung an (Entwurf; Aktivierung erst nach Preflight). */
@@ -194,10 +257,8 @@ class TodoistAdminController extends Controller {
         ]);
 
         $reference = ExternalReference::query()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', TodoistPlugin::ID)
-            ->where('external_type', TodoistPlugin::EXT_TYPE_COLLABORATOR)
-            ->where('external_id', (string) $data['collaborator_id'])
+            ->forPlugin($organization, TodoistPlugin::ID, TodoistPlugin::EXT_TYPE_COLLABORATOR)
+            ->forExternalId((string) $data['collaborator_id'])
             ->first();
 
         $connection = TodoistConnection::query()->where('organization_id', $organization->id)->first();
@@ -217,16 +278,7 @@ class TodoistAdminController extends Controller {
             return back()->with('error', __('todoist.flash.collaborator_invalid'));
         }
 
-        ExternalReference::query()->updateOrCreate([
-            'organization_id' => $organization->id,
-            'plugin_id' => TodoistPlugin::ID,
-            'external_type' => TodoistPlugin::EXT_TYPE_COLLABORATOR,
-            'external_id' => (string) $data['collaborator_id'],
-        ], [
-            'referenceable_type' => $user->getMorphClass(),
-            'referenceable_id' => $user->getKey(),
-            'synced_at' => now(),
-        ]);
+        ExternalReference::link($organization, TodoistPlugin::ID, TodoistPlugin::EXT_TYPE_COLLABORATOR, $user, (string) $data['collaborator_id']);
         $connection?->audit('todoist.collaborator_assigned', [
             'collaborator_id' => (string) $data['collaborator_id'],
             'user_id' => (int) $user->getKey(),
@@ -249,105 +301,5 @@ class TodoistAdminController extends Controller {
         $connection->audit('todoist.sync_manual', ['by_user_id' => (int) $admin->id]);
 
         return back()->with('success', __('todoist.flash.sync_done'));
-    }
-
-    /** Startet den OAuth-Flow: org- und sitzungsgebundener Einmal-state. */
-    public function startOAuth(TodoistOAuth $oauth): RedirectResponse {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
-
-        if (! TodoistConfig::isConfigured()) {
-            return back()->with('error', __('todoist.flash.not_configured'));
-        }
-
-        // Ohne PKCE (Todoist unterstützt es nicht); state bleibt Einmal-Token.
-        ['state' => $state] = $this->handshake()->start((int) $organization->id, (int) $admin->id, withPkce: false);
-
-        $url = $oauth->grant()->getAuthorizationUrl($state, [$oauth->scopes()]);
-
-        return redirect()->away($url);
-    }
-
-    /** OAuth-Callback: state prüfen (einmalig!), Code tauschen, Verbindung speichern. */
-    public function oauthCallback(Request $request, TodoistOAuth $oauth): RedirectResponse {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
-
-        $code = (string) $request->query('code', '');
-
-        // Einmalig einlösen (Replay-Schutz); Bindung an Organisation UND
-        // startenden Benutzer — nur der Admin, der den Flow begonnen hat,
-        // kann ihn in seiner Sitzung abschließen.
-        $payload = $this->handshake()->redeem((string) $request->query('state', ''), (int) $organization->id, (int) $admin->id);
-        if ($payload === null) {
-            return redirect()->route('admin.todoist.index')->with('error', __('todoist.flash.state_invalid'));
-        }
-
-        if ($code === '') {
-            return redirect()->route('admin.todoist.index')->with('error', __('todoist.flash.oauth_denied'));
-        }
-
-        try {
-            $token = $oauth->grant()->exchangeAuthorizationCode($code);
-        } catch (Throwable $e) {
-            // Nur die Fehlerklasse — nie Payload/Token.
-            return redirect()->route('admin.todoist.index')
-                ->with('error', __('todoist.flash.oauth_failed', ['class' => class_basename($e)]));
-        }
-
-        /** @var TodoistConnection $connection */
-        $connection = TodoistConnection::query()->firstOrNew(['organization_id' => $organization->id]);
-        $connection->forceFill([
-            'access_token' => $token->getAccessToken(),
-            'refresh_token' => $token->getRefreshToken(),
-            'token_expires_at' => $token->getExpiresAt(),
-            'scopes' => $token->getScope() ?? $oauth->scopes(),
-            'status' => TodoistConnection::STATUS_ACTIVE,
-            'last_error' => null,
-            'connected_by' => $admin->id,
-            'connected_at' => now(),
-            'disconnected_by' => null,
-            'disconnected_at' => null,
-        ])->save();
-
-        // Verbundenen Todoist-Benutzer festhalten (für Webhook-Org-Zuordnung, P5).
-        try {
-            $user = (new TodoistApiClient($connection))->getUser();
-            $connection->forceFill([
-                'todoist_user_id' => isset($user['id']) ? (string) $user['id'] : null,
-                'todoist_user_email' => isset($user['email']) ? (string) $user['email'] : null,
-            ])->save();
-        } catch (Throwable) {
-            // Verbindungsdaten bleiben gültig; der Health-Check meldet API-Probleme.
-        }
-
-        $connection->audit('todoist.connected', ['by_user_id' => (int) $admin->id]);
-
-        return redirect()->route('admin.todoist.index')->with('success', __('todoist.flash.connected'));
-    }
-
-    /** Trennt die Verbindung (auditiert); Zuordnungen/Referenzen bleiben erhalten (DoD). */
-    public function disconnect(): RedirectResponse {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
-
-        $connection = TodoistConnection::query()->where('organization_id', $organization->id)->first();
-        if ($connection instanceof TodoistConnection) {
-            $connection->forceFill([
-                'access_token' => null,
-                'refresh_token' => null,
-                'token_expires_at' => null,
-                'status' => TodoistConnection::STATUS_DISCONNECTED,
-                'disconnected_by' => $admin->id,
-                'disconnected_at' => now(),
-            ])->save();
-            $connection->audit('todoist.disconnected', ['by_user_id' => (int) $admin->id]);
-        }
-
-        return redirect()->route('admin.todoist.index')->with('success', __('todoist.flash.disconnected'));
-    }
-
-    private function handshake(): OAuthStateHandshake {
-        return new OAuthStateHandshake('todoist-oauth-state');
     }
 }

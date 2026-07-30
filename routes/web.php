@@ -2611,6 +2611,7 @@ Route::middleware('auth')->group(function () {
         Route::get('audit', [AuditLogController::class, 'index'])->name('audit.index');
 
         Route::resource('admin/organizations', OrganizationController::class)
+            ->except(['show'])
             ->names('admin.organizations')
             ->parameters(['organizations' => 'organization']);
 

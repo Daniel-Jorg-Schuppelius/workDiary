@@ -14,11 +14,9 @@ namespace App\Plugins\Todoist\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\{TodoistConnection, TodoistWebhookDelivery};
-use App\Plugins\Support\WebhookSignature;
+use App\Plugins\Support\{RecordsWebhookDeliveries, WebhookSignature};
 use App\Plugins\Todoist\Jobs\TodoistWebhookSyncJob;
 use App\Plugins\Todoist\TodoistConfig;
-use CommonToolkit\Helper\Data\CryptoHelper;
-use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\{JsonResponse, Request};
 
 /**
@@ -34,6 +32,8 @@ use Illuminate\Http\{JsonResponse, Request};
  * an und schreibt nie direkt Felder. Verlässliche Quelle bleibt das Polling.
  */
 class TodoistWebhookController extends Controller {
+    use RecordsWebhookDeliveries;
+
     public function __invoke(Request $request): JsonResponse {
         $secret = TodoistConfig::resolve()['client_secret'];
         $raw = (string) $request->getContent();
@@ -47,16 +47,15 @@ class TodoistWebhookController extends Controller {
         $payload = (array) json_decode($raw, true);
         $deliveryId = (string) $request->header('X-Todoist-Delivery-ID', '');
         if ($deliveryId === '') {
-            $deliveryId = CryptoHelper::hash($raw); // Fallback: inhaltsbasierte Dedup
+            $deliveryId = $this->deliveryHash($raw); // Fallback: inhaltsbasierte Dedup
         }
 
-        try {
-            $delivery = TodoistWebhookDelivery::query()->create([
-                'delivery_id' => $deliveryId,
-                'event_name' => isset($payload['event_name']) ? (string) $payload['event_name'] : null,
-                'received_at' => now(),
-            ]);
-        } catch (UniqueConstraintViolationException) {
+        $delivery = $this->recordDelivery(fn (): TodoistWebhookDelivery => TodoistWebhookDelivery::query()->create([
+            'delivery_id' => $deliveryId,
+            'event_name' => isset($payload['event_name']) ? (string) $payload['event_name'] : null,
+            'received_at' => now(),
+        ]));
+        if ($delivery === null) {
             return response()->json(['status' => 'duplicate']);
         }
 

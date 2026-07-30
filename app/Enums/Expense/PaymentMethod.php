@@ -35,4 +35,23 @@ enum PaymentMethod: string implements HasLabel {
             self::CompanyCard, self::BankTransfer => false,
         };
     }
+
+    /**
+     * In der UI zugelassene Zahlungsarten (W2.3): Whitelist aus
+     * config/expenses.php; leere Liste = alle Enum-Cases.
+     *
+     * @return list<self>
+     */
+    public static function allowed(): array {
+        $allowed = (array) config('expenses.allowed_payment_methods', []);
+
+        if ($allowed === []) {
+            return self::cases();
+        }
+
+        return array_values(array_filter(
+            self::cases(),
+            static fn (self $method): bool => in_array($method->value, $allowed, true),
+        ));
+    }
 }

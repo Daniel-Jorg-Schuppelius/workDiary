@@ -56,12 +56,9 @@ class TodoistOutboxDispatcher implements IntegrationOutboxDispatcher {
             return true; // lokal gelöscht → nichts anzulegen
         }
 
-        $alreadyLinked = ExternalReference::query()->withoutGlobalScopes()
-            ->where('organization_id', $entry->organization_id)
-            ->where('plugin_id', TodoistPlugin::ID)
-            ->where('external_type', TodoistPlugin::EXT_TYPE_TASK)
-            ->where('referenceable_type', $task->getMorphClass())
-            ->where('referenceable_id', $task->getKey())
+        $alreadyLinked = ExternalReference::query()
+            ->forPlugin($entry->organization_id, TodoistPlugin::ID, TodoistPlugin::EXT_TYPE_TASK)
+            ->forReferenceable($task)
             ->exists();
         if ($alreadyLinked) {
             return true; // schon exportiert/importiert → keine Doppelanlage
@@ -152,11 +149,9 @@ class TodoistOutboxDispatcher implements IntegrationOutboxDispatcher {
             return true; // lokal gelöscht → keine Löschweitergabe, nichts zu übertragen
         }
 
-        $reference = ExternalReference::query()->withoutGlobalScopes()
-            ->where('organization_id', $entry->organization_id)
-            ->where('plugin_id', TodoistPlugin::ID)
-            ->where('external_type', TodoistPlugin::EXT_TYPE_TASK)
-            ->where('external_id', (string) ($payload['external_id'] ?? ''))
+        $reference = ExternalReference::query()
+            ->forPlugin($entry->organization_id, TodoistPlugin::ID, TodoistPlugin::EXT_TYPE_TASK)
+            ->forExternalId((string) ($payload['external_id'] ?? ''))
             ->first();
         if ($reference === null) {
             return true; // entkoppelt → nichts zu übertragen
@@ -319,10 +314,8 @@ class TodoistOutboxDispatcher implements IntegrationOutboxDispatcher {
             return null;
         }
 
-        $externalId = ExternalReference::query()->withoutGlobalScopes()
-            ->where('organization_id', $task->organization_id)
-            ->where('plugin_id', TodoistPlugin::ID)
-            ->where('external_type', TodoistPlugin::EXT_TYPE_COLLABORATOR)
+        $externalId = ExternalReference::query()
+            ->forPlugin($task->organization_id, TodoistPlugin::ID, TodoistPlugin::EXT_TYPE_COLLABORATOR)
             ->where('referenceable_id', $task->assigned_to)
             ->value('external_id');
 

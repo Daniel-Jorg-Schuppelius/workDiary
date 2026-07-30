@@ -101,7 +101,7 @@ class RetainerVoucherReconcilerTest extends TestCase {
         $this->assertSame(1, $result['booked']);
         $payment = $this->agreement->payments()->firstOrFail();
         $this->assertTrue($payment->source === AccountPaymentSource::Lexoffice);
-        $this->assertSame('550.00', $payment->amount);
+        $this->assertSame('550.00', $payment->amount?->getAmount());
         $this->assertSame('lex-voucher-uuid-1', $payment->source_reference);
         $this->assertSame(Invoice::STATUS_PAID, $this->retainerInvoice->fresh()->status);
     }
@@ -109,13 +109,13 @@ class RetainerVoucherReconcilerTest extends TestCase {
     public function test_partial_then_full_payment_grows_idempotently(): void {
         $this->voucher('open', 550.00, 200.00); // 350 bezahlt
         app(RetainerVoucherReconciler::class)->reconcile($this->organization);
-        $this->assertSame('350.00', $this->agreement->payments()->firstOrFail()->amount);
+        $this->assertSame('350.00', $this->agreement->payments()->firstOrFail()->amount?->getAmount());
 
         $this->voucher('paid', 550.00, 0.00);   // jetzt voll
         app(RetainerVoucherReconciler::class)->reconcile($this->organization);
 
         $this->assertSame(1, $this->agreement->payments()->count());
-        $this->assertSame('550.00', $this->agreement->payments()->firstOrFail()->amount);
+        $this->assertSame('550.00', $this->agreement->payments()->firstOrFail()->amount?->getAmount());
     }
 
     public function test_voided_voucher_revokes_payment(): void {

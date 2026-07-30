@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $organization_id
  * @property int|null $customer_id
+ * @property int|null $project_id
  * @property string $code
  * @property string $label
  * @property array<string, array{reaction_minutes:int, resolution_minutes:int}> $priority_table
@@ -40,6 +41,7 @@ class SlaContract extends Model {
         'pause_rules',
         'organization_id',
         'customer_id',
+        'project_id',
         'code',
         'label',
         'priority_table',
@@ -64,6 +66,16 @@ class SlaContract extends Model {
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);
+    }
+
+    /**
+     * Optionale Projektbindung (W5.4): der Vertrag gilt dann nur für dieses
+     * Projekt und gewinnt bei der Auflösung vor Kunden-/Default-Vertrag.
+     *
+     * @return BelongsTo<Project, $this>
+     */
+    public function project(): BelongsTo {
+        return $this->belongsTo(Project::class);
     }
 
     /** @return HasMany<SlaContractQuota, $this> */

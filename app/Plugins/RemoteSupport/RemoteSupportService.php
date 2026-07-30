@@ -78,8 +78,7 @@ class RemoteSupportService {
             ->withoutGlobalScopes()
             ->where('plugin_id', RemoteSupportPlugin::ID)
             ->where('external_type', self::deviceType($provider))
-            ->where('referenceable_type', $asset->getMorphClass())
-            ->where('referenceable_id', $asset->getKey())
+            ->forReferenceable($asset)
             ->first();
 
         if ($primary === null) {
@@ -138,10 +137,8 @@ class RemoteSupportService {
     /** Entfernt eine bestimmte Geräte-ID — ohne $remoteId alle IDs des Anbieters. */
     public function forgetRemoteId(Asset $asset, string $provider, ?string $remoteId = null): void {
         ExternalReference::query()
-            ->where('plugin_id', RemoteSupportPlugin::ID)
-            ->where('external_type', self::deviceType($provider))
-            ->where('referenceable_type', $asset->getMorphClass())
-            ->where('referenceable_id', $asset->getKey())
+            ->forPlugin($asset->organization_id, RemoteSupportPlugin::ID, self::deviceType($provider))
+            ->forReferenceable($asset)
             ->when($remoteId !== null, fn ($q) => $q->where('external_id', $remoteId))
             ->delete();
 
@@ -165,10 +162,8 @@ class RemoteSupportService {
      */
     public function remoteIds(Asset $asset, string $provider): array {
         $primary = ExternalReference::query()
-            ->where('plugin_id', RemoteSupportPlugin::ID)
-            ->where('external_type', self::deviceType($provider))
-            ->where('referenceable_type', $asset->getMorphClass())
-            ->where('referenceable_id', $asset->getKey())
+            ->forPlugin($asset->organization_id, RemoteSupportPlugin::ID, self::deviceType($provider))
+            ->forReferenceable($asset)
             ->orderBy('id')
             ->pluck('external_id');
 
@@ -203,12 +198,9 @@ class RemoteSupportService {
         $ids = 0;
 
         $primaries = ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $source->organization_id)
-            ->where('plugin_id', RemoteSupportPlugin::ID)
+            ->forPlugin($source->organization_id, RemoteSupportPlugin::ID)
             ->whereIn('external_type', array_values(self::DEVICE_TYPES))
-            ->where('referenceable_type', $source->getMorphClass())
-            ->where('referenceable_id', $source->getKey())
+            ->forReferenceable($source)
             ->get();
 
         foreach ($primaries as $ref) {
@@ -216,8 +208,7 @@ class RemoteSupportService {
                 ->withoutGlobalScopes()
                 ->where('plugin_id', RemoteSupportPlugin::ID)
                 ->where('external_type', $ref->external_type)
-                ->where('referenceable_type', $target->getMorphClass())
-                ->where('referenceable_id', $target->getKey())
+                ->forReferenceable($target)
                 ->exists();
 
             if ($targetHasPrimary) {
@@ -412,11 +403,8 @@ class RemoteSupportService {
 
     private function matchAsset(Organization $organization, string $provider, string $remoteId): ?Asset {
         $ref = ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', RemoteSupportPlugin::ID)
-            ->where('external_type', self::deviceType($provider))
-            ->where('external_id', $remoteId)
+            ->forPlugin($organization, RemoteSupportPlugin::ID, self::deviceType($provider))
+            ->forExternalId($remoteId)
             ->first();
 
         if ($ref !== null) {
@@ -649,12 +637,8 @@ class RemoteSupportService {
         // Weitere Sitzungen am selben Eintrag (mehrere Sessions innerhalb einer
         // erfassten Zeit) laufen als Alias; alreadyImported() kennt beide.
         $occupied = ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', RemoteSupportPlugin::ID)
-            ->where('external_type', self::EXT_TYPE_SESSION)
-            ->where('referenceable_type', $entry->getMorphClass())
-            ->where('referenceable_id', $entry->getKey())
+            ->forPlugin($organization, RemoteSupportPlugin::ID, self::EXT_TYPE_SESSION)
+            ->forReferenceable($entry)
             ->exists();
 
         if ($occupied) {

@@ -50,6 +50,16 @@ jobs:
       - name: Run static analysis
         run: composer lint
 
+      # Vollreview W0.4/W0.5: Routen müssen auf existierende Controller-
+      # Methoden zeigen; neuer Code betritt App\Legacy nur über die Bridge.
+      - name: Route action check
+        run: |
+          cp .env.testing .env
+          composer routes:check
+
+      - name: Legacy encapsulation guard
+        run: composer legacy:guard
+
   security-gate:
     name: Security gate (dependencies & format)
     runs-on: ubuntu-latest

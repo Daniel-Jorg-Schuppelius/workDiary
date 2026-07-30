@@ -154,11 +154,9 @@ class ZammadOutboxDispatcher implements IntegrationOutboxDispatcher {
     }
 
     private function alreadyAccounted(int $organizationId, int $timeEntryId): bool {
-        return ExternalReference::query()->withoutGlobalScopes()
-            ->where('organization_id', $organizationId)
-            ->where('plugin_id', ZammadPlugin::ID)
-            ->where('external_type', self::EXT_TYPE_TIME)
-            ->where('external_id', (string) $timeEntryId)
+        return ExternalReference::query()
+            ->forPlugin($organizationId, ZammadPlugin::ID, self::EXT_TYPE_TIME)
+            ->forExternalId((string) $timeEntryId)
             ->exists();
     }
 }

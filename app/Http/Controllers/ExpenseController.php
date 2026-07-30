@@ -253,7 +253,7 @@ class ExpenseController extends Controller {
                 ->get(['id', 'label', 'default_tax_rate', 'default_billable', 'icon', 'color']),
             'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'paymentMethods' => PaymentMethod::cases(),
+            'paymentMethods' => PaymentMethod::allowed(),
         ];
     }
 }

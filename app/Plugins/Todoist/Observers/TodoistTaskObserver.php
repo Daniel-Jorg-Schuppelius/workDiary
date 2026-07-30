@@ -106,12 +106,9 @@ class TodoistTaskObserver {
             return;
         }
 
-        $reference = ExternalReference::query()->withoutGlobalScopes()
-            ->where('organization_id', $task->organization_id)
-            ->where('plugin_id', TodoistPlugin::ID)
-            ->where('external_type', TodoistPlugin::EXT_TYPE_TASK)
-            ->where('referenceable_type', $task->getMorphClass())
-            ->where('referenceable_id', $task->getKey())
+        $reference = ExternalReference::query()
+            ->forPlugin($task->organization_id, TodoistPlugin::ID, TodoistPlugin::EXT_TYPE_TASK)
+            ->forReferenceable($task)
             ->first();
         if ($reference === null) {
             return; // nicht Todoist-verknüpft

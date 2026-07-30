@@ -106,12 +106,9 @@ class DocumentMirrorService {
     private function deliverAndRecord(string $pluginId, Model $morph, string $externalType, string $relativePath, string $contents, string $mime, string $displayTitle, MirrorConnection $connection, RemoteFileGateway $gateway, bool $force, array $extraPayload): string {
         $sha = CryptoHelper::hash($contents);
 
-        $ref = ExternalReference::query()->withoutGlobalScopes()
-            ->where('organization_id', $connection->organizationId())
-            ->where('plugin_id', $pluginId)
-            ->where('external_type', $externalType)
-            ->where('referenceable_type', $morph->getMorphClass())
-            ->where('referenceable_id', $morph->getKey())
+        $ref = ExternalReference::query()
+            ->forPlugin($connection->organizationId(), $pluginId, $externalType)
+            ->forReferenceable($morph)
             ->first();
 
         // Bereits gespiegelt und inhaltlich unverändert → nichts zu tun.

@@ -44,7 +44,7 @@ class RateCalculator {
         }
 
         if ($agreementRate !== null) {
-            return (float) $agreementRate->hourly_rate;
+            return $agreementRate->hourly_rate?->toFloat() ?? 0.0;
         }
 
         $user = $entry->user;

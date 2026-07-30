@@ -93,12 +93,9 @@ class DocumentConflictResolver {
     public function detach(MirrorTarget $target, IntegrationInboxItem $item): void {
         $document = $this->document($item);
 
-        ExternalReference::query()->withoutGlobalScopes()
-            ->where('organization_id', $item->organization_id)
-            ->where('plugin_id', $target->pluginId())
-            ->where('external_type', DocumentMirrorService::EXTERNAL_TYPE)
-            ->where('referenceable_type', $document->getMorphClass())
-            ->where('referenceable_id', $document->getKey())
+        ExternalReference::query()
+            ->forPlugin($item->organization_id, $target->pluginId(), DocumentMirrorService::EXTERNAL_TYPE)
+            ->forReferenceable($document)
             ->delete();
 
         // Marker setzen; der Observer prüft ihn ZUERST und reiht nichts mehr ein.

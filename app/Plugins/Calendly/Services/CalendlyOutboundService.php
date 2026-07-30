@@ -72,4 +72,14 @@ class CalendlyOutboundService {
 
         return (new CalendlyClient($connection))->cancelScheduledEvent($eventUuid, $reason);
     }
+
+    /**
+     * Extrahiert die Scheduled-Event-UUID aus einer Calendly-URI — funktioniert
+     * für Event-URIs (`.../scheduled_events/{uuid}`) wie für Invitee-URIs
+     * (`.../scheduled_events/{uuid}/invitees/{uuid}`, der `source_uri`-Anker
+     * der Terminwünsche).
+     */
+    public static function eventUuidFromUri(string $uri): ?string {
+        return preg_match('#/scheduled_events/([^/?\#]+)#', $uri, $matches) === 1 ? $matches[1] : null;
+    }
 }

@@ -11,20 +11,18 @@
 namespace App\Plugins\GoogleDrive;
 
 use App\Plugins\GoogleDrive\Api\GoogleDriveOAuth;
-use Illuminate\Support\ServiceProvider;
+use App\Plugins\Support\PluginServiceProviderBase;
 
 /**
  * Plugin-eigener ServiceProvider (Feature 080, MVP-355): Config-Defaults +
  * Routen; {@see GoogleDriveOAuth} ist Singleton (Test-Austauschpunkt).
  */
-class GoogleDriveServiceProvider extends ServiceProvider {
-    public function register(): void {
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . GoogleDrivePlugin::ID);
-
-        $this->app->singleton(GoogleDriveOAuth::class, fn (): GoogleDriveOAuth => new GoogleDriveOAuth());
+class GoogleDriveServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return GoogleDrivePlugin::ID;
     }
 
-    public function boot(): void {
-        $this->loadRoutesFrom(__DIR__ . '/routes.php');
+    protected function registerPlugin(): void {
+        $this->app->singleton(GoogleDriveOAuth::class, fn (): GoogleDriveOAuth => new GoogleDriveOAuth());
     }
 }

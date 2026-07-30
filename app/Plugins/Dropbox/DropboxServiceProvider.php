@@ -11,21 +11,19 @@
 namespace App\Plugins\Dropbox;
 
 use App\Plugins\Dropbox\Api\DropboxOAuth;
-use Illuminate\Support\ServiceProvider;
+use App\Plugins\Support\PluginServiceProviderBase;
 
 /**
  * Plugin-eigener ServiceProvider (Feature 080, MVP-353): Config-Defaults +
  * Routen; {@see DropboxOAuth} ist Singleton — Tests ersetzen ihn durch eine
  * Variante mit Guzzle-MockHandler (Muster GoogleCalendar/Todoist).
  */
-class DropboxServiceProvider extends ServiceProvider {
-    public function register(): void {
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . DropboxPlugin::ID);
-
-        $this->app->singleton(DropboxOAuth::class, fn (): DropboxOAuth => new DropboxOAuth());
+class DropboxServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return DropboxPlugin::ID;
     }
 
-    public function boot(): void {
-        $this->loadRoutesFrom(__DIR__ . '/routes.php');
+    protected function registerPlugin(): void {
+        $this->app->singleton(DropboxOAuth::class, fn (): DropboxOAuth => new DropboxOAuth());
     }
 }

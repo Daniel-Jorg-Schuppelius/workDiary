@@ -12,9 +12,11 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy;
 
+use App\Enums\Numbering\NumberScope;
 use App\Enums\Privacy\{DataSubjectRequestStatus, DataSubjectRequestType};
 use App\Models\{Organization, User};
 use App\Models\Privacy\DataSubjectRequest;
+use App\Services\Numbering\NumberSequenceService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -24,7 +26,10 @@ use Illuminate\Support\Facades\DB;
  * schreibt ein Ereignis in die Hash-Kette ({@see PrivacyEventService}).
  */
 class DataSubjectRequestService {
-    public function __construct(private readonly PrivacyEventService $events) {}
+    public function __construct(
+        private readonly PrivacyEventService $events,
+        private readonly NumberSequenceService $numbers,
+    ) {}
 
     /** Neue Anfrage anlegen: verschluesselt Identitaet/Anliegen, setzt die Frist (Art. 12). */
     public function open(
@@ -110,12 +115,8 @@ class DataSubjectRequestService {
     }
 
     private function nextNumber(Organization $organization, Carbon $now): string {
-        $year = $now->year;
-        $count = DataSubjectRequest::query()
-            ->where('organization_id', $organization->id)
-            ->whereYear('received_at', $year)
-            ->count();
-
-        return sprintf('DSR-%d-%04d', $year, $count + 1);
+        // W1.1: zentraler Nummernkreis (lockForUpdate, reset_per_year) statt
+        // race-anfälligem count()+1 — Format bleibt DSR-<Jahr>-0001.
+        return $this->numbers->next($organization, NumberScope::DataSubjectRequest, $now);
     }
 }

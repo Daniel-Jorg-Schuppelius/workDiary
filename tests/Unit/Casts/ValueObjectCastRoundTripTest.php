@@ -10,8 +10,8 @@
 
 namespace Tests\Unit\Casts;
 
-use App\Casts\{BicCast, GermanTaxIdCast, GtinCast, IbanCast, VatNumberCast};
-use CommonToolkit\ValueObjects\{Bic, Gtin, Iban};
+use App\Casts\{BicCast, DecimalCast, GermanTaxIdCast, GermanTaxNumberCast, GtinCast, IbanCast, VatNumberCast};
+use CommonToolkit\ValueObjects\{Bic, Decimal, GermanTaxNumber, Gtin, Iban};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Crypt;
 use Tests\TestCase;
@@ -98,5 +98,24 @@ class ValueObjectCastRoundTripTest extends TestCase {
 
         $taxId = (new GermanTaxIdCast('encrypted'))->set($model, 'tax_identification_number', '86095742719', []);
         $this->assertSame('86095742719', Crypt::decryptString((string) $taxId['tax_identification_number']));
+    }
+
+    /**
+     * Vorrats-Casts für die anstehende VO-Integration (Vollreview W2.4):
+     * DecimalCast und GermanTaxNumberCast haben noch keine Produktionsnutzung,
+     * bleiben aber bewusst erhalten — der Round-trip sichert sie bis dahin ab.
+     */
+    public function test_decimal_and_tax_number_round_trip(): void {
+        $model = $this->model();
+
+        $decimal = (new DecimalCast('4'))->set($model, 'factor', '1.2345', []);
+        $this->assertSame('1.2345', $decimal['factor']);
+        $read = (new DecimalCast('4'))->get($model, 'factor', $decimal['factor'], []);
+        $this->assertInstanceOf(Decimal::class, $read);
+
+        $taxNumber = (new GermanTaxNumberCast)->set($model, 'tax_number', '151/815/08156', []);
+        $this->assertIsString($taxNumber['tax_number']);
+        $readTax = (new GermanTaxNumberCast)->get($model, 'tax_number', $taxNumber['tax_number'], []);
+        $this->assertInstanceOf(GermanTaxNumber::class, $readTax);
     }
 }

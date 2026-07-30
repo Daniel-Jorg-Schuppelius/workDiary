@@ -59,10 +59,8 @@ class SupplierController extends Controller {
         $lexoffice = $plugins->withCapability(PluginCapability::TimeExport)->get(LexofficePlugin::ID);
         $lexofficeContactRef = $lexoffice
             ? ExternalReference::query()
-            ->where('plugin_id', LexofficePlugin::ID)
-            ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
-            ->where('referenceable_type', $supplier->getMorphClass())
-            ->where('referenceable_id', $supplier->getKey())
+            ->forPlugin($supplier->organization_id, LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)
+            ->forReferenceable($supplier)
             ->first()
             : null;
 

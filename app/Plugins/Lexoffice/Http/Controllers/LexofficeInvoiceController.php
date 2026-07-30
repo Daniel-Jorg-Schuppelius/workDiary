@@ -39,10 +39,8 @@ class LexofficeInvoiceController extends Controller {
         }
 
         $contactRef = ExternalReference::query()
-            ->where('plugin_id', LexofficePlugin::ID)
-            ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
-            ->where('referenceable_type', $invoice->customer->getMorphClass())
-            ->where('referenceable_id', $invoice->customer->getKey())
+            ->forPlugin($invoice->customer->organization_id, LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)
+            ->forReferenceable($invoice->customer)
             ->first();
 
         try {
@@ -66,10 +64,8 @@ class LexofficeInvoiceController extends Controller {
         Gate::authorize('view', $invoice);
 
         $ref = ExternalReference::query()
-            ->where('plugin_id', LexofficePlugin::ID)
-            ->where('external_type', LexofficeInvoiceService::EXT_TYPE_INVOICE)
-            ->where('referenceable_type', $invoice->getMorphClass())
-            ->where('referenceable_id', $invoice->getKey())
+            ->forPlugin($invoice->organization_id, LexofficePlugin::ID, LexofficeInvoiceService::EXT_TYPE_INVOICE)
+            ->forReferenceable($invoice)
             ->firstOrFail();
 
         $pdf = $this->lexofficeInvoice->downloadPdf($ref->external_id);

@@ -11,24 +11,24 @@
 namespace App\Plugins\Clockify;
 
 use App\Plugins\Clockify\Services\ClockifyOutboxDispatcher;
+use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Integration\IntegrationOutboxDispatcherResolver;
-use Illuminate\Support\ServiceProvider;
 
 /**
  * Plugin-eigener ServiceProvider (geladen vom Core-PluginServiceProvider, sobald
  * ClockifyPlugin in der Registry steht). Registriert den Import-Service, lädt
  * Routen und Views.
  */
-class ClockifyServiceProvider extends ServiceProvider {
-    public function register(): void {
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . ClockifyPlugin::ID);
+class ClockifyServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return ClockifyPlugin::ID;
+    }
 
+    protected function registerPlugin(): void {
         $this->app->singleton(ClockifyImportService::class, fn (): ClockifyImportService => new ClockifyImportService);
     }
 
-    public function boot(): void {
-        $this->loadRoutesFrom(__DIR__ . '/routes.php');
-        $this->loadViewsFrom(__DIR__ . '/Resources/views', 'clockify');
+    protected function bootPlugin(): void {
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new ClockifyOutboxDispatcher);
     }
 }

@@ -177,15 +177,20 @@ class ExpenseService {
         $categoryId = $attributes['expense_category_id'] ?? $existing?->expense_category_id;
         $category = $categoryId !== null ? ExpenseCategory::query()->find((int) $categoryId) : null;
 
+        // W2.3: dokumentierte Fallback-Kette expenses.* → invoicing.* verdrahtet.
         if (! array_key_exists('currency', $attributes) || ! is_string($attributes['currency']) || $attributes['currency'] === '') {
-            $attributes['currency'] = $existing !== null ? $existing->currency : (string) config('invoicing.default_currency', 'EUR');
+            $attributes['currency'] = $existing !== null
+                ? $existing->currency
+                : (string) (config('expenses.default_currency') ?? config('invoicing.default_currency', 'EUR'));
         }
 
         if (! array_key_exists('tax_rate', $attributes) || $attributes['tax_rate'] === null || $attributes['tax_rate'] === '') {
             if ($category !== null) {
                 $attributes['tax_rate'] = (string) $category->default_tax_rate;
             } else {
-                $attributes['tax_rate'] = $existing !== null ? $existing->tax_rate : (string) config('invoicing.default_tax_rate', '19.00');
+                $attributes['tax_rate'] = $existing !== null
+                    ? $existing->tax_rate
+                    : (string) (config('expenses.default_tax_rate') ?? config('invoicing.default_tax_rate', '19.00'));
             }
         }
 

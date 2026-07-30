@@ -10,35 +10,27 @@
 
 namespace App\Plugins\Msgraph\Api;
 
-use APIToolkit\API\Authentication\OAuth2\OAuth2AuthorizationCodeGrant;
 use App\Plugins\Msgraph\MsgraphConfig;
-use GuzzleHttp\Client as GuzzleClient;
+use App\Plugins\Support\PluginOAuthGrant;
 
 /**
- * OAuth2 Authorization-Code-Grant (+ PKCE) für das Microsoft-Graph-BACKUPZIEL
+ * OAuth2-Authorization-Code-Grant (+ PKCE) für das Microsoft-Graph-BACKUPZIEL
  * (Feature 017 Phase 32, MVP-363). Getrennt von Kalender- und Intake-Flow:
  * eigener Redirect, eigene Scopes (Files.ReadWrite als engste produktiv
  * verfügbare delegierte Berechtigung — bestätigtes Integrationskonto!).
  */
-class MsgraphBackupOAuth {
-    public function __construct(private readonly ?GuzzleClient $httpClient = null) {}
-
-    public function grant(): OAuth2AuthorizationCodeGrant {
-        $config = MsgraphConfig::resolve();
-
-        return new OAuth2AuthorizationCodeGrant(
-            clientId: $config['client_id'],
-            clientSecret: $config['client_secret'],
-            authorizeUrl: $config['authorize_url'],
-            tokenUrl: $config['token_url'],
-            redirectUri: route('admin.backup-targets.microsoft.oauth.callback'),
-            httpClient: $this->httpClient,
-        );
+class MsgraphBackupOAuth extends PluginOAuthGrant {
+    /** @return array<string, string|int|bool> */
+    protected function config(): array {
+        return MsgraphConfig::resolve();
     }
 
-    /** @return list<string> */
-    public function scopes(): array {
-        return array_values(array_filter(explode(' ', (string) MsgraphConfig::resolve()['backup_scopes'])));
+    protected function callbackRouteName(): string {
+        return 'admin.backup-targets.microsoft.oauth.callback';
+    }
+
+    protected function scopesKey(): string {
+        return 'backup_scopes';
     }
 
     /** Ohne diesen Scope ist das Ziel `blocked` (keine Sonderwege). */

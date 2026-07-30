@@ -163,12 +163,8 @@ class OrgaMaxTarget implements FacturationTarget {
     private function resolveCustomerReference(BillingTransfer $transfer): ExternalReference {
         $customer = $transfer->customer;
         $reference = ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $transfer->organization_id)
-            ->where('plugin_id', OrgaMaxPlugin::ID)
-            ->where('external_type', 'customer')
-            ->where('referenceable_type', $customer->getMorphClass())
-            ->where('referenceable_id', $customer->getKey())
+            ->forPlugin($transfer->organization_id, OrgaMaxPlugin::ID, 'customer')
+            ->forReferenceable($customer)
             ->first();
         if (! $reference instanceof ExternalReference) {
             throw new RuntimeException((string) __('orgamax.error.customer_unmapped', ['customer' => $customer->name]));

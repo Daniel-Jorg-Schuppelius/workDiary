@@ -13,7 +13,7 @@ namespace App\Services;
 use App\Enums\Diary\Status;
 use App\Enums\User\UserRole;
 use App\Models\{Attachment, Comment, DiaryEntry, EmergencyAssignment, Timesheet, User};
-use App\Support\Setting;
+use App\Support\{CarbonFmt, Setting, Tz};
 
 class PushNotifier {
     public function __construct(protected WebPushService $webPush) {}
@@ -72,9 +72,13 @@ class PushNotifier {
         if (! $user) {
             return;
         }
+        // Empfängerbezogen (W4.2): Zeitpunkt in der Zeitzone des EMPFÄNGERS —
+        // Tz::current() sähe hier den Auslöser bzw. Queue-Kontext (Muster wie
+        // NotificationDispatcher::pushTextFor je Empfänger rendert).
+        $tz = Tz::isValid($user->timezone) ? $user->timezone : null;
         $this->webPush->sendToUser($user, [
             'title' => __('Notdienst zugewiesen'),
-            'body' => optional($assignment->start_at)->format('d.m.Y H:i') . ' – ' . ($assignment->reason ?: ''),
+            'body' => CarbonFmt::fdatetime($assignment->start_at, $tz) . ' – ' . ($assignment->reason ?: ''),
             'url' => route('week.index'),
             'tag' => 'assignment-' . $assignment->id,
         ]);
@@ -109,7 +113,8 @@ class PushNotifier {
         }
         $this->webPush->sendToUser($owner, [
             'title' => __('Stundenzettel signiert'),
-            'body' => $project->name . ' · ' . $timesheet->work_date->format('d.m.Y'),
+            // work_date ist reiner date-Cast → fdate ohne TZ-Umrechnung (W4.2).
+            'body' => $project->name . ' · ' . CarbonFmt::fdate($timesheet->work_date),
             'url' => route('projects.timesheets.show', [$project, $timesheet]),
             'tag' => 'timesheet-' . $timesheet->id,
         ]);

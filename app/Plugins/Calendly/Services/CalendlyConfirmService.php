@@ -123,6 +123,11 @@ class CalendlyConfirmService {
         if (! $entry instanceof DiaryEntry) {
             return;
         }
+        // Bereits storniert (z. B. app-seitig mit Calendly-Cancel-Sync, dessen
+        // Absage-Webhook zurückkommt) → idempotent, kein Schein-Konflikt.
+        if ($entry->status === Status::Cancelled) {
+            return;
+        }
         $actor = $this->resolveActor($request);
         if (! $actor instanceof User) {
             return;

@@ -11,7 +11,7 @@
 namespace App\Plugins\GoogleCalendar;
 
 use App\Plugins\GoogleCalendar\Api\GoogleCalendarOAuth;
-use Illuminate\Support\ServiceProvider;
+use App\Plugins\Support\PluginServiceProviderBase;
 
 /**
  * Plugin-eigener ServiceProvider (MVP-328, Bauturbo A8). Registriert
@@ -19,10 +19,12 @@ use Illuminate\Support\ServiceProvider;
  * {@see GoogleCalendarOAuth} ist Singleton — Tests ersetzen ihn durch eine
  * Variante mit Guzzle-MockHandler (Todoist-Muster).
  */
-class GoogleCalendarServiceProvider extends ServiceProvider {
-    public function register(): void {
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . GoogleCalendarPlugin::ID);
+class GoogleCalendarServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return GoogleCalendarPlugin::ID;
+    }
 
+    protected function registerPlugin(): void {
         $this->app->singleton(GoogleCalendarOAuth::class, fn(): GoogleCalendarOAuth => new GoogleCalendarOAuth());
 
         if ($this->app->runningInConsole()) {
@@ -30,10 +32,5 @@ class GoogleCalendarServiceProvider extends ServiceProvider {
                 Console\GoogleCalendarPublishCommand::class,
             ]);
         }
-    }
-
-    public function boot(): void {
-        $this->loadRoutesFrom(__DIR__ . '/routes.php');
-        $this->loadViewsFrom(__DIR__ . '/Resources/views', 'google_calendar');
     }
 }

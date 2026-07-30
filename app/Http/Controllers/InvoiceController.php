@@ -432,8 +432,7 @@ class InvoiceController extends Controller {
         // dieser Hook auf die Plugin-Route. So bleibt der Core entkoppelt.
         $hooked = ExternalReference::query()
             ->where('external_type', 'invoice')
-            ->where('referenceable_type', $invoice->getMorphClass())
-            ->where('referenceable_id', $invoice->getKey())
+            ->forReferenceable($invoice)
             ->first();
 
         if ($hooked !== null) {

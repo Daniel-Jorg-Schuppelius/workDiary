@@ -35,6 +35,8 @@ enum NumberScope: string implements HasLabel {
     case Rental = 'rental';
     case AssetFinance = 'asset_finance';
     case Contract = 'contract';
+    case PrivacyIncident = 'privacy_incident';
+    case DataSubjectRequest = 'data_subject_request';
 
     public function label(): string {
         return match ($this) {
@@ -57,6 +59,8 @@ enum NumberScope: string implements HasLabel {
             self::Rental => __('Verleihakte'),
             self::AssetFinance => __('Leasingakte'),
             self::Contract => __('Vertrag'),
+            self::PrivacyIncident => __('Datenschutzvorfall'),
+            self::DataSubjectRequest => __('Betroffenenanfrage'),
         };
     }
 
@@ -72,6 +76,7 @@ enum NumberScope: string implements HasLabel {
             self::Claim, self::Rma => false, // Fallakten/Logistik, keine Belegwirkung
             self::Rental, self::AssetFinance => false, // Fallakten, keine Belegwirkung
             self::Contract => false, // Vertragsakte, keine Belegwirkung
+            self::PrivacyIncident, self::DataSubjectRequest => false, // Datenschutz-Fallakten, keine Belegwirkung
         };
     }
 }

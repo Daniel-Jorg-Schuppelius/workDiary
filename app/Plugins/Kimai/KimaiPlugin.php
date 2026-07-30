@@ -79,24 +79,19 @@ class KimaiPlugin implements Plugin, TimeImporter {
         return app(KimaiImportService::class)->importFromApi($organization, $config);
     }
 
-    /** Health-Check: pingt die Kimai-API; ohne API-Zugang ist CSV der reguläre Modus. */
+    /** Health-Check: pingt die Kimai-API; ohne API-Zugang ist CSV der reguläre Modus (= ok). */
     public function healthCheck(): PluginHealth {
         $config = KimaiConfig::resolve();
         $client = new KimaiApiClient($config['api_token'], $config['base_url']);
 
-        if (! $client->isConfigured()) {
-            return PluginHealth::ok(__('CSV-Modus — kein API-Zugang hinterlegt.'));
-        }
-
-        try {
-            return $client->ping()
-                ? PluginHealth::ok()
-                : PluginHealth::degraded(__('Kimai-API antwortet nicht (Ping fehlgeschlagen).'));
-        } catch (KimaiApiException $e) {
-            return PluginHealth::degraded($e->getMessage());
-        } catch (\Throwable $e) {
-            return PluginHealth::degraded(__('Kimai-API nicht erreichbar: :message', ['message' => $e->getMessage()]));
-        }
+        return PluginHealth::pingHealth(
+            ping: fn (): bool => $client->ping(),
+            unreachableMessage: __('Kimai-API antwortet nicht (Ping fehlgeschlagen).'),
+            configured: $client->isConfigured(),
+            notConfiguredMessage: __('CSV-Modus — kein API-Zugang hinterlegt.'),
+            apiExceptionClass: KimaiApiException::class,
+            throwableMessage: fn (\Throwable $e): string => __('Kimai-API nicht erreichbar: :message', ['message' => $e->getMessage()]),
+        );
     }
 
     public function adminPanel(): ?array {

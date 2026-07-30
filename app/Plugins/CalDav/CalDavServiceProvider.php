@@ -12,17 +12,19 @@ namespace App\Plugins\CalDav;
 
 use App\Plugins\CalDav\Contracts\CalDavGatewayFactory;
 use App\Plugins\CalDav\Services\GuzzleCalDavGatewayFactory;
-use Illuminate\Support\ServiceProvider;
+use App\Plugins\Support\PluginServiceProviderBase;
 
 /**
  * Plugin-eigener ServiceProvider (Feature 058). Bindet die Gateway-Factory
  * (Tests ersetzen sie durch eine Fake-Variante ohne HTTP), registriert
  * Config-Defaults, Routen, Views und den Publish-Command.
  */
-class CalDavServiceProvider extends ServiceProvider {
-    public function register(): void {
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . CalDavPlugin::ID);
+class CalDavServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return CalDavPlugin::ID;
+    }
 
+    protected function registerPlugin(): void {
         $this->app->singleton(CalDavGatewayFactory::class, GuzzleCalDavGatewayFactory::class);
 
         if ($this->app->runningInConsole()) {
@@ -30,10 +32,5 @@ class CalDavServiceProvider extends ServiceProvider {
                 Console\CalDavPublishCommand::class,
             ]);
         }
-    }
-
-    public function boot(): void {
-        $this->loadRoutesFrom(__DIR__ . '/routes.php');
-        $this->loadViewsFrom(__DIR__ . '/Resources/views', 'caldav');
     }
 }

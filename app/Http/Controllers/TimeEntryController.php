@@ -14,7 +14,9 @@ use App\Enums\Classification\ClassificationDomain;
 use App\Enums\Task\TaskStatus;
 use App\Http\Requests\SaveTimeEntryRequest;
 use App\Models\{DiaryEntry, Project, TimeEntry};
+use App\Models\User;
 use App\Services\Classification\ClassificationResolver;
+use App\Services\Flextime\CoreTimeValidator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -61,13 +63,19 @@ class TimeEntryController extends Controller {
 
         $data = $request->validated();
 
-        $project->timeEntries()->create($data + [
+        $timeEntry = $project->timeEntries()->create($data + [
             'user_id' => Auth::id(),
             'organization_id' => $project->organization_id,
         ]);
 
-        return redirect()->route('projects.show', ['project' => $project, '#' => 'time'])
+        $redirect = redirect()->route('projects.show', ['project' => $project, '#' => 'time'])
             ->with('success', __('Zeiteintrag erfasst.'));
+
+        if (($warning = $this->coreTimeWarning($timeEntry)) !== null) {
+            $redirect->with('warning', $warning);
+        }
+
+        return $redirect;
     }
 
     public function edit(Project $project, TimeEntry $timeEntry): View {
@@ -136,8 +144,30 @@ class TimeEntryController extends Controller {
 
         $timeEntry->update($request->validated());
 
-        return redirect()->route('projects.show', ['project' => $project, '#' => 'time'])
+        $redirect = redirect()->route('projects.show', ['project' => $project, '#' => 'time'])
             ->with('success', __('Zeiteintrag aktualisiert.'));
+
+        if (($warning = $this->coreTimeWarning($timeEntry->fresh())) !== null) {
+            $redirect->with('warning', $warning);
+        }
+
+        return $redirect;
+    }
+
+    /**
+     * Nicht blockierende Kernzeit-/Rahmenzeit-/Pausen-Hinweise (Vollreview
+     * W2.1) für den Speicherpfad; null = kein Hinweis (Flash bleibt leer).
+     */
+    private function coreTimeWarning(?TimeEntry $timeEntry): ?string {
+        $owner = $timeEntry?->user;
+
+        if ($timeEntry === null || ! $owner instanceof User) {
+            return null;
+        }
+
+        $violations = app(CoreTimeValidator::class)->violations($owner, $timeEntry);
+
+        return $violations === [] ? null : implode(' ', $violations);
     }
 
     public function destroy(Project $project, TimeEntry $timeEntry): RedirectResponse {

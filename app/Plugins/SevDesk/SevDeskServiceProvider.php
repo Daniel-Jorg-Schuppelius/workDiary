@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\SevDesk;
 
-use Illuminate\Support\ServiceProvider;
+use App\Plugins\Support\PluginServiceProviderBase;
 
 /**
  * Bootet das sevDesk-Plugin (MVP-125): hängt die plugin-eigenen
@@ -20,8 +20,8 @@ use Illuminate\Support\ServiceProvider;
  * Konfiguration läuft über die Auto-Form der Plugin-Karte, die Übergabe über
  * den {@see \App\Services\Finance\Targets\SevDeskTarget}.
  */
-class SevDeskServiceProvider extends ServiceProvider {
-    public function register(): void {
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . SevDeskPlugin::ID);
+class SevDeskServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return SevDeskPlugin::ID;
     }
 }

@@ -10,8 +10,8 @@
 
 namespace App\Plugins\Dhl;
 
+use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Shipping\ShippingProviderRegistry;
-use Illuminate\Support\ServiceProvider;
 
 /**
  * Plugin-eigener ServiceProvider (Feature 059). Wird vom Core-
@@ -21,12 +21,12 @@ use Illuminate\Support\ServiceProvider;
  * {@see ShippingProviderRegistry} ein, damit der ShipmentService ihn über den
  * Carrier-Schlüssel `dhl` auflöst.
  */
-class DhlServiceProvider extends ServiceProvider {
-    public function register(): void {
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . DhlPlugin::ID);
+class DhlServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return DhlPlugin::ID;
     }
 
-    public function boot(): void {
+    protected function bootPlugin(): void {
         $this->app->make(ShippingProviderRegistry::class)->register($this->app->make(DhlPlugin::class));
     }
 }

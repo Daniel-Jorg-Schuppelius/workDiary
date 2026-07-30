@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Asset, Attachment, Comment, Customer, DiaryEntry, EmergencyAssignment, KnowledgeArticle, OnCallShift, Organization, ServiceTicket, Supplier, Task, User};
+use App\Models\{Asset, Attachment, Comment, Customer, DiaryEntry, EmergencyAssignment, Expense, KnowledgeArticle, OnCallShift, Organization, ServiceTicket, Supplier, Task, User};
 use App\Services\Attachments\{FileAttacher, ImageMetaUploader};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
@@ -57,6 +57,7 @@ class AttachmentController extends Controller {
         'asset' => Asset::class,
         'knowledge' => KnowledgeArticle::class,
         'service-ticket' => ServiceTicket::class,
+        'expense' => Expense::class,
     ];
 
     /**
@@ -86,11 +87,24 @@ class AttachmentController extends Controller {
         // Anhängen erfordert das Bearbeiten-Recht am Trägerobjekt, nicht nur Sichtbarkeit.
         Gate::authorize('update', $parent);
 
+        // W2.3: Belege an Ausgaben haben ein eigenes, konfigurierbares Limit
+        // und eine eigene MIME-Whitelist (config/expenses.php).
+        $maxKb = $parent instanceof Expense
+            ? min(FileAttacher::maxKb(), max(1, (int) config('expenses.max_upload_mb', 10)) * 1024)
+            : FileAttacher::maxKb();
+
         $request->validate([
-            'file' => ['required', 'file', 'max:' . FileAttacher::maxKb()],
+            'file' => ['required', 'file', 'max:' . $maxKb],
         ]);
 
         $file = $request->file('file');
+
+        if ($parent instanceof Expense) {
+            $expenseMimes = (array) config('expenses.allowed_mime_types', []);
+            if ($expenseMimes !== [] && ! in_array($file->getMimeType() ?? '', $expenseMimes, true)) {
+                return back()->withErrors(['file' => __('Dateityp nicht erlaubt.')]);
+            }
+        }
 
         $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
         if (! in_array($ext, self::ALLOWED_EXTENSIONS, true)) {

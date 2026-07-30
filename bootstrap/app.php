@@ -40,6 +40,12 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware(AuthenticateScim::class)->prefix('scim/v2')->group(__DIR__ . '/../routes/scim.php');
         },
     )
+    // Legacy-Commands liegen ausserhalb des Auto-Discovery-Pfads
+    // (app/Console/Commands) und muessen explizit registriert werden —
+    // die Admin-Migrations-UI (legacy:import/-plan, legacy:archive) haengt daran.
+    ->withCommands([
+        __DIR__ . '/../app/Legacy/Console/Commands',
+    ])
     ->withMiddleware(function (Middleware $middleware): void {
         // Reverse-Proxy-Betrieb (Feature 096, MVP-443): ohne TrustedProxies
         // wäre Request::ip() die Proxy-IP — Rate-Limits, Security-Log/fail2ban,

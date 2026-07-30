@@ -84,7 +84,7 @@ class MatchingService {
             $score = 0;
             $reasons = [];
 
-            $expected = $agreement->expected_monthly_amount !== null ? (float) $agreement->expected_monthly_amount : null;
+            $expected = $agreement->expected_monthly_amount?->toFloat();
             if ($expected !== null && abs($amount - $expected) <= self::CENT_TOLERANCE) {
                 $score += self::SCORE_AMOUNT_EXACT;
                 $reasons[] = 'amount';
@@ -108,7 +108,7 @@ class MatchingService {
                 'kind' => AllocationKind::Payment,
                 'score' => $score,
                 'reasons' => array_values(array_unique($reasons)),
-                'open_amount' => $latest !== null ? round((float) $latest->balance, 2) : 0.0,
+                'open_amount' => $latest?->balance?->toFloat() ?? 0.0,
                 'foreign_currency' => false,
             ];
         }

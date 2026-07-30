@@ -10,33 +10,21 @@
 
 namespace App\Plugins\GoogleDrive\Api;
 
-use APIToolkit\API\Authentication\OAuth2\OAuth2AuthorizationCodeGrant;
 use App\Plugins\GoogleDrive\GoogleDriveConfig;
-use GuzzleHttp\Client as GuzzleClient;
+use App\Plugins\Support\PluginOAuthGrant;
 
 /**
- * OAuth2 Authorization-Code-Grant (+ PKCE) für Google Drive (Feature 080,
+ * OAuth2-Authorization-Code-Grant (+ PKCE) für Google Drive (Feature 080,
  * MVP-355). `access_type=offline` + `prompt=consent` sichern das
- * Refresh-Token (Muster GoogleCalendarOAuth).
+ * Refresh-Token (Zusatzparameter setzt der Intake-Flow).
  */
-class GoogleDriveOAuth {
-    public function __construct(private readonly ?GuzzleClient $httpClient = null) {}
-
-    public function grant(): OAuth2AuthorizationCodeGrant {
-        $config = GoogleDriveConfig::resolve();
-
-        return new OAuth2AuthorizationCodeGrant(
-            clientId: $config['client_id'],
-            clientSecret: $config['client_secret'],
-            authorizeUrl: $config['authorize_url'],
-            tokenUrl: $config['token_url'],
-            redirectUri: route('admin.cloud-intake.google.oauth.callback'),
-            httpClient: $this->httpClient,
-        );
+class GoogleDriveOAuth extends PluginOAuthGrant {
+    /** @return array<string, string|int|bool> */
+    protected function config(): array {
+        return GoogleDriveConfig::resolve();
     }
 
-    /** @return list<string> */
-    public function scopes(): array {
-        return array_values(array_filter(explode(' ', GoogleDriveConfig::resolve()['scopes'])));
+    protected function callbackRouteName(): string {
+        return 'admin.cloud-intake.google.oauth.callback';
     }
 }

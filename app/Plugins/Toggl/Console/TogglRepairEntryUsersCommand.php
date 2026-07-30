@@ -95,11 +95,8 @@ class TogglRepairEntryUsersCommand extends Command {
                 }
 
                 $ref = ExternalReference::query()
-                    ->withoutGlobalScopes()
-                    ->where('organization_id', $org->id)
-                    ->where('plugin_id', TogglPlugin::ID)
-                    ->where('external_type', TogglImportService::EXT_TYPE_ENTRY)
-                    ->where('external_id', $entry->entryKey)
+                    ->forPlugin($org->id, TogglPlugin::ID, TogglImportService::EXT_TYPE_ENTRY)
+                    ->forExternalId($entry->entryKey)
                     ->first();
                 $timeEntry = $ref?->referenceable;
                 if (! $timeEntry instanceof TimeEntry) {

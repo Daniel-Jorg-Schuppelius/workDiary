@@ -31,6 +31,9 @@ return [
             'restPeriod' => 'Ruhezeit',
             'breakMissing' => 'Pflichtpause',
             'maxWeeklyHours' => 'Wochenhöchstarbeitszeit',
+            'frameTime' => 'Rahmenzeit',
+            'coreTime' => 'Kernarbeitszeit',
+            'entryBreakMissing' => 'Pflichtpause (Projektzeit)',
         ],
         'severity' => [
             'error' => 'Verstoß',

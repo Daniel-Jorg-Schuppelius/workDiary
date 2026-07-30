@@ -10,23 +10,26 @@
 
 namespace App\Plugins\Calendly;
 
+use App\Models\DiaryEntry;
 use App\Plugins\Calendly\Console\CalendlyBackfillCommand;
-use Illuminate\Support\ServiceProvider;
+use App\Plugins\Calendly\Observers\CalendlyDiaryEntryObserver;
+use App\Plugins\Support\PluginServiceProviderBase;
 
 /**
  * Plugin-eigener ServiceProvider (Feature 095). Wird vom Core-
  * {@see \App\Providers\PluginServiceProvider} geladen, sobald CalendlyPlugin in
- * der Registry steht. Liefert Config-Defaults, lädt Routes + Views und stellt
- * den Backfill-Command bereit.
+ * der Registry steht. Liefert Config-Defaults, lädt Routes + Views, registriert
+ * den Cancel-Sync-Trigger (P5) und stellt den Backfill-Command bereit.
  */
-class CalendlyServiceProvider extends ServiceProvider {
-    public function register(): void {
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . CalendlyPlugin::ID);
+class CalendlyServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return CalendlyPlugin::ID;
     }
 
-    public function boot(): void {
-        $this->loadRoutesFrom(__DIR__ . '/routes.php');
-        $this->loadViewsFrom(__DIR__ . '/Resources/views', 'calendly');
+    protected function bootPlugin(): void {
+        // Outbound-Cancel-Sync (P5): app-seitiger Storno eines bestätigten
+        // Calendly-Termins wird best effort gegen Calendly abgeglichen.
+        DiaryEntry::observe(CalendlyDiaryEntryObserver::class);
 
         if ($this->app->runningInConsole()) {
             $this->commands([

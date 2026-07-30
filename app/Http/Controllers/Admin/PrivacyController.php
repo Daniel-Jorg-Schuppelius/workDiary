@@ -15,7 +15,6 @@ use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, User};
 use App\Services\Privacy\PrivacyOverviewService;
 use App\Support\Sqid;
-use CommonToolkit\Helper\Data\CSV\StringHelper;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\{RedirectResponse, Request, Response as HttpResponse};
 use Illuminate\Support\Facades\{DB, Gate};
@@ -169,29 +168,24 @@ class PrivacyController extends Controller {
             );
         }
 
-        return new StreamedResponse(function () use ($payload): void {
-            $out = fopen('php://output', 'w');
-            if ($out === false) {
-                return;
-            }
-            fwrite($out, StringHelper::encodeLine(['section', 'id', 'user_id', 'event', 'extra'], ',') . "\r\n");
+        // W4.1: gemeinsames CSV-Skelett (BOM + Formel-Injektions-Guard auf den
+        // nutzergesteuerten Zellen wie Token-Namen); Komma-Delimiter bleibt.
+        $rows = (static function () use ($payload): \Generator {
             foreach ($payload['sessions'] as $s) {
-                fwrite($out, StringHelper::encodeLine(['session', $s['id'], $s['user_id'], '', (string) $s['ip_address']], ',') . "\r\n");
+                yield ['session', $s['id'], $s['user_id'], '', (string) $s['ip_address']];
             }
             foreach ($payload['tokens'] as $t) {
-                fwrite($out, StringHelper::encodeLine(['token', (string) $t['id'], (string) $t['user_id'], '', (string) $t['name']], ',') . "\r\n");
+                yield ['token', (string) $t['id'], (string) $t['user_id'], '', (string) $t['name']];
             }
             foreach ($payload['exports'] as $e) {
-                fwrite($out, StringHelper::encodeLine(['export', (string) $e['id'], (string) ($e['user_id'] ?? ''), $e['event'], (string) ($e['created_at'] ?? '')], ',') . "\r\n");
+                yield ['export', (string) $e['id'], (string) ($e['user_id'] ?? ''), $e['event'], (string) ($e['created_at'] ?? '')];
             }
             foreach ($payload['support_accesses'] as $a) {
-                fwrite($out, StringHelper::encodeLine(['support', (string) $a['id'], (string) ($a['user_id'] ?? ''), $a['event'], (string) ($a['created_at'] ?? '')], ',') . "\r\n");
+                yield ['support', (string) $a['id'], (string) ($a['user_id'] ?? ''), $a['event'], (string) ($a['created_at'] ?? '')];
             }
-            fclose($out);
-        }, Response::HTTP_OK, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => sprintf('attachment; filename="%s.csv"', $base),
-        ]);
+        })();
+
+        return \App\Support\CsvExport::streamFromRows($base . '.csv', ['section', 'id', 'user_id', 'event', 'extra'], $rows, ',');
     }
 
     public function destroySession(Request $request, string $id): RedirectResponse {

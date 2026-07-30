@@ -14,7 +14,7 @@ namespace App\Plugins\Clockify\Sources;
 
 use APIToolkit\API\Authentication\ApiKeyAuthentication;
 use App\Plugins\Clockify\Exceptions\ClockifyApiException;
-use App\Plugins\Support\{PluginApiClient, PluginHttpFactory, RemoteTimeWriter, StartStopFingerprint};
+use App\Plugins\Support\{GuardsPluginApiResponses, PluginApiClient, PluginApiException, PluginHttpFactory, RemoteTimeWriter, StartStopFingerprint};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\Response;
 
@@ -28,7 +28,7 @@ use Illuminate\Http\Client\Response;
  * {@see PluginHttpFactory} durch {@see \Tests\Support\FakePluginHttp}.
  */
 class ClockifyApiClient implements RemoteTimeWriter {
-    use StartStopFingerprint;
+    use GuardsPluginApiResponses, StartStopFingerprint;
 
     public const PAGE_SIZE = 1000;
 
@@ -216,18 +216,22 @@ class ClockifyApiClient implements RemoteTimeWriter {
         return rtrim($base, '/') . $path;
     }
 
-    private function assertOk(Response $response, string $context): void {
-        if ($response->successful()) {
-            return;
-        }
+    // --- Fehlerbehandlung (GuardsPluginApiResponses) ----------------------
 
-        $detail = (string) ($response->json('message') ?? $response->body());
-        $message = sprintf('Clockify-API %s: HTTP %d — %s', $context, $response->status(), mb_substr($detail, 0, 300));
-        if ($response->status() === 429) {
-            $message .= ' ' . __('(Free-Plan: 30 Requests/h — für Free-Konten den CSV-Weg nutzen.)');
-        }
+    /** @return class-string<PluginApiException> */
+    protected function apiExceptionClass(): string {
+        return ClockifyApiException::class;
+    }
 
-        throw new ClockifyApiException($message, $response->status());
+    protected function apiLabel(): string {
+        return 'Clockify-API';
+    }
+
+    /** Free-Plan (30 Requests/h): 429 wird mit CSV-Hinweis gemeldet. */
+    protected function apiErrorHint(Response $response): string {
+        return $response->status() === 429
+            ? __('(Free-Plan: 30 Requests/h — für Free-Konten den CSV-Weg nutzen.)')
+            : '';
     }
 
     private function api(): PluginApiClient {

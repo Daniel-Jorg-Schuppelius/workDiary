@@ -78,11 +78,8 @@ class OrgaMaxOutboxDispatcher implements IntegrationOutboxDispatcher {
         // Idempotenz: existiert zur Order bereits eine Rechnungs-Referenz
         // (früherer Lauf mit unklarem Ausgang), wird sie übernommen.
         $existing = ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $entry->organization_id)
-            ->where('plugin_id', OrgaMaxPlugin::ID)
-            ->where('external_type', 'orgamax_converted_invoice')
-            ->where('external_id', 'order:' . $orderId)
+            ->forPlugin($entry->organization_id, OrgaMaxPlugin::ID, 'orgamax_converted_invoice')
+            ->forExternalId('order:' . $orderId)
             ->first();
         if ($existing instanceof ExternalReference) {
             return true;
@@ -155,11 +152,8 @@ class OrgaMaxOutboxDispatcher implements IntegrationOutboxDispatcher {
         // Dublettenprüfung: gleicher Betrag + Datum bereits gemeldet?
         $marker = 'payment:' . $invoiceId . ':' . (string) ($payload['amount'] ?? '') . ':' . (string) ($payload['date'] ?? '');
         $existing = ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $entry->organization_id)
-            ->where('plugin_id', OrgaMaxPlugin::ID)
-            ->where('external_type', 'orgamax_payment')
-            ->where('external_id', $marker)
+            ->forPlugin($entry->organization_id, OrgaMaxPlugin::ID, 'orgamax_payment')
+            ->forExternalId($marker)
             ->first();
         if ($existing instanceof ExternalReference) {
             return true;

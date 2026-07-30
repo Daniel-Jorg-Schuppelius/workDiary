@@ -99,10 +99,8 @@ class LexofficeDunningService {
      */
     public function reference(LexofficeVoucher $voucher): ?ExternalReference {
         return ExternalReference::query()
-            ->where('plugin_id', LexofficePlugin::ID)
-            ->where('external_type', self::EXT_TYPE_DUNNING)
-            ->where('referenceable_type', $voucher->getMorphClass())
-            ->where('referenceable_id', $voucher->getKey())
+            ->forPlugin($voucher->organization_id, LexofficePlugin::ID, self::EXT_TYPE_DUNNING)
+            ->forReferenceable($voucher)
             ->first();
     }
 

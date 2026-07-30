@@ -15,8 +15,8 @@ namespace App\Plugins\Billbee;
 use App\Models\Organization;
 use App\Plugins\Billbee\Console\BillbeeSyncCommand;
 use App\Plugins\Billbee\Services\{BillbeeInventoryProvider, BillbeeStockDispatcher};
+use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Inventory\{ExternalInventoryDispatcherResolver, InventoryLedger, InventoryProviderResolver};
-use Illuminate\Support\ServiceProvider;
 
 /**
  * Bootet das Billbee-Plugin (MVP-433/434): Config-Defaults, Admin-Routen/
@@ -24,19 +24,18 @@ use Illuminate\Support\ServiceProvider;
  * Provider-Registry (External-Mode je Org wählbar) + Outbox-Dispatcher
  * (Absolut-Stock-Updates).
  */
-class BillbeeServiceProvider extends ServiceProvider {
-    public function register(): void {
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . BillbeePlugin::ID);
+class BillbeeServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return BillbeePlugin::ID;
+    }
 
+    protected function registerPlugin(): void {
         if ($this->app->runningInConsole()) {
             $this->commands([BillbeeSyncCommand::class]);
         }
     }
 
-    public function boot(): void {
-        $this->loadRoutesFrom(__DIR__ . '/routes.php');
-        $this->loadViewsFrom(__DIR__ . '/Resources/views', BillbeePlugin::ID);
-
+    protected function bootPlugin(): void {
         app(ExternalInventoryDispatcherResolver::class)->register(new BillbeeStockDispatcher());
         app(InventoryProviderResolver::class)->registerExternal(
             BillbeePlugin::ID,

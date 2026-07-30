@@ -10,33 +10,21 @@
 
 namespace App\Plugins\Todoist\Api;
 
-use APIToolkit\API\Authentication\OAuth2\OAuth2AuthorizationCodeGrant;
+use App\Plugins\Support\PluginOAuthGrant;
 use App\Plugins\Todoist\TodoistConfig;
-use GuzzleHttp\Client as GuzzleClient;
 
 /**
- * Baut den OAuth2-Authorization-Code-Grant für Todoist (Feature 055,
- * MVP-111) aus der installationsweiten Konfiguration. Als Container-Singleton
- * der Austauschpunkt für Tests: dort wird ein Guzzle-`MockHandler`-Client
- * injiziert.
+ * OAuth2-Authorization-Code-Grant für Todoist (Feature 055, MVP-111).
+ * Todoist unterstützt kein PKCE — der Admin-Flow startet den Handshake
+ * mit `withPkce: false`.
  */
-class TodoistOAuth {
-    public function __construct(private readonly ?GuzzleClient $httpClient = null) {}
-
-    public function grant(): OAuth2AuthorizationCodeGrant {
-        $config = TodoistConfig::resolve();
-
-        return new OAuth2AuthorizationCodeGrant(
-            clientId: $config['client_id'],
-            clientSecret: $config['client_secret'],
-            authorizeUrl: $config['authorize_url'],
-            tokenUrl: $config['token_url'],
-            redirectUri: route('admin.todoist.oauth.callback'),
-            httpClient: $this->httpClient,
-        );
+class TodoistOAuth extends PluginOAuthGrant {
+    /** @return array<string, string|int|bool> */
+    protected function config(): array {
+        return TodoistConfig::resolve();
     }
 
-    public function scopes(): string {
-        return TodoistConfig::resolve()['scopes'];
+    protected function callbackRouteName(): string {
+        return 'admin.todoist.oauth.callback';
     }
 }

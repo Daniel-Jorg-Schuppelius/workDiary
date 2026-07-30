@@ -79,24 +79,24 @@ class ClockifyPlugin implements Plugin, TimeImporter {
         return app(ClockifyImportService::class)->importFromApi($organization, $config);
     }
 
-    /** Health-Check: löst den API-Benutzer auf; ohne API-Key ist CSV der reguläre Modus. */
+    /** Health-Check: löst den API-Benutzer auf; ohne API-Key ist CSV der reguläre Modus (= ok). */
     public function healthCheck(): PluginHealth {
         $config = ClockifyConfig::resolve();
         $client = new ClockifyApiClient($config['api_key'], $config['base_url'], $config['reports_base_url'], $config['workspace_id']);
 
-        if (! $client->isConfigured()) {
-            return PluginHealth::ok(__('CSV-Modus — kein API-Key hinterlegt.'));
-        }
+        return PluginHealth::pingHealth(
+            // currentUser() wirft bei Fehlern — der false-Zweig ist unerreichbar.
+            ping: function () use ($client): bool {
+                $client->currentUser();
 
-        try {
-            $client->currentUser();
-
-            return PluginHealth::ok();
-        } catch (ClockifyApiException $e) {
-            return PluginHealth::degraded($e->getMessage());
-        } catch (\Throwable $e) {
-            return PluginHealth::degraded(__('Clockify-API nicht erreichbar: :message', ['message' => $e->getMessage()]));
-        }
+                return true;
+            },
+            unreachableMessage: '',
+            configured: $client->isConfigured(),
+            notConfiguredMessage: __('CSV-Modus — kein API-Key hinterlegt.'),
+            apiExceptionClass: ClockifyApiException::class,
+            throwableMessage: fn (\Throwable $e): string => __('Clockify-API nicht erreichbar: :message', ['message' => $e->getMessage()]),
+        );
     }
 
     public function adminPanel(): ?array {

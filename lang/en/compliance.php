@@ -31,6 +31,9 @@ return [
             'restPeriod' => 'Rest period',
             'breakMissing' => 'Mandatory break',
             'maxWeeklyHours' => 'Maximum weekly hours',
+            'frameTime' => 'Working time frame',
+            'coreTime' => 'Core working hours',
+            'entryBreakMissing' => 'Mandatory break (project time)',
         ],
         'severity' => [
             'error' => 'Violation',

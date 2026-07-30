@@ -230,12 +230,8 @@ class OpenProjectStructureSync {
      */
     public function externalIdFor(Organization $organization, Model $model, string $type): ?string {
         $ref = ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', OpenProjectPlugin::ID)
-            ->where('external_type', $type)
-            ->where('referenceable_type', $model->getMorphClass())
-            ->where('referenceable_id', $model->getKey())
+            ->forPlugin($organization, OpenProjectPlugin::ID, $type)
+            ->forReferenceable($model)
             ->first();
 
         return $ref?->external_id;
@@ -249,9 +245,7 @@ class OpenProjectStructureSync {
      */
     public function mappings(Organization $organization): Collection {
         return ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', OpenProjectPlugin::ID)
+            ->forPlugin($organization, OpenProjectPlugin::ID)
             ->whereIn('external_type', [self::EXT_TYPE_PROJECT, self::EXT_TYPE_WORK_PACKAGE, self::EXT_TYPE_USER])
             ->with('referenceable')
             ->orderBy('external_type')
@@ -290,11 +284,8 @@ class OpenProjectStructureSync {
 
     private function reference(Organization $organization, string $type, string $externalId): ?ExternalReference {
         return ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', OpenProjectPlugin::ID)
-            ->where('external_type', $type)
-            ->where('external_id', $externalId)
+            ->forPlugin($organization, OpenProjectPlugin::ID, $type)
+            ->forExternalId($externalId)
             ->with('referenceable')
             ->first();
     }
@@ -314,7 +305,7 @@ class OpenProjectStructureSync {
             'referenceable_id' => $referenceable->getKey(),
         ];
 
-        $byKey = ExternalReference::query()->withoutGlobalScopes()->where($key)->first();
+        $byKey = ExternalReference::query()->forPlugin($organization, OpenProjectPlugin::ID, $type)->forExternalId($externalId)->first();
         if ($byKey !== null) {
             $byKey->fill($target + ['payload' => $payload !== [] ? $payload : null, 'synced_at' => now()])->save();
 
@@ -329,8 +320,7 @@ class OpenProjectStructureSync {
             ->withoutGlobalScopes()
             ->where('plugin_id', OpenProjectPlugin::ID)
             ->where('external_type', $type)
-            ->where('referenceable_type', $target['referenceable_type'])
-            ->where('referenceable_id', $target['referenceable_id'])
+            ->forReferenceable($referenceable)
             ->exists();
 
         if ($hasPrimary) {

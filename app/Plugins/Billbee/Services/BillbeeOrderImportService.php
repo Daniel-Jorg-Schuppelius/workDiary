@@ -164,11 +164,9 @@ class BillbeeOrderImportService {
 
     /** Kunde aus bestehender Käufer-Referenz (Zuordnung bereits entschieden). */
     private function customerByReference(Organization $organization, string $buyerExternalId): ?Customer {
-        $reference = \App\Models\ExternalReference::query()->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', BillbeePlugin::ID)
-            ->where('external_type', 'customer')
-            ->where('external_id', $buyerExternalId)
+        $reference = \App\Models\ExternalReference::query()
+            ->forPlugin($organization, BillbeePlugin::ID, 'customer')
+            ->forExternalId($buyerExternalId)
             ->first();
         $referenceable = $reference?->referenceable;
 

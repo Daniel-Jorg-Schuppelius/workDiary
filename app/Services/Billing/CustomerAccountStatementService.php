@@ -15,6 +15,8 @@ use App\Models\Billing\{CustomerAccountPayment, CustomerBillingAgreement, Custom
 use App\Models\{TimeEntry, User};
 use App\Support\Tz;
 use Carbon\CarbonInterface;
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\{Carbon, Collection};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -60,7 +62,7 @@ class CustomerAccountStatementService {
                 if (! $statement->locked) {
                     $this->computePeriod($agreement, $statement, $prevBalance);
                 }
-                $prevBalance = (float) $statement->balance;
+                $prevBalance = $this->asMoney($statement->balance, $agreement->currency);
                 $cursor->addMonthNoOverflow();
             }
         }
@@ -216,11 +218,11 @@ class CustomerAccountStatementService {
     public function bookLexofficePayment(
         CustomerBillingAgreement $agreement,
         string $sourceReference,
-        float $amount,
+        Money $amount,
         CarbonInterface $paidOn,
         ?string $note = null,
     ): ?CustomerAccountPayment {
-        if ($amount <= 0) {
+        if (! $amount->isPositive()) {
             return null;
         }
 
@@ -236,7 +238,7 @@ class CustomerAccountStatementService {
             [
                 'organization_id' => $agreement->organization_id,
                 'paid_on' => $effective->toDateString(),
-                'amount' => round($amount, 2),
+                'amount' => $this->asMoney($amount, $agreement->currency),
                 'currency' => $agreement->currency->value,
                 'note' => $note,
             ],
@@ -316,13 +318,13 @@ class CustomerAccountStatementService {
     // interne Bausteine
     // ------------------------------------------------------------------
 
-    /** @return array{0: Carbon|null, 1: float} Startmonat + Anfangs-Übertrag der offenen Kette. */
+    /** @return array{0: Carbon|null, 1: Money} Startmonat + Anfangs-Übertrag der offenen Kette. */
     private function chainAnchor(CustomerBillingAgreement $agreement, ?CustomerBillingStatement $lastLocked): array {
         if ($lastLocked !== null) {
-            return [$lastLocked->periodStart()->addMonthNoOverflow(), (float) $lastLocked->balance];
+            return [$lastLocked->periodStart()->addMonthNoOverflow(), $this->asMoney($lastLocked->balance, $agreement->currency)];
         }
 
-        $openingBalance = (float) $agreement->opening_balance;
+        $openingBalance = $this->asMoney($agreement->opening_balance, $agreement->currency);
         if ($agreement->opening_balance_date !== null) {
             return [
                 Carbon::parse($agreement->opening_balance_date, Tz::current())->startOfMonth()->addMonthNoOverflow(),
@@ -359,7 +361,7 @@ class CustomerAccountStatementService {
         return $lastLocked?->periodStart()->addMonthNoOverflow();
     }
 
-    private function computePeriod(CustomerBillingAgreement $agreement, CustomerBillingStatement $statement, float $carryIn): void {
+    private function computePeriod(CustomerBillingAgreement $agreement, CustomerBillingStatement $statement, Money $carryIn): void {
         $start = $statement->periodStart();
         $end = $start->copy()->endOfMonth();
 
@@ -370,15 +372,16 @@ class CustomerAccountStatementService {
 
         $payments = $this->paymentsFor($agreement, $start, $end);
 
-        $gross = round((float) $entries->sum(fn (TimeEntry $e): float => $e->rate?->toFloat() ?? 0.0), 2);
-        $paid = round((float) $payments->sum(fn (CustomerAccountPayment $p): float => (float) $p->amount), 2);
+        $currency = $agreement->currency;
+        $gross = Money::sum($entries->map(fn (TimeEntry $e): Money => $this->asMoney($e->rate, $currency)), $currency);
+        $paid = Money::sum($payments->map(fn (CustomerAccountPayment $p): Money => $this->asMoney($p->amount, $currency)), $currency);
 
         $statement->fill([
             'total_minutes' => (int) $entries->sum('minutes'),
             'gross_value' => $gross,
             'payments_total' => $paid,
-            'carry_in' => round($carryIn, 2),
-            'balance' => round($carryIn + $gross - $paid, 2),
+            'carry_in' => $carryIn,
+            'balance' => $carryIn->plus($gross)->minus($paid),
             'computed_at' => now(),
         ])->save();
     }
@@ -390,6 +393,7 @@ class CustomerAccountStatementService {
         $start = $statement->periodStart();
         $end = $start->copy()->endOfMonth();
         $tz = Tz::current();
+        $currency = $agreement->currency;
 
         $entries = $this->entriesQuery($agreement)
             ->whereDate('date', '>=', $start->toDateString())
@@ -398,7 +402,7 @@ class CustomerAccountStatementService {
             ->orderBy('started_at')
             ->get();
 
-        $rows = $entries->map(function (TimeEntry $entry) use ($tz): array {
+        $rows = $entries->map(function (TimeEntry $entry) use ($tz, $currency): array {
             $localStart = $entry->started_at?->copy()->setTimezone($tz);
             $localEnd = $entry->ended_at?->copy()->setTimezone($tz);
             $category = $entry->getRelationValue('activityCategory');
@@ -414,14 +418,15 @@ class CustomerAccountStatementService {
                 'end' => $localEnd?->format('H:i'),
                 'minutes' => (int) $entry->minutes,
                 'hourly_rate' => $entry->hourly_rate?->toFloat(),
-                'amount' => ($entry->rate?->toFloat() ?? 0.0),
+                // Snapshot-/JSON-Grenze: Beträge als float (Vorbild totals-Spalte).
+                'amount' => $this->asMoney($entry->rate, $currency)->toFloat(),
             ];
         })->values()->all();
 
         $payments = $this->paymentsFor($agreement, $start, $end)->map(fn (CustomerAccountPayment $p): array => [
             'id' => $p->id,
             'paid_on' => $p->paid_on->toDateString(),
-            'amount' => (float) $p->amount,
+            'amount' => $p->amount?->toFloat() ?? 0.0,
             'source' => $p->source->value,
             'note' => $p->note,
         ])->values()->all();
@@ -431,10 +436,24 @@ class CustomerAccountStatementService {
             ->map(fn (Collection $group, string $label): array => [
                 'label' => $label,
                 'minutes' => (int) $group->sum('minutes'),
-                'amount' => round((float) $group->sum('amount'), 2),
+                'amount' => Money::sum($group->map(fn (array $row): Money => Money::ofFloat((float) $row['amount'], $currency)), $currency)->toFloat(),
             ])->values()->all();
 
         return ['rows' => $rows, 'payments' => $payments, 'by_category' => $byCategory];
+    }
+
+    /**
+     * Hebt ein Geld-Attribut währungsfest auf die Agreement-Währung (Betrag
+     * unverändert): Statements/Zeiteinträge tragen keine eigene Währungsspalte,
+     * ihr Cast fällt auf die Standardwährung zurück — ohne Normierung würde
+     * die Money-Arithmetik bei Nicht-EUR-Agreements Währungsmix melden.
+     */
+    private function asMoney(?Money $value, CurrencyCode $currency): Money {
+        if ($value === null) {
+            return Money::zero($currency);
+        }
+
+        return $value->getCurrency() === $currency ? $value : Money::of($value->getAmount(), $currency);
     }
 
     /** @return Collection<int, CustomerAccountPayment> */

@@ -14,6 +14,7 @@ use App\Models\Billing\CustomerBillingAgreement;
 use App\Models\{ExternalReference, Invoice, LexofficeVoucher, Organization};
 use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
 use App\Support\Tz;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Carbon;
 
 /**
@@ -68,11 +69,11 @@ class RetainerVoucherReconciler {
                 continue;
             }
 
-            $total = $voucher->total_amount?->toFloat() ?? 0.0;
-            $open = $voucher->open_amount?->toFloat() ?? $total;
-            $paid = round($total - $open, 2);
+            $total = $voucher->total_amount ?? Money::zero($voucher->currency);
+            $open = $voucher->open_amount ?? $total;
+            $paid = $total->minus($open);
 
-            if ($paid <= 0) {
+            if (! $paid->isPositive()) {
                 $result['skipped']++;
 
                 continue;
@@ -89,7 +90,7 @@ class RetainerVoucherReconciler {
                 $paidOn,
                 (string) __('customer-billing.lexoffice_payment_note', ['number' => (string) $voucher->voucher_number]),
             );
-            $this->markInvoice($invoice, $open <= 0.005 ? Invoice::STATUS_PAID : Invoice::STATUS_PARTIALLY_PAID, $paidOn);
+            $this->markInvoice($invoice, $open->isPositive() ? Invoice::STATUS_PARTIALLY_PAID : Invoice::STATUS_PAID, $paidOn);
             $result['booked']++;
         }
 
@@ -101,9 +102,7 @@ class RetainerVoucherReconciler {
      */
     private function retainerInvoiceMap(Organization $organization): array {
         $refs = ExternalReference::query()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', LexofficePlugin::ID)
-            ->where('external_type', LexofficeInvoiceService::EXT_TYPE_INVOICE)
+            ->forPlugin($organization->id, LexofficePlugin::ID, LexofficeInvoiceService::EXT_TYPE_INVOICE)
             ->where('referenceable_type', (new Invoice)->getMorphClass())
             ->get(['external_id', 'referenceable_id']);
 

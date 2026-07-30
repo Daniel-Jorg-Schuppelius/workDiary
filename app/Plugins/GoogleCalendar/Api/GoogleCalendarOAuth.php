@@ -10,35 +10,21 @@
 
 namespace App\Plugins\GoogleCalendar\Api;
 
-use APIToolkit\API\Authentication\OAuth2\OAuth2AuthorizationCodeGrant;
 use App\Plugins\GoogleCalendar\GoogleCalendarConfig;
-use GuzzleHttp\Client as GuzzleClient;
+use App\Plugins\Support\PluginOAuthGrant;
 
 /**
- * Baut den OAuth2-Authorization-Code-Grant (+ PKCE) für Google
- * (MVP-328, Bauturbo A8) aus der installationsweiten Konfiguration.
+ * OAuth2-Authorization-Code-Grant (+ PKCE) für Google (MVP-328, Bauturbo A8).
  * Offline-Access (`access_type=offline` + `prompt=consent`) stellt das
- * Refresh-Token sicher. Als Container-Singleton der Austauschpunkt für
- * Tests: dort wird ein Guzzle-`MockHandler`-Client injiziert (Todoist-Muster).
+ * Refresh-Token sicher (Zusatzparameter setzt der Admin-Flow).
  */
-class GoogleCalendarOAuth {
-    public function __construct(private readonly ?GuzzleClient $httpClient = null) {}
-
-    public function grant(): OAuth2AuthorizationCodeGrant {
-        $config = GoogleCalendarConfig::resolve();
-
-        return new OAuth2AuthorizationCodeGrant(
-            clientId: $config['client_id'],
-            clientSecret: $config['client_secret'],
-            authorizeUrl: $config['authorize_url'],
-            tokenUrl: $config['token_url'],
-            redirectUri: route('admin.google-calendar.oauth.callback'),
-            httpClient: $this->httpClient,
-        );
+class GoogleCalendarOAuth extends PluginOAuthGrant {
+    /** @return array<string, string|int|bool> */
+    protected function config(): array {
+        return GoogleCalendarConfig::resolve();
     }
 
-    /** @return list<string> */
-    public function scopes(): array {
-        return array_values(array_filter(explode(' ', GoogleCalendarConfig::resolve()['scopes'])));
+    protected function callbackRouteName(): string {
+        return 'admin.google-calendar.oauth.callback';
     }
 }

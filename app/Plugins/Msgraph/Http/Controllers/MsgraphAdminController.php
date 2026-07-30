@@ -10,12 +10,11 @@
 
 namespace App\Plugins\Msgraph\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\MsgraphConnection;
 use App\Plugins\Msgraph\Api\{MsgraphCalendarClient, MsgraphOAuth};
 use App\Plugins\Msgraph\MsgraphConfig;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
-use App\Plugins\Support\OAuthStateHandshake;
+use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
@@ -23,12 +22,12 @@ use Throwable;
 
 /**
  * Microsoft-365-Admin-Panel + OAuth-Verbindungsflow (MVP-328, Bauturbo A8).
- * Der OAuth-`state` ist kurzlebig, einmalig einlösbar und an Organisation UND
- * Sitzung gebunden (Todoist-Muster); der PKCE-Verifier wandert mit dem state
- * durch den Cache. Tokens erscheinen nie in Logs, Fehlermeldungen oder
- * Audit-Payloads. Scope ist bewusst nur `Calendars.ReadWrite offline_access`.
+ * Der OAuth-Flow (state einmalig, org-/sitzungsgebunden, PKCE) läuft über die
+ * gemeinsame Basis {@see ConnectionOAuthController}. Tokens erscheinen nie in
+ * Logs, Fehlermeldungen oder Audit-Payloads. Scope ist bewusst nur
+ * `Calendars.ReadWrite offline_access`.
  */
-class MsgraphAdminController extends Controller {
+class MsgraphAdminController extends ConnectionOAuthController {
     use ResolvesPluginOrgContext;
 
     public function index(): View {
@@ -58,68 +57,38 @@ class MsgraphAdminController extends Controller {
         ]);
     }
 
-    /** Startet den OAuth-Flow: org- und sitzungsgebundener Einmal-state + PKCE. */
-    public function startOAuth(MsgraphOAuth $oauth): RedirectResponse {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
+    // ── OAuth-Flow: Hooks der gemeinsamen Basis (Vollreview W3a) ──
 
-        if (! MsgraphConfig::isConfigured()) {
-            return back()->with('error', __('msgraph.flash.not_configured'));
-        }
-
-        ['state' => $state, 'verifier' => $verifier] = $this->handshake()->start((int) $organization->id, (int) $admin->id);
-
-        $url = $oauth->grant()->getAuthorizationUrl($state, $oauth->scopes(), pkceVerifier: $verifier);
-
-        return redirect()->away($url);
+    protected function oauth(): PluginOAuthGrant {
+        return app(MsgraphOAuth::class);
     }
 
-    /** OAuth-Callback: state prüfen (einmalig!), Code + PKCE tauschen, Verbindung speichern. */
-    public function oauthCallback(Request $request, MsgraphOAuth $oauth): RedirectResponse {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
+    protected function isConfigured(): bool {
+        return MsgraphConfig::isConfigured();
+    }
 
-        $code = (string) $request->query('code', '');
+    protected function connectionModel(): string {
+        return MsgraphConnection::class;
+    }
 
-        // Einmalig einlösen (Replay-Schutz), org- und sitzungsgebunden.
-        $payload = $this->handshake()->redeem((string) $request->query('state', ''), (int) $organization->id, (int) $admin->id);
-        if ($payload === null) {
-            return redirect()->route('admin.msgraph.index')->with('error', __('msgraph.flash.state_invalid'));
-        }
+    protected function stateCachePrefix(): string {
+        return 'msgraph-oauth-state';
+    }
 
-        if ($code === '') {
-            return redirect()->route('admin.msgraph.index')->with('error', __('msgraph.flash.oauth_denied'));
-        }
+    protected function overviewRouteName(): string {
+        return 'admin.msgraph.index';
+    }
 
-        try {
-            $token = $oauth->grant()->exchangeAuthorizationCode($code, OAuthStateHandshake::verifierFrom($payload));
-        } catch (Throwable $e) {
-            // Nur die Fehlerklasse — nie Payload/Token.
-            return redirect()->route('admin.msgraph.index')
-                ->with('error', __('msgraph.flash.oauth_failed', ['class' => class_basename($e)]));
-        }
+    protected function pluginKey(): string {
+        return 'msgraph';
+    }
 
-        /** @var MsgraphConnection $connection */
-        $connection = MsgraphConnection::query()->firstOrNew(['organization_id' => $organization->id]);
-        $connection->forceFill([
-            'access_token' => $token->getAccessToken(),
-            'refresh_token' => $token->getRefreshToken(),
-            'token_expires_at' => $token->getExpiresAt(),
-            'scopes' => $token->getScope() ?? implode(' ', $oauth->scopes()),
-            'status' => MsgraphConnection::STATUS_ACTIVE,
-            'last_error' => null,
-            'last_error_at' => null,
-            'consecutive_failures' => 0,
-            'disabled_at' => null,
-            'connected_by' => $admin->id,
-            'connected_at' => now(),
-            'disconnected_by' => null,
-            'disconnected_at' => null,
-        ])->save();
+    protected function connectedStatus(): string {
+        return MsgraphConnection::STATUS_ACTIVE;
+    }
 
-        $connection->audit('msgraph.connected', ['by_user_id' => (int) $admin->id]);
-
-        return redirect()->route('admin.msgraph.index')->with('success', __('msgraph.flash.connected'));
+    protected function disconnectedStatus(): string {
+        return MsgraphConnection::STATUS_DISCONNECTED;
     }
 
     /** Wählt den Ziel-Kalender (Name wird serverseitig aus der Kalenderliste aufgelöst). */
@@ -174,30 +143,5 @@ class MsgraphAdminController extends Controller {
         $connection->audit('msgraph.publish_manual', ['by_user_id' => (int) $admin->id]);
 
         return back()->with('success', __('msgraph.flash.publish_done'));
-    }
-
-    /** Trennt die Verbindung (auditiert); publizierte Termine + Referenzen bleiben erhalten. */
-    public function disconnect(): RedirectResponse {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
-
-        $connection = MsgraphConnection::query()->where('organization_id', $organization->id)->first();
-        if ($connection instanceof MsgraphConnection) {
-            $connection->forceFill([
-                'access_token' => null,
-                'refresh_token' => null,
-                'token_expires_at' => null,
-                'status' => MsgraphConnection::STATUS_DISCONNECTED,
-                'disconnected_by' => $admin->id,
-                'disconnected_at' => now(),
-            ])->save();
-            $connection->audit('msgraph.disconnected', ['by_user_id' => (int) $admin->id]);
-        }
-
-        return redirect()->route('admin.msgraph.index')->with('success', __('msgraph.flash.disconnected'));
-    }
-
-    private function handshake(): OAuthStateHandshake {
-        return new OAuthStateHandshake('msgraph-oauth-state');
     }
 }

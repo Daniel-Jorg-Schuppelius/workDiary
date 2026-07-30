@@ -58,7 +58,9 @@ class ProcedureRunController extends Controller {
 
         // Bedingte Schritte (config.depends_on): nicht zutreffende Schritte
         // werden markiert, damit die UI sie als „nicht anwendbar (N/A)"
-        // anbietet, statt den Lauf zu blockieren.
+        // anbietet, statt den Lauf zu blockieren. Die Auswertung liegt im
+        // Execution-Kern ({@see ProcedureExecutionService::isStepApplicable},
+        // W5.3) — hier wird nur die vorgeladene Code-Karte durchgereicht.
         $valuesByStepCode = [];
         foreach ($stepRuns as $sr) {
             $code = (string) ($sr->stepDef->code ?? '');
@@ -70,7 +72,7 @@ class ProcedureRunController extends Controller {
         $currentAssigned = false;
         $steps = $stepRuns->map(function (ProcedureStepRun $sr) use ($execution, $viewer, $valuesByStepCode, &$currentAssigned): array {
             $blockReason = $execution->blockReasonFor($sr, $viewer);
-            $applicable = $this->isStepApplicable($sr, $valuesByStepCode);
+            $applicable = $execution->isStepApplicable($sr, $valuesByStepCode);
             $isCurrent = false;
             if (! $currentAssigned && ! $sr->status->isFinal() && $blockReason === null && $applicable) {
                 $isCurrent = true;
@@ -343,33 +345,6 @@ class ProcedureRunController extends Controller {
      */
     private function assertStepBelongsToRun(ProcedureRun $run, ProcedureStepRun $stepRun): void {
         abort_unless((int) $stepRun->procedure_run_id === (int) $run->id, 404);
-    }
-
-    /**
-     * Wertet eine optionale Bedingung (config.depends_on) eines Schritts
-     * gegen den erfassten Wert des Bezugsschritts aus. Ohne Bedingung ist
-     * der Schritt immer anwendbar.
-     *
-     * @param  array<string, ProcedureStepRun>  $valuesByStepCode
-     */
-    private function isStepApplicable(ProcedureStepRun $stepRun, array $valuesByStepCode): bool {
-        $dependsCode = data_get($stepRun->stepDef?->config, 'depends_on.step_code');
-        if (! is_string($dependsCode) || $dependsCode === '') {
-            return true;
-        }
-
-        $reference = $valuesByStepCode[$dependsCode] ?? null;
-        if (! $reference instanceof ProcedureStepRun) {
-            return true; // Bezugsschritt unbekannt → nicht künstlich blockieren.
-        }
-
-        $equals = data_get($stepRun->stepDef?->config, 'depends_on.equals');
-        if ($equals === null || $equals === '') {
-            // Reine Existenzbedingung: Bezugsschritt muss erledigt sein.
-            return $reference->status === ProcedureStepRunStatus::Done;
-        }
-
-        return (string) data_get($reference->value_json, 'value') === (string) $equals;
     }
 
     /** Restliche Wartezeit eines Warteschritts in Sekunden (0 = abgelaufen/keine). */

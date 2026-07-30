@@ -12,7 +12,7 @@ namespace App\Legacy;
 
 use App\Legacy\Auth\LegacyUserProvider;
 use App\Legacy\Models\{LegacyDiaryEntry, LegacyUser};
-use App\Legacy\Support\LegacyRoleResolver;
+use App\Legacy\Support\{LegacyConnectivity, LegacyRoleResolver};
 use App\Models\User;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Hashing\Hasher;
@@ -24,9 +24,21 @@ use Illuminate\Contracts\Hashing\Hasher;
  * Kapselt nur — kein Rückbau, keine Änderung der Legacy-Semantik.
  */
 class LegacyBridge {
+    /** Name der Legacy-DB-Verbindung (für DatabaseHealth-Prüfungen). */
+    public const CONNECTION = LegacyConnectivity::CONNECTION;
+
     /** Legacy-Admin-Status (Legacy-ID ≤ 3 oder Fallback-Admin-Liste). */
     public static function isLegacyAdmin(?User $user): bool {
         return LegacyRoleResolver::isAdmin($user);
+    }
+
+    /**
+     * Best-Effort-Arbeit gegen die Legacy-DB: der Callback läuft nur, wenn die
+     * legacy-Verbindung konfiguriert und nicht als down markiert ist; sonst
+     * (und bei Verbindungsfehlern) kommt $default zurück.
+     */
+    public static function attempt(callable $work, mixed $default): mixed {
+        return LegacyConnectivity::attempt($work, $default);
     }
 
     /** Legacy-Konto zur bereits aufgelösten legacy_user_id; null ohne Verknüpfung. */

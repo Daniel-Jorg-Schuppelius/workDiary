@@ -40,10 +40,8 @@ class ZammadTimeEntryObserver {
             return;
         }
 
-        $reference = ExternalReference::query()->withoutGlobalScopes()
-            ->where('organization_id', $timeEntry->organization_id)
-            ->where('plugin_id', ZammadPlugin::ID)
-            ->where('external_type', ZammadPlugin::EXT_TYPE_TICKET)
+        $reference = ExternalReference::query()
+            ->forPlugin($timeEntry->organization_id, ZammadPlugin::ID, ZammadPlugin::EXT_TYPE_TICKET)
             ->where('referenceable_type', (new Task)->getMorphClass())
             ->where('referenceable_id', $timeEntry->task_id)
             ->first();

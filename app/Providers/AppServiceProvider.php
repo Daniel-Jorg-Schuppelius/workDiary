@@ -75,10 +75,7 @@ class AppServiceProvider extends ServiceProvider {
                 area: 'cti_calls',
                 modelClass: \App\Models\ExternalReference::class,
                 overdueQuery: fn($organization, $cutoff) => \App\Models\ExternalReference::query()
-                    ->withoutGlobalScopes()
-                    ->where('organization_id', $organization->id)
-                    ->where('plugin_id', \App\Services\Cti\CtiCallService::PLUGIN_ID)
-                    ->where('external_type', \App\Services\Cti\CtiCallService::EXTERNAL_TYPE)
+                    ->forPlugin($organization->id, \App\Services\Cti\CtiCallService::PLUGIN_ID, \App\Services\Cti\CtiCallService::EXTERNAL_TYPE)
                     ->where('synced_at', '<', $cutoff)
                     ->whereRaw("json_extract(payload, '$.anonymized') is null"),
                 purge: function (\App\Models\ExternalReference $subject): void {
@@ -948,7 +945,9 @@ class AppServiceProvider extends ServiceProvider {
 
         // Personal-/Team-KPIs, Finance, Urlaub/Flex, Schichten, Notdienste und
         // Onboarding rendert das Tab-Dashboard fest → hier NICHT als Widget
-        // registriert (sonst doppelt); Klassen bleiben für spätere Reaktivierung.
+        // registriert (sonst doppelt); Klassen bleiben für spätere Reaktivierung
+        // (Entscheidung bestätigt: Vollreview 2026-07-29, W2.4 — reaktivieren
+        // oder löschen entscheidet ein künftiges Dashboard-Feature).
         $registry->register($this->app->make(\App\Dashboard\Widgets\BookmarksWidget::class));
         $registry->register($this->app->make(\App\Dashboard\Widgets\DataProtectionWidget::class));
         // Aufgabencenter-Kachel (Feature 041/MVP-058, nachgezogen als B3/MVP-344).

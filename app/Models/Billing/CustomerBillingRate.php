@@ -10,6 +10,7 @@
 
 namespace App\Models\Billing;
 
+use App\Casts\MoneyCast;
 use App\Enums\Billing\BillingRateDayType;
 use App\Models\ActivityCategory;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
@@ -28,7 +29,7 @@ use Illuminate\Support\Carbon;
  * @property int $customer_billing_agreement_id
  * @property int|null $activity_category_id
  * @property BillingRateDayType $day_type
- * @property float $hourly_rate
+ * @property \CommonToolkit\ValueObjects\Money|null $hourly_rate
  * @property Carbon|null $valid_from
  * @property Carbon|null $valid_until
  */
@@ -59,7 +60,8 @@ class CustomerBillingRate extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'day_type' => BillingRateDayType::class,
-        'hourly_rate' => 'decimal:2',
+        // Tabelle ohne Währungsspalte — Cast fällt auf die Standardwährung zurück.
+        'hourly_rate' => MoneyCast::class,
         'valid_from' => 'date',
         'valid_until' => 'date',
     ];

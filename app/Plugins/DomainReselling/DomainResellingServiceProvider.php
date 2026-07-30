@@ -10,15 +10,15 @@
 
 namespace App\Plugins\DomainReselling;
 
-use Illuminate\Support\ServiceProvider;
+use App\Plugins\Support\PluginServiceProviderBase;
 
 /**
  * Plugin-eigener ServiceProvider (Feature 083). Merged nur die Plugin-Config;
  * die Verwaltungs-UX (Verbindungen, Domains, Reseller, Berichte) liegt
  * app-seitig unter `admin.domain-provider.*`/`domains.*`/`domain-reseller.*`.
  */
-class DomainResellingServiceProvider extends ServiceProvider {
-    public function register(): void {
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . DomainResellingPlugin::ID);
+class DomainResellingServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return DomainResellingPlugin::ID;
     }
 }

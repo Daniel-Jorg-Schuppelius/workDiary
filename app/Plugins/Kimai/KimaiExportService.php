@@ -114,10 +114,7 @@ class KimaiExportService extends AbstractTimeEntryPushService {
      */
     private function kimaiProjectIdByProjectId(Organization $organization): array {
         return ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', KimaiPlugin::ID)
-            ->where('external_type', KimaiImportService::EXT_TYPE_PROJECT_ID)
+            ->forPlugin($organization, KimaiPlugin::ID, KimaiImportService::EXT_TYPE_PROJECT_ID)
             ->where('referenceable_type', (new Project)->getMorphClass())
             ->pluck('external_id', 'referenceable_id')
             ->mapWithKeys(fn ($externalId, $projectId): array => [(int) $projectId => (int) $externalId])
@@ -127,12 +124,8 @@ class KimaiExportService extends AbstractTimeEntryPushService {
     /** Import-Echo-Schutz: aus Kimai importierte Einträge nie zurückbuchen. */
     private function isImportedFromKimai(Organization $organization, TimeEntry $entry): bool {
         return ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', KimaiPlugin::ID)
-            ->where('external_type', KimaiImportService::EXT_TYPE_ENTRY)
-            ->where('referenceable_type', $entry->getMorphClass())
-            ->where('referenceable_id', $entry->getKey())
+            ->forPlugin($organization, KimaiPlugin::ID, KimaiImportService::EXT_TYPE_ENTRY)
+            ->forReferenceable($entry)
             ->exists();
     }
 }

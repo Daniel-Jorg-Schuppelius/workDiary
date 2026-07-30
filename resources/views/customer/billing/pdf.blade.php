@@ -12,7 +12,7 @@
      kein <html>-Gerüst. Datenquelle: CustomerAccountStatementService::monthData. --}}
 
 @php
-    $money = fn ($v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $v, 2, withThousandsSeparator: true) . ' €';
+    $money = fn ($v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v instanceof \CommonToolkit\ValueObjects\Money ? $v->toFloat() : (float) $v, 2, withThousandsSeparator: true) . ' €';
     $hours = fn (int $m) => sprintf('%d:%02d', intdiv($m, 60), $m % 60);
     $statement = $statement ?? null;
 @endphp

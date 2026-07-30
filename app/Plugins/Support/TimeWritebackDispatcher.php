@@ -204,10 +204,8 @@ abstract class TimeWritebackDispatcher implements IntegrationOutboxDispatcher {
     private function resolveReference(IntegrationOutboxEntry $outbox): ?ExternalReference {
         $payload = $outbox->payload;
 
-        $query = ExternalReference::query()->withoutGlobalScopes()
-            ->where('organization_id', $outbox->organization_id)
-            ->where('plugin_id', $this->pluginId())
-            ->where('external_type', MatchingTimeImportService::EXT_TYPE_ENTRY)
+        $query = ExternalReference::query()
+            ->forPlugin($outbox->organization_id, $this->pluginId(), MatchingTimeImportService::EXT_TYPE_ENTRY)
             ->where('referenceable_type', (new TimeEntry)->getMorphClass());
 
         if (isset($payload['time_entry_id'])) {
@@ -216,7 +214,7 @@ abstract class TimeWritebackDispatcher implements IntegrationOutboxDispatcher {
 
         $externalId = trim((string) ($payload['external_id'] ?? ''));
 
-        return $externalId !== '' ? $query->where('external_id', $externalId)->first() : null;
+        return $externalId !== '' ? $query->forExternalId($externalId)->first() : null;
     }
 
     /**

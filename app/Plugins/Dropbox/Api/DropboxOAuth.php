@@ -10,34 +10,21 @@
 
 namespace App\Plugins\Dropbox\Api;
 
-use APIToolkit\API\Authentication\OAuth2\OAuth2AuthorizationCodeGrant;
 use App\Plugins\Dropbox\DropboxConfig;
-use GuzzleHttp\Client as GuzzleClient;
+use App\Plugins\Support\PluginOAuthGrant;
 
 /**
- * OAuth2 Authorization-Code-Grant (+ PKCE) für Dropbox (Feature 080,
+ * OAuth2-Authorization-Code-Grant (+ PKCE) für Dropbox (Feature 080,
  * MVP-353). `token_access_type=offline` erzwingt kurzlebige Access- plus
- * Refresh-Tokens. Container-Singleton = Austauschpunkt für Tests
- * (Guzzle-MockHandler, Muster GoogleCalendarOAuth).
+ * Refresh-Tokens (Zusatzparameter setzt der Intake-Flow).
  */
-class DropboxOAuth {
-    public function __construct(private readonly ?GuzzleClient $httpClient = null) {}
-
-    public function grant(): OAuth2AuthorizationCodeGrant {
-        $config = DropboxConfig::resolve();
-
-        return new OAuth2AuthorizationCodeGrant(
-            clientId: $config['client_id'],
-            clientSecret: $config['client_secret'],
-            authorizeUrl: $config['authorize_url'],
-            tokenUrl: $config['token_url'],
-            redirectUri: route('admin.cloud-intake.dropbox.oauth.callback'),
-            httpClient: $this->httpClient,
-        );
+class DropboxOAuth extends PluginOAuthGrant {
+    /** @return array<string, string|int|bool> */
+    protected function config(): array {
+        return DropboxConfig::resolve();
     }
 
-    /** @return list<string> */
-    public function scopes(): array {
-        return array_values(array_filter(explode(' ', DropboxConfig::resolve()['scopes'])));
+    protected function callbackRouteName(): string {
+        return 'admin.cloud-intake.dropbox.oauth.callback';
     }
 }

@@ -56,9 +56,7 @@ class SyncVouchersJob implements ShouldBeUnique, ShouldQueue {
         $supplierMorph = (new Supplier)->getMorphClass();
 
         ExternalReference::query()
-            ->where('organization_id', $this->organizationId)
-            ->where('plugin_id', LexofficePlugin::ID)
-            ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
+            ->forPlugin($this->organizationId, LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)
             ->whereIn('referenceable_type', [$customerMorph, $supplierMorph])
             ->select('referenceable_type', 'referenceable_id')
             ->distinct()

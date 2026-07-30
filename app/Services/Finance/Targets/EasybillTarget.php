@@ -177,12 +177,8 @@ class EasybillTarget implements FacturationTarget {
         $customer = $transfer->customer;
 
         $existing = ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $transfer->organization_id)
-            ->where('plugin_id', EasybillPlugin::ID)
-            ->where('external_type', self::EXT_TYPE_CUSTOMER)
-            ->where('referenceable_type', $customer->getMorphClass())
-            ->where('referenceable_id', $customer->getKey())
+            ->forPlugin($transfer->organization_id, EasybillPlugin::ID, self::EXT_TYPE_CUSTOMER)
+            ->forReferenceable($customer)
             ->first();
         if ($existing instanceof ExternalReference) {
             return $existing;

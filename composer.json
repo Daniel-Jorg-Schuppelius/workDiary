@@ -91,6 +91,8 @@
         "audit": "@composer audit",
         "sbom": "@php scripts/generate-sbom.php",
         "security:gate": "bash scripts/security-gate.sh",
+        "routes:check": "@php scripts/check-route-actions.php",
+        "legacy:guard": "@php scripts/find-legacy-usage-in-new.php",
         "hooks:install": "cp scripts/git-hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit && echo 'pre-commit-Hook installiert.'",
         "i18n:check": "@php scripts/find-untranslated.php",
         "lang:check": "@php scripts/translations-diff.php",
@@ -102,6 +104,8 @@
         "qa": [
             "@format",
             "@lint",
+            "@routes:check",
+            "@legacy:guard",
             "@test",
             "@lang:check",
             "@lang:coverage",

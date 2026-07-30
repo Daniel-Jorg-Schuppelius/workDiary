@@ -12,17 +12,19 @@ namespace App\Plugins\CardDav;
 
 use App\Plugins\CardDav\Contracts\CardDavGatewayFactory;
 use App\Plugins\CardDav\Services\LibCardDavGatewayFactory;
-use Illuminate\Support\ServiceProvider;
+use App\Plugins\Support\PluginServiceProviderBase;
 
 /**
  * Plugin-eigener ServiceProvider (Bauturbo A9). Bindet die Gateway-Factory
  * (Tests ersetzen sie durch eine Fake-Variante ohne HTTP), registriert
  * Config-Defaults, Routen, Views und den Sync-Command.
  */
-class CardDavServiceProvider extends ServiceProvider {
-    public function register(): void {
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . CardDavPlugin::ID);
+class CardDavServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return CardDavPlugin::ID;
+    }
 
+    protected function registerPlugin(): void {
         $this->app->singleton(CardDavGatewayFactory::class, LibCardDavGatewayFactory::class);
 
         if ($this->app->runningInConsole()) {
@@ -30,10 +32,5 @@ class CardDavServiceProvider extends ServiceProvider {
                 Console\CardDavSyncCommand::class,
             ]);
         }
-    }
-
-    public function boot(): void {
-        $this->loadRoutesFrom(__DIR__ . '/routes.php');
-        $this->loadViewsFrom(__DIR__ . '/Resources/views', 'carddav');
     }
 }

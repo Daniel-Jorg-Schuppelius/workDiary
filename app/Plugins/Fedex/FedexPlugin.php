@@ -14,8 +14,8 @@ use App\Enums\Shipping\ShipmentStatus;
 use App\Models\{CarrierConnection, Organization, PluginSetting};
 use App\Plugins\Contracts\{Plugin, PluginCapability, ShippingProvider};
 use App\Plugins\Fedex\Api\FedexApiClient;
-use App\Plugins\{PluginDefaults, PluginHealth};
-use App\Plugins\Support\PluginOrgContext;
+use App\Plugins\PluginDefaults;
+use App\Plugins\Support\{ChecksCarrierHealth, PluginOrgContext};
 use App\Services\Shipping\{CarrierTokenCache, ShipmentLabel, ShipmentRequest, ShipperAddress, TrackingEvent, TrackingResult};
 use Illuminate\Support\Carbon;
 use RuntimeException;
@@ -40,7 +40,10 @@ use Throwable;
  * durch FedEx stehen aus.
  */
 class FedexPlugin implements Plugin, ShippingProvider {
-    use PluginDefaults;
+    use ChecksCarrierHealth, PluginDefaults {
+        // Carrier-Health (healthy()+healthCheck()) kommt aus dem Support-Trait.
+        ChecksCarrierHealth::healthCheck insteadof PluginDefaults;
+    }
 
     public const ID = 'fedex';
 
@@ -188,42 +191,24 @@ class FedexPlugin implements Plugin, ShippingProvider {
         return new TrackingResult($this->mapStatus($statusCode), $events);
     }
 
-    public function healthy(CarrierConnection $connection): bool {
-        try {
-            return $this->client($connection)->ping();
-        } catch (Throwable) {
-            return false;
-        }
+    // --- Carrier-Health (Hooks für ChecksCarrierHealth) -------------------
+
+    protected function carrierPing(CarrierConnection $connection): bool {
+        return $this->client($connection)->ping();
     }
 
-    // --- Plugin-Health ----------------------------------------------------
+    /** @return array{missing: string, disabled: string, connected: string, unreachable: string} */
+    protected function carrierHealthMessages(): array {
+        return [
+            'missing' => __('Keine FedEx-Anbindung hinterlegt.'),
+            'disabled' => __('FedEx-Anbindung ist deaktiviert.'),
+            'connected' => __('Verbunden mit der FedEx-API.'),
+            'unreachable' => __('FedEx-API nicht erreichbar oder Zugangsdaten ungültig.'),
+        ];
+    }
 
-    public function healthCheck(): PluginHealth {
-        $org = PluginOrgContext::currentOrNull();
-        if (! $org instanceof Organization) {
-            return PluginHealth::ok(__('Keine Organisation im Kontext.'));
-        }
-
-        /** @var CarrierConnection|null $connection */
-        $connection = CarrierConnection::query()
-            ->where('organization_id', $org->id)
-            ->where('carrier', self::CARRIER)
-            ->first();
-
-        if (! $connection instanceof CarrierConnection) {
-            return PluginHealth::degraded(__('Keine FedEx-Anbindung hinterlegt.'));
-        }
-        if (! $connection->isActive()) {
-            return PluginHealth::degraded(__('FedEx-Anbindung ist deaktiviert.'));
-        }
-
-        try {
-            return $this->healthy($connection)
-                ? PluginHealth::ok(__('Verbunden mit der FedEx-API.'))
-                : PluginHealth::failing(__('FedEx-API nicht erreichbar oder Zugangsdaten ungültig.'), 'unreachable');
-        } catch (Throwable $e) {
-            return PluginHealth::failing(__('FedEx-API-Fehler (:class).', ['class' => class_basename($e)]));
-        }
+    protected function carrierErrorMessage(Throwable $e): string {
+        return __('FedEx-API-Fehler (:class).', ['class' => class_basename($e)]);
     }
 
     // --- Mapping ----------------------------------------------------------

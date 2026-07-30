@@ -42,12 +42,9 @@ class ZammadTaskObserver {
             return;
         }
 
-        $reference = ExternalReference::query()->withoutGlobalScopes()
-            ->where('organization_id', $task->organization_id)
-            ->where('plugin_id', ZammadPlugin::ID)
-            ->where('external_type', ZammadPlugin::EXT_TYPE_TICKET)
-            ->where('referenceable_type', $task->getMorphClass())
-            ->where('referenceable_id', $task->getKey())
+        $reference = ExternalReference::query()
+            ->forPlugin($task->organization_id, ZammadPlugin::ID, ZammadPlugin::EXT_TYPE_TICKET)
+            ->forReferenceable($task)
             ->first();
         if ($reference === null) {
             return; // nicht Zammad-verknüpft

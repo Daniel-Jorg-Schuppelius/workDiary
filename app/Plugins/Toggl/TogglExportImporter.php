@@ -515,11 +515,8 @@ class TogglExportImporter {
 
     private function alreadyImported(Organization $organization, string $entryKey): bool {
         return ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', TogglPlugin::ID)
-            ->where('external_type', TogglImportService::EXT_TYPE_ENTRY)
-            ->where('external_id', $entryKey)
+            ->forPlugin($organization->id, TogglPlugin::ID, TogglImportService::EXT_TYPE_ENTRY)
+            ->forExternalId($entryKey)
             ->exists();
     }
 
@@ -535,7 +532,10 @@ class TogglExportImporter {
             'referenceable_id' => $referenceable->getKey(),
         ];
 
-        $byKey = ExternalReference::query()->withoutGlobalScopes()->where($key)->first();
+        $byKey = ExternalReference::query()
+            ->forPlugin($organization->id, TogglPlugin::ID, $type)
+            ->forExternalId($externalId)
+            ->first();
         if ($byKey !== null) {
             // Umhängen auf ein Ziel, das schon einen anderen Schlüssel trägt,
             // würde extref_unique verletzen → Schlüssel wird unten zum Alias.
@@ -588,11 +588,8 @@ class TogglExportImporter {
         }
 
         $ref = ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', TogglPlugin::ID)
-            ->where('external_type', $type)
-            ->where('external_id', $externalId)
+            ->forPlugin($organization->id, TogglPlugin::ID, $type)
+            ->forExternalId($externalId)
             ->first();
 
         if ($ref?->referenceable instanceof \Illuminate\Database\Eloquent\Model) {

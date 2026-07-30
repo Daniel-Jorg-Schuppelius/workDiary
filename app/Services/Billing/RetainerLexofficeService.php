@@ -17,6 +17,7 @@ use App\Plugins\PluginManager;
 use App\Services\Invoicing\InvoiceGenerator;
 use App\Support\Tz;
 use Carbon\CarbonInterface;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -50,8 +51,8 @@ class RetainerLexofficeService {
         $this->assertConfigured();
 
         $customer = $agreement->customer()->firstOrFail();
-        $amount = (float) ($agreement->expected_monthly_amount ?? 0);
-        if ($amount <= 0) {
+        $amount = $agreement->expected_monthly_amount;
+        if ($amount === null || ! $amount->isPositive()) {
             throw ValidationException::withMessages(['agreement' => __('customer-billing.retainer_amount_required')]);
         }
 
@@ -71,7 +72,7 @@ class RetainerLexofficeService {
             $invoice = $this->generator->retainerChargeFor(
                 $customer,
                 $description,
-                (string) $amount,
+                $amount->getAmount(),
                 $placeholder,
                 Invoice::TYPE_RETAINER,
                 $serviceDate,
@@ -100,7 +101,7 @@ class RetainerLexofficeService {
 
         $this->statements->recalculateOpen($agreement);
         $balance = $this->openBalance($agreement);
-        if ($balance <= 0.005) {
+        if (! $balance->isPositive()) {
             throw ValidationException::withMessages(['agreement' => __('customer-billing.trueup_no_open_balance')]);
         }
 
@@ -119,7 +120,7 @@ class RetainerLexofficeService {
             $invoice = $this->generator->retainerChargeFor(
                 $customer,
                 $description,
-                (string) round($balance, 2),
+                $balance->getAmount(),
                 $placeholder,
                 Invoice::TYPE_RETAINER,
                 $now,
@@ -138,10 +139,8 @@ class RetainerLexofficeService {
 
     private function resolveContactExternalId(Customer $customer): string {
         $ref = ExternalReference::query()
-            ->where('plugin_id', LexofficePlugin::ID)
-            ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
-            ->where('referenceable_type', $customer->getMorphClass())
-            ->where('referenceable_id', $customer->getKey())
+            ->forPlugin($customer->organization_id, LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)
+            ->forReferenceable($customer)
             ->first();
 
         if ($ref !== null) {
@@ -158,12 +157,14 @@ class RetainerLexofficeService {
     }
 
     /** Aktuell offener Saldo = balance des jüngsten Statements der Kette. */
-    private function openBalance(CustomerBillingAgreement $agreement): float {
+    private function openBalance(CustomerBillingAgreement $agreement): Money {
         $latest = $agreement->statements()
             ->orderByDesc('year')->orderByDesc('month')
             ->first();
 
-        return $latest !== null ? (float) $latest->balance : 0.0;
+        $balance = $latest?->balance;
+
+        return $balance ?? Money::zero($agreement->currency);
     }
 
     /**

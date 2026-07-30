@@ -14,27 +14,26 @@ namespace App\Plugins\OrgaMax;
 
 use App\Plugins\OrgaMax\Console\OrgaMaxSyncCommand;
 use App\Plugins\OrgaMax\Services\OrgaMaxOutboxDispatcher;
+use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Integration\IntegrationOutboxDispatcherResolver;
-use Illuminate\Support\ServiceProvider;
 
 /**
  * Bootet das orgaMAX-Plugin (Feature 077): Routen, Views, Console-Command
  * und die Registrierung des Outbox-Dispatchers für Schreibbefehle
  * (invoice.convert / invoice.send / payment.push).
  */
-class OrgaMaxServiceProvider extends ServiceProvider {
-    public function register(): void {
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . OrgaMaxPlugin::ID);
+class OrgaMaxServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return OrgaMaxPlugin::ID;
+    }
 
+    protected function registerPlugin(): void {
         if ($this->app->runningInConsole()) {
             $this->commands([OrgaMaxSyncCommand::class]);
         }
     }
 
-    public function boot(): void {
-        $this->loadRoutesFrom(__DIR__ . '/routes.php');
-        $this->loadViewsFrom(__DIR__ . '/Resources/views', OrgaMaxPlugin::ID);
-
+    protected function bootPlugin(): void {
         $this->app->make(IntegrationOutboxDispatcherResolver::class)
             ->register($this->app->make(OrgaMaxOutboxDispatcher::class));
     }

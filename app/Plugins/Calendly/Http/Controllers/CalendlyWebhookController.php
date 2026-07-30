@@ -15,9 +15,7 @@ namespace App\Plugins\Calendly\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\{CalendlyWebhookDelivery, CalendlyWebhookSubscription};
 use App\Plugins\Calendly\Jobs\CalendlyIngestJob;
-use App\Plugins\Support\WebhookSignature;
-use CommonToolkit\Helper\Data\CryptoHelper;
-use Illuminate\Database\UniqueConstraintViolationException;
+use App\Plugins\Support\{RecordsWebhookDeliveries, WebhookSignature};
 use Illuminate\Http\{JsonResponse, Request};
 
 /**
@@ -34,6 +32,8 @@ use Illuminate\Http\{JsonResponse, Request};
  * direkt Felder. Verlässliche Quelle bleibt der Polling-Backfill.
  */
 class CalendlyWebhookController extends Controller {
+    use RecordsWebhookDeliveries;
+
     private const MAX_SKEW_SECONDS = 300;
 
     public function __invoke(Request $request, string $token): JsonResponse {
@@ -65,15 +65,14 @@ class CalendlyWebhookController extends Controller {
         $inviteePayload = is_array($payload['payload'] ?? null) ? $payload['payload'] : [];
         $inviteeUri = is_string($inviteePayload['uri'] ?? null) ? $inviteePayload['uri'] : null;
 
-        try {
-            $delivery = CalendlyWebhookDelivery::query()->create([
-                'delivery_hash' => CryptoHelper::hash($raw),
-                'event_name' => isset($payload['event']) ? (string) $payload['event'] : null,
-                'invitee_uri' => $inviteeUri,
-                'organization_id' => (int) $subscription->organization_id,
-                'received_at' => now(),
-            ]);
-        } catch (UniqueConstraintViolationException) {
+        $delivery = $this->recordDelivery(fn (): CalendlyWebhookDelivery => CalendlyWebhookDelivery::query()->create([
+            'delivery_hash' => $this->deliveryHash($raw),
+            'event_name' => isset($payload['event']) ? (string) $payload['event'] : null,
+            'invitee_uri' => $inviteeUri,
+            'organization_id' => (int) $subscription->organization_id,
+            'received_at' => now(),
+        ]));
+        if ($delivery === null) {
             return response()->json(['status' => 'duplicate']);
         }
 

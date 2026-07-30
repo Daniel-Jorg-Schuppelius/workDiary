@@ -16,7 +16,6 @@ use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\PluginOrgContext;
 use App\Plugins\Toggl\Sources\TogglApiClient;
 use Carbon\CarbonImmutable;
-use Throwable;
 
 /**
  * Toggl-Track-Import-Plugin.
@@ -107,21 +106,19 @@ class TogglPlugin implements Plugin, TimeImporter {
         return true;
     }
 
-    /** Health-Check: pingt /me mit dem konfigurierten Token. */
+    /** Health-Check: pingt /me mit dem konfigurierten Token (ohne Token: degraded, Fehler: failing). */
     public function healthCheck(): PluginHealth {
         $config = TogglConfig::resolve();
         $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id']);
 
-        if (! $client->isConfigured()) {
-            return PluginHealth::degraded(__('Kein Toggl API-Token hinterlegt.'));
-        }
-
-        try {
-            return $client->ping()
-                ? PluginHealth::ok('toggl: ok')
-                : PluginHealth::failing(__('Toggl-API nicht erreichbar oder Token ungültig.'));
-        } catch (Throwable $e) {
-            return PluginHealth::failing($e->getMessage());
-        }
+        return PluginHealth::pingHealth(
+            ping: fn (): bool => $client->ping(),
+            unreachableMessage: __('Toggl-API nicht erreichbar oder Token ungültig.'),
+            configured: $client->isConfigured(),
+            notConfiguredMessage: __('Kein Toggl API-Token hinterlegt.'),
+            notConfiguredStatus: PluginHealth::STATUS_DEGRADED,
+            errorStatus: PluginHealth::STATUS_FAILING,
+            okMessage: 'toggl: ok',
+        );
     }
 }

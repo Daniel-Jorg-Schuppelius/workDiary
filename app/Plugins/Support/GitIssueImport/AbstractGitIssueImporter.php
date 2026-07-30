@@ -99,10 +99,8 @@ abstract class AbstractGitIssueImporter {
                 $target = $this->mapStatus($issue);
 
                 $reference = ExternalReference::query()
-                    ->where('organization_id', $organization->id)
-                    ->where('plugin_id', $this->pluginId())
-                    ->where('external_type', $this->externalType())
-                    ->where('external_id', $externalId)
+                    ->forPlugin($organization, $this->pluginId(), $this->externalType())
+                    ->forExternalId($externalId)
                     ->first();
 
                 if ($reference instanceof ExternalReference) {
