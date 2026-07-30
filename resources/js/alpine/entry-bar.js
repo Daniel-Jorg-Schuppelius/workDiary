@@ -114,34 +114,32 @@ export function registerEntryBar(Alpine) {
             get formAction() {
                 return this.isTimer ? this.startUrl : this.storeUrl;
             },
-            // Aktiver Modus in Primärfarbe — deutlich sichtbar statt btn-active.
+            // Dreifach-Segment Timer | Dauer | Von/Bis: genau EIN Button ist
+            // aktiv (Primärfarbe); Dauer/Von-Bis schalten zugleich auf Manuell.
             get timerBtnClass() {
                 return this.isTimer ? "btn-primary" : "";
             },
-            get manualBtnClass() {
-                return this.isManual ? "btn-primary" : "";
-            },
             get durationBtnClass() {
-                return this.isDuration ? "btn-primary" : "";
+                return this.isManual && this.isDuration ? "btn-primary" : "";
             },
             get rangeBtnClass() {
-                return this.isRange ? "btn-primary" : "";
+                return this.isManual && this.isRange ? "btn-primary" : "";
             },
             setModeTimer() {
                 if (!this.isToday) return;
                 this.mode = "timer";
                 localStorage.setItem("wd.entrybar.mode", "timer");
             },
-            setModeManual() {
-                this.mode = "manual";
-                localStorage.setItem("wd.entrybar.mode", "manual");
-            },
             setDuration() {
+                this.mode = "manual";
                 this.timeMode = "duration";
+                localStorage.setItem("wd.entrybar.mode", "manual");
                 localStorage.setItem("wd.entrybar.timeMode", "duration");
             },
             setRange() {
+                this.mode = "manual";
                 this.timeMode = "range";
+                localStorage.setItem("wd.entrybar.mode", "manual");
                 localStorage.setItem("wd.entrybar.timeMode", "range");
             },
 

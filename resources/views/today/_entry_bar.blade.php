@@ -48,20 +48,24 @@
         <form method="POST" action="{{ route('today.entry-bar.store') }}"
               x-data="entryBar"
               data-config="{{ json_encode($entryBarConfig) }}"
-              :action="formAction"
-              class="space-y-2">
+              {{-- Kein space-y am Formular: es würde der sichtbaren Hauptzeile
+                   8px margin-bottom geben, weil das LETZTE Kind (Zuordnung) meist
+                   display:none ist — die Zweitzeile bringt ihr mt-2 selbst mit. --}}
+              :action="formAction">
             @csrf
             <input type="hidden" name="project_id" :value="selectedId" value="{{ old('project_id') }}">
 
             {{-- Alles in einer Zeile (bricht nur auf schmalen Screens um). --}}
             <div class="flex flex-wrap items-center gap-2">
+                {{-- basis-40: schmale Plan-Breite, damit die Zeile nicht wegen der
+                     Browser-Default-Breite des Inputs umbricht; flex-1 füllt danach. --}}
                 <input type="text" name="description" maxlength="500"
-                       class="input input-bordered input-sm min-w-40 flex-1"
+                       class="input input-bordered input-sm min-w-40 basis-40 flex-1"
                        placeholder="{{ __('Woran arbeitest du?') }}"
                        value="{{ old('description') }}">
 
                 {{-- Projekt-Combobox: tippen filtert (zuletzt genutzte zuerst). --}}
-                <div class="relative w-full sm:w-56" @click.outside="closeMenu()">
+                <div class="relative w-full sm:w-48" @click.outside="closeMenu()">
                     <input type="text"
                            x-model="query"
                            @focus="openMenu()"
@@ -115,23 +119,31 @@
                     </p>
                 </div>
 
-                {{-- Manuelle Zeitfelder, inline (inaktive Eingaben disabled → kein Submit). --}}
-                <div class="join" x-cloak x-show="isManual">
+                {{-- EIN Dreifach-Segment für den Eingabemodus (einzeilige Leiste):
+                     Timer | Dauer | Von/Bis. Dauer/Von-Bis schalten zugleich auf
+                     Manuell um. Nur mit JS nutzbar (x-cloak). --}}
+                <div class="join" x-cloak>
+                    @if ($isToday)
+                        <button type="button" class="btn btn-sm join-item" :class="timerBtnClass"
+                                @click="setModeTimer">{{ __('Timer') }}</button>
+                    @endif
                     <button type="button" class="btn btn-sm join-item" :class="durationBtnClass"
                             @click="setDuration">{{ __('Dauer') }}</button>
                     <button type="button" class="btn btn-sm join-item" :class="rangeBtnClass"
                             @click="setRange">{{ __('Von / Bis') }}</button>
                 </div>
 
-                {{-- Wrapper statt x-show am Input: flatpickr (altInput) ersetzt das
-                     Feld durch ein sichtbares Zwillings-Input im selben Elternknoten —
-                     nur ein umschließendes x-show blendet beide zusammen aus. --}}
-                <span class="inline-flex" x-show="isManual">
-                    <input type="date" name="date" class="input input-bordered input-sm w-36"
-                           :disabled="manualDisabled"
+                {{-- fieldset statt x-show/:disabled am Input: flatpickr (altInput)
+                     ersetzt das Feld durch ein sichtbares Zwillings-Input im selben
+                     Elternknoten — nur der umschließende Wrapper blendet beide
+                     zusammen aus, und nur ein disabled-fieldset deaktiviert auch
+                     das Zwillingsfeld (dynamisches :disabled am Original erreicht
+                     es nicht). --}}
+                <fieldset class="inline-flex" x-show="isManual" :disabled="manualDisabled">
+                    <input type="date" name="date" class="input input-bordered input-sm w-32"
                            aria-label="{{ __('Datum') }}"
                            value="{{ old('date', $day->toDateString()) }}">
-                </span>
+                </fieldset>
 
                 <input type="text" inputmode="numeric" placeholder="{{ __('Dauer (HH:MM)') }}"
                        x-show="showDurationPane"
@@ -141,33 +153,27 @@
                        aria-label="{{ __('Dauer (HH:MM)') }}">
                 <input type="hidden" name="minutes" :value="minutes" :disabled="durationDisabled" value="{{ old('minutes') }}">
 
-                <div class="flex items-center gap-1" x-show="showRangePane">
-                    <input type="time" name="start_time" class="input input-bordered input-sm w-24"
-                           :disabled="rangeDisabled"
-                           aria-label="{{ __('Von') }}"
-                           value="{{ old('start_time') }}">
-                    <span class="text-base-content/60">–</span>
-                    <input type="time" name="end_time" class="input input-bordered input-sm w-24"
-                           :disabled="rangeDisabled"
-                           aria-label="{{ __('Bis') }}"
-                           value="{{ old('end_time') }}">
-                    <input type="number" name="break_minutes" min="0" max="600"
-                           :disabled="rangeDisabled"
-                           class="input input-bordered input-sm w-16 px-2 text-right tabular-nums"
-                           title="{{ __('Pause (Minuten)') }}"
-                           aria-label="{{ __('Pause (Minuten)') }}"
-                           value="{{ old('break_minutes', 0) }}">
-                </div>
-
-                {{-- Modus-Umschalter (nur mit JS nutzbar). --}}
-                @if ($isToday)
-                    <div class="join" x-cloak>
-                        <button type="button" class="btn btn-sm join-item" :class="timerBtnClass"
-                                @click="setModeTimer">{{ __('Timer') }}</button>
-                        <button type="button" class="btn btn-sm join-item" :class="manualBtnClass"
-                                @click="setModeManual">{{ __('Manuell') }}</button>
+                {{-- Von/Bis über die Standard-Komponente x-date-range (type=time).
+                     fieldset statt :disabled an den Einzel-Inputs: die Komponente
+                     reicht Alpine-Bindings nicht durch — das fieldset deaktiviert
+                     alle enthaltenen Felder auf einmal (inaktiver Modus submittet
+                     nicht). :linked="false", weil Bis ≤ Von bewusst erlaubt ist
+                     (Buchung über Mitternacht rollt serverseitig auf den Folgetag). --}}
+                <fieldset class="inline-flex items-center gap-2" x-show="showRangePane" :disabled="rangeDisabled">
+                    <x-date-range type="time"
+                                  fromName="start_time" toName="end_time"
+                                  :from="old('start_time')" :to="old('end_time')"
+                                  :label="false" :linked="false"
+                                  size="sm" class="w-40" />
+                    <div class="join">
+                        <span class="join-item flex items-center border border-base-300 bg-base-200 px-2 text-xs text-base-content/60"
+                              title="{{ __('Pause (Minuten)') }}">{{ __('Pause') }}</span>
+                        <input type="number" name="break_minutes" min="0" max="600"
+                               class="input input-bordered input-sm join-item w-14 px-1 text-right tabular-nums"
+                               aria-label="{{ __('Pause (Minuten)') }}"
+                               value="{{ old('break_minutes', 0) }}">
                     </div>
-                @endif
+                </fieldset>
 
                 <button type="button" class="btn btn-sm btn-ghost btn-square" x-cloak x-show="hasProject"
                         @click="toggleMore"
@@ -186,7 +192,7 @@
             </div>
 
             {{-- Sekundärfelder: projektabhängig (Fetch nach Projektwahl). --}}
-            <div class="flex flex-wrap items-center gap-2" x-cloak x-show="moreOpen">
+            <div class="mt-2 flex flex-wrap items-center gap-2" x-cloak x-show="moreOpen">
                 <label class="w-full text-xs uppercase tracking-[0.18em] text-base-content/60 sm:w-auto" x-show="hasSecondary">{{ __('Zuordnung') }}</label>
                 <select name="task_id" x-model="taskId" x-show="hasTasks"
                         class="select select-bordered select-sm w-full sm:w-56"
