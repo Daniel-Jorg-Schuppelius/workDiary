@@ -39,6 +39,7 @@ TOOLKITS=(
     php-pdf-toolkit
     datev-php-sdk
     lexoffice-php-sdk
+    orgamax-php-sdk
 )
 
 # Architektur-/Doku-Repo (Markdown)
