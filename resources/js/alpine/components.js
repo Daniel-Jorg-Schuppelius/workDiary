@@ -905,7 +905,8 @@ export function registerAlpineComponents(Alpine) {
                 return "background:" + tag.color;
             },
             optionClass(idx) {
-                return idx === this.highlight ? "active" : "";
+                // daisyUI 5: Markierung heißt menu-active („active" ist wirkungslos).
+                return idx === this.highlight ? "menu-active" : "";
             },
             openMenu() {
                 this.open = true;

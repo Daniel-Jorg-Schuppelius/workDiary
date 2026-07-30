@@ -150,7 +150,11 @@
             </x-card>
         @endif
 
-        <x-card as="section" padding="p-0" class="overflow-hidden">
+        {{-- shrink-0 (beide Tabellen-Karten): als Flex-Kind der scrollenden
+             page-shell darf die Karte nicht unter ihre Inhaltshöhe schrumpfen —
+             overflow-hidden würde sonst ohne Scrollbalken abschneiden; bei
+             Platzmangel scrollt stattdessen der Seiten-Container. --}}
+        <x-card as="section" padding="p-0" class="shrink-0 overflow-hidden">
             <header class="flex items-center justify-between gap-2 border-b border-base-300 p-3">
                 <h2 class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Stempelungen') }}</h2>
                 <span class="text-xs text-base-content/60">{{ $attendances->count() }}</span>
@@ -182,7 +186,7 @@
             </x-table>
         </x-card>
 
-        <x-card as="section" padding="p-0" class="overflow-hidden">
+        <x-card as="section" padding="p-0" class="shrink-0 overflow-hidden">
             <header class="flex items-center justify-between gap-2 border-b border-base-300 p-3">
                 <h2 class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Zeiteinträge') }}</h2>
                 <span class="text-xs text-base-content/60">{{ $entries->count() }}</span>

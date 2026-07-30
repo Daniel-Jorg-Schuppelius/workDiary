@@ -95,20 +95,26 @@
 
     {{-- Minimierte Rail-Ansicht (Feature 039): ab lg ist der ZUGEKLAPPTE Drawer
          selbst die schmale Schiene (Breite animiert in layout.css wie bei der
-         linken Sidebar). Klick (data-help-trigger ohne Topic → JS öffnet
-         Seitenkontext-Hilfe) klappt auf; der Schließen-Button minimiert wieder.
+         linken Sidebar). Wie bei der Menü-Sidebar ist die GESAMTE Schiene ein
+         Klick-Trigger (data-help-trigger ohne Topic → JS öffnet die Seiten-
+         kontext-Hilfe); unten sitzt der Aufklapp-Chevron im Stil des
+         Sidebar-Collapse-Buttons. Der Schließen-Button minimiert wieder.
          Auf Mobil ausgeblendet — dort bleibt der Header-Button. --}}
-    <div class="absolute inset-y-0 right-0 hidden w-(--help-rail-w) flex-col items-center gap-2 py-3 lg:flex"
-         data-help-railmode>
-        <x-icon-btn icon="help"
-                    tone="ghost"
-                    size="sm"
-                    class="btn-square"
-                    label="{{ __('Hilfe öffnen') }}"
-                    data-help-trigger
-                    aria-haspopup="dialog"
-                    aria-controls="help-drawer" />
-    </div>
+    <button type="button"
+            class="absolute inset-y-0 right-0 hidden w-(--help-rail-w) cursor-pointer flex-col items-center justify-between px-1.5 py-3 transition-colors hover:bg-base-content/10 lg:flex"
+            data-help-railmode
+            data-help-trigger
+            aria-haspopup="dialog"
+            aria-controls="help-drawer"
+            title="{{ __('Hilfe öffnen') }}"
+            aria-label="{{ __('Hilfe öffnen') }}">
+        <span class="btn btn-sm btn-ghost btn-square pointer-events-none" aria-hidden="true">
+            <x-icon name="help" />
+        </span>
+        <span class="btn btn-sm btn-primary pointer-events-none w-full justify-center" aria-hidden="true">
+            <x-icon name="chevron_left" />
+        </span>
+    </button>
 </div>
 
 {{-- Backdrop nur mobil (<lg): Desktop-Sidebar ist nicht-modal. Bezieht sich –

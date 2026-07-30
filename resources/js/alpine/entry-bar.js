@@ -113,17 +113,18 @@ export function registerEntryBar(Alpine) {
             get formAction() {
                 return this.isTimer ? this.startUrl : this.storeUrl;
             },
+            // Aktiver Modus in Primärfarbe — deutlich sichtbar statt btn-active.
             get timerBtnClass() {
-                return this.isTimer ? "btn-active" : "";
+                return this.isTimer ? "btn-primary" : "";
             },
             get manualBtnClass() {
-                return this.isManual ? "btn-active" : "";
+                return this.isManual ? "btn-primary" : "";
             },
             get durationBtnClass() {
-                return this.isDuration ? "btn-active" : "";
+                return this.isDuration ? "btn-primary" : "";
             },
             get rangeBtnClass() {
-                return this.isRange ? "btn-active" : "";
+                return this.isRange ? "btn-primary" : "";
             },
             setModeTimer() {
                 if (!this.isToday) return;
@@ -194,7 +195,8 @@ export function registerEntryBar(Alpine) {
                 return this.hasProject && !this.hasTasks && !this.hasDiary;
             },
             optionClass(idx) {
-                return idx === this.highlight ? "active" : "";
+                // daisyUI 5: Markierung heißt menu-active („active" ist wirkungslos).
+                return idx === this.highlight ? "menu-active" : "";
             },
             setHighlight(idx) {
                 this.highlight = idx;

@@ -31,7 +31,9 @@ body.sidebar-collapsed {
                bleibt voll bedienbar (kein Backdrop ab lg). */
 :root {
     --help-sidebar-w: 28rem;
-    --help-rail-w: 3.25rem;
+    /* Gleiche Breite wie die eingeklappte Menü-Sidebar links (4.5rem) —
+       die Rail wirkt sonst am Rand gequetscht und der Trigger ist zu klein. */
+    --help-rail-w: 4.5rem;
 }
 .with-help-pad {
     transition: padding-right 200ms ease;
@@ -167,10 +169,10 @@ body.sidebar-collapsed {
             visibility 0s 150ms;
     }
 }
-/* Rail-Button: btn-ghost erbt sonst die dunkle body-base-content-Farbe
-               (Corporate) → unsichtbares Icon auf dunklem Grund. Helle Sidebar-
+/* Rail: erbt sonst die dunkle body-base-content-Farbe (Corporate) →
+               unsichtbares Icon auf dunklem wd-badge-Grund. Helle Sidebar-
                Textfarbe explizit setzen (ohne --btn-color, sonst weißer Fond). */
-#help-drawer [data-help-railmode] [data-help-trigger] {
+#help-drawer [data-help-railmode] {
     color: var(--color-base-content);
 }
 /* 3-stufiger Header über CSS Container Queries statt Viewport-

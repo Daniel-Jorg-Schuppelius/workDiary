@@ -77,12 +77,14 @@
                         <template x-for="(p, idx) in filtered" :key="p.id">
                             <li>
                                 <button type="button"
-                                        class="flex-col items-start gap-0"
+                                        class="flex-col items-start gap-0.5 py-1.5"
                                         :class="optionClass(idx)"
                                         @mouseenter="setHighlight(idx)"
                                         @click="choose(p)">
                                     <span class="font-medium" x-text="p.name"></span>
-                                    <span class="text-xs text-base-content/60" x-show="p.customer" x-text="p.customer"></span>
+                                    {{-- opacity statt fester Textfarbe: bleibt auf dem
+                                         menu-active-Hintergrund der Markierung lesbar. --}}
+                                    <span class="text-xs opacity-60" x-show="p.customer" x-text="p.customer"></span>
                                 </button>
                             </li>
                         </template>
