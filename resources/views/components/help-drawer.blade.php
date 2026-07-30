@@ -100,8 +100,11 @@
          kontext-Hilfe); unten sitzt der Aufklapp-Chevron im Stil des
          Sidebar-Collapse-Buttons. Der Schließen-Button minimiert wieder.
          Auf Mobil ausgeblendet — dort bleibt der Header-Button. --}}
+    {{-- px-3/py-4 spiegeln die Innenabstände der eingeklappten Menü-Sidebar
+         (sidebar-header/-footer px-3 py-4) — Inhalte kleben sonst an den
+         Panelkanten. --}}
     <button type="button"
-            class="absolute inset-y-0 right-0 hidden w-(--help-rail-w) cursor-pointer flex-col items-center justify-between px-1.5 py-3 transition-colors hover:bg-base-content/10 lg:flex"
+            class="absolute inset-y-0 right-0 hidden w-(--help-rail-w) cursor-pointer flex-col items-center justify-between px-3 py-4 transition-colors hover:bg-base-content/10 lg:flex"
             data-help-railmode
             data-help-trigger
             aria-haspopup="dialog"

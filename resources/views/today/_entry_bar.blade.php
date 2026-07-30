@@ -103,11 +103,15 @@
                             @click="setRange">{{ __('Von / Bis') }}</button>
                 </div>
 
-                <input type="date" name="date" class="input input-bordered input-sm w-36"
-                       x-show="isManual"
-                       :disabled="manualDisabled"
-                       aria-label="{{ __('Datum') }}"
-                       value="{{ old('date', $day->toDateString()) }}">
+                {{-- Wrapper statt x-show am Input: flatpickr (altInput) ersetzt das
+                     Feld durch ein sichtbares Zwillings-Input im selben Elternknoten —
+                     nur ein umschließendes x-show blendet beide zusammen aus. --}}
+                <span class="inline-flex" x-show="isManual">
+                    <input type="date" name="date" class="input input-bordered input-sm w-36"
+                           :disabled="manualDisabled"
+                           aria-label="{{ __('Datum') }}"
+                           value="{{ old('date', $day->toDateString()) }}">
+                </span>
 
                 <input type="text" inputmode="numeric" placeholder="{{ __('Dauer (HH:MM)') }}"
                        x-show="showDurationPane"
