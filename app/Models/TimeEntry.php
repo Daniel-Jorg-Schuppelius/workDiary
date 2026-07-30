@@ -198,6 +198,15 @@ class TimeEntry extends Model {
                 }
             }
 
+            // Ohne explizites billable erbt ein neuer Eintrag die effektive
+            // Projekt-Einstellung (Parent-Kette → Kunde). Muss vor der
+            // Snapshot-Berechnung stehen: ein fehlendes Attribut zählte dort
+            // sonst als nicht abrechenbar (rate = 0), obwohl das DB-Default
+            // true ist.
+            if (! $entry->exists && ! array_key_exists('billable', $entry->getAttributes())) {
+                $entry->billable = $entry->project?->effectiveBillable() ?? true;
+            }
+
             // Recalculate billing snapshot whenever a relevant field changes.
             // date/started_at/activity_category_id gehören dazu, weil Kunden-
             // konditionen (Feature 098) Tagtyp- und Kategorie-abhängig sind.

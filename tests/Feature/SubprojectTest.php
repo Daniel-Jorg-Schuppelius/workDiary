@@ -143,6 +143,27 @@ class SubprojectTest extends TestCase {
         $this->assertSame(80.0, $standalone->effectiveHourlyRate());
     }
 
+    public function test_effective_billable_walks_up_to_parent_then_customer(): void {
+        $parent = $this->makeProject(['billable' => false]);
+        $child = Project::create([
+            'organization_id' => $this->organization->id,
+            'parent_id' => $parent->id,
+            'name' => 'Child billable erbt',
+            'status' => ProjectStatus::Active->value,
+        ]);
+
+        $this->assertFalse($child->effectiveBillable());
+
+        // Eigener Wert schlägt Parent und Kunde.
+        $child->update(['billable' => true]);
+        $this->assertTrue($child->fresh()->effectiveBillable());
+
+        // Ohne eigenen Wert und Parent zählt der Kunde.
+        $this->customer->update(['billable' => false]);
+        $standalone = $this->makeProject();
+        $this->assertFalse($standalone->effectiveBillable());
+    }
+
     public function test_delete_with_children_is_blocked_by_policy(): void {
         $parent = $this->makeProject();
         Project::create([

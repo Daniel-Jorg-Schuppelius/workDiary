@@ -39,6 +39,35 @@ class ProjectsTest extends TestCase {
         ]);
     }
 
+    /**
+     * Abrechenbar-Schalter (Tri-State): '0'/'1' setzen die Spalte, leere
+     * Auswahl („Erben") setzt sie auf null zurück.
+     */
+    public function test_billable_tristate_is_saved_and_cleared_via_web_route(): void {
+        $user = User::factory()->user()->create();
+
+        $this->actingAs($user)
+            ->post(route('projects.store'), [
+                'name' => 'Interne Doku',
+                'status' => ProjectStatus::Active->value,
+                'billable' => '0',
+            ])
+            ->assertRedirect();
+
+        $project = Project::query()->where('name', 'Interne Doku')->firstOrFail();
+        $this->assertFalse((bool) $project->billable);
+
+        $this->actingAs($user)
+            ->put(route('projects.update', $project), [
+                'name' => 'Interne Doku',
+                'status' => ProjectStatus::Active->value,
+                'billable' => '',
+            ])
+            ->assertRedirect();
+
+        $this->assertNull($project->fresh()->billable);
+    }
+
     public function test_rename_is_unique_per_customer_and_foreign_customer(): void {
         $user = User::factory()->admin()->create();
         $customer = Customer::factory()->create(['organization_id' => $user->organization_id]);

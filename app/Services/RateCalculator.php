@@ -106,13 +106,10 @@ class RateCalculator {
             return false;
         }
 
+        // Effektive Projekt-Einstellung (eigener Wert > Parent-Kette > Kunde);
+        // das frühere property_exists() griff bei Eloquent-Attributen nie.
         $project = $entry->project;
-        if ($project && property_exists($project, 'billable') && $project->billable === false) {
-            return false;
-        }
-
-        $customer = $project?->customer;
-        if ($customer && $customer->billable === false) {
+        if ($project !== null && ! $project->effectiveBillable()) {
             return false;
         }
 

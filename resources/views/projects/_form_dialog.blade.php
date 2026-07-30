@@ -183,6 +183,10 @@
             </x-form-group>
         @endif
 
+        {{-- Abrechenbar-Override (Tri-State) — Partial, s. Kommentar dort
+             (Blade-Backtracking-Schwelle). --}}
+        @include('projects._billable_field', ['project' => $project])
+
         {{-- Wetter-Auto-Abruf-Override (Feature 062, Rang 12) — Partial,
              s. Kommentar dort (Blade-Backtracking-Schwelle). --}}
         @include('projects._weather_field', ['project' => $project])

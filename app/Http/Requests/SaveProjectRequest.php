@@ -29,12 +29,14 @@ class SaveProjectRequest extends BaseFormRequest {
     ];
 
     /**
-     * Leerer Wetter-Override (Auswahl „Erben") → null, damit `nullable`/`in:0,1`
+     * Leere Tri-State-Overrides (Auswahl „Erben") → null, damit `nullable`/`in:0,1`
      * greift und die Spalte auf null (= vererben) gesetzt wird.
      */
     protected function prepareForValidation(): void {
-        if ($this->input('weather_auto_fetch') === '') {
-            $this->merge(['weather_auto_fetch' => null]);
+        foreach (['weather_auto_fetch', 'billable'] as $triState) {
+            if ($this->input($triState) === '') {
+                $this->merge([$triState => null]);
+            }
         }
     }
 
@@ -76,6 +78,9 @@ class SaveProjectRequest extends BaseFormRequest {
             // Wetter-Auto-Abruf-Override (Feature 062, Rang 12): Tri-State
             // ''=erben (→ null in prepareForValidation), '1'=an, '0'=aus.
             'weather_auto_fetch' => ['nullable', 'in:0,1'],
+            // Abrechenbar-Override: Tri-State wie weather_auto_fetch; null =
+            // erben (Parent-Kette → Kunde), s. effectiveBillable().
+            'billable' => ['nullable', 'in:0,1'],
             'team_ids' => ['array'],
             'team_ids.*' => ['integer', new \App\Rules\ExistsInCurrentOrganization('teams')],
             'member_ids' => ['array'],

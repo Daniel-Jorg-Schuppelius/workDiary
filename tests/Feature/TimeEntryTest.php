@@ -65,6 +65,42 @@ class TimeEntryTest extends TestCase {
     }
 
     /**
+     * Abrechenbar-Schalter am Projekt: neue Einträge erben die effektive
+     * Projekt-Einstellung, und der Rate-Snapshot rechnet damit — vorher
+     * fehlte das Attribut beim Anlegen und zählte in der Snapshot-Berechnung
+     * als nicht abrechenbar (rate = 0).
+     */
+    public function test_new_entry_inherits_project_billable_and_rate_snapshot(): void {
+        $this->project->update(['hourly_rate' => 100, 'billable' => false]);
+
+        $this->actingAs($this->user)
+            ->post(route('projects.time-entries.store', $this->project), [
+                'date' => '2030-01-15',
+                'minutes' => 60,
+                'description' => 'Interne Zeit',
+            ])
+            ->assertRedirect();
+
+        $entry = TimeEntry::query()->where('description', 'Interne Zeit')->firstOrFail();
+        $this->assertFalse($entry->billable);
+        $this->assertSame(0.0, $entry->rate?->toFloat());
+
+        $this->project->update(['billable' => true]);
+
+        $this->actingAs($this->user)
+            ->post(route('projects.time-entries.store', $this->project), [
+                'date' => '2030-01-16',
+                'minutes' => 60,
+                'description' => 'Abrechenbare Zeit',
+            ])
+            ->assertRedirect();
+
+        $entry = TimeEntry::query()->where('description', 'Abrechenbare Zeit')->firstOrFail();
+        $this->assertTrue($entry->billable);
+        $this->assertSame(100.0, $entry->rate?->toFloat());
+    }
+
+    /**
      * Vollaudit 2026-07 (N2): kaputte datetime-local-Eingaben (z. B. manipuliertes
      * POST) müssen als Validierungsfehler enden — vorher warf die ungeschützte
      * Tz-Umrechnung in prepareForValidation() einen 500er.
