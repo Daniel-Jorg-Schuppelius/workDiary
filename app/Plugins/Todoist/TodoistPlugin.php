@@ -86,11 +86,8 @@ class TodoistPlugin implements Plugin, TaskSyncer {
      */
     public static function taskUrl(\App\Models\Task $task): ?string {
         $externalId = \App\Models\ExternalReference::query()
-            ->where('organization_id', $task->organization_id)
-            ->where('plugin_id', self::ID)
-            ->where('external_type', self::EXT_TYPE_TASK)
-            ->where('referenceable_type', $task->getMorphClass())
-            ->where('referenceable_id', $task->getKey())
+            ->forPlugin($task->organization_id, self::ID, self::EXT_TYPE_TASK)
+            ->forReferenceable($task)
             ->value('external_id');
 
         if (! is_string($externalId) || preg_match('/^[A-Za-z0-9_-]+$/', $externalId) !== 1) {

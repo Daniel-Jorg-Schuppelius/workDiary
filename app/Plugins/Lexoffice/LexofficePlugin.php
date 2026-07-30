@@ -273,10 +273,8 @@ class LexofficePlugin implements ContactSyncer, Plugin, SlotRenderer, TimeExport
         }
 
         $contactRef = ExternalReference::query()
-            ->where('plugin_id', self::ID)
-            ->where('external_type', self::EXT_TYPE_CONTACT)
-            ->where('referenceable_type', $customer->getMorphClass())
-            ->where('referenceable_id', $customer->getKey())
+            ->forPlugin($customer->organization_id, self::ID, self::EXT_TYPE_CONTACT)
+            ->forReferenceable($customer)
             ->first();
 
         $contactExternalId = $contactRef !== null ? $contactRef->external_id : $this->pushContact($customer);

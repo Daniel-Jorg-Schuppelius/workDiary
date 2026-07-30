@@ -57,7 +57,7 @@ class BillingAdminTest extends TestCase {
 
         $agreement = $this->customer->billingAgreement()->firstOrFail();
         $this->assertTrue($agreement->mode === BillingAgreementMode::Account);
-        $this->assertSame('2852.37', $agreement->opening_balance);
+        $this->assertSame('2852.37', $agreement->opening_balance?->getAmount());
         $this->assertSame(3, $agreement->rates()->count());
         $this->assertSame(
             $category->id,
@@ -89,7 +89,7 @@ class BillingAdminTest extends TestCase {
         $agreement->refresh();
         $this->assertSame(5, $agreement->workdays_per_week);
         $this->assertSame(1, $agreement->rates()->count());
-        $this->assertSame('22.00', $agreement->rates()->firstOrFail()->hourly_rate);
+        $this->assertSame('22.00', $agreement->rates()->firstOrFail()->hourly_rate?->getAmount());
     }
 
     public function test_payment_can_be_booked_and_voided(): void {
@@ -106,7 +106,7 @@ class BillingAdminTest extends TestCase {
 
         $payment = CustomerAccountPayment::query()->firstOrFail();
         $this->assertTrue($payment->source === AccountPaymentSource::Manual);
-        $this->assertSame('550.00', $payment->amount);
+        $this->assertSame('550.00', $payment->amount?->getAmount());
 
         $this->actingAs($this->admin)
             ->delete(route('customers.billing.payments.destroy', [$this->customer, $payment]))

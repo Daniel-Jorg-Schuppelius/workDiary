@@ -10,35 +10,21 @@
 
 namespace App\Plugins\Sharepoint\Api;
 
-use APIToolkit\API\Authentication\OAuth2\OAuth2AuthorizationCodeGrant;
 use App\Plugins\Sharepoint\SharepointConfig;
-use GuzzleHttp\Client as GuzzleClient;
+use App\Plugins\Support\PluginOAuthGrant;
 
 /**
- * Baut den OAuth2-Authorization-Code-Grant (+ PKCE) gegen die Microsoft
- * Identity Platform für die SharePoint-Ablage (MVP-330, Bauturbo A10) aus der
- * installationsweiten Konfiguration (Fallback auf die MSGRAPH_*-Werte,
- * Tenant-Default 'common'). Als Container-Singleton der Austauschpunkt für
- * Tests: dort wird ein Guzzle-`MockHandler`-Client injiziert (A8-Muster).
+ * OAuth2-Authorization-Code-Grant (+ PKCE) gegen die Microsoft Identity
+ * Platform für die SharePoint-Ablage (MVP-330, Bauturbo A10); Fallback auf
+ * die MSGRAPH_*-Werte, Tenant-Default 'common' (via SharepointConfig).
  */
-class SharepointOAuth {
-    public function __construct(private readonly ?GuzzleClient $httpClient = null) {}
-
-    public function grant(): OAuth2AuthorizationCodeGrant {
-        $config = SharepointConfig::resolve();
-
-        return new OAuth2AuthorizationCodeGrant(
-            clientId: $config['client_id'],
-            clientSecret: $config['client_secret'],
-            authorizeUrl: $config['authorize_url'],
-            tokenUrl: $config['token_url'],
-            redirectUri: route('admin.sharepoint.oauth.callback'),
-            httpClient: $this->httpClient,
-        );
+class SharepointOAuth extends PluginOAuthGrant {
+    /** @return array<string, string|int|bool> */
+    protected function config(): array {
+        return SharepointConfig::resolve();
     }
 
-    /** @return list<string> */
-    public function scopes(): array {
-        return array_values(array_filter(explode(' ', SharepointConfig::resolve()['scopes'])));
+    protected function callbackRouteName(): string {
+        return 'admin.sharepoint.oauth.callback';
     }
 }

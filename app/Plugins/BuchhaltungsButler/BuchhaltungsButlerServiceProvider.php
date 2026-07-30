@@ -15,20 +15,20 @@ namespace App\Plugins\BuchhaltungsButler;
 use App\Models\Invoice;
 use App\Plugins\BuchhaltungsButler\Observers\BhbInvoiceObserver;
 use App\Plugins\BuchhaltungsButler\Services\BhbOutboxDispatcher;
+use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Integration\IntegrationOutboxDispatcherResolver;
-use Illuminate\Support\ServiceProvider;
 
 /**
  * Bootet das BuchhaltungsButler-Plugin (MVP-432): Config-Defaults, Invoice-
  * Observer (Statuswechsel → Outbox-Enqueue) und Outbox-Dispatcher. Keine
  * eigenen Routen/Views — Konfiguration über die Auto-Form der Plugin-Karte.
  */
-class BuchhaltungsButlerServiceProvider extends ServiceProvider {
-    public function register(): void {
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . BuchhaltungsButlerPlugin::ID);
+class BuchhaltungsButlerServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return BuchhaltungsButlerPlugin::ID;
     }
 
-    public function boot(): void {
+    protected function bootPlugin(): void {
         Invoice::observe(BhbInvoiceObserver::class);
         app(IntegrationOutboxDispatcherResolver::class)->register(new BhbOutboxDispatcher());
     }

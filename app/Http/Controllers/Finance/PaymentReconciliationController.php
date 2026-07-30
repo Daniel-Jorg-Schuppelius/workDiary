@@ -188,7 +188,7 @@ class PaymentReconciliationController extends Controller {
             ->get();
         foreach ($agreements as $agreement) {
             $expected = $agreement->expected_monthly_amount !== null
-                ? ' · ~' . NumberHelper::toGermanFormat((float) $agreement->expected_monthly_amount, 2, withThousandsSeparator: true)
+                ? ' · ~' . NumberHelper::toGermanFormat($agreement->expected_monthly_amount->toFloat(), 2, withThousandsSeparator: true)
                 : '';
             $options[] = [
                 'value' => 'account:' . $agreement->sqid,

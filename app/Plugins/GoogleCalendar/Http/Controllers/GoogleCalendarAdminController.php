@@ -10,12 +10,11 @@
 
 namespace App\Plugins\GoogleCalendar\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\GoogleCalendarConnection;
 use App\Plugins\GoogleCalendar\Api\{GoogleCalendarClient, GoogleCalendarOAuth};
 use App\Plugins\GoogleCalendar\GoogleCalendarConfig;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
-use App\Plugins\Support\OAuthStateHandshake;
+use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
@@ -23,13 +22,12 @@ use Throwable;
 
 /**
  * Google-Kalender-Admin-Panel + OAuth-Verbindungsflow (MVP-328, Bauturbo A8).
- * Der OAuth-`state` ist kurzlebig, einmalig einlösbar und an Organisation UND
- * Sitzung gebunden (Todoist-Muster); der PKCE-Verifier wandert mit dem state
- * durch den Cache. `access_type=offline` + `prompt=consent` sichern das
- * Refresh-Token. Tokens erscheinen nie in Logs, Fehlermeldungen oder
- * Audit-Payloads.
+ * Der OAuth-Flow (state einmalig, org-/sitzungsgebunden, PKCE) läuft über die
+ * gemeinsame Basis {@see ConnectionOAuthController}; `access_type=offline` +
+ * `prompt=consent` sichern das Refresh-Token. Tokens erscheinen nie in Logs,
+ * Fehlermeldungen oder Audit-Payloads.
  */
-class GoogleCalendarAdminController extends Controller {
+class GoogleCalendarAdminController extends ConnectionOAuthController {
     use ResolvesPluginOrgContext;
 
     public function index(): View {
@@ -59,73 +57,55 @@ class GoogleCalendarAdminController extends Controller {
         ]);
     }
 
-    /** Startet den OAuth-Flow: org- und sitzungsgebundener Einmal-state + PKCE. */
-    public function startOAuth(GoogleCalendarOAuth $oauth): RedirectResponse {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
+    // ── OAuth-Flow: Hooks der gemeinsamen Basis (Vollreview W3a) ──
 
-        if (! GoogleCalendarConfig::isConfigured()) {
-            return back()->with('error', __('google_calendar.flash.not_configured'));
-        }
-
-        ['state' => $state, 'verifier' => $verifier] = $this->handshake()->start((int) $organization->id, (int) $admin->id);
-
-        // access_type=offline + prompt=consent: nur so liefert Google
-        // zuverlässig ein Refresh-Token (auch bei erneuter Verbindung).
-        $url = $oauth->grant()->getAuthorizationUrl($state, $oauth->scopes(), [
-            'access_type' => 'offline',
-            'prompt' => 'consent',
-        ], $verifier);
-
-        return redirect()->away($url);
+    protected function oauth(): PluginOAuthGrant {
+        return app(GoogleCalendarOAuth::class);
     }
 
-    /** OAuth-Callback: state prüfen (einmalig!), Code + PKCE tauschen, Verbindung speichern. */
-    public function oauthCallback(Request $request, GoogleCalendarOAuth $oauth): RedirectResponse {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
+    protected function isConfigured(): bool {
+        return GoogleCalendarConfig::isConfigured();
+    }
 
-        $code = (string) $request->query('code', '');
+    protected function connectionModel(): string {
+        return GoogleCalendarConnection::class;
+    }
 
-        // Einmalig einlösen (Replay-Schutz), org- und sitzungsgebunden.
-        $payload = $this->handshake()->redeem((string) $request->query('state', ''), (int) $organization->id, (int) $admin->id);
-        if ($payload === null) {
-            return redirect()->route('admin.google-calendar.index')->with('error', __('google_calendar.flash.state_invalid'));
-        }
+    protected function stateCachePrefix(): string {
+        return 'google-calendar-oauth-state';
+    }
 
-        if ($code === '') {
-            return redirect()->route('admin.google-calendar.index')->with('error', __('google_calendar.flash.oauth_denied'));
-        }
+    protected function overviewRouteName(): string {
+        return 'admin.google-calendar.index';
+    }
 
-        try {
-            $token = $oauth->grant()->exchangeAuthorizationCode($code, OAuthStateHandshake::verifierFrom($payload));
-        } catch (Throwable $e) {
-            // Nur die Fehlerklasse — nie Payload/Token.
-            return redirect()->route('admin.google-calendar.index')
-                ->with('error', __('google_calendar.flash.oauth_failed', ['class' => class_basename($e)]));
-        }
+    protected function pluginKey(): string {
+        return 'google_calendar';
+    }
 
-        /** @var GoogleCalendarConnection $connection */
-        $connection = GoogleCalendarConnection::query()->firstOrNew(['organization_id' => $organization->id]);
-        $connection->forceFill([
-            'access_token' => $token->getAccessToken(),
-            'refresh_token' => $token->getRefreshToken() ?? $connection->refresh_token,
-            'token_expires_at' => $token->getExpiresAt(),
-            'scopes' => $token->getScope() ?? implode(' ', $oauth->scopes()),
-            'status' => GoogleCalendarConnection::STATUS_ACTIVE,
-            'last_error' => null,
-            'last_error_at' => null,
-            'consecutive_failures' => 0,
-            'disabled_at' => null,
-            'connected_by' => $admin->id,
-            'connected_at' => now(),
-            'disconnected_by' => null,
-            'disconnected_at' => null,
-        ])->save();
+    protected function connectedStatus(): string {
+        return GoogleCalendarConnection::STATUS_ACTIVE;
+    }
 
-        $connection->audit('google_calendar.connected', ['by_user_id' => (int) $admin->id]);
+    protected function disconnectedStatus(): string {
+        return GoogleCalendarConnection::STATUS_DISCONNECTED;
+    }
 
-        return redirect()->route('admin.google-calendar.index')->with('success', __('google_calendar.flash.connected'));
+    protected function keepsRefreshTokenOnReconnect(): bool {
+        return true;
+    }
+
+    /**
+     * access_type=offline + prompt=consent: nur so liefert Google
+     * zuverlässig ein Refresh-Token (auch bei erneuter Verbindung).
+     *
+     * @return array<string, string>
+     */
+    protected function extraAuthorizeParams(): array {
+        return [
+            'access_type' => 'offline',
+            'prompt' => 'consent',
+        ];
     }
 
     /** Wählt den Ziel-Kalender (Name wird serverseitig aus der Kalenderliste aufgelöst). */
@@ -180,30 +160,5 @@ class GoogleCalendarAdminController extends Controller {
         $connection->audit('google_calendar.publish_manual', ['by_user_id' => (int) $admin->id]);
 
         return back()->with('success', __('google_calendar.flash.publish_done'));
-    }
-
-    /** Trennt die Verbindung (auditiert); publizierte Termine + Referenzen bleiben erhalten. */
-    public function disconnect(): RedirectResponse {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
-
-        $connection = GoogleCalendarConnection::query()->where('organization_id', $organization->id)->first();
-        if ($connection instanceof GoogleCalendarConnection) {
-            $connection->forceFill([
-                'access_token' => null,
-                'refresh_token' => null,
-                'token_expires_at' => null,
-                'status' => GoogleCalendarConnection::STATUS_DISCONNECTED,
-                'disconnected_by' => $admin->id,
-                'disconnected_at' => now(),
-            ])->save();
-            $connection->audit('google_calendar.disconnected', ['by_user_id' => (int) $admin->id]);
-        }
-
-        return redirect()->route('admin.google-calendar.index')->with('success', __('google_calendar.flash.disconnected'));
-    }
-
-    private function handshake(): OAuthStateHandshake {
-        return new OAuthStateHandshake('google-calendar-oauth-state');
     }
 }

@@ -60,10 +60,7 @@ class OpenProjectExportService extends AbstractTimeEntryPushService {
 
     protected function exportableProjectIds(Organization $organization): array {
         return array_values(ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', OpenProjectPlugin::ID)
-            ->where('external_type', OpenProjectStructureSync::EXT_TYPE_PROJECT)
+            ->forPlugin($organization, OpenProjectPlugin::ID, OpenProjectStructureSync::EXT_TYPE_PROJECT)
             ->where('referenceable_type', (new Project)->getMorphClass())
             ->pluck('referenceable_id')
             ->map(fn ($id): int => (int) $id)

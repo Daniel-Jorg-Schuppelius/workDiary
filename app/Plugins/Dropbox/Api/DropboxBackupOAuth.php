@@ -10,35 +10,27 @@
 
 namespace App\Plugins\Dropbox\Api;
 
-use APIToolkit\API\Authentication\OAuth2\OAuth2AuthorizationCodeGrant;
 use App\Plugins\Dropbox\DropboxConfig;
-use GuzzleHttp\Client as GuzzleClient;
+use App\Plugins\Support\PluginOAuthGrant;
 
 /**
- * OAuth2 Authorization-Code-Grant (+ PKCE) für das Dropbox-BACKUPZIEL
+ * OAuth2-Authorization-Code-Grant (+ PKCE) für das Dropbox-BACKUPZIEL
  * (Feature 017 Phase 32, MVP-363). Bewusst getrennt vom Intake-Flow
  * ({@see DropboxOAuth}): eigener Redirect, eigene (Schreib-)Scopes,
- * systemweite Verbindung. Container-Singleton = Austauschpunkt für Tests.
+ * systemweite Verbindung.
  */
-class DropboxBackupOAuth {
-    public function __construct(private readonly ?GuzzleClient $httpClient = null) {}
-
-    public function grant(): OAuth2AuthorizationCodeGrant {
-        $config = DropboxConfig::resolve();
-
-        return new OAuth2AuthorizationCodeGrant(
-            clientId: $config['client_id'],
-            clientSecret: $config['client_secret'],
-            authorizeUrl: $config['authorize_url'],
-            tokenUrl: $config['token_url'],
-            redirectUri: route('admin.backup-targets.dropbox.oauth.callback'),
-            httpClient: $this->httpClient,
-        );
+class DropboxBackupOAuth extends PluginOAuthGrant {
+    /** @return array<string, string|int|bool> */
+    protected function config(): array {
+        return DropboxConfig::resolve();
     }
 
-    /** @return list<string> */
-    public function scopes(): array {
-        return array_values(array_filter(explode(' ', DropboxConfig::resolve()['backup_scopes'])));
+    protected function callbackRouteName(): string {
+        return 'admin.backup-targets.dropbox.oauth.callback';
+    }
+
+    protected function scopesKey(): string {
+        return 'backup_scopes';
     }
 
     /** Ohne diesen Scope ist das Ziel `blocked` (keine Sonderwege). */

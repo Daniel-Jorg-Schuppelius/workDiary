@@ -239,8 +239,7 @@ class ScimUserService {
         $ref = ExternalReference::query()->withoutGlobalScopes()
             ->where('plugin_id', self::PLUGIN_ID)
             ->where('external_type', self::EXT_TYPE)
-            ->where('referenceable_type', $user->getMorphClass())
-            ->where('referenceable_id', $user->getKey())
+            ->forReferenceable($user)
             ->first();
 
         return $ref instanceof ExternalReference ? (string) $ref->external_id : null;

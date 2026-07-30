@@ -178,6 +178,120 @@ class ProcedureExecutionServiceTest extends TestCase {
         );
     }
 
+    public function test_conditional_required_step_with_unmet_condition_does_not_block_completion(): void {
+        // W5.3: Ein durch Bedingung (config.depends_on) entfallener
+        // Pflichtschritt gilt als N/A und blockiert den Abschluss nicht.
+        [$org, $user] = $this->makeOrgAndUser();
+        $template = $this->makeConditionalTemplate($org, $user);
+        $entry = DiaryEntry::factory()->for($user)->create();
+        $run = $this->executor->start($template, $entry, $user);
+
+        $this->executor->execute($this->stepRunByCode($run, 'trigger'), $user, ProcedureStepRunStatus::Done, [
+            'value_json' => ['value' => 'no'], // Bedingung (yes) NICHT erfüllt
+        ]);
+
+        $this->assertSame([], $this->executor->missingRequiredStepRuns($run->fresh()));
+
+        $completed = $this->executor->completeRun($run->fresh(), $user);
+        $this->assertSame(ProcedureRunStatus::Completed, $completed->status);
+    }
+
+    public function test_conditional_required_step_with_met_condition_blocks_completion(): void {
+        // W5.3: Erfüllte Bedingung → der Pflichtschritt greift wieder.
+        [$org, $user] = $this->makeOrgAndUser();
+        $template = $this->makeConditionalTemplate($org, $user);
+        $entry = DiaryEntry::factory()->for($user)->create();
+        $run = $this->executor->start($template, $entry, $user);
+
+        $this->executor->execute($this->stepRunByCode($run, 'trigger'), $user, ProcedureStepRunStatus::Done, [
+            'value_json' => ['value' => 'yes'],
+        ]);
+
+        try {
+            $this->executor->completeRun($run->fresh(), $user);
+            $this->fail('Expected ProcedureRunIncompleteException');
+        } catch (ProcedureRunIncompleteException $e) {
+            $this->assertSame([(int) $this->stepRunByCode($run, 'conditional')->id], $e->missingStepRunIds);
+        }
+    }
+
+    public function test_order_check_skips_non_applicable_blocking_step(): void {
+        // W5.3: Ein per Bedingung entfallener (N/A) blockierender Vorgänger
+        // sperrt Folgeschritte nicht mehr.
+        [$org, $user] = $this->makeOrgAndUser();
+        $template = $this->makeConditionalTemplate($org, $user, withFinal: true);
+        $entry = DiaryEntry::factory()->for($user)->create();
+        $run = $this->executor->start($template, $entry, $user);
+
+        $this->executor->execute($this->stepRunByCode($run, 'trigger'), $user, ProcedureStepRunStatus::Done, [
+            'value_json' => ['value' => 'no'], // conditional wird N/A
+        ]);
+
+        $final = $this->stepRunByCode($run->fresh(), 'final');
+        $this->assertNull($this->executor->blockReasonFor($final, $user));
+        $this->assertTrue($this->executor->canExecute($final, $user));
+    }
+
+    public function test_order_check_still_blocks_when_condition_met(): void {
+        // W5.3 Gegenprobe: erfüllte Bedingung → der blockierende Vorgänger sperrt.
+        [$org, $user] = $this->makeOrgAndUser();
+        $template = $this->makeConditionalTemplate($org, $user, withFinal: true);
+        $entry = DiaryEntry::factory()->for($user)->create();
+        $run = $this->executor->start($template, $entry, $user);
+
+        $this->executor->execute($this->stepRunByCode($run, 'trigger'), $user, ProcedureStepRunStatus::Done, [
+            'value_json' => ['value' => 'yes'],
+        ]);
+
+        $final = $this->stepRunByCode($run->fresh(), 'final');
+        $this->assertSame(
+            ProcedureStepBlockedException::REASON_PREVIOUS_STEP_INCOMPLETE,
+            $this->executor->blockReasonFor($final, $user),
+        );
+    }
+
+    /** Step-Run eines Laufs anhand des Schritt-Codes. */
+    private function stepRunByCode(ProcedureRun $run, string $code): \App\Models\ProcedureStepRun {
+        $stepRun = $run->stepRuns()->with('stepDef')->get()
+            ->first(fn($sr) => $sr->stepDef?->code === $code);
+        $this->assertNotNull($stepRun, "Step-Run '$code' fehlt.");
+
+        return $stepRun;
+    }
+
+    /**
+     * Vorlage mit bedingtem Pflichtschritt: `conditional` gilt nur, wenn
+     * `trigger` den Wert `yes` erfasst (config.depends_on, W5.3).
+     */
+    private function makeConditionalTemplate(Organization $org, User $user, bool $withFinal = false): ProcedureTemplate {
+        $template = $this->templates->create($org, $user, [
+            'code' => 'COND-' . uniqid(),
+            'name' => 'Conditional Test',
+        ]);
+        $version = $template->versions->first();
+        $this->templates->addStepDef($version, [
+            'code' => 'trigger',
+            'step_type' => ProcedureStepType::Confirm->value,
+            'label' => 'Trigger',
+        ]);
+        $this->templates->addStepDef($version, [
+            'code' => 'conditional',
+            'step_type' => ProcedureStepType::Confirm->value,
+            'label' => 'Conditional',
+            'config' => ['depends_on' => ['step_code' => 'trigger', 'equals' => 'yes']],
+        ]);
+        if ($withFinal) {
+            $this->templates->addStepDef($version, [
+                'code' => 'final',
+                'step_type' => ProcedureStepType::Confirm->value,
+                'label' => 'Final',
+            ]);
+        }
+        $this->templates->publish($version, $user);
+
+        return $template->fresh(['versions.steps']);
+    }
+
     /** @param  list<string>  $stepCodes */
     private function makePublishedTemplate(Organization $org, User $user, array $stepCodes): ProcedureTemplate {
         $template = $this->templates->create($org, $user, [

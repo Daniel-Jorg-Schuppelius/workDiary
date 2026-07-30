@@ -10,6 +10,7 @@
 
 namespace App\Models\Billing;
 
+use App\Casts\MoneyCast;
 use App\Enums\Billing\AccountPaymentSource;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Finance\{BankTransaction, PaymentAllocation};
@@ -29,7 +30,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $organization_id
  * @property int $customer_billing_agreement_id
  * @property Carbon $paid_on
- * @property float $amount
+ * @property \CommonToolkit\ValueObjects\Money|null $amount
  * @property CurrencyCode $currency
  * @property AccountPaymentSource $source
  * @property string|null $source_reference
@@ -65,7 +66,7 @@ class CustomerAccountPayment extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'paid_on' => 'date',
-        'amount' => 'decimal:2',
+        'amount' => MoneyCast::class . ':currency,2',
         'currency' => CurrencyCode::class,
         'source' => AccountPaymentSource::class,
     ];

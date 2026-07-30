@@ -15,8 +15,8 @@ namespace App\Plugins\JtlWawi;
 use App\Models\Organization;
 use App\Plugins\JtlWawi\Console\JtlSyncCommand;
 use App\Plugins\JtlWawi\Services\{JtlStockReader, JtlWawiInventoryProvider, JtlWawiOutboxDispatcher};
+use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Inventory\{ExternalInventoryDispatcherResolver, InventoryLedger, InventoryProviderResolver};
-use Illuminate\Support\ServiceProvider;
 
 /**
  * Bootet das JTL-Wawi-Plugin (Feature 078): Routen, Views, Console-Command
@@ -24,19 +24,18 @@ use Illuminate\Support\ServiceProvider;
  * (Schreibzustellung) und Provider-Factory (Lese-/Buchungsvertrag) an den
  * Singleton-Resolvern des Lagerkerns.
  */
-class JtlWawiServiceProvider extends ServiceProvider {
-    public function register(): void {
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . JtlWawiPlugin::ID);
+class JtlWawiServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return JtlWawiPlugin::ID;
+    }
 
+    protected function registerPlugin(): void {
         if ($this->app->runningInConsole()) {
             $this->commands([JtlSyncCommand::class]);
         }
     }
 
-    public function boot(): void {
-        $this->loadRoutesFrom(__DIR__ . '/routes.php');
-        $this->loadViewsFrom(__DIR__ . '/Resources/views', JtlWawiPlugin::ID);
-
+    protected function bootPlugin(): void {
         $this->app->make(ExternalInventoryDispatcherResolver::class)
             ->register($this->app->make(JtlWawiOutboxDispatcher::class));
 

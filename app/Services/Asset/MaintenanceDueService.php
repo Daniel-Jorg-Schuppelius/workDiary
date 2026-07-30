@@ -43,11 +43,9 @@ class MaintenanceDueService {
 
         $externalId = $plan->id . ':' . $plan->next_due_on->toDateString();
 
-        $alreadyHandled = ExternalReference::query()->withoutGlobalScopes()
-            ->where('organization_id', $plan->organization_id)
-            ->where('plugin_id', self::PLUGIN_ID)
-            ->where('external_type', self::EXTERNAL_TYPE)
-            ->where('external_id', $externalId)
+        $alreadyHandled = ExternalReference::query()
+            ->forPlugin($plan->organization_id, self::PLUGIN_ID, self::EXTERNAL_TYPE)
+            ->forExternalId($externalId)
             ->exists();
         if ($alreadyHandled) {
             return null; // diese Fälligkeit wurde bereits erzeugt

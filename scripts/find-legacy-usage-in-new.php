@@ -18,9 +18,9 @@ $root = dirname(__DIR__);
 
 $scanDirs = [
     'app/Http/Controllers',
+    'app/Http/Middleware',
     'app/Models',
     'app/Services',
-    'app/Actions',
     'app/Listeners',
     'app/Observers',
     'app/Policies',

@@ -52,16 +52,12 @@ class OrgaMaxAdminController extends Controller {
 
         $connection = OrgaMaxConnection::query()->where('organization_id', $organization->id)->first();
         $invoices = ExternalReference::query()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', OrgaMaxPlugin::ID)
-            ->where('external_type', \App\Plugins\OrgaMax\Services\OrgaMaxInvoiceProjector::EXT_TYPE_INVOICE)
+            ->forPlugin($organization, OrgaMaxPlugin::ID, \App\Plugins\OrgaMax\Services\OrgaMaxInvoiceProjector::EXT_TYPE_INVOICE)
             ->orderByDesc('synced_at')
             ->limit(50)
             ->get();
         $orders = ExternalReference::query()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', OrgaMaxPlugin::ID)
-            ->where('external_type', \App\Services\Finance\Targets\OrgaMaxTarget::EXT_TYPE_ORDER)
+            ->forPlugin($organization, OrgaMaxPlugin::ID, \App\Services\Finance\Targets\OrgaMaxTarget::EXT_TYPE_ORDER)
             ->orderByDesc('synced_at')
             ->limit(50)
             ->get();

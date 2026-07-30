@@ -107,11 +107,8 @@ class LexofficeVoucherSync {
         $organizationId = (int) $owner->organization_id;
 
         $ref = ExternalReference::query()
-            ->where('organization_id', $organizationId)
-            ->where('plugin_id', LexofficePlugin::ID)
-            ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
-            ->where('referenceable_type', $owner->getMorphClass())
-            ->where('referenceable_id', $owner->getKey())
+            ->forPlugin($organizationId, LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)
+            ->forReferenceable($owner)
             ->first(['external_id']);
 
         if ($ref === null) {
@@ -197,10 +194,8 @@ class LexofficeVoucherSync {
      */
     private function ownersForContact(int $organizationId, string $contactExternalId): array {
         $refs = ExternalReference::query()
-            ->where('organization_id', $organizationId)
-            ->where('plugin_id', LexofficePlugin::ID)
-            ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
-            ->where('external_id', $contactExternalId)
+            ->forPlugin($organizationId, LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)
+            ->forExternalId($contactExternalId)
             ->get(['referenceable_type', 'referenceable_id']);
 
         $owners = ['customer_id' => null, 'supplier_id' => null];
@@ -225,9 +220,7 @@ class LexofficeVoucherSync {
      */
     private function buildContactMap(Organization $organization): array {
         $refs = ExternalReference::query()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', LexofficePlugin::ID)
-            ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
+            ->forPlugin($organization, LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)
             ->get(['external_id', 'referenceable_type', 'referenceable_id']);
 
         $customerMorph = (new Customer)->getMorphClass();

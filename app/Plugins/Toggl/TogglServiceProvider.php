@@ -10,28 +10,26 @@
 
 namespace App\Plugins\Toggl;
 
+use App\Plugins\Support\PluginServiceProviderBase;
 use App\Plugins\Toggl\Console\{TogglBackfillReferencesCommand, TogglImportCommand, TogglRepairEntryUsersCommand};
 use App\Plugins\Toggl\Services\TogglOutboxDispatcher;
 use App\Services\Integration\IntegrationOutboxDispatcherResolver;
-use Illuminate\Support\ServiceProvider;
 
 /**
  * Plugin-eigener ServiceProvider. Wird vom Core-{@see \App\Providers\PluginServiceProvider}
  * geladen, sobald TogglPlugin in der Registry steht. Registriert den Service,
  * lädt Routes + Views und stellt den Import-Command bereit.
  */
-class TogglServiceProvider extends ServiceProvider {
-    public function register(): void {
-        // Plugin liefert seine eigenen Config-Defaults/ENV-Fallbacks → `config('plugins.toggl.*')`.
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . TogglPlugin::ID);
+class TogglServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return TogglPlugin::ID;
+    }
 
+    protected function registerPlugin(): void {
         $this->app->singleton(TogglImportService::class, fn(): TogglImportService => new TogglImportService);
     }
 
-    public function boot(): void {
-        $this->loadRoutesFrom(__DIR__ . '/routes.php');
-        $this->loadViewsFrom(__DIR__ . '/Resources/views', 'toggl');
-
+    protected function bootPlugin(): void {
         // Rückrichtung (MVP-437): lokale Korrekturen an importierten Zeiten
         // gehen über die Integrations-Outbox zurück nach Toggl.
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new TogglOutboxDispatcher);

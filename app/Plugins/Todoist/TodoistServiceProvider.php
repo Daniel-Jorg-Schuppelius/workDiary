@@ -11,11 +11,11 @@
 namespace App\Plugins\Todoist;
 
 use App\Models\Task;
+use App\Plugins\Support\PluginServiceProviderBase;
 use App\Plugins\Todoist\Api\TodoistOAuth;
 use App\Plugins\Todoist\Observers\TodoistTaskObserver;
 use App\Plugins\Todoist\Services\TodoistOutboxDispatcher;
 use App\Services\Integration\IntegrationOutboxDispatcherResolver;
-use Illuminate\Support\ServiceProvider;
 
 /**
  * Plugin-eigener ServiceProvider (Feature 055). Wird vom Core-
@@ -25,10 +25,12 @@ use Illuminate\Support\ServiceProvider;
  * {@see TodoistOAuth} ist Singleton — Tests ersetzen ihn durch eine Variante
  * mit Guzzle-MockHandler.
  */
-class TodoistServiceProvider extends ServiceProvider {
-    public function register(): void {
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . TodoistPlugin::ID);
+class TodoistServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return TodoistPlugin::ID;
+    }
 
+    protected function registerPlugin(): void {
         $this->app->singleton(TodoistOAuth::class, fn (): TodoistOAuth => new TodoistOAuth());
 
         if ($this->app->runningInConsole()) {
@@ -38,10 +40,7 @@ class TodoistServiceProvider extends ServiceProvider {
         }
     }
 
-    public function boot(): void {
-        $this->loadRoutesFrom(__DIR__ . '/routes.php');
-        $this->loadViewsFrom(__DIR__ . '/Resources/views', 'todoist');
-
+    protected function bootPlugin(): void {
         Task::observe(TodoistTaskObserver::class);
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new TodoistOutboxDispatcher());
     }

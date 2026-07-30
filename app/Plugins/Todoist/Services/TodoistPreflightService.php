@@ -38,9 +38,7 @@ class TodoistPreflightService {
         $collaborators = $api->getCollaborators($todoistProjectId);
 
         $mappedCollaborators = ExternalReference::query()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', TodoistPlugin::ID)
-            ->where('external_type', TodoistPlugin::EXT_TYPE_COLLABORATOR)
+            ->forPlugin($organization->id, TodoistPlugin::ID, TodoistPlugin::EXT_TYPE_COLLABORATOR)
             ->pluck('referenceable_id', 'external_id');
 
         $taskIds = array_values(array_filter(array_map(
@@ -48,9 +46,7 @@ class TodoistPreflightService {
             $tasks,
         )));
         $referenced = $taskIds === [] ? 0 : ExternalReference::query()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', TodoistPlugin::ID)
-            ->where('external_type', TodoistPlugin::EXT_TYPE_TASK)
+            ->forPlugin($organization->id, TodoistPlugin::ID, TodoistPlugin::EXT_TYPE_TASK)
             ->whereIn('external_id', $taskIds)
             ->count();
 

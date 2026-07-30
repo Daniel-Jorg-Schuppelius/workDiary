@@ -12,8 +12,8 @@ namespace App\Plugins\Sharepoint;
 
 use App\Plugins\Sharepoint\Api\SharepointOAuth;
 use App\Plugins\Support\Mirror\{MirrorOutboxDispatcher, MirrorTargetRegistry};
+use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Integration\IntegrationOutboxDispatcherResolver;
-use Illuminate\Support\ServiceProvider;
 
 /**
  * Plugin-eigener ServiceProvider (MVP-330, Bauturbo A10). Registriert
@@ -23,10 +23,12 @@ use Illuminate\Support\ServiceProvider;
  * Zustellung). {@see SharepointOAuth} ist Singleton — Tests ersetzen ihn
  * durch eine Variante mit Guzzle-MockHandler (A8-Muster).
  */
-class SharepointServiceProvider extends ServiceProvider {
-    public function register(): void {
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . SharepointPlugin::ID);
+class SharepointServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return SharepointPlugin::ID;
+    }
 
+    protected function registerPlugin(): void {
         $this->app->singleton(SharepointOAuth::class, fn(): SharepointOAuth => new SharepointOAuth());
         // Geteilte Ziel-Registry des Spiegel-Kerns (A10): ein Singleton für
         // alle Mirror-Plugins — Observer/Dispatcher sehen dieselben Targets.
@@ -39,10 +41,7 @@ class SharepointServiceProvider extends ServiceProvider {
         }
     }
 
-    public function boot(): void {
-        $this->loadRoutesFrom(__DIR__ . '/routes.php');
-        $this->loadViewsFrom(__DIR__ . '/Resources/views', 'sharepoint');
-
+    protected function bootPlugin(): void {
         $target = new SharepointMirrorTarget();
         $this->app->make(MirrorTargetRegistry::class)->register($target);
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new MirrorOutboxDispatcher($target));

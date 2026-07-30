@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Navigation;
 
 use App\Enums\User\Permission;
-use App\Legacy\Support\LegacyRoleResolver;
+use App\Legacy\LegacyBridge;
 use App\Models\User;
 use App\Plugins\PluginManager;
 use App\Services\Licensing\FeatureFlagResolver;
@@ -1065,7 +1065,7 @@ class NavigationRegistry {
         $pluginPanelRoutes = []; // Routen aktiver Plugin-Panels (für Ungruppiert-Ausschluss)
         $pluginPanelItems = [];  // fertige Menü-Items der Plugin-Panels (eigene Systemmenü-Gruppe „Plugins")
 
-        $isLegacyAdmin = LegacyRoleResolver::isAdmin($user);
+        $isLegacyAdmin = LegacyBridge::isLegacyAdmin($user);
         $isGlobalAdmin = $user->isAdmin();
         $isPlatformAdmin = $user->isGlobalAdmin();
 

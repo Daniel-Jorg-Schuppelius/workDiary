@@ -11,25 +11,23 @@
 namespace App\Plugins\RemoteSupport;
 
 use App\Plugins\RemoteSupport\Console\SyncSessionsCommand;
-use Illuminate\Support\ServiceProvider;
+use App\Plugins\Support\PluginServiceProviderBase;
 
 /**
  * Plugin-eigener ServiceProvider. Wird vom Core-{@see \App\Providers\PluginServiceProvider}
  * geladen, sobald RemoteSupportPlugin in der Registry steht. Registriert den
  * Service, lädt Routes + Views und stellt den Sync-Command bereit.
  */
-class RemoteSupportServiceProvider extends ServiceProvider {
-    public function register(): void {
-        // Plugin liefert seine eigenen Config-Defaults/ENV-Fallbacks → `config('plugins.remote-support.*')`.
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . RemoteSupportPlugin::ID);
+class RemoteSupportServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return RemoteSupportPlugin::ID;
+    }
 
+    protected function registerPlugin(): void {
         $this->app->singleton(RemoteSupportService::class, fn(): RemoteSupportService => new RemoteSupportService);
     }
 
-    public function boot(): void {
-        $this->loadRoutesFrom(__DIR__ . '/routes.php');
-        $this->loadViewsFrom(__DIR__ . '/Resources/views', 'remote-support');
-
+    protected function bootPlugin(): void {
         if ($this->app->runningInConsole()) {
             $this->commands([
                 SyncSessionsCommand::class,

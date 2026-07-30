@@ -10,6 +10,7 @@
 
 namespace App\Services\Stammdaten;
 
+use CommonToolkit\Helper\Data\BankHelper;
 use CommonToolkit\ValueObjects\{Bic, GermanTaxId, GermanTaxNumber, Gtin, Iban, VatNumber};
 use Illuminate\Database\Eloquent\Model;
 
@@ -155,9 +156,10 @@ class IdentifierIssueDetector {
      * Eindeutig ableitbare Korrektur — nur wenn genau eine Variante gültig ist.
      */
     private function suggestion(string $kind, string $value): ?string {
-        $compact = strtoupper(preg_replace('/\s+/', '', $value) ?? '');
-
         if ($kind === 'iban') {
+            // W4.4: Kompaktierung über den Toolkit-Format-Anker statt inline
+            // (byte-gleiche Semantik: Whitespace-Strip + Uppercase).
+            $compact = BankHelper::normalizeIBAN($value) ?? '';
             $candidates = [];
             for ($i = 4; $i < strlen($compact); $i++) {
                 $candidate = substr($compact, 0, $i) . substr($compact, $i + 1);

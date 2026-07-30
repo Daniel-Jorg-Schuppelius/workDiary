@@ -12,10 +12,12 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy;
 
+use App\Enums\Numbering\NumberScope;
 use App\Enums\Privacy\{ControllerRole, IncidentStatus, IncidentType};
 use App\Models\{Customer, Organization};
 use App\Models\Privacy\{Incident, IncidentEvent, Measure};
 use App\Models\User;
+use App\Services\Numbering\NumberSequenceService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -25,6 +27,8 @@ use Illuminate\Support\Facades\DB;
  * Massnahmenverfolgung. Jeder Schritt schreibt ein Ereignis in die Hash-Kette.
  */
 class IncidentService {
+    public function __construct(private readonly NumberSequenceService $numbers) {}
+
     public function open(
         Organization $organization,
         IncidentType $type,
@@ -197,11 +201,8 @@ class IncidentService {
     }
 
     private function nextNumber(Organization $organization, Carbon $now): string {
-        $count = Incident::query()
-            ->where('organization_id', $organization->id)
-            ->whereYear('discovered_at', $now->year)
-            ->count();
-
-        return sprintf('DSV-%d-%04d', $now->year, $count + 1);
+        // W1.1: zentraler Nummernkreis (lockForUpdate, reset_per_year) statt
+        // race-anfälligem count()+1 — Format bleibt DSV-<Jahr>-0001.
+        return $this->numbers->next($organization, NumberScope::PrivacyIncident, $now);
     }
 }

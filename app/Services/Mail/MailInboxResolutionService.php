@@ -135,10 +135,8 @@ class MailInboxResolutionService {
             $externalId = $messageId . '#' . (int) ($meta['index'] ?? 0);
 
             $alreadyImported = ExternalReference::query()
-                ->where('organization_id', $item->organization_id)
-                ->where('plugin_id', MailIntakeService::PLUGIN_ID)
-                ->where('external_type', self::DMS_EXTERNAL_TYPE)
-                ->where('external_id', $externalId)
+                ->forPlugin($item->organization_id, MailIntakeService::PLUGIN_ID, self::DMS_EXTERNAL_TYPE)
+                ->forExternalId($externalId)
                 ->exists();
             if ($alreadyImported) {
                 continue; // schon übernommen (Doppelauflösung)

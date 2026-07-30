@@ -11,10 +11,10 @@
 namespace App\Plugins\Webdav;
 
 use App\Plugins\Support\Mirror\{MirrorOutboxDispatcher, MirrorTargetRegistry};
+use App\Plugins\Support\PluginServiceProviderBase;
 use App\Plugins\Webdav\Contracts\WebdavGatewayFactory;
 use App\Plugins\Webdav\Services\GuzzleWebdavGatewayFactory;
 use App\Services\Integration\IntegrationOutboxDispatcherResolver;
-use Illuminate\Support\ServiceProvider;
 
 /**
  * Plugin-eigener ServiceProvider (Feature 058, MVP-127). Bindet die
@@ -24,10 +24,12 @@ use Illuminate\Support\ServiceProvider;
  * die Freigabe-Observer an, der generische Outbox-Dispatcher übernimmt die
  * Zustellung.
  */
-class WebdavServiceProvider extends ServiceProvider {
-    public function register(): void {
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . WebdavPlugin::ID);
+class WebdavServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return WebdavPlugin::ID;
+    }
 
+    protected function registerPlugin(): void {
         $this->app->singleton(WebdavGatewayFactory::class, GuzzleWebdavGatewayFactory::class);
         // Geteilte Ziel-Registry des Spiegel-Kerns (A10): ein Singleton für
         // alle Mirror-Plugins — Observer/Dispatcher sehen dieselben Targets.
@@ -40,10 +42,7 @@ class WebdavServiceProvider extends ServiceProvider {
         }
     }
 
-    public function boot(): void {
-        $this->loadRoutesFrom(__DIR__ . '/routes.php');
-        $this->loadViewsFrom(__DIR__ . '/Resources/views', 'webdav');
-
+    protected function bootPlugin(): void {
         $target = new WebdavMirrorTarget();
         $this->app->make(MirrorTargetRegistry::class)->register($target);
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new MirrorOutboxDispatcher($target));

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Gitlab;
 
-use Illuminate\Support\ServiceProvider;
+use App\Plugins\Support\PluginServiceProviderBase;
 
 /**
  * Plugin-eigener ServiceProvider (Feature 060, Bauturbo A6). Wird vom Core-
@@ -21,18 +21,16 @@ use Illuminate\Support\ServiceProvider;
  * Der HTTP-Transport kommt aus der {@see \App\Plugins\Support\PluginHttpFactory}
  * (php-api-toolkit) — Tests ersetzen ihn durch FakePluginHttp.
  */
-class GitlabServiceProvider extends ServiceProvider {
-    public function register(): void {
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . GitlabPlugin::ID);
+class GitlabServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return GitlabPlugin::ID;
+    }
 
+    protected function registerPlugin(): void {
         if ($this->app->runningInConsole()) {
             $this->commands([
                 Console\GitlabSyncCommand::class,
             ]);
         }
-    }
-
-    public function boot(): void {
-        $this->loadRoutesFrom(__DIR__ . '/routes.php');
     }
 }

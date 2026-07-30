@@ -89,7 +89,7 @@ class RetainerAdminTest extends TestCase {
 
         $agreement = $customer->billingAgreement()->firstOrFail();
         $this->assertTrue($agreement->mode === BillingAgreementMode::Retainer);
-        $this->assertSame('550.00', $agreement->expected_monthly_amount);
+        $this->assertSame('550.00', $agreement->expected_monthly_amount?->getAmount());
     }
 
     public function test_panel_shows_retainer_block(): void {

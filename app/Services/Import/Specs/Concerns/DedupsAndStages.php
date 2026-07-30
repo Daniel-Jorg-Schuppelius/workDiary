@@ -202,11 +202,9 @@ trait DedupsAndStages {
     private function resolveByExternalId(Organization $organization, string $externalId, string $modelClass, string $externalType): ?Model {
         $morph = (new $modelClass)->getMorphClass();
         $ref = ExternalReference::query()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', self::CSV_PLUGIN)
-            ->where('external_type', $externalType)
+            ->forPlugin($organization, self::CSV_PLUGIN, $externalType)
             ->where('referenceable_type', $morph)
-            ->where('external_id', $externalId)
+            ->forExternalId($externalId)
             ->first();
 
         return $ref?->referenceable;

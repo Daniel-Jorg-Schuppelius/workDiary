@@ -103,11 +103,9 @@ class IntegrationResolver {
 
     private function findLinked(Organization $org, string $pluginId, string $externalType, string $morph, string $externalId): ?Model {
         $ref = ExternalReference::query()
-            ->where('organization_id', $org->id)
-            ->where('plugin_id', $pluginId)
-            ->where('external_type', $externalType)
+            ->forPlugin($org, $pluginId, $externalType)
             ->where('referenceable_type', $morph)
-            ->where('external_id', $externalId)
+            ->forExternalId($externalId)
             ->first();
 
         if ($ref?->referenceable instanceof Model) {

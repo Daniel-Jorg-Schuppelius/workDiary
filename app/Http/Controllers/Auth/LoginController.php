@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Auth\Concerns\ResolvesWorkMode;
 use App\Http\Controllers\Controller;
-use App\Legacy\Support\LegacyConnectivity;
+use App\Legacy\LegacyBridge;
 use App\Models\{SsoConnection, User};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, RateLimiter};
@@ -169,7 +169,7 @@ class LoginController extends Controller {
 
         try {
             // attempt(): kein Connect-Versuch bei als down markierter legacy-DB; Mapping ist Best-Effort.
-            $legacy = LegacyConnectivity::attempt(function () use ($submittedUsername, $authUser): ?object {
+            $legacy = LegacyBridge::attempt(function () use ($submittedUsername, $authUser): ?object {
                 $found = DB::connection('legacy')
                     ->table('user')
                     ->select(['id', 'uname'])

@@ -11,7 +11,7 @@
 namespace App\Plugins\Msgraph;
 
 use App\Plugins\Msgraph\Api\MsgraphOAuth;
-use Illuminate\Support\ServiceProvider;
+use App\Plugins\Support\PluginServiceProviderBase;
 
 /**
  * Plugin-eigener ServiceProvider (MVP-328, Bauturbo A8). Registriert
@@ -19,10 +19,12 @@ use Illuminate\Support\ServiceProvider;
  * {@see MsgraphOAuth} ist Singleton — Tests ersetzen ihn durch eine Variante
  * mit Guzzle-MockHandler (Todoist-Muster).
  */
-class MsgraphServiceProvider extends ServiceProvider {
-    public function register(): void {
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . MsgraphPlugin::ID);
+class MsgraphServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return MsgraphPlugin::ID;
+    }
 
+    protected function registerPlugin(): void {
         $this->app->singleton(MsgraphOAuth::class, fn(): MsgraphOAuth => new MsgraphOAuth());
 
         if ($this->app->runningInConsole()) {
@@ -30,10 +32,5 @@ class MsgraphServiceProvider extends ServiceProvider {
                 Console\MsgraphPublishCommand::class,
             ]);
         }
-    }
-
-    public function boot(): void {
-        $this->loadRoutesFrom(__DIR__ . '/routes.php');
-        $this->loadViewsFrom(__DIR__ . '/Resources/views', 'msgraph');
     }
 }

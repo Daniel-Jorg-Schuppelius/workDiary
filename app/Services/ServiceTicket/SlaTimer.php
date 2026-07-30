@@ -58,13 +58,28 @@ class SlaTimer {
     }
 
     /**
-     * Findet den passenden SLA-Vertrag: zuerst Customer-spezifisch, sonst Default.
+     * Findet den passenden SLA-Vertrag: Projekt → Kunde → Org-Default (W5.4).
+     * Ein projektgebundener Vertrag gewinnt, wenn der Kontext ein Projekt hat;
+     * projektgebundene Verträge greifen NUR über ihr Projekt (nie als Kunden-
+     * oder Default-Treffer). Ohne Projekt bleibt das Verhalten unverändert.
      */
-    public function resolveContract(int $organizationId, ?int $customerId): ?SlaContract {
+    public function resolveContract(int $organizationId, ?int $customerId, ?int $projectId = null): ?SlaContract {
+        if ($projectId !== null) {
+            $projectBound = SlaContract::query()
+                ->where('organization_id', $organizationId)
+                ->where('project_id', $projectId)
+                ->where('is_active', true)
+                ->first();
+            if ($projectBound !== null) {
+                return $projectBound;
+            }
+        }
+
         if ($customerId !== null) {
             $specific = SlaContract::query()
                 ->where('organization_id', $organizationId)
                 ->where('customer_id', $customerId)
+                ->whereNull('project_id')
                 ->where('is_active', true)
                 ->first();
             if ($specific !== null) {
@@ -75,6 +90,7 @@ class SlaTimer {
         return SlaContract::query()
             ->where('organization_id', $organizationId)
             ->whereNull('customer_id')
+            ->whereNull('project_id')
             ->where('is_active', true)
             ->where('is_default', true)
             ->first();

@@ -166,11 +166,9 @@ class OpenProjectImportService {
      * @return 'unchanged'|'updated'|'conflict'
      */
     private function syncKnownEntry(Organization $organization, OpenProjectEntry $entry): string {
-        $reference = ExternalReference::query()->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', $this->pluginId())
-            ->where('external_type', self::EXT_TYPE_ENTRY)
-            ->where('external_id', $entry->entryKey)
+        $reference = ExternalReference::query()
+            ->forPlugin($organization, $this->pluginId(), self::EXT_TYPE_ENTRY)
+            ->forExternalId($entry->entryKey)
             ->first();
 
         $known = is_array($reference?->payload) ? (string) ($reference->payload['fingerprint'] ?? '') : '';

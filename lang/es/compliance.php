@@ -31,6 +31,9 @@ return [
             'restPeriod' => 'Tiempo de descanso',
             'breakMissing' => 'Pausa obligatoria',
             'maxWeeklyHours' => 'Jornada semanal máxima',
+            'frameTime' => 'Horario marco',
+            'coreTime' => 'Horario central',
+            'entryBreakMissing' => 'Pausa obligatoria (tiempo de proyecto)',
         ],
         'severity' => [
             'error' => 'Infracción',

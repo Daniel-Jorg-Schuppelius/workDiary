@@ -69,7 +69,7 @@ class ReconciliationAccountTest extends TestCase {
 
         $payment = CustomerAccountPayment::query()->firstOrFail();
         $this->assertTrue($payment->source === AccountPaymentSource::Bank);
-        $this->assertSame('550.00', $payment->amount);
+        $this->assertSame('550.00', $payment->amount?->getAmount());
         $this->assertSame($tx->id, $payment->bank_transaction_id);
         $this->assertNotNull($payment->payment_allocation_id);
         $this->assertSame($tx->booking_date->toDateString(), $payment->paid_on->toDateString());
@@ -79,7 +79,7 @@ class ReconciliationAccountTest extends TestCase {
             ->where('year', $payment->paid_on->year)
             ->where('month', $payment->paid_on->month)
             ->firstOrFail();
-        $this->assertSame('550.00', $statement->payments_total);
+        $this->assertSame('550.00', $statement->payments_total?->getAmount());
 
         $this->assertDatabaseHas('payment_reconciliation_events', [
             'bank_transaction_id' => $tx->id,
@@ -102,7 +102,7 @@ class ReconciliationAccountTest extends TestCase {
             'payment_allocation_id' => $allocation->id,
         ]);
         $statement = $this->agreement->statements()->orderByDesc('year')->orderByDesc('month')->first();
-        $this->assertSame('0.00', $statement->payments_total);
+        $this->assertSame('0.00', $statement->payments_total?->getAmount());
     }
 
     public function test_process_return_books_negative_payment(): void {
@@ -118,7 +118,7 @@ class ReconciliationAccountTest extends TestCase {
         app(ReconciliationService::class)->processReturn($returnTx, $original, 'AC04', $this->user);
 
         $negative = CustomerAccountPayment::query()->where('amount', '<', 0)->firstOrFail();
-        $this->assertSame('-550.00', $negative->amount);
+        $this->assertSame('-550.00', $negative->amount?->getAmount());
         $this->assertStringContainsString('RET#' . $original->id, (string) $negative->note);
         // Original-Zahlung bleibt bestehen (GoBD: Zahlung ist geflossen).
         $this->assertSame(2, CustomerAccountPayment::query()->count());

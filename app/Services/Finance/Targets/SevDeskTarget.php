@@ -203,12 +203,8 @@ class SevDeskTarget implements FacturationTarget {
         $customer = $transfer->customer;
 
         $existing = ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $transfer->organization_id)
-            ->where('plugin_id', SevDeskPlugin::ID)
-            ->where('external_type', self::EXT_TYPE_CONTACT)
-            ->where('referenceable_type', $customer->getMorphClass())
-            ->where('referenceable_id', $customer->getKey())
+            ->forPlugin($transfer->organization_id, SevDeskPlugin::ID, self::EXT_TYPE_CONTACT)
+            ->forReferenceable($customer)
             ->first();
         if ($existing instanceof ExternalReference) {
             return $existing;

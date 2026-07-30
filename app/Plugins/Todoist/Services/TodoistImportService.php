@@ -72,9 +72,7 @@ class TodoistImportService {
 
         $sectionMap = $link->sectionLinks()->pluck('task_status', 'todoist_section_id');
         $collaboratorMap = ExternalReference::query()
-            ->where('organization_id', $link->organization_id)
-            ->where('plugin_id', TodoistPlugin::ID)
-            ->where('external_type', TodoistPlugin::EXT_TYPE_COLLABORATOR)
+            ->forPlugin($link->organization_id, TodoistPlugin::ID, TodoistPlugin::EXT_TYPE_COLLABORATOR)
             ->pluck('referenceable_id', 'external_id');
 
         // Referenzen der Items UND ihrer Eltern laden — im Delta kann ein Kind
@@ -85,9 +83,7 @@ class TodoistImportService {
 
         /** @var Collection<string, ExternalReference> $references */
         $references = ExternalReference::query()
-            ->where('organization_id', $link->organization_id)
-            ->where('plugin_id', TodoistPlugin::ID)
-            ->where('external_type', TodoistPlugin::EXT_TYPE_TASK)
+            ->forPlugin($link->organization_id, TodoistPlugin::ID, TodoistPlugin::EXT_TYPE_TASK)
             ->whereIn('external_id', $referenceIds)
             ->get()
             ->keyBy('external_id');
@@ -107,10 +103,8 @@ class TodoistImportService {
         foreach ($deleted as $remote) {
             $reference = $references->get((string) ($remote['id'] ?? ''))
                 ?? ExternalReference::query()
-                    ->where('organization_id', $link->organization_id)
-                    ->where('plugin_id', TodoistPlugin::ID)
-                    ->where('external_type', TodoistPlugin::EXT_TYPE_TASK)
-                    ->where('external_id', (string) ($remote['id'] ?? ''))
+                    ->forPlugin($link->organization_id, TodoistPlugin::ID, TodoistPlugin::EXT_TYPE_TASK)
+                    ->forExternalId((string) ($remote['id'] ?? ''))
                     ->first();
             if ($reference !== null && $this->markRemoteDeleted($link, $reference, explicit: true)) {
                 $counters['inbox']++;
@@ -371,9 +365,7 @@ class TodoistImportService {
         $remoteIds = $remoteTasks->pluck('id')->map(fn ($id) => (string) $id)->all();
 
         $vanished = ExternalReference::query()
-            ->where('organization_id', $link->organization_id)
-            ->where('plugin_id', TodoistPlugin::ID)
-            ->where('external_type', TodoistPlugin::EXT_TYPE_TASK)
+            ->forPlugin($link->organization_id, TodoistPlugin::ID, TodoistPlugin::EXT_TYPE_TASK)
             ->whereNotIn('external_id', $remoteIds)
             ->get();
 

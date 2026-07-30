@@ -56,12 +56,9 @@ class BhbOutboxDispatcher implements IntegrationOutboxDispatcher {
         }
 
         // Referenz-Idempotenz: verspätete Wiederholung lädt nie doppelt hoch.
-        $existing = ExternalReference::query()->withoutGlobalScopes()
-            ->where('organization_id', $entry->organization_id)
-            ->where('plugin_id', BuchhaltungsButlerPlugin::ID)
-            ->where('external_type', self::EXT_TYPE_RECEIPT)
-            ->where('referenceable_type', $invoice->getMorphClass())
-            ->where('referenceable_id', $invoice->getKey())
+        $existing = ExternalReference::query()
+            ->forPlugin($entry->organization_id, BuchhaltungsButlerPlugin::ID, self::EXT_TYPE_RECEIPT)
+            ->forReferenceable($invoice)
             ->exists();
         if ($existing) {
             return true;

@@ -33,10 +33,8 @@ trait ReconcilesRemoteDeletions {
             return 0;
         }
 
-        $orphans = ExternalReference::query()->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', $this->pluginId())
-            ->where('external_type', $externalType)
+        $orphans = ExternalReference::query()
+            ->forPlugin($organization, $this->pluginId(), $externalType)
             ->where('referenceable_type', (new TimeEntry)->getMorphClass())
             ->whereNotIn('external_id', $seenKeys)
             ->whereIn('referenceable_id', TimeEntry::query()->withoutGlobalScopes()

@@ -14,8 +14,10 @@ namespace App\Services\Search;
 
 use App\Enums\Knowledge\ArticleStatus;
 use App\Enums\User\Permission;
-use App\Models\{Attachment, Comment, CommunicationNote, Customer, DiaryEntry, Document, Expense, FormSubmission, KnowledgeArticle, PerDiemTrip, Project, User};
+use App\Models\{Asset, Attachment, Comment, CommunicationNote, Customer, DiaryEntry, Document, Expense, FormSubmission, KnowledgeArticle, PerDiemTrip, Project, User};
+use App\Services\Asset\AssetFormOptions;
 use App\Services\Licensing\FeatureFlagResolver;
+use App\Support\CarbonFmt;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Facades\Gate;
 
@@ -35,12 +37,18 @@ use Illuminate\Support\Facades\Gate;
  * Auftrag) und Anhang-Metadaten (Attachment.original_name; Aufträge des
  * Nutzers bzw. eigene Uploads — Volltext/OCR bleibt Folge-MVP).
  *
+ * Anzeige-Zeitstempel (W4.2): laufen über {@see CarbonFmt} — datetime-Spalten
+ * (UTC) erst via orgTz() in die Anzeige-Zeitzone, reine date-Casts direkt fdate().
+ *
  * @phpstan-type SearchItem array{id: int|string, title: string, subtitle: string|null, url: string}
  * @phpstan-type SearchGroup array{key: string, label: string, icon: string, items: list<array{id: int|string, title: string, subtitle: string|null, url: string}>}
  * @phpstan-type SearchFilters array{domain?: string|null, from?: string|null, to?: string|null, person?: int|null, customer?: int|null}
  */
 class GlobalSearchService {
-    public function __construct(private readonly FeatureFlagResolver $featureFlags) {}
+    public function __construct(
+        private readonly FeatureFlagResolver $featureFlags,
+        private readonly AssetFormOptions $assetOptions,
+    ) {}
 
     /**
      * Verfügbare Domänen (Key => Label) für Filter-UI.
@@ -51,6 +59,7 @@ class GlobalSearchService {
         return [
             'customers' => (string) __('Kunden'),
             'projects' => (string) __('Projekte'),
+            'assets' => (string) __('Objekte & Assets'),
             'diary' => (string) __('Aufträge'),
             'expenses' => (string) __('Spesen'),
             'per_diem_trips' => (string) __('Reisekosten'),
@@ -127,6 +136,35 @@ class GlobalSearchService {
                     ->all());
         }
 
+        // Objekte & Assets (Vollreview W5.2): nur mit asset.view (AssetPolicy::
+        // viewAny, Admin-Bypass); gefunden über Name sowie Asset-/Inventar-/
+        // Seriennummer. Kein Personenbezug → Personen-Filter liefert bewusst
+        // keine Treffer; Kunden-Filter über customer_id.
+        if ($wants('assets') && $person === null && Gate::forUser($user)->allows('viewAny', Asset::class)) {
+            $assetQuery = Asset::query()
+                ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+                ->where(fn($q) => $q->whereLikeEscaped('name', $term)
+                    ->orWhereLikeEscaped('asset_no', $term)
+                    ->orWhereLikeEscaped('inventory_no', $term)
+                    ->orWhereLikeEscaped('serial_no', $term))
+                ->when($customer !== null, fn($q) => $q->where('customer_id', $customer))
+                ->with('customer:id,name');
+            $range($assetQuery, 'created_at');
+            $statusLabels = $this->assetOptions->statusOptions();
+            $groups[] = $this->makeGroup('assets', (string) __('Objekte & Assets'), 'precision_manufacturing',
+                $assetQuery->orderBy('name')->limit($limit)->get()
+                    ->map(fn(Asset $a) => [
+                        'id' => $a->id,
+                        'title' => (string) $a->name,
+                        'subtitle' => trim('#' . $a->asset_no
+                            . ' · ' . ($statusLabels[$a->status->value] ?? $a->status->value)
+                            . ($a->inventory_no ? ' · ' . $a->inventory_no : ($a->serial_no ? ' · ' . $a->serial_no : ''))
+                            . ($a->customer ? ' · ' . $a->customer->name : '')),
+                        'url' => route('assets.show', $a),
+                    ])
+                    ->all());
+        }
+
         // Aufträge / Tagebucheinträge (MVP-014): Sichtbarkeit wie der Index — ohne
         // diary.viewAny (und kein Admin) nur EIGENE bzw. zugewiesene Aufträge.
         if ($wants('diary')) {
@@ -144,7 +182,7 @@ class GlobalSearchService {
                         'title' => $d->title ?: ($d->content ? mb_strimwidth($d->content, 0, 60, '…') : (string) __('Auftrag #:id', ['id' => $d->id])),
                         'subtitle' => trim($d->status->label()
                             . ($d->customer ? ' · ' . $d->customer->name : '')
-                            . ($d->start_at ? ' · ' . $d->start_at->format('d.m.Y') : '')),
+                            . ($d->start_at ? ' · ' . CarbonFmt::fdate(CarbonFmt::orgTz($d->start_at)) : '')),
                         'url' => route('diary.show', $d),
                     ])
                     ->all());
@@ -171,7 +209,7 @@ class GlobalSearchService {
                     ->map(fn(Expense $e) => [
                         'id' => $e->id,
                         'title' => $e->vendor ?: ($e->description ?: (string) __('Spese #:id', ['id' => $e->id])),
-                        'subtitle' => $e->date->format('d.m.Y')
+                        'subtitle' => CarbonFmt::fdate($e->date)
                             . ' · ' . NumberHelper::toGermanFormat(($e->amount_gross?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) . ' €',
                         'url' => route('expenses.show', $e),
                     ])
@@ -195,7 +233,7 @@ class GlobalSearchService {
                     ->map(fn(PerDiemTrip $t) => [
                         'id' => $t->id,
                         'title' => trim(($t->location ?: '—') . ($t->country ? ' (' . $t->country . ')' : '')),
-                        'subtitle' => $t->started_at->format('d.m.Y')
+                        'subtitle' => CarbonFmt::fdate(CarbonFmt::orgTz($t->started_at))
                             . ($t->purpose ? ' · ' . mb_strimwidth($t->purpose, 0, 60, '…') : ''),
                         'url' => route('per-diem-trips.show', $t),
                     ])
@@ -241,7 +279,7 @@ class GlobalSearchService {
                 $noteItems[] = [
                     'id' => $n->id,
                     'title' => (string) $n->subject,
-                    'subtitle' => $n->occurred_at->format('d.m.Y')
+                    'subtitle' => CarbonFmt::fdate(CarbonFmt::orgTz($n->occurred_at))
                         . ' · ' . $n->type->label()
                         . ($notableName !== null ? ' · ' . $notableName : ''),
                     'url' => $url,
@@ -308,7 +346,7 @@ class GlobalSearchService {
                     ->map(fn(FormSubmission $s) => [
                         'id' => $s->id,
                         'title' => $s->template->name ?? __('form.title.submissions') . ' #' . $s->id,
-                        'subtitle' => $s->submitted_at->format('d.m.Y')
+                        'subtitle' => CarbonFmt::fdate(CarbonFmt::orgTz($s->submitted_at))
                             . ($s->submitter ? ' · ' . $s->submitter->name : ''),
                         'url' => route('form-submissions.show', $s),
                     ])
@@ -337,7 +375,7 @@ class GlobalSearchService {
                     ->map(fn(Comment $c) => [
                         'id' => $c->id,
                         'title' => mb_strimwidth((string) $c->body, 0, 80, '…'),
-                        'subtitle' => ($c->created_at?->format('d.m.Y') ?? '')
+                        'subtitle' => ($c->created_at !== null ? CarbonFmt::fdate(CarbonFmt::orgTz($c->created_at)) : '')
                             . ($c->user ? ' · ' . $c->user->name : '')
                             . ($c->commentable instanceof DiaryEntry && $c->commentable->title ? ' · ' . $c->commentable->title : ''),
                         'url' => route('diary.show', $c->commentable_id) . '#comments',
@@ -375,7 +413,7 @@ class GlobalSearchService {
                     ->map(fn(Attachment $a) => [
                         'id' => $a->id,
                         'title' => (string) $a->original_name,
-                        'subtitle' => ($a->created_at?->format('d.m.Y') ?? '')
+                        'subtitle' => ($a->created_at !== null ? CarbonFmt::fdate(CarbonFmt::orgTz($a->created_at)) : '')
                             . ($a->mime ? ' · ' . $a->mime : ''),
                         'url' => route('attachments.download', $a),
                     ])

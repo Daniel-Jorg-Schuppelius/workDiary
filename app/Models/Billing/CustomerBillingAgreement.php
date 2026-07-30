@@ -10,6 +10,7 @@
 
 namespace App\Models\Billing;
 
+use App\Casts\MoneyCast;
 use App\Enums\Billing\BillingAgreementMode;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer;
@@ -29,9 +30,9 @@ use Illuminate\Support\Carbon;
  * @property int $customer_id
  * @property BillingAgreementMode $mode
  * @property CurrencyCode $currency
- * @property float|null $expected_monthly_amount
+ * @property \CommonToolkit\ValueObjects\Money|null $expected_monthly_amount
  * @property int $workdays_per_week
- * @property float $opening_balance
+ * @property \CommonToolkit\ValueObjects\Money|null $opening_balance
  * @property Carbon|null $opening_balance_date
  * @property bool $active
  * @property string|null $notes
@@ -69,9 +70,9 @@ class CustomerBillingAgreement extends Model {
     protected $casts = [
         'mode' => BillingAgreementMode::class,
         'currency' => CurrencyCode::class,
-        'expected_monthly_amount' => 'decimal:2',
+        'expected_monthly_amount' => MoneyCast::class . ':currency,2',
         'workdays_per_week' => 'integer',
-        'opening_balance' => 'decimal:2',
+        'opening_balance' => MoneyCast::class . ':currency,2',
         'opening_balance_date' => 'date',
         'active' => 'boolean',
     ];

@@ -27,12 +27,8 @@ trait ReconcilesByMarker {
     /** Bereits übergeben? Harte Idempotenz je Transfer über den Nachweis. */
     private function existingReference(BillingTransfer $transfer, string $pluginId, string $externalType): ?ExternalReference {
         $existing = ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $transfer->organization_id)
-            ->where('plugin_id', $pluginId)
-            ->where('external_type', $externalType)
-            ->where('referenceable_type', $transfer->getMorphClass())
-            ->where('referenceable_id', $transfer->getKey())
+            ->forPlugin($transfer->organization_id, $pluginId, $externalType)
+            ->forReferenceable($transfer)
             ->first();
 
         return $existing instanceof ExternalReference ? $existing : null;

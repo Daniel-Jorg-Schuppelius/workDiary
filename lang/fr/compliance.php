@@ -31,6 +31,9 @@ return [
             'restPeriod' => 'Temps de repos',
             'breakMissing' => 'Pause obligatoire',
             'maxWeeklyHours' => 'Durée hebdomadaire maximale',
+            'frameTime' => 'Plage de travail autorisée',
+            'coreTime' => 'Plages fixes',
+            'entryBreakMissing' => 'Pause obligatoire (temps projet)',
         ],
         'severity' => [
             'error' => 'Infraction',

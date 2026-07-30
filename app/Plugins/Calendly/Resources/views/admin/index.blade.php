@@ -51,6 +51,44 @@
         </div>
     @endunless
 
+    {{-- Einmal-Buchungslink (Outbound, P5) --}}
+    @if ($connection && $connection->isActive())
+        @if (session('calendly_booking_url'))
+            <div class="alert alert-info text-sm">
+                <span>{{ __('Buchungslink') }}:
+                    <a href="{{ session('calendly_booking_url') }}" target="_blank" rel="noopener"
+                       class="link break-all">{{ session('calendly_booking_url') }}</a>
+                </span>
+            </div>
+        @endif
+
+        <div class="rounded-box border border-base-300 p-4 space-y-2">
+            <h3 class="font-medium">{{ __('Einmal-Buchungslink') }}</h3>
+            <p class="text-xs text-base-content/60">
+                {{ __('Erzeugt einen einmaligen Calendly-Buchungslink je Lead/Leistung — nicht öffentlich gelistet, zum direkten Teilen.') }}
+            </p>
+            <form method="POST" action="{{ route('admin.calendly.booking-link') }}" class="flex flex-wrap items-end gap-2">
+                @csrf
+                <div class="fieldset">
+                    <label class="fieldset-label" for="booking-link-name">{{ __('Bezeichnung') }}</label>
+                    <input id="booking-link-name" name="name" type="text" required maxlength="255"
+                           class="input input-sm input-bordered" placeholder="{{ __('z. B. Erstberatung') }}" />
+                </div>
+                <div class="fieldset">
+                    <label class="fieldset-label" for="booking-link-duration">{{ __('Dauer (Minuten)') }}</label>
+                    <input id="booking-link-duration" name="duration" type="number" required min="5" max="480" value="30"
+                           class="input input-sm input-bordered w-28" />
+                </div>
+                <div class="fieldset">
+                    <label class="fieldset-label" for="booking-link-days">{{ __('Buchbar (Tage)') }}</label>
+                    <input id="booking-link-days" name="days" type="number" min="1" max="90" value="30"
+                           class="input input-sm input-bordered w-24" />
+                </div>
+                <button type="submit" class="btn btn-sm btn-primary">{{ __('Link erzeugen') }}</button>
+            </form>
+        </div>
+    @endif
+
     {{-- Offene Terminwünsche (zweiphasige Bestätigung) --}}
     @if ($requests->isEmpty())
         <x-empty-state framed icon="event_busy"

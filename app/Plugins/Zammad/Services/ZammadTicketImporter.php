@@ -44,10 +44,8 @@ class ZammadTicketImporter {
             $externalId = (string) $ticket['id'];
 
             $exists = ExternalReference::query()
-                ->where('organization_id', $connection->organization_id)
-                ->where('plugin_id', ZammadPlugin::ID)
-                ->where('external_type', ZammadPlugin::EXT_TYPE_TICKET)
-                ->where('external_id', $externalId)
+                ->forPlugin($connection->organization_id, ZammadPlugin::ID, ZammadPlugin::EXT_TYPE_TICKET)
+                ->forExternalId($externalId)
                 ->exists();
             if ($exists) {
                 $skipped++;
@@ -205,10 +203,7 @@ class ZammadTicketImporter {
         }
 
         $existingRefs = ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $connection->organization_id)
-            ->where('plugin_id', ZammadPlugin::ID)
-            ->where('external_type', ZammadPlugin::EXT_TYPE_TICKET)
+            ->forPlugin($connection->organization_id, ZammadPlugin::ID, ZammadPlugin::EXT_TYPE_TICKET)
             ->count();
 
         $previous = $connection->ticket_target;

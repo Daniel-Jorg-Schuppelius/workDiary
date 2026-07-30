@@ -31,15 +31,21 @@ class SlaContractController extends Controller {
         $this->authorizeView($request);
 
         $contracts = SlaContract::query()
-            ->with('customer:id,name')
+            ->with(['customer:id,name', 'project:id,name'])
             ->withCount('quotas')
             ->orderByDesc('is_default')
             ->orderBy('code')
             ->get();
 
+        $canManage = $request->user()?->can(\App\Enums\User\Permission::SlaContractManage->value) ?? false;
+
         return view('sla-contracts.index', [
             'contracts' => $contracts,
-            'canManage' => $request->user()?->can(\App\Enums\User\Permission::SlaContractManage->value) ?? false,
+            'canManage' => $canManage,
+            // Projekt-Auswahl fürs Admin-Formular (W5.4), org-gescopt via Global Scope.
+            'projects' => $canManage
+                ? \App\Models\Project::query()->orderBy('name')->get(['id', 'name'])
+                : collect(),
         ]);
     }
 
@@ -75,6 +81,7 @@ class SlaContractController extends Controller {
             'code' => ['required', 'string', 'min:2', 'max:60'],
             'label' => ['required', 'string', 'min:2', 'max:180'],
             'customer_id' => ['nullable', new \App\Rules\ExistsInCurrentOrganization('customers')],
+            'project_id' => ['nullable', new \App\Rules\ExistsInCurrentOrganization('projects')],
             'priority_table' => ['required', 'json'],
             'business_hours' => ['nullable', 'json'],
             'pause_rules' => ['nullable', 'array'],
@@ -89,6 +96,8 @@ class SlaContractController extends Controller {
             'code' => $data['code'],
             'label' => $data['label'],
             'customer_id' => $data['customer_id'] ?? null,
+            // Optionale Projektbindung (W5.4): leer = kunden-/org-weiter Vertrag.
+            'project_id' => ($data['project_id'] ?? '') !== '' ? (int) $data['project_id'] : null,
             'priority_table' => json_decode((string) $data['priority_table'], true),
             'business_hours' => ($data['business_hours'] ?? '') !== ''
                 ? json_decode((string) $data['business_hours'], true)

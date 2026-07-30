@@ -174,9 +174,7 @@ class OpenProjectController extends Controller {
      */
     private function findMapping(Organization $organization, int $id): ExternalReference {
         return ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', OpenProjectPlugin::ID)
+            ->forPlugin($organization, OpenProjectPlugin::ID)
             ->whereIn('external_type', [
                 OpenProjectStructureSync::EXT_TYPE_PROJECT,
                 OpenProjectStructureSync::EXT_TYPE_WORK_PACKAGE,

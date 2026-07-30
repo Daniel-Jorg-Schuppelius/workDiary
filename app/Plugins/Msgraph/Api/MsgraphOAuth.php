@@ -10,35 +10,21 @@
 
 namespace App\Plugins\Msgraph\Api;
 
-use APIToolkit\API\Authentication\OAuth2\OAuth2AuthorizationCodeGrant;
 use App\Plugins\Msgraph\MsgraphConfig;
-use GuzzleHttp\Client as GuzzleClient;
+use App\Plugins\Support\PluginOAuthGrant;
 
 /**
- * Baut den OAuth2-Authorization-Code-Grant (+ PKCE) gegen die Microsoft
- * Identity Platform (MVP-328, Bauturbo A8) aus der installationsweiten
- * Konfiguration (Tenant-Default 'common'). Als Container-Singleton der
- * Austauschpunkt für Tests: dort wird ein Guzzle-`MockHandler`-Client
- * injiziert (Todoist-Muster).
+ * OAuth2-Authorization-Code-Grant (+ PKCE) gegen die Microsoft Identity
+ * Platform (MVP-328, Bauturbo A8); authorize_url/token_url kommen aus
+ * MsgraphConfig bereits mit eingesetztem Tenant (Default 'common').
  */
-class MsgraphOAuth {
-    public function __construct(private readonly ?GuzzleClient $httpClient = null) {}
-
-    public function grant(): OAuth2AuthorizationCodeGrant {
-        $config = MsgraphConfig::resolve();
-
-        return new OAuth2AuthorizationCodeGrant(
-            clientId: $config['client_id'],
-            clientSecret: $config['client_secret'],
-            authorizeUrl: $config['authorize_url'],
-            tokenUrl: $config['token_url'],
-            redirectUri: route('admin.msgraph.oauth.callback'),
-            httpClient: $this->httpClient,
-        );
+class MsgraphOAuth extends PluginOAuthGrant {
+    /** @return array<string, string|int|bool> */
+    protected function config(): array {
+        return MsgraphConfig::resolve();
     }
 
-    /** @return list<string> */
-    public function scopes(): array {
-        return array_values(array_filter(explode(' ', MsgraphConfig::resolve()['scopes'])));
+    protected function callbackRouteName(): string {
+        return 'admin.msgraph.oauth.callback';
     }
 }

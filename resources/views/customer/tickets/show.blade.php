@@ -23,7 +23,13 @@
                         · {{ $item->actor }}
                     @endif
                 </p>
-                @if ($item->summary)
+                @if ($item->type === 'attachment' && $item->url)
+                    {{-- Anhang als Download-Link (W5.1, kunden-gescopter Endpunkt). --}}
+                    <a href="{{ $item->url }}" class="link link-hover inline-flex items-center gap-1 text-sm">
+                        <span class="material-symbols-outlined text-sm" aria-hidden="true">download</span>
+                        {{ $item->summary }}
+                    </a>
+                @elseif ($item->summary)
                     <p class="whitespace-pre-line text-sm">{{ $item->summary }}</p>
                 @endif
             </div>

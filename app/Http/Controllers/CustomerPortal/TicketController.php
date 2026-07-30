@@ -12,16 +12,17 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\CustomerPortal;
 
-use App\Enums\ServiceTicket\{ServiceTicketSource, ServiceTicketStatus};
+use App\Enums\ServiceTicket\{ServiceTicketSource, ServiceTicketStatus, TicketMessageKind};
 use App\Http\Controllers\{AttachmentController, Controller};
-use App\Models\{ServiceQueue, ServiceTicket, TicketSatisfaction, User};
+use App\Models\{Attachment, ServiceQueue, ServiceTicket, ServiceTicketMessage, TicketSatisfaction, User};
 use App\Services\Attachments\FileAttacher;
 use App\Services\ServiceTicket\{ServiceTicketService, TicketConversationService};
 use App\Services\Timeline\ServiceTicketTimelineService;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, Storage};
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * Portal-Tickets (Feature 065, MVP-160): nur EIGENE Tickets des Kunden,
@@ -54,6 +55,51 @@ class TicketController extends Controller {
             'timeline' => $timeline->forCustomer($ticket),
             'rated' => TicketSatisfaction::query()->where('service_ticket_id', $ticket->id)->exists(),
         ]);
+    }
+
+    /**
+     * Sicherer Portal-Download eines Ticket-Anhangs (W5.1): gleiche
+     * Scope-Grenze wie {@see self::show()} (nur eigene Tickets), Anhang nur
+     * bei Kundenfreigabe und Zugehörigkeit zum Ticket bzw. zu einer
+     * kundensichtbaren Nachricht — Anhänge interner Notizen bleiben 404
+     * (doppelter Riegel wie im {@see ServiceTicketTimelineService}). Pfade
+     * stammen ausschließlich aus der DB und werden über den Storage-Disk
+     * aufgelöst — kein Client-Input im Pfad.
+     */
+    public function downloadAttachment(ServiceTicket $ticket, Attachment $attachment): BinaryFileResponse {
+        $user = $this->portalUser();
+        abort_unless((int) $ticket->customer_id === (int) $user->customer_id, 404);
+        abort_unless($this->isCustomerVisibleTicketAttachment($ticket, $attachment), 404);
+
+        $disk = Storage::disk($attachment->disk);
+        if (! $disk->exists($attachment->path)) {
+            abort(404);
+        }
+
+        return response()->download($disk->path($attachment->path), $attachment->original_name);
+    }
+
+    /** Leak-Schutz: Anhang gehört zum Ticket (direkt oder via public-Nachricht) und ist kundensichtbar. */
+    private function isCustomerVisibleTicketAttachment(ServiceTicket $ticket, Attachment $attachment): bool {
+        if (! $attachment->customer_visible) {
+            return false;
+        }
+
+        if ($attachment->attachable_type === $ticket->getMorphClass()) {
+            return (int) $attachment->attachable_id === (int) $ticket->getKey();
+        }
+
+        if ($attachment->attachable_type === (new ServiceTicketMessage())->getMorphClass()) {
+            // Typfrage statt Filter-Flag: nur Anhänge kundensichtbarer
+            // Nachrichten (public_reply/system_event) sind ladbar.
+            return ServiceTicketMessage::query()
+                ->whereKey($attachment->attachable_id)
+                ->where('service_ticket_id', $ticket->id)
+                ->whereIn('kind', [TicketMessageKind::PublicReply->value, TicketMessageKind::SystemEvent->value])
+                ->exists();
+        }
+
+        return false;
     }
 
     public function store(Request $request, ServiceTicketService $tickets, TicketConversationService $conversation): RedirectResponse {

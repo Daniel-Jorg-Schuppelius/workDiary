@@ -12,21 +12,19 @@ namespace App\Plugins\Nextcloud;
 
 use App\Plugins\Nextcloud\Contracts\NextcloudTransportFactory;
 use App\Plugins\Nextcloud\Services\GuzzleNextcloudTransportFactory;
-use Illuminate\Support\ServiceProvider;
+use App\Plugins\Support\PluginServiceProviderBase;
 
 /**
  * Plugin-eigener ServiceProvider (Feature 080 MVP-382 / Feature 017 MVP-383).
  * Bindet die WebDAV-Transport-Factory (Tests ersetzen sie durch eine Variante
  * mit gemocktem Guzzle-Client ohne HTTP) und registriert Config + Routen.
  */
-class NextcloudServiceProvider extends ServiceProvider {
-    public function register(): void {
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . NextcloudPlugin::ID);
-
-        $this->app->singleton(NextcloudTransportFactory::class, GuzzleNextcloudTransportFactory::class);
+class NextcloudServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return NextcloudPlugin::ID;
     }
 
-    public function boot(): void {
-        $this->loadRoutesFrom(__DIR__ . '/routes.php');
+    protected function registerPlugin(): void {
+        $this->app->singleton(NextcloudTransportFactory::class, GuzzleNextcloudTransportFactory::class);
     }
 }

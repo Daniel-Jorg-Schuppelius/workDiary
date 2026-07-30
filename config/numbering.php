@@ -68,6 +68,26 @@ return [
             'reset_per_year' => true,
             'starts_at' => 0,
         ],
+        // Datenschutz-Fallakten (Vollreview W1.1): lösen die früheren
+        // count-basierten nextNumber()-Kopien in den Privacy-Services ab.
+        'privacy_incident' => [
+            'prefix' => 'DSV',
+            'prefix_separator' => '-',
+            'include_year' => true,
+            'year_separator' => '-',
+            'padding' => 4,
+            'reset_per_year' => true,
+            'starts_at' => 0,
+        ],
+        'data_subject_request' => [
+            'prefix' => 'DSR',
+            'prefix_separator' => '-',
+            'include_year' => true,
+            'year_separator' => '-',
+            'padding' => 4,
+            'reset_per_year' => true,
+            'starts_at' => 0,
+        ],
         'problem_report' => [
             'prefix' => 'PR',
             'prefix_separator' => '-',

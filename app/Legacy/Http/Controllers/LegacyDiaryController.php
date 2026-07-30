@@ -181,6 +181,54 @@ class LegacyDiaryController extends Controller {
         return redirect()->route('legacy.diary.index')->with('success', 'Legacy-Eintrag geloescht.');
     }
 
+    public function bulk(Request $request): RedirectResponse {
+        $data = $request->validate([
+            'action' => ['required', 'string', 'in:status_open,status_alert,status_progress,status_done,delete'],
+            'ids' => ['required', 'array', 'max:500'],
+            'ids.*' => ['integer'],
+        ]);
+
+        $authUser = Auth::user();
+        $isAdmin = LegacyRoleResolver::isAdmin($authUser);
+        $legacyUserId = LegacyRoleResolver::resolveLegacyUserId($authUser);
+
+        // Gleiche Berechtigungsgrenze wie ensureCanModify: Admin alles,
+        // sonst nur eigene Eintraege (fremde IDs werden still ignoriert).
+        $query = LegacyDiaryEntry::query()->whereIn('id', $data['ids']);
+
+        if (! $isAdmin) {
+            abort_if($legacyUserId <= 0, 403);
+            $query->where('user', $legacyUserId);
+        }
+
+        $entries = $query->get();
+
+        if ($data['action'] === 'delete') {
+            foreach ($entries as $entry) {
+                $entry->delete();
+            }
+
+            return redirect()->route('legacy.diary.index')
+                ->with('success', $entries->count() . ' Legacy-Eintraege geloescht.');
+        }
+
+        $gelesen = match ((string) $data['action']) {
+            'status_open' => 2,
+            'status_alert' => 3,
+            'status_progress' => 1,
+            'status_done' => -1,
+            // Von der Validierung ausgeschlossen — nur für die Exhaustivität.
+            default => abort(422),
+        };
+
+        foreach ($entries as $entry) {
+            $entry->update(['gelesen' => $gelesen, 'aktuell' => now()]);
+        }
+
+        return redirect()->route('legacy.diary.index')
+            ->with('success', $entries->count() . ' Legacy-Eintraege aktualisiert.');
+    }
+
     private function ensureCanModify(LegacyDiaryEntry $entry): void {
         $authUser = Auth::user();
 

@@ -118,11 +118,9 @@ class TerminalStampService {
     }
 
     private function alreadySeen(AttendanceTerminal $terminal, string $eventId): bool {
-        return ExternalReference::query()->withoutGlobalScopes()
-            ->where('organization_id', $terminal->organization_id)
-            ->where('plugin_id', self::PLUGIN_ID)
-            ->where('external_type', self::EXTERNAL_TYPE)
-            ->where('external_id', $eventId)
+        return ExternalReference::query()
+            ->forPlugin($terminal->organization_id, self::PLUGIN_ID, self::EXTERNAL_TYPE)
+            ->forExternalId($eventId)
             ->exists();
     }
 

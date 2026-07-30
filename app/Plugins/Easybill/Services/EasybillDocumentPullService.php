@@ -43,10 +43,7 @@ class EasybillDocumentPullService {
         }
 
         $references = ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organizationId)
-            ->where('plugin_id', EasybillPlugin::ID)
-            ->where('external_type', EasybillTarget::EXT_TYPE_INVOICE)
+            ->forPlugin($organizationId, EasybillPlugin::ID, EasybillTarget::EXT_TYPE_INVOICE)
             ->get()
             ->filter(fn(ExternalReference $ref): bool => empty(((array) $ref->payload)['document_pulled_at'] ?? null));
         if ($references->isEmpty()) {

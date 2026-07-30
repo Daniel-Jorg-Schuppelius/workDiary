@@ -13,7 +13,6 @@ namespace App\Http\Controllers\Reporting\Concerns;
 use App\Models\{AuditLog, User};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
-use CommonToolkit\Helper\Data\CSV\StringHelper;
 use Illuminate\Http\{Request, Response};
 
 /**
@@ -51,19 +50,21 @@ trait WritesReportCsv {
         $delimiter = (string) config('reports.csv_delimiter', ';');
         $delimiter = $delimiter === '' ? ';' : $delimiter[0];
 
-        $csv = '';
-
+        $commentLines = [];
         if ((bool) config('reports.csv_meta_lines', true)) {
-            $csv .= '#report:' . $reportCode . "\r\n";
-            $csv .= '#generated:' . CarbonImmutable::now('UTC')->format('Y-m-d\TH:i:s\Z') . "\r\n";
-            $csv .= '#filter_hash:' . $this->reportFilterHash($filters) . "\r\n";
+            $commentLines = [
+                '#report:' . $reportCode,
+                '#generated:' . CarbonImmutable::now('UTC')->format('Y-m-d\TH:i:s\Z'),
+                '#filter_hash:' . $this->reportFilterHash($filters),
+            ];
         }
 
-        foreach ($rows as $row) {
-            $csv .= StringHelper::encodeLine($row, $delimiter) . "\r\n";
-        }
+        // W4.1: gemeinsames Low-Level-Skelett (BOM, Kommentarkopf, Guard auf
+        // nutzergesteuerten Zellen) lebt in CsvExport; hier bleibt nur die
+        // Report-Fachsemantik (Meta-Zeilen, Audit, Filter-Hash).
+        $csv = \App\Support\CsvExport::toString(null, $rows, $delimiter, $commentLines);
 
-        return response(\CommonToolkit\Helper\Data\StringHelper::prependBom($csv), 200, [
+        return response($csv, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);

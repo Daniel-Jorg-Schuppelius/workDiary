@@ -120,7 +120,7 @@ class ImportBillingExcelCommand extends Command {
                 ->where('year', $row['year'])
                 ->where('month', $row['month'])
                 ->first();
-            $row['computed_gross'] = $statement !== null ? (float) $statement->gross_value : null;
+            $row['computed_gross'] = $statement?->gross_value?->toFloat();
         }
 
         return $summary;

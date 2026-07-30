@@ -28,9 +28,13 @@ final class CarbonFmt {
         return $dt->translatedFormat(Formats::date());
     }
 
-    /** Datum + Uhrzeit in Anzeige-Zeitzone + konfiguriertem Format. */
-    public static function fdatetime(CarbonInterface $dt): string {
-        return $dt->copy()->setTimezone(Tz::current())->translatedFormat(Formats::dateTime());
+    /**
+     * Datum + Uhrzeit in Anzeige-Zeitzone + konfiguriertem Format. Optional
+     * mit expliziter Zeitzone (z. B. die des EMPFÄNGERS beim Push-Versand,
+     * wo Tz::current() den Auslöser bzw. Queue-Kontext sähe — W4.2).
+     */
+    public static function fdatetime(CarbonInterface $dt, ?string $tz = null): string {
+        return $dt->copy()->setTimezone($tz ?? Tz::current())->translatedFormat(Formats::dateTime());
     }
 
     /** Uhrzeit in Anzeige-Zeitzone + konfiguriertem Format. */

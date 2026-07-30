@@ -149,11 +149,9 @@ class LexofficeContactSync {
         $externalId = (string) $remote['id'];
 
         $existingRef = ExternalReference::query()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', LexofficePlugin::ID)
-            ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
+            ->forPlugin($organization, LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)
             ->where('referenceable_type', $morphClass)
-            ->where('external_id', $externalId)
+            ->forExternalId($externalId)
             ->first();
 
         if ($existingRef instanceof ExternalReference) {
@@ -262,8 +260,7 @@ class LexofficeContactSync {
      */
     private function hasConflictingRef(Model $record, string $morphClass, string $externalId): bool {
         return ExternalReference::query()
-            ->where('plugin_id', LexofficePlugin::ID)
-            ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
+            ->forPlugin((int) $record->getAttribute('organization_id'), LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)
             ->where('referenceable_type', $morphClass)
             ->where('referenceable_id', $record->getKey())
             ->where('external_id', '!=', $externalId)
@@ -555,11 +552,9 @@ class LexofficeContactSync {
      */
     private function touchSnapshot(Model $record, array $remote, string $externalId): void {
         ExternalReference::query()
-            ->where('organization_id', $record->getAttribute('organization_id'))
-            ->where('plugin_id', LexofficePlugin::ID)
-            ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
+            ->forPlugin((int) $record->getAttribute('organization_id'), LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)
             ->where('referenceable_type', $record->getMorphClass())
-            ->where('external_id', $externalId)
+            ->forExternalId($externalId)
             ->update([
                 'payload' => $remote,
                 'synced_at' => now(),

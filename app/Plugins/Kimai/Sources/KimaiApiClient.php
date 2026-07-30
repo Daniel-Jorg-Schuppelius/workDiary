@@ -14,9 +14,8 @@ namespace App\Plugins\Kimai\Sources;
 
 use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Plugins\Kimai\Exceptions\KimaiApiException;
-use App\Plugins\Support\{PluginApiClient, PluginHttpFactory, RemoteTimeWriter, StartStopFingerprint};
+use App\Plugins\Support\{GuardsPluginApiResponses, PluginApiClient, PluginApiException, PluginHttpFactory, RemoteTimeWriter, StartStopFingerprint};
 use Carbon\CarbonImmutable;
-use Illuminate\Http\Client\Response;
 
 /**
  * Kimai-2.x-API-Client auf dem `php-api-toolkit`-Fundament
@@ -28,7 +27,7 @@ use Illuminate\Http\Client\Response;
  * {@see \Tests\Support\FakePluginHttp}.
  */
 class KimaiApiClient implements RemoteTimeWriter {
-    use StartStopFingerprint;
+    use GuardsPluginApiResponses, StartStopFingerprint;
 
     public const PAGE_SIZE = 500;
 
@@ -188,17 +187,15 @@ class KimaiApiClient implements RemoteTimeWriter {
         return rtrim((string) $this->baseUrl, '/') . $path;
     }
 
-    private function assertOk(Response $response, string $context): void {
-        if ($response->successful()) {
-            return;
-        }
+    // --- Fehlerbehandlung (GuardsPluginApiResponses) ----------------------
 
-        $detail = (string) ($response->json('message') ?? $response->body());
+    /** @return class-string<PluginApiException> */
+    protected function apiExceptionClass(): string {
+        return KimaiApiException::class;
+    }
 
-        throw new KimaiApiException(
-            sprintf('Kimai-API %s: HTTP %d — %s', $context, $response->status(), mb_substr($detail, 0, 300)),
-            $response->status(),
-        );
+    protected function apiLabel(): string {
+        return 'Kimai-API';
     }
 
     private function api(): PluginApiClient {

@@ -94,21 +94,21 @@ class StatementServiceTest extends TestCase {
         $this->service->bookPayment($this->agreement, ['paid_on' => '2026-02-15', 'amount' => 30.00]);
 
         $feb = $this->statement(2026, 2);
-        $this->assertSame('100.00', $feb->carry_in);
-        $this->assertSame('40.00', $feb->gross_value);
-        $this->assertSame('30.00', $feb->payments_total);
-        $this->assertSame('110.00', $feb->balance);
+        $this->assertSame('100.00', $feb->carry_in?->getAmount());
+        $this->assertSame('40.00', $feb->gross_value?->getAmount());
+        $this->assertSame('30.00', $feb->payments_total?->getAmount());
+        $this->assertSame('110.00', $feb->balance?->getAmount());
         $this->assertSame(120, $feb->total_minutes);
 
         $mar = $this->statement(2026, 3);
-        $this->assertSame('110.00', $mar->carry_in);
-        $this->assertSame('30.00', $mar->gross_value);
-        $this->assertSame('140.00', $mar->balance);
+        $this->assertSame('110.00', $mar->carry_in?->getAmount());
+        $this->assertSame('30.00', $mar->gross_value?->getAmount());
+        $this->assertSame('140.00', $mar->balance?->getAmount());
 
         // Leere Folgemonate schleppen den Saldo unverändert weiter.
         $apr = $this->statement(2026, 4);
-        $this->assertSame('140.00', $apr->carry_in);
-        $this->assertSame('140.00', $apr->balance);
+        $this->assertSame('140.00', $apr->carry_in?->getAmount());
+        $this->assertSame('140.00', $apr->balance?->getAmount());
     }
 
     public function test_close_requires_oldest_open_month_and_exports_entries(): void {
@@ -180,19 +180,19 @@ class StatementServiceTest extends TestCase {
         $this->assertSame('50.00', $manualEntry->fresh()->hourly_rate?->getAmount());
 
         $feb = $this->statement(2026, 2);
-        $this->assertSame('150.00', $feb->gross_value); // 2h×25 + 2h×50
+        $this->assertSame('150.00', $feb->gross_value?->getAmount()); // 2h×25 + 2h×50
     }
 
     public function test_stray_entries_in_locked_month_are_reported_without_changing_balance(): void {
         $this->makeEntry('2026-02-10');
         $this->service->recalculateOpen($this->agreement);
         $feb = $this->service->close($this->statement(2026, 2), $this->user);
-        $lockedBalance = $feb->balance;
+        $lockedBalance = $feb->balance?->getAmount();
 
         $stray = $this->makeEntry('2026-02-20');
         $warnings = $this->service->recalculateOpen($this->agreement);
 
         $this->assertSame([$stray->id], array_column($warnings['stray_entries'], 'id'));
-        $this->assertSame($lockedBalance, $this->statement(2026, 2)->balance);
+        $this->assertSame($lockedBalance, $this->statement(2026, 2)->balance?->getAmount());
     }
 }

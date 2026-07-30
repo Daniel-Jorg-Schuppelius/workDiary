@@ -40,11 +40,9 @@ class CtiCallService {
      * @return 'recorded'|'skipped'|'unmatched'
      */
     public function record(CtiConnection $connection, CtiCall $call): string {
-        $exists = ExternalReference::query()->withoutGlobalScopes()
-            ->where('organization_id', $connection->organization_id)
-            ->where('plugin_id', self::PLUGIN_ID)
-            ->where('external_type', self::EXTERNAL_TYPE)
-            ->where('external_id', $call->callId)
+        $exists = ExternalReference::query()
+            ->forPlugin($connection->organization_id, self::PLUGIN_ID, self::EXTERNAL_TYPE)
+            ->forExternalId($call->callId)
             ->exists();
         if ($exists) {
             return 'skipped';

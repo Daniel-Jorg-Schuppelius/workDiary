@@ -53,11 +53,9 @@ trait BindsTimeImportReference {
      */
     protected function findImported(Organization $organization, string $modelClass, string $externalType, string $key): ?Model {
         $ref = ExternalReference::query()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', self::TIME_IMPORT_PLUGIN)
-            ->where('external_type', $externalType)
+            ->forPlugin($organization, self::TIME_IMPORT_PLUGIN, $externalType)
             ->where('referenceable_type', (new $modelClass)->getMorphClass())
-            ->where('external_id', $key)
+            ->forExternalId($key)
             ->first();
 
         return $ref?->referenceable;

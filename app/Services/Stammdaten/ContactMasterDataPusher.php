@@ -66,10 +66,8 @@ class ContactMasterDataPusher {
 
     private function isLinked(Customer|Supplier $contact): bool {
         return \App\Models\ExternalReference::query()
-            ->where('plugin_id', LexofficePlugin::ID)
-            ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
-            ->where('referenceable_type', $contact->getMorphClass())
-            ->where('referenceable_id', $contact->getKey())
+            ->forPlugin($contact->organization_id, LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)
+            ->forReferenceable($contact)
             ->exists();
     }
 }

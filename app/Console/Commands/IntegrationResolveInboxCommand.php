@@ -183,10 +183,8 @@ class IntegrationResolveInboxCommand extends Command {
         }
 
         return ExternalReference::query()
-            ->where('plugin_id', $item->plugin_id)
-            ->where('external_type', $item->external_type)
-            ->where('referenceable_type', $candidate->getMorphClass())
-            ->where('referenceable_id', $candidate->getKey())
+            ->forPlugin($item->organization_id, $item->plugin_id, $item->external_type)
+            ->forReferenceable($candidate)
             ->where('external_id', '!=', $item->external_id)
             ->exists();
     }

@@ -10,26 +10,26 @@
 
 namespace App\Plugins\Calendly\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\{AppointmentRequest, CalendlyConnection, CalendlyWebhookSubscription};
+use App\Models\{AppointmentRequest, CalendlyConnection, CalendlyWebhookSubscription, User};
 use App\Plugins\Calendly\Api\{CalendlyClient, CalendlyOAuth};
 use App\Plugins\Calendly\CalendlyConfig;
-use App\Plugins\Calendly\Services\{CalendlyBackfillService, CalendlyConfirmService, CalendlySubscriptionManager};
+use App\Plugins\Calendly\Services\{CalendlyBackfillService, CalendlyConfirmService, CalendlyOutboundService, CalendlySubscriptionManager};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
-use App\Plugins\Support\OAuthStateHandshake;
+use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
 use App\Support\OrganizationContext;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
-use Throwable;
 
 /**
- * Calendly-Admin-Panel + OAuth-Verbindungsflow (Feature 095). Der OAuth-`state`
- * ist kurzlebig, einmalig einlösbar und an Organisation UND Sitzung gebunden;
- * der PKCE-Verifier wandert mit dem state durch den Cache. Tokens erscheinen nie
- * in Logs, Fehlermeldungen oder Audit-Payloads. Die zweiphasige Bestätigung der
+ * Calendly-Admin-Panel + OAuth-Verbindungsflow (Feature 095). Der OAuth-Flow
+ * (state einmalig, org-/sitzungsgebunden, PKCE) läuft über die gemeinsame
+ * Basis {@see ConnectionOAuthController}; Tokens erscheinen nie in Logs,
+ * Fehlermeldungen oder Audit-Payloads. Die zweiphasige Bestätigung der
  * Terminwünsche läuft über {@see CalendlyConfirmService}.
  */
-class CalendlyAdminController extends Controller {
+class CalendlyAdminController extends ConnectionOAuthController {
     use ResolvesPluginOrgContext;
 
     public function index(): View {
@@ -57,59 +57,66 @@ class CalendlyAdminController extends Controller {
         ]);
     }
 
-    public function startOAuth(CalendlyOAuth $oauth): RedirectResponse {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
+    // ── OAuth-Flow: Hooks der gemeinsamen Basis (Vollreview W3a) ──
 
-        if (! CalendlyConfig::isConfigured()) {
-            return back()->with('error', __('Calendly Client-ID/Secret sind nicht konfiguriert.'));
-        }
-
-        ['state' => $state, 'verifier' => $verifier] = $this->handshake()->start((int) $organization->id, (int) $admin->id);
-        $url = $oauth->grant()->getAuthorizationUrl($state, $oauth->scopes(), [], $verifier);
-
-        return redirect()->away($url);
+    protected function oauth(): PluginOAuthGrant {
+        return app(CalendlyOAuth::class);
     }
 
-    public function oauthCallback(Request $request, CalendlyOAuth $oauth): RedirectResponse {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
+    protected function isConfigured(): bool {
+        return CalendlyConfig::isConfigured();
+    }
 
-        $code = (string) $request->query('code', '');
-        $payload = $this->handshake()->redeem((string) $request->query('state', ''), (int) $organization->id, (int) $admin->id);
-        if ($payload === null) {
-            return redirect()->route('admin.calendly.index')->with('error', __('Ungültiger oder abgelaufener OAuth-Status.'));
-        }
-        if ($code === '') {
-            return redirect()->route('admin.calendly.index')->with('error', __('OAuth-Autorisierung abgebrochen.'));
-        }
+    protected function connectionModel(): string {
+        return CalendlyConnection::class;
+    }
 
-        try {
-            $token = $oauth->grant()->exchangeAuthorizationCode($code, OAuthStateHandshake::verifierFrom($payload));
-        } catch (Throwable $e) {
-            return redirect()->route('admin.calendly.index')
-                ->with('error', __('OAuth fehlgeschlagen (:class).', ['class' => class_basename($e)]));
-        }
+    protected function stateCachePrefix(): string {
+        return 'calendly-oauth-state';
+    }
 
+    protected function overviewRouteName(): string {
+        return 'admin.calendly.index';
+    }
+
+    protected function pluginKey(): string {
+        return 'calendly';
+    }
+
+    protected function connectedStatus(): string {
+        return CalendlyConnection::STATUS_ACTIVE;
+    }
+
+    protected function disconnectedStatus(): string {
+        return CalendlyConnection::STATUS_DISCONNECTED;
+    }
+
+    protected function keepsRefreshTokenOnReconnect(): bool {
+        return true;
+    }
+
+    /**
+     * Calendly flasht wörtliche Texte statt Lang-Keys (Bestand, Feature 095).
+     *
+     * @param  array<string, string>  $replace
+     */
+    protected function flashMessage(string $name, array $replace = []): string {
+        $message = match ($name) {
+            'not_configured' => __('Calendly Client-ID/Secret sind nicht konfiguriert.'),
+            'state_invalid' => __('Ungültiger oder abgelaufener OAuth-Status.'),
+            'oauth_denied' => __('OAuth-Autorisierung abgebrochen.'),
+            'oauth_failed' => __('OAuth fehlgeschlagen (:class).', $replace),
+            'connected' => __('Calendly verbunden.'),
+            'disconnected' => __('Calendly-Verbindung getrennt.'),
+            default => $name,
+        };
+
+        return is_string($message) ? $message : $name;
+    }
+
+    /** /users/me: verbundenen Nutzer + Organisation-URI (Scope-Ziel) ermitteln. */
+    protected function afterConnected(Model $connection, User $admin): void {
         /** @var CalendlyConnection $connection */
-        $connection = CalendlyConnection::query()->firstOrNew(['organization_id' => $organization->id]);
-        $connection->forceFill([
-            'access_token' => $token->getAccessToken(),
-            'refresh_token' => $token->getRefreshToken() ?? $connection->refresh_token,
-            'token_expires_at' => $token->getExpiresAt(),
-            'scopes' => $token->getScope() ?? implode(' ', $oauth->scopes()),
-            'status' => CalendlyConnection::STATUS_ACTIVE,
-            'last_error' => null,
-            'last_error_at' => null,
-            'consecutive_failures' => 0,
-            'disabled_at' => null,
-            'connected_by' => $admin->id,
-            'connected_at' => now(),
-            'disconnected_by' => null,
-            'disconnected_at' => null,
-        ])->save();
-
-        // /users/me: verbundenen Nutzer + Organisation-URI (Scope-Ziel) ermitteln.
         $me = (new CalendlyClient($connection))->currentUser();
         if (is_array($me)) {
             $connection->forceFill([
@@ -117,10 +124,12 @@ class CalendlyAdminController extends Controller {
                 'calendly_organization_uri' => is_string($me['current_organization'] ?? null) ? $me['current_organization'] : null,
             ])->save();
         }
+    }
 
-        $connection->audit('calendly.connected', ['by_user_id' => (int) $admin->id]);
-
-        return redirect()->route('admin.calendly.index')->with('success', __('Calendly verbunden.'));
+    /** Webhook-Abmeldung vor dem Trennen (Token ist noch gültig). */
+    protected function beforeDisconnect(Model $connection): void {
+        /** @var CalendlyConnection $connection */
+        app(CalendlySubscriptionManager::class)->remove($connection);
     }
 
     public function subscribe(CalendlySubscriptionManager $subscriptions): RedirectResponse {
@@ -173,28 +182,40 @@ class CalendlyAdminController extends Controller {
         return back()->with('success', __('Terminwunsch abgelehnt.'));
     }
 
-    public function disconnect(CalendlySubscriptionManager $subscriptions): RedirectResponse {
+    /**
+     * Outbound (P5): Einmal-Buchungslink je Lead/Leistung über
+     * `POST /one_off_event_types` erzeugen; die `scheduling_url` wird zum
+     * Teilen geflasht (nicht auditiert — der Link ist ein Zugriffsartefakt).
+     */
+    public function createBookingLink(Request $request, CalendlyOutboundService $outbound): RedirectResponse {
         $admin = $this->admin();
         $organization = $this->organization($admin);
 
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'duration' => ['required', 'integer', 'min:5', 'max:480'],
+            'days' => ['nullable', 'integer', 'min:1', 'max:90'],
+        ]);
+
         $connection = CalendlyConnection::query()->where('organization_id', $organization->id)->first();
-        if ($connection instanceof CalendlyConnection) {
-            $subscriptions->remove($connection);
-            $connection->forceFill([
-                'access_token' => null,
-                'refresh_token' => null,
-                'token_expires_at' => null,
-                'status' => CalendlyConnection::STATUS_DISCONNECTED,
-                'disconnected_by' => $admin->id,
-                'disconnected_at' => now(),
-            ])->save();
-            $connection->audit('calendly.disconnected', ['by_user_id' => (int) $admin->id]);
+        if (! $connection instanceof CalendlyConnection || ! $connection->isActive()) {
+            return back()->with('error', __('Keine aktive Calendly-Verbindung.'));
         }
 
-        return redirect()->route('admin.calendly.index')->with('success', __('Calendly-Verbindung getrennt.'));
-    }
+        $url = $outbound->createBookingLink(
+            $connection,
+            $data['name'],
+            (int) $data['duration'],
+            endDate: CarbonImmutable::now()->addDays((int) ($data['days'] ?? 30)),
+        );
+        if ($url === null) {
+            return back()->with('error', __('Buchungslink konnte nicht erzeugt werden.'));
+        }
 
-    private function handshake(): OAuthStateHandshake {
-        return new OAuthStateHandshake('calendly-oauth-state');
+        $connection->audit('calendly.booking_link_created', ['by_user_id' => (int) $admin->id, 'name' => $data['name']]);
+
+        return back()
+            ->with('success', __('Einmal-Buchungslink erzeugt.'))
+            ->with('calendly_booking_url', $url);
     }
 }

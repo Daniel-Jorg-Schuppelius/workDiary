@@ -48,9 +48,7 @@ class RemoteCalendarPublishService {
 
         foreach ($items as $item) {
             $ref = ExternalReference::query()
-                ->where('organization_id', $connection->organizationId())
-                ->where('plugin_id', $pluginId)
-                ->where('external_type', $externalType)
+                ->forPlugin($connection->organizationId(), $pluginId, $externalType)
                 ->where('referenceable_type', $item->referenceableType())
                 ->where('referenceable_id', $item->referenceableId())
                 ->first();

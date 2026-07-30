@@ -56,6 +56,9 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
         Route::get('/tickets', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'index'])->name('tickets.index');
         Route::post('/tickets', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'store'])->name('tickets.store');
         Route::get('/tickets/{ticket}', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'show'])->name('tickets.show');
+        // Anhang-Download (W5.1): gleiche Scope-Grenze wie die Ticket-Ansicht,
+        // Pfade nur aus der DB — Sicherheitsmuster wie customer.documents.download.
+        Route::get('/tickets/{ticket}/attachments/{attachment}/download', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'downloadAttachment'])->name('tickets.attachments.download');
         Route::post('/tickets/{ticket}/reply', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'reply'])->name('tickets.reply');
         Route::post('/tickets/{ticket}/accept', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'accept'])->name('tickets.accept');
         Route::post('/tickets/{ticket}/reopen', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'reopen'])->name('tickets.reopen');

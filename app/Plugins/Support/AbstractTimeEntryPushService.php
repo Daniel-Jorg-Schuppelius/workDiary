@@ -166,12 +166,8 @@ abstract class AbstractTimeEntryPushService {
 
     protected function alreadyPushed(Organization $organization, TimeEntry $entry): bool {
         return ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', $this->pluginId())
-            ->where('external_type', self::EXT_TYPE_PUSHED)
-            ->where('referenceable_type', $entry->getMorphClass())
-            ->where('referenceable_id', $entry->getKey())
+            ->forPlugin($organization, $this->pluginId(), self::EXT_TYPE_PUSHED)
+            ->forReferenceable($entry)
             ->exists();
     }
 

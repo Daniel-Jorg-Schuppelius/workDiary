@@ -11,7 +11,7 @@
 namespace App\Plugins\Lexoffice;
 
 use App\Plugins\Lexoffice\Console\{LexofficeSyncArticlesCommand, LexofficeSyncContactsCommand, LexofficeSyncVouchersCommand};
-use Illuminate\Support\ServiceProvider;
+use App\Plugins\Support\PluginServiceProviderBase;
 
 /**
  * Plugin-eigener ServiceProvider. Wird vom Core-{@see \App\Providers\PluginServiceProvider}
@@ -24,11 +24,12 @@ use Illuminate\Support\ServiceProvider;
  *  - Artisan-Commands
  *  - Migrations
  */
-class LexofficeServiceProvider extends ServiceProvider {
-    public function register(): void {
-        // Plugin liefert seine eigenen Config-Defaults/ENV-Fallbacks → `config('plugins.lexoffice.*')`.
-        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . LexofficePlugin::ID);
+class LexofficeServiceProvider extends PluginServiceProviderBase {
+    protected function pluginId(): string {
+        return LexofficePlugin::ID;
+    }
 
+    protected function registerPlugin(): void {
         $this->app->singleton(LexofficeService::class, function (): LexofficeService {
             $config = LexofficeConfig::resolve();
 
@@ -56,10 +57,7 @@ class LexofficeServiceProvider extends ServiceProvider {
         });
     }
 
-    public function boot(): void {
-        $this->loadRoutesFrom(__DIR__ . '/routes.php');
-        $this->loadViewsFrom(__DIR__ . '/Resources/views', 'lexoffice');
-
+    protected function bootPlugin(): void {
         if ($this->app->runningInConsole()) {
             $this->commands([
                 LexofficeSyncArticlesCommand::class,

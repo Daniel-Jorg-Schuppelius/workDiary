@@ -117,8 +117,7 @@ class TimeWritebackObserver {
             ->where('organization_id', $organizationId)
             ->whereIn('plugin_id', array_keys($dispatchers))
             ->where('external_type', MatchingTimeImportService::EXT_TYPE_ENTRY)
-            ->where('referenceable_type', $entry->getMorphClass())
-            ->where('referenceable_id', $entry->getKey())
+            ->forReferenceable($entry)
             ->get();
 
         $out = [];
