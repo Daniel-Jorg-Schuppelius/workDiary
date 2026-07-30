@@ -99,6 +99,34 @@ class TimeEntryBarTest extends TestCase {
         $this->assertTrue($entry->ended_at?->greaterThan($entry->started_at));
     }
 
+    public function test_range_booking_chains_next_date_and_start_time(): void {
+        // Ketten-Erfassung: 30.06. 23:00–01:00 → die Leiste soll für die
+        // nächste Buchung 01.07. + Startzeit 01:00 vorbelegen; die Ansicht
+        // bleibt beim Starttag der gebuchten Zeit.
+        $this->actingAs($this->user)
+            ->post(route('today.entry-bar.store'), [
+                'project_id' => $this->project->sqid,
+                'date' => '2026-06-30',
+                'start_time' => '23:00',
+                'end_time' => '01:00',
+            ])
+            ->assertRedirect(route('today.show', ['date' => '2026-06-30']))
+            ->assertSessionHas('entryBar.nextDate', '2026-07-01')
+            ->assertSessionHas('entryBar.nextStart', '01:00');
+    }
+
+    public function test_same_day_range_booking_chains_end_time(): void {
+        $this->actingAs($this->user)
+            ->post(route('today.entry-bar.store'), [
+                'project_id' => $this->project->sqid,
+                'date' => '2026-07-07',
+                'start_time' => '08:00',
+                'end_time' => '10:30',
+            ])
+            ->assertSessionHas('entryBar.nextDate', '2026-07-07')
+            ->assertSessionHas('entryBar.nextStart', '10:30');
+    }
+
     public function test_minutes_required_without_range(): void {
         $this->actingAs($this->user)
             ->post(route('today.entry-bar.store'), [

@@ -15,6 +15,7 @@ use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Controllers\Concerns\BuildsTimeEntryOptions;
 use App\Http\Requests\QuickTimeEntryRequest;
 use App\Models\{DiaryEntry, Project, Task, TimeEntry, User};
+use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{JsonResponse, RedirectResponse};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -56,7 +57,9 @@ class TimeEntryBarController extends Controller {
             'description' => $data['description'] ?? null,
         ];
 
-        if (filled($data['started_at'] ?? null) && filled($data['ended_at'] ?? null)) {
+        $isRange = filled($data['started_at'] ?? null) && filled($data['ended_at'] ?? null);
+
+        if ($isRange) {
             // minutes + date leitet der TimeEntry-saving-Hook aus der Spanne ab;
             // die Werte kommen bereits als UTC-Strings aus dem FormRequest.
             $attributes['started_at'] = $data['started_at'];
@@ -73,8 +76,20 @@ class TimeEntryBarController extends Controller {
 
         TimeEntry::create($attributes);
 
-        return redirect()->route('today.show', ['date' => $dateString])
+        $redirect = redirect()->route('today.show', ['date' => $dateString])
             ->with('status', __('Zeit auf „:project" gebucht.', ['project' => $project->name]));
+
+        if ($isRange) {
+            // Ketten-Erfassung: die nächste Buchung setzt dort an, wo diese
+            // endet — Datum UND Startzeit werden in der Leiste vorbelegt
+            // (läuft der Eintrag über Mitternacht, springt das Datum auf den
+            // Folgetag). Flash-Werte gelten nur für den nächsten Request.
+            $endLocal = CarbonImmutable::parse((string) $data['ended_at'], 'UTC')->setTimezone(Tz::current());
+            $redirect->with('entryBar.nextDate', $endLocal->toDateString())
+                ->with('entryBar.nextStart', $endLocal->format('H:i'));
+        }
+
+        return $redirect;
     }
 
     /**

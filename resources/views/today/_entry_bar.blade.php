@@ -139,10 +139,13 @@
                      zusammen aus, und nur ein disabled-fieldset deaktiviert auch
                      das Zwillingsfeld (dynamisches :disabled am Original erreicht
                      es nicht). --}}
+                {{-- Ketten-Erfassung: nach einer Von/Bis-Buchung ist das Datum mit
+                     dem Ende der letzten Buchung vorbelegt (Session-Flash aus dem
+                     Store) — bei Buchungen über Mitternacht also der Folgetag. --}}
                 <fieldset class="inline-flex" x-show="isManual" :disabled="manualDisabled">
                     <input type="date" name="date" class="input input-bordered input-sm w-32"
                            aria-label="{{ __('Datum') }}"
-                           value="{{ old('date', $day->toDateString()) }}">
+                           value="{{ old('date', session('entryBar.nextDate', $day->toDateString())) }}">
                 </fieldset>
 
                 <input type="text" inputmode="numeric" placeholder="{{ __('Dauer (HH:MM)') }}"
@@ -160,9 +163,10 @@
                      nicht). :linked="false", weil Bis ≤ Von bewusst erlaubt ist
                      (Buchung über Mitternacht rollt serverseitig auf den Folgetag). --}}
                 <fieldset class="inline-flex items-center gap-2" x-show="showRangePane" :disabled="rangeDisabled">
+                    {{-- „Von" mit dem Ende der letzten Buchung vorbelegen (Kette). --}}
                     <x-date-range type="time"
                                   fromName="start_time" toName="end_time"
-                                  :from="old('start_time')" :to="old('end_time')"
+                                  :from="old('start_time', session('entryBar.nextStart'))" :to="old('end_time')"
                                   :label="false" :linked="false"
                                   size="sm" class="w-40" />
                     <div class="join">
