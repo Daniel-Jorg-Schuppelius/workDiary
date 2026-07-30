@@ -181,6 +181,14 @@ body.sidebar-collapsed {
 #help-drawer [data-help-railmode] {
     color: var(--color-base-content);
 }
+/* Beim lg-Breakpoint-Wechsel setzt help-drawer.js diese Klasse für zwei
+               Frames: Rail ↔ versteckter Mobil-Drawer sollen hart umschalten,
+               nicht über die Slide-/Width-Transitions animieren (sichtbares
+               Aufpoppen beim Fenster-Verkleinern). */
+#help-drawer.help-no-anim,
+#help-drawer.help-no-anim * {
+    transition: none !important;
+}
 /* 3-stufiger Header über CSS Container Queries statt Viewport-
                Breakpoints. Vorteil: das Layout reagiert auf den tatsächlich
                verfügbaren Header-Platz (also nach Abzug der Sidebar) und nicht

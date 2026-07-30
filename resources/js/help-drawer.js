@@ -481,11 +481,20 @@ function bindHelpDrawer() {
         }
     });
 
-    // Breakpoint-Wechsel bei offener Hilfe: Backdrop-Zustand nachziehen
-    // (Desktop nicht-modal ohne Backdrop, mobil mit Backdrop).
+    // Breakpoint-Wechsel: Backdrop-Zustand nachziehen (Desktop nicht-modal
+    // ohne Backdrop, mobil mit Backdrop) UND Transitions kurz abschalten —
+    // der Wechsel Rail (Desktop, sichtbar) ↔ Slide-Drawer (mobil, versteckt)
+    // würde sonst als kurzes Aufpoppen/Rausrutschen animieren.
     const desktopQuery = window.matchMedia(DESKTOP_QUERY);
     if (typeof desktopQuery.addEventListener === "function") {
         desktopQuery.addEventListener("change", () => {
+            const drawer = document.querySelector(DRAWER_SELECTOR);
+            if (drawer) {
+                drawer.classList.add("help-no-anim");
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => drawer.classList.remove("help-no-anim"));
+                });
+            }
             if (isOpen()) {
                 setBackdropHidden(
                     document.querySelector(BACKDROP_SELECTOR),
