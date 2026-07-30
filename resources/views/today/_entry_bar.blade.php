@@ -33,6 +33,7 @@
                     'id' => $p->sqid,
                     'name' => $p->name,
                     'customer' => $p->customer?->name,
+                    'recent' => $entryBarRecentIds->contains($p->id),
                 ])->values()->all(),
                 'optionsUrl' => route('today.entry-bar.options', ['project' => '__ID__']),
                 'startUrl' => route('stopwatch.start'),
@@ -72,13 +73,16 @@
                            autocomplete="off"
                            class="input input-bordered input-sm w-full"
                            placeholder="{{ __('Projekt suchen…') }}">
+                    {{-- Ohne Suchtext gruppiert: „Zuletzt verwendet" (Top 10) und
+                         „Weitere Projekte"; mit Suchtext eine flache Trefferliste
+                         (otherFiltered ist dann leer). `flex flex-col` explizit:
+                         daisyUI-5-Menüeinträge sind sonst Grid mit Spalten-Autoflow
+                         → Projekt und Kunde würden nebeneinander gequetscht. --}}
                     <ul x-show="showMenu" x-cloak x-transition.opacity
-                        class="menu menu-sm absolute z-30 mt-1 w-full max-h-64 flex-nowrap overflow-y-auto rounded-box border border-base-300 bg-base-100 shadow-lg">
-                        <template x-for="(p, idx) in filtered" :key="p.id">
+                        class="menu menu-sm absolute z-30 mt-1 w-full max-h-72 flex-nowrap overflow-y-auto rounded-box border border-base-300 bg-base-100 shadow-lg">
+                        <li class="menu-title" x-show="showRecentLabel">{{ __('Zuletzt verwendet') }}</li>
+                        <template x-for="(p, idx) in primaryFiltered" :key="p.id">
                             <li>
-                                {{-- `flex` explizit: daisyUI-5-Menüeinträge sind sonst
-                                     Grid mit Spalten-Autoflow → Projekt und Kunde würden
-                                     nebeneinander gequetscht statt gestapelt. --}}
                                 <button type="button"
                                         class="flex flex-col items-start gap-1 py-2"
                                         :class="optionClass(idx)"
@@ -87,6 +91,19 @@
                                     <span class="font-medium leading-tight" x-text="p.name"></span>
                                     {{-- opacity statt fester Textfarbe: bleibt auf dem
                                          menu-active-Hintergrund der Markierung lesbar. --}}
+                                    <span class="text-xs leading-tight opacity-60" x-show="p.customer" x-text="p.customer"></span>
+                                </button>
+                            </li>
+                        </template>
+                        <li class="menu-title" x-show="showOtherLabel">{{ __('Weitere Projekte') }}</li>
+                        <template x-for="(p, idx) in otherFiltered" :key="p.id">
+                            <li>
+                                <button type="button"
+                                        class="flex flex-col items-start gap-1 py-2"
+                                        :class="optionClassOther(idx)"
+                                        @mouseenter="setHighlightOther(idx)"
+                                        @click="choose(p)">
+                                    <span class="font-medium leading-tight" x-text="p.name"></span>
                                     <span class="text-xs leading-tight opacity-60" x-show="p.customer" x-text="p.customer"></span>
                                 </button>
                             </li>

@@ -9059,5 +9059,7 @@
     "Es läuft bereits eine Zeiterfassung.": "A time entry is already running.",
     "Weitere Felder": "More fields",
     "Kein Projekt gefunden.": "No project found.",
-    "Für dieses Projekt gibt es keine Aufgaben oder Aufträge.": "This project has no tasks or orders."
+    "Für dieses Projekt gibt es keine Aufgaben oder Aufträge.": "This project has no tasks or orders.",
+    "Zuletzt verwendet": "Recently used",
+    "Weitere Projekte": "Other projects"
 }

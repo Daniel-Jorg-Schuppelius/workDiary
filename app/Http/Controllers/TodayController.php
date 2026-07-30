@@ -100,7 +100,8 @@ class TodayController extends Controller {
             ? []
             : app(UntrackedBlockCalculator::class)->blocks($attendances, $entries, CarbonImmutable::now());
         // Eine Liste für Quick-Buchung UND Eingabeleiste (zuletzt genutzte zuerst).
-        $projects = $isFuture ? collect() : $this->quickBookProjects($user);
+        $recentProjectIds = $isFuture ? collect() : $this->recentProjectIds($user);
+        $projects = $isFuture ? collect() : $this->quickBookProjects($recentProjectIds);
 
         return view('today.show', [
             'day' => $day,
@@ -108,6 +109,7 @@ class TodayController extends Controller {
             'openBlocks' => $openBlocks,
             'quickBookProjects' => $projects,
             'entryBarProjects' => $projects,
+            'entryBarRecentIds' => $recentProjectIds,
             'runningEntry' => $this->stopwatch->current($user),
             'attendances' => $attendances,
             'entries' => $entries,
@@ -134,23 +136,33 @@ class TodayController extends Controller {
     }
 
     /**
-     * Buchungsziele für die Quick-Buchung: zuletzt genutzte Projekte des
-     * Nutzers zuerst (relevante Drag-Ziele), danach die restlichen aktiven
-     * Projekte der Organisation (für die vollständige Auswahl im Fallback).
+     * Zuletzt bebuchte Projekte des Nutzers (Top 10, jüngste zuerst) — Basis
+     * für die Sortierung der Quick-Buchung und die „Zuletzt verwendet"-Gruppe
+     * der Eingabeleiste.
      *
-     * @return \Illuminate\Support\Collection<int, Project>
+     * @return \Illuminate\Support\Collection<int, int>
      */
-    private function quickBookProjects(User $user): \Illuminate\Support\Collection {
-        $recentIds = TimeEntry::query()
+    private function recentProjectIds(User $user): \Illuminate\Support\Collection {
+        return TimeEntry::query()
             ->where('user_id', $user->id)
             ->whereNotNull('project_id')
             ->orderByDesc('date')
             ->limit(60)
             ->pluck('project_id')
             ->unique()
-            ->take(8)
+            ->take(10)
             ->values();
+    }
 
+    /**
+     * Buchungsziele für die Quick-Buchung: zuletzt genutzte Projekte des
+     * Nutzers zuerst (relevante Drag-Ziele), danach die restlichen aktiven
+     * Projekte der Organisation (für die vollständige Auswahl im Fallback).
+     *
+     * @param  \Illuminate\Support\Collection<int, int>  $recentIds
+     * @return \Illuminate\Support\Collection<int, Project>
+     */
+    private function quickBookProjects(\Illuminate\Support\Collection $recentIds): \Illuminate\Support\Collection {
         return Project::query()
             ->where('status', ProjectStatus::Active)
             ->with('customer:id,name')

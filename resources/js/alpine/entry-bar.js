@@ -61,6 +61,7 @@ export function registerEntryBar(Alpine) {
                     id: String(p.id ?? ""),
                     name: String(p.name ?? ""),
                     customer: p.customer ? String(p.customer) : "",
+                    recent: p.recent === true,
                 }));
                 this.optionsUrl = String(cfg.optionsUrl ?? "");
                 this.startUrl = String(cfg.startUrl ?? "");
@@ -164,14 +165,43 @@ export function registerEntryBar(Alpine) {
             },
 
             // ── Projekt-Combobox ────────────────────────────────────────────
-            get filtered() {
+            // Ohne Suchtext: zwei Gruppen — „Zuletzt verwendet" (Top 10 der
+            // zuletzt bebuchten Projekte) und „Weitere Projekte". Mit Suchtext:
+            // flache Trefferliste. `filtered` bleibt die flache Gesamtliste
+            // für Tastatur-Navigation und Menü-Sichtbarkeit.
+            get queryActive() {
                 const q = this.query.trim().toLowerCase();
-                if (q === "" || q === this.selectedName.toLowerCase()) {
-                    return this.projects.slice(0, 8);
+                return q !== "" && q !== this.selectedName.toLowerCase();
+            },
+            get primaryFiltered() {
+                if (this.queryActive) {
+                    const q = this.query.trim().toLowerCase();
+                    return this.projects
+                        .filter((p) => p.name.toLowerCase().includes(q) || p.customer.toLowerCase().includes(q))
+                        .slice(0, 10);
                 }
-                return this.projects
-                    .filter((p) => p.name.toLowerCase().includes(q) || p.customer.toLowerCase().includes(q))
-                    .slice(0, 8);
+                return this.projects.filter((p) => p.recent).slice(0, 10);
+            },
+            get otherFiltered() {
+                if (this.queryActive) {
+                    return [];
+                }
+                return this.projects.filter((p) => !p.recent).slice(0, 10);
+            },
+            get filtered() {
+                return this.primaryFiltered.concat(this.otherFiltered);
+            },
+            get showRecentLabel() {
+                return !this.queryActive && this.primaryFiltered.length > 0;
+            },
+            get showOtherLabel() {
+                return !this.queryActive && this.primaryFiltered.length > 0 && this.otherFiltered.length > 0;
+            },
+            optionClassOther(idx) {
+                return this.optionClass(idx + this.primaryFiltered.length);
+            },
+            setHighlightOther(idx) {
+                this.highlight = idx + this.primaryFiltered.length;
             },
             get showMenu() {
                 return this.open && this.filtered.length > 0;
