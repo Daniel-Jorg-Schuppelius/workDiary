@@ -271,5 +271,8 @@
                 </div>
             @endif
         </form>
+
+        {{-- Rezeptur / Materialbedarf (MVP-455) — eigenständige Formulare. --}}
+        @include('procedures.templates._recipe')
     </x-page-shell>
 @endsection

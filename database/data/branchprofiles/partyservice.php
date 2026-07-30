@@ -22,7 +22,7 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'partyservice',
     'label' => 'Partyservice / Catering',
-    'version' => 1,
+    'version' => 2,
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.
     'modules_recommended' => [
@@ -126,7 +126,11 @@ return [
         ],
         // 14 Hauptallergene nach LMIV (EU 1169/2011, Anhang II). Werden je
         // Menüplanung zugeordnet und vor Abschluss erzwungen (allow_multi).
+        // `keine` (v2, MVP-455): markiert eine Zutat explizit als geklärt
+        // allergenfrei — Zutaten ohne jede Zuordnung blockieren die
+        // Rezeptfreigabe.
         'allergen' => [
+            ['code' => 'keine', 'label' => 'Keine Allergene'],
             ['code' => 'gluten', 'label' => 'Glutenhaltiges Getreide'],
             ['code' => 'krebstiere', 'label' => 'Krebstiere'],
             ['code' => 'ei', 'label' => 'Eier'],

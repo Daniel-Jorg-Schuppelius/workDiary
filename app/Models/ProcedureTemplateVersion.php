@@ -66,6 +66,15 @@ class ProcedureTemplateVersion extends Model {
     }
 
     /**
+     * Materialbedarf/Rezeptpositionen (MVP-061/455).
+     *
+     * @return HasMany<ProcedureMaterialRequirement, $this>
+     */
+    public function materialRequirements(): HasMany {
+        return $this->hasMany(ProcedureMaterialRequirement::class)->orderBy('position');
+    }
+
+    /**
      * Typisierte Auftragsparameter dieser Version (Feature 047, MVP-061).
      *
      * @return HasMany<ProcedureParameterDefinition, $this>

@@ -229,6 +229,11 @@ class ProcedureTemplateService {
                 return $version;
             }
 
+            // Partyservice-Rezepte (MVP-455): ungeklärte Allergene blockieren
+            // die Freigabe; Rezepte ohne Profil sind nie betroffen. Lazy
+            // aufgelöst, um keinen Konstruktor-Zyklus aufzubauen.
+            app(\App\Services\Recipes\RecipeService::class)->assertPublishable($version);
+
             $from = ($validFrom ?? Carbon::today())->copy()->startOfDay();
 
             // Schliesse offene vorherige Versionen.

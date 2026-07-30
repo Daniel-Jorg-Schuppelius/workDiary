@@ -285,6 +285,7 @@ return [
         'purchase-orders.*' => 'module.lager',
         'supplier-scorecards.*' => 'module.lager', // Bauturbo Welle D Lieferantenperformance-Scorecards
         'b2b-catalog.*' => 'module.b2b_katalog', // Feature 099 Zugangs-/Freigabe-Verwaltung + Bestell-Upload (Public-Routen sichert ResolveB2bCatalogOrganization per 404)
+        'recipe-menus.*' => 'module.lager', // MVP-455 Menü-/Buffetplanung (Partyservice-Kontext prüft der Controller per 404)
         'supplier-catalogs.*' => 'module.lager', // Feature 050 Lieferantenkataloge
         'pricing-margin-rules.*' => 'module.lager', // Feature 050 Margenregeln
         'oci-carts.*' => 'module.lager', // Feature 050 OCI-Warenkorb

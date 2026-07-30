@@ -12,7 +12,7 @@ namespace App\Models;
 
 use App\Casts\MoneyCast;
 use App\Enums\Article\{ArticleStatus, ArticleType};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, HasTags, Searchable};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasClassifications, HasSqid, HasTags, Searchable};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -38,6 +38,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 class Article extends Model {
     use Auditable;
     use BelongsToOrganization;
+    // Allergen-Klassifikationen der Zutaten (MVP-455, Domäne `allergen`).
+    use HasClassifications;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
     use HasSqid;

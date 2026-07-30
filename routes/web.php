@@ -2103,6 +2103,20 @@ Route::middleware('auth')->group(function () {
         Route::post('procedures/{template}/versions/{version}/publish', [\App\Http\Controllers\ProcedureTemplateController::class, 'publish'])->name('procedures.versions.publish');
         Route::post('procedures/{template}/activate', [\App\Http\Controllers\ProcedureTemplateController::class, 'activate'])->name('procedures.activate');
         Route::post('procedures/{template}/archive', [\App\Http\Controllers\ProcedureTemplateController::class, 'archive'])->name('procedures.archive');
+
+        // ── Rezeptpflege (MVP-455): Materialpositionen nur am Draft; Partyservice-
+        // Aufsatz (Profil/Allergene) nur bei installiertem Branchenprofil. ──
+        Route::post('procedures/{template}/versions/{version}/materials', [\App\Http\Controllers\Recipes\RecipeController::class, 'storeMaterial'])->name('procedures.materials.store');
+        Route::delete('procedures/{template}/versions/{version}/materials/{requirement}', [\App\Http\Controllers\Recipes\RecipeController::class, 'destroyMaterial'])->name('procedures.materials.destroy');
+        Route::post('procedures/{template}/versions/{version}/recipe-profile', [\App\Http\Controllers\Recipes\RecipeController::class, 'saveProfile'])->name('procedures.recipe-profile.save');
+        Route::post('procedures/{template}/versions/{version}/ingredient-allergens/{article}', [\App\Http\Controllers\Recipes\RecipeController::class, 'saveIngredientAllergens'])->name('procedures.ingredient-allergens.save');
+
+        // ── Menü-/Buffetplanung (MVP-455, Partyservice, module.lager) ──
+        Route::get('recipe-menus', [\App\Http\Controllers\Recipes\RecipeMenuController::class, 'index'])->name('recipe-menus.index');
+        Route::post('recipe-menus', [\App\Http\Controllers\Recipes\RecipeMenuController::class, 'store'])->name('recipe-menus.store');
+        Route::get('recipe-menus/{menu}', [\App\Http\Controllers\Recipes\RecipeMenuController::class, 'show'])->name('recipe-menus.show');
+        Route::post('recipe-menus/{menu}/items', [\App\Http\Controllers\Recipes\RecipeMenuController::class, 'storeItem'])->name('recipe-menus.items.store');
+        Route::delete('recipe-menus/{menu}/items/{item}', [\App\Http\Controllers\Recipes\RecipeMenuController::class, 'destroyItem'])->name('recipe-menus.items.destroy');
         Route::get('procedure-runs/{run}/print', [\App\Http\Controllers\ProcedureRunController::class, 'print'])->name('procedure-runs.print');
         Route::post('diary/{diary}/procedures/{template}/start', [\App\Http\Controllers\ProcedureRunController::class, 'start'])->name('procedure-runs.start');
         // Mobile Ausführung eines Prozedurlaufs (MVP-063): Schritt-für-Schritt,

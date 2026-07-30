@@ -100,7 +100,7 @@ class ProcedureTemplateController extends Controller {
         $template->load('versions.steps');
         $draft = $this->latestDraft($template);
 
-        return view('procedures.templates.edit', [
+        return view('procedures.templates.edit', array_merge([
             'template' => $template,
             'draft' => $draft,
             'versions' => $template->versions->sortByDesc('version')->values(),
@@ -108,7 +108,67 @@ class ProcedureTemplateController extends Controller {
             'proofTypes' => ProcedureProofType::cases(),
             'riskLevels' => ProcedureRiskLevel::cases(),
             'canPublish' => Gate::allows('publish', $template),
-        ]);
+        ], $this->recipeViewData($template, $draft)));
+    }
+
+    /**
+     * Rezeptpflege-Daten (MVP-455): Positionen der bearbeitbaren bzw. jüngsten
+     * veröffentlichten Version, Skalierung/Plankosten und — nur im
+     * Partyservice-Kontext — Profil + Allergenlage.
+     *
+     * @return array<string, mixed>
+     */
+    private function recipeViewData(ProcedureTemplate $template, ?ProcedureTemplateVersion $draft): array {
+        $recipes = app(\App\Services\Recipes\RecipeService::class);
+        $version = $draft ?? $template->versions->whereNotNull('published_at')->sortByDesc('version')->first();
+        $organization = $template->organization;
+
+        $data = [
+            'recipeVersion' => $version,
+            'recipeRequirements' => collect(),
+            'recipeArticles' => collect(),
+            'recipePartyActive' => $organization !== null && $recipes->isPartyserviceActive($organization),
+            'recipeProfile' => null,
+            'recipeAllergens' => null,
+            'recipeAllergenOptions' => collect(),
+            'recipePlan' => null,
+            'recipePortions' => '1',
+        ];
+
+        if (! $version instanceof ProcedureTemplateVersion) {
+            return $data;
+        }
+
+        $data['recipeRequirements'] = $version->materialRequirements()->with(['article', 'variant'])->get();
+        $data['recipeArticles'] = \App\Models\Article::query()
+            ->where('status', \App\Enums\Article\ArticleStatus::Active->value)
+            ->orderBy('number')
+            ->get(['id', 'number', 'name', 'base_unit']);
+
+        if ($data['recipePartyActive']) {
+            $profile = \App\Models\Recipes\RecipeProfile::query()
+                ->where('procedure_template_version_id', $version->id)
+                ->first();
+            $portions = (string) request()->query('portions', (string) ($profile->base_portions ?? '1'));
+            if (! is_numeric($portions) || (float) $portions <= 0) {
+                $portions = '1';
+            }
+
+            $data['recipeProfile'] = $profile;
+            $data['recipeAllergens'] = $recipes->allergens($version);
+            $data['recipePlan'] = $recipes->planCosts($version, $portions);
+            $data['recipePortions'] = $portions;
+            $data['recipeAllergenOptions'] = \App\Models\Classification::query()
+                ->where('domain', \App\Enums\Classification\ClassificationDomain::Allergen->value)
+                ->where(function ($q) use ($template): void {
+                    $q->whereNull('organization_id')->orWhere('organization_id', $template->organization_id);
+                })
+                ->where('active', true)
+                ->orderBy('sort_order')
+                ->get();
+        }
+
+        return $data;
     }
 
     /**
@@ -201,6 +261,27 @@ class ProcedureTemplateController extends Controller {
                 ];
             }
             $this->service->syncSteps($version, $carryOver);
+
+            // Rezeptur (MVP-455): Materialpositionen + Partyservice-Profil der
+            // letzten Version als Startpunkt der neuen Draft-Version übernehmen.
+            foreach ($latest->materialRequirements as $requirement) {
+                $copy = $requirement->replicate();
+                $copy->procedure_template_version_id = $version->id;
+                $copy->save();
+            }
+            $profile = \App\Models\Recipes\RecipeProfile::query()
+                ->where('procedure_template_version_id', $latest->id)
+                ->first();
+            if ($profile !== null) {
+                \App\Models\Recipes\RecipeProfile::query()->create([
+                    'organization_id' => $profile->organization_id,
+                    'procedure_template_version_id' => $version->id,
+                    'base_portions' => $profile->base_portions,
+                    'base_yield_qty' => $profile->base_yield_qty,
+                    'yield_unit' => $profile->yield_unit,
+                    'allergen_overrides' => $profile->allergen_overrides,
+                ]);
+            }
         }
 
         return redirect()
