@@ -1128,4 +1128,37 @@ return [
             'error' => 'Fehler',
         ],
     ],
+
+    'passenger' => [
+        'operation_mode' => [
+            'taxi' => 'Taxenverkehr (§ 47 PBefG)',
+            'rental_car' => 'Mietwagenverkehr (§ 49 PBefG)',
+            'pooled_on_demand' => 'Gebündelter Bedarfsverkehr (§ 50 PBefG)',
+        ],
+        'ride_status' => [
+            'requested' => 'Angefragt',
+            'accepted' => 'Angenommen',
+            'assigned' => 'Disponiert',
+            'en_route_pickup' => 'Anfahrt',
+            'waiting' => 'Wartend',
+            'occupied' => 'Besetzt',
+            'completed' => 'Abgeschlossen',
+            'cancelled' => 'Storniert',
+            'no_show' => 'Fahrgast nicht erschienen',
+            'aborted' => 'Abgebrochen',
+        ],
+        'price_kind' => [
+            'tariff' => 'Tarif',
+            'fixed_price' => 'Festpreis',
+            'contract' => 'Vertragspreis',
+        ],
+        'order_channel' => [
+            'hail' => 'Winkkunde / Halteplatz',
+            'phone' => 'Telefon',
+            'app' => 'App',
+            'web' => 'Web',
+            'mediator' => 'Vermittlungszentrale',
+            'contract' => 'Rahmenvertrag',
+        ],
+    ],
 ];

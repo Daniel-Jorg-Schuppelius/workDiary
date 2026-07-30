@@ -1127,4 +1127,37 @@ return [
             'error' => 'Error',
         ],
     ],
+
+    'passenger' => [
+        'operation_mode' => [
+            'taxi' => 'Taxi service (§ 47 PBefG)',
+            'rental_car' => 'Rental car service (§ 49 PBefG)',
+            'pooled_on_demand' => 'Pooled on-demand service (§ 50 PBefG)',
+        ],
+        'ride_status' => [
+            'requested' => 'Requested',
+            'accepted' => 'Accepted',
+            'assigned' => 'Assigned',
+            'en_route_pickup' => 'En route to pickup',
+            'waiting' => 'Waiting',
+            'occupied' => 'Occupied',
+            'completed' => 'Completed',
+            'cancelled' => 'Cancelled',
+            'no_show' => 'Passenger no-show',
+            'aborted' => 'Aborted',
+        ],
+        'price_kind' => [
+            'tariff' => 'Tariff',
+            'fixed_price' => 'Fixed price',
+            'contract' => 'Contract price',
+        ],
+        'order_channel' => [
+            'hail' => 'Street hail / rank',
+            'phone' => 'Phone',
+            'app' => 'App',
+            'web' => 'Web',
+            'mediator' => 'Dispatch center',
+            'contract' => 'Framework contract',
+        ],
+    ],
 ];

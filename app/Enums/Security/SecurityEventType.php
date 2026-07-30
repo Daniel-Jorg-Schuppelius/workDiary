@@ -26,6 +26,7 @@ enum SecurityEventType: string {
     case SsoFailed = 'sso.failed';
     case TerminalBadgeUnknown = 'terminal.badge_unknown';
     case PlatformAdminIpBlocked = 'admin.ip_blocked';
+    case ImpossibleTravel = 'auth.impossible_travel';
 
     /** PSR-3-Level der Log-Zeile. */
     public function level(): string {

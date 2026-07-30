@@ -55,6 +55,15 @@ enum PluginCapability: string implements HasLabel {
     /** Kann extern gebuchte Termine empfangen und Buchungslinks erzeugen (Feature 095, z. B. Calendly). */
     case AppointmentSync = 'appointment_sync';
 
+    /** Personenbeförderung (MVP-456): Taxameter-/Wegstreckenzähler-Import. */
+    case FareMeter = 'fare_meter';
+
+    /** Personenbeförderung (MVP-456): externe Fahrtvermittlung. */
+    case PassengerDispatch = 'passenger_dispatch';
+
+    /** Personenbeförderung (MVP-456): Mobilitätsdaten nach § 3a PBefG/MDV. */
+    case MobilityData = 'mobility_data';
+
     /** Übersetztes UI-Label (Badge in der Plugin-Übersicht). */
     public function label(): string {
         return match ($this) {
@@ -69,6 +78,9 @@ enum PluginCapability: string implements HasLabel {
             self::BackupTarget => __('Backupziel'),
             self::DomainRegistrar => __('Domain-Registrar'),
             self::AppointmentSync => __('Terminsynchronisation'),
+            self::FareMeter => __('Taxameter-Import'),
+            self::PassengerDispatch => __('Fahrtvermittlung'),
+            self::MobilityData => __('Mobilitätsdaten'),
         };
     }
 
@@ -90,6 +102,9 @@ enum PluginCapability: string implements HasLabel {
             self::BackupTarget => BackupTarget::class,
             self::DomainRegistrar => DomainRegistrar::class,
             self::AppointmentSync => AppointmentSyncer::class,
+            self::FareMeter => FareMeterProvider::class,
+            self::PassengerDispatch => PassengerDispatchProvider::class,
+            self::MobilityData => MobilityDataPublisher::class,
         };
     }
 }

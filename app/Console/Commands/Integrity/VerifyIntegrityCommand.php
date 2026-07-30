@@ -25,6 +25,7 @@ use Illuminate\Console\Command;
 class VerifyIntegrityCommand extends Command {
     protected $signature = 'integrity:verify
         {--json : Ergebnis als JSON ausgeben (Monitoring)}
+        {--anchor : Externen Integritätsanker vom Backupziel gegenprüfen (MVP-447)}
         {--trigger=cli : Auslöser des Laufs (cli|schedule|ui)}';
 
     protected $description = 'Prüft den Quelltext gegen die Integritäts-Baseline (integrity.json).';
@@ -38,7 +39,7 @@ class VerifyIntegrityCommand extends Command {
             return self::SUCCESS;
         }
 
-        $check = $service->runVerification($trigger);
+        $check = $service->runVerification($trigger, withAnchor: (bool) $this->option('anchor'));
 
         if ((bool) $this->option('json')) {
             $this->line((string) json_encode([

@@ -110,4 +110,10 @@ return [
     'action' => [
         'pull_advisories' => 'Récupérer maintenant',
     ],
+
+    // Escalade d'attaque massive vers le module de crise (fonctionnalité 097, MVP-449).
+    'crisis' => [
+        'mass_attack_title' => 'Attaque massive détectée (:event)',
+        'mass_attack_description' => ':count événements de type :event en :window minutes (limite :limit). Vérifiez les accès, appliquez des blocages, documentez la cause.',
+    ],
 ];

@@ -110,4 +110,10 @@ return [
     'action' => [
         'pull_advisories' => 'Pull now',
     ],
+
+    // Mass attack escalation into the crisis module (feature 097, MVP-449).
+    'crisis' => [
+        'mass_attack_title' => 'Mass attack detected (:event)',
+        'mass_attack_description' => ':count events of type :event within :window minutes (limit :limit). Review access, apply blocks, document the cause.',
+    ],
 ];

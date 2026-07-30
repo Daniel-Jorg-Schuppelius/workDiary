@@ -1127,4 +1127,37 @@ return [
             'error' => 'Error',
         ],
     ],
+
+    'passenger' => [
+        'operation_mode' => [
+            'taxi' => 'Servicio de taxi (§ 47 PBefG)',
+            'rental_car' => 'Alquiler con conductor (§ 49 PBefG)',
+            'pooled_on_demand' => 'Transporte a demanda agrupado (§ 50 PBefG)',
+        ],
+        'ride_status' => [
+            'requested' => 'Solicitado',
+            'accepted' => 'Aceptado',
+            'assigned' => 'Asignado',
+            'en_route_pickup' => 'En camino a la recogida',
+            'waiting' => 'En espera',
+            'occupied' => 'Ocupado',
+            'completed' => 'Completado',
+            'cancelled' => 'Cancelado',
+            'no_show' => 'Pasajero ausente',
+            'aborted' => 'Interrumpido',
+        ],
+        'price_kind' => [
+            'tariff' => 'Tarifa',
+            'fixed_price' => 'Precio fijo',
+            'contract' => 'Precio contractual',
+        ],
+        'order_channel' => [
+            'hail' => 'Parada a mano / estación',
+            'phone' => 'Teléfono',
+            'app' => 'Aplicación',
+            'web' => 'Web',
+            'mediator' => 'Central de despacho',
+            'contract' => 'Contrato marco',
+        ],
+    ],
 ];

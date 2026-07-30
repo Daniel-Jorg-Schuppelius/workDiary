@@ -33,6 +33,9 @@ class KnownDeviceService {
         $label = UserAgentHelper::shortLabel($userAgent);
         $country = $this->country($ip);
         $fingerprint = CryptoHelper::hash($user->id . '|' . $label . '|' . ($country ?? '-'));
+        // Grobe Koordinaten als Referenz der Impossible-Travel-Erkennung
+        // (MVP-449); ohne .mmdb bleiben sie null und die Prüfung ruht.
+        $coordinates = IpLocationHelper::coordinates($ip);
 
         $known = UserKnownDevice::query()
             ->where('user_id', $user->id)
@@ -40,7 +43,11 @@ class KnownDeviceService {
             ->first();
 
         if ($known !== null) {
-            $known->forceFill(['last_seen_at' => now()])->save();
+            $known->forceFill(array_filter([
+                'last_seen_at' => now(),
+                'latitude' => $coordinates['lat'] ?? null,
+                'longitude' => $coordinates['lon'] ?? null,
+            ], static fn($value): bool => $value !== null))->save();
 
             return;
         }
@@ -53,6 +60,8 @@ class KnownDeviceService {
             'fingerprint' => $fingerprint,
             'label' => $label,
             'country' => $country,
+            'latitude' => $coordinates['lat'] ?? null,
+            'longitude' => $coordinates['lon'] ?? null,
             'last_seen_at' => now(),
         ]);
 

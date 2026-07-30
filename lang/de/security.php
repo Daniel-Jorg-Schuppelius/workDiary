@@ -110,4 +110,10 @@ return [
     'action' => [
         'pull_advisories' => 'Jetzt abrufen',
     ],
+
+    // Massenangriff-Eskalation ins Krisenmodul (Feature 097, MVP-449).
+    'crisis' => [
+        'mass_attack_title' => 'Massenangriff erkannt (:event)',
+        'mass_attack_description' => ':count Ereignisse vom Typ :event in :window Minuten (Limit :limit). Zugänge prüfen, Sperren setzen, Ursache dokumentieren.',
+    ],
 ];

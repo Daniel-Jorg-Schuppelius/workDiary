@@ -29,11 +29,15 @@ class UserKnownDevice extends Model {
         'fingerprint',
         'label',
         'country',
+        'latitude',
+        'longitude',
         'last_seen_at',
     ];
 
     /** @var array<string, string> */
     protected $casts = [
+        'latitude' => 'float',
+        'longitude' => 'float',
         'last_seen_at' => 'datetime',
     ];
 

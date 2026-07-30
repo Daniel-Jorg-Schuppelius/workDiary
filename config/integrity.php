@@ -69,6 +69,17 @@ return [
         'debounce_seconds' => (int) env('INTEGRITY_WATCH_DEBOUNCE', 30),
     ],
 
+    // Lockdown-Option (Feature 097, MVP-448). Default AUS: greift nur bei
+    // signierter Release-Baseline UND >= 2 konsekutiven Abweichungsläufen.
+    // Betriebsregel: Hotfix ohne neue Baseline + Lockdown an = selbst
+    // verschuldeter Ausfall (siehe Feature 095, Betriebsteil).
+    'lockdown' => [
+        'mode' => env('INTEGRITY_LOCKDOWN', 'off'),      // off | confirmed
+        // Bypass-Secret für `artisan down --secret`, damit Admins während der
+        // Sperre hineinkommen. Leer = kein Bypass-Pfad.
+        'bypass_secret' => env('INTEGRITY_LOCKDOWN_SECRET', ''),
+    ],
+
     // Deckel für persistierte/ausgegebene Einzelbefunde je Kategorie.
     'max_findings' => 50,
 

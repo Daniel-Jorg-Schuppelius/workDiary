@@ -38,6 +38,14 @@ class AuthEventSubscriber {
 
         if ($event->user instanceof User) {
             try {
+                // Impossible Travel (MVP-449) VOR touch(): danach ist die
+                // „letzte bekannte Position" bereits die aktuelle.
+                app(\App\Services\Security\ImpossibleTravelDetector::class)->check($event->user, Request::ip());
+            } catch (\Throwable $e) {
+                Log::warning('auth.impossible_travel_failed', ['error' => $e->getMessage()]);
+            }
+
+            try {
                 $this->devices->touch($event->user, Request::userAgent(), Request::ip());
             } catch (\Throwable $e) {
                 // Geräte-Erkennung darf den Login nie brechen.

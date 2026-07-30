@@ -17,6 +17,10 @@ namespace App\Services\Release;
  * dateiweise Befunde (Pfadlisten) + veränderte vendor-Pakete + Befunde der
  * Signatur-/Artefaktkette. Listen sind ungedeckelt — Deckelung erst bei
  * Persistenz/Ausgabe ({@see CodeIntegrityService::cappedFindings()}).
+ *
+ * Feature 097 (MVP-447) ergänzt Sekundärsignale: `env` (Drift der
+ * `.env`-Datei) zählt als Abweichung, `warnings` (Git-Sekundär-Check,
+ * Anker-Hinweise) sind bewusst NIE Fail-Ursache.
  */
 final class IntegrityComparison {
     /**
@@ -25,6 +29,8 @@ final class IntegrityComparison {
      * @param  list<string>  $deleted  Baseline-Pfade, die fehlen
      * @param  list<string>  $packages  vendor-Pakete mit abweichendem Aggregat (inkl. neu/entfernt)
      * @param  list<string>  $chain  Befunde der Signatur-/Artefaktkette (ReleaseVerifier)
+     * @param  list<string>  $env  `.env`-Drift (datensparsam: Datei-Hash + Schlüsselsatz, nie Werte)
+     * @param  list<string>  $warnings  reine WARN-Signale (Git-Check, Anker-Hinweise)
      */
     public function __construct(
         public readonly array $added = [],
@@ -32,11 +38,13 @@ final class IntegrityComparison {
         public readonly array $deleted = [],
         public readonly array $packages = [],
         public readonly array $chain = [],
+        public readonly array $env = [],
+        public readonly array $warnings = [],
     ) {}
 
     public function clean(): bool {
         return $this->added === [] && $this->modified === [] && $this->deleted === []
-            && $this->packages === [] && $this->chain === [];
+            && $this->packages === [] && $this->chain === [] && $this->env === [];
     }
 
     /**
@@ -50,6 +58,10 @@ final class IntegrityComparison {
             'deleted' => $this->deleted,
             'packages' => $this->packages,
             'chain' => $this->chain,
+            'env' => $this->env,
+            // `warnings` bewusst NICHT im Hash: ein flatterndes WARN-Signal
+            // (z. B. lokaler Git-Zustand) soll keinen Alarm-Zustandswechsel
+            // auslösen.
         ]));
     }
 }

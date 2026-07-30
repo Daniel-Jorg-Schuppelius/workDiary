@@ -15,6 +15,7 @@ namespace App\Console\Commands\Security;
 use App\Enums\Notification\NotificationEvent;
 use App\Models\{SecurityEvent, User};
 use App\Notifications\GenericEventNotification;
+use App\Services\Security\SecurityCrisisEscalator;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\{Cache, Notification};
 
@@ -33,7 +34,7 @@ class EvaluateSecurityEventsCommand extends Command {
     public function handle(): int {
         $this->prune();
 
-        /** @var list<array{key: string, event: string, scope: string, window_minutes: int, limit: int}> $rules */
+        /** @var list<array{key: string, event: string, scope: string, window_minutes: int, limit: int, crisis?: bool}> $rules */
         $rules = (array) config('security.events.thresholds', []);
         foreach ($rules as $rule) {
             $this->evaluate($rule);
@@ -42,7 +43,7 @@ class EvaluateSecurityEventsCommand extends Command {
         return self::SUCCESS;
     }
 
-    /** @param array{key: string, event: string, scope: string, window_minutes: int, limit: int} $rule */
+    /** @param array{key: string, event: string, scope: string, window_minutes: int, limit: int, crisis?: bool} $rule */
     private function evaluate(array $rule): void {
         $since = now()->subMinutes(max(1, (int) $rule['window_minutes']));
         $query = SecurityEvent::query()
@@ -67,12 +68,25 @@ class EvaluateSecurityEventsCommand extends Command {
         $cacheKey = 'security:alarm:' . $rule['key'];
         $active = (bool) Cache::get($cacheKey, false);
 
+        // Massenangriff-Regeln (MVP-449) eskalieren als CrisisAlert statt als
+        // normale Notification; Entwarnung läuft über dieselbe
+        // Zustandswechsel-Logik.
+        $isCrisis = (bool) ($rule['crisis'] ?? false);
+
         if ($breached && ! $active) {
             Cache::put($cacheKey, true, now()->addDays(7));
-            $this->notify($rule, $count, is_string($offenderIp) ? $offenderIp : null, alarm: true);
+            if ($isCrisis) {
+                app(SecurityCrisisEscalator::class)->raise($rule, $count);
+            } else {
+                $this->notify($rule, $count, is_string($offenderIp) ? $offenderIp : null, alarm: true);
+            }
         } elseif (! $breached && $active) {
             Cache::forget($cacheKey);
-            $this->notify($rule, $count, null, alarm: false);
+            if ($isCrisis) {
+                app(SecurityCrisisEscalator::class)->allClear($rule, $count);
+            } else {
+                $this->notify($rule, $count, null, alarm: false);
+            }
         }
     }
 

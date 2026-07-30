@@ -58,7 +58,23 @@ return [
             ['key' => 'two_factor_failed_global', 'event' => 'auth.2fa_failed', 'scope' => 'global', 'window_minutes' => 10, 'limit' => 10],
             ['key' => 'api_token_invalid_global', 'event' => 'api.token_invalid', 'scope' => 'global', 'window_minutes' => 10, 'limit' => 30],
             ['key' => 'webhook_signature_global', 'event' => 'webhook.signature_invalid', 'scope' => 'global', 'window_minutes' => 10, 'limit' => 20],
+            // Massenangriff (Feature 097, MVP-449): deutlich über der normalen
+            // Alarmschwelle; `crisis => true` eröffnet einen CrisisAlert
+            // (Quittierungspflicht) statt einer normalen Notification.
+            ['key' => 'auth_failed_mass', 'event' => 'auth.failed', 'scope' => 'global', 'window_minutes' => 10, 'limit' => 300, 'crisis' => true],
         ],
+    ],
+
+    /*
+    | Impossible-Travel-Erkennung (Feature 097, MVP-449). Wirkt nur mit
+    | lokaler `.mmdb` (config/geoip.php) — ohne sie ruht die Prüfung still.
+    | Mindestdistanz unterdrückt Pendel-/Mobilfunk-Rauschen, die
+    | Geschwindigkeitsschwelle liegt auf Linienflug-Niveau.
+    */
+    'impossible_travel' => [
+        'enabled' => (bool) env('SECURITY_IMPOSSIBLE_TRAVEL', true),
+        'min_distance_km' => (float) env('SECURITY_IMPOSSIBLE_TRAVEL_MIN_KM', 300),
+        'max_speed_kmh' => (float) env('SECURITY_IMPOSSIBLE_TRAVEL_MAX_KMH', 900),
     ],
 
     /*

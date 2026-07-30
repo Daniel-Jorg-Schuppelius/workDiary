@@ -62,6 +62,44 @@ class CodeIntegrityService {
             'files' => $files,
             'packages' => $packages,
             'root' => $this->rootHash($files, $packages),
+            // `.env`-Drift-Signal (MVP-447): datensparsam — Datei-Hash plus
+            // Hash der SORTIERTEN Schlüsselnamen, nie Werte. Nur bei lokaler
+            // Baseline sinnvoll; Release-Baselines kennen die .env nicht.
+            'env' => $source === 'local' ? $this->envFingerprint() : null,
+        ];
+    }
+
+    /**
+     * Fingerabdruck der `.env`: sha256 der Datei + sha256 der sortierten
+     * Schlüsselnamen. Damit lassen sich „Werte geändert" und
+     * „Schlüsselsatz geändert" unterscheiden, ohne ein Secret zu lesen oder
+     * zu speichern.
+     *
+     * @return array{file: string, keys: string, key_count: int}|null
+     */
+    public function envFingerprint(): ?array {
+        // Dieselbe Wurzel wie der Datei-Scan (`integrity.base`-Override).
+        $path = $this->basePath() . DIRECTORY_SEPARATOR . '.env';
+        if (! is_file($path) || ! is_readable($path)) {
+            return null;
+        }
+
+        $contents = (string) file_get_contents($path);
+        $keys = [];
+        foreach (preg_split('/\R/', $contents) ?: [] as $line) {
+            $line = trim((string) $line);
+            if ($line === '' || str_starts_with($line, '#') || ! str_contains($line, '=')) {
+                continue;
+            }
+            $keys[] = trim(strtok($line, '=') ?: '');
+        }
+        $keys = array_values(array_unique(array_filter($keys)));
+        sort($keys);
+
+        return [
+            'file' => CryptoHelper::hash($contents),
+            'keys' => CryptoHelper::hash(implode("\n", $keys)),
+            'key_count' => count($keys),
         ];
     }
 
@@ -126,6 +164,10 @@ class CodeIntegrityService {
             'packages' => count($manifest['packages']),
         ]);
 
+        // Externe Verankerung (MVP-447): ohne konfiguriertes Backupziel oder
+        // bei Transportfehlern still übersprungen — nie Fail-Ursache.
+        app(IntegrityAnchorService::class)->push($manifest, $check->exists ? $check : null);
+
         return $check;
     }
 
@@ -135,7 +177,7 @@ class CodeIntegrityService {
      * Audit-Kette verankert, Zustandswechsel-Alarm an Plattform-Admins.
      * Einziger Prüfpfad für CLI, Scheduler und Admin-UI.
      */
-    public function runVerification(string $trigger = 'cli'): IntegrityCheck {
+    public function runVerification(string $trigger = 'cli', bool $withAnchor = false): IntegrityCheck {
         $startedAt = microtime(true);
         $manifest = $this->load();
 
@@ -145,14 +187,59 @@ class CodeIntegrityService {
 
         try {
             $comparison = $this->compare($manifest);
+            if ($withAnchor) {
+                $comparison = $this->withAnchorSignal($comparison, $manifest);
+            }
             $status = $comparison->clean() ? IntegrityCheckStatus::Ok : IntegrityCheckStatus::Deviation;
 
-            return $this->persistRun($status, $manifest, $comparison, $trigger, $startedAt);
+            $check = $this->persistRun($status, $manifest, $comparison, $trigger, $startedAt);
+            app(IntegrityLockdownService::class)->evaluate($check, $manifest, $comparison);
+
+            return $check;
         } catch (\Throwable $e) {
             report($e);
 
             return $this->persistRun(IntegrityCheckStatus::Error, $manifest, null, $trigger, $startedAt, $e->getMessage());
         }
+    }
+
+    /**
+     * Externes Anker-Signal (MVP-447) in den Vergleich einweben: ein
+     * Root-/Historien-Bruch gegen den Anker ist eine echte Abweichung
+     * (`chain`), fehlender/nicht lesbarer Anker nur ein Hinweis (`warnings`).
+     *
+     * @param  array<string, mixed>  $manifest
+     */
+    private function withAnchorSignal(IntegrityComparison $comparison, array $manifest): IntegrityComparison {
+        $lastCheck = IntegrityCheck::query()
+            ->whereIn('status', [IntegrityCheckStatus::Ok->value, IntegrityCheckStatus::Deviation->value])
+            ->latest('ran_at')
+            ->latest('id')
+            ->first();
+
+        $result = app(IntegrityAnchorService::class)->compare($manifest, $lastCheck);
+
+        return match ($result['state']) {
+            'mismatch' => new IntegrityComparison(
+                added: $comparison->added,
+                modified: $comparison->modified,
+                deleted: $comparison->deleted,
+                packages: $comparison->packages,
+                chain: [...$comparison->chain, ...$result['issues']],
+                env: $comparison->env,
+                warnings: $comparison->warnings,
+            ),
+            'unavailable' => new IntegrityComparison(
+                added: $comparison->added,
+                modified: $comparison->modified,
+                deleted: $comparison->deleted,
+                packages: $comparison->packages,
+                chain: $comparison->chain,
+                env: $comparison->env,
+                warnings: [...$comparison->warnings, ...$result['issues']],
+            ),
+            default => $comparison,
+        };
     }
 
     /**
@@ -196,7 +283,122 @@ class CodeIntegrityService {
             deleted: $deleted,
             packages: $packages,
             chain: $this->chainIssues(),
+            env: $this->envIssues($manifest),
+            warnings: $this->gitWarnings($manifest),
         );
+    }
+
+    /**
+     * `.env`-Drift gegen den Baseline-Fingerabdruck (MVP-447): unterscheidet
+     * „Werte geändert" von „Schlüsselsatz geändert", ohne Werte anzufassen.
+     * Ohne Baseline-Fingerabdruck (Release-Baseline) kein Signal.
+     *
+     * @param  array<string, mixed>  $manifest
+     * @return list<string>
+     */
+    private function envIssues(array $manifest): array {
+        $baseline = is_array($manifest['env'] ?? null) ? $manifest['env'] : null;
+        if ($baseline === null) {
+            return [];
+        }
+
+        $current = $this->envFingerprint();
+        if ($current === null) {
+            return [(string) __('integrity.env.missing')];
+        }
+
+        if (hash_equals((string) ($baseline['file'] ?? ''), $current['file'])) {
+            return [];
+        }
+
+        return [
+            hash_equals((string) ($baseline['keys'] ?? ''), $current['keys'])
+                ? (string) __('integrity.env.values_changed')
+                : (string) __('integrity.env.keys_changed', [
+                    'before' => (int) ($baseline['key_count'] ?? 0),
+                    'after' => $current['key_count'],
+                ]),
+        ];
+    }
+
+    /**
+     * Git-Sekundär-Check (MVP-447): HEAD gegen den `build`-Hash der Baseline
+     * und ein leerer Arbeitsbaum im Scan-Scope. Reines WARN — nicht jede
+     * Installation deployt via Git, und `.git` ist selbst manipulierbar.
+     *
+     * @param  array<string, mixed>  $manifest
+     * @return list<string>
+     */
+    private function gitWarnings(array $manifest): array {
+        if (! is_dir($this->basePath() . DIRECTORY_SEPARATOR . '.git')) {
+            return [];
+        }
+
+        $warnings = [];
+        $head = app(SbomGenerator::class)->resolveGitHash();
+        $expected = is_array($manifest['application'] ?? null)
+            ? (string) ($manifest['application']['build'] ?? '')
+            : '';
+
+        if ($head !== null && $expected !== '' && ! str_starts_with($head, $expected) && ! str_starts_with($expected, $head)) {
+            $warnings[] = (string) __('integrity.git.head_mismatch', ['head' => $head, 'expected' => $expected]);
+        }
+
+        $dirty = $this->gitDirtyPaths();
+        if ($dirty !== []) {
+            $warnings[] = (string) __('integrity.git.dirty', [
+                'count' => count($dirty),
+                'paths' => implode(', ', array_slice($dirty, 0, 5)),
+            ]);
+        }
+
+        return $warnings;
+    }
+
+    /**
+     * Geänderte Pfade laut `git status --porcelain`, beschränkt auf den
+     * Scan-Scope (`integrity.paths` + `root_files`).
+     *
+     * @return list<string>
+     */
+    private function gitDirtyPaths(): array {
+        try {
+            $output = @shell_exec('git -C ' . escapeshellarg($this->basePath()) . ' status --porcelain 2>/dev/null');
+        } catch (\Throwable) {
+            return [];
+        }
+        if (! is_string($output) || trim($output) === '') {
+            return [];
+        }
+
+        $scope = array_map(static fn($p): string => (string) $p, (array) config('integrity.paths', []));
+        $rootFiles = array_map(static fn($p): string => (string) $p, (array) config('integrity.root_files', []));
+
+        $dirty = [];
+        foreach (preg_split('/\R/', $output) ?: [] as $line) {
+            $path = trim(mb_substr((string) $line, 3));
+            if ($path === '') {
+                continue;
+            }
+            // Renames melden "alt -> neu"; der neue Pfad ist der relevante.
+            if (str_contains($path, ' -> ')) {
+                $path = trim((string) substr($path, (int) strpos($path, ' -> ') + 4));
+            }
+            $path = trim($path, '"');
+
+            $inScope = in_array($path, $rootFiles, true);
+            foreach ($scope as $prefix) {
+                if ($prefix !== '' && str_starts_with($path, rtrim($prefix, '/') . '/')) {
+                    $inScope = true;
+                    break;
+                }
+            }
+            if ($inScope && ! $this->isExcludedPath($this->basePath() . DIRECTORY_SEPARATOR . $path)) {
+                $dirty[] = $path;
+            }
+        }
+
+        return array_values(array_unique($dirty));
     }
 
     /**
@@ -208,7 +410,15 @@ class CodeIntegrityService {
     public function cappedFindings(IntegrityComparison $comparison): array {
         $cap = max(1, (int) config('integrity.max_findings', 50));
         $findings = [];
-        foreach (['added' => $comparison->added, 'modified' => $comparison->modified, 'deleted' => $comparison->deleted, 'packages' => $comparison->packages, 'chain' => $comparison->chain] as $key => $list) {
+        foreach ([
+            'added' => $comparison->added,
+            'modified' => $comparison->modified,
+            'deleted' => $comparison->deleted,
+            'packages' => $comparison->packages,
+            'chain' => $comparison->chain,
+            'env' => $comparison->env,
+            'warnings' => $comparison->warnings,
+        ] as $key => $list) {
             if ($list !== []) {
                 $findings[$key] = array_slice($list, 0, $cap);
             }
