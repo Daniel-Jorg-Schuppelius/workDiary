@@ -86,6 +86,11 @@ body.sidebar-collapsed {
         right: var(--sidebar-gap);
         border-radius: var(--panel-radius);
         border-left: 0;
+        /* Breite hart deckeln (überschreibt w-full/max-w-md): auf sehr
+           schmalen Screens (< ~480px) würde der rechts verankerte Drawer
+           sonst links aus dem Viewport ragen — der linke Rand-Abstand
+           bleibt so immer erhalten (Muster der mobilen Menü-Sidebar). */
+        width: min(var(--help-sidebar-w), calc(100vw - var(--sidebar-gap) * 2));
         /* Slide-Drawer wie die linke Sidebar mobil: Element bleibt im DOM,
                        help-drawer.js togglet nur .translate-x-full. visibility kippt
                        beim Schließen erst nach dem Slide-out (Delay), beim Öffnen
