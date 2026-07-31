@@ -64,6 +64,7 @@ class ProjectObserver {
     /** Sicherstellen, dass pro Kunde höchstens ein Standardprojekt existiert. */
     public function saved(Project $project): void {
         if ($project->wasChanged('customer_id')) {
+            $project->unsetRelation('customer');
             $newCustomerId = $project->customer_id;
 
             // Sub-Projekte erben den neuen Kunden mit (rekursiv via Events).

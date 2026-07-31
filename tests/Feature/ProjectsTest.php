@@ -169,17 +169,53 @@ class ProjectsTest extends TestCase {
             'is_default' => false,
         ]);
 
-        $this->actingAs($user)
+        $response = $this->actingAs($user)
             ->put(route('projects.update', $project), [
                 'name' => 'Serverpflege',
                 'status' => ProjectStatus::Active->value,
                 'customer_id' => $kundeB->sqid,
-            ])
-            ->assertSessionHasNoErrors()
-            ->assertRedirect();
+            ]);
+        $response->assertSessionHasNoErrors()->assertRedirect();
+
+        // Der Redirect muss auf die NEUE Projekt-URL zeigen und auflösbar sein
+        // (Route-Key = kundenslug/projektslug — stale customer-Relation ergäbe
+        // die alte URL und damit einen 404 nach erfolgreichem Umhängen).
+        $this->actingAs($user)
+            ->get((string) $response->headers->get('Location'))
+            ->assertOk();
 
         $project->refresh();
         $this->assertSame($kundeB->id, $project->customer_id);
         $this->assertSame('serverpflege-2', $project->slug, 'Slug muss beim Zielkunden eindeutig gemacht werden.');
+    }
+
+    /**
+     * Umhängen über den Bearbeiten-Dialog: Der Route-Key (kundenslug/slug)
+     * ändert sich, die alte Seite existiert nicht mehr — der Dialog braucht
+     * die neue URL als JSON-Redirect, sonst lädt er die tote URL neu (404).
+     */
+    public function test_dialog_update_returns_new_url_after_customer_move(): void {
+        $user = User::factory()->admin()->create();
+        $kunde = Customer::factory()->create(['organization_id' => $user->organization_id]);
+        $project = Project::factory()->create([
+            'organization_id' => $user->organization_id,
+            'customer_id' => null, // internes Projekt → URL /projects/intern/allgemein
+            'name' => 'Allgemein',
+            'slug' => 'allgemein',
+            'is_default' => false,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->withHeader('X-Entry-Dialog', '1')
+            ->put(route('projects.update', $project), [
+                'name' => 'Allgemein',
+                'status' => ProjectStatus::Active->value,
+                'customer_id' => $kunde->sqid,
+            ]);
+
+        $response->assertOk()->assertJsonStructure(['redirect']);
+        $redirect = (string) $response->json('redirect');
+        $this->assertStringContainsString($kunde->slug . '/allgemein', $redirect, 'Neue URL muss den Kunden-Slug enthalten.');
+        $this->actingAs($user)->get($redirect)->assertOk();
     }
 }

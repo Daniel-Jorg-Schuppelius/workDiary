@@ -15,7 +15,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\SaveProjectRequest;
 use App\Models\{DiaryEntry, LexofficeArticle, Project, RecurrenceRule, Task, Team, User};
 use Carbon\CarbonImmutable;
-use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Pagination\{LengthAwarePaginator, Paginator};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, DB, Gate};
@@ -249,7 +249,7 @@ class ProjectController extends Controller {
             'timesheets' => $project->timesheets()
                 ->with('user:id,name')
                 ->inRange($rangeFrom, $rangeTo)
-                ->withCount(['entries as non_billable_count' => fn ($q) => $q->where('billable', false)])
+                ->withCount(['entries as non_billable_count' => fn($q) => $q->where('billable', false)])
                 ->latest('work_date')
                 ->paginate(50, ['*'], 'sheets_page')
                 ->withQueryString(),
@@ -304,7 +304,7 @@ class ProjectController extends Controller {
         ]);
     }
 
-    public function update(SaveProjectRequest $request, Project $project): RedirectResponse {
+    public function update(SaveProjectRequest $request, Project $project): RedirectResponse|JsonResponse {
         Gate::authorize('update', $project);
 
         $data = $request->validated();
@@ -314,6 +314,10 @@ class ProjectController extends Controller {
 
         $project->update($data);
         $this->syncTeamsAndMembers($project, $teamIds, $memberIds);
+
+        if ($request->hasHeader('X-Entry-Dialog') && ($project->wasChanged('customer_id') || $project->wasChanged('slug'))) {
+            return response()->json(['redirect' => route('projects.show', $project)]);
+        }
 
         return redirect()->route('projects.show', $project)
             ->with('success', __('Projekt aktualisiert.'));
