@@ -57,9 +57,8 @@ class AuditLog extends Model implements HashChainable {
             'event' => $this->getAttribute('event'),
             'auditable_type' => $this->getAttribute('auditable_type'),
             'auditable_id' => $this->nullableInt($this->getAttribute('auditable_id')),
-            // Bewusst getAttribute(): Spalte `changes` kollidiert mit Eloquents interner $changes-Property.
             'changes' => $this->getAttribute('changes'),
-            'ip' => $this->getAttribute('ip'),
+            'ip' => $this->getAttributes()['ip'] ?? null,
             'user_agent' => $this->getAttribute('user_agent'),
             'created_at' => $this->hashCreatedAt(),
         ];

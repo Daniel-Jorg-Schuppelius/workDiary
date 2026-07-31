@@ -127,6 +127,35 @@ class AuditLogChainTest extends TestCase {
         $this->assertNotSame($first->hash, $head->head_hash);
     }
 
+    /**
+     * Byte-genauer Pin gegen die IpAddressCast-Regression (1e6320f0): `ip` muss
+     * als Roh-String in den Hash eingehen — als Cast-Objekt würde json_encode
+     * `{}` serialisieren und alle Bestands-Hashes unlesbar machen.
+     */
+    public function test_ip_is_hashed_as_raw_string_not_as_cast_object(): void {
+        $entry = $this->makeEntry('created', 1);
+
+        $payload = [
+            'user_id' => null,
+            'organization_id' => null,
+            'event' => 'created',
+            'auditable_type' => 'TestModel',
+            'auditable_id' => 1,
+            'changes' => ['before' => ['x' => 1], 'after' => ['x' => 2]],
+            'ip' => '127.0.0.1',
+            'user_agent' => 'phpunit',
+            'created_at' => $entry->created_at?->format('Y-m-d H:i:s'),
+        ];
+        $expected = hash('sha256', '|' . json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+
+        $this->assertSame($expected, $entry->hash, 'ip muss als String gehasht werden, nicht als ValueObject.');
+    }
+
+    public function test_payload_object_value_is_rejected(): void {
+        $this->expectException(\InvalidArgumentException::class);
+        AuditLog::chainHash(null, ['ip' => new \stdClass]);
+    }
+
     private function runVerify(): int {
         return $this->artisan('audit:verify')->run();
     }

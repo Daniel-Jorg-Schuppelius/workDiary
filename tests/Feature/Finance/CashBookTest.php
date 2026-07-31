@@ -66,6 +66,18 @@ class CashBookTest extends TestCase {
         $this->assertSame(130.00, app(CashBookService::class)->balance($this->register));
     }
 
+    /**
+     * Pin gegen die MoneyCast-Regression (1e6320f0): `amount` muss als roher
+     * Dezimalstring in den Hash eingehen — "(string) Money" wäre "50.00 EUR"
+     * und bräche alle vor dem Cast gehashten Bestandszeilen.
+     */
+    public function test_amount_is_hashed_as_raw_decimal_string(): void {
+        $entry = $this->record();
+
+        $this->assertSame('50.00', $entry->hashPayload()['amount']);
+        $this->assertSame(0, \Illuminate\Support\Facades\Artisan::call('audit:verify', ['--chain' => 'cash_entries']));
+    }
+
     public function test_entries_are_append_only(): void {
         $entry = $this->record();
 

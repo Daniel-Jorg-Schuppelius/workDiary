@@ -16,6 +16,7 @@ use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 /**
  * Macht ein Audit-Modell revisionssicher (GoBD): jede Zeile ist über eine
@@ -124,10 +125,31 @@ trait HashChained {
                     $value = $decoded;
                 }
             }
+            self::assertScalarPayloadValue($key, $value);
             $normalized[$key] = $value;
         }
 
         return JsonHelper::encode($normalized, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+
+    /**
+     * Wirft, wenn ein Payload-Wert (auch verschachtelt) ein Objekt ist.
+     */
+    private static function assertScalarPayloadValue(string $key, mixed $value): void {
+        if (is_object($value)) {
+            throw new InvalidArgumentException(
+                "Hash-Payload [{$key}] ist ein Objekt (" . $value::class . ') — Rohwert statt Cast übergeben.',
+            );
+        }
+        if (is_array($value)) {
+            array_walk_recursive($value, static function (mixed $leaf) use ($key): void {
+                if (is_object($leaf)) {
+                    throw new InvalidArgumentException(
+                        "Hash-Payload [{$key}] enthält verschachtelt ein Objekt (" . $leaf::class . ') — Rohwert statt Cast übergeben.',
+                    );
+                }
+            });
+        }
     }
 
     /**

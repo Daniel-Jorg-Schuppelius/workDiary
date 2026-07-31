@@ -112,7 +112,9 @@ class CashEntry extends Model implements HashChainable {
             'seq_no' => $this->nullableInt($this->getAttribute('seq_no')),
             'booked_on' => optional($this->booked_on)->toDateString(),
             'direction' => $this->getAttribute('direction'),
-            'amount' => (string) $this->getAttribute('amount'),
+            // Roh statt MoneyCast ((string) Money wäre "12.34 EUR"), auf Spalten-
+            // skala normalisiert: SQLite liefert decimal als 50 statt "50.00".
+            'amount' => $this->hashAmount(),
             'purpose' => $this->getAttribute('purpose'),
             'counterparty' => $this->getAttribute('counterparty'),
             'invoice_id' => $this->nullableInt($this->getAttribute('invoice_id')),
@@ -124,5 +126,11 @@ class CashEntry extends Model implements HashChainable {
 
     private function nullableInt(mixed $value): ?int {
         return $value === null ? null : (int) $value;
+    }
+
+    private function hashAmount(): string {
+        $raw = $this->getAttributes()['amount'] ?? null;
+
+        return $raw === null ? '' : number_format((float) $raw, 2, '.', '');
     }
 }

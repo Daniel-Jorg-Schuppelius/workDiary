@@ -1,0 +1,153 @@
+<?php
+/*
+ * Created on   : Fri Jul 31 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : 2026_11_08_100000_rechain_audit_hashes_after_value_object_casts.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+declare(strict_types=1);
+
+use App\Models\{AuditLog, CashEntry};
+use App\Models\Concerns\HashChainable;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\{DB, Log, Schema};
+
+/**
+ * Repariert die Hash-Ketten nach der ValueObject-Cast-Regression (1e6320f0):
+ * hashPayload() serialisierte `ip` (AuditLog) als {} bzw. `amount` (CashEntry)
+ * als "12.34 EUR" — Zeilen aus diesem Zeitraum rechnen unter der korrigierten
+ * Semantik anders und die gesamte Folge-Kette muss neu verkettet werden.
+ *
+ * Echtheitsnachweis vor jedem Rewrite: Der gespeicherte Hash MUSS entweder der
+ * korrekten oder exakt der Cast-defekten Semantik über dem gespeicherten
+ * prev_hash entsprechen — sonst bricht die Migration ab (echte Veränderung,
+ * es wird nichts überschrieben). Jeder Rewrite wird mit Alt-/Neu-Hash als
+ * JSONL protokolliert (storage/app/audit-chain-repair-*.jsonl, GoBD-Nachweis).
+ */
+return new class extends Migration {
+    public function up(): void {
+        $proofPath = storage_path('app/audit-chain-repair-' . now()->format('Ymd_His') . '.jsonl');
+
+        // audit_logs: defekte Variante hashte `ip` als leeres Objekt ({}).
+        $this->rechain('audit_logs', AuditLog::class, $proofPath, static function (HashChainable $model, array $payload): array {
+            $variants = [];
+            if ($payload['ip'] !== null) {
+                $variants['ip_object'] = array_replace($payload, ['ip' => new stdClass]);
+                $variants['ip_null'] = array_replace($payload, ['ip' => null]);
+            }
+
+            return $variants;
+        });
+
+        // cash_entries: defekte Variante hashte `amount` als "(string) Money" ("12.34 EUR").
+        $this->rechain('cash_entries', CashEntry::class, $proofPath, static function (HashChainable $model, array $payload): array {
+            /** @var CashEntry $model */
+            $castAmount = (string) $model->getAttribute('amount');
+
+            return $castAmount === $payload['amount']
+                ? []
+                : ['amount_money' => array_replace($payload, ['amount' => $castAmount])];
+        });
+    }
+
+    /**
+     * Läuft die Kette in id-Reihenfolge ab und verkettet ab der ersten
+     * Abweichung mit korrekter Semantik neu. $brokenVariants liefert je Zeile
+     * die als Software-Artefakt anerkannten Alt-Payloads (leer = keine).
+     *
+     * @param class-string<HashChainable> $modelClass
+     * @param Closure(HashChainable, array<string, mixed>): array<string, array<string, mixed>> $brokenVariants
+     */
+    private function rechain(string $table, string $modelClass, string $proofPath, Closure $brokenVariants): void {
+        if (! Schema::hasTable($table) || DB::table($table)->count() === 0) {
+            return;
+        }
+
+        DB::transaction(function () use ($table, $modelClass, $proofPath, $brokenVariants): void {
+            // Kettenkopf sperren — serialisiert gegen parallele Live-Inserts (wie HashChained::performInsert).
+            DB::table('audit_chain_heads')->insertOrIgnore(['chain' => $table, 'head_hash' => null, 'height' => 0]);
+            DB::table('audit_chain_heads')->where('chain', $table)->lockForUpdate()->first();
+
+            $storedPrev = null;   // Kettenstand, wie er in der DB liegt
+            $runningPrev = null;  // Kettenstand nach Korrektur
+            $rewritten = 0;
+            $rows = 0;
+
+            foreach (DB::table($table)->orderBy('id')->cursor() as $row) {
+                $rows++;
+                if ($row->prev_hash !== $storedPrev) {
+                    throw new RuntimeException("[{$table}] prev_hash-Verkettung gebrochen bei id={$row->id} — keine Reparatur, audit:verify-Befund klären.");
+                }
+
+                $model = $modelClass::fromStorageRow((array) $row);
+                $payload = $model->hashPayload();
+                $correctOverStored = $modelClass::chainHash($storedPrev, $payload);
+
+                $variant = null;
+                if (! hash_equals($correctOverStored, (string) $row->hash)) {
+                    foreach ($brokenVariants($model, $payload) as $name => $brokenPayload) {
+                        if (hash_equals($this->hashWithoutGuard($storedPrev, $brokenPayload), (string) $row->hash)) {
+                            $variant = $name;
+                            break;
+                        }
+                    }
+                    if ($variant === null) {
+                        throw new RuntimeException("[{$table}] id={$row->id}: Hash entspricht weder korrekter noch Cast-defekter Semantik — mögliche echte Veränderung, Abbruch ohne Rewrite.");
+                    }
+                }
+
+                $newHash = $modelClass::chainHash($runningPrev, $payload);
+                if (! hash_equals($newHash, (string) $row->hash) || $row->prev_hash !== $runningPrev) {
+                    DB::table($table)->where('id', $row->id)->update(['prev_hash' => $runningPrev, 'hash' => $newHash]);
+                    file_put_contents($proofPath, json_encode([
+                        'table' => $table,
+                        'id' => $row->id,
+                        'variant' => $variant ?? 'rechained_after_divergence',
+                        'old_prev_hash' => $row->prev_hash,
+                        'old_hash' => $row->hash,
+                        'new_prev_hash' => $runningPrev,
+                        'new_hash' => $newHash,
+                    ], JSON_UNESCAPED_SLASHES) . "\n", FILE_APPEND | LOCK_EX);
+                    $rewritten++;
+                }
+
+                $storedPrev = (string) $row->hash;
+                $runningPrev = $newHash;
+            }
+
+            if ($rewritten > 0) {
+                DB::table('audit_chain_heads')->where('chain', $table)->update(['head_hash' => $runningPrev, 'height' => $rows]);
+                Log::notice('audit.chain_repaired', ['table' => $table, 'rows' => $rows, 'rewritten' => $rewritten, 'proof' => $proofPath]);
+            }
+        });
+    }
+
+    /**
+     * chainHash ohne den Objekt-Guard — nur zur Rekonstruktion der defekten
+     * Alt-Semantik (ip als {}), die der Guard heute zu Recht ablehnt. Repliziert
+     * die Decode-Normalisierung von HashChained::canonicalPayload().
+     *
+     * @param array<string, mixed> $data
+     */
+    private function hashWithoutGuard(?string $prevHash, array $data): string {
+        $normalized = [];
+        foreach ($data as $key => $value) {
+            if (is_string($value)) {
+                $decoded = json_decode($value, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $value = $decoded;
+                }
+            }
+            $normalized[$key] = $value;
+        }
+
+        return hash('sha256', (string) $prevHash . '|' . json_encode($normalized, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+    }
+
+    public function down(): void {
+        // Rewrite alter (defekter) Hashes ist nicht umkehrbar — Protokoll liegt als JSONL in storage/app.
+    }
+};
