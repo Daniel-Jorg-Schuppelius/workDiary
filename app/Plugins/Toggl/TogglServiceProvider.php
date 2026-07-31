@@ -11,7 +11,7 @@
 namespace App\Plugins\Toggl;
 
 use App\Plugins\Support\PluginServiceProviderBase;
-use App\Plugins\Toggl\Console\{TogglBackfillReferencesCommand, TogglImportCommand, TogglRepairEntryUsersCommand};
+use App\Plugins\Toggl\Console\{TogglBackfillReferencesCommand, TogglImportCommand, TogglPushCommand, TogglRepairEntryBillableCommand, TogglRepairEntryUsersCommand};
 use App\Plugins\Toggl\Services\TogglOutboxDispatcher;
 use App\Services\Integration\IntegrationOutboxDispatcherResolver;
 
@@ -37,8 +37,10 @@ class TogglServiceProvider extends PluginServiceProviderBase {
         if ($this->app->runningInConsole()) {
             $this->commands([
                 TogglImportCommand::class,
+                TogglPushCommand::class,
                 TogglBackfillReferencesCommand::class,
                 TogglRepairEntryUsersCommand::class,
+                TogglRepairEntryBillableCommand::class,
             ]);
         }
     }

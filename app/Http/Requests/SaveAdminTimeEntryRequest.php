@@ -27,6 +27,7 @@ class SaveAdminTimeEntryRequest extends BaseFormRequest {
     protected array $sqidFields = [
         'activity_category_id' => \App\Models\ActivityCategory::class,
         'attendance_id' => \App\Models\Attendance::class,
+        'tag_ids' => \App\Models\Tag::class,
     ];
 
     /**
@@ -101,6 +102,9 @@ class SaveAdminTimeEntryRequest extends BaseFormRequest {
             'started_at' => ['nullable', 'date'],
             'ended_at' => ['nullable', 'date', 'after_or_equal:started_at'],
             'description' => ['nullable', 'string', 'max:500'],
+            'tag_ids' => ['nullable', 'array'],
+            'tag_ids.*' => ['integer', new \App\Rules\ExistsInCurrentOrganization('tags')],
+            'new_tags' => ['nullable', 'string', 'max:500'],
         ];
     }
 

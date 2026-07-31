@@ -9061,5 +9061,16 @@
     "Kein Projekt gefunden.": "Aucun projet trouvé.",
     "Für dieses Projekt gibt es keine Aufgaben oder Aufträge.": "Ce projet n'a ni tâches ni commandes.",
     "Zuletzt verwendet": "Utilisés récemment",
-    "Weitere Projekte": "Autres projets"
+    "Weitere Projekte": "Autres projets",
+    "Zeit-Übertragung aktivieren": "Activer le transfert des temps",
+    "Überträgt in workDiary erfasste Zeiten gemappter Projekte nach Toggl (z. B. Fernwartungssitzungen). Angelegt wird immer für den Token-Inhaber; übertragene Einträge verhalten sich danach wie importierte — inklusive Abgleich in beide Richtungen und Löschungserkennung.": "Transfère vers Toggl les temps saisis dans workDiary pour les projets mappés (p. ex. sessions de télémaintenance). Les entrées sont toujours créées pour le propriétaire du jeton ; les entrées transférées se comportent ensuite comme des entrées importées — synchronisation bidirectionnelle et détection des suppressions incluses.",
+    "Toggl-Übertragung ist deaktiviert (Plugin-Einstellung „Zeit-Übertragung aktivieren\").": "Le transfert Toggl est désactivé (réglage du plugin « Activer le transfert des temps »).",
+    "Toggl-API ist nicht konfiguriert (API-Token in den Plugin-Einstellungen hinterlegen).": "L'API Toggl n'est pas configurée (renseigner le jeton d'API dans les réglages du plugin).",
+    "Kein Projekt ist einem Toggl-Projekt zugeordnet (zuerst Sync ausführen bzw. Inbox-Gruppen buchen).": "Aucun projet n'est associé à un projet Toggl (lancer d'abord la synchronisation ou comptabiliser les groupes de la boîte de réception).",
+    "Kein Toggl-Workspace auflösbar (Workspace-ID in den Plugin-Einstellungen hinterlegen).": "Aucun espace de travail Toggl résoluble (renseigner l'ID d'espace de travail dans les réglages du plugin).",
+    "Toggl-Übertragung: :pushed übertragen, :skipped übersprungen, :failed fehlgeschlagen.": "Transfert Toggl : :pushed transférés, :skipped ignorés, :failed en échec.",
+    "Zeiten nach Toggl übertragen": "Transférer les temps vers Toggl",
+    "Überträgt in workDiary erfasste Zeiten gemappter Projekte nach Toggl (z. B. Fernwartungssitzungen). Angelegt wird für den Token-Inhaber; bereits übertragene oder aus Toggl importierte Einträge werden übersprungen, die Einträge bleiben lokal abrechenbar.": "Transfère vers Toggl les temps saisis dans workDiary pour les projets mappés (p. ex. sessions de télémaintenance). Les entrées sont créées pour le propriétaire du jeton ; les entrées déjà transférées ou importées depuis Toggl sont ignorées, et les entrées restent facturables localement.",
+    "Nach Toggl übertragen": "Transférer vers Toggl",
+    "Übertragung jetzt ausführen? Es werden Zeiteinträge in Toggl angelegt.": "Lancer le transfert maintenant ? Des entrées de temps seront créées dans Toggl."
 }

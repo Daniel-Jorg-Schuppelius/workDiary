@@ -48,7 +48,16 @@
                             @endif
                         </td>
                         <td class="text-xs text-base-content/70">{{ $entry->task->title ?? '—' }}</td>
-                        <td class="max-w-xs truncate text-xs text-base-content/70">{{ $entry->description }}</td>
+                        <td class="max-w-xs text-xs text-base-content/70">
+                            <span class="block truncate">{{ $entry->description }}</span>
+                            @if ($entry->tags->isNotEmpty())
+                                <span class="mt-0.5 flex flex-wrap gap-1">
+                                    @foreach ($entry->tags as $tag)
+                                        <span class="badge badge-xs" style="background:{{ $tag->color ?? '#94a3b8' }};color:#fff">{{ $tag->name }}</span>
+                                    @endforeach
+                                </span>
+                            @endif
+                        </td>
                         <td class="text-right whitespace-nowrap">
                             @can('update', $entry)
                                 <x-icon-btn icon="edit"

@@ -195,13 +195,22 @@
                                         @endif
                                     </td>
                                     <td>{{ $entry->activity_type?->label() }}</td>
-                                    <td class="max-w-60 truncate">
-                                        @if (filled($entry->description))
-                                            {{ $entry->description }}
-                                        @elseif ($entry->billable)
-                                            <span class="text-warning">{{ __('day-close.status.comment_missing') }}</span>
-                                        @else
-                                            <span class="opacity-50">—</span>
+                                    <td class="max-w-60">
+                                        <span class="block truncate">
+                                            @if (filled($entry->description))
+                                                {{ $entry->description }}
+                                            @elseif ($entry->billable)
+                                                <span class="text-warning">{{ __('day-close.status.comment_missing') }}</span>
+                                            @else
+                                                <span class="opacity-50">—</span>
+                                            @endif
+                                        </span>
+                                        @if ($entry->tags->isNotEmpty())
+                                            <span class="mt-0.5 flex flex-wrap gap-1">
+                                                @foreach ($entry->tags as $tag)
+                                                    <span class="badge badge-xs" style="background:{{ $tag->color ?? '#94a3b8' }};color:#fff">{{ $tag->name }}</span>
+                                                @endforeach
+                                            </span>
                                         @endif
                                     </td>
                                     <td class="text-center">

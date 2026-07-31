@@ -160,7 +160,7 @@ class TimesheetController extends Controller {
 
     public function show(Project $project, Timesheet $timesheet, MaterialProviderRegistry $registry): View {
         Gate::authorize('view', $timesheet);
-        $timesheet->load(['entries.task', 'materialUsages.material', 'signatureAttachment']);
+        $timesheet->load(['entries.task', 'entries.tags:id,name,color', 'materialUsages.material', 'signatureAttachment']);
 
         $tasks = $project->tasks()->orderBy('title')->get(['id', 'title']);
         $materials = $registry->get('local')?->search('', 50) ?? collect();

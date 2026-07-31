@@ -215,6 +215,7 @@
                     </template>
                 </select>
                 <p class="text-xs text-base-content/60" x-show="noSecondary">{{ __('Für dieses Projekt gibt es keine Aufgaben oder Aufträge.') }}</p>
+                <x-tag-picker class="w-full sm:w-96" :tags="$allTags ?? []" :selected="[]" :recent="$recentTagIds ?? []" />
             </div>
         </form>
     @endif

@@ -9061,5 +9061,16 @@
     "Kein Projekt gefunden.": "No se encontró ningún proyecto.",
     "Für dieses Projekt gibt es keine Aufgaben oder Aufträge.": "Este proyecto no tiene tareas ni pedidos.",
     "Zuletzt verwendet": "Usados recientemente",
-    "Weitere Projekte": "Otros proyectos"
+    "Weitere Projekte": "Otros proyectos",
+    "Zeit-Übertragung aktivieren": "Activar la transferencia de tiempos",
+    "Überträgt in workDiary erfasste Zeiten gemappter Projekte nach Toggl (z. B. Fernwartungssitzungen). Angelegt wird immer für den Token-Inhaber; übertragene Einträge verhalten sich danach wie importierte — inklusive Abgleich in beide Richtungen und Löschungserkennung.": "Transfiere a Toggl los tiempos registrados en workDiary de los proyectos asignados (p. ej. sesiones de asistencia remota). Las entradas se crean siempre para el titular del token; las entradas transferidas se comportan después como las importadas, incluidos la sincronización bidireccional y la detección de eliminaciones.",
+    "Toggl-Übertragung ist deaktiviert (Plugin-Einstellung „Zeit-Übertragung aktivieren\").": "La transferencia a Toggl está desactivada (ajuste del plugin «Activar la transferencia de tiempos»).",
+    "Toggl-API ist nicht konfiguriert (API-Token in den Plugin-Einstellungen hinterlegen).": "La API de Toggl no está configurada (guarda el token de API en los ajustes del plugin).",
+    "Kein Projekt ist einem Toggl-Projekt zugeordnet (zuerst Sync ausführen bzw. Inbox-Gruppen buchen).": "Ningún proyecto está asignado a un proyecto de Toggl (ejecuta primero la sincronización o contabiliza los grupos de la bandeja de entrada).",
+    "Kein Toggl-Workspace auflösbar (Workspace-ID in den Plugin-Einstellungen hinterlegen).": "No se puede determinar el espacio de trabajo de Toggl (guarda el ID del espacio de trabajo en los ajustes del plugin).",
+    "Toggl-Übertragung: :pushed übertragen, :skipped übersprungen, :failed fehlgeschlagen.": "Transferencia a Toggl: :pushed transferidos, :skipped omitidos, :failed fallidos.",
+    "Zeiten nach Toggl übertragen": "Transferir tiempos a Toggl",
+    "Überträgt in workDiary erfasste Zeiten gemappter Projekte nach Toggl (z. B. Fernwartungssitzungen). Angelegt wird für den Token-Inhaber; bereits übertragene oder aus Toggl importierte Einträge werden übersprungen, die Einträge bleiben lokal abrechenbar.": "Transfiere a Toggl los tiempos registrados en workDiary de los proyectos asignados (p. ej. sesiones de asistencia remota). Las entradas se crean para el titular del token; las entradas ya transferidas o importadas de Toggl se omiten y siguen siendo facturables localmente.",
+    "Nach Toggl übertragen": "Transferir a Toggl",
+    "Übertragung jetzt ausführen? Es werden Zeiteinträge in Toggl angelegt.": "¿Ejecutar la transferencia ahora? Se crearán registros de tiempo en Toggl."
 }

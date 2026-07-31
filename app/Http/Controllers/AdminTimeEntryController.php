@@ -11,6 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\TimeEntry\TimeEntryKind;
+use App\Http\Controllers\Concerns\ProvidesTimeEntryTagPicker;
 use App\Http\Requests\SaveAdminTimeEntryRequest;
 use App\Models\{ActivityCategory, Attendance, TimeEntry, User};
 use Carbon\CarbonImmutable;
@@ -24,6 +25,8 @@ use Illuminate\View\View;
  * a billable target, training, etc.
  */
 class AdminTimeEntryController extends Controller {
+    use ProvidesTimeEntryTagPicker;
+
     public function create(Request $request): View {
         Gate::authorize('create', TimeEntry::class);
 
@@ -40,7 +43,7 @@ class AdminTimeEntryController extends Controller {
             'categories' => $categories,
             'date' => $date,
             'openAttendance' => $openAttendance,
-        ]);
+        ] + $this->tagPickerData());
     }
 
     public function store(SaveAdminTimeEntryRequest $request): RedirectResponse {
@@ -50,6 +53,7 @@ class AdminTimeEntryController extends Controller {
         $user = Auth::user();
 
         $data = $request->validated();
+        [$tagIds, $newTags] = $this->pullTagInput($data);
         $data['user_id'] = $user->id;
         $data['kind'] = TimeEntryKind::Work->value;
 
@@ -61,7 +65,7 @@ class AdminTimeEntryController extends Controller {
         }
         $data['organization_id'] ??= $user->organization_id;
 
-        TimeEntry::create($data);
+        TimeEntry::create($data)->syncTagsFromInput($tagIds, $newTags);
 
         return redirect()->route('today.show', ['date' => $data['date']])
             ->with('success', __('Verwaltungszeit erfasst.'));
@@ -71,17 +75,21 @@ class AdminTimeEntryController extends Controller {
         Gate::authorize('update', $timeEntry);
 
         return view('time-entries._admin_form_dialog', [
-            'entry' => $timeEntry,
+            'entry' => $timeEntry->load('tags:id,name,color'),
             'categories' => ActivityCategory::query()->active()->orderBy('sort_order')->orderBy('label')->get(),
             'date' => $timeEntry->date?->toDateString(),
             'openAttendance' => null,
-        ]);
+        ] + $this->tagPickerData($timeEntry));
     }
 
     public function update(SaveAdminTimeEntryRequest $request, TimeEntry $timeEntry): RedirectResponse {
         Gate::authorize('update', $timeEntry);
 
-        $timeEntry->update($request->validated());
+        $data = $request->validated();
+        [$tagIds, $newTags] = $this->pullTagInput($data);
+
+        $timeEntry->update($data);
+        $timeEntry->syncTagsFromInput($tagIds, $newTags);
 
         return redirect()->route('today.show', ['date' => $timeEntry->date?->toDateString()])
             ->with('success', __('Verwaltungszeit aktualisiert.'));

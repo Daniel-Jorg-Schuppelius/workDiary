@@ -14,7 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{Customer, ExternalReference, ForeignCustomer, IntegrationInboxItem, Organization, Project};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Toggl\Sources\{ApiWorkspaceSource, TogglApiClient, TogglWorkspaceReader};
-use App\Plugins\Toggl\{TogglArchiveException, TogglConfig, TogglExportArchiveService, TogglExportImporter, TogglImportService, TogglOptionBuilder, TogglPlugin};
+use App\Plugins\Toggl\{TogglArchiveException, TogglConfig, TogglExportArchiveService, TogglExportImporter, TogglExportService, TogglImportService, TogglOptionBuilder, TogglPlugin};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -52,9 +52,47 @@ class TogglController extends Controller {
                 ->count()
             : 0;
 
+        $config = TogglConfig::resolve($admin->organization_id);
+
         return view('toggl::admin.import', [
             'inboxOpenCount' => $inboxOpenCount,
+            'apiConfigured' => $config['api_token'] !== null,
+            'exportEnabled' => (bool) $config['export_enabled'],
         ]);
+    }
+
+    /** Spiegelung workDiary → Toggl (manueller Lauf; Zeitfenster optional). */
+    public function exportApi(Request $request, TogglExportService $export): RedirectResponse {
+        $admin = $this->admin();
+
+        $data = $request->validate([
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date', 'after_or_equal:from'],
+        ]);
+
+        $config = TogglConfig::resolve($admin->organization_id);
+
+        $result = $export->exportPending(
+            $this->organization($admin),
+            $config,
+            isset($data['from']) ? CarbonImmutable::parse((string) $data['from'])->startOfDay() : null,
+            isset($data['to']) ? CarbonImmutable::parse((string) $data['to'])->endOfDay() : null,
+        );
+
+        if ($result['pushed'] === 0 && $result['errors'] !== []) {
+            return back()->withErrors(['api' => $result['errors'][0]]);
+        }
+
+        $status = __('Toggl-Übertragung: :pushed übertragen, :skipped übersprungen, :failed fehlgeschlagen.', [
+            'pushed' => $result['pushed'],
+            'skipped' => $result['skipped'],
+            'failed' => $result['failed'],
+        ]);
+        if ($result['errors'] !== []) {
+            $status .= ' ' . $result['errors'][0];
+        }
+
+        return back()->with('status', $status);
     }
 
     public function sync(): RedirectResponse {

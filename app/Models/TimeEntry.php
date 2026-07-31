@@ -12,7 +12,7 @@ namespace App\Models;
 
 use App\Casts\MoneyCast;
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, HasTags};
 use App\Services\RateCalculator;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
@@ -57,6 +57,7 @@ class TimeEntry extends Model {
     use HasFactory;
 
     use HasSqid;
+    use HasTags;
 
     /**
      * Liefert ein lokalisiertes Label für einen activity_type-Wert.

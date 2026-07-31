@@ -13,6 +13,7 @@ namespace App\Plugins\Toggl;
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, Organization, Project, TimeEntry, User};
+use App\Plugins\Support\AttachesImportedTags;
 use App\Plugins\Toggl\Sources\{FolderWorkspaceSource, TogglEntry, TogglWorkspaceReader, WorkspaceSourceInterface};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -39,6 +40,8 @@ use Illuminate\Support\Str;
  * „Würde anlegen/buchen"-Zahlen ohne zu schreiben.
  */
 class TogglExportImporter {
+    use AttachesImportedTags;
+
     public const MODE_SKIP = 'skip';
 
     public const MODE_OWN = 'own';
@@ -485,7 +488,7 @@ class TogglExportImporter {
             $entry->description,
         ]))) ?: (string) __('Toggl-Zeiteintrag');
 
-        $timeEntry = TimeEntry::query()->create([
+        $attributes = [
             'organization_id' => $organization->id,
             'project_id' => $project->id,
             'user_id' => $user->id,
@@ -494,8 +497,17 @@ class TogglExportImporter {
             'ended_at' => $entry->endedAt,
             'kind' => TimeEntryKind::Work,
             'description' => $description,
-            'billable' => $entry->billable,
-        ]);
+        ];
+        if ($entry->billable) {
+            // Nur echtes true ist ein Signal (Free-Plan liefert immer false) —
+            // sonst weglassen → Boot erbt effectiveBillable() des Projekts
+            // (Spiegel der Projekt-Regel in findOrCreateProject).
+            $attributes['billable'] = true;
+        }
+        $timeEntry = TimeEntry::query()->create($attributes);
+
+        // Toggl-Tags (nur API-Quelle; der Ordner-Reader liefert keine) additiv anhängen.
+        $this->attachImportedTags($organization, $timeEntry, $entry->tags);
 
         ExternalReference::query()->create([
             'organization_id' => $organization->id,

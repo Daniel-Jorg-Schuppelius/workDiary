@@ -12,6 +12,7 @@ namespace App\Plugins\Toggl\Sources;
 
 use APIToolkit\API\Authentication\BasicAuthentication;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory, RemoteTimeWriter, StartStopFingerprint};
+use App\Plugins\Toggl\Exceptions\TogglApiException;
 use Carbon\CarbonImmutable;
 
 /**
@@ -162,10 +163,27 @@ class TogglApiClient implements RemoteTimeWriter {
             endedAt: CarbonImmutable::parse($stop),
             billable: (bool) ($record['billable'] ?? false),
             userEmail: $email,
+            tags: self::tagNames($record['tags'] ?? null),
             clientId: $clientId !== null ? (int) $clientId : null,
             projectId: $projectId,
             workspaceId: isset($record['workspace_id']) ? (int) $record['workspace_id'] : null,
         );
+    }
+
+    /**
+     * Normalisiert das tags-Feld eines v9-Datensatzes (Tag-Namen).
+     *
+     * @return list<string>
+     */
+    private static function tagNames(mixed $tags): array {
+        if (! is_array($tags)) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map(
+            static fn ($tag): string => trim((string) $tag),
+            $tags,
+        ), static fn (string $tag): bool => $tag !== ''));
     }
 
     /**
@@ -279,6 +297,33 @@ class TogglApiClient implements RemoteTimeWriter {
     }
 
     /**
+     * Workspace-Tags (ID → Name) — die Reports-API liefert nur tag_ids,
+     * die Namen kommen aus dieser Liste.
+     *
+     * @return array<int, string>
+     */
+    public function workspaceTags(int $workspaceId): array {
+        $response = $this->api()
+            ->getResponse($this->baseUrl . '/workspaces/' . $workspaceId . '/tags', [], ['timeout' => 20]);
+
+        if (! $response->successful()) {
+            return [];
+        }
+
+        $out = [];
+        foreach ((array) ($response->json() ?? []) as $row) {
+            $name = trim((string) ($row['name'] ?? ''));
+            $id = $row['id'] ?? null;
+            if ($name === '' || $id === null) {
+                continue;
+            }
+            $out[(int) $id] = $name;
+        }
+
+        return $out;
+    }
+
+    /**
      * Workspace-Benutzer, Format wie der Ordner-Reader.
      *
      * @return array<int, array{id: ?int, email: string, name: string, timezone: ?string}>
@@ -355,6 +400,9 @@ class TogglApiClient implements RemoteTimeWriter {
             return [];
         }
 
+        // Reports-Zeilen tragen nur tag_ids — einmal je Workspace auflösen.
+        $tagNamesById = $this->workspaceTags($workspaceId);
+
         $entries = [];
         $windowEnd = $ceil;
         while ($windowEnd->greaterThanOrEqualTo($floor)) {
@@ -364,7 +412,7 @@ class TogglApiClient implements RemoteTimeWriter {
             }
 
             foreach ($this->fetchReportWindow($workspaceId, $windowStart, $windowEnd) as $row) {
-                foreach ($this->mapReportRow((array) $row, $projects, $workspaceId, $emailsByUserId) as $entry) {
+                foreach ($this->mapReportRow((array) $row, $projects, $workspaceId, $emailsByUserId, $tagNamesById) as $entry) {
                     $entries[] = $entry;
                 }
             }
@@ -420,9 +468,10 @@ class TogglApiClient implements RemoteTimeWriter {
      * @param  array<string, mixed>  $row
      * @param  array<int, array{name: string, client_name: ?string, client_id: ?int}>  $projects
      * @param  array<int, string>  $emailsByUserId  Toggl-User-ID → E-Mail
+     * @param  array<int, string>  $tagNamesById  Toggl-Tag-ID → Name
      * @return array<int, TogglEntry>
      */
-    private function mapReportRow(array $row, array $projects, ?int $workspaceId = null, array $emailsByUserId = []): array {
+    private function mapReportRow(array $row, array $projects, ?int $workspaceId = null, array $emailsByUserId = [], array $tagNamesById = []): array {
         $items = $row['time_entries'] ?? null;
         if (! is_array($items) || $items === []) {
             return [];
@@ -439,9 +488,17 @@ class TogglApiClient implements RemoteTimeWriter {
         $userEmail = $this->reportUserEmail($row)
             ?? (isset($row['user_id']) ? ($emailsByUserId[(int) $row['user_id']] ?? null) : null);
 
+        // Unbekannte tag_ids (z. B. inzwischen gelöschte Tags) still überspringen.
+        $tags = [];
+        foreach (is_array($row['tag_ids'] ?? null) ? $row['tag_ids'] : [] as $tagId) {
+            if (is_numeric($tagId) && isset($tagNamesById[(int) $tagId])) {
+                $tags[] = $tagNamesById[(int) $tagId];
+            }
+        }
+
         $entries = [];
         foreach ($items as $item) {
-            $entry = $this->reportItemToEntry((array) $item, $clientName, $projectName, $description, $billable, $userEmail, $clientId, $projectId, $workspaceId);
+            $entry = $this->reportItemToEntry((array) $item, $clientName, $projectName, $description, $billable, $userEmail, $clientId, $projectId, $workspaceId, $tags);
             if ($entry !== null) {
                 $entries[] = $entry;
             }
@@ -454,8 +511,9 @@ class TogglApiClient implements RemoteTimeWriter {
      * Baut aus einer einzelnen Reports-Position ein {@see TogglEntry}.
      *
      * @param  array<string, mixed>  $item
+     * @param  list<string>  $tags
      */
-    private function reportItemToEntry(array $item, ?string $clientName, ?string $projectName, ?string $description, bool $billable, ?string $userEmail, ?int $clientId = null, ?int $projectId = null, ?int $workspaceId = null): ?TogglEntry {
+    private function reportItemToEntry(array $item, ?string $clientName, ?string $projectName, ?string $description, bool $billable, ?string $userEmail, ?int $clientId = null, ?int $projectId = null, ?int $workspaceId = null, array $tags = []): ?TogglEntry {
         $start = $item['start'] ?? null;
         $stop = $item['stop'] ?? null;
         if (! is_string($start) || $start === '') {
@@ -478,6 +536,7 @@ class TogglApiClient implements RemoteTimeWriter {
             endedAt: CarbonImmutable::parse($stop),
             billable: $billable,
             userEmail: $userEmail,
+            tags: $tags,
             clientId: $clientId,
             projectId: $projectId,
             workspaceId: $workspaceId,
@@ -591,6 +650,58 @@ class TogglApiClient implements RemoteTimeWriter {
         }
 
         return $this->baseUrl . '/workspaces/' . $workspaceId . '/time_entries/' . (int) $externalId;
+    }
+
+    /**
+     * Legt einen Zeiteintrag in Toggl an (v9) und liefert den Response-Datensatz —
+     * Grundlage für die Referenzen + den Import-Fingerabdruck des Push-Exports.
+     * Angelegt wird immer für den Token-Inhaber (v9-Limitierung).
+     *
+     * @param  list<string>  $tags
+     * @return array<string, mixed>
+     *
+     * @throws TogglApiException bei Nicht-2xx (Status für 429-Abbruch)
+     */
+    public function createTimeEntry(
+        int $workspaceId,
+        CarbonImmutable $start,
+        CarbonImmutable $stop,
+        string $description,
+        ?int $projectId,
+        bool $billable,
+        array $tags = [],
+    ): array {
+        $payload = [
+            'created_with' => 'workDiary',
+            'description' => $description,
+            'start' => $start->utc()->toIso8601String(),
+            'stop' => $stop->utc()->toIso8601String(),
+            'workspace_id' => $workspaceId,
+        ];
+        if ($projectId !== null) {
+            $payload['project_id'] = $projectId;
+        }
+        if ($billable) {
+            // Free-Plan-Workspaces kennen das Flag nicht — false nie senden.
+            $payload['billable'] = true;
+        }
+        if ($tags !== []) {
+            $payload['tags'] = $tags;
+        }
+
+        $response = $this->api()->postJson(
+            $this->baseUrl . '/workspaces/' . $workspaceId . '/time_entries',
+            $payload,
+            ['timeout' => 20],
+        );
+        if (! $response->successful()) {
+            throw new TogglApiException(
+                'Toggl-Anlage fehlgeschlagen (HTTP ' . $response->status() . ')',
+                $response->status(),
+            );
+        }
+
+        return (array) $response->json();
     }
 
     private function api(): PluginApiClient {

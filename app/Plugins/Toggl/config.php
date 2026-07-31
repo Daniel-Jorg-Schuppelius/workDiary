@@ -26,4 +26,6 @@ return [
     'default_billable' => (bool) env('TOGGL_DEFAULT_BILLABLE', true),
     // Benutzer, dem importierte Zeiten zugeordnet werden (sonst Org-Owner / erster Benutzer).
     'default_user_id' => env('TOGGL_DEFAULT_USER_ID'),
+    // Spiegelung workDiary → Toggl (lokal erfasste Zeiten anlegen); bewusst aus.
+    'export_enabled' => (bool) env('TOGGL_EXPORT_ENABLED', false),
 ];

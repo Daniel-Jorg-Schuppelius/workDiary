@@ -9061,5 +9061,16 @@
     "Kein Projekt gefunden.": "No project found.",
     "Für dieses Projekt gibt es keine Aufgaben oder Aufträge.": "This project has no tasks or orders.",
     "Zuletzt verwendet": "Recently used",
-    "Weitere Projekte": "Other projects"
+    "Weitere Projekte": "Other projects",
+    "Zeit-Übertragung aktivieren": "Enable time transfer",
+    "Überträgt in workDiary erfasste Zeiten gemappter Projekte nach Toggl (z. B. Fernwartungssitzungen). Angelegt wird immer für den Token-Inhaber; übertragene Einträge verhalten sich danach wie importierte — inklusive Abgleich in beide Richtungen und Löschungserkennung.": "Transfers times recorded in workDiary for mapped projects to Toggl (e.g. remote support sessions). Entries are always created for the token owner; transferred entries then behave like imported ones — including two-way sync and deletion detection.",
+    "Toggl-Übertragung ist deaktiviert (Plugin-Einstellung „Zeit-Übertragung aktivieren\").": "Toggl transfer is disabled (plugin setting \"Enable time transfer\").",
+    "Toggl-API ist nicht konfiguriert (API-Token in den Plugin-Einstellungen hinterlegen).": "Toggl API is not configured (store the API token in the plugin settings).",
+    "Kein Projekt ist einem Toggl-Projekt zugeordnet (zuerst Sync ausführen bzw. Inbox-Gruppen buchen).": "No project is mapped to a Toggl project (run the sync first or book inbox groups).",
+    "Kein Toggl-Workspace auflösbar (Workspace-ID in den Plugin-Einstellungen hinterlegen).": "No Toggl workspace resolvable (store the workspace ID in the plugin settings).",
+    "Toggl-Übertragung: :pushed übertragen, :skipped übersprungen, :failed fehlgeschlagen.": "Toggl transfer: :pushed transferred, :skipped skipped, :failed failed.",
+    "Zeiten nach Toggl übertragen": "Transfer times to Toggl",
+    "Überträgt in workDiary erfasste Zeiten gemappter Projekte nach Toggl (z. B. Fernwartungssitzungen). Angelegt wird für den Token-Inhaber; bereits übertragene oder aus Toggl importierte Einträge werden übersprungen, die Einträge bleiben lokal abrechenbar.": "Transfers times recorded in workDiary for mapped projects to Toggl (e.g. remote support sessions). Entries are created for the token owner; already transferred or Toggl-imported entries are skipped, and the entries remain billable locally.",
+    "Nach Toggl übertragen": "Transfer to Toggl",
+    "Übertragung jetzt ausführen? Es werden Zeiteinträge in Toggl angelegt.": "Run the transfer now? Time entries will be created in Toggl."
 }

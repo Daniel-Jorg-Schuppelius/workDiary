@@ -41,7 +41,8 @@ final class ImportedTimeEntry {
         public readonly ?string $description,
         public readonly CarbonImmutable $startedAt,
         public readonly CarbonImmutable $endedAt,
-        public readonly bool $billable = false,
+        /** true/false = echtes Quell-Signal (Kimai/Clockify); null = kein Signal (Toggl Free) → Projekt-Vererbung. */
+        public readonly ?bool $billable = null,
         public readonly ?string $userEmail = null,
         public readonly array $tags = [],
         public readonly string $source = self::SOURCE_CSV,

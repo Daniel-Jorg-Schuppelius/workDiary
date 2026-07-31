@@ -140,6 +140,11 @@
                        value="{{ old('description', $entry?->description) }}">
             </div>
 
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('Tags') }}</label>
+                <x-tag-picker :tags="$allTags" :selected="$selectedTagIds" :recent="$recentTagIds" />
+            </div>
+
             {{-- Nacharbeit/Kulanz (Feature 014, Rang 59): nur anzeigen, wenn Gründe gepflegt sind. --}}
             @if ($reworkOptions->isNotEmpty())
                 <div class="fieldset">

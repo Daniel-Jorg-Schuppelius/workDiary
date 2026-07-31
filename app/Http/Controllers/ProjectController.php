@@ -160,7 +160,7 @@ class ProjectController extends Controller {
         $timeDir = strtolower((string) request()->query('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
 
         $timeEntriesQuery = $project->timeEntries()
-            ->with(['user:id,name', 'task:id,title'])
+            ->with(['user:id,name', 'task:id,title', 'tags:id,name,color'])
             ->whereBetween('date', [$rangeFrom->toDateString(), $rangeTo->toDateString()]);
         match ($timeSort) {
             // Relations-Spalten über korrelierte Subqueries sortieren.

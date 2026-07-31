@@ -9061,5 +9061,16 @@
     "Kein Projekt gefunden.": "Nessun progetto trovato.",
     "Für dieses Projekt gibt es keine Aufgaben oder Aufträge.": "Questo progetto non ha attività né incarichi.",
     "Zuletzt verwendet": "Usati di recente",
-    "Weitere Projekte": "Altri progetti"
+    "Weitere Projekte": "Altri progetti",
+    "Zeit-Übertragung aktivieren": "Attiva il trasferimento dei tempi",
+    "Überträgt in workDiary erfasste Zeiten gemappter Projekte nach Toggl (z. B. Fernwartungssitzungen). Angelegt wird immer für den Token-Inhaber; übertragene Einträge verhalten sich danach wie importierte — inklusive Abgleich in beide Richtungen und Löschungserkennung.": "Trasferisce a Toggl i tempi registrati in workDiary per i progetti mappati (ad es. sessioni di assistenza remota). Le voci vengono sempre create per il titolare del token; le voci trasferite si comportano poi come quelle importate — inclusi l'allineamento bidirezionale e il rilevamento delle cancellazioni.",
+    "Toggl-Übertragung ist deaktiviert (Plugin-Einstellung „Zeit-Übertragung aktivieren\").": "Il trasferimento Toggl è disattivato (impostazione del plugin «Attiva il trasferimento dei tempi»).",
+    "Toggl-API ist nicht konfiguriert (API-Token in den Plugin-Einstellungen hinterlegen).": "L'API di Toggl non è configurata (inserire il token API nelle impostazioni del plugin).",
+    "Kein Projekt ist einem Toggl-Projekt zugeordnet (zuerst Sync ausführen bzw. Inbox-Gruppen buchen).": "Nessun progetto è associato a un progetto Toggl (eseguire prima la sincronizzazione o registrare i gruppi della inbox).",
+    "Kein Toggl-Workspace auflösbar (Workspace-ID in den Plugin-Einstellungen hinterlegen).": "Nessun workspace Toggl risolvibile (inserire l'ID del workspace nelle impostazioni del plugin).",
+    "Toggl-Übertragung: :pushed übertragen, :skipped übersprungen, :failed fehlgeschlagen.": "Trasferimento Toggl: :pushed trasferiti, :skipped saltati, :failed non riusciti.",
+    "Zeiten nach Toggl übertragen": "Trasferire i tempi a Toggl",
+    "Überträgt in workDiary erfasste Zeiten gemappter Projekte nach Toggl (z. B. Fernwartungssitzungen). Angelegt wird für den Token-Inhaber; bereits übertragene oder aus Toggl importierte Einträge werden übersprungen, die Einträge bleiben lokal abrechenbar.": "Trasferisce a Toggl i tempi registrati in workDiary per i progetti mappati (ad es. sessioni di assistenza remota). Le voci vengono create per il titolare del token; le voci già trasferite o importate da Toggl vengono saltate e restano fatturabili in locale.",
+    "Nach Toggl übertragen": "Trasferisci a Toggl",
+    "Übertragung jetzt ausführen? Es werden Zeiteinträge in Toggl angelegt.": "Eseguire il trasferimento adesso? Verranno create voci di tempo in Toggl."
 }

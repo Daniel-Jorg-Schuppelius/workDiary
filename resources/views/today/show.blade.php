@@ -221,6 +221,13 @@
                             @if ($e->description)
                                 <span class="block text-xs text-base-content/60">{{ \Illuminate\Support\Str::limit($e->description, 80) }}</span>
                             @endif
+                            @if ($e->tags->isNotEmpty())
+                                <span class="mt-0.5 flex flex-wrap gap-1">
+                                    @foreach ($e->tags as $tag)
+                                        <span class="badge badge-xs" style="background:{{ $tag->color ?? '#94a3b8' }};color:#fff">{{ $tag->name }}</span>
+                                    @endforeach
+                                </span>
+                            @endif
                         </td>
                         <td class="text-right tabular-nums">{{ $e->minutes }}</td>
                     </tr>

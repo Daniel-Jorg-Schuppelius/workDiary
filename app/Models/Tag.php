@@ -61,6 +61,31 @@ class Tag extends Model {
         ]);
     }
 
+    /**
+     * Console-/Queue-sichere Variante mit expliziter Organisation: ohne
+     * currentOrganization-Binding (z. B. Scheduler-Importe) würde
+     * {@see findOrCreateByName} org-übergreifend matchen und Tags mit
+     * organization_id=NULL anlegen.
+     */
+    public static function findOrCreateByNameForOrganization(string $name, int $organizationId, ?int $userId = null): self {
+        $name = trim($name);
+
+        $existing = static::query()->withoutGlobalScopes()
+            ->where('organization_id', $organizationId)
+            ->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
+            ->first();
+        if ($existing) {
+            return $existing;
+        }
+
+        return static::query()->withoutGlobalScopes()->create([
+            'name' => $name,
+            'slug' => static::uniqueSlug($name),
+            'created_by' => $userId,
+            'organization_id' => $organizationId,
+        ]);
+    }
+
     /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by');
@@ -94,5 +119,10 @@ class Tag extends Model {
     /** @return MorphToMany<Protocol, $this> */
     public function protocols(): MorphToMany {
         return $this->morphedByMany(Protocol::class, 'taggable');
+    }
+
+    /** @return MorphToMany<TimeEntry, $this> */
+    public function timeEntries(): MorphToMany {
+        return $this->morphedByMany(TimeEntry::class, 'taggable');
     }
 }

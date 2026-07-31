@@ -104,7 +104,7 @@ class TogglImportService extends MatchingTimeImportService {
     }
 
     /**
-     * Mappt das Toggl-DTO (keine Tätigkeit/Tags) auf das gemeinsame Import-DTO.
+     * Mappt das Toggl-DTO (keine Tätigkeit) auf das gemeinsame Import-DTO.
      *
      * @param  array<int, string>  $workspaceNames
      */
@@ -117,9 +117,13 @@ class TogglImportService extends MatchingTimeImportService {
             description: $entry->description,
             startedAt: $entry->startedAt,
             endedAt: $entry->endedAt,
-            billable: $entry->billable,
+            // Toggl liefert billable für jeden Eintrag (Free-Plan: immer false,
+            // das Flag ist dort Premium) — nur ein echtes true ist ein Signal,
+            // sonst kein Signal (null) statt hartem „nicht abrechenbar"
+            // (Spiegel der Projekt-Regel in TogglExportImporter).
+            billable: $entry->billable ? true : null,
             userEmail: $entry->userEmail,
-            tags: [],
+            tags: $entry->tags,
             source: $entry->source,
             clientId: $entry->clientId,
             projectId: $entry->projectId,

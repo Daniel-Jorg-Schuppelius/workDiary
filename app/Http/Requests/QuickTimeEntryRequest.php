@@ -27,6 +27,7 @@ class QuickTimeEntryRequest extends BaseFormRequest {
         'project_id' => \App\Models\Project::class,
         'task_id' => \App\Models\Task::class,
         'diary_entry_id' => \App\Models\DiaryEntry::class,
+        'tag_ids' => \App\Models\Tag::class,
     ];
 
     /**
@@ -103,6 +104,9 @@ class QuickTimeEntryRequest extends BaseFormRequest {
             'ended_at' => ['nullable', 'date', 'after:started_at'],
             'minutes' => [$isRange ? 'nullable' : 'required', 'integer', 'min:1', 'max:1440'],
             'break_minutes' => ['nullable', 'integer', 'min:0', 'max:600'],
+            'tag_ids' => ['nullable', 'array'],
+            'tag_ids.*' => ['integer', new \App\Rules\ExistsInCurrentOrganization('tags')],
+            'new_tags' => ['nullable', 'string', 'max:500'],
         ];
     }
 
