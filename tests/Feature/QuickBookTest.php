@@ -11,7 +11,7 @@
 namespace Tests\Feature;
 
 use App\Enums\Project\ProjectStatus;
-use App\Models\{Organization, Project, Task, User};
+use App\Models\{Attendance, Customer, Organization, Project, Task, TimeEntry, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -99,6 +99,54 @@ class QuickBookTest extends TestCase {
             ->assertJsonValidationErrors(['started_at', 'minutes']);
 
         $this->assertDatabaseCount('time_entries', 0);
+    }
+
+    public function test_today_page_limits_drag_targets_and_groups_project_select(): void {
+        // Anwesenheit ohne gebuchte Spannen → genau ein offener Block heute.
+        Attendance::create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->user->id,
+            'started_at' => now()->subHours(2),
+            'date' => now()->startOfDay(),
+        ]);
+
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Muster GmbH',
+        ]);
+        foreach (range(1, 12) as $i) {
+            Project::create([
+                'organization_id' => $this->organization->id,
+                'customer_id' => $customer->id,
+                'name' => sprintf('Projekt %02d', $i),
+                'status' => ProjectStatus::Active->value,
+                'created_by' => $this->user->id,
+            ]);
+        }
+        // Dauer-Eintrag (ohne Spanne): macht das Projekt „zuletzt verwendet",
+        // ohne den offenen Block zu verkleinern.
+        TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'date' => now()->toDateString(),
+            'minutes' => 30,
+        ]);
+
+        $html = $this->actingAs($this->user)
+            ->get(route('today.show'))
+            ->assertOk()
+            ->getContent() ?: '';
+
+        // Nur die Top 10 als Drag-Ziele; der Rest (inkl. des automatischen
+        // „Wartung"-Projekts aus Customer::booted()) steckt im Dropdown.
+        $activeProjects = Project::query()->where('status', ProjectStatus::Active->value)->count();
+        $this->assertGreaterThan(10, $activeProjects);
+        $this->assertSame(10, substr_count($html, 'data-qb-target'));
+        $this->assertStringContainsString(sprintf('+ %d weitere im Dropdown', $activeProjects - 10), $html);
+        // Dropdown gruppiert: „Zuletzt verwendet" zuerst, Rest je Kunde.
+        $this->assertStringContainsString('Zuletzt verwendet', $html);
+        $this->assertStringContainsString('optgroup label="Muster GmbH"', $html);
     }
 
     public function test_foreign_organization_project_is_rejected(): void {

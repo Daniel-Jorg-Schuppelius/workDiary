@@ -4,7 +4,9 @@
   Je offenem Block ein eigenständiges Formular → funktioniert OHNE JS
   (Projekt wählen, „Buchen" → Server-Redirect). Mit JS zusätzlich: Block per
   Drag auf ein Projekt-Ziel ziehen bzw. Ctrl/Cmd+Enter = buchen + weiter
-  (resources/js/quick-book.js). Erwartet: $openBlocks, $quickBookProjects, $fmt.
+  (resources/js/quick-book.js). Erwartet: $openBlocks, $quickBookProjects,
+  $quickBookTargets (Top 10 als Drag-Ziele), $quickBookRecent,
+  $quickBookByCustomer (Optgroups fürs Dropdown), $fmt.
 --}}
 @if (! empty($openBlocks) && $quickBookProjects->isNotEmpty())
     <x-card as="section" data-qb-panel data-qb-url="{{ route('today.quick-book') }}">
@@ -13,14 +15,24 @@
             <span class="text-xs text-base-content/60">{{ __('Offenen Block auf ein Projekt ziehen oder unten wählen.') }}</span>
         </header>
 
-        {{-- Drag-Ziele: aktive Projekte (zuletzt genutzte zuerst). --}}
+        {{-- Drag-Ziele: bewusst nur die Top 10 (zuletzt genutzte zuerst) — alle
+             aktiven Projekte als Chips werden bei vielen Projekten zur Wand;
+             die Langliste deckt das Dropdown je Block ab. --}}
         <div class="mb-3 flex flex-wrap gap-2">
-            @foreach ($quickBookProjects as $p)
+            @foreach ($quickBookTargets as $p)
                 <span data-qb-target data-project="{{ $p->sqid }}"
                       class="qb-target inline-flex items-center gap-1 rounded-box border border-dashed border-base-300 bg-base-200/60 px-3 py-1 text-xs">
                     <span class="material-symbols-outlined text-sm" aria-hidden="true">folder</span>{{ $p->name }}
+                    @if ($p->customer)
+                        <span class="text-base-content/50">· {{ $p->customer->name }}</span>
+                    @endif
                 </span>
             @endforeach
+            @if ($quickBookProjects->count() > $quickBookTargets->count())
+                <span class="inline-flex items-center px-1 py-1 text-xs text-base-content/50">
+                    {{ __('+ :count weitere im Dropdown', ['count' => $quickBookProjects->count() - $quickBookTargets->count()]) }}
+                </span>
+            @endif
         </div>
 
         <ul class="space-y-2">
@@ -40,11 +52,25 @@
                         <input type="hidden" name="started_at" value="{{ $block['started_at']->toIso8601String() }}">
                         <input type="hidden" name="ended_at" value="{{ $block['ended_at']->toIso8601String() }}">
                         <label class="sr-only" for="qb-project-{{ $loop->index }}">{{ __('Projekt') }}</label>
+                        {{-- Gruppiert statt flach: „Zuletzt verwendet" zuerst,
+                             danach je Kunde eine Optgroup — bei vielen
+                             Projekten sonst nicht mehr scanbar. --}}
                         <select id="qb-project-{{ $loop->index }}" name="project" required
                                 class="select select-sm select-bordered">
                             <option value="">{{ __('— Projekt —') }}</option>
-                            @foreach ($quickBookProjects as $p)
-                                <option value="{{ $p->sqid }}">{{ $p->name }}</option>
+                            @if ($quickBookRecent->isNotEmpty())
+                                <optgroup label="{{ __('Zuletzt verwendet') }}">
+                                    @foreach ($quickBookRecent as $p)
+                                        <option value="{{ $p->sqid }}">{{ $p->name }}@if ($p->customer) · {{ $p->customer->name }}@endif</option>
+                                    @endforeach
+                                </optgroup>
+                            @endif
+                            @foreach ($quickBookByCustomer as $customerName => $group)
+                                <optgroup label="{{ $customerName }}">
+                                    @foreach ($group as $p)
+                                        <option value="{{ $p->sqid }}">{{ $p->name }}</option>
+                                    @endforeach
+                                </optgroup>
                             @endforeach
                         </select>
                         <button type="submit" class="btn btn-sm btn-primary">{{ __('Buchen') }}</button>

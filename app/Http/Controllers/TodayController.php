@@ -103,12 +103,29 @@ class TodayController extends Controller {
         // Eine Liste für Quick-Buchung UND Eingabeleiste (zuletzt genutzte zuerst).
         $recentProjectIds = $isFuture ? collect() : $this->recentProjectIds($user);
         $projects = $isFuture ? collect() : $this->quickBookProjects($recentProjectIds);
+        // Bei vielen Projekten bleibt die Quick-Buchung nur übersichtlich, wenn
+        // Drag-Ziele auf die relevanten Projekte begrenzt sind (Rest über das
+        // Dropdown) und das Dropdown nach Kunden gruppiert (statt einer flachen
+        // Liste, deren „zuletzt zuerst"-Sortierung dort willkürlich wirkt).
+        $recentProjects = $projects->filter(fn(Project $p): bool => $recentProjectIds->contains($p->id))->values();
+        $otherProjects = $projects->reject(fn(Project $p): bool => $recentProjectIds->contains($p->id));
+        $othersByCustomer = $otherProjects
+            ->filter(fn(Project $p): bool => $p->customer !== null)
+            ->groupBy(fn(Project $p): string => (string) $p->customer?->name)
+            ->sortKeys(SORT_NATURAL | SORT_FLAG_CASE);
+        $withoutCustomer = $otherProjects->filter(fn(Project $p): bool => $p->customer === null)->values();
+        if ($withoutCustomer->isNotEmpty()) {
+            $othersByCustomer->put(__('Ohne Kunde'), $withoutCustomer);
+        }
 
         return view('today.show', [
             'day' => $day,
             'current' => $current,
             'openBlocks' => $openBlocks,
             'quickBookProjects' => $projects,
+            'quickBookTargets' => $projects->take(10),
+            'quickBookRecent' => $recentProjects,
+            'quickBookByCustomer' => $othersByCustomer,
             'entryBarProjects' => $projects,
             'entryBarRecentIds' => $recentProjectIds,
             'allTags' => \App\Support\LookupCache::tagOptions(),
