@@ -33,10 +33,9 @@ class TimesheetController extends Controller {
         $globalRange = app(DateRangeContext::class)->current();
         $query = Timesheet::query()
             ->with(['project', 'user'])
-            ->whereBetween('work_date', [
-                $globalRange['from']->toDateString(),
-                $globalRange['to']->toDateString(),
-            ]);
+            // Scope statt Inline-whereBetween: kennt den Randtag-Fall
+            // (date-Cast speichert 'Y-m-d 00:00:00').
+            ->inRange($globalRange['from'], $globalRange['to']);
         if ($scope !== 'team' || ! $isAdmin) {
             $query->forUser($userId);
         }

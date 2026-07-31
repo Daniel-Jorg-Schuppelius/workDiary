@@ -94,9 +94,10 @@ class TimeEntryTagsTest extends TestCase {
     }
 
     public function test_foreign_org_tag_id_is_rejected(): void {
+        $foreignOrg = \App\Models\Organization::factory()->create();
         $foreignTag = Tag::query()->withoutGlobalScopes()->create([
             'name' => 'Fremd',
-            'organization_id' => $this->organization->id + 999,
+            'organization_id' => $foreignOrg->id,
         ]);
 
         $this->actingAs($this->user)

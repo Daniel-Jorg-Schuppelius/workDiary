@@ -143,7 +143,11 @@ class Timesheet extends Model {
      * @return Builder<Timesheet>
      */
     public function scopeInRange(Builder $q, CarbonInterface $from, CarbonInterface $to): Builder {
-        return $q->whereBetween('work_date', [$from->toDateString(), $to->toDateString()]);
+        // Der date-Cast speichert 'Y-m-d 00:00:00' — eine reine Datums-Obergrenze
+        // würde den LETZTEN Tag des Zeitraums lexikografisch ausschließen
+        // ('… 00:00:00' > 'Y-m-d'). Untergrenze bewusst ohne Zeitanteil, damit
+        // auch nackte 'Y-m-d'-Altwerte am ersten Tag matchen.
+        return $q->whereBetween('work_date', [$from->toDateString(), $to->toDateString() . ' 23:59:59']);
     }
 
     /**

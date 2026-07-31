@@ -65,6 +65,24 @@ class ProjectShowDateRangeTest extends TestCase {
         $response->assertViewHas('totalMinutes', 180);
     }
 
+    /**
+     * Randtag-Regression: der date-Cast speichert 'Y-m-d 00:00:00' — Einträge
+     * und Stundenzettel auf dem LETZTEN Tag des Zeitraums müssen sichtbar
+     * bleiben (lexikografischer Vergleich gegen reine Datums-Obergrenze schlug
+     * fehl; aufgefallen am Monatsletzten 2026-07-31).
+     */
+    public function test_entries_on_last_day_of_range_are_included(): void {
+        $this->createTimeEntry('2026-06-30', 9, 11, description: 'Letzter-Juni-Tag');
+        $this->createTimesheet('2026-06-30');
+
+        $response = $this->getProjectPinnedToJune();
+
+        $response->assertOk();
+        $response->assertSee('Letzter-Juni-Tag');
+        $response->assertViewHas('rangeMinutes', 120);
+        $response->assertViewHas('timesheets', fn ($timesheets): bool => $timesheets->total() === 1);
+    }
+
     public function test_my_minutes_scoped_to_range_and_user(): void {
         $colleague = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $this->createTimeEntry('2026-06-10', 9, 11);

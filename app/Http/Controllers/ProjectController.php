@@ -113,6 +113,10 @@ class ProjectController extends Controller {
         // withQueryString()-Sortier-/Paginierlinks frei von Range-Params bleiben.
         [$rangeFrom, $rangeTo] = $this->globalDateRangeBounds();
         $rangeLabel = $this->globalDateRange()['label'];
+        // time_entries.date wird per date-Cast als 'Y-m-d 00:00:00' gespeichert —
+        // die Obergrenze braucht den Zeitanteil, sonst fällt der letzte Tag des
+        // Zeitraums lexikografisch heraus (Randtag-Bug, s. Timesheet::scopeInRange).
+        $rangeDateBounds = [$rangeFrom->toDateString(), $rangeTo->toDateString() . ' 23:59:59'];
 
         // Aufträge (Tab 4): DiaryEntries mit dem Projekt als Initialprojekt ODER via TimeEntry
         // verknüpft; Header-Zeitraum mode-aware (Backlog/Recurring bleiben sichtbar);
@@ -161,7 +165,7 @@ class ProjectController extends Controller {
 
         $timeEntriesQuery = $project->timeEntries()
             ->with(['user:id,name', 'task:id,title', 'tags:id,name,color'])
-            ->whereBetween('date', [$rangeFrom->toDateString(), $rangeTo->toDateString()]);
+            ->whereBetween('date', $rangeDateBounds);
         match ($timeSort) {
             // Relations-Spalten über korrelierte Subqueries sortieren.
             'user' => $timeEntriesQuery->orderBy(
@@ -188,11 +192,11 @@ class ProjectController extends Controller {
         // Anker, Zeitraum- und Meine-Stunden folgen dem Header-Zeitraum.
         $totalMinutes = $project->timeEntries()->sum('minutes');
         $rangeMinutes = $project->timeEntries()
-            ->whereBetween('date', [$rangeFrom->toDateString(), $rangeTo->toDateString()])
+            ->whereBetween('date', $rangeDateBounds)
             ->sum('minutes');
         $myMinutes = $project->timeEntries()
             ->where('user_id', Auth::id())
-            ->whereBetween('date', [$rangeFrom->toDateString(), $rangeTo->toDateString()])
+            ->whereBetween('date', $rangeDateBounds)
             ->sum('minutes');
 
         // Nächster Milestone für Übersicht
