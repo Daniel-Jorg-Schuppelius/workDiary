@@ -446,7 +446,20 @@ class RemoteSupportService {
         $covering = $project->customer_id !== null
             ? $this->findCoveringEntry($organization, $session, $userId, (int) $project->customer_id)
             : null;
+
+        // Rückwärts-Lead-Fenster (Gegenstück zum FritzBox-Plugin): endet ein
+        // Telefonat-Eintrag desselben Kunden ≤ attempt_lead_minutes vor dem
+        // Sitzungsbeginn (erst der Anruf, dann der Sitzungsaufbau), verschmilzt
+        // die Sitzung mit ihm statt doppelt zu buchen.
+        $covering ??= $project->customer_id !== null
+            ? $this->precedingCallEntry($organization, $session, $userId, (int) $project->customer_id)
+            : null;
+
         if ($covering !== null) {
+            // Telefonat-Einträge werden bis zum Sitzungsende verlängert (eine
+            // Abrechnung für Anruf + Fernwartung); fremd erfasste Zeiten
+            // bleiben autoritativ und werden nie verändert.
+            $this->extendCallEntryEnd($organization, $covering, $session);
             $this->rememberSessionReference($organization, $session, $covering, $asset, linked: true);
 
             return [$covering, true];
@@ -629,6 +642,94 @@ class RemoteSupportService {
         }
 
         return $best;
+    }
+
+    /**
+     * Telefonat-Eintrag (FritzBox-Import) desselben Benutzers UND Kunden, der
+     * höchstens attempt_lead_minutes vor dem Sitzungsbeginn endete — der Anruf
+     * war die Anbahnung der Fernwartung. Nur erweiterbare Einträge zählen
+     * (nicht exportiert, Monat offen): sonst würde die Verknüpfung die
+     * Sitzungszeit verschlucken → eigener Eintrag ist dann korrekt.
+     */
+    private function precedingCallEntry(Organization $organization, RemoteSession $session, int $userId, int $customerId): ?TimeEntry {
+        $windowMinutes = max(0, (int) config('plugins.remote-support.attempt_lead_minutes', 15));
+        if ($windowMinutes === 0) {
+            return null;
+        }
+
+        $candidates = TimeEntry::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('user_id', $userId)
+            ->where('exported', false)
+            ->where('ended_at', '>=', $session->startedAt->subMinutes($windowMinutes))
+            ->where('ended_at', '<=', $session->startedAt)
+            ->whereIn('project_id', Project::query()
+                ->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->where('customer_id', $customerId)
+                ->select('id'))
+            ->orderByDesc('ended_at')
+            ->get();
+
+        foreach ($candidates as $entry) {
+            if ($this->isCallEntry($organization, $entry) && ! $this->extensionLocked($organization, $entry, $session)) {
+                return $entry;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Zieht das Ende eines Telefonat-Eintrags auf das Sitzungsende vor
+     * (Anruf → Fernwartung = eine Abrechnung). Greift nur bei
+     * FritzBox-Telefonat-Einträgen; exportierte Einträge und abgeschlossene
+     * Monate werden nie modifiziert (dann bleibt es bei der Verknüpfung).
+     */
+    private function extendCallEntryEnd(Organization $organization, TimeEntry $entry, RemoteSession $session): void {
+        if ($entry->ended_at === null || $session->endedAt->getTimestamp() <= $entry->ended_at->getTimestamp()) {
+            return;
+        }
+        if ((bool) $entry->exported || ! $this->isCallEntry($organization, $entry)) {
+            return;
+        }
+        if ($this->extensionLocked($organization, $entry, $session)) {
+            return;
+        }
+
+        $entry->ended_at = \Illuminate\Support\Carbon::instance($session->endedAt);
+        $entry->save(); // minutes rechnet der saving-Hook neu
+    }
+
+    /** Trägt der Eintrag eine FritzBox-Anruf-Referenz (Primär oder Alias)? */
+    private function isCallEntry(Organization $organization, TimeEntry $entry): bool {
+        return ExternalReference::query()
+            ->forPlugin($organization, \App\Plugins\Fritzbox\FritzboxPlugin::ID, 'call')
+            ->forReferenceable($entry)
+            ->exists()
+            || ExternalReferenceAlias::query()
+                ->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->where('plugin_id', \App\Plugins\Fritzbox\FritzboxPlugin::ID)
+                ->where('external_type', 'call')
+                ->where('referenceable_type', $entry->getMorphClass())
+                ->where('referenceable_id', $entry->getKey())
+                ->exists();
+    }
+
+    /** Monatsabschluss-Guard für die Ende-Verlängerung (Eintrags- und Sitzungsende-Tag). */
+    private function extensionLocked(Organization $organization, TimeEntry $entry, RemoteSession $session): bool {
+        $user = \App\Models\User::query()->withoutGlobalScopes()->find($entry->user_id);
+        if ($user === null) {
+            return false;
+        }
+
+        $tz = \App\Support\Tz::isValid($organization->timezone) ? (string) $organization->timezone : \App\Support\Tz::FALLBACK;
+        $closure = app(\App\Services\TimeApproval\MonthClosureService::class);
+
+        return ($entry->started_at !== null && $closure->isPeriodLockedForUser($user, CarbonImmutable::instance($entry->started_at)->setTimezone($tz)))
+            || $closure->isPeriodLockedForUser($user, $session->endedAt->setTimezone($tz));
     }
 
     /** Idempotenz-Anker: verknüpft die anbieterseitige Session mit dem Eintrag. */
