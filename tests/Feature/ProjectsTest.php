@@ -140,4 +140,46 @@ class ProjectsTest extends TestCase {
             ->get(route('projects.edit', $project))
             ->assertForbidden();
     }
+
+    /**
+     * Umhängen auf einen Kunden, der bereits ein Projekt mit gleichem Slug hat
+     * ((customer_id, slug) unique, z. B. „wartung" je Kunde): statt der
+     * DB-Unique-Verletzung (500er ohne Validierungsfehler — der Slug steht
+     * nicht im Formular) wird still um-geslugt.
+     */
+    public function test_moving_project_to_customer_with_same_slug_reslugs_instead_of_crashing(): void {
+        $user = User::factory()->admin()->create();
+        $kundeA = Customer::factory()->create(['organization_id' => $user->organization_id]);
+        $kundeB = Customer::factory()->create(['organization_id' => $user->organization_id]);
+
+        // Anderer Name (kein Validierungs-Konflikt), aber gleicher Slug — wie in
+        // der Praxis nach einer Umbenennung (der Slug bleibt beim Rename stehen).
+        Project::factory()->create([
+            'organization_id' => $user->organization_id,
+            'customer_id' => $kundeB->id,
+            'name' => 'Server-Betreuung',
+            'slug' => 'serverpflege',
+            'is_default' => false,
+        ]);
+        $project = Project::factory()->create([
+            'organization_id' => $user->organization_id,
+            'customer_id' => $kundeA->id,
+            'name' => 'Serverpflege',
+            'slug' => 'serverpflege',
+            'is_default' => false,
+        ]);
+
+        $this->actingAs($user)
+            ->put(route('projects.update', $project), [
+                'name' => 'Serverpflege',
+                'status' => ProjectStatus::Active->value,
+                'customer_id' => $kundeB->sqid,
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
+
+        $project->refresh();
+        $this->assertSame($kundeB->id, $project->customer_id);
+        $this->assertSame('serverpflege-2', $project->slug, 'Slug muss beim Zielkunden eindeutig gemacht werden.');
+    }
 }

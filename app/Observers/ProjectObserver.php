@@ -43,6 +43,22 @@ class ProjectObserver {
         if (! $project->slug) {
             $project->slug = Project::uniqueSlug($project->name, $project->customer_id);
         }
+
+        // Kundenwechsel: (customer_id, slug) ist unique und der Slug steht nicht
+        // im Formular — kollidiert er beim Zielkunden (z. B. das Auto-Projekt
+        // „Wartung" existiert je Kunde), still um-sluggen statt DB-Fehler. Die
+        // URL ändert sich beim Umhängen ohnehin (Route-Key beginnt mit dem
+        // Kunden-Slug).
+        if ($project->exists && $project->isDirty('customer_id') && $project->slug) {
+            $collides = Project::query()
+                ->where('customer_id', $project->customer_id)
+                ->where('slug', $project->slug)
+                ->where('id', '!=', $project->id)
+                ->exists();
+            if ($collides) {
+                $project->slug = Project::uniqueSlug((string) $project->slug, $project->customer_id, (int) $project->id);
+            }
+        }
     }
 
     /** Sicherstellen, dass pro Kunde höchstens ein Standardprojekt existiert. */
