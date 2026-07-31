@@ -12,8 +12,9 @@ namespace Tests\Feature;
 
 use App\Models\{AuditLog, OrganizationAuditLog};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{Artisan, DB};
 use RuntimeException;
+use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
 /**
@@ -23,6 +24,7 @@ use Tests\TestCase;
  */
 class AuditLogChainTest extends TestCase {
     use RefreshDatabase;
+    use WithOrganization;
 
     private function makeEntry(string $event, int $auditableId): AuditLog {
         return AuditLog::create([
@@ -149,6 +151,19 @@ class AuditLogChainTest extends TestCase {
         $expected = hash('sha256', '|' . json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 
         $this->assertSame($expected, $entry->hash, 'ip muss als String gehasht werden, nicht als ValueObject.');
+    }
+
+    /**
+     * Der Hash muss NACH allen attributmutierenden creating-Listenern rechnen:
+     * Die BelongsToOrganization-Auto-Befüllung setzte organization_id früher
+     * erst nach der Hash-Berechnung — die Zeile war ab Geburt unprüfbar.
+     */
+    public function test_auto_filled_organization_is_part_of_the_hash(): void {
+        $this->setUpOrganization();
+        $entry = $this->makeEntry('created', 1); // organization_id null → Auto-Befüllung greift
+
+        $this->assertSame((int) $this->organization->id, (int) $entry->organization_id);
+        $this->assertSame(0, Artisan::call('audit:verify'), 'Auto-befüllte organization_id muss im Hash stecken.');
     }
 
     public function test_payload_object_value_is_rejected(): void {

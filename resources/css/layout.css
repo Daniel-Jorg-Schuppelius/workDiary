@@ -196,7 +196,7 @@ body.sidebar-collapsed {
     text-overflow: ellipsis;
     white-space: nowrap;
     writing-mode: vertical-rl;
-    transform: rotate(180deg);
+    transform: rotate(0deg);
 }
 
 @media (prefers-reduced-motion: reduce) {

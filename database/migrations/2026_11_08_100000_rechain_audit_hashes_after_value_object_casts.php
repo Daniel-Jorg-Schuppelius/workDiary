@@ -31,19 +31,54 @@ return new class extends Migration {
     public function up(): void {
         $proofPath = storage_path('app/audit-chain-repair-' . now()->format('Ymd_His') . '.jsonl');
 
-        // audit_logs: defekte Variante hashte `ip` als leeres Objekt ({}).
-        $this->rechain('audit_logs', AuditLog::class, $proofPath, static function (HashChainable $model, array $payload): array {
-            $variants = [];
+        // audit_logs: zwei anerkannte Artefakt-Klassen — (1) Cast-Regression
+        // hashte `ip` als leeres Objekt ({}), (2) ON DELETE SET NULL nullte
+        // user_id/organization_id beim Löschen des Users/der Org nachträglich
+        // (Originalwert steckt meist im changes-JSON, sonst kleiner Suchraum).
+        $this->rechain('audit_logs', AuditLog::class, $proofPath, static function (array $payload): array {
+            $changes = is_array($payload['changes']) ? $payload['changes'] : [];
+
+            $ips = ['raw' => $payload['ip']];
             if ($payload['ip'] !== null) {
-                $variants['ip_object'] = array_replace($payload, ['ip' => new stdClass]);
-                $variants['ip_null'] = array_replace($payload, ['ip' => null]);
+                $ips['object'] = new stdClass;
+                $ips['null'] = null;
+            }
+
+            $fkCandidates = static function (?int $stored, string $key) use ($changes): array {
+                $candidates = ['stored' => $stored];
+                if ($stored === null) {
+                    if (isset($changes[$key])) {
+                        $candidates['fk_' . (int) $changes[$key]] = (int) $changes[$key];
+                    }
+                    for ($i = 1; $i <= 10; $i++) {
+                        $candidates['fk_' . $i] = $i;
+                    }
+                }
+
+                return $candidates;
+            };
+
+            $variants = [];
+            foreach ($fkCandidates($payload['user_id'], 'user_id') as $uLabel => $userId) {
+                foreach ($fkCandidates($payload['organization_id'], 'organization_id') as $oLabel => $orgId) {
+                    foreach ($ips as $iLabel => $ip) {
+                        if ($uLabel === 'stored' && $oLabel === 'stored' && $iLabel === 'raw') {
+                            continue; // korrekte Semantik — prüft der Aufrufer bereits
+                        }
+                        $variants["user={$uLabel}|org={$oLabel}|ip={$iLabel}"] = array_replace($payload, [
+                            'user_id' => $userId,
+                            'organization_id' => $orgId,
+                            'ip' => $ip,
+                        ]);
+                    }
+                }
             }
 
             return $variants;
         });
 
         // cash_entries: defekte Variante hashte `amount` als "(string) Money" ("12.34 EUR").
-        $this->rechain('cash_entries', CashEntry::class, $proofPath, static function (HashChainable $model, array $payload): array {
+        $this->rechain('cash_entries', CashEntry::class, $proofPath, static function (array $payload, HashChainable $model): array {
             /** @var CashEntry $model */
             $castAmount = (string) $model->getAttribute('amount');
 
@@ -59,7 +94,7 @@ return new class extends Migration {
      * die als Software-Artefakt anerkannten Alt-Payloads (leer = keine).
      *
      * @param class-string<HashChainable> $modelClass
-     * @param Closure(HashChainable, array<string, mixed>): array<string, array<string, mixed>> $brokenVariants
+     * @param Closure(array<string, mixed>, HashChainable): array<string, array<string, mixed>> $brokenVariants
      */
     private function rechain(string $table, string $modelClass, string $proofPath, Closure $brokenVariants): void {
         if (! Schema::hasTable($table) || DB::table($table)->count() === 0) {
@@ -88,7 +123,7 @@ return new class extends Migration {
 
                 $variant = null;
                 if (! hash_equals($correctOverStored, (string) $row->hash)) {
-                    foreach ($brokenVariants($model, $payload) as $name => $brokenPayload) {
+                    foreach ($brokenVariants($payload, $model) as $name => $brokenPayload) {
                         if (hash_equals($this->hashWithoutGuard($storedPrev, $brokenPayload), (string) $row->hash)) {
                             $variant = $name;
                             break;

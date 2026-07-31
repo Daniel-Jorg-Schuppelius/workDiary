@@ -14,6 +14,7 @@ use App\Models\AuditLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Artisan, DB};
 use RuntimeException;
+use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
 /**
@@ -24,6 +25,7 @@ use Tests\TestCase;
  */
 class AuditChainRepairMigrationTest extends TestCase {
     use RefreshDatabase;
+    use WithOrganization;
 
     private function makeEntry(string $event): AuditLog {
         return AuditLog::create([
@@ -87,6 +89,40 @@ class AuditChainRepairMigrationTest extends TestCase {
         $this->assertSame($a->hash, DB::table('audit_logs')->where('id', $a->id)->value('hash'));
         $this->assertSame($b->hash, DB::table('audit_logs')->where('id', $b->id)->value('hash'));
         $this->assertSame(0, Artisan::call('audit:verify'));
+    }
+
+    /**
+     * ON DELETE SET NULL auf audit_logs.organization_id: Das Löschen einer Org
+     * nullt Bestandszeilen an der Kette vorbei (Prod: Orgs 2/3, 11 Zeilen).
+     * Die Nullung wird als Artefakt anerkannt und neu verkettet; die Spalte
+     * bleibt NULL, der Originalwert steht im Nachweis-Protokoll.
+     */
+    public function test_fk_nulled_organization_rows_are_rechained(): void {
+        $this->setUpOrganization();
+        $this->makeEntry('created');
+        $b = AuditLog::create([
+            'organization_id' => $this->organization->id,
+            'user_id' => null,
+            'event' => 'created',
+            'auditable_type' => 'TestModel',
+            'auditable_id' => 2,
+            'changes' => ['organization_id' => $this->organization->id, 'name' => 'X'],
+            'ip' => '10.0.0.7',
+            'user_agent' => 'phpunit',
+        ]);
+
+        // FK-Kaskade nachstellen: Spalte nullen, Hash bleibt der alte.
+        DB::table('audit_logs')->where('id', $b->id)->update(['organization_id' => null]);
+
+        $this->assertSame(1, Artisan::call('audit:verify'), 'Genullte FK-Spalte muss die Prüfung brechen.');
+
+        $this->runRepair();
+
+        $this->assertSame(0, Artisan::call('audit:verify'), 'Nach der Reparatur ist die Kette wieder prüfbar.');
+        $this->assertNull(
+            DB::table('audit_logs')->where('id', $b->id)->value('organization_id'),
+            'Die Spalte bleibt NULL — nur die Kette wird fortgeschrieben.',
+        );
     }
 
     public function test_genuine_tampering_aborts_without_rewrite(): void {

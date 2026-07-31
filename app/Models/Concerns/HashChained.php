@@ -53,11 +53,36 @@ trait HashChained {
     }
 
     /**
-     * Serialisierter Insert: sperrt den Kettenkopf, verkettet und schreibt fort.
+     * Verkettet als LETZTER creating-Listener: attributmutierende Traits
+     * (z. B. BelongsToOrganization-Auto-Befüllung) müssen vor HashChained
+     * deklariert sein, sonst ginge ihr Wert nicht in den Hash ein — die Zeile
+     * wäre ab Geburt unprüfbar (Regressionstest AuditLogChainTest).
      */
-    protected function performInsert(Builder $query) {
+    public static function bootHashChained(): void {
+        static::creating(static function (self $model): void {
+            $model->applyChainHash();
+        });
+    }
+
+    /**
+     * Sperrt den Kettenkopf und setzt prev_hash/hash. Läuft im creating-Event —
+     * also innerhalb der Transaktion von {@see performInsert()}.
+     */
+    protected function applyChainHash(): void {
         $this->prepareHashTimestamps();
 
+        $head = DB::table('audit_chain_heads')->where('chain', $this->chainName())->lockForUpdate()->first();
+        $prevHash = $head->head_hash ?? null;
+
+        $this->setAttribute('prev_hash', $prevHash);
+        $this->setAttribute('hash', static::chainHash($prevHash, $this->hashPayload()));
+    }
+
+    /**
+     * Serialisierter Insert: Transaktion um Hash-Berechnung (creating-Event,
+     * {@see applyChainHash()}), Insert und Kopf-Fortschreibung.
+     */
+    protected function performInsert(Builder $query) {
         $connection = $this->getConnection();
         $chain = $this->chainName();
 
@@ -65,18 +90,12 @@ trait HashChained {
         DB::table('audit_chain_heads')->insertOrIgnore(['chain' => $chain, 'head_hash' => null, 'height' => 0]);
 
         return $connection->transaction(function () use ($query, $chain) {
-            $head = DB::table('audit_chain_heads')->where('chain', $chain)->lockForUpdate()->first();
-            $prevHash = $head->head_hash ?? null;
-
-            $this->setAttribute('prev_hash', $prevHash);
-            $this->setAttribute('hash', static::chainHash($prevHash, $this->hashPayload()));
-
             $inserted = parent::performInsert($query);
 
             if ($inserted !== false) {
                 DB::table('audit_chain_heads')->where('chain', $chain)->update([
                     'head_hash' => $this->getAttribute('hash'),
-                    'height' => (int) ($head->height ?? 0) + 1,
+                    'height' => DB::raw('height + 1'),
                 ]);
             }
 
