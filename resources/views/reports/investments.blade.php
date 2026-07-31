@@ -9,10 +9,19 @@
         <x-page-toolbar>
             <div class="text-sm text-base-content/70">{{ __('Pipeline, Budgetauslastung und offene Entscheidungen.') }}</div>
             <x-slot:actions>
-                <x-icon-btn icon="download" size="sm" :href="route('investments.report', ['export' => 'csv'])" show-label>{{ __('CSV') }}</x-icon-btn>
+                <x-icon-btn icon="download" size="sm" :href="route('investments.report', array_merge($standardFilters->toQueryParams(), ['export' => 'csv']))" show-label>{{ __('CSV') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    <x-filter-bar :action="route('investments.report')" :reset="route('investments.report')">
+        @include('reports._standard_filters', ['idPrefix' => 'investments', 'statusOptions' => $statusOptions, 'statusLabel' => __('Status')])
+    </x-filter-bar>
+
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.bar :title="__('Ist-Investitionen (€) je Monat (nur positive)')" unit="€" :series="$monthlyActualSeries" :x-label="__('Monat')" :y-label="__('Ist (€)')" />
+        <x-charts.bar-h :title="__('Genehmigtes Volumen je Kategorie')" unit="€" :series="$categoryVolumeSeries" :x-label="__('Kategorie')" :y-label="__('Genehmigt (€)')" />
+    </div>
 
     <div class="grid gap-4 sm:grid-cols-4">
         <x-kpi-tile :label="__('Genehmigt gesamt')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totals['approved'], 2, withThousandsSeparator: true) . ' €'" />

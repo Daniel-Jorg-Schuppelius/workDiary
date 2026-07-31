@@ -13,11 +13,14 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Reporting;
 
 use App\Enums\User\Permission as P;
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
-use App\Models\Investments\{InvestmentBudgetRequest, InvestmentCase, InvestmentDeviation};
+use App\Http\Controllers\Reporting\Concerns\{ResolvesStandardReportFilters, WritesReportCsv};
+use App\Models\Investments\{InvestmentActual, InvestmentBudgetRequest, InvestmentCase, InvestmentDeviation};
 use App\Models\User;
 use App\Services\Investments\InvestmentService;
+use App\Services\Reporting\ReportFilters;
+use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
@@ -29,17 +32,29 @@ use Illuminate\View\View;
  * bis zur Akte, CSV-Export.
  */
 class InvestmentsReportController extends Controller {
+    use ResolvesGlobalDateRange;
+    use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
     public function index(Request $request, InvestmentService $investments): View|Response {
         $user = Auth::user();
         abort_unless($user instanceof User && $user->can(P::InvestmentViewAny->value), 403);
 
+        // Zeitraum wirkt nur auf die Ist-Zeitreihe — die Akten-/Pipeline-Sicht
+        // bleibt bewusst zeitraumunabhängig (Lebenszyklus statt Periode).
+        [$from, $to] = $this->resolveRange($request);
+        $filters = $this->standardFilters($request, ['status'], $from, $to, InvestmentCase::STATUSES);
+
         $pipeline = [];
         $rows = [];
         $totals = ['approved' => 0.0, 'committed' => 0.0, 'actual' => 0.0];
 
-        foreach (InvestmentCase::query()->with(['costCenter'])->orderByDesc('id')->get() as $case) {
+        $cases = InvestmentCase::query()
+            ->with(['costCenter'])
+            ->when($filters->status !== null, fn($q) => $q->where('status', $filters->status))
+            ->orderByDesc('id')
+            ->get();
+        foreach ($cases as $case) {
             $pipeline[(string) $case->status] = ($pipeline[(string) $case->status] ?? 0) + 1;
             $projection = $investments->projection($case);
             if ($projection['approved'] > 0 || $projection['actual'] > 0 || $projection['committed'] > 0) {
@@ -67,7 +82,12 @@ class InvestmentsReportController extends Controller {
                 ];
             }
 
-            return $this->csvWithMetadata($csv, 'investments.csv', 'investments', [], $request);
+            return $this->csvWithMetadata($csv, 'investments.csv', 'investments', $filters->toAuditArray(), $request);
+        }
+
+        $statusOptions = [];
+        foreach (InvestmentCase::STATUSES as $status) {
+            $statusOptions[$status] = (string) __("values.$status");
         }
 
         return view('reports.investments', [
@@ -76,6 +96,73 @@ class InvestmentsReportController extends Controller {
             'totals' => $totals,
             'openApprovals' => $openApprovals,
             'openDeviations' => $openDeviations,
+            'standardFilters' => $filters,
+            'filterFields' => ['status'],
+            'statusOptions' => $statusOptions,
+            'monthlyActualSeries' => $this->monthlyActualSeries($from, $to, $filters),
+            'categoryVolumeSeries' => $this->categoryVolumeSeries($rows),
         ]);
+    }
+
+    /**
+     * Ist-Investitionen (€) je Monat des Zeitraums aus den erfassten
+     * Ist-Werten (occurred_on). Negative Monatssummen (Korrekturen) werden
+     * ausgeblendet — im Titel als „nur positive" dokumentiert. Leere Serie
+     * statt Null-Achse (§Diagramm-UX).
+     *
+     * @return list<array{x: string, y: float}>
+     */
+    private function monthlyActualSeries(CarbonImmutable $from, CarbonImmutable $to, ReportFilters $filters): array {
+        $actuals = InvestmentActual::query()
+            ->whereBetween('occurred_on', [$from->toDateString(), $to->toDateString()])
+            ->when($filters->status !== null, fn($q) => $q->whereHas('investmentCase', fn($c) => $c->where('status', $filters->status)))
+            ->get(['amount', 'occurred_on']);
+
+        /** @var array<string, float> $byMonth */
+        $byMonth = [];
+        foreach ($actuals as $actual) {
+            $key = CarbonImmutable::parse((string) $actual->occurred_on)->format('Y-m');
+            $byMonth[$key] = ($byMonth[$key] ?? 0.0) + (float) $actual->amount;
+        }
+        if ($byMonth === [] || array_sum($byMonth) <= 0) {
+            return [];
+        }
+
+        $series = [];
+        foreach ($this->buildMonthsInRange($from, $to) as $month) {
+            $sum = round($byMonth[$month['key']] ?? 0.0, 2);
+            if ($sum < 0) {
+                continue; // bar kann keine negativen Werte darstellen (s. Titel).
+            }
+            $series[] = ['x' => $month['shortLabel'], 'y' => $sum];
+        }
+
+        return $series;
+    }
+
+    /**
+     * Genehmigtes Volumen (€) je Kategorie — absteigend, nur Kategorien mit
+     * genehmigtem Budget.
+     *
+     * @param  array<int, array{case: InvestmentCase, projection: array{approved: float, committed: float, actual: float, remaining: float|null}}>  $rows
+     * @return list<array{x: string, y: float}>
+     */
+    private function categoryVolumeSeries(array $rows): array {
+        /** @var array<string, float> $byCategory */
+        $byCategory = [];
+        foreach ($rows as $row) {
+            $category = (string) $row['case']->category;
+            $byCategory[$category] = ($byCategory[$category] ?? 0.0) + (float) $row['projection']['approved'];
+        }
+
+        return array_values(collect($byCategory)
+            ->filter(static fn(float $sum): bool => $sum > 0)
+            ->sortDesc()
+            ->map(static fn(float $sum, string $category): array => [
+                'x' => (string) __("values.$category"),
+                'y' => round($sum, 2),
+            ])
+            ->values()
+            ->all());
     }
 }

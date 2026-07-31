@@ -27,6 +27,10 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
+    <x-filter-bar :action="route('reports.compliance.dashboard')" :reset="route('reports.compliance.dashboard')">
+        @include('reports._standard_filters', ['idPrefix' => 'comp-dash'])
+    </x-filter-bar>
+
     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <x-kpi-tile :label="__('Befunde gesamt')" :value="$summary['total']" tone="primary" format="int"
                     :href="route('reports.arbzg-compliance')" />
@@ -43,6 +47,13 @@
                         format="int"
                         :href="route('reports.arbzg-compliance', ['kind' => $kind])" />
         @endforeach
+    </div>
+
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.line :title="__('Offene Befunde je Monat')" :unit="__('Befunde')"
+                       :series="$openMonthlySeries" :x-label="__('Monat')" :y-label="__('Offen')" />
+        <x-charts.stacked-bar :title="__('Befunde je Monat nach Verstoßart')" :unit="__('Befunde')"
+                              :series="$monthlyKindSeries" :bands="$kindBands" :x-label="__('Monat')" />
     </div>
 
     <x-card :title="__('Verstöße je Regel und Monat')" icon="calendar_month">

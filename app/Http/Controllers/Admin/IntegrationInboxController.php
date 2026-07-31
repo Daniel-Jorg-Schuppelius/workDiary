@@ -78,8 +78,9 @@ class IntegrationInboxController extends Controller {
                 ->all();
         }
 
-        // Fremdkunden-Optionen nur für den Zeit-Import-Form-Typ „customer_project".
-        $foreignCustomers = $groups->contains(fn(array $g): bool => ($g['form'] ?? null) === 'customer_project')
+        // Fremdkunden-Optionen für die Form-Typen mit Endkunden-Auswahl
+        // (Zeit-Import „customer_project" und FritzBox-Rufnummern).
+        $foreignCustomers = $groups->contains(fn(array $g): bool => in_array($g['form'] ?? null, ['customer_project', 'phone_number'], true))
             ? $this->foreignCustomerOptions($user)
             : [];
 

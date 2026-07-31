@@ -31,7 +31,7 @@
             <x-slot:actions>
                 @if($result !== null)
                     <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.cohort-comparison', array_filter(['qualification_id' => $qualSqid, 'metric' => $metric, 'window' => $window, 'export' => 'csv']))"
+                                :href="route('reports.cohort-comparison', array_merge($standardFilters->toQueryParams(), array_filter(['qualification_id' => $qualSqid, 'metric' => $metric, 'window' => $window, 'export' => 'csv'])))"
                                 show-label>CSV</x-icon-btn>
                 @endif
                 <x-help-button topic="reports.cohort-comparison" />
@@ -40,6 +40,7 @@
     </x-slot:toolbar>
 
     <x-filter-bar :action="route('reports.cohort-comparison')" :reset="route('reports.cohort-comparison')">
+        @include('reports._standard_filters', ['idPrefix' => 'cohort'])
         <x-filter-field show-label :label="__('reporting.cohort.qualification')" for="ch-qual">
             <select id="ch-qual" name="qualification_id" class="select select-sm select-bordered">
                 <option value="">{{ __('reporting.cohort.choose') }}</option>
@@ -64,6 +65,11 @@
     <div role="alert" class="alert alert-info mb-4 text-sm">
         <span class="material-symbols-outlined" aria-hidden="true">info</span>
         <div>{{ __('reporting.cohort.data_note') }}</div>
+    </div>
+
+    <div class="grid gap-3 xl:grid-cols-2 mb-4">
+        <x-charts.bar :title="__('Vorher vs. nachher je Mitarbeitendem')" unit="%" :series="$beforeAfterSeries" :y2-label="__('reporting.cohort.after')" :x-label="__('reporting.cohort.member')" :y-label="__($metricOptions[$metric])" />
+        <x-charts.line :title="__('Kohortenverlauf (Wochen vor/nach Erwerb)')" unit="%" :series="$weeklySeries" :x-label="__('Woche relativ zum Erwerb')" :y-label="__($metricOptions[$metric])" />
     </div>
 
     @if($result === null)

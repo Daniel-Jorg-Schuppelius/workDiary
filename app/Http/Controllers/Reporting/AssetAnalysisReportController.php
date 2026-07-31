@@ -12,10 +12,10 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{Asset, Customer};
-use App\Services\Reporting\AssetAnalysisReportBuilder;
-use App\Support\Sqid;
+use App\Services\Reporting\{AssetAnalysisReportBuilder, ReportFilters};
+use App\Support\{CarbonFmt, Sqid};
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
@@ -31,16 +31,26 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 class AssetAnalysisReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
     public function __construct(private readonly AssetAnalysisReportBuilder $builder) {}
 
     public function index(Request $request): View|Response|SymfonyResponse {
-        $range = $this->globalDateRange();
-        [$from, $to] = $this->globalDateRangeBounds();
+        [$from, $to] = $this->resolveRange($request);
+        $label = CarbonFmt::fdate($from) . ' – ' . CarbonFmt::fdate($to);
 
-        $rawCustomerId = $request->query('customer_id');
-        $customerId = Sqid::decodeOrNumeric(Customer::class, $rawCustomerId);
+        // Standard-Set bewusst nur Kunde — Assets haben keine natürliche
+        // Status-/Projektdimension; category_code/manufacturer/group_by
+        // bleiben Spezialfilter des Reports.
+        $filters = $this->standardFilters($request, ['customer'], $from, $to);
+        // Legacy-Parameter customer_id (alte Bookmarks) ins Standard-Set
+        // übernehmen, damit Partial, Links und Audit denselben Stand sehen.
+        $customerId = $filters->customerId ?? Sqid::decodeOrNumeric(Customer::class, $request->query('customer_id'));
+        if ($customerId !== $filters->customerId) {
+            $filters = new ReportFilters(from: $from, to: $to, customerId: $customerId);
+        }
+
         $categoryCode = $request->filled('category_code') ? (string) $request->string('category_code') : null;
         $manufacturer = $request->filled('manufacturer') ? (string) $request->string('manufacturer') : null;
         $groupBy = (string) $request->string('group_by', 'asset');
@@ -50,29 +60,30 @@ class AssetAnalysisReportController extends Controller {
 
         $rows = $this->builder->build($from, $to, $customerId, $categoryCode, $manufacturer, $groupBy);
 
-        $exportContext = [
-            'from' => $from->toDateString(),
-            'to' => $to->toDateString(),
-            'customer_id' => $customerId,
+        $exportContext = array_merge([
             'category_code' => $categoryCode,
             'manufacturer' => $manufacturer,
             'group_by' => $groupBy,
-        ];
+        ], $filters->toAuditArray());
 
         if ($request->query('export') === 'csv') {
             return $this->exportCsv($rows, $groupBy, $from->toDateString(), $to->toDateString(), $exportContext, $request);
         }
 
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($rows, $groupBy, $range['label'], $from->toDateString(), $to->toDateString(), $exportContext, $request);
+            return $this->exportPdf($rows, $groupBy, $label, $from->toDateString(), $to->toDateString(), $this->defectsSeries($rows), $exportContext, $request);
         }
 
         return view('reports.assets', [
             'rows' => $rows,
-            'label' => $range['label'],
+            'label' => $label,
             'from' => $from,
             'to' => $to,
-            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
+            'standardFilters' => $filters,
+            'filterFields' => ['customer'],
+            'defectsSeries' => $this->defectsSeries($rows),
+            'defectRateSeries' => $this->defectRateSeries($rows),
+            ...$this->standardFilterOptions(['customer'], $filters),
             'categories' => Asset::query()
                 ->whereNotNull('category_code')
                 ->orderBy('category_code')
@@ -92,6 +103,47 @@ class AssetAnalysisReportController extends Controller {
             'manufacturer' => $manufacturer,
             'groupBy' => $groupBy,
         ]);
+    }
+
+    /**
+     * Defekt-Pareto (Top 20) der aktiven Gruppierungsebene — Drilldown in die
+     * Defektprotokolle (der AssetDrilldownReportController liest die
+     * Legacy-Parameternamen aus dem drilldown-Array der Zeile).
+     *
+     * @param  list<array{key:string,label:string,assetCount:int,entryCount:int,openIssueCount:int,escalationCount:int,defectCount:int,defectRate:float,lastIncidentAt:?string,drilldown:array<string,mixed>}>  $rows
+     * @return list<array{x: string, y: int, url: string}>
+     */
+    private function defectsSeries(array $rows): array {
+        return array_values(collect($rows)
+            ->filter(static fn(array $row): bool => $row['defectCount'] > 0)
+            ->sortByDesc('defectCount')
+            ->take(20)
+            ->map(static fn(array $row): array => [
+                'x' => $row['label'],
+                'y' => $row['defectCount'],
+                'url' => route('reports.assets.drilldown.protocols', $row['drilldown']),
+            ])
+            ->all());
+    }
+
+    /**
+     * Defektrate (%) je Gruppierungsebene, Top 15 — eine Zeitreihe geben die
+     * Builder-Daten nicht her (nur Aggregatzeilen je Gruppe).
+     *
+     * @param  list<array{key:string,label:string,assetCount:int,entryCount:int,openIssueCount:int,escalationCount:int,defectCount:int,defectRate:float,lastIncidentAt:?string,drilldown:array<string,mixed>}>  $rows
+     * @return list<array{x: string, y: float, url: string}>
+     */
+    private function defectRateSeries(array $rows): array {
+        return array_values(collect($rows)
+            ->filter(static fn(array $row): bool => $row['defectRate'] > 0.0)
+            ->sortByDesc('defectRate')
+            ->take(15)
+            ->map(static fn(array $row): array => [
+                'x' => $row['label'],
+                'y' => $row['defectRate'],
+                'url' => route('reports.assets.drilldown.protocols', $row['drilldown']),
+            ])
+            ->all());
     }
 
     /**
@@ -149,15 +201,28 @@ class AssetAnalysisReportController extends Controller {
      *   escalationCount:int,defectCount:int,defectRate:float,lastIncidentAt:?string,
      *   drilldown:array<string,mixed>
      * }>  $rows
+     * @param  list<array{x: string, y: int, url: string}>  $defectsSeries
      * @param  array<string, mixed>  $filters
      */
-    private function exportPdf(array $rows, string $groupBy, string $label, string $from, string $to, array $filters, Request $request): SymfonyResponse {
+    private function exportPdf(array $rows, string $groupBy, string $label, string $from, string $to, array $defectsSeries, array $filters, Request $request): SymfonyResponse {
         $filename = sprintf('produktanalyse_%s_%s_%s.pdf', $groupBy, $from, $to);
 
         return $this->pdfDownload('reports.pdf.assets', [
             'rows' => $rows,
             'label' => $label,
             'groupBy' => $groupBy,
+            'chart' => [
+                'type' => 'bar-h',
+                'title' => __('Defekte im Zeitraum (Top 20)'),
+                'unit' => __('Defekte'),
+                'xLabel' => match ($groupBy) {
+                    'group' => __('Produktgruppe'),
+                    'model' => __('Modell'),
+                    default => __('Asset'),
+                },
+                'yLabel' => __('Defekte'),
+                'series' => $defectsSeries,
+            ],
         ], $filename, 'landscape', $request, 'assets-analysis', $filters);
     }
 }

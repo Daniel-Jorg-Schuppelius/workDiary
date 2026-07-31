@@ -17,34 +17,22 @@
         <x-page-toolbar :subtitle="__('Plan vs. Ist, Nacharbeit und Eskalation je Auftragstyp.')">
             <x-slot:actions>
                 <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.entry-types', array_filter(['customer_id' => \App\Support\Sqid::encode(\App\Models\Customer::class, $customerId), 'user_id' => \App\Support\Sqid::encode(\App\Models\User::class, $userId), 'entry_type_id' => \App\Support\Sqid::encode(\App\Models\EntryType::class, $entryTypeFilter), 'status' => $statusFilter, 'export' => 'csv']))"
+                            :href="route('reports.entry-types', array_merge($standardFilters->toQueryParams(), array_filter(['entry_type_id' => \App\Support\Sqid::encode(\App\Models\EntryType::class, $entryTypeFilter)]), ['export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.entry-types', array_filter(['customer_id' => \App\Support\Sqid::encode(\App\Models\Customer::class, $customerId), 'user_id' => \App\Support\Sqid::encode(\App\Models\User::class, $userId), 'entry_type_id' => \App\Support\Sqid::encode(\App\Models\EntryType::class, $entryTypeFilter), 'status' => $statusFilter, 'export' => 'pdf']))"
+                            :href="route('reports.entry-types', array_merge($standardFilters->toQueryParams(), array_filter(['entry_type_id' => \App\Support\Sqid::encode(\App\Models\EntryType::class, $entryTypeFilter)]), ['export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
 
     <x-filter-bar :action="route('reports.entry-types')" :reset="route('reports.entry-types')">
-        <x-filter-field :label="__('Kunde')" for="rep-customer">
-            <select id="rep-customer" name="customer_id" class="select select-sm select-bordered">
-                <option value="">{{ __('Alle') }}</option>
-                @foreach($customers as $customer)
-                    <option value="{{ $customer->sqid }}" @selected(\App\Support\Sqid::encode(\App\Models\Customer::class, $customerId) === $customer->sqid)>{{ $customer->name }}</option>
-                @endforeach
-            </select>
-        </x-filter-field>
+        @include('reports._standard_filters', [
+            'idPrefix' => 'entry-types',
+            'statusOptions' => \App\Http\Controllers\Reporting\EntryTypeAnalysisReportController::statusOptions(),
+        ])
 
-        <x-filter-field :label="__('Mitarbeiter')" for="rep-user">
-            <select id="rep-user" name="user_id" class="select select-sm select-bordered">
-                <option value="">{{ __('Alle') }}</option>
-                @foreach($reportUsers as $reportUser)
-                    <option value="{{ $reportUser->sqid }}" @selected(\App\Support\Sqid::encode(\App\Models\User::class, $userId) === $reportUser->sqid)>{{ $reportUser->name }}</option>
-                @endforeach
-            </select>
-        </x-filter-field>
-
+        {{-- Typ-Drilldown-Parameter (bewusst NICHT im Standard-Set — der Report gliedert nach Typ). --}}
         <x-filter-field :label="__('Auftragstyp')" for="rep-entry-type">
             <select id="rep-entry-type" name="entry_type_id" class="select select-sm select-bordered">
                 <option value="">{{ __('Alle') }}</option>
@@ -53,16 +41,13 @@
                 @endforeach
             </select>
         </x-filter-field>
-
-        <x-filter-field :label="__('Status')" for="rep-status">
-            <select id="rep-status" name="status" class="select select-sm select-bordered">
-                <option value="">{{ __('Alle') }}</option>
-                @foreach(\App\Http\Controllers\Reporting\EntryTypeAnalysisReportController::statusOptions() as $value => $label)
-                    <option value="{{ $value }}" @selected($statusFilter === (int) $value)>{{ $label }}</option>
-                @endforeach
-            </select>
-        </x-filter-field>
     </x-filter-bar>
+
+    {{-- Feature 002: Diagramme (Plan/Ist + Überzugsquote je Auftragstyp) --}}
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.bar :title="__('Plan vs. Ist je Auftragstyp')" :unit="__('Min.')" :series="$planVsIstSeries" :x-label="__('Auftragstyp')" :y-label="__('Ø Ist (Min.)')" :y2-label="__('Ø Plan (Min.)')" />
+        <x-charts.bar-h :title="__('Überzugsquote je Auftragstyp (Top 15)')" unit="%" :series="$overrunSeries" :x-label="__('Auftragstyp')" :y-label="__('Überzug %')" />
+    </div>
 
     <x-card>
         <div class="mb-3 text-xs text-base-content/60">{{ __('Zeitraum') }}: {{ $label }}</div>

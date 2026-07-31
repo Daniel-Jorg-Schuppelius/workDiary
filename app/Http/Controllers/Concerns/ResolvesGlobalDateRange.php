@@ -49,8 +49,17 @@ trait ResolvesGlobalDateRange {
      */
     protected function resolveRange(Request $request): array {
         if ($request->filled('from') && $request->filled('to')) {
-            $from = CarbonImmutable::parse((string) $request->query('from'))->startOfDay();
-            $to = CarbonImmutable::parse((string) $request->query('to'))->endOfDay();
+            try {
+                $from = CarbonImmutable::parse((string) $request->query('from'))->startOfDay();
+                $to = CarbonImmutable::parse((string) $request->query('to'))->endOfDay();
+            } catch (\Carbon\Exceptions\InvalidFormatException) {
+                // Müll-Input (hand-editierte Bookmarks) → globaler Zeitraum statt 500.
+                return $this->globalDateRangeBounds();
+            }
+
+            if ($to->lessThan($from)) {
+                [$from, $to] = [$to->startOfDay(), $from->endOfDay()];
+            }
 
             return [$from, $to];
         }

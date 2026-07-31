@@ -54,6 +54,7 @@ class EconomicsReportBuilder {
      * Wirtschaftlichkeit je Projekt im Zeitraum.
      *
      * @param  list<int>|null  $projectIds  Optionaler Filter auf Projekt-IDs.
+     * @param  int|null  $customerId  Optionaler Kundenfilter (Feature 002).
      * @return list<array{
      *   projectId:int,
      *   projectName:string,
@@ -89,12 +90,13 @@ class EconomicsReportBuilder {
      *   planBudgetDelta:float|null
      * }>
      */
-    public function byProject(CarbonImmutable $from, CarbonImmutable $to, ?array $projectIds = null): array {
+    public function byProject(CarbonImmutable $from, CarbonImmutable $to, ?array $projectIds = null, ?int $customerId = null): array {
         $fromDate = $from->toDateString();
         $toDate = $to->toDateString();
 
         $projects = Project::query()
             ->when($projectIds !== null && $projectIds !== [], fn($q) => $q->whereIn('id', $projectIds))
+            ->when($customerId !== null, fn($q) => $q->where('customer_id', $customerId))
             ->orderBy('name')
             ->get(['id', 'name', 'customer_id', 'time_budget', 'budget']);
 
@@ -149,6 +151,10 @@ class EconomicsReportBuilder {
      * Wirtschaftlichkeit je Kunde im Zeitraum (über alle Kunden-Projekte sowie
      * direkt am Kunden hängende Spesen).
      *
+     * Feature 002: optionaler Kunden-/Projektfilter. Mit Projektfilter werden
+     * die Geld-Aggregate projektgebunden erhoben (direkt am Kunden hängende
+     * Spesen/Fahrten ohne Projektanker bleiben dann bewusst außen vor).
+     *
      * @return list<array{
      *   customerId:int,
      *   customerName:string,
@@ -182,20 +188,24 @@ class EconomicsReportBuilder {
      *   planBudgetDelta:float|null
      * }>
      */
-    public function byCustomer(CarbonImmutable $from, CarbonImmutable $to): array {
+    public function byCustomer(CarbonImmutable $from, CarbonImmutable $to, ?int $customerId = null, ?int $projectId = null): array {
         $fromDate = $from->toDateString();
         $toDate = $to->toDateString();
 
-        $customers = Customer::query()->orderBy('name')->get(['id', 'name']);
+        $customers = Customer::query()
+            ->when($customerId !== null, fn($q) => $q->whereKey($customerId))
+            ->orderBy('name')
+            ->get(['id', 'name']);
 
         // Projekte (inkl. Budget) einmal laden + nach Kunde gruppieren statt N×3 Queries; Geld-Aggregate bleiben
         // kundenweise, um die Semantik der Projekt-/Kundenfilter unverändert zu lassen.
         $projectsByCustomer = Project::query()
+            ->when($projectId !== null, fn($q) => $q->whereKey($projectId))
             ->get(['id', 'customer_id', 'time_budget', 'budget'])
             ->groupBy(static fn (Project $p): int => (int) $p->customer_id);
 
         return array_values($customers
-            ->map(function (Customer $customer) use ($fromDate, $toDate, $projectsByCustomer): array {
+            ->map(function (Customer $customer) use ($fromDate, $toDate, $projectsByCustomer, $projectId): array {
                 /** @var \Illuminate\Support\Collection<int, Project> $customerProjects */
                 $customerProjects = $projectsByCustomer->get((int) $customer->id, collect());
 
@@ -208,8 +218,18 @@ class EconomicsReportBuilder {
                 );
 
                 $material = $this->materialAggregate($fromDate, $toDate, projectIds: $projectIds);
-                $expense = $this->expenseAggregate($fromDate, $toDate, customerId: (int) $customer->id, projectIds: $projectIds);
-                $travel = $this->travelAggregate($fromDate, $toDate, customerId: (int) $customer->id, customer: $customer, projectIds: $projectIds);
+                if ($projectId !== null) {
+                    // Projektfilter: strikt projektgebundene Aggregate — Spesen/
+                    // Fahrten, die nur am Kunden hängen, zählen hier nicht mit.
+                    $projectModel = $customerProjects->firstWhere('id', $projectId);
+                    $expense = $this->expenseAggregate($fromDate, $toDate, projectIds: $projectIds);
+                    $travel = $projectModel instanceof Project
+                        ? $this->travelAggregate($fromDate, $toDate, projectId: $projectId, customer: $customer, project: $projectModel)
+                        : ['revenue' => 0.0, 'cost' => 0.0];
+                } else {
+                    $expense = $this->expenseAggregate($fromDate, $toDate, customerId: (int) $customer->id, projectIds: $projectIds);
+                    $travel = $this->travelAggregate($fromDate, $toDate, customerId: (int) $customer->id, customer: $customer, projectIds: $projectIds);
+                }
 
                 $planMinutes = $customerProjects->sum(static fn (Project $p): int => (int) $p->time_budget);
                 $planBudget = $customerProjects->sum(static fn (Project $p): float => ($p->budget?->toFloat() ?? 0.0));
@@ -472,6 +492,53 @@ class EconomicsReportBuilder {
             'actualCost' => $actualCost,
             'planBudgetDelta' => $planBudget !== null ? round($actualCost - $planBudget, 2) : null,
         ];
+    }
+
+    /**
+     * Zeit-Erlös (abrechenbare rate-Snapshots) und Zeit-Kosten (internal_rate)
+     * je Monat des Zeitraums (Feature 002, Monats-Chart). Bewusst NUR die
+     * Zeit-Dimension mit einer Query — Material/Spesen/Fahrt haben keine
+     * gemeinsame Monatsquelle ohne weitere Aggregationsläufe.
+     *
+     * @return list<array{month: string, monthLabel: string, revenue: float, cost: float}>
+     */
+    public function timeByMonth(CarbonImmutable $from, CarbonImmutable $to, ?int $customerId = null, ?int $projectId = null): array {
+        /** @var Collection<int, TimeEntry> $entries */
+        $entries = TimeEntry::query()
+            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->when($projectId !== null, fn($q) => $q->where('project_id', $projectId))
+            ->when($projectId === null && $customerId !== null, fn($q) => $q->whereIn(
+                'project_id',
+                Project::query()->where('customer_id', $customerId)->select('id'),
+            ))
+            ->get(['date', 'billable', 'rate', 'internal_rate']);
+
+        /** @var array<string, array{revenue: float, cost: float}> $byMonth */
+        $byMonth = [];
+        foreach ($entries as $entry) {
+            $key = $entry->date?->format('Y-m');
+            if ($key === null) {
+                continue;
+            }
+            $byMonth[$key] ??= ['revenue' => 0.0, 'cost' => 0.0];
+            if ($entry->billable) {
+                $byMonth[$key]['revenue'] += ($entry->rate?->toFloat() ?? 0.0);
+            }
+            $byMonth[$key]['cost'] += ($entry->internal_rate?->toFloat() ?? 0.0);
+        }
+
+        $series = [];
+        for ($cursor = $from->startOfMonth(); $cursor->lte($to); $cursor = $cursor->addMonth()) {
+            $key = $cursor->format('Y-m');
+            $series[] = [
+                'month' => $key,
+                'monthLabel' => $cursor->translatedFormat('M Y'),
+                'revenue' => round($byMonth[$key]['revenue'] ?? 0.0, 2),
+                'cost' => round($byMonth[$key]['cost'] ?? 0.0, 2),
+            ];
+        }
+
+        return $series;
     }
 
     /**

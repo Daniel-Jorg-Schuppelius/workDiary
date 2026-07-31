@@ -9,10 +9,21 @@
         <x-page-toolbar>
             <div class="text-sm text-base-content/70">{{ __('Zeitraum: :from – :to · nur aggregierte Kennzahlen, keine Bewerberdetails.', ['from' => $from, 'to' => $to]) }}</div>
             <x-slot:actions>
-                <x-icon-btn icon="download" size="sm" :href="route('applications.report', ['export' => 'csv'])" show-label>{{ __('CSV') }}</x-icon-btn>
+                <x-icon-btn icon="download" size="sm" :href="route('applications.report', array_merge($standardFilters->toQueryParams(), ['export' => 'csv']))" show-label>{{ __('CSV') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    <x-filter-bar :action="route('applications.report')" :reset="route('applications.report')">
+        @include('reports._standard_filters', ['idPrefix' => 'applications', 'statusOptions' => $statusOptions, 'statusLabel' => __('Bewerbungsstatus')])
+    </x-filter-bar>
+
+    @if ($recruiting !== null)
+        <div class="grid gap-3 xl:grid-cols-2">
+            <x-charts.line :title="__('Bewerbungseingang je Monat')" :unit="__('Bewerbungen')" :series="$monthlySeries" :x-label="__('Monat')" :y-label="__('Bewerbungen')" />
+            <x-charts.bar-h :title="__('Bewerber-Funnel je Workflow-Stufe')" :unit="__('Bewerbungen')" :series="$funnelSeries" :x-label="__('Workflow-Stufe')" :y-label="__('Anzahl')" />
+        </div>
+    @endif
 
     @if ($tenders !== null)
         <div class="grid gap-4 lg:grid-cols-2">

@@ -18,6 +18,8 @@
 @endsection
 
 @section('pdf-table')
+    @include('reports.pdf.charts._chart')
+
     <table class="data">
         <thead>
             <tr>

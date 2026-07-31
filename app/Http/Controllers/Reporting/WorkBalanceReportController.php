@@ -12,12 +12,12 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\User;
-use App\Services\Reporting\WorkBalanceCalculator;
+use App\Services\Reporting\{PeriodBalance, ReportFilters, WorkBalanceCalculator};
 use App\Support\Sqid;
-use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Collection;
+use Carbon\{Carbon, CarbonImmutable};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -33,8 +33,12 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 class WorkBalanceReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use ResolvesStandardReportFilters;
     // A9: liefert auditExport für den PDF-Export.
     use WritesReportCsv;
+
+    /** Ab dieser Zeitraumlänge wird die Tagesserie wochenweise aggregiert. */
+    private const WEEKLY_THRESHOLD_DAYS = 62;
 
     public function __construct(protected WorkBalanceCalculator $calc) {}
 
@@ -42,9 +46,18 @@ class WorkBalanceReportController extends Controller {
         /** @var User $authUser */
         $authUser = Auth::user();
         $user = $this->resolveTargetUser($request, $authUser);
-        $selectableUsers = $authUser->isAdmin() ? $this->loadSelectableUsers() : null;
+        $isAdmin = $authUser->isAdmin();
 
         [$from, $to, $label] = $this->resolveRange($request);
+
+        // Standardfilter (Feature 002): 'user' bleibt über resolveTargetUser
+        // führend (Admin-Gate + Org-Grenze); das Set spiegelt den aufgelösten
+        // Nutzer für Partial-Preselect, Links und Audit. 'team' engt nur die
+        // Mitarbeiter-Auswahlliste ein — der Report bleibt eine Ein-Nutzer-Sicht.
+        $filters = $this->standardFilters($request, ['user', 'team'], $from, $to);
+        if ($filters->userId !== (int) $user->id) {
+            $filters = new ReportFilters(from: $from, to: $to, userId: (int) $user->id, teamId: $filters->teamId);
+        }
 
         $period = $this->calc->range($user, $from, $to);
 
@@ -60,12 +73,27 @@ class WorkBalanceReportController extends Controller {
                 'user' => $user,
                 'period' => $period,
                 'label' => $label,
-            ], $filename, request: $request, reportCode: 'work-balance', filters: [
-                'user_id' => $user->id,
-                'from' => $from->toDateString(),
-                'to' => $to->toDateString(),
-            ]);
+            ], $filename, request: $request, reportCode: 'work-balance', filters: array_merge(
+                ['user_id' => $user->id],
+                $filters->toAuditArray(),
+            ));
         }
+
+        $filterOptions = [];
+        if ($isAdmin) {
+            $filterOptions = $this->standardFilterOptions(['user', 'team'], $filters);
+            if ($filters->teamId !== null && isset($filterOptions['filterUsers'])) {
+                // Team wählt die Mitarbeiterliste vor; der aktuell angezeigte
+                // Nutzer bleibt sichtbar, auch wenn er nicht Team-Mitglied ist.
+                $teamIds = $filters->teamUserIds();
+                $filterOptions['filterUsers'] = $filterOptions['filterUsers']
+                    ->filter(fn($option): bool => in_array((int) $option->getKey(), $teamIds, true) || (int) $option->getKey() === (int) $user->id)
+                    ->values();
+            }
+        }
+
+        [$dailySeries, $dailyIsWeekly] = $this->istSollSeries($period);
+        $monthlySeries = $this->monthlyIstSollSeries($period);
 
         /** @var View $view */
         $view = view('reports.work-balance', [
@@ -74,10 +102,90 @@ class WorkBalanceReportController extends Controller {
             'from' => $from,
             'to' => $to,
             'label' => $label,
-            'selectableUsers' => $selectableUsers,
+            'isAdmin' => $isAdmin,
+            'standardFilters' => $filters,
+            'filterFields' => ['user', 'team'],
+            'dailySeries' => $dailySeries,
+            'dailySeriesLabel' => $dailyIsWeekly ? __('Ist- und Soll-Stunden je Kalenderwoche') : __('Ist- und Soll-Stunden je Tag'),
+            'dailyMedian' => $dailySeries === [] ? null : NumberHelper::median(array_column($dailySeries, 'y')),
+            'monthlySeries' => $monthlySeries,
+            'monthlyMedian' => $monthlySeries === [] ? null : NumberHelper::median(array_column($monthlySeries, 'y')),
+            ...$filterOptions,
         ]);
 
         return $view;
+    }
+
+    /**
+     * Ist-Stunden (Erfasst) vs. Soll je Tag — bei langen Zeiträumen je
+     * ISO-Woche. Der Flex-Saldo selbst kann negativ werden und ist mit den
+     * Chart-Komponenten nicht darstellbar (nur nicht-negative Werte); die
+     * Ist/Soll-Gruppierung zeigt dieselbe Abweichung vorzeichenfrei.
+     *
+     * @return array{0: list<array{x: string, y: float, y2: float}>, 1: bool} [Serie, wochenweise?]
+     */
+    private function istSollSeries(PeriodBalance $period): array {
+        // Ohne erfasste Daten Leerzustand statt Soll-only-Achse (§Diagramm-UX) —
+        // das Default-Arbeitszeitmodell liefert auch in leeren Orgs ein Soll > 0.
+        if ($period->trackedMinutes === 0 && $period->attendanceMinutes === 0) {
+            return [[], false];
+        }
+
+        $weekly = count($period->days) > self::WEEKLY_THRESHOLD_DAYS;
+        $buckets = [];
+        foreach ($period->days as $day) {
+            $date = Carbon::parse($day->date);
+            $key = $weekly ? sprintf('KW %02d/%04d', $date->isoWeek, $date->isoWeekYear) : $date->isoFormat('DD.MM.');
+            $buckets[$key] ??= ['tracked' => 0, 'target' => 0];
+            $buckets[$key]['tracked'] += $day->trackedMinutes;
+            $buckets[$key]['target'] += $day->targetMinutes;
+        }
+
+        $series = [];
+        foreach ($buckets as $key => $minutes) {
+            $series[] = [
+                'x' => (string) $key,
+                'y' => round($minutes['tracked'] / 60, 1),
+                'y2' => round($minutes['target'] / 60, 1),
+            ];
+        }
+
+        return [$series, $weekly];
+    }
+
+    /**
+     * Ist-Stunden (Erfasst) vs. Soll je Monat (Saldo = sichtbare Differenz;
+     * Median über die Monats-Ist-Werte).
+     *
+     * @return list<array{x: string, y: float, y2: float}>
+     */
+    private function monthlyIstSollSeries(PeriodBalance $period): array {
+        // Leerzustand analog istSollSeries() (§Diagramm-UX).
+        if ($period->trackedMinutes === 0 && $period->attendanceMinutes === 0) {
+            return [];
+        }
+
+        $locale = app()->getLocale();
+        $buckets = [];
+        foreach ($period->days as $day) {
+            $date = Carbon::parse($day->date);
+            $date->locale($locale);
+            $key = $date->format('Y-m');
+            $buckets[$key] ??= ['label' => $date->isoFormat('MMM YY'), 'tracked' => 0, 'target' => 0];
+            $buckets[$key]['tracked'] += $day->trackedMinutes;
+            $buckets[$key]['target'] += $day->targetMinutes;
+        }
+
+        $series = [];
+        foreach ($buckets as $bucket) {
+            $series[] = [
+                'x' => $bucket['label'],
+                'y' => round($bucket['tracked'] / 60, 1),
+                'y2' => round($bucket['target'] / 60, 1),
+            ];
+        }
+
+        return $series;
     }
 
     /**
@@ -109,22 +217,6 @@ class WorkBalanceReportController extends Controller {
         }
 
         return $target;
-    }
-
-    /**
-     * @return Collection<int, User>
-     */
-    private function loadSelectableUsers(): Collection {
-        $authUser = auth()->user();
-        $orgId = $authUser instanceof User ? $authUser->organization_id : null;
-
-        /** @var Collection<int, User> $users */
-        $users = User::query()
-            ->when($orgId !== null, fn ($q) => $q->where('organization_id', $orgId))
-            ->orderBy('name')
-            ->get();
-
-        return $users;
     }
 
     /**

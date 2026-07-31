@@ -517,7 +517,7 @@ class RemoteSupportSyncTest extends TestCase {
         ]);
 
         $target = Customer::factory()->create(['organization_id' => $this->organization->id]);
-        /** @var \App\Models\Project $project */
+        /** @var Project $project */
         $project = $target->projects()->create([
             'organization_id' => $this->organization->id,
             'name' => 'Sonderprojekt',

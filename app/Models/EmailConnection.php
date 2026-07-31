@@ -64,6 +64,7 @@ class EmailConnection extends Model {
         'processed_folder',
         'active',
         'einvoice_intake',
+        'callreport_intake',
         'last_polled_at',
         'created_by',
     ];
@@ -74,6 +75,7 @@ class EmailConnection extends Model {
         'port' => 'integer',
         'active' => 'boolean',
         'einvoice_intake' => 'boolean',
+        'callreport_intake' => 'boolean',
         'last_polled_at' => 'datetime',
     ];
 

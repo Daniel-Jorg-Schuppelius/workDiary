@@ -11,6 +11,11 @@
     $money = function (float $val): string {
         return \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($val, 2, withThousandsSeparator: true) . ' €';
     };
+    $fmtChart = fn(int|float $min): string => intdiv((int) $min, 60) . ':' . str_pad((string) ((int) $min % 60), 2, '0', STR_PAD_LEFT);
+    $linkParams = array_filter(array_merge(
+        ['scope' => $isAdmin ? $scope : null, 'week' => $activeKey],
+        $standardFilters->toQueryParams(),
+    ));
 @endphp
 
 <x-page-shell>
@@ -18,13 +23,13 @@
         <x-page-toolbar :subtitle="__('Stunden je Mitarbeiter und Tag in der ausgewählten Kalenderwoche.')">
             <x-slot:actions>
                 <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.week-by-user', array_filter(['scope' => $isAdmin ? $scope : null, 'week' => $activeKey, 'export' => 'csv']))"
+                            :href="route('reports.week-by-user', array_merge($linkParams, ['export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
                 <x-icon-btn icon="table_chart" tone="outline" size="sm"
-                            :href="route('reports.week-by-user', array_filter(['scope' => $isAdmin ? $scope : null, 'week' => $activeKey, 'export' => 'xlsx']))"
+                            :href="route('reports.week-by-user', array_merge($linkParams, ['export' => 'xlsx']))"
                             show-label>XLSX</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.week-by-user', array_filter(['scope' => $isAdmin ? $scope : null, 'week' => $activeKey, 'export' => 'pdf']))"
+                            :href="route('reports.week-by-user', array_merge($linkParams, ['export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
@@ -38,8 +43,23 @@
                     <option value="team" @selected($scope === 'team')>{{ __('Gesamtes Team') }}</option>
                 </select>
             </x-filter-field>
+            @include('reports._standard_filters', ['idPrefix' => 'week-by-user'])
+            {{-- Aktive Woche beim Umfiltern beibehalten. --}}
+            <input type="hidden" name="week" value="{{ $activeKey }}">
         </x-filter-bar>
     @endif
+
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.heatmap
+            :title="__('Stunden je Mitarbeiter und Wochentag')"
+            unit="h"
+            :rows="$heatmapRows"
+            :col-labels="array_values($dayLabels)"
+            :x-label="__('Mitarbeiter')"
+            :format="$fmtChart"
+        />
+        <x-charts.stacked-bar :title="__('Stunden je Mitarbeiter nach Art')" unit="h" :series="$userKindSeries" :bands="$kindBands" :x-label="__('Mitarbeiter')" />
+    </div>
 
     @if ($weeksTruncated ?? false)
         <div class="alert alert-warning text-sm">
@@ -51,7 +71,7 @@
         <div role="tablist" class="tabs tabs-box flex-nowrap overflow-x-auto">
             @foreach ($weekTabs as $tab)
                 <a role="tab"
-                   href="{{ route('reports.week-by-user', array_filter(['scope' => $isAdmin ? $scope : null, 'week' => $tab['key']])) }}"
+                   href="{{ route('reports.week-by-user', array_merge($linkParams, ['week' => $tab['key']])) }}"
                    class="tab whitespace-nowrap gap-1.5 {{ $tab['key'] === $activeKey ? 'tab-active' : '' }}">
                     <span class="font-semibold">{{ __('KW') }} {{ $tab['week'] }}</span>
                     <span class="text-[0.65rem] text-base-content/50 tabular-nums">{{ $tab['shortLabel'] }}</span>

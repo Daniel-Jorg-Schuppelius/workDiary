@@ -17,24 +17,27 @@
             <x-page-toolbar :subtitle="__('Soll-Ist-Vergleich von Anwesenheit, erfasster Zeit und Saldo für :user.', ['user' => $user->name])">
                 <x-slot:actions>
                     <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                                :href="route('reports.work-balance', array_merge(request()->query(), ['export' => 'pdf']))"
+                                :href="route('reports.work-balance', array_merge(request()->query(), $standardFilters->toQueryParams(), ['export' => 'pdf']))"
                                 show-label>PDF</x-icon-btn>
                 </x-slot:actions>
             </x-page-toolbar>
         </x-slot:toolbar>
 
-        @if (! empty($selectableUsers))
+        @if ($isAdmin)
             <x-filter-bar :action="route('reports.work-balance')" :reset="route('reports.work-balance')">
-                @foreach (request()->except(['user', 'export']) as $k => $v)
+                {{-- Zeitraum-Spezialparameter (year/month bzw. from/to) beim Umfiltern erhalten. --}}
+                @foreach (request()->except(['user', 'team', 'export']) as $k => $v)
+                    @continue(! is_scalar($v))
                     <input type="hidden" name="{{ $k }}" value="{{ $v }}">
                 @endforeach
-                <select name="user" class="select select-sm select-bordered w-56 shrink-0" aria-label="{{ __('Nutzer') }}" data-autosubmit>
-                    @foreach ($selectableUsers as $u)
-                        <option value="{{ $u->sqid }}" @selected($u->sqid === $user->sqid)>{{ $u->name }}</option>
-                    @endforeach
-                </select>
+                @include('reports._standard_filters', ['idPrefix' => 'work-balance'])
             </x-filter-bar>
         @endif
+
+        <div class="grid gap-3 xl:grid-cols-2">
+            <x-charts.bar :title="$dailySeriesLabel" unit="h" :series="$dailySeries" :median="$dailyMedian" :y2-label="__('Soll')" :x-label="__('Zeitraum')" :y-label="__('Ist')" />
+            <x-charts.bar :title="__('Ist- und Soll-Stunden je Monat')" unit="h" :series="$monthlySeries" :median="$monthlyMedian" :y2-label="__('Soll')" :x-label="__('Monat')" :y-label="__('Ist')" />
+        </div>
 
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <x-kpi-tile :label="__('Soll')" :value="$fmt($period->targetMinutes) . ' h'" />

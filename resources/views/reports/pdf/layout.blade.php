@@ -38,6 +38,11 @@
         .logo { max-height: 40px; max-width: 160px; }
         .footer { margin-top: 12px; color: #6b7280; font-size: 10px; }
         .contact { font-size: 10px; color: #4b5563; }
+        /* Print-Diagramme (reports/pdf/charts/) */
+        table.chart-bars td { vertical-align: middle; }
+        table.chart-heatmap { font-size: 8px; }
+        table.chart-heatmap th, table.chart-heatmap td { border: 1px solid #e5e7eb; padding: 2px 3px; }
+        .chart-legend { margin: 4px 0 10px; }
     </style>
     @stack('pdf-styles')
 </head>

@@ -186,6 +186,24 @@ body.sidebar-collapsed {
 #help-drawer [data-help-railmode] {
     color: var(--color-base-content);
 }
+/* Vertikale Rail-Schlagzeile: writing-mode nutzt die verfügbare Höhe als
+   Textzeile, ohne dass ein transformiertes Element falsche Layout-Grenzen
+   behält. rotate(180deg) ergibt die gewünschte Leserichtung unten → oben. */
+.wd-help-news-title {
+    display: block;
+    max-height: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #help-drawer [data-help-news-item] {
+        transition: none;
+    }
+}
 /* Beim lg-Breakpoint-Wechsel setzt help-drawer.js diese Klasse für zwei
                Frames: Rail ↔ versteckter Mobil-Drawer sollen hart umschalten,
                nicht über die Slide-/Width-Transitions animieren (sichtbares

@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{TimeEntry, User};
 use App\Support\XlsxExport;
 use Carbon\Carbon;
@@ -33,6 +33,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 class MonthByUserTeamReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
@@ -42,17 +43,23 @@ class MonthByUserTeamReportController extends Controller {
             Gate::authorize('viewAny', User::class);
         }
 
-        $range = $this->globalDateRange();
-        $year = (int) $range['from']->year;
-        $year = max(2000, min(2100, $year));
+        [$rangeFrom] = $this->resolveRange($request);
+        $year = max(2000, min(2100, (int) $rangeFrom->year));
 
         $start = Carbon::create($year, 1, 1, 0, 0, 0) ?: Carbon::now()->startOfYear();
         $end = $start->copy()->endOfYear();
 
-        $entries = TimeEntry::query()
+        $filters = $this->standardFilters(
+            $request,
+            ['user', 'team'],
+            $start->toImmutable(),
+            $end->toImmutable(),
+        );
+
+        $entriesQuery = TimeEntry::query()
             ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
-            ->select('user_id', 'date', 'minutes', 'rate')
-            ->get();
+            ->select('user_id', 'date', 'minutes', 'rate');
+        $entries = $filters->applyToTimeEntryQuery($entriesQuery)->get();
 
         /** @var array<int, array{months: array<int, int>, total: int, rate: float}> $byUser */
         $byUser = [];
@@ -102,14 +109,18 @@ class MonthByUserTeamReportController extends Controller {
             $yearRate += $row['rate'];
         }
 
+        $exportFilters = array_merge(['year' => $year], $filters->toAuditArray());
+        $heatmapRows = $this->heatmapRows($byUser, $users);
+        $userHoursSeries = $this->userHoursSeries($byUser, $users);
+
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($byUser, $users, $monthLabels, $monthTotals, $yearTotal, $yearRate, $year, $request);
+            return $this->exportCsv($byUser, $users, $monthLabels, $monthTotals, $yearTotal, $yearRate, $year, $exportFilters, $request);
         }
         if ($request->query('export') === 'xlsx') {
             return $this->exportXlsx($byUser, $users, $monthLabels, $monthTotals, $yearTotal, $yearRate, $year);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($byUser, $users, $monthLabels, $monthTotals, $yearTotal, $yearRate, $year, $request);
+            return $this->exportPdf($byUser, $users, $monthLabels, $monthTotals, $yearTotal, $yearRate, $year, $heatmapRows, $exportFilters, $request);
         }
 
         return view('reports.month-by-user-team', [
@@ -120,7 +131,54 @@ class MonthByUserTeamReportController extends Controller {
             'monthTotals' => $monthTotals,
             'yearTotal' => $yearTotal,
             'yearRate' => $yearRate,
+            'standardFilters' => $filters,
+            'filterFields' => ['user', 'team'],
+            'userHoursSeries' => $userHoursSeries,
+            'hoursMedian' => $userHoursSeries === [] ? null : NumberHelper::median(array_column($userHoursSeries, 'y')),
+            'heatmapRows' => $heatmapRows,
+            ...$this->standardFilterOptions(['user', 'team'], $filters),
         ]);
+    }
+
+    /**
+     * Stunden je Mitarbeiter (Jahressumme). Der Report führt keine Soll-Werte
+     * je User — Vergleichslinie ist daher der Median über die User-Summen.
+     *
+     * @param  array<int, array{months: array<int, int>, total: int, rate: float}>  $byUser
+     * @param  Collection<int, User>  $users
+     * @return list<array{x: string, y: float}>
+     */
+    private function userHoursSeries(array $byUser, Collection $users): array {
+        $series = [];
+        foreach ($byUser as $uid => $row) {
+            $userModel = $users->get($uid);
+            $series[] = [
+                'x' => $userModel instanceof User ? $userModel->name : '#' . $uid,
+                'y' => round($row['total'] / 60, 1),
+            ];
+        }
+
+        return $series;
+    }
+
+    /**
+     * Heatmap-Zeilen User × Monat (Minuten; Anzeige h:mm via format-Prop).
+     *
+     * @param  array<int, array{months: array<int, int>, total: int, rate: float}>  $byUser
+     * @param  Collection<int, User>  $users
+     * @return list<array{label: string, cells: list<array{value: int}>}>
+     */
+    private function heatmapRows(array $byUser, Collection $users): array {
+        $rows = [];
+        foreach ($byUser as $uid => $row) {
+            $userModel = $users->get($uid);
+            $rows[] = [
+                'label' => $userModel instanceof User ? $userModel->name : '#' . $uid,
+                'cells' => array_map(fn(int $minutes): array => ['value' => $minutes], array_values($row['months'])),
+            ];
+        }
+
+        return $rows;
     }
 
     /**
@@ -158,15 +216,16 @@ class MonthByUserTeamReportController extends Controller {
      * @param  Collection<int, User>  $users
      * @param  array<int, string>  $monthLabels
      * @param  array<int, int>  $monthTotals
+     * @param  array<string, mixed>  $exportFilters
      */
-    private function exportCsv(array $byUser, Collection $users, array $monthLabels, array $monthTotals, int $yearTotal, float $yearRate, int $year, Request $request): Response {
+    private function exportCsv(array $byUser, Collection $users, array $monthLabels, array $monthTotals, int $yearTotal, float $yearRate, int $year, array $exportFilters, Request $request): Response {
         $filename = sprintf('monat-team-%04d.csv', $year);
         $rows = [array_merge(['Mitarbeiter'], array_values($monthLabels), ['Jahressumme', 'Erloes'])];
         foreach ($this->buildRows($byUser, $users, $monthTotals, $yearTotal, $yearRate) as $row) {
             $rows[] = array_map(static fn($v) => is_float($v) ? NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) : $v, $row);
         }
 
-        return $this->csvWithMetadata($rows, $filename, 'month-by-user-team', ['year' => $year], $request);
+        return $this->csvWithMetadata($rows, $filename, 'month-by-user-team', $exportFilters, $request);
     }
 
     /**
@@ -187,8 +246,10 @@ class MonthByUserTeamReportController extends Controller {
      * @param  Collection<int, User>  $users
      * @param  array<int, string>  $monthLabels
      * @param  array<int, int>  $monthTotals
+     * @param  list<array{label: string, cells: list<array{value: int}>}>  $heatmapRows
+     * @param  array<string, mixed>  $exportFilters
      */
-    private function exportPdf(array $byUser, Collection $users, array $monthLabels, array $monthTotals, int $yearTotal, float $yearRate, int $year, Request $request): SymfonyResponse {
+    private function exportPdf(array $byUser, Collection $users, array $monthLabels, array $monthTotals, int $yearTotal, float $yearRate, int $year, array $heatmapRows, array $exportFilters, Request $request): SymfonyResponse {
         $filename = sprintf('monat-team-%04d.pdf', $year);
         return $this->pdfDownload('reports.pdf.month-by-user-team', [
             'byUser' => $byUser,
@@ -198,6 +259,15 @@ class MonthByUserTeamReportController extends Controller {
             'yearTotal' => $yearTotal,
             'yearRate' => $yearRate,
             'year' => $year,
-        ], $filename, 'landscape', $request, 'month-by-user-team', ['year' => $year]);
+            'chart' => [
+                'type' => 'heatmap',
+                'title' => __('Stunden je Mitarbeiter und Monat'),
+                'unit' => 'h',
+                'xLabel' => __('Mitarbeiter'),
+                'rows' => $heatmapRows,
+                'colLabels' => array_values($monthLabels),
+                'format' => fn(float $minutes): string => intdiv((int) $minutes, 60) . ':' . str_pad((string) ((int) $minutes % 60), 2, '0', STR_PAD_LEFT),
+            ],
+        ], $filename, 'landscape', $request, 'month-by-user-team', $exportFilters);
     }
 }

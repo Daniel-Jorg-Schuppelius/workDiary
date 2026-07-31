@@ -12,6 +12,10 @@
     $money = function (float $val): string {
         return \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($val, 2, withThousandsSeparator: true) . ' €';
     };
+    $linkParams = array_filter(array_merge(
+        ['scope' => $isAdmin ? $scope : null, 'foreign_customer' => $foreignCustomerParam !== '' ? $foreignCustomerParam : null],
+        $standardFilters->toQueryParams(),
+    ));
 @endphp
 
 <x-page-shell>
@@ -19,28 +23,38 @@
         <x-page-toolbar :subtitle="__('Aggregierte Stunden und Erlöse pro Kunde und Projekt im gewählten Zeitraum.')">
             <x-slot:actions>
                 <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.customer-project', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'csv']))"
+                            :href="route('reports.customer-project', array_merge($linkParams, ['export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
                 <x-icon-btn icon="table_chart" tone="outline" size="sm"
-                            :href="route('reports.customer-project', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'xlsx']))"
+                            :href="route('reports.customer-project', array_merge($linkParams, ['export' => 'xlsx']))"
                             show-label>XLSX</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.customer-project', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'pdf']))"
+                            :href="route('reports.customer-project', array_merge($linkParams, ['export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if ($isAdmin)
-        <x-filter-bar :action="route('reports.customer-project')" :reset="route('reports.customer-project')">
+    <x-filter-bar :action="route('reports.customer-project')" :reset="route('reports.customer-project')">
+        @if ($isAdmin)
             <x-filter-field :label="__('Bereich')" for="rep-scope">
                 <select id="rep-scope" name="scope" class="select select-sm select-bordered" data-autosubmit>
                     <option value="mine" @selected($scope === 'mine')>{{ __('Nur meine') }}</option>
                     <option value="team" @selected($scope === 'team')>{{ __('Gesamtes Team') }}</option>
                 </select>
             </x-filter-field>
-        </x-filter-bar>
-    @endif
+        @endif
+        @include('reports._standard_filters', ['idPrefix' => 'customer-project'])
+        @if ($foreignCustomerParam !== '')
+            {{-- Endkunden-Einschränkung (Link-Parameter) beim Umfiltern beibehalten. --}}
+            <input type="hidden" name="foreign_customer" value="{{ $foreignCustomerParam }}">
+        @endif
+    </x-filter-bar>
+
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.pareto :title="__('Stunden je Kunde (Top 20)')" unit="h" :series="$customerHoursSeries" :x-label="__('Kunde')" :y-label="__('Stunden')" />
+        <x-charts.bar-h :title="__('Top-Projekte nach Stunden')" unit="h" :series="$topProjectsSeries" :x-label="__('Projekt')" :y-label="__('Stunden')" />
+    </div>
 
     <x-card>
         <div class="mb-3 flex flex-wrap items-baseline justify-end gap-2">

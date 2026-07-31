@@ -675,6 +675,15 @@ class NavigationRegistry {
             'collapsible' => true,
             'groups' => [
                 [
+                    // Landing (Feature 002): KPIs + gruppierter Einstieg; speist auch reports.index selbst.
+                    'key' => 'reports-overview',
+                    'label' => __('Übersicht'),
+                    'icon' => 'dashboard',
+                    'items' => [
+                        ['route' => 'reports.index', 'label' => __('Übersicht'), 'icon' => 'dashboard', 'modal' => false, 'matches' => ['reports.index']],
+                    ],
+                ],
+                [
                     'key' => 'reports-personal',
                     'label' => __('Persönlich'),
                     'icon' => 'person',
@@ -683,6 +692,8 @@ class NavigationRegistry {
                         ['route' => 'reports.my-year', 'label' => __('Mein Jahr'), 'icon' => 'calendar_view_month', 'modal' => false, 'matches' => ['reports.my-year']],
                         ['route' => 'reports.work-balance', 'label' => __('Arbeitsbilanz'), 'icon' => 'balance', 'modal' => false, 'matches' => ['reports.work-balance']],
                         ['route' => 'reports.attendance', 'label' => __('Anwesenheit'), 'icon' => 'co_present', 'modal' => false, 'matches' => ['reports.attendance']],
+                        // Plan/Ist (MVP-018) war bisher nur per URL erreichbar; Tab-Leiste der Seite führt zu Team/Org/Dimensionen.
+                        ['route' => 'reports.plan-ist.presence', 'label' => __('Plan/Ist'), 'icon' => 'schedule', 'modal' => false, 'matches' => ['reports.plan-ist.*']],
                     ],
                 ],
                 [

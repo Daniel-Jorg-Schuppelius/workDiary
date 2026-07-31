@@ -13,8 +13,11 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\User\{CompensationModel, FlatInterval, Permission};
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\ResolvesStandardReportFilters;
 use App\Models\{TimeEntry, User};
+use Carbon\{Carbon, CarbonImmutable};
 use CommonToolkit\Helper\Data\NumberHelper;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -32,14 +35,17 @@ use Illuminate\View\View;
  */
 class ExternalPayoutReportController extends Controller {
     use ResolvesGlobalDateRange;
+    use ResolvesStandardReportFilters;
 
-    public function index(): View {
+    public function index(Request $request): View {
         /** @var User $auth */
         $auth = Auth::user();
         abort_unless($auth->organization_id !== null && $auth->can(Permission::UserPayrollManage->value), 403);
 
-        [$from, $to] = $this->globalDateRangeBounds();
+        [$from, $to] = $this->resolveRange($request);
         $monthCount = max(1, count($this->buildMonthsInRange($from, $to)));
+
+        $filters = $this->standardFilters($request, ['user'], $from, $to);
 
         // Mandantengrenze: User hat KEINEN globalen OrganizationScope — ohne
         // expliziten Org-Filter erschienen externe Mitarbeiter (inkl.
@@ -51,6 +57,7 @@ class ExternalPayoutReportController extends Controller {
                 CompensationModel::Pauschal->value,
                 CompensationModel::NachZeitaufwand->value,
             ])
+            ->when($filters->userId !== null, fn($q) => $q->whereKey($filters->userId))
             ->orderBy('name')
             ->get();
 
@@ -114,6 +121,115 @@ class ExternalPayoutReportController extends Controller {
             'from' => $from,
             'to' => $to,
             'monthCount' => $monthCount,
+            'standardFilters' => $filters,
+            'filterFields' => ['user'],
+            'monthlyPayoutSeries' => $this->monthlyPayoutSeries($externals, $from, $to),
+            'payoutByUserSeries' => $this->payoutByUserSeries($rows),
+            ...$this->standardFilterOptions(['user'], $filters),
         ]);
+    }
+
+    /**
+     * Auszahlungen (€) je Monat: zeitbasierte Vergütung nach Monat der
+     * Zeiteinträge, Monatspauschalen je Zeitraum-Monat, Einsatzpauschalen
+     * nach Einsatztagen, Einmalpauschalen im ersten Monat. Leere Serie statt
+     * Null-Achse (§Diagramm-UX).
+     *
+     * @param  \Illuminate\Support\Collection<int, User>  $externals
+     * @return list<array{x: string, y: float}>
+     */
+    private function monthlyPayoutSeries($externals, CarbonImmutable $from, CarbonImmutable $to): array {
+        $months = $this->buildMonthsInRange($from, $to);
+        if ($externals->isEmpty() || $months === []) {
+            return [];
+        }
+
+        // Eine Abfrage für alle zeitabhängigen Modelle: Minuten + Einsatztage
+        // je Mitarbeiter × Monat.
+        $timeUserIds = $externals
+            ->filter(fn(User $u): bool => $u->compensation_model === CompensationModel::NachZeitaufwand
+                || ($u->compensation_model === CompensationModel::Pauschal && $u->flat_interval === FlatInterval::ProEinsatz))
+            ->pluck('id')
+            ->all();
+
+        /** @var array<int, array<string, int>> $minutesByUserMonth */
+        $minutesByUserMonth = [];
+        /** @var array<int, array<string, array<string, bool>>> $daysByUserMonth */
+        $daysByUserMonth = [];
+        if ($timeUserIds !== []) {
+            $entries = TimeEntry::query()
+                ->whereIn('user_id', $timeUserIds)
+                ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+                ->get(['user_id', 'date', 'minutes']);
+            foreach ($entries as $entry) {
+                $uid = (int) $entry->user_id;
+                $date = Carbon::parse((string) $entry->date);
+                $ym = $date->format('Y-m');
+                $minutesByUserMonth[$uid][$ym] = ($minutesByUserMonth[$uid][$ym] ?? 0) + (int) $entry->minutes;
+                $daysByUserMonth[$uid][$ym][$date->toDateString()] = true;
+            }
+        }
+
+        /** @var array<string, float> $byMonth */
+        $byMonth = array_fill_keys(array_column($months, 'key'), 0.0);
+        $firstMonth = (string) $months[0]['key'];
+
+        foreach ($externals as $user) {
+            $uid = (int) $user->id;
+            $model = $user->compensation_model;
+            if ($model === CompensationModel::NachZeitaufwand) {
+                $rate = ($user->compensation_rate?->toFloat() ?? 0.0);
+                foreach ($minutesByUserMonth[$uid] ?? [] as $ym => $minutes) {
+                    if (array_key_exists($ym, $byMonth)) {
+                        $byMonth[$ym] += round($minutes / 60 * $rate, 2);
+                    }
+                }
+            } elseif ($model === CompensationModel::Pauschal) {
+                $flat = ($user->flat_amount?->toFloat() ?? 0.0);
+                $interval = $user->flat_interval;
+                if ($interval === FlatInterval::Monatlich) {
+                    foreach ($byMonth as $ym => $sum) {
+                        $byMonth[$ym] = $sum + $flat;
+                    }
+                } elseif ($interval === FlatInterval::ProEinsatz) {
+                    foreach ($daysByUserMonth[$uid] ?? [] as $ym => $days) {
+                        if (array_key_exists($ym, $byMonth)) {
+                            $byMonth[$ym] += $flat * count($days);
+                        }
+                    }
+                } else { // Einmalig → erster Monat des Zeitraums
+                    $byMonth[$firstMonth] += $flat;
+                }
+            }
+        }
+
+        if (array_sum($byMonth) <= 0) {
+            return [];
+        }
+
+        $series = [];
+        foreach ($months as $month) {
+            $series[] = ['x' => $month['shortLabel'], 'y' => round($byMonth[$month['key']] ?? 0.0, 2)];
+        }
+
+        return $series;
+    }
+
+    /**
+     * Auszahlungen (€) je Externem — Top 15, nur positive Beträge.
+     *
+     * @param  array<int, array{user: User, model: CompensationModel|null, minutes: int, basis: string, amount: float}>  $rows
+     * @return list<array{x: string, y: float}>
+     */
+    private function payoutByUserSeries(array $rows): array {
+        return array_values(collect($rows)
+            ->filter(static fn(array $row): bool => $row['amount'] > 0)
+            ->sortByDesc('amount')
+            ->take(15)
+            ->map(static fn(array $row): array => [
+                'x' => (string) $row['user']->name,
+                'y' => round((float) $row['amount'], 2),
+            ])
+            ->all());
     }
 }

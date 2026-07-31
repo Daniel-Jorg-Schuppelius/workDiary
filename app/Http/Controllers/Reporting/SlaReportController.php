@@ -14,9 +14,9 @@ use App\Enums\Reporting\{ReportTargetMetric, ReportTargetScope};
 use App\Enums\ServiceTicket\{ServiceTicketPriority, SlaViolationKind};
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{ServiceTicket, SlaContractQuota, SlaViolation, User};
-use App\Services\Reporting\ReportTargetEvaluator;
+use App\Services\Reporting\{ReportFilters, ReportTargetEvaluator};
 use App\Services\ServiceTicket\{SlaQuotaService, SlaViolationService};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -37,6 +37,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 class SlaReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
     public function __construct(
@@ -47,11 +48,13 @@ class SlaReportController extends Controller {
     public function index(Request $request): View|SymfonyResponse {
         Gate::authorize('viewAny', SlaViolation::class);
 
-        [$fromDate, $toDate] = $this->globalDateRangeBounds();
+        [$fromDate, $toDate] = $this->resolveRange($request);
         $from = $fromDate->toDateString();
         $to = $toDate->toDateString();
 
-        $metrics = $this->aggregate($fromDate, $toDate);
+        $filters = $this->standardFilters($request, ['customer'], $fromDate, $toDate);
+
+        $metrics = $this->aggregate($fromDate, $toDate, $filters);
 
         // Feature 002 (Zielwerte): Einhaltungsquote gegen org-weites Ziel (in %).
         $actualRate = $metrics['compliance_rate'] !== null ? round($metrics['compliance_rate'] * 100, 2) : null;
@@ -64,18 +67,31 @@ class SlaReportController extends Controller {
         );
         $metrics['compliance_target'] = $complianceTarget;
 
+        /** @var array<int, array{name:string, count:int}> $byCustomer */
+        $byCustomer = $metrics['by_customer'];
+        $violationCustomerSeries = $this->violationsByCustomerSeries($byCustomer);
+        $exportFilters = $filters->toAuditArray();
+
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($metrics, $from, $to, $request);
+            return $this->exportCsv($metrics, $from, $to, $request, $exportFilters);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($metrics, $from, $to, $request);
+            return $this->exportPdf($metrics, $from, $to, $violationCustomerSeries, $request, $exportFilters);
         }
+
+        [$complianceSeries, $complianceMedian] = $this->monthlyComplianceSeries($fromDate, $toDate, $filters);
 
         return view('reports.sla', array_merge($metrics, [
             'from' => $from,
             'to' => $to,
             'canManage' => Gate::allows('acknowledge', new SlaViolation),
             'quotas' => $this->quotaUsage($toDate),
+            'standardFilters' => $filters,
+            'filterFields' => ['customer'],
+            'complianceSeries' => $complianceSeries,
+            'complianceMedian' => $complianceMedian,
+            'violationCustomerSeries' => $violationCustomerSeries,
+            ...$this->standardFilterOptions(['customer'], $filters),
         ]));
     }
 
@@ -143,18 +159,20 @@ class SlaReportController extends Controller {
      *   violations: \Illuminate\Database\Eloquent\Collection<int, SlaViolation>
      * }
      */
-    private function aggregate(CarbonImmutable $from, CarbonImmutable $to): array {
+    private function aggregate(CarbonImmutable $from, CarbonImmutable $to, ReportFilters $filters): array {
         // Tickets mit Lösungsfrist im Zeitraum (gemeldet im Zeitraum) bilden die
         // Bezugsmenge für die Einhaltungsquote.
         $relevant = ServiceTicket::query()
             ->whereNotNull('resolution_due_at')
             ->whereBetween('reported_at', [$from, $to])
+            ->when($filters->customerId !== null, fn($q) => $q->where('customer_id', $filters->customerId))
             ->count();
 
         /** @var Collection<int, SlaViolation> $violations */
         $violations = SlaViolation::query()
             ->with(['serviceTicket:id,ticket_no,title,customer_id,status', 'serviceTicket.customer:id,name'])
             ->whereBetween('breached_at', [$from, $to])
+            ->when($filters->customerId !== null, fn($q) => $q->whereHas('serviceTicket', fn($t) => $t->where('customer_id', $filters->customerId)))
             ->orderByDesc('breached_at')
             ->get();
 
@@ -205,9 +223,79 @@ class SlaReportController extends Controller {
     }
 
     /**
-     * @param  array<string, mixed>  $metrics
+     * SLA-Erfüllung (%) je Monat des Zeitraums + Median über die Monate.
+     * Bezugsmenge je Monat: gemeldete Tickets mit Lösungsfrist; Verletzungen
+     * zählen im Monat des Fristbruchs. Monate ohne Bezugsmenge entfallen;
+     * ohne jede Bezugsmenge → leere Serie (§Diagramm-UX).
+     *
+     * @return array{0: list<array{x: string, y: float}>, 1: float|null}
      */
-    private function exportCsv(array $metrics, string $from, string $to, Request $request): Response {
+    private function monthlyComplianceSeries(CarbonImmutable $from, CarbonImmutable $to, ReportFilters $filters): array {
+        /** @var array<string, int> $relevantByMonth */
+        $relevantByMonth = [];
+        $tickets = ServiceTicket::query()
+            ->whereNotNull('resolution_due_at')
+            ->whereBetween('reported_at', [$from, $to])
+            ->when($filters->customerId !== null, fn($q) => $q->where('customer_id', $filters->customerId))
+            ->get(['reported_at']);
+        foreach ($tickets as $ticket) {
+            $key = CarbonImmutable::parse((string) $ticket->reported_at)->format('Y-m');
+            $relevantByMonth[$key] = ($relevantByMonth[$key] ?? 0) + 1;
+        }
+        if ($relevantByMonth === []) {
+            return [[], null];
+        }
+
+        /** @var array<string, int> $violationsByMonth */
+        $violationsByMonth = [];
+        $breaches = SlaViolation::query()
+            ->whereBetween('breached_at', [$from, $to])
+            ->when($filters->customerId !== null, fn($q) => $q->whereHas('serviceTicket', fn($t) => $t->where('customer_id', $filters->customerId)))
+            ->get(['breached_at']);
+        foreach ($breaches as $violation) {
+            $key = CarbonImmutable::parse((string) $violation->breached_at)->format('Y-m');
+            $violationsByMonth[$key] = ($violationsByMonth[$key] ?? 0) + 1;
+        }
+
+        $series = [];
+        foreach ($this->buildMonthsInRange($from, $to) as $month) {
+            $relevant = $relevantByMonth[$month['key']] ?? 0;
+            if ($relevant <= 0) {
+                continue; // Ohne Bezugsmenge keine Quote ausweisbar.
+            }
+            $met = max(0, $relevant - ($violationsByMonth[$month['key']] ?? 0));
+            $series[] = ['x' => $month['shortLabel'], 'y' => round($met / $relevant * 100, 1)];
+        }
+
+        $values = array_column($series, 'y');
+        sort($values);
+        $count = count($values);
+        $median = $count > 0
+            ? round(($values[intdiv($count - 1, 2)] + $values[intdiv($count, 2)]) / 2, 1)
+            : null;
+
+        return [$series, $median];
+    }
+
+    /**
+     * Verletzungen je Kunde (Top 15) — Screen bar-h + PDF.
+     *
+     * @param  array<int, array{name:string, count:int}>  $byCustomer
+     * @return list<array{x: string, y: int}>
+     */
+    private function violationsByCustomerSeries(array $byCustomer): array {
+        return array_values(collect($byCustomer)
+            ->filter(static fn(array $row): bool => $row['count'] > 0)
+            ->take(15)
+            ->map(static fn(array $row): array => ['x' => $row['name'], 'y' => $row['count']])
+            ->all());
+    }
+
+    /**
+     * @param  array<string, mixed>  $metrics
+     * @param  array<string, mixed>  $exportFilters
+     */
+    private function exportCsv(array $metrics, string $from, string $to, Request $request, array $exportFilters): Response {
         /** @var array<string, int> $byKind */
         $byKind = $metrics['by_kind'];
         /** @var array<string, int> $byPriority */
@@ -245,18 +333,28 @@ class SlaReportController extends Controller {
             $rows,
             sprintf('sla_%s_%s.csv', $from, $to),
             'sla',
-            ['from' => $from, 'to' => $to],
+            $exportFilters,
             $request,
         );
     }
 
     /**
      * @param  array<string, mixed>  $metrics
+     * @param  list<array{x: string, y: int}>  $violationCustomerSeries
+     * @param  array<string, mixed>  $exportFilters
      */
-    private function exportPdf(array $metrics, string $from, string $to, Request $request): SymfonyResponse {
+    private function exportPdf(array $metrics, string $from, string $to, array $violationCustomerSeries, Request $request, array $exportFilters): SymfonyResponse {
         return $this->pdfDownload('reports.pdf.sla', array_merge($metrics, [
             'from' => $from,
             'to' => $to,
-        ]), sprintf('sla_%s_%s.pdf', $from, $to), request: $request, reportCode: 'sla', filters: ['from' => $from, 'to' => $to]);
+            'chart' => [
+                'type' => 'bar-h',
+                'title' => __('Verletzungen je Kunde (Top 15)'),
+                'unit' => __('Verletzungen'),
+                'xLabel' => __('Kunde'),
+                'yLabel' => __('Anzahl'),
+                'series' => $violationCustomerSeries,
+            ],
+        ]), sprintf('sla_%s_%s.pdf', $from, $to), request: $request, reportCode: 'sla', filters: $exportFilters);
     }
 }

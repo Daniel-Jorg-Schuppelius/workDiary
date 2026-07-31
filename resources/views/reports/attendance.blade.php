@@ -9,6 +9,11 @@
         $abs = abs($minutes);
         return $sign . intdiv($abs, 60) . ':' . str_pad((string) ($abs % 60), 2, '0', STR_PAD_LEFT) . ' h';
     };
+    $fmtChart = fn(int|float $min): string => intdiv((int) $min, 60) . ':' . str_pad((string) ((int) $min % 60), 2, '0', STR_PAD_LEFT);
+    $linkParams = array_filter(array_merge(
+        ['scope' => $isAdmin ? $scope : null],
+        $standardFilters->toQueryParams(),
+    ));
 @endphp
 
 <x-page-shell>
@@ -16,10 +21,10 @@
         <x-page-toolbar :subtitle="__('Soll, Anwesenheit, gebuchte Zeit und Saldo je Mitarbeiter im Zeitraum.')">
             <x-slot:actions>
                 <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.attendance', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'csv']))"
+                            :href="route('reports.attendance', array_merge($linkParams, ['export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.attendance', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'pdf']))"
+                            :href="route('reports.attendance', array_merge($linkParams, ['export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
@@ -33,8 +38,21 @@
                     <option value="team" @selected($scope === 'team')>{{ __('Gesamtes Team') }}</option>
                 </select>
             </x-filter-field>
+            @include('reports._standard_filters', ['idPrefix' => 'attendance'])
         </x-filter-bar>
     @endif
+
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.heatmap
+            :title="__('Anwesenheit je Mitarbeiter und Wochentag')"
+            unit="h"
+            :rows="$heatmapRows"
+            :col-labels="$weekdayLabels"
+            :x-label="__('Mitarbeiter')"
+            :format="$fmtChart"
+        />
+        <x-charts.line :title="__('Anwesenheit im Zeitverlauf')" unit="h" :series="$timelineSeries" :x-label="__('Zeitraum')" :y-label="__('Stunden')" />
+    </div>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
         <x-kpi-tile :label="__('Soll')" :value="$fmtMin($totals['target'])" />

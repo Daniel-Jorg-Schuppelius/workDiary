@@ -113,6 +113,7 @@ return [
         'mail' => ['poll' => 'Mail-Eingang abrufen'],
         'maintenance' => ['scan_due' => 'Wartungspläne auf Fälligkeit prüfen'],
         'notifications' => ['scan_deadlines' => 'Fristen prüfen und erinnern'],
+        'news-feed' => ['refresh' => 'Neuigkeiten-Feed aktualisieren'],
         'openproject' => [
             'import' => 'OpenProject-Import',
             'push' => 'Zeiten nach OpenProject übertragen',

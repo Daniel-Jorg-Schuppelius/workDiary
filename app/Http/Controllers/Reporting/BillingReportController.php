@@ -12,8 +12,9 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{Customer, Invoice, InvoiceItem, TimeEntry};
+use App\Services\Reporting\ReportFilters;
 use Carbon\Carbon;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
@@ -29,6 +30,7 @@ class BillingReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use ResolvesReportScope;
+    use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
@@ -37,24 +39,34 @@ class BillingReportController extends Controller {
         // Bewusst Datumsstrings: die Queries filtern teils DATETIME-Spalten
         // (created_at/issued_on) über Datumsgrenzen — Timestamps wären eine
         // Verhaltensänderung.
-        [$fromDate, $toDate] = $this->globalDateRangeBounds();
+        [$fromDate, $toDate] = $this->resolveRange($request);
         $from = $fromDate->toDateString();
         $to = $toDate->toDateString();
         $today = Carbon::today();
 
-        $status = $this->aggregateByStatus($from, $to);
-        $aging = $this->aggregateAging($today);
-        $perCustomer = $this->aggregatePerCustomer($from, $to);
-        $unbilled = $this->aggregateUnbilled($from, $to);
+        // Standard-Set (Feature 002): Kunde/Projekt wirken auf Rechnungs- und
+        // Angebotsaggregate, Mitarbeiter nur auf die Zeiten (Rechnungen kennen
+        // keinen Bearbeiter). Der E-Rechnungs-Eingang bleibt org-weit —
+        // IncomingEInvoice trägt keinen Kunden-/Projektanker. Status bewusst
+        // NICHT im Set: der Rechnungsstatus ist hier Ausweis-Dimension
+        // (Tabellen je Status), kein Filter.
+        $filters = $this->standardFilters($request, ['customer', 'project', 'user'], $fromDate, $toDate);
+
+        $status = $this->aggregateByStatus($from, $to, $filters);
+        $aging = $this->aggregateAging($today, $filters);
+        $perCustomer = $this->aggregatePerCustomer($from, $to, $filters);
+        $unbilled = $this->aggregateUnbilled($from, $to, $filters);
         $einvoicing = $this->aggregateEInvoicing($from, $to);
         // Vollaudit 2026-07 (N18): Angebots-/Belegketten-Kennzahlen.
-        $documentChain = $this->aggregateDocumentChain($from, $to);
+        $documentChain = $this->aggregateDocumentChain($from, $to, $filters);
+
+        $monthly = $this->monthlyBillableSeries($filters);
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($status, $aging, $perCustomer, $unbilled, $einvoicing, $documentChain, $from, $to, $request);
+            return $this->exportCsv($status, $aging, $perCustomer, $unbilled, $einvoicing, $documentChain, $from, $to, $filters, $request);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($status, $aging, $perCustomer, $unbilled, $from, $to, $request);
+            return $this->exportPdf($status, $aging, $perCustomer, $unbilled, $from, $to, $monthly, $filters, $request);
         }
 
         return view('reports.billing', [
@@ -66,7 +78,93 @@ class BillingReportController extends Controller {
             'unbilled' => $unbilled,
             'einvoicing' => $einvoicing,
             'documentChain' => $documentChain,
+            'standardFilters' => $filters,
+            'filterFields' => ['customer', 'project', 'user'],
+            'monthlyBillableSeries' => $monthly['series'],
+            'billableBands' => $monthly['bands'],
+            'customerRevenueSeries' => $this->customerRevenueSeries($perCustomer, $filters),
+            ...$this->standardFilterOptions(['customer', 'project', 'user'], $filters),
         ]);
+    }
+
+    /**
+     * Abrechenbare vs. nicht abrechenbare Stunden je Monat (Feature 002) —
+     * aus dem billable-Flag der Zeiten; leere Serie statt Null-Bändern.
+     *
+     * @return array{series: list<array{x: string, billable: float, non_billable: float}>, bands: list<array{key: string, label: string}>}
+     */
+    private function monthlyBillableSeries(ReportFilters $filters): array {
+        $bands = [
+            ['key' => 'billable', 'label' => (string) __('Abrechenbar')],
+            ['key' => 'non_billable', 'label' => (string) __('Nicht abrechenbar')],
+        ];
+
+        /** @var Collection<int, TimeEntry> $entries */
+        $entries = $filters->applyToTimeEntryQuery(
+            TimeEntry::query()->whereBetween('date', [$filters->from->toDateString(), $filters->to->toDateString()])
+        )->get(['date', 'minutes', 'billable']);
+
+        if ($entries->isEmpty()) {
+            return ['series' => [], 'bands' => $bands]; // Leerzustand (§Diagramm-UX).
+        }
+
+        /** @var array<string, array{billable: int, non_billable: int}> $byMonth */
+        $byMonth = [];
+        foreach ($entries as $entry) {
+            $key = $entry->date?->format('Y-m');
+            if ($key === null) {
+                continue;
+            }
+            $byMonth[$key] ??= ['billable' => 0, 'non_billable' => 0];
+            $byMonth[$key][$entry->billable ? 'billable' : 'non_billable'] += (int) $entry->minutes;
+        }
+
+        $series = [];
+        for ($cursor = $filters->from->startOfMonth(); $cursor->lte($filters->to); $cursor = $cursor->addMonth()) {
+            $key = $cursor->format('Y-m');
+            $series[] = [
+                'x' => $cursor->translatedFormat('M Y'),
+                'billable' => round(($byMonth[$key]['billable'] ?? 0) / 60, 1),
+                'non_billable' => round(($byMonth[$key]['non_billable'] ?? 0) / 60, 1),
+            ];
+        }
+
+        return ['series' => $series, 'bands' => $bands];
+    }
+
+    /**
+     * Umsatz (Brutto, ausgestellt + bezahlt) je Kunde, Top 15 — der Report
+     * weist keine OFFENEN Beträge je Kunde aus (Aging ist org-weit ohne
+     * Kundendimension), daher Pareto über den bestehenden Umsatz-Ausweis.
+     * Drilldown öffnet den Kunden im Kunden-&-Projekte-Report.
+     *
+     * @param  array<int, array{customer: Customer, count: int, total: float}>  $perCustomer
+     * @return list<array{x: string, y: float, url: string}>
+     */
+    private function customerRevenueSeries(array $perCustomer, ReportFilters $filters): array {
+        return array_values(collect($perCustomer)
+            ->filter(static fn(array $row): bool => $row['total'] > 0.0)
+            ->take(15)
+            ->map(fn(array $row): array => [
+                'x' => (string) $row['customer']->name,
+                'y' => round($row['total'], 2),
+                'url' => route('reports.customer-project', array_merge($filters->toQueryParams(), [
+                    'customer' => (string) $row['customer']->sqid,
+                ])),
+            ])
+            ->all());
+    }
+
+    /**
+     * Kunden-/Projektfilter auf eine Rechnungs-Query anwenden (Feature 002).
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<Invoice>  $query
+     * @return \Illuminate\Database\Eloquent\Builder<Invoice>
+     */
+    private function applyInvoiceFilters($query, ReportFilters $filters) {
+        return $query
+            ->when($filters->customerId !== null, fn($q) => $q->where('customer_id', $filters->customerId))
+            ->when($filters->projectId !== null, fn($q) => $q->where('project_id', $filters->projectId));
     }
 
     /**
@@ -141,9 +239,11 @@ class BillingReportController extends Controller {
      *     correction: array{invoices: int, cancellations: int, credit_notes: int, rate: float|null}
      * }
      */
-    private function aggregateDocumentChain(string $from, string $to): array {
+    private function aggregateDocumentChain(string $from, string $to, ReportFilters $filters): array {
         $quotes = \App\Models\Quote::query()
             ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->when($filters->customerId !== null, fn($q) => $q->where('customer_id', $filters->customerId))
+            ->when($filters->projectId !== null, fn($q) => $q->where('project_id', $filters->projectId))
             ->get(['status', 'decided_at', 'updated_at', 'decision_snapshot', 'created_at']);
 
         $byStatus = [];
@@ -167,9 +267,10 @@ class BillingReportController extends Controller {
             1,
         );
 
-        $invoices = Invoice::query()
-            ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
-            ->get(['type', 'quote_id', 'parent_invoice_id']);
+        $invoices = $this->applyInvoiceFilters(
+            Invoice::query()->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']),
+            $filters,
+        )->get(['type', 'quote_id', 'parent_invoice_id']);
         $regular = $invoices->where('type', Invoice::TYPE_INVOICE);
 
         return [
@@ -194,7 +295,7 @@ class BillingReportController extends Controller {
     /**
      * @return array<string, array{count:int, subtotal:float, tax:float, total:float}>
      */
-    private function aggregateByStatus(string $from, string $to): array {
+    private function aggregateByStatus(string $from, string $to, ReportFilters $filters): array {
         $statuses = Invoice::STATUSES;
         $result = [];
         foreach ($statuses as $st) {
@@ -202,14 +303,16 @@ class BillingReportController extends Controller {
         }
 
         /** @var Collection<int, Invoice> $invoices */
-        $invoices = Invoice::query()
-            ->where(function ($w) use ($from, $to): void {
-                $w->whereBetween('issued_on', [$from, $to])
-                    ->orWhere(function ($w2) use ($from, $to): void {
-                        $w2->whereNull('issued_on')->whereBetween('created_at', [$from, $to]);
-                    });
-            })
-            ->get(['status', 'subtotal', 'tax_amount', 'total']);
+        $invoices = $this->applyInvoiceFilters(
+            Invoice::query()
+                ->where(function ($w) use ($from, $to): void {
+                    $w->whereBetween('issued_on', [$from, $to])
+                        ->orWhere(function ($w2) use ($from, $to): void {
+                            $w2->whereNull('issued_on')->whereBetween('created_at', [$from, $to]);
+                        });
+                }),
+            $filters,
+        )->get(['status', 'subtotal', 'tax_amount', 'total']);
 
         foreach ($invoices as $inv) {
             $st = $inv->status;
@@ -234,7 +337,7 @@ class BillingReportController extends Controller {
      *   open_total: float
      * }
      */
-    private function aggregateAging(Carbon $today): array {
+    private function aggregateAging(Carbon $today, ReportFilters $filters): array {
         $buckets = [
             'current' => ['count' => 0, 'total' => 0.0],
             '1_7' => ['count' => 0, 'total' => 0.0],
@@ -244,9 +347,10 @@ class BillingReportController extends Controller {
         ];
 
         /** @var Collection<int, Invoice> $invoices */
-        $invoices = Invoice::query()
-            ->where('status', Invoice::STATUS_ISSUED)
-            ->get(['due_on', 'issued_on', 'total']);
+        $invoices = $this->applyInvoiceFilters(
+            Invoice::query()->where('status', Invoice::STATUS_ISSUED),
+            $filters,
+        )->get(['due_on', 'issued_on', 'total']);
 
         $openTotal = 0.0;
         foreach ($invoices as $inv) {
@@ -281,12 +385,14 @@ class BillingReportController extends Controller {
     /**
      * @return array<int, array{customer: Customer, count:int, total:float}>
      */
-    private function aggregatePerCustomer(string $from, string $to): array {
+    private function aggregatePerCustomer(string $from, string $to, ReportFilters $filters): array {
         /** @var Collection<int, Invoice> $invoices */
-        $invoices = Invoice::query()
-            ->whereBetween('issued_on', [$from, $to])
-            ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PAID])
-            ->get(['customer_id', 'total']);
+        $invoices = $this->applyInvoiceFilters(
+            Invoice::query()
+                ->whereBetween('issued_on', [$from, $to])
+                ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PAID]),
+            $filters,
+        )->get(['customer_id', 'total']);
 
         /** @var array<int, array{count:int, total:float}> $agg */
         $agg = [];
@@ -324,17 +430,18 @@ class BillingReportController extends Controller {
      *
      * @return array{count:int, minutes:int, projected_revenue:float}
      */
-    private function aggregateUnbilled(string $from, string $to): array {
+    private function aggregateUnbilled(string $from, string $to, ReportFilters $filters): array {
         $billedIds = InvoiceItem::query()
             ->whereNotNull('time_entry_id')
             ->select('time_entry_id');
 
         /** @var Collection<int, TimeEntry> $entries */
-        $entries = TimeEntry::query()
-            ->where('billable', true)
-            ->whereBetween('date', [$from, $to])
-            ->whereNotIn('id', $billedIds)
-            ->get(['minutes', 'rate']);
+        $entries = $filters->applyToTimeEntryQuery(
+            TimeEntry::query()
+                ->where('billable', true)
+                ->whereBetween('date', [$from, $to])
+                ->whereNotIn('id', $billedIds)
+        )->get(['minutes', 'rate']);
 
         $minutes = 0;
         $revenue = 0.0;
@@ -367,7 +474,7 @@ class BillingReportController extends Controller {
      * @param  array<string, mixed>  $einvoicing
      * @param  array{quotes: array<string, int>, acceptance_rate: float|null, decision_median_days: float|null, conversions: array{quote_to_invoice: int, proforma_to_invoice: int}, correction: array{invoices: int, cancellations: int, credit_notes: int, rate: float|null}}  $documentChain
      */
-    private function exportCsv(array $status, array $aging, array $perCustomer, array $unbilled, array $einvoicing, array $documentChain, string $from, string $to, Request $request): Response {
+    private function exportCsv(array $status, array $aging, array $perCustomer, array $unbilled, array $einvoicing, array $documentChain, string $from, string $to, ReportFilters $filters, Request $request): Response {
         $filename = sprintf('billing_%s_%s.csv', $from, $to);
         $rows = [];
         $rows[] = ['Bereich', 'Schlüssel', 'Anzahl', 'Wert €'];
@@ -406,7 +513,7 @@ class BillingReportController extends Controller {
         $rows[] = ['Korrektur', 'GUTSCHRIFTEN', $documentChain['correction']['credit_notes'], ''];
         $rows[] = ['Korrektur', 'QUOTE_%', '', $documentChain['correction']['rate'] !== null ? NumberHelper::toUSFormat($documentChain['correction']['rate'], 1) : ''];
 
-        return $this->csvWithMetadata($rows, $filename, 'billing', ['from' => $from, 'to' => $to], $request);
+        return $this->csvWithMetadata($rows, $filename, 'billing', $filters->toAuditArray(), $request);
     }
 
     /**
@@ -414,8 +521,9 @@ class BillingReportController extends Controller {
      * @param  array{buckets: array<string, array{count:int, total:float}>, open_total: float}  $aging
      * @param  array<int, array{customer: Customer, count:int, total:float}>  $perCustomer
      * @param  array{count:int, minutes:int, projected_revenue:float}  $unbilled
+     * @param  array{series: list<array{x: string, billable: float, non_billable: float}>, bands: list<array{key: string, label: string}>}  $monthly
      */
-    private function exportPdf(array $status, array $aging, array $perCustomer, array $unbilled, string $from, string $to, Request $request): SymfonyResponse {
+    private function exportPdf(array $status, array $aging, array $perCustomer, array $unbilled, string $from, string $to, array $monthly, ReportFilters $filters, Request $request): SymfonyResponse {
         $filename = sprintf('billing_%s_%s.pdf', $from, $to);
         return $this->pdfDownload('reports.pdf.billing', [
             'status' => $status,
@@ -424,6 +532,14 @@ class BillingReportController extends Controller {
             'unbilled' => $unbilled,
             'from' => $from,
             'to' => $to,
-        ], $filename, request: $request, reportCode: 'billing', filters: ['from' => $from, 'to' => $to]);
+            'chart' => [
+                'type' => 'stacked-bar-h',
+                'title' => __('Abrechenbare und nicht abrechenbare Stunden je Monat'),
+                'unit' => 'h',
+                'xLabel' => __('Monat'),
+                'series' => $monthly['series'],
+                'bands' => $monthly['bands'],
+            ],
+        ], $filename, request: $request, reportCode: 'billing', filters: $filters->toAuditArray());
     }
 }

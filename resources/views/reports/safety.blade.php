@@ -8,11 +8,23 @@
         <x-page-toolbar :subtitle="__('safety.report.subtitle')" />
     </x-slot:toolbar>
 
+    <x-filter-bar :action="route('reports.safety')" :reset="route('reports.safety')">
+        @include('reports._standard_filters', ['idPrefix' => 'safety'])
+    </x-filter-bar>
+
     <div class="grid gap-3 grid-cols-2 sm:grid-cols-4">
         <x-kpi-tile :label="__('safety.report.kpi.total')" :value="$total" />
         <x-kpi-tile :label="__('safety.report.kpi.open')" :value="$open" tone="warning" />
         <x-kpi-tile :label="__('safety.report.kpi.closed')" :value="$closed" tone="success" />
         <x-kpi-tile :label="__('safety.report.kpi.critical')" :value="$bySeverity['critical']" tone="error" />
+    </div>
+
+    <div class="mt-4 grid gap-3 xl:grid-cols-2">
+        <x-charts.bar :title="__('Ereignisse je Monat')" :unit="__('Ereignisse')"
+                      :series="$monthlySeries" :x-label="__('Monat')" :y-label="__('Ereignisse')"
+                      :y2-label="__('davon geschlossen')" />
+        <x-charts.stacked-bar :title="__('Ereignisse je Monat nach Status')" :unit="__('Ereignisse')"
+                              :series="$statusMonthlySeries" :bands="$statusBands" :x-label="__('Monat')" />
     </div>
 
     <div class="mt-4 grid gap-4 lg:grid-cols-2">

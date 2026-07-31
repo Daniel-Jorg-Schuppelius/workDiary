@@ -35,14 +35,25 @@
         <x-page-toolbar :subtitle="__('Qualifikationsmatrix der Mitarbeiter inkl. Ablauf- und Warnstatus.')">
             <x-slot:actions>
                 <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.qualifications', ['export' => 'csv'])"
+                            :href="route('reports.qualifications', array_merge($standardFilters->toQueryParams(), ['export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.qualifications', ['export' => 'pdf'])"
+                            :href="route('reports.qualifications', array_merge($standardFilters->toQueryParams(), ['export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    <x-filter-bar :action="route('reports.qualifications')" :reset="route('reports.qualifications')">
+        @include('reports._standard_filters', ['idPrefix' => 'qualifications'])
+    </x-filter-bar>
+
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.bar-h :title="__('Träger je Qualifikation (Top 15)')" :unit="__('Personen')"
+                        :series="$holdersSeries" :x-label="__('Qualifikation')" :y-label="__('Personen')" />
+        <x-charts.stacked-bar :title="__('Zuweisungen je Qualifikation nach Status')" :unit="__('Zuweisungen')"
+                              :series="$stateSeries" :bands="$stateBands" :x-label="__('Qualifikation')" />
+    </div>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
         <x-kpi-tile :label="__('Mitarbeiter')" :value="$totals['users']" />

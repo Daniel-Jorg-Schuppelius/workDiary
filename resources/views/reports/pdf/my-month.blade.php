@@ -19,6 +19,8 @@
 @endsection
 
 @section('pdf-table')
+    @include('reports.pdf.charts._chart')
+
     @forelse ($byDay as $date => $row)
         @php
             $h = intdiv((int) $row['minutes'], 60);

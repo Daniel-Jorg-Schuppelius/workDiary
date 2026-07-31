@@ -15,8 +15,10 @@ use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Enums\Tour\TourStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
-use App\Models\{DiaryEntry, EntryType, Task, Tour, User};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
+use App\Models\{Customer, DiaryEntry, EntryType, Project, Task, Tour, User};
+use App\Services\Reporting\ReportFilters;
+use App\Support\Sqid;
 use Carbon\{Carbon, CarbonImmutable};
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
@@ -33,25 +35,50 @@ class OperationsReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use ResolvesReportScope;
+    use ResolvesStandardReportFilters;
     use WritesReportCsv;
+
+    /**
+     * Gruppierter Auftragsstatus (Statusdimension des Reports) →
+     * zugehörige Roh-Status. Storniert bleibt bewusst außen vor.
+     *
+     * @var array<string, list<DiaryStatus>>
+     */
+    private const STATUS_GROUPS = [
+        'open' => [DiaryStatus::Planned, DiaryStatus::Accepted],
+        'in_progress' => [DiaryStatus::InProgress],
+        'problem' => [DiaryStatus::WaitingCustomer, DiaryStatus::WaitingMaterial],
+        'done' => [DiaryStatus::Completed, DiaryStatus::AcceptedFinal, DiaryStatus::Invoiced],
+    ];
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
         [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
 
-        [$fromDate, $toDate] = $this->globalDateRangeBounds();
+        [$fromDate, $toDate] = $this->resolveRange($request);
         $from = $fromDate->toDateString();
         $to = $toDate->toDateString();
 
-        $orders = $this->aggregateOrders($fromDate, $toDate, $scope, $userId);
-        $tasks = $this->aggregateTasks($fromDate, $toDate, $scope, $userId);
-        $tours = $this->aggregateTours($fromDate, $toDate, $scope, $userId);
+        $filters = $this->standardFilters(
+            $request,
+            ['customer', 'project', 'user', 'status'],
+            $fromDate,
+            $toDate,
+            array_keys(self::STATUS_GROUPS),
+            scope: $scope,
+        );
+
+        $orders = $this->aggregateOrders($fromDate, $toDate, $scope, $userId, $filters);
+        $tasks = $this->aggregateTasks($fromDate, $toDate, $scope, $userId, $filters);
+        $tours = $this->aggregateTours($fromDate, $toDate, $scope, $userId, $filters);
+        $weeklyFlowSeries = $this->weeklyOrderFlowSeries($fromDate, $toDate, $scope, $userId, $filters);
+        $exportFilters = array_merge(['scope' => $scope], $filters->toAuditArray());
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($orders, $tasks, $tours, $from, $to, $scope, $request);
+            return $this->exportCsv($orders, $tasks, $tours, $from, $to, $request, $exportFilters);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($orders, $tasks, $tours, $from, $to, $scope, $request);
+            return $this->exportPdf($orders, $tasks, $tours, $from, $to, $scope, $weeklyFlowSeries, $request, $exportFilters);
         }
 
         return view('reports.operations', [
@@ -62,6 +89,17 @@ class OperationsReportController extends Controller {
             'orders' => $orders,
             'tasks' => $tasks,
             'tours' => $tours,
+            'standardFilters' => $filters,
+            'filterFields' => ['customer', 'project', 'user', 'status'],
+            'statusOptions' => [
+                'open' => __('Offen'),
+                'in_progress' => __('In Arbeit'),
+                'problem' => __('Problem'),
+                'done' => __('Erledigt'),
+            ],
+            'weeklyFlowSeries' => $weeklyFlowSeries,
+            'backlogSeries' => $this->backlogByCustomerSeries($fromDate, $toDate, $scope, $userId, $filters),
+            ...$this->standardFilterOptions(['customer', 'project', 'user'], $filters),
         ]);
     }
     /**
@@ -73,13 +111,17 @@ class OperationsReportController extends Controller {
      *   completion_rate: float|null
      * }
      */
-    private function aggregateOrders(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId): array {
+    private function aggregateOrders(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): array {
         $q = DiaryEntry::query()
             ->whereHas('entryType', fn($t) => $t->where('slug', EntryType::SLUG_SERVICE))
             ->whereBetween('scheduled_for', [$from, $to]);
         if ($scope === 'mine') {
             $q->where('assigned_user_id', $userId);
         }
+        // Standardfilter: Status ist hier die GRUPPIERTE Dimension des Reports
+        // (open/in_progress/problem/done) → eigene Whitelist statt Roh-Enum.
+        $filters->applyToDiaryEntryQuery($q, ['user' => 'assigned_user_id', 'status' => null]);
+        $this->applyStatusGroup($q, $filters);
         /** @var Collection<int, DiaryEntry> $rows */
         $rows = $q->get(['status', 'priority', 'service_minutes']);
 
@@ -133,7 +175,7 @@ class OperationsReportController extends Controller {
      *   completion_rate: float|null
      * }
      */
-    private function aggregateTasks(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId): array {
+    private function aggregateTasks(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): array {
         // Tasks: aufgenommen werden Tasks, die im Zeitraum erstellt
         // oder fällig sind oder zuletzt aktualisiert wurden.
         $q = Task::query()
@@ -147,6 +189,17 @@ class OperationsReportController extends Controller {
             $q->where(function ($w) use ($userId): void {
                 $w->where('assigned_to', $userId)->orWhere('created_by', $userId);
             });
+        }
+        // Standardfilter: Mitarbeiter = Bearbeiter; Kunde über die Projektliste
+        // (Tasks kennen keinen Kunden direkt). Status-Gruppe gilt nur für
+        // Service-Aufträge (eigenes Task-Enum).
+        if ($filters->userId !== null) {
+            $q->where('assigned_to', $filters->userId);
+        }
+        if ($filters->projectId !== null) {
+            $q->where('project_id', $filters->projectId);
+        } elseif ($filters->customerId !== null) {
+            $q->whereIn('project_id', Project::query()->where('customer_id', $filters->customerId)->select('id'));
         }
         /** @var Collection<int, Task> $rows */
         $rows = $q->get(['status', 'priority', 'due_date']);
@@ -191,10 +244,14 @@ class OperationsReportController extends Controller {
      *   per_user: array<int, array{user: User, count:int, distance_km:float, minutes:int}>
      * }
      */
-    private function aggregateTours(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId): array {
+    private function aggregateTours(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): array {
         $q = Tour::query()->whereBetween('tour_date', [$from->toDateString(), $to->toDateString()]);
         if ($scope === 'mine') {
             $q->where('user_id', $userId);
+        }
+        // Touren kennen weder Kunde noch Projekt — nur der Mitarbeiter-Filter greift.
+        if ($filters->userId !== null) {
+            $q->where('user_id', $filters->userId);
         }
         /** @var Collection<int, Tour> $rows */
         $rows = $q->get(['user_id', 'planned_distance_km', 'planned_duration_minutes', 'status']);
@@ -245,11 +302,140 @@ class OperationsReportController extends Controller {
     }
 
     /**
+     * Wendet die gewählte Status-Gruppe (open/in_progress/problem/done) auf
+     * eine Service-Auftrags-Query an.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<DiaryEntry>  $q
+     */
+    private function applyStatusGroup(\Illuminate\Database\Eloquent\Builder $q, ReportFilters $filters): void {
+        if ($filters->status === null) {
+            return;
+        }
+        $statuses = self::STATUS_GROUPS[$filters->status] ?? [];
+        $q->whereIn('status', array_map(static fn(DiaryStatus $s): int => $s->value, $statuses));
+    }
+
+    /**
+     * Service-Aufträge: erstellt vs. erledigt je ISO-Woche des Zeitraums.
+     * Die Status-Gruppe bleibt hier bewusst außen vor — die beiden Serien
+     * SIND die Statusdimension. Leere Serie statt Null-Achse (§Diagramm-UX).
+     *
+     * @return list<array{x: string, y: int, y2: int}>
+     */
+    private function weeklyOrderFlowSeries(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): array {
+        $weeks = [];
+        $cursor = $from->startOfWeek();
+        for ($i = 0; $i < 160 && $cursor->lte($to); $i++) {
+            $weeks[sprintf('%04d-W%02d', $cursor->isoWeekYear, $cursor->isoWeek)] = 'KW ' . $cursor->isoWeek;
+            $cursor = $cursor->addWeek();
+        }
+
+        $base = function () use ($scope, $userId, $filters): \Illuminate\Database\Eloquent\Builder {
+            $q = DiaryEntry::query()
+                ->whereHas('entryType', fn($t) => $t->where('slug', EntryType::SLUG_SERVICE));
+            if ($scope === 'mine') {
+                $q->where('assigned_user_id', $userId);
+            }
+
+            return $filters->applyToDiaryEntryQuery($q, ['user' => 'assigned_user_id', 'status' => null]);
+        };
+
+        /** @var array<string, int> $created */
+        $created = [];
+        foreach ($base()->whereBetween('created_at', [$from, $to])->get(['created_at']) as $entry) {
+            $date = Carbon::parse((string) $entry->created_at);
+            $key = sprintf('%04d-W%02d', $date->isoWeekYear, $date->isoWeek);
+            $created[$key] = ($created[$key] ?? 0) + 1;
+        }
+        /** @var array<string, int> $completed */
+        $completed = [];
+        foreach ($base()->whereBetween('completed_at', [$from, $to])->get(['completed_at']) as $entry) {
+            $date = Carbon::parse((string) $entry->completed_at);
+            $key = sprintf('%04d-W%02d', $date->isoWeekYear, $date->isoWeek);
+            $completed[$key] = ($completed[$key] ?? 0) + 1;
+        }
+
+        if (array_sum($created) === 0 && array_sum($completed) === 0) {
+            return [];
+        }
+
+        $series = [];
+        foreach ($weeks as $key => $label) {
+            $series[] = [
+                'x' => $label,
+                'y' => (int) ($created[$key] ?? 0),
+                'y2' => (int) ($completed[$key] ?? 0),
+            ];
+        }
+
+        return $series;
+    }
+
+    /**
+     * Backlog (offene Service-Aufträge, Gruppen open/in_progress/problem) je
+     * Kunde — Top 15; Drilldown in die Offene-Punkte-Liste des Kunden
+     * (Drilldown-Controller liest die Legacy-Parameternamen customer_id/…).
+     *
+     * @return list<array{x: string, y: int, url?: string}>
+     */
+    private function backlogByCustomerSeries(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): array {
+        $openStatuses = array_map(
+            static fn(DiaryStatus $s): int => $s->value,
+            array_merge(self::STATUS_GROUPS['open'], self::STATUS_GROUPS['in_progress'], self::STATUS_GROUPS['problem']),
+        );
+
+        $q = DiaryEntry::query()
+            ->whereHas('entryType', fn($t) => $t->where('slug', EntryType::SLUG_SERVICE))
+            ->whereBetween('scheduled_for', [$from, $to])
+            ->whereIn('status', $openStatuses);
+        if ($scope === 'mine') {
+            $q->where('assigned_user_id', $userId);
+        }
+        $filters->applyToDiaryEntryQuery($q, ['user' => 'assigned_user_id', 'status' => null]);
+
+        /** @var array<int, int> $byCustomer */
+        $byCustomer = [];
+        foreach ($q->get(['customer_id']) as $entry) {
+            $cid = (int) ($entry->customer_id ?? 0);
+            $byCustomer[$cid] = ($byCustomer[$cid] ?? 0) + 1;
+        }
+        if ($byCustomer === []) {
+            return [];
+        }
+
+        arsort($byCustomer);
+        $byCustomer = array_slice($byCustomer, 0, 15, true);
+
+        $names = Customer::query()
+            ->whereIn('id', array_filter(array_keys($byCustomer)))
+            ->pluck('name', 'id');
+
+        $series = [];
+        foreach ($byCustomer as $cid => $count) {
+            $point = [
+                'x' => $cid > 0 ? (string) ($names[$cid] ?? ('#' . $cid)) : (string) __('Ohne Kunde'),
+                'y' => $count,
+            ];
+            if ($cid > 0) {
+                $point['url'] = route('reports.customers.drilldown.open-issues', array_filter([
+                    'customer_id' => Sqid::encode(Customer::class, $cid),
+                    'project_id' => Sqid::encode(Project::class, $filters->projectId),
+                    'user_id' => Sqid::encode(User::class, $filters->userId),
+                ]));
+            }
+            $series[] = $point;
+        }
+
+        return $series;
+    }
+
+    /**
      * @param  array{total:int, service_minutes:int, by_status: array<string,int>, by_priority: array<string,int>, completion_rate: float|null}  $orders
      * @param  array{total:int, by_status: array<string,int>, by_priority: array<string,int>, overdue:int, completion_rate: float|null}  $tasks
      * @param  array{total:int, completed:int, planned_distance_km:float, planned_minutes:int, per_user: array<int, array{user: User, count:int, distance_km:float, minutes:int}>}  $tours
+     * @param  array<string, mixed>  $exportFilters
      */
-    private function exportCsv(array $orders, array $tasks, array $tours, string $from, string $to, string $scope, Request $request): Response {
+    private function exportCsv(array $orders, array $tasks, array $tours, string $from, string $to, Request $request, array $exportFilters): Response {
         $filename = sprintf('operations_%s_%s.csv', $from, $to);
         $rows = [];
         $rows[] = ['Bereich', 'Kennzahl', 'Wert'];
@@ -285,19 +471,17 @@ class OperationsReportController extends Controller {
             ];
         }
 
-        return $this->csvWithMetadata($rows, $filename, 'operations', [
-            'from' => $from,
-            'to' => $to,
-            'scope' => $scope,
-        ], $request);
+        return $this->csvWithMetadata($rows, $filename, 'operations', $exportFilters, $request);
     }
 
     /**
      * @param  array{total:int, service_minutes:int, by_status: array<string,int>, by_priority: array<string,int>, completion_rate: float|null}  $orders
      * @param  array{total:int, by_status: array<string,int>, by_priority: array<string,int>, overdue:int, completion_rate: float|null}  $tasks
      * @param  array{total:int, completed:int, planned_distance_km:float, planned_minutes:int, per_user: array<int, array{user: User, count:int, distance_km:float, minutes:int}>}  $tours
+     * @param  list<array{x: string, y: int, y2: int}>  $weeklyFlowSeries
+     * @param  array<string, mixed>  $exportFilters
      */
-    private function exportPdf(array $orders, array $tasks, array $tours, string $from, string $to, string $scope, Request $request): SymfonyResponse {
+    private function exportPdf(array $orders, array $tasks, array $tours, string $from, string $to, string $scope, array $weeklyFlowSeries, Request $request, array $exportFilters): SymfonyResponse {
         $filename = sprintf('operations_%s_%s.pdf', $from, $to);
         return $this->pdfDownload('reports.pdf.operations', [
             'orders' => $orders,
@@ -306,6 +490,16 @@ class OperationsReportController extends Controller {
             'from' => $from,
             'to' => $to,
             'scope' => $scope,
-        ], $filename, request: $request, reportCode: 'operations', filters: ['from' => $from, 'to' => $to, 'scope' => $scope]);
+            'chart' => [
+                'type' => 'bar-h',
+                'title' => __('Service-Aufträge: erstellt vs. erledigt je Woche'),
+                'unit' => __('Aufträge'),
+                'xLabel' => __('Woche'),
+                'yLabel' => __('Erstellt'),
+                'y2Label' => __('Erledigt'),
+                'note' => __('Vereinfachte Druckdarstellung.'),
+                'series' => array_values(array_filter($weeklyFlowSeries, static fn(array $point): bool => $point['y'] > 0 || $point['y2'] > 0)),
+            ],
+        ], $filename, request: $request, reportCode: 'operations', filters: $exportFilters);
     }
 }

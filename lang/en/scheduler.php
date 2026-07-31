@@ -113,6 +113,7 @@ return [
         'mail' => ['poll' => 'Poll mail intake'],
         'maintenance' => ['scan_due' => 'Check maintenance plans for due work'],
         'notifications' => ['scan_deadlines' => 'Scan deadlines and notify'],
+        'news-feed' => ['refresh' => 'Refresh news feed'],
         'openproject' => [
             'import' => 'OpenProject import',
             'push' => 'Push times to OpenProject',

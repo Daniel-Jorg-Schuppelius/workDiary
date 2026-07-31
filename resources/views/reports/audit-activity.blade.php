@@ -29,20 +29,34 @@
         <x-page-toolbar :subtitle="__('Audit-Events nach Event-Typ, Entity und Nutzer im Zeitraum.')">
             <x-slot:actions>
                 <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.audit-activity', ['export' => 'csv'])"
+                            :href="route('reports.audit-activity', array_merge($standardFilters->toQueryParams(), ['export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.audit-activity', ['export' => 'pdf'])"
+                            :href="route('reports.audit-activity', array_merge($standardFilters->toQueryParams(), ['export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    <x-filter-bar :action="route('reports.audit-activity')" :reset="route('reports.audit-activity')">
+        @include('reports._standard_filters', ['idPrefix' => 'audit'])
+    </x-filter-bar>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
         <x-kpi-tile :label="__('Events Σ')" :value="$totals['total']" />
         <x-kpi-tile :label="__('Aktive Benutzer')" :value="$totals['users']" />
         <x-kpi-tile :label="__('Entity-Typen')" :value="$totals['types']" />
     </div>
+
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.line :title="__('Ereignisse im Verlauf')" :unit="__('Events')"
+                       :series="$timelineSeries" :x-label="__('Zeitraum')" :y-label="__('Events')" />
+        <x-charts.bar-h :title="__('Top-Akteure (Top 15)')" :unit="__('Events')"
+                        :series="$topActorsSeries" :x-label="__('Benutzer')" :y-label="__('Events')" />
+    </div>
+
+    <x-charts.stacked-bar :title="__('Ereignisse je Monat nach Typ')" :unit="__('Events')"
+                          :series="$monthlyEventSeries" :bands="$eventBands" :x-label="__('Monat')" />
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <x-card>

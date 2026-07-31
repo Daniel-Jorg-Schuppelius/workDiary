@@ -13,7 +13,9 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\Safety\{SafetyEventKind, SafetyEventSeverity, SafetyEventStatus};
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\ResolvesStandardReportFilters;
 use App\Models\SafetyEvent;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -24,16 +26,19 @@ use Illuminate\View\View;
  */
 class SafetyReportController extends Controller {
     use ResolvesGlobalDateRange;
+    use ResolvesStandardReportFilters;
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', SafetyEvent::class);
-        unset($request);
 
-        [$fromDate, $toDate] = $this->globalDateRangeBounds();
+        [$fromDate, $toDate] = $this->resolveRange($request);
+        // Mitarbeiter-/Team-Filter greift auf den Melder (reported_by_user_id).
+        $filters = $this->standardFilters($request, ['user', 'team'], $fromDate, $toDate);
 
-        $events = SafetyEvent::query()
-            ->whereBetween('occurred_at', [$fromDate, $toDate])
-            ->get(['kind', 'severity', 'status']);
+        $eventsQuery = SafetyEvent::query()
+            ->whereBetween('occurred_at', [$fromDate, $toDate]);
+        $filters->applyUserAndTeam($eventsQuery, 'reported_by_user_id');
+        $events = $eventsQuery->get(['kind', 'severity', 'status', 'occurred_at']);
 
         $byKind = [];
         foreach (SafetyEventKind::cases() as $kind) {
@@ -56,6 +61,95 @@ class SafetyReportController extends Controller {
             'bySeverity' => $bySeverity,
             'open' => $open,
             'closed' => $closed,
+            'standardFilters' => $filters,
+            'filterFields' => ['user', 'team'],
+            'monthlySeries' => $this->monthlySeries($events, $fromDate, $toDate),
+            'statusMonthlySeries' => $this->statusMonthlySeries($events, $fromDate, $toDate),
+            'statusBands' => $this->statusBands(),
+            ...$this->standardFilterOptions(['user', 'team'], $filters),
         ]);
+    }
+
+    /**
+     * Ereignisse je Monat, Zweitserie = davon geschlossen.
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection<int, SafetyEvent>  $events
+     * @return list<array{x: string, y: int, y2: int}>
+     */
+    private function monthlySeries($events, CarbonImmutable $from, CarbonImmutable $to): array {
+        if ($events->isEmpty()) {
+            return []; // Leerzustand statt Null-Serie (§Diagramm-UX).
+        }
+
+        $months = $this->buildMonthsInRange($from, $to);
+        /** @var array<string, array{total: int, closed: int}> $byMonth */
+        $byMonth = [];
+        foreach ($months as $month) {
+            $byMonth[$month['key']] = ['total' => 0, 'closed' => 0];
+        }
+        foreach ($events as $event) {
+            $monthKey = $event->occurred_at->format('Y-m');
+            if (! array_key_exists($monthKey, $byMonth)) {
+                continue;
+            }
+            $byMonth[$monthKey]['total']++;
+            if ($event->status === SafetyEventStatus::Closed) {
+                $byMonth[$monthKey]['closed']++;
+            }
+        }
+
+        $series = [];
+        foreach ($months as $month) {
+            $series[] = [
+                'x' => $month['shortLabel'],
+                'y' => $byMonth[$month['key']]['total'],
+                'y2' => $byMonth[$month['key']]['closed'],
+            ];
+        }
+
+        return $series;
+    }
+
+    /**
+     * Ereignisse je Monat, gestapelt nach Bearbeitungsstatus.
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection<int, SafetyEvent>  $events
+     * @return list<array<string, string|int>>
+     */
+    private function statusMonthlySeries($events, CarbonImmutable $from, CarbonImmutable $to): array {
+        if ($events->isEmpty()) {
+            return []; // Leerzustand statt Null-Serie (§Diagramm-UX).
+        }
+
+        $statusValues = array_column(SafetyEventStatus::cases(), 'value');
+        $months = $this->buildMonthsInRange($from, $to);
+        /** @var array<string, array<string, int>> $byMonth */
+        $byMonth = [];
+        foreach ($months as $month) {
+            $byMonth[$month['key']] = array_fill_keys($statusValues, 0);
+        }
+        foreach ($events as $event) {
+            $monthKey = $event->occurred_at->format('Y-m');
+            if (isset($byMonth[$monthKey][$event->status->value])) {
+                $byMonth[$monthKey][$event->status->value]++;
+            }
+        }
+
+        $series = [];
+        foreach ($months as $month) {
+            $series[] = ['x' => $month['shortLabel']] + $byMonth[$month['key']];
+        }
+
+        return $series;
+    }
+
+    /**
+     * @return list<array{key: string, label: string}>
+     */
+    private function statusBands(): array {
+        return array_map(static fn (SafetyEventStatus $status): array => [
+            'key' => $status->value,
+            'label' => $status->label(),
+        ], SafetyEventStatus::cases());
     }
 }

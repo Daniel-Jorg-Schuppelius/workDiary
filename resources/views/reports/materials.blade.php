@@ -6,6 +6,10 @@
 @php
     $num = fn (float $v, int $d = 2) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, $d, withThousandsSeparator: true);
     $eur = fn (float $v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) . ' €';
+    $linkParams = array_filter(array_merge(
+        ['scope' => $isAdmin ? $scope : null],
+        $standardFilters->toQueryParams(),
+    ));
 @endphp
 
 <x-page-shell>
@@ -13,25 +17,31 @@
         <x-page-toolbar :subtitle="__('Verbrauch und Netto-Erlöse je Material im Zeitraum.')">
             <x-slot:actions>
                 <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.materials', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'csv']))"
+                            :href="route('reports.materials', array_merge($linkParams, ['export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.materials', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'pdf']))"
+                            :href="route('reports.materials', array_merge($linkParams, ['export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if ($isAdmin)
-        <x-filter-bar :action="route('reports.materials')" :reset="route('reports.materials')">
+    <x-filter-bar :action="route('reports.materials')" :reset="route('reports.materials')">
+        @if ($isAdmin)
             <x-filter-field :label="__('Bereich')" for="rep-scope">
                 <select id="rep-scope" name="scope" class="select select-sm select-bordered" data-autosubmit>
                     <option value="mine" @selected($scope === 'mine')>{{ __('Nur eigene') }}</option>
                     <option value="team" @selected($scope === 'team')>{{ __('Gesamtes Team') }}</option>
                 </select>
             </x-filter-field>
-        </x-filter-bar>
-    @endif
+        @endif
+        @include('reports._standard_filters', ['idPrefix' => 'materials'])
+    </x-filter-bar>
+
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.pareto :title="__('Verbrauchswert je Material (Top 20)')" unit="€" :series="$materialValueSeries" :x-label="__('Material')" :y-label="__('Netto (€)')" />
+        <x-charts.bar :title="__('Materialkosten je Monat')" unit="€" :series="$monthlyCostSeries" :x-label="__('Monat')" :y-label="__('Netto (€)')" />
+    </div>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
         <x-kpi-tile :label="__('Materialien')" :value="$totals['materials']" />

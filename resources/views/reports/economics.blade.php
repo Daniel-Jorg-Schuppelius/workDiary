@@ -25,10 +25,10 @@
         <x-page-toolbar :subtitle="__('Deckungsbeitrag, Ranking und Plan-vs-Ist je Kunde und Projekt.')">
             <x-slot:actions>
                 <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.economics', array_filter(['project_id' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId), 'export' => 'csv']))"
+                            :href="route('reports.economics', array_merge($standardFilters->toQueryParams(), ['export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.economics', array_filter(['project_id' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId), 'export' => 'pdf']))"
+                            :href="route('reports.economics', array_merge($standardFilters->toQueryParams(), ['export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>
                 <x-help-button topic="reports.economics" />
             </x-slot:actions>
@@ -36,14 +36,7 @@
     </x-slot:toolbar>
 
     <x-filter-bar :action="route('reports.economics')" :reset="route('reports.economics')">
-        <x-filter-field :label="__('Projekt')" for="rep-project">
-            <select id="rep-project" name="project_id" class="select select-sm select-bordered">
-                <option value="">{{ __('Alle') }}</option>
-                @foreach($projects as $project)
-                    <option value="{{ $project->sqid }}" @selected(\App\Support\Sqid::encode(\App\Models\Project::class, $projectId) === $project->sqid)>{{ $project->name }}</option>
-                @endforeach
-            </select>
-        </x-filter-field>
+        @include('reports._standard_filters', ['idPrefix' => 'economics'])
     </x-filter-bar>
 
     <div class="mb-3 text-xs text-base-content/60">{{ __('Zeitraum') }}: {{ $label }}</div>
@@ -57,6 +50,13 @@
             @endif
         </div>
     </div>
+
+    {{-- Feature 002: Diagramme (Deckungsbeitrag, Marge/Volumen, Monatsverlauf) --}}
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.bar-h :title="__('Top-Deckungsbeiträge je Projekt (nur positive)')" unit="€" :series="$contributionSeries" :x-label="__('Projekt')" :y-label="__('Deckungsbeitrag (€)')" />
+        <x-charts.scatter :title="__('Marge vs. Volumen je Projekt (nur Marge ≥ 0)')" unit="%" :series="$marginVolumeSeries" :percentiles="$marginPercentiles" :x-label="__('Projekt')" :y-label="__('Marge %')" />
+    </div>
+    <x-charts.bar :title="__('Erlös und Kosten aus Zeiten je Monat')" unit="€" :series="$monthlySeries" :x-label="__('Monat')" :y-label="__('Erlös (Zeit)')" :y2-label="__('Kosten (Zeit)')" />
 
     {{-- Feature 002: Zielwert Deckungsbeitrags-Marge (Soll/Ist) --}}
     @if($marginTarget !== null)

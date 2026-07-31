@@ -19,6 +19,7 @@
 @endsection
 
 @section('pdf-table')
+    @include('reports.pdf.charts._chart')
     @php
         $cellClass = fn (?array $c) => match ($c['state'] ?? null) {
             'expired'  => 'expired',

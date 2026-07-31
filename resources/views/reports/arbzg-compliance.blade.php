@@ -20,16 +20,17 @@
                             :href="route('reports.compliance.history')"
                             show-label>{{ __('compliance.history.nav') }}</x-icon-btn>
                 <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.arbzg-compliance', array_filter(['kind' => $kindFilter ?: null, 'export' => 'csv']))"
+                            :href="route('reports.arbzg-compliance', array_merge($standardFilters->toQueryParams(), array_filter(['kind' => $kindFilter ?: null, 'export' => 'csv'])))"
                             show-label>CSV</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.arbzg-compliance', array_filter(['kind' => $kindFilter ?: null, 'export' => 'pdf']))"
+                            :href="route('reports.arbzg-compliance', array_merge($standardFilters->toQueryParams(), array_filter(['kind' => $kindFilter ?: null, 'export' => 'pdf'])))"
                             show-label>PDF</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
 
     <x-filter-bar :action="route('reports.arbzg-compliance')" :reset="route('reports.arbzg-compliance')">
+        @include('reports._standard_filters', ['idPrefix' => 'arbzg'])
         <x-filter-field :label="__('compliance.report.filter.kind')" for="rep-kind">
             <select id="rep-kind" name="kind" class="select select-sm select-bordered" data-autosubmit>
                 <option value="">{{ __('compliance.report.filter.all') }}</option>
@@ -39,6 +40,18 @@
             </select>
         </x-filter-field>
     </x-filter-bar>
+
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.stacked-bar :title="__('Befunde je Monat nach Verstoßart')" :unit="__('Befunde')"
+                              :series="$monthlyKindSeries" :bands="$kindBands" :x-label="__('Monat')" />
+        <x-charts.heatmap
+            :title="__('Befunde je Mitarbeiter und Monat')"
+            :unit="__('Befunde')"
+            :rows="$heatmapRows"
+            :col-labels="$monthLabels"
+            :x-label="__('Mitarbeiter')"
+        />
+    </div>
 
     <div class="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
         <x-kpi-tile :label="__('compliance.report.kpi.total')" :value="$summary['total']"

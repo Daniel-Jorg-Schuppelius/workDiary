@@ -9,6 +9,8 @@
 @endphp
 
 @section('pdf-table')
+    @include('reports.pdf.charts._chart')
+
     <h2 style="font-size:13px;margin:8px 0 4px;">{{ __('Wirtschaftlichkeit je Kunde') }}</h2>
     <table>
         <thead>

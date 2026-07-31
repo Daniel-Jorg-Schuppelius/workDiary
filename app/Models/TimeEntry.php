@@ -42,10 +42,10 @@ use Illuminate\Support\Carbon;
  * @property int $minutes
  * @property string|null $description
  * @property bool $billable
- * @property \CommonToolkit\ValueObjects\Money|null $hourly_rate
- * @property \CommonToolkit\ValueObjects\Money|null $fixed_rate
- * @property \CommonToolkit\ValueObjects\Money|null $rate
- * @property \CommonToolkit\ValueObjects\Money|null $internal_rate
+ * @property Money|null $hourly_rate
+ * @property Money|null $fixed_rate
+ * @property Money|null $rate
+ * @property Money|null $internal_rate
  * @property bool $exported
  * @property int|null $customer_billing_rate_id
  */
@@ -81,18 +81,18 @@ class TimeEntry extends Model {
     /**
      * Nacharbeitsgrund (Rang 59, Domäne rework_reason).
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Classification, $this>
+     * @return BelongsTo<\App\Models\Classification, $this>
      */
-    public function reworkReason(): \Illuminate\Database\Eloquent\Relations\BelongsTo {
+    public function reworkReason(): BelongsTo {
         return $this->belongsTo(\App\Models\Classification::class, 'rework_reason_classification_id');
     }
 
     /**
      * Kulanzgrund (Rang 59, Domäne goodwill_reason).
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Classification, $this>
+     * @return BelongsTo<\App\Models\Classification, $this>
      */
-    public function goodwillReason(): \Illuminate\Database\Eloquent\Relations\BelongsTo {
+    public function goodwillReason(): BelongsTo {
         return $this->belongsTo(\App\Models\Classification::class, 'goodwill_reason_classification_id');
     }
 

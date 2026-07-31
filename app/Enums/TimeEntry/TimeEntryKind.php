@@ -23,4 +23,17 @@ enum TimeEntryKind: string implements HasLabel {
     public function label(): string {
         return (string) __('enums.time_entry.kind.' . $this->value);
     }
+
+    /**
+     * Bänder für gestapelte Zeit-Charts (x-charts.stacked-bar bzw. das
+     * Print-Pendant) — Reihenfolge = Stapelreihenfolge unten → oben.
+     *
+     * @return list<array{key: string, label: string}>
+     */
+    public static function chartBands(): array {
+        return array_map(
+            fn(self $kind): array => ['key' => $kind->value, 'label' => $kind->label()],
+            self::cases(),
+        );
+    }
 }

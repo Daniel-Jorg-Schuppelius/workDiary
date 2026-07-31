@@ -19,6 +19,7 @@
 @endsection
 
 @section('pdf-table')
+    @include('reports.pdf.charts._chart')
     @php
         $fmtMin = function (int $minutes): string {
             $sign = $minutes < 0 ? '-' : '';

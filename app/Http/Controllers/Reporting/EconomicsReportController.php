@@ -15,10 +15,10 @@ use App\Enums\Reporting\{ReportTargetMetric, ReportTargetScope};
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{Expense, MaterialUsage, Project, TimeEntry, Timesheet, User};
-use App\Services\Reporting\{EconomicsReportBuilder, ReportTargetEvaluator};
-use App\Support\Sqid;
+use App\Services\Reporting\{EconomicsReportBuilder, ReportFilters, ReportTargetEvaluator};
+use App\Support\{CarbonFmt, Sqid};
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
@@ -34,6 +34,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 class EconomicsReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
     public function __construct(
@@ -47,31 +48,38 @@ class EconomicsReportController extends Controller {
             && ($authUser->isAdmin() || $authUser->can(Permission::ReportView->value));
         abort_unless($allowed, 403);
 
-        $range = $this->globalDateRange();
-        [$from, $to] = $this->globalDateRangeBounds();
+        [$from, $to] = $this->resolveRange($request);
+        $label = CarbonFmt::fdate($from) . ' – ' . CarbonFmt::fdate($to);
 
-        $rawProjectId = $request->query('project_id');
-        $projectId = Sqid::decodeOrNumeric(Project::class, $rawProjectId);
+        $filters = $this->standardFilters($request, ['customer', 'project'], $from, $to);
+        // Legacy-Parameter project_id (alte Bookmarks) ins Standard-Set
+        // übernehmen, damit Partial, Links und Audit denselben Stand sehen.
+        $projectId = $filters->projectId ?? Sqid::decodeOrNumeric(Project::class, $request->query('project_id'));
+        if ($projectId !== $filters->projectId) {
+            $filters = new ReportFilters(
+                from: $from,
+                to: $to,
+                customerId: $filters->customerId,
+                projectId: $projectId,
+            );
+        }
+        $customerId = $filters->customerId;
 
-        $byProject = $this->builder->byProject($from, $to, $projectId !== null ? [$projectId] : null);
-        $byCustomer = $this->builder->byCustomer($from, $to);
+        $byProject = $this->builder->byProject($from, $to, $projectId !== null ? [$projectId] : null, $customerId);
+        $byCustomer = $this->builder->byCustomer($from, $to, $customerId, $projectId);
 
         // MVP-332: LV-Dimension nur bei konkretem Projektfilter (die
         // Positionssicht ist projektgebunden; hasBoq=false → leerer Zustand).
         $boqDimension = $projectId !== null ? $this->builder->byBoqPosition($from, $to, $projectId) : null;
 
-        $exportContext = [
-            'from' => $from->toDateString(),
-            'to' => $to->toDateString(),
-            'project_id' => $projectId,
-        ];
+        $exportContext = $filters->toAuditArray();
 
         if ($request->query('export') === 'csv') {
             return $this->exportCsv($byCustomer, $byProject, $from->toDateString(), $to->toDateString(), $exportContext, $request, $boqDimension);
         }
 
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($byCustomer, $byProject, $range['label'], $from->toDateString(), $to->toDateString(), $exportContext, $request, $boqDimension);
+            return $this->exportPdf($byCustomer, $byProject, $label, $from->toDateString(), $to->toDateString(), $this->contributionSeries($byProject, $filters), $exportContext, $request, $boqDimension);
         }
 
         $rankProjects = collect($byProject)->filter(static fn(array $r): bool => $r['revenue'] > 0.0 || $r['cost'] > 0.0);
@@ -111,6 +119,8 @@ class EconomicsReportController extends Controller {
             }
         }
 
+        $scatter = $this->marginVolumeScatter($byProject, $filters);
+
         return view('reports.economics', [
             'boqDimension' => $boqDimension,
             'marginTarget' => $marginTarget,
@@ -118,9 +128,14 @@ class EconomicsReportController extends Controller {
             'customerMarginTargets' => $customerMarginTargets,
             'from' => $from,
             'to' => $to,
-            'label' => $range['label'],
+            'label' => $label,
             'projectId' => $projectId,
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
+            'standardFilters' => $filters,
+            'filterFields' => ['customer', 'project'],
+            'contributionSeries' => $this->contributionSeries($byProject, $filters),
+            'marginVolumeSeries' => $scatter['series'],
+            'marginPercentiles' => $scatter['percentiles'],
+            'monthlySeries' => $this->monthlySeries($filters),
             'byCustomer' => $byCustomer,
             'byProject' => $byProject,
             'topProjects' => $topProjects,
@@ -128,7 +143,94 @@ class EconomicsReportController extends Controller {
             'topCustomers' => $topCustomers,
             'flopCustomers' => $flopCustomers,
             'costRateMissing' => $costRateMissing,
+            ...$this->standardFilterOptions(['customer', 'project'], $filters),
         ]);
+    }
+
+    /**
+     * Deckungsbeitrag je Projekt (Top 15) — bar-h kann keine negativen Balken,
+     * daher NUR positive Beiträge; negative stehen prominent in der
+     * Flop-Tabelle. Drilldown = Selbstfilter der Seite auf das Projekt.
+     *
+     * @param  list<array<string, mixed>>  $byProject
+     * @return list<array{x: string, y: float, url: string}>
+     */
+    private function contributionSeries(array $byProject, ReportFilters $filters): array {
+        return array_values(collect($byProject)
+            ->filter(static fn(array $row): bool => (float) $row['contribution'] > 0.0)
+            ->sortByDesc('contribution')
+            ->take(15)
+            ->map(fn(array $row): array => [
+                'x' => (string) $row['projectName'],
+                'y' => round((float) $row['contribution'], 2),
+                'url' => route('reports.economics', array_merge($filters->toQueryParams(), [
+                    'project' => Sqid::encode(Project::class, (int) $row['projectId']),
+                ])),
+            ])
+            ->all());
+    }
+
+    /**
+     * Marge (%) je Projekt, aufsteigend nach Volumen (Stunden) — die
+     * scatter-Komponente platziert Punkte index-basiert, daher dient die
+     * Volumen-Sortierung als x-Dimension. Nur Projekte mit Erlös und
+     * nicht-negativer Marge (Komponente zeichnet keine negativen y-Werte);
+     * P50-Linie = Median-Marge, gekappt auf die 40 volumenstärksten Projekte.
+     *
+     * @param  list<array<string, mixed>>  $byProject
+     * @return array{series: list<array{x: string, y: float, label: string, url: string}>, percentiles: array<string, float>}
+     */
+    private function marginVolumeScatter(array $byProject, ReportFilters $filters): array {
+        $points = collect($byProject)
+            ->filter(static fn(array $row): bool => (float) $row['revenue'] > 0.0 && (float) $row['margin'] >= 0.0)
+            ->sortByDesc('totalMinutes')
+            ->take(40)
+            ->sortBy('totalMinutes')
+            ->values();
+
+        if ($points->isEmpty()) {
+            return ['series' => [], 'percentiles' => []];
+        }
+
+        $margins = $points->pluck('margin')->map(static fn($v): float => (float) $v)->sort()->values();
+        $mid = intdiv($margins->count(), 2);
+        $median = $margins->count() % 2 === 1
+            ? (float) $margins[$mid]
+            : round(((float) $margins[$mid - 1] + (float) $margins[$mid]) / 2, 2);
+
+        $series = $points->map(fn(array $row): array => [
+            'x' => (string) $row['projectName'],
+            'y' => (float) $row['margin'],
+            'label' => sprintf('%s (%s h)', (string) $row['projectName'], NumberHelper::toGermanFormat(round(((int) $row['totalMinutes']) / 60, 1), 1)),
+            'url' => route('reports.economics', array_merge($filters->toQueryParams(), [
+                'project' => Sqid::encode(Project::class, (int) $row['projectId']),
+            ])),
+        ])->all();
+
+        return ['series' => array_values($series), 'percentiles' => ['P50' => $median]];
+    }
+
+    /**
+     * Erlös/Kosten aus Zeiten je Monat (Feature 002) — leere Serie statt
+     * Null-Linie, wenn der Zeitraum keine bewerteten Zeiten trägt.
+     *
+     * @return list<array{x: string, y: float, y2: float}>
+     */
+    private function monthlySeries(ReportFilters $filters): array {
+        $months = $this->builder->timeByMonth($filters->from, $filters->to, $filters->customerId, $filters->projectId);
+
+        $hasData = collect($months)->contains(
+            static fn(array $month): bool => $month['revenue'] > 0.0 || $month['cost'] > 0.0,
+        );
+        if (! $hasData) {
+            return []; // Leerzustand statt Null-Linie (§Diagramm-UX).
+        }
+
+        return array_map(static fn(array $month): array => [
+            'x' => $month['monthLabel'],
+            'y' => $month['revenue'],
+            'y2' => $month['cost'],
+        ], $months);
     }
 
     /**
@@ -217,10 +319,11 @@ class EconomicsReportController extends Controller {
     /**
      * @param  list<array<string, mixed>>  $byCustomer
      * @param  list<array<string, mixed>>  $byProject
+     * @param  list<array{x: string, y: float, url: string}>  $contributionSeries
      * @param  array<string, mixed>        $filters
      * @param  array{hasBoq: bool, positions: list<array<string, mixed>>, unassigned: array<string, int|float>}|null  $byBoq
      */
-    private function exportPdf(array $byCustomer, array $byProject, string $label, string $from, string $to, array $filters, Request $request, ?array $byBoq = null): SymfonyResponse {
+    private function exportPdf(array $byCustomer, array $byProject, string $label, string $from, string $to, array $contributionSeries, array $filters, Request $request, ?array $byBoq = null): SymfonyResponse {
         $filename = sprintf('wirtschaftlichkeit_%s_%s.pdf', $from, $to);
 
         return $this->pdfDownload('reports.pdf.economics', [
@@ -228,6 +331,14 @@ class EconomicsReportController extends Controller {
             'byProject' => $byProject,
             'byBoq' => $byBoq,
             'label' => $label,
+            'chart' => [
+                'type' => 'bar-h',
+                'title' => __('Top-Deckungsbeiträge je Projekt (nur positive)'),
+                'unit' => '€',
+                'xLabel' => __('Projekt'),
+                'yLabel' => __('Deckungsbeitrag (€)'),
+                'series' => $contributionSeries,
+            ],
         ], $filename, 'landscape', $request, 'economics', $filters);
     }
 

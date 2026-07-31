@@ -17,6 +17,8 @@
 @endsection
 
 @section('pdf-table')
+    @include('reports.pdf.charts._chart')
+
     <h2>Monatswerte</h2>
     <table class="data">
         <thead>

@@ -2551,6 +2551,8 @@ Route::middleware('auth')->group(function () {
             ->name('reports.plan-ist.sites');
 
         // ── Auswertungen ────────────────────────────────────────────────────────
+        // Übersichts-Landing (Feature 002): KPIs + Einstieg in alle Reports.
+        Route::get('reports', [\App\Http\Controllers\Reporting\ReportsOverviewController::class, 'index'])->name('reports.index');
         Route::get('reports/my-year', [MyYearReportController::class, 'index'])->name('reports.my-year');
         Route::get('reports/my-month', [MyMonthReportController::class, 'index'])->name('reports.my-month');
         Route::get('reports/external-payouts', [ExternalPayoutReportController::class, 'index'])->name('reports.external-payouts');

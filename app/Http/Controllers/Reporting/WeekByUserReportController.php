@@ -10,9 +10,10 @@
 
 namespace App\Http\Controllers\Reporting;
 
+use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{TimeEntry, User};
 use App\Support\XlsxExport;
 use Carbon\{Carbon, CarbonImmutable};
@@ -34,6 +35,7 @@ class WeekByUserReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use ResolvesReportScope;
+    use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
     /** Maximalanzahl gleichzeitig gerenderter Wochen-Tabs. */
@@ -43,10 +45,10 @@ class WeekByUserReportController extends Controller {
         $userId = (int) Auth::id();
         [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
 
-        // Aus dem globalen Header-Zeitraum alle überlappenden ISO-Wochen sammeln
-        // und als Tab-Liste an die View liefern – Pattern analog zu WeekController.
-        $range = $this->globalDateRange();
-        $weekMeta = $this->collectWeekMeta($range['from'], $range['to']);
+        // Aus dem effektiven Zeitraum (from/to-Bookmark vor Header-Widget) alle
+        // überlappenden ISO-Wochen sammeln und als Tab-Liste an die View liefern.
+        [$rangeFrom, $rangeTo] = $this->resolveRange($request);
+        $weekMeta = $this->collectWeekMeta($rangeFrom, $rangeTo);
         $totalWeeks = count($weekMeta);
         $weeksTruncated = $totalWeeks > self::MAX_WEEKS;
         if ($weeksTruncated) {
@@ -75,27 +77,40 @@ class WeekByUserReportController extends Controller {
         $start = $active['start']->copy();
         $end = $active['end']->copy();
 
+        $filters = $this->standardFilters(
+            $request,
+            ['user', 'team'],
+            $start->toImmutable(),
+            $end->toImmutable(),
+            scope: $scope,
+        );
+
         $query = TimeEntry::query()
             ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
-            ->select('user_id', 'date', 'minutes', 'rate');
+            ->select('user_id', 'date', 'minutes', 'rate', 'kind');
         if ($scope === 'mine') {
             $query->where('user_id', $userId);
         }
+        $filters->applyToTimeEntryQuery($query);
         $entries = $query->get();
 
-        // Aggregate user_id -> [day_index 0..6 => minutes], plus totals.
+        // Aggregate user_id -> [day_index 0..6 => minutes], plus totals + Art-Split.
         /** @var array<int, array{days: array<int, int>, total: int, rate: float}> $byUser */
         $byUser = [];
+        /** @var array<int, array<string, int>> $byUserKind */
+        $byUserKind = [];
         foreach ($entries as $e) {
             $uid = (int) $e->user_id;
             $dayDate = Carbon::parse((string) $e->date);
             $idx = $dayDate->dayOfWeekIso - 1; // 0=Mo .. 6=So
             if (! isset($byUser[$uid])) {
                 $byUser[$uid] = ['days' => array_fill(0, 7, 0), 'total' => 0, 'rate' => 0.0];
+                $byUserKind[$uid] = array_fill_keys(TimeEntryKind::values(), 0);
             }
             $byUser[$uid]['days'][$idx] += (int) $e->minutes;
             $byUser[$uid]['total'] += (int) $e->minutes;
             $byUser[$uid]['rate'] += ($e->rate?->toFloat() ?? 0.0);
+            $byUserKind[$uid][$e->kind->value] += (int) $e->minutes;
         }
 
         // User-Modelle für Anzeigenamen.
@@ -133,14 +148,17 @@ class WeekByUserReportController extends Controller {
         $start->locale($locale);
         $weekLabel = sprintf('KW %02d / %d', $week, $year);
 
+        $exportFilters = array_merge(['year' => $year, 'week' => $week, 'scope' => $scope], $filters->toAuditArray());
+        $heatmapRows = $this->heatmapRows($byUser, $users, $dayLabels);
+
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($byUser, $users, $dayLabels, $dayTotals, $weekTotal, $weekRate, $year, $week, $scope, $request);
+            return $this->exportCsv($byUser, $users, $dayLabels, $dayTotals, $weekTotal, $weekRate, $year, $week, $exportFilters, $request);
         }
         if ($request->query('export') === 'xlsx') {
             return $this->exportXlsx($byUser, $users, $dayLabels, $dayTotals, $weekTotal, $weekRate, $year, $week);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($byUser, $users, $dayLabels, $dayTotals, $weekTotal, $weekRate, $weekLabel, $year, $week, $scope, $request);
+            return $this->exportPdf($byUser, $users, $dayLabels, $dayTotals, $weekTotal, $weekRate, $weekLabel, $heatmapRows, $year, $week, $exportFilters, $request);
         }
 
         return view('reports.week-by-user', [
@@ -159,7 +177,56 @@ class WeekByUserReportController extends Controller {
             'activeKey' => $activeKey,
             'totalWeeks' => $totalWeeks,
             'weeksTruncated' => $weeksTruncated,
+            'standardFilters' => $filters,
+            'filterFields' => ['user', 'team'],
+            'heatmapRows' => $heatmapRows,
+            'userKindSeries' => $this->userKindSeries($byUser, $byUserKind, $users),
+            'kindBands' => TimeEntryKind::chartBands(),
+            ...$this->standardFilterOptions(['user', 'team'], $filters),
         ]);
+    }
+
+    /**
+     * Heatmap-Zeilen User × Wochentag (Minuten; Anzeige h:mm via format-Prop).
+     *
+     * @param  array<int, array{days: array<int, int>, total: int, rate: float}>  $byUser
+     * @param  Collection<int, User>  $users
+     * @param  array<int, string>  $dayLabels
+     * @return list<array{label: string, cells: list<array{value: int}>}>
+     */
+    private function heatmapRows(array $byUser, $users, array $dayLabels): array {
+        $rows = [];
+        foreach ($byUser as $uid => $row) {
+            $userModel = $users->get($uid);
+            $rows[] = [
+                'label' => $userModel instanceof User ? $userModel->name : '#' . $uid,
+                'cells' => array_map(fn(int $minutes): array => ['value' => $minutes], array_values($row['days'])),
+            ];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Stunden je User nach Art (gestapelte Säulen).
+     *
+     * @param  array<int, array{days: array<int, int>, total: int, rate: float}>  $byUser
+     * @param  array<int, array<string, int>>  $byUserKind
+     * @param  Collection<int, User>  $users
+     * @return list<array<string, string|float>>
+     */
+    private function userKindSeries(array $byUser, array $byUserKind, $users): array {
+        $series = [];
+        foreach (array_keys($byUser) as $uid) {
+            $userModel = $users->get($uid);
+            $row = ['x' => $userModel instanceof User ? $userModel->name : '#' . $uid];
+            foreach ($byUserKind[$uid] ?? [] as $kindValue => $minutes) {
+                $row[$kindValue] = round($minutes / 60, 1);
+            }
+            $series[] = $row;
+        }
+
+        return $series;
     }
 
     /**
@@ -198,14 +265,21 @@ class WeekByUserReportController extends Controller {
      * @param  array<int, string>  $dayLabels
      * @param  array<int, int>  $dayTotals
      */
-    private function exportCsv(array $byUser, $users, array $dayLabels, array $dayTotals, int $weekTotal, float $weekRate, int $year, int $week, string $scope, Request $request): Response {
+    /**
+     * @param  array<int, array{days: array<int, int>, total: int, rate: float}>  $byUser
+     * @param  Collection<int, User>  $users
+     * @param  array<int, string>  $dayLabels
+     * @param  array<int, int>  $dayTotals
+     * @param  array<string, mixed>  $exportFilters
+     */
+    private function exportCsv(array $byUser, $users, array $dayLabels, array $dayTotals, int $weekTotal, float $weekRate, int $year, int $week, array $exportFilters, Request $request): Response {
         $filename = sprintf('woche_%04d-W%02d.csv', $year, $week);
         $rows = [array_merge(['Mitarbeiter'], $dayLabels, ['Wochensumme', 'Erloes'])];
         foreach ($this->buildRows($byUser, $users, $dayTotals, $weekTotal, $weekRate) as $row) {
             $rows[] = array_map(static fn($v) => is_float($v) ? NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) : $v, $row);
         }
 
-        return $this->csvWithMetadata($rows, $filename, 'week-by-user', ['year' => $year, 'week' => $week, 'scope' => $scope], $request);
+        return $this->csvWithMetadata($rows, $filename, 'week-by-user', $exportFilters, $request);
     }
 
     /**
@@ -227,7 +301,15 @@ class WeekByUserReportController extends Controller {
      * @param  array<int, string>  $dayLabels
      * @param  array<int, int>  $dayTotals
      */
-    private function exportPdf(array $byUser, $users, array $dayLabels, array $dayTotals, int $weekTotal, float $weekRate, string $weekLabel, int $year, int $week, string $scope, Request $request): SymfonyResponse {
+    /**
+     * @param  array<int, array{days: array<int, int>, total: int, rate: float}>  $byUser
+     * @param  Collection<int, User>  $users
+     * @param  array<int, string>  $dayLabels
+     * @param  array<int, int>  $dayTotals
+     * @param  list<array{label: string, cells: list<array{value: int}>}>  $heatmapRows
+     * @param  array<string, mixed>  $exportFilters
+     */
+    private function exportPdf(array $byUser, $users, array $dayLabels, array $dayTotals, int $weekTotal, float $weekRate, string $weekLabel, array $heatmapRows, int $year, int $week, array $exportFilters, Request $request): SymfonyResponse {
         $filename = sprintf('woche_%04d-W%02d.pdf', $year, $week);
         return $this->pdfDownload('reports.pdf.week-by-user', [
             'byUser' => $byUser,
@@ -237,7 +319,16 @@ class WeekByUserReportController extends Controller {
             'weekTotal' => $weekTotal,
             'weekRate' => $weekRate,
             'weekLabel' => $weekLabel,
-        ], $filename, 'landscape', $request, 'week-by-user', ['year' => $year, 'week' => $week, 'scope' => $scope]);
+            'chart' => [
+                'type' => 'heatmap',
+                'title' => __('Stunden je Mitarbeiter und Wochentag'),
+                'unit' => 'h',
+                'xLabel' => __('Mitarbeiter'),
+                'rows' => $heatmapRows,
+                'colLabels' => array_values($dayLabels),
+                'format' => fn(float $minutes): string => intdiv((int) $minutes, 60) . ':' . str_pad((string) ((int) $minutes % 60), 2, '0', STR_PAD_LEFT),
+            ],
+        ], $filename, 'landscape', $request, 'week-by-user', $exportFilters);
     }
 
     /**

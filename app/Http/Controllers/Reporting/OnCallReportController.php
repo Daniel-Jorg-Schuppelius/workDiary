@@ -12,8 +12,9 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{EmergencyAssignment, OnCallShift, User};
+use App\Services\Reporting\ReportFilters;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
@@ -30,24 +31,29 @@ class OnCallReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use ResolvesReportScope;
+    use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
         [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
 
-        [$fromDate, $toDate] = $this->globalDateRangeBounds();
+        [$fromDate, $toDate] = $this->resolveRange($request);
         $from = $fromDate->toDateString();
         $to = $toDate->toDateString();
 
-        $rows = $this->aggregate($fromDate, $toDate, $scope, $userId);
+        $filters = $this->standardFilters($request, ['user', 'team'], $fromDate, $toDate, scope: $scope);
+
+        $rows = $this->aggregate($fromDate, $toDate, $scope, $userId, $filters);
         $totals = $this->totals($rows);
+        [$heatmapRows, $weekLabels] = $this->standbyHeatmap($rows, $fromDate, $toDate, $scope, $userId, $filters);
+        $exportFilters = array_merge(['scope' => $scope], $filters->toAuditArray());
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($rows, $totals, $from, $to, $scope, $request);
+            return $this->exportCsv($rows, $totals, $from, $to, $request, $exportFilters);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($rows, $totals, $from, $to, $scope, $request);
+            return $this->exportPdf($rows, $totals, $from, $to, $scope, $heatmapRows, $weekLabels, $request, $exportFilters);
         }
 
         return view('reports.on-call', [
@@ -57,6 +63,12 @@ class OnCallReportController extends Controller {
             'isAdmin' => $isAdmin,
             'rows' => $rows,
             'totals' => $totals,
+            'standardFilters' => $filters,
+            'filterFields' => ['user', 'team'],
+            'heatmapRows' => $heatmapRows,
+            'weekLabels' => $weekLabels,
+            'monthlyAssignmentSeries' => $this->monthlyAssignmentSeries($fromDate, $toDate, $scope, $userId, $filters),
+            ...$this->standardFilterOptions(['user', 'team'], $filters),
         ]);
     }
     /**
@@ -69,7 +81,7 @@ class OnCallReportController extends Controller {
      *   ratio: float|null
      * }>
      */
-    private function aggregate(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId): array {
+    private function aggregate(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): array {
         $shiftsQ = OnCallShift::query()
             ->where('is_archived', false)
             ->where('start_at', '<', $to)
@@ -82,6 +94,8 @@ class OnCallReportController extends Controller {
             $shiftsQ->where('user_id', $userId);
             $assignmentsQ->where('user_id', $userId);
         }
+        $filters->applyUserAndTeam($shiftsQ);
+        $filters->applyUserAndTeam($assignmentsQ);
 
         /** @var array<int, array{shift_count:int, shift_minutes:int, assignment_count:int, assignment_minutes:int}> $byUser */
         $byUser = [];
@@ -169,10 +183,107 @@ class OnCallReportController extends Controller {
     }
 
     /**
+     * Heatmap Mitarbeiter × ISO-Woche (Bereitschaftsminuten, anteilig auf die
+     * Wochen aufgeteilt und auf den Zeitraum geklemmt). Zeilenreihenfolge wie
+     * die Tabelle; leere Zeilenliste → Empty-State der Komponente.
+     *
+     * @param  array<int, array{user: User, shift_count:int, shift_minutes:int, assignment_count:int, assignment_minutes:int, ratio:float|null}>  $rows
+     * @return array{0: list<array{label: string, cells: list<array{value: int}|null>}>, 1: list<string>}
+     */
+    private function standbyHeatmap(array $rows, CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): array {
+        $weeks = [];
+        $cursor = $from->startOfWeek();
+        for ($i = 0; $i < 160 && $cursor->lte($to); $i++) {
+            $weeks[sprintf('%04d-W%02d', $cursor->isoWeekYear, $cursor->isoWeek)] = 'KW ' . $cursor->isoWeek;
+            $cursor = $cursor->addWeek();
+        }
+        if ($rows === [] || $weeks === []) {
+            return [[], array_values($weeks)];
+        }
+
+        $shiftsQ = OnCallShift::query()
+            ->where('is_archived', false)
+            ->where('start_at', '<', $to)
+            ->where('end_at', '>', $from);
+        if ($scope === 'mine') {
+            $shiftsQ->where('user_id', $userId);
+        }
+        $filters->applyUserAndTeam($shiftsQ);
+
+        /** @var array<int, array<string, int>> $byUserWeek */
+        $byUserWeek = [];
+        foreach ($shiftsQ->get() as $shift) {
+            $uid = (int) $shift->user_id;
+            $start = $shift->start_at->greaterThan($from) ? $shift->start_at->toImmutable() : $from;
+            $end = $shift->end_at->lessThan($to) ? $shift->end_at->toImmutable() : $to;
+            // Minuten wochenweise zuschneiden (Schichten laufen über Wochengrenzen).
+            $weekCursor = $start;
+            while ($weekCursor->lessThan($end)) {
+                $weekEnd = $weekCursor->endOfWeek();
+                $sliceEnd = $weekEnd->lessThan($end) ? $weekEnd : $end;
+                $key = sprintf('%04d-W%02d', $weekCursor->isoWeekYear, $weekCursor->isoWeek);
+                $minutes = max(0, (int) $weekCursor->diffInMinutes($sliceEnd, true));
+                $byUserWeek[$uid][$key] = ($byUserWeek[$uid][$key] ?? 0) + $minutes;
+                $weekCursor = $weekCursor->startOfWeek()->addWeek();
+            }
+        }
+
+        $heatmapRows = [];
+        foreach ($rows as $row) {
+            $uid = (int) $row['user']->id;
+            $heatmapRows[] = [
+                'label' => (string) $row['user']->name,
+                'cells' => array_map(
+                    static fn(string $weekKey): array => ['value' => (int) ($byUserWeek[$uid][$weekKey] ?? 0)],
+                    array_keys($weeks),
+                ),
+            ];
+        }
+
+        return [$heatmapRows, array_values($weeks)];
+    }
+
+    /**
+     * Einsätze je Monat über den Zeitraum — leere Serie statt Null-Achse
+     * (§Diagramm-UX). Zählung nach (geklemmtem) Einsatzbeginn.
+     *
+     * @return list<array{x: string, y: int}>
+     */
+    private function monthlyAssignmentSeries(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): array {
+        $q = EmergencyAssignment::query()
+            ->where('is_archived', false)
+            ->where('start_at', '<', $to)
+            ->where('end_at', '>', $from);
+        if ($scope === 'mine') {
+            $q->where('user_id', $userId);
+        }
+        $filters->applyUserAndTeam($q);
+
+        /** @var array<string, int> $byMonth */
+        $byMonth = [];
+        foreach ($q->get() as $assignment) {
+            $start = $assignment->start_at->greaterThan($from) ? $assignment->start_at->toImmutable() : $from;
+            $key = $start->format('Y-m');
+            $byMonth[$key] = ($byMonth[$key] ?? 0) + 1;
+        }
+        if ($byMonth === []) {
+            return [];
+        }
+
+        $series = [];
+        foreach ($this->buildMonthsInRange($from, $to) as $month) {
+            $series[] = ['x' => $month['shortLabel'], 'y' => (int) ($byMonth[$month['key']] ?? 0)];
+        }
+
+        return $series;
+    }
+
+    /**
      * @param  array<int, array{user: User, shift_count:int, shift_minutes:int, assignment_count:int, assignment_minutes:int, ratio:float|null}>  $rows
      * @param  array{users:int, shift_count:int, shift_minutes:int, assignment_count:int, assignment_minutes:int, ratio:float|null}  $totals
+     * @param  array<string, mixed>  $exportFilters
      */
-    private function exportCsv(array $rows, array $totals, string $from, string $to, string $scope, Request $request): Response {
+    private function exportCsv(array $rows, array $totals, string $from, string $to, Request $request, array $exportFilters): Response {
         $filename = sprintf('notdienst_%s_%s.csv', $from, $to);
         $fmt = static function (int $minutes): string {
             $h = intdiv($minutes, 60);
@@ -201,18 +312,17 @@ class OnCallReportController extends Controller {
             $totals['ratio'] !== null ? NumberHelper::toUSFormat($totals['ratio'] * 100, 1) : '',
         ];
 
-        return $this->csvWithMetadata($out, $filename, 'on-call', [
-            'from' => $from,
-            'to' => $to,
-            'scope' => $scope,
-        ], $request);
+        return $this->csvWithMetadata($out, $filename, 'on-call', $exportFilters, $request);
     }
 
     /**
      * @param  array<int, array{user: User, shift_count:int, shift_minutes:int, assignment_count:int, assignment_minutes:int, ratio:float|null}>  $rows
      * @param  array{users:int, shift_count:int, shift_minutes:int, assignment_count:int, assignment_minutes:int, ratio:float|null}  $totals
+     * @param  list<array{label: string, cells: list<array{value: int}|null>}>  $heatmapRows
+     * @param  list<string>  $weekLabels
+     * @param  array<string, mixed>  $exportFilters
      */
-    private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope, Request $request): SymfonyResponse {
+    private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope, array $heatmapRows, array $weekLabels, Request $request, array $exportFilters): SymfonyResponse {
         $filename = sprintf('notdienst_%s_%s.pdf', $from, $to);
         return $this->pdfDownload('reports.pdf.on-call', [
             'rows' => $rows,
@@ -220,6 +330,15 @@ class OnCallReportController extends Controller {
             'from' => $from,
             'to' => $to,
             'scope' => $scope,
-        ], $filename, request: $request, reportCode: 'on-call', filters: ['from' => $from, 'to' => $to, 'scope' => $scope]);
+            'chart' => [
+                'type' => 'heatmap',
+                'title' => __('Bereitschaft je Mitarbeiter und Woche'),
+                'unit' => 'h',
+                'xLabel' => __('Mitarbeiter'),
+                'rows' => $heatmapRows,
+                'colLabels' => $weekLabels,
+                'format' => fn(float $minutes): string => intdiv((int) $minutes, 60) . ':' . str_pad((string) ((int) $minutes % 60), 2, '0', STR_PAD_LEFT),
+            ],
+        ], $filename, 'landscape', $request, 'on-call', $exportFilters);
     }
 }

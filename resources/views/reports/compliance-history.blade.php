@@ -26,6 +26,10 @@
     $sevTone = fn (string $sev) => $sev === \App\Services\Compliance\AttendanceComplianceFinding::SEVERITY_ERROR ? 'error' : 'warning';
     $ackStatus = \App\Enums\Compliance\ComplianceFindingStatus::Acknowledged->value;
     $accStatus = \App\Enums\Compliance\ComplianceFindingStatus::Accepted->value;
+    $statusOptions = [];
+    foreach ($statuses as $status) {
+        $statusOptions[$status] = __('enums.compliance.finding-status.' . $status) . ' (' . ($counts[$status] ?? 0) . ')';
+    }
 @endphp
 
 <x-page-shell>
@@ -41,17 +45,16 @@
     </x-slot:toolbar>
 
     <x-filter-bar :action="route('reports.compliance.history')" :reset="route('reports.compliance.history')">
-        <x-filter-field :label="__('compliance.history.filter.status')" for="hist-status">
-            <select id="hist-status" name="status" class="select select-sm select-bordered" data-autosubmit>
-                <option value="">{{ __('compliance.history.filter.all') }}</option>
-                @foreach ($statuses as $status)
-                    <option value="{{ $status }}" @selected($statusFilter === $status)>
-                        {{ __('enums.compliance.finding-status.' . $status) }} ({{ $counts[$status] ?? 0 }})
-                    </option>
-                @endforeach
-            </select>
-        </x-filter-field>
+        @include('reports._standard_filters', [
+            'idPrefix' => 'hist',
+            'statusOptions' => $statusOptions,
+            'statusLabel' => __('compliance.history.filter.status'),
+        ])
     </x-filter-bar>
+
+    <x-charts.bar :title="__('Neue vs. quittierte Befunde je Monat')" :unit="__('Befunde')"
+                  :series="$ackSeries" :x-label="__('Monat')" :y-label="__('Neu')"
+                  :y2-label="__('Quittiert')" />
 
     <div class="grid gap-3 grid-cols-2 sm:grid-cols-4">
         @foreach ($statuses as $status)

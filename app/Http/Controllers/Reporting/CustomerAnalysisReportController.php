@@ -12,56 +12,61 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
-use App\Models\{Project, User};
-use App\Services\Reporting\CustomerAnalysisReportBuilder;
-use App\Support\Sqid;
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
+use App\Models\{Customer, Project, User};
+use App\Services\Reporting\{CustomerAnalysisReportBuilder, ReportFilters};
+use App\Support\{CarbonFmt, Sqid};
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class CustomerAnalysisReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
     public function __construct(private readonly CustomerAnalysisReportBuilder $builder) {}
 
     public function index(Request $request): View|Response|SymfonyResponse {
-        $range = $this->globalDateRange();
-        [$from, $to] = $this->globalDateRangeBounds();
+        [$from, $to] = $this->resolveRange($request);
 
         $minMinutes = max(0, (int) $request->integer('min_minutes', 0));
-        $rawProjectId = $request->query('project_id');
-        $projectId = Sqid::decodeOrNumeric(Project::class, $rawProjectId);
-        $rawUserId = $request->query('user_id');
-        $userId = Sqid::decodeOrNumeric(User::class, $rawUserId);
+        $filters = $this->standardFilters($request, ['project', 'user', 'entry_type'], $from, $to);
+        // Legacy-Parameter (project_id/user_id — alte Bookmarks) ins Standard-Set
+        // übernehmen, damit Partial, Links und Audit denselben Stand sehen.
+        $projectId = $filters->projectId ?? Sqid::decodeOrNumeric(Project::class, $request->query('project_id'));
+        $userId = $filters->userId ?? Sqid::decodeOrNumeric(User::class, $request->query('user_id'));
+        if ($projectId !== $filters->projectId || $userId !== $filters->userId) {
+            $filters = new ReportFilters(
+                from: $from,
+                to: $to,
+                projectId: $projectId,
+                userId: $userId,
+                entryTypeId: $filters->entryTypeId,
+            );
+        }
 
-        $rows = collect($this->builder->build($from, $to, $projectId, $userId))
+        $rows = collect($this->builder->build($from, $to, $projectId, $userId, $filters->entryTypeId))
             ->filter(static fn(array $row): bool => $row['totalMinutes'] >= $minMinutes)
             ->values();
 
-        $exportContext = [
-            'from' => $from->toDateString(),
-            'to' => $to->toDateString(),
-            'min_minutes' => $minMinutes,
-            'project_id' => $projectId,
-            'user_id' => $userId,
-        ];
+        $exportFilters = array_merge(['min_minutes' => $minMinutes], $filters->toAuditArray());
+        $label = CarbonFmt::fdate($from) . ' – ' . CarbonFmt::fdate($to);
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv(array_values($rows->all()), $from->toDateString(), $to->toDateString(), $exportContext, $request);
+            return $this->exportCsv(array_values($rows->all()), $from->toDateString(), $to->toDateString(), $exportFilters, $request);
         }
 
         if ($request->query('export') === 'pdf') {
             return $this->exportPdf(
                 array_values($rows->all()),
-                $range['label'],
+                $label,
                 $from->toDateString(),
                 $to->toDateString(),
-                $exportContext,
+                $this->customerHoursSeries(array_values($rows->all()), $filters),
+                $exportFilters,
                 $request,
             );
         }
@@ -74,21 +79,83 @@ class CustomerAnalysisReportController extends Controller {
             'rows' => $rows,
             'from' => $from,
             'to' => $to,
-            'label' => $range['label'],
+            'label' => $label,
             'minMinutes' => $minMinutes,
             'projectId' => $projectId,
             'userId' => $userId,
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
-            // Mandantengrenze: User hat KEINEN globalen OrganizationScope — ohne expliziten
-            // Org-Filter listete das Dropdown User aller Orgs (Tenant-Leak, Bauturbo A17, ReportPdfTenantTest).
-            'reportUsers' => User::query()
-                ->where('organization_id', Auth::user()?->organization_id)
-                ->orderBy('name')
-                ->get(['id', 'name']),
             'topByMinutes' => $topByMinutes,
             'topByRework' => $topByRework,
             'topByNonBillable' => $topByNonBillable,
+            'standardFilters' => $filters,
+            'filterFields' => ['project', 'user', 'entry_type'],
+            'customerHoursSeries' => $this->customerHoursSeries(array_values($rows->all()), $filters),
+            'trendSeries' => $this->trendSeries($to, $filters),
+            'openIssuesSeries' => $this->openIssuesSeries(array_values($rows->all()), $filters),
+            ...$this->standardFilterOptions(['project', 'user', 'entry_type'], $filters),
         ]);
+    }
+
+    /**
+     * Stunden je Kunde (Top 20) — Pareto am Screen, bar-h im PDF; Drilldown
+     * öffnet den Kunden im Kunden-&-Projekte-Report mit geerbtem Filterkontext.
+     *
+     * @param  array<int, array{customerId:int, customerName:string, entryCount:int, totalMinutes:int, billableMinutes:int, nonBillableMinutes:int, nonBillableShare:float, reworkEntryCount:int, openIssueCount:int, escalationCount:int, avgEntryMinutes:int, trend30d:int}>  $rows
+     * @return list<array{x: string, y: float, url: string}>
+     */
+    private function customerHoursSeries(array $rows, ReportFilters $filters): array {
+        return array_values(collect($rows)
+            ->filter(static fn(array $row): bool => $row['totalMinutes'] > 0)
+            ->sortByDesc('totalMinutes')
+            ->take(20)
+            ->map(fn(array $row): array => [
+                'x' => $row['customerName'],
+                'y' => round($row['totalMinutes'] / 60, 1),
+                'url' => route('reports.customer-project', array_merge($filters->toQueryParams(), [
+                    'customer' => Sqid::encode(Customer::class, $row['customerId']),
+                ])),
+            ])
+            ->all());
+    }
+
+    /**
+     * Auftragseingang pro Tag der letzten 30 Tage (Trend-Linienchart).
+     *
+     * @return list<array{x: string, y: int}>
+     */
+    private function trendSeries(\Carbon\CarbonImmutable $to, ReportFilters $filters): array {
+        $daily = $this->builder->dailyEntrySeries30d($to, $filters->projectId, $filters->userId, $filters->entryTypeId);
+        if (array_sum(array_column($daily, 'count')) === 0) {
+            return []; // Leerzustand statt Null-Linie (§Diagramm-UX).
+        }
+
+        return array_map(static fn(array $point): array => [
+            'x' => $point['date']->format('d.m.'),
+            'y' => $point['count'],
+        ], $daily);
+    }
+
+    /**
+     * Offene Punkte je Kunde (Top 15) — Drilldown in die Offene-Punkte-Liste
+     * (Drilldown-Controller erwartet die Legacy-Parameternamen customer_id/…).
+     *
+     * @param  array<int, array{customerId:int, customerName:string, entryCount:int, totalMinutes:int, billableMinutes:int, nonBillableMinutes:int, nonBillableShare:float, reworkEntryCount:int, openIssueCount:int, escalationCount:int, avgEntryMinutes:int, trend30d:int}>  $rows
+     * @return list<array{x: string, y: int, url: string}>
+     */
+    private function openIssuesSeries(array $rows, ReportFilters $filters): array {
+        return array_values(collect($rows)
+            ->filter(static fn(array $row): bool => $row['openIssueCount'] > 0)
+            ->sortByDesc('openIssueCount')
+            ->take(15)
+            ->map(fn(array $row): array => [
+                'x' => $row['customerName'],
+                'y' => $row['openIssueCount'],
+                'url' => route('reports.customers.drilldown.open-issues', array_filter([
+                    'customer_id' => Sqid::encode(Customer::class, $row['customerId']),
+                    'project_id' => Sqid::encode(Project::class, $filters->projectId),
+                    'user_id' => Sqid::encode(User::class, $filters->userId),
+                ])),
+            ])
+            ->all());
     }
 
     /**
@@ -159,14 +226,23 @@ class CustomerAnalysisReportController extends Controller {
      *   avgEntryMinutes:int,
      *   trend30d:int
      * }>  $rows
+     * @param  list<array{x: string, y: float, url: string}>  $hoursSeries
      * @param  array<string, mixed>  $filters
      */
-    private function exportPdf(array $rows, string $label, string $from, string $to, array $filters, Request $request): SymfonyResponse {
+    private function exportPdf(array $rows, string $label, string $from, string $to, array $hoursSeries, array $filters, Request $request): SymfonyResponse {
         $filename = sprintf('kundenanalyse_%s_%s.pdf', $from, $to);
 
         return $this->pdfDownload('reports.pdf.customers', [
             'rows' => $rows,
             'label' => $label,
+            'chart' => [
+                'type' => 'bar-h',
+                'title' => __('Stunden je Kunde (Top 20)'),
+                'unit' => 'h',
+                'xLabel' => __('Kunde'),
+                'yLabel' => __('Stunden'),
+                'series' => array_values(array_filter($hoursSeries, static fn(array $point): bool => $point['y'] > 0)),
+            ],
         ], $filename, 'landscape', $request, 'customers-analysis', $filters);
     }
 }

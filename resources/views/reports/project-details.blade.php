@@ -19,13 +19,13 @@
             <x-slot:actions>
                 @if ($project)
                     <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.project-details', ['project_id' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId), 'export' => 'csv'])"
+                                :href="route('reports.project-details', array_merge($standardFilters->toQueryParams(), ['export' => 'csv']))"
                                 show-label>CSV</x-icon-btn>
                     <x-icon-btn icon="table_chart" tone="outline" size="sm"
-                                :href="route('reports.project-details', ['project_id' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId), 'export' => 'xlsx'])"
+                                :href="route('reports.project-details', array_merge($standardFilters->toQueryParams(), ['export' => 'xlsx']))"
                                 show-label>XLSX</x-icon-btn>
                     <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                                :href="route('reports.project-details', ['project_id' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId), 'export' => 'pdf'])"
+                                :href="route('reports.project-details', array_merge($standardFilters->toQueryParams(), ['export' => 'pdf']))"
                                 show-label>PDF</x-icon-btn>
                 @endif
             </x-slot:actions>
@@ -33,16 +33,14 @@
     </x-slot:toolbar>
 
     <x-filter-bar :action="route('reports.project-details')" :reset="route('reports.project-details')">
-        <x-filter-field :label="__('Projekt')" for="rep-project">
-            <select id="rep-project" name="project_id" class="select select-sm select-bordered" data-autosubmit>
-                @foreach ($projects as $p)
-                    <option value="{{ $p->sqid }}" @selected(\App\Support\Sqid::encode(\App\Models\Project::class, $projectId) === $p->sqid)>
-                        {{ $p->name }}@if ($p->customer) — {{ $p->customer->name }}@endif
-                    </option>
-                @endforeach
-            </select>
-        </x-filter-field>
+        @include('reports._standard_filters', ['idPrefix' => 'project-details'])
     </x-filter-bar>
+
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.line :title="__('Stundenverlauf im Zeitraum')" unit="h" :series="$timelineSeries" :x-label="__('Zeitpunkt')" :y-label="__('Stunden')" />
+        <x-charts.bar :title="__('Ist- und Plan-Stunden je Monat')" unit="h" :series="$planIstSeries" :median="$planIstMedian" :x-label="__('Monat')" :y-label="__('Ist')" :y2-label="__('Plan')" />
+    </div>
+    <x-charts.stacked-bar :title="__('Stunden nach Auftragstyp je Monat')" unit="h" :series="$typeMonthlySeries" :bands="$typeBands" :x-label="__('Monat')" />
 
     @if (! $project)
         <div class="alert">{{ __('Kein Projekt vorhanden.') }}</div>

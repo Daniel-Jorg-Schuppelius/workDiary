@@ -32,14 +32,23 @@
         <x-page-toolbar :subtitle="__('sla.report.subtitle')">
             <x-slot:actions>
                 <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.sla', ['export' => 'csv'])"
+                            :href="route('reports.sla', array_merge($standardFilters->toQueryParams(), ['export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.sla', ['export' => 'pdf'])"
+                            :href="route('reports.sla', array_merge($standardFilters->toQueryParams(), ['export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    <x-filter-bar :action="route('reports.sla')" :reset="route('reports.sla')">
+        @include('reports._standard_filters', ['idPrefix' => 'sla'])
+    </x-filter-bar>
+
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.bar :title="__('SLA-Erfüllung (%) je Monat')" unit="%" :series="$complianceSeries" :median="$complianceMedian" :x-label="__('Monat')" :y-label="__('Erfüllung (%)')" />
+        <x-charts.bar-h :title="__('Verletzungen je Kunde (Top 15)')" :unit="__('Verletzungen')" :series="$violationCustomerSeries" :x-label="__('Kunde')" :y-label="__('Anzahl')" />
+    </div>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
         <x-kpi-tile :label="__('sla.report.total_tickets')" :value="$total_tickets" />

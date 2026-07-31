@@ -11,6 +11,7 @@
 @endsection
 
 @section('pdf-table')
+    @include('reports.pdf.charts._chart')
     @php
         $money = fn (float $v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) . ' €';
         $num   = fn (float $v, int $d = 2) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, $d, withThousandsSeparator: true);

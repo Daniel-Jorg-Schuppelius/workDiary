@@ -37,6 +37,8 @@ class SchedulerRegistrationTest extends TestCase {
         'operations:scan' => ['0 * * * *', true, true],
         // Neu mit MVP-054 (kein Alt-Eintrag): Update-Check (Opt-in-Gate im Command).
         'updates:check' => ['30 6 * * *', true, true],
+        // Neuigkeiten-Rail (Opt-in-Gate im Command; externer Abruf nie im Web-Request).
+        'news-feed:refresh' => ['*/30 * * * *', true, true],
         // Neu mit Bauturbo A17 (MVP-335): täglicher GoBD-Integritätsnachweis.
         'audit:verify' => ['30 2 * * *', true, true],
         // Vollaudit 2026-07 (H10/H13/N17): E-Mail-Eingang, Domain-Sync/-Events,

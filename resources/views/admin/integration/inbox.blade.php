@@ -79,6 +79,10 @@
                             <span class="font-semibold">{{ __('Bestellung') }} {{ $g['order_id'] }}</span>
                             <span class="text-sm text-base-content/60">· {{ $g['customer_name'] ?? $g['buyer_name'] }}</span>
                             <span class="badge badge-sm badge-outline">{{ $g['source'] }}</span>
+                        @elseif ($form === 'phone_number')
+                            <span class="font-semibold">{{ $g['number'] }}</span>
+                            @if ($g['name'] ?? null)<span class="text-sm text-base-content/60">· {{ $g['name'] }}</span>@endif
+                            @if ($g['shared'])<span class="badge badge-sm badge-outline" title="{{ __('Geteilte Nummer — Zuordnung gilt nur für diesen Anruf') }}">{{ __('geteilt') }}</span>@endif
                         @else
                             <span class="font-semibold">{{ $g['project_name'] ?: __('(ohne Projekt)') }}</span>
                             @if ($g['client_name'] ?? null)<span class="text-sm text-base-content/60">· {{ $g['client_name'] }}</span>@endif
@@ -148,6 +152,48 @@
                             <button type="submit" class="btn btn-sm btn-primary">{{ __('An Gerät binden & buchen') }}</button>
                             <a href="{{ route('admin.remote-support.pending.index') }}" class="btn btn-sm btn-ghost">{{ __('Neues Gerät / Mehrkundengerät …') }}</a>
                             <button type="submit" form="{{ $dismissFormId }}" class="btn btn-sm btn-ghost">{{ __('Gruppe verwerfen') }}</button>
+                        </form>
+                    @elseif ($form === 'phone_number')
+                        {{-- FritzBox: unbekannte Rufnummer einem Kunden/Endkunden zuordnen.
+                             „Merken" lernt die Nummer dauerhaft; „geteilte Nummer" schaltet auf
+                             Einzelzuordnung je Anruf (Dienstleister-Hotline im Kundenauftrag);
+                             „ignorieren" filtert die Nummer künftig komplett (privat/Spam). --}}
+                        <form method="POST" action="{{ route('admin.integration.inbox.group.book') }}" class="flex flex-wrap items-end gap-2">
+                            @csrf
+                            <input type="hidden" name="plugin" value="{{ $g['plugin_id'] }}">
+                            <input type="hidden" name="group_key" value="{{ $g['group_key'] }}">
+                            <select name="customer" class="select select-sm select-bordered">
+                                <option value="">{{ __('… Kunde auswählen') }}</option>
+                                @foreach ($customerOptions as $sqid => $label)
+                                    <option value="{{ $sqid }}" @selected(($g['suggested_customer_sqid'] ?? null) === $sqid)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <select name="foreign_customer" class="select select-sm select-bordered">
+                                <option value="">{{ __('… oder Endkunde (optional)') }}</option>
+                                @foreach ($foreignCustomers as $fcGroup)
+                                    <optgroup label="{{ $fcGroup['label'] }}">
+                                        @foreach ($fcGroup['foreigns'] as $fc)
+                                            <option value="{{ $fc['sqid'] }}" @selected(($g['suggested_foreign_sqid'] ?? null) === $fc['sqid'])>{{ $fc['name'] }}</option>
+                                        @endforeach
+                                    </optgroup>
+                                @endforeach
+                            </select>
+                            @if (! $g['shared'])
+                                <label class="label cursor-pointer gap-2 py-1">
+                                    <input type="hidden" name="remember" value="0">
+                                    <input type="checkbox" name="remember" value="1" checked class="checkbox checkbox-sm">
+                                    <span class="text-sm">{{ __('Nummer dauerhaft merken') }}</span>
+                                </label>
+                            @endif
+                            <button type="submit" name="action" value="assign" class="btn btn-sm btn-primary">{{ __('Zuordnen & buchen') }}</button>
+                            @if (! $g['shared'])
+                                <button type="submit" name="action" value="shared" class="btn btn-sm btn-outline"
+                                        title="{{ __('Künftige Anrufe dieser Nummer landen einzeln zur Zuordnung in der Inbox (z. B. Dienstleister-Hotline im Kundenauftrag).') }}">{{ __('Geteilte Nummer') }}</button>
+                                <button type="submit" name="action" value="ignore" class="btn btn-sm btn-ghost"
+                                        data-confirm-dialog data-confirm-message="{{ __('Diese Nummer dauerhaft ignorieren? Künftige Anrufe werden nicht mehr importiert.') }}">{{ __('Nummer ignorieren') }}</button>
+                            @endif
+                            <button type="submit" form="{{ $dismissFormId }}" class="btn btn-sm btn-ghost"
+                                    title="{{ __('Nur diese Anrufe verwerfen — die Nummer taucht beim nächsten Import wieder auf.') }}">{{ __('Gruppe verwerfen') }}</button>
                         </form>
                     @elseif ($form === 'b2b_order')
                         {{-- openTRANS-Bestellung (Feature 099): Kunde bestätigen/wählen,

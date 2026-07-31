@@ -13,9 +13,10 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\Attendance\AttendanceStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{Attendance, TimeEntry, User, WorkSchedule};
-use Carbon\{CarbonImmutable, CarbonInterface, CarbonPeriod};
+use App\Services\Reporting\ReportFilters;
+use Carbon\{Carbon, CarbonImmutable, CarbonInterface, CarbonPeriod};
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
@@ -30,25 +31,32 @@ class AttendanceReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use ResolvesReportScope;
+    use ResolvesStandardReportFilters;
     use WritesReportCsv;
+
+    /** Ab dieser Zeitraumlänge wird die Zeitverlauf-Serie wochenweise aggregiert. */
+    private const WEEKLY_THRESHOLD_DAYS = 62;
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
         [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
 
-        $range = $this->globalDateRange();
-        $from = $range['from'];
-        $to = $range['to'];
+        [$from, $to] = $this->resolveRange($request);
         $fromStr = $from->toDateString();
         $toStr = $to->toDateString();
 
-        $rows = $this->aggregate($from, $to, $scope, $userId);
+        $filters = $this->standardFilters($request, ['user', 'team'], $from, $to, scope: $scope);
+
+        $rows = $this->aggregate($from, $to, $scope, $userId, $filters);
+        $exportFilters = array_merge(['scope' => $scope], $filters->toAuditArray());
+        $weekdayLabels = $this->weekdayLabels();
+        $heatmapRows = $this->weekdayHeatmapRows($from, $to, $rows);
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($rows, $fromStr, $toStr, $scope, $request);
+            return $this->exportCsv($rows, $fromStr, $toStr, $exportFilters, $request);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($rows, $fromStr, $toStr, $scope, $request);
+            return $this->exportPdf($rows, $fromStr, $toStr, $scope, $heatmapRows, $weekdayLabels, $exportFilters, $request);
         }
 
         return view('reports.attendance', [
@@ -58,7 +66,117 @@ class AttendanceReportController extends Controller {
             'scope' => $scope,
             'isAdmin' => $isAdmin,
             'totals' => $this->totals($rows),
+            'standardFilters' => $filters,
+            'filterFields' => ['user', 'team'],
+            'heatmapRows' => $heatmapRows,
+            'weekdayLabels' => $weekdayLabels,
+            'timelineSeries' => $this->timelineSeries($from, $to, $rows),
+            ...$this->standardFilterOptions(['user', 'team'], $filters),
         ]);
+    }
+
+    /**
+     * Lokalisierte Wochentagskürzel Mo–So für die Heatmap-Spalten.
+     *
+     * @return list<string>
+     */
+    private function weekdayLabels(): array {
+        $locale = app()->getLocale();
+        $monday = Carbon::now()->startOfWeek();
+        $labels = [];
+        for ($i = 0; $i < 7; $i++) {
+            $day = $monday->copy()->addDays($i);
+            $day->locale($locale);
+            $labels[] = $day->isoFormat('dd');
+        }
+
+        return $labels;
+    }
+
+    /**
+     * Heatmap Mitarbeiter × Wochentag (Anwesenheitsminuten; Anzeige h:mm).
+     *
+     * @param  array<int, array{user: User, attendance_minutes:int, time_entry_minutes:int, target_minutes:int, workdays:int, variance:int}>  $rows
+     * @return list<array{label: string, cells: list<array{value: int}>}>
+     */
+    private function weekdayHeatmapRows(CarbonImmutable $from, CarbonImmutable $to, array $rows): array {
+        if ($rows === []) {
+            return [];
+        }
+        $userIds = array_map(static fn(array $r): int => (int) $r['user']->id, $rows);
+
+        $attendances = Attendance::query()
+            ->whereIn('user_id', $userIds)
+            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereNotIn('status', [AttendanceStatus::Cancelled->value, AttendanceStatus::Open->value])
+            ->get(['user_id', 'date', 'duration_minutes']);
+        if ($attendances->isEmpty()) {
+            return []; // Leerzustand statt Null-Matrix (§Diagramm-UX).
+        }
+
+        /** @var array<int, array<int, int>> $byUserDay [user_id][0..6] => minutes */
+        $byUserDay = [];
+        foreach ($attendances as $a) {
+            $idx = CarbonImmutable::parse((string) $a->date)->dayOfWeekIso - 1;
+            $uid = (int) $a->user_id;
+            $byUserDay[$uid][$idx] = ($byUserDay[$uid][$idx] ?? 0) + (int) $a->duration_minutes;
+        }
+
+        $heatmap = [];
+        foreach ($rows as $r) {
+            $uid = (int) $r['user']->id;
+            $cells = [];
+            for ($i = 0; $i < 7; $i++) {
+                $cells[] = ['value' => $byUserDay[$uid][$i] ?? 0];
+            }
+            $heatmap[] = ['label' => (string) $r['user']->name, 'cells' => $cells];
+        }
+
+        return $heatmap;
+    }
+
+    /**
+     * Anwesenheitsstunden im Zeitverlauf — je Tag, bei langen Zeiträumen je
+     * ISO-Woche (über alle gefilterten Mitarbeiter summiert).
+     *
+     * @param  array<int, array{user: User, attendance_minutes:int, time_entry_minutes:int, target_minutes:int, workdays:int, variance:int}>  $rows
+     * @return list<array{x: string, y: float}>
+     */
+    private function timelineSeries(CarbonImmutable $from, CarbonImmutable $to, array $rows): array {
+        if ($rows === []) {
+            return [];
+        }
+        $userIds = array_map(static fn(array $r): int => (int) $r['user']->id, $rows);
+
+        /** @var array<string, int> $minutesByDate */
+        $minutesByDate = Attendance::query()
+            ->whereIn('user_id', $userIds)
+            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereNotIn('status', [AttendanceStatus::Cancelled->value, AttendanceStatus::Open->value])
+            ->selectRaw('date, COALESCE(SUM(duration_minutes), 0) as m')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->pluck('m', 'date')
+            ->map(static fn($v): int => (int) $v)
+            ->all();
+        if ($minutesByDate === [] || array_sum($minutesByDate) === 0) {
+            return []; // Leerzustand statt Null-Linie (§Diagramm-UX).
+        }
+
+        $weekly = (int) $from->diffInDays($to) > self::WEEKLY_THRESHOLD_DAYS;
+        $buckets = [];
+        foreach ($minutesByDate as $dateStr => $minutes) {
+            $date = CarbonImmutable::parse((string) $dateStr);
+            $key = $weekly ? sprintf('KW %02d/%04d', $date->isoWeek, $date->isoWeekYear) : $date->isoFormat('DD.MM.');
+            $buckets[$key] = ($buckets[$key] ?? 0) + $minutes;
+        }
+
+        $series = [];
+        foreach ($buckets as $key => $minutes) {
+            $series[] = ['x' => (string) $key, 'y' => round($minutes / 60, 1)];
+        }
+
+        return $series;
     }
 
     /**
@@ -71,7 +189,7 @@ class AttendanceReportController extends Controller {
      *   variance: int
      * }>
      */
-    private function aggregate(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId): array {
+    private function aggregate(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): array {
         // Mandantengrenze: User hat KEINEN globalen OrganizationScope — ohne expliziten
         // Org-Filter erschienen im Team-Scope User aller Orgs als Zeilen (Tenant-Leak, Bauturbo A17).
         $usersQuery = User::query()
@@ -80,6 +198,7 @@ class AttendanceReportController extends Controller {
         if ($scope === 'mine') {
             $usersQuery->where('id', $userId);
         }
+        $filters->applyUserAndTeam($usersQuery, 'id');
         /** @var Collection<int, User> $users */
         $users = $usersQuery->get(['id', 'name']);
 
@@ -215,8 +334,9 @@ class AttendanceReportController extends Controller {
 
     /**
      * @param  array<int, array{user: User, attendance_minutes:int, time_entry_minutes:int, target_minutes:int, workdays:int, variance:int}>  $rows
+     * @param  array<string, mixed>  $exportFilters
      */
-    private function exportCsv(array $rows, string $from, string $to, string $scope, Request $request): Response {
+    private function exportCsv(array $rows, string $from, string $to, array $exportFilters, Request $request): Response {
         $filename = sprintf('anwesenheit_%s_%s.csv', $from, $to);
         $out = [];
         $out[] = ['Mitarbeiter', 'Arbeitstage', 'Soll (min)', 'Anwesend (min)', 'Gebucht (min)', 'Saldo (min)'];
@@ -226,13 +346,16 @@ class AttendanceReportController extends Controller {
         $totals = $this->totals($rows);
         $out[] = ['GESAMT', '', $totals['target'], $totals['attendance'], $totals['time_entry'], $totals['variance']];
 
-        return $this->csvWithMetadata($out, $filename, 'attendance', ['from' => $from, 'to' => $to, 'scope' => $scope], $request);
+        return $this->csvWithMetadata($out, $filename, 'attendance', $exportFilters, $request);
     }
 
     /**
      * @param  array<int, array{user: User, attendance_minutes:int, time_entry_minutes:int, target_minutes:int, workdays:int, variance:int}>  $rows
+     * @param  list<array{label: string, cells: list<array{value: int}>}>  $heatmapRows
+     * @param  list<string>  $weekdayLabels
+     * @param  array<string, mixed>  $exportFilters
      */
-    private function exportPdf(array $rows, string $from, string $to, string $scope, Request $request): SymfonyResponse {
+    private function exportPdf(array $rows, string $from, string $to, string $scope, array $heatmapRows, array $weekdayLabels, array $exportFilters, Request $request): SymfonyResponse {
         $filename = sprintf('anwesenheit_%s_%s.pdf', $from, $to);
         return $this->pdfDownload('reports.pdf.attendance', [
             'rows' => $rows,
@@ -240,6 +363,15 @@ class AttendanceReportController extends Controller {
             'from' => $from,
             'to' => $to,
             'scope' => $scope,
-        ], $filename, request: $request, reportCode: 'attendance', filters: ['from' => $from, 'to' => $to, 'scope' => $scope]);
+            'chart' => [
+                'type' => 'heatmap',
+                'title' => __('Anwesenheit je Mitarbeiter und Wochentag'),
+                'unit' => 'h',
+                'xLabel' => __('Mitarbeiter'),
+                'rows' => $heatmapRows,
+                'colLabels' => $weekdayLabels,
+                'format' => fn(float $minutes): string => intdiv((int) $minutes, 60) . ':' . str_pad((string) ((int) $minutes % 60), 2, '0', STR_PAD_LEFT),
+            ],
+        ], $filename, request: $request, reportCode: 'attendance', filters: $exportFilters);
     }
 }

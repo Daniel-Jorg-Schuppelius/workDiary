@@ -37,7 +37,7 @@ class MailIntakeService {
     ) {}
 
     /**
-     * @return 'created'|'skipped'|'ticket_message'|'einvoice'|'b2b_order'
+     * @return 'created'|'skipped'|'ticket_message'|'einvoice'|'b2b_order'|'callreport'
      */
     public function intake(Organization $organization, EmailConnection $connection, ParsedMessage $message): string {
         // openTRANS-Bestellungen (Feature 099, MVP-458): XML-Anhänge zuerst als
@@ -55,6 +55,16 @@ class MailIntakeService {
         // Eingangsverarbeitung wie der Upload; nicht lesbare Nachrichten fallen in die normale Inbox durch.
         if ($connection->einvoice_intake && $message->attachments !== []) {
             $result = $this->intakeEInvoices($organization, $connection, $message);
+            if ($result !== null) {
+                return $result;
+            }
+        }
+
+        // Telefonbericht-Postfach (FritzBox-Plugin): CSV-Anhänge der monatlichen
+        // Push-Mail laufen in den Anruflisten-Import — VOR Ticket/Inbox, sonst
+        // frisst die generische Inbox die Mail. Kein Anrufbericht → normaler Weg.
+        if ($connection->callreport_intake && $message->attachments !== []) {
+            $result = $this->intakeCallReports($organization, $message);
             if ($result !== null) {
                 return $result;
             }
@@ -240,6 +250,53 @@ class MailIntakeService {
         }
         if ($duplicates > 0) {
             return 'skipped'; // bereits erfasst — kein zweites Document, kein Inbox-Item
+        }
+
+        return null;
+    }
+
+    /**
+     * FRITZ!Box-Telefonberichte übernehmen (FritzBox-Plugin, Push-Mail): jeder
+     * CSV-taugliche Anhang wird inhaltsbasiert geprüft — der MIME-Typ der
+     * Push-Mails ist unzuverlässig (text/plain, octet-stream) — und in den
+     * Anruflisten-Import gereicht. `null` = kein Anrufbericht bzw. Plugin für
+     * die Organisation aus → normaler Inbox-Weg (nichts verschlucken). Erneut
+     * zugestellte Berichte deduplizieren über die Call-Keys des Imports.
+     *
+     * @return 'callreport'|'skipped'|null
+     */
+    private function intakeCallReports(Organization $organization, ParsedMessage $message): ?string {
+        $config = \App\Plugins\Fritzbox\FritzboxConfig::resolve($organization->id);
+        if (! $config['enabled']) {
+            return null;
+        }
+
+        $service = app(\App\Plugins\Fritzbox\FritzboxImportService::class);
+        $processed = 0;
+        $duplicates = 0;
+        foreach ($message->attachments as $attachment) {
+            $isCandidate = str_contains($attachment->mime, 'csv')
+                || str_contains($attachment->mime, 'text/plain')
+                || str_contains($attachment->mime, 'octet-stream')
+                || str_ends_with(strtolower($attachment->filename), '.csv');
+            if (! $isCandidate || ! \App\Plugins\Fritzbox\Sources\FritzboxCsvParser::looksLikeCallReport($attachment->content)) {
+                continue;
+            }
+
+            try {
+                $result = $service->importFromCsv($organization, $attachment->content, $config);
+            } catch (\RuntimeException) {
+                continue; // doch keine lesbare Anrufliste / kein buchbarer Benutzer → andere Pipelines
+            }
+
+            $result['created'] + $result['linked'] + $result['pending'] > 0 ? $processed++ : $duplicates++;
+        }
+
+        if ($processed > 0) {
+            return 'callreport';
+        }
+        if ($duplicates > 0) {
+            return 'skipped'; // bereits erfasst — kein Inbox-Item
         }
 
         return null;

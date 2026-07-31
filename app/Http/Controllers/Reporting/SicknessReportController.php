@@ -13,11 +13,13 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\Sickness\SickLeaveKind;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\ResolvesReportScope;
+use App\Http\Controllers\Reporting\Concerns\{ResolvesReportScope, ResolvesStandardReportFilters};
 use App\Models\{SickLeave, User};
 use App\Services\HolidayService;
+use App\Services\Reporting\ReportFilters;
 use App\Services\Sickness\ContinuedPaymentService;
 use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -33,6 +35,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 class SicknessReportController extends Controller {
     use ResolvesGlobalDateRange;
     use ResolvesReportScope;
+    use ResolvesStandardReportFilters;
 
     public function __construct(
         private readonly HolidayService $holidayService,
@@ -43,10 +46,15 @@ class SicknessReportController extends Controller {
         $userId = (int) Auth::id();
         [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
 
-        [$fromDate, $toDate] = $this->globalDateRangeBounds();
+        [$fromDate, $toDate] = $this->resolveRange($request);
 
-        $rows = $this->aggregate($fromDate, $toDate, $scope, $userId);
+        $filters = $this->standardFilters($request, ['user', 'team'], $fromDate, $toDate, scope: $scope);
+
+        $leaves = $this->loadLeaves($fromDate, $toDate, $scope, $userId, $filters);
+        $rows = $this->aggregate($fromDate, $toDate, $leaves);
         $totals = $this->totals($rows);
+        $months = $this->buildMonthsInRange($fromDate, $toDate);
+        $monthlySeries = $this->monthlySickSeries($fromDate, $toDate, $leaves, $months);
 
         return view('reports.sickness', [
             'from' => $fromDate->toDateString(),
@@ -55,9 +63,134 @@ class SicknessReportController extends Controller {
             'isAdmin' => $isAdmin,
             'rows' => $rows,
             'totals' => $totals,
+            'standardFilters' => $filters,
+            'filterFields' => ['user', 'team'],
+            'monthlySeries' => $monthlySeries,
+            'monthlyMedian' => $monthlySeries === [] ? null : NumberHelper::median(array_column($monthlySeries, 'y')),
+            'monthLabels' => array_column($months, 'shortLabel'),
+            'heatmapRows' => $this->userMonthHeatmapRows($fromDate, $toDate, $leaves, $rows, $months),
+            ...$this->standardFilterOptions(['user', 'team'], $filters),
         ]);
     }
+
     /**
+     * Krankmeldungen des Zeitraums (Scope + Standardfilter angewandt) —
+     * eine Query für Tabelle und beide Diagramme.
+     *
+     * @return Collection<int, SickLeave>
+     */
+    private function loadLeaves(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): Collection {
+        $q = SickLeave::query()
+            ->whereNull('cancelled_at')
+            ->where('end_date', '>=', $from->toDateString())
+            ->where('start_date', '<=', $to->toDateString());
+        if ($scope === 'mine') {
+            $q->where('user_id', $userId);
+        }
+        $filters->applyUserAndTeam($q);
+
+        /** @var Collection<int, SickLeave> $leaves */
+        $leaves = $q->with('attachments')->get();
+
+        return $leaves;
+    }
+
+    /**
+     * Kranktage (Werktage) je Monat über alle gefilterten Mitarbeiter.
+     *
+     * @param  Collection<int, SickLeave>  $leaves
+     * @param  list<array{key:string,year:int,month:int,label:string,shortLabel:string}>  $months
+     * @return list<array{x: string, y: int}>
+     */
+    private function monthlySickSeries(CarbonImmutable $from, CarbonImmutable $to, Collection $leaves, array $months): array {
+        if ($leaves->isEmpty() || $months === []) {
+            return []; // Leerzustand statt Null-Achse (§Diagramm-UX).
+        }
+
+        /** @var array<string, int> $buckets */
+        $buckets = [];
+        foreach ($months as $month) {
+            $buckets[$month['key']] = 0;
+        }
+        foreach ($leaves as $leave) {
+            $this->addWorkdaysPerMonth($buckets, $leave, $from, $to);
+        }
+        if (array_sum($buckets) === 0) {
+            return [];
+        }
+
+        $series = [];
+        foreach ($months as $month) {
+            $series[] = ['x' => $month['shortLabel'], 'y' => $buckets[$month['key']]];
+        }
+
+        return $series;
+    }
+
+    /**
+     * Heatmap Mitarbeiter × Monat (Kranktage als Werktage).
+     *
+     * @param  Collection<int, SickLeave>  $leaves
+     * @param  array<int, array{user: User, sick_workdays:int, sick_calendar_days:int, episodes:int, follow_ups:int, with_au:int, entitlement_days:int, used_days:int, remaining_days:int, exhausted:bool, chain_start:?string, exhaustion_date:?string}>  $rows
+     * @param  list<array{key:string,year:int,month:int,label:string,shortLabel:string}>  $months
+     * @return list<array{label: string, cells: list<array{value: int}>}>
+     */
+    private function userMonthHeatmapRows(CarbonImmutable $from, CarbonImmutable $to, Collection $leaves, array $rows, array $months): array {
+        if ($leaves->isEmpty() || $months === [] || $rows === []) {
+            return []; // Leerzustand statt Null-Matrix (§Diagramm-UX).
+        }
+
+        /** @var array<int, array<string, int>> $byUserMonth */
+        $byUserMonth = [];
+        $emptyBuckets = [];
+        foreach ($months as $month) {
+            $emptyBuckets[$month['key']] = 0;
+        }
+        foreach ($leaves as $leave) {
+            $uid = (int) $leave->user_id;
+            $byUserMonth[$uid] ??= $emptyBuckets;
+            $this->addWorkdaysPerMonth($byUserMonth[$uid], $leave, $from, $to);
+        }
+
+        $heatmap = [];
+        foreach ($rows as $r) {
+            $uid = (int) $r['user']->id;
+            $cells = [];
+            foreach ($months as $month) {
+                $cells[] = ['value' => $byUserMonth[$uid][$month['key']] ?? 0];
+            }
+            $heatmap[] = ['label' => (string) $r['user']->name, 'cells' => $cells];
+        }
+
+        return $heatmap;
+    }
+
+    /**
+     * Verteilt die Werktage einer Krankmeldung (auf den Report-Zeitraum
+     * geklammert) monatsweise auf die übergebenen Buckets.
+     *
+     * @param  array<string, int>  $buckets
+     */
+    private function addWorkdaysPerMonth(array &$buckets, SickLeave $leave, CarbonImmutable $from, CarbonImmutable $to): void {
+        $start = $leave->start_date->greaterThan($from) ? CarbonImmutable::parse($leave->start_date->toDateString()) : $from;
+        $end = $leave->end_date->lessThan($to) ? CarbonImmutable::parse($leave->end_date->toDateString()) : $to;
+        if ($start->greaterThan($end)) {
+            return;
+        }
+
+        $cursor = $start->startOfMonth();
+        while ($cursor->lte($end)) {
+            $monthKey = $cursor->format('Y-m');
+            $chunkStart = $start->greaterThan($cursor) ? $start : $cursor;
+            $chunkEnd = $end->lessThan($cursor->endOfMonth()) ? $end : $cursor->endOfMonth();
+            if (array_key_exists($monthKey, $buckets)) {
+                $buckets[$monthKey] += $this->countWorkdays($chunkStart, $chunkEnd);
+            }
+            $cursor = $cursor->addMonth();
+        }
+    }
+    /**
+     * @param  Collection<int, SickLeave>  $leaves
      * @return array<int, array{
      *   user: User,
      *   sick_workdays:int,
@@ -73,17 +206,7 @@ class SicknessReportController extends Controller {
      *   exhaustion_date:?string
      * }>
      */
-    private function aggregate(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId): array {
-        $q = SickLeave::query()
-            ->whereNull('cancelled_at')
-            ->where('end_date', '>=', $from->toDateString())
-            ->where('start_date', '<=', $to->toDateString());
-        if ($scope === 'mine') {
-            $q->where('user_id', $userId);
-        }
-        /** @var Collection<int, SickLeave> $leaves */
-        $leaves = $q->with('attachments')->get();
-
+    private function aggregate(CarbonImmutable $from, CarbonImmutable $to, Collection $leaves): array {
         /** @var array<int, array{workdays:int, cal:int, episodes:int, follow:int, with_au:int}> $byUser */
         $byUser = [];
         foreach ($leaves as $s) {

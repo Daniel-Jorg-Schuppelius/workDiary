@@ -4,6 +4,8 @@
 @section('pdf-heading', 'Kundenanalyse')
 
 @section('pdf-table')
+    @include('reports.pdf.charts._chart')
+
     <table>
         <thead>
             <tr>

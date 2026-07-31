@@ -18,6 +18,7 @@
 @endsection
 
 @section('pdf-table')
+    @include('reports.pdf.charts._chart')
     @php
         $pct = fn (?float $v) => $v !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v * 100, 1, withThousandsSeparator: true) . ' %' : '–';
         $fmtMin = function (int $minutes): string {

@@ -22,6 +22,17 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
+    <x-filter-bar :action="route('reports.data-quality')" :reset="route('reports.data-quality')">
+        @include('reports._standard_filters', ['idPrefix' => 'data-quality'])
+    </x-filter-bar>
+
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.bar :title="__('Aufträge mit Klassifikationslücken je Monat')" :unit="__('Aufträge')"
+                      :series="$gapsMonthlySeries" :x-label="__('Monat')" :y-label="__('Aufträge')" />
+        <x-charts.bar-h :title="__('Fehlende Klassifikationen je Kunde (Top 15)')" :unit="__('Lücken')"
+                        :series="$gapsByCustomerSeries" :x-label="__('Kunde')" :y-label="__('Lücken')" />
+    </div>
+
     <div class="grid gap-4 sm:grid-cols-3">
         <x-kpi-tile :label="__('Aufträge mit Lücken')" :value="$entries_with_gaps"
                     :tone="$entries_with_gaps > 0 ? 'warning' : 'success'" />

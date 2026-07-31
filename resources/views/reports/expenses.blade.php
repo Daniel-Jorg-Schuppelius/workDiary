@@ -17,15 +17,13 @@
                 </select>
             </x-filter-field>
         @endif
-        <x-filter-field :label="__('Status')" for="rep-status">
-            <select id="rep-status" name="status" class="select select-sm select-bordered" data-autosubmit>
-                <option value="">{{ __('Alle') }}</option>
-                @foreach ($statusOptions as $opt)
-                    <option value="{{ $opt->value }}" @selected($statusFilter === $opt->value)>{{ $opt->label() }}</option>
-                @endforeach
-            </select>
-        </x-filter-field>
+        @include('reports._standard_filters', ['idPrefix' => 'expenses', 'statusOptions' => $statusOptions, 'statusLabel' => __('Status')])
     </x-filter-bar>
+
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.stacked-bar :title="__('Spesen (€) je Monat nach Kategorie')" unit="€" :series="$monthlyCategorySeries" :bands="$categoryBands" :x-label="__('Monat')" />
+        <x-charts.bar-h :title="__('Top-Verursacher (Top 15)')" unit="€" :series="$topSpenderSeries" :x-label="__('Mitarbeiter')" :y-label="__('Brutto (€)')" />
+    </div>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
         <x-kpi-tile :label="__('Summe (Brutto)')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($grandTotal, 2, withThousandsSeparator: true) . ' €'" />

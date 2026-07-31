@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\ResolvesStandardReportFilters;
 use App\Models\TimeEntry;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -28,10 +29,11 @@ use Illuminate\View\View;
  */
 class MyYearReportController extends Controller {
     use ResolvesGlobalDateRange;
+    use ResolvesStandardReportFilters;
 
     public function index(Request $request): View {
         $userId = (int) Auth::id();
-        $year = (int) $this->globalDateRange()['from']->year;
+        $year = (int) $this->resolveRange($request)[0]->year;
         $year = max(2000, min(2100, $year));
 
         $kind = (string) $request->input('kind', 'all');
@@ -43,6 +45,8 @@ class MyYearReportController extends Controller {
         $start = Carbon::create($year, 1, 1, 0, 0, 0) ?: Carbon::now()->startOfYear();
         $end = $start->copy()->endOfYear();
 
+        $filters = $this->standardFilters($request, ['customer', 'project'], $start->toImmutable(), $end->toImmutable());
+
         $query = TimeEntry::query()
             ->where('user_id', $userId)
             ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
@@ -50,6 +54,7 @@ class MyYearReportController extends Controller {
         if ($kind !== 'all') {
             $query->where('kind', $kind);
         }
+        $filters->applyToTimeEntryQuery($query);
 
         // Aggregation in PHP (DB-agnostisch). Datensatz ist bounded (ein User,
         // ein Jahr), Performance unkritisch.
@@ -79,12 +84,28 @@ class MyYearReportController extends Controller {
 
         $monthNames = [];
         $daysInMonth = [];
+        $monthUrls = [];
+        $monthlySeries = [];
         $locale = app()->getLocale();
         for ($m = 1; $m <= 12; $m++) {
             $first = Carbon::create($year, $m, 1, 0, 0, 0) ?: Carbon::now();
             $first->locale($locale);
             $monthNames[$m] = $first->isoFormat('MMMM');
             $daysInMonth[$m] = (int) $first->daysInMonth;
+            // Drilldown: Monat in „Mein Monat" öffnen — Zeitraum + Filterkontext erben.
+            $monthUrls[$m] = route('reports.my-month', array_merge($filters->toQueryParams(), [
+                'from' => $first->toDateString(),
+                'to' => $first->copy()->endOfMonth()->toDateString(),
+                'kind' => $kind,
+            ]));
+            $monthlySeries[] = [
+                'x' => $first->isoFormat('MMM'),
+                'y' => round($monthTotals[$m] / 60, 1),
+                'url' => $monthUrls[$m],
+            ];
+        }
+        if ($yearTotal === 0) {
+            $monthlySeries = []; // Leerzustand statt Null-Achse (§Diagramm-UX).
         }
 
         return view('reports.my-year', [
@@ -98,6 +119,11 @@ class MyYearReportController extends Controller {
             'monthNames' => $monthNames,
             'daysInMonth' => $daysInMonth,
             'maxCell' => $maxCell,
+            'monthUrls' => $monthUrls,
+            'monthlySeries' => $monthlySeries,
+            'standardFilters' => $filters,
+            'filterFields' => ['customer', 'project'],
+            ...$this->standardFilterOptions(['customer', 'project'], $filters),
         ]);
     }
 }

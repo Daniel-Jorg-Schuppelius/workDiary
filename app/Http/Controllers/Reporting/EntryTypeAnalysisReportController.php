@@ -13,76 +13,128 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\Diary\Status as DiaryStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{Customer, EntryType, User};
-use App\Services\Reporting\EntryTypeAnalysisReportBuilder;
-use App\Support\Sqid;
+use App\Services\Reporting\{EntryTypeAnalysisReportBuilder, ReportFilters};
+use App\Support\{CarbonFmt, Sqid};
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class EntryTypeAnalysisReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
     public function __construct(private readonly EntryTypeAnalysisReportBuilder $builder) {}
 
     public function index(Request $request): View|Response|SymfonyResponse {
-        $range = $this->globalDateRange();
-        [$from, $to] = $this->globalDateRangeBounds();
+        [$from, $to] = $this->resolveRange($request);
+        $label = CarbonFmt::fdate($from) . ' – ' . CarbonFmt::fdate($to);
 
-        $rawCustomerId = $request->query('customer_id');
-        $rawUserId = $request->query('user_id');
-        $rawEntryTypeId = $request->query('entry_type_id');
+        $statusValues = array_map(static fn(DiaryStatus $status): string => (string) $status->value, DiaryStatus::cases());
+        $filters = $this->standardFilters($request, ['customer', 'project', 'user', 'status'], $from, $to, $statusValues);
+        // Legacy-Parameter (customer_id/user_id — alte Bookmarks) ins
+        // Standard-Set übernehmen, damit Partial, Links und Audit denselben
+        // Stand sehen. entry_type_id bleibt bewusst eigener Drilldown-Param —
+        // der Report gliedert nach Typ, entry_type gehört nicht ins Set.
+        $customerId = $filters->customerId ?? Sqid::decodeOrNumeric(Customer::class, $request->query('customer_id'));
+        $userId = $filters->userId ?? Sqid::decodeOrNumeric(User::class, $request->query('user_id'));
+        if ($customerId !== $filters->customerId || $userId !== $filters->userId) {
+            $filters = new ReportFilters(
+                from: $from,
+                to: $to,
+                customerId: $customerId,
+                projectId: $filters->projectId,
+                userId: $userId,
+                status: $filters->status,
+            );
+        }
 
-        $customerId = Sqid::decodeOrNumeric(Customer::class, $rawCustomerId);
+        $entryTypeFilter = Sqid::decodeOrNumeric(EntryType::class, $request->query('entry_type_id'));
+        $statusFilter = $filters->status !== null ? (int) $filters->status : null;
 
-        $userId = Sqid::decodeOrNumeric(User::class, $rawUserId);
+        $rows = $this->builder->build($from, $to, $customerId, $userId, $entryTypeFilter, $statusFilter, $filters->projectId);
 
-        $entryTypeFilter = Sqid::decodeOrNumeric(EntryType::class, $rawEntryTypeId);
-        $statusFilter = $request->filled('status') ? (int) $request->integer('status') : null;
-
-        $rows = $this->builder->build($from, $to, $customerId, $userId, $entryTypeFilter, $statusFilter);
-
-        $exportContext = [
-            'from' => $from->toDateString(),
-            'to' => $to->toDateString(),
-            'customer_id' => $customerId,
-            'user_id' => $userId,
-            'entry_type_id' => $entryTypeFilter,
-            'status' => $statusFilter,
-        ];
+        $exportContext = array_merge(['entry_type_id' => $entryTypeFilter], $filters->toAuditArray());
 
         if ($request->query('export') === 'csv') {
             return $this->exportCsv($rows, $from->toDateString(), $to->toDateString(), $exportContext, $request);
         }
 
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($rows, $range['label'], $from->toDateString(), $to->toDateString(), $exportContext, $request);
+            return $this->exportPdf($rows, $label, $from->toDateString(), $to->toDateString(), $exportContext, $request);
         }
 
         return view('reports.entry-types', [
             'rows' => $rows,
-            'label' => $range['label'],
+            'label' => $label,
             'from' => $from,
             'to' => $to,
-            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            // Mandantengrenze: User hat KEINEN globalen OrganizationScope —
-            // ohne expliziten Org-Filter listete das Dropdown User ALLER
-            // Organisationen (Tenant-Leak, Bauturbo A17).
-            'reportUsers' => User::query()
-                ->where('organization_id', Auth::user()?->organization_id)
-                ->orderBy('name')
-                ->get(['id', 'name']),
             'entryTypes' => EntryType::query()->ordered()->get(['id', 'label']),
             'customerId' => $customerId,
             'userId' => $userId,
             'entryTypeFilter' => $entryTypeFilter,
             'statusFilter' => $statusFilter,
+            'standardFilters' => $filters,
+            'filterFields' => ['customer', 'project', 'user', 'status'],
+            'planVsIstSeries' => $this->planVsIstSeries($rows, $filters),
+            'overrunSeries' => $this->overrunSeries($rows, $filters),
+            ...$this->standardFilterOptions(['customer', 'project', 'user'], $filters),
         ]);
+    }
+
+    /**
+     * Ø Ist vs. Ø Plan (Minuten) je Auftragstyp — Zweitserie (y2) = Plan;
+     * Drilldown öffnet die Auftragsliste des Typs mit geerbtem Filterkontext.
+     *
+     * @param  list<array<string, mixed>>  $rows
+     * @return list<array{x: string, y: float, y2: float, url: string}>
+     */
+    private function planVsIstSeries(array $rows, ReportFilters $filters): array {
+        return array_values(collect($rows)
+            ->filter(static fn(array $row): bool => (float) $row['avgActualMinutes'] > 0.0 || (float) $row['avgPlannedMinutes'] > 0.0)
+            ->map(fn(array $row): array => [
+                'x' => (string) $row['entryTypeName'],
+                'y' => (float) $row['avgActualMinutes'],
+                'y2' => (float) $row['avgPlannedMinutes'],
+                'url' => $this->entryTypeDrilldownUrl((int) $row['entryTypeId'], $filters),
+            ])
+            ->all());
+    }
+
+    /**
+     * Überzugsquote (%) je Auftragstyp, Top 15 — Überzüge haben keinen
+     * eigenen Drilldown-Endpunkt, der passende bestehende ist die
+     * Auftragsliste des Typs (wie die Typ-Spalte der Tabelle).
+     *
+     * @param  list<array<string, mixed>>  $rows
+     * @return list<array{x: string, y: float, url: string}>
+     */
+    private function overrunSeries(array $rows, ReportFilters $filters): array {
+        return array_values(collect($rows)
+            ->filter(static fn(array $row): bool => (float) $row['overrunShare'] > 0.0)
+            ->sortByDesc('overrunShare')
+            ->take(15)
+            ->map(fn(array $row): array => [
+                'x' => (string) $row['entryTypeName'],
+                'y' => (float) $row['overrunShare'],
+                'url' => $this->entryTypeDrilldownUrl((int) $row['entryTypeId'], $filters),
+            ])
+            ->all());
+    }
+
+    /** Auftragslisten-Drilldown eines Typs mit geerbtem Filterkontext. */
+    private function entryTypeDrilldownUrl(int $entryTypeId, ReportFilters $filters): string {
+        return route('diary.index', array_filter([
+            'from' => $filters->from->toDateString(),
+            'to' => $filters->to->toDateString(),
+            'customer' => Sqid::encode(Customer::class, $filters->customerId),
+            'entry_type' => $entryTypeId > 0 ? Sqid::encode(EntryType::class, $entryTypeId) : null,
+            'status' => $filters->status,
+        ]));
     }
 
     /**
@@ -183,9 +235,29 @@ class EntryTypeAnalysisReportController extends Controller {
     private function exportPdf(array $rows, string $label, string $from, string $to, array $filters, Request $request): SymfonyResponse {
         $filename = sprintf('auftragstypanalyse_%s_%s.pdf', $from, $to);
 
+        $chartSeries = array_values(collect($rows)
+            ->filter(static fn(array $row): bool => (float) $row['avgActualMinutes'] > 0.0 || (float) $row['avgPlannedMinutes'] > 0.0)
+            ->sortByDesc('avgActualMinutes')
+            ->take(20)
+            ->map(static fn(array $row): array => [
+                'x' => (string) $row['entryTypeName'],
+                'y' => (float) $row['avgActualMinutes'],
+                'y2' => (float) $row['avgPlannedMinutes'],
+            ])
+            ->all());
+
         return $this->pdfDownload('reports.pdf.entry-types', [
             'rows' => $rows,
             'label' => $label,
+            'chart' => [
+                'type' => 'bar-h',
+                'title' => __('Plan vs. Ist je Auftragstyp'),
+                'unit' => __('Min.'),
+                'xLabel' => __('Auftragstyp'),
+                'yLabel' => __('Ø Ist (Min.)'),
+                'y2Label' => __('Ø Plan (Min.)'),
+                'series' => $chartSeries,
+            ],
         ], $filename, 'landscape', $request, 'entry-types-analysis', $filters);
     }
 

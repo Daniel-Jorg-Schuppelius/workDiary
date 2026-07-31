@@ -13,8 +13,9 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\Expense\ExpenseStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\ResolvesReportScope;
+use App\Http\Controllers\Reporting\Concerns\{ResolvesReportScope, ResolvesStandardReportFilters};
 use App\Models\Expense;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,15 +30,24 @@ use Illuminate\View\View;
 class ExpenseReportController extends Controller {
     use ResolvesGlobalDateRange;
     use ResolvesReportScope;
+    use ResolvesStandardReportFilters;
 
     public function index(Request $request): View {
         $authUser = Auth::user();
         [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
 
-        [$from, $to] = $this->globalDateRangeBounds();
+        [$from, $to] = $this->resolveRange($request);
 
-        $statusFilter = $request->string('status')->toString();
-        $statusEnum = $statusFilter !== '' ? ExpenseStatus::tryFrom($statusFilter) : null;
+        // Der bisherige status-Parameter heißt im Standardset genauso —
+        // alte Bookmarks funktionieren unverändert (Whitelist = Enum-Werte).
+        $filters = $this->standardFilters(
+            $request,
+            ['user', 'team', 'project', 'status'],
+            $from,
+            $to,
+            ExpenseStatus::values(),
+            scope: $scope,
+        );
 
         $query = Expense::query()
             ->with(['user:id,name', 'category:id,label,icon,color'])
@@ -49,29 +59,115 @@ class ExpenseReportController extends Controller {
             $query->where('organization_id', $authUser->organization_id);
         }
 
-        if ($statusEnum !== null) {
-            $query->where('status', $statusEnum->value);
+        if ($filters->projectId !== null) {
+            $query->where('project_id', $filters->projectId);
         }
+        if ($filters->status !== null) {
+            $query->where('status', $filters->status);
+        }
+        $filters->applyUserAndTeam($query);
 
         /** @var Collection<int, Expense> $expenses */
         $expenses = $query->get();
 
         [$rows, $months, $totalsPerUser, $totalsPerCategory, $totalsPerMonth, $grandTotal] = $this->aggregate($expenses);
+        [$monthlyCategorySeries, $categoryBands] = $this->monthlyCategorySeries($expenses, $from, $to);
 
         return view('reports.expenses', [
             'from' => $from->toDateString(),
             'to' => $to->toDateString(),
             'scope' => $scope,
             'isAdmin' => $isAdmin,
-            'statusFilter' => $statusFilter,
-            'statusOptions' => ExpenseStatus::cases(),
+            'statusOptions' => ExpenseStatus::options(),
             'rows' => $rows,
             'months' => $months,
             'totalsPerUser' => $totalsPerUser,
             'totalsPerCategory' => $totalsPerCategory,
             'totalsPerMonth' => $totalsPerMonth,
             'grandTotal' => $grandTotal,
+            'standardFilters' => $filters,
+            'filterFields' => ['user', 'team', 'project', 'status'],
+            'monthlyCategorySeries' => $monthlyCategorySeries,
+            'categoryBands' => $categoryBands,
+            'topSpenderSeries' => $this->topSpenderSeries($totalsPerUser),
+            ...$this->standardFilterOptions(['user', 'team', 'project'], $filters),
         ]);
+    }
+
+    /**
+     * Spesen (brutto, €) je Monat, gestapelt nach Kategorie — Top 4
+     * Kategorien + „Rest"-Sammelband (§Diagramm-UX: leere Serie ohne Daten).
+     *
+     * @param  Collection<int, Expense>  $expenses
+     * @return array{0: list<array<string, string|float>>, 1: list<array{key: string, label: string}>}
+     */
+    private function monthlyCategorySeries(Collection $expenses, CarbonImmutable $from, CarbonImmutable $to): array {
+        if ($expenses->isEmpty()) {
+            return [[], []];
+        }
+
+        /** @var array<string, array<string, float>> $byMonthCategory */
+        $byMonthCategory = [];
+        /** @var array<string, float> $categoryTotals */
+        $categoryTotals = [];
+        foreach ($expenses as $expense) {
+            $category = $expense->category->label ?? '—';
+            $month = $expense->date->format('Y-m');
+            $amount = ($expense->amount_gross?->toFloat() ?? 0.0);
+            $byMonthCategory[$month][$category] = ($byMonthCategory[$month][$category] ?? 0.0) + $amount;
+            $categoryTotals[$category] = ($categoryTotals[$category] ?? 0.0) + $amount;
+        }
+
+        arsort($categoryTotals);
+        $topCategories = array_slice(array_keys($categoryTotals), 0, 4);
+        $hasRest = count($categoryTotals) > count($topCategories);
+
+        $bands = [];
+        /** @var array<string, string> $keyByCategory */
+        $keyByCategory = [];
+        foreach ($topCategories as $i => $category) {
+            $key = 'cat_' . $i;
+            $keyByCategory[$category] = $key;
+            $bands[] = ['key' => $key, 'label' => $category];
+        }
+        if ($hasRest) {
+            $bands[] = ['key' => 'rest', 'label' => (string) __('Rest')];
+        }
+
+        $series = [];
+        foreach ($this->buildMonthsInRange($from, $to) as $month) {
+            $row = ['x' => $month['shortLabel']];
+            foreach ($bands as $band) {
+                $row[$band['key']] = 0.0;
+            }
+            foreach ($byMonthCategory[$month['key']] ?? [] as $category => $amount) {
+                $key = $keyByCategory[$category] ?? 'rest';
+                if (! $hasRest && ! isset($keyByCategory[$category])) {
+                    continue;
+                }
+                $row[$key] = round((float) $row[$key] + $amount, 2);
+            }
+            $series[] = $row;
+        }
+
+        return [$series, $bands];
+    }
+
+    /**
+     * Top-Verursacher (brutto, €) — Top 15 Mitarbeiter.
+     *
+     * @param  array<string, float>  $totalsPerUser
+     * @return list<array{x: string, y: float}>
+     */
+    private function topSpenderSeries(array $totalsPerUser): array {
+        arsort($totalsPerUser);
+
+        return array_values(collect($totalsPerUser)
+            ->filter(static fn(float $sum): bool => $sum > 0)
+            ->take(15)
+            ->map(static fn(float $sum, string $name): array => ['x' => $name, 'y' => round($sum, 2)])
+            ->values()
+            ->all());
     }
 
     /**

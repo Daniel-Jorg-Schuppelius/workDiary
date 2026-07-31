@@ -11,6 +11,8 @@
     $money = function (float $val): string {
         return \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($val, 2, withThousandsSeparator: true) . ' €';
     };
+    $fmtChart = fn(int|float $min): string => intdiv((int) $min, 60) . ':' . str_pad((string) ((int) $min % 60), 2, '0', STR_PAD_LEFT);
+    $linkParams = $standardFilters->toQueryParams();
 @endphp
 
 <x-page-shell>
@@ -18,17 +20,33 @@
         <x-page-toolbar :subtitle="__('Stunden je Mitarbeiter und Monat über das Jahr.')">
             <x-slot:actions>
                 <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.month-by-user-team', ['export' => 'csv'])"
+                            :href="route('reports.month-by-user-team', array_merge($linkParams, ['export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
                 <x-icon-btn icon="table_chart" tone="outline" size="sm"
-                            :href="route('reports.month-by-user-team', ['export' => 'xlsx'])"
+                            :href="route('reports.month-by-user-team', array_merge($linkParams, ['export' => 'xlsx']))"
                             show-label>XLSX</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.month-by-user-team', ['export' => 'pdf'])"
+                            :href="route('reports.month-by-user-team', array_merge($linkParams, ['export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    <x-filter-bar :action="route('reports.month-by-user-team')" :reset="route('reports.month-by-user-team')">
+        @include('reports._standard_filters', ['idPrefix' => 'month-by-user-team'])
+    </x-filter-bar>
+
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.bar :title="__('Stunden je Mitarbeiter')" unit="h" :series="$userHoursSeries" :median="$hoursMedian" :x-label="__('Mitarbeiter')" :y-label="__('Stunden')" />
+        <x-charts.heatmap
+            :title="__('Stunden je Mitarbeiter und Monat')"
+            unit="h"
+            :rows="$heatmapRows"
+            :col-labels="array_values($monthLabels)"
+            :x-label="__('Mitarbeiter')"
+            :format="$fmtChart"
+        />
+    </div>
 
     <x-card>
         <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">

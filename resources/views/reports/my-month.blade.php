@@ -24,17 +24,34 @@
         <x-page-toolbar :subtitle="__('Tagesweise Übersicht aller eigenen Zeiteinträge im Monat.')">
             <x-slot:actions>
                 <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.my-month', ['export' => 'csv'])"
+                            :href="route('reports.my-month', array_merge(['export' => 'csv', 'kind' => $kind], $standardFilters->toQueryParams()))"
                             show-label>CSV</x-icon-btn>
                 <x-icon-btn icon="table_chart" tone="outline" size="sm"
-                            :href="route('reports.my-month', ['export' => 'xlsx'])"
+                            :href="route('reports.my-month', array_merge(['export' => 'xlsx', 'kind' => $kind], $standardFilters->toQueryParams()))"
                             show-label>XLSX</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.my-month', ['export' => 'pdf'])"
+                            :href="route('reports.my-month', array_merge(['export' => 'pdf', 'kind' => $kind], $standardFilters->toQueryParams()))"
                             show-label>PDF</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    <x-filter-bar :action="route('reports.my-month')" :reset="route('reports.my-month')">
+        @include('reports._standard_filters', ['idPrefix' => 'my-month'])
+        <x-filter-field :label="__('Art')" for="my-month-kind">
+            <select id="my-month-kind" name="kind" class="select select-sm select-bordered" data-autosubmit>
+                <option value="all" @selected($kind === 'all')>{{ __('Alle') }}</option>
+                <option value="work" @selected($kind === 'work')>{{ __('Arbeit') }}</option>
+                <option value="travel" @selected($kind === 'travel')>{{ __('Reise') }}</option>
+                <option value="standby" @selected($kind === 'standby')>{{ __('Bereitschaft') }}</option>
+            </select>
+        </x-filter-field>
+    </x-filter-bar>
+
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.line :title="__('Stunden pro Tag')" unit="h" :series="$dailySeries" :x-label="__('Tag')" :y-label="__('Stunden')" />
+        <x-charts.stacked-bar :title="__('Stunden pro Woche nach Art')" unit="h" :series="$weekKindSeries" :bands="$kindBands" :x-label="__('Woche')" />
+    </div>
 
     <x-card>
         <div class="mb-3 flex flex-wrap items-baseline justify-end gap-2">

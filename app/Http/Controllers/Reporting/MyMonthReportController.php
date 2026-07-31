@@ -10,9 +10,10 @@
 
 namespace App\Http\Controllers\Reporting;
 
+use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{Customer, Project, Task, TimeEntry};
 use App\Support\XlsxExport;
 use Carbon\Carbon;
@@ -33,27 +34,38 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 class MyMonthReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
-        $globalRange = $this->globalDateRange();
-        $year = (int) $globalRange['from']->year;
-        $month = (int) $globalRange['from']->month;
-        $year = max(2000, min(2100, $year));
-        $month = max(1, min(12, $month));
+        [$rangeFrom] = $this->resolveRange($request);
+        $year = max(2000, min(2100, (int) $rangeFrom->year));
+        $month = max(1, min(12, (int) $rangeFrom->month));
 
         $start = Carbon::create($year, $month, 1, 0, 0, 0) ?: Carbon::now()->startOfMonth();
         $end = $start->copy()->endOfMonth();
 
-        $entries = TimeEntry::query()
+        $filters = $this->standardFilters(
+            $request,
+            ['customer', 'project'],
+            $start->toImmutable(),
+            $end->toImmutable(),
+        );
+        $kind = (string) $request->query('kind', 'all');
+        if (! in_array($kind, array_merge(['all'], TimeEntryKind::values()), true)) {
+            $kind = 'all';
+        }
+
+        $entriesQuery = TimeEntry::query()
             ->with(['project.customer', 'task'])
             ->where('user_id', $userId)
             ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+            ->when($kind !== 'all', fn($q) => $q->where('kind', $kind))
             ->orderBy('date')
             ->orderBy('started_at')
-            ->orderBy('id')
-            ->get();
+            ->orderBy('id');
+        $entries = $filters->applyToTimeEntryQuery($entriesQuery)->get();
 
         // Gruppiere nach Tag (Y-m-d).
         /** @var array<string, array{entries: Collection<int, TimeEntry>, minutes: int, rate: float}> $byDay */
@@ -78,14 +90,16 @@ class MyMonthReportController extends Controller {
         $start->locale($locale);
         $monthLabel = $start->isoFormat('MMMM YYYY');
 
+        $exportFilters = array_merge(['year' => $year, 'month' => $month, 'kind' => $kind], $filters->toAuditArray());
+
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($entries, $year, $month, $request);
+            return $this->exportCsv($entries, $year, $month, $request, $exportFilters);
         }
         if ($request->query('export') === 'xlsx') {
             return $this->exportXlsx($entries, $year, $month);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($byDay, $monthLabel, $monthMinutes, $monthRate, $year, $month, $request);
+            return $this->exportPdf($byDay, $monthLabel, $this->dailyHoursSeries($byDay, $start), $monthMinutes, $monthRate, $request, $exportFilters);
         }
 
         return view('reports.my-month', [
@@ -95,7 +109,64 @@ class MyMonthReportController extends Controller {
             'byDay' => $byDay,
             'monthMinutes' => $monthMinutes,
             'monthRate' => $monthRate,
+            'kind' => $kind,
+            'standardFilters' => $filters,
+            'filterFields' => ['customer', 'project'],
+            'dailySeries' => $this->dailyHoursSeries($byDay, $start),
+            'weekKindSeries' => $this->weeklyKindSeries($entries),
+            'kindBands' => TimeEntryKind::chartBands(),
+            ...$this->standardFilterOptions(['customer', 'project'], $filters),
         ]);
+    }
+
+    /**
+     * Stunden je Kalendertag des Monats (Chart-Datenkontrakt, Screen + PDF).
+     *
+     * @param  array<string, array{entries: Collection<int, TimeEntry>, minutes: int, rate: float}>  $byDay
+     * @return list<array{x: string, y: float}>
+     */
+    private function dailyHoursSeries(array $byDay, Carbon $start): array {
+        if ($byDay === []) {
+            return []; // Leerzustand statt Null-Linie (§Diagramm-UX).
+        }
+
+        $series = [];
+        for ($day = 1; $day <= (int) $start->daysInMonth; $day++) {
+            $key = sprintf('%04d-%02d-%02d', $start->year, $start->month, $day);
+            $series[] = [
+                'x' => sprintf('%02d.', $day),
+                'y' => round(((int) ($byDay[$key]['minutes'] ?? 0)) / 60, 1),
+            ];
+        }
+
+        return $series;
+    }
+
+    /**
+     * Stunden je ISO-Woche, aufgeteilt nach Art (work/travel/standby).
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection<int, TimeEntry>  $entries
+     * @return list<array<string, string|float>>
+     */
+    private function weeklyKindSeries(\Illuminate\Database\Eloquent\Collection $entries): array {
+        $byWeek = [];
+        foreach ($entries as $entry) {
+            $date = Carbon::parse((string) $entry->date);
+            $week = 'KW ' . $date->isoWeek;
+            $byWeek[$week] ??= array_fill_keys(TimeEntryKind::values(), 0);
+            $byWeek[$week][$entry->kind->value] += (int) $entry->minutes;
+        }
+
+        $series = [];
+        foreach ($byWeek as $week => $minutesByKind) {
+            $row = ['x' => $week];
+            foreach ($minutesByKind as $kindValue => $minutes) {
+                $row[$kindValue] = round($minutes / 60, 1);
+            }
+            $series[] = $row;
+        }
+
+        return $series;
     }
 
     /**
@@ -138,8 +209,9 @@ class MyMonthReportController extends Controller {
 
     /**
      * @param  \Illuminate\Database\Eloquent\Collection<int, TimeEntry>  $entries
+     * @param  array<string, mixed>  $exportFilters
      */
-    private function exportCsv(\Illuminate\Database\Eloquent\Collection $entries, int $year, int $month, Request $request): Response {
+    private function exportCsv(\Illuminate\Database\Eloquent\Collection $entries, int $year, int $month, Request $request, array $exportFilters): Response {
         $filename = sprintf('mein-monat-%04d-%02d.csv', $year, $month);
         $rows = [$this->exportHeaders()];
         foreach ($this->exportRows($entries) as $row) {
@@ -148,10 +220,7 @@ class MyMonthReportController extends Controller {
             $rows[] = $row;
         }
 
-        return $this->csvWithMetadata($rows, $filename, 'my-month', [
-            'year' => $year,
-            'month' => $month,
-        ], $request);
+        return $this->csvWithMetadata($rows, $filename, 'my-month', $exportFilters, $request);
     }
 
     /**
@@ -165,14 +234,24 @@ class MyMonthReportController extends Controller {
 
     /**
      * @param  array<string, array{entries: Collection<int, TimeEntry>, minutes: int, rate: float}>  $byDay
+     * @param  list<array{x: string, y: float}>  $dailySeries
+     * @param  array<string, mixed>  $exportFilters
      */
-    private function exportPdf(array $byDay, string $monthLabel, int $monthMinutes, float $monthRate, int $year, int $month, Request $request): SymfonyResponse {
-        $filename = sprintf('mein-monat-%04d-%02d.pdf', $year, $month);
+    private function exportPdf(array $byDay, string $monthLabel, array $dailySeries, int $monthMinutes, float $monthRate, Request $request, array $exportFilters): SymfonyResponse {
+        $filename = sprintf('mein-monat-%04d-%02d.pdf', (int) $exportFilters['year'], (int) $exportFilters['month']);
         return $this->pdfDownload('reports.pdf.my-month', [
             'byDay' => $byDay,
             'monthLabel' => $monthLabel,
             'monthMinutes' => $monthMinutes,
             'monthRate' => $monthRate,
-        ], $filename, request: $request, reportCode: 'my-month', filters: ['year' => $year, 'month' => $month]);
+            'chart' => [
+                'type' => 'bar-h',
+                'title' => __('Stunden pro Tag'),
+                'unit' => 'h',
+                'xLabel' => __('Tag'),
+                'yLabel' => __('Stunden'),
+                'series' => array_values(array_filter($dailySeries, fn(array $point): bool => $point['y'] > 0)),
+            ],
+        ], $filename, request: $request, reportCode: 'my-month', filters: $exportFilters);
     }
 }

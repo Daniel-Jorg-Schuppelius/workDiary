@@ -99,6 +99,9 @@ return [
     'invoicing.billing_grouping_gap_minutes' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:1440', 'fallback' => 0],
     'ui.dashboard.recent_limit' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'min:1|max:1000'],
     'ui.calendar.slot_minutes' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'options' => [10, 15, 20, 30, 60]],
+    // Neuigkeiten-Rail: externe Kommunikation bleibt installationsweit Opt-in.
+    'ui.news_feed.enabled' => ['type' => 'boolean', 'scopes' => ['system'], 'fallback' => false, 'affects' => ['news-feed.refresh']],
+    'ui.news_feed.url' => ['type' => 'string', 'scopes' => ['system'], 'rules' => 'nullable|url:http,https|max:2048', 'affects' => ['news-feed.refresh']],
 
     // --- Wetter/Zeiterfassung ---
     // weather.auto_fetch hat keinen config-Default (harter Default false in Protocol)

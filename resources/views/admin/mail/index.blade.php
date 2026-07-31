@@ -132,6 +132,13 @@
                         <span class="label-text">{{ __('Rechnungs-Postfach: Anhänge als E-Rechnung in den Prüfbereich übernehmen') }}</span>
                     </span>
                 </label>
+                <label class="form-control justify-end">
+                    <span class="label cursor-pointer justify-start gap-2">
+                        <input type="hidden" name="callreport_intake" value="0">
+                        <input type="checkbox" name="callreport_intake" value="1" class="toggle toggle-sm toggle-primary" @checked(old('callreport_intake', false))>
+                        <span class="label-text">{{ __('Telefonbericht-Postfach: FRITZ!Box-Anruflisten (CSV) in den Anruflisten-Import übernehmen') }}</span>
+                    </span>
+                </label>
             </div>
             <div class="flex justify-end">
                 <button type="submit" class="btn btn-sm btn-primary">{{ __('mail.action.save') }}</button>

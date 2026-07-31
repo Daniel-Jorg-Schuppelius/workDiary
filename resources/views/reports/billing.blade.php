@@ -30,14 +30,18 @@
         <x-page-toolbar :subtitle="__('Rechnungs-Status, Aging offener Posten und projizierter Erlös aus unbillter Zeit.')">
             <x-slot:actions>
                 <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.billing', ['export' => 'csv'])"
+                            :href="route('reports.billing', array_merge($standardFilters->toQueryParams(), ['export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.billing', ['export' => 'pdf'])"
+                            :href="route('reports.billing', array_merge($standardFilters->toQueryParams(), ['export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    <x-filter-bar :action="route('reports.billing')" :reset="route('reports.billing')">
+        @include('reports._standard_filters', ['idPrefix' => 'billing'])
+    </x-filter-bar>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
         <x-kpi-tile :label="__('Ausgestellt + Bezahlt (Σ Brutto)')" :value="$eur($totalIssuedPaid)" />
@@ -46,6 +50,12 @@
                     :hint="$aging['buckets']['30_plus']['count'] . ' ' . __('> 30 Tage')" />
         <x-kpi-tile :label="__('Unbillte Zeit')" :value="$fmtMin($unbilled['minutes'])"
                     :hint="$unbilled['count'] . ' ' . __('Einträge') . ' · ' . $eur($unbilled['projected_revenue'])" />
+    </div>
+
+    {{-- Feature 002: Diagramme (Abrechenbarkeit je Monat + Umsatz-Pareto) --}}
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.stacked-bar :title="__('Abrechenbare und nicht abrechenbare Stunden je Monat')" unit="h" :series="$monthlyBillableSeries" :bands="$billableBands" :x-label="__('Monat')" />
+        <x-charts.pareto :title="__('Umsatz je Kunde (Top 15)')" unit="€" :series="$customerRevenueSeries" :x-label="__('Kunde')" :y-label="__('Brutto (€)')" />
     </div>
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">

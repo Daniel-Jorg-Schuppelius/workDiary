@@ -10,6 +10,11 @@
         return $sign . intdiv($abs, 60) . ':' . str_pad((string) ($abs % 60), 2, '0', STR_PAD_LEFT) . ' h';
     };
     $pct = fn (float $v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v * 100, 1, withThousandsSeparator: true) . ' %';
+    $fmtChart = fn (int|float $min): string => intdiv((int) $min, 60) . ':' . str_pad((string) ((int) $min % 60), 2, '0', STR_PAD_LEFT);
+    $linkParams = array_filter(array_merge(
+        ['scope' => $isAdmin ? $scope : null],
+        $standardFilters->toQueryParams(),
+    ));
 @endphp
 
 <x-page-shell>
@@ -17,25 +22,38 @@
         <x-page-toolbar :subtitle="__('Bereitschaftsschichten, aktive Einsätze und Aktiv-Anteil je Mitarbeiter.')">
             <x-slot:actions>
                 <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.on-call', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'csv']))"
+                            :href="route('reports.on-call', array_merge($linkParams, ['export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.on-call', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'pdf']))"
+                            :href="route('reports.on-call', array_merge($linkParams, ['export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if ($isAdmin)
-        <x-filter-bar :action="route('reports.on-call')" :reset="route('reports.on-call')">
+    <x-filter-bar :action="route('reports.on-call')" :reset="route('reports.on-call')">
+        @if ($isAdmin)
             <x-filter-field :label="__('Bereich')" for="rep-scope">
                 <select id="rep-scope" name="scope" class="select select-sm select-bordered" data-autosubmit>
                     <option value="mine" @selected($scope === 'mine')>{{ __('Nur meine Bereitschaft') }}</option>
                     <option value="team" @selected($scope === 'team')>{{ __('Gesamtes Team') }}</option>
                 </select>
             </x-filter-field>
-        </x-filter-bar>
-    @endif
+        @endif
+        @include('reports._standard_filters', ['idPrefix' => 'on-call'])
+    </x-filter-bar>
+
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.heatmap
+            :title="__('Bereitschaft je Mitarbeiter und Woche')"
+            unit="h"
+            :rows="$heatmapRows"
+            :col-labels="$weekLabels"
+            :x-label="__('Mitarbeiter')"
+            :format="$fmtChart"
+        />
+        <x-charts.bar :title="__('Einsätze je Monat')" :unit="__('Einsätze')" :series="$monthlyAssignmentSeries" :x-label="__('Monat')" :y-label="__('Anzahl')" />
+    </div>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
         <x-kpi-tile :label="__('Mitarbeiter')" :value="$totals['users']" />

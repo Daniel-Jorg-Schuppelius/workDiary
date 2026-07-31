@@ -15,10 +15,10 @@
 <x-index-page :subtitle="__('Defekte, offene Punkte und Aufwand je Asset, Produktgruppe oder Modell.')">
     <x-slot:actions>
         <x-icon-btn icon="download" tone="outline" size="sm"
-                    :href="route('reports.assets', array_filter(['customer_id' => \App\Support\Sqid::encode(\App\Models\Customer::class, $customerId), 'category_code' => $categoryCode, 'manufacturer' => $manufacturer, 'group_by' => $groupBy, 'export' => 'csv']))"
+                    :href="route('reports.assets', array_merge($standardFilters->toQueryParams(), array_filter(['category_code' => $categoryCode, 'manufacturer' => $manufacturer, 'group_by' => $groupBy]), ['export' => 'csv']))"
                     show-label>CSV</x-icon-btn>
         <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                    :href="route('reports.assets', array_filter(['customer_id' => \App\Support\Sqid::encode(\App\Models\Customer::class, $customerId), 'category_code' => $categoryCode, 'manufacturer' => $manufacturer, 'group_by' => $groupBy, 'export' => 'pdf']))"
+                    :href="route('reports.assets', array_merge($standardFilters->toQueryParams(), array_filter(['category_code' => $categoryCode, 'manufacturer' => $manufacturer, 'group_by' => $groupBy]), ['export' => 'pdf']))"
                     show-label>PDF</x-icon-btn>
     </x-slot:actions>
 
@@ -31,14 +31,7 @@
             </select>
         </x-filter-field>
 
-        <x-filter-field :label="__('Kunde')" for="rep-customer">
-            <select id="rep-customer" name="customer_id" class="select select-sm select-bordered">
-                <option value="">{{ __('Alle') }}</option>
-                @foreach($customers as $customer)
-                    <option value="{{ $customer->sqid }}" @selected(\App\Support\Sqid::encode(\App\Models\Customer::class, $customerId) === $customer->sqid)>{{ $customer->name }}</option>
-                @endforeach
-            </select>
-        </x-filter-field>
+        @include('reports._standard_filters', ['idPrefix' => 'assets'])
 
         <x-filter-field :label="__('Produktgruppe')" for="rep-category">
             <select id="rep-category" name="category_code" class="select select-sm select-bordered">
@@ -58,6 +51,15 @@
             </select>
         </x-filter-field>
     </x-filter-bar>
+
+    {{-- Feature 002: Diagramme (Defekt-Pareto + Defektrate der aktiven Ebene) --}}
+    @php
+        $dimLabel = match ($groupBy) { 'group' => __('Produktgruppe'), 'model' => __('Modell'), default => __('Asset') };
+    @endphp
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.pareto :title="__('Defekte im Zeitraum (Top 20)')" :unit="__('Defekte')" :series="$defectsSeries" :x-label="$dimLabel" :y-label="__('Defekte')" />
+        <x-charts.bar :title="__('Defektrate (Top 15)')" unit="%" :series="$defectRateSeries" :x-label="$dimLabel" :y-label="__('Defektrate %')" />
+    </div>
 
     <x-card>
         <div class="mb-3 text-xs text-base-content/60">{{ __('Zeitraum') }}: {{ $label }}</div>

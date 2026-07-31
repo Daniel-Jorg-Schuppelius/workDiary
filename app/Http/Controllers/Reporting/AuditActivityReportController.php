@@ -12,10 +12,12 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{AuditLog, User};
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
+use Illuminate\Support\Facades\Lang;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
@@ -27,16 +29,22 @@ class AuditActivityReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use ResolvesReportScope;
+    use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
     private const RECENT_LIMIT = 100;
 
+    /** Ab dieser Zeitraumlänge bündelt die Verlaufskurve je Woche statt je Tag. */
+    private const WEEKLY_THRESHOLD_DAYS = 62;
+
     public function index(Request $request): View|SymfonyResponse {
         abort_unless($this->viewerIsAdmin(), 403);
 
-        [$from, $to] = $this->globalDateRangeBounds();
+        [$from, $to] = $this->resolveRange($request);
+        $filters = $this->standardFilters($request, ['user'], $from, $to);
 
         $base = AuditLog::query()->whereBetween('created_at', [$from, $to]);
+        $filters->applyUserAndTeam($base);
 
         /** @var array<string, int> $byEvent */
         $byEvent = (clone $base)
@@ -99,15 +107,21 @@ class AuditActivityReportController extends Controller {
             ->limit(self::RECENT_LIMIT)
             ->get(['id', 'user_id', 'event', 'auditable_type', 'auditable_id', 'ip', 'created_at']);
 
+        $exportFilters = $filters->toAuditArray();
+        $dailyBuckets = $this->dailyEventBuckets($base);
+        $span = (int) $from->diffInDays($to, true) + 1;
+        $timelineSeries = $this->timelineSeries($dailyBuckets, $span > self::WEEKLY_THRESHOLD_DAYS);
+        [$monthlyEventSeries, $eventBands] = $this->monthlyEventSeries($dailyBuckets);
+
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($byEvent, $byType, $byUser, $recent, $from->toDateString(), $to->toDateString(), $request);
+            return $this->exportCsv($byEvent, $byType, $byUser, $recent, $from->toDateString(), $to->toDateString(), $exportFilters, $request);
         }
         if ($request->query('export') === 'pdf') {
             return $this->exportPdf($byEvent, $byType, $byUser, $recent, [
                 'total' => $total,
                 'users' => $distinctUsers,
                 'types' => $distinctTypes,
-            ], $from->toDateString(), $to->toDateString(), $request);
+            ], $from->toDateString(), $to->toDateString(), $timelineSeries, $exportFilters, $request);
         }
 
         return view('reports.audit-activity', [
@@ -122,7 +136,140 @@ class AuditActivityReportController extends Controller {
                 'users' => $distinctUsers,
                 'types' => $distinctTypes,
             ],
+            'standardFilters' => $filters,
+            'filterFields' => ['user'],
+            'timelineSeries' => $timelineSeries,
+            'topActorsSeries' => $this->topActorsSeries($byUser),
+            'monthlyEventSeries' => $monthlyEventSeries,
+            'eventBands' => $eventBands,
+            ...$this->standardFilterOptions(['user'], $filters),
         ]);
+    }
+
+    /**
+     * Ereigniszählung je Tag × Event-Typ (eine Aggregatabfrage; DATE() läuft
+     * auf MySQL wie SQLite) — Basis für Verlaufskurve und Monats-Stapel.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<AuditLog>  $base
+     * @return array<string, array<string, int>>  [Y-m-d][event] => Anzahl
+     */
+    private function dailyEventBuckets(\Illuminate\Database\Eloquent\Builder $base): array {
+        /** @var array<string, array<string, int>> $buckets */
+        $buckets = [];
+        (clone $base)
+            ->selectRaw('DATE(created_at) as day, event, COUNT(*) as c')
+            ->groupBy('day', 'event')
+            ->orderBy('day')
+            ->get()
+            ->each(function ($row) use (&$buckets): void {
+                $buckets[(string) $row->getAttribute('day')][(string) $row->getAttribute('event')] = (int) $row->getAttribute('c');
+            });
+
+        return $buckets;
+    }
+
+    /**
+     * Ereignisse je Tag — bei langen Zeiträumen (> 62 Tage) je ISO-Woche.
+     *
+     * @param  array<string, array<string, int>>  $dailyBuckets
+     * @return list<array{x: string, y: int}>
+     */
+    private function timelineSeries(array $dailyBuckets, bool $weekly): array {
+        if ($dailyBuckets === []) {
+            return []; // Leerzustand statt Null-Linie (§Diagramm-UX).
+        }
+
+        /** @var array<string, int> $byBucket */
+        $byBucket = [];
+        foreach ($dailyBuckets as $day => $byEvent) {
+            $date = Carbon::parse($day);
+            $label = $weekly
+                ? sprintf('KW %02d/%02d', $date->isoWeek, $date->isoWeekYear % 100)
+                : $date->format('d.m.');
+            $byBucket[$label] = ($byBucket[$label] ?? 0) + array_sum($byEvent);
+        }
+
+        $series = [];
+        foreach ($byBucket as $label => $count) {
+            $series[] = ['x' => $label, 'y' => $count];
+        }
+
+        return $series;
+    }
+
+    /**
+     * Top-Akteure (Top 15) für bar-h.
+     *
+     * @param  array<int, array{user: ?User, count:int}>  $byUser
+     * @return list<array{x: string, y: int}>
+     */
+    private function topActorsSeries(array $byUser): array {
+        return array_values(collect($byUser)
+            ->map(static fn (array $row): array => [
+                'x' => $row['user'] !== null ? (string) $row['user']->name : '—',
+                'y' => $row['count'],
+            ])
+            ->filter(static fn (array $point): bool => $point['y'] > 0)
+            ->take(15)
+            ->all());
+    }
+
+    /**
+     * Ereignisse je Monat, gestapelt nach Event-Typ (Top 4 + Rest).
+     *
+     * @param  array<string, array<string, int>>  $dailyBuckets
+     * @return array{0: list<array<string, string|int>>, 1: list<array{key: string, label: string}>}
+     */
+    private function monthlyEventSeries(array $dailyBuckets): array {
+        /** @var array<string, int> $eventTotals */
+        $eventTotals = [];
+        /** @var array<string, array<string, int>> $byMonth */
+        $byMonth = [];
+        foreach ($dailyBuckets as $day => $byEvent) {
+            $monthKey = substr($day, 0, 7);
+            foreach ($byEvent as $event => $count) {
+                $eventTotals[$event] = ($eventTotals[$event] ?? 0) + $count;
+                $byMonth[$monthKey][$event] = ($byMonth[$monthKey][$event] ?? 0) + $count;
+            }
+        }
+        if ($byMonth === []) {
+            return [[], []];
+        }
+
+        arsort($eventTotals);
+        $topEvents = array_slice(array_keys($eventTotals), 0, 4);
+        $hasRest = count($eventTotals) > count($topEvents);
+
+        $bands = array_map(fn (string $event): array => [
+            'key' => $event,
+            'label' => Lang::has('audit-events.' . $event) ? (string) __('audit-events.' . $event) : $event,
+        ], $topEvents);
+        if ($hasRest) {
+            $bands[] = ['key' => 'other', 'label' => (string) __('Sonstige')];
+        }
+
+        ksort($byMonth, SORT_STRING);
+        $series = [];
+        foreach ($byMonth as $monthKey => $byEvent) {
+            $point = ['x' => Carbon::parse($monthKey . '-01')->translatedFormat('M Y')];
+            $rest = 0;
+            foreach ($byEvent as $event => $count) {
+                if (in_array($event, $topEvents, true)) {
+                    $point[$event] = ($point[$event] ?? 0) + $count;
+                } else {
+                    $rest += $count;
+                }
+            }
+            foreach ($topEvents as $event) {
+                $point[$event] ??= 0;
+            }
+            if ($hasRest) {
+                $point['other'] = $rest;
+            }
+            $series[] = $point;
+        }
+
+        return [$series, $bands];
     }
 
     /**
@@ -130,8 +277,9 @@ class AuditActivityReportController extends Controller {
      * @param  array<string, int>  $byType
      * @param  array<int, array{user: ?User, count:int}>  $byUser
      * @param  Collection<int, AuditLog>  $recent
+     * @param  array<string, mixed>  $exportFilters
      */
-    private function exportCsv(array $byEvent, array $byType, array $byUser, $recent, string $from, string $to, Request $request): Response {
+    private function exportCsv(array $byEvent, array $byType, array $byUser, $recent, string $from, string $to, array $exportFilters, Request $request): Response {
         $filename = sprintf('audit_%s_%s.csv', $from, $to);
         $rows = [];
         $rows[] = ['Bereich', 'Schlüssel', 'Anzahl'];
@@ -157,7 +305,7 @@ class AuditActivityReportController extends Controller {
             ];
         }
 
-        return $this->csvWithMetadata($rows, $filename, 'audit-activity', ['from' => $from, 'to' => $to], $request);
+        return $this->csvWithMetadata($rows, $filename, 'audit-activity', $exportFilters, $request);
     }
 
     /**
@@ -166,9 +314,14 @@ class AuditActivityReportController extends Controller {
      * @param  array<int, array{user: ?User, count:int}>  $byUser
      * @param  Collection<int, AuditLog>  $recent
      * @param  array{total:int, users:int, types:int}  $totals
+     * @param  list<array{x: string, y: int}>  $timelineSeries
+     * @param  array<string, mixed>  $exportFilters
      */
-    private function exportPdf(array $byEvent, array $byType, array $byUser, $recent, array $totals, string $from, string $to, Request $request): SymfonyResponse {
+    private function exportPdf(array $byEvent, array $byType, array $byUser, $recent, array $totals, string $from, string $to, array $timelineSeries, array $exportFilters, Request $request): SymfonyResponse {
         $filename = sprintf('audit_%s_%s.pdf', $from, $to);
+        // Zeitreihe im Druck als bar-h (letzte 24 Datenpunkte, Nullen raus).
+        $printSeries = array_values(array_filter($timelineSeries, static fn (array $point): bool => $point['y'] > 0));
+        $printSeries = array_slice($printSeries, -24);
         return $this->pdfDownload('reports.pdf.audit-activity', [
             'byEvent' => $byEvent,
             'byType' => $byType,
@@ -177,7 +330,16 @@ class AuditActivityReportController extends Controller {
             'totals' => $totals,
             'from' => $from,
             'to' => $to,
-        ], $filename, request: $request, reportCode: 'audit-activity', filters: ['from' => $from, 'to' => $to]);
+            'chart' => [
+                'type' => 'bar-h',
+                'title' => __('Ereignisse im Verlauf'),
+                'unit' => __('Events'),
+                'xLabel' => __('Zeitraum'),
+                'yLabel' => __('Events'),
+                'series' => $printSeries,
+                'note' => __('Vereinfachte Druckdarstellung.'),
+            ],
+        ], $filename, request: $request, reportCode: 'audit-activity', filters: $exportFilters);
     }
 
     private function shortType(string $fqcn): string {

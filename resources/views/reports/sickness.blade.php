@@ -16,8 +16,20 @@
                     <option value="team" @selected($scope === 'team')>{{ __('Gesamtes Team') }}</option>
                 </select>
             </x-filter-field>
+            @include('reports._standard_filters', ['idPrefix' => 'sickness'])
         </x-filter-bar>
     @endif
+
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.bar :title="__('Kranktage je Monat')" :unit="__('Tage')" :series="$monthlySeries" :median="$monthlyMedian" :x-label="__('Monat')" :y-label="__('Tage')" />
+        <x-charts.heatmap
+            :title="__('Kranktage je Mitarbeiter und Monat')"
+            :unit="__('Tage')"
+            :rows="$heatmapRows"
+            :col-labels="$monthLabels"
+            :x-label="__('Mitarbeiter')"
+        />
+    </div>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
         <x-kpi-tile :label="__('Mitarbeiter')" :value="$totals['users']" />

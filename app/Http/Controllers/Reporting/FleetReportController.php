@@ -12,9 +12,10 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{EnergyLog, TravelLog, Vehicle};
-use Carbon\CarbonImmutable;
+use App\Services\Reporting\ReportFilters;
+use Carbon\{Carbon, CarbonImmutable};
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
@@ -30,24 +31,29 @@ class FleetReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use ResolvesReportScope;
+    use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
         [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
 
-        [$fromDate, $toDate] = $this->globalDateRangeBounds();
+        [$fromDate, $toDate] = $this->resolveRange($request);
         $from = $fromDate->toDateString();
         $to = $toDate->toDateString();
 
-        $rows = $this->aggregate($fromDate, $toDate, $scope, $userId);
+        $filters = $this->standardFilters($request, ['user'], $fromDate, $toDate, scope: $scope);
+
+        $rows = $this->aggregate($fromDate, $toDate, $scope, $userId, $filters);
         $totals = $this->totals($rows);
+        $vehicleKmSeries = $this->vehicleKmSeries($rows);
+        $exportFilters = array_merge(['scope' => $scope], $filters->toAuditArray());
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($rows, $totals, $from, $to, $scope, $request);
+            return $this->exportCsv($rows, $totals, $from, $to, $request, $exportFilters);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($rows, $totals, $from, $to, $scope, $request);
+            return $this->exportPdf($rows, $totals, $from, $to, $vehicleKmSeries, $request, $exportFilters);
         }
 
         return view('reports.fleet', [
@@ -57,6 +63,11 @@ class FleetReportController extends Controller {
             'isAdmin' => $isAdmin,
             'rows' => $rows,
             'totals' => $totals,
+            'standardFilters' => $filters,
+            'filterFields' => ['user'],
+            'vehicleKmSeries' => $vehicleKmSeries,
+            'monthlyKmSeries' => $this->monthlyKmSeries($fromDate, $toDate, $scope, $userId, $filters),
+            ...$this->standardFilterOptions(['user'], $filters),
         ]);
     }
     /**
@@ -73,7 +84,7 @@ class FleetReportController extends Controller {
      *   last_odometer: int|null
      * }>
      */
-    private function aggregate(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId): array {
+    private function aggregate(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): array {
         $travelQuery = TravelLog::query()
             ->whereNotNull('vehicle_id')
             ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
@@ -85,6 +96,8 @@ class FleetReportController extends Controller {
             $travelQuery->where('user_id', $userId);
             $energyQuery->where('user_id', $userId);
         }
+        $filters->applyUserAndTeam($travelQuery);
+        $filters->applyUserAndTeam($energyQuery);
 
         /** @var array<int, array{trip_count:int, km:float, reimbursement:float}> $travelByVehicle */
         $travelByVehicle = [];
@@ -191,10 +204,64 @@ class FleetReportController extends Controller {
     }
 
     /**
+     * Kilometer je Fahrzeug (Top 15) — nur Fahrzeuge mit Fahrleistung
+     * (Chart-Datenkontrakt Screen + PDF).
+     *
+     * @param  array<int, array{vehicle: Vehicle, trip_count:int, km:float, reimbursement:float, fuel_count:int, liters:float, kwh:float, energy_cost:float, cost_per_km:float|null, last_odometer:int|null}>  $rows
+     * @return list<array{x: string, y: float}>
+     */
+    private function vehicleKmSeries(array $rows): array {
+        return array_values(collect($rows)
+            ->filter(static fn(array $r): bool => $r['km'] > 0)
+            ->sortByDesc('km')
+            ->take(15)
+            ->map(static fn(array $r): array => [
+                'x' => (string) $r['vehicle']->license_plate . ($r['vehicle']->label !== null && $r['vehicle']->label !== '' ? ' — ' . $r['vehicle']->label : ''),
+                'y' => round((float) $r['km'], 1),
+            ])
+            ->all());
+    }
+
+    /**
+     * Kilometer je Monat über den Zeitraum (leere Serie statt Null-Achse,
+     * §Diagramm-UX).
+     *
+     * @return list<array{x: string, y: float}>
+     */
+    private function monthlyKmSeries(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): array {
+        $q = TravelLog::query()
+            ->whereNotNull('vehicle_id')
+            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->select('date', 'distance_km');
+        if ($scope === 'mine') {
+            $q->where('user_id', $userId);
+        }
+        $filters->applyUserAndTeam($q);
+
+        /** @var array<string, float> $byMonth */
+        $byMonth = [];
+        foreach ($q->get() as $t) {
+            $key = Carbon::parse((string) $t->date)->format('Y-m');
+            $byMonth[$key] = ($byMonth[$key] ?? 0.0) + (float) $t->distance_km;
+        }
+        if ($byMonth === [] || array_sum($byMonth) <= 0) {
+            return [];
+        }
+
+        $series = [];
+        foreach ($this->buildMonthsInRange($from, $to) as $month) {
+            $series[] = ['x' => $month['shortLabel'], 'y' => round($byMonth[$month['key']] ?? 0.0, 1)];
+        }
+
+        return $series;
+    }
+
+    /**
      * @param  array<int, array{vehicle: Vehicle, trip_count:int, km:float, reimbursement:float, fuel_count:int, liters:float, kwh:float, energy_cost:float, cost_per_km:float|null, last_odometer:int|null}>  $rows
      * @param  array{km:float, trip_count:int, fuel_count:int, liters:float, kwh:float, energy_cost:float, reimbursement:float, vehicles:int, avg_cost_per_km:float|null}  $totals
+     * @param  array<string, mixed>  $exportFilters
      */
-    private function exportCsv(array $rows, array $totals, string $from, string $to, string $scope, Request $request): Response {
+    private function exportCsv(array $rows, array $totals, string $from, string $to, Request $request, array $exportFilters): Response {
         $filename = sprintf('fuhrpark_%s_%s.csv', $from, $to);
         $out = [['Kennzeichen', 'Bezeichnung', 'Antrieb', 'Fahrten', 'km', 'Erstattung', 'Tankungen', 'Liter', 'kWh', 'Energiekosten', '€/km', 'Tachostand']];
         foreach ($rows as $r) {
@@ -229,21 +296,31 @@ class FleetReportController extends Controller {
             '',
         ];
 
-        return $this->csvWithMetadata($out, $filename, 'fleet', ['from' => $from, 'to' => $to, 'scope' => $scope], $request);
+        return $this->csvWithMetadata($out, $filename, 'fleet', $exportFilters, $request);
     }
 
     /**
      * @param  array<int, array{vehicle: Vehicle, trip_count:int, km:float, reimbursement:float, fuel_count:int, liters:float, kwh:float, energy_cost:float, cost_per_km:float|null, last_odometer:int|null}>  $rows
      * @param  array{km:float, trip_count:int, fuel_count:int, liters:float, kwh:float, energy_cost:float, reimbursement:float, vehicles:int, avg_cost_per_km:float|null}  $totals
+     * @param  list<array{x: string, y: float}>  $vehicleKmSeries
+     * @param  array<string, mixed>  $exportFilters
      */
-    private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope, Request $request): SymfonyResponse {
+    private function exportPdf(array $rows, array $totals, string $from, string $to, array $vehicleKmSeries, Request $request, array $exportFilters): SymfonyResponse {
         $filename = sprintf('fuhrpark_%s_%s.pdf', $from, $to);
         return $this->pdfDownload('reports.pdf.fleet', [
             'rows' => $rows,
             'totals' => $totals,
             'from' => $from,
             'to' => $to,
-            'scope' => $scope,
-        ], $filename, 'landscape', $request, 'fleet', ['from' => $from, 'to' => $to, 'scope' => $scope]);
+            'scope' => (string) ($exportFilters['scope'] ?? 'mine'),
+            'chart' => [
+                'type' => 'bar-h',
+                'title' => __('Kilometer je Fahrzeug (Top 15)'),
+                'unit' => 'km',
+                'xLabel' => __('Fahrzeug'),
+                'yLabel' => __('km'),
+                'series' => $vehicleKmSeries,
+            ],
+        ], $filename, 'landscape', $request, 'fleet', $exportFilters);
     }
 }

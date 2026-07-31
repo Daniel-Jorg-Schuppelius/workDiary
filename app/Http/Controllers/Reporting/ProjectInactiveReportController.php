@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\Project\ProjectStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
+use App\Http\Controllers\Reporting\Concerns\{ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{Customer, Project, TimeEntry, User};
 use App\Support\{Sqid, XlsxExport};
 use Carbon\CarbonImmutable;
@@ -32,22 +32,22 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 class ProjectInactiveReportController extends Controller {
     use ResolvesGlobalDateRange;
+    use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
         Gate::authorize('viewAny', Project::class);
 
-        $range = $this->globalDateRange();
-        $from = $range['from'];
-        $to = $range['to'];
+        [$from, $to] = $this->resolveRange($request);
+        $filters = $this->standardFilters($request, ['customer'], $from, $to);
 
-        $projects = $this->loadInactiveProjects($from, $to);
+        $projects = $this->loadInactiveProjects($from, $to, $filters->customerId);
 
         // Letzte Aktivität insgesamt pro Projekt (kann vor dem Range liegen).
         $lastByProject = $this->lastActivityByProject($projects->pluck('id')->all());
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($projects, $lastByProject, $from, $to, $request);
+            return $this->exportCsv($projects, $lastByProject, $from, $to, $filters->toAuditArray(), $request);
         }
         if ($request->query('export') === 'xlsx') {
             return $this->exportXlsx($projects, $lastByProject, $from, $to);
@@ -61,6 +61,10 @@ class ProjectInactiveReportController extends Controller {
             'lastByProject' => $lastByProject,
             'rangeFrom' => $from,
             'rangeTo' => $to,
+            'standardFilters' => $filters,
+            'filterFields' => ['customer'],
+            'inactivitySeries' => $this->inactivitySeries($projects, $lastByProject, $to),
+            ...$this->standardFilterOptions(['customer'], $filters),
         ]);
     }
 
@@ -115,11 +119,12 @@ class ProjectInactiveReportController extends Controller {
     /**
      * @return Collection<int, Project>
      */
-    private function loadInactiveProjects(CarbonImmutable $from, CarbonImmutable $to): Collection {
+    private function loadInactiveProjects(CarbonImmutable $from, CarbonImmutable $to, ?int $customerId = null): Collection {
         /** @var Collection<int, Project> $projects */
         $projects = Project::query()
             ->with('customer')
             ->where('status', '!=', ProjectStatus::Archived->value)
+            ->when($customerId !== null, fn($q) => $q->where('customer_id', $customerId))
             ->whereDoesntHave('timeEntries', function ($q) use ($from, $to): void {
                 $q->whereBetween('date', [$from->toDateString(), $to->toDateString()]);
             })
@@ -127,6 +132,53 @@ class ProjectInactiveReportController extends Controller {
             ->get();
 
         return $projects;
+    }
+
+    /**
+     * Projekte je Inaktivitäts-Bucket (Monate seit letzter Buchung, gemessen
+     * am Ende des gewählten Zeitraums; Projekte ohne jede Buchung separat).
+     *
+     * @param  Collection<int, Project>  $projects
+     * @param  array<int, string|null>  $lastByProject
+     * @return list<array{x: string, y: int}>
+     */
+    private function inactivitySeries(Collection $projects, array $lastByProject, CarbonImmutable $to): array {
+        if ($projects->count() === 0) {
+            return []; // Leerzustand statt Null-Achse (§Diagramm-UX).
+        }
+
+        $buckets = [
+            'lte3' => ['label' => __('≤ 3 Monate'), 'count' => 0],
+            'lte6' => ['label' => __('3–6 Monate'), 'count' => 0],
+            'lte12' => ['label' => __('6–12 Monate'), 'count' => 0],
+            'gt12' => ['label' => __('> 12 Monate'), 'count' => 0],
+            'never' => ['label' => __('Ohne Buchung'), 'count' => 0],
+        ];
+
+        $anchor = $to->endOfDay();
+        foreach ($projects as $project) {
+            $last = $lastByProject[(int) $project->id] ?? null;
+            if ($last === null) {
+                $buckets['never']['count']++;
+
+                continue;
+            }
+            $lastDate = CarbonImmutable::parse($last)->startOfDay();
+            // Carbon 3: diffInMonths liefert float (Richtung über Argumentreihenfolge).
+            $months = $lastDate->greaterThanOrEqualTo($anchor) ? 0.0 : $lastDate->diffInMonths($anchor);
+            $key = match (true) {
+                $months <= 3 => 'lte3',
+                $months <= 6 => 'lte6',
+                $months <= 12 => 'lte12',
+                default => 'gt12',
+            };
+            $buckets[$key]['count']++;
+        }
+
+        return array_values(array_map(
+            static fn(array $bucket): array => ['x' => $bucket['label'], 'y' => $bucket['count']],
+            $buckets,
+        ));
     }
 
     /**
@@ -163,8 +215,9 @@ class ProjectInactiveReportController extends Controller {
     /**
      * @param  Collection<int, Project>  $projects
      * @param  array<int, string|null>  $lastByProject
+     * @param  array<string, int|string>  $exportFilters
      */
-    private function exportCsv(Collection $projects, array $lastByProject, CarbonImmutable $from, CarbonImmutable $to, Request $request): Response {
+    private function exportCsv(Collection $projects, array $lastByProject, CarbonImmutable $from, CarbonImmutable $to, array $exportFilters, Request $request): Response {
         $filename = sprintf('projekte-inaktiv_%s_%s.csv', $from->toDateString(), $to->toDateString());
         $rows = [['Projekt', 'Kunde', 'Status', 'Letzte Aktivität']];
         foreach ($projects as $project) {
@@ -180,10 +233,7 @@ class ProjectInactiveReportController extends Controller {
             ];
         }
 
-        return $this->csvWithMetadata($rows, $filename, 'project-inactive', [
-            'from' => $from->toDateString(),
-            'to' => $to->toDateString(),
-        ], $request);
+        return $this->csvWithMetadata($rows, $filename, 'project-inactive', $exportFilters, $request);
     }
 
     /**

@@ -29,6 +29,10 @@
         'urgent' => __('Dringend'),
     ];
     $label = fn (array $map, string $key) => $map[$key] ?? $key;
+    $linkParams = array_filter(array_merge(
+        ['scope' => $isAdmin ? $scope : null],
+        $standardFilters->toQueryParams(),
+    ));
 @endphp
 
 <x-page-shell>
@@ -36,25 +40,31 @@
         <x-page-toolbar :subtitle="__('Service-Aufträge, Tasks und Touren auf einen Blick.')">
             <x-slot:actions>
                 <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.operations', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'csv']))"
+                            :href="route('reports.operations', array_merge($linkParams, ['export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.operations', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'pdf']))"
+                            :href="route('reports.operations', array_merge($linkParams, ['export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if ($isAdmin)
-        <x-filter-bar :action="route('reports.operations')" :reset="route('reports.operations')">
+    <x-filter-bar :action="route('reports.operations')" :reset="route('reports.operations')">
+        @if ($isAdmin)
             <x-filter-field :label="__('Bereich')" for="rep-scope">
                 <select id="rep-scope" name="scope" class="select select-sm select-bordered" data-autosubmit>
                     <option value="mine" @selected($scope === 'mine')>{{ __('Nur eigene') }}</option>
                     <option value="team" @selected($scope === 'team')>{{ __('Gesamtes Team') }}</option>
                 </select>
             </x-filter-field>
-        </x-filter-bar>
-    @endif
+        @endif
+        @include('reports._standard_filters', ['idPrefix' => 'operations', 'statusOptions' => $statusOptions, 'statusLabel' => __('Auftragsstatus')])
+    </x-filter-bar>
+
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.bar :title="__('Service-Aufträge: erstellt vs. erledigt je Woche')" :unit="__('Aufträge')" :series="$weeklyFlowSeries" :x-label="__('Woche')" :y-label="__('Anzahl')" :y2-label="__('Erledigt')" />
+        <x-charts.bar-h :title="__('Backlog je Kunde (Top 15)')" :unit="__('Aufträge')" :series="$backlogSeries" :x-label="__('Kunde')" :y-label="__('Offene Aufträge')" />
+    </div>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
         <x-kpi-tile :label="__('Service-Aufträge')" :value="$orders['total']"

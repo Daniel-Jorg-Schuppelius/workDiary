@@ -19,6 +19,13 @@ return [
         /** Number of most-recent entries shown on the dashboard. */
         'recent_limit' => (int) env('UI_DASHBOARD_RECENT_LIMIT', 5),
     ],
+    'news_feed' => [
+        /** Optional, serverseitig gecachter RSS-/Atom-Feed in der Hilfe-Rail. */
+        'enabled' => (bool) env('UI_NEWS_FEED_ENABLED', false),
+        'url' => (string) env('UI_NEWS_FEED_URL', ''),
+        'max_items' => 5,
+        'rotation_seconds' => 15,
+    ],
     'search' => [
         /** Default result limit for type-ahead / quick search endpoints. */
         'results_limit' => (int) env('UI_SEARCH_RESULTS_LIMIT', 20),

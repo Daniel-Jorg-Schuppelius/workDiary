@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Integration;
 
 use App\Plugins\Clockify\ClockifyGroupBooker;
+use App\Plugins\Fritzbox\FritzboxGroupBooker;
 use App\Plugins\Kimai\KimaiGroupBooker;
 use App\Plugins\OpenProject\OpenProjectGroupBooker;
 use App\Plugins\RemoteSupport\RemoteSupportGroupBooker;
@@ -32,6 +33,7 @@ class InboxGroupBookerRegistry {
         'clockify' => ClockifyGroupBooker::class,
         'openproject' => OpenProjectGroupBooker::class,
         'remote-support' => RemoteSupportGroupBooker::class,
+        'fritzbox' => FritzboxGroupBooker::class,
         B2bOrderGroupBooker::PLUGIN_ID => B2bOrderGroupBooker::class,
     ];
 

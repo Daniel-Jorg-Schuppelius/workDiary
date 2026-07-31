@@ -27,6 +27,8 @@
         $totalIssuedPaid = ($status['issued']['total'] ?? 0) + ($status['paid']['total'] ?? 0);
     @endphp
 
+    @include('reports.pdf.charts._chart')
+
     <table class="kpis">
         <tr>
             <td><div class="label">{{ __('Ausgestellt + Bezahlt') }}</div><div class="value">{{ $eur($totalIssuedPaid) }}</div></td>

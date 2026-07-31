@@ -7,6 +7,10 @@
     $money = fn (float $v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) . ' €';
     $km    = fn (float $v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 1, withThousandsSeparator: true) . ' km';
     $num   = fn (float $v, int $d = 2) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, $d, withThousandsSeparator: true);
+    $linkParams = array_filter(array_merge(
+        ['scope' => $isAdmin ? $scope : null],
+        $standardFilters->toQueryParams(),
+    ));
 @endphp
 
 <x-page-shell>
@@ -14,25 +18,31 @@
         <x-page-toolbar :subtitle="__('Fahrten, Tankungen, Energiekosten und Erstattungen je Fahrzeug.')">
             <x-slot:actions>
                 <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.fleet', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'csv']))"
+                            :href="route('reports.fleet', array_merge($linkParams, ['export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.fleet', array_filter(['scope' => $isAdmin ? $scope : null, 'export' => 'pdf']))"
+                            :href="route('reports.fleet', array_merge($linkParams, ['export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if ($isAdmin)
-        <x-filter-bar :action="route('reports.fleet')" :reset="route('reports.fleet')">
+    <x-filter-bar :action="route('reports.fleet')" :reset="route('reports.fleet')">
+        @if ($isAdmin)
             <x-filter-field :label="__('Bereich')" for="rep-scope">
                 <select id="rep-scope" name="scope" class="select select-sm select-bordered" data-autosubmit>
                     <option value="mine" @selected($scope === 'mine')>{{ __('Nur meine Fahrten') }}</option>
                     <option value="team" @selected($scope === 'team')>{{ __('Gesamter Fuhrpark') }}</option>
                 </select>
             </x-filter-field>
-        </x-filter-bar>
-    @endif
+        @endif
+        @include('reports._standard_filters', ['idPrefix' => 'fleet'])
+    </x-filter-bar>
+
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.bar-h :title="__('Kilometer je Fahrzeug (Top 15)')" unit="km" :series="$vehicleKmSeries" :x-label="__('Fahrzeug')" :y-label="__('km')" />
+        <x-charts.bar :title="__('Kilometer je Monat')" unit="km" :series="$monthlyKmSeries" :x-label="__('Monat')" :y-label="__('km')" />
+    </div>
 
     {{-- KPI-Kacheln --}}
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">

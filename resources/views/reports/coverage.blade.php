@@ -12,14 +12,31 @@
         <x-page-toolbar :subtitle="__('Soll-Ist-Besetzung je Schichttyp inkl. Erfüllung und Unterdeckungstagen.')">
             <x-slot:actions>
                 <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.coverage', ['export' => 'csv'])"
+                            :href="route('reports.coverage', array_merge($standardFilters->toQueryParams(), ['export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.coverage', ['export' => 'pdf'])"
+                            :href="route('reports.coverage', array_merge($standardFilters->toQueryParams(), ['export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    <x-filter-bar :action="route('reports.coverage')" :reset="route('reports.coverage')">
+        @include('reports._standard_filters', ['idPrefix' => 'coverage'])
+    </x-filter-bar>
+
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.heatmap
+            :title="__('Deckungsgrad je Schichttyp und Wochentag')"
+            unit="%"
+            :rows="$coverageHeatmapRows"
+            :col-labels="$weekdayLabels"
+            :x-label="__('Schichttyp')"
+            :totals="false"
+        />
+        <x-charts.bar :title="__('Fehlende Personentage je Woche')" :unit="__('Personentage')"
+                      :series="$underfilledWeekSeries" :x-label="__('Woche')" :y-label="__('Fehlend')" />
+    </div>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
         <x-kpi-tile :label="__('Schichttypen')" :value="$totals['shift_types']" :hint="$daySpan . ' ' . __('Tage')" />

@@ -19,6 +19,10 @@
 
         return $sign . intdiv($abs, 60) . ':' . str_pad((string) ($abs % 60), 2, '0', STR_PAD_LEFT) . ' h';
     };
+    $linkParams = array_filter(array_merge(
+        ['min_minutes' => $minMinutes > 0 ? $minMinutes : null],
+        $standardFilters->toQueryParams(),
+    ));
 @endphp
 
 <x-page-shell>
@@ -26,10 +30,10 @@
         <x-page-toolbar :subtitle="__('Aufwand, Nacharbeit und Nicht-Abrechenbares je Kunde.')">
             <x-slot:actions>
                 <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.customers', array_filter(['min_minutes' => $minMinutes > 0 ? $minMinutes : null, 'project_id' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId), 'user_id' => \App\Support\Sqid::encode(\App\Models\User::class, $userId), 'export' => 'csv']))"
+                            :href="route('reports.customers', array_merge($linkParams, ['export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.customers', array_filter(['min_minutes' => $minMinutes > 0 ? $minMinutes : null, 'project_id' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId), 'user_id' => \App\Support\Sqid::encode(\App\Models\User::class, $userId), 'export' => 'pdf']))"
+                            :href="route('reports.customers', array_merge($linkParams, ['export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>
                 <x-help-button topic="reports.customer-analysis" />
             </x-slot:actions>
@@ -37,28 +41,17 @@
     </x-slot:toolbar>
 
     <x-filter-bar :action="route('reports.customers')" :reset="route('reports.customers')">
+        @include('reports._standard_filters', ['idPrefix' => 'customers'])
         <x-filter-field :label="__('Mindest-Aufwand (Minuten)')" for="rep-min-minutes">
             <input id="rep-min-minutes" type="number" name="min_minutes" value="{{ $minMinutes }}" min="0" class="input input-sm input-bordered w-36" />
         </x-filter-field>
-
-        <x-filter-field :label="__('Projekt')" for="rep-project">
-            <select id="rep-project" name="project_id" class="select select-sm select-bordered">
-                <option value="">{{ __('Alle') }}</option>
-                @foreach($projects as $project)
-                    <option value="{{ $project->sqid }}" @selected(\App\Support\Sqid::encode(\App\Models\Project::class, $projectId) === $project->sqid)>{{ $project->name }}</option>
-                @endforeach
-            </select>
-        </x-filter-field>
-
-        <x-filter-field :label="__('Mitarbeiter')" for="rep-user">
-            <select id="rep-user" name="user_id" class="select select-sm select-bordered">
-                <option value="">{{ __('Alle') }}</option>
-                @foreach($reportUsers as $reportUser)
-                    <option value="{{ $reportUser->sqid }}" @selected(\App\Support\Sqid::encode(\App\Models\User::class, $userId) === $reportUser->sqid)>{{ $reportUser->name }}</option>
-                @endforeach
-            </select>
-        </x-filter-field>
     </x-filter-bar>
+
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.pareto :title="__('Stunden je Kunde (Top 20)')" unit="h" :series="$customerHoursSeries" :x-label="__('Kunde')" :y-label="__('Stunden')" />
+        <x-charts.line :title="__('Auftragseingang der letzten 30 Tage')" :unit="__('Aufträge')" :series="$trendSeries" :x-label="__('Tag')" :y-label="__('Aufträge')" />
+    </div>
+    <x-charts.bar-h :title="__('Offene Punkte je Kunde (Top 15)')" :unit="__('Offene Punkte')" :series="$openIssuesSeries" :x-label="__('Kunde')" :y-label="__('Offene Punkte')" />
 
     <div class="grid gap-4 lg:grid-cols-3">
         <x-table bare table-sort="client">

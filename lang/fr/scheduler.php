@@ -113,6 +113,7 @@ return [
         'mail' => ['poll' => 'Relever la boîte mail entrante'],
         'maintenance' => ['scan_due' => 'Vérifier les plans de maintenance échus'],
         'notifications' => ['scan_deadlines' => 'Contrôler les échéances et notifier'],
+        'news-feed' => ['refresh' => 'Actualiser le fil d’actualités'],
         'openproject' => [
             'import' => 'Import OpenProject',
             'push' => 'Transférer les temps vers OpenProject',

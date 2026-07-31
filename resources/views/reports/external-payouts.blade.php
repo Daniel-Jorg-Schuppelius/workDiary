@@ -15,6 +15,15 @@
         <x-page-toolbar :subtitle="__('An externe Mitarbeiter zu zahlende Beträge im gewählten Zeitraum (:from – :to).', ['from' => $from->fdate(), 'to' => $to->fdate()])" />
     </x-slot:toolbar>
 
+    <x-filter-bar :action="route('reports.external-payouts')" :reset="route('reports.external-payouts')">
+        @include('reports._standard_filters', ['idPrefix' => 'external-payouts'])
+    </x-filter-bar>
+
+    <div class="grid gap-3 xl:grid-cols-2">
+        <x-charts.bar :title="__('Auszahlungen (€) je Monat')" unit="€" :series="$monthlyPayoutSeries" :x-label="__('Monat')" :y-label="__('Betrag (€)')" />
+        <x-charts.bar-h :title="__('Auszahlungen je Externem (Top 15)')" unit="€" :series="$payoutByUserSeries" :x-label="__('Mitarbeiter')" :y-label="__('Betrag (€)')" />
+    </div>
+
     <x-card>
         <div class="mb-3 flex flex-wrap items-baseline justify-end gap-2">
             <span class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ __('Summe') }}</span>

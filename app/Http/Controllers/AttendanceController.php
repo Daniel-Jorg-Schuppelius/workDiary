@@ -38,7 +38,10 @@ class AttendanceController extends Controller {
 
         $attendances = Attendance::query()
             ->where('user_id', Auth::id())
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()]);
+            // whereDate statt String-whereBetween: `date` liegt als Datetime vor,
+            // sonst fällt der letzte Tag des Zeitraums hinter die Obergrenze.
+            ->whereDate('date', '>=', $from->toDateString())
+            ->whereDate('date', '<=', $to->toDateString());
 
         [$sort, $dir] = SortableQuery::apply($attendances, $request, [
             'date' => 'date',

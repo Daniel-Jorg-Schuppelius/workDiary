@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
+use App\Http\Controllers\Reporting\Concerns\{ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{Qualification, User};
 use App\Services\Reporting\CohortComparisonBuilder;
 use App\Support\Sqid;
@@ -31,6 +31,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 class CohortComparisonReportController extends Controller {
     use ResolvesGlobalDateRange;
+    use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
     public function __construct(private readonly CohortComparisonBuilder $builder) {}
@@ -52,6 +53,11 @@ class CohortComparisonReportController extends Controller {
         $window = (int) $request->query('window', 90);
         $window = max(7, min(365, $window));
 
+        // Zeitraum wirkt hier nicht auf die Kennzahl (Fenster hängt am
+        // Erwerbsdatum) — er speist nur das Standard-Filterset (Team).
+        [$from, $to] = $this->resolveRange($request);
+        $filters = $this->standardFilters($request, ['team'], $from, $to);
+
         $rawQualId = $request->query('qualification_id');
         $qualId = Sqid::decodeOrNumeric(Qualification::class, $rawQualId);
 
@@ -60,10 +66,10 @@ class CohortComparisonReportController extends Controller {
         if ($qualId !== null) {
             $qualification = Qualification::query()->find($qualId);
             if ($qualification !== null) {
-                $result = $this->builder->build($qualification, $metric, $window);
+                $result = $this->builder->build($qualification, $metric, $window, $filters->teamUserIds());
 
                 if ($request->query('export') === 'csv') {
-                    return $this->exportCsv($result, (string) $qualification->name, $metricOptions[$metric], $request);
+                    return $this->exportCsv($result, (string) $qualification->name, $metricOptions[$metric], $filters->toAuditArray(), $request);
                 }
             }
         }
@@ -76,14 +82,53 @@ class CohortComparisonReportController extends Controller {
             'metricOptions' => $metricOptions,
             'window' => $window,
             'result' => $result,
-            'label' => $this->globalDateRange()['label'],
+            'standardFilters' => $filters,
+            'filterFields' => ['team'],
+            'beforeAfterSeries' => $result === null ? [] : $this->beforeAfterSeries($result['members']),
+            'weeklySeries' => $result === null ? [] : $this->weeklySeries($result['weekly']),
+            ...$this->standardFilterOptions(['team'], $filters),
         ]);
     }
 
     /**
-     * @param  array<string, mixed>  $result
+     * Vorher- vs. Nachher-Wert der Kennzahl je Kohortenmitglied (y2 =
+     * nachher, Schraffur) — nur Mitglieder mit beiden Fensterwerten.
+     *
+     * @param  list<array{userName:string, before: float|null, after: float|null}>  $members
+     * @return list<array{x: string, y: float, y2: float}>
      */
-    private function exportCsv(array $result, string $qualName, string $metricLabelKey, Request $request): Response {
+    private function beforeAfterSeries(array $members): array {
+        $series = [];
+        foreach ($members as $member) {
+            if ($member['before'] === null || $member['after'] === null) {
+                continue;
+            }
+            $series[] = ['x' => $member['userName'], 'y' => $member['before'], 'y2' => $member['after']];
+        }
+
+        return $series;
+    }
+
+    /**
+     * Kohortenverlauf über die Fensterwochen relativ zum Erwerbsdatum
+     * (W+0 = Erwerbswoche); Wochen ohne Buchungen liefert der Builder nicht
+     * mit — leere Serie ⇒ Leerzustand (§Diagramm-UX).
+     *
+     * @param  list<array{week:int, value: float, minutes:int}>  $weekly
+     * @return list<array{x: string, y: float}>
+     */
+    private function weeklySeries(array $weekly): array {
+        return array_map(static fn(array $point): array => [
+            'x' => sprintf('W%+d', $point['week']),
+            'y' => $point['value'],
+        ], $weekly);
+    }
+
+    /**
+     * @param  array<string, mixed>  $result
+     * @param  array<string, int|string>  $auditFilters
+     */
+    private function exportCsv(array $result, string $qualName, string $metricLabelKey, array $auditFilters, Request $request): Response {
         /** @var list<array<string, mixed>> $members */
         $members = $result['members'];
 
@@ -112,7 +157,7 @@ class CohortComparisonReportController extends Controller {
             $rows,
             sprintf('kohorte_%s.csv', preg_replace('/[^a-z0-9]+/i', '_', $qualName)),
             'cohort-comparison',
-            ['qualification' => $qualName, 'metric' => (string) __($metricLabelKey)],
+            array_merge(['qualification' => $qualName, 'metric' => (string) __($metricLabelKey)], $auditFilters),
             $request,
         );
     }

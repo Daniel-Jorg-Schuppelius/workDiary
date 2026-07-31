@@ -18,7 +18,9 @@ const BACKDROP_SELECTOR = "[data-help-backdrop]";
 const FALLBACK_TEMPLATE_SELECTOR = "template[data-help-fallback]";
 const OPEN_STORAGE_KEY = "help.open";
 const FOOTER_COLLAPSED_STORAGE_KEY = "help.footer.collapsed";
+const NEWS_PAUSED_STORAGE_KEY = "help.news.paused";
 const DESKTOP_QUERY = "(min-width: 1024px)";
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 // Unterhalb dieser Viewport-Höhe klappt der Footer (Feedback/Aktionen) ohne
 // gespeicherte Präferenz standardmäßig ein — sonst bleibt für den Hilfetext
 // auf niedrigen Bildschirmen kaum Platz.
@@ -28,6 +30,7 @@ let currentTopic = null;
 let currentLocale = null;
 let feedbackSent = false;
 let lastTrigger = null;
+let newsRotationTimer = null;
 
 function isDesktop() {
     return window.matchMedia(DESKTOP_QUERY).matches;
@@ -111,6 +114,135 @@ function toggleFooter() {
     const collapsed = !content.classList.contains("hidden");
     applyFooterCollapsed(collapsed);
     rememberFooterCollapsed(collapsed);
+}
+
+function storedNewsPausedPreference() {
+    try {
+        const stored = window.localStorage.getItem(NEWS_PAUSED_STORAGE_KEY);
+        if (stored === "1") return true;
+        if (stored === "0") return false;
+    } catch (error) {
+        // Ohne localStorage gilt nur die Reduced-Motion-Präferenz.
+    }
+    return null;
+}
+
+function rememberNewsPaused(paused) {
+    try {
+        window.localStorage.setItem(
+            NEWS_PAUSED_STORAGE_KEY,
+            paused ? "1" : "0",
+        );
+    } catch (error) {
+        // Die Feed-Rail funktioniert auch ohne persistente Präferenz.
+    }
+}
+
+function bindNewsRail() {
+    const rail = document.querySelector("[data-help-news]");
+    if (!rail) return;
+
+    const items = Array.from(
+        rail.querySelectorAll("[data-help-news-item]"),
+    ).filter((item) => item instanceof HTMLElement);
+    const toggle = rail.querySelector("[data-help-news-toggle]");
+    const toggleIcon = rail.querySelector("[data-help-news-toggle-icon]");
+    if (items.length < 2 || !toggle) return;
+
+    const configuredInterval = Number.parseInt(
+        rail.getAttribute("data-news-rotation-ms") || "15000",
+        10,
+    );
+    const interval = Number.isFinite(configuredInterval)
+        ? Math.max(5000, configuredInterval)
+        : 15000;
+    const storedPreference = storedNewsPausedPreference();
+    let paused =
+        storedPreference === null
+            ? window.matchMedia(REDUCED_MOTION_QUERY).matches
+            : storedPreference;
+    let temporarilyPaused = false;
+    let currentIndex = 0;
+
+    const updateToggle = () => {
+        const label = rail.getAttribute(
+            paused ? "data-label-resume" : "data-label-pause",
+        );
+        toggle.setAttribute("aria-pressed", paused ? "true" : "false");
+        if (label) {
+            toggle.setAttribute("aria-label", label);
+            toggle.setAttribute("title", label);
+        }
+        if (toggleIcon) toggleIcon.textContent = paused ? "play_arrow" : "pause";
+    };
+
+    const showItem = (index) => {
+        items.forEach((item, itemIndex) => {
+            const active = itemIndex === index;
+            item.classList.toggle("opacity-100", active);
+            item.classList.toggle("opacity-0", !active);
+            item.classList.toggle("pointer-events-none", !active);
+            if (active) {
+                item.removeAttribute("aria-hidden");
+                item.removeAttribute("tabindex");
+            } else {
+                item.setAttribute("aria-hidden", "true");
+                item.setAttribute("tabindex", "-1");
+            }
+        });
+    };
+
+    const stopTimer = () => {
+        if (newsRotationTimer !== null) {
+            window.clearInterval(newsRotationTimer);
+            newsRotationTimer = null;
+        }
+    };
+
+    const startTimer = () => {
+        stopTimer();
+        if (paused || temporarilyPaused || document.hidden) return;
+        newsRotationTimer = window.setInterval(() => {
+            if (document.body.classList.contains("help-sidebar-open")) return;
+            currentIndex = (currentIndex + 1) % items.length;
+            showItem(currentIndex);
+        }, interval);
+    };
+
+    toggle.addEventListener("click", () => {
+        paused = !paused;
+        rememberNewsPaused(paused);
+        updateToggle();
+        startTimer();
+    });
+
+    rail.addEventListener("mouseenter", () => {
+        temporarilyPaused = true;
+        stopTimer();
+    });
+    rail.addEventListener("mouseleave", () => {
+        temporarilyPaused = false;
+        startTimer();
+    });
+    rail.addEventListener("focusin", () => {
+        temporarilyPaused = true;
+        stopTimer();
+    });
+    rail.addEventListener("focusout", (event) => {
+        if (!(event instanceof FocusEvent)) return;
+        if (
+            event.relatedTarget instanceof Node &&
+            rail.contains(event.relatedTarget)
+        )
+            return;
+        temporarilyPaused = false;
+        startTimer();
+    });
+    document.addEventListener("visibilitychange", startTimer);
+
+    showItem(currentIndex);
+    updateToggle();
+    startTimer();
 }
 
 // Drawer/Backdrop bleiben immer im DOM (kein display-Toggling), getogglet
@@ -509,6 +641,8 @@ function bindHelpDrawer() {
     if (document.querySelector("[data-help-footer-content]")) {
         applyFooterCollapsed(footerShouldStartCollapsed());
     }
+
+    bindNewsRail();
 
     // War die Sidebar beim letzten Seitenaufruf offen, öffnet sie nach dem
     // (vollen) Page-Load automatisch mit dem NEUEN Seitenkontext. Kein

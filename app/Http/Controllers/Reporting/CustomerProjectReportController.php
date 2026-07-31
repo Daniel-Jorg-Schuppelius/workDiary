@@ -12,9 +12,10 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{Customer, Project, TimeEntry};
-use App\Support\XlsxExport;
+use App\Services\Reporting\ReportFilters;
+use App\Support\{Sqid, XlsxExport};
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
@@ -32,33 +33,44 @@ class CustomerProjectReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use ResolvesReportScope;
+    use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
         [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
 
-        [$fromDate, $toDate] = $this->globalDateRangeBounds();
+        [$fromDate, $toDate] = $this->resolveRange($request);
         $from = $fromDate->toDateString();
         $to = $toDate->toDateString();
 
-        $foreignCustomerId = \App\Support\Sqid::decode(\App\Models\ForeignCustomer::class, (string) $request->string('foreign_customer')->toString());
+        // Mitarbeiter-Filter nur für Admins — Nicht-Admins sehen ohnehin nur eigene Zeiten.
+        $filterFields = $isAdmin ? ['customer', 'project', 'user'] : ['customer', 'project'];
+        $filters = $this->standardFilters($request, $filterFields, $fromDate, $toDate, scope: $scope);
 
-        $byProject = $this->aggregateByProject($from, $to, $scope, $userId, $foreignCustomerId);
+        $foreignCustomerParam = $request->string('foreign_customer')->toString();
+        $foreignCustomerId = Sqid::decode(\App\Models\ForeignCustomer::class, $foreignCustomerParam);
+
+        $byProject = $this->aggregateByProject($from, $to, $scope, $userId, $filters, $foreignCustomerId);
         $bucket = $this->bucketByCustomer($byProject);
         $this->sortBuckets($bucket);
 
         $totalMinutes = array_sum(array_column($bucket, 'minutes'));
         $totalRate = array_sum(array_column($bucket, 'rate'));
 
+        $exportFilters = array_merge(
+            array_filter(['foreign_customer' => $foreignCustomerId]),
+            $filters->toAuditArray(),
+        );
+
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($bucket, $totalMinutes, $totalRate, $from, $to, $scope, $foreignCustomerId, $request);
+            return $this->exportCsv($bucket, $totalMinutes, $totalRate, $from, $to, $exportFilters, $request);
         }
         if ($request->query('export') === 'xlsx') {
             return $this->exportXlsx($bucket, $totalMinutes, $totalRate, $from, $to);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($bucket, $totalMinutes, $totalRate, $from, $to, $scope, $foreignCustomerId, $request);
+            return $this->exportPdf($bucket, $totalMinutes, $totalRate, $from, $to, $scope, $this->topProjectsSeries($bucket, $filters), $exportFilters, $request);
         }
 
         return view('reports.customer-project', [
@@ -69,12 +81,19 @@ class CustomerProjectReportController extends Controller {
             'bucket' => $bucket,
             'totalMinutes' => $totalMinutes,
             'totalRate' => $totalRate,
+            'standardFilters' => $filters,
+            'filterFields' => $filterFields,
+            'foreignCustomerParam' => $foreignCustomerParam,
+            'customerHoursSeries' => $this->customerHoursSeries($bucket, $filters),
+            'topProjectsSeries' => $this->topProjectsSeries($bucket, $filters),
+            ...$this->standardFilterOptions($filterFields, $filters),
         ]);
     }
+
     /**
      * @return array<int, array{minutes: int, rate: float}>
      */
-    private function aggregateByProject(string $from, string $to, string $scope, int $userId, ?int $foreignCustomerId = null): array {
+    private function aggregateByProject(string $from, string $to, string $scope, int $userId, ReportFilters $filters, ?int $foreignCustomerId = null): array {
         $query = TimeEntry::query()
             ->whereBetween('date', [$from, $to])
             ->select('project_id', 'minutes', 'rate', 'user_id');
@@ -84,6 +103,7 @@ class CustomerProjectReportController extends Controller {
         if ($foreignCustomerId !== null) {
             $query->whereHas('project', fn($q) => $q->where('foreign_customer_id', $foreignCustomerId));
         }
+        $filters->applyToTimeEntryQuery($query);
 
         $byProject = [];
         foreach ($query->get() as $e) {
@@ -152,6 +172,65 @@ class CustomerProjectReportController extends Controller {
     }
 
     /**
+     * Stunden je Kunde (Top 20, Pareto) — Drilldown filtert diesen Report auf den Kunden.
+     *
+     * @param  array<int|string, array{customer: ?Customer, projects: array<int, array{project: Project, minutes: int, rate: float}>, minutes: int, rate: float}>  $bucket
+     * @return list<array{x: string, y: float, url: ?string}>
+     */
+    private function customerHoursSeries(array $bucket, ReportFilters $filters): array {
+        $series = [];
+        foreach ($bucket as $row) {
+            if ($row['minutes'] <= 0) {
+                continue;
+            }
+            $customer = $row['customer'];
+            $series[] = [
+                'x' => $customer instanceof Customer ? $customer->name : __('Ohne Kunde'),
+                'y' => round($row['minutes'] / 60, 1),
+                'url' => $customer instanceof Customer
+                    ? route('reports.customer-project', array_merge($filters->toQueryParams(), [
+                        'customer' => Sqid::encode(Customer::class, $customer->id),
+                    ]))
+                    : null,
+            ];
+        }
+        usort($series, static fn(array $a, array $b): int => $b['y'] <=> $a['y']);
+
+        return array_slice($series, 0, 20);
+    }
+
+    /**
+     * Top-Projekte nach Stunden (Top 15) — Drilldown öffnet den
+     * Projekt-Details-Report mit geerbtem Filterkontext.
+     *
+     * @param  array<int|string, array{customer: ?Customer, projects: array<int, array{project: Project, minutes: int, rate: float}>, minutes: int, rate: float}>  $bucket
+     * @return list<array{x: string, y: float, url: string}>
+     */
+    private function topProjectsSeries(array $bucket, ReportFilters $filters): array {
+        $series = [];
+        foreach ($bucket as $row) {
+            foreach ($row['projects'] as $entry) {
+                if ($entry['minutes'] <= 0) {
+                    continue;
+                }
+                $customer = $row['customer'];
+                $label = $entry['project']->name
+                    . ($customer instanceof Customer ? ' · ' . $customer->name : '');
+                $series[] = [
+                    'x' => $label,
+                    'y' => round($entry['minutes'] / 60, 1),
+                    'url' => route('reports.project-details', array_merge($filters->toQueryParams(), [
+                        'project' => Sqid::encode(Project::class, $entry['project']->id),
+                    ])),
+                ];
+            }
+        }
+        usort($series, static fn(array $a, array $b): int => $b['y'] <=> $a['y']);
+
+        return array_slice($series, 0, 15);
+    }
+
+    /**
      * @param  array<int|string, array{customer: ?Customer, projects: array<int, array{project: Project, minutes: int, rate: float}>, minutes: int, rate: float}>  $bucket
      * @return list<list<int|float|string|null>>
      */
@@ -178,15 +257,16 @@ class CustomerProjectReportController extends Controller {
 
     /**
      * @param  array<int|string, array{customer: ?Customer, projects: array<int, array{project: Project, minutes: int, rate: float}>, minutes: int, rate: float}>  $bucket
+     * @param  array<string, mixed>  $exportFilters
      */
-    private function exportCsv(array $bucket, int $totalMinutes, float $totalRate, string $from, string $to, string $scope, ?int $foreignCustomerId, Request $request): Response {
+    private function exportCsv(array $bucket, int $totalMinutes, float $totalRate, string $from, string $to, array $exportFilters, Request $request): Response {
         $filename = sprintf('kunden-projekte_%s_%s.csv', $from, $to);
         $rows = [['Kunde', 'Endkunde', 'Projekt', 'Projektnummer', 'Minuten', 'Erloes']];
         foreach ($this->buildRows($bucket, $totalMinutes, $totalRate) as $row) {
             $rows[] = array_map(static fn($v) => is_float($v) ? NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) : $v, $row);
         }
 
-        return $this->csvWithMetadata($rows, $filename, 'customer-project', ['from' => $from, 'to' => $to, 'scope' => $scope, 'foreign_customer' => $foreignCustomerId], $request);
+        return $this->csvWithMetadata($rows, $filename, 'customer-project', $exportFilters, $request);
     }
 
     /**
@@ -201,8 +281,10 @@ class CustomerProjectReportController extends Controller {
 
     /**
      * @param  array<int|string, array{customer: ?Customer, projects: array<int, array{project: Project, minutes: int, rate: float}>, minutes: int, rate: float}>  $bucket
+     * @param  list<array{x: string, y: float, url: string}>  $topProjectsSeries
+     * @param  array<string, mixed>  $exportFilters
      */
-    private function exportPdf(array $bucket, int $totalMinutes, float $totalRate, string $from, string $to, string $scope, ?int $foreignCustomerId, Request $request): SymfonyResponse {
+    private function exportPdf(array $bucket, int $totalMinutes, float $totalRate, string $from, string $to, string $scope, array $topProjectsSeries, array $exportFilters, Request $request): SymfonyResponse {
         $filename = sprintf('kunden-projekte_%s_%s.pdf', $from, $to);
         return $this->pdfDownload('reports.pdf.customer-project', [
             'bucket' => $bucket,
@@ -211,6 +293,14 @@ class CustomerProjectReportController extends Controller {
             'from' => $from,
             'to' => $to,
             'scope' => $scope,
-        ], $filename, request: $request, reportCode: 'customer-project', filters: ['from' => $from, 'to' => $to, 'scope' => $scope, 'foreign_customer' => $foreignCustomerId]);
+            'chart' => [
+                'type' => 'bar-h',
+                'title' => __('Top-Projekte nach Stunden'),
+                'unit' => 'h',
+                'xLabel' => __('Projekt'),
+                'yLabel' => __('Stunden'),
+                'series' => $topProjectsSeries,
+            ],
+        ], $filename, request: $request, reportCode: 'customer-project', filters: $exportFilters);
     }
 }

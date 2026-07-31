@@ -13,7 +13,8 @@
     /** @var array<int, int> $monthTotals */
     /** @var array<int, int> $daysInMonth */
     /** @var array<int, string> $monthNames */
-    $fmt = function (int $min): string {
+    $fmt = function (int|float $min): string {
+        $min = (int) round($min);
         if ($min <= 0) {
             return '';
         }
@@ -24,15 +25,24 @@
         $abs = abs($min);
         return $sign . intdiv($abs, 60) . ':' . str_pad((string) ($abs % 60), 2, '0', STR_PAD_LEFT) . ' h';
     };
-    $intensity = function (int $min) use ($maxCell): string {
-        if ($min <= 0 || $maxCell <= 0) {
-            return '';
+
+    $heatmapRows = [];
+    for ($m = 1; $m <= 12; $m++) {
+        $cells = [];
+        for ($d = 1; $d <= 31; $d++) {
+            if ($d > $daysInMonth[$m]) {
+                $cells[] = null;
+                continue;
+            }
+            $val = $matrix[$m][$d];
+            $cells[] = [
+                'value' => $val,
+                'title' => sprintf('%02d.%02d.%d', $d, $m, $year) . ' — ' . ($val > 0 ? $fmtTotal($val) : __('keine Einträge')),
+                'class' => \Carbon\Carbon::create($year, $m, $d)->isSunday() ? 'text-error' : '',
+            ];
         }
-        // Skala 8% .. 60% Primary-Tönung.
-        $ratio = min(1.0, $min / $maxCell);
-        $alpha = 8 + (int) round($ratio * 52);
-        return 'background-color: color-mix(in oklab, var(--color-primary) ' . $alpha . '%, transparent);';
-    };
+        $heatmapRows[] = ['label' => $monthNames[$m], 'url' => $monthUrls[$m] ?? null, 'cells' => $cells];
+    }
 @endphp
 
 <x-page-shell>
@@ -41,6 +51,7 @@
     </x-slot:toolbar>
 
     <x-filter-bar :action="route('reports.my-year')" :reset="route('reports.my-year')">
+        @include('reports._standard_filters', ['idPrefix' => 'my-year'])
         <x-filter-field :label="__('Art')" for="rep-kind">
             <select id="rep-kind" name="kind" class="select select-sm select-bordered" data-autosubmit>
                 <option value="all" @selected($kind === 'all')>{{ __('Alle') }}</option>
@@ -51,68 +62,20 @@
         </x-filter-field>
     </x-filter-bar>
 
-    <x-card>
-        <div class="mb-3 flex flex-wrap items-center justify-end gap-2">
-            <div class="flex items-baseline gap-2">
-                <span class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ __('Jahressumme') }}</span>
-                <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $yearTotal > 0 ? 'text-primary' : 'text-base-content/50' }}">
-                    {{ $fmtTotal($yearTotal) }}
-                </span>
-            </div>
-        </div>
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <x-kpi-tile :label="__('Jahressumme')" :value="$fmtTotal($yearTotal)" :tone="$yearTotal > 0 ? 'primary' : 'neutral'" />
+    </div>
 
-        @if ($yearTotal === 0)
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>' :title="__('Keine Zeiteinträge für dieses Jahr.')" />
-        @else
-            <div class="overflow-x-auto">
-                <table class="table table-xs w-full text-center tabular-nums">
-                    <thead>
-                        <tr>
-                            <th class="text-left font-semibold uppercase tracking-[0.12em] text-[0.65rem] text-base-content/60">{{ __('Monat') }}</th>
-                            @for ($d = 1; $d <= 31; $d++)
-                                <th class="px-1 font-semibold text-[0.65rem] text-base-content/50">{{ $d }}</th>
-                            @endfor
-                            <th class="bg-base-200 px-2 font-semibold uppercase tracking-[0.12em] text-[0.65rem] text-base-content/70">Σ</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for ($m = 1; $m <= 12; $m++)
-                            <tr>
-                                <th class="text-left font-semibold text-base-content/80 whitespace-nowrap">{{ $monthNames[$m] }}</th>
-                                @for ($d = 1; $d <= 31; $d++)
-                                    @if ($d > $daysInMonth[$m])
-                                        <td class="bg-base-200/40 text-base-content/30">·</td>
-                                    @else
-                                        @php
-                                            $val = $matrix[$m][$d];
-                                            $isSunday = \Carbon\Carbon::create($year, $m, $d)->isSunday();
-                                        @endphp
-                                        <td class="text-[0.65rem]{{ $isSunday ? ' text-error' : '' }}" style="{{ $intensity($val) }}"
-                                            title="{{ sprintf('%02d.%02d.%d', $d, $m, $year) }} — {{ $val > 0 ? $fmtTotal($val) : __('keine Einträge') }}">
-                                            {{ $fmt($val) }}
-                                        </td>
-                                    @endif
-                                @endfor
-                                <td class="bg-base-200 font-semibold text-base-content {{ $monthTotals[$m] > 0 ? '' : 'text-base-content/40' }}">
-                                    {{ $monthTotals[$m] > 0 ? $fmt($monthTotals[$m]) : '·' }}
-                                </td>
-                            </tr>
-                        @endfor
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <th class="bg-base-200 text-left text-[0.65rem] uppercase tracking-[0.12em] text-base-content/70">Σ</th>
-                            @for ($d = 1; $d <= 31; $d++)
-                                <th class="bg-base-200 text-[0.65rem] {{ $dayTotals[$d] > 0 ? 'text-base-content' : 'text-base-content/40' }}">
-                                    {{ $dayTotals[$d] > 0 ? $fmt($dayTotals[$d]) : '' }}
-                                </th>
-                            @endfor
-                            <th class="bg-primary/10 font-semibold text-primary">{{ $fmt($yearTotal) }}</th>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-        @endif
-    </x-card>
+    <x-charts.heatmap
+        :title="__('Stunden pro Tag')"
+        unit="h"
+        :rows="$heatmapRows"
+        :col-labels="range(1, 31)"
+        :max="$maxCell"
+        :x-label="__('Monat')"
+        :format="$fmt"
+    />
+
+    <x-charts.bar :title="__('Stunden pro Monat')" unit="h" :series="$monthlySeries" :x-label="__('Monat')" :y-label="__('Stunden')" />
 </x-page-shell>
 @endsection

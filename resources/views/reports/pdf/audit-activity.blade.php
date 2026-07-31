@@ -17,6 +17,7 @@
 @endsection
 
 @section('pdf-table')
+    @include('reports.pdf.charts._chart')
     @php
         $shortType = function (?string $fqcn): string {
             if ($fqcn === null || $fqcn === '') return '—';

@@ -13,10 +13,11 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\Vacation\{VacationStatus, VacationType};
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{FlexBalance, SickLeave, User, Vacation};
 use App\Services\Absence\VacationBalanceService;
 use App\Services\HolidayService;
+use App\Services\Reporting\ReportFilters;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
@@ -32,7 +33,11 @@ class AbsencesReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use ResolvesReportScope;
+    use ResolvesStandardReportFilters;
     use WritesReportCsv;
+
+    /** Top-N-Kappung des Resturlaub-Balkendiagramms. */
+    private const REMAINING_TOP_N = 15;
 
     public function __construct(
         private readonly HolidayService $holidayService,
@@ -43,11 +48,20 @@ class AbsencesReportController extends Controller {
         $userId = (int) Auth::id();
         [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
 
-        [$fromDate, $toDate] = $this->globalDateRangeBounds();
+        [$fromDate, $toDate] = $this->resolveRange($request);
         $from = $fromDate->toDateString();
         $to = $toDate->toDateString();
 
-        $rows = $this->aggregate($fromDate, $toDate, $scope, $userId);
+        $filters = $this->standardFilters(
+            $request,
+            ['user', 'team', 'status'],
+            $fromDate,
+            $toDate,
+            [VacationStatus::Pending->value, VacationStatus::Approved->value],
+            scope: $scope,
+        );
+
+        $rows = $this->aggregate($fromDate, $toDate, $scope, $userId, $filters);
         $totals = $this->totals($rows);
 
         // MVP-413: Urlaubskonto-Spalten (Anspruch+Übertrag/Rest) für das Jahr des Bereichsendes.
@@ -58,11 +72,15 @@ class AbsencesReportController extends Controller {
             $rows[$i]['remaining_days'] = $balance->hasEntitlement ? $balance->remainingDays() : null;
         }
 
+        $exportFilters = array_merge(['scope' => $scope], $filters->toAuditArray());
+        $monthlyTypeSeries = $this->monthlyTypeSeries($fromDate, $toDate, $scope, $userId, $filters);
+        $typeBands = $this->typeBands();
+
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($rows, $totals, $from, $to, $scope, $balanceYear, $request);
+            return $this->exportCsv($rows, $totals, $from, $to, $balanceYear, $exportFilters, $request);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($rows, $totals, $from, $to, $scope, $balanceYear, $request);
+            return $this->exportPdf($rows, $totals, $from, $to, $scope, $balanceYear, $monthlyTypeSeries, $typeBands, $exportFilters, $request);
         }
 
         return view('reports.absences', [
@@ -73,7 +91,145 @@ class AbsencesReportController extends Controller {
             'rows' => $rows,
             'totals' => $totals,
             'balanceYear' => $balanceYear,
+            'standardFilters' => $filters,
+            'filterFields' => ['user', 'team', 'status'],
+            'monthlyTypeSeries' => $monthlyTypeSeries,
+            'typeBands' => $typeBands,
+            'remainingSeries' => $this->remainingVacationSeries($rows),
+            ...$this->standardFilterOptions(['user', 'team'], $filters),
         ]);
+    }
+
+    /**
+     * Bänder des Monats-Stapeldiagramms (vorhandene totals-Kategorien).
+     *
+     * @return list<array{key: string, label: string}>
+     */
+    private function typeBands(): array {
+        return [
+            ['key' => 'vacation', 'label' => __('Urlaub')],
+            ['key' => 'sick', 'label' => __('Krank')],
+            ['key' => 'special', 'label' => __('Sonder')],
+            ['key' => 'unpaid', 'label' => __('Unbezahlt')],
+        ];
+    }
+
+    /**
+     * Abwesenheits-Werktage je Monat nach Typ (Chart-Datenkontrakt Screen + PDF).
+     * Urlaubstypen zählen wie in der Tabelle nur genehmigte Anträge — außer der
+     * Standardfilter „Status" wählt explizit einen anderen Status; Kranktage
+     * kommen statusunabhängig aus den Krankmeldungen.
+     *
+     * @return list<array<string, string|int>>
+     */
+    private function monthlyTypeSeries(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): array {
+        $months = $this->buildMonthsInRange($from, $to);
+        if ($months === []) {
+            return [];
+        }
+
+        /** @var array<string, array<string, int>> $buckets [Y-m][band] => Werktage */
+        $buckets = [];
+        foreach ($months as $month) {
+            $buckets[$month['key']] = ['vacation' => 0, 'sick' => 0, 'special' => 0, 'unpaid' => 0];
+        }
+
+        $vacQ = Vacation::query();
+        if ($scope === 'mine') {
+            $vacQ->where('user_id', $userId);
+        }
+        $filters->applyUserAndTeam($vacQ);
+        $wantedStatus = $filters->status ?? VacationStatus::Approved->value;
+        $vacQ->where('status', $wantedStatus);
+        $vacQ->scopes(['overlapping' => [$from, $to]]);
+        /** @var Collection<int, Vacation> $vacations */
+        $vacations = $vacQ->get();
+        foreach ($vacations as $v) {
+            $bandKey = match ($v->type) {
+                VacationType::Vacation => 'vacation',
+                VacationType::Special => 'special',
+                VacationType::Unpaid => 'unpaid',
+                default => null,
+            };
+            if ($bandKey === null) {
+                continue;
+            }
+            $this->addWorkdaysPerMonth($buckets, $bandKey, $v->start_date, $v->end_date, $from, $to);
+        }
+
+        $sickQ = SickLeave::query()
+            ->whereNull('cancelled_at')
+            ->where('end_date', '>=', $from->toDateString())
+            ->where('start_date', '<=', $to->toDateString());
+        if ($scope === 'mine') {
+            $sickQ->where('user_id', $userId);
+        }
+        $filters->applyUserAndTeam($sickQ);
+        /** @var Collection<int, SickLeave> $sickLeaves */
+        $sickLeaves = $sickQ->get();
+        foreach ($sickLeaves as $s) {
+            $this->addWorkdaysPerMonth($buckets, 'sick', $s->start_date, $s->end_date, $from, $to);
+        }
+
+        $total = 0;
+        foreach ($buckets as $bucket) {
+            $total += array_sum($bucket);
+        }
+        if ($total === 0) {
+            return []; // Leerzustand statt Null-Achse (§Diagramm-UX).
+        }
+
+        $series = [];
+        foreach ($months as $month) {
+            $series[] = ['x' => $month['shortLabel'], ...$buckets[$month['key']]];
+        }
+
+        return $series;
+    }
+
+    /**
+     * Verteilt die Werktage einer Abwesenheit (auf den Report-Zeitraum
+     * geklammert) monatsweise auf die Chart-Buckets.
+     *
+     * @param  array<string, array<string, int>>  $buckets  [Y-m][band] => Werktage
+     */
+    private function addWorkdaysPerMonth(array &$buckets, string $bandKey, CarbonInterface $startDate, CarbonInterface $endDate, CarbonImmutable $from, CarbonImmutable $to): void {
+        $start = $startDate->greaterThan($from) ? CarbonImmutable::parse($startDate->toDateString()) : $from;
+        $end = $endDate->lessThan($to) ? CarbonImmutable::parse($endDate->toDateString()) : $to;
+        if ($start->greaterThan($end)) {
+            return;
+        }
+
+        $cursor = $start->startOfMonth();
+        while ($cursor->lte($end)) {
+            $monthKey = $cursor->format('Y-m');
+            $chunkStart = $start->greaterThan($cursor) ? $start : $cursor;
+            $chunkEnd = $end->lessThan($cursor->endOfMonth()) ? $end : $cursor->endOfMonth();
+            if (isset($buckets[$monthKey])) {
+                $buckets[$monthKey][$bandKey] += $this->countWorkdays($chunkStart, $chunkEnd);
+            }
+            $cursor = $cursor->addMonth();
+        }
+    }
+
+    /**
+     * Resturlaub Top-N je Mitarbeiter (absteigend, aus den MVP-413-Spalten).
+     *
+     * @param  array<int, array{user: User, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int|null, entitled_total_days?:float|null, remaining_days?:float|null}>  $rows
+     * @return list<array{x: string, y: float}>
+     */
+    private function remainingVacationSeries(array $rows): array {
+        $series = [];
+        foreach ($rows as $r) {
+            $remaining = $r['remaining_days'] ?? null;
+            if ($remaining === null) {
+                continue;
+            }
+            $series[] = ['x' => (string) $r['user']->name, 'y' => round((float) $remaining, 1)];
+        }
+        usort($series, static fn(array $a, array $b): int => $b['y'] <=> $a['y']);
+
+        return array_slice($series, 0, self::REMAINING_TOP_N);
     }
     /**
      * @return array<int, array{
@@ -87,11 +243,16 @@ class AbsencesReportController extends Controller {
      *   flex_balance_minutes:int|null
      * }>
      */
-    private function aggregate(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId): array {
-        $vacQ = Vacation::query()->scopes(['overlapping' => [$from, $to]]);
+    private function aggregate(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): array {
+        $vacQ = Vacation::query();
         if ($scope === 'mine') {
             $vacQ->where('user_id', $userId);
         }
+        $filters->applyUserAndTeam($vacQ);
+        if ($filters->status !== null) {
+            $vacQ->where('status', $filters->status);
+        }
+        $vacQ->scopes(['overlapping' => [$from, $to]]);
         /** @var Collection<int, Vacation> $vacations */
         $vacations = $vacQ->get();
 
@@ -104,6 +265,7 @@ class AbsencesReportController extends Controller {
         if ($scope === 'mine') {
             $flexQ->where('user_id', $userId);
         }
+        $filters->applyUserAndTeam($flexQ);
         /** @var Collection<int, FlexBalance> $flexAll */
         $flexAll = $flexQ->get();
 
@@ -153,6 +315,7 @@ class AbsencesReportController extends Controller {
         if ($scope === 'mine') {
             $sickQ->where('user_id', $userId);
         }
+        $filters->applyUserAndTeam($sickQ);
         /** @var Collection<int, SickLeave> $sickLeaves */
         $sickLeaves = $sickQ->get();
         foreach ($sickLeaves as $s) {
@@ -266,8 +429,9 @@ class AbsencesReportController extends Controller {
     /**
      * @param  array<int, array{user: User, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int|null, entitled_total_days?:float|null, remaining_days?:float|null}>  $rows
      * @param  array{users:int, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int}  $totals
+     * @param  array<string, mixed>  $exportFilters
      */
-    private function exportCsv(array $rows, array $totals, string $from, string $to, string $scope, int $balanceYear, Request $request): Response {
+    private function exportCsv(array $rows, array $totals, string $from, string $to, int $balanceYear, array $exportFilters, Request $request): Response {
         $filename = sprintf('abwesenheiten_%s_%s.csv', $from, $to);
         $fmt = static function (int $m): string {
             $sign = $m < 0 ? '-' : '';
@@ -304,14 +468,17 @@ class AbsencesReportController extends Controller {
             $fmt($totals['flex_balance_minutes']),
         ];
 
-        return $this->csvWithMetadata($out, $filename, 'absences', ['from' => $from, 'to' => $to, 'scope' => $scope], $request);
+        return $this->csvWithMetadata($out, $filename, 'absences', $exportFilters, $request);
     }
 
     /**
      * @param  array<int, array{user: User, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int|null, entitled_total_days?:float|null, remaining_days?:float|null}>  $rows
      * @param  array{users:int, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int}  $totals
+     * @param  list<array<string, string|int>>  $monthlyTypeSeries
+     * @param  list<array{key: string, label: string}>  $typeBands
+     * @param  array<string, mixed>  $exportFilters
      */
-    private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope, int $balanceYear, Request $request): SymfonyResponse {
+    private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope, int $balanceYear, array $monthlyTypeSeries, array $typeBands, array $exportFilters, Request $request): SymfonyResponse {
         $filename = sprintf('abwesenheiten_%s_%s.pdf', $from, $to);
         return $this->pdfDownload('reports.pdf.absences', [
             'rows' => $rows,
@@ -320,6 +487,15 @@ class AbsencesReportController extends Controller {
             'to' => $to,
             'scope' => $scope,
             'balanceYear' => $balanceYear,
-        ], $filename, 'landscape', $request, 'absences', ['from' => $from, 'to' => $to, 'scope' => $scope]);
+            'chart' => [
+                'type' => 'stacked-bar-h',
+                'title' => __('Abwesenheitstage je Monat nach Typ'),
+                'unit' => __('Tage'),
+                'xLabel' => __('Monat'),
+                'series' => $monthlyTypeSeries,
+                'bands' => $typeBands,
+                'note' => __('Vereinfachte Druckdarstellung.'),
+            ],
+        ], $filename, 'landscape', $request, 'absences', $exportFilters);
     }
 }

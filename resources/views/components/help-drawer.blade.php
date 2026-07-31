@@ -93,31 +93,78 @@
         </footer>
     </div>
 
-    {{-- Minimierte Rail-Ansicht (Feature 039): ab lg ist der ZUGEKLAPPTE Drawer
-         selbst die schmale Schiene (Breite animiert in layout.css wie bei der
-         linken Sidebar). Wie bei der Menü-Sidebar ist die GESAMTE Schiene ein
-         Klick-Trigger (data-help-trigger ohne Topic → JS öffnet die Seiten-
-         kontext-Hilfe); unten sitzt der Aufklapp-Chevron im Stil des
-         Sidebar-Collapse-Buttons. Der Schließen-Button minimiert wieder.
-         Auf Mobil ausgeblendet — dort bleibt der Header-Button. --}}
+    {{-- Minimierte Rail-Ansicht (Feature 039 + Neuigkeiten-MVP): ab lg ist der
+         zugeklappte Drawer selbst die schmale Schiene. Anders als zuvor darf
+         die gesamte Rail kein einzelner Button mehr sein: die optionale RSS-
+         Schlagzeile ist ein eigener externer Link, Hilfe und Pause sind echte
+         getrennte Aktionen (kein verschachteltes interaktives Markup). --}}
     {{-- px-3/py-4 spiegeln die Innenabstände der eingeklappten Menü-Sidebar
          (sidebar-header/-footer px-3 py-4) — Inhalte kleben sonst an den
          Panelkanten. --}}
-    <button type="button"
-            class="absolute inset-y-0 right-0 hidden w-(--help-rail-w) cursor-pointer flex-col items-center justify-between px-3 py-4 transition-colors hover:bg-base-content/10 lg:flex"
-            data-help-railmode
-            data-help-trigger
-            aria-haspopup="dialog"
-            aria-controls="help-drawer"
-            title="{{ __('Hilfe öffnen') }}"
-            aria-label="{{ __('Hilfe öffnen') }}">
-        <span class="btn btn-sm btn-ghost btn-square pointer-events-none" aria-hidden="true">
-            <x-icon name="help" />
-        </span>
-        <span class="btn btn-sm btn-primary pointer-events-none w-full justify-center" aria-hidden="true">
-            <x-icon name="chevron_left" />
-        </span>
-    </button>
+    @php
+        $newsItems = app(\App\Services\UI\SidebarNewsFeedService::class)->items();
+        $newsRotationMs = app(\App\Services\UI\SidebarNewsFeedService::class)->rotationIntervalMilliseconds();
+    @endphp
+    <div class="absolute inset-y-0 right-0 hidden w-(--help-rail-w) flex-col items-center gap-2 px-3 py-4 lg:flex"
+         data-help-railmode>
+        @if ($newsItems !== [])
+            <x-icon-btn icon="help" tone="ghost" size="sm"
+                        :label="__('Hilfe öffnen')"
+                        data-help-trigger aria-haspopup="dialog" aria-controls="help-drawer" />
+
+            <div class="flex min-h-0 w-full flex-1 flex-col items-center gap-2 rounded-xl border border-base-300/60 bg-base-100/40 py-2"
+                 data-help-news data-news-rotation-ms="{{ $newsRotationMs }}"
+                 data-label-pause="{{ __('Neuigkeiten pausieren') }}"
+                 data-label-resume="{{ __('Neuigkeiten fortsetzen') }}">
+                <x-icon name="newspaper" class="shrink-0 text-base-content/60" />
+                <div class="relative min-h-0 w-full flex-1 overflow-hidden" data-help-news-items>
+                    @foreach ($newsItems as $index => $newsItem)
+                        @php($newsLabel = __('Neuigkeit von :source: :title', ['source' => $newsItem['source'], 'title' => $newsItem['title']]))
+                        <a href="{{ $newsItem['url'] }}"
+                           target="_blank" rel="noopener noreferrer"
+                           @class([
+                               'absolute inset-0 flex items-center justify-center overflow-hidden rounded-lg px-1 py-2 text-xs text-base-content/80 transition-opacity hover:bg-base-content/10 hover:text-base-content focus-visible:ring-2 focus-visible:ring-primary/60',
+                               'opacity-100' => $index === 0,
+                               'pointer-events-none opacity-0' => $index !== 0,
+                           ])
+                           data-help-news-item
+                           @if ($index !== 0) aria-hidden="true" tabindex="-1" @endif
+                           title="{{ $newsLabel }}" aria-label="{{ $newsLabel }}">
+                            <span class="wd-help-news-title" aria-hidden="true">{{ $newsItem['title'] }}</span>
+                        </a>
+                    @endforeach
+                </div>
+                @if (count($newsItems) > 1)
+                    <button type="button"
+                            class="btn btn-xs btn-ghost btn-square shrink-0"
+                            data-help-news-toggle
+                            aria-pressed="false"
+                            title="{{ __('Neuigkeiten pausieren') }}"
+                            aria-label="{{ __('Neuigkeiten pausieren') }}">
+                        <x-icon name="pause" data-help-news-toggle-icon />
+                    </button>
+                @endif
+            </div>
+
+            <x-icon-btn icon="chevron_left" tone="primary" size="sm"
+                        class="w-full justify-center"
+                        :label="__('Hilfe aufklappen')"
+                        data-help-trigger aria-haspopup="dialog" aria-controls="help-drawer" />
+        @else
+            <button type="button"
+                    class="flex h-full w-full flex-col items-center justify-between rounded-xl text-xs uppercase tracking-wider text-base-content/50 transition-colors hover:bg-base-content/10 hover:text-base-content"
+                    data-help-trigger aria-haspopup="dialog" aria-controls="help-drawer"
+                    title="{{ __('Hilfe öffnen') }}" aria-label="{{ __('Hilfe öffnen') }}">
+                <span class="btn btn-sm btn-ghost btn-square pointer-events-none" aria-hidden="true">
+                    <x-icon name="help" />
+                </span>
+                <span class="wd-help-news-title" aria-hidden="true">{{ __('Hilfe') }}</span>
+                <span class="btn btn-sm btn-primary pointer-events-none w-full justify-center" aria-hidden="true">
+                    <x-icon name="chevron_left" />
+                </span>
+            </button>
+        @endif
+    </div>
 </div>
 
 {{-- Backdrop nur mobil (<lg): Desktop-Sidebar ist nicht-modal. Bezieht sich –

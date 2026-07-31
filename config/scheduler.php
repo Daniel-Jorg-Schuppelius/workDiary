@@ -97,6 +97,17 @@ return [
             'expected_runtime_minutes' => 2,
         ],
 
+        // --- Optionale Neuigkeiten in der eingeklappten Hilfe-Rail ---
+        // Der Command ist ohne Opt-in ein No-op; Seitenaufrufe greifen nur auf
+        // seinen letzten erfolgreichen Cache-Stand zu.
+        'news-feed.refresh' => [
+            'command' => 'news-feed:refresh',
+            'cadence' => ['type' => 'everyThirtyMinutes'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 1,
+        ],
+
         // --- Quelltext-Integritätsprüfung (Feature 095, MVP-441) ---
         // Abschaltbar via INTEGRITY_CHECK_ENABLED (der Command prüft selbst).
         'security.integrity' => [
