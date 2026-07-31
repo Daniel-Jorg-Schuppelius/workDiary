@@ -40,7 +40,12 @@
                         <td>{{ $ts->user?->name }}</td>
                         <td class="text-right tabular-nums" data-sort-value="{{ (int) $ts->total_work_minutes }}">{{ $h }}:{{ str_pad((string)$m,2,'0',STR_PAD_LEFT) }} h</td>
                         <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float)$ts->total_material_net, 2, withThousandsSeparator: true) }} €</td>
-                        <td><x-status-badge size="sm" :tone="$ts->statusTone()">{{ $ts->statusLabel() }}</x-status-badge></td>
+                        <td>
+                            <x-status-badge size="sm" :tone="$ts->statusTone()">{{ $ts->statusLabel() }}</x-status-badge>
+                            @if (($ts->non_billable_count ?? 0) > 0)
+                                <x-status-badge tone="warning" size="xs" class="ml-1">{{ __('nicht abrechenbar') }}: {{ $ts->non_billable_count }}</x-status-badge>
+                            @endif
+                        </td>
                         <td class="text-right">
                             <x-icon-btn icon="open_in_new"
                                         :href="route('projects.timesheets.show', [$project, $ts])"

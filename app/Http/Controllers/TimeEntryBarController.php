@@ -12,7 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Diary\Mode;
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Http\Controllers\Concerns\BuildsTimeEntryOptions;
+use App\Http\Controllers\Concerns\{BuildsTimeEntryOptions, ProvidesTimeEntryTagPicker};
 use App\Http\Requests\QuickTimeEntryRequest;
 use App\Models\{DiaryEntry, Project, Task, TimeEntry, User};
 use App\Support\Tz;
@@ -28,6 +28,7 @@ use Illuminate\Support\Str;
  */
 class TimeEntryBarController extends Controller {
     use BuildsTimeEntryOptions;
+    use ProvidesTimeEntryTagPicker;
 
     public function store(QuickTimeEntryRequest $request): RedirectResponse {
         Gate::authorize('create', TimeEntry::class);
@@ -35,6 +36,7 @@ class TimeEntryBarController extends Controller {
         /** @var User $user */
         $user = Auth::user();
         $data = $request->validated();
+        [$tagIds, $newTags] = $this->pullTagInput($data);
 
         /** @var Project $project */
         $project = Project::query()->findOrFail((int) $data['project_id']);
@@ -74,7 +76,8 @@ class TimeEntryBarController extends Controller {
         // nicht der UTC-Tag von started_at (kann beim Umrechnen abweichen).
         $dateString = CarbonImmutable::parse((string) $data['date'])->toDateString();
 
-        TimeEntry::create($attributes);
+        $timeEntry = TimeEntry::create($attributes);
+        $timeEntry->syncTagsFromInput($tagIds, $newTags);
 
         $redirect = redirect()->route('today.show', ['date' => $dateString])
             ->with('status', __('Zeit auf „:project" gebucht.', ['project' => $project->name]));

@@ -1,4 +1,4 @@
-{{-- Tab: Übersicht — erwartet: $project, $milestones, $taskStats, $totalMinutes, $monthMinutes, $myMinutes, $nextMilestone, $entries --}}
+{{-- Tab: Übersicht — erwartet: $project, $milestones, $taskStats, $totalMinutes, $nextMilestone, $entries --}}
 @php
     $openTasks     = (int) ($taskStats->get(\App\Enums\Task\TaskStatus::Open->value) ?? 0);
     $inProgTasks   = (int) ($taskStats->get(\App\Enums\Task\TaskStatus::InProgress->value) ?? 0);

@@ -357,6 +357,14 @@ return [
             'criticality' => 'integration',
             'expected_runtime_minutes' => 15,
         ],
+        'toggl.push' => [
+            'command' => 'toggl:push',
+            'plugin' => 'toggl',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 10,
+        ],
         'openproject.import' => [
             'command' => 'openproject:import',
             'plugin' => 'openproject',

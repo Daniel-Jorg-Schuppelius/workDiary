@@ -116,7 +116,7 @@ abstract class AbstractTimeEntryPushService {
                 $externalId = $this->createRemoteEntry($organization, $entry);
 
                 $this->recordPushed($organization, $entry, $externalId);
-                $entry->forceFill(['exported' => true])->save();
+                $this->markPushed($entry);
                 $pushed++;
             } catch (\Throwable $e) {
                 if ($this->shouldAbort($e)) {
@@ -135,6 +135,16 @@ abstract class AbstractTimeEntryPushService {
         }
 
         return ['pushed' => $pushed, 'skipped' => $skipped, 'failed' => $failed, 'errors' => $errors];
+    }
+
+    /**
+     * Nach erfolgreicher Remote-Anlage. Standard: als exportiert markieren
+     * („Rückbuchung", Kimai/OpenProject) — der Eintrag verschwindet damit aus
+     * der lokalen Abrechnung. Spiegel-Exporte (Toggl) überschreiben als No-op;
+     * dann MUSS die Kandidaten-Query gepushte Einträge selbst ausschließen.
+     */
+    protected function markPushed(TimeEntry $entry): void {
+        $entry->forceFill(['exported' => true])->save();
     }
 
     /**

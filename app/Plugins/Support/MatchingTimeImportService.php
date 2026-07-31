@@ -31,6 +31,7 @@ use Illuminate\Support\Collection;
  * umbenennungsfestes Matching und ggf. Export-Mapping des Plugins.
  */
 abstract class MatchingTimeImportService {
+    use AttachesImportedTags;
     use PersistsTimeImportInbox;
     use ReconcilesRemoteDeletions;
 
@@ -170,6 +171,11 @@ abstract class MatchingTimeImportService {
             'minutes' => $entry->minutes(),
             'description' => $entry->description,
         ])->save();
+
+        // Tags additiv mitnehmen, wenn ohnehin ein Sync ansteht. Der
+        // Fingerabdruck enthält Tags bewusst NICHT — reine Tag-Änderungen
+        // drüben lösen kein Update aus, Entfernungen werden nie gespiegelt.
+        $this->attachImportedTags($organization, $timeEntry, $entry->tags);
 
         $reference->payload = array_merge((array) $reference->payload, ['fingerprint' => $current]);
         $reference->synced_at = now();
@@ -405,7 +411,7 @@ abstract class MatchingTimeImportService {
             $entry->description,
         ]))) ?: $this->fallbackDescription();
 
-        $timeEntry = TimeEntry::query()->create([
+        $attributes = [
             'organization_id' => $organization->id,
             'project_id' => $project->id,
             // Mitarbeiter-Zeile der Quelle gewinnt: E-Mail → Org-Benutzer,
@@ -416,8 +422,22 @@ abstract class MatchingTimeImportService {
             'ended_at' => $entry->endedAt,
             'kind' => TimeEntryKind::Work,
             'description' => $description,
-            'billable' => $defaultBillable && $entry->billable,
-        ]);
+        ];
+        if ($entry->billable !== null) {
+            // Echtes Quell-Signal: default_billable bleibt der Riegel.
+            $attributes['billable'] = $defaultBillable && $entry->billable;
+        } elseif (! $defaultBillable) {
+            // Hilfetext der Einstellung bleibt wahr: „Wenn aus, werden
+            // importierte Zeiten nie als abrechenbar markiert."
+            $attributes['billable'] = false;
+        }
+        // Sonst Attribut bewusst weglassen → TimeEntry-Boot erbt
+        // effectiveBillable() des Projekts vor der Satz-Snapshot-Berechnung.
+
+        $timeEntry = TimeEntry::query()->create($attributes);
+
+        // Quell-Tags (Toggl-API/CSV, Kimai-/Clockify-CSV) additiv anhängen.
+        $this->attachImportedTags($organization, $timeEntry, $entry->tags);
 
         ExternalReference::query()->create([
             'organization_id' => $organization->id,
@@ -496,7 +516,7 @@ abstract class MatchingTimeImportService {
     }
 
     /**
-     * @return Collection<int, array{group_key: string, client_name: ?string, project_name: ?string, workspace_name: ?string, count: int, minutes: int, first_seen: ?\Illuminate\Support\Carbon, last_seen: ?\Illuminate\Support\Carbon, entries: array<int, array{description: ?string, started_at: ?string, ended_at: ?string, minutes: int, user_email: ?string, billable: bool}>, entries_more: int}>
+     * @return Collection<int, array{group_key: string, client_name: ?string, project_name: ?string, workspace_name: ?string, count: int, minutes: int, first_seen: ?\Illuminate\Support\Carbon, last_seen: ?\Illuminate\Support\Carbon, entries: array<int, array{description: ?string, started_at: ?string, ended_at: ?string, minutes: int, user_email: ?string, billable: ?bool}>, entries_more: int}>
      */
     public function openInboxGroups(Organization $organization): Collection {
         return $this->openInboxItems($organization)
@@ -523,7 +543,7 @@ abstract class MatchingTimeImportService {
                             'ended_at' => isset($s['ended_at']) ? (string) $s['ended_at'] : null,
                             'minutes' => $this->snapshotMinutes($s),
                             'user_email' => isset($s['user_email']) && (string) $s['user_email'] !== '' ? (string) $s['user_email'] : null,
-                            'billable' => (bool) ($s['billable'] ?? false),
+                            'billable' => isset($s['billable']) ? (bool) $s['billable'] : null,
                         ];
                     })
                     ->values()
@@ -617,7 +637,9 @@ abstract class MatchingTimeImportService {
             description: $snap['description'] ?? null,
             startedAt: CarbonImmutable::parse((string) $snap['started_at']),
             endedAt: CarbonImmutable::parse((string) $snap['ended_at']),
-            billable: (bool) ($snap['billable'] ?? false),
+            // null (kein Quell-Signal, z. B. Toggl Free) muss den Roundtrip
+            // überleben — sonst würde die Inbox-Buchung hart „nicht abrechenbar".
+            billable: isset($snap['billable']) ? (bool) $snap['billable'] : null,
             userEmail: $snap['user_email'] ?? null,
             tags: $tags,
             source: (string) ($snap['source'] ?? ImportedTimeEntry::SOURCE_CSV),

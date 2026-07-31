@@ -44,13 +44,17 @@ final class RemoteTimeFingerprint {
         CarbonImmutable $endedAt,
         ?string $description,
         ?int $projectId,
-        bool $billable,
+        ?bool $billable,
     ): string {
         return (string) CryptoHelper::hash(implode('|', [
             $startedAt->utc()->format('Y-m-d\TH:i:s'),
             $endedAt->utc()->format('Y-m-d\TH:i:s'),
             trim((string) $description),
             (string) ($projectId ?? ''),
+            // null (kein Quell-Signal, Toggl Free) kodiert BEWUSST wie false:
+            // alle vor der ?bool-Umstellung gespeicherten Abdrücke bleiben
+            // gültig — sonst meldete der stündliche Sync jeden Bestands-Eintrag
+            // einmal als „updated".
             $billable ? '1' : '0',
         ]));
     }

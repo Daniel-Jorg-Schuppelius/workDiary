@@ -50,6 +50,30 @@
             </div>
         </div>
 
+        {{-- Spiegelung workDiary → Toggl (nur bei aktivierter Zeit-Übertragung) --}}
+        @if (($apiConfigured ?? false) && ($exportEnabled ?? false))
+            <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('Zeiten nach Toggl übertragen') }}</h2>
+                <p class="mb-3 text-sm text-base-content/60">
+                    {{ __('Überträgt in workDiary erfasste Zeiten gemappter Projekte nach Toggl (z. B. Fernwartungssitzungen). Angelegt wird für den Token-Inhaber; bereits übertragene oder aus Toggl importierte Einträge werden übersprungen, die Einträge bleiben lokal abrechenbar.') }}
+                </p>
+                <form method="POST" action="{{ route('admin.toggl.export-api') }}" class="flex flex-wrap items-end gap-2">
+                    @csrf
+                    <label class="form-control">
+                        <span class="label-text text-xs">{{ __('Von') }}</span>
+                        <input type="date" name="from" value="{{ old('from') }}" class="input input-sm input-bordered">
+                    </label>
+                    <label class="form-control">
+                        <span class="label-text text-xs">{{ __('Bis') }}</span>
+                        <input type="date" name="to" value="{{ old('to') }}" class="input input-sm input-bordered">
+                    </label>
+                    <x-icon-btn icon="cloud_upload" tone="primary" size="sm" type="submit" show-label
+                                data-confirm-dialog
+                                data-confirm-message="{{ __('Übertragung jetzt ausführen? Es werden Zeiteinträge in Toggl angelegt.') }}">{{ __('Nach Toggl übertragen') }}</x-icon-btn>
+                </form>
+            </div>
+        @endif
+
         {{-- Unzugeordnete Einträge → zentrale Zuordnungs-Inbox (MVP-103) --}}
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
             <div class="flex flex-wrap items-center justify-between gap-2">

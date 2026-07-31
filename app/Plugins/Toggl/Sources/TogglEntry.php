@@ -40,6 +40,13 @@ final class TogglEntry {
         public readonly bool $billable = false,
         /** Toggl-User-E-Mail (informativ, für die Inbox-Anzeige). */
         public readonly ?string $userEmail = null,
+        /**
+         * Toggl-Tag-Namen. Bewusst NICHT Teil von {@see self::csvKey()} —
+         * ein Re-Export mit nachgepflegten Tags darf keine Duplikate erzeugen.
+         *
+         * @var list<string>
+         */
+        public readonly array $tags = [],
         /** Stabile Toggl-Client-ID (nur API; CSV liefert keine) → bevorzugter Kunden-Schlüssel. */
         public readonly ?int $clientId = null,
         /** Stabile Toggl-Projekt-ID (nur API; CSV liefert keine) → bevorzugter Projekt-Schlüssel. */

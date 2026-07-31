@@ -119,7 +119,7 @@ class DayCloseService {
         $entries = TimeEntry::query()
             ->where('user_id', $user->id)
             ->whereDate('date', $day->toDateString())
-            ->with(['project', 'activityCategory'])
+            ->with(['project', 'activityCategory', 'tags:id,name,color'])
             ->orderBy('id')
             ->get();
 

@@ -98,7 +98,16 @@
                     <td class="text-right tabular-nums" data-sort-value="{{ (int) $e->minutes }}">{{ $fmtMin((int)$e->minutes) }}</td>
                     <td>{{ $entryKindLabel($e->kind) }}</td>
                     <td>{{ $e->task?->title }}</td>
-                    <td>{{ $e->description }}</td>
+                    <td>
+                        {{ $e->description }}
+                        @if ($e->tags->isNotEmpty())
+                            <span class="mt-0.5 flex flex-wrap gap-1">
+                                @foreach ($e->tags as $tag)
+                                    <span class="badge badge-xs" style="background:{{ $tag->color ?? '#94a3b8' }};color:#fff">{{ $tag->name }}</span>
+                                @endforeach
+                            </span>
+                        @endif
+                    </td>
                     <td class="text-right">
                         @if($editable)
                             <x-action-form :action="route('projects.timesheets.entries.destroy', [$project, $timesheet, $e])" method="DELETE"

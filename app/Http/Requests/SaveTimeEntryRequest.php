@@ -23,6 +23,7 @@ class SaveTimeEntryRequest extends BaseFormRequest {
         'diary_entry_id' => \App\Models\DiaryEntry::class,
         'rework_reason_classification_id' => \App\Models\Classification::class,
         'goodwill_reason_classification_id' => \App\Models\Classification::class,
+        'tag_ids' => \App\Models\Tag::class,
     ];
 
     /** @return array<string, mixed> */
@@ -44,6 +45,9 @@ class SaveTimeEntryRequest extends BaseFormRequest {
             // Org-Constraint: eigene Org ODER Plattform-Default (organization_id NULL).
             'rework_reason_classification_id' => ['nullable', 'integer', Rule::exists('classifications', 'id')->where(fn($q) => $this->scopeClassification($q, 'rework_reason'))],
             'goodwill_reason_classification_id' => ['nullable', 'integer', Rule::exists('classifications', 'id')->where(fn($q) => $this->scopeClassification($q, 'goodwill_reason'))],
+            'tag_ids' => ['nullable', 'array'],
+            'tag_ids.*' => ['integer', new \App\Rules\ExistsInCurrentOrganization('tags')],
+            'new_tags' => ['nullable', 'string', 'max:500'],
         ];
     }
 
@@ -88,6 +92,7 @@ class SaveTimeEntryRequest extends BaseFormRequest {
             'ended_at' => __('Bis'),
             'break_minutes' => __('Pause'),
             'description' => __('Beschreibung'),
+            'new_tags' => __('Tags'),
         ];
     }
 

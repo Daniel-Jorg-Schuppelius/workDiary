@@ -11,7 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Classification\ClassificationDomain;
-use App\Http\Controllers\Concerns\BuildsTimeEntryOptions;
+use App\Http\Controllers\Concerns\{BuildsTimeEntryOptions, ProvidesTimeEntryTagPicker};
 use App\Http\Requests\SaveTimeEntryRequest;
 use App\Models\{Project, TimeEntry};
 use App\Models\User;
@@ -24,6 +24,7 @@ use Illuminate\View\View;
 
 class TimeEntryController extends Controller {
     use BuildsTimeEntryOptions;
+    use ProvidesTimeEntryTagPicker;
 
     /**
      * Projekt-Picker für die Sidebar-Aktion „Zeiteintrag". Stunden brauchen
@@ -52,18 +53,21 @@ class TimeEntryController extends Controller {
             'tasks' => $this->taskOptions($project),
             'diaryOptions' => $this->diaryOptions($project),
             'isDialog' => true,
-        ] + $this->classificationOptions($project));
+        ] + $this->classificationOptions($project) + $this->tagPickerData());
     }
 
     public function store(Project $project, SaveTimeEntryRequest $request): RedirectResponse {
         Gate::authorize('create', TimeEntry::class);
 
         $data = $request->validated();
+        // Tags sind keine Spalten — vor dem Mass-Assignment herauslösen.
+        [$tagIds, $newTags] = $this->pullTagInput($data);
 
         $timeEntry = $project->timeEntries()->create($data + [
             'user_id' => Auth::id(),
             'organization_id' => $project->organization_id,
         ]);
+        $timeEntry->syncTagsFromInput($tagIds, $newTags);
 
         $redirect = redirect()->route('projects.show', ['project' => $project, '#' => 'time'])
             ->with('success', __('Zeiteintrag erfasst.'));
@@ -84,11 +88,11 @@ class TimeEntryController extends Controller {
 
         return view('projects._time_entry_dialog', [
             'project' => $project,
-            'entry' => $timeEntry,
+            'entry' => $timeEntry->load('tags:id,name,color'),
             'tasks' => $tasks,
             'diaryOptions' => $this->diaryOptions($project, $timeEntry->diary_entry_id),
             'isDialog' => true,
-        ] + $this->classificationOptions($project));
+        ] + $this->classificationOptions($project) + $this->tagPickerData($timeEntry));
     }
 
     /**
@@ -109,7 +113,12 @@ class TimeEntryController extends Controller {
     public function update(Project $project, TimeEntry $timeEntry, SaveTimeEntryRequest $request): RedirectResponse {
         Gate::authorize('update', $timeEntry);
 
-        $timeEntry->update($request->validated());
+        $data = $request->validated();
+        [$tagIds, $newTags] = $this->pullTagInput($data);
+
+        $timeEntry->update($data);
+        // Voll-ersetzend (leere Auswahl leert) — Semantik der manuellen Bearbeitung.
+        $timeEntry->syncTagsFromInput($tagIds, $newTags);
 
         $redirect = redirect()->route('projects.show', ['project' => $project, '#' => 'time'])
             ->with('success', __('Zeiteintrag aktualisiert.'));

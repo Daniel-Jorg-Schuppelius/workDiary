@@ -11,7 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Project\ProjectStatus;
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Concerns\{ProvidesTimeEntryTagPicker, ResolvesGlobalDateRange};
 use App\Models\{Attendance, Project, TimeEntry, User};
 use App\Services\Attendance\AttendanceClockService;
 use App\Services\Flextime\FlexCalculator;
@@ -30,6 +30,7 @@ use Illuminate\View\View;
  * bleibt für Fremdtage/Admin (`?user=`) erhalten.
  */
 class TodayController extends Controller {
+    use ProvidesTimeEntryTagPicker;
     use ResolvesGlobalDateRange;
 
     public function __construct(
@@ -110,6 +111,8 @@ class TodayController extends Controller {
             'quickBookProjects' => $projects,
             'entryBarProjects' => $projects,
             'entryBarRecentIds' => $recentProjectIds,
+            'allTags' => \App\Support\LookupCache::tagOptions(),
+            'recentTagIds' => $this->recentTimeEntryTagSqids((int) $user->id),
             'runningEntry' => $this->stopwatch->current($user),
             'attendances' => $attendances,
             'entries' => $entries,

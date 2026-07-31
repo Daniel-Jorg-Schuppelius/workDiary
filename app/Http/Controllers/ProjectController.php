@@ -11,6 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Project\ProjectStatus;
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\SaveProjectRequest;
 use App\Models\{DiaryEntry, LexofficeArticle, Project, RecurrenceRule, Task, Team, User};
 use Carbon\CarbonImmutable;
@@ -21,6 +22,8 @@ use Illuminate\Support\Facades\{Auth, DB, Gate};
 use Illuminate\View\View;
 
 class ProjectController extends Controller {
+    use ResolvesGlobalDateRange;
+
     public function index(Request $request): View {
         Gate::authorize('viewAny', Project::class);
 
@@ -105,8 +108,15 @@ class ProjectController extends Controller {
     public function show(Project $project): View {
         Gate::authorize('view', $project);
 
+        // Alle datumsbehafteten Listen folgen dem globalen Header-Zeitraum
+        // (AGENTS.md §8) — bewusst ohne from/to-Query-Override, damit die
+        // withQueryString()-Sortier-/Paginierlinks frei von Range-Params bleiben.
+        [$rangeFrom, $rangeTo] = $this->globalDateRangeBounds();
+        $rangeLabel = $this->globalDateRange()['label'];
+
         // Aufträge (Tab 4): DiaryEntries mit dem Projekt als Initialprojekt ODER via TimeEntry
-        // verknüpft; nach updated_at, da Backlog/Deadline/Window kein start_at haben.
+        // verknüpft; Header-Zeitraum mode-aware (Backlog/Recurring bleiben sichtbar);
+        // nach updated_at, da Backlog/Deadline/Window kein start_at haben.
         $entries = DiaryEntry::query()
             ->with(['user:id,name', 'tags:id,name,color'])
             ->where(function ($q) use ($project): void {
@@ -118,6 +128,7 @@ class ProjectController extends Controller {
                             ->whereNotNull('diary_entry_id');
                     });
             })
+            ->overlappingDateRange($rangeFrom->toDateString(), $rangeTo->toDateString())
             ->orderByDesc('updated_at')
             ->paginate(50, ['*'], 'diary_page')
             ->withQueryString();
@@ -148,7 +159,9 @@ class ProjectController extends Controller {
         $timeSort = (string) request()->query('sort', 'date');
         $timeDir = strtolower((string) request()->query('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
 
-        $timeEntriesQuery = $project->timeEntries()->with(['user:id,name', 'task:id,title']);
+        $timeEntriesQuery = $project->timeEntries()
+            ->with(['user:id,name', 'task:id,title', 'tags:id,name,color'])
+            ->whereBetween('date', [$rangeFrom->toDateString(), $rangeTo->toDateString()]);
         match ($timeSort) {
             // Relations-Spalten über korrelierte Subqueries sortieren.
             'user' => $timeEntriesQuery->orderBy(
@@ -171,13 +184,15 @@ class ProjectController extends Controller {
             ->paginate(50)
             ->withQueryString();
 
-        // Zeit-Aggregationen (Tab 1 + 3)
+        // Zeit-Aggregationen (Tab 1 + 3): Gesamt bleibt bewusst all-time als
+        // Anker, Zeitraum- und Meine-Stunden folgen dem Header-Zeitraum.
         $totalMinutes = $project->timeEntries()->sum('minutes');
-        $monthMinutes = $project->timeEntries()
-            ->where('date', '>=', now()->startOfMonth())
+        $rangeMinutes = $project->timeEntries()
+            ->whereBetween('date', [$rangeFrom->toDateString(), $rangeTo->toDateString()])
             ->sum('minutes');
         $myMinutes = $project->timeEntries()
             ->where('user_id', Auth::id())
+            ->whereBetween('date', [$rangeFrom->toDateString(), $rangeTo->toDateString()])
             ->sum('minutes');
 
         // Nächster Milestone für Übersicht
@@ -197,7 +212,7 @@ class ProjectController extends Controller {
         /** @var User $viewer */
         $viewer = Auth::user();
         $timeline = app(\App\Services\Timeline\ProjectTimelineService::class)
-            ->forProject($project, $viewer, 50, $timelineOffset);
+            ->forProject($project, $viewer, 50, $timelineOffset, $rangeFrom, $rangeTo);
 
         // Abrechnung (Tab 8, nur für Billing-Manager sichtbar)
         $billingRules = collect();
@@ -223,10 +238,17 @@ class ProjectController extends Controller {
             'timeSort' => $timeSort,
             'timeDir' => $timeDir,
             'totalMinutes' => (int) $totalMinutes,
-            'monthMinutes' => (int) $monthMinutes,
+            'rangeMinutes' => (int) $rangeMinutes,
+            'rangeLabel' => $rangeLabel,
             'myMinutes' => (int) $myMinutes,
             'nextMilestone' => $nextMilestone,
-            'timesheets' => $project->timesheets()->with('user:id,name')->latest('work_date')->paginate(50, ['*'], 'sheets_page')->withQueryString(),
+            'timesheets' => $project->timesheets()
+                ->with('user:id,name')
+                ->inRange($rangeFrom, $rangeTo)
+                ->withCount(['entries as non_billable_count' => fn ($q) => $q->where('billable', false)])
+                ->latest('work_date')
+                ->paginate(50, ['*'], 'sheets_page')
+                ->withQueryString(),
             'recurrenceRules' => $recurrenceRules,
             'timeline' => $timeline['items'],
             'timelineHasMore' => $timeline['hasMore'],

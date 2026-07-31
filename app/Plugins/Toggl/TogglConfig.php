@@ -21,7 +21,7 @@ class TogglConfig {
     public const DEFAULT_BASE_URL = 'https://api.track.toggl.com/api/v9';
 
     /**
-     * @return array{enabled: bool, api_token: ?string, base_url: string, workspace_id: ?int, writeback: bool, sync_window_days: int, default_billable: bool, default_user_id: ?int}
+     * @return array{enabled: bool, api_token: ?string, base_url: string, workspace_id: ?int, writeback: bool, sync_window_days: int, default_billable: bool, default_user_id: ?int, export_enabled: bool}
      */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(TogglPlugin::ID, $organizationId);
@@ -38,6 +38,9 @@ class TogglConfig {
             // nach Toggl zurückschreiben. Bewusst standardmäßig aus — sie ändert
             // Daten im Fremdsystem.
             'writeback' => $r->bool('writeback', false),
+            // Spiegelung workDiary → Toggl (lokal erfasste Zeiten anlegen).
+            // Bewusst standardmäßig aus — sie erzeugt Daten im Fremdsystem.
+            'export_enabled' => $r->bool('export_enabled', false),
         ];
     }
 }

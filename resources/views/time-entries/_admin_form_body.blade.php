@@ -67,6 +67,10 @@
     <div class="fieldset">
         <textarea name="description" rows="3" maxlength="500" class="textarea textarea-bordered w-full">{{ old('description', $entry?->description) }}</textarea>
     </div>
+    <div class="fieldset">
+        <label class="fieldset-label">{{ __('Tags') }}</label>
+        <x-tag-picker :tags="$allTags ?? []" :selected="$selectedTagIds ?? []" :recent="$recentTagIds ?? []" />
+    </div>
 </x-form-group>
 
 <x-validation-errors />

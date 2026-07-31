@@ -19,7 +19,7 @@ use CommonToolkit\Helper\Data\StringHelper;
  *
  * Spalten werden über die Kopfzeile per Namen aufgelöst (case-insensitiv,
  * sprach-/spaltenreihenfolge-tolerant): Client, Project, Description,
- * Start date, Start time, End date, End time, Duration, Billable, Email.
+ * Start date, Start time, End date, End time, Duration, Billable, Email, Tags.
  * Da der Detailbericht keine Eintrags-ID enthält, wird der Idempotenz-Schlüssel
  * deterministisch aus Start/Ende/Client/Projekt/Beschreibung gehasht.
  */
@@ -36,6 +36,9 @@ class TogglCsvParser {
         'duration' => 'duration',
         'billable' => 'billable',
         'email' => 'email',
+        'tags' => 'tags',
+        'schlagworte' => 'tags',
+        'schlagwörter' => 'tags',
     ];
 
     /**
@@ -133,7 +136,21 @@ class TogglCsvParser {
             endedAt: $endedAt,
             billable: $this->isBillable($get('billable')),
             userEmail: $this->nullIfBlank($get('email')),
+            tags: $this->parseTags($get('tags')),
         );
+    }
+
+    /**
+     * Toggl exportiert Tags kommasepariert in einer (gequoteten) Spalte.
+     *
+     * @return list<string>
+     */
+    private function parseTags(?string $value): array {
+        if ($value === null || trim($value) === '') {
+            return [];
+        }
+
+        return array_values(array_filter(array_map('trim', explode(',', $value)), static fn (string $tag): bool => $tag !== ''));
     }
 
     private function durationToSeconds(string $duration): int {

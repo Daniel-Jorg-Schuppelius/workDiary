@@ -40,14 +40,14 @@ class TogglImportTest extends TestCase {
         return new TogglImportService;
     }
 
-    private function enableToggl(): array {
+    private function enableToggl(array $settings = []): array {
         PluginSetting::query()->create([
             'organization_id' => $this->organization->id,
             'plugin_id' => TogglPlugin::ID,
             'enabled' => true,
-            'settings' => [
+            'settings' => array_merge([
                 'api_token' => 'test-token',
-            ],
+            ], $settings),
         ]);
 
         return TogglConfig::resolve($this->organization->id);
@@ -73,7 +73,8 @@ class TogglImportTest extends TestCase {
         return mb_strtolower(trim($client) . '|' . trim($project));
     }
 
-    private function seedInboxEntry(string $client, string $project, string $entryKey, string $start, string $end, bool $billable = true, ?string $description = null, ?int $workspaceId = null, ?string $workspaceName = null): IntegrationInboxItem {
+    /** @param list<string> $tags */
+    private function seedInboxEntry(string $client, string $project, string $entryKey, string $start, string $end, ?bool $billable = true, ?string $description = null, ?int $workspaceId = null, ?string $workspaceName = null, array $tags = []): IntegrationInboxItem {
         return IntegrationInboxItem::query()->create([
             'organization_id' => $this->organization->id,
             'plugin_id' => TogglPlugin::ID,
@@ -95,6 +96,7 @@ class TogglImportTest extends TestCase {
                 'ended_at' => CarbonImmutable::parse($end)->toIso8601String(),
                 'billable' => $billable,
                 'user_email' => null,
+                'tags' => $tags,
                 'workspace_id' => $workspaceId,
                 'workspace_name' => $workspaceName,
             ],
@@ -188,6 +190,9 @@ class TogglImportTest extends TestCase {
             'external_id' => 'toggl:555',
             'referenceable_id' => $entry->id,
         ]);
+        // Report-tag_ids werden über die Workspace-Tag-Liste aufgelöst;
+        // unbekannte IDs (gelöschte Tags) fallen still raus.
+        $this->assertSame(['Fernwartung'], $entry->tags()->pluck('name')->all());
     }
 
     /**
@@ -207,12 +212,15 @@ class TogglImportTest extends TestCase {
             ),
             'https://api.track.toggl.com/api/v9/workspaces/7/clients*' => FakePluginHttp::response([['id' => 5, 'name' => 'Acme']], 200),
             'https://api.track.toggl.com/api/v9/workspaces/7/projects*' => FakePluginHttp::response([['id' => 9, 'name' => 'Website', 'client_id' => 5, 'active' => true]], 200),
+            'https://api.track.toggl.com/api/v9/workspaces/7/tags*' => FakePluginHttp::response([['id' => 77, 'name' => 'Fernwartung']], 200),
             'https://api.track.toggl.com/api/v9/workspaces' => FakePluginHttp::response([['id' => 7, 'name' => 'Firma WS']], 200),
             'https://api.track.toggl.com/reports/api/v3/workspace/7/search/time_entries*' => FakePluginHttp::response([[
                 'project_id' => 9,
                 'description' => 'Mitarbeiter-Arbeit',
                 'billable' => true,
                 'user_id' => 42,
+                // 77 bekannt (→ „Fernwartung"), 999 gelöscht → still übersprungen.
+                'tag_ids' => [77, 999],
                 'time_entries' => [['id' => 555, 'start' => '2026-05-26T10:00:00+00:00', 'stop' => '2026-05-26T11:00:00+00:00']],
             ]], 200),
         ];
@@ -272,6 +280,300 @@ class TogglImportTest extends TestCase {
         $this->assertSame(0, $second['created']);
         $this->assertSame(1, $second['skipped']);
         $this->assertSame(1, TimeEntry::query()->count());
+    }
+
+    /**
+     * Toggl Free meldet billable=false für JEDEN Eintrag (Premium-Feature) —
+     * das ist kein Signal: der Eintrag erbt die effektive Projekt-Abrechenbarkeit.
+     */
+    public function test_api_billable_false_inherits_effective_project_billable(): void {
+        $config = $this->enableToggl();
+        $project = $this->customerWithProject('Acme', 'Website');
+        $project->forceFill(['billable' => null])->save(); // erbt vom Kunden (true)
+
+        $this->fakeApi(
+            timeEntries: [[
+                'id' => 111,
+                'workspace_id' => 1,
+                'project_id' => 9,
+                'start' => '2026-05-26T10:00:00+00:00',
+                'stop' => '2026-05-26T10:45:00+00:00',
+                'billable' => false,
+            ]],
+            clients: [['id' => 5, 'name' => 'Acme']],
+            projects: [['id' => 9, 'name' => 'Website', 'client_id' => 5, 'workspace_id' => 1]],
+        );
+
+        $this->service()->importFromApi($this->organization, $config, CarbonImmutable::parse('2026-05-25'), CarbonImmutable::parse('2026-05-27'));
+
+        $entry = TimeEntry::query()->where('project_id', $project->id)->firstOrFail();
+        $this->assertTrue($entry->billable);
+    }
+
+    public function test_api_billable_false_respects_non_billable_project(): void {
+        $config = $this->enableToggl();
+        $project = $this->customerWithProject('Acme', 'Website');
+        $project->forceFill(['billable' => false])->save();
+
+        $this->fakeApi(
+            timeEntries: [[
+                'id' => 111,
+                'workspace_id' => 1,
+                'project_id' => 9,
+                'start' => '2026-05-26T10:00:00+00:00',
+                'stop' => '2026-05-26T10:45:00+00:00',
+                'billable' => false,
+            ]],
+            clients: [['id' => 5, 'name' => 'Acme']],
+            projects: [['id' => 9, 'name' => 'Website', 'client_id' => 5, 'workspace_id' => 1]],
+        );
+
+        $this->service()->importFromApi($this->organization, $config, CarbonImmutable::parse('2026-05-25'), CarbonImmutable::parse('2026-05-27'));
+
+        $entry = TimeEntry::query()->where('project_id', $project->id)->firstOrFail();
+        $this->assertFalse($entry->billable);
+    }
+
+    public function test_api_billable_false_with_default_billable_off_stays_false(): void {
+        $config = $this->enableToggl(['default_billable' => false]);
+        $project = $this->customerWithProject('Acme', 'Website');
+
+        $this->fakeApi(
+            timeEntries: [[
+                'id' => 111,
+                'workspace_id' => 1,
+                'project_id' => 9,
+                'start' => '2026-05-26T10:00:00+00:00',
+                'stop' => '2026-05-26T10:45:00+00:00',
+                'billable' => false,
+            ]],
+            clients: [['id' => 5, 'name' => 'Acme']],
+            projects: [['id' => 9, 'name' => 'Website', 'client_id' => 5, 'workspace_id' => 1]],
+        );
+
+        $this->service()->importFromApi($this->organization, $config, CarbonImmutable::parse('2026-05-25'), CarbonImmutable::parse('2026-05-27'));
+
+        $entry = TimeEntry::query()->where('project_id', $project->id)->firstOrFail();
+        $this->assertFalse($entry->billable);
+    }
+
+    public function test_api_billable_true_wins_over_non_billable_project(): void {
+        $config = $this->enableToggl();
+        $project = $this->customerWithProject('Acme', 'Website');
+        $project->forceFill(['billable' => false])->save();
+
+        $this->fakeApi(
+            timeEntries: [[
+                'id' => 111,
+                'workspace_id' => 1,
+                'project_id' => 9,
+                'start' => '2026-05-26T10:00:00+00:00',
+                'stop' => '2026-05-26T10:45:00+00:00',
+                'billable' => true,
+            ]],
+            clients: [['id' => 5, 'name' => 'Acme']],
+            projects: [['id' => 9, 'name' => 'Website', 'client_id' => 5, 'workspace_id' => 1]],
+        );
+
+        $this->service()->importFromApi($this->organization, $config, CarbonImmutable::parse('2026-05-25'), CarbonImmutable::parse('2026-05-27'));
+
+        $entry = TimeEntry::query()->where('project_id', $project->id)->firstOrFail();
+        $this->assertTrue($entry->billable);
+    }
+
+    /**
+     * Guard gegen die stündliche Massen-„updated"-Welle: vor der ?bool-Umstellung
+     * gespeicherte Fingerabdrücke (billable=false → '0') müssen mit dem neuen
+     * „kein Signal"-Import (null → '0') weiterhin byte-identisch matchen.
+     */
+    public function test_legacy_fingerprint_matches_import_without_billable_signal(): void {
+        $config = $this->enableToggl();
+        $project = $this->customerWithProject('Acme', 'Website');
+
+        $start = CarbonImmutable::parse('2026-05-26T10:00:00+00:00');
+        $stop = CarbonImmutable::parse('2026-05-26T10:30:00+00:00');
+
+        $existing = TimeEntry::query()->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $project->id,
+            'user_id' => $this->admin->id,
+            'date' => $start->toDateString(),
+            'started_at' => $start,
+            'ended_at' => $stop,
+            'kind' => \App\Enums\TimeEntry\TimeEntryKind::Work,
+            'billable' => false,
+        ]);
+        ExternalReference::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => TogglImportService::EXT_TYPE_ENTRY,
+            'referenceable_type' => $existing->getMorphClass(),
+            'referenceable_id' => $existing->getKey(),
+            'external_id' => 'toggl:111',
+            'payload' => [
+                // Alt-Zustand: Abdruck wurde mit hartem false gebildet.
+                'fingerprint' => \App\Plugins\Support\RemoteTimeFingerprint::fromParts($start, $stop, null, 9, false),
+            ],
+            'synced_at' => now(),
+        ]);
+
+        $this->fakeApi(
+            timeEntries: [[
+                'id' => 111,
+                'workspace_id' => 1,
+                'project_id' => 9,
+                'start' => '2026-05-26T10:00:00+00:00',
+                'stop' => '2026-05-26T10:30:00+00:00',
+                'billable' => false,
+            ]],
+            clients: [['id' => 5, 'name' => 'Acme']],
+            projects: [['id' => 9, 'name' => 'Website', 'client_id' => 5, 'workspace_id' => 1]],
+        );
+
+        $result = $this->service()->importFromApi($this->organization, $config, CarbonImmutable::parse('2026-05-25'), CarbonImmutable::parse('2026-05-27'));
+
+        $this->assertSame(1, $result['skipped']);
+        $this->assertSame(0, $result['updated']);
+        $this->assertSame(1, TimeEntry::query()->count());
+        $this->assertFalse($existing->fresh()->billable);
+    }
+
+    public function test_book_inbox_group_round_trips_missing_billable_signal(): void {
+        $this->enableToggl();
+        $project = $this->customerWithProject('Beta GmbH', 'Intranet');
+
+        // null = kein Quell-Signal (Toggl Free) → gebuchter Eintrag erbt (Kunde true).
+        $this->seedInboxEntry('Beta GmbH', 'Intranet', 'csv:null-sig', '2026-05-26 09:00:00', '2026-05-26 10:00:00', billable: null);
+        // Legacy-Snapshot mit hartem false (vor der Umstellung geschrieben) bucht als false.
+        $this->seedInboxEntry('Beta GmbH', 'Intranet', 'csv:legacy-false', '2026-05-26 11:00:00', '2026-05-26 12:00:00', billable: false);
+
+        $result = $this->service()->bookInboxGroup($this->organization, $this->groupKey('Beta GmbH', 'Intranet'), $project->customer, $project);
+
+        $this->assertSame(2, $result['created']);
+        $this->assertTrue(TimeEntry::query()->where('description', 'like', '%Intranet%')->where('started_at', '2026-05-26 09:00:00')->firstOrFail()->billable);
+        $this->assertFalse(TimeEntry::query()->where('started_at', '2026-05-26 11:00:00')->firstOrFail()->billable);
+    }
+
+    public function test_api_import_attaches_tags_with_correct_organization(): void {
+        $config = $this->enableToggl();
+        $project = $this->customerWithProject('Acme', 'Website');
+
+        $this->fakeApi(
+            timeEntries: [[
+                'id' => 111,
+                'workspace_id' => 1,
+                'project_id' => 9,
+                'start' => '2026-05-26T10:00:00+00:00',
+                'stop' => '2026-05-26T10:45:00+00:00',
+                'billable' => false,
+                'tags' => ['Support', 'Wartung'],
+            ]],
+            clients: [['id' => 5, 'name' => 'Acme']],
+            projects: [['id' => 9, 'name' => 'Website', 'client_id' => 5, 'workspace_id' => 1]],
+        );
+
+        // Bewusst OHNE Org-Kontext/Auth (wie der Scheduler-Lauf): die Tags
+        // müssen trotzdem in der richtigen Organisation landen.
+        $this->service()->importFromApi($this->organization, $config, CarbonImmutable::parse('2026-05-25'), CarbonImmutable::parse('2026-05-27'));
+
+        $entry = TimeEntry::query()->where('project_id', $project->id)->firstOrFail();
+        $this->assertSame(['Support', 'Wartung'], $entry->tags()->pluck('name')->sort()->values()->all());
+        $this->assertSame(
+            [$this->organization->id, $this->organization->id],
+            \App\Models\Tag::query()->withoutGlobalScopes()->pluck('organization_id')->map(fn ($id) => (int) $id)->all(),
+        );
+    }
+
+    public function test_csv_import_attaches_tags_and_stays_idempotent(): void {
+        $config = $this->enableToggl();
+        $project = $this->customerWithProject('Beta GmbH', 'Intranet');
+
+        $csv = <<<'CSV'
+        User,Email,Client,Project,Task,Description,Billable,Start date,Start time,End date,End time,Duration,Tags
+        Tech,tech@example.com,Beta GmbH,Intranet,,Wartung,Yes,2026-05-26,09:00:00,2026-05-26,10:00:00,01:00:00,"Wartung, Vor-Ort"
+        CSV;
+
+        $first = $this->service()->importFromCsv($this->organization, $csv, $config);
+        $second = $this->service()->importFromCsv($this->organization, $csv, $config);
+
+        $this->assertSame(1, $first['created']);
+        $this->assertSame(0, $second['created']);
+        $this->assertSame(1, TimeEntry::query()->count());
+
+        $entry = TimeEntry::query()->where('project_id', $project->id)->firstOrFail();
+        $this->assertSame(['Vor-Ort', 'Wartung'], $entry->tags()->pluck('name')->sort()->values()->all());
+        $this->assertSame(2, \App\Models\Tag::query()->withoutGlobalScopes()->count());
+    }
+
+    public function test_book_inbox_group_applies_snapshot_tags(): void {
+        $this->enableToggl();
+        $project = $this->customerWithProject('Beta GmbH', 'Intranet');
+
+        $this->seedInboxEntry('Beta GmbH', 'Intranet', 'csv:tagged', '2026-05-26 09:00:00', '2026-05-26 10:00:00', tags: ['Eskalation']);
+
+        $result = $this->service()->bookInboxGroup($this->organization, $this->groupKey('Beta GmbH', 'Intranet'), $project->customer, $project);
+
+        $this->assertSame(1, $result['created']);
+        $entry = TimeEntry::query()->where('project_id', $project->id)->firstOrFail();
+        $this->assertSame(['Eskalation'], $entry->tags()->pluck('name')->all());
+    }
+
+    public function test_sync_known_entry_update_applies_tags_additively(): void {
+        $config = $this->enableToggl();
+        $project = $this->customerWithProject('Acme', 'Website');
+
+        $start = CarbonImmutable::parse('2026-05-26T10:00:00+00:00');
+        $stop = CarbonImmutable::parse('2026-05-26T10:30:00+00:00');
+
+        $existing = TimeEntry::query()->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $project->id,
+            'user_id' => $this->admin->id,
+            'date' => $start->toDateString(),
+            'started_at' => $start,
+            'ended_at' => $stop,
+            'kind' => \App\Enums\TimeEntry\TimeEntryKind::Work,
+            'description' => 'Alte Beschreibung',
+        ]);
+        $manual = \App\Models\Tag::create(['name' => 'Manuell', 'organization_id' => $this->organization->id]);
+        $existing->tags()->sync([$manual->id]);
+
+        ExternalReference::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => TogglImportService::EXT_TYPE_ENTRY,
+            'referenceable_type' => $existing->getMorphClass(),
+            'referenceable_id' => $existing->getKey(),
+            'external_id' => 'toggl:111',
+            'payload' => [
+                'fingerprint' => \App\Plugins\Support\RemoteTimeFingerprint::fromParts($start, $stop, 'Alte Beschreibung', 9, false),
+            ],
+            'synced_at' => now(),
+        ]);
+
+        // Drüben wurde die Beschreibung geändert UND ein Tag ergänzt.
+        $this->fakeApi(
+            timeEntries: [[
+                'id' => 111,
+                'workspace_id' => 1,
+                'project_id' => 9,
+                'start' => '2026-05-26T10:00:00+00:00',
+                'stop' => '2026-05-26T10:30:00+00:00',
+                'billable' => false,
+                'description' => 'Neue Beschreibung',
+                'tags' => ['Remote'],
+            ]],
+            clients: [['id' => 5, 'name' => 'Acme']],
+            projects: [['id' => 9, 'name' => 'Website', 'client_id' => 5, 'workspace_id' => 1]],
+        );
+
+        $result = $this->service()->importFromApi($this->organization, $config, CarbonImmutable::parse('2026-05-25'), CarbonImmutable::parse('2026-05-27'));
+
+        $this->assertSame(1, $result['updated']);
+        $fresh = $existing->fresh();
+        $this->assertSame('Neue Beschreibung', $fresh->description);
+        // Additiv: der Remote-Tag kommt dazu, der manuelle bleibt.
+        $this->assertSame(['Manuell', 'Remote'], $fresh->tags()->pluck('name')->sort()->values()->all());
     }
 
     public function test_unmatched_entry_is_recorded_in_inbox(): void {
