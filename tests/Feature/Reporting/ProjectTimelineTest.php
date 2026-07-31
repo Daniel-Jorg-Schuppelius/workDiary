@@ -12,6 +12,7 @@ namespace Tests\Feature\Reporting;
 
 use App\Models\{CommunicationNote, Customer, DiaryEntry, Document, Project, User};
 use App\Services\Timeline\ProjectTimelineService;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -96,6 +97,51 @@ class ProjectTimelineTest extends TestCase {
 
         $page2 = app(ProjectTimelineService::class)->forProject($project, $viewer, 10, 10);
         $this->assertFalse($page2['hasMore']);
+    }
+
+    public function test_timeline_filters_by_range_and_keeps_undated_items(): void {
+        $viewer = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $project = Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'is_default' => false,
+        ]);
+        DiaryEntry::factory()->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $project->id,
+            'user_id' => $viewer->id,
+            'title' => 'Auftrag im Juni',
+            'start_at' => '2026-06-10 09:00:00',
+            'end_at' => '2026-06-10 10:00:00',
+        ]);
+        DiaryEntry::factory()->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $project->id,
+            'user_id' => $viewer->id,
+            'title' => 'Auftrag im Mai',
+            'start_at' => '2026-05-10 09:00:00',
+            'end_at' => '2026-05-10 10:00:00',
+        ]);
+        // Meilenstein ohne Fälligkeit: occurredAt === null → bleibt trotz Filter sichtbar.
+        $project->milestones()->create([
+            'organization_id' => $this->organization->id,
+            'created_by' => $viewer->id,
+            'title' => 'Undatierter Meilenstein',
+            'is_completed' => false,
+        ]);
+
+        $result = app(ProjectTimelineService::class)->forProject(
+            $project,
+            $viewer,
+            50,
+            0,
+            CarbonImmutable::parse('2026-06-01')->startOfDay(),
+            CarbonImmutable::parse('2026-06-30')->endOfDay(),
+        );
+        $titles = array_map(static fn ($item): string => $item->title, $result['items']);
+
+        $this->assertContains('Auftrag im Juni', $titles);
+        $this->assertNotContains('Auftrag im Mai', $titles);
+        $this->assertContains(__('Meilenstein: :title', ['title' => 'Undatierter Meilenstein']), $titles);
     }
 
     public function test_project_page_renders_timeline_tab(): void {

@@ -1,4 +1,4 @@
-{{-- Tab: Zeiterfassung — erwartet: $project, $timeEntries, $totalMinutes, $monthMinutes, $myMinutes --}}
+{{-- Tab: Zeiterfassung — erwartet: $project, $timeEntries, $totalMinutes, $rangeMinutes, $rangeLabel, $myMinutes --}}
 @php
     $fmt = fn(int $min) => intdiv($min, 60) . ':' . str_pad($min % 60, 2, '0', STR_PAD_LEFT) . ' h';
 @endphp
@@ -7,8 +7,8 @@
     {{-- Summary — Standard-KPI-Kacheln wie auf der Kunden-Detailseite --}}
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <x-kpi-tile :label="__('Gesamt')" :value="$fmt($totalMinutes)" tone="neutral" />
-        <x-kpi-tile :label="__('Dieser Monat')" :value="$fmt($monthMinutes)" tone="neutral" />
-        <x-kpi-tile :label="__('Meine Stunden')" :value="$fmt($myMinutes)" tone="neutral" />
+        <x-kpi-tile :label="$rangeLabel" :value="$fmt($rangeMinutes)" tone="neutral" />
+        <x-kpi-tile :label="__('Meine Stunden')" :value="$fmt($myMinutes)" :hint="$rangeLabel" tone="neutral" />
     </div>
 
     {{-- Tabelle — Standard-Karte; Leerzustand kommt aus x-table --}}
@@ -41,7 +41,12 @@
                     <tr class="hover:bg-base-200/50">
                         <td class="whitespace-nowrap text-xs" data-sort-value="{{ $entry->date->format('Y-m-d') }}">{{ $entry->date->fdate() }}</td>
                         <td class="text-xs">{{ $entry->user->name ?? '—' }}</td>
-                        <td class="whitespace-nowrap text-right text-xs font-medium">{{ $entry->hoursFormatted() }}</td>
+                        <td class="whitespace-nowrap text-right text-xs font-medium">
+                            {{ $entry->hoursFormatted() }}
+                            @if (! $entry->billable)
+                                <x-status-badge tone="warning" size="xs" class="ml-1">{{ __('nicht abrechenbar') }}</x-status-badge>
+                            @endif
+                        </td>
                         <td class="text-xs text-base-content/70">{{ $entry->task->title ?? '—' }}</td>
                         <td class="max-w-xs truncate text-xs text-base-content/70">{{ $entry->description }}</td>
                         <td class="text-right whitespace-nowrap">
