@@ -581,6 +581,16 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(\App\Models\Domain\DomainProviderConnection::class, \App\Policies\Domain\DomainProviderConnectionPolicy::class);
         Gate::policy(\App\Models\Domain\DomainProjection::class, \App\Policies\Domain\DomainProjectionPolicy::class);
         Gate::policy(\App\Models\Domain\DomainResellerAccount::class, \App\Policies\Domain\DomainResellerAccountPolicy::class);
+        // MVP-456: Personenbeförderung — eine Rechtefamilie für Fahrtakte,
+        // Tarife, Konzessionen, Fahrzeugprofile und Schichtabrechnung.
+        Gate::policy(\App\Models\Passenger\PassengerRide::class, \App\Policies\Passenger\PassengerRidePolicy::class);
+        Gate::policy(\App\Models\Passenger\PassengerFareTariff::class, \App\Policies\Passenger\PassengerRidePolicy::class);
+        Gate::policy(\App\Models\Passenger\PassengerConcession::class, \App\Policies\Passenger\PassengerRidePolicy::class);
+        Gate::policy(\App\Models\Passenger\PassengerVehicleProfile::class, \App\Policies\Passenger\PassengerRidePolicy::class);
+        Gate::policy(\App\Models\Passenger\PassengerShiftSettlement::class, \App\Policies\Passenger\PassengerRidePolicy::class);
+        // MVP-459: Druckauftrag — gleiche Rechtefamilie wie die Fertigung
+        // (1:1-Spezialisierung), eigener Modelltyp in der Policy.
+        Gate::policy(\App\Models\Print\PrintOrder::class, \App\Policies\Print\PrintOrderPolicy::class);
         // Feature 073: Geräte-/Maschinenverleih (Akte + versionierte Preislisten).
         Gate::policy(\App\Models\Rental\RentalCase::class, \App\Policies\Rental\RentalCasePolicy::class);
         Gate::policy(\App\Models\Rental\RentalRateCard::class, \App\Policies\Rental\RentalRateCardPolicy::class);

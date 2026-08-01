@@ -2120,6 +2120,62 @@ Route::middleware('auth')->group(function () {
         Route::get('recipe-menus/{menu}', [\App\Http\Controllers\Recipes\RecipeMenuController::class, 'show'])->name('recipe-menus.show');
         Route::post('recipe-menus/{menu}/items', [\App\Http\Controllers\Recipes\RecipeMenuController::class, 'storeItem'])->name('recipe-menus.items.store');
         Route::delete('recipe-menus/{menu}/items/{item}', [\App\Http\Controllers\Recipes\RecipeMenuController::class, 'destroyItem'])->name('recipe-menus.items.destroy');
+
+        // ── Personenbeförderung (MVP-456, Branchenprofil taxi-mietwagen):
+        // Fahrtakten mit Pflichtgates, Stammdaten (Tarife/Konzessionen/
+        // Fahrzeugprofile) und Schichtabrechnung. Profil-Gate: 404 im
+        // Controller (Muster Recipes). ──
+        Route::get('passenger-rides', [\App\Http\Controllers\Passenger\PassengerRideController::class, 'index'])->name('passenger-rides.index');
+        Route::get('passenger-rides/create', [\App\Http\Controllers\Passenger\PassengerRideController::class, 'create'])->name('passenger-rides.create');
+        Route::post('passenger-rides', [\App\Http\Controllers\Passenger\PassengerRideController::class, 'store'])->name('passenger-rides.store');
+        Route::get('passenger-rides/{ride}', [\App\Http\Controllers\Passenger\PassengerRideController::class, 'show'])->name('passenger-rides.show');
+        Route::post('passenger-rides/{ride}/assign', [\App\Http\Controllers\Passenger\PassengerRideController::class, 'assign'])->name('passenger-rides.assign');
+        Route::post('passenger-rides/{ride}/start', [\App\Http\Controllers\Passenger\PassengerRideController::class, 'start'])->name('passenger-rides.start');
+        Route::post('passenger-rides/{ride}/transition', [\App\Http\Controllers\Passenger\PassengerRideController::class, 'transition'])->name('passenger-rides.transition');
+        Route::post('passenger-rides/{ride}/complete', [\App\Http\Controllers\Passenger\PassengerRideController::class, 'complete'])->name('passenger-rides.complete');
+        Route::post('passenger-rides/{ride}/close', [\App\Http\Controllers\Passenger\PassengerRideController::class, 'close'])->name('passenger-rides.close');
+        Route::post('passenger-rides/{ride}/return', [\App\Http\Controllers\Passenger\PassengerRideController::class, 'recordReturn'])->name('passenger-rides.return');
+
+        Route::get('passenger-masterdata', [\App\Http\Controllers\Passenger\PassengerMasterDataController::class, 'index'])->name('passenger-masterdata.index');
+        Route::get('passenger-masterdata/tariffs/create', [\App\Http\Controllers\Passenger\PassengerMasterDataController::class, 'createTariff'])->name('passenger-masterdata.tariffs.create');
+        Route::post('passenger-masterdata/tariffs', [\App\Http\Controllers\Passenger\PassengerMasterDataController::class, 'storeTariff'])->name('passenger-masterdata.tariffs.store');
+        Route::get('passenger-masterdata/tariffs/{tariff}/edit', [\App\Http\Controllers\Passenger\PassengerMasterDataController::class, 'editTariff'])->name('passenger-masterdata.tariffs.edit');
+        Route::put('passenger-masterdata/tariffs/{tariff}', [\App\Http\Controllers\Passenger\PassengerMasterDataController::class, 'updateTariff'])->name('passenger-masterdata.tariffs.update');
+        Route::post('passenger-masterdata/tariffs/{tariff}/rules', [\App\Http\Controllers\Passenger\PassengerMasterDataController::class, 'storeTariffRule'])->name('passenger-masterdata.tariffs.rules.store');
+        Route::delete('passenger-masterdata/tariffs/{tariff}/rules/{rule}', [\App\Http\Controllers\Passenger\PassengerMasterDataController::class, 'destroyTariffRule'])->name('passenger-masterdata.tariffs.rules.destroy');
+        Route::get('passenger-masterdata/concessions/create', [\App\Http\Controllers\Passenger\PassengerMasterDataController::class, 'createConcession'])->name('passenger-masterdata.concessions.create');
+        Route::post('passenger-masterdata/concessions', [\App\Http\Controllers\Passenger\PassengerMasterDataController::class, 'storeConcession'])->name('passenger-masterdata.concessions.store');
+        Route::get('passenger-masterdata/concessions/{concession}/edit', [\App\Http\Controllers\Passenger\PassengerMasterDataController::class, 'editConcession'])->name('passenger-masterdata.concessions.edit');
+        Route::put('passenger-masterdata/concessions/{concession}', [\App\Http\Controllers\Passenger\PassengerMasterDataController::class, 'updateConcession'])->name('passenger-masterdata.concessions.update');
+        Route::get('passenger-masterdata/vehicle-profiles/create', [\App\Http\Controllers\Passenger\PassengerMasterDataController::class, 'createVehicleProfile'])->name('passenger-masterdata.vehicle-profiles.create');
+        Route::post('passenger-masterdata/vehicle-profiles', [\App\Http\Controllers\Passenger\PassengerMasterDataController::class, 'storeVehicleProfile'])->name('passenger-masterdata.vehicle-profiles.store');
+        Route::get('passenger-masterdata/vehicle-profiles/{profile}/edit', [\App\Http\Controllers\Passenger\PassengerMasterDataController::class, 'editVehicleProfile'])->name('passenger-masterdata.vehicle-profiles.edit');
+        Route::put('passenger-masterdata/vehicle-profiles/{profile}', [\App\Http\Controllers\Passenger\PassengerMasterDataController::class, 'updateVehicleProfile'])->name('passenger-masterdata.vehicle-profiles.update');
+
+        Route::get('passenger-settlements', [\App\Http\Controllers\Passenger\PassengerSettlementController::class, 'index'])->name('passenger-settlements.index');
+        Route::get('passenger-settlements/create', [\App\Http\Controllers\Passenger\PassengerSettlementController::class, 'create'])->name('passenger-settlements.create');
+        Route::post('passenger-settlements', [\App\Http\Controllers\Passenger\PassengerSettlementController::class, 'store'])->name('passenger-settlements.store');
+        Route::get('passenger-settlements/{settlement}/edit', [\App\Http\Controllers\Passenger\PassengerSettlementController::class, 'edit'])->name('passenger-settlements.edit');
+        Route::put('passenger-settlements/{settlement}', [\App\Http\Controllers\Passenger\PassengerSettlementController::class, 'update'])->name('passenger-settlements.update');
+        Route::post('passenger-settlements/{settlement}/close', [\App\Http\Controllers\Passenger\PassengerSettlementController::class, 'close'])->name('passenger-settlements.close');
+
+        // ── Druckaufträge (MVP-459, Branchenprofil druck-kopiershop):
+        // Fachakte am Fertigungsauftrag mit Dateicheck/Preflight, Freigabe
+        // (Hash-Bindung), Maschinen-Gate, QK und Ausgabe. ──
+        Route::get('print-orders', [\App\Http\Controllers\Print\PrintOrderController::class, 'index'])->name('print-orders.index');
+        Route::get('print-orders/create', [\App\Http\Controllers\Print\PrintOrderController::class, 'create'])->name('print-orders.create');
+        Route::post('print-orders', [\App\Http\Controllers\Print\PrintOrderController::class, 'store'])->name('print-orders.store');
+        Route::get('print-orders/{order}', [\App\Http\Controllers\Print\PrintOrderController::class, 'show'])->name('print-orders.show');
+        Route::post('print-orders/{order}/file', [\App\Http\Controllers\Print\PrintOrderController::class, 'uploadFile'])->name('print-orders.file');
+        Route::post('print-orders/{order}/preflight/run', [\App\Http\Controllers\Print\PrintOrderController::class, 'runPreflight'])->name('print-orders.preflight.run');
+        Route::post('print-orders/{order}/preflight/manual', [\App\Http\Controllers\Print\PrintOrderController::class, 'recordManualPreflight'])->name('print-orders.preflight.manual');
+        Route::post('print-orders/{order}/preflight/override', [\App\Http\Controllers\Print\PrintOrderController::class, 'overridePreflight'])->name('print-orders.preflight.override');
+        Route::post('print-orders/{order}/approve', [\App\Http\Controllers\Print\PrintOrderController::class, 'approve'])->name('print-orders.approve');
+        Route::post('print-orders/{order}/production/start', [\App\Http\Controllers\Print\PrintOrderController::class, 'startProduction'])->name('print-orders.production.start');
+        Route::post('print-orders/{order}/production/resume', [\App\Http\Controllers\Print\PrintOrderController::class, 'resumeProduction'])->name('print-orders.production.resume');
+        Route::post('print-orders/{order}/quality-check', [\App\Http\Controllers\Print\PrintOrderController::class, 'qualityCheck'])->name('print-orders.quality-check');
+        Route::post('print-orders/{order}/issue', [\App\Http\Controllers\Print\PrintOrderController::class, 'issue'])->name('print-orders.issue');
+        Route::post('print-orders/{order}/cancel', [\App\Http\Controllers\Print\PrintOrderController::class, 'cancel'])->name('print-orders.cancel');
         Route::get('procedure-runs/{run}/print', [\App\Http\Controllers\ProcedureRunController::class, 'print'])->name('procedure-runs.print');
         Route::post('diary/{diary}/procedures/{template}/start', [\App\Http\Controllers\ProcedureRunController::class, 'start'])->name('procedure-runs.start');
         // Mobile Ausführung eines Prozedurlaufs (MVP-063): Schritt-für-Schritt,

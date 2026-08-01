@@ -120,6 +120,7 @@ return [
         ],
         'operations' => ['scan' => 'Sincronizar tareas operativas'],
         'orgamax' => ['sync' => 'Sincronización orgaMAX'],
+        'print' => ['purge_files' => 'Depurar archivos de producción de impresión tras la retención'],
         'payroll' => ['import_minimum_wages' => 'Importar salarios mínimos de la UE'],
         'plans' => ['purge' => 'Depurar datos de módulos degradados'],
         'plugin' => ['healthcheck' => 'Comprobación de estado de plugins'],
@@ -133,7 +134,7 @@ return [
         'security' => ['advisories_pull' => 'Obtener avisos de seguridad', 'integrity' => 'Comprobación de integridad del código fuente', 'evaluate' => 'Evaluar detección de ataques'],
         'tickets' => ['scan_sla_breaches' => 'Detectar incumplimientos de SLA'],
         'todoist' => ['sync' => 'Sincronización de Todoist'],
-        'toggl' => ['import' => 'Importación de Toggl'],
+        'toggl' => ['push' => 'Exportar tiempos a Toggl', 'import' => 'Importación de Toggl'],
         'updates' => ['check' => 'Comprobación de actualizaciones'],
     ],
     'hint' => [

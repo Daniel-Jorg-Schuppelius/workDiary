@@ -421,6 +421,10 @@ return [
         'travel-log.viewAny' => 'View travel log',
         'travel-log.manage' => 'Manage travel log',
         'energy-log.manage' => 'Manage refuelling and charging',
+        'passenger.viewAny' => 'List passenger transport rides',
+        'passenger.view' => 'View ride record',
+        'passenger.manage' => 'Accept and dispatch rides and maintain master data',
+        'passenger.settle' => 'Run and close shift settlements',
 
         'material.manage' => 'Manage materials',
         'material.import' => 'Import materials',

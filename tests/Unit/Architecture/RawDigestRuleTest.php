@@ -37,6 +37,13 @@ class RawDigestRuleTest extends TestCase {
         // Byte-genaue Kompatibilität zum Altsystem (Legacy-Klartext-/Hash-
         // Passwortpfade); wird mit dem Legacy-Modul abgelöst, nicht migriert.
         'app/Legacy/' => 'Legacy-Passwort-Pfade: Altsystem-Kompatibilität, bewusst nicht auf CryptoHelper migriert (C1).',
+        // Dedup-Fingerprint der FritzBox-Anrufliste: bereits importierte Anrufe
+        // sind mit diesem sha1-Format persistiert — Algorithmuswechsel würde
+        // alle Anrufe erneut importieren (kein Security-Kontext).
+        'app/Plugins/Fritzbox/Sources/FritzboxCall.php' => 'Persistierter sha1-Dedup-Fingerprint der Anrufliste; Wechsel erzeugt Duplikate (kein Security-Kontext).',
+        // GUID-/Cache-Schlüssel des News-Feeds (Gelesen-Markierung): mit
+        // gespeicherten Hashes abwärtskompatibel, kein Security-Kontext.
+        'app/Services/UI/SidebarNewsFeedService.php' => 'Persistierte Feed-GUID-Hashes (Gelesen-Status); Wechsel setzt Lesestände zurück (kein Security-Kontext).',
     ];
 
     /** Verbotene feste Digest-Aufrufe (Substring, Wortgrenze davor). */

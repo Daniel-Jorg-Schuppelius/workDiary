@@ -1161,4 +1161,28 @@ return [
             'contract' => 'Rahmenvertrag',
         ],
     ],
+    'print' => [
+        'order_status' => [
+            'data_check' => 'Datenprüfung',
+            'approved' => 'Freigegeben',
+            'in_production' => 'In Produktion',
+            'quality_check' => 'Qualitätskontrolle',
+            'rework' => 'Nacharbeit',
+            'ready' => 'Bereit zur Ausgabe',
+            'issued' => 'Ausgegeben',
+            'cancelled' => 'Storniert',
+        ],
+        'preflight_status' => [
+            'pending' => 'Ausstehend',
+            'passed' => 'Bestanden',
+            'warnings' => 'Mit Warnungen',
+            'failed' => 'Fehlgeschlagen',
+            'overridden' => 'Begründet übersteuert',
+        ],
+        'output_kind' => [
+            'pickup' => 'Abholung',
+            'shipping' => 'Versand',
+            'counter' => 'Tresenverkauf',
+        ],
+    ],
 ];

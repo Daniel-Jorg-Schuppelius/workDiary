@@ -1160,4 +1160,28 @@ return [
             'contract' => 'Contrat-cadre',
         ],
     ],
+    'print' => [
+        'order_status' => [
+            'data_check' => 'Contrôle des données',
+            'approved' => 'Bon à tirer donné',
+            'in_production' => 'En production',
+            'quality_check' => 'Contrôle qualité',
+            'rework' => 'Reprise',
+            'ready' => 'Prêt pour remise',
+            'issued' => 'Remis',
+            'cancelled' => 'Annulé',
+        ],
+        'preflight_status' => [
+            'pending' => 'En attente',
+            'passed' => 'Réussi',
+            'warnings' => 'Avec avertissements',
+            'failed' => 'Échoué',
+            'overridden' => 'Dérogé avec motif',
+        ],
+        'output_kind' => [
+            'pickup' => 'Retrait',
+            'shipping' => 'Expédition',
+            'counter' => 'Vente au comptoir',
+        ],
+    ],
 ];

@@ -27,6 +27,12 @@ return [
         'help.topics.show',
         'external.show',
         'quotes.portal.show',
+        // Öffentliche Bewerber-Karriereseiten (sessionlos, externe Zielgruppe).
+        'careers.index',
+        'careers.show',
+        // Externer B2B-Katalogzugang (Feature 099): tokengesicherte Public-Routen.
+        'b2b-catalog.index',
+        'b2b-catalog.show',
     ],
 
     'routes' => [
@@ -48,6 +54,21 @@ return [
         'applications.report' => 'applications.overview',
         // Reklamation/Gewährleistung (Feature 072)
         'claims.*' => 'claims.overview',
+        // Menü-/Buffetplanung Partyservice (MVP-455)
+        'recipe-menus.*' => 'recipes.menus',
+        // Plugin-Admin-Seiten ohne eigenes Topic → generische Integrationen.
+        'admin.calendly.*' => 'admin.integrations',
+        'admin.fritzbox.*' => 'admin.integrations',
+        // Globale Suche
+        'search.*' => 'search.overview',
+        // Security-Event-Log (Feature 096) → bestehendes Sicherheits-Topic.
+        'admin.security-events.*' => 'admin.security',
+        // Personenbeförderung Taxi/Mietwagen (MVP-456)
+        'passenger-rides.*' => 'passenger.overview',
+        'passenger-masterdata.*' => 'passenger.overview',
+        'passenger-settlements.*' => 'passenger.overview',
+        // Druckerzeugnisse/Kopiershop (MVP-459)
+        'print-orders.*' => 'print.orders',
 
         'contracts.*' => 'contracts.overview',
         // Cloud-Dokumenteingang (Feature 080).

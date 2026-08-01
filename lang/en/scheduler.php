@@ -120,6 +120,7 @@ return [
         ],
         'operations' => ['scan' => 'Sync operations tasks'],
         'orgamax' => ['sync' => 'orgaMAX sync'],
+        'print' => ['purge_files' => 'Purge print production files after retention'],
         'payroll' => ['import_minimum_wages' => 'Import EU minimum wages'],
         'plans' => ['purge' => 'Purge downgraded module data'],
         'plugin' => ['healthcheck' => 'Plugin health check'],
@@ -133,7 +134,7 @@ return [
         'security' => ['advisories_pull' => 'Pull security advisories', 'integrity' => 'Source code integrity check', 'evaluate' => 'Evaluate threat detection'],
         'tickets' => ['scan_sla_breaches' => 'Scan SLA breaches'],
         'todoist' => ['sync' => 'Todoist sync'],
-        'toggl' => ['import' => 'Toggl import'],
+        'toggl' => ['push' => 'Push time entries to Toggl', 'import' => 'Toggl import'],
         'updates' => ['check' => 'Update check'],
     ],
     'hint' => [

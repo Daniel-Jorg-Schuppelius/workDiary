@@ -120,6 +120,7 @@ return [
         ],
         'operations' => ['scan' => 'Betriebsaufgaben abgleichen'],
         'orgamax' => ['sync' => 'orgaMAX-Abgleich'],
+        'print' => ['purge_files' => 'Druck-Produktionsdateien nach Löschfrist bereinigen'],
         'payroll' => ['import_minimum_wages' => 'EU-Mindestlöhne importieren'],
         'plans' => ['purge' => 'Downgrade-Daten bereinigen'],
         'plugin' => ['healthcheck' => 'Plugin-Healthcheck'],
@@ -133,7 +134,7 @@ return [
         'security' => ['advisories_pull' => 'Sicherheitshinweise abrufen', 'integrity' => 'Quelltext-Integritätsprüfung', 'evaluate' => 'Angriffserkennung auswerten'],
         'tickets' => ['scan_sla_breaches' => 'SLA-Verletzungen prüfen'],
         'todoist' => ['sync' => 'Todoist-Abgleich'],
-        'toggl' => ['import' => 'Toggl-Import'],
+        'toggl' => ['push' => 'Toggl-Zeiten exportieren', 'import' => 'Toggl-Import'],
         'updates' => ['check' => 'Update-Prüfung'],
     ],
     'hint' => [

@@ -119,6 +119,8 @@ class UserOrgScopingRuleTest extends TestCase {
         'app/Http/Controllers/Admin/LicenseAdminController.php' => 'Plattformweite Nutzerzahl als Lizenz-Fallback (globaler Betreiber-Kontext).',
         'app/Services/Security/SecurityOverviewService.php' => 'Basis-Query wird org-bedingt gefiltert; NULL-Org = bewusste plattformweite Betreiber-Sicht.',
         'app/Services/Release/CodeIntegrityService.php' => 'Integritäts-Alarm an ALLE Plattform-Admins (is_platform_admin), installationsweit per Definition (Feature 095).',
+        'app/Services/Release/IntegrityLockdownService.php' => 'Lockdown adressiert Plattform-Admins (is_platform_admin), installationsweit per Definition (Feature 095).',
+        'app/Services/Security/SecurityCrisisEscalator.php' => 'Sicherheits-Eskalation an Plattform-Admins (is_platform_admin), installationsweit per Definition (Feature 096/097).',
         // Org-bedingter Filter; Expense trägt immer organization_id (Fallback ohne Org unerreichbar).
         'app/Services/Expense/ApproverResolver.php' => 'Basis-Query wird bei vorhandener Expense-Org gefiltert (Expense ist tenant-scoped).',
         // Öffentliche, sessionlose Token-Route: Auflösung über den Feed-Token, danach Org-Bindung.

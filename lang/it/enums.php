@@ -1160,4 +1160,28 @@ return [
             'contract' => 'Contratto quadro',
         ],
     ],
+    'print' => [
+        'order_status' => [
+            'data_check' => 'Verifica dati',
+            'approved' => 'Approvato',
+            'in_production' => 'In produzione',
+            'quality_check' => 'Controllo qualità',
+            'rework' => 'Rilavorazione',
+            'ready' => 'Pronto per la consegna',
+            'issued' => 'Consegnato',
+            'cancelled' => 'Annullato',
+        ],
+        'preflight_status' => [
+            'pending' => 'In sospeso',
+            'passed' => 'Superato',
+            'warnings' => 'Con avvisi',
+            'failed' => 'Fallito',
+            'overridden' => 'Derogato con motivazione',
+        ],
+        'output_kind' => [
+            'pickup' => 'Ritiro',
+            'shipping' => 'Spedizione',
+            'counter' => 'Vendita al banco',
+        ],
+    ],
 ];

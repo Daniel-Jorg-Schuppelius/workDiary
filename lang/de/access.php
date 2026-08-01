@@ -421,6 +421,10 @@ return [
         'travel-log.viewAny' => 'Fahrtenbuch einsehen',
         'travel-log.manage' => 'Fahrtenbuch verwalten',
         'energy-log.manage' => 'Tankungen/Ladevorgänge verwalten',
+        'passenger.viewAny' => 'Fahrten der Personenbeförderung auflisten',
+        'passenger.view' => 'Fahrtakte einsehen',
+        'passenger.manage' => 'Fahrten annehmen, disponieren und Stammdaten pflegen',
+        'passenger.settle' => 'Schichtabrechnung führen und abschließen',
 
         'material.manage' => 'Material-Stamm verwalten',
         'material.import' => 'Material importieren',

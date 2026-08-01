@@ -490,6 +490,17 @@ return [
             'expected_runtime_minutes' => 15,
         ],
 
+        // --- Druck: Löschfristen der Produktionsdateien (MVP-459) ---
+        // Entfernt nur die Kundendatei; Auftrag/Snapshot/Hash bleiben als
+        // kaufmännischer Nachweis erhalten.
+        'print.purge_files' => [
+            'command' => 'print:purge-files',
+            'cadence' => ['type' => 'dailyAt', 'time' => '03:45'],
+            'allowed' => ['dailyAt', 'weeklyOn'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 5,
+        ],
+
         // --- Sonderpläne ---
         'payroll.import_minimum_wages' => [
             'command' => 'payroll:import-minimum-wages',

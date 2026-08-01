@@ -1160,4 +1160,28 @@ return [
             'contract' => 'Contrato marco',
         ],
     ],
+    'print' => [
+        'order_status' => [
+            'data_check' => 'Comprobación de datos',
+            'approved' => 'Aprobado',
+            'in_production' => 'En producción',
+            'quality_check' => 'Control de calidad',
+            'rework' => 'Retrabajo',
+            'ready' => 'Listo para entrega',
+            'issued' => 'Entregado',
+            'cancelled' => 'Anulado',
+        ],
+        'preflight_status' => [
+            'pending' => 'Pendiente',
+            'passed' => 'Superado',
+            'warnings' => 'Con advertencias',
+            'failed' => 'Fallido',
+            'overridden' => 'Anulado con motivo',
+        ],
+        'output_kind' => [
+            'pickup' => 'Recogida',
+            'shipping' => 'Envío',
+            'counter' => 'Venta en mostrador',
+        ],
+    ],
 ];

@@ -1160,4 +1160,28 @@ return [
             'contract' => 'Framework contract',
         ],
     ],
+    'print' => [
+        'order_status' => [
+            'data_check' => 'Data check',
+            'approved' => 'Approved',
+            'in_production' => 'In production',
+            'quality_check' => 'Quality check',
+            'rework' => 'Rework',
+            'ready' => 'Ready for hand-over',
+            'issued' => 'Handed over',
+            'cancelled' => 'Cancelled',
+        ],
+        'preflight_status' => [
+            'pending' => 'Pending',
+            'passed' => 'Passed',
+            'warnings' => 'With warnings',
+            'failed' => 'Failed',
+            'overridden' => 'Overridden with reason',
+        ],
+        'output_kind' => [
+            'pickup' => 'Pickup',
+            'shipping' => 'Shipping',
+            'counter' => 'Counter sale',
+        ],
+    ],
 ];

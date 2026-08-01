@@ -203,6 +203,10 @@ class NavigationRegistry {
             'sustainability.index' => 'module.sustainability',
             'claims.index' => 'module.claims',
             'claims.reports.index' => 'module.claims',
+            'passenger-rides.index' => 'module.fuhrpark',
+            'passenger-masterdata.index' => 'module.fuhrpark',
+            'passenger-settlements.index' => 'module.fuhrpark',
+            'print-orders.index' => 'module.lager',
             'domains.index' => 'module.domain',
             'domain-reseller.index' => 'module.domain',
             'domains.reports' => 'module.domain',
@@ -510,6 +514,37 @@ class NavigationRegistry {
                 'items' => [
                     ['route' => 'claims.index', 'label' => __('Reklamationsakten'), 'icon' => 'assignment_return', 'modal' => false, 'matches' => ['claims.index', 'claims.show']],
                     ['route' => 'claims.reports.index', 'label' => __('Qualitätsbericht'), 'icon' => 'query_stats', 'modal' => false, 'matches' => ['claims.reports.*']],
+                ],
+            ];
+        }
+        // MVP-456: Personenbeförderung — erscheint nur mit installiertem
+        // Branchenprofil taxi-mietwagen (Profil-Gate wie im Controller).
+        $navOrganization = $user?->organization;
+        if ($navOrganization !== null
+            && app(\App\Services\Passenger\PassengerRideService::class)->isPassengerProfileActive($navOrganization)
+            && Gate::allows('viewAny', \App\Models\Passenger\PassengerRide::class)) {
+            $sidebarSections[] = [
+                'key' => 'passenger',
+                'label' => __('passenger.nav.section'),
+                'collapsible' => true,
+                'items' => [
+                    ['route' => 'passenger-rides.index', 'label' => __('passenger.rides.title'), 'icon' => 'local_taxi', 'modal' => false, 'matches' => ['passenger-rides.*']],
+                    ['route' => 'passenger-masterdata.index', 'label' => __('passenger.masterdata.title'), 'icon' => 'price_change', 'modal' => false, 'matches' => ['passenger-masterdata.*']],
+                    ['route' => 'passenger-settlements.index', 'label' => __('passenger.settlements.title'), 'icon' => 'payments', 'modal' => false, 'matches' => ['passenger-settlements.*']],
+                ],
+            ];
+        }
+        // MVP-459: Druckaufträge — erscheint nur mit installiertem
+        // Branchenprofil druck-kopiershop (Profil-Gate wie im Controller).
+        if ($navOrganization !== null
+            && app(\App\Services\Print\PrintOrderService::class)->isPrintProfileActive($navOrganization)
+            && Gate::allows('viewAny', \App\Models\Print\PrintOrder::class)) {
+            $sidebarSections[] = [
+                'key' => 'print',
+                'label' => __('print.nav.section'),
+                'collapsible' => true,
+                'items' => [
+                    ['route' => 'print-orders.index', 'label' => __('print.orders.title'), 'icon' => 'print', 'modal' => false, 'matches' => ['print-orders.*']],
                 ],
             ];
         }

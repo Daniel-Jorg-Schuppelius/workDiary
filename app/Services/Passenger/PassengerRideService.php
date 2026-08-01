@@ -14,8 +14,8 @@ namespace App\Services\Passenger;
 
 use App\Enums\Diary\Status;
 use App\Enums\Passenger\{RideOperationMode, RideOrderChannel, RidePriceKind, RideStatus};
-use App\Models\Passenger\{PassengerConcession, PassengerFareTariff, PassengerRide, PassengerVehicleProfile};
 use App\Models\{DiaryEntry, Organization, User, Vehicle};
+use App\Models\Passenger\{PassengerConcession, PassengerFareTariff, PassengerRide, PassengerVehicleProfile};
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -37,6 +37,19 @@ use Illuminate\Validation\ValidationException;
 class PassengerRideService {
     /** Name der Pflicht-Qualifikation (Seed im Branchenprofil). */
     public const DRIVER_QUALIFICATION = 'Fahrerlaubnis zur Fahrgastbeförderung (P-Schein)';
+
+    /** Branchenprofil-Code (Seed unter database/data/branchprofiles). */
+    public const PROFILE_CODE = 'taxi-mietwagen';
+
+    /** Profil installiert? (Muster RecipeService — Kontext-Gate der UI.) */
+    public function isPassengerProfileActive(Organization $organization): bool {
+        $settings = is_array($organization->settings) ? $organization->settings : [];
+        if (($settings['branch_profile_code'] ?? null) === self::PROFILE_CODE) {
+            return true;
+        }
+
+        return data_get($settings, 'branch_profile_versions.' . self::PROFILE_CODE) !== null;
+    }
 
     /**
      * Fahrtannahme (Gate „Fahrtannahme", Konzept §6).

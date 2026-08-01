@@ -41,7 +41,7 @@ enum Permission: string implements HasLabel {
     case DocumentDesignManage = 'documentDesign.manage';
     case DocumentDesignAssign = 'documentDesign.assign';
         // ── orgaMAX-Faktura-Aktionen (Feature 077, MVP-310) ─────────
-    // ── Kassenbuch (Phase 38, MVP-414) ──────────────────────────
+        // ── Kassenbuch (Phase 38, MVP-414) ──────────────────────────
     case CashView = 'finance.cash.view';
     case CashManage = 'finance.cash.manage';
     case OrgamaxInvoiceConvert = 'finance.orgamax.convert';
@@ -98,11 +98,11 @@ enum Permission: string implements HasLabel {
     case PrivacySupportView = 'privacy.support.view';
     case PrivacyReportExport = 'privacy.report.export';
 
-    // Temporäre Supportfreigabe (Rang 64): Kundenadmin erteilt/widerruft
-    // zeitlich begrenzte Support-Zugriffe inkl. Impersonations-Erlaubnis.
+        // Temporäre Supportfreigabe (Rang 64): Kundenadmin erteilt/widerruft
+        // zeitlich begrenzte Support-Zugriffe inkl. Impersonations-Erlaubnis.
     case SupportGrantManage = 'support.grant.manage';
 
-    // ── Agiles Projektmanagement (Feature 064) ────────────────────────────
+        // ── Agiles Projektmanagement (Feature 064) ────────────────────────────
     case AgileView = 'agile.view';
     case AgileBoardManage = 'agile.board.manage';
     case AgileBacklogPrioritize = 'agile.backlog.prioritize';
@@ -301,7 +301,7 @@ enum Permission: string implements HasLabel {
     case EmergencyAssignmentManage = 'emergency-assignment.manage';
     case ShiftTypeManage = 'shift-type.manage';
     case ScheduledShiftManage = 'scheduled-shift.manage';
-    // Dienstplan-Intelligenz (Feature 007)
+        // Dienstplan-Intelligenz (Feature 007)
     case ShiftExchangeRequest = 'shift.exchange';
     case ShiftExchangeApprove = 'shift.exchange.approve';
     case AvailabilityManageOwn = 'availability.manage.own';
@@ -312,7 +312,7 @@ enum Permission: string implements HasLabel {
     case VacationRequest = 'vacation.request';
     case VacationApprove = 'vacation.approve';
     case VacationCancel = 'vacation.cancel';
-    // Urlaubskonto (MVP-413): Jahresansprüche + Übertrag pflegen
+        // Urlaubskonto (MVP-413): Jahresansprüche + Übertrag pflegen
     case VacationEntitlementsManage = 'vacation.entitlements.manage';
     case SickLeaveViewAny = 'sick-leave.viewAny';
     case SickLeaveManage = 'sick-leave.manage';
@@ -328,6 +328,12 @@ enum Permission: string implements HasLabel {
     case TravelLogManage = 'travel-log.manage';
     case EnergyLogManage = 'energy-log.manage';
 
+        // ── Personenbeförderung (MVP-456, Branchenprofil Taxi/Mietwagen) ──
+    case PassengerViewAny = 'passenger.viewAny';
+    case PassengerView = 'passenger.view';
+    case PassengerManage = 'passenger.manage';
+    case PassengerSettle = 'passenger.settle';
+
         // ── Stammdaten / Listen ────────────────────────────────────────────
     case MaterialManage = 'material.manage';
     case MaterialImport = 'material.import';
@@ -341,7 +347,7 @@ enum Permission: string implements HasLabel {
         // ── Reporting / Audit / Sonstiges ──────────────────────────────────
     case ReportView = 'report.view';
     case ReportExport = 'report.export';
-    // Feature 002: Zielwerte/Benchmarks je Kennzahl pflegen (GF/Admin).
+        // Feature 002: Zielwerte/Benchmarks je Kennzahl pflegen (GF/Admin).
     case ReportTargetManage = 'report.target.manage';
     case ImportViewReports = 'import.viewReports';
         // ── Cloud-Dokumenteingang (Feature 080, MVP-351) ─────────────────
@@ -351,11 +357,11 @@ enum Permission: string implements HasLabel {
     case AuditLogView = 'audit-log.view';
     case AttendanceViewAny = 'attendance.viewAny';
     case AttendanceManage = 'attendance.manage';
-    // MVP-438: Zeiterfassungs-Import (CSV/XLSX/iCal). Stempelungen streng
-    // (Admin/HR), Projektzeiten breiter vergebbar.
+        // MVP-438: Zeiterfassungs-Import (CSV/XLSX/iCal). Stempelungen streng
+        // (Admin/HR), Projektzeiten breiter vergebbar.
     case AttendanceImport = 'attendance.import';
     case ProjectTimeImport = 'project-time.import';
-    // ArbZG-Compliance-Auswertung auf Ist-Arbeitszeit (Feature 006).
+        // ArbZG-Compliance-Auswertung auf Ist-Arbeitszeit (Feature 006).
     case ComplianceViewAny = 'compliance.viewAny';
     case WorkScheduleManage = 'work-schedule.manage';
     case FlexBalanceView = 'flex.view';
@@ -395,7 +401,7 @@ enum Permission: string implements HasLabel {
     case DocumentUpdate = 'document.update';
     case DocumentDelete = 'document.delete';
     case DocumentArchive = 'document.archive';
-    // Vertrauliche Dokumente Dritter sehen/verwalten (Vollaudit 2026-07, N10).
+        // Vertrauliche Dokumente Dritter sehen/verwalten (Vollaudit 2026-07, N10).
     case DocumentConfidentialManage = 'document.confidential.manage';
 
         // ── Wissensbasis & Problemhistorie (Feature 011) ───────────────────
@@ -550,8 +556,8 @@ enum Permission: string implements HasLabel {
     case InventoryViewAny = 'inventory.viewAny';
     case InventoryPost = 'inventory.post';
     case InventoryConfigure = 'inventory.configure';
-    // Vollaudit 2026-07 (M22): getrennte Freigaben — negative Bestände und
-    // Ersatzmaterial-Genehmigung sind eigene, rollenbasierte Rechte.
+        // Vollaudit 2026-07 (M22): getrennte Freigaben — negative Bestände und
+        // Ersatzmaterial-Genehmigung sind eigene, rollenbasierte Rechte.
     case InventoryNegative = 'inventory.negative';
     case InventorySubstituteApprove = 'inventory.substituteApprove';
 
@@ -706,7 +712,8 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'tour.'),
             str_starts_with($this->value, 'vehicle.'),
             str_starts_with($this->value, 'travel-log.'),
-            str_starts_with($this->value, 'energy-log.') => PermissionGroup::Fleet,
+            str_starts_with($this->value, 'energy-log.'),
+            str_starts_with($this->value, 'passenger.') => PermissionGroup::Fleet,
             str_starts_with($this->value, 'report.') => PermissionGroup::Reports,
             str_starts_with($this->value, 'attendance.'),
             str_starts_with($this->value, 'work-schedule.'),
