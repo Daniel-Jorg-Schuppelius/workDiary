@@ -231,6 +231,37 @@
                 @endif
             @endcan
         </x-card>
+
+        @if ($claimLinks->isNotEmpty() || $canOpenClaim)
+            <x-card :title="__('print.section.claims')">
+                @if ($claimLinks->isEmpty())
+                    <p class="text-sm opacity-70">{{ __('print.claim.none') }}</p>
+                @else
+                    <ul class="space-y-1 text-sm">
+                        @foreach ($claimLinks as $link)
+                            <li class="flex flex-wrap items-center gap-2">
+                                <a href="{{ route('claims.show', $link->claimCase) }}" class="link link-primary font-medium">{{ $link->claimCase?->number }}</a>
+                                <span>{{ $link->claimCase?->title }}</span>
+                                <x-status-badge outline>{{ $link->claimCase?->status?->label() }}</x-status-badge>
+                                @if ($link->note)
+                                    <span class="opacity-70">{{ $link->note }}</span>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+
+                @if ($canOpenClaim)
+                    <form method="POST" action="{{ route('print-orders.claim', $order) }}" class="mt-3 flex flex-wrap items-end gap-2 text-sm">
+                        @csrf
+                        <input type="text" name="description" placeholder="{{ __('print.claim.description') }}" class="input input-sm input-bordered w-72" aria-label="{{ __('print.claim.description') }}">
+                        <input type="number" name="affected_quantity" step="0.0001" min="0.0001" placeholder="{{ __('print.claim.affected_quantity') }}" class="input input-sm input-bordered w-40" aria-label="{{ __('print.claim.affected_quantity') }}">
+                        <button type="submit" class="btn btn-sm">{{ __('print.claim.open') }}</button>
+                    </form>
+                    <p class="mt-1 text-xs opacity-70">{{ __('print.hint.claim_reference') }}</p>
+                @endif
+            </x-card>
+        @endif
     </div>
 </x-page-shell>
 @endsection

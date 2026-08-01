@@ -70,10 +70,21 @@ class PrintOrderController extends Controller {
 
         $order->load(['manufacturingOrder.article', 'document', 'documentVersion', 'asset', 'shipment', 'approver', 'qcChecker']);
 
+        $claimsEnabled = app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.claims');
+
         return view('print.orders.show', [
             'order' => $order,
             'machines' => Asset::query()->orderBy('name')->get(['id', 'name']),
             'shipments' => Shipment::query()->orderByDesc('id')->limit(50)->get(),
+            'claimLinks' => $claimsEnabled
+                ? \App\Models\Claims\ClaimCaseLink::query()
+                    ->where('linkable_type', $order->getMorphClass())
+                    ->where('linkable_id', $order->id)
+                    ->with('claimCase')
+                    ->latest('id')
+                    ->get()
+                : collect(),
+            'canOpenClaim' => $claimsEnabled && Gate::allows('create', \App\Models\Claims\ClaimCase::class),
         ]);
     }
 
@@ -285,6 +296,47 @@ class PrintOrderController extends Controller {
         $this->orders->cancel($order, (string) $validated['reason'], $request->user() ?? abort(401));
 
         return redirect()->route('print-orders.show', $order)->with('status', (string) __('print.flash.cancelled'));
+    }
+
+    /**
+     * Reklamation zum Druckauftrag (Issue #75): der Fall wird per
+     * ClaimCaseLink an die Fachakte gebunden — darüber sind freigegebene
+     * Datei, Produktions-Snapshot und QK-Ergebnis referenzierbar.
+     */
+    public function openClaim(Request $request, PrintOrder $order): RedirectResponse {
+        Gate::authorize('view', $order);
+        $this->assertInOrganization($order->organization_id);
+        abort_unless(app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.claims'), 404);
+        Gate::authorize('create', \App\Models\Claims\ClaimCase::class);
+
+        $validated = $request->validate([
+            'description' => ['nullable', 'string', 'max:4000'],
+            'affected_quantity' => ['nullable', 'numeric', 'min:0.0001'],
+        ]);
+
+        $actor = $request->user() ?? abort(401);
+        $manufacturing = $order->manufacturingOrder;
+        $quantity = $validated['affected_quantity'] ?? null;
+
+        $claim = app(\App\Services\Claims\ClaimCaseService::class)->open($this->printOrganization(), $actor, [
+            'title' => (string) __('print.claim.title', ['number' => $manufacturing->number ?? $order->sqid]),
+            'description' => trim((string) ($validated['description'] ?? '')) ?: null,
+            'customer_id' => $manufacturing?->customer_id,
+        ]);
+        \App\Models\Claims\ClaimCaseLink::query()->create([
+            'organization_id' => $order->organization_id,
+            'claim_case_id' => $claim->id,
+            'linkable_type' => $order->getMorphClass(),
+            'linkable_id' => $order->id,
+            'role' => 'affected',
+            'note' => $quantity !== null
+                ? (string) __('print.claim.affected_quantity_note', ['quantity' => $quantity])
+                : null,
+            'created_by' => $actor->id,
+        ]);
+        $order->audit('print.claim_opened', ['claim' => $claim->number, 'affected_quantity' => $quantity]);
+
+        return redirect()->route('claims.show', $claim)->with('status', (string) __('print.flash.claim_opened', ['number' => $claim->number]));
     }
 
     /** @return list<string> */

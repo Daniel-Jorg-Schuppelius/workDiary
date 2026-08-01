@@ -80,6 +80,18 @@
                                         <x-icon-btn icon="task_alt" type="submit" :label="__('passenger.settlements.action.close')" />
                                     </form>
                                 </div>
+                            @elseif ($settlement->cash_entry_id !== null)
+                                <x-status-badge size="md" outline tone="success">{{ __('passenger.cash.posted') }}</x-status-badge>
+                            @elseif ($canPostCash && $cashRegisters->isNotEmpty() && bccomp((string) $settlement->cash_total, '0', 2) > 0)
+                                <form method="POST" action="{{ route('passenger-settlements.cash-entry', $settlement) }}" class="flex items-center justify-end gap-1">
+                                    @csrf
+                                    <select name="cash_register_id" class="select select-xs select-bordered w-36" required aria-label="{{ __('passenger.cash.register') }}">
+                                        @foreach ($cashRegisters as $register)
+                                            <option value="{{ $register->sqid }}">{{ $register->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <x-icon-btn icon="point_of_sale" type="submit" :label="__('passenger.cash.post_action')" />
+                                </form>
                             @endif
                         @endcan
                     </td>

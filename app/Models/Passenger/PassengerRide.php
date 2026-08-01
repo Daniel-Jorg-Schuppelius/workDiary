@@ -70,6 +70,7 @@ use Illuminate\Support\Carbon;
  * @property string $settlement_status
  * @property Carbon|null $order_received_at
  * @property Carbon|null $returned_to_base_at
+ * @property Carbon|null $anonymized_at
  */
 class PassengerRide extends Model {
     use Auditable;
@@ -191,6 +192,9 @@ class PassengerRide extends Model {
         'window_end' => 'datetime',
         'order_received_at' => 'datetime',
         'returned_to_base_at' => 'datetime',
+        // Retention (Konzept §11): nach Frist werden Orts-/Fahrgastfelder
+        // genullt; Beträge/Steuer/Zeiten bleiben als Vorgangsnachweis.
+        'anonymized_at' => 'datetime',
     ];
 
     /** @return BelongsTo<DiaryEntry, $this> */

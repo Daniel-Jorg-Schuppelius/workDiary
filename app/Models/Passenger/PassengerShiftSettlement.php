@@ -14,8 +14,8 @@ namespace App\Models\Passenger;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\{User, Vehicle};
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
 
@@ -41,6 +41,7 @@ use Illuminate\Support\Carbon;
  * @property numeric-string $difference
  * @property string|null $difference_reason
  * @property string $status
+ * @property int|null $cash_entry_id
  */
 class PassengerShiftSettlement extends Model {
     use Auditable;
@@ -107,6 +108,15 @@ class PassengerShiftSettlement extends Model {
     /** @return HasMany<PassengerRide, $this> */
     public function rides(): HasMany {
         return $this->hasMany(PassengerRide::class, 'shift_settlement_id');
+    }
+
+    /**
+     * Kassenbuch-Buchung der Übergabe (Issue #74).
+     *
+     * @return BelongsTo<\App\Models\CashEntry, $this>
+     */
+    public function cashEntry(): BelongsTo {
+        return $this->belongsTo(\App\Models\CashEntry::class);
     }
 
     /**

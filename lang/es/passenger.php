@@ -249,6 +249,7 @@ return [
         'vehicle_profile_saved' => 'Perfil de vehículo guardado.',
         'settlement_saved' => 'Liquidación de turno guardada.',
         'settlement_closed' => 'Liquidación de turno cerrada.',
+        'cash_posted' => 'Efectivo traspasado al libro de caja.',
     ],
 
     'error' => [
@@ -267,6 +268,9 @@ return [
         'settlement_exists' => 'Ya existe una liquidación de turno para este conductor en este día.',
         'settlement_closed' => 'La liquidación de turno ya está cerrada.',
         'difference_reason_required' => 'Una diferencia abierta solo puede cerrarse con un motivo.',
+        'settlement_not_closed' => 'La liquidación debe cerrarse primero.',
+        'cash_already_posted' => 'El efectivo ya se ha traspasado al libro de caja.',
+        'cash_nothing_to_post' => 'No hay efectivo que traspasar.',
     ],
 
     'issue' => [
@@ -284,5 +288,13 @@ return [
         'meter_calibration' => 'Calibración de taxímetro/cuentakilómetros',
         'bokraft' => 'Inspección BOKraft',
         'hu' => 'Inspección técnica',
+    ],
+
+    // Kassenbuch-Übergabe der Schichtabrechnung (Issue #74).
+    'cash' => [
+        'register' => 'Caja',
+        'posted' => 'En el libro de caja',
+        'post_action' => 'Traspasar al libro de caja',
+        'purpose' => 'Liquidación de turno :driver del :date',
     ],
 ];

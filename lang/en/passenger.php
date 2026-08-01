@@ -249,6 +249,7 @@ return [
         'vehicle_profile_saved' => 'Vehicle profile saved.',
         'settlement_saved' => 'Shift settlement saved.',
         'settlement_closed' => 'Shift settlement closed.',
+        'cash_posted' => 'Cash revenue posted to the cash book.',
     ],
 
     'error' => [
@@ -267,6 +268,9 @@ return [
         'settlement_exists' => 'A shift settlement already exists for this driver on this day.',
         'settlement_closed' => 'The shift settlement is already closed.',
         'difference_reason_required' => 'An open difference can only be closed with a reason.',
+        'settlement_not_closed' => 'The settlement must be closed first.',
+        'cash_already_posted' => 'The cash revenue has already been posted to the cash book.',
+        'cash_nothing_to_post' => 'There is no cash revenue to post.',
     ],
 
     'issue' => [
@@ -284,5 +288,13 @@ return [
         'meter_calibration' => 'Taximeter/odometer calibration',
         'bokraft' => 'BOKraft inspection',
         'hu' => 'Main inspection',
+    ],
+
+    // Kassenbuch-Übergabe der Schichtabrechnung (Issue #74).
+    'cash' => [
+        'register' => 'Cash register',
+        'posted' => 'In cash book',
+        'post_action' => 'Post to cash book',
+        'purpose' => 'Shift settlement :driver of :date',
     ],
 ];

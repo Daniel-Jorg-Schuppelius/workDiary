@@ -249,6 +249,7 @@ return [
         'vehicle_profile_saved' => 'Profil de véhicule enregistré.',
         'settlement_saved' => 'Décompte de service enregistré.',
         'settlement_closed' => 'Décompte de service clôturé.',
+        'cash_posted' => 'Recette en espèces reportée au livre de caisse.',
     ],
 
     'error' => [
@@ -267,6 +268,9 @@ return [
         'settlement_exists' => 'Un décompte de service existe déjà pour ce chauffeur ce jour-là.',
         'settlement_closed' => 'Le décompte de service est déjà clôturé.',
         'difference_reason_required' => 'Un écart ouvert ne peut être clôturé qu\'avec un motif.',
+        'settlement_not_closed' => 'Le décompte doit d\'abord être clôturé.',
+        'cash_already_posted' => 'La recette en espèces a déjà été reportée au livre de caisse.',
+        'cash_nothing_to_post' => 'Aucune recette en espèces à reporter.',
     ],
 
     'issue' => [
@@ -284,5 +288,13 @@ return [
         'meter_calibration' => 'Étalonnage taximètre/compteur',
         'bokraft' => 'Contrôle BOKraft',
         'hu' => 'Contrôle technique',
+    ],
+
+    // Kassenbuch-Übergabe der Schichtabrechnung (Issue #74).
+    'cash' => [
+        'register' => 'Caisse',
+        'posted' => 'Au livre de caisse',
+        'post_action' => 'Reporter au livre de caisse',
+        'purpose' => 'Décompte de service :driver du :date',
     ],
 ];

@@ -53,9 +53,17 @@ class PassengerSettlementController extends Controller {
             ->paginate(25)
             ->withQueryString();
 
+        // Kassenbuch-Übergabe (Issue #74): nur mit Kassenmodul + Kassenrecht.
+        $cashEnabled = app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.kasse')
+            && Gate::allows(\App\Enums\User\Permission::CashManage->value);
+
         return view('passenger.settlements.index', [
             'settlements' => $settlements,
             'openCount' => PassengerShiftSettlement::query()->where('status', PassengerShiftSettlement::STATUS_OPEN)->count(),
+            'cashRegisters' => $cashEnabled
+                ? \App\Models\CashRegister::query()->where('active', true)->orderBy('name')->get(['id', 'name'])
+                : collect(),
+            'canPostCash' => $cashEnabled,
         ]);
     }
 
@@ -148,6 +156,61 @@ class PassengerSettlementController extends Controller {
         $settlement->audit('passenger.settlement_closed', ['status' => $settlement->status, 'difference' => $difference]);
 
         return redirect()->route('passenger-settlements.index')->with('status', (string) __('passenger.flash.settlement_closed'));
+    }
+
+    /**
+     * Barumsatz einer abgeschlossenen Abrechnung ins Kassenbuch übernehmen
+     * (Issue #74): genau eine Einnahme-Buchung je Abrechnung, rückverlinkt
+     * über `cash_entry_id`. Der CashBookService bleibt die einzige
+     * Schreibstelle (GoBD-Hash-Kette, Tagesabschluss-Sperre).
+     */
+    public function postCashEntry(Request $request, PassengerShiftSettlement $settlement): RedirectResponse {
+        Gate::authorize('settle', $settlement);
+        $this->assertInOrganization($settlement->organization_id);
+        abort_unless(app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.kasse'), 404);
+        Gate::authorize(\App\Enums\User\Permission::CashManage->value);
+
+        if ($settlement->status === PassengerShiftSettlement::STATUS_OPEN) {
+            throw ValidationException::withMessages(['status' => (string) __('passenger.error.settlement_not_closed')]);
+        }
+        if ($settlement->cash_entry_id !== null) {
+            throw ValidationException::withMessages(['status' => (string) __('passenger.error.cash_already_posted')]);
+        }
+        if (bccomp((string) $settlement->cash_total, '0', 2) <= 0) {
+            throw ValidationException::withMessages(['status' => (string) __('passenger.error.cash_nothing_to_post')]);
+        }
+
+        $request->merge(['cash_register_id' => Sqid::decodeOrNumeric(\App\Models\CashRegister::class, $request->input('cash_register_id'))]);
+        $validated = $request->validate([
+            'cash_register_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('cash_registers')],
+        ]);
+        $register = \App\Models\CashRegister::query()->findOrFail((int) $validated['cash_register_id']);
+        $actor = $request->user() ?? abort(401);
+
+        try {
+            $entry = app(\App\Services\Finance\CashBookService::class)->record($register, [
+                'booked_on' => $settlement->shift_date->toDateString(),
+                'direction' => \App\Models\CashEntry::DIRECTION_IN,
+                'amount' => (string) $settlement->cash_total,
+                'purpose' => (string) __('passenger.cash.purpose', [
+                    'driver' => (string) ($settlement->driver->name ?? '—'),
+                    'date' => \App\Support\CarbonFmt::fdate($settlement->shift_date),
+                ]),
+                'counterparty' => $settlement->driver->name ?? null,
+                'created_by' => $actor->id,
+            ]);
+        } catch (\InvalidArgumentException $exception) {
+            throw ValidationException::withMessages(['cash_register_id' => $exception->getMessage()]);
+        }
+
+        $settlement->forceFill(['cash_entry_id' => $entry->id])->save();
+        $settlement->audit('passenger.settlement_cash_posted', [
+            'cash_entry_id' => $entry->id,
+            'register_id' => $register->id,
+            'amount' => (string) $settlement->cash_total,
+        ]);
+
+        return redirect()->route('passenger-settlements.index')->with('status', (string) __('passenger.flash.cash_posted'));
     }
 
     /** @return array<string, mixed> */

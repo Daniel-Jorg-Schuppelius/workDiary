@@ -63,6 +63,7 @@ class SchedulerRegistrationTest extends TestCase {
         'plugin:healthcheck --no-fail' => ['0 * * * *', true, true],
         'remote:sync-sessions' => ['0 * * * *', true, true],
         'toggl:import' => ['0 * * * *', true, true],
+        'toggl:push' => ['0 * * * *', true, true],
         'openproject:import' => ['0 * * * *', true, true],
         'todoist:sync' => ['0 * * * *', true, true],
         // Neu mit Feature 095: Calendly-Termin-Backfill (Polling/Reconciliation).
@@ -90,6 +91,8 @@ class SchedulerRegistrationTest extends TestCase {
         'easybill:sync' => ['0 * * * *', true, true],
         // Neu mit Feature 077 (MVP-313): orgaMAX-Projektions-Sync.
         'orgamax:sync' => ['0 * * * *', true, true],
+        // Neu mit MVP-459 (Druck/Kopiershop): Löschfristen der Produktionsdateien.
+        'print:purge-files' => ['45 3 * * *', true, true],
         'payroll:import-minimum-wages' => ['0 4 15 1,7 *', true, true],
         'catalog:fetch-due' => ['*/15 * * * *', true, true],
         'security:advisories-pull' => ['30 5 * * *', true, true],

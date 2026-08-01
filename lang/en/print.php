@@ -48,6 +48,7 @@ return [
         'file' => 'Production file & preflight',
         'approval' => 'Print approval & snapshot',
         'production' => 'Production, QC & hand-over',
+        'claims' => 'Claims',
     ],
 
     'field' => [
@@ -118,6 +119,7 @@ return [
         'retention' => 'When the period expires only the customer file is removed — order, snapshot and checksum remain as commercial evidence.',
         'no_snapshot' => 'No print approval yet — parameters are frozen as an immutable snapshot upon approval.',
         'counter_minimal' => 'Counter sale: no personal data required.',
+        'claim_reference' => 'The case is linked to the print order — approved file, production snapshot and QC result stay referenceable through it.',
     ],
 
     'flash' => [
@@ -130,6 +132,7 @@ return [
         'quality_checked' => 'Quality control recorded.',
         'issued' => 'Order handed over.',
         'cancelled' => 'Order cancelled.',
+        'claim_opened' => 'Claim :number created.',
     ],
 
     'preflight' => [
@@ -159,5 +162,15 @@ return [
         'handover_required' => 'Pickup requires a hand-over record (name).',
         'cancel_reason_required' => 'Cancellation requires a reason.',
         'file_missing_storage' => 'The file version does not exist in storage.',
+    ],
+
+    // Reklamation am Druckauftrag (Issue #75).
+    'claim' => [
+        'title' => 'Claim for print order :number',
+        'none' => 'No claims for this order.',
+        'description' => 'Description',
+        'affected_quantity' => 'Affected quantity',
+        'affected_quantity_note' => 'Affected quantity: :quantity',
+        'open' => 'Open claim',
     ],
 ];

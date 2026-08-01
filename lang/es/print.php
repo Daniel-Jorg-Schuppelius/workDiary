@@ -48,6 +48,7 @@ return [
         'file' => 'Archivo de producción & preflight',
         'approval' => 'Aprobación de impresión & instantánea',
         'production' => 'Producción, CC & entrega',
+        'claims' => 'Reclamaciones',
     ],
 
     'field' => [
@@ -118,6 +119,7 @@ return [
         'retention' => 'Al vencer solo se elimina el archivo del cliente — orden, instantánea y suma de verificación permanecen como prueba comercial.',
         'no_snapshot' => 'Aún sin aprobación de impresión — los parámetros se congelan como instantánea inmutable al aprobar.',
         'counter_minimal' => 'Venta en mostrador: no se requieren datos personales.',
+        'claim_reference' => 'El caso se vincula a la orden de impresión — el archivo aprobado, la instantánea de producción y el resultado de CC siguen siendo referenciables.',
     ],
 
     'flash' => [
@@ -130,6 +132,7 @@ return [
         'quality_checked' => 'Control de calidad documentado.',
         'issued' => 'Orden entregada.',
         'cancelled' => 'Orden anulada.',
+        'claim_opened' => 'Reclamación :number creada.',
     ],
 
     'preflight' => [
@@ -159,5 +162,15 @@ return [
         'handover_required' => 'La recogida requiere un justificante de entrega (nombre).',
         'cancel_reason_required' => 'La anulación requiere un motivo.',
         'file_missing_storage' => 'La versión del archivo no existe en el almacenamiento.',
+    ],
+
+    // Reklamation am Druckauftrag (Issue #75).
+    'claim' => [
+        'title' => 'Reclamación orden de impresión :number',
+        'none' => 'Sin reclamaciones para esta orden.',
+        'description' => 'Descripción',
+        'affected_quantity' => 'Cantidad afectada',
+        'affected_quantity_note' => 'Cantidad afectada: :quantity',
+        'open' => 'Crear reclamación',
     ],
 ];

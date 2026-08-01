@@ -48,6 +48,7 @@ return [
         'file' => 'Produktionsdatei & Preflight',
         'approval' => 'Druckfreigabe & Snapshot',
         'production' => 'Produktion, QK & Ausgabe',
+        'claims' => 'Reklamationen',
     ],
 
     'field' => [
@@ -118,6 +119,7 @@ return [
         'retention' => 'Nach Ablauf wird nur die Kundendatei entfernt — Auftrag, Snapshot und Prüfsumme bleiben als kaufmännischer Nachweis.',
         'no_snapshot' => 'Noch keine Druckfreigabe — Parameter werden bei der Freigabe als unveränderlicher Snapshot eingefroren.',
         'counter_minimal' => 'Tresenverkauf: keine personenbezogenen Angaben nötig.',
+        'claim_reference' => 'Der Fall wird mit dem Druckauftrag verknüpft — freigegebene Datei, Produktions-Snapshot und QK-Ergebnis bleiben darüber referenzierbar.',
     ],
 
     'flash' => [
@@ -130,6 +132,7 @@ return [
         'quality_checked' => 'Qualitätskontrolle dokumentiert.',
         'issued' => 'Auftrag ausgegeben.',
         'cancelled' => 'Auftrag storniert.',
+        'claim_opened' => 'Reklamation :number angelegt.',
     ],
 
     'preflight' => [
@@ -159,5 +162,15 @@ return [
         'handover_required' => 'Abholung braucht einen Übergabenachweis (Name).',
         'cancel_reason_required' => 'Storno braucht eine Begründung.',
         'file_missing_storage' => 'Die Dateiversion ist im Storage nicht vorhanden.',
+    ],
+
+    // Reklamation am Druckauftrag (Issue #75).
+    'claim' => [
+        'title' => 'Reklamation Druckauftrag :number',
+        'none' => 'Keine Reklamationen zu diesem Auftrag.',
+        'description' => 'Beschreibung',
+        'affected_quantity' => 'Betroffene Menge',
+        'affected_quantity_note' => 'Betroffene Menge: :quantity',
+        'open' => 'Reklamation anlegen',
     ],
 ];

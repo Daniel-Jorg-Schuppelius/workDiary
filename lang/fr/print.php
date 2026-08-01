@@ -48,6 +48,7 @@ return [
         'file' => 'Fichier de production & preflight',
         'approval' => 'Bon à tirer & instantané',
         'production' => 'Production, CQ & remise',
+        'claims' => 'Réclamations',
     ],
 
     'field' => [
@@ -118,6 +119,7 @@ return [
         'retention' => 'À l\'échéance, seul le fichier client est supprimé — ordre, instantané et somme de contrôle demeurent comme preuve commerciale.',
         'no_snapshot' => 'Pas encore de bon à tirer — les paramètres sont figés en instantané immuable lors de la validation.',
         'counter_minimal' => 'Vente au comptoir : aucune donnée personnelle requise.',
+        'claim_reference' => 'Le dossier est lié à l\'ordre d\'impression — fichier approuvé, instantané de production et résultat CQ restent référencés.',
     ],
 
     'flash' => [
@@ -130,6 +132,7 @@ return [
         'quality_checked' => 'Contrôle qualité documenté.',
         'issued' => 'Ordre remis.',
         'cancelled' => 'Ordre annulé.',
+        'claim_opened' => 'Réclamation :number créée.',
     ],
 
     'preflight' => [
@@ -159,5 +162,15 @@ return [
         'handover_required' => 'Le retrait exige une preuve de remise (nom).',
         'cancel_reason_required' => 'L\'annulation exige un motif.',
         'file_missing_storage' => 'La version du fichier n\'existe pas dans le stockage.',
+    ],
+
+    // Reklamation am Druckauftrag (Issue #75).
+    'claim' => [
+        'title' => 'Réclamation ordre d\'impression :number',
+        'none' => 'Aucune réclamation pour cet ordre.',
+        'description' => 'Description',
+        'affected_quantity' => 'Quantité concernée',
+        'affected_quantity_note' => 'Quantité concernée : :quantity',
+        'open' => 'Créer une réclamation',
     ],
 ];

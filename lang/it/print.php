@@ -48,6 +48,7 @@ return [
         'file' => 'File di produzione & preflight',
         'approval' => 'Visto si stampi & snapshot',
         'production' => 'Produzione, CQ & consegna',
+        'claims' => 'Reclami',
     ],
 
     'field' => [
@@ -118,6 +119,7 @@ return [
         'retention' => 'Alla scadenza viene rimosso solo il file del cliente — ordine, snapshot e checksum restano come prova commerciale.',
         'no_snapshot' => 'Ancora nessun visto si stampi — i parametri vengono congelati come snapshot immutabile all\'approvazione.',
         'counter_minimal' => 'Vendita al banco: nessun dato personale necessario.',
+        'claim_reference' => 'Il caso viene collegato all\'ordine di stampa — file approvato, snapshot di produzione ed esito CQ restano referenziabili.',
     ],
 
     'flash' => [
@@ -130,6 +132,7 @@ return [
         'quality_checked' => 'Controllo qualità documentato.',
         'issued' => 'Ordine consegnato.',
         'cancelled' => 'Ordine annullato.',
+        'claim_opened' => 'Reclamo :number creato.',
     ],
 
     'preflight' => [
@@ -159,5 +162,15 @@ return [
         'handover_required' => 'Il ritiro richiede una prova di consegna (nome).',
         'cancel_reason_required' => 'L\'annullamento richiede una motivazione.',
         'file_missing_storage' => 'La versione del file non esiste nello storage.',
+    ],
+
+    // Reklamation am Druckauftrag (Issue #75).
+    'claim' => [
+        'title' => 'Reclamo ordine di stampa :number',
+        'none' => 'Nessun reclamo per questo ordine.',
+        'description' => 'Descrizione',
+        'affected_quantity' => 'Quantità interessata',
+        'affected_quantity_note' => 'Quantità interessata: :quantity',
+        'open' => 'Crea reclamo',
     ],
 ];

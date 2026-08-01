@@ -249,6 +249,7 @@ return [
         'vehicle_profile_saved' => 'Fahrzeugprofil gespeichert.',
         'settlement_saved' => 'Schichtabrechnung gespeichert.',
         'settlement_closed' => 'Schichtabrechnung abgeschlossen.',
+        'cash_posted' => 'Barumsatz ins Kassenbuch übernommen.',
     ],
 
     'error' => [
@@ -267,6 +268,9 @@ return [
         'settlement_exists' => 'Für diesen Fahrer existiert an diesem Tag bereits eine Schichtabrechnung.',
         'settlement_closed' => 'Die Schichtabrechnung ist bereits abgeschlossen.',
         'difference_reason_required' => 'Eine offene Differenz kann nur mit Begründung geschlossen werden.',
+        'settlement_not_closed' => 'Die Abrechnung muss zuerst abgeschlossen werden.',
+        'cash_already_posted' => 'Der Barumsatz wurde bereits ins Kassenbuch übernommen.',
+        'cash_nothing_to_post' => 'Kein Barumsatz zum Übernehmen vorhanden.',
     ],
 
     'issue' => [
@@ -284,5 +288,13 @@ return [
         'meter_calibration' => 'Eichung Taxameter/Wegstreckenzähler',
         'bokraft' => 'BOKraft-Prüfung',
         'hu' => 'Hauptuntersuchung',
+    ],
+
+    // Kassenbuch-Übergabe der Schichtabrechnung (Issue #74).
+    'cash' => [
+        'register' => 'Kasse',
+        'posted' => 'Im Kassenbuch',
+        'post_action' => 'In Kassenbuch übernehmen',
+        'purpose' => 'Schichtabrechnung :driver vom :date',
     ],
 ];

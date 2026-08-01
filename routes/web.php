@@ -2158,6 +2158,7 @@ Route::middleware('auth')->group(function () {
         Route::get('passenger-settlements/{settlement}/edit', [\App\Http\Controllers\Passenger\PassengerSettlementController::class, 'edit'])->name('passenger-settlements.edit');
         Route::put('passenger-settlements/{settlement}', [\App\Http\Controllers\Passenger\PassengerSettlementController::class, 'update'])->name('passenger-settlements.update');
         Route::post('passenger-settlements/{settlement}/close', [\App\Http\Controllers\Passenger\PassengerSettlementController::class, 'close'])->name('passenger-settlements.close');
+        Route::post('passenger-settlements/{settlement}/cash-entry', [\App\Http\Controllers\Passenger\PassengerSettlementController::class, 'postCashEntry'])->name('passenger-settlements.cash-entry');
 
         // ── Druckaufträge (MVP-459, Branchenprofil druck-kopiershop):
         // Fachakte am Fertigungsauftrag mit Dateicheck/Preflight, Freigabe
@@ -2176,6 +2177,7 @@ Route::middleware('auth')->group(function () {
         Route::post('print-orders/{order}/quality-check', [\App\Http\Controllers\Print\PrintOrderController::class, 'qualityCheck'])->name('print-orders.quality-check');
         Route::post('print-orders/{order}/issue', [\App\Http\Controllers\Print\PrintOrderController::class, 'issue'])->name('print-orders.issue');
         Route::post('print-orders/{order}/cancel', [\App\Http\Controllers\Print\PrintOrderController::class, 'cancel'])->name('print-orders.cancel');
+        Route::post('print-orders/{order}/claim', [\App\Http\Controllers\Print\PrintOrderController::class, 'openClaim'])->name('print-orders.claim');
         Route::get('procedure-runs/{run}/print', [\App\Http\Controllers\ProcedureRunController::class, 'print'])->name('procedure-runs.print');
         Route::post('diary/{diary}/procedures/{template}/start', [\App\Http\Controllers\ProcedureRunController::class, 'start'])->name('procedure-runs.start');
         // Mobile Ausführung eines Prozedurlaufs (MVP-063): Schritt-für-Schritt,

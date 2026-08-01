@@ -249,6 +249,7 @@ return [
         'vehicle_profile_saved' => 'Profilo veicolo salvato.',
         'settlement_saved' => 'Chiusura turno salvata.',
         'settlement_closed' => 'Chiusura turno conclusa.',
+        'cash_posted' => 'Incasso in contanti registrato nel libro cassa.',
     ],
 
     'error' => [
@@ -267,6 +268,9 @@ return [
         'settlement_exists' => 'Per questo autista esiste già una chiusura turno in questo giorno.',
         'settlement_closed' => 'La chiusura turno è già conclusa.',
         'difference_reason_required' => 'Una differenza aperta può essere conclusa solo con una motivazione.',
+        'settlement_not_closed' => 'Il conteggio deve prima essere chiuso.',
+        'cash_already_posted' => 'L\'incasso in contanti è già stato registrato nel libro cassa.',
+        'cash_nothing_to_post' => 'Nessun incasso in contanti da registrare.',
     ],
 
     'issue' => [
@@ -284,5 +288,13 @@ return [
         'meter_calibration' => 'Taratura tassametro/contachilometri',
         'bokraft' => 'Verifica BOKraft',
         'hu' => 'Revisione principale',
+    ],
+
+    // Kassenbuch-Übergabe der Schichtabrechnung (Issue #74).
+    'cash' => [
+        'register' => 'Cassa',
+        'posted' => 'Nel libro cassa',
+        'post_action' => 'Registra nel libro cassa',
+        'purpose' => 'Conteggio turno :driver del :date',
     ],
 ];

@@ -110,5 +110,16 @@ return [
             'years' => ['DE' => 10, 'AT' => 7, 'CH' => 10],
             'basis' => ['DE' => 'GoBD / AO §147 / §14b UStG', 'AT' => 'BAO §132', 'CH' => 'OR Art. 958f'],
         ],
+
+        // Fahrtakten (MVP-456, Konzept §11): Orts-/Fahrgastbezug wird nach
+        // Frist anonymisiert (Abhol-/Zieladresse, Wegpunkte, Fahrgastkontakt,
+        // Freitexte); Beträge, Steuer und Zeiten bleiben als kaufmännischer
+        // Nachweis. Frist folgt der Aufbewahrungspflicht des Mietwagen-
+        // Auftragseingangs (§ 49 Abs. 4 PBefG: 1 Jahr).
+        'passenger_rides' => [
+            'label' => 'Fahrtakten (Orts-/Fahrgastbezug)',
+            'years' => ['DE' => 1, 'AT' => 1, 'CH' => 1],
+            'basis' => ['DE' => '§ 49 Abs. 4 PBefG (1 J.) / Art. 5 Abs. 1 lit. e DSGVO', 'AT' => 'Art. 5 DSGVO (Speicherbegrenzung)', 'CH' => 'DSG (Zweckbindung)'],
+        ],
     ],
 ];
