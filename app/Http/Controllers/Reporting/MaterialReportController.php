@@ -41,7 +41,8 @@ class MaterialReportController extends Controller {
         $from = $fromDate->toDateString();
         $to = $toDate->toDateString();
 
-        $filters = $this->standardFilters($request, ['customer', 'project'], $fromDate, $toDate, scope: $scope);
+        $filterFields = ['customer', 'project', 'include_excluded'];
+        $filters = $this->standardFilters($request, $filterFields, $fromDate, $toDate, scope: $scope);
 
         $aggregation = $this->aggregate($from, $to, $scope, $userId, $filters);
         $paretoSeries = $this->materialValueSeries($aggregation['rows']);
@@ -62,10 +63,10 @@ class MaterialReportController extends Controller {
             'rows' => $aggregation['rows'],
             'totals' => $aggregation['totals'],
             'standardFilters' => $filters,
-            'filterFields' => ['customer', 'project'],
+            'filterFields' => $filterFields,
             'materialValueSeries' => $paretoSeries,
             'monthlyCostSeries' => $this->monthlyCostSeries($aggregation['monthly'], $fromDate, $toDate),
-            ...$this->standardFilterOptions(['customer', 'project'], $filters),
+            ...$this->standardFilterOptions($filterFields, $filters),
         ]);
     }
 
@@ -98,6 +99,13 @@ class MaterialReportController extends Controller {
                     $w->where('project_id', $filters->projectId);
                 } elseif ($filters->customerId !== null) {
                     $w->whereIn('project_id', Project::query()->where('customer_id', $filters->customerId)->select('id'));
+                } elseif ($filters->excludedCustomerIds !== []) {
+                    // Feature 002: Verbrauch über Projekte org-weit ausgeblendeter Kunden
+                    // entfällt — NOT IN würde projektlose Timesheets mit verwerfen (NULL-Guard).
+                    $w->where(fn($q) => $q->whereNull('project_id')->orWhereNotIn(
+                        'project_id',
+                        Project::query()->whereIn('customer_id', $filters->excludedCustomerIds)->select('id'),
+                    ));
                 }
             });
 

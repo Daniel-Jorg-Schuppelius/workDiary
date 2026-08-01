@@ -24,6 +24,8 @@ use Carbon\CarbonImmutable;
  */
 class AssetAnalysisReportBuilder {
     /**
+     * @param  list<int>  $excludedCustomerIds  Feature 002: Assets und Aufträge
+     *         org-weit ausgeblendeter Kunden entfallen; Übersteuerung regelt der Aufrufer.
      * @return list<array{
      *   key:string,
      *   label:string,
@@ -44,10 +46,15 @@ class AssetAnalysisReportBuilder {
         ?string $categoryCode,
         ?string $manufacturer,
         string $groupBy,
+        array $excludedCustomerIds = [],
     ): array {
         $assets = Asset::query()
             ->with('product:id,name')
             ->when($customerId !== null, fn($q) => $q->where('customer_id', $customerId))
+            // NOT IN würde NULL-Kunden mit verwerfen — kundenlose Assets bleiben sichtbar.
+            ->when($excludedCustomerIds !== [], fn($q) => $q->where(
+                fn($w) => $w->whereNull('customer_id')->orWhereNotIn('customer_id', $excludedCustomerIds),
+            ))
             ->when($categoryCode !== null, fn($q) => $q->where('category_code', $categoryCode))
             ->when($manufacturer !== null, fn($q) => $q->where('manufacturer', $manufacturer))
             ->get(['id', 'name', 'asset_no', 'category_code', 'manufacturer', 'model', 'product_id']);
@@ -62,6 +69,11 @@ class AssetAnalysisReportBuilder {
         $entryRows = DiaryEntry::query()
             ->whereIn('asset_id', $assetIds)
             ->whereBetween('created_at', [$from, $to])
+            // Feature 002: Aufträge ausgeblendeter Kunden zählen nicht in die
+            // Asset-Kennzahlen (kundenlose Aufträge bleiben sichtbar).
+            ->when($excludedCustomerIds !== [], fn($q) => $q->where(
+                fn($w) => $w->whereNull('customer_id')->orWhereNotIn('customer_id', $excludedCustomerIds),
+            ))
             ->get(['id', 'asset_id']);
 
         /** @var array<int, list<int>> $entriesByAsset */

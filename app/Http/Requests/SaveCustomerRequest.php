@@ -53,6 +53,7 @@ class SaveCustomerRequest extends BaseFormRequest {
             'internal_rate' => ['nullable', 'numeric', 'min:0', 'max:99999.99'],
             'invoice_text' => ['nullable', 'string', 'max:5000'],
             'billable' => ['sometimes', 'boolean'],
+            'exclude_from_reports' => ['sometimes', 'boolean'],
             // E-Rechnung (Feature 045): Leitweg-ID/Käuferreferenz (BT-10).
             'buyer_reference' => ['nullable', 'string', 'max:64'],
             // Fakturierungsweg-Override (Feature 045): nur mit finance.config
@@ -104,6 +105,7 @@ class SaveCustomerRequest extends BaseFormRequest {
 
         $this->merge(array_merge($this->partyNormalizedData(), [
             'billable' => $this->boolean('billable'),
+            'exclude_from_reports' => $this->boolean('exclude_from_reports'),
             'travel_settings' => $travel === [] ? null : $travel,
         ]));
     }

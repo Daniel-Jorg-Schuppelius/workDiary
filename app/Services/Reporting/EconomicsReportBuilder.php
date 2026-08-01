@@ -55,6 +55,8 @@ class EconomicsReportBuilder {
      *
      * @param  list<int>|null  $projectIds  Optionaler Filter auf Projekt-IDs.
      * @param  int|null  $customerId  Optionaler Kundenfilter (Feature 002).
+     * @param  list<int>  $excludedCustomerIds  Feature 002: Projekte org-weit
+     *         ausgeblendeter Kunden entfallen; Übersteuerung regelt der Aufrufer.
      * @return list<array{
      *   projectId:int,
      *   projectName:string,
@@ -90,13 +92,17 @@ class EconomicsReportBuilder {
      *   planBudgetDelta:float|null
      * }>
      */
-    public function byProject(CarbonImmutable $from, CarbonImmutable $to, ?array $projectIds = null, ?int $customerId = null): array {
+    public function byProject(CarbonImmutable $from, CarbonImmutable $to, ?array $projectIds = null, ?int $customerId = null, array $excludedCustomerIds = []): array {
         $fromDate = $from->toDateString();
         $toDate = $to->toDateString();
 
         $projects = Project::query()
             ->when($projectIds !== null && $projectIds !== [], fn($q) => $q->whereIn('id', $projectIds))
             ->when($customerId !== null, fn($q) => $q->where('customer_id', $customerId))
+            // NOT IN würde NULL-Kunden mit verwerfen — kundenlose Projekte bleiben sichtbar.
+            ->when($excludedCustomerIds !== [], fn($q) => $q->where(
+                fn($w) => $w->whereNull('customer_id')->orWhereNotIn('customer_id', $excludedCustomerIds),
+            ))
             ->orderBy('name')
             ->get(['id', 'name', 'customer_id', 'time_budget', 'budget']);
 
@@ -155,6 +161,8 @@ class EconomicsReportBuilder {
      * die Geld-Aggregate projektgebunden erhoben (direkt am Kunden hängende
      * Spesen/Fahrten ohne Projektanker bleiben dann bewusst außen vor).
      *
+     * @param  list<int>  $excludedCustomerIds  Feature 002: org-weit ausgeblendete
+     *         Kunden entfallen als Zeilen; Übersteuerung regelt der Aufrufer.
      * @return list<array{
      *   customerId:int,
      *   customerName:string,
@@ -188,12 +196,13 @@ class EconomicsReportBuilder {
      *   planBudgetDelta:float|null
      * }>
      */
-    public function byCustomer(CarbonImmutable $from, CarbonImmutable $to, ?int $customerId = null, ?int $projectId = null): array {
+    public function byCustomer(CarbonImmutable $from, CarbonImmutable $to, ?int $customerId = null, ?int $projectId = null, array $excludedCustomerIds = []): array {
         $fromDate = $from->toDateString();
         $toDate = $to->toDateString();
 
         $customers = Customer::query()
             ->when($customerId !== null, fn($q) => $q->whereKey($customerId))
+            ->when($excludedCustomerIds !== [], fn($q) => $q->whereNotIn('id', $excludedCustomerIds))
             ->orderBy('name')
             ->get(['id', 'name']);
 
@@ -500,9 +509,11 @@ class EconomicsReportBuilder {
      * Zeit-Dimension mit einer Query — Material/Spesen/Fahrt haben keine
      * gemeinsame Monatsquelle ohne weitere Aggregationsläufe.
      *
+     * @param  list<int>  $excludedCustomerIds  Feature 002: Zeiten auf Projekten
+     *         ausgeblendeter Kunden entfallen; Übersteuerung regelt der Aufrufer.
      * @return list<array{month: string, monthLabel: string, revenue: float, cost: float}>
      */
-    public function timeByMonth(CarbonImmutable $from, CarbonImmutable $to, ?int $customerId = null, ?int $projectId = null): array {
+    public function timeByMonth(CarbonImmutable $from, CarbonImmutable $to, ?int $customerId = null, ?int $projectId = null, array $excludedCustomerIds = []): array {
         /** @var Collection<int, TimeEntry> $entries */
         $entries = TimeEntry::query()
             ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
@@ -510,6 +521,10 @@ class EconomicsReportBuilder {
             ->when($projectId === null && $customerId !== null, fn($q) => $q->whereIn(
                 'project_id',
                 Project::query()->where('customer_id', $customerId)->select('id'),
+            ))
+            ->when($projectId === null && $customerId === null && $excludedCustomerIds !== [], fn($q) => $q->whereNotIn(
+                'project_id',
+                Project::query()->whereIn('customer_id', $excludedCustomerIds)->select('id'),
             ))
             ->get(['date', 'billable', 'rate', 'internal_rate']);
 

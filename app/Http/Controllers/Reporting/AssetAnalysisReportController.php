@@ -43,13 +43,24 @@ class AssetAnalysisReportController extends Controller {
         // Standard-Set bewusst nur Kunde — Assets haben keine natürliche
         // Status-/Projektdimension; category_code/manufacturer/group_by
         // bleiben Spezialfilter des Reports.
-        $filters = $this->standardFilters($request, ['customer'], $from, $to);
+        $filterFields = ['customer', 'include_excluded'];
+        $filters = $this->standardFilters($request, $filterFields, $from, $to);
         // Legacy-Parameter customer_id (alte Bookmarks) ins Standard-Set
         // übernehmen, damit Partial, Links und Audit denselben Stand sehen.
         $customerId = $filters->customerId ?? Sqid::decodeOrNumeric(Customer::class, $request->query('customer_id'));
         if ($customerId !== $filters->customerId) {
-            $filters = new ReportFilters(from: $from, to: $to, customerId: $customerId);
+            $filters = new ReportFilters(
+                from: $from,
+                to: $to,
+                customerId: $customerId,
+                excludedCustomerIds: $filters->excludedCustomerIds,
+                includeExcludedCustomers: $filters->includeExcludedCustomers,
+            );
         }
+
+        // Feature 002: Ausblendung greift nur ohne explizite Kundenwahl
+        // (gleiche Übersteuerungsregel wie ReportFilters::customerExclusionActive()).
+        $excludedCustomerIds = $customerId === null ? $filters->excludedCustomerIds : [];
 
         $categoryCode = $request->filled('category_code') ? (string) $request->string('category_code') : null;
         $manufacturer = $request->filled('manufacturer') ? (string) $request->string('manufacturer') : null;
@@ -58,7 +69,7 @@ class AssetAnalysisReportController extends Controller {
             $groupBy = 'asset';
         }
 
-        $rows = $this->builder->build($from, $to, $customerId, $categoryCode, $manufacturer, $groupBy);
+        $rows = $this->builder->build($from, $to, $customerId, $categoryCode, $manufacturer, $groupBy, $excludedCustomerIds);
 
         $exportContext = array_merge([
             'category_code' => $categoryCode,
@@ -80,10 +91,10 @@ class AssetAnalysisReportController extends Controller {
             'from' => $from,
             'to' => $to,
             'standardFilters' => $filters,
-            'filterFields' => ['customer'],
+            'filterFields' => $filterFields,
             'defectsSeries' => $this->defectsSeries($rows),
             'defectRateSeries' => $this->defectRateSeries($rows),
-            ...$this->standardFilterOptions(['customer'], $filters),
+            ...$this->standardFilterOptions($filterFields, $filters),
             'categories' => Asset::query()
                 ->whereNotNull('category_code')
                 ->orderBy('category_code')

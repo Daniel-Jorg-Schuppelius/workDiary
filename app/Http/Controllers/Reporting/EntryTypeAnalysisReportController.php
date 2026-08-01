@@ -35,7 +35,8 @@ class EntryTypeAnalysisReportController extends Controller {
         $label = CarbonFmt::fdate($from) . ' – ' . CarbonFmt::fdate($to);
 
         $statusValues = array_map(static fn(DiaryStatus $status): string => (string) $status->value, DiaryStatus::cases());
-        $filters = $this->standardFilters($request, ['customer', 'project', 'user', 'status'], $from, $to, $statusValues);
+        $filterFields = ['customer', 'project', 'user', 'status', 'include_excluded'];
+        $filters = $this->standardFilters($request, $filterFields, $from, $to, $statusValues);
         // Legacy-Parameter (customer_id/user_id — alte Bookmarks) ins
         // Standard-Set übernehmen, damit Partial, Links und Audit denselben
         // Stand sehen. entry_type_id bleibt bewusst eigener Drilldown-Param —
@@ -50,13 +51,21 @@ class EntryTypeAnalysisReportController extends Controller {
                 projectId: $filters->projectId,
                 userId: $userId,
                 status: $filters->status,
+                excludedCustomerIds: $filters->excludedCustomerIds,
+                includeExcludedCustomers: $filters->includeExcludedCustomers,
             );
         }
 
         $entryTypeFilter = Sqid::decodeOrNumeric(EntryType::class, $request->query('entry_type_id'));
         $statusFilter = $filters->status !== null ? (int) $filters->status : null;
 
-        $rows = $this->builder->build($from, $to, $customerId, $userId, $entryTypeFilter, $statusFilter, $filters->projectId);
+        // Feature 002: Ausblendung greift nur ohne explizite Kunden-/Projektwahl
+        // (gleiche Übersteuerungsregel wie ReportFilters::customerExclusionActive()).
+        $excludedCustomerIds = $customerId === null && $filters->projectId === null
+            ? $filters->excludedCustomerIds
+            : [];
+
+        $rows = $this->builder->build($from, $to, $customerId, $userId, $entryTypeFilter, $statusFilter, $filters->projectId, $excludedCustomerIds);
 
         $exportContext = array_merge(['entry_type_id' => $entryTypeFilter], $filters->toAuditArray());
 
@@ -79,10 +88,10 @@ class EntryTypeAnalysisReportController extends Controller {
             'entryTypeFilter' => $entryTypeFilter,
             'statusFilter' => $statusFilter,
             'standardFilters' => $filters,
-            'filterFields' => ['customer', 'project', 'user', 'status'],
+            'filterFields' => $filterFields,
             'planVsIstSeries' => $this->planVsIstSeries($rows, $filters),
             'overrunSeries' => $this->overrunSeries($rows, $filters),
-            ...$this->standardFilterOptions(['customer', 'project', 'user'], $filters),
+            ...$this->standardFilterOptions(['customer', 'project', 'user', 'include_excluded'], $filters),
         ]);
     }
 

@@ -24,12 +24,17 @@
 @php
     $points = collect($series)->sortByDesc('y')->values();
     $total = max(0.0001, (float) $points->sum('y'));
-    $width = 640; $height = 240; $pad = 36;
+    // Ab ~9 Kategorien überlappen horizontale Labels — dann schräg (−40°)
+    // mit mehr Fußraum, sonst bleibt die Achse unlesbar.
+    $rotateLabels = $points->count() > 8;
+    $width = 640; $pad = 36;
+    $padB = $rotateLabels ? 84 : 36;
+    $height = 240 + ($rotateLabels ? 48 : 0);
     $maxY = max(1, (int) ceil((float) $points->max('y')));
     $slot_ = $points->count() > 0 ? ($width - 2 * $pad) / $points->count() : 0;
     $barW = max(8, min(44, $slot_ * 0.55));
-    $sy = fn(float $v): float => $height - $pad - ($v / $maxY) * ($height - 2 * $pad);
-    $syPct = fn(float $pct): float => $height - $pad - ($pct / 100) * ($height - 2 * $pad);
+    $sy = fn(float $v): float => $height - $padB - ($v / $maxY) * ($height - $pad - $padB);
+    $syPct = fn(float $pct): float => $height - $padB - ($pct / 100) * ($height - $pad - $padB);
     $running = 0.0;
     $cumPoints = $points->map(function (array $p, int $i) use (&$running, $total, $pad, $slot_, $syPct): array {
         $running += (float) $p['y'];
@@ -50,19 +55,25 @@
         <x-empty-state icon="align_vertical_bottom" :title="__('Noch keine Daten für dieses Diagramm.')" compact />
     @else
         <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="mt-2 w-full">
-            <line x1="{{ $pad }}" y1="{{ $height - $pad }}" x2="{{ $width - $pad }}" y2="{{ $height - $pad }}" class="stroke-base-300" stroke-width="1" />
-            <line x1="{{ $pad }}" y1="{{ $pad }}" x2="{{ $pad }}" y2="{{ $height - $pad }}" class="stroke-base-300" stroke-width="1" />
+            <line x1="{{ $pad }}" y1="{{ $height - $padB }}" x2="{{ $width - $pad }}" y2="{{ $height - $padB }}" class="stroke-base-300" stroke-width="1" />
+            <line x1="{{ $pad }}" y1="{{ $pad }}" x2="{{ $pad }}" y2="{{ $height - $padB }}" class="stroke-base-300" stroke-width="1" />
             <text x="{{ $pad - 6 }}" y="{{ $pad }}" text-anchor="end" class="fill-base-content/60 text-[10px]">{{ $maxY }}</text>
-            <text x="{{ $pad - 6 }}" y="{{ $height - $pad }}" text-anchor="end" class="fill-base-content/60 text-[10px]">0</text>
+            <text x="{{ $pad - 6 }}" y="{{ $height - $padB }}" text-anchor="end" class="fill-base-content/60 text-[10px]">0</text>
             @foreach ($points as $i => $point)
                 @php($cx = $pad + ($i + 0.5) * $slot_)
                 <a @if (!empty($point['url'])) href="{{ $point['url'] }}" @endif tabindex="0"
                    aria-label="{{ $point['x'] }}: {{ $point['y'] }} {{ $unit }} ({{ $cumPoints[$i]['pct'] }}% {{ __('kumuliert') }})">
                     <rect x="{{ round($cx - $barW / 2, 1) }}" y="{{ round($sy((float) $point['y']), 1) }}"
-                          width="{{ round($barW, 1) }}" height="{{ round($height - $pad - $sy((float) $point['y']), 1) }}"
+                          width="{{ round($barW, 1) }}" height="{{ round($height - $padB - $sy((float) $point['y']), 1) }}"
                           class="fill-primary" />
                 </a>
-                <text x="{{ round($cx, 1) }}" y="{{ $height - $pad + 12 }}" text-anchor="middle" class="fill-base-content/60 text-[10px]">{{ \Illuminate\Support\Str::limit((string) $point['x'], 10, '…') }}</text>
+                @if ($rotateLabels)
+                    <text x="{{ round($cx, 1) }}" y="{{ $height - $padB + 12 }}" text-anchor="end"
+                          transform="rotate(-40 {{ round($cx, 1) }} {{ $height - $padB + 12 }})"
+                          class="fill-base-content/60 text-[10px]">{{ \Illuminate\Support\Str::limit((string) $point['x'], 18, '…') }}</text>
+                @else
+                    <text x="{{ round($cx, 1) }}" y="{{ $height - $padB + 12 }}" text-anchor="middle" class="fill-base-content/60 text-[10px]">{{ \Illuminate\Support\Str::limit((string) $point['x'], 10, '…') }}</text>
+                @endif
             @endforeach
             <path d="{{ $cumPoints->map(fn(array $p, int $i): string => ($i === 0 ? 'M' : 'L') . round($p['x'], 1) . ' ' . round($p['y'], 1))->implode(' ') }}"
                   fill="none" class="stroke-secondary" stroke-width="2" stroke-dasharray="6 3" />

@@ -28,12 +28,16 @@
 @php
     $points = collect($series)->values();
     $bandList = collect($bands)->values();
-    $width = 640; $height = 240; $pad = 36;
+    // Ab ~9 Kategorien überlappen horizontale Labels — dann schräg (−40°) mit mehr Fußraum.
+    $rotateLabels = $points->count() > 8;
+    $width = 640; $pad = 36;
+    $padB = $rotateLabels ? 84 : 36;
+    $height = 240 + ($rotateLabels ? 48 : 0);
     $totals = $points->map(fn(array $p): float => (float) $bandList->sum(fn(array $b) => (float) ($p[$b['key']] ?? 0)));
     $maxY = max(1, (int) ceil((float) $totals->max()));
     $slot_ = $points->count() > 0 ? ($width - 2 * $pad) / $points->count() : 0;
     $barW = max(6, min(38, $slot_ * 0.55));
-    $sy = fn(float $v): float => $height - $pad - ($v / $maxY) * ($height - 2 * $pad);
+    $sy = fn(float $v): float => $height - $padB - ($v / $maxY) * ($height - $pad - $padB);
     $fills = ['fill-primary/70', 'fill-secondary/60', 'fill-accent/50', 'fill-info/50', 'fill-warning/50'];
 @endphp
 
@@ -51,10 +55,10 @@
         <x-empty-state icon="stacked_bar_chart" :title="__('Noch keine Daten für dieses Diagramm.')" compact />
     @else
         <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="mt-2 w-full">
-            <line x1="{{ $pad }}" y1="{{ $height - $pad }}" x2="{{ $width - $pad }}" y2="{{ $height - $pad }}" class="stroke-base-300" stroke-width="1" />
-            <line x1="{{ $pad }}" y1="{{ $pad }}" x2="{{ $pad }}" y2="{{ $height - $pad }}" class="stroke-base-300" stroke-width="1" />
+            <line x1="{{ $pad }}" y1="{{ $height - $padB }}" x2="{{ $width - $pad }}" y2="{{ $height - $padB }}" class="stroke-base-300" stroke-width="1" />
+            <line x1="{{ $pad }}" y1="{{ $pad }}" x2="{{ $pad }}" y2="{{ $height - $padB }}" class="stroke-base-300" stroke-width="1" />
             <text x="{{ $pad - 6 }}" y="{{ $pad }}" text-anchor="end" class="fill-base-content/60 text-[10px]">{{ $maxY }}</text>
-            <text x="{{ $pad - 6 }}" y="{{ $height - $pad }}" text-anchor="end" class="fill-base-content/60 text-[10px]">0</text>
+            <text x="{{ $pad - 6 }}" y="{{ $height - $padB }}" text-anchor="end" class="fill-base-content/60 text-[10px]">0</text>
             @foreach ($points as $i => $point)
                 @php
                     $cx = $pad + ($i + 0.5) * $slot_;
@@ -83,7 +87,13 @@
                               class="{{ $rect['fill'] }} stroke-base-100" stroke-width="0.5" />
                     @endforeach
                 </a>
-                <text x="{{ round($cx, 1) }}" y="{{ $height - $pad + 12 }}" text-anchor="middle" class="fill-base-content/60 text-[10px]">{{ \Illuminate\Support\Str::limit((string) $point['x'], 10, '…') }}</text>
+                @if ($rotateLabels)
+                    <text x="{{ round($cx, 1) }}" y="{{ $height - $padB + 12 }}" text-anchor="end"
+                          transform="rotate(-40 {{ round($cx, 1) }} {{ $height - $padB + 12 }})"
+                          class="fill-base-content/60 text-[10px]">{{ \Illuminate\Support\Str::limit((string) $point['x'], 18, '…') }}</text>
+                @else
+                    <text x="{{ round($cx, 1) }}" y="{{ $height - $padB + 12 }}" text-anchor="middle" class="fill-base-content/60 text-[10px]">{{ \Illuminate\Support\Str::limit((string) $point['x'], 10, '…') }}</text>
+                @endif
             @endforeach
         </svg>
         <p class="mt-1 flex flex-wrap gap-3 text-xs">

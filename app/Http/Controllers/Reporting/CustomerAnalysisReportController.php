@@ -33,7 +33,8 @@ class CustomerAnalysisReportController extends Controller {
         [$from, $to] = $this->resolveRange($request);
 
         $minMinutes = max(0, (int) $request->integer('min_minutes', 0));
-        $filters = $this->standardFilters($request, ['project', 'user', 'entry_type'], $from, $to);
+        $filterFields = ['project', 'user', 'entry_type', 'include_excluded'];
+        $filters = $this->standardFilters($request, $filterFields, $from, $to);
         // Legacy-Parameter (project_id/user_id — alte Bookmarks) ins Standard-Set
         // übernehmen, damit Partial, Links und Audit denselben Stand sehen.
         $projectId = $filters->projectId ?? Sqid::decodeOrNumeric(Project::class, $request->query('project_id'));
@@ -45,10 +46,18 @@ class CustomerAnalysisReportController extends Controller {
                 projectId: $projectId,
                 userId: $userId,
                 entryTypeId: $filters->entryTypeId,
+                excludedCustomerIds: $filters->excludedCustomerIds,
+                includeExcludedCustomers: $filters->includeExcludedCustomers,
             );
         }
 
-        $rows = collect($this->builder->build($from, $to, $projectId, $userId, $filters->entryTypeId))
+        // Feature 002: Ausblendung greift nur ohne explizite Kunden-/Projektwahl
+        // (gleiche Übersteuerungsregel wie ReportFilters::customerExclusionActive()).
+        $excludedCustomerIds = $filters->customerId === null && $filters->projectId === null
+            ? $filters->excludedCustomerIds
+            : [];
+
+        $rows = collect($this->builder->build($from, $to, $projectId, $userId, $filters->entryTypeId, $excludedCustomerIds))
             ->filter(static fn(array $row): bool => $row['totalMinutes'] >= $minMinutes)
             ->values();
 
@@ -87,11 +96,11 @@ class CustomerAnalysisReportController extends Controller {
             'topByRework' => $topByRework,
             'topByNonBillable' => $topByNonBillable,
             'standardFilters' => $filters,
-            'filterFields' => ['project', 'user', 'entry_type'],
+            'filterFields' => $filterFields,
             'customerHoursSeries' => $this->customerHoursSeries(array_values($rows->all()), $filters),
-            'trendSeries' => $this->trendSeries($to, $filters),
+            'trendSeries' => $this->trendSeries($to, $filters, $excludedCustomerIds),
             'openIssuesSeries' => $this->openIssuesSeries(array_values($rows->all()), $filters),
-            ...$this->standardFilterOptions(['project', 'user', 'entry_type'], $filters),
+            ...$this->standardFilterOptions($filterFields, $filters),
         ]);
     }
 
@@ -120,10 +129,11 @@ class CustomerAnalysisReportController extends Controller {
     /**
      * Auftragseingang pro Tag der letzten 30 Tage (Trend-Linienchart).
      *
+     * @param  list<int>  $excludedCustomerIds
      * @return list<array{x: string, y: int}>
      */
-    private function trendSeries(\Carbon\CarbonImmutable $to, ReportFilters $filters): array {
-        $daily = $this->builder->dailyEntrySeries30d($to, $filters->projectId, $filters->userId, $filters->entryTypeId);
+    private function trendSeries(\Carbon\CarbonImmutable $to, ReportFilters $filters, array $excludedCustomerIds = []): array {
+        $daily = $this->builder->dailyEntrySeries30d($to, $filters->projectId, $filters->userId, $filters->entryTypeId, $excludedCustomerIds);
         if (array_sum(array_column($daily, 'count')) === 0) {
             return []; // Leerzustand statt Null-Linie (§Diagramm-UX).
         }

@@ -24,6 +24,8 @@ use Carbon\CarbonImmutable;
  */
 class CustomerAnalysisReportBuilder {
     /**
+     * @param  list<int>  $excludedCustomerIds  Feature 002: org-weit ausgeblendete
+     *         Kunden (customers.exclude_from_reports); Übersteuerung regelt der Aufrufer.
      * @return list<array{
      *   customerId:int,
      *   customerName:string,
@@ -39,8 +41,9 @@ class CustomerAnalysisReportBuilder {
      *   trend30d:int
      * }>
      */
-    public function build(CarbonImmutable $from, CarbonImmutable $to, ?int $projectId, ?int $userId, ?int $entryTypeId = null): array {
+    public function build(CarbonImmutable $from, CarbonImmutable $to, ?int $projectId, ?int $userId, ?int $entryTypeId = null, array $excludedCustomerIds = []): array {
         return array_values(Customer::query()
+            ->when($excludedCustomerIds !== [], fn($q) => $q->whereNotIn('id', $excludedCustomerIds))
             ->orderBy('name')
             ->get(['id', 'name'])
             ->map(function (Customer $customer) use ($from, $to, $projectId, $userId, $entryTypeId): array {
@@ -160,9 +163,10 @@ class CustomerAnalysisReportBuilder {
      * dasselbe Zeitfenster wie {@see trend30d()}, als Tagesreihe für den
      * Trend-Linienchart des Kundenreports.
      *
+     * @param  list<int>  $excludedCustomerIds  Feature 002; kundenlose Einträge bleiben sichtbar.
      * @return list<array{date: CarbonImmutable, count: int}>
      */
-    public function dailyEntrySeries30d(CarbonImmutable $to, ?int $projectId, ?int $userId, ?int $entryTypeId = null): array {
+    public function dailyEntrySeries30d(CarbonImmutable $to, ?int $projectId, ?int $userId, ?int $entryTypeId = null, array $excludedCustomerIds = []): array {
         $from = $to->subDays(29)->startOfDay();
 
         /** @var array<string, int> $byDay */
@@ -172,6 +176,10 @@ class CustomerAnalysisReportBuilder {
             ->when($projectId !== null, fn($q) => $q->where('project_id', $projectId))
             ->when($userId !== null, fn($q) => $q->where('user_id', $userId))
             ->when($entryTypeId !== null, fn($q) => $q->where('entry_type_id', $entryTypeId))
+            // NOT IN würde NULL-Kunden mit verwerfen — kundenlose Einträge bleiben sichtbar.
+            ->when($excludedCustomerIds !== [], fn($q) => $q->where(
+                fn($w) => $w->whereNull('customer_id')->orWhereNotIn('customer_id', $excludedCustomerIds),
+            ))
             ->pluck('created_at')
             ->each(function ($createdAt) use (&$byDay): void {
                 $key = CarbonImmutable::parse((string) $createdAt)->toDateString();

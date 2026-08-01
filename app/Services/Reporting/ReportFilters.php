@@ -31,6 +31,12 @@ use Illuminate\Support\Facades\DB;
  * zusätzlich auf Query-Ebene).
  */
 final readonly class ReportFilters {
+    /**
+     * @param  list<int>  $excludedCustomerIds  org-weit ausgeblendete Kunden
+     *         (customers.exclude_from_reports); leer, wenn die Seite die
+     *         Ausblendung nicht deklariert oder „einbeziehen" aktiv ist.
+     *         Explizite Kunden-/Projektwahl übersteuert die Ausblendung.
+     */
     public function __construct(
         public CarbonImmutable $from,
         public CarbonImmutable $to,
@@ -41,7 +47,16 @@ final readonly class ReportFilters {
         public ?int $entryTypeId = null,
         public ?string $status = null,
         public string $scope = 'mine',
+        public array $excludedCustomerIds = [],
+        public bool $includeExcludedCustomers = false,
     ) {}
+
+    /** Ausblendung greift nur ohne explizite Kunden-/Projektwahl. */
+    private function customerExclusionActive(): bool {
+        return $this->excludedCustomerIds !== []
+            && $this->customerId === null
+            && $this->projectId === null;
+    }
 
     /**
      * Zeiteinträge filtern. time_entries kennt keinen Kunden direkt —
@@ -59,6 +74,8 @@ final readonly class ReportFilters {
             $query->where($projectColumn, $this->projectId);
         } elseif ($this->customerId !== null) {
             $query->whereIn($projectColumn, Project::query()->where('customer_id', $this->customerId)->select('id'));
+        } elseif ($this->customerExclusionActive()) {
+            $query->whereNotIn($projectColumn, Project::query()->whereIn('customer_id', $this->excludedCustomerIds)->select('id'));
         }
 
         return $this->applyUserAndTeam($query, $userColumn);
@@ -87,8 +104,28 @@ final readonly class ReportFilters {
         if ($this->status !== null && $statusColumn !== null) {
             $query->where($statusColumn, $this->status);
         }
+        if ($this->customerExclusionActive()) {
+            $customerColumn = $columns['customer'] ?? 'customer_id';
+            // NOT IN würde NULL-Kunden mit verwerfen — kundenlose Einträge bleiben sichtbar.
+            $query->where(fn($q) => $q->whereNull($customerColumn)->orWhereNotIn($customerColumn, $this->excludedCustomerIds));
+        }
 
         return $this->applyUserAndTeam($query, $columns['user'] ?? 'user_id');
+    }
+
+    /**
+     * Kunden-Stammabfragen (Builder, die direkt über customers aggregieren):
+     * org-weit ausgeblendete Kunden herausfiltern.
+     *
+     * @param  Builder<\App\Models\Customer>  $query
+     * @return Builder<\App\Models\Customer>
+     */
+    public function applyToCustomerQuery(Builder $query): Builder {
+        if ($this->customerExclusionActive()) {
+            $query->whereNotIn('customers.id', $this->excludedCustomerIds);
+        }
+
+        return $query;
     }
 
     /**
@@ -145,6 +182,7 @@ final readonly class ReportFilters {
             'team' => Sqid::encode(Team::class, $this->teamId),
             'entry_type' => Sqid::encode(EntryType::class, $this->entryTypeId),
             'status' => (string) ($this->status ?? ''),
+            'include_excluded' => $this->includeExcludedCustomers ? '1' : '',
         ], fn(string $value): bool => $value !== '');
     }
 
@@ -168,6 +206,7 @@ final readonly class ReportFilters {
             'entry_type_id' => $this->entryTypeId,
             'status' => $this->status,
             'scope' => $this->scope,
+            'include_excluded' => $this->includeExcludedCustomers ? 1 : null,
         ], fn($value): bool => $value !== null && $value !== '');
     }
 

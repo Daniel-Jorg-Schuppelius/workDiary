@@ -17,6 +17,7 @@
     wird hier nur als Chip angezeigt — keine zweite Quelle der Wahrheit.
 --}}
 @php
+    /** @var \App\Services\Reporting\ReportFilters $standardFilters */
     $idPrefix = $idPrefix ?? 'rep';
     $filterFields = $filterFields ?? [];
     $range = app(\App\Services\UI\DateRangeContext::class)->current();
@@ -92,4 +93,15 @@
             @endforeach
         </select>
     </x-filter-field>
+@endif
+
+{{-- Feature 002: org-weit ausgeblendete Kunden (customers.exclude_from_reports)
+     temporär einbeziehen — Toggle erscheint nur, wenn es solche Kunden gibt. --}}
+@if (in_array('include_excluded', $filterFields, true) && ($hasExcludedCustomers ?? false))
+    <label class="flex shrink-0 cursor-pointer items-center gap-2" for="{{ $idPrefix }}-include-excluded"
+           title="{{ __('Kunden mit „In Auswertungen ausblenden“ mit anzeigen.') }}">
+        <input type="checkbox" id="{{ $idPrefix }}-include-excluded" name="include_excluded" value="1"
+               @checked($standardFilters->includeExcludedCustomers) class="toggle toggle-primary toggle-sm" data-autosubmit>
+        <span class="text-sm text-base-content/75">{{ __('Ausgeblendete Kunden einbeziehen') }}</span>
+    </label>
 @endif

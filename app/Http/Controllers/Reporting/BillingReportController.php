@@ -49,8 +49,10 @@ class BillingReportController extends Controller {
         // keinen Bearbeiter). Der E-Rechnungs-Eingang bleibt org-weit —
         // IncomingEInvoice trägt keinen Kunden-/Projektanker. Status bewusst
         // NICHT im Set: der Rechnungsstatus ist hier Ausweis-Dimension
-        // (Tabellen je Status), kein Filter.
-        $filters = $this->standardFilters($request, ['customer', 'project', 'user'], $fromDate, $toDate);
+        // (Tabellen je Status), kein Filter. include_excluded blendet org-weit
+        // ausgeblendete Kunden aus (Rechnungen/Angebote/Zeiten).
+        $filterFields = ['customer', 'project', 'user', 'include_excluded'];
+        $filters = $this->standardFilters($request, $filterFields, $fromDate, $toDate);
 
         $status = $this->aggregateByStatus($from, $to, $filters);
         $aging = $this->aggregateAging($today, $filters);
@@ -79,11 +81,11 @@ class BillingReportController extends Controller {
             'einvoicing' => $einvoicing,
             'documentChain' => $documentChain,
             'standardFilters' => $filters,
-            'filterFields' => ['customer', 'project', 'user'],
+            'filterFields' => $filterFields,
             'monthlyBillableSeries' => $monthly['series'],
             'billableBands' => $monthly['bands'],
             'customerRevenueSeries' => $this->customerRevenueSeries($perCustomer, $filters),
-            ...$this->standardFilterOptions(['customer', 'project', 'user'], $filters),
+            ...$this->standardFilterOptions($filterFields, $filters),
         ]);
     }
 
@@ -156,7 +158,9 @@ class BillingReportController extends Controller {
     }
 
     /**
-     * Kunden-/Projektfilter auf eine Rechnungs-Query anwenden (Feature 002).
+     * Kunden-/Projektfilter auf eine Rechnungs-Query anwenden (Feature 002),
+     * inkl. Ausblendung org-weit ausgeblendeter Kunden (Übersteuerungsregel wie
+     * ReportFilters::customerExclusionActive(): nur ohne explizite Wahl).
      *
      * @param  \Illuminate\Database\Eloquent\Builder<Invoice>  $query
      * @return \Illuminate\Database\Eloquent\Builder<Invoice>
@@ -164,7 +168,22 @@ class BillingReportController extends Controller {
     private function applyInvoiceFilters($query, ReportFilters $filters) {
         return $query
             ->when($filters->customerId !== null, fn($q) => $q->where('customer_id', $filters->customerId))
-            ->when($filters->projectId !== null, fn($q) => $q->where('project_id', $filters->projectId));
+            ->when($filters->projectId !== null, fn($q) => $q->where('project_id', $filters->projectId))
+            // NOT IN würde NULL-Kunden mit verwerfen — kundenlose Belege bleiben sichtbar.
+            ->when($this->activeExcludedCustomerIds($filters) !== [], fn($q) => $q->where(
+                fn($w) => $w->whereNull('customer_id')->orWhereNotIn('customer_id', $this->activeExcludedCustomerIds($filters)),
+            ));
+    }
+
+    /**
+     * Feature 002: Ausblendung greift nur ohne explizite Kunden-/Projektwahl.
+     *
+     * @return list<int>
+     */
+    private function activeExcludedCustomerIds(ReportFilters $filters): array {
+        return $filters->customerId === null && $filters->projectId === null
+            ? $filters->excludedCustomerIds
+            : [];
     }
 
     /**
@@ -244,6 +263,10 @@ class BillingReportController extends Controller {
             ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
             ->when($filters->customerId !== null, fn($q) => $q->where('customer_id', $filters->customerId))
             ->when($filters->projectId !== null, fn($q) => $q->where('project_id', $filters->projectId))
+            // Feature 002: Angebote org-weit ausgeblendeter Kunden entfallen (NULL-Kunden bleiben).
+            ->when($this->activeExcludedCustomerIds($filters) !== [], fn($q) => $q->where(
+                fn($w) => $w->whereNull('customer_id')->orWhereNotIn('customer_id', $this->activeExcludedCustomerIds($filters)),
+            ))
             ->get(['status', 'decided_at', 'updated_at', 'decision_snapshot', 'created_at']);
 
         $byStatus = [];

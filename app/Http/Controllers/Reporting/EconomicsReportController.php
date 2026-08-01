@@ -51,7 +51,8 @@ class EconomicsReportController extends Controller {
         [$from, $to] = $this->resolveRange($request);
         $label = CarbonFmt::fdate($from) . ' – ' . CarbonFmt::fdate($to);
 
-        $filters = $this->standardFilters($request, ['customer', 'project'], $from, $to);
+        $filterFields = ['customer', 'project', 'include_excluded'];
+        $filters = $this->standardFilters($request, $filterFields, $from, $to);
         // Legacy-Parameter project_id (alte Bookmarks) ins Standard-Set
         // übernehmen, damit Partial, Links und Audit denselben Stand sehen.
         $projectId = $filters->projectId ?? Sqid::decodeOrNumeric(Project::class, $request->query('project_id'));
@@ -61,12 +62,20 @@ class EconomicsReportController extends Controller {
                 to: $to,
                 customerId: $filters->customerId,
                 projectId: $projectId,
+                excludedCustomerIds: $filters->excludedCustomerIds,
+                includeExcludedCustomers: $filters->includeExcludedCustomers,
             );
         }
         $customerId = $filters->customerId;
 
-        $byProject = $this->builder->byProject($from, $to, $projectId !== null ? [$projectId] : null, $customerId);
-        $byCustomer = $this->builder->byCustomer($from, $to, $customerId, $projectId);
+        // Feature 002: Ausblendung greift nur ohne explizite Kunden-/Projektwahl
+        // (gleiche Übersteuerungsregel wie ReportFilters::customerExclusionActive()).
+        $excludedCustomerIds = $customerId === null && $projectId === null
+            ? $filters->excludedCustomerIds
+            : [];
+
+        $byProject = $this->builder->byProject($from, $to, $projectId !== null ? [$projectId] : null, $customerId, $excludedCustomerIds);
+        $byCustomer = $this->builder->byCustomer($from, $to, $customerId, $projectId, $excludedCustomerIds);
 
         // MVP-332: LV-Dimension nur bei konkretem Projektfilter (die
         // Positionssicht ist projektgebunden; hasBoq=false → leerer Zustand).
@@ -131,11 +140,11 @@ class EconomicsReportController extends Controller {
             'label' => $label,
             'projectId' => $projectId,
             'standardFilters' => $filters,
-            'filterFields' => ['customer', 'project'],
+            'filterFields' => $filterFields,
             'contributionSeries' => $this->contributionSeries($byProject, $filters),
             'marginVolumeSeries' => $scatter['series'],
             'marginPercentiles' => $scatter['percentiles'],
-            'monthlySeries' => $this->monthlySeries($filters),
+            'monthlySeries' => $this->monthlySeries($filters, $excludedCustomerIds),
             'byCustomer' => $byCustomer,
             'byProject' => $byProject,
             'topProjects' => $topProjects,
@@ -143,7 +152,7 @@ class EconomicsReportController extends Controller {
             'topCustomers' => $topCustomers,
             'flopCustomers' => $flopCustomers,
             'costRateMissing' => $costRateMissing,
-            ...$this->standardFilterOptions(['customer', 'project'], $filters),
+            ...$this->standardFilterOptions($filterFields, $filters),
         ]);
     }
 
@@ -214,10 +223,11 @@ class EconomicsReportController extends Controller {
      * Erlös/Kosten aus Zeiten je Monat (Feature 002) — leere Serie statt
      * Null-Linie, wenn der Zeitraum keine bewerteten Zeiten trägt.
      *
+     * @param  list<int>  $excludedCustomerIds
      * @return list<array{x: string, y: float, y2: float}>
      */
-    private function monthlySeries(ReportFilters $filters): array {
-        $months = $this->builder->timeByMonth($filters->from, $filters->to, $filters->customerId, $filters->projectId);
+    private function monthlySeries(ReportFilters $filters, array $excludedCustomerIds = []): array {
+        $months = $this->builder->timeByMonth($filters->from, $filters->to, $filters->customerId, $filters->projectId, $excludedCustomerIds);
 
         $hasData = collect($months)->contains(
             static fn(array $month): bool => $month['revenue'] > 0.0 || $month['cost'] > 0.0,

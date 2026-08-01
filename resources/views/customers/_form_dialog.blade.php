@@ -55,6 +55,11 @@
 
             <x-checkbox-field name="billable" :label="__('Abrechenbar')" :checked="old('billable', $customer?->billable ?? true)" />
 
+            {{-- Feature 002: z. B. Arbeitgeber-Kunde mit separater Abrechnung — wirkt nur in den Auswertungen. --}}
+            <x-checkbox-field name="exclude_from_reports" :label="__('In Auswertungen ausblenden')"
+                              :hint="__('Zeiten bleiben erfasst; der Kunde erscheint nur nicht in den kundenbezogenen Auswertungen.')"
+                              :checked="old('exclude_from_reports', $customer?->exclude_from_reports ?? false)" />
+
             {{-- E-Rechnung (Feature 045): Leitweg-ID/Käuferreferenz (BT-10) — Pflicht in der XRechnung. --}}
             <x-input-field name="buyer_reference" :label="__('invoicing.buyer_reference')" maxlength="64"
                            :value="old('buyer_reference', $customer?->buyer_reference)" :hint="__('invoicing.buyer_reference_hint')" />

@@ -93,6 +93,21 @@ trait ResolvesStandardReportFilters {
             $status = in_array($raw, $statusValues, true) ? $raw : null;
         }
 
+        // Feature 002: org-weit ausgeblendete Kunden (customers.exclude_from_reports).
+        // Nur Seiten, die 'include_excluded' deklarieren, wenden die Ausblendung an —
+        // persönliche Zeitauswertungen bleiben vollständig.
+        $includeExcluded = false;
+        $excludedCustomerIds = [];
+        if (in_array('include_excluded', $fields, true)) {
+            $includeExcluded = $request->boolean('include_excluded');
+            if (! $includeExcluded) {
+                $excludedCustomerIds = array_values(array_map(
+                    fn($id): int => (int) $id,
+                    Customer::query()->where('exclude_from_reports', true)->pluck('id')->all(),
+                ));
+            }
+        }
+
         return new ReportFilters(
             from: $from,
             to: $to,
@@ -103,6 +118,8 @@ trait ResolvesStandardReportFilters {
             entryTypeId: $entryTypeId,
             status: $status,
             scope: $scope,
+            excludedCustomerIds: $excludedCustomerIds,
+            includeExcludedCustomers: $includeExcluded,
         );
     }
 
@@ -118,10 +135,16 @@ trait ResolvesStandardReportFilters {
      *     filterUsers?: \Illuminate\Database\Eloquent\Collection<int, User>,
      *     filterTeams?: \Illuminate\Database\Eloquent\Collection<int, Team>,
      *     filterEntryTypes?: \Illuminate\Database\Eloquent\Collection<int, EntryType>,
+     *     hasExcludedCustomers?: bool,
      * }
      */
     protected function standardFilterOptions(array $fields, ?ReportFilters $filters = null): array {
         $options = [];
+
+        if (in_array('include_excluded', $fields, true)) {
+            // Toggle nur zeigen, wenn es überhaupt ausgeblendete Kunden gibt.
+            $options['hasExcludedCustomers'] = Customer::query()->where('exclude_from_reports', true)->exists();
+        }
 
         if (in_array('customer', $fields, true)) {
             $options['filterCustomers'] = Customer::query()

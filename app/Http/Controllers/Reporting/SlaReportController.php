@@ -52,7 +52,7 @@ class SlaReportController extends Controller {
         $from = $fromDate->toDateString();
         $to = $toDate->toDateString();
 
-        $filters = $this->standardFilters($request, ['customer'], $fromDate, $toDate);
+        $filters = $this->standardFilters($request, ['customer', 'include_excluded'], $fromDate, $toDate);
 
         $metrics = $this->aggregate($fromDate, $toDate, $filters);
 
@@ -87,11 +87,11 @@ class SlaReportController extends Controller {
             'canManage' => Gate::allows('acknowledge', new SlaViolation),
             'quotas' => $this->quotaUsage($toDate),
             'standardFilters' => $filters,
-            'filterFields' => ['customer'],
+            'filterFields' => ['customer', 'include_excluded'],
             'complianceSeries' => $complianceSeries,
             'complianceMedian' => $complianceMedian,
             'violationCustomerSeries' => $violationCustomerSeries,
-            ...$this->standardFilterOptions(['customer'], $filters),
+            ...$this->standardFilterOptions(['customer', 'include_excluded'], $filters),
         ]));
     }
 
@@ -160,12 +160,22 @@ class SlaReportController extends Controller {
      * }
      */
     private function aggregate(CarbonImmutable $from, CarbonImmutable $to, ReportFilters $filters): array {
+        // Feature 002: Ausblendung greift nur ohne explizite Kundenwahl
+        // (gleiche Übersteuerungsregel wie ReportFilters::customerExclusionActive()).
+        $excluded = $filters->customerId === null && $filters->projectId === null
+            ? $filters->excludedCustomerIds
+            : [];
+
         // Tickets mit Lösungsfrist im Zeitraum (gemeldet im Zeitraum) bilden die
         // Bezugsmenge für die Einhaltungsquote.
         $relevant = ServiceTicket::query()
             ->whereNotNull('resolution_due_at')
             ->whereBetween('reported_at', [$from, $to])
             ->when($filters->customerId !== null, fn($q) => $q->where('customer_id', $filters->customerId))
+            // NOT IN würde NULL-Kunden mit verwerfen — kundenlose Tickets bleiben sichtbar.
+            ->when($excluded !== [], fn($q) => $q->where(
+                fn($w) => $w->whereNull('customer_id')->orWhereNotIn('customer_id', $excluded),
+            ))
             ->count();
 
         /** @var Collection<int, SlaViolation> $violations */
@@ -173,6 +183,9 @@ class SlaReportController extends Controller {
             ->with(['serviceTicket:id,ticket_no,title,customer_id,status', 'serviceTicket.customer:id,name'])
             ->whereBetween('breached_at', [$from, $to])
             ->when($filters->customerId !== null, fn($q) => $q->whereHas('serviceTicket', fn($t) => $t->where('customer_id', $filters->customerId)))
+            // Feature 002: Verletzungen an Tickets ausgeblendeter Kunden entfallen
+            // (whereDoesntHave hält Verletzungen ohne Ticket/Kunde sichtbar).
+            ->when($excluded !== [], fn($q) => $q->whereDoesntHave('serviceTicket', fn($t) => $t->whereIn('customer_id', $excluded)))
             ->orderByDesc('breached_at')
             ->get();
 
@@ -231,12 +244,20 @@ class SlaReportController extends Controller {
      * @return array{0: list<array{x: string, y: float}>, 1: float|null}
      */
     private function monthlyComplianceSeries(CarbonImmutable $from, CarbonImmutable $to, ReportFilters $filters): array {
+        // Feature 002: gleiche Ausblendungs-/Übersteuerungsregel wie aggregate().
+        $excluded = $filters->customerId === null && $filters->projectId === null
+            ? $filters->excludedCustomerIds
+            : [];
+
         /** @var array<string, int> $relevantByMonth */
         $relevantByMonth = [];
         $tickets = ServiceTicket::query()
             ->whereNotNull('resolution_due_at')
             ->whereBetween('reported_at', [$from, $to])
             ->when($filters->customerId !== null, fn($q) => $q->where('customer_id', $filters->customerId))
+            ->when($excluded !== [], fn($q) => $q->where(
+                fn($w) => $w->whereNull('customer_id')->orWhereNotIn('customer_id', $excluded),
+            ))
             ->get(['reported_at']);
         foreach ($tickets as $ticket) {
             $key = CarbonImmutable::parse((string) $ticket->reported_at)->format('Y-m');
@@ -251,6 +272,7 @@ class SlaReportController extends Controller {
         $breaches = SlaViolation::query()
             ->whereBetween('breached_at', [$from, $to])
             ->when($filters->customerId !== null, fn($q) => $q->whereHas('serviceTicket', fn($t) => $t->where('customer_id', $filters->customerId)))
+            ->when($excluded !== [], fn($q) => $q->whereDoesntHave('serviceTicket', fn($t) => $t->whereIn('customer_id', $excluded)))
             ->get(['breached_at']);
         foreach ($breaches as $violation) {
             $key = CarbonImmutable::parse((string) $violation->breached_at)->format('Y-m');

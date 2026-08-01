@@ -45,7 +45,11 @@ class CustomerProjectReportController extends Controller {
         $to = $toDate->toDateString();
 
         // Mitarbeiter-Filter nur für Admins — Nicht-Admins sehen ohnehin nur eigene Zeiten.
-        $filterFields = $isAdmin ? ['customer', 'project', 'user'] : ['customer', 'project'];
+        // Feature 002: include_excluded blendet org-weit ausgeblendete Kunden aus
+        // (greift über applyToTimeEntryQuery auf alle Aggregat-/Chart-/Exportpfade).
+        $filterFields = $isAdmin
+            ? ['customer', 'project', 'user', 'include_excluded']
+            : ['customer', 'project', 'include_excluded'];
         $filters = $this->standardFilters($request, $filterFields, $fromDate, $toDate, scope: $scope);
 
         $foreignCustomerParam = $request->string('foreign_customer')->toString();

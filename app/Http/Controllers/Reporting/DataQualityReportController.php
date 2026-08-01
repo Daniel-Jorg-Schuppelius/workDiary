@@ -42,7 +42,8 @@ class DataQualityReportController extends Controller {
         abort_unless($user instanceof User && $user->can(Permission::ReportView->value), 403);
 
         [$from, $to] = $this->resolveRange($request);
-        $filters = $this->standardFilters($request, ['customer', 'project', 'entry_type'], $from, $to);
+        $filterFields = ['customer', 'project', 'entry_type', 'include_excluded'];
+        $filters = $this->standardFilters($request, $filterFields, $from, $to);
 
         $entriesQuery = DiaryEntry::query()
             ->with(['entryType', 'customer:id,name'])
@@ -68,10 +69,10 @@ class DataQualityReportController extends Controller {
             'from' => $from->toDateString(),
             'to' => $to->toDateString(),
             'standardFilters' => $filters,
-            'filterFields' => ['customer', 'project', 'entry_type'],
+            'filterFields' => $filterFields,
             'gapsMonthlySeries' => $this->gapsMonthlySeries($report['rows'], $from, $to),
             'gapsByCustomerSeries' => $this->gapsByCustomerSeries($report['rows'], $customerByEntry),
-            ...$this->standardFilterOptions(['customer', 'project', 'entry_type'], $filters),
+            ...$this->standardFilterOptions($filterFields, $filters),
         ]);
     }
 

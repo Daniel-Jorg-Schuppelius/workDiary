@@ -28,6 +28,9 @@ use Carbon\CarbonImmutable;
  */
 class EntryTypeAnalysisReportBuilder {
     /**
+     * @param  list<int>  $excludedCustomerIds  Feature 002: Aufträge (und deren
+     *         Zeiten) org-weit ausgeblendeter Kunden entfallen; Übersteuerung
+     *         regelt der Aufrufer.
      * @return list<array{
      *   entryTypeId:int,
      *   entryTypeName:string,
@@ -58,11 +61,16 @@ class EntryTypeAnalysisReportBuilder {
         ?int $entryTypeFilter,
         ?int $statusFilter,
         ?int $projectId = null,
+        array $excludedCustomerIds = [],
     ): array {
         $entries = DiaryEntry::query()
             ->whereBetween('created_at', [$from, $to])
             ->when($customerId !== null, fn($q) => $q->where('customer_id', $customerId))
             ->when($projectId !== null, fn($q) => $q->where('project_id', $projectId))
+            // NOT IN würde NULL-Kunden mit verwerfen — kundenlose Aufträge bleiben sichtbar.
+            ->when($excludedCustomerIds !== [], fn($q) => $q->where(
+                fn($w) => $w->whereNull('customer_id')->orWhereNotIn('customer_id', $excludedCustomerIds),
+            ))
             ->when($userId !== null, fn($q) => $q->where('user_id', $userId))
             ->when($entryTypeFilter !== null, fn($q) => $q->where('entry_type_id', $entryTypeFilter))
             ->when($statusFilter !== null, fn($q) => $q->where('status', $statusFilter))

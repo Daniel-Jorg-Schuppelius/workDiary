@@ -55,6 +55,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $bank_bic
  * @property string|null $bank_name
  * @property bool $billable
+ * @property bool $exclude_from_reports
  * @property string|null $buyer_reference
  * @property string|null $debtor_no
  * @property Carbon|null $archived_at
@@ -122,6 +123,7 @@ class Customer extends Model {
         'billing_mode',
         'buyer_reference',
         'debtor_no',
+        'exclude_from_reports',
         'archived_at',
         'created_by',
     ];
@@ -130,6 +132,7 @@ class Customer extends Model {
     protected $casts = [
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'billable' => 'boolean',
+        'exclude_from_reports' => 'boolean',
         'billing_mode' => \App\Enums\Finance\BillingMode::class,
         'archived_at' => 'datetime',
         'hourly_rate' => MoneyCast::class . ':currency,2',
@@ -299,5 +302,17 @@ class Customer extends Model {
         return $query->whereHas('projects.timeEntries', function (Builder $q): void {
             $q->where('billable', true)->where('exported', false);
         });
+    }
+
+    /**
+     * Auswertungssicht (Feature 002): org-weit ausgeblendete Kunden
+     * (exclude_from_reports, z. B. Arbeitgeber mit separater Abrechnung)
+     * herausfiltern. Stammdaten/Zeiterfassung bleiben unberührt.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeVisibleInReports(Builder $query): Builder {
+        return $query->where('exclude_from_reports', false);
     }
 }

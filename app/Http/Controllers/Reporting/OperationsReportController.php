@@ -59,9 +59,10 @@ class OperationsReportController extends Controller {
         $from = $fromDate->toDateString();
         $to = $toDate->toDateString();
 
+        $filterFields = ['customer', 'project', 'user', 'status', 'include_excluded'];
         $filters = $this->standardFilters(
             $request,
-            ['customer', 'project', 'user', 'status'],
+            $filterFields,
             $fromDate,
             $toDate,
             array_keys(self::STATUS_GROUPS),
@@ -90,7 +91,7 @@ class OperationsReportController extends Controller {
             'tasks' => $tasks,
             'tours' => $tours,
             'standardFilters' => $filters,
-            'filterFields' => ['customer', 'project', 'user', 'status'],
+            'filterFields' => $filterFields,
             'statusOptions' => [
                 'open' => __('Offen'),
                 'in_progress' => __('In Arbeit'),
@@ -99,7 +100,7 @@ class OperationsReportController extends Controller {
             ],
             'weeklyFlowSeries' => $weeklyFlowSeries,
             'backlogSeries' => $this->backlogByCustomerSeries($fromDate, $toDate, $scope, $userId, $filters),
-            ...$this->standardFilterOptions(['customer', 'project', 'user'], $filters),
+            ...$this->standardFilterOptions(['customer', 'project', 'user', 'include_excluded'], $filters),
         ]);
     }
     /**
@@ -200,6 +201,13 @@ class OperationsReportController extends Controller {
             $q->where('project_id', $filters->projectId);
         } elseif ($filters->customerId !== null) {
             $q->whereIn('project_id', Project::query()->where('customer_id', $filters->customerId)->select('id'));
+        } elseif ($filters->excludedCustomerIds !== []) {
+            // Feature 002: Tasks auf Projekten org-weit ausgeblendeter Kunden entfallen —
+            // NOT IN würde projektlose Tasks mit verwerfen, daher NULL-Guard.
+            $q->where(fn($w) => $w->whereNull('project_id')->orWhereNotIn(
+                'project_id',
+                Project::query()->whereIn('customer_id', $filters->excludedCustomerIds)->select('id'),
+            ));
         }
         /** @var Collection<int, Task> $rows */
         $rows = $q->get(['status', 'priority', 'due_date']);
