@@ -48,6 +48,8 @@ class SchedulerRegistrationTest extends TestCase {
         'domain:events' => ['*/30 * * * *', true, true],
         'inventory:cycle-counts' => ['50 5 * * 1', true, true],
         'inventory:expiring-lots' => ['10 6 * * *', true, true],
+        // Neu mit MVP-461: wöchentlicher Offene-Zeiten-Digest an die Buchhaltung.
+        'finance:open-times-digest' => ['40 6 * * 1', true, true],
         'archive:run' => ['0 3 * * *', true, true],
         'plans:purge' => ['30 3 * * *', true, true],
         'privacy:deadlines' => ['0 6 * * *', true, true],

@@ -13,7 +13,7 @@
 
 @php
     $money = fn ($v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v instanceof \CommonToolkit\ValueObjects\Money ? $v->toFloat() : (float) $v, 2, withThousandsSeparator: true) . ' €';
-    $hours = fn (int $m) => sprintf('%d:%02d', intdiv($m, 60), $m % 60);
+    $hours = fn (int $m): string => \App\Support\Formats::duration($m);
     $statement = $statement ?? null;
 @endphp
 
@@ -54,7 +54,7 @@
 
 <table style="border-collapse: collapse; font-size: 10pt; margin-left: auto;">
     <tr>
-        <td style="padding: 1mm 4mm; text-align: right; color: #555;">{{ __('customer-billing.gross_value') }} ({{ $hours((int) $statement->total_minutes) }} h)</td>
+        <td style="padding: 1mm 4mm; text-align: right; color: #555;">{{ __('customer-billing.gross_value') }} ({{ $hours((int) $statement->total_minutes) }})</td>
         <td style="padding: 1mm 2mm; text-align: right;">{{ $money($statement->gross_value) }}</td>
     </tr>
     <tr>

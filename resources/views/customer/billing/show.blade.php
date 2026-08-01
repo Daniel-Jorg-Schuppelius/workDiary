@@ -11,7 +11,7 @@
 
 @php
     $money = fn ($v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v instanceof \CommonToolkit\ValueObjects\Money ? $v->toFloat() : (float) $v, 2, withThousandsSeparator: true) . ' €';
-    $hours = fn (int $m) => sprintf('%d:%02d', intdiv($m, 60), $m % 60);
+    $hours = fn (int $m): string => \App\Support\Formats::duration($m);
 @endphp
 
 @section('content')
@@ -33,7 +33,7 @@
         <div class="rounded-box border border-base-300 p-3">
             <div class="text-xs text-base-content/60">{{ __('customer-billing.gross_value') }}</div>
             <div class="text-lg font-semibold tabular-nums">{{ $money($statement->gross_value) }}</div>
-            <div class="text-xs text-base-content/60 tabular-nums">{{ $hours($statement->total_minutes) }} h</div>
+            <div class="text-xs text-base-content/60 tabular-nums">{{ $hours($statement->total_minutes) }}</div>
         </div>
         <div class="rounded-box border border-base-300 p-3">
             <div class="text-xs text-base-content/60">{{ __('customer-billing.payments_total') }}</div>

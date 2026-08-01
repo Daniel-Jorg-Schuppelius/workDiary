@@ -15,13 +15,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * Mine/Team-Sichtweite der Report-Controller: `team` nur für Admins,
+ * Mine/Team-Sichtweite der Report-Controller: `team` nur für Nutzer mit
+ * Org-weiter Zeit-Sicht (Admin oder Permission timeEntry.viewAny, MVP-460),
  * alles andere fällt auf `mine` zurück.
  */
 trait ResolvesReportScope {
-    protected function resolveScope(Request $request, bool $isAdmin): string {
+    protected function resolveScope(Request $request, bool $seesAll): string {
         $scope = $request->string('scope', 'mine')->toString();
-        if ($scope !== 'team' || ! $isAdmin) {
+        if ($scope !== 'team' || ! $seesAll) {
             $scope = 'mine';
         }
 
@@ -39,10 +40,30 @@ trait ResolvesReportScope {
         return [$this->resolveScope($request, $isAdmin), $isAdmin];
     }
 
+    /**
+     * Scope + Org-weite Zeit-Sicht in einem Schritt — für Reports, deren
+     * Team-Ansicht auch der Buchhaltung offensteht (Sicht, keine Admin-UI).
+     *
+     * @return array{string, bool} [$scope, $seesAllTimes]
+     */
+    protected function resolveScopeWithVisibility(Request $request): array {
+        $seesAll = $this->viewerSeesAllTimes();
+
+        return [$this->resolveScope($request, $seesAll), $seesAll];
+    }
+
     /** Admin-Status des angemeldeten Nutzers. */
     protected function viewerIsAdmin(): bool {
         $user = Auth::user();
 
         return $user instanceof User && $user->isAdmin();
+    }
+
+    /** Org-weite Zeit-Sicht: Admin oder Permission timeEntry.viewAny (E1, MVP-460). */
+    protected function viewerSeesAllTimes(): bool {
+        $user = Auth::user();
+
+        return $user instanceof User
+            && ($user->isAdmin() || $user->hasEffectivePermission('timeEntry.viewAny'));
     }
 }

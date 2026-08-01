@@ -49,4 +49,23 @@ return [
             'missing_due_date' => 'Fälligkeitsdatum fehlt — das Standard-Zahlungsziel wird verwendet.',
         ],
     ],
+
+    // Rechnungs-Vorschau im Erstell-Dialog (MVP-462).
+    'source_times' => ':count Quell-Zeiteintrag anzeigen|:count Quell-Zeiteinträge anzeigen',
+    'preview' => [
+        'heading' => 'Vorschau:',
+        'empty' => 'Für die gewählten Filter gibt es keine abrechenbaren Zeiten oder Anfahrten.',
+        'entry_count' => ':count Eintrag|:count Einträge',
+        'travel' => '+ :count Anfahrt(en)',
+        'warning_late' => ':count Nachzügler: Leistungsdatum liegt in einem bereits abgerechneten Zeitraum.|:count Nachzügler: Leistungsdaten liegen in bereits abgerechneten Zeiträumen.',
+        'column' => [
+            'description' => 'Position',
+            'duration' => 'Dauer',
+            'rate' => 'Satz',
+            'amount' => 'Betrag',
+        ],
+        'entries_heading' => 'Einzelne Zeiteinträge anzeigen/ausschließen',
+        'exclude' => 'ausschließen',
+        'exclude_hint' => 'Ausgeschlossene Einträge bleiben offen und erscheinen im nächsten Rechnungslauf wieder.',
+    ],
 ];

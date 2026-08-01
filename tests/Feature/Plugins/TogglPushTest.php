@@ -11,11 +11,13 @@
 namespace Tests\Feature\Plugins;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{ExternalReference, PluginSetting, Project, Tag, TimeEntry, User};
+use App\Models\{ExternalReference, IntegrationOutboxEntry, PluginSetting, Project, Tag, TimeEntry, User};
 use App\Plugins\Support\MatchingTimeImportService;
+use App\Plugins\Toggl\Services\TogglOutboxDispatcher;
 use App\Plugins\Toggl\{TogglConfig, TogglExportService, TogglImportService, TogglPlugin};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
@@ -37,6 +39,10 @@ class TogglPushTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
+
+        // Der created()-Observer (MVP-463) enqueued Create-Outbox-Einträge samt
+        // Delivery-Job — im Test rufen wir den Dispatcher gezielt selbst auf.
+        Queue::fake();
 
         $this->user = User::factory()->create(['organization_id' => $this->organization->id]);
         $this->organization->forceFill(['owner_id' => $this->user->id])->save();
@@ -302,6 +308,67 @@ class TogglPushTest extends TestCase {
         $this->assertSame(0, $result['pushed']);
         $this->assertSame(0, $result['failed']);
         $this->assertNotSame([], $result['errors']);
+    }
+
+    public function test_outbox_create_pushes_single_entry(): void {
+        // MVP-463: der created()-Observer enqueued den Create; der Dispatcher
+        // pusht mit denselben Schutzlinien wie der Stunden-Batch.
+        $this->config();
+        $project = $this->mappedProject();
+        $entry = $this->timeEntry($project);
+
+        $outbox = IntegrationOutboxEntry::query()
+            ->where('operation', TogglOutboxDispatcher::OP_ENTRY_CREATE)
+            ->where('idempotency_key', TogglPlugin::ID . '-entry-create:' . $entry->getKey())
+            ->firstOrFail();
+
+        $fake = FakePluginHttp::fake([
+            self::CREATE_URL => FakePluginHttp::response($this->createdResponse(), 200),
+        ]);
+
+        $this->assertTrue(app(TogglOutboxDispatcher::class)->dispatch($outbox));
+
+        $fake->assertSentCount(1);
+        // Spiegel-Semantik: lokal weiter abrechenbar, beide References geschrieben.
+        $this->assertFalse((bool) $entry->fresh()->exported);
+        $this->assertDatabaseHas('external_references', [
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => TogglExportService::EXT_TYPE_PUSHED,
+            'referenceable_id' => $entry->getKey(),
+        ]);
+        $this->assertDatabaseHas('external_references', [
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => MatchingTimeImportService::EXT_TYPE_ENTRY,
+            'referenceable_id' => $entry->getKey(),
+            'external_id' => 'toggl:9001',
+        ]);
+    }
+
+    public function test_outbox_create_drops_already_referenced_entry(): void {
+        // Rennen mit toggl:push: existiert schon eine Toggl-Referenz, ist der
+        // Outbox-Create ein No-op (kein Doppel-POST).
+        $this->config();
+        $project = $this->mappedProject();
+        $entry = $this->timeEntry($project);
+
+        ExternalReference::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => MatchingTimeImportService::EXT_TYPE_ENTRY,
+            'referenceable_type' => $entry->getMorphClass(),
+            'referenceable_id' => $entry->getKey(),
+            'external_id' => 'toggl:555',
+            'synced_at' => now(),
+        ]);
+
+        $outbox = IntegrationOutboxEntry::query()
+            ->where('operation', TogglOutboxDispatcher::OP_ENTRY_CREATE)
+            ->firstOrFail();
+
+        $fake = FakePluginHttp::fake([]);
+
+        $this->assertTrue(app(TogglOutboxDispatcher::class)->dispatch($outbox));
+        $fake->assertNothingSent();
     }
 
     public function test_single_workspace_is_resolved_when_not_configured(): void {

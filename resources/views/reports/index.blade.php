@@ -8,10 +8,7 @@
     /** @var int $bookedDays */
     /** @var int $activeProjects */
     /** @var int $avgMinutesPerDay */
-    $fmtHours = function (int $minutes): string {
-        $abs = abs($minutes);
-        return ($minutes < 0 ? '-' : '') . intdiv($abs, 60) . ':' . str_pad((string) ($abs % 60), 2, '0', STR_PAD_LEFT) . ' h';
-    };
+    $fmtHours = fn (int $minutes): string => \App\Support\Formats::duration($minutes, 'clock');
 @endphp
 
 <x-page-shell>

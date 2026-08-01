@@ -138,6 +138,43 @@ abstract class AbstractTimeEntryPushService {
     }
 
     /**
+     * Einzel-Push für den Outbox-Create-Pfad (MVP-463): dieselben Schutzlinien
+     * wie {@see exportPending()} — Konfiguration, Kandidaten-Query inkl.
+     * plugin-eigener Referenz-Ausschlüsse ({@see scopeCandidates()}),
+     * alreadyPushed, shouldSkip — für genau einen Eintrag. false = nicht
+     * geeignet/nicht konfiguriert (Drop); API-Fehler laufen als Exception
+     * nach oben (Outbox-Retry-Semantik).
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public function pushSingle(Organization $organization, array $config, TimeEntry $entry): bool {
+        if ($this->prepareExport($organization, $config) !== null) {
+            return false;
+        }
+
+        $projectIds = $this->exportableProjectIds($organization);
+        $eligible = $this->scopeCandidates(
+            TimeEntry::query()
+                ->withoutGlobalScopes()
+                ->whereKey($entry->getKey())
+                ->where('organization_id', $organization->id)
+                ->whereIn('project_id', $projectIds === [] ? [0] : $projectIds)
+                ->where('exported', false)
+                ->where('minutes', '>', 0)
+        )->exists();
+
+        if (! $eligible || $this->alreadyPushed($organization, $entry) || $this->shouldSkip($organization, $entry)) {
+            return false;
+        }
+
+        $externalId = $this->createRemoteEntry($organization, $entry);
+        $this->recordPushed($organization, $entry, $externalId);
+        $this->markPushed($entry);
+
+        return true;
+    }
+
+    /**
      * Nach erfolgreicher Remote-Anlage. Standard: als exportiert markieren
      * („Rückbuchung", Kimai/OpenProject) — der Eintrag verschwindet damit aus
      * der lokalen Abrechnung. Spiegel-Exporte (Toggl) überschreiben als No-op;

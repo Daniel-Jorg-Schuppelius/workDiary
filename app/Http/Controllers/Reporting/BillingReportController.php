@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Reporting;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
-use App\Models\{Customer, Invoice, InvoiceItem, TimeEntry};
+use App\Models\{Customer, Invoice, TimeEntry};
 use App\Services\Reporting\ReportFilters;
 use Carbon\Carbon;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -24,7 +24,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * Billing-/Rechnungs-Auswertung: Status, Aging, Top-Kunden, unbillte Zeiten.
- * Nur für Administratoren (Org-weite Finanzdaten).
+ * Für Administratoren und Rollen mit timeEntry.viewAny (Buchhaltung, MVP-460).
  */
 class BillingReportController extends Controller {
     use RendersReportPdf;
@@ -34,7 +34,7 @@ class BillingReportController extends Controller {
     use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
-        abort_unless($this->viewerIsAdmin(), 403);
+        abort_unless($this->viewerSeesAllTimes(), 403);
 
         // Bewusst Datumsstrings: die Queries filtern teils DATETIME-Spalten
         // (created_at/issued_on) über Datumsgrenzen — Timestamps wären eine
@@ -449,21 +449,21 @@ class BillingReportController extends Controller {
     }
 
     /**
-     * Billable TimeEntries im Zeitraum, die nicht in einer InvoiceItem auftauchen.
+     * Billable TimeEntries im Zeitraum, die noch kein Abrechnungspfad verbraucht hat.
      *
      * @return array{count:int, minutes:int, projected_revenue:float}
      */
     private function aggregateUnbilled(string $from, string $to, ReportFilters $filters): array {
-        $billedIds = InvoiceItem::query()
-            ->whereNotNull('time_entry_id')
-            ->select('time_entry_id');
-
+        // MVP-460: exported ist der kanonische Verbraucht-Flag aller drei
+        // Abrechnungspfade (Rechnung, Kontomodus, Faktura-Übergabe). Der
+        // frühere Abgleich gegen invoice_items.time_entry_id übersah die per
+        // Pivot gebündelten Nicht-Primär-Einträge — die KPI war überhöht.
         /** @var Collection<int, TimeEntry> $entries */
         $entries = $filters->applyToTimeEntryQuery(
             TimeEntry::query()
                 ->where('billable', true)
                 ->whereBetween('date', [$from, $to])
-                ->whereNotIn('id', $billedIds)
+                ->where('exported', false)
         )->get(['minutes', 'rate']);
 
         $minutes = 0;

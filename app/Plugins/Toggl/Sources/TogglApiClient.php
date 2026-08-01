@@ -599,9 +599,11 @@ class TogglApiClient implements RemoteTimeWriter {
     }
 
     /**
-     * Zeiteintrag in Toggl aktualisieren (API v9).
+     * Zeiteintrag in Toggl aktualisieren (API v9). Tags und gemapptes
+     * project_id werden mitgespiegelt, wenn der Dispatcher sie liefert (G3,
+     * MVP-463) — Projekt-Umzüge kommen so in Toggl an.
      *
-     * @param  array{description: ?string, date: ?CarbonImmutable, started_at: ?CarbonImmutable, ended_at: ?CarbonImmutable, minutes: int, billable: bool}  $entry
+     * @param  array{description: ?string, date: ?CarbonImmutable, started_at: ?CarbonImmutable, ended_at: ?CarbonImmutable, minutes: int, billable: bool, tags?: list<string>, project_id?: int}  $entry
      * @param  array<string, mixed>  $context
      */
     public function pushEntryUpdate(string $externalId, array $entry, array $context): bool {
@@ -616,6 +618,12 @@ class TogglApiClient implements RemoteTimeWriter {
             'stop' => $entry['ended_at']?->utc()->toIso8601String(),
         ], static fn ($v): bool => $v !== null);
         $changes['billable'] = $entry['billable'];
+        if (isset($entry['tags'])) {
+            $changes['tags'] = $entry['tags'];
+        }
+        if (isset($entry['project_id'])) {
+            $changes['project_id'] = (int) $entry['project_id'];
+        }
 
         return $this->api()->putJson($url, $changes, ['timeout' => 20])->successful();
     }

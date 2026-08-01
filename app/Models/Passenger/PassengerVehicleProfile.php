@@ -15,8 +15,8 @@ namespace App\Models\Passenger;
 use App\Enums\Passenger\RideOperationMode;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Vehicle;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 

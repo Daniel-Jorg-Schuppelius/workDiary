@@ -38,16 +38,17 @@ class CustomerProjectReportController extends Controller {
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
-        [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
+        [$scope, $seesAll] = $this->resolveScopeWithVisibility($request);
 
         [$fromDate, $toDate] = $this->resolveRange($request);
         $from = $fromDate->toDateString();
         $to = $toDate->toDateString();
 
-        // Mitarbeiter-Filter nur für Admins — Nicht-Admins sehen ohnehin nur eigene Zeiten.
+        // Mitarbeiter-Filter nur bei Org-weiter Zeit-Sicht (Admin/Buchhaltung) —
+        // andere sehen ohnehin nur eigene Zeiten.
         // Feature 002: include_excluded blendet org-weit ausgeblendete Kunden aus
         // (greift über applyToTimeEntryQuery auf alle Aggregat-/Chart-/Exportpfade).
-        $filterFields = $isAdmin
+        $filterFields = $seesAll
             ? ['customer', 'project', 'user', 'include_excluded']
             : ['customer', 'project', 'include_excluded'];
         $filters = $this->standardFilters($request, $filterFields, $fromDate, $toDate, scope: $scope);
@@ -81,7 +82,7 @@ class CustomerProjectReportController extends Controller {
             'from' => $from,
             'to' => $to,
             'scope' => $scope,
-            'isAdmin' => $isAdmin,
+            'seesAll' => $seesAll,
             'bucket' => $bucket,
             'totalMinutes' => $totalMinutes,
             'totalRate' => $totalRate,

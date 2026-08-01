@@ -30,7 +30,9 @@ class TimeEntryPolicy {
             return false;
         }
 
-        return $user->canManageBilling();
+        // timeEntry.viewAny ist der Sicht-Schalter (Buchhaltung/Geschäftsführung);
+        // canManageBilling bleibt der Gate für Rechnungs-Aktionen.
+        return $user->canManageBilling() || $user->hasEffectivePermission('timeEntry.viewAny');
     }
 
     public function create(User $user): bool {

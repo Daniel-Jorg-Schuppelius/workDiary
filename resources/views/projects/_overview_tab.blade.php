@@ -4,9 +4,7 @@
     $inProgTasks   = (int) ($taskStats->get(\App\Enums\Task\TaskStatus::InProgress->value) ?? 0);
     $doneTasks     = (int) ($taskStats->get(\App\Enums\Task\TaskStatus::Done->value) ?? 0);
     $totalTasks    = $openTasks + $inProgTasks + $doneTasks;
-    $totalH        = intdiv($totalMinutes, 60);
-    $totalM        = $totalMinutes % 60;
-    $totalHours    = $totalH . ':' . str_pad((string) $totalM, 2, '0', STR_PAD_LEFT) . ' h';
+    $totalHours    = \App\Support\Formats::duration($totalMinutes, 'clock');
 @endphp
 
 <div class="flex flex-col gap-4">

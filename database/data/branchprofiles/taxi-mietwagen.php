@@ -10,8 +10,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\Classification\ClassificationRequirementPhase;
-use App\Enums\Classification\ClassificationRequirementSeverity;
+use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequirementSeverity};
 
 /**
  * Branchenprofil Taxi- und Mietwagenunternehmen (MVP-456,

@@ -49,4 +49,23 @@ return [
             'missing_due_date' => 'Date d\'échéance manquante — le délai de paiement par défaut est utilisé.',
         ],
     ],
+
+    // Aperçu de la facture dans le dialogue de création (MVP-462).
+    'source_times' => 'Afficher :count saisie de temps source|Afficher :count saisies de temps sources',
+    'preview' => [
+        'heading' => 'Aperçu :',
+        'empty' => 'Aucun temps facturable ni frais de déplacement pour les filtres sélectionnés.',
+        'entry_count' => ':count saisie|:count saisies',
+        'travel' => '+ :count déplacement(s)',
+        'warning_late' => ':count saisie tardive : la date de prestation tombe dans une période déjà facturée.|:count saisies tardives : les dates de prestation tombent dans des périodes déjà facturées.',
+        'column' => [
+            'description' => 'Position',
+            'duration' => 'Durée',
+            'rate' => 'Taux',
+            'amount' => 'Montant',
+        ],
+        'entries_heading' => 'Afficher/exclure des saisies individuelles',
+        'exclude' => 'exclure',
+        'exclude_hint' => 'Les saisies exclues restent ouvertes et réapparaissent au prochain cycle de facturation.',
+    ],
 ];

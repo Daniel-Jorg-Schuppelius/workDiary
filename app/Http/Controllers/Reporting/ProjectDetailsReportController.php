@@ -40,20 +40,20 @@ class ProjectDetailsReportController extends Controller {
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
-        $isAdmin = $this->viewerIsAdmin();
+        $seesAll = $this->viewerSeesAllTimes();
 
         [$rangeFrom, $rangeTo] = $this->resolveRange($request);
         $year = max(2000, min(2100, (int) $rangeFrom->year));
 
-        // Mitarbeiter-Filter nur für Admins — Nicht-Admins sehen ohnehin nur eigene Zeiten.
-        $filterFields = $isAdmin ? ['customer', 'project', 'user'] : ['customer', 'project'];
+        // Mitarbeiter-Filter nur bei Org-weiter Zeit-Sicht (Admin/Buchhaltung).
+        $filterFields = $seesAll ? ['customer', 'project', 'user'] : ['customer', 'project'];
         $filters = $this->standardFilters($request, $filterFields, $rangeFrom, $rangeTo);
 
         // Legacy-Parameter project_id (alte Bookmarks) ins Standard-Set übernehmen.
         $projectId = $filters->projectId ?? Sqid::decodeOrNumeric(Project::class, $request->query('project_id'));
         $projectId ??= 0;
 
-        $projects = $this->loadAccessibleProjects($isAdmin, $userId, $filters->customerId);
+        $projects = $this->loadAccessibleProjects($seesAll, $userId, $filters->customerId);
 
         $project = $projectId > 0 ? $projects->firstWhere('id', $projectId) : null;
         if (! $project instanceof Project) {
@@ -71,7 +71,7 @@ class ProjectDetailsReportController extends Controller {
             userId: $filters->userId,
         );
 
-        $aggregate = $this->aggregateYear($project, $year, $isAdmin, $userId, $filters->userId);
+        $aggregate = $this->aggregateYear($project, $year, $seesAll, $userId, $filters->userId);
         $monthMatrix = $aggregate['monthMatrix'];
         $byUser = $aggregate['byUser'];
         $yearMinutes = $aggregate['yearMinutes'];
@@ -122,11 +122,11 @@ class ProjectDetailsReportController extends Controller {
     /**
      * @return Collection<int, Project>
      */
-    private function loadAccessibleProjects(bool $isAdmin, int $userId, ?int $customerId = null): Collection {
+    private function loadAccessibleProjects(bool $seesAll, int $userId, ?int $customerId = null): Collection {
         $projectsQuery = Project::with('customer')
             ->when($customerId !== null, fn($q) => $q->where('customer_id', $customerId))
             ->orderBy('name');
-        if (! $isAdmin) {
+        if (! $seesAll) {
             $accessibleIds = TimeEntry::query()
                 ->where('user_id', $userId)
                 ->distinct()
@@ -144,7 +144,7 @@ class ProjectDetailsReportController extends Controller {
     /**
      * @return array{monthMatrix: array<int, array{minutes: int, rate: float}>, byUser: array<int, array{minutes: int, rate: float}>, yearMinutes: int, yearRate: float, entries: \Illuminate\Support\Collection<int, TimeEntry>}
      */
-    private function aggregateYear(?Project $project, int $year, bool $isAdmin, int $userId, ?int $filterUserId = null): array {
+    private function aggregateYear(?Project $project, int $year, bool $seesAll, int $userId, ?int $filterUserId = null): array {
         /** @var array<int, array{minutes: int, rate: float}> $monthMatrix */
         $monthMatrix = array_fill(1, 12, ['minutes' => 0, 'rate' => 0.0]);
         /** @var array<int, array{minutes: int, rate: float}> $byUser */
@@ -165,7 +165,7 @@ class ProjectDetailsReportController extends Controller {
             ->when($filterUserId !== null, fn($q) => $q->where('user_id', $filterUserId))
             ->select('user_id', 'date', 'minutes', 'rate', 'diary_entry_id')
             ->get();
-        if (! $isAdmin) {
+        if (! $seesAll) {
             $entries = $entries->where('user_id', $userId);
         }
 

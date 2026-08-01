@@ -1,7 +1,7 @@
 ---
 title: "Facturas y comprobantes"
 topic: invoices.manage
-version: 1
+version: 2
 audience: []
 related:
     - contacts.manage
@@ -19,3 +19,12 @@ completarse, pero los comprobantes enviados, contabilizados o
 entregados externamente no deben modificarse en silencio; en caso de
 error usa el proceso de anulación o corrección previsto en lugar de
 sobrescribir números o importes.
+
+Desde MVP-462 el diálogo de creación muestra una **vista previa** de
+las posiciones generadas (número, duración en formato reloj y decimal,
+importe, aviso de registros tardíos) en cuanto se seleccionan cliente
+y período. Los registros individuales pueden **excluirse** del ciclo
+mediante casilla — permanecen abiertos y reaparecen en el siguiente
+ciclo. En la factura, los **registros de tiempo de origen** de cada
+posición son desplegables; las cantidades de horas aparecen también en
+formato reloj (p. ej. 1,50 h = 1:30 h).

@@ -11,6 +11,8 @@
 namespace App\Support;
 
 use App\Models\User;
+use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\ValueObjects\Duration;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -44,6 +46,25 @@ final class Formats {
     /** Kombiniertes Datum-+-Uhrzeit-Format. */
     public static function dateTime(): string {
         return self::date() . ' ' . self::time();
+    }
+
+    /**
+     * Dauer aus Minuten: 'clock' → "1:30 h", 'decimal' → "1,50 h",
+     * 'both' → "1:30 h (1,50 h)". Dezimal nur auf Abrechnungsflächen
+     * verwenden; Anwesenheit/Flex bleiben beim Uhrenformat.
+     */
+    public static function duration(int $minutes, string $mode = 'both', bool $withUnit = true): string {
+        $duration = Duration::ofMinutes($minutes);
+        $unit = $withUnit ? ' h' : '';
+        $clock = $duration->toClock() . $unit;
+        // getTotalSeconds()/3600 ≙ toDecimalHours(); Umstieg nach Toolkit-Release v1.23.
+        $decimal = NumberHelper::toGermanFormat($duration->getTotalSeconds() / 3600, 2) . $unit;
+
+        return match ($mode) {
+            'clock' => $clock,
+            'decimal' => $decimal,
+            default => $clock . ' (' . $decimal . ')',
+        };
     }
 
     /** @return list<string> */

@@ -327,6 +327,108 @@ class TogglWritebackTest extends TestCase {
         $this->assertDatabaseCount('integration_inbox_items', 0);
     }
 
+    public function test_created_entry_enqueues_a_create_when_export_enabled(): void {
+        // MVP-463: Neuanlage läuft zeitnah über die Outbox statt nur per Stunden-Batch.
+        config(['plugins.toggl.export_enabled' => true]);
+
+        $user = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $project = Project::factory()->create(['organization_id' => $this->organization->id]);
+        $entry = TimeEntry::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'started_at' => CarbonImmutable::parse('2026-07-01 09:00'),
+            'ended_at' => CarbonImmutable::parse('2026-07-01 10:00'),
+            'exported' => false,
+        ]);
+
+        $this->assertDatabaseHas('integration_outbox', [
+            'organization_id' => $this->organization->id,
+            'plugin_id' => TogglPlugin::ID,
+            'operation' => TogglOutboxDispatcher::OP_ENTRY_CREATE,
+            'idempotency_key' => TogglPlugin::ID . '-entry-create:' . $entry->getKey(),
+        ]);
+    }
+
+    public function test_created_entry_without_export_enabled_is_not_enqueued(): void {
+        config(['plugins.toggl.export_enabled' => false]);
+
+        $user = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $project = Project::factory()->create(['organization_id' => $this->organization->id]);
+        TimeEntry::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $user->id,
+            'project_id' => $project->id,
+            'exported' => false,
+        ]);
+
+        $this->assertDatabaseMissing('integration_outbox', [
+            'operation' => TogglOutboxDispatcher::OP_ENTRY_CREATE,
+        ]);
+    }
+
+    public function test_import_does_not_enqueue_a_create(): void {
+        config(['plugins.toggl.export_enabled' => true]);
+
+        $user = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $project = Project::factory()->create(['organization_id' => $this->organization->id]);
+
+        TimeWritebackObserver::suppressed(function () use ($user, $project): void {
+            TimeEntry::factory()->create([
+                'organization_id' => $this->organization->id,
+                'user_id' => $user->id,
+                'project_id' => $project->id,
+                'exported' => false,
+            ]);
+        });
+
+        $this->assertDatabaseMissing('integration_outbox', [
+            'operation' => TogglOutboxDispatcher::OP_ENTRY_CREATE,
+        ]);
+    }
+
+    public function test_update_payload_mirrors_tags_and_mapped_project(): void {
+        // G3 (MVP-463): Tags + gemapptes Toggl-Projekt wandern beim Update mit.
+        $start = CarbonImmutable::parse('2026-07-01 09:00');
+        $end = CarbonImmutable::parse('2026-07-01 10:00');
+        $entry = $this->linkedEntry($start, $end, 'Alt');
+
+        $tag = \App\Models\Tag::create(['name' => 'AnyDesk', 'organization_id' => $this->organization->id]);
+        $entry->tags()->sync([$tag->id]);
+        ExternalReference::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => MatchingTimeImportService::EXT_TYPE_PROJECT_ID,
+            'referenceable_type' => (new Project)->getMorphClass(),
+            'referenceable_id' => $entry->project_id,
+            'external_id' => '77',
+            'synced_at' => now(),
+        ]);
+
+        $fake = FakePluginHttp::fake([
+            self::BASE . '/workspaces/' . self::WORKSPACE . '/time_entries/' . self::EXTERNAL_ID => FakePluginHttp::response([
+                'start' => $start->toIso8601String(),
+                'stop' => $end->toIso8601String(),
+                'description' => 'Alt',
+                'billable' => true,
+            ]),
+        ]);
+
+        $entry->fresh()->update(['description' => 'Korrigiert']);
+        $outbox = IntegrationOutboxEntry::query()->where('operation', TimeWritebackDispatcher::updateOperation(TogglPlugin::ID))->firstOrFail();
+
+        $this->assertTrue(app(TogglOutboxDispatcher::class)->dispatch($outbox));
+
+        $fake->assertSent(function (RequestInterface $r): bool {
+            if ($r->getMethod() !== 'PUT') {
+                return false;
+            }
+            $body = (array) json_decode((string) $r->getBody(), true);
+
+            return ($body['tags'] ?? null) === ['AnyDesk'] && ($body['project_id'] ?? null) === 77;
+        });
+    }
+
     public function test_an_invoiced_entry_cannot_be_pulled_to_the_remote_state(): void {
         $start = CarbonImmutable::parse('2026-07-01 09:00');
         $end = CarbonImmutable::parse('2026-07-01 10:00');

@@ -87,7 +87,7 @@
                                             @endif
                                             @php($bookedMinutes = (int) ($item->task?->time_entries_sum_minutes ?? 0))
                                             @if ($bookedMinutes > 0)
-                                                <span class="badge badge-ghost badge-xs" title="{{ __('Gebuchte Zeit') }}">{{ intdiv($bookedMinutes, 60) }}:{{ str_pad((string) ($bookedMinutes % 60), 2, '0', STR_PAD_LEFT) }} h</span>
+                                                <span class="badge badge-ghost badge-xs" title="{{ __('Gebuchte Zeit') }}">{{ \App\Support\Formats::duration((int) $bookedMinutes, 'clock') }}</span>
                                             @endif
                                             @if ($item->isBlocked())
                                                 <x-status-badge tone="error" size="xs" :title="$item->blocked_reason">{{ __('blockiert') }}</x-status-badge>

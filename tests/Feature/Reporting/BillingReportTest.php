@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Reporting;
 
-use App\Models\User;
+use App\Models\{Customer, Project, TimeEntry, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
@@ -53,6 +53,53 @@ class BillingReportTest extends TestCase {
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
             ->get(route('reports.billing'))
             ->assertForbidden();
+    }
+
+    public function test_accountant_can_view_report(): void {
+        // MVP-460: timeEntry.viewAny öffnet den Report für die Buchhaltung.
+        $accountant = User::factory()->buchhaltung()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($accountant)
+            ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
+            ->get(route('reports.billing'))
+            ->assertOk();
+    }
+
+    public function test_unbilled_kpi_ignores_exported_entries(): void {
+        // Regression MVP-460: exported=true (z. B. per Pivot gebündelte
+        // Nicht-Primär-Einträge einer Rechnung) zählt nicht mehr als unbilled.
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $project = Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+        ]);
+
+        TimeEntry::factory()->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $project->id,
+            'user_id' => $this->admin->id,
+            'billable' => true,
+            'exported' => false,
+            'minutes' => 60,
+            'date' => now()->subDays(5)->toDateString(),
+        ]);
+        TimeEntry::factory()->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $project->id,
+            'user_id' => $this->admin->id,
+            'billable' => true,
+            'exported' => true,
+            'minutes' => 45,
+            'date' => now()->subDays(5)->toDateString(),
+        ]);
+
+        $response = $this->getWithRange();
+        $response->assertOk();
+
+        /** @var array{count:int, minutes:int, projected_revenue:float} $unbilled */
+        $unbilled = $response->viewData('unbilled');
+        $this->assertSame(1, $unbilled['count']);
+        $this->assertSame(60, $unbilled['minutes']);
     }
 
     public function test_csv_export_returns_csv_with_metadata(): void {

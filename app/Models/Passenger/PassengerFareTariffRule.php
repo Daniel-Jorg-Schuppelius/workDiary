@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Models\Passenger;
 
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**

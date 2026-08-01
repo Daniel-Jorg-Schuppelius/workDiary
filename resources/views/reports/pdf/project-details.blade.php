@@ -26,23 +26,15 @@
         </thead>
         <tbody>
             @foreach ($monthMatrix as $idx => $row)
-                @php
-                    $h = intdiv((int) $row['minutes'], 60);
-                    $m = (int) $row['minutes'] % 60;
-                @endphp
                 <tr>
                     <td>{{ $monthLabels[$idx] ?? $idx }}</td>
-                    <td class="right">{{ $row['minutes'] > 0 ? sprintf('%d:%02d', $h, $m) : '–' }}</td>
+                    <td class="right">{{ $row['minutes'] > 0 ? \App\Support\Formats::duration((int) $row['minutes'], 'clock', withUnit: false) : '–' }}</td>
                     <td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row['rate'], 2, withThousandsSeparator: true) }} €</td>
                 </tr>
             @endforeach
         </tbody>
         <tfoot>
-            @php
-                $hY = intdiv((int) $yearMinutes, 60);
-                $mY = (int) $yearMinutes % 60;
-            @endphp
-            <tr><td>Gesamt</td><td class="right">{{ $hY }}:{{ str_pad((string) $mY, 2, '0', STR_PAD_LEFT) }}</td><td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $yearRate, 2, withThousandsSeparator: true) }} €</td></tr>
+            <tr><td>Gesamt</td><td class="right">{{ \App\Support\Formats::duration((int) $yearMinutes, 'clock', withUnit: false) }}</td><td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $yearRate, 2, withThousandsSeparator: true) }} €</td></tr>
         </tfoot>
     </table>
 
@@ -54,13 +46,9 @@
             </thead>
             <tbody>
                 @foreach ($byUser as $uid => $row)
-                    @php
-                        $h = intdiv((int) $row['minutes'], 60);
-                        $m = (int) $row['minutes'] % 60;
-                    @endphp
                     <tr>
                         <td>{{ $users->get($uid)?->name ?? '#' . $uid }}</td>
-                        <td class="right">{{ $h }}:{{ str_pad((string) $m, 2, '0', STR_PAD_LEFT) }}</td>
+                        <td class="right">{{ \App\Support\Formats::duration((int) $row['minutes'], 'clock', withUnit: false) }}</td>
                         <td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row['rate'], 2, withThousandsSeparator: true) }} €</td>
                     </tr>
                 @endforeach

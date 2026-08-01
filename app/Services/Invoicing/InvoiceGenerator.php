@@ -53,12 +53,14 @@ class InvoiceGenerator {
      * within a date range.
      *
      * @param  array{from?: string|CarbonInterface|null, to?: string|CarbonInterface|null}  $range
+     * @param  list<int>  $excludedEntryIds  In der Vorschau abgewählte Einträge (MVP-462) —
+     *                                       bleiben exported=false und erscheinen im nächsten Lauf.
      */
-    public function fromTimeEntries(Customer $customer, ?Project $project, array $range = [], ?ForeignCustomer $foreignCustomer = null): Invoice {
+    public function fromTimeEntries(Customer $customer, ?Project $project, array $range = [], ?ForeignCustomer $foreignCustomer = null, array $excludedEntryIds = []): Invoice {
         $this->assertLocalBillingAllowed($customer);
         $this->assertNotAccountManaged($customer);
 
-        return DB::transaction(function () use ($customer, $project, $range, $foreignCustomer): Invoice {
+        return DB::transaction(function () use ($customer, $project, $range, $foreignCustomer, $excludedEntryIds): Invoice {
             // Per-Kunde serialisieren: verhindert, dass zwei parallele
             // Rechnungsläufe dieselben exported=false-Zeiten / travel_billed=false-
             // Touren doppelt abrechnen (Doppelklick).
@@ -67,25 +69,8 @@ class InvoiceGenerator {
             // Quellposten UNTER Sperre und VOR Nummernvergabe laden (wie im
             // Materialpfad): sonst erzeugt ein Lauf ohne offene Posten eine
             // leere Rechnung samt verbrauchter Nummer.
-            $query = TimeEntry::query()
-                ->where('billable', true)
-                ->where('exported', false)
-                ->whereHas('project', fn($q) => $q->where('customer_id', $customer->id)
-                    ->when($foreignCustomer !== null, fn($q) => $q->where('foreign_customer_id', $foreignCustomer?->id)));
-
-            if ($project !== null) {
-                $query->where('project_id', $project->id);
-            }
-            if (! empty($range['from'])) {
-                $query->where('date', '>=', Carbon::parse($range['from'])->toDateString());
-            }
-            if (! empty($range['to'])) {
-                $query->where('date', '<=', Carbon::parse($range['to'])->toDateString());
-            }
-
-            $entries = $query
-                ->with(['project.parent', 'project.customer', 'project.foreignCustomer'])
-                ->orderBy('date')
+            $entries = $this->openTimeEntriesQuery($customer, $project, $range, $foreignCustomer)
+                ->when($excludedEntryIds !== [], fn($q) => $q->whereNotIn('id', $excludedEntryIds))
                 ->lockForUpdate()
                 ->get();
 
@@ -131,34 +116,18 @@ class InvoiceGenerator {
             $position = 0;
             $billedEntryIds = [];
             foreach ($blocks as $block) {
-                $hours = $block->billedHours();
-                if ($hours <= 0) {
+                $line = $this->blockLine($block, $customer, $entriesById);
+                if ($line === null) {
                     continue;
                 }
 
-                // Stundensatz aus der tatsächlich gearbeiteten Zeit; auf die
-                // aufgerundeten billedHours angewendet erhöht die Taktung den
-                // Betrag. Fallback auf Eintrags-/Kunden-Stundensatz.
-                $primary = $entriesById->get($block->primaryEntryId);
-                $fallbackRate = $primary !== null && $primary->hourly_rate !== null
-                    ? $primary->hourly_rate
-                    : $customer->hourly_rate;
-                $rate = $block->hourlyRate() ?? $fallbackRate?->toFloat() ?? 0.0;
-
-                $description = $this->bookingLine(
-                    $this->describeBlock($block, $primary),
-                    $block->project?->foreignCustomer,
-                );
-
-                $serviceDate = $block->firstStart?->toDateString() ?? optional($primary?->date)->toDateString();
-
                 $item = $invoice->items()->create([
                     'time_entry_id' => $block->primaryEntryId,
-                    'service_date' => $serviceDate,
-                    'description' => $description,
-                    'quantity' => (string) $hours,
+                    'service_date' => $line['service_date'],
+                    'description' => $line['description'],
+                    'quantity' => (string) $line['hours'],
                     'unit' => (string) __('invoicing.unit_hour'),
-                    'unit_price' => (string) $rate,
+                    'unit_price' => (string) $line['rate'],
                     'position' => ++$position,
                 ]);
 
@@ -183,6 +152,135 @@ class InvoiceGenerator {
 
             return $invoice;
         });
+    }
+
+    /**
+     * Gemeinsame Quellposten-Query von Rechnungslauf und Vorschau: offene,
+     * abrechenbare Zeiten des Kunden (optional Projekt/Endkunde/Zeitraum).
+     *
+     * @param  array{from?: string|CarbonInterface|null, to?: string|CarbonInterface|null}  $range
+     * @return \Illuminate\Database\Eloquent\Builder<TimeEntry>
+     */
+    private function openTimeEntriesQuery(Customer $customer, ?Project $project, array $range, ?ForeignCustomer $foreignCustomer): \Illuminate\Database\Eloquent\Builder {
+        $query = TimeEntry::query()
+            ->where('billable', true)
+            ->where('exported', false)
+            ->whereHas('project', fn($q) => $q->where('customer_id', $customer->id)
+                ->when($foreignCustomer !== null, fn($q) => $q->where('foreign_customer_id', $foreignCustomer?->id)));
+
+        if ($project !== null) {
+            $query->where('project_id', $project->id);
+        }
+        if (! empty($range['from'])) {
+            $query->where('date', '>=', Carbon::parse($range['from'])->toDateString());
+        }
+        if (! empty($range['to'])) {
+            $query->where('date', '<=', Carbon::parse($range['to'])->toDateString());
+        }
+
+        return $query
+            ->with(['project.parent', 'project.customer', 'project.foreignCustomer', 'user:id,name'])
+            ->orderBy('date');
+    }
+
+    /**
+     * Positionsdaten eines Blocks: Stundensatz aus der tatsächlich
+     * gearbeiteten Zeit; auf die aufgerundeten billedHours angewendet erhöht
+     * die Taktung den Betrag. Fallback auf Eintrags-/Kunden-Stundensatz.
+     * NULL bei leerer abrechenbarer Menge.
+     *
+     * @param  \Illuminate\Support\Collection<int|string, TimeEntry>  $entriesById
+     * @return array{hours: float, rate: float, description: string, service_date: string|null}|null
+     */
+    private function blockLine(BillingBlock $block, Customer $customer, \Illuminate\Support\Collection $entriesById): ?array {
+        $hours = $block->billedHours();
+        if ($hours <= 0) {
+            return null;
+        }
+
+        $primary = $entriesById->get($block->primaryEntryId);
+        $fallbackRate = $primary !== null && $primary->hourly_rate !== null
+            ? $primary->hourly_rate
+            : $customer->hourly_rate;
+        $rate = $block->hourlyRate() ?? $fallbackRate?->toFloat() ?? 0.0;
+
+        return [
+            'hours' => $hours,
+            'rate' => $rate,
+            'description' => $this->bookingLine(
+                $this->describeBlock($block, $primary),
+                $block->project?->foreignCustomer,
+            ),
+            'service_date' => $block->firstStart?->toDateString() ?? optional($primary?->date)->toDateString(),
+        ];
+    }
+
+    /**
+     * Read-only-Vorschau des Rechnungslaufs (MVP-462): gleiche Selektion und
+     * Blockbildung wie {@see fromTimeEntries}, aber ohne Transaktion, Sperre
+     * und Nummernvergabe — es wird nichts verbraucht. Liefert Blöcke samt
+     * Einzel-Einträgen für die Ausschluss-Checkboxen sowie Warnsignale
+     * (Nachzügler via {@see LateTimeEntryDetector}).
+     *
+     * @param  array{from?: string|CarbonInterface|null, to?: string|CarbonInterface|null}  $range
+     * @return array{
+     *   entries: \Illuminate\Database\Eloquent\Collection<int, TimeEntry>,
+     *   lines: list<array{description: string, hours: float, rate: float, amount: float, minutes: int, entry_ids: list<int>, project_name: string|null}>,
+     *   travel: array{count: int, amount: float},
+     *   totals: array{count: int, minutes: int, amount: float},
+     *   warnings: array{late_count: int}
+     * }
+     */
+    public function previewTimeEntries(Customer $customer, ?Project $project, array $range = [], ?ForeignCustomer $foreignCustomer = null): array {
+        $this->assertLocalBillingAllowed($customer);
+        $this->assertNotAccountManaged($customer);
+
+        $entries = $this->openTimeEntriesQuery($customer, $project, $range, $foreignCustomer)->get();
+        $charges = app(\App\Services\Travel\TravelChargeService::class)
+            ->chargesForRange($customer, $project, $range, $foreignCustomer, false);
+
+        $blocks = app(BillableTimeAggregator::class)->aggregate($entries);
+        $entriesById = $entries->keyBy('id');
+
+        $lines = [];
+        $amount = 0.0;
+        foreach ($blocks as $block) {
+            $line = $this->blockLine($block, $customer, $entriesById);
+            if ($line === null) {
+                continue;
+            }
+
+            $lineAmount = round($line['hours'] * $line['rate'], 2);
+            $amount += $lineAmount;
+            $lines[] = [
+                'description' => $line['description'],
+                'hours' => $line['hours'],
+                'rate' => $line['rate'],
+                'amount' => $lineAmount,
+                'minutes' => $block->billedMinutes,
+                'entry_ids' => $block->entryIds,
+                'project_name' => $block->project?->name,
+            ];
+        }
+
+        $travelAmount = 0.0;
+        foreach ($charges as $charge) {
+            $travelAmount += $charge->amount();
+        }
+
+        return [
+            'entries' => $entries,
+            'lines' => $lines,
+            'travel' => ['count' => count($charges), 'amount' => round($travelAmount, 2)],
+            'totals' => [
+                'count' => $entries->count(),
+                'minutes' => (int) $entries->sum('minutes'),
+                'amount' => round($amount + $travelAmount, 2),
+            ],
+            'warnings' => [
+                'late_count' => app(LateTimeEntryDetector::class)->detect($entries->collect(), $customer, $project)->count(),
+            ],
+        ];
     }
 
     /**

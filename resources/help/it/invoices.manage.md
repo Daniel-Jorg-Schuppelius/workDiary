@@ -1,7 +1,7 @@
 ---
 title: "Fatture e documenti"
 topic: invoices.manage
-version: 1
+version: 2
 audience: []
 related:
     - contacts.manage
@@ -18,3 +18,12 @@ fiscali e indirizzo del destinatario. Le bozze possono essere integrate, ma
 i documenti inviati, registrati o trasferiti a sistemi esterni non vanno mai
 modificati in silenzio: in caso di errore usa il processo previsto di storno
 o correzione invece di sovrascrivere numeri o importi.
+
+Da MVP-462 il dialogo di creazione mostra un'**anteprima** delle
+posizioni generate (numero, durata nei formati orologio e decimale,
+importo, avviso di registrazioni tardive) non appena cliente e periodo
+sono selezionati. Le singole registrazioni possono essere **escluse**
+dal ciclo tramite casella — restano aperte e riappaiono nel ciclo
+successivo. Sulla fattura, le **registrazioni di tempo di origine** di
+ogni posizione sono espandibili; le quantità in ore appaiono anche nel
+formato orologio (ad es. 1,50 h = 1:30 h).

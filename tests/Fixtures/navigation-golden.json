@@ -67,6 +67,7 @@
             "/expenses/create",
             "/finanzen/datev-buchungen",
             "/finanzen/gobd",
+            "/finanzen/offene-zeiten",
             "/finanzen/uebergaben",
             "/flex",
             "/floors",

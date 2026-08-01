@@ -5,10 +5,7 @@
 @section('content')
 @php
     $eur = fn (float $v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) . ' €';
-    $fmtMin = function (int $minutes): string {
-        $abs = abs($minutes);
-        return intdiv($abs, 60) . ':' . str_pad((string) ($abs % 60), 2, '0', STR_PAD_LEFT) . ' h';
-    };
+    $fmtMin = fn (int $minutes): string => \App\Support\Formats::duration(abs($minutes));
     $statusLabels = [
         'draft'     => __('Entwurf'),
         'issued'    => __('Ausgestellt'),

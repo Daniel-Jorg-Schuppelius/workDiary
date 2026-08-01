@@ -43,7 +43,7 @@ class WeekByUserReportController extends Controller {
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
-        [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
+        [$scope, $seesAll] = $this->resolveScopeWithVisibility($request);
 
         // Aus dem effektiven Zeitraum (from/to-Bookmark vor Header-Widget) alle
         // überlappenden ISO-Wochen sammeln und als Tab-Liste an die View liefern.
@@ -166,7 +166,7 @@ class WeekByUserReportController extends Controller {
             'week' => $week,
             'weekLabel' => $weekLabel,
             'scope' => $scope,
-            'isAdmin' => $isAdmin,
+            'seesAll' => $seesAll,
             'byUser' => $byUser,
             'users' => $users,
             'dayLabels' => $dayLabels,

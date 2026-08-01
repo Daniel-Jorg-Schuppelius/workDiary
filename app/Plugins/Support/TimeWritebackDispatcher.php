@@ -101,7 +101,7 @@ abstract class TimeWritebackDispatcher implements IntegrationOutboxDispatcher {
             }
         }
 
-        $state = $this->localState($timeEntry);
+        $state = $this->updatePayload($timeEntry, $this->localState($timeEntry));
 
         if (! $writer->pushEntryUpdate($externalId, $state, $context)) {
             return false; // Outbox wiederholt es
@@ -215,6 +215,18 @@ abstract class TimeWritebackDispatcher implements IntegrationOutboxDispatcher {
         $externalId = trim((string) ($payload['external_id'] ?? ''));
 
         return $externalId !== '' ? $query->forExternalId($externalId)->first() : null;
+    }
+
+    /**
+     * Plugin-Hook (MVP-463): erweitert den Update-Zustand um Zusatzfelder
+     * (Toggl: tags + gemapptes project_id). Basis bleibt für Kimai/OpenProject
+     * unverändert; die Fingerabdrücke rechnen weiter nur auf den Kernfeldern.
+     *
+     * @param  array{description: ?string, date: ?\Carbon\CarbonImmutable, started_at: ?\Carbon\CarbonImmutable, ended_at: ?\Carbon\CarbonImmutable, minutes: int, billable: bool}  $state
+     * @return array{description: ?string, date: ?\Carbon\CarbonImmutable, started_at: ?\Carbon\CarbonImmutable, ended_at: ?\Carbon\CarbonImmutable, minutes: int, billable: bool, tags?: list<string>, project_id?: int}
+     */
+    protected function updatePayload(TimeEntry $timeEntry, array $state): array {
+        return $state;
     }
 
     /**

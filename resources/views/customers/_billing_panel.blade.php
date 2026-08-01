@@ -14,7 +14,7 @@
 
 @php
     $money = fn ($v) => $v === null ? '—' : \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v instanceof \CommonToolkit\ValueObjects\Money ? $v->toFloat() : (float) $v, 2, withThousandsSeparator: true) . ' €';
-    $hours = fn (int $m) => sprintf('%d:%02d', intdiv($m, 60), $m % 60);
+    $hours = fn (int $m): string => \App\Support\Formats::duration($m);
 @endphp
 
 <x-card :title="__('customer-billing.panel_title')" icon="request_quote" id="customer-billing" padding="p-0">

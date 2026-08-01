@@ -4,14 +4,11 @@
 
 @section('content')
 @php
-    $fmt = function (int $min): string {
-        if ($min <= 0) return '–';
-        return intdiv($min, 60) . ':' . str_pad((string) ($min % 60), 2, '0', STR_PAD_LEFT);
-    };
+    $fmt = fn (int $min): string => $min <= 0 ? '–' : \App\Support\Formats::duration($min, 'clock', withUnit: false);
     $money = function (float $val): string {
         return \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($val, 2, withThousandsSeparator: true) . ' €';
     };
-    $fmtChart = fn(int|float $min): string => intdiv((int) $min, 60) . ':' . str_pad((string) ((int) $min % 60), 2, '0', STR_PAD_LEFT);
+    $fmtChart = fn (int|float $min): string => \App\Support\Formats::duration((int) $min, 'clock', withUnit: false);
     $linkParams = $standardFilters->toQueryParams();
 @endphp
 

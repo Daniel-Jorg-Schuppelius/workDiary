@@ -61,6 +61,28 @@ class WeekByUserReportTest extends TestCase {
         $response->assertSee('2:00');
     }
 
+    public function test_accountant_gets_team_scope(): void {
+        // MVP-460: timeEntry.viewAny (Buchhaltung) schaltet die Team-Sicht frei.
+        $accountant = User::factory()->buchhaltung()->create(['organization_id' => $this->organization->id]);
+        TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'date' => '2030-04-01',
+            'started_at' => '2030-04-01 09:00:00',
+            'ended_at' => '2030-04-01 11:00:00',
+            'kind' => TimeEntryKind::Work->value,
+        ]);
+
+        $response = $this->actingAs($accountant)
+            ->withSession($this->dateRangeSession('2030-04-01', '2030-04-07'))
+            ->get(route('reports.week-by-user', ['scope' => 'team', 'week' => '2030-W14']));
+
+        $response->assertOk();
+        // Fremd-Zeiten des Mitarbeiters sind in der Team-Sicht enthalten.
+        $response->assertSee($this->user->name);
+    }
+
     public function test_csv_export_returns_download(): void {
         TimeEntry::create([
             'organization_id' => $this->organization->id,

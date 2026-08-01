@@ -101,6 +101,7 @@ return [
         ],
         'easybill' => ['sync' => 'easybill-Belegabruf'],
         'integration' => ['purge_inbox' => 'Integrations-Inbox bereinigen'],
+        'finance' => ['open_times_digest' => 'Offene-Zeiten-Digest an die Buchhaltung'],
         'inventory' => ['cycle_counts' => 'Zyklische Inventur anstoßen', 'expiring_lots' => 'MHD-Überwachung (ablaufende Chargen)'],
         'invoicing' => ['recurring' => 'Wiederkehrende Rechnungsentwürfe erzeugen'],
         'jtl' => ['sync' => 'JTL-Wawi-Abgleich'],

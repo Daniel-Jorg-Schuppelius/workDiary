@@ -12,7 +12,7 @@
         $rawType = $s->schedule_type ?? 'flextime';
         $typeValue = $rawType instanceof \App\Enums\WorkSchedule\ScheduleType ? $rawType->value : (string) $rawType;
         $type = \App\Enums\WorkSchedule\ScheduleType::tryFrom($typeValue) ?? \App\Enums\WorkSchedule\ScheduleType::Flextime;
-        $fmt = fn(int $m) => intdiv($m, 60) . ':' . str_pad((string) ($m % 60), 2, '0', STR_PAD_LEFT) . ' h';
+        $fmt = fn (int $m): string => \App\Support\Formats::duration($m, 'clock');
     @endphp
     <x-modal
         :title="__('Mein Arbeitszeit-Modell')"

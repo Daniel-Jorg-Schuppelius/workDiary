@@ -405,6 +405,7 @@ return [
         'audit.*' => 'audit.log',
 
         // Finance & Zeitexport
+        'finance.open-times.*' => 'finance.open-times',
         'finance.transfers.*' => 'finance.transfers',
         'finance.reconciliation.*' => 'finance.reconciliation',
         'finance.bank-accounts.*' => 'finance.reconciliation',

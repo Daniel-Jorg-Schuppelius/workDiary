@@ -101,6 +101,7 @@ return [
         ],
         'easybill' => ['sync' => 'Recupero documenti easybill'],
         'integration' => ['purge_inbox' => 'Ripulire la inbox delle integrazioni'],
+        'finance' => ['open_times_digest' => 'Digest dei tempi aperti per la contabilità'],
         'inventory' => ['cycle_counts' => 'Avvio inventario ciclico', 'expiring_lots' => 'Monitoraggio TMC (lotti in scadenza)'],
         'invoicing' => ['recurring' => 'Generare bozze di fatture ricorrenti'],
         'jtl' => ['sync' => 'Sincronizzazione JTL Wawi'],

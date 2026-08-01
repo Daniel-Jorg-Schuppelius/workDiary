@@ -54,6 +54,14 @@
                    :label="__('Zahlungsziel (Tage)')" :value="old('payment_terms_days', 14)"
                    :hint="__('Steuert die Fälligkeit bei der Ausstellung (Standard: 14 Tage).')" />
 </x-form-group>
+
+{{-- Vorschau (MVP-462): wird von invoiceContentSwitch debounced nachgeladen;
+     nur für den Leistungs-Lauf (content=service) relevant. --}}
+<div x-show="content === 'service'" class="mt-3">
+    <div data-invoice-preview
+         data-url="{{ route('invoices.preview') }}"
+         data-csrf="{{ csrf_token() }}"></div>
+</div>
 </div>
 
 <x-validation-errors />

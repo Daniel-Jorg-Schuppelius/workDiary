@@ -48,12 +48,11 @@
         </thead>
         <tbody>
             @forelse($timesheet->entries as $e)
-                @php $h = intdiv((int)$e->minutes, 60); $m = (int)$e->minutes % 60; @endphp
                 <tr>
                     <td>{{ $e->started_at?->ftime() }}</td>
                     <td>{{ $e->ended_at?->ftime() }}</td>
                     <td class="right">{{ (int) $e->break_minutes }}</td>
-                    <td class="right">{{ $h }}:{{ str_pad((string)$m,2,'0',STR_PAD_LEFT) }}</td>
+                    <td class="right">{{ \App\Support\Formats::duration((int) $e->minutes, 'clock', withUnit: false) }}</td>
                     <td>{{ $e->kind?->label() ?? '' }}</td>
                     <td>{{ $e->description }}</td>
                 </tr>
@@ -63,12 +62,8 @@
         </tbody>
     </table>
 
-    @php
-        $hT = intdiv((int)$timesheet->total_work_minutes, 60);
-        $mT = (int)$timesheet->total_work_minutes % 60;
-    @endphp
     <table class="totals">
-        <tr><td class="right">{{ __('timesheet.totals.work') }}:</td><td class="right" style="width:80pt;"><strong>{{ $hT }}:{{ str_pad((string)$mT,2,'0',STR_PAD_LEFT) }} h</strong></td></tr>
+        <tr><td class="right">{{ __('timesheet.totals.work') }}:</td><td class="right" style="width:80pt;"><strong>{{ \App\Support\Formats::duration((int) $timesheet->total_work_minutes, 'clock') }}</strong></td></tr>
         <tr><td class="right">{{ __('timesheet.totals.break') }}:</td><td class="right">{{ (int) $timesheet->total_break_minutes }} min</td></tr>
     </table>
 

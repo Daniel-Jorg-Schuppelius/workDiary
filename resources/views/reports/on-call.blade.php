@@ -4,13 +4,9 @@
 
 @section('content')
 @php
-    $fmt = function (int $minutes): string {
-        $sign = $minutes < 0 ? '-' : '';
-        $abs = abs($minutes);
-        return $sign . intdiv($abs, 60) . ':' . str_pad((string) ($abs % 60), 2, '0', STR_PAD_LEFT) . ' h';
-    };
+    $fmt = fn (int $minutes): string => \App\Support\Formats::duration($minutes, 'clock');
     $pct = fn (float $v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v * 100, 1, withThousandsSeparator: true) . ' %';
-    $fmtChart = fn (int|float $min): string => intdiv((int) $min, 60) . ':' . str_pad((string) ((int) $min % 60), 2, '0', STR_PAD_LEFT);
+    $fmtChart = fn (int|float $min): string => \App\Support\Formats::duration((int) $min, 'clock', withUnit: false);
     $linkParams = array_filter(array_merge(
         ['scope' => $isAdmin ? $scope : null],
         $standardFilters->toQueryParams(),

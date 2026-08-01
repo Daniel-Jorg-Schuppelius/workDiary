@@ -49,4 +49,23 @@ return [
             'missing_due_date' => 'Data di scadenza mancante — viene usato il termine di pagamento predefinito.',
         ],
     ],
+
+    // Anteprima della fattura nel dialogo di creazione (MVP-462).
+    'source_times' => 'Mostra :count registrazione di tempo di origine|Mostra :count registrazioni di tempo di origine',
+    'preview' => [
+        'heading' => 'Anteprima:',
+        'empty' => 'Nessun tempo fatturabile o trasferta per i filtri selezionati.',
+        'entry_count' => ':count registrazione|:count registrazioni',
+        'travel' => '+ :count trasferta/e',
+        'warning_late' => ':count registrazione tardiva: la data di prestazione ricade in un periodo già fatturato.|:count registrazioni tardive: le date di prestazione ricadono in periodi già fatturati.',
+        'column' => [
+            'description' => 'Posizione',
+            'duration' => 'Durata',
+            'rate' => 'Tariffa',
+            'amount' => 'Importo',
+        ],
+        'entries_heading' => 'Mostra/escludi singole registrazioni',
+        'exclude' => 'escludi',
+        'exclude_hint' => 'Le registrazioni escluse restano aperte e riappaiono nel prossimo ciclo di fatturazione.',
+    ],
 ];

@@ -63,6 +63,49 @@ class InvoiceController extends Controller {
         return view('invoices._form_dialog', compact('customers', 'projects', 'foreignCustomers', 'defaultFrom', 'defaultTo'));
     }
 
+    /**
+     * Read-only-Vorschau des Rechnungslaufs (MVP-462): rendert das Partial für
+     * den Erstell-Dialog — Blöcke, Summen, Warnungen und Einzel-Einträge mit
+     * Ausschluss-Checkboxen. Verbraucht nichts (keine Sperre, keine Nummer).
+     */
+    public function preview(Request $request, InvoiceGenerator $gen): View {
+        Gate::authorize('create', Invoice::class);
+
+        $request->merge([
+            'customer_id' => \App\Support\Sqid::decodeOrNumeric(Customer::class, $request->input('customer_id')),
+            'project_id' => \App\Support\Sqid::decodeOrNumeric(Project::class, $request->input('project_id')),
+            'foreign_customer_id' => \App\Support\Sqid::decodeOrNumeric(\App\Models\ForeignCustomer::class, $request->input('foreign_customer_id')),
+        ]);
+
+        $data = $request->validate([
+            'customer_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('customers')],
+            'project_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('projects')],
+            'foreign_customer_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('foreign_customers')],
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date', 'after_or_equal:from'],
+        ]);
+
+        /** @var Customer $customer */
+        $customer = Customer::query()->findOrFail($data['customer_id']);
+        /** @var Project|null $project */
+        $project = isset($data['project_id']) ? Project::query()->find($data['project_id']) : null;
+        /** @var \App\Models\ForeignCustomer|null $foreignCustomer */
+        $foreignCustomer = isset($data['foreign_customer_id']) ? \App\Models\ForeignCustomer::query()->find($data['foreign_customer_id']) : null;
+
+        try {
+            $preview = $gen->previewTimeEntries($customer, $project, [
+                'from' => $data['from'] ?? null,
+                'to' => $data['to'] ?? null,
+            ], $foreignCustomer);
+        } catch (\App\Services\Finance\BillingModeLockedException $e) {
+            return view('invoices._preview', ['preview' => null, 'blocked' => $e->getMessage()]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return view('invoices._preview', ['preview' => null, 'blocked' => collect($e->errors())->flatten()->first()]);
+        }
+
+        return view('invoices._preview', ['preview' => $preview, 'blocked' => null]);
+    }
+
     public function store(Request $request, InvoiceGenerator $gen): RedirectResponse {
         Gate::authorize('create', Invoice::class);
 
@@ -93,7 +136,19 @@ class InvoiceController extends Controller {
             'dp_amount' => ['required_if:content,down_payment', 'nullable', 'numeric', 'min:0.01', 'max:99999999.99'],
             'dp_service_date' => ['nullable', 'date'],
             'payment_terms_days' => ['nullable', 'integer', 'min:0', 'max:365'],
+            'excluded_time_entry_ids' => ['nullable', 'array', 'max:500'],
+            'excluded_time_entry_ids.*' => ['string'],
         ]);
+
+        // In der Vorschau abgewählte Einträge (MVP-462): Sqids dekodieren;
+        // fremde/ungültige IDs sind harmlos, weil whereNotIn nur ausschließt.
+        $excludedEntryIds = [];
+        foreach ((array) ($data['excluded_time_entry_ids'] ?? []) as $sqid) {
+            $decoded = \App\Support\Sqid::decodeOrNumeric(\App\Models\TimeEntry::class, $sqid);
+            if ($decoded !== null) {
+                $excludedEntryIds[] = $decoded;
+            }
+        }
 
         /** @var Customer $customer */
         $customer = Customer::query()->findOrFail($data['customer_id']);
@@ -132,7 +187,7 @@ class InvoiceController extends Controller {
             // Material wird getrennt abgerechnet (eigene Rechnung mit Lieferdatum).
             $invoice = $gen->fromMaterialUsages($customer, $project, $range, $foreignCustomer);
         } else {
-            $invoice = $gen->fromTimeEntries($customer, $project, $range, $foreignCustomer);
+            $invoice = $gen->fromTimeEntries($customer, $project, $range, $foreignCustomer, $excludedEntryIds);
         }
 
         // Teilrechnung (Belegkette 066): reine Kennzeichnung des Entwurfs, keine Anrechnungslogik.
@@ -155,7 +210,7 @@ class InvoiceController extends Controller {
 
     public function show(Invoice $invoice): View {
         Gate::authorize('view', $invoice);
-        $invoice->load(['items', 'customer', 'project']);
+        $invoice->load(['items.timeEntries.user', 'customer', 'project']);
 
         // Belegkette 066: anrechenbare offene Abschläge für den Schlussrechnungs-CTA.
         $openDownPaymentCount = 0;

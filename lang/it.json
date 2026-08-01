@@ -9218,5 +9218,8 @@
     "… oder Endkunde (optional)": "… o cliente finale (facoltativo)",
     "… und :count weitere": "… e altre :count",
     "€/km": "€/km",
-    "≤ 3 Monate": "≤ 3 mesi"
+    "≤ 3 Monate": "≤ 3 mesi",
+    "Offene Zeiten: :count Einträge warten auf Abrechnung": "Tempi aperti: :count registrazioni in attesa di fatturazione",
+    "Davon :late Nachzügler in bereits abgerechneten Zeiträumen und :stale älter als :days Tage. Bitte die Arbeitsliste „Offene Zeiten\" prüfen.": "Di cui :late registrazioni tardive in periodi già fatturati e :stale più vecchie di :days giorni. Verificare la lista di lavoro «Tempi aperti».",
+    "Offene Zeiten öffnen": "Apri i tempi aperti"
 }

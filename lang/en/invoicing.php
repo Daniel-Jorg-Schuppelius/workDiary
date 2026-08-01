@@ -49,4 +49,23 @@ return [
             'missing_due_date' => 'Due date missing — the default payment term is used.',
         ],
     ],
+
+    // Invoice preview in the create dialog (MVP-462).
+    'source_times' => 'Show :count source time entry|Show :count source time entries',
+    'preview' => [
+        'heading' => 'Preview:',
+        'empty' => 'No billable times or travel charges match the selected filters.',
+        'entry_count' => ':count entry|:count entries',
+        'travel' => '+ :count travel charge(s)',
+        'warning_late' => ':count late entry: service date falls into an already billed period.|:count late entries: service dates fall into already billed periods.',
+        'column' => [
+            'description' => 'Item',
+            'duration' => 'Duration',
+            'rate' => 'Rate',
+            'amount' => 'Amount',
+        ],
+        'entries_heading' => 'Show/exclude individual time entries',
+        'exclude' => 'exclude',
+        'exclude_hint' => 'Excluded entries stay open and reappear in the next invoicing run.',
+    ],
 ];

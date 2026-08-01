@@ -1383,6 +1383,9 @@ Route::middleware('auth')->group(function () {
         // ── Rechnungen / Invoicing ────────────────────────────────────
         Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices.index');
         Route::get('invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
+        // Vorschau (MVP-462): POST + Literal-Segment VOR invoices/{invoice},
+        // damit das Sqid-Binding nicht greift (Muster admin/ai/vorschau).
+        Route::post('invoices/vorschau', [InvoiceController::class, 'preview'])->name('invoices.preview');
         Route::post('invoices', [InvoiceController::class, 'store'])->name('invoices.store');
         Route::get('invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
         Route::delete('invoices/{invoice}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
@@ -1813,6 +1816,14 @@ Route::middleware('auth')->group(function () {
             Route::post('{transfer}/uebertragen', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'execute'])->name('execute');
             Route::post('{transfer}/verwerfen', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'void'])->name('void');
             Route::get('{transfer}/download', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'download'])->name('download');
+        });
+
+        // ── Offene Zeiten (MVP-460): Buchhaltungs-Arbeitsliste unabgerechneter
+        // Zeiten. Routen MÜSSEN finance.* heißen (Plan-Gating 'finance.*' →
+        // module.finance). Sicht-Gate: timeEntry.viewAny (im Controller).
+        Route::prefix('finanzen/offene-zeiten')->name('finance.open-times.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Finance\OpenTimesController::class, 'index'])->name('index');
+            Route::get('export', [\App\Http\Controllers\Finance\OpenTimesController::class, 'export'])->name('export');
         });
 
         // ── Zahlungsabgleich (Feature 045, Priorität 3 / Phase 4) ───────────────

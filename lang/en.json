@@ -9218,5 +9218,8 @@
     "… oder Endkunde (optional)": "… or end customer (optional)",
     "… und :count weitere": "… and :count more",
     "€/km": "€/km",
-    "≤ 3 Monate": "≤ 3 months"
+    "≤ 3 Monate": "≤ 3 months",
+    "Offene Zeiten: :count Einträge warten auf Abrechnung": "Open times: :count entries are waiting to be billed",
+    "Davon :late Nachzügler in bereits abgerechneten Zeiträumen und :stale älter als :days Tage. Bitte die Arbeitsliste „Offene Zeiten\" prüfen.": "Of these, :late are late entries in already billed periods and :stale are older than :days days. Please review the \"Open times\" worklist.",
+    "Offene Zeiten öffnen": "Open the open-times worklist"
 }

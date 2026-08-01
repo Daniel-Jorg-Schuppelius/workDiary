@@ -18,13 +18,9 @@
         if ($min <= 0) {
             return '';
         }
-        return intdiv($min, 60) . ':' . str_pad((string) ($min % 60), 2, '0', STR_PAD_LEFT);
+        return \App\Support\Formats::duration($min, 'clock', withUnit: false);
     };
-    $fmtTotal = function (int $min): string {
-        $sign = $min < 0 ? '-' : '';
-        $abs = abs($min);
-        return $sign . intdiv($abs, 60) . ':' . str_pad((string) ($abs % 60), 2, '0', STR_PAD_LEFT) . ' h';
-    };
+    $fmtTotal = fn (int $min): string => \App\Support\Formats::duration($min, 'clock');
 
     $heatmapRows = [];
     for ($m = 1; $m <= 12; $m++) {

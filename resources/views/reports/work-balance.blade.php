@@ -4,11 +4,7 @@
 @section('nav-title', __('Arbeitsbilanz') . ' — ' . $label)
 
 @php
-    $fmt = function (int $minutes): string {
-        $sign = $minutes < 0 ? '-' : '';
-        $m = abs($minutes);
-        return $sign . sprintf('%d:%02d', intdiv($m, 60), $m % 60);
-    };
+    $fmt = fn (int $minutes): string => \App\Support\Formats::duration($minutes, 'clock', withUnit: false);
 @endphp
 
 @section('content')

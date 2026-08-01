@@ -16,8 +16,7 @@ use App\Enums\Security\IntegrityCheckStatus;
 use App\Models\IntegrityCheck;
 use App\Services\Release\{CodeIntegrityService, IntegrityAnchorService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\File as FileFacade;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\{File as FileFacade, Storage};
 use Tests\TestCase;
 
 /**

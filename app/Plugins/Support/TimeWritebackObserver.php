@@ -46,6 +46,36 @@ class TimeWritebackObserver {
         }
     }
 
+    /**
+     * Neuanlage (MVP-463): Spiegel-Plugins ({@see MirrorsCreatedEntries})
+     * bekommen den Eintrag zeitnah über die Outbox statt erst per Stunden-
+     * Batch. Eignungsprüfung (Projekt-Mapping, bestehende Referenzen) läuft
+     * erst im Dispatcher — hier nur die billigen Guards.
+     */
+    public function created(TimeEntry $entry): void {
+        if (self::$suppressed || $entry->exported) {
+            return;
+        }
+
+        foreach (app(IntegrationOutboxDispatcherResolver::class)->all() as $dispatcher) {
+            if (! $dispatcher instanceof MirrorsCreatedEntries) {
+                continue;
+            }
+            if (! $dispatcher->mirrorCreateEnabled((int) $entry->organization_id)) {
+                continue;
+            }
+
+            app(IntegrationOutboxService::class)->enqueue(
+                (int) $entry->organization_id,
+                $dispatcher->pluginId(),
+                $dispatcher->createOperation(),
+                ['time_entry_id' => $entry->getKey()],
+                $dispatcher->pluginId() . '-entry-create:' . $entry->getKey(),
+                $entry,
+            );
+        }
+    }
+
     public function updated(TimeEntry $entry): void {
         if (self::$suppressed || $entry->exported) {
             return;

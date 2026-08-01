@@ -14,6 +14,7 @@ use App\Casts\MoneyCast;
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, HasTags};
 use App\Services\RateCalculator;
+use App\Support\Formats;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use Database\Factories\TimeEntryFactory;
@@ -310,9 +311,6 @@ class TimeEntry extends Model {
     }
 
     public function hoursFormatted(): string {
-        $h = intdiv($this->minutes, 60);
-        $m = $this->minutes % 60;
-
-        return sprintf('%d:%02d h', $h, $m);
+        return Formats::duration((int) $this->minutes, 'clock');
     }
 }

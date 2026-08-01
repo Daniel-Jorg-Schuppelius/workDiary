@@ -23,7 +23,11 @@ namespace App\Plugins\Support;
  * Eintrags (Workspace-/Projekt-IDs u. ä.) — je Plugin verschieden, deshalb
  * nicht Teil der Signatur.
  *
- * @phpstan-type LocalTimeState array{description: ?string, date: ?\Carbon\CarbonImmutable, started_at: ?\Carbon\CarbonImmutable, ended_at: ?\Carbon\CarbonImmutable, minutes: int, billable: bool}
+ * `tags`/`project_id` sind optionale Plugin-Erweiterungen des Update-Zustands
+ * ({@see TimeWritebackDispatcher} updatePayload-Hook, MVP-463) — Writer ohne
+ * Unterstützung ignorieren sie.
+ *
+ * @phpstan-type LocalTimeState array{description: ?string, date: ?\Carbon\CarbonImmutable, started_at: ?\Carbon\CarbonImmutable, ended_at: ?\Carbon\CarbonImmutable, minutes: int, billable: bool, tags?: list<string>, project_id?: int}
  */
 interface RemoteTimeWriter {
     /**

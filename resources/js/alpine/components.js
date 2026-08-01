@@ -5,6 +5,8 @@
  * (keine Inline-Ausdrücke, keine Operatoren/Ternaries). Funktioniert auch im
  * Standard-Build, daher migrierbar OHNE Build-Wechsel.
  */
+import { clearHtml, setHtml, trustedServerHtml } from "../lib/html.js";
+
 export function registerAlpineComponents(Alpine) {
     // Zwei-Faktor-Login: Umschalten zwischen TOTP-Code und Recovery-Code.
     Alpine.data("twoFactorChallenge", () => ({
@@ -1232,16 +1234,73 @@ export function registerAlpineComponents(Alpine) {
     // Rechnungs-Assistent: blendet Feldgruppen nach gewähltem Inhaltstyp um
     // (ehemals Inline-x-data + if-Statement in x-on:change — der CSP-Parser
     // kennt nur Ausdrücke, keine Statements). Initialwert via data-content.
+    // MVP-462: lädt zusätzlich die Rechnungs-Vorschau (Partial vom Server)
+    // debounced nach, sobald sich Kunde/Projekt/Endkunde/Zeitraum ändern.
     Alpine.data("invoiceContentSwitch", () => ({
         content: "service",
+        previewTimer: null,
         init() {
             this.content = this.$el.dataset.content || "service";
+            this.schedulePreview();
         },
         // Delegierter change-Handler des Wrappers: reagiert nur auf das
         // "content"-Select im Formular.
         onFormChange(event) {
             if (event.target && event.target.name === "content") {
                 this.content = event.target.value;
+            }
+            // Änderungen INNERHALB der Vorschau (Ausschluss-Checkboxen) dürfen
+            // keinen Reload auslösen — sonst verlöre die Auswahl ihren Stand.
+            if (event.target && event.target.closest("[data-invoice-preview]")) {
+                return;
+            }
+            this.schedulePreview();
+        },
+        schedulePreview() {
+            const box = this.$root.querySelector("[data-invoice-preview]");
+            if (!box) return;
+            clearTimeout(this.previewTimer);
+            this.previewTimer = setTimeout(() => {
+                this.loadPreview();
+            }, 350);
+        },
+        async loadPreview() {
+            const box = this.$root.querySelector("[data-invoice-preview]");
+            if (!box) return;
+            const form = box.closest("form");
+            if (!form || this.content !== "service") {
+                clearHtml(box);
+                return;
+            }
+            const fields = new FormData(form);
+            const params = new URLSearchParams();
+            ["customer_id", "project_id", "foreign_customer_id", "from", "to"].forEach((name) => {
+                const value = fields.get(name);
+                if (value) params.set(name, String(value));
+            });
+            if (!params.get("customer_id")) {
+                clearHtml(box);
+                return;
+            }
+            try {
+                const res = await fetch(box.dataset.url || "", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRF-TOKEN": box.dataset.csrf || "",
+                        "X-Requested-With": "XMLHttpRequest",
+                        "Content-Type": "application/x-www-form-urlencoded",
+                        Accept: "text/html",
+                    },
+                    body: params.toString(),
+                });
+                if (!res.ok) {
+                    clearHtml(box);
+                    return;
+                }
+                setHtml(box, trustedServerHtml(await res.text()));
+            } catch {
+                // Netzwerkfehler: Vorschau bleibt leer, das Formular funktioniert weiter.
+                clearHtml(box);
             }
         },
     }));

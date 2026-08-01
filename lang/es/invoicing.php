@@ -49,4 +49,23 @@ return [
             'missing_due_date' => 'Falta la fecha de vencimiento — se usa el plazo de pago predeterminado.',
         ],
     ],
+
+    // Vista previa de la factura en el diálogo de creación (MVP-462).
+    'source_times' => 'Mostrar :count registro de tiempo de origen|Mostrar :count registros de tiempo de origen',
+    'preview' => [
+        'heading' => 'Vista previa:',
+        'empty' => 'No hay tiempos facturables ni desplazamientos para los filtros seleccionados.',
+        'entry_count' => ':count registro|:count registros',
+        'travel' => '+ :count desplazamiento(s)',
+        'warning_late' => ':count registro tardío: la fecha de prestación cae en un período ya facturado.|:count registros tardíos: las fechas de prestación caen en períodos ya facturados.',
+        'column' => [
+            'description' => 'Posición',
+            'duration' => 'Duración',
+            'rate' => 'Tarifa',
+            'amount' => 'Importe',
+        ],
+        'entries_heading' => 'Mostrar/excluir registros individuales',
+        'exclude' => 'excluir',
+        'exclude_hint' => 'Los registros excluidos permanecen abiertos y reaparecen en el próximo ciclo de facturación.',
+    ],
 ];

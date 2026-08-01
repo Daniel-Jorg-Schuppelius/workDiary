@@ -11,7 +11,7 @@
 --}}
 @php
     /** @var \App\Models\DiaryEntry $diary */
-    $fmtMinutes = fn(int $minutes): string => sprintf('%d:%02d h', intdiv($minutes, 60), $minutes % 60);
+    $fmtMinutes = fn (int $minutes): string => \App\Support\Formats::duration($minutes, 'clock');
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">

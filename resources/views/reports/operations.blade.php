@@ -5,11 +5,7 @@
 @section('content')
 @php
     $pct = fn (?float $v) => $v !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v * 100, 1, withThousandsSeparator: true) . ' %' : '–';
-    $fmtMin = function (int $minutes): string {
-        $sign = $minutes < 0 ? '-' : '';
-        $abs = abs($minutes);
-        return $sign . intdiv($abs, 60) . ':' . str_pad((string) ($abs % 60), 2, '0', STR_PAD_LEFT) . ' h';
-    };
+    $fmtMin = fn (int $minutes): string => \App\Support\Formats::duration($minutes, 'clock');
     $num = fn (float $v, int $d = 2) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, $d, withThousandsSeparator: true);
     $statusLabels = [
         'planned'      => __('Geplant'),

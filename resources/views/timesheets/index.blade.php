@@ -61,14 +61,12 @@
                 </tr>
             </x-slot:head>
                 @foreach($timesheets as $ts)
-                    <?php $h = intdiv((int)$ts->total_work_minutes, 60); ?>
-                    <?php $m = (int)$ts->total_work_minutes % 60; ?>
                     <?php $tsIsSunday = $ts->work_date && \Carbon\Carbon::parse($ts->work_date)->isSunday(); ?>
                     <tr class="{{ $tsIsSunday ? 'text-error' : '' }}">
                         <td>{{ optional($ts->work_date)->fdate() }}</td>
                         <td>{{ $ts->project?->name }}</td>
                         <td>{{ $ts->user?->name }}</td>
-                        <td class="text-right tabular-nums">{{ $h }}:{{ str_pad((string)$m,2,'0',STR_PAD_LEFT) }} h</td>
+                        <td class="text-right tabular-nums">{{ \App\Support\Formats::duration((int) $ts->total_work_minutes, 'clock') }}</td>
                         <td><x-status-badge size="sm" :tone="$ts->statusTone()">{{ $ts->statusLabel() }}</x-status-badge></td>
                         <td class="text-right">
                             <x-icon-btn icon="open_in_new"

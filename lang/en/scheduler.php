@@ -101,6 +101,7 @@ return [
         ],
         'easybill' => ['sync' => 'easybill document retrieval'],
         'integration' => ['purge_inbox' => 'Purge integration inbox'],
+        'finance' => ['open_times_digest' => 'Open-times digest for accounting'],
         'inventory' => ['cycle_counts' => 'Trigger cycle counts', 'expiring_lots' => 'Best-before monitoring (expiring lots)'],
         'invoicing' => ['recurring' => 'Generate recurring invoice drafts'],
         'jtl' => ['sync' => 'JTL Wawi sync'],

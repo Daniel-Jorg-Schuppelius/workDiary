@@ -729,16 +729,16 @@
         },
         {
             "name": "daniel-jorg-schuppelius/php-pdf-toolkit",
-            "version": "v0.15.4",
+            "version": "v0.15.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/php-pdf-toolkit.git",
-                "reference": "7721643834283ac42540ce36f24bd89b1f8b1183"
+                "reference": "6862c3d6018b6df068e5e71875ea7442aba990b3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-pdf-toolkit/zipball/7721643834283ac42540ce36f24bd89b1f8b1183",
-                "reference": "7721643834283ac42540ce36f24bd89b1f8b1183",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-pdf-toolkit/zipball/6862c3d6018b6df068e5e71875ea7442aba990b3",
+                "reference": "6862c3d6018b6df068e5e71875ea7442aba990b3",
                 "shasum": ""
             },
             "require": {
@@ -776,9 +776,9 @@
             "description": "PHP 8.2+ library for PDF text extraction with automatic reader selection. Supports embedded text and scanned documents via OCR.",
             "support": {
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/php-pdf-toolkit/issues",
-                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-pdf-toolkit/tree/v0.15.4"
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-pdf-toolkit/tree/v0.15.5"
             },
-            "time": "2026-07-30T14:13:38+00:00"
+            "time": "2026-07-30T15:08:34+00:00"
         },
         {
             "name": "darkaonline/l5-swagger",
@@ -1507,16 +1507,16 @@
         },
         {
             "name": "dschuppelius/php-common-toolkit",
-            "version": "v1.22.2",
+            "version": "v1.22.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DSchuppelius/php-common-toolkit.git",
-                "reference": "21bf46fad60eaca108dbce0da789c36dae0867ce"
+                "reference": "6fd278fbb76ae6bd0f5b32b1abe2af7737918e99"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/21bf46fad60eaca108dbce0da789c36dae0867ce",
-                "reference": "21bf46fad60eaca108dbce0da789c36dae0867ce",
+                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/6fd278fbb76ae6bd0f5b32b1abe2af7737918e99",
+                "reference": "6fd278fbb76ae6bd0f5b32b1abe2af7737918e99",
                 "shasum": ""
             },
             "require": {
@@ -1552,9 +1552,9 @@
             "description": "Project description.",
             "support": {
                 "issues": "https://github.com/DSchuppelius/php-common-toolkit/issues",
-                "source": "https://github.com/DSchuppelius/php-common-toolkit/tree/v1.22.2"
+                "source": "https://github.com/DSchuppelius/php-common-toolkit/tree/v1.22.3"
             },
-            "time": "2026-07-30T14:45:07+00:00"
+            "time": "2026-08-01T14:22:05+00:00"
         },
         {
             "name": "dschuppelius/php-config-toolkit",
@@ -13716,16 +13716,16 @@
         },
         {
             "name": "laravel/pint",
-            "version": "v1.30.0",
+            "version": "v1.30.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/pint.git",
-                "reference": "72a0540d1aa10b6c146bda2a22f3ae003123c0ea"
+                "reference": "de440809cb86055b43e7ae979bed3baf8d29ef5a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/pint/zipball/72a0540d1aa10b6c146bda2a22f3ae003123c0ea",
-                "reference": "72a0540d1aa10b6c146bda2a22f3ae003123c0ea",
+                "url": "https://api.github.com/repos/laravel/pint/zipball/de440809cb86055b43e7ae979bed3baf8d29ef5a",
+                "reference": "de440809cb86055b43e7ae979bed3baf8d29ef5a",
                 "shasum": ""
             },
             "require": {
@@ -13737,7 +13737,7 @@
             },
             "require-dev": {
                 "composer/semver": "^3.4.4",
-                "friendsofphp/php-cs-fixer": "^3.95.17",
+                "friendsofphp/php-cs-fixer": "^3.95.18",
                 "illuminate/view": "^12.64.0",
                 "larastan/larastan": "^3.10.0",
                 "laravel-zero/framework": "^12.1.0",
@@ -13782,7 +13782,7 @@
                 "issues": "https://github.com/laravel/pint/issues",
                 "source": "https://github.com/laravel/pint"
             },
-            "time": "2026-07-28T20:48:56+00:00"
+            "time": "2026-08-01T01:14:35+00:00"
         },
         {
             "name": "mockery/mockery",

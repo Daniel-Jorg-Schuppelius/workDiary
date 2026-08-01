@@ -23,15 +23,13 @@
 
     @forelse ($byDay as $date => $row)
         @php
-            $h = intdiv((int) $row['minutes'], 60);
-            $m = (int) $row['minutes'] % 60;
             $isSunday = \Carbon\Carbon::parse($date)->isSunday();
         @endphp
         <table class="data day-table">
             <thead>
                 <tr class="day-header{{ $isSunday ? ' sun' : '' }}">
                     <th colspan="4">{{ \Carbon\Carbon::parse($date)->locale(app()->getLocale())->isoFormat('dddd, DD.MM.YYYY') }}</th>
-                    <th class="right">{{ $h }}:{{ str_pad((string) $m, 2, '0', STR_PAD_LEFT) }} h</th>
+                    <th class="right">{{ \App\Support\Formats::duration((int) $row['minutes'], 'clock') }}</th>
                     <th class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row['rate'], 2, withThousandsSeparator: true) }} €</th>
                 </tr>
                 <tr>
@@ -45,10 +43,6 @@
             </thead>
             <tbody>
                 @foreach ($row['entries'] as $e)
-                    @php
-                        $eh = intdiv((int) $e->minutes, 60);
-                        $em = (int) $e->minutes % 60;
-                    @endphp
                     <tr>
                         <td>{{ $e->started_at ? \Carbon\Carbon::parse((string) $e->started_at)->ftime() : '' }}</td>
                         <td>{{ $e->ended_at ? \Carbon\Carbon::parse((string) $e->ended_at)->ftime() : '' }}</td>
@@ -60,7 +54,7 @@
                             @if ($e->task)<span class="small">{{ $e->task->title }}</span><br>@endif
                             {{ $e->description }}
                         </td>
-                        <td class="right">{{ $eh }}:{{ str_pad((string) $em, 2, '0', STR_PAD_LEFT) }}</td>
+                        <td class="right">{{ \App\Support\Formats::duration((int) $e->minutes, 'clock', withUnit: false) }}</td>
                         <td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($e->rate?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}</td>
                     </tr>
                 @endforeach
@@ -70,14 +64,10 @@
         <p>{{ __('Keine Einträge im gewählten Monat.') }}</p>
     @endforelse
 
-    @php
-        $hM = intdiv((int) $monthMinutes, 60);
-        $mM = (int) $monthMinutes % 60;
-    @endphp
     <table class="month-total">
         <tr>
             <td class="right" style="width: 70%;"><strong>Monat gesamt:</strong></td>
-            <td class="right" style="width: 15%;"><strong>{{ $hM }}:{{ str_pad((string) $mM, 2, '0', STR_PAD_LEFT) }} h</strong></td>
+            <td class="right" style="width: 15%;"><strong>{{ \App\Support\Formats::duration((int) $monthMinutes, 'clock') }}</strong></td>
             <td class="right" style="width: 15%;"><strong>{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $monthRate, 2, withThousandsSeparator: true) }} €</strong></td>
         </tr>
     </table>

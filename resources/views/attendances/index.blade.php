@@ -45,7 +45,7 @@
                         <td class="text-right tabular-nums">{{ $a->break_minutes_total }}</td>
                         <td class="text-right tabular-nums">
                             @if ($a->duration_minutes !== null)
-                                {{ sprintf('%d:%02d', intdiv($a->duration_minutes, 60), $a->duration_minutes % 60) }}
+                                {{ \App\Support\Formats::duration((int) $a->duration_minutes, 'clock', withUnit: false) }}
                             @else
                                 —
                             @endif

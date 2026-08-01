@@ -184,6 +184,17 @@ return [
             'expected_runtime_minutes' => 3,
         ],
 
+        // Offene-Zeiten-Digest (MVP-461): wöchentlicher Hinweis an die
+        // Buchhaltung bei Nachzüglern/überfälligen offenen Zeiten; ohne Befund
+        // wird nichts verschickt.
+        'finance.open_times_digest' => [
+            'command' => 'finance:open-times-digest',
+            'cadence' => ['type' => 'weeklyOn', 'day' => 1, 'time' => '06:40'],
+            'allowed' => ['dailyAt', 'weeklyOn'],
+            'criticality' => 'housekeeping',
+            'expected_runtime_minutes' => 3,
+        ],
+
         // Vollaudit 2026-07 (N17): zyklische Inventur (E6) — planbar und
         // automatisch statt nur manuell.
         'inventory.cycle_counts' => [

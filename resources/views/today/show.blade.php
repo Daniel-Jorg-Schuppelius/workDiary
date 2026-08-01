@@ -13,11 +13,7 @@
     /** @var int $untrackedMinutes */
     /** @var \Illuminate\Support\Collection $byActivity */
 
-    $fmt = function (int $m): string {
-        $sign = $m < 0 ? '-' : '';
-        $m = abs($m);
-        return sprintf('%s%d:%02d h', $sign, intdiv($m, 60), $m % 60);
-    };
+    $fmt = fn (int $m): string => \App\Support\Formats::duration($m, 'clock');
     // Vom gemeinsamen Tagesabschluss-Partial _balance erwartet.
     $fmtMin = function (int $m): string {
         $sign = $m < 0 ? '−' : '';

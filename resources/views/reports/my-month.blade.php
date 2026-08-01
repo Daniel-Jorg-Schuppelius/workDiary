@@ -4,11 +4,7 @@
 
 @section('content')
 @php
-    $fmt = function (int $min): string {
-        $sign = $min < 0 ? '-' : '';
-        $abs = abs($min);
-        return $sign . intdiv($abs, 60) . ':' . str_pad((string) ($abs % 60), 2, '0', STR_PAD_LEFT) . ' h';
-    };
+    $fmt = fn (int $min): string => \App\Support\Formats::duration($min, 'clock');
     $money = function (float $val): string {
         return \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($val, 2, withThousandsSeparator: true) . ' €';
     };

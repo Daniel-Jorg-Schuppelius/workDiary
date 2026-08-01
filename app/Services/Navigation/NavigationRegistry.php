@@ -232,6 +232,7 @@ class NavigationRegistry {
             'knowledge.index' => 'module.knowledge',
             'ideas.index' => 'module.ideas',
             'form-submissions.index' => 'module.forms',
+            'finance.open-times.index' => 'module.finance',
             'finance.transfers.index' => 'module.finance',
             'finance.reconciliation.index' => 'module.finance',
             'finance.bank-accounts.index' => 'module.finance',
@@ -476,6 +477,9 @@ class NavigationRegistry {
                     'icon' => 'request_quote',
                     'items' => [
                         ['route' => 'invoices.index', 'label' => __('Rechnungen & Belege'), 'icon' => 'request_quote', 'modal' => false, 'matches' => ['invoices.*', 'lexoffice.vouchers.*']],
+                        ...(Gate::allows('timeEntry.viewAny')
+                            ? [['route' => 'finance.open-times.index', 'label' => __('finance.open_times.menu'), 'icon' => 'pending_actions', 'modal' => false, 'matches' => ['finance.open-times.*']]]
+                            : []),
                         ['route' => 'finance.transfers.index', 'label' => __('finance.title.menu'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['finance.transfers.*', 'finance.reconciliation.*', 'finance.bank-accounts.*']],
                         ['route' => 'finance.datev.index', 'label' => __('finance.datev.menu'), 'icon' => 'account_tree', 'modal' => false, 'matches' => ['finance.datev.*']],
                         ['route' => 'finance.gobd.index', 'label' => __('gobd.title'), 'icon' => 'gavel', 'modal' => false, 'matches' => ['finance.gobd.*']],

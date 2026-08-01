@@ -38,7 +38,7 @@
                     <td>{{ $entry->customer?->name ?? '—' }}</td>
                     <td>{{ $entry->project?->name ?? '—' }}</td>
                     <td>{{ $entry->started_at->format('H:i') }}–{{ $entry->ended_at->format('H:i') }}</td>
-                    <td class="text-end">{{ intdiv($entry->minutes, 60) }}:{{ str_pad((string) ($entry->minutes % 60), 2, '0', STR_PAD_LEFT) }} h</td>
+                    <td class="text-end">{{ \App\Support\Formats::duration((int) $entry->minutes, 'clock') }}</td>
                     <td>{{ $entry->description }}</td>
                     <td class="text-right whitespace-nowrap">
                         <x-action-form :action="route('location.review.confirm', $entry)">

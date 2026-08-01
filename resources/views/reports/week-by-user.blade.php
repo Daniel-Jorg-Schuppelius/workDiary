@@ -4,16 +4,13 @@
 
 @section('content')
 @php
-    $fmt = function (int $min): string {
-        if ($min <= 0) return '–';
-        return intdiv($min, 60) . ':' . str_pad((string) ($min % 60), 2, '0', STR_PAD_LEFT);
-    };
+    $fmt = fn (int $min): string => $min <= 0 ? '–' : \App\Support\Formats::duration($min, 'clock', withUnit: false);
     $money = function (float $val): string {
         return \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($val, 2, withThousandsSeparator: true) . ' €';
     };
-    $fmtChart = fn(int|float $min): string => intdiv((int) $min, 60) . ':' . str_pad((string) ((int) $min % 60), 2, '0', STR_PAD_LEFT);
+    $fmtChart = fn (int|float $min): string => \App\Support\Formats::duration((int) $min, 'clock', withUnit: false);
     $linkParams = array_filter(array_merge(
-        ['scope' => $isAdmin ? $scope : null, 'week' => $activeKey],
+        ['scope' => $seesAll ? $scope : null, 'week' => $activeKey],
         $standardFilters->toQueryParams(),
     ));
 @endphp
@@ -35,7 +32,7 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if ($isAdmin)
+    @if ($seesAll)
         <x-filter-bar :action="route('reports.week-by-user')" :reset="route('reports.week-by-user')">
             <x-filter-field :label="__('Bereich')" for="rep-scope">
                 <select id="rep-scope" name="scope" class="select select-sm select-bordered" data-autosubmit>

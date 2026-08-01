@@ -6,7 +6,7 @@
 @php
     $editable = $timesheet->canEdit();
     $canSign = auth()->user()?->can('sign', $timesheet) ?? false;
-    $fmtMin = fn(int $min) => intdiv($min, 60) . ':' . str_pad((string)($min % 60), 2, '0', STR_PAD_LEFT);
+    $fmtMin = fn (int $min): string => \App\Support\Formats::duration($min, 'clock', withUnit: false);
     $entryKindLabel = static function (?\App\Enums\TimeEntry\TimeEntryKind $kind): string {
         return $kind?->label() ?? '';
     };

@@ -1,6 +1,6 @@
 {{-- Tab: Zeiterfassung — erwartet: $project, $timeEntries, $totalMinutes, $rangeMinutes, $rangeLabel, $myMinutes --}}
 @php
-    $fmt = fn(int $min) => intdiv($min, 60) . ':' . str_pad($min % 60, 2, '0', STR_PAD_LEFT) . ' h';
+    $fmt = fn (int $min): string => \App\Support\Formats::duration($min, 'clock');
 @endphp
 
 <div class="flex flex-col gap-3">

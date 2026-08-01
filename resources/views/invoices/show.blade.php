@@ -298,7 +298,7 @@
                 <td>{{ $item->position }}</td>
                 <td>{{ $item->description }}</td>
                 @if ($showServiceDates)<td data-sort-value="{{ optional($item->service_date)->toDateString() }}">{{ optional($item->service_date)->fdate() ?: '—' }}</td>@endif
-                <td class="text-right" data-sort-value="{{ (float) $item->quantity }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, ((int) round((float) $item->quantity * 1000)) % 10 !== 0 ? 3 : 2, withThousandsSeparator: true) }} {{ $item->unit }}</td>
+                <td class="text-right" data-sort-value="{{ (float) $item->quantity }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, ((int) round((float) $item->quantity * 1000)) % 10 !== 0 ? 3 : 2, withThousandsSeparator: true) }} {{ $item->unit }}@if ($item->unit === __('invoicing.unit_hour')) <span class="whitespace-nowrap text-xs text-base-content/60">({{ \App\Support\Formats::duration((int) round((float) $item->quantity * 60), 'clock') }})</span>@endif</td>
                 <td class="text-right" data-sort-value="{{ ($item->unit_price?->toFloat() ?? 0.0) }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->unit_price?->toFloat() ?? 0.0), ((int) round(($item->unit_price?->toFloat() ?? 0.0) * 10000)) % 100 !== 0 ? 4 : 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
                 <td class="text-right" data-sort-value="{{ ($item->amount?->toFloat() ?? 0.0) }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
                 @can('update', $invoice)
@@ -330,6 +330,28 @@
                     @endif
                 @endcan
             </tr>
+            @if ($item->timeEntries->isNotEmpty())
+                {{-- Quell-Zeiten der Position (MVP-462): Herkunft je Block sichtbar machen. --}}
+                <tr>
+                    <td colspan="{{ $footColspan + 2 }}" class="py-1">
+                        <details>
+                            <summary class="cursor-pointer text-xs text-base-content/60">
+                                {{ trans_choice('invoicing.source_times', $item->timeEntries->count(), ['count' => $item->timeEntries->count()]) }}
+                            </summary>
+                            <ul class="mt-1 space-y-0.5 pl-4">
+                                @foreach ($item->timeEntries as $sourceEntry)
+                                    <li class="flex flex-wrap items-center gap-2 text-xs text-base-content/70">
+                                        <span class="whitespace-nowrap">{{ $sourceEntry->date?->format(\App\Support\Formats::date()) ?? '—' }}</span>
+                                        <span>{{ $sourceEntry->user->name ?? '—' }}</span>
+                                        <span class="max-w-md truncate" title="{{ $sourceEntry->description }}">{{ $sourceEntry->description }}</span>
+                                        <x-duration :minutes="$sourceEntry->minutes" class="ml-auto" />
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </details>
+                    </td>
+                </tr>
+            @endif
             @if ($aiDraft && ($aiSuggestions[$item->id] ?? null) !== null)
                 <tr data-ai-suggestion-row>
                     <td colspan="{{ $footColspan + 2 }}">

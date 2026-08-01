@@ -146,7 +146,7 @@
                                     @foreach ($flexBacklog as $a)
                                         @php
                                             $svc = $a->service_minutes;
-                                            $svcLabel = $svc ? intdiv($svc, 60).':'.str_pad((string) ($svc % 60), 2, '0', STR_PAD_LEFT).' h' : __('keine Dauer');
+                                            $svcLabel = $svc ? \App\Support\Formats::duration((int) $svc, 'clock') : __('keine Dauer');
                                         @endphp
                                         <li class="flex items-center gap-2 rounded-box border border-base-200 bg-base-200/30 p-2">
                                             <input type="checkbox" name="order_ids[]" value="{{ $a->id }}" class="checkbox checkbox-sm">

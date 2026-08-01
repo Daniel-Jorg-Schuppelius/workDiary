@@ -32,37 +32,27 @@
         <tbody>
             @foreach ($bucket as $row)
                 @php
-                    $hC = intdiv((int) $row['minutes'], 60);
-                    $mC = (int) $row['minutes'] % 60;
                     $customerName = $row['customer'] ? $row['customer']->name : '(Ohne Kunde)';
                 @endphp
                 <tr class="customer-row">
                     <td>{{ $customerName }}</td>
                     <td></td>
-                    <td class="right">{{ $hC }}:{{ str_pad((string) $mC, 2, '0', STR_PAD_LEFT) }}</td>
+                    <td class="right">{{ \App\Support\Formats::duration((int) $row['minutes'], 'clock', withUnit: false) }}</td>
                     <td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row['rate'], 2, withThousandsSeparator: true) }} €</td>
                 </tr>
                 @foreach ($row['projects'] as $entry)
-                    @php
-                        $hp = intdiv((int) $entry['minutes'], 60);
-                        $mp = (int) $entry['minutes'] % 60;
-                    @endphp
                     <tr class="project-row">
                         <td>{{ $entry['project']->name }}@if ($entry['project']->foreignCustomer) · {{ $entry['project']->foreignCustomer->name }}@endif</td>
                         <td>{{ $entry['project']->number }}</td>
-                        <td class="right">{{ $hp }}:{{ str_pad((string) $mp, 2, '0', STR_PAD_LEFT) }}</td>
+                        <td class="right">{{ \App\Support\Formats::duration((int) $entry['minutes'], 'clock', withUnit: false) }}</td>
                         <td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $entry['rate'], 2, withThousandsSeparator: true) }} €</td>
                     </tr>
                 @endforeach
             @endforeach
-            @php
-                $hT = intdiv((int) $totalMinutes, 60);
-                $mT = (int) $totalMinutes % 60;
-            @endphp
             <tr class="totals">
                 <td>Gesamt</td>
                 <td></td>
-                <td class="right">{{ $hT }}:{{ str_pad((string) $mT, 2, '0', STR_PAD_LEFT) }}</td>
+                <td class="right">{{ \App\Support\Formats::duration((int) $totalMinutes, 'clock', withUnit: false) }}</td>
                 <td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $totalRate, 2, withThousandsSeparator: true) }} €</td>
             </tr>
         </tbody>
