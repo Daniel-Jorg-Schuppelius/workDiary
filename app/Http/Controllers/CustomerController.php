@@ -280,10 +280,21 @@ class CustomerController extends Controller {
         // Abgleich den alten Wert wieder.
         $pushed = app(ContactMasterDataPusher::class)->pushIfLinked($customer, $changed);
 
+        // Abrechenbar-Schalter auf offene Zeiten durchziehen — billable ist am
+        // Eintrag ein Snapshot und bliebe sonst auf dem alten Wert stehen.
+        $syncedBillable = in_array('billable', $changed, true)
+            ? app(\App\Services\Billing\TimeEntryBillableSyncService::class)->syncCustomer($customer)
+            : 0;
+
+        $message = $pushed
+            ? __('Kunde aktualisiert und an Lexoffice übertragen.')
+            : __('Kunde aktualisiert.');
+        if ($syncedBillable > 0) {
+            $message .= ' ' . trans_choice(':count offener Zeiteintrag an die neue Abrechenbarkeit angepasst.|:count offene Zeiteinträge an die neue Abrechenbarkeit angepasst.', $syncedBillable, ['count' => $syncedBillable]);
+        }
+
         return redirect()->route('customers.show', $customer)
-            ->with('success', $pushed
-                ? __('Kunde aktualisiert und an Lexoffice übertragen.')
-                : __('Kunde aktualisiert.'));
+            ->with('success', $message);
     }
 
     public function destroy(Customer $customer): RedirectResponse {

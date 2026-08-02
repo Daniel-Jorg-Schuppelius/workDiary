@@ -159,7 +159,9 @@
                             $latestBilled = $latestBilledByCustomer[$entry->project->customer_id ?? 0] ?? null;
                             $isLate = $latestBilled !== null && $entry->date !== null && $entry->date->lte($latestBilled);
                         @endphp
-                        @if (! $entry->billable)
+                        @if ($entry->billable)
+                            <span class="text-base-content/60">{{ __('Ja') }}</span>
+                        @else
                             <x-status-badge tone="warning" outline>{{ __('finance.open_times.badge.non_billable') }}</x-status-badge>
                         @endif
                         @if ($isLate)

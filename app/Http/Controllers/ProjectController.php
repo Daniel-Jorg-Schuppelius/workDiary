@@ -315,12 +315,23 @@ class ProjectController extends Controller {
         $project->update($data);
         $this->syncTeamsAndMembers($project, $teamIds, $memberIds);
 
+        // Abrechenbar-Schalter auf offene Zeiten durchziehen — billable ist am
+        // Eintrag ein Snapshot und bliebe sonst auf dem alten Wert stehen.
+        $syncedBillable = $project->wasChanged('billable')
+            ? app(\App\Services\Billing\TimeEntryBillableSyncService::class)->syncProject($project)
+            : 0;
+
         if ($request->hasHeader('X-Entry-Dialog') && ($project->wasChanged('customer_id') || $project->wasChanged('slug'))) {
             return response()->json(['redirect' => route('projects.show', $project)]);
         }
 
+        $message = __('Projekt aktualisiert.');
+        if ($syncedBillable > 0) {
+            $message .= ' ' . trans_choice(':count offener Zeiteintrag an die neue Abrechenbarkeit angepasst.|:count offene Zeiteinträge an die neue Abrechenbarkeit angepasst.', $syncedBillable, ['count' => $syncedBillable]);
+        }
+
         return redirect()->route('projects.show', $project)
-            ->with('success', __('Projekt aktualisiert.'));
+            ->with('success', $message);
     }
 
     public function destroy(Project $project): RedirectResponse {

@@ -110,6 +110,7 @@
     ":count ausgewählt": ":count sélectionné(s)",
     ":count offene Lücke(n) erkannt.": ":count lacune(s) ouverte(s) détectée(s).",
     ":count offene Zuordnungskonflikte — bitte zuerst auflösen.": "Il reste :count conflits d'affectation ouverts — veuillez d'abord les résoudre.",
+    ":count offener Zeiteintrag an die neue Abrechenbarkeit angepasst.|:count offene Zeiteinträge an die neue Abrechenbarkeit angepasst.": ":count saisie de temps ouverte adaptée à la nouvelle facturabilité.|:count saisies de temps ouvertes adaptées à la nouvelle facturabilité.",
     ":count ohne Artikel": ":count sans article",
     ":count online": ":count en ligne",
     ":count unquittierte Alarme eskaliert (inkl. Stellvertretung).": ":count alertes non acquittées escaladées (suppléants inclus).",

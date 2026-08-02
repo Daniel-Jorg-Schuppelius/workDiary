@@ -110,6 +110,7 @@
     ":count ausgewählt": ":count selected",
     ":count offene Lücke(n) erkannt.": ":count open gap(s) detected.",
     ":count offene Zuordnungskonflikte — bitte zuerst auflösen.": "A decision is pending for :count assignment conflicts — please resolve them first.",
+    ":count offener Zeiteintrag an die neue Abrechenbarkeit angepasst.|:count offene Zeiteinträge an die neue Abrechenbarkeit angepasst.": ":count open time entry adjusted to the new billability.|:count open time entries adjusted to the new billability.",
     ":count ohne Artikel": ":count without article",
     ":count online": ":count online",
     ":count unquittierte Alarme eskaliert (inkl. Stellvertretung).": ":count unacknowledged alerts escalated (incl. deputies).",

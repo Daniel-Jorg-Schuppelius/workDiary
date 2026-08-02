@@ -110,6 +110,7 @@
     ":count ausgewählt": ":count seleccionado(s)",
     ":count offene Lücke(n) erkannt.": ":count hueco(s) abierto(s) detectado(s).",
     ":count offene Zuordnungskonflikte — bitte zuerst auflösen.": ":count conflictos de asignación abiertos — resuélvalos primero.",
+    ":count offener Zeiteintrag an die neue Abrechenbarkeit angepasst.|:count offene Zeiteinträge an die neue Abrechenbarkeit angepasst.": ":count registro de tiempo abierto ajustado a la nueva facturabilidad.|:count registros de tiempo abiertos ajustados a la nueva facturabilidad.",
     ":count ohne Artikel": ":count sin artículo",
     ":count online": ":count en línea",
     ":count unquittierte Alarme eskaliert (inkl. Stellvertretung).": ":count alertas sin confirmar escaladas (incl. suplentes).",
