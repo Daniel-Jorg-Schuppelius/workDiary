@@ -19,7 +19,7 @@
         <x-kpi-tile :label="__('safety.report.kpi.critical')" :value="$bySeverity['critical']" tone="error" />
     </div>
 
-    <div class="mt-4 grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid mt-4 grid gap-3 xl:grid-cols-2">
         <x-charts.bar :title="__('Ereignisse je Monat')" :unit="__('Ereignisse')"
                       :series="$monthlySeries" :x-label="__('Monat')" :y-label="__('Ereignisse')"
                       :y2-label="__('davon geschlossen')" />

@@ -25,7 +25,7 @@
         @include('reports._standard_filters', ['idPrefix' => 'coverage'])
     </x-filter-bar>
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.heatmap
             :title="__('Deckungsgrad je Schichttyp und Wochentag')"
             unit="%"

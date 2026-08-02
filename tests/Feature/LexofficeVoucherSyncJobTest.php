@@ -10,11 +10,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Customer, ExternalReference, PluginSetting, Supplier, User};
+use App\Models\{Customer, ExternalReference, LexofficeVoucher, PluginSetting, Supplier, User};
 use App\Plugins\Lexoffice\Jobs\{SyncOwnerVouchersJob, SyncVouchersJob};
-use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\Lexoffice\{LexofficePlugin, LexofficeVoucherSync};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\{Http, Queue};
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -40,6 +40,41 @@ final class LexofficeVoucherSyncJobTest extends TestCase {
             'enabled' => true,
             'settings' => ['api_key' => 'test-key'],
         ]);
+    }
+
+    public function test_enrich_paid_dates_fetches_payment_dates_for_paid_vouchers(): void {
+        // Phase-54-Nachtrag: voucherlist liefert kein paidDate — die
+        // Anreicherung holt es je bezahltem Beleg über den Payments-Endpunkt.
+        Http::fake([
+            'api.lexoffice.io/v1/payments/ext-paid' => Http::response(['paidDate' => '2030-01-15T00:00:00.000+01:00', 'openAmount' => 0]),
+            'api.lexoffice.io/v1/payments/ext-err' => Http::response([], 404),
+        ]);
+
+        $mk = fn (string $ext, string $status, ?string $paidDate): LexofficeVoucher => LexofficeVoucher::create([
+            'organization_id' => $this->organization->id,
+            'external_id' => $ext,
+            'voucher_type' => 'invoice',
+            'voucher_status' => $status,
+            'voucher_number' => strtoupper($ext),
+            'voucher_date' => '2030-01-05',
+            'paid_date' => $paidDate,
+            'total_amount' => 100,
+            'currency' => 'EUR',
+        ]);
+
+        $paid = $mk('ext-paid', 'paid', null);
+        $err = $mk('ext-err', 'paid', null);
+        $mk('ext-open', 'open', null);         // kein Kandidat (unbezahlt)
+        $mk('ext-done', 'paid', '2030-01-01'); // schon angereichert
+
+        $count = (new LexofficeVoucherSync('test-key'))->enrichPaidDates($this->organization->id);
+
+        $this->assertSame(1, $count);
+        $this->assertSame('2030-01-15', $paid->fresh()?->paid_date?->toDateString());
+        // Fehler je Beleg werden toleriert; unbezahlte/angereicherte Belege
+        // erzeugen gar keinen Request.
+        $this->assertNull($err->fresh()?->paid_date);
+        Http::assertSentCount(2);
     }
 
     public function test_global_sync_dispatches_background_job(): void {

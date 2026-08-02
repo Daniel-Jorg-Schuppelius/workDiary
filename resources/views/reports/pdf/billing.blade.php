@@ -44,7 +44,7 @@
                     <tbody>
                         @foreach ($status as $st => $s)
                             <tr>
-                                <td>{{ $st }}</td>
+                                <td>{{ __("values.$st") }}</td>
                                 <td class="right">{{ $s['count'] }}</td>
                                 <td class="right">{{ $eur($s['subtotal']) }}</td>
                                 <td class="right">{{ $eur($s['total']) }}</td>

@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Reporting;
 
-use App\Models\{Customer, Invoice, User};
+use App\Models\{Customer, Invoice, LexofficeVoucher, User};
 use App\Services\Reporting\PaymentBehaviorReportBuilder;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -133,5 +133,69 @@ class PaymentBehaviorReportTest extends TestCase {
             ->get(route('reports.payment-behavior'))
             ->assertOk()
             ->assertSee('R-3');
+    }
+
+    public function test_mirrored_lexoffice_vouchers_flow_into_payment_behavior(): void {
+        // Phase-54-Nachtrag: Zahlungsverhalten funktioniert auch bei externer
+        // Rechnungshoheit — Spiegelbelege mit paid_date aus der
+        // Payments-Anreicherung zählen wie lokale Rechnungen.
+        $gamma = Customer::create(['organization_id' => $this->organization->id, 'name' => 'Gamma Extern GmbH']);
+        $mk = function (string $ext, string $number, string $type, string $status, string $date, ?string $due, ?string $paid, float $total) use ($gamma): void {
+            LexofficeVoucher::create([
+                'organization_id' => $this->organization->id,
+                'external_id' => $ext,
+                'customer_id' => $gamma->id,
+                'voucher_type' => $type,
+                'voucher_status' => $status,
+                'voucher_number' => $number,
+                'voucher_date' => $date,
+                'due_date' => $due,
+                'paid_date' => $paid,
+                'total_amount' => $total,
+                'currency' => 'EUR',
+            ]);
+        };
+
+        $mk('v1', 'LX-A', 'invoice', 'paid', '2030-01-08', '2030-01-22', '2030-01-18', 200.0); // 10 Tage, pünktlich
+        $mk('v2', 'LX-B', 'invoice', 'open', '2030-02-05', '2030-02-19', null, 300.0);         // überfällig 40 Tage
+        $mk('v3', 'LX-C', 'invoice', 'paid', '2030-01-10', '2030-01-24', null, 150.0);         // bezahlt ohne Zahldatum
+        $mk('v4', 'R-1', 'invoice', 'paid', '2030-01-10', '2030-01-24', '2030-01-25', 1000.0); // Duplikat der lokalen R-1
+        $mk('v5', 'LX-D', 'creditnote', 'paid', '2030-01-12', null, '2030-01-20', 50.0);       // Gutschrift zählt hier nicht
+
+        $result = $this->build();
+        $kpis = $result['kpis'];
+
+        // R-1 (10 T), R-2 (34 T) lokal + LX-A (10 T) — Duplikat/Gutschrift/
+        // ohne-Zahldatum erhöhen den Zähler NICHT.
+        $this->assertSame(3, $kpis['paidCount']);
+        $this->assertSame(18.0, $kpis['avgPayDays']);
+        $this->assertSame(66.7, $kpis['onTimeShare']);
+
+        // Überfällig: lokale R-3 (44 Tage) + gespiegelte LX-B (40 Tage).
+        $this->assertSame(2, $kpis['overdueCount']);
+        $this->assertSame(800.0, $kpis['overdueTotal']);
+        $byNumber = collect($result['overdue'])->keyBy('number');
+        $this->assertSame(40, $byNumber['LX-B']['daysOverdue']);
+        $this->assertNull($byNumber['LX-B']['invoiceId']);
+        $this->assertNotNull($byNumber['R-3']['invoiceId']);
+
+        // Zahldauer-Verteilung über beide Quellen (n = 3, Median 10 Tage).
+        $this->assertSame(3, $result['payBox'][0]['n']);
+        $this->assertSame(10.0, $result['payBox'][0]['median']);
+    }
+
+    public function test_customer_charts_link_to_self_filtered_report(): void {
+        $response = $this->actingAs($this->admin)
+            ->withSession($this->dateRangeSession('2030-01-01', '2030-03-31'))
+            ->get(route('reports.payment-behavior'));
+
+        // Verzugs-Top verlinkt auf den kundengefilterten Selbst-Drilldown (MVP-470).
+        $delay = $response->viewData('delaySeries');
+        $this->assertStringContainsString('reports/payment-behavior?', $delay[0]['url']);
+        $this->assertStringContainsString('customer=', $delay[0]['url']);
+
+        // Boxplot: Gesamtzeile ohne Link, Kundenzeilen — hier n<3 — entfallen.
+        $payBox = $response->viewData('payBox');
+        $this->assertNull($payBox[0]['url']);
     }
 }

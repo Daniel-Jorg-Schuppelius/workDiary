@@ -19,6 +19,7 @@
     'unit',
     'series' => [],
     'computedAt' => null,
+    'note' => null,           // Datenbasis-Hinweis unter dem Titel (MVP-470)
     'median' => null,        // horizontale Medianlinie (Zahl)
     'xLabel' => null,
     'yLabel' => null,
@@ -50,8 +51,14 @@
         </span>
     </figcaption>
 
+    @if ($note)
+        <p class="mt-1 text-xs text-base-content/50">{{ $note }}</p>
+    @endif
+
     @if ($points->isEmpty())
-        <x-empty-state icon="bar_chart" :title="__('Noch keine Daten für dieses Diagramm.')" compact />
+        <div class="wd-chart-empty">
+            <x-empty-state icon="bar_chart" :title="__('Noch keine Daten für dieses Diagramm.')" compact />
+        </div>
     @else
         <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="mt-2 w-full">
             <defs>
@@ -91,7 +98,7 @@
             @endforeach
         </svg>
 
-        <div class="mt-2 max-h-48 overflow-y-auto">
+        <div class="wd-chart-table mt-2 max-h-48 overflow-y-auto">
             <x-table bare>
                 <x-slot:head>
                     <tr>

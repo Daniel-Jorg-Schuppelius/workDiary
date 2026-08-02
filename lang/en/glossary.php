@@ -33,4 +33,13 @@ return [
     'abnahme' => "Acceptance: the customer's formal confirmation that the work was delivered as agreed — documented via a signed protocol; starts warranty and billing.",
     'prozedur' => "Procedure: guided step-by-step work instruction from a versioned template; every run is logged traceably.",
     'zeitkonto' => "Working-time account: records overtime and undertime against the contractual target — basis for time off in lieu or payout.",
+    'rfm_recency' => "Recency score 1–5: how recent is the last service? 5 = top quintile (most recently active), 1 = inactive the longest.",
+    'rfm_frequency' => "Frequency score 1–5: activity days in the period, as a quintile across all active customers. 5 = most frequent customers.",
+    'rfm_monetary' => "Monetary score 1–5: revenue in the period (billable time snapshots), as a quintile. 5 = highest-revenue customers.",
+    'hhi' => "Herfindahl-Hirschman index: sum of squared revenue shares (in %). Below 1500 uncritical, above 2500 high concentration risk.",
+    'dso' => "Days sales outstanding: open receivables ÷ revenue of the last 90 days × 90 — average capital tie-up in days.",
+    'auslastung' => "Tracked working time ÷ target time from the work schedule, in percent.",
+    'abrechenbare_quote' => "Billable ÷ tracked working time, in percent — how much time flows into paid work.",
+    'realisierung' => "Invoiced ÷ billable working time, in percent — how much billable work actually ends up on invoices.",
+    'kohorte' => "Group of customers with their first service in the same year — their activity is tracked over the following years.",
 ];

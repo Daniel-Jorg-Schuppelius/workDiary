@@ -46,6 +46,10 @@ class CustomerValueReportController extends Controller {
         $label = CarbonFmt::fdate($from) . ' – ' . CarbonFmt::fdate($to);
 
         $riskDays = max(1, (int) $request->integer('risk_days', 60));
+        // Segment-Drilldown (MVP-470): filtert NUR die Kundenliste, nicht
+        // die Charts/KPIs — sonst würde die Konzentrationssicht kippen.
+        $segment = $request->query('segment');
+        $segment = is_string($segment) && array_key_exists($segment, $this->segmentLabels()) ? $segment : null;
         $filterFields = ['project', 'user', 'include_excluded'];
         $filters = $this->standardFilters($request, $filterFields, $from, $to);
 
@@ -75,6 +79,8 @@ class CustomerValueReportController extends Controller {
 
         return view('reports.customer-value', [
             'rows' => $rows,
+            'tableRows' => $segment !== null ? $rows->where('segment', $segment)->values() : $rows,
+            'segment' => $segment,
             'segments' => $result['segments'],
             'segmentLabels' => $this->segmentLabels(),
             'concentration' => $result['concentration'],
@@ -87,8 +93,8 @@ class CustomerValueReportController extends Controller {
             'standardFilters' => $filters,
             'filterFields' => $filterFields,
             'revenueSeries' => $this->revenueSeries($result['rows'], $filters),
-            'riskScatter' => $this->riskScatter($result['rows']),
-            'segmentSeries' => $this->segmentSeries($result['segments']),
+            'riskScatter' => $this->riskScatter($result['rows'], $filters),
+            'segmentSeries' => $this->segmentSeries($result['segments'], $filters, $riskDays),
             ...$this->standardFilterOptions($filterFields, $filters),
         ]);
     }
@@ -132,18 +138,21 @@ class CustomerValueReportController extends Controller {
      * rechts oberhalb der P80-Linie sind gefährdete A-Kunden.
      *
      * @param  list<array{customerId:int, customerName:string, recencyDays:?int, frequencyDays:int, revenue:float, invoiced:float, totalMinutes:int, r:?int, f:?int, m:?int, segment:string, firstActivity:?string, lastActivity:?string}>  $rows
-     * @return array{series: list<array{x: string, y: float}>, percentiles: array<string, float>}
+     * @return array{series: list<array{x: string, y: float, url: string}>, percentiles: array<string, float>}
      */
-    private function riskScatter(array $rows): array {
+    private function riskScatter(array $rows, ReportFilters $filters): array {
         $active = collect($rows)
             ->filter(static fn(array $row): bool => $row['revenue'] > 0 && $row['recencyDays'] !== null)
             ->sortBy('recencyDays')
             ->values();
 
         $series = $active
-            ->map(static fn(array $row): array => [
+            ->map(fn(array $row): array => [
                 'x' => $row['customerName'] . ' (' . $row['recencyDays'] . ' ' . __('Tage') . ')',
                 'y' => round($row['revenue'], 2),
+                'url' => route('reports.customer-project', array_merge($filters->toQueryParams(), [
+                    'customer' => Sqid::encode(Customer::class, $row['customerId']),
+                ])),
             ])
             ->all();
 
@@ -158,17 +167,28 @@ class CustomerValueReportController extends Controller {
     }
 
     /**
+     * Segmentverteilung mit Drilldown: Klick filtert die Kundenliste der
+     * Seite auf das Segment (Anker #kundenliste, MVP-470).
+     *
      * @param  array<string, int>  $segments
-     * @return list<array{x: string, y: int}>
+     * @return list<array{x: string, y: int, url: string}>
      */
-    private function segmentSeries(array $segments): array {
+    private function segmentSeries(array $segments, ReportFilters $filters, int $riskDays): array {
         $labels = $this->segmentLabels();
+        $baseParams = array_merge(
+            $filters->toQueryParams(),
+            $riskDays !== 60 ? ['risk_days' => $riskDays] : [],
+        );
 
         return array_values(collect($segments)
             ->map(static fn(int $count, string $key): array => ['key' => $key, 'count' => $count])
             ->values()
             ->filter(static fn(array $row): bool => $row['count'] > 0)
-            ->map(static fn(array $row): array => ['x' => $labels[$row['key']] ?? $row['key'], 'y' => $row['count']])
+            ->map(static fn(array $row): array => [
+                'x' => $labels[$row['key']] ?? $row['key'],
+                'y' => $row['count'],
+                'url' => route('reports.customer-value', array_merge($baseParams, ['segment' => $row['key']])) . '#kundenliste',
+            ])
             ->all());
     }
 

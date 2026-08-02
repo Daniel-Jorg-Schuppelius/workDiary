@@ -18,6 +18,7 @@
     'series' => [],
     'bands' => [],           // unten → oben: [['key' => 'open', 'label' => 'Offen'], …]
     'computedAt' => null,
+    'note' => null,           // Datenbasis-Hinweis unter dem Titel (MVP-470)
     'xLabel' => null,
 ])
 
@@ -56,8 +57,14 @@
         </span>
     </figcaption>
 
+    @if ($note)
+        <p class="mt-1 text-xs text-base-content/50">{{ $note }}</p>
+    @endif
+
     @if ($points->count() < 2)
-        <x-empty-state icon="area_chart" :title="__('Noch keine Daten für dieses Diagramm.')" compact />
+        <div class="wd-chart-empty">
+            <x-empty-state icon="area_chart" :title="__('Noch keine Daten für dieses Diagramm.')" compact />
+        </div>
     @else
         <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="mt-2 w-full">
             <line x1="{{ $pad }}" y1="{{ $height - $pad }}" x2="{{ $width - $pad }}" y2="{{ $height - $pad }}" class="stroke-base-300" stroke-width="1" />
@@ -77,7 +84,7 @@
             @endforeach
         </p>
 
-        <div class="mt-2 max-h-48 overflow-y-auto">
+        <div class="wd-chart-table mt-2 max-h-48 overflow-y-auto">
             <x-table bare>
                 <x-slot:head>
                     <tr>

@@ -67,7 +67,7 @@
         <div>{{ __('reporting.cohort.data_note') }}</div>
     </div>
 
-    <div class="grid gap-3 xl:grid-cols-2 mb-4">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2 mb-4">
         <x-charts.bar :title="__('Vorher vs. nachher je Mitarbeitendem')" unit="%" :series="$beforeAfterSeries" :y2-label="__('reporting.cohort.after')" :x-label="__('reporting.cohort.member')" :y-label="__($metricOptions[$metric])" />
         <x-charts.line :title="__('Kohortenverlauf (Wochen vor/nach Erwerb)')" unit="%" :series="$weeklySeries" :x-label="__('Woche relativ zum Erwerb')" :y-label="__($metricOptions[$metric])" />
     </div>

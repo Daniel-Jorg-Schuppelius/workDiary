@@ -50,7 +50,7 @@
         </div>
     @endif
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.area-stack :title="__('Kumulatives Flussdiagramm (CFD)')"
                              :unit="__('Elemente')"
                              :computed-at="$cfd->computedAt"

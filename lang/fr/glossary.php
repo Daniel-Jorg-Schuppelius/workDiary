@@ -33,4 +33,13 @@ return [
     'abnahme' => "Réception : confirmation formelle du client que la prestation a été fournie conformément au contrat — documentée par protocole signé ; déclenche garantie et facturation.",
     'prozedur' => "Procédure : instruction de travail guidée pas à pas issue d'un modèle versionné ; chaque exécution est consignée de façon traçable.",
     'zeitkonto' => "Compte de temps de travail : consigne les heures en plus ou en moins par rapport au temps contractuel — base de récupération ou de paiement.",
+    'rfm_recency' => "Score de récence 1–5 : la dernière prestation est-elle récente ? 5 = quintile supérieur (actif récemment), 1 = inactif le plus longtemps.",
+    'rfm_frequency' => "Score de fréquence 1–5 : jours d'activité sur la période, en quintile sur tous les clients actifs. 5 = clients les plus fréquents.",
+    'rfm_monetary' => "Score monétaire 1–5 : chiffre d'affaires sur la période (temps facturables), en quintile. 5 = clients au plus fort chiffre d'affaires.",
+    'hhi' => "Indice de Herfindahl-Hirschman : somme des parts de chiffre d'affaires au carré (en %). Moins de 1500 : non critique ; plus de 2500 : forte concentration.",
+    'dso' => "Days sales outstanding : créances ouvertes ÷ chiffre d'affaires des 90 derniers jours × 90 — immobilisation moyenne du capital en jours.",
+    'auslastung' => "Temps de travail saisi ÷ temps théorique du modèle de temps de travail, en pourcentage.",
+    'abrechenbare_quote' => "Temps facturable ÷ temps saisi, en pourcentage — la part du temps qui va dans du travail rémunéré.",
+    'realisierung' => "Temps facturé ÷ temps facturable, en pourcentage — la part du travail facturable qui arrive réellement sur les factures.",
+    'kohorte' => "Groupe de clients dont la première prestation date de la même année — leur activité est suivie sur les années suivantes.",
 ];

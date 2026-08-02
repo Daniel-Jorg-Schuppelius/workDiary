@@ -45,7 +45,7 @@
         @include('reports._standard_filters', ['idPrefix' => 'sla'])
     </x-filter-bar>
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.bar :title="__('SLA-Erfüllung (%) je Monat')" unit="%" :series="$complianceSeries" :median="$complianceMedian" :x-label="__('Monat')" :y-label="__('Erfüllung (%)')" />
         <x-charts.bar-h :title="__('Verletzungen je Kunde (Top 15)')" :unit="__('Verletzungen')" :series="$violationCustomerSeries" :x-label="__('Kunde')" :y-label="__('Anzahl')" />
     </div>

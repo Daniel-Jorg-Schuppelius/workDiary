@@ -49,7 +49,7 @@
         @endforeach
     </div>
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.line :title="__('Offene Befunde je Monat')" :unit="__('Befunde')"
                        :series="$openMonthlySeries" :x-label="__('Monat')" :y-label="__('Offen')" />
         <x-charts.stacked-bar :title="__('Befunde je Monat nach Verstoßart')" :unit="__('Befunde')"

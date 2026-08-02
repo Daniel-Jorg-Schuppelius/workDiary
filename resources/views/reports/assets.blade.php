@@ -56,7 +56,7 @@
     @php
         $dimLabel = match ($groupBy) { 'group' => __('Produktgruppe'), 'model' => __('Modell'), default => __('Asset') };
     @endphp
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.pareto :title="__('Defekte im Zeitraum (Top 20)')" :unit="__('Defekte')" :series="$defectsSeries" :x-label="$dimLabel" :y-label="__('Defekte')" />
         <x-charts.bar :title="__('Defektrate (Top 15)')" unit="%" :series="$defectRateSeries" :x-label="$dimLabel" :y-label="__('Defektrate %')" />
     </div>

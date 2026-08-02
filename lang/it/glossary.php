@@ -33,4 +33,13 @@ return [
     'abnahme' => "Collaudo: conferma formale del cliente che la prestazione è stata eseguita come da contratto — documentata con protocollo firmato; avvia garanzia e fatturazione.",
     'prozedur' => "Procedura: istruzione di lavoro guidata passo dopo passo da un modello versionato; ogni esecuzione viene registrata in modo tracciabile.",
     'zeitkonto' => "Conto ore di lavoro: registra ore in più o in meno rispetto all'orario contrattuale — base per recupero o pagamento.",
+    'rfm_recency' => "Punteggio recency 1–5: quanto è recente l'ultima prestazione? 5 = quintile superiore (attivo di recente), 1 = inattivo da più tempo.",
+    'rfm_frequency' => "Punteggio frequency 1–5: giorni di attività nel periodo, come quintile su tutti i clienti attivi. 5 = clienti più frequenti.",
+    'rfm_monetary' => "Punteggio monetary 1–5: ricavi nel periodo (tempi fatturabili), come quintile. 5 = clienti con i ricavi più alti.",
+    'hhi' => "Indice di Herfindahl-Hirschman: somma dei quadrati delle quote di ricavo (in %). Sotto 1500 non critico, sopra 2500 concentrazione elevata.",
+    'dso' => "Days sales outstanding: crediti aperti ÷ ricavi degli ultimi 90 giorni × 90 — immobilizzo medio del capitale in giorni.",
+    'auslastung' => "Tempo di lavoro registrato ÷ tempo previsto dal modello di orario, in percentuale.",
+    'abrechenbare_quote' => "Tempo fatturabile ÷ tempo registrato, in percentuale — quanta parte del tempo confluisce in lavoro remunerato.",
+    'realisierung' => "Tempo fatturato ÷ tempo fatturabile, in percentuale — quanta parte del lavoro fatturabile arriva davvero in fattura.",
+    'kohorte' => "Gruppo di clienti con prima prestazione nello stesso anno — la loro attività viene seguita negli anni successivi.",
 ];

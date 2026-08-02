@@ -33,7 +33,7 @@
         @include('reports._standard_filters', ['idPrefix' => 'month-by-user-team'])
     </x-filter-bar>
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.bar :title="__('Stunden je Mitarbeiter')" unit="h" :series="$userHoursSeries" :median="$hoursMedian" :x-label="__('Mitarbeiter')" :y-label="__('Stunden')" />
         <x-charts.heatmap
             :title="__('Stunden je Mitarbeiter und Monat')"

@@ -6,12 +6,6 @@
 @php
     $eur = fn (float $v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) . ' €';
     $fmtMin = fn (int $minutes): string => \App\Support\Formats::duration(abs($minutes));
-    $statusLabels = [
-        'draft'     => __('Entwurf'),
-        'issued'    => __('Ausgestellt'),
-        'paid'      => __('Bezahlt'),
-        'cancelled' => __('Storniert'),
-    ];
     $agingLabels = [
         'current'  => __('Aktuell'),
         '1_7'      => __('1–7 Tage'),
@@ -50,9 +44,10 @@
     </div>
 
     {{-- Feature 002: Diagramme (Abrechenbarkeit je Monat + Umsatz-Pareto) --}}
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.stacked-bar :title="__('Abrechenbare und nicht abrechenbare Stunden je Monat')" unit="h" :series="$monthlyBillableSeries" :bands="$billableBands" :x-label="__('Monat')" />
-        <x-charts.pareto :title="__('Umsatz je Kunde (Top 15)')" unit="€" :series="$customerRevenueSeries" :x-label="__('Kunde')" :y-label="__('Brutto (€)')" />
+        <x-charts.pareto :title="__('Umsatz je Kunde (Top 15)')" unit="€" :series="$customerRevenueSeries" :x-label="__('Kunde')" :y-label="__('Brutto (€)')"
+                         :note="__('Lokale Rechnungen plus gespiegelte Belege aus dem Buchhaltungsprogramm (Lexoffice); von der App übergebene Rechnungen zählen nur einmal, Gutschriften negativ.')" />
     </div>
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -69,7 +64,7 @@
                 </x-slot:head>
                 @foreach ($status as $st => $s)
                     <tr>
-                        <td>{{ $statusLabels[$st] ?? $st }}</td>
+                        <td>{{ __("values.$st") }}</td>
                         <td class="text-right tabular-nums">{{ $s['count'] }}</td>
                         <td class="text-right tabular-nums" data-sort-value="{{ (float) $s['subtotal'] }}">{{ $eur($s['subtotal']) }}</td>
                         <td class="text-right tabular-nums" data-sort-value="{{ (float) $s['total'] }}">{{ $eur($s['total']) }}</td>
@@ -111,12 +106,16 @@
         @if (empty($perCustomer))
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">payments</span>' :title="__('Keine Rechnungen im Zeitraum.')" />
         @else
+            @php($hasExternal = collect($perCustomer)->contains(fn (array $r): bool => ($r['external'] ?? 0.0) != 0.0))
             <x-table table-sort="client" bare>
                 <x-slot:head>
                     <tr>
                         <x-table.th sort type="string">{{ __('Kunde') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Rechnungen') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Brutto') }}</x-table.th>
+                        @if ($hasExternal)
+                            <x-table.th sort type="number" align="right">{{ __('davon Lexoffice') }}</x-table.th>
+                        @endif
                     </tr>
                 </x-slot:head>
                 @foreach ($perCustomer as $r)
@@ -124,6 +123,9 @@
                         <td class="font-semibold">{{ $r['customer']->name }}</td>
                         <td class="text-right tabular-nums">{{ $r['count'] }}</td>
                         <td class="text-right tabular-nums" data-sort-value="{{ (float) $r['total'] }}">{{ $eur($r['total']) }}</td>
+                        @if ($hasExternal)
+                            <td class="text-right tabular-nums" data-sort-value="{{ (float) ($r['external'] ?? 0.0) }}">{{ ($r['external'] ?? 0.0) != 0.0 ? $eur($r['external']) : '—' }}</td>
+                        @endif
                     </tr>
                 @endforeach
             </x-table>
@@ -174,7 +176,7 @@
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Angebote & Belegkette (im Zeitraum)') }}</h3>
             <x-detail-grid>
                 @forelse ($documentChain['quotes'] as $st => $count)
-                    <x-detail-grid.row :label="__('Angebote: :status', ['status' => $st])">{{ $count }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Angebote: :status', ['status' => __('values.' . $st)])">{{ $count }}</x-detail-grid.row>
                 @empty
                     <x-detail-grid.row :label="__('Angebote')">{{ __('Keine im Zeitraum.') }}</x-detail-grid.row>
                 @endforelse

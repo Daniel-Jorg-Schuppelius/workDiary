@@ -52,13 +52,16 @@
     </div>
 
     <x-charts.bullet :title="__('Auslastung je Person gegen Zielwert')" unit="%" :series="$bulletSeries"
-                     :x-label="__('Person')" :y-label="__('Auslastung')" :target-label="__('Ziel')" />
+                     :x-label="__('Person')" :y-label="__('Auslastung')" :target-label="__('Ziel')"
+                     :note="__('Auslastung = erfasste Zeit ÷ Soll-Zeit aus dem Arbeitszeitmodell; Ziel aus Admin → Zielwerte; Klick öffnet den Monatsbericht der Person.')" />
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.line :title="__('Auslastung im Monatsverlauf')" unit="%" :series="$trendSeries"
-                       :x-label="__('Monat')" :y-label="__('Auslastung %')" />
+                       :x-label="__('Monat')" :y-label="__('Auslastung %')"
+                       :note="__('Klick auf einen Monat schränkt diesen Bericht auf den Monat ein.')" />
         <x-charts.boxplot :title="__('Verteilung der Auslastung je Monat')" unit="%" :series="$boxSeries"
-                          :x-label="__('Monat')" :y-label="__('Auslastung %')" />
+                          :x-label="__('Monat')" :y-label="__('Auslastung %')"
+                          :note="__('Eine Box je Monat über die Auslastung aller Personen mit Soll-Zeit; Ausreißer nach unten sind meist Planungs- oder Erfassungslücken.')" />
     </div>
 
     <x-card class="mt-4">
@@ -82,7 +85,9 @@
                 </x-slot:head>
                 @foreach ($rows as $row)
                     <tr>
-                        <td class="font-medium">{{ $row['userName'] }}</td>
+                        <td class="font-medium">
+                            <a href="{{ route('reports.month-by-user-team', ['user' => \App\Support\Sqid::encode(\App\Models\User::class, $row['userId'])]) }}" class="link link-hover">{{ $row['userName'] }}</a>
+                        </td>
                         <td class="text-right tabular-nums">{{ $hours($row['targetMinutes']) }}</td>
                         <td class="text-right tabular-nums">{{ $hours($row['trackedMinutes']) }}</td>
                         <td class="text-right tabular-nums">{{ $hours($row['billableMinutes']) }}</td>

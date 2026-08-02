@@ -14,7 +14,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{Customer, Invoice, TimeEntry};
-use App\Services\Reporting\ReportFilters;
+use App\Services\Reporting\{LexofficeRevenueMirror, ReportFilters};
 use Carbon\Carbon;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
@@ -98,7 +98,10 @@ class BillingReportController extends Controller {
     private function monthlyBillableSeries(ReportFilters $filters): array {
         $bands = [
             ['key' => 'billable', 'label' => (string) __('Abrechenbar')],
-            ['key' => 'non_billable', 'label' => (string) __('Nicht abrechenbar')],
+            // Kontrastband schraffiert (§Diagramm-UX, Phase-54-Nacharbeit):
+            // „Nicht abrechenbar" darf nicht wie eine gleichwertige zweite
+            // Themenfarbe wirken.
+            ['key' => 'non_billable', 'label' => (string) __('Nicht abrechenbar'), 'hatch' => true],
         ];
 
         /** @var Collection<int, TimeEntry> $entries */
@@ -140,7 +143,7 @@ class BillingReportController extends Controller {
      * Kundendimension), daher Pareto über den bestehenden Umsatz-Ausweis.
      * Drilldown öffnet den Kunden im Kunden-&-Projekte-Report.
      *
-     * @param  array<int, array{customer: Customer, count: int, total: float}>  $perCustomer
+     * @param  array<int, array{customer: Customer, count: int, total: float, external: float}>  $perCustomer
      * @return list<array{x: string, y: float, url: string}>
      */
     private function customerRevenueSeries(array $perCustomer, ReportFilters $filters): array {
@@ -406,7 +409,7 @@ class BillingReportController extends Controller {
     }
 
     /**
-     * @return array<int, array{customer: Customer, count:int, total:float}>
+     * @return array<int, array{customer: Customer, count:int, total:float, external:float}>
      */
     private function aggregatePerCustomer(string $from, string $to, ReportFilters $filters): array {
         /** @var Collection<int, Invoice> $invoices */
@@ -417,15 +420,31 @@ class BillingReportController extends Controller {
             $filters,
         )->get(['customer_id', 'total']);
 
-        /** @var array<int, array{count:int, total:float}> $agg */
+        /** @var array<int, array{count:int, total:float, external:float}> $agg */
         $agg = [];
         foreach ($invoices as $inv) {
             $cid = (int) $inv->customer_id;
             if (! isset($agg[$cid])) {
-                $agg[$cid] = ['count' => 0, 'total' => 0.0];
+                $agg[$cid] = ['count' => 0, 'total' => 0.0, 'external' => 0.0];
             }
             $agg[$cid]['count']++;
             $agg[$cid]['total'] += ($inv->total?->toFloat() ?? 0.0);
+        }
+
+        // Bei externer Rechnungshoheit existieren die Rechnungen nur im
+        // Buchhaltungsprogramm — der Lexoffice-Beleg-Spiegel liefert sie nach.
+        // Bei aktivem Projektfilter ehrlich leer: externe Belege tragen keine
+        // Projektzuordnung.
+        $external = $filters->projectId === null
+            ? app(LexofficeRevenueMirror::class)->perCustomer($from, $to, $filters->customerId, $this->activeExcludedCustomerIds($filters))
+            : [];
+        foreach ($external as $cid => $ext) {
+            if (! isset($agg[$cid])) {
+                $agg[$cid] = ['count' => 0, 'total' => 0.0, 'external' => 0.0];
+            }
+            $agg[$cid]['count'] += $ext['count'];
+            $agg[$cid]['total'] += $ext['total'];
+            $agg[$cid]['external'] += $ext['total'];
         }
 
         if ($agg === []) {
@@ -441,6 +460,7 @@ class BillingReportController extends Controller {
                 'customer' => $c,
                 'count' => $agg[$cid]['count'],
                 'total' => $agg[$cid]['total'],
+                'external' => $agg[$cid]['external'],
             ];
         }
         usort($rows, static fn($a, $b): int => $b['total'] <=> $a['total']);
@@ -485,7 +505,7 @@ class BillingReportController extends Controller {
     /**
      * @param  array<string, array{count:int, subtotal:float, tax:float, total:float}>  $status
      * @param  array{buckets: array<string, array{count:int, total:float}>, open_total: float}  $aging
-     * @param  array<int, array{customer: Customer, count:int, total:float}>  $perCustomer
+     * @param  array<int, array{customer: Customer, count:int, total:float, external:float}>  $perCustomer
      * @param  array{count:int, minutes:int, projected_revenue:float}  $unbilled
      * @param  array{incoming: array<string, array{count:int, gross:float}>, incoming_transferred: int, validation: array{checked:int, passed:int, failed:int}, dunning: array<int, int>}  $einvoicing
      */
@@ -510,6 +530,9 @@ class BillingReportController extends Controller {
         $rows[] = ['Aging', 'OFFEN_SUMME', '', NumberHelper::toUSFormat($aging['open_total'], 2)];
         foreach ($perCustomer as $r) {
             $rows[] = ['Kunde', $r['customer']->name, $r['count'], NumberHelper::toUSFormat($r['total'], 2)];
+            if (($r['external'] ?? 0.0) != 0.0) {
+                $rows[] = ['Kunde', $r['customer']->name . ' (davon Lexoffice)', '', NumberHelper::toUSFormat($r['external'], 2)];
+            }
         }
         $rows[] = ['Unbillte Zeit', 'Einträge', $unbilled['count'], ''];
         $rows[] = ['Unbillte Zeit', 'Minuten', $unbilled['minutes'], ''];
@@ -542,7 +565,7 @@ class BillingReportController extends Controller {
     /**
      * @param  array<string, array{count:int, subtotal:float, tax:float, total:float}>  $status
      * @param  array{buckets: array<string, array{count:int, total:float}>, open_total: float}  $aging
-     * @param  array<int, array{customer: Customer, count:int, total:float}>  $perCustomer
+     * @param  array<int, array{customer: Customer, count:int, total:float, external:float}>  $perCustomer
      * @param  array{count:int, minutes:int, projected_revenue:float}  $unbilled
      * @param  array{series: list<array{x: string, billable: float, non_billable: float}>, bands: list<array{key: string, label: string}>}  $monthly
      */

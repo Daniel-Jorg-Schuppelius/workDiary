@@ -23,6 +23,7 @@
     'rows' => [],
     'colLabels' => [],
     'computedAt' => null,
+    'note' => null,           // Datenbasis-Hinweis unter dem Titel (MVP-470)
     'max' => null,           // Skalenmaximum; Default: höchster Zellwert
     'totals' => true,        // Σ-Spalte/-Zeile anzeigen
     'xLabel' => null,        // Kopf der Zeilenlabel-Spalte
@@ -64,10 +65,16 @@
         </span>
     </figcaption>
 
+    @if ($note)
+        <p class="mt-1 text-xs text-base-content/50">{{ $note }}</p>
+    @endif
+
     @if ($rowList->isEmpty() || $maxCell <= 0)
-        <x-empty-state icon="grid_on" :title="__('Noch keine Daten für dieses Diagramm.')" compact />
+        <div class="wd-chart-empty">
+            <x-empty-state icon="grid_on" :title="__('Noch keine Daten für dieses Diagramm.')" compact />
+        </div>
     @else
-        <div class="mt-2 overflow-x-auto">
+        <div class="wd-chart-table mt-2 overflow-x-auto">
             <table class="table table-xs w-full text-center tabular-nums">
                 <thead>
                     <tr>

@@ -52,7 +52,7 @@
     </div>
 
     {{-- Feature 002: Diagramme (Deckungsbeitrag, Marge/Volumen, Monatsverlauf) --}}
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.bar-h :title="__('Top-Deckungsbeiträge je Projekt (nur positive)')" unit="€" :series="$contributionSeries" :x-label="__('Projekt')" :y-label="__('Deckungsbeitrag (€)')" />
         <x-charts.scatter :title="__('Marge vs. Volumen je Projekt (nur Marge ≥ 0)')" unit="%" :series="$marginVolumeSeries" :percentiles="$marginPercentiles" :x-label="__('Projekt')" :y-label="__('Marge %')" />
     </div>

@@ -178,6 +178,33 @@ class CustomerValueReportTest extends TestCase {
             ->assertSee('Gefährdete A-Kunden');
     }
 
+    public function test_segment_filter_narrows_table_but_not_charts(): void {
+        $response = $this->actingAs($this->admin)
+            ->withSession($this->dateRangeSession('2030-01-01', '2030-06-30'))
+            ->get(route('reports.customer-value', ['segment' => 'at_risk']));
+
+        $response->assertOk();
+        // Nur die Kundenliste ist gefiltert — Charts/KPIs bleiben vollständig.
+        $this->assertSame(['Bravo GmbH'], $response->viewData('tableRows')->pluck('customerName')->all());
+        $this->assertCount(6, $response->viewData('rows'));
+        $response->assertSee('Segmentfilter aufheben');
+
+        // Segment-Balken verlinken auf die gefilterte Liste (Anker #kundenliste).
+        $urls = array_column($response->viewData('segmentSeries'), 'url');
+        $this->assertNotEmpty($urls);
+        foreach ($urls as $url) {
+            $this->assertStringContainsString('segment=', $url);
+            $this->assertStringContainsString('#kundenliste', $url);
+        }
+
+        // Unbekanntes Segment wird still ignoriert (Whitelist).
+        $unfiltered = $this->actingAs($this->admin)
+            ->withSession($this->dateRangeSession('2030-01-01', '2030-06-30'))
+            ->get(route('reports.customer-value', ['segment' => 'kaputt']));
+        $unfiltered->assertOk();
+        $this->assertCount(6, $unfiltered->viewData('tableRows'));
+    }
+
     public function test_csv_export_contains_segments_and_metadata(): void {
         $response = $this->actingAs($this->admin)
             ->withSession($this->dateRangeSession('2030-01-01', '2030-06-30'))

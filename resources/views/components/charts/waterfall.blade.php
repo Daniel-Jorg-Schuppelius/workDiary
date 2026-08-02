@@ -23,6 +23,7 @@
     'startLabel' => null,
     'endLabel' => null,
     'computedAt' => null,
+    'note' => null,           // Datenbasis-Hinweis unter dem Titel (MVP-470)
     'xLabel' => null,
     'yLabel' => null,
 ])
@@ -63,8 +64,14 @@
         </span>
     </figcaption>
 
+    @if ($note)
+        <p class="mt-1 text-xs text-base-content/50">{{ $note }}</p>
+    @endif
+
     @if ($deltas->isEmpty())
-        <x-empty-state icon="waterfall_chart" :title="__('Noch keine Daten für dieses Diagramm.')" compact />
+        <div class="wd-chart-empty">
+            <x-empty-state icon="waterfall_chart" :title="__('Noch keine Daten für dieses Diagramm.')" compact />
+        </div>
     @else
         <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="mt-2 w-full">
             <defs>
@@ -132,7 +139,7 @@
             </span>
         </p>
 
-        <div class="mt-2 max-h-48 overflow-y-auto">
+        <div class="wd-chart-table mt-2 max-h-48 overflow-y-auto">
             <x-table bare>
                 <x-slot:head>
                     <tr>

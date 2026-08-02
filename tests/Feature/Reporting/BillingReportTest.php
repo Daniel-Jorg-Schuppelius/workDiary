@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Reporting;
 
-use App\Models\{Customer, Project, TimeEntry, User};
+use App\Models\{Customer, Invoice, LexofficeVoucher, Project, TimeEntry, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
@@ -63,6 +63,63 @@ class BillingReportTest extends TestCase {
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
             ->get(route('reports.billing'))
             ->assertOk();
+    }
+
+    public function test_customer_revenue_includes_lexoffice_voucher_mirror(): void {
+        // Phase-54-Nachtrag: Bei externer Rechnungshoheit liegen die
+        // Rechnungen nur im Buchhaltungsprogramm — der Beleg-Spiegel
+        // (lexoffice_vouchers) liefert sie in den Umsatz je Kunde nach.
+        $alpha = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Alpha Lokal GmbH']);
+        $beta = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Beta Extern AG']);
+
+        Invoice::create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $alpha->id,
+            'number' => 'RE-1001',
+            'status' => Invoice::STATUS_ISSUED,
+            'type' => Invoice::TYPE_INVOICE,
+            'currency' => 'EUR',
+            'tax_rate' => '19.00',
+            'issued_on' => now()->subDays(10)->toDateString(),
+            'total' => 1000,
+            'created_by' => $this->admin->id,
+        ]);
+
+        $mkVoucher = function (Customer $customer, string $externalId, string $type, string $status, string $number, float $total): void {
+            LexofficeVoucher::create([
+                'organization_id' => $this->organization->id,
+                'external_id' => $externalId,
+                'customer_id' => $customer->id,
+                'voucher_type' => $type,
+                'voucher_status' => $status,
+                'voucher_number' => $number,
+                'voucher_date' => now()->subDays(5)->toDateString(),
+                'total_amount' => $total,
+                'currency' => 'EUR',
+            ]);
+        };
+
+        $mkVoucher($beta, 'lx-1', 'invoice', 'open', 'LX-500', 500.0);
+        $mkVoucher($beta, 'lx-2', 'creditnote', 'paid', 'LX-501', 100.0);
+        $mkVoucher($beta, 'lx-3', 'invoice', 'draft', 'LX-502', 999.0);   // Entwurf zählt nicht
+        $mkVoucher($alpha, 'lx-4', 'invoice', 'paid', 'RE-1001', 1000.0); // Duplikat der lokalen Rechnung
+
+        $response = $this->getWithRange();
+        $response->assertOk();
+
+        $perCustomer = collect($response->viewData('perCustomer'))->keyBy(fn(array $r): string => (string) $r['customer']->name);
+        // Alpha: nur die lokale Rechnung — der gespiegelte Beleg mit gleicher
+        // Nummer wird übersprungen (keine Doppelzählung).
+        $this->assertSame(1000.0, $perCustomer['Alpha Lokal GmbH']['total']);
+        $this->assertSame(0.0, $perCustomer['Alpha Lokal GmbH']['external']);
+        // Beta: 500 − 100 Gutschrift, Entwurf zählt nicht.
+        $this->assertSame(400.0, $perCustomer['Beta Extern AG']['total']);
+        $this->assertSame(400.0, $perCustomer['Beta Extern AG']['external']);
+
+        // Chart-Serie enthält beide Kunden; Tabelle weist die externe Quelle aus.
+        $labels = array_column($response->viewData('customerRevenueSeries'), 'x');
+        $this->assertContains('Beta Extern AG', $labels);
+        $response->assertSee('davon Lexoffice');
     }
 
     public function test_unbilled_kpi_ignores_exported_entries(): void {

@@ -51,6 +51,41 @@ class CustomerRetentionReportBuilder {
     }
 
     /**
+     * Drilldown (MVP-470): Kunden einer Kohorte (Erstleistungsjahr) mit
+     * Erst-/Letztleistung und — falls $activityYear gesetzt — der Angabe,
+     * ob im Zieljahr Leistung bezogen wurde.
+     *
+     * @param  list<int>  $excludedCustomerIds
+     * @return list<array{customerId:int, customerName:string, firstActivity:string, lastActivity:string, activeInYear:?bool}>
+     */
+    public function cohortCustomers(CarbonImmutable $from, CarbonImmutable $to, int $cohortYear, ?int $activityYear = null, int $lostAfterDays = 365, array $excludedCustomerIds = []): array {
+        $customers = Customer::query()
+            ->when($excludedCustomerIds !== [], fn($q) => $q->whereNotIn('id', $excludedCustomerIds))
+            ->orderBy('name')
+            ->get(['id', 'name']);
+        $names = $customers->mapWithKeys(static fn(Customer $c): array => [(int) $c->id => (string) $c->name])->all();
+
+        $stats = $this->activityStats($from, $to, $lostAfterDays, array_keys($names));
+
+        $rows = [];
+        foreach ($stats as $cid => $s) {
+            if ($s['first'] === null || (int) substr($s['first'], 0, 4) !== $cohortYear) {
+                continue;
+            }
+            $rows[] = [
+                'customerId' => (int) $cid,
+                'customerName' => $names[$cid] ?? ('#' . $cid),
+                'firstActivity' => (string) $s['first'],
+                'lastActivity' => (string) $s['last'],
+                'activeInYear' => $activityYear !== null ? isset($s['years'][$activityYear]) : null,
+            ];
+        }
+        usort($rows, static fn(array $a, array $b): int => strcasecmp($a['customerName'], $b['customerName']));
+
+        return $rows;
+    }
+
+    /**
      * Aktivitätsstatistik je Kunde in einem Durchgang: Erst-/Letztleistung,
      * Leistungsjahre und Aktivität in den beiden Bilanzfenstern.
      *

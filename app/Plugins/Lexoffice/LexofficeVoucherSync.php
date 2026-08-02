@@ -48,7 +48,7 @@ class LexofficeVoucherSync {
     }
 
     /**
-     * @return array{contacts: int, created: int, updated: int, archived: int}
+     * @return array{contacts: int, created: int, updated: int, archived: int, paid_dates: int}
      */
     public function sync(Organization $organization): array {
         if ($this->apiKey === null || $this->apiKey === '') {
@@ -88,7 +88,48 @@ class LexofficeVoucherSync {
             'created' => $created,
             'updated' => $updated,
             'archived' => (int) $archived,
+            'paid_dates' => $this->enrichPaidDates($organization->id),
         ];
+    }
+
+    /**
+     * Zahlungsdaten nachladen (Phase-54-Nachtrag): Die voucherlist liefert
+     * KEIN paidDate — für bezahlte Belege ohne Zahlungsdatum wird es über
+     * den Payments-Endpunkt geholt. Damit kann der Zahlungsverhaltens-
+     * Report Zahldauer/DSO auch bei externer Rechnungshoheit rechnen.
+     * $limit deckelt die Zusatz-Requests je Lauf (Ratelimit 2 req/s);
+     * Rest folgt beim nächsten Sync. Fehler je Beleg (z. B. 404 für
+     * Belegarten ohne Zahlung) werden toleriert.
+     */
+    public function enrichPaidDates(int $organizationId, int $limit = 100): int {
+        $candidates = LexofficeVoucher::query()
+            ->where('organization_id', $organizationId)
+            ->where('voucher_status', 'paid')
+            ->whereNull('paid_date')
+            ->whereIn('voucher_type', ['invoice', 'downpaymentinvoice', 'creditnote'])
+            ->orderByDesc('voucher_date')
+            ->limit($limit)
+            ->get(['id', 'external_id']);
+
+        $enriched = 0;
+        foreach ($candidates as $voucher) {
+            usleep(600_000); // sanftes Throttling wie beim voucherlist-Abruf
+
+            $response = $this->api()->getResponse($this->baseUrl . '/payments/' . $voucher->external_id);
+            if (! $response->successful()) {
+                continue;
+            }
+
+            $paidDate = $response->json('paidDate');
+            if (! is_string($paidDate) || $paidDate === '') {
+                continue;
+            }
+
+            $voucher->forceFill(['paid_date' => substr($paidDate, 0, 10)])->save();
+            $enriched++;
+        }
+
+        return $enriched;
     }
 
     /**
@@ -97,7 +138,7 @@ class LexofficeVoucherSync {
      * Detailseite. Archiviert nur die nicht mehr sichtbaren Belege DIESES
      * Kontakts (kontaktscoped, nicht org-weit).
      *
-     * @return array{contacts: int, created: int, updated: int, archived: int}
+     * @return array{contacts: int, created: int, updated: int, archived: int, paid_dates: int}
      */
     public function syncFor(Customer|Supplier $owner): array {
         if ($this->apiKey === null || $this->apiKey === '') {
@@ -112,7 +153,7 @@ class LexofficeVoucherSync {
             ->first(['external_id']);
 
         if ($ref === null) {
-            return ['contacts' => 0, 'created' => 0, 'updated' => 0, 'archived' => 0];
+            return ['contacts' => 0, 'created' => 0, 'updated' => 0, 'archived' => 0, 'paid_dates' => 0];
         }
 
         $contactExternalId = (string) $ref->external_id;
@@ -142,7 +183,13 @@ class LexofficeVoucherSync {
             ->when($seen !== [], fn (\Illuminate\Database\Eloquent\Builder $q) => $q->whereNotIn('external_id', $seen))
             ->update(['archived' => true]);
 
-        return ['contacts' => 1, 'created' => $created, 'updated' => $updated, 'archived' => (int) $archived];
+        return [
+            'contacts' => 1,
+            'created' => $created,
+            'updated' => $updated,
+            'archived' => (int) $archived,
+            'paid_dates' => $this->enrichPaidDates($organizationId),
+        ];
     }
 
     /**

@@ -15,25 +15,33 @@ use Carbon\CarbonImmutable;
 
 /**
  * Zahlungsverhalten & Forderungstrend (MVP-468, Feature 002). Verhaltens-
- * und Trendsicht auf lokale Rechnungen — grenzt sich vom Billing-Report
+ * und Trendsicht auf Rechnungen — grenzt sich vom Billing-Report
  * (Bestandsaufnahme/Aging heute) bewusst ab. Referenzdatum ist das
  * Zeitraumende, nicht „heute" — reproduzierbare Berichte.
  *
+ * Quellen: lokale Rechnungen (Typen invoice/partial/final, Status ohne
+ * draft/cancelled) PLUS der Lexoffice-Beleg-Spiegel (Phase-54-Nachtrag,
+ * {@see LexofficeRevenueMirror::invoiceRows()}) — bei externer
+ * Rechnungshoheit kämen sonst keine Zahlungsdaten zusammen. Zahldaten der
+ * Spiegelbelege stammen aus der Payments-Anreicherung des Belegsyncs.
+ *
  * DSO als Countback: offene Forderungen am Monatsende ÷ Umsatz der letzten
  * 90 Tage × 90. Zahldauer = paid_on − issued_on, Verzug = max(0, paid_on −
- * due_on). Nur Typen invoice/partial/final, Status ohne draft/cancelled.
+ * due_on).
  */
 class PaymentBehaviorReportBuilder {
     private const DSO_WINDOW_DAYS = 90;
+
+    public function __construct(private readonly LexofficeRevenueMirror $externalInvoices) {}
 
     /**
      * @param  list<int>  $excludedCustomerIds
      * @return array{
      *   kpis: array{dso:?float, avgPayDays:?float, onTimeShare:?float, overdueCount:int, overdueTotal:float, paidCount:int},
      *   monthly: list<array{month:string, dso:?float, avgPayDays:?float}>,
-     *   payBox: list<array{x:string, min:float, q1:float, median:float, q3:float, max:float, n:int}>,
+     *   payBox: list<array{x:string, min:float, q1:float, median:float, q3:float, max:float, n:int, customerId:?int}>,
      *   delayTop: list<array{customerId:int, customerName:string, avgDelay:float, invoices:int}>,
-     *   overdue: list<array{invoiceId:int, number:string, customerId:int, customerName:string, dueOn:string, daysOverdue:int, total:float}>,
+     *   overdue: list<array{invoiceId:?int, number:string, customerId:int, customerName:string, dueOn:string, daysOverdue:int, total:float}>,
      *   hasData: bool,
      * }
      */
@@ -58,6 +66,12 @@ class PaymentBehaviorReportBuilder {
             ])
             ->values()
             ->all();
+
+        $invoices = array_merge($invoices, $this->externalInvoices->invoiceRows(
+            $to->toDateString(),
+            $customerId,
+            $customerId === null ? $excludedCustomerIds : [],
+        ));
 
         if ($invoices === []) {
             return [
@@ -127,7 +141,7 @@ class PaymentBehaviorReportBuilder {
     }
 
     /**
-     * @param  array<int, array{id:int, customerId:int, number:string, issuedOn:?string, dueOn:?string, paidOn:?string, total:float, paid:bool}>  $invoices
+     * @param  array<int, array{id:?int, customerId:int, number:string, issuedOn:?string, dueOn:?string, paidOn:?string, total:float, paid:bool}>  $invoices
      */
     private function dsoAt(array $invoices, CarbonImmutable $at): ?float {
         $atDate = $at->toDateString();
@@ -151,7 +165,7 @@ class PaymentBehaviorReportBuilder {
     }
 
     /**
-     * @param  array<int, array{id:int, customerId:int, number:string, issuedOn:?string, dueOn:?string, paidOn:?string, total:float, paid:bool}>  $invoices
+     * @param  array<int, array{id:?int, customerId:int, number:string, issuedOn:?string, dueOn:?string, paidOn:?string, total:float, paid:bool}>  $invoices
      * @param  callable(array{issuedOn:?string, paidOn:?string}): int  $payDays
      * @return list<array{month:string, dso:?float, avgPayDays:?float}>
      */
@@ -183,17 +197,17 @@ class PaymentBehaviorReportBuilder {
      * Zahldauer-Verteilung (Boxplot): alle Kunden gesamt plus die fünf
      * Kunden mit den meisten bezahlten Rechnungen (n ≥ 3).
      *
-     * @param  list<array{id:int, customerId:int, number:string, issuedOn:?string, dueOn:?string, paidOn:?string, total:float, paid:bool}>  $paidInPeriod
+     * @param  list<array{id:?int, customerId:int, number:string, issuedOn:?string, dueOn:?string, paidOn:?string, total:float, paid:bool}>  $paidInPeriod
      * @param  array<int, string>  $names
      * @param  callable(array{issuedOn:?string, paidOn:?string}): int  $payDays
-     * @return list<array{x:string, min:float, q1:float, median:float, q3:float, max:float, n:int}>
+     * @return list<array{x:string, min:float, q1:float, median:float, q3:float, max:float, n:int, customerId:?int}>
      */
     private function payBox(array $paidInPeriod, array $names, callable $payDays): array {
         if ($paidInPeriod === []) {
             return [];
         }
 
-        $box = function (string $label, array $values): array {
+        $box = function (string $label, array $values, ?int $customerId): array {
             sort($values);
 
             return [
@@ -204,11 +218,12 @@ class PaymentBehaviorReportBuilder {
                 'q3' => round($this->percentile($values, 0.75), 1),
                 'max' => (float) $values[count($values) - 1],
                 'n' => count($values),
+                'customerId' => $customerId,
             ];
         };
 
         $all = array_map($payDays, $paidInPeriod);
-        $result = [$box((string) __('Alle Kunden'), $all)];
+        $result = [$box((string) __('Alle Kunden'), $all, null)];
 
         $byCustomer = [];
         foreach ($paidInPeriod as $inv) {
@@ -219,14 +234,14 @@ class PaymentBehaviorReportBuilder {
             if (count($values) < 3) {
                 continue;
             }
-            $result[] = $box($names[$cid] ?? ('#' . $cid), $values);
+            $result[] = $box($names[$cid] ?? ('#' . $cid), $values, (int) $cid);
         }
 
         return $result;
     }
 
     /**
-     * @param  list<array{id:int, customerId:int, number:string, issuedOn:?string, dueOn:?string, paidOn:?string, total:float, paid:bool}>  $withDue
+     * @param  list<array{id:?int, customerId:int, number:string, issuedOn:?string, dueOn:?string, paidOn:?string, total:float, paid:bool}>  $withDue
      * @param  array<int, string>  $names
      * @param  callable(array{dueOn:?string, paidOn:?string}): int  $delayDays
      * @return list<array{customerId:int, customerName:string, avgDelay:float, invoices:int}>

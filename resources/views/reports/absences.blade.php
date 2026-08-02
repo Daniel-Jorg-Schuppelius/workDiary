@@ -44,7 +44,7 @@
         </x-filter-bar>
     @endif
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.stacked-bar :title="__('Abwesenheitstage je Monat nach Typ')" :unit="__('Tage')" :series="$monthlyTypeSeries" :bands="$typeBands" :x-label="__('Monat')" />
         <x-charts.bar-h :title="__('Resturlaub je Mitarbeiter (Top 15)')" :unit="__('Tage')" :series="$remainingSeries" :x-label="__('Mitarbeiter')" :y-label="__('Tage')" />
     </div>

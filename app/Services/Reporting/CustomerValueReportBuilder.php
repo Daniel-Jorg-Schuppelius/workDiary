@@ -35,6 +35,8 @@ class CustomerValueReportBuilder {
 
     public const HHI_HIGH = 2500;
 
+    public function __construct(private readonly LexofficeRevenueMirror $externalRevenue) {}
+
     /**
      * @param  list<int>  $excludedCustomerIds
      * @return array{
@@ -263,8 +265,10 @@ class CustomerValueReportBuilder {
     }
 
     /**
-     * Fakturierter Netto-Zweitwert je Kunde (vereinfachte Sicht): ausgestellte/
-     * (teil)bezahlte Rechnungen der Typen invoice/partial/final im Zeitraum.
+     * Fakturierter Zweitwert je Kunde (vereinfachte Sicht): ausgestellte/
+     * (teil)bezahlte lokale Rechnungen der Typen invoice/partial/final plus
+     * gespiegelte Lexoffice-Belege (Phase-54-Nachtrag) — bei externer
+     * Rechnungshoheit kämen sonst keine fakturierten Beträge zusammen.
      *
      * @return array<int, float>
      */
@@ -278,6 +282,10 @@ class CustomerValueReportBuilder {
             ->each(function (Invoice $inv) use (&$sums): void {
                 $sums[(int) $inv->customer_id] = ($sums[(int) $inv->customer_id] ?? 0.0) + ($inv->total?->toFloat() ?? 0.0);
             });
+
+        foreach ($this->externalRevenue->perCustomer($from->toDateString(), $to->toDateString()) as $cid => $ext) {
+            $sums[$cid] = ($sums[$cid] ?? 0.0) + $ext['total'];
+        }
 
         return $sums;
     }

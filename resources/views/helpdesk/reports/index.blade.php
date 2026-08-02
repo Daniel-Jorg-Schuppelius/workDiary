@@ -73,7 +73,7 @@
         </x-card>
     </div>
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.bar :title="__('Ticketvolumen je Woche')"
                       :unit="__('Tickets')"
                       :x-label="__('Woche')"
@@ -134,7 +134,7 @@
         </x-table>
     </x-card>
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-card :title="__('Change-Ausgänge')">
             @if ($changeOutcomes === [])
                 <x-empty-state icon="published_with_changes" :title="__('Keine abgeschlossenen Changes im Zeitraum.')" compact />

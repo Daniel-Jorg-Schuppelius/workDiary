@@ -61,6 +61,11 @@ class CustomerRetentionReportController extends Controller {
             return $this->exportPdf($result, $label, $from->toDateString(), $to->toDateString(), $exportFilters, $request);
         }
 
+        $drilldownParams = array_merge(
+            $filters->toQueryParams(),
+            $lostDays !== 365 ? ['lost_days' => $lostDays] : [],
+        );
+
         return view('reports.customer-retention', [
             'cohorts' => $result['cohorts'],
             'bridge' => $result['bridge'],
@@ -71,20 +76,66 @@ class CustomerRetentionReportController extends Controller {
             'label' => $label,
             'standardFilters' => $filters,
             'filterFields' => $filterFields,
-            'cohortHeatmap' => $this->cohortHeatmap($result['cohorts']),
-            'bridgeSeries' => $this->bridgeSeries($result['bridge']),
+            'cohortHeatmap' => $this->cohortHeatmap($result['cohorts'], $drilldownParams),
+            'bridgeSeries' => $this->bridgeSeries($result['bridge'], withAnchors: true),
             ...$this->standardFilterOptions($filterFields, $filters),
+        ]);
+    }
+
+    /**
+     * Drilldown (MVP-470): Kunden einer Kohorte (Erstleistungsjahr),
+     * optional mit Aktiv-Kennzeichen für ein Zieljahr — beantwortet „wer
+     * steckt hinter dieser Heatmap-Zelle?".
+     */
+    public function drilldown(Request $request): View|Response {
+        $authUser = Auth::user();
+        $allowed = $authUser instanceof User
+            && ($authUser->isAdmin() || $authUser->can(Permission::ReportView->value));
+        abort_unless($allowed, 403);
+
+        [$from, $to] = $this->resolveRange($request);
+        $label = CarbonFmt::fdate($from) . ' – ' . CarbonFmt::fdate($to);
+
+        $cohort = (int) $request->integer('cohort');
+        abort_unless($cohort >= 1990 && $cohort <= 2100, 404);
+        $year = $request->filled('year') ? (int) $request->integer('year') : null;
+
+        $lostDays = max(30, (int) $request->integer('lost_days', 365));
+        $filters = $this->standardFilters($request, ['include_excluded'], $from, $to);
+
+        $rows = $this->builder->cohortCustomers($from, $to, $cohort, $year, $lostDays, $filters->excludedCustomerIds);
+
+        $exportFilters = array_merge(['cohort' => $cohort, 'year' => $year, 'lost_days' => $lostDays], $filters->toAuditArray());
+
+        if ($request->query('export') === 'csv') {
+            $out = [['Kunde', 'ErsteLeistung', 'LetzteLeistung', $year !== null ? 'AktivIn' . $year : 'AktivImZieljahr']];
+            foreach ($rows as $row) {
+                $out[] = [$row['customerName'], $row['firstActivity'], $row['lastActivity'], $row['activeInYear'] === null ? '' : ($row['activeInYear'] ? 'ja' : 'nein')];
+            }
+
+            return $this->csvWithMetadata($out, sprintf('kohorte_%d_%s_%s.csv', $cohort, $from->toDateString(), $to->toDateString()), 'customer-retention-cohort', $exportFilters, $request);
+        }
+
+        return view('reports.drilldown.customer-retention-cohort', [
+            'rows' => $rows,
+            'cohort' => $cohort,
+            'year' => $year,
+            'lostDays' => $lostDays,
+            'label' => $label,
+            'standardFilters' => $filters,
         ]);
     }
 
     /**
      * Kohorten-Matrix im Heatmap-Kontrakt (Zeilen: Erstleistungsjahr,
      * Spalten: Jahr +Offset, Wert: Anteil aktiver Kunden in %).
+     * Zeilenlabel und Zellen verlinken in den Kohorten-Drilldown (MVP-470).
      *
      * @param  array{years: list<int>, rows: list<array{year:int, size:int, cells: list<?float>}>}  $cohorts
-     * @return array{rows: list<array{label: string, cells: list<?array{value: float, title: string}>}>, colLabels: list<string>, max: ?float}
+     * @param  array<string, mixed>  $drilldownParams
+     * @return array{rows: list<array{label: string, url: string, cells: list<?array{value: float, title: string, url: string}>}>, colLabels: list<string>, max: ?float}
      */
-    private function cohortHeatmap(array $cohorts): array {
+    private function cohortHeatmap(array $cohorts, array $drilldownParams = []): array {
         $offsets = range(0, count($cohorts['years']) - 1);
 
         // Kohorten ohne Kunden wären reine Null-Zeilen; ohne jede Kohorte
@@ -94,10 +145,15 @@ class CustomerRetentionReportController extends Controller {
         return [
             'rows' => array_map(static fn(array $row): array => [
                 'label' => $row['year'] . ' (n=' . $row['size'] . ')',
-                'cells' => array_map(static fn(?float $pct): ?array => $pct === null ? null : [
+                'url' => route('reports.customer-retention.drilldown', array_merge($drilldownParams, ['cohort' => $row['year']])),
+                'cells' => array_map(static fn(?float $pct, int $offset): ?array => $pct === null ? null : [
                     'value' => $pct,
                     'title' => NumberHelper::toGermanFormat($pct, 1) . ' %',
-                ], $row['cells']),
+                    'url' => route('reports.customer-retention.drilldown', array_merge($drilldownParams, [
+                        'cohort' => $row['year'],
+                        'year' => $row['year'] + $offset,
+                    ])),
+                ], $row['cells'], array_keys($row['cells'])),
             ], $rows),
             'colLabels' => array_map(static fn(int $offset): string => '+' . $offset, $offsets),
             'max' => $rows === [] ? null : 100.0,
@@ -106,20 +162,23 @@ class CustomerRetentionReportController extends Controller {
 
     /**
      * Bestandsbrücke im Waterfall-Kontrakt; Drilldown-Listen stehen auf der
-     * Seite selbst (gleiche Daten, §Diagramm-UX-Tabellenparität).
+     * Seite selbst (gleiche Daten, §Diagramm-UX-Tabellenparität) — die
+     * Schritte verlinken per In-Page-Anker auf die Namenslisten (MVP-470).
      *
      * @param  array{start:int, end:int, new: list<array{customerId:int, customerName:string}>, reactivated: list<array{customerId:int, customerName:string}>, newChurned: list<array{customerId:int, customerName:string}>, lost: list<array{customerId:int, customerName:string}>}  $bridge
-     * @return list<array{x: string, y: int}>
+     * @return list<array{x: string, y: int, url: ?string}>
      */
-    private function bridgeSeries(array $bridge): array {
+    private function bridgeSeries(array $bridge, bool $withAnchors = false): array {
+        $anchor = static fn(string $id): ?string => $withAnchors ? '#' . $id : null;
+
         // „Neukunden" enthält ALLE Erstkunden des Zeitraums (auch die wieder
         // inaktiven) — nur so geht die Brücke exakt auf:
         // Start + Neu + Zurückgewonnen − Neu-wieder-inaktiv − Verloren = Ende.
         return array_values(array_filter([
-            ['x' => (string) __('Neukunden'), 'y' => count($bridge['new']) + count($bridge['newChurned'])],
-            ['x' => (string) __('Zurückgewonnen'), 'y' => count($bridge['reactivated'])],
-            ['x' => (string) __('Neu, wieder inaktiv'), 'y' => -count($bridge['newChurned'])],
-            ['x' => (string) __('Verloren'), 'y' => -count($bridge['lost'])],
+            ['x' => (string) __('Neukunden'), 'y' => count($bridge['new']) + count($bridge['newChurned']), 'url' => $anchor('neukunden')],
+            ['x' => (string) __('Zurückgewonnen'), 'y' => count($bridge['reactivated']), 'url' => $anchor('zurueckgewonnen')],
+            ['x' => (string) __('Neu, wieder inaktiv'), 'y' => -count($bridge['newChurned']), 'url' => $anchor('neukunden')],
+            ['x' => (string) __('Verloren'), 'y' => -count($bridge['lost']), 'url' => $anchor('verloren')],
         ], static fn(array $step): bool => $step['y'] !== 0));
     }
 

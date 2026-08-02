@@ -38,7 +38,7 @@
         @include('reports._standard_filters', ['idPrefix' => 'materials'])
     </x-filter-bar>
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.pareto :title="__('Verbrauchswert je Material (Top 20)')" unit="€" :series="$materialValueSeries" :x-label="__('Material')" :y-label="__('Netto (€)')" />
         <x-charts.bar :title="__('Materialkosten je Monat')" unit="€" :series="$monthlyCostSeries" :x-label="__('Monat')" :y-label="__('Netto (€)')" />
     </div>

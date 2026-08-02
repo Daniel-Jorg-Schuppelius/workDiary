@@ -136,6 +136,47 @@ class CustomerRetentionReportTest extends TestCase {
         $this->assertNotNull($kpis['avgCustomerAgeYears']);
     }
 
+    public function test_cohort_drilldown_lists_members_with_activity_flag(): void {
+        $plain = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $this->actingAs($plain)
+            ->withSession($this->dateRangeSession('2030-01-01', '2030-12-31'))
+            ->get(route('reports.customer-retention.drilldown', ['cohort' => 2028]))
+            ->assertForbidden();
+
+        $response = $this->actingAs($this->admin)
+            ->withSession($this->dateRangeSession('2030-01-01', '2030-12-31'))
+            ->get(route('reports.customer-retention.drilldown', ['cohort' => 2029, 'year' => 2030, 'lost_days' => 180]));
+
+        $response->assertOk();
+        $rows = $response->viewData('rows');
+        $this->assertSame(['Verloren GmbH'], array_column($rows, 'customerName'));
+        $this->assertFalse($rows[0]['activeInYear']);
+        $response->assertSee('Zur Kundenbindung');
+
+        // Kohorte 2028 war in 2030 aktiv.
+        $active = $this->actingAs($this->admin)
+            ->withSession($this->dateRangeSession('2030-01-01', '2030-12-31'))
+            ->get(route('reports.customer-retention.drilldown', ['cohort' => 2028, 'year' => 2030, 'lost_days' => 180]));
+        $this->assertTrue($active->viewData('rows')[0]['activeInYear']);
+    }
+
+    public function test_heatmap_and_bridge_link_to_their_data(): void {
+        $response = $this->actingAs($this->admin)
+            ->withSession($this->dateRangeSession('2030-01-01', '2030-12-31'))
+            ->get(route('reports.customer-retention', ['lost_days' => 180]));
+
+        $heatmap = $response->viewData('cohortHeatmap');
+        $this->assertStringContainsString('reports/customer-retention/drilldown', $heatmap['rows'][0]['url']);
+        $firstCell = collect($heatmap['rows'][0]['cells'])->filter()->first();
+        $this->assertStringContainsString('cohort=', $firstCell['url']);
+        $this->assertStringContainsString('year=', $firstCell['url']);
+
+        // Brücken-Schritte springen per Anker auf die Namenslisten.
+        $anchors = array_column($response->viewData('bridgeSeries'), 'url');
+        $this->assertContains('#neukunden', $anchors);
+        $this->assertContains('#verloren', $anchors);
+    }
+
     public function test_page_renders_bridge_series_and_requires_permission(): void {
         $plain = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($plain)

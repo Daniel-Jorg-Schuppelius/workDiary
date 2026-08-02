@@ -46,7 +46,7 @@
         </x-filter-bar>
     @endif
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.heatmap
             :title="__('Stunden je Mitarbeiter und Wochentag')"
             unit="h"

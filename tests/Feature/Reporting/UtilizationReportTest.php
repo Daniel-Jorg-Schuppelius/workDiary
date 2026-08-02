@@ -117,7 +117,12 @@ class UtilizationReportTest extends TestCase {
             ->get(route('reports.utilization', ['user' => \App\Support\Sqid::encode(User::class, $this->worker->id)]));
 
         $series = $response->viewData('bulletSeries');
-        $this->assertSame([['x' => 'Willi Worker', 'y' => 60.0, 'target' => 80.0]], $series);
+        $this->assertCount(1, $series);
+        $this->assertSame('Willi Worker', $series[0]['x']);
+        $this->assertSame(60.0, $series[0]['y']);
+        $this->assertSame(80.0, $series[0]['target']);
+        // Drilldown (MVP-470): Bullet öffnet den Monatsbericht der Person.
+        $this->assertStringContainsString('reports/month-by-user-team?user=', $series[0]['url']);
 
         $orgEval = $response->viewData('orgEval');
         $this->assertNotNull($orgEval);

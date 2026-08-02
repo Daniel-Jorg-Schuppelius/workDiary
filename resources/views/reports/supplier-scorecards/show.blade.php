@@ -122,7 +122,7 @@
     </div>
 
     {{-- Verläufe --}}
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.line :title="__('scorecard.chart_ontime')"
                        :unit="__('scorecard.unit_percent')"
                        :computed-at="$card['computed_at']"

@@ -19,7 +19,7 @@
     </x-filter-bar>
 
     @if ($recruiting !== null)
-        <div class="grid gap-3 xl:grid-cols-2">
+        <div class="chart-grid grid gap-3 xl:grid-cols-2">
             <x-charts.line :title="__('Bewerbungseingang je Monat')" :unit="__('Bewerbungen')" :series="$monthlySeries" :x-label="__('Monat')" :y-label="__('Bewerbungen')" />
             <x-charts.bar-h :title="__('Bewerber-Funnel je Workflow-Stufe')" :unit="__('Bewerbungen')" :series="$funnelSeries" :x-label="__('Workflow-Stufe')" :y-label="__('Anzahl')" />
         </div>

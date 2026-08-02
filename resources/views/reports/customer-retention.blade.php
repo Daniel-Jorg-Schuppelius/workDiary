@@ -55,18 +55,20 @@
                     :hint="__('seit :days Tagen ohne Leistung', ['days' => $lostDays])" />
     </div>
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.heatmap :title="__('Kohorten-Retention (Anteil aktiver Kunden je Jahr)')" unit="%"
                           :rows="$cohortHeatmap['rows']" :col-labels="$cohortHeatmap['colLabels']"
                           :max="$cohortHeatmap['max']" :totals="false" :x-label="__('Erstleistungsjahr')"
-                          :format="fn (float $v): string => round($v) . ' %'" />
+                          :format="fn (float $v): string => round($v) . ' %'"
+                          :note="__('Zeile = Erstleistungsjahr, Spalte +n = n Jahre später; Klick auf Zeile oder Zelle öffnet die Kundenliste der Kohorte.')" />
         <x-charts.waterfall :title="__('Kundenbestandsbrücke')" :unit="__('Kunden')" :series="$bridgeSeries"
                             :start-value="$bridge['start']" :start-label="__('Bestand Start')" :end-label="__('Bestand Ende')"
-                            :x-label="__('Schritt')" :y-label="__('Kunden')" />
+                            :x-label="__('Schritt')" :y-label="__('Kunden')"
+                            :note="__('Aktiv = Leistung innerhalb von :days Tagen; Klick auf einen Schritt springt zur Namensliste darunter.', ['days' => $lostDays])" />
     </div>
 
     <div class="mt-4 grid gap-4 lg:grid-cols-3">
-        <x-card>
+        <x-card id="neukunden" class="scroll-mt-24">
             <h2 class="mb-2 font-['Space_Grotesk'] text-sm font-semibold">{{ __('Neukunden') }} ({{ count($bridge['new']) + count($bridge['newChurned']) }})</h2>
             @if ($bridge['new'] === [] && $bridge['newChurned'] === [])
                 <p class="text-sm text-base-content/60">{{ __('Keine Neukunden im Zeitraum.') }}</p>
@@ -85,7 +87,7 @@
             @endif
         </x-card>
 
-        <x-card>
+        <x-card id="zurueckgewonnen" class="scroll-mt-24">
             <h2 class="mb-2 font-['Space_Grotesk'] text-sm font-semibold">{{ __('Zurückgewonnen') }} ({{ count($bridge['reactivated']) }})</h2>
             @if ($bridge['reactivated'] === [])
                 <p class="text-sm text-base-content/60">{{ __('Keine zurückgewonnenen Kunden im Zeitraum.') }}</p>
@@ -98,7 +100,7 @@
             @endif
         </x-card>
 
-        <x-card>
+        <x-card id="verloren" class="scroll-mt-24">
             <h2 class="mb-2 font-['Space_Grotesk'] text-sm font-semibold">{{ __('Verlorene Kunden') }} ({{ count($bridge['lost']) }})</h2>
             @if ($bridge['lost'] === [])
                 <p class="text-sm text-base-content/60">{{ __('Keine verlorenen Kunden im Zeitraum — gut so.') }}</p>

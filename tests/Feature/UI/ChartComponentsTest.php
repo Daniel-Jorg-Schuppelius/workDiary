@@ -30,6 +30,8 @@ class ChartComponentsTest extends TestCase {
 
         $this->assertStringContainsString('Noch keine Daten', $html);
         $this->assertStringNotContainsString('<svg viewBox', $html);
+        // MVP-469: Leerzustand zentriert sich in gestreckten Grid-Kacheln.
+        $this->assertStringContainsString('wd-chart-empty', $html);
     }
 
     public function test_bar_h_renders_full_labels_values_and_drilldown(): void {
@@ -46,8 +48,10 @@ class ChartComponentsTest extends TestCase {
         $this->assertStringContainsString('href="/reports/project-details?project=abc"', $html);
         $this->assertStringContainsString('aria-label="Ein sehr langer Projektname mit Kunde: 12.5 h, Soll: 10"', $html);
         $this->assertStringContainsString('tabindex="0"', $html);
-        // Gleichwertige Tabelle unterhalb des Diagramms.
+        // Gleichwertige Tabelle unterhalb des Diagramms — füllt in
+        // chart-grid-Kacheln die Resthöhe (MVP-469, Klasse wd-chart-table).
         $this->assertStringContainsString('Zweites Projekt', $html);
+        $this->assertStringContainsString('wd-chart-table', $html);
         $this->assertStringContainsString('fill-primary', $html);
         $this->assertDoesNotMatchRegularExpression('/(?:fill|stroke|background)[^"]*#[0-9a-f]{3,6}/i', $html);
     }
@@ -73,6 +77,26 @@ class ChartComponentsTest extends TestCase {
         $this->assertStringContainsString('KW 1: 35 h', $html);
         $this->assertStringContainsString('Σ', $html);
         $this->assertStringContainsString('fill-primary/70', $html);
+    }
+
+    public function test_stacked_bar_hatches_contrast_band_instead_of_second_color(): void {
+        $html = Blade::render('<x-charts.stacked-bar :title="$t" unit="h" :series="$s" :bands="$b" />', [
+            't' => 'Abrechenbar vs. nicht abrechenbar',
+            's' => [['x' => 'Jan', 'billable' => 30, 'non_billable' => 10]],
+            'b' => [
+                ['key' => 'billable', 'label' => 'Abrechenbar'],
+                ['key' => 'non_billable', 'label' => 'Nicht abrechenbar', 'hatch' => true],
+            ],
+        ]);
+
+        // Kontrastband als Schraffur (Farbe nie alleiniger Träger) — Segment
+        // UND Legenden-Kästchen; das schraffierte Band bekommt KEINE
+        // Themen-Füllfarbe aus der Leiter.
+        $this->assertStringContainsString('hatch-sb-', $html);
+        $this->assertMatchesRegularExpression('/<rect[^>]*fill="url\(#hatch-sb-[^"]+\)"[^>]*class="stroke-secondary"/', $html);
+        $this->assertStringContainsString('fill-primary/70', $html);
+        $this->assertStringNotContainsString('fill-secondary/60', $html);
+        $this->assertDoesNotMatchRegularExpression('/(?:fill|stroke|background)[^"]*#[0-9a-f]{3,6}/i', $html);
     }
 
     public function test_stacked_bar_renders_empty_state_without_bands(): void {
@@ -209,6 +233,18 @@ class ChartComponentsTest extends TestCase {
         $this->assertStringContainsString('href="/reports/payment-behavior?customer=abc"', $html);
         $this->assertStringContainsString('fill-primary/30', $html);
         $this->assertDoesNotMatchRegularExpression('/(?:fill|stroke|background)[^"]*#[0-9a-f]{3,6}/i', $html);
+    }
+
+    // ---- note-Prop (MVP-470) -------------------------------------------
+
+    public function test_note_prop_renders_data_basis_hint(): void {
+        $html = Blade::render('<x-charts.bar-h :title="$t" unit="h" :series="$s" :note="$n" />', [
+            't' => 'Mit Hinweis',
+            's' => [['x' => 'A', 'y' => 1]],
+            'n' => 'Datenbasis: abrechenbare Zeit-Snapshots.',
+        ]);
+
+        $this->assertStringContainsString('Datenbasis: abrechenbare Zeit-Snapshots.', $html);
     }
 
     // ---- <x-charts.sparkline> ------------------------------------------

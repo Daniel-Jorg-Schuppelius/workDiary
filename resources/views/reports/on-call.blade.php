@@ -39,7 +39,7 @@
         @include('reports._standard_filters', ['idPrefix' => 'on-call'])
     </x-filter-bar>
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.heatmap
             :title="__('Bereitschaft je Mitarbeiter und Woche')"
             unit="h"

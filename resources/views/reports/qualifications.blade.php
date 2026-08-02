@@ -48,7 +48,7 @@
         @include('reports._standard_filters', ['idPrefix' => 'qualifications'])
     </x-filter-bar>
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.bar-h :title="__('Träger je Qualifikation (Top 15)')" :unit="__('Personen')"
                         :series="$holdersSeries" :x-label="__('Qualifikation')" :y-label="__('Personen')" />
         <x-charts.stacked-bar :title="__('Zuweisungen je Qualifikation nach Status')" :unit="__('Zuweisungen')"

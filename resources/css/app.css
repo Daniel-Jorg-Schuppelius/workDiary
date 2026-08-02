@@ -324,6 +324,34 @@
 }
 
 /* ------------------------------------------------------------------ */
+/* Chart-Kacheln in Grids (MVP-469): Grid-Zellen werden per Default auf */
+/* Reihenhöhe gestreckt, die Chart-<figure> füllt aber nicht mit — die  */
+/* Datentabelle ist auf max-h-48 gedeckelt und unten bleibt Leerraum.   */
+/* Elternklasse `chart-grid` am Grid (statt Komponenten-Prop): nur im   */
+/* Grid-Kontext wird die Kachel zur Flex-Spalte und die Tabelle         */
+/* (`wd-chart-table`) füllt die Resthöhe (Basis 12rem = bisheriger      */
+/* max-h-48-Deckel, damit lange Tabellen die Reihe nicht aufblähen);    */
+/* Standalone-Charts behalten ihre kompakte Naturhöhe. Leerzustände     */
+/* (`wd-chart-empty`) zentrieren sich in der gestreckten Kachel.        */
+/* ------------------------------------------------------------------ */
+.chart-grid > figure {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+.chart-grid > figure .wd-chart-table {
+    flex: 1 1 12rem;
+    max-height: none;
+    min-height: 0;
+}
+.chart-grid > figure .wd-chart-empty {
+    flex: 1 1 auto;
+    display: grid;
+    place-items: center;
+}
+
+/* ------------------------------------------------------------------ */
 /* Opt-out aus Chromiums experimentellem base-select (daisyUI 5 setzt   */
 /* `appearance: base-select`): Bei einfachem <select>-Markup clippt     */
 /* Chromium den gewählten Eintrag dort NICHT — lange Labels malen über  */

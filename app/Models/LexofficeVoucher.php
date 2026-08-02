@@ -30,6 +30,7 @@ use Illuminate\Support\Carbon;
  * @property ?string $voucher_number
  * @property ?Carbon $voucher_date
  * @property ?Carbon $due_date
+ * @property ?Carbon $paid_date
  * @property \CommonToolkit\ValueObjects\Money|null $total_amount
  * @property \CommonToolkit\ValueObjects\Money|null $open_amount
  * @property \CommonToolkit\Enums\CurrencyCode $currency
@@ -52,6 +53,7 @@ class LexofficeVoucher extends Model {
         'voucher_number',
         'voucher_date',
         'due_date',
+        'paid_date',
         'total_amount',
         'open_amount',
         'currency',
@@ -67,6 +69,7 @@ class LexofficeVoucher extends Model {
         'supplier_id' => 'integer',
         'voucher_date' => 'date',
         'due_date' => 'date',
+        'paid_date' => 'date',
         'total_amount' => MoneyCast::class . ':currency,2',
         'open_amount' => MoneyCast::class . ':currency,2',
         'archived' => 'boolean',

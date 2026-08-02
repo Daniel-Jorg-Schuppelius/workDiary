@@ -15,7 +15,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\User;
-use App\Services\Reporting\PaymentBehaviorReportBuilder;
+use App\Services\Reporting\{PaymentBehaviorReportBuilder, ReportFilters};
 use App\Support\CarbonFmt;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
@@ -25,8 +25,9 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * Zahlungsverhalten & Forderungstrend (MVP-468, Feature 002): Wie schnell
- * zahlen Kunden, wohin entwickelt sich die Liquiditätsbindung? Nur mit
- * lokaler Rechnungsführung aussagekräftig (Rechnungshoheit beachten).
+ * zahlen Kunden, wohin entwickelt sich die Liquiditätsbindung? Quellen:
+ * lokale Rechnungen plus Lexoffice-Beleg-Spiegel (Phase-54-Nachtrag) —
+ * funktioniert damit auch bei externer Rechnungshoheit.
  */
 class PaymentBehaviorReportController extends Controller {
     use RendersReportPdf;
@@ -65,7 +66,7 @@ class PaymentBehaviorReportController extends Controller {
 
         return view('reports.payment-behavior', [
             'kpis' => $result['kpis'],
-            'payBox' => $result['payBox'],
+            'payBox' => $this->withCustomerUrls($result['payBox'], $filters),
             'delayTop' => $result['delayTop'],
             'overdue' => $result['overdue'],
             'hasData' => $result['hasData'],
@@ -76,7 +77,7 @@ class PaymentBehaviorReportController extends Controller {
             'filterFields' => $filterFields,
             'dsoSeries' => $this->monthlySeries($result['monthly'], 'dso'),
             'payDaysSeries' => $this->monthlySeries($result['monthly'], 'avgPayDays'),
-            'delaySeries' => $this->delaySeries($result['delayTop']),
+            'delaySeries' => $this->delaySeries($result['delayTop'], $filters),
             ...$this->standardFilterOptions($filterFields, $filters),
         ]);
     }
@@ -96,18 +97,40 @@ class PaymentBehaviorReportController extends Controller {
     }
 
     /**
-     * @param  list<array{customerId:int, customerName:string, avgDelay:float, invoices:int}>  $delayTop
-     * @return list<array{x: string, y: float}>
+     * Selbstfilter-Drilldown (MVP-470): Klick auf einen Kunden zeigt diesen
+     * Bericht nur für ihn (Trend/Verteilung/Rechnungen des Kunden).
      */
-    private function delaySeries(array $delayTop): array {
-        return array_map(static fn(array $row): array => [
+    private function customerUrl(int $customerId, ReportFilters $filters): string {
+        return route('reports.payment-behavior', array_merge($filters->toQueryParams(), [
+            'customer' => \App\Support\Sqid::encode(\App\Models\Customer::class, $customerId),
+        ]));
+    }
+
+    /**
+     * @param  list<array{x:string, min:float, q1:float, median:float, q3:float, max:float, n:int, customerId:?int}>  $payBox
+     * @return list<array{x:string, min:float, q1:float, median:float, q3:float, max:float, n:int, customerId:?int, url:?string}>
+     */
+    private function withCustomerUrls(array $payBox, ReportFilters $filters): array {
+        return array_map(fn(array $box): array => [
+            ...$box,
+            'url' => $box['customerId'] !== null ? $this->customerUrl($box['customerId'], $filters) : null,
+        ], $payBox);
+    }
+
+    /**
+     * @param  list<array{customerId:int, customerName:string, avgDelay:float, invoices:int}>  $delayTop
+     * @return list<array{x: string, y: float, url: string}>
+     */
+    private function delaySeries(array $delayTop, ReportFilters $filters): array {
+        return array_map(fn(array $row): array => [
             'x' => $row['customerName'],
             'y' => $row['avgDelay'],
+            'url' => $this->customerUrl($row['customerId'], $filters),
         ], array_values(array_filter($delayTop, static fn(array $row): bool => $row['avgDelay'] > 0)));
     }
 
     /**
-     * @param  array{kpis: array{dso:?float, avgPayDays:?float, onTimeShare:?float, overdueCount:int, overdueTotal:float, paidCount:int}, monthly: list<array{month:string, dso:?float, avgPayDays:?float}>, payBox: list<array{x:string, min:float, q1:float, median:float, q3:float, max:float, n:int}>, delayTop: list<array{customerId:int, customerName:string, avgDelay:float, invoices:int}>, overdue: list<array{invoiceId:int, number:string, customerId:int, customerName:string, dueOn:string, daysOverdue:int, total:float}>, hasData: bool}  $result
+     * @param  array{kpis: array{dso:?float, avgPayDays:?float, onTimeShare:?float, overdueCount:int, overdueTotal:float, paidCount:int}, monthly: list<array{month:string, dso:?float, avgPayDays:?float}>, payBox: list<array{x:string, min:float, q1:float, median:float, q3:float, max:float, n:int}>, delayTop: list<array{customerId:int, customerName:string, avgDelay:float, invoices:int}>, overdue: list<array{invoiceId:?int, number:string, customerId:int, customerName:string, dueOn:string, daysOverdue:int, total:float}>, hasData: bool}  $result
      * @param  array<string, mixed>  $filters
      */
     private function exportCsv(array $result, string $from, string $to, array $filters, Request $request): Response {
@@ -146,7 +169,7 @@ class PaymentBehaviorReportController extends Controller {
     }
 
     /**
-     * @param  array{kpis: array{dso:?float, avgPayDays:?float, onTimeShare:?float, overdueCount:int, overdueTotal:float, paidCount:int}, monthly: list<array{month:string, dso:?float, avgPayDays:?float}>, payBox: list<array{x:string, min:float, q1:float, median:float, q3:float, max:float, n:int}>, delayTop: list<array{customerId:int, customerName:string, avgDelay:float, invoices:int}>, overdue: list<array{invoiceId:int, number:string, customerId:int, customerName:string, dueOn:string, daysOverdue:int, total:float}>, hasData: bool}  $result
+     * @param  array{kpis: array{dso:?float, avgPayDays:?float, onTimeShare:?float, overdueCount:int, overdueTotal:float, paidCount:int}, monthly: list<array{month:string, dso:?float, avgPayDays:?float}>, payBox: list<array{x:string, min:float, q1:float, median:float, q3:float, max:float, n:int}>, delayTop: list<array{customerId:int, customerName:string, avgDelay:float, invoices:int}>, overdue: list<array{invoiceId:?int, number:string, customerId:int, customerName:string, dueOn:string, daysOverdue:int, total:float}>, hasData: bool}  $result
      * @param  array<string, mixed>  $filters
      */
     private function exportPdf(array $result, string $label, string $from, string $to, array $filters, Request $request): SymfonyResponse {

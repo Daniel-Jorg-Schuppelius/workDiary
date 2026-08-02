@@ -42,7 +42,7 @@
         </x-filter-field>
     </x-filter-bar>
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.pareto :title="__('Stunden je Kunde (Top 20)')" unit="h" :series="$customerHoursSeries" :x-label="__('Kunde')" :y-label="__('Stunden')" />
         <x-charts.line :title="__('Auftragseingang der letzten 30 Tage')" :unit="__('Aufträge')" :series="$trendSeries" :x-label="__('Tag')" :y-label="__('Aufträge')" />
     </div>

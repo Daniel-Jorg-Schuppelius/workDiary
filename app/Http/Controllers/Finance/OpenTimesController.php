@@ -17,7 +17,7 @@ use App\Services\Invoicing\LateTimeEntryDetector;
 use App\Support\{CsvExport, Formats, Sqid};
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{Request, Response};
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{DB, Gate};
 use Illuminate\View\View;
 
 /**
@@ -203,7 +203,7 @@ class OpenTimesController extends Controller {
         /** @var object{entry_count:int|string|null, minutes_sum:int|string|null, rate_sum:float|string|null}|null $row */
         $row = $query
             ->reorder()
-            ->selectRaw('COUNT(*) as entry_count, COALESCE(SUM(time_entries.minutes), 0) as minutes_sum, COALESCE(SUM(time_entries.rate), 0) as rate_sum')
+            ->select(DB::raw('COUNT(*) as entry_count, COALESCE(SUM(time_entries.minutes), 0) as minutes_sum, COALESCE(SUM(time_entries.rate), 0) as rate_sum'))
             ->first();
 
         return [
@@ -223,7 +223,7 @@ class OpenTimesController extends Controller {
         $rows = [];
         foreach ($query
             ->reorder()
-            ->selectRaw('customers.name as customer_name, projects.name as project_name, COUNT(*) as entry_count, COALESCE(SUM(time_entries.minutes), 0) as minutes_sum, COALESCE(SUM(time_entries.rate), 0) as rate_sum')
+            ->select(DB::raw('customers.name as customer_name, projects.name as project_name, COUNT(*) as entry_count, COALESCE(SUM(time_entries.minutes), 0) as minutes_sum, COALESCE(SUM(time_entries.rate), 0) as rate_sum'))
             ->groupBy('customers.name', 'projects.name')
             ->orderBy('customers.name')
             ->orderBy('projects.name')

@@ -2641,6 +2641,9 @@ Route::middleware('auth')->group(function () {
             ->name('reports.customer-value');
         Route::get('reports/customer-retention', [\App\Http\Controllers\Reporting\CustomerRetentionReportController::class, 'index'])
             ->name('reports.customer-retention');
+        // Kohorten-Drilldown (MVP-470): wer steckt hinter einer Heatmap-Zelle?
+        Route::get('reports/customer-retention/drilldown', [\App\Http\Controllers\Reporting\CustomerRetentionReportController::class, 'drilldown'])
+            ->name('reports.customer-retention.drilldown');
         Route::get('reports/utilization', [\App\Http\Controllers\Reporting\UtilizationReportController::class, 'index'])
             ->name('reports.utilization');
         Route::get('reports/payment-behavior', [\App\Http\Controllers\Reporting\PaymentBehaviorReportController::class, 'index'])

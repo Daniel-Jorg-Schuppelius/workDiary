@@ -60,20 +60,23 @@
                     :tone="($concentration['top5Share'] ?? 0) > 60 ? 'warning' : 'neutral'"
                     :hint="__('Klumpenrisiko ab ~60 %')" />
         <x-kpi-tile :label="__('Top-10-Anteil')" :value="$concentration['top10Share'] !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($concentration['top10Share'], 1) . ' %' : '–'" />
-        <x-kpi-tile :label="__('HHI (Konzentration)')" :value="$hhi ?? '–'" :tone="$hhiTone"
+        <x-kpi-tile :label="__('HHI (Konzentration)')" :value="$hhi ?? '–'" :tone="$hhiTone" term="hhi"
                     :hint="__('unter 1500 unkritisch, über 2500 hoch')" />
         <x-kpi-tile :label="__('Gefährdete A-Kunden')" :value="count($riskRows)"
                     :tone="count($riskRows) > 0 ? 'warning' : 'success'"
                     :hint="__('hoher Erlös, aber seit :days Tagen ohne Leistung', ['days' => $riskDays])" />
     </div>
 
-    <div class="grid gap-3 xl:grid-cols-2">
-        <x-charts.pareto :title="__('Erlös je Kunde (Top 20)')" unit="€" :series="$revenueSeries" :x-label="__('Kunde')" y-label="€" />
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
+        <x-charts.pareto :title="__('Erlös je Kunde (Top 20)')" unit="€" :series="$revenueSeries" :x-label="__('Kunde')" y-label="€"
+                         :note="__('Datenbasis: abrechenbare Zeit-Snapshots im Zeitraum; Klick öffnet den Kunden im Kunden-&-Projekte-Bericht.')" />
         <x-charts.scatter :title="__('Erlös nach Inaktivität (rechts = länger her)')" unit="€"
                           :series="$riskScatter['series']" :percentiles="$riskScatter['percentiles']"
-                          :x-label="__('Kunde (Tage seit letzter Leistung)')" y-label="€" />
+                          :x-label="__('Kunde (Tage seit letzter Leistung)')" y-label="€"
+                          :note="__('Punkte rechts oben = umsatzstarke Kunden, die lange nichts bezogen haben; P80 = 80. Erlös-Perzentil.')" />
     </div>
-    <x-charts.bar-h :title="__('Kunden je Segment')" :unit="__('Kunden')" :series="$segmentSeries" :x-label="__('Segment')" :y-label="__('Kunden')" />
+    <x-charts.bar-h :title="__('Kunden je Segment')" :unit="__('Kunden')" :series="$segmentSeries" :x-label="__('Segment')" :y-label="__('Kunden')"
+                    :note="__('Klick auf ein Segment filtert die Kundenliste unten auf genau diese Kunden.')" />
 
     <x-card class="mt-4">
         <h2 class="mb-2 font-['Space_Grotesk'] text-sm font-semibold">{{ __('Gefährdete A-Kunden') }}</h2>
@@ -105,10 +108,35 @@
         @endif
     </x-card>
 
-    <x-card class="mt-4">
-        <div class="mb-3 text-xs text-base-content/60">{{ __('Zeitraum') }}: {{ $label }}</div>
+    <x-card id="kundenliste" class="mt-4 scroll-mt-24">
+        <div class="mb-2 flex flex-wrap items-center gap-3">
+            <div class="text-xs text-base-content/60">{{ __('Zeitraum') }}: {{ $label }}</div>
+            @if ($segment !== null)
+                <span class="badge badge-sm {{ $segmentBadge[$segment] ?? 'badge-ghost' }}">
+                    {{ __('Segment') }}: {{ $segmentLabels[$segment] ?? $segment }}
+                </span>
+                <a href="{{ route('reports.customer-value', $linkParams) }}#kundenliste" class="link text-xs">{{ __('Segmentfilter aufheben') }}</a>
+            @endif
+        </div>
 
-        @if ($rows->isEmpty())
+        {{-- Segment-Definitionen (MVP-470): Textfassung der Regeln aus
+             CustomerValueReportBuilder::segment() — erste zutreffende Regel gewinnt. --}}
+        <details class="mb-3 rounded-box border border-base-300 bg-base-200/40 p-3 text-sm">
+            <summary class="cursor-pointer font-medium">{{ __('Wie entstehen die Segmente?') }}</summary>
+            <p class="mt-2 text-base-content/70">
+                {{ __('Jeder aktive Kunde erhält drei Quintil-Scores von 1 (unterstes Fünftel) bis 5 (oberstes Fünftel): R (Recency: je kürzer die letzte Leistung her ist, desto höher), F (Frequency: Aktivitätstage im Zeitraum) und M (Monetary: Erlös im Zeitraum). Die erste zutreffende Regel bestimmt das Segment:') }}
+            </p>
+            <ul class="mt-2 list-disc space-y-1 pl-5 text-base-content/70">
+                <li><span class="badge badge-ghost badge-sm">{{ $segmentLabels['inactive'] }}</span> — {{ __('keine Leistung im Zeitraum, oder R ≤ 2 ohne hohen Erlös') }}</li>
+                <li><span class="badge badge-primary badge-sm">{{ $segmentLabels['new'] }}</span> — {{ __('Erstleistung liegt im Zeitraum') }}</li>
+                <li><span class="badge badge-success badge-sm">{{ $segmentLabels['champion'] }}</span> — {{ __('R ≥ 4 und F ≥ 4 und M ≥ 4') }}</li>
+                <li><span class="badge badge-warning badge-sm">{{ $segmentLabels['at_risk'] }}</span> — {{ __('R ≤ 2 bei M ≥ 4 (umsatzstark, aber lange keine Leistung)') }}</li>
+                <li><span class="badge badge-info badge-sm">{{ $segmentLabels['loyal'] }}</span> — {{ __('F ≥ 3 (regelmäßige Leistung)') }}</li>
+                <li><span class="badge badge-ghost badge-sm">{{ $segmentLabels['potential'] }}</span> — {{ __('alle übrigen aktiven Kunden') }}</li>
+            </ul>
+        </details>
+
+        @if ($tableRows->isEmpty())
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">analytics</span>' :title="__('Keine Kundendaten im gewählten Zeitraum.')" />
         @else
             <x-table bare table-sort="client">
@@ -120,13 +148,13 @@
                         <x-table.th sort type="number" align="right">{{ __('Aktivitätstage') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Erlös') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Fakturiert') }}</x-table.th>
-                        <x-table.th sort type="number" align="right">R</x-table.th>
-                        <x-table.th sort type="number" align="right">F</x-table.th>
-                        <x-table.th sort type="number" align="right">M</x-table.th>
+                        <x-table.th sort type="number" align="right"><x-term glossary="rfm_recency">R</x-term></x-table.th>
+                        <x-table.th sort type="number" align="right"><x-term glossary="rfm_frequency">F</x-term></x-table.th>
+                        <x-table.th sort type="number" align="right"><x-term glossary="rfm_monetary">M</x-term></x-table.th>
                         <x-table.th sort type="string" align="right">{{ __('Erste Leistung') }}</x-table.th>
                     </tr>
                 </x-slot:head>
-                @foreach ($rows as $row)
+                @foreach ($tableRows as $row)
                     <tr>
                         <td class="font-medium">
                             <a href="{{ route('reports.customer-project', array_merge($standardFilters->toQueryParams(), ['customer' => \App\Support\Sqid::encode(\App\Models\Customer::class, $row['customerId'])])) }}" class="link link-hover">

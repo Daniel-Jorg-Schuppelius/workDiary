@@ -33,7 +33,7 @@
         @include('reports._standard_filters', ['idPrefix' => 'project-details'])
     </x-filter-bar>
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.line :title="__('Stundenverlauf im Zeitraum')" unit="h" :series="$timelineSeries" :x-label="__('Zeitpunkt')" :y-label="__('Stunden')" />
         <x-charts.bar :title="__('Ist- und Plan-Stunden je Monat')" unit="h" :series="$planIstSeries" :median="$planIstMedian" :x-label="__('Monat')" :y-label="__('Ist')" :y2-label="__('Plan')" />
     </div>

@@ -48,7 +48,7 @@
                        :title="__('Noch kein gestarteter Sprint vorhanden.')"
                        :message="__('Das Cockpit füllt sich, sobald ein Sprint gestartet wurde.')" />
     @else
-        <div class="grid gap-3 xl:grid-cols-2">
+        <div class="chart-grid grid gap-3 xl:grid-cols-2">
             @if ($burndown !== null)
                 <x-charts.line :title="__('Burndown — :name', ['name' => $sprint->name])"
                                :unit="__('Story Points (verbleibend)')"

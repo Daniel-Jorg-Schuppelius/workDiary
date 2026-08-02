@@ -37,7 +37,7 @@
         </x-filter-field>
     </x-filter-bar>
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.stacked-bar :title="__('Befunde je Monat nach Verstoßart')" :unit="__('Befunde')"
                               :series="$monthlyKindSeries" :bands="$kindBands" :x-label="__('Monat')" />
         <x-charts.heatmap

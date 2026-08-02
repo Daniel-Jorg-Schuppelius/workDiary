@@ -44,7 +44,7 @@
         </x-filter-field>
     </x-filter-bar>
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.line :title="__('Stunden pro Tag')" unit="h" :series="$dailySeries" :x-label="__('Tag')" :y-label="__('Stunden')" />
         <x-charts.stacked-bar :title="__('Stunden pro Woche nach Art')" unit="h" :series="$weekKindSeries" :bands="$kindBands" :x-label="__('Woche')" />
     </div>

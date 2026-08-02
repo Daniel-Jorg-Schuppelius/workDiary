@@ -48,7 +48,7 @@
         <x-kpi-tile :label="__('Entity-Typen')" :value="$totals['types']" />
     </div>
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.line :title="__('Ereignisse im Verlauf')" :unit="__('Events')"
                        :series="$timelineSeries" :x-label="__('Zeitraum')" :y-label="__('Events')" />
         <x-charts.bar-h :title="__('Top-Akteure (Top 15)')" :unit="__('Events')"

@@ -15,7 +15,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\User;
-use App\Services\Reporting\{ReportTargetEvaluator, UtilizationReportBuilder};
+use App\Services\Reporting\{ReportFilters, ReportTargetEvaluator, UtilizationReportBuilder};
 use App\Support\CarbonFmt;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
@@ -90,10 +90,31 @@ class UtilizationReportController extends Controller {
             'standardFilters' => $filters,
             'filterFields' => $filterFields,
             'bulletSeries' => $this->bulletSeries($result['rows'], $targetPool),
-            'trendSeries' => $this->trendSeries($result['monthly']),
-            'boxSeries' => $result['monthlyBoxes'],
+            'trendSeries' => $this->trendSeries($result['monthly'], $filters),
+            'boxSeries' => $this->monthUrls($result['monthlyBoxes'], $filters),
             ...$this->standardFilterOptions($filterFields, $filters),
         ]);
+    }
+
+    /**
+     * Drilldown-Link auf denselben Report, eingeschränkt auf einen Monat
+     * (from/to-Override der globalen Zeitraumwahl, MVP-470).
+     */
+    private function monthUrl(string $month, ReportFilters $filters): string {
+        $start = \Carbon\CarbonImmutable::parse($month . '-01');
+
+        return route('reports.utilization', array_merge($filters->toQueryParams(), [
+            'from' => $start->toDateString(),
+            'to' => $start->endOfMonth()->toDateString(),
+        ]));
+    }
+
+    /**
+     * @param  list<array{x:string, min:float, q1:float, median:float, q3:float, max:float, n:int}>  $boxes
+     * @return list<array{x:string, min:float, q1:float, median:float, q3:float, max:float, n:int, url:string}>
+     */
+    private function monthUrls(array $boxes, ReportFilters $filters): array {
+        return array_map(fn(array $box): array => [...$box, 'url' => $this->monthUrl($box['x'], $filters)], $boxes);
     }
 
     /**
@@ -102,7 +123,7 @@ class UtilizationReportController extends Controller {
      *
      * @param  list<array{userId:int, userName:string, targetMinutes:int, trackedMinutes:int, billableMinutes:int, invoicedMinutes:int, utilization:?float, billableRate:?float, realization:?float}>  $rows
      * @param  \Illuminate\Support\Collection<int, \App\Models\ReportTarget>  $targetPool
-     * @return list<array{x: string, y: float, target: ?float}>
+     * @return list<array{x: string, y: float, target: ?float, url: string}>
      */
     private function bulletSeries(array $rows, \Illuminate\Support\Collection $targetPool): array {
         return array_values(collect($rows)
@@ -114,6 +135,7 @@ class UtilizationReportController extends Controller {
                     'x' => $row['userName'],
                     'y' => $row['utilization'],
                     'target' => $target !== null ? (float) $target->target_value : null,
+                    'url' => route('reports.month-by-user-team', ['user' => \App\Support\Sqid::encode(User::class, $row['userId'])]),
                 ];
             })
             ->all());
@@ -121,12 +143,13 @@ class UtilizationReportController extends Controller {
 
     /**
      * @param  list<array{month:string, utilization:?float, billableRate:?float}>  $monthly
-     * @return list<array{x: string, y: float}>
+     * @return list<array{x: string, y: float, url: string}>
      */
-    private function trendSeries(array $monthly): array {
-        $series = array_values(array_filter(array_map(static fn(array $m): ?array => $m['utilization'] === null ? null : [
+    private function trendSeries(array $monthly, ReportFilters $filters): array {
+        $series = array_values(array_filter(array_map(fn(array $m): ?array => $m['utilization'] === null ? null : [
             'x' => $m['month'],
             'y' => $m['utilization'],
+            'url' => $this->monthUrl($m['month'], $filters),
         ], $monthly)));
 
         return count($series) > 1 ? $series : []; // Ein-Punkt-Linie sagt nichts — Leerzustand.

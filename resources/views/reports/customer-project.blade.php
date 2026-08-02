@@ -47,7 +47,7 @@
         @endif
     </x-filter-bar>
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.pareto :title="__('Stunden je Kunde (Top 20)')" unit="h" :series="$customerHoursSeries" :x-label="__('Kunde')" :y-label="__('Stunden')" />
         <x-charts.bar-h :title="__('Top-Projekte nach Stunden')" unit="h" :series="$topProjectsSeries" :x-label="__('Projekt')" :y-label="__('Stunden')" />
     </div>

@@ -20,7 +20,7 @@
         </x-filter-bar>
     @endif
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.bar :title="__('Kranktage je Monat')" :unit="__('Tage')" :series="$monthlySeries" :median="$monthlyMedian" :x-label="__('Monat')" :y-label="__('Tage')" />
         <x-charts.heatmap
             :title="__('Kranktage je Mitarbeiter und Monat')"

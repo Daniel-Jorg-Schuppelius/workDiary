@@ -40,12 +40,12 @@
     @if (! $hasData)
         <div class="alert alert-info text-sm" role="status">
             <span class="material-symbols-outlined" aria-hidden="true">info</span>
-            {{ __('Dieser Bericht wertet lokal geführte Rechnungen aus. Führt ein externes System (DATEV/Lexoffice) die Rechnungen, entsteht hier keine Datenbasis.') }}
+            {{ __('Keine Rechnungsdaten: weder lokale Rechnungen noch gespiegelte Lexoffice-Belege vorhanden. Bei externer Rechnungshoheit zuerst den Beleg-Sync des Lexoffice-Plugins ausführen — er lädt auch die Zahlungsdaten nach.') }}
         </div>
     @endif
 
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-            <x-kpi-tile :label="__('DSO (Tage)')" :value="$days($kpis['dso'])"
+            <x-kpi-tile :label="__('DSO (Tage)')" :value="$days($kpis['dso'])" term="dso"
                         :tone="($kpis['dso'] ?? 0) > 45 ? 'warning' : 'neutral'"
                         :hint="__('offene Forderungen ÷ Umsatz der letzten 90 Tage × 90')" />
             <x-kpi-tile :label="__('Ø Zahldauer (Tage)')" :value="$days($kpis['avgPayDays'])"
@@ -57,17 +57,21 @@
                         :tone="$kpis['overdueTotal'] > 0 ? 'warning' : 'success'" />
         </div>
 
-        <div class="grid gap-3 xl:grid-cols-2">
+        <div class="chart-grid grid gap-3 xl:grid-cols-2">
             <x-charts.line :title="__('DSO im Monatsverlauf')" :unit="__('Tage')" :series="$dsoSeries"
-                           :x-label="__('Monat')" :y-label="__('DSO (Tage)')" />
+                           :x-label="__('Monat')" :y-label="__('DSO (Tage)')"
+                           :note="__('DSO je Monatsende: offene Forderungen ÷ Umsatz der letzten 90 Tage × 90 — je höher, desto länger ist Liquidität gebunden.')" />
             <x-charts.line :title="__('Ø Zahldauer im Monatsverlauf')" :unit="__('Tage')" :series="$payDaysSeries"
-                           :x-label="__('Monat')" :y-label="__('Zahldauer (Tage)')" />
+                           :x-label="__('Monat')" :y-label="__('Zahldauer (Tage)')"
+                           :note="__('Ø Tage von Rechnungsstellung bis Zahlung der im jeweiligen Monat bezahlten Rechnungen.')" />
         </div>
-        <div class="grid gap-3 xl:grid-cols-2">
+        <div class="chart-grid grid gap-3 xl:grid-cols-2">
             <x-charts.boxplot :title="__('Zahldauer-Verteilung (Ausstellung bis Zahlung)')" :unit="__('Tage')" :series="$payBox"
-                              :x-label="__('Kunde')" :y-label="__('Tage')" />
+                              :x-label="__('Kunde')" :y-label="__('Tage')"
+                              :note="__('Nur bezahlte Rechnungen im Zeitraum; Klick auf einen Kunden filtert diesen Bericht auf ihn.')" />
             <x-charts.bar-h :title="__('Ø Verzugstage je Kunde (Top 10)')" :unit="__('Tage')" :series="$delaySeries"
-                            :x-label="__('Kunde')" :y-label="__('Verzugstage')" />
+                            :x-label="__('Kunde')" :y-label="__('Verzugstage')"
+                            :note="__('Verzug = Tage nach Fälligkeit (Frühzahler zählen als 0); Klick filtert diesen Bericht auf den Kunden.')" />
         </div>
 
         <x-card class="mt-4">
@@ -90,9 +94,16 @@
                     @foreach ($overdue as $row)
                         <tr>
                             <td class="font-medium">
-                                <a href="{{ route('invoices.show', \App\Support\Sqid::encode(\App\Models\Invoice::class, $row['invoiceId'])) }}" class="link link-hover">{{ $row['number'] }}</a>
+                                @if ($row['invoiceId'] !== null)
+                                    <a href="{{ route('invoices.show', \App\Support\Sqid::encode(\App\Models\Invoice::class, $row['invoiceId'])) }}" class="link link-hover">{{ $row['number'] }}</a>
+                                @else
+                                    {{ $row['number'] }}
+                                    <span class="badge badge-ghost badge-xs ml-1">Lexoffice</span>
+                                @endif
                             </td>
-                            <td>{{ $row['customerName'] }}</td>
+                            <td>
+                                <a href="{{ route('invoices.index', ['customer' => \App\Support\Sqid::encode(\App\Models\Customer::class, $row['customerId']), 'status' => \App\Models\Invoice::STATUS_ISSUED]) }}" class="link link-hover">{{ $row['customerName'] }}</a>
+                            </td>
                             <td class="text-right tabular-nums">{{ $row['dueOn'] }}</td>
                             <td class="text-right tabular-nums">{{ $row['daysOverdue'] }}</td>
                             <td class="text-right tabular-nums">{{ $eur($row['total']) }}</td>

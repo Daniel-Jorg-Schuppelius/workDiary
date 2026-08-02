@@ -26,7 +26,7 @@
         @include('reports._standard_filters', ['idPrefix' => 'data-quality'])
     </x-filter-bar>
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.bar :title="__('Aufträge mit Klassifikationslücken je Monat')" :unit="__('Aufträge')"
                       :series="$gapsMonthlySeries" :x-label="__('Monat')" :y-label="__('Aufträge')" />
         <x-charts.bar-h :title="__('Fehlende Klassifikationen je Kunde (Top 15)')" :unit="__('Lücken')"

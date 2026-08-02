@@ -30,7 +30,7 @@
             </x-filter-bar>
         @endif
 
-        <div class="grid gap-3 xl:grid-cols-2">
+        <div class="chart-grid grid gap-3 xl:grid-cols-2">
             <x-charts.bar :title="$dailySeriesLabel" unit="h" :series="$dailySeries" :median="$dailyMedian" :y2-label="__('Soll')" :x-label="__('Zeitraum')" :y-label="__('Ist')" />
             <x-charts.bar :title="__('Ist- und Soll-Stunden je Monat')" unit="h" :series="$monthlySeries" :median="$monthlyMedian" :y2-label="__('Soll')" :x-label="__('Monat')" :y-label="__('Ist')" />
         </div>

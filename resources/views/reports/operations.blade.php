@@ -57,7 +57,7 @@
         @include('reports._standard_filters', ['idPrefix' => 'operations', 'statusOptions' => $statusOptions, 'statusLabel' => __('Auftragsstatus')])
     </x-filter-bar>
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.bar :title="__('Service-Aufträge: erstellt vs. erledigt je Woche')" :unit="__('Aufträge')" :series="$weeklyFlowSeries" :x-label="__('Woche')" :y-label="__('Anzahl')" :y2-label="__('Erledigt')" />
         <x-charts.bar-h :title="__('Backlog je Kunde (Top 15)')" :unit="__('Aufträge')" :series="$backlogSeries" :x-label="__('Kunde')" :y-label="__('Offene Aufträge')" />
     </div>

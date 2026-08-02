@@ -27,7 +27,7 @@
         <x-kpi-tile :label="__('Aktive Projekte')" :value="$activeProjects" tone="secondary" />
     </div>
 
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.bar :title="$hoursSeriesLabel" unit="h" :series="$hoursSeries" :x-label="__('Zeitraum')" :y-label="__('Stunden')" />
         <x-charts.bar-h :title="__('Top-Projekte nach Stunden')" unit="h" :series="$topProjects" :x-label="__('Projekt')" :y-label="__('Stunden')" />
     </div>

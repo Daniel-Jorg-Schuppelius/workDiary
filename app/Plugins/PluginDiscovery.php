@@ -78,6 +78,11 @@ final class PluginDiscovery {
 
         $classes = [];
         foreach (glob($pattern) ?: [] as $file) {
+            // Konvention strikt: <Name>/<Name>Plugin.php — sonst matcht der Glob
+            // auch Contracts/Plugin.php (das Interface selbst) und Warnungen fluten.
+            if (basename($file) !== basename(\dirname($file)) . 'Plugin.php') {
+                continue;
+            }
             $class = self::classFromPath($file);
             if ($class !== null) {
                 $classes[] = $class;

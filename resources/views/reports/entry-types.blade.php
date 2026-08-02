@@ -44,7 +44,7 @@
     </x-filter-bar>
 
     {{-- Feature 002: Diagramme (Plan/Ist + Überzugsquote je Auftragstyp) --}}
-    <div class="grid gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.bar :title="__('Plan vs. Ist je Auftragstyp')" :unit="__('Min.')" :series="$planVsIstSeries" :x-label="__('Auftragstyp')" :y-label="__('Ø Ist (Min.)')" :y2-label="__('Ø Plan (Min.)')" />
         <x-charts.bar-h :title="__('Überzugsquote je Auftragstyp (Top 15)')" unit="%" :series="$overrunSeries" :x-label="__('Auftragstyp')" :y-label="__('Überzug %')" />
     </div>
