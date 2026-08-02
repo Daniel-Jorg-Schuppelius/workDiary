@@ -778,6 +778,31 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Fixed
 
+- Kunden-Sonderkonditionen, Pauschal-Modus (Feature 098): vier Lücken aus dem
+  ersten Praxiseinsatz. **Bestandszeiten blieben mit 0,00 € bewertet** — Zeiten,
+  die vor Anlage der Kondition erfasst wurden, tragen keinen Satz-Snapshot, und
+  „Satz neu anwenden" fasste nur Einträge mit gesetztem Konditions-Marker an
+  (bei den übrigen wurde kein Feld „dirty", also rechnete auch der Save-Hook
+  nicht neu). „Neu berechnen" bewertet sie jetzt nach; manuelle Satz-Overrides
+  bleiben unangetastet. **Lexoffice-Zahlungen wurden brutto in einen
+  Netto-Saldo gebucht** (voucherlist liefert nur Brutto) — der Nettobetrag wird
+  jetzt am Beleg nachgeladen und gecacht, Teilzahlungen anteilig. **Pauschal-
+  rechnungen, die direkt in Lexoffice erstellt wurden, waren nicht zuordenbar**
+  (der Abgleich kannte nur selbst gepushte Belege) — es gibt jetzt „Beleg
+  verknüpfen" am Monat plus einen eng gefassten Auto-Match (Monat, Nettobetrag
+  und genau ein Kandidat); bei verknüpftem Beleg entfällt „Pauschale senden",
+  damit in Lexoffice keine zweite Rechnung entsteht. **Der Abgleich lief nur im
+  stündlichen Cron** — der Belege-Sync an der Kundenakte und der Hintergrund-
+  Sync ziehen den Zahlstatus jetzt mit; zudem band `lexoffice:sync-vouchers`
+  den Organisations-Kontext nicht, wodurch der Belegabruf den API-Key einer
+  fremden Organisation hätte verwenden können.
+- Kunden-Sonderkonditionen, Pauschal-Modus (Feature 098): **„Beleg verknüpfen"
+  brach nach einem vorherigen Lösen/Storno mit einem Datenbankfehler ab**
+  (Duplicate entry für `uq_cap_source_ref`). Die stornierte Zahlung wird nur
+  soft-deleted, blockiert den Unique-Index aber weiter, während
+  `updateOrCreate` sie nicht mehr fand und neu anlegen wollte. Der
+  Zahlungs-Rücksync sucht die Zeile jetzt inklusive stornierter Einträge und
+  belebt sie wieder, statt eine zweite anzulegen.
 - Rechnungs-Detailseite: Inline-`@php(...)` in Kombination mit einem
   `@php … @endphp`-Block in derselben View erzeugte über Blades
   Raw-Block-Erkennung ein ungültiges `<?php(` (kein PHP-Open-Tag) — der

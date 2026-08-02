@@ -237,20 +237,33 @@ class CustomerAccountStatementService {
         $target = Carbon::parse($paidOn)->setTimezone(Tz::current());
         $effective = $this->firstUnlockedFrom($agreement, $target);
 
-        $payment = CustomerAccountPayment::query()->updateOrCreate(
-            [
+        $values = [
+            'organization_id' => $agreement->organization_id,
+            'paid_on' => $effective->toDateString(),
+            'amount' => $this->asMoney($amount, $agreement->currency),
+            'currency' => $agreement->currency->value,
+            'note' => $note,
+        ];
+
+        // uq_cap_source_ref kennt kein deleted_at: eine stornierte Zeile
+        // (revoke/unlink) blockiert den Insert weiterhin. Darum stornierte
+        // Zeilen mitsuchen und wiederbeleben statt neu anzulegen.
+        $payment = CustomerAccountPayment::withTrashed()
+            ->where('customer_billing_agreement_id', $agreement->id)
+            ->where('source', AccountPaymentSource::Lexoffice)
+            ->where('source_reference', $sourceReference)
+            ->first();
+
+        if ($payment === null) {
+            $payment = CustomerAccountPayment::create($values + [
                 'customer_billing_agreement_id' => $agreement->id,
                 'source' => AccountPaymentSource::Lexoffice,
                 'source_reference' => $sourceReference,
-            ],
-            [
-                'organization_id' => $agreement->organization_id,
-                'paid_on' => $effective->toDateString(),
-                'amount' => $this->asMoney($amount, $agreement->currency),
-                'currency' => $agreement->currency->value,
-                'note' => $note,
-            ],
-        );
+            ]);
+        } else {
+            $payment->fill($values);
+            $payment->trashed() ? $payment->restore() : $payment->save();
+        }
 
         $this->recalculateOpen($agreement);
 

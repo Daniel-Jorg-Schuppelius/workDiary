@@ -215,4 +215,41 @@ class RetainerVoucherReconcilerTest extends TestCase {
         $this->assertNull($statement->fresh()->lexoffice_voucher_id);
         $this->assertSame(0, $this->agreement->payments()->count());
     }
+
+    public function test_relinking_after_unlink_revives_the_payment(): void {
+        // Die stornierte Zahlung bleibt soft-deleted in der Tabelle und
+        // blockiert den Unique-Index (uq_cap_source_ref) — ein erneutes
+        // Verknüpfen darf daran nicht scheitern.
+        $statement = app(CustomerAccountStatementService::class)->ensure($this->agreement, 2026, 4);
+        $voucher = $this->voucher('paid', 654.50, 0.00, 'lex-external-only', [
+            'voucher_date' => '2026-04-30',
+            'net_amount' => 550.00,
+        ]);
+        $reconciler = app(RetainerVoucherReconciler::class);
+        $reconciler->reconcile($this->organization);
+        $reconciler->unlink($statement->fresh());
+
+        $reconciler->link($statement->fresh(), $voucher);
+        $reconciler->reconcile($this->organization);
+
+        $this->assertSame(1, $this->agreement->payments()->count());
+        $this->assertSame('550.00', $this->agreement->payments()->firstOrFail()->amount?->getAmount());
+    }
+
+    public function test_voided_then_paid_again_revives_the_payment(): void {
+        $this->voucher('paid', 550.00, 0.00);
+        $reconciler = app(RetainerVoucherReconciler::class);
+        $reconciler->reconcile($this->organization);
+
+        $this->voucher('voided', 550.00, 550.00);
+        $reconciler->reconcile($this->organization);
+        $this->assertSame(0, $this->agreement->payments()->count());
+
+        $this->voucher('paid', 550.00, 0.00);
+        $result = $reconciler->reconcile($this->organization);
+
+        $this->assertSame(1, $result['booked']);
+        $this->assertSame(1, $this->agreement->payments()->count());
+        $this->assertSame('550.00', $this->agreement->payments()->firstOrFail()->amount?->getAmount());
+    }
 }
