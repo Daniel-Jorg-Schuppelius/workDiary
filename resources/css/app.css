@@ -346,9 +346,13 @@
     min-height: 0;
 }
 .chart-grid > figure .wd-chart-empty {
+    /* Nur VERTIKAL zentrieren — als Spalten-Flex streckt sich der
+       Leerzustand weiter über die volle Kachelbreite (place-items:center
+       würde ihn auf Inhaltsbreite schrumpfen). */
     flex: 1 1 auto;
-    display: grid;
-    place-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 /* ------------------------------------------------------------------ */
