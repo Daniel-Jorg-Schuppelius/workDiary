@@ -10,10 +10,10 @@
 
 namespace App\Plugins\CardDav;
 
-use App\Models\{CardDavConnection, Organization, PluginSetting};
+use App\Models\{CardDavConnection, Organization};
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\CardDav\Contracts\CardDavGatewayFactory;
 use App\Plugins\Contracts\Plugin;
-use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\PluginOrgContext;
 use Throwable;
 
@@ -31,16 +31,10 @@ use Throwable;
  * Bewusst KEINE Capability: {@see \App\Plugins\Contracts\ContactSyncer} ist
  * der Push-Vertrag (workDiary → extern), dieses Plugin ist rein lesend.
  */
-class CardDavPlugin implements Plugin {
-    use PluginDefaults;
-
+class CardDavPlugin extends AbstractPlugin {
     public const ID = 'carddav';
 
     public const SERVICE_PROVIDER = CardDavServiceProvider::class;
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'CardDAV';
@@ -52,18 +46,6 @@ class CardDavPlugin implements Plugin {
 
     public function description(): string {
         return (string) __('carddav.description');
-    }
-
-    public function isEnabled(): bool {
-        $org = PluginOrgContext::currentOrNull();
-        if ($org instanceof Organization) {
-            $row = PluginSetting::forOrganization($org->id, self::ID);
-            if ($row->exists) {
-                return $row->enabled;
-            }
-        }
-
-        return (bool) config('plugins.carddav.enabled', false);
     }
 
     public function capabilities(): array {
@@ -78,17 +60,9 @@ class CardDavPlugin implements Plugin {
         ];
     }
 
-    public function serviceProvider(): ?string {
-        return CardDavServiceProvider::class;
-    }
-
     /** Per-Org-Konfiguration liegt in `carddav_connections` (Admin-Panel), nicht in plugin_settings. */
     public function settingsSchema(): array {
         return [];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     /** Health-Check je Organisation: Anbindung suchen und den Server anpingen. */

@@ -1268,12 +1268,18 @@ Route::middleware('auth')->group(function () {
         // vom jeweiligen Plugin-ServiceProvider geladen — siehe app/Plugins/*/routes.php.
 
         // ── Plugin-Übersicht (Admin) ────────────────────────────────────────────
-        Route::get('admin/plugins', [AdminPluginController::class, 'index'])->name('admin.plugins.index');
-        Route::get('admin/plugins/{plugin}', [AdminPluginController::class, 'edit'])->name('admin.plugins.edit');
-        Route::put('admin/plugins/{plugin}', [AdminPluginController::class, 'update'])->name('admin.plugins.update');
-        Route::post('admin/plugins/{plugin}/toggle', [AdminPluginController::class, 'toggle'])->name('admin.plugins.toggle');
-        Route::post('admin/plugins/{plugin}/health-check', [AdminPluginController::class, 'healthCheck'])->name('admin.plugins.health-check');
-        Route::post('admin/plugins/{plugin}/reset-errors', [AdminPluginErrorController::class, 'reset'])->name('admin.plugins.reset-errors');
+        // Autorisierung zentral über das Gate `manage-plugins` (Review 2026-08, W1c).
+        Route::middleware('can:manage-plugins')->group(function (): void {
+            Route::get('admin/plugins', [AdminPluginController::class, 'index'])->name('admin.plugins.index');
+            Route::get('admin/plugins/{plugin}', [AdminPluginController::class, 'edit'])->name('admin.plugins.edit');
+            Route::put('admin/plugins/{plugin}', [AdminPluginController::class, 'update'])->name('admin.plugins.update');
+            Route::post('admin/plugins/{plugin}/toggle', [AdminPluginController::class, 'toggle'])->name('admin.plugins.toggle');
+            Route::post('admin/plugins/{plugin}/health-check', [AdminPluginController::class, 'healthCheck'])
+                ->middleware('throttle:6,1')
+                ->name('admin.plugins.health-check');
+            Route::post('admin/plugins/{plugin}/upgrade', [AdminPluginController::class, 'upgrade'])->name('admin.plugins.upgrade');
+            Route::post('admin/plugins/{plugin}/reset-errors', [AdminPluginErrorController::class, 'reset'])->name('admin.plugins.reset-errors');
+        });
 
         // ── SSO & Verzeichnisdienste (Admin, Feature 057) ───────────────────────
         // Enterprise-gegatet über config/plans.php (admin.sso.* = module.sso).
@@ -1348,9 +1354,13 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/terminals/badges/revoke', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'revokeBadge'])->name('admin.terminals.badges.revoke');
 
         // ── Plugin-Fehler-Inbox (Admin) ─────────────────────────────────────────
-        Route::get('admin/plugin-errors', [AdminPluginErrorController::class, 'index'])->name('admin.plugin-errors.index');
-        Route::get('admin/plugin-errors/{pluginError}', [AdminPluginErrorController::class, 'show'])->name('admin.plugin-errors.show');
-        Route::post('admin/plugin-errors/{pluginError}/acknowledge', [AdminPluginErrorController::class, 'acknowledge'])->name('admin.plugin-errors.acknowledge');
+        Route::middleware('can:manage-plugins')->group(function (): void {
+            Route::get('admin/plugin-errors', [AdminPluginErrorController::class, 'index'])->name('admin.plugin-errors.index');
+            Route::post('admin/plugin-errors/bulk-acknowledge', [AdminPluginErrorController::class, 'bulkAcknowledge'])->name('admin.plugin-errors.bulk-acknowledge');
+            Route::get('admin/plugin-errors/{pluginError}', [AdminPluginErrorController::class, 'show'])->name('admin.plugin-errors.show');
+            Route::post('admin/plugin-errors/{pluginError}/acknowledge', [AdminPluginErrorController::class, 'acknowledge'])->name('admin.plugin-errors.acknowledge');
+            Route::post('admin/plugin-errors/{pluginError}/reopen', [AdminPluginErrorController::class, 'reopen'])->name('admin.plugin-errors.reopen');
+        });
 
         // ── Rechnungs-Mail-Templates (Admin) ─────────────────────────────────────
         Route::resource('admin/invoice-mail-templates', InvoiceMailTemplateController::class)

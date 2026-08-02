@@ -124,7 +124,7 @@ return [
         'print' => ['purge_files' => 'Druck-Produktionsdateien nach Löschfrist bereinigen'],
         'payroll' => ['import_minimum_wages' => 'EU-Mindestlöhne importieren'],
         'plans' => ['purge' => 'Downgrade-Daten bereinigen'],
-        'plugin' => ['healthcheck' => 'Plugin-Healthcheck'],
+        'plugin' => ['healthcheck' => 'Plugin-Healthcheck', 'errors_prune' => 'Plugin-Fehler-Inbox aufräumen (Aufbewahrungsfristen)'],
         'privacy' => [
             'deadlines' => 'Betroffenenanfragen-Fristen prüfen',
             'retention_scan' => 'Löschfristen-Scan',

@@ -10,9 +10,9 @@
 
 namespace App\Plugins\Sharepoint;
 
-use App\Models\{Organization, PluginSetting, SharepointConnection};
+use App\Models\{Organization, SharepointConnection};
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\Plugin;
-use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Sharepoint\Api\SharepointDriveClient;
 use App\Plugins\Support\PluginOrgContext;
 use Throwable;
@@ -37,16 +37,10 @@ use Throwable;
  * Bewusst ohne Sync-Capability: die Spiegelung ist ereignisgetrieben
  * (Freigabe → Outbox), kein providerneutraler Abgleicheinstieg.
  */
-class SharepointPlugin implements Plugin {
-    use PluginDefaults;
-
+class SharepointPlugin extends AbstractPlugin {
     public const ID = 'sharepoint';
 
     public const SERVICE_PROVIDER = SharepointServiceProvider::class;
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'SharePoint';
@@ -58,18 +52,6 @@ class SharepointPlugin implements Plugin {
 
     public function description(): string {
         return __('sharepoint.plugin_description');
-    }
-
-    public function isEnabled(): bool {
-        $org = PluginOrgContext::currentOrNull();
-        if ($org instanceof Organization) {
-            $row = PluginSetting::forOrganization($org->id, self::ID);
-            if ($row->exists) {
-                return $row->enabled;
-            }
-        }
-
-        return (bool) config('plugins.sharepoint.enabled', false);
     }
 
     /** Ereignisgetriebenes Sink-Plugin ohne providerneutrale Sync-Capability. */
@@ -85,17 +67,9 @@ class SharepointPlugin implements Plugin {
         ];
     }
 
-    public function serviceProvider(): ?string {
-        return SharepointServiceProvider::class;
-    }
-
     /** Keine per-Org-Secrets in plugin_settings: die Verbindung liegt in `sharepoint_connections`. */
     public function settingsSchema(): array {
         return [];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     /** Health-Check je Organisation: billige Probe auf die gewählte Bibliothek. */

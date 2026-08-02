@@ -10,8 +10,8 @@
 
 namespace App\Providers;
 
+use App\Plugins\{CapabilityRegistry, PluginDiscovery, PluginErrorRecorder, PluginManager, PluginSchemaManager};
 use App\Plugins\Contracts\Plugin;
-use App\Plugins\{PluginDiscovery, PluginErrorRecorder, PluginManager, PluginSchemaManager};
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
@@ -46,13 +46,25 @@ class PluginServiceProvider extends ServiceProvider {
             $this->registerPluginProvider($class);
         }
 
+        // Capability-Registry (Review 2026-08, W5e): Kern-Enum + extern
+        // registrierte Fähigkeiten. Muss vor den Plugin-Providern stehen,
+        // damit diese in register() eigene Capabilities beisteuern können.
+        $this->app->singleton(CapabilityRegistry::class);
+
         $this->app->singleton(PluginManager::class, function (Application $app) use ($classes): PluginManager {
             $manager = new PluginManager;
 
             foreach ($classes as $class) {
                 $instance = $this->instantiatePlugin($app, $class);
-                if ($instance !== null) {
+                if ($instance === null) {
+                    continue;
+                }
+                try {
                     $manager->register($instance);
+                } catch (Throwable $e) {
+                    // Duplikat-ID o. Ä. darf nie die ganze App reißen: Plugin
+                    // überspringen und den Konflikt org-los aufzeichnen (W0b).
+                    $this->safeRecord($instance->id(), 'boot', $e);
                 }
             }
 
@@ -60,12 +72,17 @@ class PluginServiceProvider extends ServiceProvider {
         });
     }
 
+    /** Auto-Upgrade nur einmal pro Prozess (Review 2026-08, D10/W6). */
+    private static bool $schemaChecked = false;
+
     public function boot(): void {
-        // Defensiv: Auto-Schema-Upgrade nur lokal. In Produktion wird der Admin per UI-Hinweis aufmerksam gemacht
-        // und löst `php artisan plugin:upgrade` bewusst manuell aus.
-        if (! $this->app->environment('local')) {
+        // Defensiv: Auto-Schema-Upgrade nur lokal — einmal pro Prozess, unter
+        // dem Lock des SchemaManagers. In Produktion zeigt die Admin-Übersicht
+        // ausstehende Upgrades mit Auslöse-Button (admin.plugins.upgrade).
+        if (! $this->app->environment('local') || self::$schemaChecked) {
             return;
         }
+        self::$schemaChecked = true;
 
         try {
             /** @var PluginManager $manager */
@@ -109,7 +126,7 @@ class PluginServiceProvider extends ServiceProvider {
                 $this->app->register($providerFqcn);
             }
         } catch (Throwable $e) {
-            $this->safeRecord($class, 'boot', $e);
+            $this->safeRecord($this->pluginIdFor($class), 'boot', $e);
         }
     }
 
@@ -128,10 +145,27 @@ class PluginServiceProvider extends ServiceProvider {
 
             return $instance;
         } catch (Throwable $e) {
-            $this->safeRecord($class, 'boot', $e);
+            $this->safeRecord($this->pluginIdFor($class), 'boot', $e);
 
             return null;
         }
+    }
+
+    /**
+     * Plugin-ID für die Fehleraufzeichnung: Auto-Disable und Admin-UI matchen
+     * gegen `Plugin::id()`, nicht den FQCN (W0a). Alle Plugins exponieren die
+     * Konvention `const ID`; nur wenn sie fehlt, bleibt der FQCN als Notnagel.
+     */
+    private function pluginIdFor(string $class): string {
+        try {
+            if (defined("{$class}::ID") && is_string($class::ID) && $class::ID !== '') {
+                return $class::ID;
+            }
+        } catch (Throwable) {
+            // defined() kann bei kaputten Autoload-Ständen werfen → Fallback.
+        }
+
+        return $class;
     }
 
     private function safeRecord(string $pluginId, string $phase, Throwable $e): void {

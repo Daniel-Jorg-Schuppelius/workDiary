@@ -13,10 +13,10 @@ namespace App\Plugins\Nextcloud;
 use App\Enums\CloudIntake\{CloudIntakeConnectionStatus, CloudIntakeProvider};
 use App\Models\Backup\BackupTargetConnection;
 use App\Models\CloudIntake\CloudDocumentConnection;
-use App\Models\{Organization, PluginSetting};
+use App\Models\Organization;
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{BackupTarget, DocumentIntakeSource, Plugin, PluginCapability};
 use App\Plugins\Nextcloud\Api\{NextcloudBackupClient, NextcloudIntakeClient};
-use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\Backup\BackupAccount;
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
 use App\Plugins\Support\PluginOrgContext;
@@ -36,17 +36,11 @@ use Throwable;
  * Kein installationsweiter App-Key: angebunden wird je Verbindung mit
  * Server-URL, Nutzer und verschlüsseltem App-Passwort.
  */
-class NextcloudPlugin implements BackupTarget, DocumentIntakeSource, Plugin {
-    use PluginDefaults;
-
+class NextcloudPlugin extends AbstractPlugin implements BackupTarget, DocumentIntakeSource {
     public const ID = 'nextcloud';
 
     /** Von der Plugin-Discovery VOR der Instanziierung registriert. */
     public const SERVICE_PROVIDER = NextcloudServiceProvider::class;
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'Nextcloud';
@@ -58,18 +52,6 @@ class NextcloudPlugin implements BackupTarget, DocumentIntakeSource, Plugin {
 
     public function description(): string {
         return __('cloud_intake.nextcloud.description');
-    }
-
-    public function isEnabled(): bool {
-        $org = PluginOrgContext::currentOrNull();
-        if ($org instanceof Organization) {
-            $row = PluginSetting::forOrganization($org->id, self::ID);
-            if ($row->exists) {
-                return $row->enabled;
-            }
-        }
-
-        return (bool) config('plugins.nextcloud.enabled', false);
     }
 
     public function capabilities(): array {
@@ -135,17 +117,9 @@ class NextcloudPlugin implements BackupTarget, DocumentIntakeSource, Plugin {
         return null;
     }
 
-    public function serviceProvider(): ?string {
-        return NextcloudServiceProvider::class;
-    }
-
     /** Zugangsdaten liegen je Verbindung (Server-URL/Nutzer/App-Passwort), nicht in plugin_settings. */
     public function settingsSchema(): array {
         return [];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     /** Health je Organisation: Zustand der Dokumenteingang-Verbindungen. */

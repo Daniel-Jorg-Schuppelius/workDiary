@@ -37,7 +37,7 @@ Rückwärtskompatibilität vergleichen. Nach einer Migration: betroffene Tests +
 | datev-php-sdk | `Datev\` | DATEV Desktop API: Buchungsstapel, Stammdaten, Belege (kein EXTF-CSV-Export) |
 | lexoffice-php-sdk | `Lexoffice\` | Lexoffice REST-API: Kontakte, Belege, Rechnungen, Artikel, Webhooks |
 | orgamax-php-sdk | `Orgamax\` | orgaMAX-Buchhaltung REST-API: Kunden/Lieferanten/Artikel, Aufträge, Rechnungen (Zahlung/Lock/Versand/PDF), Dateien, To-dos — Basis des OrgaMax-Plugins |
-| php-api-toolkit | `APIToolkit\` | HTTP-/API-Client-Fundament (Basis der SDKs): `ClientAbstract` mit Retry/Backoff/Retry-After und injizierbarem Guzzle, Auth inkl. OAuth2 (PKCE/Revocation), `CursorPaginator`, typisierte HTTP-Exceptions — Standard für **neue** API-Plugins; Bestands-Plugins bleiben auf `PluginHttp` |
+| php-api-toolkit | `APIToolkit\` | HTTP-/API-Client-Fundament (Basis der SDKs): `ClientAbstract` mit Retry/Backoff/Retry-After und injizierbarem Guzzle, Auth inkl. OAuth2 (PKCE/Revocation), `CursorPaginator`, typisierte HTTP-Exceptions — Plugins beziehen ihre Clients über `App\Plugins\Support\PluginHttpFactory` (`client()`/`sdkClient()`/`clientCredentialsGrant()`); die frühere `PluginHttp`-Klasse existiert nicht mehr |
 | php-error-toolkit | `ERRORToolkit\` | Logging-Fundament aller Toolkits: `LoggerRegistry` (+ Laravel-Bridge: auto-discovertes ServiceProvider leitet Toolkit-Logs in den Laravel-Log-Channel, ENV `ERROR_TOOLKIT_LOG_CHANNEL`), `ErrorLog`-Trait, Datei-/Konsolen-Logger, FileSystem-Exceptions |
 
 ### Bewusst app-lokal (nicht erneut vorschlagen)

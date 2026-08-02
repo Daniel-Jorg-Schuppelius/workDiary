@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Plugins\BuchhaltungsButler;
 
-use App\Models\{Organization, PluginSetting};
+use App\Models\Organization;
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\BuchhaltungsButler\Api\{BhbApiException, BhbClientFactory};
 use App\Plugins\Contracts\Plugin;
-use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\PluginOrgContext;
 use Throwable;
 
@@ -34,16 +34,10 @@ use Throwable;
  * - Rate-Limit 100 req/Kunde/min → Request-Intervall 0,6 s.
  * - Kein Rück-Sync (Buchungen/Zahlungen) im MVP — bewusste Grenze.
  */
-class BuchhaltungsButlerPlugin implements Plugin {
-    use PluginDefaults;
-
+class BuchhaltungsButlerPlugin extends AbstractPlugin {
     public const ID = 'buchhaltungsbutler';
 
     public const SERVICE_PROVIDER = BuchhaltungsButlerServiceProvider::class;
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'BuchhaltungsButler';
@@ -57,30 +51,9 @@ class BuchhaltungsButlerPlugin implements Plugin {
         return __('Übergibt ausgestellte lokale Rechnungen als Belege an BuchhaltungsButler (Basic Auth + api_key): idempotenter Push über die Integrations-Outbox mit sha256-Nachweis; die Rechnungshoheit bleibt bei WorkDiary, die Buchführung bei BuchhaltungsButler.');
     }
 
-    public function isEnabled(): bool {
-        $organization = PluginOrgContext::currentOrNull();
-        if ($organization instanceof Organization) {
-            $setting = PluginSetting::forOrganization($organization->id, self::ID);
-            if ($setting->exists) {
-                return (bool) $setting->enabled;
-            }
-        }
-
-        return (bool) config('plugins.' . self::ID . '.enabled', false);
-    }
-
     /** @return array<int, \App\Plugins\Contracts\PluginCapability> Push läuft über Observer + integration_outbox. */
     public function capabilities(): array {
         return [];
-    }
-
-    /** Konfiguration läuft über die Auto-Form der Plugin-Karte (settingsSchema). */
-    public function adminPanel(): ?array {
-        return null;
-    }
-
-    public function serviceProvider(): ?string {
-        return self::SERVICE_PROVIDER;
     }
 
     /** @return array<int, array{key: string, label: string, type: string, options?: array<string, string>, help?: string, required?: bool, default?: mixed}> */
@@ -91,10 +64,6 @@ class BuchhaltungsButlerPlugin implements Plugin {
             ['key' => 'api_key', 'label' => __('API-Key (Mandant)'), 'type' => 'password', 'required' => true, 'help' => __('Wird als Formfeld api_key in jedem Request mitgesendet (BHB-Vertrag).')],
             ['key' => 'push_enabled', 'label' => __('Ausgestellte Rechnungen als Beleg pushen'), 'type' => 'boolean', 'default' => true],
         ];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     public function healthCheck(): PluginHealth {

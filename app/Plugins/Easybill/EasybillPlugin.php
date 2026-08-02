@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Plugins\Easybill;
 
-use App\Models\{Organization, PluginSetting};
+use App\Models\Organization;
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\Plugin;
 use App\Plugins\Easybill\Api\{EasybillApiException, EasybillClientFactory};
-use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\PluginOrgContext;
 use Throwable;
 
@@ -32,16 +32,10 @@ use Throwable;
  * - Rate-Limits sind tarifabhängig (PLUS 10, BUSINESS 60 req/min) — das
  *   Intervall kommt aus dem Setting `rate_limit_per_minute`.
  */
-class EasybillPlugin implements Plugin {
-    use PluginDefaults;
-
+class EasybillPlugin extends AbstractPlugin {
     public const ID = 'easybill';
 
     public const SERVICE_PROVIDER = EasybillServiceProvider::class;
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'easybill';
@@ -55,30 +49,9 @@ class EasybillPlugin implements Plugin {
         return __('Übergibt bestätigte Abrechnungspositionen als Rechnungsentwurf an easybill (Bearer-API-Key gegen api.easybill.de): Kunden-Projektion, idempotente Übergabe mit Quellmarker, optionaler Rückabruf fertiggestellter Belege (PDF/E-Rechnung) ins DMS.');
     }
 
-    public function isEnabled(): bool {
-        $organization = PluginOrgContext::currentOrNull();
-        if ($organization instanceof Organization) {
-            $setting = PluginSetting::forOrganization($organization->id, self::ID);
-            if ($setting->exists) {
-                return (bool) $setting->enabled;
-            }
-        }
-
-        return (bool) config('plugins.' . self::ID . '.enabled', false);
-    }
-
     /** @return array<int, \App\Plugins\Contracts\PluginCapability> Fähigkeiten hängen am FacturationTarget-Vertrag. */
     public function capabilities(): array {
         return [];
-    }
-
-    /** Konfiguration läuft über die Auto-Form der Plugin-Karte (settingsSchema). */
-    public function adminPanel(): ?array {
-        return null;
-    }
-
-    public function serviceProvider(): ?string {
-        return self::SERVICE_PROVIDER;
     }
 
     /** @return array<int, array{key: string, label: string, type: string, options?: array<string, string>, help?: string, required?: bool, default?: mixed}> */
@@ -95,10 +68,6 @@ class EasybillPlugin implements Plugin {
             ], 'help' => __('file_format_config des easybill-Belegs; bestimmt das Format des Rückabrufs.')],
             ['key' => 'pull_documents', 'label' => __('Fertiggestellte Belege ins DMS zurückholen'), 'type' => 'boolean', 'default' => true],
         ];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     public function healthCheck(): PluginHealth {

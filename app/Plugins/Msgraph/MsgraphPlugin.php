@@ -12,10 +12,10 @@ namespace App\Plugins\Msgraph;
 
 use App\Models\Backup\BackupTargetConnection;
 use App\Models\CloudIntake\CloudDocumentConnection;
-use App\Models\{MsgraphConnection, Organization, PluginSetting};
-use App\Plugins\Contracts\{BackupTarget, CalendarPublisher, DocumentIntakeSource, Plugin, PluginCapability};
+use App\Models\{MsgraphConnection, Organization};
+use App\Plugins\{AbstractPlugin, PluginHealth};
+use App\Plugins\Contracts\{BackupTarget, CalendarPublisher, DocumentIntakeSource, PluginCapability};
 use App\Plugins\Msgraph\Api\{MsgraphBackupClient, MsgraphCalendarClient, MsgraphIntakeClient};
-use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\Backup\BackupAccount;
 use App\Plugins\Support\Calendar\{OrganizationEventSource, RemoteCalendarEvent, RemoteCalendarPublishService};
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
@@ -42,16 +42,10 @@ use Throwable;
  * Dokumenteingang aus OneDrive/SharePoint über eigene, von der
  * Kalender-Verbindung getrennte {@see CloudDocumentConnection}s.
  */
-class MsgraphPlugin implements BackupTarget, CalendarPublisher, DocumentIntakeSource, Plugin {
-    use PluginDefaults;
-
+class MsgraphPlugin extends AbstractPlugin implements BackupTarget, CalendarPublisher, DocumentIntakeSource {
     public const ID = 'msgraph';
 
     public const SERVICE_PROVIDER = MsgraphServiceProvider::class;
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'Microsoft 365';
@@ -63,18 +57,6 @@ class MsgraphPlugin implements BackupTarget, CalendarPublisher, DocumentIntakeSo
 
     public function description(): string {
         return __('msgraph.plugin_description');
-    }
-
-    public function isEnabled(): bool {
-        $org = PluginOrgContext::currentOrNull();
-        if ($org instanceof Organization) {
-            $row = PluginSetting::forOrganization($org->id, self::ID);
-            if ($row->exists) {
-                return $row->enabled;
-            }
-        }
-
-        return (bool) config('plugins.msgraph.enabled', false);
     }
 
     public function capabilities(): array {
@@ -186,17 +168,9 @@ class MsgraphPlugin implements BackupTarget, CalendarPublisher, DocumentIntakeSo
         ];
     }
 
-    public function serviceProvider(): ?string {
-        return MsgraphServiceProvider::class;
-    }
-
     /** Keine per-Org-Secrets: Client-ID/-Secret/Tenant sind installationsweit (ENV). */
     public function settingsSchema(): array {
         return [];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     /** Health-Check je Organisation: billige Probe über die Kalenderliste. */

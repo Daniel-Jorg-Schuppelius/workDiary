@@ -10,12 +10,11 @@
 
 namespace App\Plugins\OpenProject;
 
-use App\Models\{Organization, PluginSetting};
+use App\Models\Organization;
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
 use App\Plugins\OpenProject\Services\OpenProjectImportService;
 use App\Plugins\OpenProject\Sources\OpenProjectApiClient;
-use App\Plugins\{PluginDefaults, PluginHealth};
-use App\Plugins\Support\PluginOrgContext;
 use Carbon\CarbonImmutable;
 use Throwable;
 
@@ -32,16 +31,10 @@ use Throwable;
  * Plugin-Id ist "openproject". Pro Organisation konfigurierbar über
  * plugin_settings; ENV/config dient nur als Fallback.
  */
-class OpenProjectPlugin implements Plugin, TimeImporter {
-    use PluginDefaults;
-
+class OpenProjectPlugin extends AbstractPlugin implements TimeImporter {
     public const ID = 'openproject';
 
     public const SERVICE_PROVIDER = OpenProjectServiceProvider::class;
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'OpenProject';
@@ -53,18 +46,6 @@ class OpenProjectPlugin implements Plugin, TimeImporter {
 
     public function description(): string {
         return __('Synchronisiert Projekte und Work Packages aus OpenProject, importiert Zeiteinträge und bucht erfasste Zeiten zurück (API v3).');
-    }
-
-    public function isEnabled(): bool {
-        $org = PluginOrgContext::currentOrNull();
-        if ($org instanceof Organization) {
-            $row = PluginSetting::forOrganization($org->id, self::ID);
-            if ($row->exists) {
-                return $row->enabled;
-            }
-        }
-
-        return (bool) config('plugins.openproject.enabled', false);
     }
 
     public function capabilities(): array {
@@ -90,10 +71,6 @@ class OpenProjectPlugin implements Plugin, TimeImporter {
         ];
     }
 
-    public function serviceProvider(): ?string {
-        return OpenProjectServiceProvider::class;
-    }
-
     public function settingsSchema(): array {
         return [
             ['key' => 'base_url', 'label' => __('Instanz-URL'), 'type' => 'text', 'required' => true, 'help' => __('z. B. https://openproject.example.com (mit oder ohne /api/v3).')],
@@ -105,10 +82,6 @@ class OpenProjectPlugin implements Plugin, TimeImporter {
             ['key' => 'create_missing_projects', 'label' => __('Fehlende Projekte/Aufgaben anlegen'), 'type' => 'boolean', 'default' => false, 'help' => __('Beim Struktur-Sync fehlende workDiary-Projekte/Aufgaben automatisch anlegen statt nur zuzuordnen.')],
             ['key' => 'writeback', 'label' => __('Korrekturen zurückschreiben'), 'type' => 'boolean', 'default' => false, 'help' => __('Schreibt Korrekturen an bereits importierten Zeiten zurück nach OpenProject (Änderung und Löschung). Wurde der Eintrag dort zwischenzeitlich geändert, wird nichts überschrieben — der Fall landet in der Integrations-Inbox. Abgerechnete Zeiten werden nie zurückgeschrieben.')],
         ];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     /**

@@ -10,9 +10,9 @@
 
 namespace App\Plugins\Zammad;
 
-use App\Models\{Organization, PluginSetting, ZammadConnection};
+use App\Models\{Organization, ZammadConnection};
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
-use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\PluginOrgContext;
 use App\Plugins\Zammad\Contracts\ZammadGatewayFactory;
 use App\Plugins\Zammad\Services\ZammadTicketImporter;
@@ -35,19 +35,13 @@ use Throwable;
  * Kündigt {@see PluginCapability::TaskSync} an (Aufgaben-Sync-Vertrag aus
  * Feature 055) — bewusst einbahnig (Import); Konflikt-/Inbox-Zähler bleiben 0.
  */
-class ZammadPlugin implements Plugin, TaskSyncer {
-    use PluginDefaults;
-
+class ZammadPlugin extends AbstractPlugin implements TaskSyncer {
     public const ID = 'zammad';
 
     public const SERVICE_PROVIDER = ZammadServiceProvider::class;
 
     /** ExternalReference-Typ dieses Plugins. */
     public const EXT_TYPE_TICKET = 'ticket';
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'Zammad';
@@ -59,18 +53,6 @@ class ZammadPlugin implements Plugin, TaskSyncer {
 
     public function description(): string {
         return __('Importiert Zammad-Tickets als Aufgaben (idempotent, Queue→Projekt-Zuordnung): Zeiterfassung und Abrechnung in WorkDiary, das Ticketsystem bleibt führend. Polling mit Webhook-Anstoß.');
-    }
-
-    public function isEnabled(): bool {
-        $org = PluginOrgContext::currentOrNull();
-        if ($org instanceof Organization) {
-            $row = PluginSetting::forOrganization($org->id, self::ID);
-            if ($row->exists) {
-                return $row->enabled;
-            }
-        }
-
-        return (bool) config('plugins.zammad.enabled', false);
     }
 
     public function capabilities(): array {
@@ -120,17 +102,9 @@ class ZammadPlugin implements Plugin, TaskSyncer {
         ];
     }
 
-    public function serviceProvider(): ?string {
-        return ZammadServiceProvider::class;
-    }
-
     /** Per-Org-Konfiguration liegt in `zammad_connections` (Admin-Panel), nicht in plugin_settings. */
     public function settingsSchema(): array {
         return [];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     /**

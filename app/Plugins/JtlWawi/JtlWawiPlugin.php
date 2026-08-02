@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Plugins\JtlWawi;
 
-use App\Models\{JtlConnection, Organization, PluginSetting};
+use App\Models\{JtlConnection, Organization};
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\Plugin;
 use App\Plugins\JtlWawi\Api\{JtlApiException, JtlGatewayFactory};
-use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\PluginOrgContext;
 use Throwable;
 
@@ -32,16 +32,10 @@ use Throwable;
  * (Lexoffice-Präzedenz: Capability-Enum nur für die dort gebundenen
  * Plugin-Klassen-Interfaces).
  */
-class JtlWawiPlugin implements Plugin {
-    use PluginDefaults;
-
+class JtlWawiPlugin extends AbstractPlugin {
     public const ID = 'jtl_wawi';
 
     public const SERVICE_PROVIDER = JtlWawiServiceProvider::class;
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'JTL-Wawi';
@@ -53,18 +47,6 @@ class JtlWawiPlugin implements Plugin {
 
     public function description(): string {
         return __('Bindet JTL-Wawi als führende Warenwirtschaft an: Artikel- und Lagerprojektion, Bestände lesen und Bestandsbuchungen idempotent übergeben (OnPremise und Cloud, API im Beta-Status).');
-    }
-
-    public function isEnabled(): bool {
-        $organization = PluginOrgContext::currentOrNull();
-        if ($organization instanceof Organization) {
-            $setting = PluginSetting::forOrganization($organization->id, self::ID);
-            if ($setting->exists) {
-                return (bool) $setting->enabled;
-            }
-        }
-
-        return (bool) config('plugins.' . self::ID . '.enabled', false);
     }
 
     /** @return array<int, \App\Plugins\Contracts\PluginCapability> */
@@ -81,17 +63,9 @@ class JtlWawiPlugin implements Plugin {
         ];
     }
 
-    public function serviceProvider(): ?string {
-        return self::SERVICE_PROVIDER;
-    }
-
     /** @return array<int, array<string, mixed>> Eigenes Admin-Panel statt Auto-Form. */
     public function settingsSchema(): array {
         return [];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     public function healthCheck(): PluginHealth {

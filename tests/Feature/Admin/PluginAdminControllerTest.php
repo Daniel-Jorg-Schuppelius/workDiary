@@ -30,7 +30,17 @@ class PluginAdminControllerTest extends TestCase {
 
         $manager = new PluginManager;
         $manager->register(new AdminTestPlugin);
+        $manager->register(new AdminFailingPlugin);
         $this->app->instance(PluginManager::class, $manager);
+    }
+
+    private function enablePlugin(string $pluginId): PluginSetting {
+        return PluginSetting::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => $pluginId,
+            'enabled' => true,
+            'settings' => [],
+        ]);
     }
 
     public function test_index_renders_with_plugins_and_states(): void {
@@ -85,8 +95,10 @@ class PluginAdminControllerTest extends TestCase {
     }
 
     public function test_health_check_endpoint_returns_status_and_persists(): void {
+        $this->enablePlugin('admintest');
+
         $this->actingAs($this->admin)
-            ->post(route('admin.plugins.health-check', 'admintest'))
+            ->postJson(route('admin.plugins.health-check', 'admintest'))
             ->assertOk()
             ->assertJson(['status' => PluginHealth::STATUS_OK]);
 
@@ -94,9 +106,61 @@ class PluginAdminControllerTest extends TestCase {
         $this->assertSame(PluginHealth::STATUS_OK, $state->last_health_status);
     }
 
+    /** W0e: Deaktivierte Plugins werden nicht geprüft — kein Pseudo-Fehler-Check. */
+    public function test_health_check_on_disabled_plugin_is_rejected(): void {
+        $this->actingAs($this->admin)
+            ->postJson(route('admin.plugins.health-check', 'admintest'))
+            ->assertStatus(422)
+            ->assertJson(['status' => 'disabled']);
+
+        $this->assertSame(0, PluginState::query()->where('plugin_id', 'admintest')->count());
+    }
+
+    /**
+     * E-1: Manuelle Admin-Checks landen als Phase `manual` in der Inbox, zählen
+     * aber nie für den Auto-Disable — wiederholte Klicks legen kein Plugin still.
+     */
+    public function test_failing_manual_check_records_manual_phase_without_counting(): void {
+        $this->enablePlugin('adminbroken');
+
+        $this->actingAs($this->admin)
+            ->postJson(route('admin.plugins.health-check', 'adminbroken'))
+            ->assertOk()
+            ->assertJson(['status' => PluginHealth::STATUS_FAILING]);
+
+        $error = PluginError::query()->where('plugin_id', 'adminbroken')->firstOrFail();
+        $this->assertSame(PluginError::PHASE_MANUAL, $error->phase);
+
+        $state = PluginState::query()->where('plugin_id', 'adminbroken')->firstOrFail();
+        $this->assertSame(PluginHealth::STATUS_FAILING, $state->last_health_status);
+        $this->assertSame(0, (int) $state->failure_count);
+        $this->assertNull($state->disabled_reason);
+    }
+
+    /** W0c: Deaktivieren invalidiert den persistierten Health-Zustand. */
+    public function test_toggle_off_clears_health_state(): void {
+        $this->enablePlugin('admintest');
+        $this->actingAs($this->admin)
+            ->postJson(route('admin.plugins.health-check', 'admintest'))
+            ->assertOk();
+        $this->assertNotNull(PluginState::query()->where('plugin_id', 'admintest')->firstOrFail()->last_health_status);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.plugins.toggle', 'admintest'))
+            ->assertRedirect();
+
+        $state = PluginState::query()->where('plugin_id', 'admintest')->firstOrFail();
+        $this->assertNull($state->last_health_status);
+        $this->assertNull($state->last_health_message);
+        $this->assertNull($state->last_health_check_at);
+    }
+
     public function test_reset_errors_clears_disabled_reason(): void {
+        // Org-Zeile: der UI-Reset wirkt seit W1b nur auf die eigene Organisation
+        // (globaler Kill-Switch → CLI plugin:reset, s. PluginErrorInboxScopeTest).
         PluginState::create([
             'plugin_id' => 'admintest',
+            'organization_id' => $this->organization->id,
             'failure_count' => 9,
             'disabled_reason' => 'auto',
         ]);
@@ -108,6 +172,68 @@ class PluginAdminControllerTest extends TestCase {
         $state = PluginState::query()->where('plugin_id', 'admintest')->firstOrFail();
         $this->assertNull($state->disabled_reason);
         $this->assertSame(0, (int) $state->failure_count);
+    }
+
+    /** W1d/B5: Settings-Änderung schreibt ein Audit-Event (nur Feldnamen, nie Werte). */
+    public function test_settings_change_writes_audit_event(): void {
+        $this->enablePlugin('admintest');
+
+        $this->actingAs($this->admin)
+            ->put(route('admin.plugins.update', 'admintest'), [
+                'enabled' => 1,
+                'settings' => ['api_key' => 'geheim-123'],
+            ])
+            ->assertRedirect();
+
+        $log = \App\Models\AuditLog::query()
+            ->withoutGlobalScopes()
+            ->where('event', 'integration.settings_changed')
+            ->firstOrFail();
+        $changes = (array) $log->getAttribute('changes');
+        $this->assertSame(['api_key'], $changes['fields'] ?? null);
+        $this->assertStringNotContainsString('geheim-123', json_encode($changes) ?: '');
+    }
+
+    /** W1d/B6: leeres Secret-Feld lässt den gespeicherten Wert unangetastet. */
+    public function test_empty_secret_input_keeps_existing_value(): void {
+        $row = $this->enablePlugin('admintest');
+        $row->settings = ['api_key' => 'bestehender-key'];
+        $row->save();
+
+        $this->actingAs($this->admin)
+            ->put(route('admin.plugins.update', 'admintest'), [
+                'enabled' => 1,
+                'settings' => ['api_key' => ''],
+            ])
+            ->assertRedirect();
+
+        $row->refresh();
+        $this->assertSame('bestehender-key', $row->settings['api_key'] ?? null);
+    }
+
+    /** A12: Reset quittiert die offenen Fehler des Plugins mit — die Inbox bleibt nicht rot. */
+    public function test_reset_errors_acknowledges_open_errors(): void {
+        PluginError::create([
+            'plugin_id' => 'admintest',
+            'phase' => 'runtime',
+            'exception_class' => 'X',
+            'message' => 'kaputt',
+            'occurred_at' => now(),
+        ]);
+        $foreign = PluginError::create([
+            'plugin_id' => 'other-plugin',
+            'phase' => 'runtime',
+            'exception_class' => 'X',
+            'message' => 'anderes plugin',
+            'occurred_at' => now(),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.plugins.reset-errors', 'admintest'))
+            ->assertRedirect();
+
+        $this->assertSame(0, PluginError::query()->where('plugin_id', 'admintest')->whereNull('acknowledged_at')->count());
+        $this->assertNull($foreign->refresh()->acknowledged_at);
     }
 
     public function test_plugin_errors_inbox_lists_and_acknowledges(): void {
@@ -172,5 +298,43 @@ final class AdminTestPlugin implements Plugin {
         return [
             ['key' => 'api_key', 'label' => 'API', 'type' => 'password'],
         ];
+    }
+    public function healthCheck(): PluginHealth {
+        return PluginHealth::ok('reachable');
+    }
+}
+
+final class AdminFailingPlugin implements Plugin {
+    use PluginDefaults;
+
+    public function id(): string {
+        return 'adminbroken';
+    }
+    public function name(): string {
+        return 'AdminBroken';
+    }
+    public function version(): string {
+        return '1.0.0';
+    }
+    public function description(): string {
+        return '';
+    }
+    public function isEnabled(): bool {
+        return true;
+    }
+    public function capabilities(): array {
+        return [PluginCapability::ContactSync];
+    }
+    public function adminPanel(): ?array {
+        return null;
+    }
+    public function serviceProvider(): ?string {
+        return null;
+    }
+    public function settingsSchema(): array {
+        return [];
+    }
+    public function healthCheck(): PluginHealth {
+        return PluginHealth::failing('api down');
     }
 }

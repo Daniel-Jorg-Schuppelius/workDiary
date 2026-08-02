@@ -19,7 +19,7 @@ use App\Enums\Contracts\HasLabel;
  * Ein Plugin, das eine Fähigkeit ankündigt, MUSS das zugehörige Interface
  * implementieren — erzwungen von `plugin:doctor` und {@see \Tests\Unit\Architecture\PluginContractTest}.
  */
-enum PluginCapability: string implements HasLabel {
+enum PluginCapability: string implements HasLabel, PluginCapabilityContract {
     use HasOptions;
 
     /** Kann Kundenkontakte in ein externes System pushen. */
@@ -63,6 +63,11 @@ enum PluginCapability: string implements HasLabel {
 
     /** Personenbeförderung (MVP-456): Mobilitätsdaten nach § 3a PBefG/MDV. */
     case MobilityData = 'mobility_data';
+
+    /** Stabiler Maschinen-Identifier ({@see PluginCapabilityContract}). */
+    public function identifier(): string {
+        return $this->value;
+    }
 
     /** Übersetztes UI-Label (Badge in der Plugin-Übersicht). */
     public function label(): string {

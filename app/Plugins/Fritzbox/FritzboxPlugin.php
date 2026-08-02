@@ -10,10 +10,8 @@
 
 namespace App\Plugins\Fritzbox;
 
-use App\Models\{Organization, PluginSetting};
+use App\Plugins\AbstractPlugin;
 use App\Plugins\Contracts\Plugin;
-use App\Plugins\PluginDefaults;
-use App\Plugins\Support\PluginOrgContext;
 
 /**
  * FritzBox-Anruflisten-Plugin: importiert die FRITZ!Box-Anrufliste (CSV-Export
@@ -28,17 +26,11 @@ use App\Plugins\Support\PluginOrgContext;
  * Keine TimeImport-Capability: es gibt keinen API-Pull, nur CSV/Mail-Intake.
  * Plugin-Id ist "fritzbox". Pro Organisation konfigurierbar über plugin_settings.
  */
-class FritzboxPlugin implements Plugin {
-    use PluginDefaults;
-
+class FritzboxPlugin extends AbstractPlugin {
     public const ID = 'fritzbox';
 
     /** Vom {@see \App\Providers\PluginServiceProvider} zur Provider-Registrierung ausgewertet. */
     public const SERVICE_PROVIDER = FritzboxServiceProvider::class;
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'FRITZ!Box-Anrufliste';
@@ -50,18 +42,6 @@ class FritzboxPlugin implements Plugin {
 
     public function description(): string {
         return __('Importiert die FRITZ!Box-Anrufliste (CSV oder Telefonbericht per E-Mail) und bucht Telefonate als Zeiteinträge — mit Verschmelzung in überlappende Fernwartungszeiten.');
-    }
-
-    public function isEnabled(): bool {
-        $org = PluginOrgContext::currentOrNull();
-        if ($org instanceof Organization) {
-            $row = PluginSetting::forOrganization($org->id, self::ID);
-            if ($row->exists) {
-                return $row->enabled;
-            }
-        }
-
-        return (bool) config('plugins.fritzbox.enabled', false);
     }
 
     public function capabilities(): array {
@@ -76,10 +56,6 @@ class FritzboxPlugin implements Plugin {
         ];
     }
 
-    public function serviceProvider(): ?string {
-        return FritzboxServiceProvider::class;
-    }
-
     public function settingsSchema(): array {
         return [
             ['key' => 'default_billable', 'label' => __('Telefonate abrechenbar buchen'), 'type' => 'boolean', 'default' => true, 'help' => __('Wenn aus, werden importierte Telefonate nie als abrechenbar markiert.')],
@@ -91,7 +67,4 @@ class FritzboxPlugin implements Plugin {
         ];
     }
 
-    public function isPerOrganization(): bool {
-        return true;
-    }
 }

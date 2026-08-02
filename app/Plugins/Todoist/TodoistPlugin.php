@@ -10,9 +10,9 @@
 
 namespace App\Plugins\Todoist;
 
-use App\Models\{Organization, PluginSetting, TodoistConnection};
+use App\Models\{Organization, TodoistConnection};
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
-use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\PluginOrgContext;
 use App\Plugins\Todoist\Api\TodoistApiClient;
 use Throwable;
@@ -29,9 +29,7 @@ use Throwable;
  *
  * Plugin-Id ist "todoist", per Organisation aktivierbar.
  */
-class TodoistPlugin implements Plugin, TaskSyncer {
-    use PluginDefaults;
-
+class TodoistPlugin extends AbstractPlugin implements TaskSyncer {
     public const ID = 'todoist';
 
     public const SERVICE_PROVIDER = TodoistServiceProvider::class;
@@ -40,10 +38,6 @@ class TodoistPlugin implements Plugin, TaskSyncer {
     public const EXT_TYPE_TASK = 'task';
 
     public const EXT_TYPE_COLLABORATOR = 'collaborator';
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'Todoist';
@@ -55,18 +49,6 @@ class TodoistPlugin implements Plugin, TaskSyncer {
 
     public function description(): string {
         return __('Synchronisiert Aufgaben mit Todoist (OAuth, API v1): explizit zugeordnete Projekte, Integrations-Inbox für Konflikte, keine Löschweitergabe.');
-    }
-
-    public function isEnabled(): bool {
-        $org = PluginOrgContext::currentOrNull();
-        if ($org instanceof Organization) {
-            $row = PluginSetting::forOrganization($org->id, self::ID);
-            if ($row->exists) {
-                return $row->enabled;
-            }
-        }
-
-        return (bool) config('plugins.todoist.enabled', false);
     }
 
     public function capabilities(): array {
@@ -105,17 +87,9 @@ class TodoistPlugin implements Plugin, TaskSyncer {
         ];
     }
 
-    public function serviceProvider(): ?string {
-        return TodoistServiceProvider::class;
-    }
-
     /** Keine per-Org-Secrets: Client-ID/-Secret sind installationsweit (ENV). */
     public function settingsSchema(): array {
         return [];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     public function healthCheck(): PluginHealth {

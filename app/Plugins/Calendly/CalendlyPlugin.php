@@ -10,11 +10,11 @@
 
 namespace App\Plugins\Calendly;
 
-use App\Models\{CalendlyConnection, Organization, PluginSetting};
+use App\Models\{CalendlyConnection, Organization};
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Calendly\Api\CalendlyClient;
 use App\Plugins\Calendly\Services\CalendlyBackfillService;
 use App\Plugins\Contracts\{AppointmentSyncer, Plugin, PluginCapability};
-use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\PluginOrgContext;
 use Throwable;
 
@@ -31,16 +31,10 @@ use Throwable;
  * Plugin-Id ist "calendly", pro Organisation konfigurierbar; OAuth-Client-ID/
  * -Secret sind installationsweit (ENV).
  */
-class CalendlyPlugin implements AppointmentSyncer, Plugin {
-    use PluginDefaults;
-
+class CalendlyPlugin extends AbstractPlugin implements AppointmentSyncer {
     public const ID = 'calendly';
 
     public const SERVICE_PROVIDER = CalendlyServiceProvider::class;
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'Calendly';
@@ -52,18 +46,6 @@ class CalendlyPlugin implements AppointmentSyncer, Plugin {
 
     public function description(): string {
         return __('Empfängt extern über Calendly gebuchte Termine als bestätigungspflichtige Terminwünsche und erzeugt Einmal-Buchungslinks.');
-    }
-
-    public function isEnabled(): bool {
-        $org = PluginOrgContext::currentOrNull();
-        if ($org instanceof Organization) {
-            $row = PluginSetting::forOrganization($org->id, self::ID);
-            if ($row->exists) {
-                return $row->enabled;
-            }
-        }
-
-        return (bool) config('plugins.calendly.enabled', false);
     }
 
     public function capabilities(): array {
@@ -85,18 +67,10 @@ class CalendlyPlugin implements AppointmentSyncer, Plugin {
         ];
     }
 
-    public function serviceProvider(): ?string {
-        return CalendlyServiceProvider::class;
-    }
-
     public function settingsSchema(): array {
         // OAuth-Client-ID/-Secret sind installationsweit (ENV); die Verbindung
         // wird über den OAuth-Flow im Admin-Panel hergestellt.
         return [];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     /** Health-Check: aktive Verbindung + /users/me-Ping. */

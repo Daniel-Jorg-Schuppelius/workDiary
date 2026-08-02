@@ -37,10 +37,20 @@ class PluginApiClient extends ClientAbstract {
         parent::__construct($baseUrl, null, false, $httpClient);
 
         $this->setUserAgent('workDiary-plugin/' . $pluginId);
-        $this->setTimeout(10.0);
         $this->setRequestInterval(0.0);
-        $this->setMaxRetries(3);
         $this->setDefaultHeaders(['Accept' => 'application/json']);
+
+        // Health-Kontext (Review 2026-08, W3c): ein Check muss nicht dreimal
+        // retryen — Budget = plugins.health_timeout_seconds, max. 1 Retry.
+        // Greift für Clients, die während des healthCheck() gebaut werden
+        // (der übliche Fall: Services werden lazy aufgelöst).
+        if (\App\Plugins\PluginHealthService::inHealthCheck()) {
+            $this->setTimeout((float) config('plugins.health_timeout_seconds', 10));
+            $this->setMaxRetries(1);
+        } else {
+            $this->setTimeout(10.0);
+            $this->setMaxRetries(3);
+        }
     }
 
     /**

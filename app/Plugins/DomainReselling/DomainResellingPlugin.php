@@ -12,12 +12,12 @@ namespace App\Plugins\DomainReselling;
 
 use App\Enums\Domain\DomainConnectionStatus;
 use App\Models\Domain\DomainProviderConnection;
-use App\Models\{Organization, PluginSetting};
+use App\Models\Organization;
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\Domain\DomainProviderAdapter;
 use App\Plugins\Contracts\{DomainRegistrar, Plugin, PluginCapability};
 use App\Plugins\DomainReselling\Adapters\DomainResellingAdapter;
 use App\Plugins\DomainReselling\Api\DomainResellingClient;
-use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\PluginOrgContext;
 use Throwable;
 
@@ -31,17 +31,11 @@ use Throwable;
  * und verschlüsseltem Passwort. Der Adapter bleibt „Pilot offen", bis ein
  * realer OT&E-/Produktivpilot bestanden ist (MVP-384/396).
  */
-class DomainResellingPlugin implements DomainRegistrar, Plugin {
-    use PluginDefaults;
-
+class DomainResellingPlugin extends AbstractPlugin implements DomainRegistrar {
     public const ID = 'domainreselling';
 
     /** Von der Plugin-Discovery VOR der Instanziierung registriert. */
     public const SERVICE_PROVIDER = DomainResellingServiceProvider::class;
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'DomainReselling';
@@ -53,18 +47,6 @@ class DomainResellingPlugin implements DomainRegistrar, Plugin {
 
     public function description(): string {
         return __('domain.plugin.description');
-    }
-
-    public function isEnabled(): bool {
-        $org = PluginOrgContext::currentOrNull();
-        if ($org instanceof Organization) {
-            $row = PluginSetting::forOrganization($org->id, self::ID);
-            if ($row->exists) {
-                return $row->enabled;
-            }
-        }
-
-        return (bool) config('plugins.domainreselling.enabled', false);
     }
 
     /** @return array<int, PluginCapability> */
@@ -81,17 +63,9 @@ class DomainResellingPlugin implements DomainRegistrar, Plugin {
         return null;
     }
 
-    public function serviceProvider(): ?string {
-        return DomainResellingServiceProvider::class;
-    }
-
     /** Zugangsdaten liegen je Verbindung, nicht in plugin_settings. */
     public function settingsSchema(): array {
         return [];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     /** Health je Organisation: Zustand der DomainReselling-Verbindungen. */

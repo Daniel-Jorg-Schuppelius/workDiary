@@ -43,6 +43,50 @@ return [
     'auto_disable_threshold' => (int) env('PLUGINS_AUTO_DISABLE_THRESHOLD', 5),
 
     /*
+    | Zeitfenster für den Auto-Disable (Review 2026-08, W2b): gezählt werden nur
+    | Fehler innerhalb des Fensters — fünf Fehler über sechs Monate verteilt
+    | legen das Plugin nicht mehr still. 0 = kumulativ (altes Verhalten).
+    */
+    'auto_disable_window_hours' => (int) env('PLUGINS_AUTO_DISABLE_WINDOW_HOURS', 24),
+
+    /*
+    | Eigener (typischerweise niedrigerer) Schwellwert für Boot-Fehler — ein
+    | Plugin, das den Boot reißt, ist gravierender als ein Netz-Timeout.
+    | null = auto_disable_threshold gilt auch für Boot.
+    */
+    'auto_disable_boot_threshold' => env('PLUGINS_AUTO_DISABLE_BOOT_THRESHOLD') !== null
+        ? (int) env('PLUGINS_AUTO_DISABLE_BOOT_THRESHOLD')
+        : null,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Healthchecks (Review 2026-08, W3)
+    |--------------------------------------------------------------------------
+    |
+    | health_flap_threshold : Statuswechsel werden erst nach N gleichen
+    |   Ergebnissen in Folge gemeldet (Hysterese gegen Flapping). Der allererste
+    |   Status eines Plugins wird immer sofort gemeldet.
+    | health_timeout_seconds: Timeout-Budget je Check — im Health-Kontext
+    |   erzeugte HTTP-Clients bekommen dieses Timeout und höchstens 1 Retry.
+    | health_exclude        : Plugin-IDs, die der geplante Lauf überspringt.
+    */
+    'health_flap_threshold' => (int) env('PLUGINS_HEALTH_FLAP_THRESHOLD', 2),
+    'health_timeout_seconds' => (int) env('PLUGINS_HEALTH_TIMEOUT_SECONDS', 10),
+    'health_exclude' => array_values(array_filter(explode(',', (string) env('PLUGINS_HEALTH_EXCLUDE', '')))),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Aufbewahrung plugin_errors (Review 2026-08, W2c)
+    |--------------------------------------------------------------------------
+    |
+    | model:prune (Scheduler, täglich) entfernt quittierte Fehler nach
+    | `errors_retention_acknowledged_days` und offene nach
+    | `errors_retention_open_days` Tagen.
+    */
+    'errors_retention_acknowledged_days' => (int) env('PLUGINS_ERRORS_RETENTION_ACKNOWLEDGED_DAYS', 30),
+    'errors_retention_open_days' => (int) env('PLUGINS_ERRORS_RETENTION_OPEN_DAYS', 90),
+
+    /*
     |--------------------------------------------------------------------------
     | Per-plugin configuration
     |--------------------------------------------------------------------------

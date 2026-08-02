@@ -26,7 +26,15 @@ class PluginHealthCheckCommandTest extends TestCase {
         $manager = new PluginManager;
         $manager->register(new FakeHealthyPlugin);
         $manager->register(new FakeFailingPlugin);
+        $manager->register(new FakeDisabledPlugin);
         $this->app->instance(PluginManager::class, $manager);
+    }
+
+    /** A7: Auch im globalen Zweig werden deaktivierte Plugins übersprungen. */
+    public function test_disabled_global_plugin_is_skipped(): void {
+        $this->artisan('plugin:healthcheck --no-fail')->assertExitCode(0);
+
+        $this->assertSame(0, PluginState::query()->where('plugin_id', 'dormant')->count());
     }
 
     public function test_command_persists_health_and_records_failures(): void {
@@ -133,5 +141,40 @@ final class FakeFailingPlugin implements Plugin {
     }
     public function healthCheck(): PluginHealth {
         return PluginHealth::failing('api down');
+    }
+}
+
+final class FakeDisabledPlugin implements Plugin {
+    use PluginDefaults;
+
+    public function id(): string {
+        return 'dormant';
+    }
+    public function name(): string {
+        return 'Dormant';
+    }
+    public function version(): string {
+        return '1.0.0';
+    }
+    public function description(): string {
+        return '';
+    }
+    public function isEnabled(): bool {
+        return false;
+    }
+    public function capabilities(): array {
+        return [PluginCapability::ContactSync];
+    }
+    public function adminPanel(): ?array {
+        return null;
+    }
+    public function serviceProvider(): ?string {
+        return null;
+    }
+    public function settingsSchema(): array {
+        return [];
+    }
+    public function healthCheck(): PluginHealth {
+        throw new \RuntimeException('darf nie geprüft werden');
     }
 }

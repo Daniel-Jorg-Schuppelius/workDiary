@@ -45,12 +45,21 @@ final class PluginDiscovery {
 
         $candidates = array_values(array_unique([...$explicit, ...self::scan()]));
 
-        return array_values(array_filter(
-            $candidates,
-            static fn(string $class): bool => class_exists($class)
+        $valid = [];
+        foreach ($candidates as $class) {
+            if (class_exists($class)
                 && is_subclass_of($class, Plugin::class)
-                && ! (new ReflectionClass($class))->isAbstract(),
-        ));
+                && ! (new ReflectionClass($class))->isAbstract()) {
+                $valid[] = $class;
+
+                continue;
+            }
+            // Nicht still verwerfen (W0b): ein Tippfehler im Klassennamen
+            // wäre sonst ein lautlos fehlendes Plugin.
+            \Illuminate\Support\Facades\Log::warning('Plugin candidate discarded (missing class, wrong contract or abstract)', ['class' => $class]);
+        }
+
+        return $valid;
     }
 
     /**

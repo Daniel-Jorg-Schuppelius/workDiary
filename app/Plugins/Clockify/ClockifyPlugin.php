@@ -10,12 +10,11 @@
 
 namespace App\Plugins\Clockify;
 
-use App\Models\{Organization, PluginSetting};
+use App\Models\Organization;
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Clockify\Exceptions\ClockifyApiException;
 use App\Plugins\Clockify\Sources\ClockifyApiClient;
 use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
-use App\Plugins\{PluginDefaults, PluginHealth};
-use App\Plugins\Support\PluginOrgContext;
 
 /**
  * Clockify-Import-Plugin (Migrationsimport, MVP-134).
@@ -30,17 +29,11 @@ use App\Plugins\Support\PluginOrgContext;
  *
  * Plugin-Id ist "clockify". Pro Organisation konfigurierbar über plugin_settings.
  */
-class ClockifyPlugin implements Plugin, TimeImporter {
-    use PluginDefaults;
-
+class ClockifyPlugin extends AbstractPlugin implements TimeImporter {
     public const ID = 'clockify';
 
     /** Vom {@see \App\Providers\PluginServiceProvider} zur Provider-Registrierung ausgewertet. */
     public const SERVICE_PROVIDER = ClockifyServiceProvider::class;
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'Clockify';
@@ -52,18 +45,6 @@ class ClockifyPlugin implements Plugin, TimeImporter {
 
     public function description(): string {
         return __('Importiert Zeiteinträge aus Clockify (Detailed-Report-CSV oder REST-API) und ordnet sie Kunden/Projekten zu.');
-    }
-
-    public function isEnabled(): bool {
-        $org = PluginOrgContext::currentOrNull();
-        if ($org instanceof Organization) {
-            $row = PluginSetting::forOrganization($org->id, self::ID);
-            if ($row->exists) {
-                return $row->enabled;
-            }
-        }
-
-        return (bool) config('plugins.clockify.enabled', false);
     }
 
     public function capabilities(): array {
@@ -107,10 +88,6 @@ class ClockifyPlugin implements Plugin, TimeImporter {
         ];
     }
 
-    public function serviceProvider(): ?string {
-        return ClockifyServiceProvider::class;
-    }
-
     public function settingsSchema(): array {
         return [
             ['key' => 'default_billable', 'label' => __('Abrechenbar übernehmen'), 'type' => 'boolean', 'default' => true, 'help' => __('Wenn aus, werden importierte Zeiten nie als abrechenbar markiert.')],
@@ -124,7 +101,4 @@ class ClockifyPlugin implements Plugin, TimeImporter {
         ];
     }
 
-    public function isPerOrganization(): bool {
-        return true;
-    }
 }

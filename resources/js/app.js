@@ -889,6 +889,23 @@ document.addEventListener("click", (event) => {
                         return;
                     }
 
+                    // JSON-Fehlerantworten (z. B. 409 Kompatibilitätssperre)
+                    // als Meldung anzeigen statt sie im HTML-Fallback zu verlieren.
+                    const errorContentType =
+                        response.headers.get("content-type") || "";
+                    if (errorContentType.includes("application/json")) {
+                        const payload = await response.json().catch(() => null);
+                        if (typeof window.notifyAction === "function") {
+                            window.notifyAction({
+                                tone: "error",
+                                message:
+                                    (payload && payload.message) ||
+                                    __("js.dialog.save_failed"),
+                            });
+                        }
+                        return;
+                    }
+
                     // Fallback: Falls ein Controller HTML statt JSON zurückgibt.
                     // Blade-gerendertes Dialog-Fragment, daher als Markup gesetzt.
                     const markup = await response.text();

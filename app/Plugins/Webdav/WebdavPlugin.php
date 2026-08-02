@@ -10,9 +10,9 @@
 
 namespace App\Plugins\Webdav;
 
-use App\Models\{Organization, PluginSetting, WebdavConnection};
+use App\Models\{Organization, WebdavConnection};
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\Plugin;
-use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\PluginOrgContext;
 use App\Plugins\Webdav\Contracts\WebdavGatewayFactory;
 use Throwable;
@@ -33,16 +33,10 @@ use Throwable;
  * Bewusst ohne Sync-Capability: die Spiegelung ist ereignisgetrieben
  * (Freigabe → Outbox), kein providerneutraler Abgleicheinstieg.
  */
-class WebdavPlugin implements Plugin {
-    use PluginDefaults;
-
+class WebdavPlugin extends AbstractPlugin {
     public const ID = 'webdav';
 
     public const SERVICE_PROVIDER = WebdavServiceProvider::class;
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'WebDAV';
@@ -54,18 +48,6 @@ class WebdavPlugin implements Plugin {
 
     public function description(): string {
         return __('Spiegelt freigegebene Dokumente in eine externe WebDAV-Ablage (Nextcloud/ownCloud) — mit Übergabenachweis und Konfliktanzeige, ohne Rückkanal.');
-    }
-
-    public function isEnabled(): bool {
-        $org = PluginOrgContext::currentOrNull();
-        if ($org instanceof Organization) {
-            $row = PluginSetting::forOrganization($org->id, self::ID);
-            if ($row->exists) {
-                return $row->enabled;
-            }
-        }
-
-        return (bool) config('plugins.webdav.enabled', false);
     }
 
     /** Ereignisgetriebenes Sink-Plugin ohne providerneutrale Sync-Capability. */
@@ -81,17 +63,9 @@ class WebdavPlugin implements Plugin {
         ];
     }
 
-    public function serviceProvider(): ?string {
-        return WebdavServiceProvider::class;
-    }
-
     /** Per-Org-Konfiguration liegt in `webdav_connections` (Admin-Panel), nicht in plugin_settings. */
     public function settingsSchema(): array {
         return [];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     /** Health-Check je Organisation: aktive Ablage suchen und die Collection anpingen. */

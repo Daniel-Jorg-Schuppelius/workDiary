@@ -10,11 +10,10 @@
 
 namespace App\Plugins\RemoteSupport;
 
-use App\Models\{Asset, Organization, PluginSetting};
+use App\Models\{Asset, Organization};
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, SlotRenderer, TimeImporter};
-use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, TeamViewerClient};
-use App\Plugins\Support\PluginOrgContext;
 use Carbon\CarbonImmutable;
 use Throwable;
 
@@ -28,16 +27,10 @@ use Throwable;
  * Plugin-Id ist "remote-support". Pro Organisation konfigurierbar über
  * plugin_settings; ENV dient nur als Fallback.
  */
-class RemoteSupportPlugin implements Plugin, SlotRenderer, TimeImporter {
-    use PluginDefaults;
-
+class RemoteSupportPlugin extends AbstractPlugin implements SlotRenderer, TimeImporter {
     public const ID = 'remote-support';
 
     public const SERVICE_PROVIDER = RemoteSupportServiceProvider::class;
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'Fernwartung';
@@ -49,18 +42,6 @@ class RemoteSupportPlugin implements Plugin, SlotRenderer, TimeImporter {
 
     public function description(): string {
         return __('Speichert AnyDesk-/TeamViewer-IDs an Geräten und importiert Verbindungen als Zeiteinträge im Standardprojekt des Kunden.');
-    }
-
-    public function isEnabled(): bool {
-        $org = PluginOrgContext::currentOrNull();
-        if ($org instanceof Organization) {
-            $row = PluginSetting::forOrganization($org->id, self::ID);
-            if ($row->exists) {
-                return $row->enabled;
-            }
-        }
-
-        return (bool) config('plugins.remote-support.enabled', false);
     }
 
     public function capabilities(): array {
@@ -86,10 +67,6 @@ class RemoteSupportPlugin implements Plugin, SlotRenderer, TimeImporter {
         ];
     }
 
-    public function serviceProvider(): ?string {
-        return RemoteSupportServiceProvider::class;
-    }
-
     public function settingsSchema(): array {
         return [
             ['key' => 'sync_window_days', 'label' => __('Sync-Zeitfenster (Tage)'), 'type' => 'text', 'default' => '2', 'help' => __('Wie viele Tage rückwirkend pro Lauf abgefragt werden.')],
@@ -105,10 +82,6 @@ class RemoteSupportPlugin implements Plugin, SlotRenderer, TimeImporter {
             ['key' => 'teamviewer_api_key', 'label' => __('TeamViewer Script-Token'), 'type' => 'password', 'help' => __('Script-Token mit Connection-Report-Berechtigung.')],
             ['key' => 'teamviewer_base_url', 'label' => __('TeamViewer API-Basis-URL'), 'type' => 'text', 'default' => 'https://webapi.teamviewer.com/api/v1'],
         ];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     /**

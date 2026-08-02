@@ -10,7 +10,7 @@
 
 namespace Tests\Unit\Architecture;
 
-use App\Plugins\Contracts\{Plugin, PluginCapability};
+use App\Plugins\Contracts\{Plugin, PluginCapabilityContract, SettingsField};
 use App\Plugins\PluginDiscovery;
 use Tests\TestCase;
 
@@ -44,25 +44,26 @@ class PluginContractTest extends TestCase {
         foreach ($this->pluginClasses() as $class) {
             $plugin = $this->app->make($class);
             foreach ($plugin->capabilities() as $cap) {
-                $this->assertInstanceOf(PluginCapability::class, $cap, "$class: capabilities() muss Enum-Cases liefern.");
+                // W5e: Kern-Enum ODER Registry-Capability — beide erfüllen den Contract.
+                $this->assertInstanceOf(PluginCapabilityContract::class, $cap, "$class: capabilities() muss PluginCapabilityContract-Instanzen liefern.");
                 $interface = $cap->interface();
-                $this->assertInstanceOf($interface, $plugin, "$class kündigt {$cap->name} an, implementiert aber $interface nicht.");
+                $this->assertInstanceOf($interface, $plugin, "$class kündigt {$cap->identifier()} an, implementiert aber $interface nicht.");
             }
         }
     }
 
     public function test_settings_schema_is_well_formed(): void {
-        $allowed = ['text', 'password', 'select', 'boolean'];
         foreach ($this->pluginClasses() as $class) {
             foreach ($this->app->make($class)->settingsSchema() as $field) {
-                $this->assertArrayHasKey('key', $field, "$class: Feld ohne key.");
-                $this->assertArrayHasKey('label', $field, "$class: Feld ohne label.");
-                $this->assertArrayHasKey('type', $field, "$class: Feld ohne type.");
-                $this->assertContains($field['type'], $allowed, "$class: unbekannter Feldtyp {$field['type']}.");
-                if ($field['type'] === 'select') {
-                    $this->assertNotEmpty($field['options'] ?? [], "$class: select-Feld {$field['key']} ohne options.");
+                // W5b: Normalisierung wirft bei ungültigem Typ/Key/select ohne
+                // options — dieselbe Prüfung wie `plugin:doctor` und Controller.
+                try {
+                    SettingsField::fromArray($field);
+                } catch (\InvalidArgumentException $e) {
+                    $this->fail("$class: " . $e->getMessage());
                 }
             }
+            $this->addToAssertionCount(1);
         }
     }
 

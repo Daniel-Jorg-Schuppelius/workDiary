@@ -13,10 +13,10 @@ declare(strict_types=1);
 namespace App\Plugins\OrgaMax;
 
 use APIToolkit\Exceptions\ApiException;
-use App\Models\{OrgaMaxConnection, Organization, PluginSetting};
+use App\Models\{OrgaMaxConnection, Organization};
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\Plugin;
 use App\Plugins\OrgaMax\Api\OrgaMaxClientFactory;
-use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\PluginOrgContext;
 use Orgamax\API\Endpoints\Settings\AccountSettingEndpoint;
 use Throwable;
@@ -34,16 +34,10 @@ use Throwable;
  * eigene {@see \App\Plugins\Contracts\PluginCapability} — die Fähigkeiten
  * hängen an FacturationTarget-/Outbox-Verträgen.
  */
-class OrgaMaxPlugin implements Plugin {
-    use PluginDefaults;
-
+class OrgaMaxPlugin extends AbstractPlugin {
     public const ID = 'orgamax';
 
     public const SERVICE_PROVIDER = OrgaMaxServiceProvider::class;
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'orgaMAX Buchhaltung';
@@ -55,18 +49,6 @@ class OrgaMaxPlugin implements Plugin {
 
     public function description(): string {
         return __('Bindet orgaMAX Buchhaltung über die offizielle OpenAPI an: Kunden-/Lieferanten-/Artikelprojektion, Faktura-Übergabe als orgaMAX-Auftrag sowie Rechnungs-, Zahlungs- und PDF-Projektion. Nicht für orgaMAX ERP.');
-    }
-
-    public function isEnabled(): bool {
-        $organization = PluginOrgContext::currentOrNull();
-        if ($organization instanceof Organization) {
-            $setting = PluginSetting::forOrganization($organization->id, self::ID);
-            if ($setting->exists) {
-                return (bool) $setting->enabled;
-            }
-        }
-
-        return (bool) config('plugins.' . self::ID . '.enabled', false);
     }
 
     /** @return array<int, \App\Plugins\Contracts\PluginCapability> */
@@ -83,17 +65,9 @@ class OrgaMaxPlugin implements Plugin {
         ];
     }
 
-    public function serviceProvider(): ?string {
-        return self::SERVICE_PROVIDER;
-    }
-
     /** @return array<int, array<string, mixed>> Eigenes Admin-Panel statt Auto-Form. */
     public function settingsSchema(): array {
         return [];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     public function healthCheck(): PluginHealth {
