@@ -113,7 +113,9 @@
                 </x-slot:head>
                 @forelse ($billingStatements as $statement)
                     <tr>
-                        <td class="whitespace-nowrap">{{ $statement->periodLabel() }}</td>
+                        <td class="whitespace-nowrap">
+                            <a href="{{ route('customers.billing.statements.show', [$customer, $statement]) }}" class="link link-hover">{{ $statement->periodLabel() }}</a>
+                        </td>
                         <td class="text-right tabular-nums">
                             {{ $hours($statement->total_minutes) }}
                             @if ($statement->travel_minutes > 0)

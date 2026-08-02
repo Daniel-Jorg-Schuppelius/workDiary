@@ -10,6 +10,12 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Kunden-Sonderkonditionen (Feature 098): **Monatsdetail in der Verwaltung**.
+  Der Monat im Abrechnungspanel ist jetzt verlinkt und zeigt dieselben Zeilen
+  wie Kundenportal und PDF-Nachweis (Datum, Tätigkeit, Von/Bis, Dauer,
+  Anfahrt, Satz, Betrag) plus Tätigkeits-Summen und die Zahlungen des Monats —
+  damit ist ohne Umweg über das Portal prüfbar, wie einzelne Zeiten bewertet
+  wurden. Zugriff wie beim Panel über das Bearbeiten-Recht am Kunden.
 - Kunden-Sonderkonditionen (Feature 098): **Anfahrtspauschale je Zeiteintrag**.
   In der Konditionsmaske lassen sich x Minuten Anfahrt hinterlegen, wahlweise
   nur für ausgewählte Tätigkeiten; sie werden mit dem Satz des Eintrags
@@ -812,6 +818,23 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   Sync ziehen den Zahlstatus jetzt mit; zudem band `lexoffice:sync-vouchers`
   den Organisations-Kontext nicht, wodurch der Belegabruf den API-Key einer
   fremden Organisation hätte verwenden können.
+- Kunden-Sonderkonditionen, Pauschal-Modus (Feature 098): **die Monatszeile
+  zeigte die Zahlung des Vormonats**. Retainer-Rechnungen gehen am Monatsende
+  raus und werden Anfang des Folgemonats bezahlt; da Zahlungen bisher strikt
+  nach ihrem Zahldatum einsortiert wurden, stand die Januar-Pauschale im
+  Februar und der Januar bei „Abgerechnet 0,00 €" — der Endsaldo stimmte,
+  die Monatsdarstellung war um einen Monat versetzt. Zahlungen zu einem Beleg,
+  der an einem Monat hängt, zählen jetzt in **diesen** Monat (neue Zuordnung
+  `customer_account_payments.customer_billing_statement_id`); das echte
+  Zahldatum bleibt für den Nachweis erhalten, Bank-, Hand- und Import-
+  Zahlungen ordnen sich weiterhin über das Datum ein. Zahlungen in bereits
+  abgeschlossenen Monaten behalten ihre Zuordnung.
+- Kunden-Sonderkonditionen (Feature 098): **die Tätigkeitsauswahl der
+  Anfahrtspauschale bot Kategorien an, die auf Kundenprojekten nie vorkommen**
+  (Pause, Krank, Verwaltung …). Angeboten werden jetzt nur Kategorien, die an
+  den Zeiten des jeweiligen Kunden tatsächlich auftreten; tragen dessen Zeiten
+  gar keine Kategorie, steht dort der Hinweis, dass die Anfahrt für alle
+  Einträge gilt.
 - Kunden-Sonderkonditionen (Feature 098): **eine Satzänderung wirkte nicht auf
   bereits erfasste Zeiten**. Der Konditionsdialog löschte beim Speichern alle
   Satzzeilen und legte sie neu an; da der Konditionsnachweis am Zeiteintrag

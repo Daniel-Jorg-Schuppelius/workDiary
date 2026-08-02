@@ -161,6 +161,44 @@ class BillingAdminTest extends TestCase {
         $this->assertTrue($agreement->holidays_as_weekend);
     }
 
+    public function test_statement_detail_lists_the_entries_with_travel(): void {
+        $agreement = CustomerBillingAgreement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+            'travel_minutes_per_entry' => 20,
+        ]);
+        CustomerBillingRate::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_billing_agreement_id' => $agreement->id,
+            'day_type' => 'weekday',
+            'hourly_rate' => 18.00,
+        ]);
+        $project = \App\Models\Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+        ]);
+        \App\Models\TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->admin->id,
+            'project_id' => $project->id,
+            'kind' => \App\Enums\TimeEntry\TimeEntryKind::Work->value,
+            'billable' => true,
+            'started_at' => '2026-07-17 08:00:00',
+            'ended_at' => '2026-07-17 10:00:00',
+        ]);
+        $statement = app(\App\Services\Billing\CustomerAccountStatementService::class)
+            ->ensure($agreement, 2026, 7);
+
+        $response = $this->actingAs($this->admin)
+            ->get(route('customers.billing.statements.show', [$this->customer, $statement]));
+
+        $response->assertOk();
+        $response->assertSee(__('customer-billing.travel'));
+        $response->assertSee('2:00');   // Arbeitszeit
+        $response->assertSee('0:20');   // Anfahrt
+        $response->assertSee('42,00 €'); // 140 Min. à 18,00 €
+    }
+
     public function test_payment_can_be_booked_and_voided(): void {
         CustomerBillingAgreement::factory()->create([
             'organization_id' => $this->organization->id,

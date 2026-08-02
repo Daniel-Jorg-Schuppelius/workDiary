@@ -28,11 +28,38 @@ class BillingAgreementController extends Controller {
     public function edit(Customer $customer): \Illuminate\View\View {
         Gate::authorize('update', $customer);
 
+        $agreement = $customer->billingAgreement()->with('rates')->first();
+        $categories = \App\Models\ActivityCategory::query()->active()->orderBy('label')->get();
+
         return view('customers.billing._agreement_form_dialog', [
             'customer' => $customer,
-            'agreement' => $customer->billingAgreement()->with('rates')->first(),
-            'activityCategories' => \App\Models\ActivityCategory::query()->active()->orderBy('label')->get(),
+            'agreement' => $agreement,
+            'activityCategories' => $categories,
+            // Für die Anfahrt nur Kategorien anbieten, die an den Zeiten dieses
+            // Kunden wirklich vorkommen (plus bereits gewählte): der Katalog
+            // führt sonst interne Arten (Pause, Krank …), die auf einem
+            // Kundenprojekt nie auftauchen — die Auswahl liefe ins Leere.
+            'travelCategoryOptions' => $categories->whereIn(
+                'id',
+                $this->usedCategoryIds($customer)
+                    ->merge($agreement === null ? [] : $agreement->travel_categories ?? [])
+                    ->unique()->all()
+            )->values(),
         ]);
+    }
+
+    /**
+     * Tätigkeitskategorien, die an Zeiteinträgen dieses Kunden vorkommen.
+     *
+     * @return \Illuminate\Support\Collection<int, int>
+     */
+    private function usedCategoryIds(Customer $customer): \Illuminate\Support\Collection {
+        return \App\Models\TimeEntry::query()
+            ->whereHas('project', fn ($q) => $q->where('customer_id', $customer->id))
+            ->whereNotNull('activity_category_id')
+            ->distinct()
+            ->pluck('activity_category_id')
+            ->map(fn ($id): int => (int) $id);
     }
 
     public function save(

@@ -16,6 +16,7 @@ use App\Models\{Customer, User};
 use App\Services\Billing\CustomerAccountStatementService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\View\View;
 
 /**
  * Monatsabschluss-Aktionen des Kundenkontos (Feature 098): Abschließen (Lock +
@@ -23,6 +24,31 @@ use Illuminate\Support\Facades\{Auth, Gate};
  * validiert der Service hart.
  */
 class BillingStatementController extends Controller {
+    /**
+     * Monatsdetail für die Verwaltung: dieselben Zeilen wie Portal und PDF
+     * (monthData ist die einzige Datenquelle) — gesperrt aus dem Snapshot,
+     * offen live gerechnet.
+     */
+    public function show(Customer $customer, CustomerBillingStatement $statement, CustomerAccountStatementService $service): View {
+        // Wie das Panel an der Kundenakte: Abrechnungsdaten (Sätze, Beträge)
+        // sind nicht für jeden Org-Mitleser.
+        Gate::authorize('update', $customer);
+        $this->assertBelongsToCustomer($customer, $statement);
+
+        $agreement = $statement->agreement()->firstOrFail();
+        $data = $service->monthData($agreement, $statement->year, $statement->month);
+
+        return view('customers.billing.statement', [
+            'customer' => $customer,
+            'agreement' => $agreement,
+            'statement' => $data['statement'],
+            'rows' => $data['rows'],
+            'payments' => $data['payments'],
+            'byCategory' => $data['by_category'],
+            'locked' => $data['locked'],
+        ]);
+    }
+
     public function close(Customer $customer, CustomerBillingStatement $statement, CustomerAccountStatementService $service): RedirectResponse {
         Gate::authorize('update', $customer);
         $this->assertBelongsToCustomer($customer, $statement);

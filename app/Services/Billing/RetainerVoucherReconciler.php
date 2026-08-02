@@ -53,12 +53,17 @@ class RetainerVoucherReconciler {
 
         $invoiceByExternalId = $this->retainerInvoiceMap($organization);
         $statementByVoucherId = $this->linkedStatementMap($organization);
+        $statementByInvoiceId = $this->invoiceStatementMap($organization);
 
         foreach ($vouchers as $voucher) {
             $invoice = $invoiceByExternalId[$voucher->external_id] ?? null;
+            // Monat des Belegs — egal ob selbst gepusht (Invoice) oder in
+            // Lexoffice erstellt und verknüpft (Voucher).
+            $statement = $statementByVoucherId[$voucher->id]
+                ?? ($invoice !== null ? $statementByInvoiceId[$invoice->id] ?? null : null);
             $agreement = $invoice !== null
                 ? $this->retainerAgreementFor((int) $invoice->customer_id)
-                : ($statementByVoucherId[$voucher->id] ?? null)?->agreement()->first();
+                : $statement?->agreement()->first();
 
             if ($agreement === null || ! $agreement->isRetainerMode()) {
                 $result['skipped']++;
@@ -98,6 +103,7 @@ class RetainerVoucherReconciler {
                 $this->netAmounts->paidNet($voucher, $paidGross, $total),
                 $paidOn,
                 (string) __('customer-billing.lexoffice_payment_note', ['number' => (string) $voucher->voucher_number]),
+                $statement,
             );
 
             if ($invoice !== null) {
@@ -251,6 +257,18 @@ class RetainerVoucherReconciler {
             ->whereNotNull('lexoffice_voucher_id')
             ->get()
             ->keyBy('lexoffice_voucher_id')
+            ->all();
+    }
+
+    /**
+     * @return array<int, CustomerBillingStatement> Invoice-ID → Monat der gepushten Pauschale.
+     */
+    private function invoiceStatementMap(Organization $organization): array {
+        return CustomerBillingStatement::query()
+            ->where('organization_id', $organization->id)
+            ->whereNotNull('retainer_invoice_id')
+            ->get()
+            ->keyBy('retainer_invoice_id')
             ->all();
     }
 

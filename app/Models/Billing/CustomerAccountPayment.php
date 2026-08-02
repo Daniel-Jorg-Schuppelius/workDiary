@@ -29,6 +29,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int|null $organization_id
  * @property int $customer_billing_agreement_id
+ * @property int|null $customer_billing_statement_id
  * @property Carbon $paid_on
  * @property \CommonToolkit\ValueObjects\Money|null $amount
  * @property CurrencyCode $currency
@@ -52,6 +53,7 @@ class CustomerAccountPayment extends Model {
     protected $fillable = [
         'organization_id',
         'customer_billing_agreement_id',
+        'customer_billing_statement_id',
         'paid_on',
         'amount',
         'currency',
@@ -74,6 +76,16 @@ class CustomerAccountPayment extends Model {
     /** @return BelongsTo<CustomerBillingAgreement, $this> */
     public function agreement(): BelongsTo {
         return $this->belongsTo(CustomerBillingAgreement::class, 'customer_billing_agreement_id');
+    }
+
+    /**
+     * Monat, dem die Zahlung fachlich zugerechnet wird (Beleg-Monat); NULL =
+     * Zuordnung über `paid_on`.
+     *
+     * @return BelongsTo<CustomerBillingStatement, $this>
+     */
+    public function statement(): BelongsTo {
+        return $this->belongsTo(CustomerBillingStatement::class, 'customer_billing_statement_id');
     }
 
     /** @return BelongsTo<BankTransaction, $this> */

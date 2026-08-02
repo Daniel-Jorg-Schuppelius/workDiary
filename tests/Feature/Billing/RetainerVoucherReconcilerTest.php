@@ -216,6 +216,31 @@ class RetainerVoucherReconcilerTest extends TestCase {
         $this->assertSame(0, $this->agreement->payments()->count());
     }
 
+    public function test_payment_counts_into_the_month_of_its_voucher(): void {
+        // Retainer-Rechnungen gehen am Monatsende raus und werden Anfang des
+        // Folgemonats bezahlt — ohne Belegmonat-Zuordnung stünde die Zahlung
+        // im Mai und der April bliebe bei 0,00 €.
+        $statements = app(CustomerAccountStatementService::class);
+        $april = $statements->ensure($this->agreement, 2026, 4);
+        $this->voucher('paid', 654.50, 0.00, 'lex-external-only', [
+            'voucher_number' => 'RE-2026-0042',
+            'voucher_date' => '2026-04-30',
+            'paid_date' => '2026-05-01',
+            'net_amount' => 550.00,
+        ]);
+
+        app(RetainerVoucherReconciler::class)->reconcile($this->organization);
+
+        $payment = $this->agreement->payments()->firstOrFail();
+        $this->assertSame($april->id, $payment->customer_billing_statement_id);
+        // Das echte Zahldatum bleibt am Beleg stehen.
+        $this->assertSame('2026-05-01', $payment->paid_on->toDateString());
+        $this->assertSame('550.00', $april->fresh()->payments_total?->getAmount());
+
+        $may = $this->agreement->statements()->where('year', 2026)->where('month', 5)->first();
+        $this->assertSame('0.00', $may?->payments_total?->getAmount());
+    }
+
     public function test_relinking_after_unlink_revives_the_payment(): void {
         // Die stornierte Zahlung bleibt soft-deleted in der Tabelle und
         // blockiert den Unique-Index (uq_cap_source_ref) — ein erneutes

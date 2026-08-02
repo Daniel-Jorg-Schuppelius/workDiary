@@ -1071,6 +1071,7 @@ Route::middleware('auth')->group(function () {
         Route::get('customers/{customer}/billing/payments/create', [\App\Http\Controllers\Customers\AccountPaymentController::class, 'create'])->name('customers.billing.payments.create');
         Route::post('customers/{customer}/billing/agreement', [\App\Http\Controllers\Customers\BillingAgreementController::class, 'save'])->name('customers.billing.agreement.save');
         Route::post('customers/{customer}/billing/recalculate', [\App\Http\Controllers\Customers\BillingStatementController::class, 'recalculate'])->name('customers.billing.recalculate');
+        Route::get('customers/{customer}/billing/statements/{statement}', [\App\Http\Controllers\Customers\BillingStatementController::class, 'show'])->name('customers.billing.statements.show');
         Route::post('customers/{customer}/billing/statements/{statement}/close', [\App\Http\Controllers\Customers\BillingStatementController::class, 'close'])->name('customers.billing.statements.close');
         Route::post('customers/{customer}/billing/statements/{statement}/reopen', [\App\Http\Controllers\Customers\BillingStatementController::class, 'reopen'])->name('customers.billing.statements.reopen');
         Route::post('customers/{customer}/billing/payments', [\App\Http\Controllers\Customers\AccountPaymentController::class, 'store'])->name('customers.billing.payments.store');

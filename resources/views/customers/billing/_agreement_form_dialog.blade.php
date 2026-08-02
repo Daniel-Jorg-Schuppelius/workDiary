@@ -19,6 +19,7 @@
     $selectedTravelCategories = is_array(old('travel_categories'))
         ? array_map('strval', old('travel_categories'))
         : $activityCategories->whereIn('id', $agreement?->travel_categories ?? [])->pluck('sqid')->all();
+    $travelCategoryOptions = $travelCategoryOptions ?? collect();
 @endphp
 
 <x-modal
@@ -119,13 +120,17 @@
         <div class="md:col-span-2">
             <p class="fieldset-label">{{ __('customer-billing.travel_categories') }}</p>
             <p class="text-xs text-base-content/60 mb-2">{{ __('customer-billing.travel_categories_hint') }}</p>
-            <div class="flex flex-wrap gap-x-6">
-                @foreach ($activityCategories as $category)
-                    <x-checkbox-field name="travel_categories[]" :value="$category->sqid" :toggle="false"
-                                      :with-hidden="false" :label="$category->label"
-                                      :checked="in_array($category->sqid, $selectedTravelCategories, true)" />
-                @endforeach
-            </div>
+            @if ($travelCategoryOptions->isEmpty())
+                <p class="text-xs text-base-content/60">{{ __('customer-billing.travel_categories_none') }}</p>
+            @else
+                <div class="flex flex-wrap gap-x-6">
+                    @foreach ($travelCategoryOptions as $category)
+                        <x-checkbox-field name="travel_categories[]" :value="$category->sqid" :toggle="false"
+                                          :with-hidden="false" :label="$category->label"
+                                          :checked="in_array($category->sqid, $selectedTravelCategories, true)" />
+                    @endforeach
+                </div>
+            @endif
         </div>
     </x-form-group>
 

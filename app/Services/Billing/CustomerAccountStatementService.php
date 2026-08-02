@@ -231,17 +231,25 @@ class CustomerAccountStatementService {
         Money $amount,
         CarbonInterface $paidOn,
         ?string $note = null,
+        ?CustomerBillingStatement $statement = null,
     ): ?CustomerAccountPayment {
         if (! $amount->isPositive()) {
             return null;
         }
 
         $target = Carbon::parse($paidOn)->setTimezone(Tz::current());
-        $effective = $this->firstUnlockedFrom($agreement, $target);
+
+        // Hängt der Beleg an einem offenen Monat, zählt die Zahlung dorthin —
+        // Retainer-Rechnungen gehen am Monatsende raus und werden erst im
+        // Folgemonat bezahlt. Nur ohne (oder bei gesperrtem) Beleg-Monat
+        // entscheidet das Zahldatum.
+        $bookInto = $statement !== null && ! $statement->locked ? $statement : null;
+        $effective = $bookInto?->periodStart() ?? $this->firstUnlockedFrom($agreement, $target);
 
         $values = [
             'organization_id' => $agreement->organization_id,
-            'paid_on' => $effective->toDateString(),
+            'customer_billing_statement_id' => $bookInto?->id,
+            'paid_on' => $bookInto !== null ? $target->toDateString() : $effective->toDateString(),
             'amount' => $this->asMoney($amount, $agreement->currency),
             'currency' => $agreement->currency->value,
             'note' => $note,
@@ -263,6 +271,12 @@ class CustomerAccountStatementService {
                 'source_reference' => $sourceReference,
             ]);
         } else {
+            // Eine Zahlung, die bereits in einem abgeschlossenen Monat gezählt
+            // wurde, behält ihn — sonst stünde sie dort im eingefrorenen
+            // Snapshot UND im offenen Zielmonat.
+            if ($payment->statement()->first()?->locked) {
+                unset($values['customer_billing_statement_id'], $values['paid_on']);
+            }
             $payment->fill($values);
             $payment->trashed() ? $payment->restore() : $payment->save();
         }
@@ -393,7 +407,7 @@ class CustomerAccountStatementService {
             ->whereDate('date', '<=', $end->toDateString())
             ->get();
 
-        $payments = $this->paymentsFor($agreement, $start, $end);
+        $payments = $this->paymentsFor($agreement, $statement, $start, $end);
 
         $currency = $agreement->currency;
         $gross = Money::sum($entries->map(fn (TimeEntry $e): Money => $this->asMoney($e->rate, $currency)), $currency);
@@ -450,7 +464,7 @@ class CustomerAccountStatementService {
             ];
         })->values()->all();
 
-        $payments = $this->paymentsFor($agreement, $start, $end)->map(fn (CustomerAccountPayment $p): array => [
+        $payments = $this->paymentsFor($agreement, $statement, $start, $end)->map(fn (CustomerAccountPayment $p): array => [
             'id' => $p->id,
             'paid_on' => $p->paid_on->toDateString(),
             'amount' => $p->amount?->toFloat() ?? 0.0,
@@ -485,10 +499,26 @@ class CustomerAccountStatementService {
     }
 
     /** @return Collection<int, CustomerAccountPayment> */
-    private function paymentsFor(CustomerBillingAgreement $agreement, CarbonInterface $start, CarbonInterface $end): Collection {
+    /**
+     * Zahlungen des Monats: fest zugeordnete (Beleg-Monat, s. bookLexofficePayment)
+     * plus alle nicht zugeordneten mit Zahldatum im Monat — Bank-, Hand- und
+     * Import-Zahlungen zählen weiterhin nach Datum.
+     *
+     * @return Collection<int, CustomerAccountPayment>
+     */
+    private function paymentsFor(
+        CustomerBillingAgreement $agreement,
+        CustomerBillingStatement $statement,
+        CarbonInterface $start,
+        CarbonInterface $end
+    ): Collection {
         return $agreement->payments()
-            ->whereDate('paid_on', '>=', $start->toDateString())
-            ->whereDate('paid_on', '<=', $end->toDateString())
+            ->where(fn ($q) => $q
+                ->where('customer_billing_statement_id', $statement->id)
+                ->orWhere(fn ($unassigned) => $unassigned
+                    ->whereNull('customer_billing_statement_id')
+                    ->whereDate('paid_on', '>=', $start->toDateString())
+                    ->whereDate('paid_on', '<=', $end->toDateString())))
             ->orderBy('paid_on')
             ->get();
     }
@@ -503,7 +533,14 @@ class CustomerAccountStatementService {
     private function earliestActivityDate(CustomerBillingAgreement $agreement): ?Carbon {
         $entryDate = $this->entriesQuery($agreement)->min('date');
         $paymentDate = $agreement->payments()->min('paid_on');
-        $dates = array_filter([$entryDate, $paymentDate]);
+        // Auch der älteste bestehende Monat gehört in die Kette: eine dem
+        // Belegmonat zugeordnete Zahlung kann VOR ihrem Zahldatum liegen
+        // (Rechnung Monatsende, Zahlung im Folgemonat) — sonst bliebe genau
+        // dieser Monat ungerechnet.
+        $statementDate = $agreement->statements()
+            ->orderBy('year')->orderBy('month')
+            ->first()?->periodStart()->toDateString();
+        $dates = array_filter([$entryDate, $paymentDate, $statementDate]);
 
         return $dates === [] ? null : Carbon::parse(min($dates), Tz::current());
     }
