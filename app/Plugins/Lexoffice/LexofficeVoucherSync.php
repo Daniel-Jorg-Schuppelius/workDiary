@@ -106,7 +106,7 @@ class LexofficeVoucherSync {
             ->where('organization_id', $organizationId)
             ->where('voucher_status', 'paid')
             ->whereNull('paid_date')
-            ->whereIn('voucher_type', ['invoice', 'downpaymentinvoice', 'creditnote'])
+            ->whereIn('voucher_type', ['invoice', 'salesinvoice', 'downpaymentinvoice', 'creditnote', 'salescreditnote'])
             ->orderByDesc('voucher_date')
             ->limit($limit)
             ->get(['id', 'external_id']);

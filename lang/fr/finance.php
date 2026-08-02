@@ -193,6 +193,19 @@ return [
         'action' => [
             'export' => 'Export CSV',
             'show_project' => 'Ouvrir le suivi du temps du projet',
+            'mark_billed' => 'Marquer comme facturé',
+        ],
+        'mark_billed' => [
+            'title' => 'Marquer les temps comme facturés jusqu\'à une date butoir',
+            'hint' => 'Pour la mise en service : clôturer les temps déjà facturés en dehors du système jusqu\'à une date butoir. Ils disparaissent de cette liste de travail et de tous les circuits de facturation.',
+            'warning' => 'Cette action marque toutes les saisies de temps ouvertes jusqu\'à la date butoir incluse comme facturées et ne peut pas être annulée d\'un clic.',
+            'cutoff' => 'Date butoir (incluse)',
+            'customer' => 'Client uniquement',
+            'customer_all' => 'Tous les clients',
+            'include_non_billable' => 'Marquer aussi les saisies non facturables',
+            'submit' => 'Marquer comme facturé',
+            'flash' => ':count saisie de temps jusqu\'au :date marquée comme facturée.|:count saisies de temps jusqu\'au :date marquées comme facturées.',
+            'error_customer' => 'Le client sélectionné est introuvable.',
         ],
         'filter' => [
             'customer' => 'Client',
@@ -221,9 +234,9 @@ return [
             'amount' => 'Revenu prévisionnel',
             'amount_hint' => 'Somme des instantanés de revenu (net).',
             'late' => 'Saisies tardives',
-            'late_hint' => 'Temps ouverts dans des périodes déjà facturées.',
+            'late_hint' => 'Temps ouverts dans des périodes déjà facturées — indépendamment de la période sélectionnée.',
             'stale' => 'Plus de :days jours',
-            'stale_hint' => 'Temps ouverts avec une date de prestation lointaine.',
+            'stale_hint' => 'Temps ouverts avec une date de prestation lointaine — indépendamment de la période sélectionnée.',
         ],
         'badge' => [
             'non_billable' => 'non facturable',

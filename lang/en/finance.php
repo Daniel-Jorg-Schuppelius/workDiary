@@ -293,6 +293,19 @@ return [
         'action' => [
             'export' => 'CSV export',
             'show_project' => 'Open project time tracking',
+            'mark_billed' => 'Mark as billed',
+        ],
+        'mark_billed' => [
+            'title' => 'Mark times as billed up to a cut-off date',
+            'hint' => 'For rolling out the system: close times that were already billed outside the system up to a cut-off date. They disappear from this worklist and from all billing paths.',
+            'warning' => 'This action marks all open time entries up to and including the cut-off date as billed and cannot be undone with a click.',
+            'cutoff' => 'Cut-off date (inclusive)',
+            'customer' => 'Customer only',
+            'customer_all' => 'All customers',
+            'include_non_billable' => 'Also mark non-billable entries',
+            'submit' => 'Mark as billed',
+            'flash' => ':count time entry up to :date marked as billed.|:count time entries up to :date marked as billed.',
+            'error_customer' => 'The selected customer was not found.',
         ],
         'filter' => [
             'customer' => 'Customer',
@@ -321,9 +334,9 @@ return [
             'amount' => 'Projected revenue',
             'amount_hint' => 'Sum of the revenue snapshots (net).',
             'late' => 'Late entries',
-            'late_hint' => 'Open times in periods that were already billed.',
+            'late_hint' => 'Open times in periods that were already billed — regardless of the selected period.',
             'stale' => 'Older than :days days',
-            'stale_hint' => 'Open times with a service date far in the past.',
+            'stale_hint' => 'Open times with a service date far in the past — regardless of the selected period.',
         ],
         'badge' => [
             'non_billable' => 'non-billable',

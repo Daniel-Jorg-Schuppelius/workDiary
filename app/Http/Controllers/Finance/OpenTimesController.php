@@ -11,12 +11,14 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Enums\Diary\Status;
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, DiaryEntry, Project, TimeEntry, User};
 use App\Services\Invoicing\LateTimeEntryDetector;
 use App\Support\{CsvExport, Formats, Sqid};
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\{Request, Response};
+use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{DB, Gate};
 use Illuminate\View\View;
 
@@ -26,8 +28,15 @@ use Illuminate\View\View;
  * Kunde/Projekt. Sicht-Gate ist die Permission timeEntry.viewAny (E1);
  * `exported` ist der kanonische Verbraucht-Flag aller Abrechnungspfade
  * (InvoiceGenerator, Kontomodus, Faktura-Übergabe).
+ *
+ * Zeitraum: ohne explizite from/to-Filter gilt die Header-Zeitauswahl.
+ * Die Warn-KPIs (Nachzügler, älter als 45 Tage) und der Prüfhinweis bleiben
+ * bewusst zeitraumunabhängig — sie sollen gerade auf Altbestand außerhalb
+ * des sichtbaren Fensters aufmerksam machen.
  */
 class OpenTimesController extends Controller {
+    use ResolvesGlobalDateRange;
+
     /** Ab diesem Alter (Tage seit Leistungsdatum) gilt ein offener Eintrag als überfällig. */
     public const STALE_AFTER_DAYS = 45;
 
@@ -55,19 +64,24 @@ class OpenTimesController extends Controller {
         }
         $latestBilledByCustomer = $this->lateDetector->latestBilledServiceDates(array_values(array_unique($customerIds)));
 
+        // Warn-KPIs ohne Zeitraumbegrenzung: Altbestand außerhalb des
+        // Header-Zeitraums soll sichtbar bleiben (Zweck der Arbeitsliste).
+        $unranged = $this->baseQuery($filters, withDateRange: false);
+
         return view('finance.open-times.index', [
             'entries' => $entries,
             'filters' => $filters,
             'hasActiveFilters' => $this->hasActiveFilters($filters),
             'totals' => $this->totals(clone $query),
             'groups' => $this->groupTotals(clone $query),
-            'lateCount' => $this->lateDetector->countLateInQuery(clone $query),
-            'staleCount' => (clone $query)->reorder()
+            'lateCount' => $this->lateDetector->countLateInQuery(clone $unranged),
+            'staleCount' => (clone $unranged)->reorder()
                 ->whereDate('time_entries.date', '<', now()->subDays(self::STALE_AFTER_DAYS)->toDateString())
                 ->count(),
             'staleAfterDays' => self::STALE_AFTER_DAYS,
             'latestBilledByCustomer' => $latestBilledByCustomer,
             'invoicedMismatches' => $this->invoicedDiaryMismatches(),
+            'canMarkBilled' => $this->canMarkBilled($request),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
             'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id']),
             'users' => User::query()
@@ -136,9 +150,62 @@ class OpenTimesController extends Controller {
         ]);
     }
 
+    /**
+     * Altbestand-Abschluss (Programmeinführung): alle offenen Zeiten bis zu
+     * einem Stichtag als abgerechnet (exported) markieren — sie wurden vor
+     * der Einführung bereits außerhalb des Systems fakturiert.
+     */
+    public function markBilledDialog(Request $request): View {
+        abort_unless($this->canMarkBilled($request), 403);
+
+        return view('finance.open-times._mark_billed_dialog', [
+            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
+        ]);
+    }
+
+    public function markBilled(Request $request): RedirectResponse {
+        abort_unless($this->canMarkBilled($request), 403);
+
+        $validated = $request->validate([
+            'cutoff' => ['required', 'date'],
+            'customer' => ['nullable', 'string'],
+            'include_non_billable' => ['nullable', 'boolean'],
+        ]);
+
+        $customerSqid = (string) ($validated['customer'] ?? '');
+        $customerId = Sqid::decode(Customer::class, $customerSqid);
+        if ($customerSqid !== '' && ($customerId === null || ! Customer::query()->whereKey($customerId)->exists())) {
+            return back()->withErrors(['customer' => __('finance.open_times.mark_billed.error_customer')]);
+        }
+
+        $cutoff = CarbonImmutable::parse($validated['cutoff']);
+
+        // Mass-Update bewusst ohne Model-Events — wie InvoiceGenerator: keine
+        // Writeback-/Audit-Kaskade für den einmaligen Altbestand-Abschluss.
+        $count = TimeEntry::query()
+            ->where('exported', false)
+            ->whereDate('date', '<=', $cutoff->toDateString())
+            ->when(! ($validated['include_non_billable'] ?? false), fn($q) => $q->where('billable', true))
+            ->when($customerId !== null, fn($q) => $q->whereHas('project', fn($p) => $p->where('customer_id', $customerId)))
+            ->update(['exported' => true]);
+
+        return redirect()->route('finance.open-times.index')
+            ->with('success', trans_choice('finance.open_times.mark_billed.flash', $count, [
+                'count' => $count,
+                'date' => $cutoff->format(Formats::date()),
+            ]));
+    }
+
     private function authorizeView(Request $request): void {
         $user = $request->user();
         abort_unless($user instanceof User && ($user->isAdmin() || Gate::allows('timeEntry.viewAny')), 403);
+    }
+
+    /** Schreibende Massenaktion: Admin oder Buchhaltung (timeEntry.approve). */
+    private function canMarkBilled(Request $request): bool {
+        $user = $request->user();
+
+        return $user instanceof User && ($user->isAdmin() || Gate::allows('timeEntry.approve'));
     }
 
     /**
@@ -166,6 +233,27 @@ class OpenTimesController extends Controller {
     }
 
     /**
+     * Effektiver Listen-Zeitraum: explizite from/to-Filter (auch einseitig)
+     * haben Vorrang und übersteuern die Header-Zeitauswahl komplett; ohne
+     * beide gilt der global gewählte Zeitraum aus dem Header-Widget.
+     *
+     * @param  array{customer:string, project:string, user:string, from:string, to:string, billable:string}  $filters
+     * @return array{from: ?string, to: ?string}
+     */
+    private function effectiveRange(array $filters): array {
+        if ($filters['from'] !== '' || $filters['to'] !== '') {
+            return [
+                'from' => $filters['from'] !== '' ? $filters['from'] : null,
+                'to' => $filters['to'] !== '' ? $filters['to'] : null,
+            ];
+        }
+
+        [$from, $to] = $this->globalDateRangeBounds();
+
+        return ['from' => $from->toDateString(), 'to' => $to->toDateString()];
+    }
+
+    /**
      * Offene (nicht abgerechnete) Einträge, sortiert Kunde → Projekt → Datum.
      * Left-Joins nur fürs Sortieren — Einträge ohne Projekt (z. B. Verwaltung)
      * bleiben sichtbar, gerade sie rutschen sonst durch.
@@ -173,10 +261,11 @@ class OpenTimesController extends Controller {
      * @param  array{customer:string, project:string, user:string, from:string, to:string, billable:string}  $filters
      * @return Builder<TimeEntry>
      */
-    private function baseQuery(array $filters): Builder {
+    private function baseQuery(array $filters, bool $withDateRange = true): Builder {
         $customerId = Sqid::decode(Customer::class, $filters['customer']);
         $projectId = Sqid::decode(Project::class, $filters['project']);
         $userId = Sqid::decode(User::class, $filters['user']);
+        $range = $withDateRange ? $this->effectiveRange($filters) : ['from' => null, 'to' => null];
 
         return TimeEntry::query()
             ->where('time_entries.exported', false)
@@ -185,8 +274,8 @@ class OpenTimesController extends Controller {
             ->when($customerId !== null, fn($q) => $q->whereHas('project', fn($p) => $p->where('customer_id', $customerId)))
             ->when($projectId !== null, fn($q) => $q->where('time_entries.project_id', $projectId))
             ->when($userId !== null, fn($q) => $q->where('time_entries.user_id', $userId))
-            ->when($filters['from'] !== '', fn($q) => $q->whereDate('time_entries.date', '>=', $filters['from']))
-            ->when($filters['to'] !== '', fn($q) => $q->whereDate('time_entries.date', '<=', $filters['to']))
+            ->when($range['from'] !== null, fn($q) => $q->whereDate('time_entries.date', '>=', $range['from']))
+            ->when($range['to'] !== null, fn($q) => $q->whereDate('time_entries.date', '<=', $range['to']))
             ->leftJoin('projects', 'projects.id', '=', 'time_entries.project_id')
             ->leftJoin('customers', 'customers.id', '=', 'projects.customer_id')
             ->select('time_entries.*')

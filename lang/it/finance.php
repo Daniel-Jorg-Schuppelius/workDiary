@@ -293,6 +293,19 @@ return [
         'action' => [
             'export' => 'Export CSV',
             'show_project' => 'Apri il rilevamento tempi del progetto',
+            'mark_billed' => 'Segna come fatturato',
+        ],
+        'mark_billed' => [
+            'title' => 'Segnare i tempi come fatturati fino a una data limite',
+            'hint' => 'Per l\'introduzione del sistema: chiudere i tempi già fatturati al di fuori del sistema fino a una data limite. Scompaiono da questa lista di lavoro e da tutti i percorsi di fatturazione.',
+            'warning' => 'Questa azione segna tutte le registrazioni di tempo aperte fino alla data limite inclusa come fatturate e non può essere annullata con un clic.',
+            'cutoff' => 'Data limite (inclusa)',
+            'customer' => 'Solo cliente',
+            'customer_all' => 'Tutti i clienti',
+            'include_non_billable' => 'Segnare anche le registrazioni non fatturabili',
+            'submit' => 'Segna come fatturato',
+            'flash' => ':count registrazione di tempo fino al :date segnata come fatturata.|:count registrazioni di tempo fino al :date segnate come fatturate.',
+            'error_customer' => 'Il cliente selezionato non è stato trovato.',
         ],
         'filter' => [
             'customer' => 'Cliente',
@@ -321,9 +334,9 @@ return [
             'amount' => 'Ricavo previsto',
             'amount_hint' => 'Somma degli snapshot di ricavo (netto).',
             'late' => 'Registrazioni tardive',
-            'late_hint' => 'Tempi aperti in periodi già fatturati.',
+            'late_hint' => 'Tempi aperti in periodi già fatturati — indipendentemente dal periodo selezionato.',
             'stale' => 'Più di :days giorni',
-            'stale_hint' => 'Tempi aperti con data di prestazione remota.',
+            'stale_hint' => 'Tempi aperti con data di prestazione remota — indipendentemente dal periodo selezionato.',
         ],
         'badge' => [
             'non_billable' => 'non fatturabile',

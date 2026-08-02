@@ -12,15 +12,17 @@ namespace Tests\Feature\Finance;
 
 use App\Models\{Customer, Project, TimeEntry, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\TestCase;
 
 /**
  * Offene Zeiten (MVP-460): Buchhaltungs-Arbeitsliste unabgerechneter Zeiten —
- * Sicht-Gate timeEntry.viewAny, Filter, Summen (H:MM + dezimal), CSV.
+ * Sicht-Gate timeEntry.viewAny, Filter, Summen (H:MM + dezimal), CSV,
+ * Header-Zeitauswahl als Default-Zeitraum, Altbestand-Abschluss (Stichtag).
  */
 class OpenTimesWorklistTest extends TestCase {
     use RefreshDatabase;
+    use WithGlobalDateRange;
     use WithOrganization;
 
     private User $accountant;
@@ -32,6 +34,11 @@ class OpenTimesWorklistTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
+
+        // Die Liste folgt der Header-Zeitauswahl; für die Bestandstests
+        // (Filter/Summen/CSV) den Zeitraum weit aufziehen, damit die relativen
+        // Eintragsdaten nicht am Monatsanfang aus dem Default-Fenster fallen.
+        $this->session($this->dateRangeSession(now()->subYear()->toDateString(), now()->toDateString()));
 
         $this->accountant = User::factory()->buchhaltung()->create(['organization_id' => $this->organization->id]);
         $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
@@ -208,5 +215,139 @@ class OpenTimesWorklistTest extends TestCase {
             ->assertOk()
             ->assertSee(__('finance.open_times.mismatch.heading'))
             ->assertSee('Serverumzug Abgeschlossen');
+    }
+
+    // ── Header-Zeitauswahl als Default-Zeitraum ─────────────────────────────
+
+    public function test_list_follows_header_date_range_and_warn_kpis_stay_global(): void {
+        $this->openEntry(['description' => 'Eintrag im Fenster', 'date' => now()->subDays(5)->toDateString()]);
+        $this->openEntry(['description' => 'Altbestand-Eintrag', 'date' => now()->subDays(100)->toDateString()]);
+
+        $response = $this->actingAs($this->accountant)
+            ->withSession($this->dateRangeSession(now()->subDays(10)->toDateString(), now()->toDateString()))
+            ->get(route('finance.open-times.index'));
+
+        $response->assertOk()
+            ->assertSee('Eintrag im Fenster')
+            ->assertDontSee('Altbestand-Eintrag');
+        // Warn-KPI „älter als 45 Tage" zählt zeitraumunabhängig weiter.
+        $this->assertSame(1, $response->viewData('staleCount'));
+    }
+
+    public function test_explicit_period_filter_overrides_header_range(): void {
+        $this->openEntry(['description' => 'Altbestand-Eintrag', 'date' => now()->subDays(100)->toDateString()]);
+
+        $this->actingAs($this->accountant)
+            ->withSession($this->dateRangeSession(now()->subDays(10)->toDateString(), now()->toDateString()))
+            ->get(route('finance.open-times.index', ['from' => now()->subDays(120)->toDateString()]))
+            ->assertOk()
+            ->assertSee('Altbestand-Eintrag');
+    }
+
+    // ── Altbestand-Abschluss: bis Stichtag als abgerechnet markieren ────────
+
+    public function test_mark_billed_marks_billable_entries_up_to_cutoff(): void {
+        $before = $this->openEntry(['date' => now()->subDays(60)->toDateString()]);
+        $onCutoff = $this->openEntry(['date' => now()->subDays(30)->toDateString()]);
+        $after = $this->openEntry(['date' => now()->subDays(10)->toDateString()]);
+        $nonBillable = $this->openEntry(['date' => now()->subDays(60)->toDateString(), 'billable' => false]);
+
+        $this->actingAs($this->accountant)
+            ->post(route('finance.open-times.mark-billed'), ['cutoff' => now()->subDays(30)->toDateString()])
+            ->assertRedirect(route('finance.open-times.index'))
+            ->assertSessionHas('success');
+
+        $this->assertTrue($before->refresh()->exported);
+        $this->assertTrue($onCutoff->refresh()->exported, 'Stichtag ist einschließlich');
+        $this->assertFalse($after->refresh()->exported);
+        $this->assertFalse($nonBillable->refresh()->exported, 'nicht abrechenbare bleiben ohne Opt-in offen');
+    }
+
+    public function test_mark_billed_includes_non_billable_on_request(): void {
+        $nonBillable = $this->openEntry(['date' => now()->subDays(60)->toDateString(), 'billable' => false]);
+
+        $this->actingAs($this->accountant)
+            ->post(route('finance.open-times.mark-billed'), [
+                'cutoff' => now()->subDays(30)->toDateString(),
+                'include_non_billable' => '1',
+            ])
+            ->assertRedirect(route('finance.open-times.index'));
+
+        $this->assertTrue($nonBillable->refresh()->exported);
+    }
+
+    public function test_mark_billed_scopes_to_selected_customer(): void {
+        $entryA = $this->openEntry(['date' => now()->subDays(60)->toDateString()]);
+
+        $otherCustomer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $otherProject = Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $otherCustomer->id,
+        ]);
+        $entryB = $this->openEntry(['date' => now()->subDays(60)->toDateString(), 'project_id' => $otherProject->id]);
+
+        $worker = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $projectless = TimeEntry::factory()->administration()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $worker->id,
+            'billable' => true,
+            'exported' => false,
+            'date' => now()->subDays(60)->toDateString(),
+        ]);
+
+        $this->actingAs($this->accountant)
+            ->post(route('finance.open-times.mark-billed'), [
+                'cutoff' => now()->subDays(30)->toDateString(),
+                'customer' => $this->customer->sqid,
+            ])
+            ->assertRedirect(route('finance.open-times.index'));
+
+        $this->assertTrue($entryA->refresh()->exported);
+        $this->assertFalse($entryB->refresh()->exported);
+        $this->assertFalse($projectless->refresh()->exported, 'projektlose Einträge gehören zu keinem Kunden');
+    }
+
+    public function test_mark_billed_ignores_other_organizations(): void {
+        $otherOrg = \App\Models\Organization::factory()->create();
+        $otherWorker = User::factory()->user()->create(['organization_id' => $otherOrg->id]);
+        $foreign = TimeEntry::factory()->administration()->create([
+            'organization_id' => $otherOrg->id,
+            'user_id' => $otherWorker->id,
+            'billable' => true,
+            'exported' => false,
+            'date' => now()->subDays(60)->toDateString(),
+        ]);
+
+        $this->actingAs($this->accountant)
+            ->post(route('finance.open-times.mark-billed'), ['cutoff' => now()->toDateString()])
+            ->assertRedirect(route('finance.open-times.index'));
+
+        $this->assertFalse($foreign->refresh()->exported);
+    }
+
+    public function test_mark_billed_requires_cutoff(): void {
+        $this->actingAs($this->accountant)
+            ->from(route('finance.open-times.index'))
+            ->post(route('finance.open-times.mark-billed'), [])
+            ->assertSessionHasErrors('cutoff');
+    }
+
+    public function test_mark_billed_forbidden_for_plain_user(): void {
+        $plain = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($plain)
+            ->get(route('finance.open-times.mark-billed-dialog'))
+            ->assertForbidden();
+
+        $this->actingAs($plain)
+            ->post(route('finance.open-times.mark-billed'), ['cutoff' => now()->toDateString()])
+            ->assertForbidden();
+    }
+
+    public function test_mark_billed_dialog_renders_for_accountant(): void {
+        $this->actingAs($this->accountant)
+            ->get(route('finance.open-times.mark-billed-dialog'))
+            ->assertOk()
+            ->assertSee(__('finance.open_times.mark_billed.title'));
     }
 }

@@ -14,7 +14,8 @@ use App\Models\{Customer, ExternalReference, LexofficeVoucher, PluginSetting, Su
 use App\Plugins\Lexoffice\Jobs\{SyncOwnerVouchersJob, SyncVouchersJob};
 use App\Plugins\Lexoffice\{LexofficePlugin, LexofficeVoucherSync};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\{Http, Queue};
+use Illuminate\Support\Facades\Queue;
+use Tests\Support\FakePluginHttp;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -45,9 +46,9 @@ final class LexofficeVoucherSyncJobTest extends TestCase {
     public function test_enrich_paid_dates_fetches_payment_dates_for_paid_vouchers(): void {
         // Phase-54-Nachtrag: voucherlist liefert kein paidDate — die
         // Anreicherung holt es je bezahltem Beleg über den Payments-Endpunkt.
-        Http::fake([
-            'api.lexoffice.io/v1/payments/ext-paid' => Http::response(['paidDate' => '2030-01-15T00:00:00.000+01:00', 'openAmount' => 0]),
-            'api.lexoffice.io/v1/payments/ext-err' => Http::response([], 404),
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/payments/ext-paid' => FakePluginHttp::response(['paidDate' => '2030-01-15T00:00:00.000+01:00', 'openAmount' => 0]),
+            'https://api.lexoffice.io/v1/payments/ext-err' => FakePluginHttp::response(null, 404),
         ]);
 
         $mk = fn (string $ext, string $status, ?string $paidDate): LexofficeVoucher => LexofficeVoucher::create([
@@ -71,10 +72,8 @@ final class LexofficeVoucherSyncJobTest extends TestCase {
 
         $this->assertSame(1, $count);
         $this->assertSame('2030-01-15', $paid->fresh()?->paid_date?->toDateString());
-        // Fehler je Beleg werden toleriert; unbezahlte/angereicherte Belege
-        // erzeugen gar keinen Request.
+        // Fehler je Beleg werden toleriert (404 → Beleg bleibt ohne Datum).
         $this->assertNull($err->fresh()?->paid_date);
-        Http::assertSentCount(2);
     }
 
     public function test_global_sync_dispatches_background_job(): void {

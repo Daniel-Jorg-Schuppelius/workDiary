@@ -12,7 +12,7 @@ namespace App\Plugins\RemoteSupport;
 
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Asset, Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, Organization, Project, RemotePendingSession, TimeEntry};
+use App\Models\{Asset, Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, Organization, Project, RemotePendingSession, Tag, TimeEntry};
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, RemoteProvider, RemoteSession, TeamViewerClient};
 use App\Plugins\Support\PersistsTimeImportInbox;
 use Carbon\CarbonImmutable;
@@ -38,6 +38,18 @@ class RemoteSupportService {
     ];
 
     public const EXT_TYPE_SESSION = 'session';
+
+    /**
+     * Statt Provider-Präfix in der Beschreibung („Anydesk — …") tragen
+     * importierte Einträge Tags: Anbieter-Tag + generisches Remote-Tag —
+     * damit bleibt die Beschreibung sauber und die Filterung möglich.
+     */
+    public const PROVIDER_TAG_LABELS = [
+        AnyDeskClient::ID => 'AnyDesk',
+        TeamViewerClient::ID => 'TeamViewer',
+    ];
+
+    public const REMOTE_TAG = 'Remote';
 
     /**
      * Asset-Unterkategorien (category_code), die eine Fernwartungs-ID tragen
@@ -461,13 +473,13 @@ class RemoteSupportService {
             // bleiben autoritativ und werden nie verändert.
             $this->extendCallEntryEnd($organization, $covering, $session);
             $this->rememberSessionReference($organization, $session, $covering, $asset, linked: true);
+            $this->applyRemoteTags($organization, $covering, $session->provider);
 
             return [$covering, true];
         }
 
         $description = trim(sprintf(
-            '%s — %s (%s)',
-            ucfirst($session->provider),
+            '%s (%s)',
             $asset->name ?: $asset->asset_no,
             $session->note ?? __('Fernwartungssitzung'),
         ));
@@ -503,8 +515,24 @@ class RemoteSupportService {
         }
 
         $this->rememberSessionReference($organization, $session, $entry, $asset, linked: false);
+        $this->applyRemoteTags($organization, $entry, $session->provider);
 
         return [$entry, false];
+    }
+
+    /**
+     * Anbieter-Tag (AnyDesk/TeamViewer) + Remote-Tag setzen — additiv, damit
+     * manuell vergebene Tags (z. B. am verschmolzenen Telefonat-Eintrag)
+     * erhalten bleiben. Läuft auch im Scheduler, daher die org-explizite
+     * Tag-Auflösung.
+     */
+    public function applyRemoteTags(Organization $organization, TimeEntry $entry, string $provider): void {
+        $ids = [];
+        foreach ([self::PROVIDER_TAG_LABELS[$provider] ?? ucfirst($provider), self::REMOTE_TAG] as $name) {
+            $ids[] = Tag::findOrCreateByNameForOrganization($name, (int) $organization->id)->id;
+        }
+
+        $entry->tags()->syncWithoutDetaching($ids);
     }
 
     /**

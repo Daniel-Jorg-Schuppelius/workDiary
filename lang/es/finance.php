@@ -292,6 +292,19 @@ return [
         'action' => [
             'export' => 'Exportar CSV',
             'show_project' => 'Abrir el registro de tiempos del proyecto',
+            'mark_billed' => 'Marcar como facturado',
+        ],
+        'mark_billed' => [
+            'title' => 'Marcar tiempos como facturados hasta una fecha de corte',
+            'hint' => 'Para la puesta en marcha: cerrar los tiempos ya facturados fuera del sistema hasta una fecha de corte. Desaparecen de esta lista de trabajo y de todas las vías de facturación.',
+            'warning' => 'Esta acción marca todos los registros de tiempo abiertos hasta la fecha de corte inclusive como facturados y no se puede deshacer con un clic.',
+            'cutoff' => 'Fecha de corte (inclusive)',
+            'customer' => 'Solo cliente',
+            'customer_all' => 'Todos los clientes',
+            'include_non_billable' => 'Marcar también los registros no facturables',
+            'submit' => 'Marcar como facturado',
+            'flash' => ':count registro de tiempo hasta el :date marcado como facturado.|:count registros de tiempo hasta el :date marcados como facturados.',
+            'error_customer' => 'No se encontró el cliente seleccionado.',
         ],
         'filter' => [
             'customer' => 'Cliente',
@@ -320,9 +333,9 @@ return [
             'amount' => 'Ingreso previsto',
             'amount_hint' => 'Suma de los snapshots de ingreso (neto).',
             'late' => 'Registros tardíos',
-            'late_hint' => 'Tiempos abiertos en períodos ya facturados.',
+            'late_hint' => 'Tiempos abiertos en períodos ya facturados — independientemente del período seleccionado.',
             'stale' => 'Más de :days días',
-            'stale_hint' => 'Tiempos abiertos con fecha de prestación lejana.',
+            'stale_hint' => 'Tiempos abiertos con fecha de prestación lejana — independientemente del período seleccionado.',
         ],
         'badge' => [
             'non_billable' => 'no facturable',

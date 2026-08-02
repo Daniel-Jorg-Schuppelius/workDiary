@@ -118,6 +118,12 @@ class RemoteSupportSyncTest extends TestCase {
         $this->assertSame(45, $entry->minutes);
         $this->assertTrue($entry->billable);
 
+        // Kein Provider-Präfix mehr in der Beschreibung — der Anbieter hängt
+        // stattdessen als Tag (plus generisches Remote-Tag) am Eintrag.
+        $this->assertStringStartsWith((string) $asset->name, (string) $entry->description);
+        $this->assertStringNotContainsStringIgnoringCase('teamviewer', (string) $entry->description);
+        $this->assertEqualsCanonicalizing(['Remote', 'TeamViewer'], $entry->tags()->pluck('name')->all());
+
         $this->assertDatabaseHas('external_references', [
             'plugin_id' => RemoteSupportPlugin::ID,
             'external_type' => RemoteSupportService::EXT_TYPE_SESSION,
@@ -170,6 +176,11 @@ class RemoteSupportSyncTest extends TestCase {
         $this->assertSame(0, $result['created']);
         $this->assertSame(1, $result['linked']);
         $this->assertSame(1, TimeEntry::query()->count());
+
+        // Fremd erfasste Beschreibung bleibt autoritativ — aber die Tags
+        // machen die Fernwartung auch am verknüpften Eintrag filterbar.
+        $this->assertSame('Toggl: Support', (string) $existing->fresh()->description);
+        $this->assertEqualsCanonicalizing(['Remote', 'TeamViewer'], $existing->tags()->pluck('name')->all());
         $this->assertDatabaseHas('external_references', [
             'plugin_id' => RemoteSupportPlugin::ID,
             'external_type' => RemoteSupportService::EXT_TYPE_SESSION,

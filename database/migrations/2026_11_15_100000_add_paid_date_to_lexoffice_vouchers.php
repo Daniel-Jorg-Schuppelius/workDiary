@@ -3,7 +3,7 @@
  * Created on   : Sun Aug 02 2026
  * Author       : Daniel Jörg Schuppelius
  * Author Uri   : https://schuppelius.org
- * Filename     : 2026_08_02_120000_add_paid_date_to_lexoffice_vouchers.php
+ * Filename     : 2026_11_15_100000_add_paid_date_to_lexoffice_vouchers.php
  * License      : AGPL-3.0-or-later
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
@@ -21,6 +21,10 @@ use Illuminate\Support\Facades\Schema;
  */
 return new class extends Migration {
     public function up(): void {
+        if (Schema::hasColumn('lexoffice_vouchers', 'paid_date')) {
+            return; // idempotent — Spalte kann aus einem früheren Lauf stammen
+        }
+
         Schema::table('lexoffice_vouchers', function (Blueprint $table): void {
             $table->date('paid_date')->nullable()->after('due_date');
         });

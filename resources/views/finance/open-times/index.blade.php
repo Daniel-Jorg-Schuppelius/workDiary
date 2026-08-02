@@ -18,6 +18,12 @@
 @section('content')
     <x-index-page :subtitle="__('finance.open_times.subtitle')">
         <x-slot:actions>
+            @if ($canMarkBilled)
+                <x-icon-btn icon="price_check" tone="outline" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('finance.open-times.mark-billed-dialog')"
+                            show-label>{{ __('finance.open_times.action.mark_billed') }}</x-icon-btn>
+            @endif
             <x-icon-btn icon="download" tone="outline" size="sm"
                         :href="route('finance.open-times.export', request()->query())"
                         show-label>{{ __('finance.open_times.action.export') }}</x-icon-btn>

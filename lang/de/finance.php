@@ -310,6 +310,21 @@ return [
         'action' => [
             'export' => 'CSV-Export',
             'show_project' => 'Projekt-Zeiterfassung öffnen',
+            'mark_billed' => 'Als abgerechnet markieren',
+        ],
+        // Altbestand-Abschluss: vor der Programmeinführung extern abgerechnete
+        // Zeiten bis zu einem Stichtag als abgerechnet (exported) markieren.
+        'mark_billed' => [
+            'title' => 'Zeiten bis Stichtag als abgerechnet markieren',
+            'hint' => 'Für die Programmeinführung: Zeiten, die bereits außerhalb des Systems abgerechnet wurden, bis zu einem Stichtag abschließen. Sie verschwinden aus dieser Arbeitsliste und aus allen Abrechnungswegen.',
+            'warning' => 'Diese Aktion markiert alle offenen Zeiteinträge bis einschließlich des Stichtags als abgerechnet und lässt sich nicht per Klick rückgängig machen.',
+            'cutoff' => 'Stichtag (einschließlich)',
+            'customer' => 'Nur Kunde',
+            'customer_all' => 'Alle Kunden',
+            'include_non_billable' => 'Auch nicht abrechenbare Einträge markieren',
+            'submit' => 'Als abgerechnet markieren',
+            'flash' => ':count Zeiteintrag bis :date als abgerechnet markiert.|:count Zeiteinträge bis :date als abgerechnet markiert.',
+            'error_customer' => 'Der gewählte Kunde wurde nicht gefunden.',
         ],
         'filter' => [
             'customer' => 'Kunde',
@@ -338,9 +353,9 @@ return [
             'amount' => 'Erwarteter Erlös',
             'amount_hint' => 'Summe der Erlös-Snapshots (netto).',
             'late' => 'Nachzügler',
-            'late_hint' => 'Offene Zeiten in bereits abgerechneten Zeiträumen.',
+            'late_hint' => 'Offene Zeiten in bereits abgerechneten Zeiträumen — unabhängig vom gewählten Zeitraum.',
             'stale' => 'Älter als :days Tage',
-            'stale_hint' => 'Offene Zeiten mit lange zurückliegendem Leistungsdatum.',
+            'stale_hint' => 'Offene Zeiten mit lange zurückliegendem Leistungsdatum — unabhängig vom gewählten Zeitraum.',
         ],
         'badge' => [
             'non_billable' => 'nicht abrechenbar',

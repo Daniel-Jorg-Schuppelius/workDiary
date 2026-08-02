@@ -23,15 +23,27 @@ de facturation.
 Fonctionnalités :
 
 1. **Indicateurs** en haut : nombre de saisies ouvertes, temps
-   ouvert (format horloge et décimal), revenu net prévisionnel.
-2. **Filtres** : client, projet, collaborateur/trice, période et le
+   ouvert (format horloge et décimal), revenu net prévisionnel. Les
+   tuiles d'alerte « Retardataires » et « Plus de 45 jours » comptent
+   toujours sur l'ensemble du stock — indépendamment de la période
+   sélectionnée.
+2. **Période** : sans filtre de période explicite, la liste suit la
+   sélection de période globale dans l'en-tête de la page. Un filtre
+   de/à explicite la remplace.
+3. **Filtres** : client, projet, collaborateur/trice, période et le
    commutateur « facturable ». « Non facturables uniquement » permet
    de vérifier les temps marqués non facturables volontairement ou
    par erreur.
-3. **Totaux par client & projet** dans un bloc dépliable au-dessus
+4. **Totaux par client & projet** dans un bloc dépliable au-dessus
    de la liste détaillée.
-4. **Export CSV** avec la durée dans les deux formats (H:MM et
+5. **Export CSV** avec la durée dans les deux formats (H:MM et
    décimal).
+6. **Marquer comme facturé** : pour la mise en service, clôture tous
+   les temps ouverts jusqu'à une date butoir qui ont déjà été
+   facturés en dehors du système — au choix pour un seul client et,
+   si souhaité, y compris les saisies non facturables. L'action est
+   réservée à l'administration et à la comptabilité et ne peut pas
+   être annulée d'un clic.
 
 La page est visible pour les rôles disposant de l'autorisation
 « afficher toutes les saisies de temps » (par défaut comptabilité,

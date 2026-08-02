@@ -21,14 +21,24 @@ account closing or a facturation handover.
 Features:
 
 1. **KPIs** at the top: number of open entries, open time (clock and
-   decimal format), projected net revenue.
-2. **Filters**: customer, project, employee, period, and the
+   decimal format), projected net revenue. The warning tiles "Late
+   entries" and "Older than 45 days" always count across the whole
+   backlog — regardless of the selected period.
+2. **Period**: without an explicit period filter, the list follows
+   the global date selection in the page header. An explicit
+   from/to filter overrides it.
+3. **Filters**: customer, project, employee, period, and the
    billable toggle. Use "Non-billable only" to review times marked
    non-billable deliberately or by mistake.
-3. **Totals per customer & project** as an expandable block above
+4. **Totals per customer & project** as an expandable block above
    the entry list.
-4. **CSV export** with the duration in both formats (H:MM and
+5. **CSV export** with the duration in both formats (H:MM and
    decimal).
+6. **Mark as billed**: for rolling out the system, closes all open
+   times up to a cut-off date that were already billed outside the
+   system — optionally for a single customer and, if desired,
+   including non-billable entries. The action is available to
+   administration and accounting and cannot be undone with a click.
 
 The page is visible to roles with the permission "view all time
 entries" (by default accounting, management, and administration).

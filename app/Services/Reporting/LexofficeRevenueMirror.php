@@ -44,7 +44,7 @@ class LexofficeRevenueMirror {
             ->whereNotNull('customer_id')
             ->whereNotNull('voucher_date')
             ->where('voucher_date', '<=', $upTo)
-            ->whereIn('voucher_type', ['invoice', 'downpaymentinvoice'])
+            ->whereIn('voucher_type', ['invoice', 'salesinvoice', 'downpaymentinvoice'])
             ->whereNotIn('voucher_status', ['draft', 'voided'])
             ->when($customerId !== null, fn($q) => $q->where('customer_id', $customerId))
             ->when($excludedCustomerIds !== [], fn($q) => $q->whereNotIn('customer_id', $excludedCustomerIds))
@@ -86,7 +86,7 @@ class LexofficeRevenueMirror {
         $vouchers = LexofficeVoucher::query()
             ->whereNotNull('customer_id')
             ->whereBetween('voucher_date', [$from, $to])
-            ->whereIn('voucher_type', ['invoice', 'downpaymentinvoice', 'creditnote'])
+            ->whereIn('voucher_type', ['invoice', 'salesinvoice', 'downpaymentinvoice', 'creditnote', 'salescreditnote'])
             ->whereNotIn('voucher_status', ['draft', 'voided'])
             ->when($customerId !== null, fn($q) => $q->where('customer_id', $customerId))
             ->when($excludedCustomerIds !== [], fn($q) => $q->whereNotIn('customer_id', $excludedCustomerIds))
@@ -106,7 +106,7 @@ class LexofficeRevenueMirror {
                 continue;
             }
             $cid = (int) $voucher->customer_id;
-            $sign = $voucher->voucher_type === 'creditnote' ? -1.0 : 1.0;
+            $sign = in_array($voucher->voucher_type, ['creditnote', 'salescreditnote'], true) ? -1.0 : 1.0;
             $agg[$cid] ??= ['count' => 0, 'total' => 0.0];
             $agg[$cid]['count']++;
             $agg[$cid]['total'] += $sign * ($voucher->total_amount?->toFloat() ?? 0.0);

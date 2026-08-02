@@ -22,15 +22,27 @@ chiusura del conto cliente, né da una trasmissione di fatturazione.
 Funzionalità:
 
 1. **Indicatori** in alto: numero di registrazioni aperte, tempo
-   aperto (formato orologio e decimale), ricavo netto previsto.
-2. **Filtri**: cliente, progetto, collaboratore/trice, periodo e il
+   aperto (formato orologio e decimale), ricavo netto previsto. Le
+   tessere di avviso «Ritardatari» e «Più di 45 giorni» contano
+   sempre sull'intero arretrato — indipendentemente dal periodo
+   selezionato.
+2. **Periodo**: senza un filtro di periodo esplicito, l'elenco segue
+   la selezione globale del periodo nell'intestazione della pagina.
+   Un filtro da/a esplicito la sostituisce.
+3. **Filtri**: cliente, progetto, collaboratore/trice, periodo e il
    selettore «fatturabile». Con «Solo non fatturabili» si possono
    verificare i tempi contrassegnati come non fatturabili
    volontariamente o per errore.
-3. **Totali per cliente & progetto** in un blocco espandibile sopra
+4. **Totali per cliente & progetto** in un blocco espandibile sopra
    l'elenco dettagliato.
-4. **Export CSV** con la durata in entrambi i formati (H:MM e
+5. **Export CSV** con la durata in entrambi i formati (H:MM e
    decimale).
+6. **Segna come fatturato**: per l'introduzione del sistema chiude
+   tutti i tempi aperti fino a una data limite già fatturati al di
+   fuori del sistema — a scelta per un solo cliente e, se desiderato,
+   incluse le registrazioni non fatturabili. L'azione è riservata ad
+   amministrazione e contabilità e non può essere annullata con un
+   clic.
 
 La pagina è visibile ai ruoli con l'autorizzazione «visualizzare
 tutte le registrazioni di tempo» (per impostazione predefinita

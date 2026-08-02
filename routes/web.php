@@ -1834,6 +1834,9 @@ Route::middleware('auth')->group(function () {
         Route::prefix('finanzen/offene-zeiten')->name('finance.open-times.')->group(function (): void {
             Route::get('/', [\App\Http\Controllers\Finance\OpenTimesController::class, 'index'])->name('index');
             Route::get('export', [\App\Http\Controllers\Finance\OpenTimesController::class, 'export'])->name('export');
+            // Altbestand-Abschluss: offene Zeiten bis Stichtag als abgerechnet markieren.
+            Route::get('abgerechnet-markieren', [\App\Http\Controllers\Finance\OpenTimesController::class, 'markBilledDialog'])->name('mark-billed-dialog');
+            Route::post('abgerechnet-markieren', [\App\Http\Controllers\Finance\OpenTimesController::class, 'markBilled'])->name('mark-billed');
         });
 
         // ── Zahlungsabgleich (Feature 045, Priorität 3 / Phase 4) ───────────────

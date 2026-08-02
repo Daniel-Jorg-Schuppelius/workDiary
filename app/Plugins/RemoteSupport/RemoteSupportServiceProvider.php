@@ -10,7 +10,7 @@
 
 namespace App\Plugins\RemoteSupport;
 
-use App\Plugins\RemoteSupport\Console\SyncSessionsCommand;
+use App\Plugins\RemoteSupport\Console\{RetagEntriesCommand, SyncSessionsCommand};
 use App\Plugins\Support\PluginServiceProviderBase;
 
 /**
@@ -31,6 +31,7 @@ class RemoteSupportServiceProvider extends PluginServiceProviderBase {
         if ($this->app->runningInConsole()) {
             $this->commands([
                 SyncSessionsCommand::class,
+                RetagEntriesCommand::class,
             ]);
         }
     }
