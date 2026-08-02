@@ -16,7 +16,7 @@ use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
 /**
- * Nachweistyp der Entsorger-Übergabe (Feature 100, MVP-470). workDiary
+ * Nachweistyp der Entsorger-Übergabe (Feature 100, MVP-475). workDiary
  * referenziert/archiviert die Belege (inkl. eANV-Registerbezug), erzeugt
  * sie aber nicht — keine Behördenrolle.
  */

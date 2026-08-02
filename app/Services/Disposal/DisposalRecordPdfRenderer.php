@@ -20,7 +20,7 @@ use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Kundennachweis-PDF der Entsorgungsakte (Feature 100, MVP-470):
+ * Kundennachweis-PDF der Entsorgungsakte (Feature 100, MVP-475):
  * Übernahme-/Entsorgungsprotokoll mit Geräteliste, Datenträger-Behandlung,
  * Entsorger-/Nachweisbezug und Unterschrift auf dem Firmenbogen
  * (Dokumentart `Protocol` — Pflichtblöcke DocumentMeta + CompanyIdentity).

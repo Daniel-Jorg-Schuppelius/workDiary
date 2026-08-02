@@ -16,7 +16,7 @@ use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
 /**
- * Materialkategorie nach DIN 66399 (Feature 100, MVP-470). Zusammen mit der
+ * Materialkategorie nach DIN 66399 (Feature 100, MVP-475). Zusammen mit der
  * Sicherheitsstufe 1–7 ergibt sie die Norm-Angabe der Vernichtung (z. B. H-5).
  */
 enum DinCategory: string implements HasLabel {

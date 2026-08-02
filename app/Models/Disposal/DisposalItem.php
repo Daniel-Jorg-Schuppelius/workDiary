@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
 /**
- * Geräteposition einer Entsorgungsakte (Feature 100, MVP-469).
+ * Geräteposition einer Entsorgungsakte (Feature 100, MVP-474).
  * `is_hazardous` wird ausschließlich aus dem AVV-Schlüssel abgeleitet
  * (CommonToolkit\ValueObjects\WasteCode, DisposalJobService). Fotos hängen
  * als polymorphe Attachments an der Position. Mandantengrenze transitiv

@@ -21,7 +21,7 @@ use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
 /**
- * Feature 100 (MVP-469/470): Weboberfläche der Entsorgungsakten —
+ * Feature 100 (MVP-474/475): Weboberfläche der Entsorgungsakten —
  * Modul-Gate (423) + Rechte (403), Liste mit KPIs, Akten-Ansicht mit
  * Abschluss-Prüfpanel, Anlage über den Dialog, Autorisierung der
  * Kind-Endpunkte gegen die Akte sowie Tenant-Grenze (Cross-Org → 404).

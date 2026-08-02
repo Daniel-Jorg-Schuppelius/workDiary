@@ -16,7 +16,7 @@ use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasStatusTransitions;
 
 /**
- * Status der Entsorgungsakte (Feature 100, MVP-469):
+ * Status der Entsorgungsakte (Feature 100, MVP-474):
  * angelegt → abgeholt → in Behandlung → an Entsorger übergeben → abgeschlossen.
  * Die Behandlung ist überspringbar (Vorgänge ohne Datenträger); der Abschluss
  * wird zusätzlich fachlich bewacht (DisposalJobService::assertCompletable).

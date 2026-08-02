@@ -1,4 +1,4 @@
-{{-- Dialog: Datenträger-Behandlung dokumentieren (Feature 100, MVP-470).
+{{-- Dialog: Datenträger-Behandlung dokumentieren (Feature 100, MVP-475).
      Erwartet: $item (DisposalItem), $users. Lokaler ad-hoc-Dialog je Position.
      treated_at als datetime-local: die Behandlung ist ein echter Zeitstempel
      ohne beherrschendes Einzeldatum (AGENTS §4.14, Ausnahmefall). --}}

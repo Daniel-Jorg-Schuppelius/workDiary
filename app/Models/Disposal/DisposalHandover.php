@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Entsorger-Übergabe einer Entsorgungsakte (Feature 100, MVP-470): externer
+ * Entsorger-Übergabe einer Entsorgungsakte (Feature 100, MVP-475): externer
  * Entsorgungsfachbetrieb (ExternalContact, Feature 033), Nachweistyp mit
  * Belegnummer, optionaler DMS-Beleg und EfbV-Zertifikat-Referenz. Für
  * gefährliche Abfälle (`*`-AVV-Schlüssel) ist mindestens eine Übergabe

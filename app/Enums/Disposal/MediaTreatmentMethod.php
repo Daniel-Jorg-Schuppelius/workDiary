@@ -16,7 +16,7 @@ use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
 /**
- * Behandlungsverfahren für Datenträger (Feature 100, MVP-470) — dokumentiert
+ * Behandlungsverfahren für Datenträger (Feature 100, MVP-475) — dokumentiert
  * das außerhalb von workDiary durchgeführte Verfahren, ersetzt es nicht.
  */
 enum MediaTreatmentMethod: string implements HasLabel {

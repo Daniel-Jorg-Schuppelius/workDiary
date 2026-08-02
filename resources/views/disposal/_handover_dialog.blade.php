@@ -1,4 +1,4 @@
-{{-- Dialog: Entsorger-Übergabe erfassen (Feature 100, MVP-470).
+{{-- Dialog: Entsorger-Übergabe erfassen (Feature 100, MVP-475).
      Erwartet: $job, $disposers (ExternalContact id+name). Lokaler ad-hoc-Dialog.
      Datei-Upload: enctype am x-modal (Modal rendert das <form> selbst). --}}
 <x-modal

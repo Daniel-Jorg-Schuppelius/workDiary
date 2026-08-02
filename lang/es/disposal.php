@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-// Expediente de eliminación (feature 100, MVP-469/470): lista, expediente,
+// Expediente de eliminación (feature 100, MVP-474/475): lista, expediente,
 // diálogos y PDF del justificante para el cliente. Labels de enum y mensajes
 // backend inline en el código.
 return [

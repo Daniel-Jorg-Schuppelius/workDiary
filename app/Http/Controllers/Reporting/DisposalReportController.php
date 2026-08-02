@@ -19,7 +19,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * Entsorgungsbericht (Feature 100, MVP-471): entsorgte Mengen je Kunde,
+ * Entsorgungsbericht (Feature 100, MVP-476): entsorgte Mengen je Kunde,
  * Periode und AVV-Abfallschlüssel über abgeschlossene Entsorgungsakten.
  * Zeitraum kommt aus dem globalen Header-Zeitraum (AGENTS §8).
  */

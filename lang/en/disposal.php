@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-// Disposal case (feature 100, MVP-469/470): list, case, dialogs and
+// Disposal case (feature 100, MVP-474/475): list, case, dialogs and
 // customer record PDF. Enum labels and backend messages live inline in code.
 return [
     'eyebrow' => 'Disposal',

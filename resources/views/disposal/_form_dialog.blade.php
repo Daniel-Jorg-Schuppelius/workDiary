@@ -1,4 +1,4 @@
-{{-- Dialog: Entsorgungsakte anlegen/bearbeiten (Feature 100, MVP-469).
+{{-- Dialog: Entsorgungsakte anlegen/bearbeiten (Feature 100, MVP-474).
      Erwartet: $job (DisposalJob|null), $customers, $sites, $users, $diaryEntries. --}}
 <x-modal
     :title="$job !== null ? __('disposal.form.title_edit') : __('disposal.form.title_create')"

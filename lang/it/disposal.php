@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-// Pratica di smaltimento (feature 100, MVP-469/470): elenco, pratica, dialoghi
+// Pratica di smaltimento (feature 100, MVP-474/475): elenco, pratica, dialoghi
 // e PDF dell'attestato cliente. Label enum e messaggi backend inline nel codice.
 return [
     'eyebrow' => 'Smaltimento',

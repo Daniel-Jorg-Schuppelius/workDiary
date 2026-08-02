@@ -635,7 +635,7 @@ enum Permission: string implements HasLabel {
     case AssetComplianceInspect = 'assetCompliance.inspect';
     case AssetComplianceRelease = 'assetCompliance.release';
 
-        // ── Entsorgungsakte (Feature 100, MVP-469/470) ─────────────────
+        // ── Entsorgungsakte (Feature 100, MVP-474/475) ─────────────────
         // manage führt Akte, Geräteliste, Behandlungen und Übergaben;
         // complete deckt den bewachten Abschluss (Kundennachweis) und
         // den Storno — beides Leitungsaufgabe.

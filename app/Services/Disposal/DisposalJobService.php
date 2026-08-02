@@ -30,7 +30,7 @@ use Illuminate\Support\Str;
 use RuntimeException;
 
 /**
- * Lebenszyklus der Entsorgungsakte (Feature 100, MVP-469/470):
+ * Lebenszyklus der Entsorgungsakte (Feature 100, MVP-474/475):
  * Anlage mit Nummernkreis, Geräteliste mit AVV-Gefährlichkeitsableitung
  * (WasteCode-VO, nie frei gesetzt), Datenträger-Behandlung, Entsorger-
  * Übergabe mit DMS-Beleg, Übernahme-Unterschrift und bewachter Abschluss:

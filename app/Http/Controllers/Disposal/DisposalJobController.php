@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\Gate;
 use Throwable;
 
 /**
- * Entsorgungsakten (Feature 100, MVP-469/470): Liste mit Status-KPIs,
+ * Entsorgungsakten (Feature 100, MVP-474/475): Liste mit Status-KPIs,
  * Akte mit Geräteliste, Behandlungen, Übergaben, Unterschrift und
  * Kundennachweis. Anlegen/Bearbeiten als Dialog; Statusübergänge als
  * eigene POST-Aktionen mit deutschen Verb-Segmenten.

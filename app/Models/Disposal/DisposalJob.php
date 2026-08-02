@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
 /**
- * Entsorgungsakte (Feature 100, MVP-469/470): führt Abholung, Geräteliste,
+ * Entsorgungsakte (Feature 100, MVP-474/475): führt Abholung, Geräteliste,
  * Datenträger-Behandlung, Entsorger-Übergabe und den generierten
  * Kundennachweis als prüffeste Nachweiskette. Der Kundennachweis wird als
  * DMS-Dokument (record_document_id) versioniert und über die bestehende

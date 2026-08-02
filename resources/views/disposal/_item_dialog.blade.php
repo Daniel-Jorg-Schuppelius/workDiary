@@ -1,4 +1,4 @@
-{{-- Dialog: Geräteposition erfassen/bearbeiten (Feature 100, MVP-469).
+{{-- Dialog: Geräteposition erfassen/bearbeiten (Feature 100, MVP-474).
      Erwartet: $job, $item (DisposalItem|null = Anlegen), $wasteCodes.
      Lokaler ad-hoc-Dialog (:embedded="false"), geöffnet via data-open-dialog. --}}
 @php

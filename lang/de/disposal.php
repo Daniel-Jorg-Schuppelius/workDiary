@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-// Entsorgungsakte (Feature 100, MVP-469/470): Liste, Akte, Dialoge und
+// Entsorgungsakte (Feature 100, MVP-474/475): Liste, Akte, Dialoge und
 // Kundennachweis-PDF. Enum-Labels und Backend-Meldungen liegen inline im Code.
 return [
     'eyebrow' => 'Entsorgung',

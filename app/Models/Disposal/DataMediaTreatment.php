@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Datenträger-Behandlung einer Geräteposition (Feature 100, MVP-470):
+ * Datenträger-Behandlung einer Geräteposition (Feature 100, MVP-475):
  * dokumentiert Verfahren, DIN-66399-Kategorie + Sicherheitsstufe,
  * Schutzklasse, Zeitpunkt, Durchführenden und Beleg-Referenz. Pflicht,
  * sobald die Position `has_data_storage` trägt (Abschluss-Gate).

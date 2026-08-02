@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-// Dossier d'élimination (feature 100, MVP-469/470) : liste, dossier, dialogues
+// Dossier d'élimination (feature 100, MVP-474/475) : liste, dossier, dialogues
 // et PDF de justificatif client. Libellés d'enum et messages backend inline.
 return [
     'eyebrow' => 'Élimination',

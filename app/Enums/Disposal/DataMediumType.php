@@ -16,7 +16,7 @@ use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
 /**
- * Datenträgertyp der Behandlung (Feature 100, MVP-470). Die Vorbelegung der
+ * Datenträgertyp der Behandlung (Feature 100, MVP-475). Die Vorbelegung der
  * DIN-66399-Materialkategorie folgt der Norm-Zuordnung des Trägermaterials.
  */
 enum DataMediumType: string implements HasLabel {

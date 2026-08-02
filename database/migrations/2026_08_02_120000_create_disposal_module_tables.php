@@ -13,7 +13,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Feature 100 (Phase 54, MVP-469/470): Entsorgungsakte für Altgeräte-Rücknahme.
+ * Feature 100 (Phase 56, MVP-474/475): Entsorgungsakte für Altgeräte-Rücknahme.
  *
  * Entscheidungen:
  * - Kindtabellen (items/treatments/handovers/events) ohne eigene

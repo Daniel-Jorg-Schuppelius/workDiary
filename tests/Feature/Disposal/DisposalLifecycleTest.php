@@ -25,7 +25,7 @@ use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
 /**
- * Feature 100 (MVP-469/470): Lebenszyklus der Entsorgungsakte auf
+ * Feature 100 (MVP-474/475): Lebenszyklus der Entsorgungsakte auf
  * Service-Ebene — Nummernkreis + Ereigniskette, AVV-Gefährlichkeits-
  * ableitung (WasteCode-VO, nie frei gesetzt), Statusmaschine mit
  * bewachtem Abschluss/Storno, Unveränderlichkeit nach Entsorger-Übergabe,
