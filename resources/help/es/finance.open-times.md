@@ -27,13 +27,13 @@ Funciones:
    fichas de aviso «Rezagados» y «Más de 45 días» cuentan siempre
    sobre todo el pendiente — independientemente del período
    seleccionado.
-2. **Período**: sin un filtro de período explícito, la lista sigue
-   la selección global de período en la cabecera de la página. Un
-   filtro de/hasta explícito la sustituye.
-3. **Filtros**: cliente, proyecto, empleado/a, período y el
-   conmutador «facturable». Con «Solo no facturables» se pueden
-   revisar los tiempos marcados como no facturables de forma
-   deliberada o por error.
+2. **Período**: la lista sigue la selección global de período en la
+   cabecera de la página. Los parámetros de/hasta en la barra de
+   direcciones (marcadores) la sustituyen.
+3. **Filtros**: cliente, proyecto, empleado/a y el conmutador
+   «facturable». Con «Solo no facturables» se pueden revisar los
+   tiempos marcados como no facturables de forma deliberada o por
+   error.
 4. **Totales por cliente & proyecto** en un bloque desplegable sobre
    la lista detallada.
 5. **Exportación CSV** con la duración en ambos formatos (H:MM y

@@ -26,10 +26,10 @@ Funzionalità:
    tessere di avviso «Ritardatari» e «Più di 45 giorni» contano
    sempre sull'intero arretrato — indipendentemente dal periodo
    selezionato.
-2. **Periodo**: senza un filtro di periodo esplicito, l'elenco segue
-   la selezione globale del periodo nell'intestazione della pagina.
-   Un filtro da/a esplicito la sostituisce.
-3. **Filtri**: cliente, progetto, collaboratore/trice, periodo e il
+2. **Periodo**: l'elenco segue la selezione globale del periodo
+   nell'intestazione della pagina. I parametri da/a nella barra
+   degli indirizzi (segnalibri) la sostituiscono.
+3. **Filtri**: cliente, progetto, collaboratore/trice e il
    selettore «fatturabile». Con «Solo non fatturabili» si possono
    verificare i tempi contrassegnati come non fatturabili
    volontariamente o per errore.

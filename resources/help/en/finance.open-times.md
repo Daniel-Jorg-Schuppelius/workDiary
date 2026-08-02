@@ -24,11 +24,11 @@ Features:
    decimal format), projected net revenue. The warning tiles "Late
    entries" and "Older than 45 days" always count across the whole
    backlog — regardless of the selected period.
-2. **Period**: without an explicit period filter, the list follows
-   the global date selection in the page header. An explicit
-   from/to filter overrides it.
-3. **Filters**: customer, project, employee, period, and the
-   billable toggle. Use "Non-billable only" to review times marked
+2. **Period**: the list follows the global date selection in the
+   page header. From/to parameters in the address bar (bookmarks)
+   override it.
+3. **Filters**: customer, project, employee, and the billable
+   toggle. Use "Non-billable only" to review times marked
    non-billable deliberately or by mistake.
 4. **Totals per customer & project** as an expandable block above
    the entry list.

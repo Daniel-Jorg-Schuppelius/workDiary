@@ -27,10 +27,10 @@ Fonctionnalités :
    tuiles d'alerte « Retardataires » et « Plus de 45 jours » comptent
    toujours sur l'ensemble du stock — indépendamment de la période
    sélectionnée.
-2. **Période** : sans filtre de période explicite, la liste suit la
-   sélection de période globale dans l'en-tête de la page. Un filtre
-   de/à explicite la remplace.
-3. **Filtres** : client, projet, collaborateur/trice, période et le
+2. **Période** : la liste suit la sélection de période globale dans
+   l'en-tête de la page. Les paramètres de/à dans la barre d'adresse
+   (signets) la remplacent.
+3. **Filtres** : client, projet, collaborateur/trice et le
    commutateur « facturable ». « Non facturables uniquement » permet
    de vérifier les temps marqués non facturables volontairement ou
    par erreur.
