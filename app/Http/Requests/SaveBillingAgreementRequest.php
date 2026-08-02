@@ -26,6 +26,7 @@ class SaveBillingAgreementRequest extends BaseFormRequest {
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'rate_activity_category_id' => \App\Models\ActivityCategory::class,
+        'travel_categories' => \App\Models\ActivityCategory::class,
     ];
 
     /** @return array<string, mixed> */
@@ -35,6 +36,11 @@ class SaveBillingAgreementRequest extends BaseFormRequest {
             'currency' => ['required', Rule::enum(CurrencyCode::class)],
             'expected_monthly_amount' => ['nullable', 'numeric', 'min:0', 'max:9999999'],
             'workdays_per_week' => ['required', 'integer', 'min:1', 'max:7'],
+            // Anfahrt je Zeiteintrag; 480 Min. als Plausibilitätsdeckel.
+            'travel_minutes_per_entry' => ['nullable', 'integer', 'min:0', 'max:480'],
+            'travel_categories' => ['array'],
+            'travel_categories.*' => ['integer', new ExistsInCurrentOrganization('activity_categories', includeGlobal: true)],
+            'holidays_as_weekend' => ['sometimes', 'boolean'],
             'opening_balance' => ['nullable', 'numeric', 'min:-9999999', 'max:9999999'],
             'opening_balance_date' => ['nullable', 'date'],
             'active' => ['sometimes', 'boolean'],

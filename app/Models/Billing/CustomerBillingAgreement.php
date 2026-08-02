@@ -32,6 +32,9 @@ use Illuminate\Support\Carbon;
  * @property CurrencyCode $currency
  * @property \CommonToolkit\ValueObjects\Money|null $expected_monthly_amount
  * @property int $workdays_per_week
+ * @property int $travel_minutes_per_entry
+ * @property list<int>|null $travel_categories
+ * @property bool $holidays_as_weekend
  * @property \CommonToolkit\ValueObjects\Money|null $opening_balance
  * @property Carbon|null $opening_balance_date
  * @property bool $active
@@ -60,6 +63,9 @@ class CustomerBillingAgreement extends Model {
         'currency',
         'expected_monthly_amount',
         'workdays_per_week',
+        'travel_minutes_per_entry',
+        'travel_categories',
+        'holidays_as_weekend',
         'opening_balance',
         'opening_balance_date',
         'active',
@@ -72,6 +78,9 @@ class CustomerBillingAgreement extends Model {
         'currency' => CurrencyCode::class,
         'expected_monthly_amount' => MoneyCast::class . ':currency,2',
         'workdays_per_week' => 'integer',
+        'travel_minutes_per_entry' => 'integer',
+        'travel_categories' => 'array',
+        'holidays_as_weekend' => 'boolean',
         'opening_balance' => MoneyCast::class . ':currency,2',
         'opening_balance_date' => 'date',
         'active' => 'boolean',

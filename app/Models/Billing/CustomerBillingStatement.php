@@ -30,6 +30,7 @@ use Illuminate\Support\Carbon;
  * @property int $year
  * @property int $month
  * @property int $total_minutes
+ * @property int $travel_minutes
  * @property \CommonToolkit\ValueObjects\Money|null $gross_value
  * @property \CommonToolkit\ValueObjects\Money|null $payments_total
  * @property \CommonToolkit\ValueObjects\Money|null $carry_in
@@ -57,6 +58,7 @@ class CustomerBillingStatement extends Model {
         'year',
         'month',
         'total_minutes',
+        'travel_minutes',
         'gross_value',
         'payments_total',
         'carry_in',
@@ -75,6 +77,7 @@ class CustomerBillingStatement extends Model {
         'year' => 'integer',
         'month' => 'integer',
         'total_minutes' => 'integer',
+        'travel_minutes' => 'integer',
         // Tabelle ohne Währungsspalte — Cast fällt auf die Standardwährung
         // zurück; der Statement-Service normiert auf die Agreement-Währung.
         'gross_value' => MoneyCast::class,

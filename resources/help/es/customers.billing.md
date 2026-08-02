@@ -1,7 +1,7 @@
 ---
 title: "Condiciones especiales & cuenta de cliente"
 topic: customers.billing
-version: 2
+version: 3
 audience: []
 related:
     - contacts.manage
@@ -14,6 +14,22 @@ tarifas horarias propias por actividad y tipo de día (laborable/fin de
 semana, definido mediante «días laborables por semana») y el método de
 liquidación — **cuenta de cliente** sin facturas con saldo corriente,
 **factura mensual** o **cuota fija (Lexoffice)**.
+
+Las condiciones incluyen también una **tarifa fija de desplazamiento**:
+cada registro de tiempo facturable aporta entonces x minutos
+adicionales, valorados con la tarifa del registro — opcionalmente solo
+para determinadas actividades. El tiempo de trabajo registrado no cambia,
+así que la cuenta de horas y el horario flexible quedan intactos; el
+justificante y el PDF muestran el desplazamiento en una columna propia.
+En el registro de tiempo el valor puede sobrescribirse caso por caso
+(también a 0). Los tiempos de viaje o guardia y los registros a precio
+fijo no reciben desplazamiento.
+
+Lo que cuenta como fin de semana lo determina «días laborables por
+semana» (6 = solo domingo). Opcionalmente los **festivos** cuentan
+también como fin de semana, según el calendario de festivos de la
+organización. Decide el día natural del inicio: un registro que pasa de
+la medianoche pertenece por completo a su día de inicio.
 
 En modo cuenta, cada mes tiene un bloque de liquidación: total (horas ×
 tarifa), liquidado (pagos), mes anterior (arrastre) y pendiente (saldo).

@@ -118,22 +118,26 @@ class RateCalculator {
 
     /**
      * Compute revenue (rate) and internal cost for the entry. Returns array
-     * with keys `rate`, `internal_rate`, `hourly_rate` (resolved snapshot) and
+     * with keys `rate`, `internal_rate`, `hourly_rate` (resolved snapshot),
      * `agreement_rate_id` (Feature 098: gesetzt, wenn eine Kundenkondition den
-     * Satz geliefert hat).
+     * Satz geliefert hat) und `travel_minutes` (pauschale Anfahrt der Kondition).
      *
-     * @return array{rate: float, internal_rate: float, hourly_rate: float|null, agreement_rate_id: int|null}
+     * @return array{rate: float, internal_rate: float, hourly_rate: float|null, agreement_rate_id: int|null, travel_minutes: int}
      */
     public function compute(TimeEntry $entry): array {
         $hours = ((int) $entry->minutes) / 60.0;
         $agreementRate = $this->resolveAgreementRate($entry);
+        $billable = $this->isBillable($entry);
+        $travelMinutes = $this->resolveTravelMinutes($entry, $billable);
 
         if ($entry->fixed_rate !== null) {
-            $revenue = $this->isBillable($entry) ? $entry->fixed_rate->toFloat() : 0.0;
+            $revenue = $billable ? $entry->fixed_rate->toFloat() : 0.0;
             $hourly = $this->resolveHourlyRate($entry, $agreementRate);
         } else {
             $hourly = $this->resolveHourlyRate($entry, $agreementRate);
-            $revenue = ($hourly !== null && $this->isBillable($entry)) ? round($hours * $hourly, 2) : 0.0;
+            // Anfahrt zählt als abrechenbare Zeit, nicht als geleistete.
+            $billedHours = (((int) $entry->minutes) + $travelMinutes) / 60.0;
+            $revenue = ($hourly !== null && $billable) ? round($billedHours * $hourly, 2) : 0.0;
         }
 
         $internalHourly = $this->resolveInternalRate($entry);
@@ -144,6 +148,25 @@ class RateCalculator {
             'internal_rate' => $internal,
             'hourly_rate' => $hourly,
             'agreement_rate_id' => $agreementRate?->id,
+            'travel_minutes' => $travelMinutes,
         ];
+    }
+
+    /**
+     * Pauschale Anfahrtsminuten aus der Kundenkondition (Feature 098). Sie
+     * erhöhen nur den Erlös: `minutes` bleibt die geleistete Zeit, damit
+     * Arbeitszeitkonto, Gleitzeit und interne Kosten unberührt bleiben. Ein
+     * von Hand gesetzter Wert (billing_travel_manual) schlägt die Kondition.
+     */
+    private function resolveTravelMinutes(TimeEntry $entry, bool $billable): int {
+        if ($entry->billing_travel_manual) {
+            return max(0, (int) $entry->billing_travel_minutes);
+        }
+
+        if (! $billable) {
+            return 0;
+        }
+
+        return app(AgreementRateResolver::class)->travelMinutesFor($entry);
     }
 }

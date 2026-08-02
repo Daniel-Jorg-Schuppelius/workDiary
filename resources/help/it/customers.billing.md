@@ -1,7 +1,7 @@
 ---
 title: "Condizioni speciali & conto cliente"
 topic: customers.billing
-version: 2
+version: 3
 audience: []
 related:
     - contacts.manage
@@ -14,6 +14,21 @@ tariffe orarie proprie per attività e tipo di giorno (feriale/weekend,
 definito tramite «giorni lavorativi a settimana») e la modalità di
 conteggio — **conto cliente** senza fatture con saldo corrente,
 **fattura mensile** oppure **forfait (Lexoffice)**.
+
+Tra le condizioni rientra anche un **forfait di trasferta**: ogni
+registrazione fatturabile porta con sé x minuti aggiuntivi, valorizzati
+alla tariffa della registrazione — a scelta solo per determinate
+attività. Il tempo di lavoro registrato resta invariato, quindi conto ore
+e orario flessibile non cambiano; il giustificativo e il PDF indicano la
+trasferta in una colonna propria. Nella registrazione il valore si può
+sovrascrivere caso per caso (anche a 0). Tempi di viaggio o reperibilità
+e registrazioni a prezzo fisso non ricevono alcuna trasferta.
+
+Che cosa vale come weekend lo stabiliscono i «giorni lavorativi a
+settimana» (6 = solo domenica). In opzione contano come weekend anche i
+**giorni festivi**, presi dal calendario festivi dell’organizzazione.
+Fa fede il giorno di calendario dell’inizio: una registrazione che supera
+la mezzanotte appartiene interamente al giorno iniziale.
 
 In modalità conto ogni mese ha un blocco di conteggio: totale (ore ×
 tariffa), saldato (pagamenti), mese precedente (riporto) e aperto

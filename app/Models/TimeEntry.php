@@ -49,6 +49,8 @@ use Illuminate\Support\Carbon;
  * @property Money|null $internal_rate
  * @property bool $exported
  * @property int|null $customer_billing_rate_id
+ * @property int $billing_travel_minutes
+ * @property bool $billing_travel_manual
  */
 class TimeEntry extends Model {
     use Auditable;
@@ -126,6 +128,8 @@ class TimeEntry extends Model {
         'internal_rate',
         'exported',
         'customer_billing_rate_id',
+        'billing_travel_minutes',
+        'billing_travel_manual',
     ];
 
     /** @var array<string, string> */
@@ -137,6 +141,8 @@ class TimeEntry extends Model {
         'break_minutes' => 'integer',
         'billable' => 'boolean',
         'exported' => 'boolean',
+        'billing_travel_minutes' => 'integer',
+        'billing_travel_manual' => 'boolean',
         'hourly_rate' => MoneyCast::class . ':currency,2',
         'fixed_rate' => MoneyCast::class . ':currency,2',
         'rate' => MoneyCast::class . ':currency,2',
@@ -168,6 +174,23 @@ class TimeEntry extends Model {
 
         return ! is_numeric($originalAmount)
             || bccomp($this->hourly_rate->getAmount(), $originalAmount, 4) !== 0;
+    }
+
+    /**
+     * Trägt der Eintrag exakt den Satz der Kondition, auf die sein Marker
+     * zeigt? Unterscheidet die Neubewertung nach einer Satzänderung von einem
+     * echten Handeingriff. Der Resolver ist request-gecacht, kostet also keine
+     * zusätzliche Abfrage.
+     */
+    public function matchesAgreementRate(): bool {
+        if ($this->customer_billing_rate_id === null || $this->hourly_rate === null) {
+            return false;
+        }
+
+        $rate = app(\App\Services\Billing\AgreementRateResolver::class)->rateFor($this);
+
+        return $rate?->id === $this->customer_billing_rate_id
+            && $rate->hourly_rate?->getAmount() === $this->hourly_rate->getAmount();
     }
 
     protected static function booted(): void {
@@ -223,9 +246,17 @@ class TimeEntry extends Model {
                 'date',
                 'started_at',
                 'activity_category_id',
+                'billing_travel_manual',
             ]) || ! $entry->exists) {
-                if ($entry->hourlyRateWasOverridden() && $entry->hourly_rate !== null) {
-                    // Manueller Satz-Override löst den Konditions-Marker ab (E2).
+                if (
+                    $entry->hourlyRateWasOverridden()
+                    && $entry->hourly_rate !== null
+                    && ! $entry->matchesAgreementRate()
+                ) {
+                    // Manueller Satz-Override löst den Konditions-Marker ab (E2)
+                    // — nicht aber eine Satzpflege, die denselben Konditions-
+                    // satz neu einträgt (reapplyRates); sonst verlöre jede
+                    // Satzänderung ihren Nachweis.
                     $entry->customer_billing_rate_id = null;
                 } elseif (
                     $entry->customer_billing_rate_id !== null
@@ -243,8 +274,9 @@ class TimeEntry extends Model {
     }
 
     /**
-     * Rechnet den Abrechnungs-Snapshot (rate/internal_rate/hourly_rate) aus der
-     * Satzhierarchie neu. Aus dem saving-Hook heraus aufgerufen — und aus
+     * Rechnet den Abrechnungs-Snapshot (rate/internal_rate/hourly_rate sowie
+     * die pauschale Anfahrt) aus der Satzhierarchie neu. Aus dem saving-Hook
+     * heraus aufgerufen — und aus
      * {@see \App\Services\Billing\CustomerAccountStatementService::reapplyRates()},
      * das Bestandseinträge nachbewertet, bei denen kein Feld „dirty" wird.
      */
@@ -254,6 +286,7 @@ class TimeEntry extends Model {
 
         $this->rate = Money::ofFloat($result['rate'], $currency);
         $this->internal_rate = Money::ofFloat($result['internal_rate'], $currency);
+        $this->billing_travel_minutes = $result['travel_minutes'];
 
         if ($this->hourly_rate === null && $result['hourly_rate'] !== null) {
             // Snapshot resolved hourly rate so historical entries stay stable.

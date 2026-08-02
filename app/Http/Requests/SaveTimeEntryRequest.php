@@ -41,6 +41,8 @@ class SaveTimeEntryRequest extends BaseFormRequest {
             'task_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('tasks')],
             'diary_entry_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('diary_entries')],
             'description' => ['nullable', 'string', 'max:500'],
+            // Anfahrtspauschale (Feature 098): leer = Automatik aus der Kondition.
+            'billing_travel_minutes' => ['nullable', 'integer', 'min:0', 'max:480'],
             // Rang 59: Nacharbeit-/Kulanz-Kennzeichnung (Klassifikations-Domänen).
             // Org-Constraint: eigene Org ODER Plattform-Default (organization_id NULL).
             'rework_reason_classification_id' => ['nullable', 'integer', Rule::exists('classifications', 'id')->where(fn($q) => $this->scopeClassification($q, 'rework_reason'))],

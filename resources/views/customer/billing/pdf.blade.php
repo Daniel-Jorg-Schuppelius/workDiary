@@ -15,6 +15,8 @@
     $money = fn ($v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v instanceof \CommonToolkit\ValueObjects\Money ? $v->toFloat() : (float) $v, 2, withThousandsSeparator: true) . ' €';
     $hours = fn (int $m): string => \App\Support\Formats::duration($m);
     $statement = $statement ?? null;
+    // Anfahrt-Spalte nur, wenn der Monat welche trägt (Altmonate: Snapshot ohne Feld).
+    $travelMinutes = collect($rows)->sum(fn (array $row): int => (int) ($row['travel_minutes'] ?? 0));
 @endphp
 
 <h1 style="font-size: 16pt; margin-bottom: 2mm;">{{ __('customer-billing.statement_pdf_title') }} — {{ $statement->periodLabel() }}</h1>
@@ -34,6 +36,9 @@
             <th style="text-align: left; border-bottom: 1px solid #999; padding: 1mm 2mm;">{{ __('customer-billing.start') }}</th>
             <th style="text-align: left; border-bottom: 1px solid #999; padding: 1mm 2mm;">{{ __('customer-billing.end') }}</th>
             <th style="text-align: right; border-bottom: 1px solid #999; padding: 1mm 2mm;">{{ __('customer-billing.duration') }}</th>
+            @if ($travelMinutes > 0)
+                <th style="text-align: right; border-bottom: 1px solid #999; padding: 1mm 2mm;">{{ __('customer-billing.travel') }}</th>
+            @endif
         </tr>
     </thead>
     <tbody>
@@ -45,16 +50,22 @@
                 <td style="padding: 1mm 2mm; border-bottom: 1px solid #ddd;">{{ $row['start'] }}</td>
                 <td style="padding: 1mm 2mm; border-bottom: 1px solid #ddd;">{{ $row['end'] }}</td>
                 <td style="padding: 1mm 2mm; border-bottom: 1px solid #ddd; text-align: right;">{{ $hours((int) $row['minutes']) }}</td>
+                @if ($travelMinutes > 0)
+                    <td style="padding: 1mm 2mm; border-bottom: 1px solid #ddd; text-align: right;">{{ (int) ($row['travel_minutes'] ?? 0) > 0 ? $hours((int) $row['travel_minutes']) : '—' }}</td>
+                @endif
             </tr>
         @empty
-            <tr><td colspan="6" style="padding: 2mm;">{{ __('customer-billing.no_entries') }}</td></tr>
+            <tr><td colspan="{{ $travelMinutes > 0 ? 7 : 6 }}" style="padding: 2mm;">{{ __('customer-billing.no_entries') }}</td></tr>
         @endforelse
     </tbody>
 </table>
 
 <table style="border-collapse: collapse; font-size: 10pt; margin-left: auto;">
     <tr>
-        <td style="padding: 1mm 4mm; text-align: right; color: #555;">{{ __('customer-billing.gross_value') }} ({{ $hours((int) $statement->total_minutes) }})</td>
+        <td style="padding: 1mm 4mm; text-align: right; color: #555;">
+            {{ __('customer-billing.gross_value') }}
+            ({{ $hours((int) $statement->total_minutes) }}@if ($travelMinutes > 0) + {{ $hours($travelMinutes) }} {{ __('customer-billing.travel') }}@endif)
+        </td>
         <td style="padding: 1mm 2mm; text-align: right;">{{ $money($statement->gross_value) }}</td>
     </tr>
     <tr>

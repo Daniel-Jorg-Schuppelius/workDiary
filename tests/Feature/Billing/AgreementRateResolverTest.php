@@ -177,6 +177,86 @@ class AgreementRateResolverTest extends TestCase {
         $this->assertNull($entry->customer_billing_rate_id);
     }
 
+    public function test_travel_flat_adds_billable_minutes_without_touching_worked_time(): void {
+        $this->rate(16.50);
+        $this->agreement->update(['travel_minutes_per_entry' => 20]);
+
+        $entry = $this->makeEntry('2026-07-17')->fresh();
+
+        // 2 h Arbeit + 20 Min. Anfahrt à 16,50 € = 38,50 €; minutes bleibt 120.
+        $this->assertSame(120, $entry->minutes);
+        $this->assertSame(20, $entry->billing_travel_minutes);
+        $this->assertSame('38.50', $entry->rate?->getAmount());
+    }
+
+    public function test_travel_flat_follows_the_weekend_rate(): void {
+        $this->rate(16.50);
+        $this->rate(17.50, 'weekend');
+        $this->agreement->update(['travel_minutes_per_entry' => 20]);
+
+        $sunday = $this->makeEntry('2026-07-19')->fresh();
+
+        $this->assertSame('40.83', $sunday->rate?->getAmount());
+    }
+
+    public function test_travel_flat_applies_only_to_selected_categories(): void {
+        $category = ActivityCategory::factory()->create(['organization_id' => $this->organization->id]);
+        $this->rate(16.50);
+        $this->agreement->update([
+            'travel_minutes_per_entry' => 20,
+            'travel_categories' => [$category->id],
+        ]);
+
+        $matching = $this->makeEntry('2026-07-17', ['activity_category_id' => $category->id])->fresh();
+        $other = $this->makeEntry('2026-07-17')->fresh();
+
+        $this->assertSame(20, $matching->billing_travel_minutes);
+        $this->assertSame(0, $other->billing_travel_minutes);
+        $this->assertSame('33.00', $other->rate?->getAmount());
+    }
+
+    public function test_travel_flat_skips_non_work_and_fixed_price_entries(): void {
+        $this->rate(16.50);
+        $this->agreement->update(['travel_minutes_per_entry' => 20]);
+
+        $travel = $this->makeEntry('2026-07-17', ['kind' => TimeEntryKind::Travel->value])->fresh();
+        $fixed = $this->makeEntry('2026-07-17', ['fixed_rate' => 100.00])->fresh();
+        $unbillable = $this->makeEntry('2026-07-17', ['billable' => false])->fresh();
+
+        $this->assertSame(0, $travel->billing_travel_minutes);
+        $this->assertSame(0, $fixed->billing_travel_minutes);
+        $this->assertSame('100.00', $fixed->rate?->getAmount());
+        $this->assertSame(0, $unbillable->billing_travel_minutes);
+    }
+
+    public function test_manual_travel_value_beats_the_agreement(): void {
+        $this->rate(16.50);
+        $this->agreement->update(['travel_minutes_per_entry' => 20]);
+
+        $entry = $this->makeEntry('2026-07-17', [
+            'billing_travel_minutes' => 5,
+            'billing_travel_manual' => true,
+        ])->fresh();
+
+        // 125 Min. à 16,50 € = 34,38 €.
+        $this->assertSame(5, $entry->billing_travel_minutes);
+        $this->assertSame('34.38', $entry->rate?->getAmount());
+    }
+
+    public function test_holiday_counts_as_weekend_only_when_enabled(): void {
+        $this->rate(16.50);
+        $this->rate(17.50, 'weekend');
+
+        // 2026-05-01 (Tag der Arbeit) ist ein Freitag — ohne Schalter Werktag.
+        $withoutFlag = $this->makeEntry('2026-05-01')->fresh();
+        $this->assertSame('16.50', $withoutFlag->hourly_rate?->getAmount());
+
+        $this->agreement->update(['holidays_as_weekend' => true]);
+        $withFlag = $this->makeEntry('2026-05-01')->fresh();
+
+        $this->assertSame('17.50', $withFlag->hourly_rate?->getAmount());
+    }
+
     public function test_inactive_agreement_uses_normal_hierarchy(): void {
         $this->rate(16.50);
         $this->agreement->update(['active' => false]);

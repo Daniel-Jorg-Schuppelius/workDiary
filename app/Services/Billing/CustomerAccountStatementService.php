@@ -71,26 +71,28 @@ class CustomerAccountStatementService {
     }
 
     /**
-     * Satzänderung auf offene Monate anwenden. Erfasst zwei Gruppen:
-     * Einträge MIT Konditions-Marker (Satz wurde geändert) und Einträge ganz
-     * OHNE Satz — Bestandszeiten, die vor Anlage der Kondition erfasst wurden
-     * und sonst dauerhaft mit 0,00 € im Saldo stünden. Manuelle Overrides
-     * (hourly_rate gesetzt, FK=NULL) bleiben unangetastet.
+     * Konditionsänderung auf offene Monate anwenden. Neu aufgelöst wird der
+     * Satz bei Einträgen MIT Konditions-Marker (Satz wurde geändert) und bei
+     * Einträgen ganz OHNE Satz — Bestandszeiten, die vor Anlage der Kondition
+     * erfasst wurden und sonst dauerhaft mit 0,00 € im Saldo stünden. Manuelle
+     * Satz-Overrides (hourly_rate gesetzt, FK=NULL) behalten ihren Satz,
+     * bekommen aber wie alle anderen die aktuelle Anfahrtspauschale.
      *
      * @return array{stray_entries: list<array{id: int, date: string, minutes: int}>}
      */
     public function reapplyRates(CustomerBillingAgreement $agreement): array {
         $openStart = $this->firstOpenPeriodStart($agreement);
 
-        $query = $this->entriesQuery($agreement)
-            ->where(fn ($q) => $q->whereNotNull('customer_billing_rate_id')->orWhereNull('hourly_rate'));
+        $query = $this->entriesQuery($agreement);
         if ($openStart !== null) {
             $query->whereDate('date', '>=', $openStart->toDateString());
         }
 
         foreach ($query->get() as $entry) {
-            $entry->hourly_rate = null;
-            $entry->customer_billing_rate_id = null;
+            if ($entry->customer_billing_rate_id !== null || $entry->hourly_rate === null) {
+                $entry->hourly_rate = null;
+                $entry->customer_billing_rate_id = null;
+            }
             // Direkt rechnen statt auf den saving-Hook zu bauen: bei einem
             // Eintrag, dessen hourly_rate schon NULL war, wird kein Feld dirty
             // — der Hook liefe nicht und der Satz bliebe bei 0,00 €.
@@ -398,7 +400,10 @@ class CustomerAccountStatementService {
         $paid = Money::sum($payments->map(fn (CustomerAccountPayment $p): Money => $this->asMoney($p->amount, $currency)), $currency);
 
         $statement->fill([
+            // Getrennt ausgewiesen: geleistete Zeit vs. pauschale Anfahrt, die
+            // im Betrag steckt, aber nie als Arbeitszeit gelten darf.
             'total_minutes' => (int) $entries->sum('minutes'),
+            'travel_minutes' => (int) $entries->sum('billing_travel_minutes'),
             'gross_value' => $gross,
             'payments_total' => $paid,
             'carry_in' => $carryIn,
@@ -438,6 +443,7 @@ class CustomerAccountStatementService {
                 'start' => $localStart?->format('H:i'),
                 'end' => $localEnd?->format('H:i'),
                 'minutes' => (int) $entry->minutes,
+                'travel_minutes' => (int) $entry->billing_travel_minutes,
                 'hourly_rate' => $entry->hourly_rate?->toFloat(),
                 // Snapshot-/JSON-Grenze: Beträge als float (Vorbild totals-Spalte).
                 'amount' => $this->asMoney($entry->rate, $currency)->toFloat(),
@@ -457,6 +463,7 @@ class CustomerAccountStatementService {
             ->map(fn (Collection $group, string $label): array => [
                 'label' => $label,
                 'minutes' => (int) $group->sum('minutes'),
+                'travel_minutes' => (int) $group->sum('travel_minutes'),
                 'amount' => Money::sum($group->map(fn (array $row): Money => Money::ofFloat((float) $row['amount'], $currency)), $currency)->toFloat(),
             ])->values()->all();
 

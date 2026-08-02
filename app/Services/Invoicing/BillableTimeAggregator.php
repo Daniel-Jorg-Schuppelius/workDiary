@@ -146,7 +146,11 @@ class BillableTimeAggregator {
             }
         }
 
-        $rawMinutes = $workedMinutes + $bridgedGaps;
+        // Pauschale Anfahrt der Kundenkondition (Feature 098) steckt bereits im
+        // rate-Snapshot; ohne sie in der Menge liefe Menge × Satz am Betrag vorbei.
+        $travelMinutes = (int) $chunk->sum(fn(TimeEntry $e): int => (int) $e->billing_travel_minutes);
+
+        $rawMinutes = $workedMinutes + $bridgedGaps + $travelMinutes;
         $billedMinutes = $this->ceilToIncrement($rawMinutes, $increment);
         $revenue = round((float) $chunk->sum(fn(TimeEntry $e): float => $e->rate?->toFloat() ?? 0.0), 2);
 

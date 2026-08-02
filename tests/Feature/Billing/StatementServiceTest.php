@@ -198,6 +198,38 @@ class StatementServiceTest extends TestCase {
         $this->assertSame('40.00', $this->statement(2026, 2)->gross_value?->getAmount());
     }
 
+    public function test_travel_flat_is_valued_and_reported_separately(): void {
+        $this->agreement->update(['travel_minutes_per_entry' => 15]);
+        $this->makeEntry('2026-02-10');   // 2 h + 15 Min. Anfahrt à 20 € = 45,00
+        $this->makeEntry('2026-02-11');
+
+        $data = $this->service->monthData($this->agreement, 2026, 2);
+        $statement = $this->statement(2026, 2);
+
+        $this->assertSame(240, $statement->total_minutes);
+        $this->assertSame(30, $statement->travel_minutes);
+        $this->assertSame('90.00', $statement->gross_value?->getAmount());
+        $this->assertSame(15, $data['rows'][0]['travel_minutes']);
+        $this->assertSame(30, (int) collect($data['by_category'])->sum('travel_minutes'));
+    }
+
+    public function test_reapply_rates_applies_a_newly_configured_travel_flat(): void {
+        $entry = $this->makeEntry('2026-02-10');
+        $manual = $this->makeEntry('2026-02-11', 2, ['hourly_rate' => 50.00]);
+        $this->assertSame('40.00', $entry->fresh()->rate?->getAmount());
+
+        // Anfahrt nachträglich einschalten — offene Monate ziehen nach, auch
+        // Einträge mit manuellem Stundensatz (deren Satz bleibt).
+        $this->agreement->update(['travel_minutes_per_entry' => 30]);
+        $this->service->reapplyRates($this->agreement);
+
+        $this->assertSame(30, $entry->fresh()->billing_travel_minutes);
+        $this->assertSame('50.00', $entry->fresh()->rate?->getAmount());
+        $this->assertSame('50.00', $manual->fresh()->hourly_rate?->getAmount());
+        $this->assertSame('125.00', $manual->fresh()->rate?->getAmount());
+        $this->assertSame('175.00', $this->statement(2026, 2)->gross_value?->getAmount());
+    }
+
     public function test_stray_entries_in_locked_month_are_reported_without_changing_balance(): void {
         $this->makeEntry('2026-02-10');
         $this->service->recalculateOpen($this->agreement);

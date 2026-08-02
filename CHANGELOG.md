@@ -10,6 +10,22 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Kunden-Sonderkonditionen (Feature 098): **Anfahrtspauschale je Zeiteintrag**.
+  In der Konditionsmaske lassen sich x Minuten Anfahrt hinterlegen, wahlweise
+  nur für ausgewählte Tätigkeiten; sie werden mit dem Satz des Eintrags
+  bewertet (Werktag/Wochenende gelten also automatisch mit). Die **erfasste
+  Arbeitszeit bleibt unverändert** — die Anfahrt ist eine Preisregel und
+  erhöht nur den Erlös, nicht Arbeitszeitkonto, Gleitzeit oder interne
+  Kosten; es entsteht bewusst kein fiktiver Zeiteintrag. Kontoauszug, PDF-
+  Nachweis und Kundenportal weisen sie in einer eigenen Spalte aus, die
+  Rechnungsstellung zählt sie in die abgerechnete Menge (Menge × Satz bleibt
+  der Betrag). Keine Anfahrt bei Fahrt-/Bereitschaftszeiten, Festpreis-
+  Einträgen oder nicht abrechenbaren Zeiten; im Zeiterfassungs-Dialog je
+  Eintrag übersteuerbar (auch auf 0). Neu ist außerdem ein Schalter
+  **„Feiertage wie Wochenende abrechnen"** (Standard aus, damit sich
+  Bestandsdaten nicht rückwirkend ändern) auf Basis des vorhandenen
+  Feiertagskalenders der Organisation.
+
 - DATEV-/Finanzschnittstelle (Feature 045) – Härtung & Nachweis: **Write→Read-
   Validierung** des DATEV-Buchungsstapels (die erzeugte EXTF-V700-CSV wird mit
   `php-financial-formats` über einen unabhängigen Codepfad wieder eingelesen;
@@ -796,6 +812,18 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   Sync ziehen den Zahlstatus jetzt mit; zudem band `lexoffice:sync-vouchers`
   den Organisations-Kontext nicht, wodurch der Belegabruf den API-Key einer
   fremden Organisation hätte verwenden können.
+- Kunden-Sonderkonditionen (Feature 098): **eine Satzänderung wirkte nicht auf
+  bereits erfasste Zeiten**. Der Konditionsdialog löschte beim Speichern alle
+  Satzzeilen und legte sie neu an; da der Konditionsnachweis am Zeiteintrag
+  (`customer_billing_rate_id`) per `nullOnDelete` an der Satzzeile hängt,
+  verlor jeder Eintrag seine Zuordnung — auch in abgeschlossenen Monaten —,
+  und „Neu berechnen" erkannte ihn danach nicht mehr. Wer den Wochenendsatz
+  von 17,50 € auf 18,50 € änderte, sah im offenen Monat weiterhin 17,50 €.
+  Satzzeilen werden jetzt anhand von Tätigkeit × Tagtyp fortgeschrieben statt
+  ersetzt (mit Soft-Delete für entfernte Zeilen), und der Nachweis am Eintrag
+  bleibt erhalten; nur ein tatsächlicher Handeingriff löst ihn noch ab.
+  „Neu berechnen" erfasst zudem alle abrechenbaren Zeiten der offenen Monate —
+  manuell gesetzte Stundensätze behalten ihren Satz.
 - Kunden-Sonderkonditionen, Pauschal-Modus (Feature 098): **„Beleg verknüpfen"
   brach nach einem vorherigen Lösen/Storno mit einem Datenbankfehler ab**
   (Duplicate entry für `uq_cap_source_ref`). Die stornierte Zahlung wird nur

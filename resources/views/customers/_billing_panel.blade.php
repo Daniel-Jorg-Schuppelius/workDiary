@@ -52,7 +52,15 @@
             </span>
             <span class="text-base-content/70">
                 {{ __('customer-billing.workdays_short', ['count' => $billingAgreement->workdays_per_week]) }}
+                @if ($billingAgreement->holidays_as_weekend)
+                    · {{ __('customer-billing.holidays_as_weekend_short') }}
+                @endif
             </span>
+            @if ($billingAgreement->travel_minutes_per_entry > 0)
+                <span class="text-base-content/70">
+                    {{ __('customer-billing.travel_short', ['minutes' => $billingAgreement->travel_minutes_per_entry]) }}
+                </span>
+            @endif
             @if ($billingAgreement->expected_monthly_amount !== null)
                 <span class="text-base-content/70">{{ __('customer-billing.expected_monthly') }}: {{ $money($billingAgreement->expected_monthly_amount) }}</span>
             @endif
@@ -106,7 +114,12 @@
                 @forelse ($billingStatements as $statement)
                     <tr>
                         <td class="whitespace-nowrap">{{ $statement->periodLabel() }}</td>
-                        <td class="text-right tabular-nums">{{ $hours($statement->total_minutes) }}</td>
+                        <td class="text-right tabular-nums">
+                            {{ $hours($statement->total_minutes) }}
+                            @if ($statement->travel_minutes > 0)
+                                <span class="text-xs text-base-content/60">+{{ $hours($statement->travel_minutes) }}</span>
+                            @endif
+                        </td>
                         <td class="text-right tabular-nums">{{ $money($statement->gross_value) }}</td>
                         <td class="text-right tabular-nums">{{ $money($statement->payments_total) }}</td>
                         <td class="text-right tabular-nums">{{ $money($statement->carry_in) }}</td>

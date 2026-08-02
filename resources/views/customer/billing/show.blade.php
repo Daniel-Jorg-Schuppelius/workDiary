@@ -12,6 +12,9 @@
 @php
     $money = fn ($v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v instanceof \CommonToolkit\ValueObjects\Money ? $v->toFloat() : (float) $v, 2, withThousandsSeparator: true) . ' €';
     $hours = fn (int $m): string => \App\Support\Formats::duration($m);
+    // Aus den Zeilen, nicht aus der Statement-Spalte: gesperrte Monate zeigen
+    // ihren eingefrorenen Snapshot (Altmonate ohne Anfahrt bleiben unverändert).
+    $travelMinutes = collect($rows)->sum(fn (array $row): int => (int) ($row['travel_minutes'] ?? 0));
 @endphp
 
 @section('content')
@@ -33,7 +36,12 @@
         <div class="rounded-box border border-base-300 p-3">
             <div class="text-xs text-base-content/60">{{ __('customer-billing.gross_value') }}</div>
             <div class="text-lg font-semibold tabular-nums">{{ $money($statement->gross_value) }}</div>
-            <div class="text-xs text-base-content/60 tabular-nums">{{ $hours($statement->total_minutes) }}</div>
+            <div class="text-xs text-base-content/60 tabular-nums">
+                {{ $hours($statement->total_minutes) }}
+                @if ($travelMinutes > 0)
+                    + {{ $hours($travelMinutes) }} {{ __('customer-billing.travel') }}
+                @endif
+            </div>
         </div>
         <div class="rounded-box border border-base-300 p-3">
             <div class="text-xs text-base-content/60">{{ __('customer-billing.payments_total') }}</div>
@@ -59,6 +67,9 @@
                 <x-table.th>{{ __('customer-billing.start') }}</x-table.th>
                 <x-table.th>{{ __('customer-billing.end') }}</x-table.th>
                 <x-table.th class="text-right">{{ __('customer-billing.duration') }}</x-table.th>
+                @if ($travelMinutes > 0)
+                    <x-table.th class="text-right">{{ __('customer-billing.travel') }}</x-table.th>
+                @endif
                 <x-table.th class="text-right">{{ __('customer-billing.amount') }}</x-table.th>
             </tr>
         </x-slot:head>
@@ -70,10 +81,13 @@
                 <td class="tabular-nums">{{ $row['start'] }}</td>
                 <td class="tabular-nums">{{ $row['end'] }}</td>
                 <td class="text-right tabular-nums">{{ $hours((int) $row['minutes']) }}</td>
+                @if ($travelMinutes > 0)
+                    <td class="text-right tabular-nums">{{ (int) ($row['travel_minutes'] ?? 0) > 0 ? $hours((int) $row['travel_minutes']) : '—' }}</td>
+                @endif
                 <td class="text-right tabular-nums">{{ $money($row['amount']) }}</td>
             </tr>
         @empty
-            <x-table.empty :colspan="7" :title="__('customer-billing.no_entries')" />
+            <x-table.empty :colspan="$travelMinutes > 0 ? 8 : 7" :title="__('customer-billing.no_entries')" />
         @endforelse
     </x-table>
 

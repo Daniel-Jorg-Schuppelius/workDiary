@@ -15,7 +15,7 @@ use App\Enums\Billing\BillingRateDayType;
 use App\Models\ActivityCategory;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
@@ -23,6 +23,10 @@ use Illuminate\Support\Carbon;
  * Stundensatz einer Kunden-Sonderkondition (Feature 098) je Tätigkeits-
  * kategorie × Tagtyp; activity_category_id=NULL ist der Fallback für alle
  * Kategorien. valid_from/valid_until erlauben Satz-Historie.
+ *
+ * SoftDeletes, weil time_entries.customer_billing_rate_id per nullOnDelete an
+ * der Zeile hängt: ein hartes Löschen würde den Konditionsnachweis auch aus
+ * abgeschlossenen Monaten reißen.
  *
  * @property int $id
  * @property int|null $organization_id
@@ -41,10 +45,12 @@ class CustomerBillingRate extends Model {
     use HasFactory;
 
     use HasSqid;
+    use SoftDeletes;
 
     protected static function booted(): void {
         static::saved(fn () => app(\App\Services\Billing\AgreementRateResolver::class)->flush());
         static::deleted(fn () => app(\App\Services\Billing\AgreementRateResolver::class)->flush());
+        static::restored(fn () => app(\App\Services\Billing\AgreementRateResolver::class)->flush());
     }
 
     protected $fillable = [

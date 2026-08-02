@@ -14,6 +14,11 @@
 @php
     $rates = $agreement?->rates ?? collect();
     $extraRows = 3;
+    // Nach einem Validierungsfehler kommen die Kategorien als Sqids zurück,
+    // sonst als IDs aus dem Profil — beides auf Sqid normiert.
+    $selectedTravelCategories = is_array(old('travel_categories'))
+        ? array_map('strval', old('travel_categories'))
+        : $activityCategories->whereIn('id', $agreement?->travel_categories ?? [])->pluck('sqid')->all();
 @endphp
 
 <x-modal
@@ -99,6 +104,29 @@
                 <x-input-field name="rate_hourly_rate[]" type="number" step="0.01" min="0" />
             </div>
         @endfor
+    </x-form-group>
+
+    <x-form-group :legend="__('customer-billing.travel_flat')" icon="directions_car" tone="info" cols="2"
+                  :description="__('customer-billing.travel_flat_hint')">
+        <x-input-field name="travel_minutes_per_entry" type="number" min="0" max="480" step="5"
+                       :label="__('customer-billing.travel_minutes_per_entry')"
+                       :hint="__('customer-billing.travel_minutes_hint')"
+                       :value="old('travel_minutes_per_entry', $agreement?->travel_minutes_per_entry ?? 0)" />
+        <x-checkbox-field name="holidays_as_weekend"
+                          :label="__('customer-billing.holidays_as_weekend')"
+                          :hint="__('customer-billing.holidays_as_weekend_hint')"
+                          :checked="(bool) old('holidays_as_weekend', $agreement?->holidays_as_weekend ?? false)" />
+        <div class="md:col-span-2">
+            <p class="fieldset-label">{{ __('customer-billing.travel_categories') }}</p>
+            <p class="text-xs text-base-content/60 mb-2">{{ __('customer-billing.travel_categories_hint') }}</p>
+            <div class="flex flex-wrap gap-x-6">
+                @foreach ($activityCategories as $category)
+                    <x-checkbox-field name="travel_categories[]" :value="$category->sqid" :toggle="false"
+                                      :with-hidden="false" :label="$category->label"
+                                      :checked="in_array($category->sqid, $selectedTravelCategories, true)" />
+                @endforeach
+            </div>
+        </div>
     </x-form-group>
 
     <x-form-group :legend="__('Notizen')" icon="notes" tone="ghost" cols="1">

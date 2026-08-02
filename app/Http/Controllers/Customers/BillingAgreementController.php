@@ -52,6 +52,12 @@ class BillingAgreementController extends Controller {
                     'currency' => $request->validated('currency'),
                     'expected_monthly_amount' => $request->validated('expected_monthly_amount'),
                     'workdays_per_week' => (int) $request->validated('workdays_per_week'),
+                    'travel_minutes_per_entry' => (int) ($request->validated('travel_minutes_per_entry') ?? 0),
+                    'travel_categories' => array_values(array_map(
+                        'intval',
+                        (array) $request->validated('travel_categories', [])
+                    )),
+                    'holidays_as_weekend' => $request->boolean('holidays_as_weekend'),
                     'opening_balance' => (float) ($request->validated('opening_balance') ?? 0),
                     'opening_balance_date' => $request->validated('opening_balance_date'),
                     'active' => $request->boolean('active'),
@@ -59,18 +65,21 @@ class BillingAgreementController extends Controller {
                 ],
             );
 
-            // Satzzeilen als Ganzes ersetzen (MVP ohne Historien-UI; valid_from
-            // bleibt der DB/dem Import vorbehalten).
-            $agreement->rates()->delete();
+            // Satzzeilen anhand ihrer fachlichen Identität (Kategorie × Tagtyp)
+            // fortschreiben statt sie zu ersetzen: an der Zeile hängt per
+            // nullOnDelete der Konditionsnachweis der Zeiteinträge, und
+            // reapplyRates erkennt konditionsbewertete Einträge nur an diesem
+            // Marker — ein Löschen ließe jede Satzänderung wirkungslos
+            // verpuffen. Historische Zeilen (valid_from gesetzt, aus DB/Import)
+            // verwaltet der Dialog weiterhin nicht.
+            $keptIds = [];
             foreach ($request->rateRows() as $row) {
-                CustomerBillingRate::create([
-                    'organization_id' => $agreement->organization_id,
-                    'customer_billing_agreement_id' => $agreement->id,
-                    'activity_category_id' => $row['activity_category_id'],
-                    'day_type' => $row['day_type'],
-                    'hourly_rate' => $row['hourly_rate'],
-                ]);
+                $keptIds[] = $this->upsertRate($agreement, $row)->id;
             }
+            $agreement->rates()
+                ->whereNull('valid_from')
+                ->whereNotIn('id', $keptIds)
+                ->delete();
         });
 
         $agreement = $customer->billingAgreement()->firstOrFail();
@@ -81,5 +90,36 @@ class BillingAgreementController extends Controller {
         return redirect()
             ->route('customers.show', $customer)
             ->with('status', __('customer-billing.flash_agreement_saved'));
+    }
+
+    /**
+     * Satzzeile je (Kategorie × Tagtyp) anlegen oder fortschreiben. Stornierte
+     * Zeilen werden wiederbelebt statt neu angelegt — der Unique-Index
+     * uq_cbr_scope kennt kein deleted_at.
+     *
+     * @param  array{activity_category_id: int|null, day_type: string, hourly_rate: float}  $row
+     */
+    private function upsertRate(CustomerBillingAgreement $agreement, array $row): CustomerBillingRate {
+        $rate = CustomerBillingRate::withTrashed()
+            ->where('customer_billing_agreement_id', $agreement->id)
+            ->where('activity_category_id', $row['activity_category_id'])
+            ->where('day_type', $row['day_type'])
+            ->whereNull('valid_from')
+            ->first();
+
+        if ($rate === null) {
+            return CustomerBillingRate::create([
+                'organization_id' => $agreement->organization_id,
+                'customer_billing_agreement_id' => $agreement->id,
+                'activity_category_id' => $row['activity_category_id'],
+                'day_type' => $row['day_type'],
+                'hourly_rate' => $row['hourly_rate'],
+            ]);
+        }
+
+        $rate->fill(['hourly_rate' => $row['hourly_rate']]);
+        $rate->trashed() ? $rate->restore() : $rate->save();
+
+        return $rate;
     }
 }

@@ -1,7 +1,7 @@
 ---
 title: "Conditions particulières & compte client"
 topic: customers.billing
-version: 2
+version: 3
 audience: []
 related:
     - contacts.manage
@@ -14,6 +14,22 @@ particulières** : taux horaires propres par activité et type de jour
 (semaine/week-end, définis via « jours ouvrés par semaine ») ainsi que le
 mode de facturation — **compte client** sans factures avec solde courant,
 **facture mensuelle** ou **forfait (Lexoffice)**.
+
+Les conditions comprennent aussi un **forfait de déplacement** : chaque
+saisie de temps facturable apporte alors x minutes supplémentaires,
+valorisées au tarif de la saisie — au choix uniquement pour certaines
+activités. Le temps de travail saisi reste inchangé, le compte de temps
+et l’horaire variable ne bougent donc pas ; le justificatif et le PDF
+présentent le déplacement dans une colonne dédiée. Dans la saisie de
+temps, la valeur peut être remplacée au cas par cas (0 compris). Les
+temps de trajet ou d’astreinte et les saisies au forfait n’obtiennent
+aucun déplacement.
+
+Ce qui compte comme week-end découle des « jours ouvrés par semaine »
+(6 = dimanche uniquement). En option, les **jours fériés** comptent aussi
+comme week-end, d’après le calendrier des jours fériés de
+l’organisation. C’est le jour calendaire du début qui fait foi : une
+saisie qui dépasse minuit est entièrement rattachée à son jour de début.
 
 En mode compte, chaque mois reçoit un bloc de facturation : total (heures
 × taux), réglé (paiements), mois précédent (report) et solde dû. Le solde

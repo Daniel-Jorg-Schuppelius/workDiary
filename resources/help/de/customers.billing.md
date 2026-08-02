@@ -1,7 +1,7 @@
 ---
 title: "Sonderkonditionen & Abrechnungskonto"
 topic: customers.billing
-version: 2
+version: 3
 audience: []
 related:
     - contacts.manage
@@ -14,6 +14,21 @@ Stundensätze je Tätigkeit und Tagtyp (Werktag/Wochenende, Definition über
 „Arbeitstage pro Woche") sowie der Abrechnungsweg — rechnungsloses
 **Kundenkonto** mit laufendem Saldo, **monatliche Rechnung** oder
 **Pauschale (Lexoffice)**.
+
+Zu den Konditionen gehört auch eine **Anfahrtspauschale**: Jeder
+abrechenbare Zeiteintrag bringt dann zusätzlich x Minuten mit, bewertet
+mit dem Satz des Eintrags — wahlweise nur für ausgewählte Tätigkeiten.
+Die erfasste Arbeitszeit bleibt unangetastet, Arbeitszeitkonto und
+Gleitzeit ändern sich also nicht; Nachweis und PDF weisen die Anfahrt in
+einer eigenen Spalte aus. Im Zeiteintrag lässt sich der Wert für den
+Einzelfall übersteuern (auch auf 0). Fahrt- und Bereitschaftszeiten sowie
+Festpreis-Einträge bekommen keine Anfahrt.
+
+Ob ein Tag als Wochenende zählt, bestimmt „Arbeitstage pro Woche" (6 =
+nur Sonntag). Optional zählen auch **Feiertage** wie Wochenende; Quelle
+ist der Feiertagskalender der Organisation. Maßgeblich ist der
+Kalendertag des Beginns — ein Eintrag über Mitternacht wird komplett dem
+Starttag zugerechnet.
 
 Im Konto-Modus entsteht je Monat ein Abrechnungsblock: Gesamt (Stunden ×
 Satz), Abgerechnet (Zahlungen), Vormonat (Übertrag) und Offen (Saldo).

@@ -136,6 +136,20 @@ class BillableTimeAggregatorTest extends TestCase {
         $this->assertEqualsCanonicalizing([7, 12], $blocks->map(fn(BillingBlock $b) => $b->billedMinutes)->all());
     }
 
+    public function test_travel_flat_counts_towards_the_billed_quantity(): void {
+        // Die Anfahrt steckt im rate-Snapshot; ohne sie in der Menge liefe
+        // Menge × Satz am Betrag vorbei (60 Min. × 90 € ≠ 120,00 €).
+        $project = $this->project(increment: 1, gap: 0);
+        $entry = $this->entry($project, '2030-04-01 10:00', '2030-04-01 11:00');
+        $entry->forceFill(['billing_travel_minutes' => 20, 'rate' => '120.00'])->saveQuietly();
+
+        $block = $this->aggregate($project)->firstOrFail();
+
+        $this->assertSame(60, $block->workedMinutes);
+        $this->assertSame(80, $block->billedMinutes);
+        $this->assertSame(120.00, $block->revenue);
+    }
+
     private function project(?int $increment, ?int $gap): Project {
         return Project::create([
             'organization_id' => $this->organization->id,

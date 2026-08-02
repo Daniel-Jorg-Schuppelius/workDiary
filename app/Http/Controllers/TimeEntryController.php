@@ -15,6 +15,7 @@ use App\Http\Controllers\Concerns\{BuildsTimeEntryOptions, ProvidesTimeEntryTagP
 use App\Http\Requests\SaveTimeEntryRequest;
 use App\Models\{Project, TimeEntry};
 use App\Models\User;
+use App\Services\Billing\AgreementRateResolver;
 use App\Services\Classification\ClassificationResolver;
 use App\Services\Flextime\CoreTimeValidator;
 use Illuminate\Http\RedirectResponse;
@@ -52,6 +53,7 @@ class TimeEntryController extends Controller {
             'entry' => null,
             'tasks' => $this->taskOptions($project),
             'diaryOptions' => $this->diaryOptions($project),
+            'travelFlatMinutes' => $this->travelFlatMinutes($project),
             'isDialog' => true,
         ] + $this->classificationOptions($project) + $this->tagPickerData());
     }
@@ -59,7 +61,7 @@ class TimeEntryController extends Controller {
     public function store(Project $project, SaveTimeEntryRequest $request): RedirectResponse {
         Gate::authorize('create', TimeEntry::class);
 
-        $data = $request->validated();
+        $data = $this->applyTravelOverride($request->validated());
         // Tags sind keine Spalten — vor dem Mass-Assignment herauslösen.
         [$tagIds, $newTags] = $this->pullTagInput($data);
 
@@ -91,6 +93,7 @@ class TimeEntryController extends Controller {
             'entry' => $timeEntry->load('tags:id,name,color'),
             'tasks' => $tasks,
             'diaryOptions' => $this->diaryOptions($project, $timeEntry->diary_entry_id),
+            'travelFlatMinutes' => $this->travelFlatMinutes($project),
             'isDialog' => true,
         ] + $this->classificationOptions($project) + $this->tagPickerData($timeEntry));
     }
@@ -110,10 +113,36 @@ class TimeEntryController extends Controller {
         ];
     }
 
+    /**
+     * Anfahrtspauschale der Kundenkondition (Feature 098) für den Dialog;
+     * 0 = der Kunde führt keine, das Feld bleibt ausgeblendet.
+     */
+    private function travelFlatMinutes(Project $project): int {
+        $agreement = app(AgreementRateResolver::class)->agreementFor($project->customer_id);
+
+        return $agreement === null ? 0 : $agreement->travel_minutes_per_entry;
+    }
+
+    /**
+     * Leeres Anfahrtsfeld = Automatik aus der Kondition, ein Wert = bewusste
+     * Übersteuerung, die reapplyRates() danach in Ruhe lässt.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function applyTravelOverride(array $data): array {
+        $manual = ($data['billing_travel_minutes'] ?? null) !== null;
+        if (! $manual) {
+            unset($data['billing_travel_minutes']);
+        }
+
+        return $data + ['billing_travel_manual' => $manual];
+    }
+
     public function update(Project $project, TimeEntry $timeEntry, SaveTimeEntryRequest $request): RedirectResponse {
         Gate::authorize('update', $timeEntry);
 
-        $data = $request->validated();
+        $data = $this->applyTravelOverride($request->validated());
         [$tagIds, $newTags] = $this->pullTagInput($data);
 
         $timeEntry->update($data);

@@ -170,5 +170,20 @@
             @endif
         </x-form-group>
 
+        @if (($travelFlatMinutes ?? 0) > 0)
+            <x-form-group :legend="__('customer-billing.travel_flat')" icon="directions_car" tone="info" cols="1">
+                <div class="fieldset">
+                    <label class="fieldset-label" for="billing_travel_minutes">{{ __('customer-billing.travel_minutes_entry') }}</label>
+                    <input type="number" id="billing_travel_minutes" name="billing_travel_minutes" min="0" max="480"
+                           placeholder="{{ $travelFlatMinutes }}"
+                           value="{{ old('billing_travel_minutes', $entry?->billing_travel_manual ? $entry->billing_travel_minutes : null) }}"
+                           class="input input-bordered w-full">
+                    <p class="text-xs text-base-content/60 mt-1">
+                        {{ __('customer-billing.travel_minutes_entry_hint', ['minutes' => $travelFlatMinutes]) }}
+                    </p>
+                </div>
+            </x-form-group>
+        @endif
+
         @include('time-entries._edit_extras', ['entry' => $entry])
 </x-modal>

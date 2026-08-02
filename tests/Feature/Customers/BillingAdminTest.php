@@ -92,6 +92,75 @@ class BillingAdminTest extends TestCase {
         $this->assertSame('22.00', $agreement->rates()->firstOrFail()->hourly_rate?->getAmount());
     }
 
+    public function test_rate_change_via_dialog_revalues_existing_entries(): void {
+        // Regression: der Dialog ersetzte die Satzzeilen früher komplett. Die
+        // FK time_entries.customer_billing_rate_id ist nullOnDelete — der
+        // Konditionsnachweis verschwand und reapplyRates erkannte den Eintrag
+        // nicht mehr, die Satzänderung blieb also wirkungslos.
+        $agreement = CustomerBillingAgreement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+        ]);
+        $rate = CustomerBillingRate::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_billing_agreement_id' => $agreement->id,
+            'day_type' => 'weekday',
+            'hourly_rate' => 16.50,
+        ]);
+        $project = \App\Models\Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+        ]);
+        $entry = \App\Models\TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->admin->id,
+            'project_id' => $project->id,
+            'kind' => \App\Enums\TimeEntry\TimeEntryKind::Work->value,
+            'billable' => true,
+            'started_at' => '2026-07-17 08:00:00',
+            'ended_at' => '2026-07-17 10:00:00',
+        ]);
+        $this->assertSame($rate->id, $entry->fresh()->customer_billing_rate_id);
+
+        $this->actingAs($this->admin)->post(route('customers.billing.agreement.save', $this->customer), [
+            'mode' => 'account',
+            'currency' => 'EUR',
+            'workdays_per_week' => 6,
+            'active' => '1',
+            'rate_activity_category_id' => [''],
+            'rate_day_type' => ['weekday'],
+            'rate_hourly_rate' => ['18.50'],
+        ])->assertRedirect();
+
+        $entry->refresh();
+        $this->assertSame('18.50', $entry->hourly_rate?->getAmount());
+        $this->assertSame('37.00', $entry->rate?->getAmount());
+        $this->assertSame($rate->id, $entry->customer_billing_rate_id);
+        $this->assertSame(1, $agreement->rates()->count());
+    }
+
+    public function test_travel_flat_is_saved_with_its_categories(): void {
+        $category = ActivityCategory::factory()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($this->admin)->post(route('customers.billing.agreement.save', $this->customer), [
+            'mode' => 'account',
+            'currency' => 'EUR',
+            'workdays_per_week' => 6,
+            'active' => '1',
+            'travel_minutes_per_entry' => '20',
+            'travel_categories' => [$category->sqid],
+            'holidays_as_weekend' => '1',
+            'rate_activity_category_id' => [''],
+            'rate_day_type' => ['weekday'],
+            'rate_hourly_rate' => ['16.50'],
+        ])->assertRedirect();
+
+        $agreement = $this->customer->billingAgreement()->firstOrFail();
+        $this->assertSame(20, $agreement->travel_minutes_per_entry);
+        $this->assertSame([$category->id], $agreement->travel_categories);
+        $this->assertTrue($agreement->holidays_as_weekend);
+    }
+
     public function test_payment_can_be_booked_and_voided(): void {
         CustomerBillingAgreement::factory()->create([
             'organization_id' => $this->organization->id,
