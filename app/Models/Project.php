@@ -23,6 +23,7 @@ use Illuminate\Support\{Carbon, Collection};
  * @property int $id
  * @property int|null $organization_id
  * @property int|null $customer_id
+ * @property int|null $foreign_customer_id
  * @property int|null $parent_id
  * @property string $name
  * @property string|null $slug
