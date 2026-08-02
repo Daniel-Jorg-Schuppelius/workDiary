@@ -127,4 +127,108 @@ class ChartComponentsTest extends TestCase {
 
         $this->assertStringContainsString('1:30', $html);
     }
+
+    // ---- <x-charts.bullet> ---------------------------------------------
+
+    public function test_bullet_renders_empty_state_without_data(): void {
+        $html = Blade::render('<x-charts.bullet :title="$t" unit="%" :series="[]" />', ['t' => 'Auslastung']);
+
+        $this->assertStringContainsString('Noch keine Daten', $html);
+        $this->assertStringNotContainsString('<svg viewBox', $html);
+    }
+
+    public function test_bullet_renders_target_marker_bands_and_attainment(): void {
+        $html = Blade::render('<x-charts.bullet :title="$t" unit="%" :series="$s" />', [
+            't' => 'Auslastung je Team',
+            's' => [
+                ['x' => 'Team Nord', 'y' => 72.5, 'target' => 80, 'bands' => [50, 70], 'url' => '/reports/utilization?team=abc'],
+                ['x' => 'Team Süd', 'y' => 40],
+            ],
+        ]);
+
+        $this->assertStringContainsString('aria-label="Team Nord: 72.5 %, Ziel: 80 %"', $html);
+        $this->assertStringContainsString('href="/reports/utilization?team=abc"', $html);
+        $this->assertStringContainsString('tabindex="0"', $html);
+        $this->assertStringContainsString('fill-secondary', $html);
+        $this->assertStringContainsString('fill-base-300', $html);
+        // Erreichung in der gleichwertigen Tabelle; ohne Ziel ehrlich „—".
+        $this->assertStringContainsString('91%', $html);
+        $this->assertStringContainsString('Team Süd', $html);
+        $this->assertDoesNotMatchRegularExpression('/(?:fill|stroke|background)[^"]*#[0-9a-f]{3,6}/i', $html);
+    }
+
+    // ---- <x-charts.waterfall> ------------------------------------------
+
+    public function test_waterfall_renders_empty_state_without_deltas(): void {
+        $html = Blade::render('<x-charts.waterfall :title="$t" unit="Kunden" :series="[]" :start-value="10" />', ['t' => 'Brücke']);
+
+        $this->assertStringContainsString('Noch keine Daten', $html);
+    }
+
+    public function test_waterfall_renders_totals_deltas_and_running_balance(): void {
+        $html = Blade::render('<x-charts.waterfall :title="$t" unit="Kunden" :series="$s" :start-value="10" start-label="Bestand 2025" end-label="Bestand 2026" />', [
+            't' => 'Kundenbestandsbrücke',
+            's' => [
+                ['x' => 'Neukunden', 'y' => 4, 'url' => '/reports/customer-retention?list=new'],
+                ['x' => 'Verloren', 'y' => -3],
+            ],
+        ]);
+
+        $this->assertStringContainsString('Bestand 2025', $html);
+        $this->assertStringContainsString('Bestand 2026', $html);
+        // Δ mit Vorzeichen + kumulierter Stand in aria-label und Tabelle.
+        $this->assertStringContainsString('aria-label="Neukunden: +4 Kunden, Stand: 14"', $html);
+        $this->assertStringContainsString('aria-label="Verloren: −3 Kunden, Stand: 11"', $html);
+        $this->assertStringContainsString('href="/reports/customer-retention?list=new"', $html);
+        // Abnahme schraffiert (Farbe nie alleiniger Träger) + Legende.
+        $this->assertStringContainsString('hatch-wf-', $html);
+        $this->assertStringContainsString('Zunahme', $html);
+        $this->assertStringContainsString('Abnahme', $html);
+        $this->assertDoesNotMatchRegularExpression('/(?:fill|stroke|background)[^"]*#[0-9a-f]{3,6}/i', $html);
+    }
+
+    // ---- <x-charts.boxplot> --------------------------------------------
+
+    public function test_boxplot_renders_empty_state_without_data(): void {
+        $html = Blade::render('<x-charts.boxplot :title="$t" unit="Tage" :series="[]" />', ['t' => 'Zahldauer']);
+
+        $this->assertStringContainsString('Noch keine Daten', $html);
+    }
+
+    public function test_boxplot_renders_five_number_summary_and_table(): void {
+        $html = Blade::render('<x-charts.boxplot :title="$t" unit="Tage" :series="$s" />', [
+            't' => 'Zahldauer je Kunde',
+            's' => [
+                ['x' => 'Kunde A', 'min' => 2, 'q1' => 5, 'median' => 9.5, 'q3' => 14, 'max' => 30, 'n' => 12, 'url' => '/reports/payment-behavior?customer=abc'],
+            ],
+        ]);
+
+        $this->assertStringContainsString('Median 9.5 Tage', $html);
+        $this->assertStringContainsString('Quartile 5–14', $html);
+        $this->assertStringContainsString('n=12', $html);
+        $this->assertStringContainsString('href="/reports/payment-behavior?customer=abc"', $html);
+        $this->assertStringContainsString('fill-primary/30', $html);
+        $this->assertDoesNotMatchRegularExpression('/(?:fill|stroke|background)[^"]*#[0-9a-f]{3,6}/i', $html);
+    }
+
+    // ---- <x-charts.sparkline> ------------------------------------------
+
+    public function test_sparkline_renders_dash_without_values(): void {
+        $html = Blade::render('<x-charts.sparkline :values="[]" />');
+
+        $this->assertStringContainsString('—', $html);
+        $this->assertStringNotContainsString('<svg', $html);
+    }
+
+    public function test_sparkline_renders_inline_trend_with_aria_summary(): void {
+        $html = Blade::render('<x-charts.sparkline :values="$v" unit="h" label="Monatsstunden" />', [
+            'v' => [10, 12.5, 8, 15],
+        ]);
+
+        // Kontrakt-Sonderfall: kein figure, aber Werte-Zugang über aria-label.
+        $this->assertStringNotContainsString('<figure', $html);
+        $this->assertStringContainsString('Monatsstunden: zuletzt 15 h (Min 8, Max 15)', $html);
+        $this->assertStringContainsString('stroke-primary', $html);
+        $this->assertDoesNotMatchRegularExpression('/(?:fill|stroke|background)[^"]*#[0-9a-f]{3,6}/i', $html);
+    }
 }

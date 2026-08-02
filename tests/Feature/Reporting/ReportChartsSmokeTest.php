@@ -71,6 +71,11 @@ class ReportChartsSmokeTest extends TestCase {
             // in der Enterprise-Factory-Org enthalten).
             'applications' => ['applications.report', []],
             'cohort-comparison' => ['reports.cohort-comparison', []],
+            // Entscheidungsanalysen (Phase 53, MVP-465–468).
+            'customer-value' => ['reports.customer-value', []],
+            'customer-retention' => ['reports.customer-retention', []],
+            'utilization' => ['reports.utilization', []],
+            'payment-behavior' => ['reports.payment-behavior', []],
         ];
     }
 

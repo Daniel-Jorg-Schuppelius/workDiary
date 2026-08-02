@@ -119,6 +119,8 @@
             "/reports/cohort-comparison",
             "/reports/coverage",
             "/reports/customer-project",
+            "/reports/customer-retention",
+            "/reports/customer-value",
             "/reports/customers",
             "/reports/economics",
             "/reports/entry-types",
@@ -131,6 +133,7 @@
             "/reports/my-year",
             "/reports/on-call",
             "/reports/operations",
+            "/reports/payment-behavior",
             "/reports/plan-ist/presence",
             "/reports/project-details",
             "/reports/project-inactive",
@@ -138,6 +141,7 @@
             "/reports/safety",
             "/reports/sickness",
             "/reports/sla",
+            "/reports/utilization",
             "/reports/week-by-user",
             "/reports/work-balance",
             "/rooms",
@@ -305,7 +309,8 @@
             "/reports/billing",
             "/reports/economics",
             "/reports/expenses",
-            "/reports/external-payouts"
+            "/reports/external-payouts",
+            "/reports/payment-behavior"
         ],
         "header": [
             "/account/bookmarks",

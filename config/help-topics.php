@@ -255,6 +255,11 @@ return [
         'reports.customers' => 'reports.customer-analysis',
         'reports.customer-project' => 'reports.customer-analysis',
         'reports.entry-types' => 'reports.entry-type-analysis',
+        // Entscheidungsanalysen (Phase 53, MVP-465–468).
+        'reports.customer-value' => 'reports.customer-value',
+        'reports.customer-retention' => 'reports.customer-retention',
+        'reports.utilization' => 'reports.utilization',
+        'reports.payment-behavior' => 'reports.payment-behavior',
         'reports.*' => 'reports.overview',
 
         // Onboarding

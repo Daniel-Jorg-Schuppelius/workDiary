@@ -4,7 +4,7 @@
     wie am Bildschirm) — nur das Markup ist print-spezifisch.
 
     Erwartet: $chart = [
-        'type'    => 'bar-h' | 'stacked-bar-h' | 'heatmap',
+        'type'    => 'bar-h' | 'stacked-bar-h' | 'heatmap' | 'bullet-h' | 'waterfall-h' | 'boxplot-table',
         'title'   => string, 'unit' => string,
         'note'    => ?string  (z. B. „vereinfachte Druckdarstellung"),
         …typspezifische Keys (series/bands bzw. rows/colLabels/max/format),
@@ -39,6 +39,29 @@
             'max' => $chart['max'] ?? null,
             'xLabel' => $chart['xLabel'] ?? null,
             'format' => $chart['format'] ?? null,
+        ])
+    @elseif ($chart['type'] === 'bullet-h')
+        @include('reports.pdf.charts._bullet-h', [
+            'series' => $chart['series'] ?? [],
+            'unit' => $chart['unit'] ?? '',
+            'xLabel' => $chart['xLabel'] ?? null,
+            'yLabel' => $chart['yLabel'] ?? null,
+            'targetLabel' => $chart['targetLabel'] ?? null,
+        ])
+    @elseif ($chart['type'] === 'waterfall-h')
+        @include('reports.pdf.charts._waterfall-h', [
+            'series' => $chart['series'] ?? [],
+            'startValue' => $chart['startValue'] ?? 0,
+            'startLabel' => $chart['startLabel'] ?? null,
+            'endLabel' => $chart['endLabel'] ?? null,
+            'unit' => $chart['unit'] ?? '',
+            'xLabel' => $chart['xLabel'] ?? null,
+        ])
+    @elseif ($chart['type'] === 'boxplot-table')
+        @include('reports.pdf.charts._boxplot-table', [
+            'series' => $chart['series'] ?? [],
+            'unit' => $chart['unit'] ?? '',
+            'xLabel' => $chart['xLabel'] ?? null,
         ])
     @endif
 @endif

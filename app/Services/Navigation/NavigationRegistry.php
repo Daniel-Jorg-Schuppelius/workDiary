@@ -742,6 +742,8 @@ class NavigationRegistry {
                     'items' => $this->compactItems([
                         ['route' => 'reports.week-by-user', 'label' => __('Woche pro Mitarbeiter'), 'icon' => 'date_range', 'modal' => false, 'matches' => ['reports.week-by-user']],
                         ['route' => 'reports.month-by-user-team', 'label' => __('Monat pro Mitarbeiter'), 'icon' => 'calendar_view_month', 'modal' => false, 'matches' => ['reports.month-by-user-team']],
+                        // Auslastung & Realisierung (MVP-467): Seite prüft viewAny(User)/Admin.
+                        ['route' => 'reports.utilization', 'label' => __('Auslastung'), 'icon' => 'speed', 'modal' => false, 'matches' => ['reports.utilization']],
                         ['route' => 'reports.coverage', 'label' => __('Coverage'), 'icon' => 'group_work', 'modal' => false, 'matches' => ['reports.coverage']],
                         ['route' => 'reports.absences', 'label' => __('Urlaub & Flex'), 'icon' => 'event_busy', 'modal' => false, 'matches' => ['reports.absences']],
                         ['route' => 'reports.sickness', 'label' => __('Krankheiten'), 'icon' => 'sick', 'modal' => false, 'matches' => ['reports.sickness']],
@@ -761,6 +763,13 @@ class NavigationRegistry {
                     'icon' => 'folder_special',
                     'items' => $this->compactItems([
                         ['route' => 'reports.customers', 'label' => __('Kundenanalyse'), 'icon' => 'bar_chart', 'modal' => false, 'matches' => ['reports.customers']],
+                        // Kundenwert/Kundenbindung (MVP-465/466): Erlösdaten → nur report.view/Admin.
+                        ($user?->isAdmin() || $user?->can(Permission::ReportView->value))
+                            ? ['route' => 'reports.customer-value', 'label' => __('Kundenwert'), 'icon' => 'diamond', 'modal' => false, 'matches' => ['reports.customer-value']]
+                            : null,
+                        ($user?->isAdmin() || $user?->can(Permission::ReportView->value))
+                            ? ['route' => 'reports.customer-retention', 'label' => __('Kundenbindung'), 'icon' => 'favorite', 'modal' => false, 'matches' => ['reports.customer-retention']]
+                            : null,
                         ['route' => 'reports.entry-types', 'label' => __('Auftragstypanalyse'), 'icon' => 'stacked_bar_chart', 'modal' => false, 'matches' => ['reports.entry-types']],
                         ['route' => 'reports.assets', 'label' => __('Produktanalyse'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['reports.assets']],
                         ['route' => 'reports.customer-project', 'label' => __('Kunden & Projekte'), 'icon' => 'pie_chart', 'modal' => false, 'matches' => ['reports.customer-project']],
@@ -797,6 +806,10 @@ class NavigationRegistry {
                             ? ['route' => 'reports.economics', 'label' => __('Wirtschaftlichkeit'), 'icon' => 'trending_up', 'modal' => false, 'matches' => ['reports.economics']]
                             : null,
                         ['route' => 'reports.billing', 'label' => __('Abrechnung'), 'icon' => 'request_quote', 'modal' => false, 'matches' => ['reports.billing']],
+                        // Zahlungsverhalten (MVP-468): lokale Rechnungsdaten → nur report.view/Admin.
+                        ($user?->isAdmin() || $user?->can(Permission::ReportView->value))
+                            ? ['route' => 'reports.payment-behavior', 'label' => __('Zahlungsverhalten'), 'icon' => 'schedule_send', 'modal' => false, 'matches' => ['reports.payment-behavior']]
+                            : null,
                         ['route' => 'reports.expenses', 'label' => __('Spesen'), 'icon' => 'receipt_long', 'modal' => false, 'matches' => ['reports.expenses']],
                         // Externe Auszahlungen: sensible Vergütungsdaten → nur für Payroll-Berechtigte.
                         $user?->can(Permission::UserPayrollManage->value)

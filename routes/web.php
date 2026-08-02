@@ -2626,6 +2626,15 @@ Route::middleware('auth')->group(function () {
         Route::get('reports/my-month', [MyMonthReportController::class, 'index'])->name('reports.my-month');
         Route::get('reports/external-payouts', [ExternalPayoutReportController::class, 'index'])->name('reports.external-payouts');
         Route::get('reports/customers', [CustomerAnalysisReportController::class, 'index'])->name('reports.customers');
+        // Entscheidungsanalysen (Phase 53, MVP-465/466/467/468).
+        Route::get('reports/customer-value', [\App\Http\Controllers\Reporting\CustomerValueReportController::class, 'index'])
+            ->name('reports.customer-value');
+        Route::get('reports/customer-retention', [\App\Http\Controllers\Reporting\CustomerRetentionReportController::class, 'index'])
+            ->name('reports.customer-retention');
+        Route::get('reports/utilization', [\App\Http\Controllers\Reporting\UtilizationReportController::class, 'index'])
+            ->name('reports.utilization');
+        Route::get('reports/payment-behavior', [\App\Http\Controllers\Reporting\PaymentBehaviorReportController::class, 'index'])
+            ->name('reports.payment-behavior');
         Route::get('reports/customers/drilldown/open-issues', [\App\Http\Controllers\Reporting\CustomerDrilldownReportController::class, 'openIssues'])
             ->name('reports.customers.drilldown.open-issues');
         Route::get('reports/customers/drilldown/protocols', [\App\Http\Controllers\Reporting\CustomerDrilldownReportController::class, 'protocols'])
