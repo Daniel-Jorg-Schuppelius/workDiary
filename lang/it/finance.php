@@ -314,7 +314,6 @@ return [
             'billable' => 'Fatturabile',
             'billable_yes' => 'Solo fatturabili',
             'billable_no' => 'Solo non fatturabili',
-            'period' => 'Periodo',
         ],
         'column' => [
             'date' => 'Data',

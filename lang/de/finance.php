@@ -333,7 +333,6 @@ return [
             'billable' => 'Abrechenbar',
             'billable_yes' => 'Nur abrechenbare',
             'billable_no' => 'Nur nicht abrechenbare',
-            'period' => 'Zeitraum',
         ],
         'column' => [
             'date' => 'Datum',

@@ -24,10 +24,10 @@ Funktionen:
    (Uhren- und Dezimalformat), erwarteter Netto-Erlös. Die Warn-Kacheln
    „Nachzügler" und „Älter als 45 Tage" zählen immer über den gesamten
    Bestand — unabhängig vom gewählten Zeitraum.
-2. **Zeitraum**: Ohne eigenen Zeitraum-Filter folgt die Liste der
-   globalen Zeitauswahl im Seitenkopf. Ein explizit gesetzter
-   Von-/Bis-Filter übersteuert sie.
-3. **Filter**: Kunde, Projekt, Mitarbeiter/in, Zeitraum sowie der
+2. **Zeitraum**: Die Liste folgt der globalen Zeitauswahl im
+   Seitenkopf. Von-/Bis-Parameter in der Adresszeile (Lesezeichen)
+   übersteuern sie.
+3. **Filter**: Kunde, Projekt, Mitarbeiter/in sowie der
    Abrechenbar-Schalter. Mit „Nur nicht abrechenbare" lassen sich
    bewusst oder versehentlich nicht abrechenbar markierte Zeiten
    prüfen.

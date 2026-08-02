@@ -214,7 +214,6 @@ return [
             'billable' => 'Facturable',
             'billable_yes' => 'Facturables uniquement',
             'billable_no' => 'Non facturables uniquement',
-            'period' => 'Période',
         ],
         'column' => [
             'date' => 'Date',

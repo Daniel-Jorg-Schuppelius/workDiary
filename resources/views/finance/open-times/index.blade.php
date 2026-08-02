@@ -96,11 +96,6 @@
                     <option value="all" @selected($filters['billable'] === 'all')>{{ __('finance.filter.all') }}</option>
                 </select>
             </x-filter-field>
-
-            <x-filter-field :label="__('finance.open_times.filter.period')" for="open-times-period" class="min-w-56">
-                <x-date-range from-name="from" to-name="to" from-id="open-times-period"
-                              :from="$filters['from']" :to="$filters['to']" />
-            </x-filter-field>
         </x-filter-bar>
 
         @if (count($groups) > 0)
