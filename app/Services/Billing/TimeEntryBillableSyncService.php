@@ -29,8 +29,8 @@ use Illuminate\Support\Facades\DB;
  * Writeback an Plugins bewusst unterdrückt (kein Outbox-Schwall).
  */
 class TimeEntryBillableSyncService {
-    /** @return int Anzahl angepasster Einträge */
-    public function syncCustomer(Customer $customer): int {
+    /** @return int Anzahl angepasster Einträge (bei $apply=false: Anzahl, die angepasst würde) */
+    public function syncCustomer(Customer $customer, bool $apply = true): int {
         $projects = $customer->projects()->with(['parent', 'customer'])->get();
         $affected = $projects->filter(fn(Project $p): bool => $this->inheritsFromCustomer($p))->all();
 
@@ -40,14 +40,14 @@ class TimeEntryBillableSyncService {
             $affected = [...$affected, ...$this->inheritingDescendants($project)];
         }
 
-        return $this->syncProjects(array_values($affected));
+        return $this->syncProjects(array_values($affected), $apply);
     }
 
-    /** @return int Anzahl angepasster Einträge */
-    public function syncProject(Project $project): int {
+    /** @return int Anzahl angepasster Einträge (bei $apply=false: Anzahl, die angepasst würde) */
+    public function syncProject(Project $project, bool $apply = true): int {
         $project->loadMissing(['parent', 'customer']);
 
-        return $this->syncProjects([$project, ...$this->inheritingDescendants($project)]);
+        return $this->syncProjects([$project, ...$this->inheritingDescendants($project)], $apply);
     }
 
     /** Erbt das Projekt sein billable bis hinauf vom Kunden (kein Override in der Kette)? */
@@ -83,7 +83,7 @@ class TimeEntryBillableSyncService {
     /**
      * @param  list<Project>  $projects
      */
-    private function syncProjects(array $projects): int {
+    private function syncProjects(array $projects, bool $apply = true): int {
         if ($projects === []) {
             return 0;
         }
@@ -94,13 +94,13 @@ class TimeEntryBillableSyncService {
         }
 
         $synced = 0;
-        TimeWritebackObserver::suppressed(function () use ($targetByProject, &$synced): void {
+        TimeWritebackObserver::suppressed(function () use ($targetByProject, $apply, &$synced): void {
             TimeEntry::query()
                 ->whereIn('project_id', array_keys($targetByProject))
                 ->where('exported', false)
                 ->with('timesheet')
                 ->orderBy('id')
-                ->chunkById(200, function ($entries) use ($targetByProject, &$synced): void {
+                ->chunkById(200, function ($entries) use ($targetByProject, $apply, &$synced): void {
                     foreach ($entries as $entry) {
                         $target = $targetByProject[(int) $entry->project_id] ?? null;
                         if ($target === null || (bool) $entry->billable === $target) {
@@ -110,8 +110,10 @@ class TimeEntryBillableSyncService {
                             continue;
                         }
 
-                        $entry->billable = $target;
-                        $entry->save();
+                        if ($apply) {
+                            $entry->billable = $target;
+                            $entry->save();
+                        }
                         $synced++;
                     }
                 });

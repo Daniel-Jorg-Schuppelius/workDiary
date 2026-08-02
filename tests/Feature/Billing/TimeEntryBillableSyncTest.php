@@ -165,6 +165,22 @@ class TimeEntryBillableSyncTest extends TestCase {
         $this->assertTrue((bool) $entry->refresh()->billable, 'rechnungsverknüpfte Einträge bleiben unberührt');
     }
 
+    public function test_repair_command_aligns_entries_of_non_billable_customers(): void {
+        $this->customer->update(['billable' => false]);
+        $stale = $this->openEntry();
+
+        // Dry-Run meldet, schreibt aber nicht.
+        $this->artisan('billing:sync-entry-billable')
+            ->expectsOutputToContain('1 Einträge würden angepasst')
+            ->assertSuccessful();
+        $this->assertTrue((bool) $stale->refresh()->billable);
+
+        $this->artisan('billing:sync-entry-billable', ['--apply' => true])
+            ->expectsOutputToContain('1 Einträge angepasst')
+            ->assertSuccessful();
+        $this->assertFalse((bool) $stale->refresh()->billable);
+    }
+
     public function test_project_update_via_http_reports_synced_entries(): void {
         $entry = $this->openEntry();
 
