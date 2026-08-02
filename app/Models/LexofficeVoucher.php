@@ -33,6 +33,7 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $paid_date
  * @property \CommonToolkit\ValueObjects\Money|null $total_amount
  * @property \CommonToolkit\ValueObjects\Money|null $open_amount
+ * @property \CommonToolkit\ValueObjects\Money|null $net_amount
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property bool $archived
  * @property ?array<string, mixed> $payload
@@ -56,6 +57,7 @@ class LexofficeVoucher extends Model {
         'paid_date',
         'total_amount',
         'open_amount',
+        'net_amount',
         'currency',
         'archived',
         'payload',
@@ -72,6 +74,9 @@ class LexofficeVoucher extends Model {
         'paid_date' => 'date',
         'total_amount' => MoneyCast::class . ':currency,2',
         'open_amount' => MoneyCast::class . ':currency,2',
+        // Nur der Nettobetrag der voucherlist-Belege ist NICHT enthalten — er
+        // wird per Detailabruf nachgeladen (siehe LexofficeVoucherNetAmount).
+        'net_amount' => MoneyCast::class . ':currency,2',
         'archived' => 'boolean',
         'payload' => 'array',
         'synced_at' => 'datetime',

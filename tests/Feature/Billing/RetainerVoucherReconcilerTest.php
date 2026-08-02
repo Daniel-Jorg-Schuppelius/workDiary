@@ -15,7 +15,7 @@ use App\Enums\Finance\BillingMode;
 use App\Models\Billing\{CustomerBillingAgreement, CustomerBillingRate};
 use App\Models\{Customer, ExternalReference, Invoice, LexofficeVoucher};
 use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
-use App\Services\Billing\RetainerVoucherReconciler;
+use App\Services\Billing\{CustomerAccountStatementService, RetainerVoucherReconciler};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -75,10 +75,11 @@ class RetainerVoucherReconcilerTest extends TestCase {
         ]);
     }
 
-    private function voucher(string $status, float $total, float $open, string $uuid = 'lex-voucher-uuid-1'): LexofficeVoucher {
+    /** @param array<string, mixed> $attributes */
+    private function voucher(string $status, float $total, float $open, string $uuid = 'lex-voucher-uuid-1', array $attributes = []): LexofficeVoucher {
         return LexofficeVoucher::query()->updateOrCreate(
             ['organization_id' => $this->organization->id, 'external_id' => $uuid],
-            [
+            array_merge([
                 'customer_id' => $this->customer->id,
                 'contact_external_id' => 'contact-1',
                 'voucher_type' => 'salesinvoice',
@@ -89,7 +90,7 @@ class RetainerVoucherReconcilerTest extends TestCase {
                 'open_amount' => $open,
                 'currency' => 'EUR',
                 'archived' => false,
-            ],
+            ], $attributes),
         );
     }
 
@@ -138,6 +139,80 @@ class RetainerVoucherReconcilerTest extends TestCase {
         $result = app(RetainerVoucherReconciler::class)->reconcile($this->organization);
 
         $this->assertSame(0, $result['booked']);
+        $this->assertSame(0, $this->agreement->payments()->count());
+    }
+
+    public function test_payment_is_booked_net_not_gross(): void {
+        // Lexoffice führt brutto (654,50 = 550 + 19 % USt), der Leistungssaldo
+        // rechnet netto — sonst wäre jede Pauschale 19 % zu hoch verbucht.
+        $this->voucher('paid', 654.50, 0.00, 'lex-voucher-uuid-1', ['net_amount' => 550.00]);
+
+        app(RetainerVoucherReconciler::class)->reconcile($this->organization);
+
+        $this->assertSame('550.00', $this->agreement->payments()->firstOrFail()->amount?->getAmount());
+    }
+
+    public function test_partial_payment_is_booked_proportional_to_net(): void {
+        // Halbe Bruttozahlung ⇒ halbes Netto (327,25 von 654,50 → 275,00).
+        $this->voucher('open', 654.50, 327.25, 'lex-voucher-uuid-1', ['net_amount' => 550.00]);
+
+        app(RetainerVoucherReconciler::class)->reconcile($this->organization);
+
+        $this->assertSame('275.00', $this->agreement->payments()->firstOrFail()->amount?->getAmount());
+    }
+
+    public function test_existing_lexoffice_invoice_is_auto_linked_to_its_month(): void {
+        // Pauschale wurde direkt in Lexoffice erstellt: keine ExternalReference,
+        // aber Betrag und Monat passen → Monat bekommt den Beleg + die Zahlung.
+        $statement = app(CustomerAccountStatementService::class)->ensure($this->agreement, 2026, 4);
+        $voucher = $this->voucher('paid', 654.50, 0.00, 'lex-external-only', [
+            'voucher_number' => 'RE-2026-0042',
+            'voucher_date' => '2026-04-30',
+            'net_amount' => 550.00,
+        ]);
+
+        $result = app(RetainerVoucherReconciler::class)->reconcile($this->organization);
+
+        $this->assertSame(1, $result['linked']);
+        $this->assertSame($voucher->id, $statement->fresh()->lexoffice_voucher_id);
+        $this->assertSame('550.00', $this->agreement->payments()->firstOrFail()->amount?->getAmount());
+    }
+
+    public function test_auto_link_skips_month_with_two_candidates(): void {
+        // Mehrdeutig ⇒ lieber gar nicht zuordnen als falsches Geld verbuchen.
+        app(CustomerAccountStatementService::class)->ensure($this->agreement, 2026, 4);
+        $this->voucher('paid', 654.50, 0.00, 'lex-a', ['voucher_date' => '2026-04-10', 'net_amount' => 550.00]);
+        $this->voucher('paid', 654.50, 0.00, 'lex-b', ['voucher_date' => '2026-04-20', 'net_amount' => 550.00]);
+
+        $result = app(RetainerVoucherReconciler::class)->reconcile($this->organization);
+
+        $this->assertSame(0, $result['linked']);
+        $this->assertSame(0, $this->agreement->payments()->count());
+    }
+
+    public function test_auto_link_skips_voucher_with_different_amount(): void {
+        app(CustomerAccountStatementService::class)->ensure($this->agreement, 2026, 4);
+        $this->voucher('paid', 238.00, 0.00, 'lex-other', ['voucher_date' => '2026-04-15', 'net_amount' => 200.00]);
+
+        $result = app(RetainerVoucherReconciler::class)->reconcile($this->organization);
+
+        $this->assertSame(0, $result['linked']);
+        $this->assertSame(0, $this->agreement->payments()->count());
+    }
+
+    public function test_unlink_reverts_the_booked_payment(): void {
+        $statement = app(CustomerAccountStatementService::class)->ensure($this->agreement, 2026, 4);
+        $this->voucher('paid', 654.50, 0.00, 'lex-external-only', [
+            'voucher_date' => '2026-04-30',
+            'net_amount' => 550.00,
+        ]);
+        $reconciler = app(RetainerVoucherReconciler::class);
+        $reconciler->reconcile($this->organization);
+        $this->assertSame(1, $this->agreement->payments()->count());
+
+        $reconciler->unlink($statement->fresh());
+
+        $this->assertNull($statement->fresh()->lexoffice_voucher_id);
         $this->assertSame(0, $this->agreement->payments()->count());
     }
 }

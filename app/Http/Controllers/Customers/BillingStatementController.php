@@ -51,7 +51,10 @@ class BillingStatementController extends Controller {
         Gate::authorize('update', $customer);
 
         $agreement = $customer->billingAgreement()->firstOrFail();
-        $service->recalculateOpen($agreement);
+        // reapplyRates statt recalculateOpen: der Knopf soll auch Zeiten
+        // nachbewerten, die vor Anlage der Kondition erfasst wurden — reines
+        // Nachrechnen der Statements ließe sie bei 0,00 € stehen.
+        $service->reapplyRates($agreement);
 
         return redirect()->route('customers.show', $customer)
             ->with('status', __('customer-billing.flash_recalculated'));

@@ -64,6 +64,11 @@ class RetainerLexofficeService {
             if ($locked->retainer_invoice_id !== null) {
                 return Invoice::query()->findOrFail($locked->retainer_invoice_id);
             }
+            if ($locked->lexoffice_voucher_id !== null) {
+                // Für den Monat liegt bereits eine in Lexoffice geführte
+                // Rechnung — ein Push legte dort einen zweiten Beleg an.
+                throw ValidationException::withMessages(['agreement' => __('customer-billing.retainer_voucher_already_linked')]);
+            }
 
             $serviceDate = $this->monthEnd($year, $month);
             $description = (string) __('customer-billing.retainer_line', ['period' => $locked->periodLabel()]);

@@ -1078,6 +1078,10 @@ Route::middleware('auth')->group(function () {
         // Retainer-Modus (Feature 098): Pauschale an Lexoffice senden + Spitzabrechnung.
         Route::post('customers/{customer}/billing/retainer/push', [\App\Http\Controllers\Customers\RetainerBillingController::class, 'pushMonth'])->name('customers.billing.retainer.push');
         Route::post('customers/{customer}/billing/retainer/trueup', [\App\Http\Controllers\Customers\RetainerBillingController::class, 'trueUp'])->name('customers.billing.retainer.trueup');
+        // Bereits in Lexoffice geführte Pauschalrechnung von Hand an einen Monat hängen.
+        Route::get('customers/{customer}/billing/statements/{statement}/voucher/edit', [\App\Http\Controllers\Customers\RetainerBillingController::class, 'editVoucher'])->name('customers.billing.retainer.voucher.edit');
+        Route::post('customers/{customer}/billing/statements/{statement}/voucher', [\App\Http\Controllers\Customers\RetainerBillingController::class, 'linkVoucher'])->name('customers.billing.retainer.voucher.link');
+        Route::delete('customers/{customer}/billing/statements/{statement}/voucher', [\App\Http\Controllers\Customers\RetainerBillingController::class, 'unlinkVoucher'])->name('customers.billing.retainer.voucher.unlink');
 
         // ── Fremdkunden (Endkunden einer Firma) ──────────────────────────────────
         Route::resource('foreign-customers', ForeignCustomerController::class)->parameters(['foreign-customers' => 'foreignCustomer']);

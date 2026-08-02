@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{Customer, LexofficeVoucher, Supplier, User};
 use App\Plugins\Lexoffice\Jobs\SyncVouchersJob;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeDunningService, LexofficeVoucherFileService, LexofficeVoucherSync};
+use App\Services\Billing\RetainerVoucherReconciler;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -197,6 +198,13 @@ class LexofficeVoucherController extends Controller {
 
         try {
             $result = (new LexofficeVoucherSync($config['api_key'], $config['base_url']))->syncFor($owner);
+
+            // Retainer-Zahlstatus (Feature 098) mitziehen — sonst holt der
+            // Knopf zwar die Belege, der Leistungssaldo bliebe aber bis zum
+            // stündlichen `lexoffice:sync-vouchers` unverändert.
+            if ($owner instanceof Customer && $user->organization !== null) {
+                app(RetainerVoucherReconciler::class)->reconcile($user->organization);
+            }
 
             return back()->with('success', __('Belege synchronisiert: :created neu, :updated aktualisiert.', [
                 'created' => $result['created'],

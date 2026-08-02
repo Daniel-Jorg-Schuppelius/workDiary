@@ -237,18 +237,29 @@ class TimeEntry extends Model {
                     $entry->hourly_rate = null;
                     $entry->customer_billing_rate_id = null;
                 }
-                $calc = app(RateCalculator::class);
-                $result = $calc->compute($entry);
-                $currency = CurrencyCode::Euro;
-                $entry->rate = Money::ofFloat($result['rate'], $currency);
-                $entry->internal_rate = Money::ofFloat($result['internal_rate'], $currency);
-                if ($entry->hourly_rate === null && $result['hourly_rate'] !== null) {
-                    // Snapshot resolved hourly rate so historical entries stay stable.
-                    $entry->hourly_rate = Money::ofFloat($result['hourly_rate'], $currency);
-                    $entry->customer_billing_rate_id = $result['agreement_rate_id'];
-                }
+                $entry->applyRateSnapshot();
             }
         });
+    }
+
+    /**
+     * Rechnet den Abrechnungs-Snapshot (rate/internal_rate/hourly_rate) aus der
+     * Satzhierarchie neu. Aus dem saving-Hook heraus aufgerufen — und aus
+     * {@see \App\Services\Billing\CustomerAccountStatementService::reapplyRates()},
+     * das Bestandseinträge nachbewertet, bei denen kein Feld „dirty" wird.
+     */
+    public function applyRateSnapshot(): void {
+        $result = app(RateCalculator::class)->compute($this);
+        $currency = CurrencyCode::Euro;
+
+        $this->rate = Money::ofFloat($result['rate'], $currency);
+        $this->internal_rate = Money::ofFloat($result['internal_rate'], $currency);
+
+        if ($this->hourly_rate === null && $result['hourly_rate'] !== null) {
+            // Snapshot resolved hourly rate so historical entries stay stable.
+            $this->hourly_rate = Money::ofFloat($result['hourly_rate'], $currency);
+            $this->customer_billing_rate_id = $result['agreement_rate_id'];
+        }
     }
 
     /** @return BelongsTo<Project, $this> */

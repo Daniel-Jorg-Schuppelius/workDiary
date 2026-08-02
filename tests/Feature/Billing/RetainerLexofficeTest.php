@@ -145,6 +145,31 @@ class RetainerLexofficeTest extends TestCase {
         $this->assertSame(1, Invoice::query()->where('type', Invoice::TYPE_RETAINER)->count());
     }
 
+    public function test_push_is_blocked_when_a_lexoffice_voucher_is_already_linked(): void {
+        $this->fakeInvoiceApi();
+        // Für den Monat liegt die Rechnung schon in Lexoffice — ein Push legte
+        // dort einen zweiten Beleg für dieselbe Pauschale an.
+        $voucher = \App\Models\LexofficeVoucher::create([
+            'organization_id' => $this->organization->id,
+            'external_id' => 'lex-existing-1',
+            'customer_id' => $this->customer->id,
+            'voucher_type' => 'salesinvoice',
+            'voucher_status' => 'paid',
+            'voucher_number' => 'RE-2026-0099',
+            'voucher_date' => '2026-03-31',
+            'total_amount' => 654.50,
+            'open_amount' => 0.00,
+            'currency' => 'EUR',
+            'archived' => false,
+        ]);
+        app(\App\Services\Billing\CustomerAccountStatementService::class)
+            ->ensure($this->agreement, 2026, 3)
+            ->update(['lexoffice_voucher_id' => $voucher->id]);
+
+        $this->expectException(ValidationException::class);
+        app(RetainerLexofficeService::class)->pushMonthlyRetainer($this->agreement, 2026, 3);
+    }
+
     public function test_runner_pushes_previous_month_once(): void {
         $this->fakeInvoiceApi();
         $previous = Carbon::now(Tz::current())->startOfMonth()->subMonthNoOverflow();

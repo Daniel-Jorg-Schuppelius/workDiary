@@ -40,6 +40,7 @@ use Illuminate\Support\Carbon;
  * @property array<string, mixed>|null $totals
  * @property Carbon|null $computed_at
  * @property int|null $retainer_invoice_id
+ * @property int|null $lexoffice_voucher_id
  */
 class CustomerBillingStatement extends Model {
     use Auditable;
@@ -66,6 +67,7 @@ class CustomerBillingStatement extends Model {
         'totals',
         'computed_at',
         'retainer_invoice_id',
+        'lexoffice_voucher_id',
     ];
 
     /** @var array<string, string> */
@@ -103,6 +105,22 @@ class CustomerBillingStatement extends Model {
      */
     public function retainerInvoice(): BelongsTo {
         return $this->belongsTo(\App\Models\Invoice::class, 'retainer_invoice_id');
+    }
+
+    /**
+     * Direkt in Lexoffice geführte Pauschalrechnung dieses Monats — der
+     * Gegenpart zu {@see retainerInvoice()} für Bestände, die workDiary nicht
+     * selbst gepusht hat. Beides gesetzt kann nicht vorkommen (Push prüft).
+     *
+     * @return BelongsTo<\App\Models\LexofficeVoucher, $this>
+     */
+    public function lexofficeVoucher(): BelongsTo {
+        return $this->belongsTo(\App\Models\LexofficeVoucher::class, 'lexoffice_voucher_id');
+    }
+
+    /** Ist für diesen Monat überhaupt eine Pauschalrechnung hinterlegt? */
+    public function hasRetainerCharge(): bool {
+        return $this->retainer_invoice_id !== null || $this->lexoffice_voucher_id !== null;
     }
 
     /** Erster Tag des Statement-Monats (lokale Anzeige-Zeitzone). */

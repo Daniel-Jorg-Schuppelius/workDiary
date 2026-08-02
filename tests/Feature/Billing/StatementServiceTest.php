@@ -183,6 +183,21 @@ class StatementServiceTest extends TestCase {
         $this->assertSame('150.00', $feb->gross_value?->getAmount()); // 2h×25 + 2h×50
     }
 
+    public function test_reapply_rates_values_entries_recorded_before_the_agreement_existed(): void {
+        // Bestandszeit ohne jeden Satz — so sieht ein Eintrag aus, der erfasst
+        // wurde, bevor es die Kondition gab: er stünde sonst dauerhaft mit
+        // 0,00 € im Saldo, weil ohne dirty-Feld kein Snapshot neu rechnet.
+        $entry = $this->makeEntry('2026-02-10');
+        $entry->forceFill(['hourly_rate' => null, 'customer_billing_rate_id' => null, 'rate' => 0])->saveQuietly();
+        $this->assertSame('0.00', $entry->fresh()->rate?->getAmount());
+
+        $this->service->reapplyRates($this->agreement);
+
+        $this->assertSame('20.00', $entry->fresh()->hourly_rate?->getAmount());
+        $this->assertSame('40.00', $entry->fresh()->rate?->getAmount());
+        $this->assertSame('40.00', $this->statement(2026, 2)->gross_value?->getAmount());
+    }
+
     public function test_stray_entries_in_locked_month_are_reported_without_changing_balance(): void {
         $this->makeEntry('2026-02-10');
         $this->service->recalculateOpen($this->agreement);

@@ -65,5 +65,9 @@ class SyncVouchersJob implements ShouldBeUnique, ShouldQueue {
                 $kind = $ref->referenceable_type === $customerMorph ? 'customer' : 'supplier';
                 SyncOwnerVouchersJob::dispatch($this->organizationId, $kind, (int) $ref->referenceable_id);
             });
+
+        // Zuletzt eingereiht ⇒ läuft hinter den Einzeljobs: der Retainer-
+        // Zahlstatus (Feature 098) ist damit direkt nach dem Sync aktuell.
+        ReconcileRetainersJob::dispatch($this->organizationId);
     }
 }

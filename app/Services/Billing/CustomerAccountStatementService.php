@@ -71,15 +71,19 @@ class CustomerAccountStatementService {
     }
 
     /**
-     * Satzänderung auf offene Monate anwenden: nur Einträge MIT Konditions-
-     * Marker werden neu aufgelöst — manuelle Overrides (FK=NULL) bleiben.
+     * Satzänderung auf offene Monate anwenden. Erfasst zwei Gruppen:
+     * Einträge MIT Konditions-Marker (Satz wurde geändert) und Einträge ganz
+     * OHNE Satz — Bestandszeiten, die vor Anlage der Kondition erfasst wurden
+     * und sonst dauerhaft mit 0,00 € im Saldo stünden. Manuelle Overrides
+     * (hourly_rate gesetzt, FK=NULL) bleiben unangetastet.
      *
      * @return array{stray_entries: list<array{id: int, date: string, minutes: int}>}
      */
     public function reapplyRates(CustomerBillingAgreement $agreement): array {
         $openStart = $this->firstOpenPeriodStart($agreement);
 
-        $query = $this->entriesQuery($agreement)->whereNotNull('customer_billing_rate_id');
+        $query = $this->entriesQuery($agreement)
+            ->where(fn ($q) => $q->whereNotNull('customer_billing_rate_id')->orWhereNull('hourly_rate'));
         if ($openStart !== null) {
             $query->whereDate('date', '>=', $openStart->toDateString());
         }
@@ -87,6 +91,10 @@ class CustomerAccountStatementService {
         foreach ($query->get() as $entry) {
             $entry->hourly_rate = null;
             $entry->customer_billing_rate_id = null;
+            // Direkt rechnen statt auf den saving-Hook zu bauen: bei einem
+            // Eintrag, dessen hourly_rate schon NULL war, wird kein Feld dirty
+            // — der Hook liefe nicht und der Satz bliebe bei 0,00 €.
+            $entry->applyRateSnapshot();
             $entry->save();
         }
 

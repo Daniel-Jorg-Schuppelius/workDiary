@@ -11,7 +11,7 @@
 namespace App\Plugins\Lexoffice\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeVoucherSync};
+use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeInvoiceService, LexofficeVoucherSync};
 use App\Services\Billing\RetainerVoucherReconciler;
 use Illuminate\Console\Command;
 
@@ -43,8 +43,15 @@ class LexofficeSyncVouchersCommand extends Command {
                 $this->line("  Kontakte: {$result['contacts']}, created: {$result['created']}, updated: {$result['updated']}, archived: {$result['archived']}");
 
                 // Feature 098: Retainer-Zahlstatus in den Leistungssaldo spiegeln.
-                $retainer = app(RetainerVoucherReconciler::class)->reconcile($org);
-                $this->line("  Retainer-Zahlungen: gebucht {$retainer['booked']}, storniert {$retainer['revoked']}");
+                // Org-Kontext binden und das Service-Singleton verwerfen — der
+                // Netto-Nachschlag am Beleg löst seinen API-Key sonst über die
+                // zuletzt gebundene Organisation auf.
+                $retainer = $this->withOrganizationContext($org, function () use ($org): array {
+                    app()->forgetInstance(LexofficeInvoiceService::class);
+
+                    return app(RetainerVoucherReconciler::class)->reconcile($org);
+                });
+                $this->line("  Retainer: gebucht {$retainer['booked']}, storniert {$retainer['revoked']}, neu verknüpft {$retainer['linked']}");
             } catch (\Throwable $e) {
                 $this->error("  Fehler: {$e->getMessage()}");
             }

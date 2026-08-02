@@ -165,7 +165,7 @@ class CustomerController extends Controller {
                     ->recalculateOpen($billingAgreement);
                 $billingStrayEntries = $warnings['stray_entries'];
                 $billingStatements = $billingAgreement->statements()
-                    ->with('retainerInvoice')
+                    ->with(['retainerInvoice', 'lexofficeVoucher'])
                     ->orderByDesc('year')->orderByDesc('month')
                     ->limit(13)
                     ->get();
