@@ -69,6 +69,7 @@ return [
         'lexoffice_draft_created' => 'Rechnungsentwurf in Lexoffice angelegt:',
         'sevdesk_draft_created' => 'Rechnungsentwurf in sevDesk angelegt:',
         'easybill_draft_created' => 'Rechnungsentwurf in easybill angelegt:',
+        'positions_increment' => 'Positionen entstehen mit Taktung und Zusammenfassung des Projekts — sie können daher von der ungetakteten Quellsumme abweichen. Diese Werte gehen an das Ziel bzw. in das Übergabepaket.',
     ],
 
     'confirm_execute' => 'Übergabe jetzt an das Ziel übertragen? Bei Erfolg werden die Quellen als übergeben markiert.',

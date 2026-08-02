@@ -14,6 +14,7 @@ namespace App\Plugins\Support;
 
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, IntegrationInboxItem, Organization, Project, TimeEntry, User};
+use App\Services\Integration\ProjectKeywordMatcher;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -268,31 +269,45 @@ abstract class MatchingTimeImportService {
         }
 
         $projectName = $entry->projectName !== null ? trim($entry->projectName) : '';
-        if ($projectName === '') {
-            return null;
-        }
-
-        $byName = $this->resolveByReference($organization, self::EXT_TYPE_PROJECT, $this->projectKey($entry->clientName, $projectName));
-        if ($byName instanceof Project) {
-            return $byName;
+        if ($projectName !== '') {
+            $byName = $this->resolveByReference($organization, self::EXT_TYPE_PROJECT, $this->projectKey($entry->clientName, $projectName));
+            if ($byName instanceof Project) {
+                return $byName;
+            }
         }
 
         $client = $this->matchClientForEntry($organization, $entry);
 
-        $query = Project::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->whereRaw('LOWER(name) = ?', [mb_strtolower($projectName)]);
+        if ($projectName !== '') {
+            $query = Project::query()
+                ->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->whereRaw('LOWER(name) = ?', [mb_strtolower($projectName)]);
 
-        // Fremdkunde (Endkunde): gleichnamige Projekte verschiedener Endkunden
-        // derselben Firma bleiben getrennt — daher zusätzlich auf ihn scopen.
-        if ($client instanceof ForeignCustomer) {
-            $query->where('customer_id', $client->customer_id)->where('foreign_customer_id', $client->id);
-        } elseif ($client instanceof Customer) {
-            $query->where('customer_id', $client->id);
+            // Fremdkunde (Endkunde): gleichnamige Projekte verschiedener Endkunden
+            // derselben Firma bleiben getrennt — daher zusätzlich auf ihn scopen.
+            if ($client instanceof ForeignCustomer) {
+                $query->where('customer_id', $client->customer_id)->where('foreign_customer_id', $client->id);
+            } elseif ($client instanceof Customer) {
+                $query->where('customer_id', $client->id);
+            }
+
+            $exact = $query->first();
+            if ($exact instanceof Project) {
+                return $exact;
+            }
         }
 
-        return $query->first();
+        // Letzte Stufe (MVP-483): Schlüsselwörter im Text. Greift nur bei
+        // erkanntem Kunden und eindeutigem Treffer — sonst bleibt es bei der
+        // Zuordnungs-Inbox.
+        return app(ProjectKeywordMatcher::class)->match(
+            $organization,
+            $client,
+            (string) $entry->description,
+            (string) $entry->activity,
+            $projectName,
+        )?->project;
     }
 
     /**

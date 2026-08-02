@@ -191,7 +191,18 @@
                                :title="__('finance.empty_positions_title')"
                                :message="__('finance.empty_positions')" />
             @endforelse
+            @if (!empty($positions))
+                <tr class="font-semibold">
+                    <td>{{ __('finance.csv.total') }}</td>
+                    <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $positionTotals['quantity'], 2, withThousandsSeparator: true) }}</td>
+                    <td colspan="2"></td>
+                    <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $positionTotals['amount'], 2, withThousandsSeparator: true) }}</td>
+                </tr>
+            @endif
         </x-table>
+        @if ($transfer->channel === \App\Enums\Finance\TransferChannel::Time)
+            <p class="mt-2 text-xs text-base-content/60">{{ __('finance.hint.positions_increment') }}</p>
+        @endif
     </x-card>
 
     {{-- Einzelquellen (Snapshot des Nachweises). Im Material-Kanal werden die im

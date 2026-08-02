@@ -97,6 +97,9 @@ return [
     // Abrechnungs-Taktung: Org-Default, Kunde/Projekt können übersteuern (harter Default 1/0 im Trait)
     'invoicing.billing_increment_minutes' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:1|max:1440', 'fallback' => 1],
     'invoicing.billing_grouping_gap_minutes' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:1440', 'fallback' => 0],
+    // Standard-Erlös je Stunde (MVP-482): greift erst, wenn weder Eintrag,
+    // Kondition, Mitarbeiter, Tätigkeit, Projekt noch Kunde einen Satz setzen.
+    'invoicing.default_hourly_rate' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:10000'],
     'ui.dashboard.recent_limit' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'min:1|max:1000'],
     'ui.calendar.slot_minutes' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'options' => [10, 15, 20, 30, 60]],
     // Neuigkeiten-Rail: externe Kommunikation bleibt installationsweit Opt-in.
@@ -114,6 +117,8 @@ return [
     'weather.dwd_max_station_km' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:1|max:200', 'fallback' => 30],
     // edit_window_days: kein config-Default; null = kein Bearbeitungsfenster erzwungen
     'timesheet.edit_window_days' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'nullable|min:0|max:365'],
+    // Schlüsselwort-Zuordnung importierter Zeiten (MVP-483)
+    'project.keyword_matching.enabled' => ['type' => 'boolean', 'scopes' => ['system', 'organization'], 'fallback' => true],
 
     // =====================================================================
     // Org-Formular-Keys (067-P3b): jede hier org-scoped registrierte

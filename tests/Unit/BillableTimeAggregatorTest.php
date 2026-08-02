@@ -148,6 +148,12 @@ class BillableTimeAggregatorTest extends TestCase {
         $this->assertSame(60, $block->workedMinutes);
         $this->assertSame(80, $block->billedMinutes);
         $this->assertSame(120.00, $block->revenue);
+
+        // Der Satz rechnet die Anfahrt mit heraus: 1,333 h × 90 € ≈ der
+        // abgerechnete Betrag (Cent-Rest aus der Mengen-Quantisierung, s.
+        // billedHours()). Ohne sie im Nenner käme sie doppelt an: 160 €.
+        $this->assertSame(90.00, $block->hourlyRate());
+        $this->assertEqualsWithDelta(120.00, round($block->billedHours() * (float) $block->hourlyRate(), 2), 0.05);
     }
 
     private function project(?int $increment, ?int $gap): Project {

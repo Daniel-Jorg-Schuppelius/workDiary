@@ -1951,6 +1951,9 @@ Route::middleware('auth')->group(function () {
         Route::resource('projects.time-entries', TimeEntryController::class)->except(['index', 'show']);
         Route::resource('projects.billing-rules', ProjectBillingRuleController::class)->except(['index', 'show', 'edit']);
         Route::patch('projects/{project}/billing-settings', [ProjectBillingRuleController::class, 'updateSettings'])->name('projects.billing-settings.update');
+        // Projektstufe der Satzhierarchie (MVP-482) — eigene Route, damit das
+        // Taktungsformular die Sätze nicht mit leeren Werten überschreibt.
+        Route::patch('projects/{project}/rates', [ProjectBillingRuleController::class, 'updateRates'])->name('projects.rates.update');
 
         Route::resource('projects.recurrence-rules', ProjectRecurrenceRuleController::class)
             ->except(['index', 'show']);

@@ -186,5 +186,15 @@ class ProjectMergeService extends AbstractEntityMergeService {
         if ($source->is_default && ! $target->is_default && $target->customer_id !== null) {
             $target->is_default = true;
         }
+
+        // Schlüsselwörter (MVP-483) werden vereinigt statt ersetzt: beide Listen
+        // beschreiben Texte, die künftig auf dem Ziel landen sollen.
+        $merged = array_values(array_unique(array_merge(
+            is_array($target->keywords) ? $target->keywords : [],
+            is_array($source->keywords) ? $source->keywords : [],
+        )));
+        if ($merged !== []) {
+            $target->keywords = array_slice($merged, 0, 20);
+        }
     }
 }

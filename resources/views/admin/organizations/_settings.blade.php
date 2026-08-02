@@ -68,6 +68,16 @@
                        class="input input-bordered w-full">
             </div>
 
+            {{-- Standard-Erlös: letzte Stufe der Satzhierarchie (MVP-482). --}}
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.invoicing.default_hourly_rate') }}</label>
+                <input type="number" min="0" max="10000" step="0.01" name="settings[invoicing][default_hourly_rate]"
+                       value="{{ old('settings.invoicing.default_hourly_rate', data_get($stored, 'invoicing.default_hourly_rate', '')) }}"
+                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) (config('invoicing.default_hourly_rate') ?? '—')]) }}"
+                       class="input input-bordered w-full" inputmode="decimal">
+                <p class="text-xs text-base-content/60 mt-1">{{ __('settings.invoicing.default_hourly_rate_hint') }}</p>
+            </div>
+
             {{-- Standardtaktung: greift, wenn weder Projekt noch Kunde eine Taktung setzen. --}}
             <div class="fieldset">
                 <label class="fieldset-label">{{ __('settings.invoicing.billing_increment_minutes') }}</label>
@@ -199,6 +209,20 @@
                     <span class="label-text">{{ __('settings.einvoice.small_business') }}</span>
                 </label>
                 <p class="text-xs text-base-content/60 mt-1">{{ __('settings.einvoice.small_business_hint') }}</p>
+            </div>
+        </x-form-group>
+
+        {{-- ZEIT-IMPORT (MVP-483): Schlüsselwort-Zuordnung importierter Zeiten. --}}
+        <x-form-group :legend="__('settings.time_import.heading')" icon="conversion_path" tone="info" cols="1" compact
+                      :description="__('settings.time_import.description')">
+            <div class="fieldset">
+                <label class="label cursor-pointer justify-start gap-3">
+                    <input type="hidden" name="settings[project][keyword_matching][enabled]" value="0">
+                    <input type="checkbox" name="settings[project][keyword_matching][enabled]" value="1" class="toggle toggle-info"
+                           @checked((string) old('settings.project.keyword_matching.enabled', data_get($stored, 'project.keyword_matching.enabled', config('project.keyword_matching.enabled') ? '1' : '0')) === '1')>
+                    <span class="label-text">{{ __('settings.time_import.keyword_matching') }}</span>
+                </label>
+                <p class="fieldset-label text-base-content/60">{{ __('settings.time_import.keyword_matching_hint') }}</p>
             </div>
         </x-form-group>
     </div>

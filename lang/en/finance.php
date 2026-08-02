@@ -69,6 +69,7 @@ return [
         'lexoffice_draft_created' => 'Invoice draft created in Lexoffice:',
         'sevdesk_draft_created' => 'Invoice draft created in sevDesk:',
         'easybill_draft_created' => 'Invoice draft created in easybill:',
+        'positions_increment' => 'Positions are built with the project’s billing increment and grouping — they may therefore differ from the unrounded source total. These values are sent to the target or written to the handover package.',
     ],
 
     'confirm_execute' => 'Transfer to the target now? On success the sources will be marked as handed over.',

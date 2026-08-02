@@ -65,6 +65,12 @@
             <x-input-field name="name" :label="__('Name')" required maxlength="120" :value="old('name', $project?->name)" />
 
             <x-textarea-field name="description" :label="__('Beschreibung')" rows="3" maxlength="2000" :value="old('description', $project?->description)" />
+
+            {{-- Zusätzliche Begriffe für die Zuordnung importierter Zeiten (MVP-483);
+                 der Projektname selbst wirkt immer, ohne Pflege. --}}
+            <x-input-field name="keywords" :label="__('Schlüsselwörter (Zeitzuordnung)')" maxlength="500"
+                           :value="old('keywords', is_array($project?->keywords) ? implode(', ', $project->keywords) : '')"
+                           :hint="__('Kommagetrennt. Enthält der Text einer importierten Zeit (Fernwartung, Toggl, …) einen dieser Begriffe oder den Projektnamen, wird sie diesem Projekt zugeordnet — nur bei eindeutigem Treffer.')" />
         </x-form-group>
 
         <x-form-group :legend="__('Zuordnung')" icon="link" tone="info">

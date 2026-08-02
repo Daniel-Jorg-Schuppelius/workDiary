@@ -69,6 +69,7 @@ return [
         'lexoffice_draft_created' => 'Bozza di fattura creata in Lexoffice:',
         'sevdesk_draft_created' => 'Bozza di fattura creata in sevDesk:',
         'easybill_draft_created' => 'Bozza di fattura creata in easybill:',
+        'positions_increment' => 'Le posizioni nascono con l’intervallo di fatturazione e il raggruppamento del progetto — possono quindi differire dal totale grezzo delle fonti. Sono questi i valori inviati alla destinazione o scritti nel pacchetto di trasferimento.',
     ],
 
     'confirm_execute' => 'Trasferire ora alla destinazione? In caso di successo le fonti verranno contrassegnate come consegnate.',

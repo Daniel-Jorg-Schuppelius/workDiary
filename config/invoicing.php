@@ -20,4 +20,13 @@ return [
 
     /** Default unit for time-based invoice positions. */
     'time_unit' => (string) env('INVOICING_TIME_UNIT', 'h'),
+
+    /*
+     * Organisationsweiter Standard-Stundensatz (Erlös), letzte Stufe der
+     * Satzhierarchie im RateCalculator. null = kein Fallback (Zeiten ohne
+     * gepflegten Satz bleiben bei 0,00 €).
+     */
+    'default_hourly_rate' => env('INVOICING_DEFAULT_HOURLY_RATE') !== null
+        ? (float) env('INVOICING_DEFAULT_HOURLY_RATE')
+        : null,
 ];

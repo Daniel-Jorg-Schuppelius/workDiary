@@ -69,6 +69,7 @@ return [
         'lexoffice_draft_created' => 'Borrador de factura creado en Lexoffice:',
         'sevdesk_draft_created' => 'Borrador de factura creado en sevDesk:',
         'easybill_draft_created' => 'Borrador de factura creado en easybill:',
+        'positions_increment' => 'Las posiciones se generan con el intervalo de facturación y la agrupación del proyecto, por lo que pueden diferir del total bruto de las fuentes. Estos son los valores que se envían al destino o al paquete de entrega.',
     ],
 
     'confirm_execute' => '¿Traspasar ahora al destino? Si tiene éxito, las fuentes se marcarán como entregadas.',

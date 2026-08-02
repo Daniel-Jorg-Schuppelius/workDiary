@@ -23,9 +23,10 @@ final class BillingBlock {
     /**
      * @param  list<int>  $entryIds   alle im Block enthaltenen TimeEntry-IDs
      * @param  int  $workedMinutes    tatsächlich erfasste Arbeitsminuten (ohne Lücken)
-     * @param  int  $rawMinutes       Arbeitsminuten + überbrückte Lücken (vor Taktung)
+     * @param  int  $rawMinutes       Arbeitsminuten + überbrückte Lücken + Anfahrt (vor Taktung)
      * @param  int  $billedMinutes    auf die Taktung aufgerundete Minuten
-     * @param  float  $revenue        Σ der Eintrags-rate (Snapshot-Umsatz der Arbeitszeit)
+     * @param  float  $revenue        Σ der Eintrags-rate (Snapshot-Umsatz inkl. pauschaler Anfahrt)
+     * @param  int  $travelMinutes    pauschale Anfahrt der Kundenkondition (steckt bereits im Umsatz)
      */
     public function __construct(
         public readonly ?Project $project,
@@ -39,6 +40,7 @@ final class BillingBlock {
         public readonly ?Carbon $firstStart,
         public readonly ?Carbon $lastEnd,
         public readonly ?string $description,
+        public readonly int $travelMinutes = 0,
     ) {}
 
     public function billedHours(): float {
@@ -48,17 +50,24 @@ final class BillingBlock {
     }
 
     /**
-     * Effektiver Stundensatz aus der tatsächlich gearbeiteten Zeit (gewichteter
-     * Mittelwert). Überbrückte Lücken verwässern den Satz NICHT. Wird mit
-     * {@see billedHours()} multipliziert, sodass die Taktung den Rechnungsbetrag
-     * erhöht. Liefert null, wenn kein Umsatz/keine Arbeitszeit vorliegt.
+     * Effektiver Stundensatz (gewichteter Mittelwert). Überbrückte Lücken und
+     * die Taktungs-Aufrundung verwässern den Satz NICHT — sie erhöhen über
+     * {@see billedHours()} bewusst den Rechnungsbetrag.
+     *
+     * Die pauschale Anfahrt (Feature 098) zählt dagegen mit: ihr Geld steckt
+     * bereits im `rate`-Snapshot UND ihre Minuten in der Menge. Ohne sie im
+     * Nenner käme sie doppelt an (60 Min + 20 Min Anfahrt @ 90 €/h ⇒ 1,33 h ×
+     * 120 € = 160 € statt der abgerechneten 120 €).
+     *
+     * Liefert null, wenn kein Umsatz/keine Zeit vorliegt.
      */
     public function hourlyRate(): ?float {
-        if ($this->workedMinutes <= 0 || $this->revenue <= 0.0) {
+        $divisorMinutes = $this->workedMinutes + $this->travelMinutes;
+        if ($divisorMinutes <= 0 || $this->revenue <= 0.0) {
             return null;
         }
 
-        return round($this->revenue / ($this->workedMinutes / 60.0), 2);
+        return round($this->revenue / ($divisorMinutes / 60.0), 2);
     }
 
     /**

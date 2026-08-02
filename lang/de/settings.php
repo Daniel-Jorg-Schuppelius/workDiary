@@ -69,6 +69,14 @@ return [
         'billing_increment_minutes_hint' => 'Aufrundung abrechenbarer Zeit. Greift, wenn weder Projekt noch Kunde eine Taktung setzen. Leer = minutengenau.',
         'billing_grouping_gap_minutes' => 'Standard-Lücke zum Zusammenfassen (Minuten)',
         'billing_grouping_gap_minutes_hint' => 'Bis zu dieser Lücke werden Einträge beim Abrechnen zu einem Block zusammengefasst. Leer = keine Zusammenfassung.',
+        'default_hourly_rate' => 'Standard-Stundensatz (Erlös)',
+        'default_hourly_rate_hint' => 'Greift, wenn weder Eintrag, Kundenkondition, Mitarbeiter, Tätigkeit, Projekt noch Kunde einen Satz setzen. Leer = ohne Satz bleiben Zeiten bei 0,00 €.',
+    ],
+    'time_import' => [
+        'heading' => 'Zeit-Import',
+        'description' => 'Wie importierte Zeiten (Fernwartung, Toggl, Kimai, …) einem Projekt zugeordnet werden.',
+        'keyword_matching' => 'Zeiten anhand von Schlüsselwörtern dem Projekt zuordnen',
+        'keyword_matching_hint' => 'Enthält der Text einer importierten Zeit den Namen oder ein Schlüsselwort eines Projekts desselben Kunden, wird sie dort gebucht statt im Standardprojekt bzw. in der Zuordnungs-Inbox. Nur eindeutige Treffer buchen.',
     ],
     'einvoice' => [
         'heading' => 'E-Rechnung (XRechnung)',

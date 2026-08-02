@@ -305,6 +305,10 @@ class AppServiceProvider extends ServiceProvider {
         // saved/deleted-Hooks von CustomerBillingAgreement/CustomerBillingRate.
         $this->app->scoped(\App\Services\Billing\AgreementRateResolver::class);
 
+        // Org-Standardsatz (MVP-482): gleicher Lebenszyklus — der Satz je
+        // Organisation wird pro Request/Job einmal gelesen.
+        $this->app->scoped(\App\Services\Billing\OrganizationDefaultRateResolver::class);
+
         $this->app->scoped(OsrmRouter::class, function (): OsrmRouter {
             return new OsrmRouter([
                 'base_url' => Setting::get('routing.osrm.base_url'),

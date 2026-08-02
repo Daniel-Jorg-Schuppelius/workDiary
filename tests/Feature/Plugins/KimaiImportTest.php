@@ -181,6 +181,59 @@ class KimaiImportTest extends TestCase {
         ]);
     }
 
+    /**
+     * Schlüsselwort-Zuordnung (MVP-483): unbekannter Fremd-Projektname, aber
+     * der Text nennt ein Projekt des erkannten Kunden.
+     */
+    public function test_keyword_in_description_books_into_matching_project(): void {
+        $config = $this->enableKimai();
+        $project = $this->customerWithProject('Acme', 'DATEV');
+
+        $csv = <<<'CSV'
+        Datum,Von,Dauer,Kunde,Projekt,Tätigkeit,Beschreibung,Abrechenbar
+        2026-05-26,09:00,1:00,Acme,Allerlei,Support,Installation DATEV-Updates,ja
+        CSV;
+
+        $result = $this->service()->importFromCsv($this->organization, $csv, $config);
+
+        $this->assertSame(1, $result['created']);
+        $this->assertSame(0, $result['unmatched']);
+        $this->assertSame($project->id, TimeEntry::query()->firstOrFail()->project_id);
+    }
+
+    public function test_keyword_matching_disabled_keeps_entry_in_inbox(): void {
+        $config = $this->enableKimai();
+        $this->customerWithProject('Acme', 'DATEV');
+        $this->organization->update(['settings' => ['project' => ['keyword_matching' => ['enabled' => false]]]]);
+
+        $csv = <<<'CSV'
+        Datum,Von,Dauer,Kunde,Projekt,Tätigkeit,Beschreibung,Abrechenbar
+        2026-05-26,09:00,1:00,Acme,Allerlei,Support,Installation DATEV-Updates,ja
+        CSV;
+
+        $result = $this->service()->importFromCsv($this->organization, $csv, $config);
+
+        $this->assertSame(0, $result['created']);
+        $this->assertSame(1, $result['unmatched']);
+        $this->assertSame(0, TimeEntry::query()->count());
+    }
+
+    public function test_keyword_without_known_customer_stays_in_inbox(): void {
+        $config = $this->enableKimai();
+        $this->customerWithProject('Acme', 'DATEV');
+
+        // Fremder Kunde: ohne Kundenbezug wird nie kundenübergreifend geraten.
+        $csv = <<<'CSV'
+        Datum,Von,Dauer,Kunde,Projekt,Tätigkeit,Beschreibung,Abrechenbar
+        2026-05-26,09:00,1:00,Beta GmbH,Allerlei,Support,Installation DATEV-Updates,ja
+        CSV;
+
+        $result = $this->service()->importFromCsv($this->organization, $csv, $config);
+
+        $this->assertSame(0, $result['created']);
+        $this->assertSame(1, $result['unmatched']);
+    }
+
     public function test_different_activities_form_separate_inbox_groups(): void {
         $config = $this->enableKimai();
 

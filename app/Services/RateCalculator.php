@@ -12,12 +12,12 @@ namespace App\Services;
 
 use App\Models\Billing\CustomerBillingRate;
 use App\Models\TimeEntry;
-use App\Services\Billing\AgreementRateResolver;
+use App\Services\Billing\{AgreementRateResolver, OrganizationDefaultRateResolver};
 
 /**
  * Calculates billable revenue and internal cost for a TimeEntry following the
  * Kimai rate hierarchy: TimeEntry override -> Kundenkondition (Feature 098)
- * -> User -> Activity (Task) -> Project -> Customer.
+ * -> User -> Activity (Task) -> Project -> Customer -> Org-Standardsatz.
  *
  * A non-null fixed_rate on the entry overrides hourly calculation and yields a
  * flat fee regardless of duration.
@@ -122,6 +122,11 @@ class RateCalculator {
      * `agreement_rate_id` (Feature 098: gesetzt, wenn eine Kundenkondition den
      * Satz geliefert hat) und `travel_minutes` (pauschale Anfahrt der Kondition).
      *
+     * `hourly_rate` trägt bewusst NUR explizit gepflegte Sätze: der
+     * Org-Standardsatz (MVP-482) rechnet zwar den Erlös, wird aber nicht in den
+     * Eintrag eingefroren — sonst folgte er einer späteren Änderung des
+     * Standards nicht mehr.
+     *
      * @return array{rate: float, internal_rate: float, hourly_rate: float|null, agreement_rate_id: int|null, travel_minutes: int}
      */
     public function compute(TimeEntry $entry): array {
@@ -130,14 +135,16 @@ class RateCalculator {
         $billable = $this->isBillable($entry);
         $travelMinutes = $this->resolveTravelMinutes($entry, $billable);
 
+        $hourly = $this->resolveHourlyRate($entry, $agreementRate);
+        $effectiveHourly = $hourly ?? app(OrganizationDefaultRateResolver::class)
+            ->hourlyRateFor($entry->organization_id !== null ? (int) $entry->organization_id : null);
+
         if ($entry->fixed_rate !== null) {
             $revenue = $billable ? $entry->fixed_rate->toFloat() : 0.0;
-            $hourly = $this->resolveHourlyRate($entry, $agreementRate);
         } else {
-            $hourly = $this->resolveHourlyRate($entry, $agreementRate);
             // Anfahrt zählt als abrechenbare Zeit, nicht als geleistete.
             $billedHours = (((int) $entry->minutes) + $travelMinutes) / 60.0;
-            $revenue = ($hourly !== null && $billable) ? round($billedHours * $hourly, 2) : 0.0;
+            $revenue = ($effectiveHourly !== null && $billable) ? round($billedHours * $effectiveHourly, 2) : 0.0;
         }
 
         $internalHourly = $this->resolveInternalRate($entry);

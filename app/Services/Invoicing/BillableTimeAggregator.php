@@ -170,6 +170,7 @@ class BillableTimeAggregator {
             firstStart: $firstStart,
             lastEnd: $lastEnd,
             description: $description !== '' ? $description : null,
+            travelMinutes: $travelMinutes,
         );
     }
 }

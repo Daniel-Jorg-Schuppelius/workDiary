@@ -66,6 +66,14 @@ return [
         'billing_increment_minutes_hint' => 'Billable time is rounded up to this increment. Applies when neither project nor customer set one. Empty = minute-exact.',
         'billing_grouping_gap_minutes' => 'Default grouping gap (minutes)',
         'billing_grouping_gap_minutes_hint' => 'Entries within this gap are merged into one block when billing. Empty = no grouping.',
+        'default_hourly_rate' => 'Default hourly rate (revenue)',
+        'default_hourly_rate_hint' => 'Applies when neither entry, customer agreement, employee, activity, project nor customer sets a rate. Empty = entries without a rate stay at 0.00.',
+    ],
+    'time_import' => [
+        'heading' => 'Time import',
+        'description' => 'How imported time (remote support, Toggl, Kimai, …) is assigned to a project.',
+        'keyword_matching' => 'Assign time to projects by keyword',
+        'keyword_matching_hint' => 'If the text of an imported entry contains the name or a keyword of a project of the same customer, it is booked there instead of the default project or the assignment inbox. Only unambiguous matches are booked.',
     ],
     'einvoice' => [
         'heading' => 'E-invoice (XRechnung)',

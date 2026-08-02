@@ -58,6 +58,14 @@ return [
         'billing_increment_minutes_hint' => 'Il tempo fatturabile viene arrotondato per eccesso a questo incremento. Si applica se né il progetto né il cliente ne impostano uno. Vuoto = al minuto.',
         'billing_grouping_gap_minutes' => 'Intervallo di raggruppamento predefinito (minuti)',
         'billing_grouping_gap_minutes_hint' => 'Le registrazioni entro questo intervallo vengono unite in un blocco in fatturazione. Vuoto = nessun raggruppamento.',
+        'default_hourly_rate' => 'Tariffa oraria predefinita (ricavo)',
+        'default_hourly_rate_hint' => 'Vale quando né la registrazione, né la condizione cliente, né il collaboratore, né l’attività, né il progetto, né il cliente impostano una tariffa. Vuoto = i tempi senza tariffa restano a 0,00 €.',
+    ],
+    'time_import' => [
+        'heading' => 'Importazione tempi',
+        'description' => 'Come i tempi importati (assistenza remota, Toggl, Kimai, …) vengono assegnati a un progetto.',
+        'keyword_matching' => 'Assegna i tempi ai progetti tramite parole chiave',
+        'keyword_matching_hint' => 'Se il testo di un tempo importato contiene il nome o una parola chiave di un progetto dello stesso cliente, viene registrato lì invece che nel progetto predefinito o nella casella di assegnazione. Vengono registrate solo le corrispondenze univoche.',
     ],
     'einvoice' => [
         'heading' => 'Fattura elettronica (XRechnung)',

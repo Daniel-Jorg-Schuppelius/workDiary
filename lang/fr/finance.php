@@ -69,6 +69,7 @@ return [
         'lexoffice_draft_created' => 'Brouillon de facture créé dans Lexoffice :',
         'sevdesk_draft_created' => 'Brouillon de facture créé dans sevDesk :',
         'easybill_draft_created' => 'Brouillon de facture créé dans easybill :',
+        'positions_increment' => 'Les positions sont créées avec l’incrément de facturation et le regroupement du projet — elles peuvent donc différer du total brut des sources. Ce sont ces valeurs qui partent vers la cible ou dans le paquet de transfert.',
     ],
 
     'confirm_execute' => 'Transférer maintenant vers la cible ? En cas de succès, les sources seront marquées comme remises.',

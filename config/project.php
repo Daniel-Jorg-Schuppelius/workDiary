@@ -23,4 +23,32 @@ return [
         'color' => env('PROJECT_DEFAULT_COLOR', '#64748b'),
         'billable' => (bool) env('PROJECT_DEFAULT_BILLABLE', true),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Schlüsselwort-Zuordnung importierter Zeiten (MVP-483)
+    |--------------------------------------------------------------------------
+    |
+    | Enthält der Text einer importierten Zeit (Fernwartungs-Notiz, Toggl-
+    | Beschreibung, …) den Namen oder ein Synonym eines Projekts DESSELBEN
+    | Kunden, wird sie diesem Projekt zugeordnet statt im Standardprojekt bzw.
+    | in der Zuordnungs-Inbox zu landen. Nur eindeutige Treffer buchen.
+    */
+    'keyword_matching' => [
+        'enabled' => (bool) env('PROJECT_KEYWORD_MATCHING', true),
+
+        /* Mindestlänge aus dem Projektnamen abgeleiteter Begriffe. */
+        'min_token_length' => (int) env('PROJECT_KEYWORD_MIN_LENGTH', 4),
+
+        /*
+         * Namensbestandteile, die nie allein zuordnen — sie kommen in beinahe
+         * jedem Support-Text vor und träfen sonst wahllos.
+         */
+        'stopwords' => [
+            'wartung', 'support', 'service', 'projekt', 'allgemein', 'sonstiges',
+            'sonstige', 'intern', 'extern', 'arbeiten', 'beratung', 'betreuung',
+            'diverse', 'diverses', 'kunde', 'kunden', 'aufgaben', 'aufgabe',
+            'standard', 'pauschale', 'stunden', 'zeiten', 'edv', 'it',
+        ],
+    ],
 ];

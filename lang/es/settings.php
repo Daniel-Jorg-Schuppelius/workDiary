@@ -58,6 +58,14 @@ return [
         'billing_increment_minutes_hint' => 'El tiempo facturable se redondea hacia arriba a este incremento. Se aplica si ni el proyecto ni el cliente definen uno. Vacío = al minuto.',
         'billing_grouping_gap_minutes' => 'Intervalo de agrupación predeterminado (minutos)',
         'billing_grouping_gap_minutes_hint' => 'Las entradas separadas como máximo por este intervalo se agrupan en un bloque al facturar. Vacío = sin agrupación.',
+        'default_hourly_rate' => 'Tarifa horaria estándar (ingreso)',
+        'default_hourly_rate_hint' => 'Se aplica cuando ni la entrada, ni la condición de cliente, ni el empleado, ni la actividad, ni el proyecto, ni el cliente fijan una tarifa. Vacío = los tiempos sin tarifa quedan en 0,00 €.',
+    ],
+    'time_import' => [
+        'heading' => 'Importación de tiempos',
+        'description' => 'Cómo se asignan a un proyecto los tiempos importados (asistencia remota, Toggl, Kimai, …).',
+        'keyword_matching' => 'Asignar tiempos a proyectos por palabra clave',
+        'keyword_matching_hint' => 'Si el texto de un tiempo importado contiene el nombre o una palabra clave de un proyecto del mismo cliente, se registra allí en lugar del proyecto estándar o de la bandeja de asignación. Solo se registran las coincidencias inequívocas.',
     ],
     'einvoice' => [
         'heading' => 'Factura electrónica (XRechnung)',

@@ -15,6 +15,7 @@ use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{Asset, Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, Organization, Project, RemotePendingSession, Tag, TimeEntry};
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, RemoteProvider, RemoteSession, TeamViewerClient};
 use App\Plugins\Support\PersistsTimeImportInbox;
+use App\Services\Integration\ProjectKeywordMatcher;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\DateHelper;
 
@@ -444,9 +445,13 @@ class RemoteSupportService {
     /** @return array{0: ?TimeEntry, 1: bool}  [Eintrag, true = nur an vorhandene Zeit verknüpft] */
     private function createTimeEntry(Organization $organization, Asset $asset, RemoteSession $session, int $userId, bool $billable, ?Project $project = null): array {
         // Bei Mehrkundengeräten wird das Zielprojekt explizit übergeben; sonst
-        // greift das Projekt des Fremdkunden (Endkunden), das Standardprojekt
-        // des Asset-Kunden oder — bei eigenen Geräten ohne Kunden — das
-        // interne Wartungsprojekt.
+        // entscheidet die Sitzungsnotiz (Schlüsselwort-Zuordnung, MVP-483) und
+        // erst danach das Projekt des Fremdkunden (Endkunden), das
+        // Standardprojekt des Asset-Kunden oder — bei eigenen Geräten ohne
+        // Kunden — das interne Wartungsprojekt.
+        $project ??= app(ProjectKeywordMatcher::class)
+            ->match($organization, $asset->foreignCustomer ?? $asset->customer, (string) $session->note)
+            ?->project;
         $project ??= $asset->foreignCustomer?->defaultProjectOrCreate()
             ?? $asset->customer?->defaultProjectOrCreate()
             ?? $this->internalMaintenanceProject($organization);
@@ -1148,6 +1153,11 @@ class RemoteSupportService {
             return false;
         }
 
+        // Wie beim Import: die Auswahl aus der Inbox gewinnt, danach entscheidet
+        // die Notiz (MVP-483), zuletzt das Standardprojekt.
+        $project ??= app(ProjectKeywordMatcher::class)
+            ->match($organization, $foreignCustomer ?? $customer, (string) $row->note)
+            ?->project;
         $project ??= $foreignCustomer?->defaultProjectOrCreate()
             ?? $customer?->defaultProjectOrCreate()
             ?? $this->internalMaintenanceProject($organization);

@@ -58,6 +58,14 @@ return [
         'billing_increment_minutes_hint' => 'Le temps facturable est arrondi à cet incrément. S’applique si ni le projet ni le client n’en définissent un. Vide = à la minute près.',
         'billing_grouping_gap_minutes' => 'Écart de regroupement par défaut (minutes)',
         'billing_grouping_gap_minutes_hint' => 'Les saisies séparées d’au plus cet écart sont regroupées en un bloc lors de la facturation. Vide = pas de regroupement.',
+        'default_hourly_rate' => 'Taux horaire par défaut (produit)',
+        'default_hourly_rate_hint' => 'S’applique lorsque ni la saisie, ni la condition client, ni le collaborateur, ni l’activité, ni le projet, ni le client ne définit de taux. Vide = les temps sans taux restent à 0,00 €.',
+    ],
+    'time_import' => [
+        'heading' => 'Import des temps',
+        'description' => 'Comment les temps importés (assistance à distance, Toggl, Kimai, …) sont affectés à un projet.',
+        'keyword_matching' => 'Affecter les temps aux projets par mot-clé',
+        'keyword_matching_hint' => 'Si le texte d’un temps importé contient le nom ou un mot-clé d’un projet du même client, il y est imputé au lieu du projet par défaut ou de la boîte d’affectation. Seules les correspondances univoques sont imputées.',
     ],
     'einvoice' => [
         'heading' => 'Facture électronique (XRechnung)',

@@ -29,6 +29,7 @@ use Illuminate\Support\{Carbon, Collection};
  * @property string|null $slug
  * @property string|null $number
  * @property string|null $description
+ * @property array<int, string>|null $keywords
  * @property string|null $invoice_text
  * @property string|null $color
  * @property ProjectStatus $status
@@ -75,6 +76,7 @@ class Project extends Model {
         'slug',
         'number',
         'description',
+        'keywords',
         'invoice_text',
         'color',
         'status',
@@ -102,6 +104,7 @@ class Project extends Model {
         'starts_on' => 'date',
         'ends_on' => 'date',
         'archived_at' => 'datetime',
+        'keywords' => 'array',
         'hourly_rate' => MoneyCast::class . ':currency,2',
         'internal_rate' => MoneyCast::class . ':currency,2',
         'budget' => MoneyCast::class . ':currency,2',

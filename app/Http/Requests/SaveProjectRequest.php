@@ -14,6 +14,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\{Customer, ForeignCustomer, Project, Team, User};
 use Closure;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Validation\Rule;
 
 class SaveProjectRequest extends BaseFormRequest {
@@ -37,6 +38,21 @@ class SaveProjectRequest extends BaseFormRequest {
             if ($this->input($triState) === '') {
                 $this->merge([$triState => null]);
             }
+        }
+
+        // Schlüsselwörter (MVP-483) kommen als eine Zeile aus dem Formular und
+        // werden hier zur normalisierten Liste — der Matcher vergleicht später
+        // kleingeschrieben, kurze Begriffe wären nur Zufallstreffer.
+        $keywords = $this->input('keywords');
+        if (is_string($keywords)) {
+            $tokens = [];
+            foreach (preg_split('/[,;\r\n]+/', $keywords) ?: [] as $token) {
+                $token = mb_strtolower(StringHelper::normalizeWhitespace(trim($token)));
+                if (mb_strlen($token) >= 3) {
+                    $tokens[$token] = true;
+                }
+            }
+            $this->merge(['keywords' => $tokens === [] ? null : array_slice(array_keys($tokens), 0, 20)]);
         }
     }
 
@@ -70,6 +86,10 @@ class SaveProjectRequest extends BaseFormRequest {
                         ->where('foreign_customer_id', $foreignCustomerId)),
             ],
             'description' => ['nullable', 'string', 'max:2000'],
+            // Synonyme für die Schlüsselwort-Zuordnung importierter Zeiten;
+            // der Projektname selbst wird ohnehin abgeleitet.
+            'keywords' => ['nullable', 'array', 'max:20'],
+            'keywords.*' => ['string', 'min:3', 'max:60'],
             'color' => ['nullable', 'string', 'max:16'],
             'status' => ['required', Rule::enum(ProjectStatus::class)],
             'starts_on' => ['nullable', 'date'],

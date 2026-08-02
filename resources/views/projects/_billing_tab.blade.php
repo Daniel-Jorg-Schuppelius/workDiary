@@ -59,6 +59,52 @@
         </form>
     </div>
 
+    {{-- Sätze: Projektstufe der Satzhierarchie (Kunde bzw. Org-Standard erben). --}}
+    @php
+        $inheritedHourly = $project->customer?->hourly_rate?->toFloat()
+            ?? (\App\Support\Setting::get('invoicing.default_hourly_rate') !== null
+                ? (float) \App\Support\Setting::get('invoicing.default_hourly_rate') : null);
+        $inheritedInternal = $project->customer?->internal_rate?->toFloat();
+        $ratePlaceholder = fn(?float $value): string => $value !== null
+            ? __('Erben (aktuell: :value)', ['value' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($value, 2)])
+            : __('Erben (kein Satz hinterlegt)');
+    @endphp
+    <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
+        <header class="border-b border-base-300 px-4 py-3">
+            <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Sätze') }}</span>
+            <p class="mt-0.5 text-xs text-base-content/60">
+                {{ __('Gilt für Zeiten dieses Projekts, sofern weder Eintrag, Kundenkondition, Mitarbeiter noch Tätigkeit einen Satz setzen. Leer = Satz des Kunden bzw. der Organisations-Standardsatz.') }}
+            </p>
+        </header>
+
+        <form method="POST" action="{{ route('projects.rates.update', $project) }}" class="flex flex-col gap-4 p-4">
+            @csrf
+            @method('PATCH')
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div class="fieldset">
+                    <label class="fieldset-label">{{ __('Stundensatz (Erlös)') }}</label>
+                    <input type="number" name="hourly_rate" min="0" max="10000" step="0.01" inputmode="decimal"
+                           value="{{ old('hourly_rate', $project->hourly_rate?->getAmount()) }}"
+                           placeholder="{{ $ratePlaceholder($inheritedHourly) }}"
+                           class="input input-bordered w-full">
+                </div>
+
+                <div class="fieldset">
+                    <label class="fieldset-label">{{ __('Interner Satz (Kosten)') }}</label>
+                    <input type="number" name="internal_rate" min="0" max="10000" step="0.01" inputmode="decimal"
+                           value="{{ old('internal_rate', $project->internal_rate?->getAmount()) }}"
+                           placeholder="{{ $ratePlaceholder($inheritedInternal) }}"
+                           class="input input-bordered w-full">
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <x-button type="submit" tone="primary" size="sm" icon="save">{{ __('Sätze speichern') }}</x-button>
+            </div>
+        </form>
+    </div>
+
     {{-- Abrechnungs-Regeln --}}
     <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
         <header class="flex items-center justify-between gap-3 border-b border-base-300 px-4 py-3">

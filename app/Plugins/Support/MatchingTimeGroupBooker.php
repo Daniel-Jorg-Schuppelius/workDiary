@@ -14,7 +14,7 @@ namespace App\Plugins\Support;
 
 use App\Models\Organization;
 use App\Services\Integration\Concerns\ResolvesInboxTargets;
-use App\Services\Integration\InboxGroupBooker;
+use App\Services\Integration\{InboxGroupBooker, ProjectKeywordMatcher};
 use Illuminate\Support\Collection;
 
 /**
@@ -40,6 +40,17 @@ abstract class MatchingTimeGroupBooker implements InboxGroupBooker {
             $foreign = $this->service->suggestForeignCustomer($organization, $group['client_name']);
             $customer = $foreign !== null ? $foreign->customer : $this->service->suggestCustomer($organization, $group['client_name']);
             $project = $this->service->suggestProject($organization, $customer, $group['project_name'], $foreign);
+            // Kein Namenstreffer: Schlüsselwörter aus den Beschreibungen der
+            // Gruppe (MVP-483) — reine Vorbelegung, gebucht wird per Hand.
+            if ($project === null && ($foreign !== null || $customer !== null)) {
+                $descriptions = array_map(
+                    static fn (array $entry): string => (string) ($entry['description'] ?? ''),
+                    $group['entries'],
+                );
+                $project = app(ProjectKeywordMatcher::class)
+                    ->match($organization, $foreign ?? $customer, (string) $group['project_name'], ...$descriptions)
+                    ?->project;
+            }
             // Gehört das vorgeschlagene Projekt einem Endkunden, den Endkunden
             // mit vorschlagen — sonst kollidiert die Vorauswahl mit der
             // „Kein Fremdkunde = nur Firmen-Projekte"-Regel.

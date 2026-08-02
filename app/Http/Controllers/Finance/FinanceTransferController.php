@@ -167,9 +167,17 @@ class FinanceTransferController extends Controller {
             MaterialUsage::class => ['timesheet:id,work_date,project_id', 'timesheet.project:id,name'],
         ]);
 
+        $positions = $this->previewPositions($transfer);
+
         return view('finance.transfers.show', [
             'transfer' => $transfer,
-            'positions' => $this->previewPositions($transfer),
+            'positions' => $positions,
+            // Summe der entstehenden Positionen: bei gesetzter Taktung liegt sie
+            // über der Quellsumme des Transfers (die den Nachweis abbildet).
+            'positionTotals' => [
+                'quantity' => array_sum(array_column($positions, 'quantity_raw')),
+                'amount' => array_sum(array_column($positions, 'amount_raw')),
+            ],
         ]);
     }
 
@@ -299,7 +307,7 @@ class FinanceTransferController extends Controller {
      * Vorschau-Positionen wie das Ziel sie erzeugen würde: Zeit über die
      * bestehende Aggregation (Taktung!), Material je Verwendung.
      *
-     * @return list<array{name: string, quantity: string, unit: string, unit_price: string, amount: string}>
+     * @return list<array{name: string, quantity: string, unit: string, unit_price: string, amount: string, quantity_raw: float, amount_raw: float}>
      */
     private function previewPositions(BillingTransfer $transfer): array {
         $positions = [];
@@ -342,6 +350,8 @@ class FinanceTransferController extends Controller {
                     'unit' => 'h',
                     'unit_price' => NumberHelper::toGermanFormat($rate, 2, withThousandsSeparator: true),
                     'amount' => NumberHelper::toGermanFormat(round($hours * $rate, 2), 2, withThousandsSeparator: true),
+                    'quantity_raw' => $hours,
+                    'amount_raw' => round($hours * $rate, 2),
                 ];
             }
 
@@ -357,6 +367,8 @@ class FinanceTransferController extends Controller {
                 'unit' => $usage->unit ?? '',
                 'unit_price' => NumberHelper::toGermanFormat(($usage->unit_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true),
                 'amount' => NumberHelper::toGermanFormat((float) ($item->amount ?? 0), 2, withThousandsSeparator: true),
+                'quantity_raw' => (float) ($item->quantity ?? 0),
+                'amount_raw' => (float) ($item->amount ?? 0),
             ];
         }
 

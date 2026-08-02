@@ -321,6 +321,29 @@ class FinanceTransferExecuteTest extends TestCase {
         $this->assertStringContainsString((string) __('finance.csv.total'), $content);
     }
 
+    /**
+     * Taktung/Zusammenfassung gelten auch im Übergabepaket — vorher schrieb es
+     * die ungetakteten Item-Snapshots und wich damit von Vorschau und
+     * API-Zielen ab.
+     */
+    public function test_execute_file_target_applies_billing_increment(): void {
+        Storage::fake(FileTarget::DISK);
+
+        $this->project->update(['billing_increment_minutes' => 15]);
+        // 50 Minuten @ 90 €/h ⇒ Snapshot 75,00 €; getaktet auf 60 Min ⇒ 1,00 h × 90 €.
+        $this->makeTimeEntry(['minutes' => 50, 'description' => 'Serverwartung']);
+        $transfer = $this->confirmedTransfer(TransferTarget::File);
+
+        $this->post(route('finance.transfers.execute', $transfer))
+            ->assertSessionHasNoErrors();
+
+        $content = Storage::disk(FileTarget::DISK)->get($transfer->fresh()->file_path);
+
+        $this->assertStringContainsString(';1.00;90.00;90.00;', $content);
+        $this->assertStringContainsString(__('finance.csv.total') . ';;;;1.00;;90.00;', $content);
+        $this->assertStringNotContainsString(';0.83;', $content);
+    }
+
     public function test_execute_file_target_writes_material_csv_for_datev_target(): void {
         Storage::fake(FileTarget::DISK);
 
