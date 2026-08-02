@@ -73,6 +73,13 @@ class TenantTraitCoverageTest extends TestCase {
         ProcedureRunEvent::class,
         ProcedureBackupProof::class,
         Classification::class,
+        // Entsorgungsakte (Feature 100): Kind-Entitäten der mandantengebundenen
+        // DisposalJob — Mandantengrenze transitiv über disposal_job_id
+        // (Muster ProtocolItem/ProtocolEvent). Siehe Allow-List im Audit-Doc.
+        \App\Models\Disposal\DisposalItem::class,
+        \App\Models\Disposal\DataMediaTreatment::class,
+        \App\Models\Disposal\DisposalHandover::class,
+        \App\Models\Disposal\DisposalJobEvent::class,
         // Child-Entitäten von mandantengebundenen Aggregaten — Mandantengrenze
         // wird transitiv über das Parent-Modell (TimeExport, TimeCorrection,
         // MonthClosure, ImportRun) durchgesetzt; eigene organization_id wäre redundant.

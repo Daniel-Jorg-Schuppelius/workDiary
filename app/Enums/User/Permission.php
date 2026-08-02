@@ -635,6 +635,15 @@ enum Permission: string implements HasLabel {
     case AssetComplianceInspect = 'assetCompliance.inspect';
     case AssetComplianceRelease = 'assetCompliance.release';
 
+        // ── Entsorgungsakte (Feature 100, MVP-469/470) ─────────────────
+        // manage führt Akte, Geräteliste, Behandlungen und Übergaben;
+        // complete deckt den bewachten Abschluss (Kundennachweis) und
+        // den Storno — beides Leitungsaufgabe.
+    case DisposalViewAny = 'disposal.viewAny';
+    case DisposalView = 'disposal.view';
+    case DisposalManage = 'disposal.manage';
+    case DisposalComplete = 'disposal.complete';
+
         // ── Allgemeine Vertragsverwaltung (Welle D, CLM) ───────────────
         // Verträge beliebiger Art mit Laufzeit/Kündigung/Indexierung und
         // Vertragskalender (Obligationen). Additiv zum Leasing-Modell.
@@ -753,6 +762,7 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'claim.') => PermissionGroup::Claims,
             str_starts_with($this->value, 'domain.') => PermissionGroup::Domains,
             str_starts_with($this->value, 'rental.') => PermissionGroup::Rental,
+            str_starts_with($this->value, 'disposal.') => PermissionGroup::Disposal,
             str_starts_with($this->value, 'assetFinance.') => PermissionGroup::AssetFinance,
             str_starts_with($this->value, 'assetCompliance.') => PermissionGroup::AssetCompliance,
             str_starts_with($this->value, 'contract.') => PermissionGroup::Contracts,

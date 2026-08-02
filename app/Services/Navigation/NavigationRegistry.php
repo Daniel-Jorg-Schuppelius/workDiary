@@ -217,6 +217,8 @@ class NavigationRegistry {
             'rental.profiles.index' => 'module.rental',
             'rental.rates.index' => 'module.rental',
             'rental.reports.index' => 'module.rental',
+            'disposal.index' => 'module.entsorgung',
+            'disposal.reports.index' => 'module.entsorgung',
             'asset-finance.index' => 'module.asset_finance',
             'asset-finance.deadlines.index' => 'module.asset_finance',
             'asset-finance.reports.index' => 'module.asset_finance',
@@ -575,6 +577,17 @@ class NavigationRegistry {
                     ['route' => 'rental.profiles.index', 'label' => __('Gerätepool'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['rental.profiles.*']],
                     ['route' => 'rental.rates.index', 'label' => __('Preislisten'), 'icon' => 'price_change', 'modal' => false, 'matches' => ['rental.rates.*']],
                     ['route' => 'rental.reports.index', 'label' => __('Verleihbericht'), 'icon' => 'query_stats', 'modal' => false, 'matches' => ['rental.reports.*']],
+                ],
+            ];
+        }
+        if (Gate::allows('viewAny', \App\Models\Disposal\DisposalJob::class)) {
+            $sidebarSections[] = [
+                'key' => 'disposal',
+                'label' => __('Entsorgung'),
+                'collapsible' => true,
+                'items' => [
+                    ['route' => 'disposal.index', 'label' => __('Entsorgungsakten'), 'icon' => 'recycling', 'modal' => false, 'matches' => ['disposal.index', 'disposal.show']],
+                    ['route' => 'disposal.reports.index', 'label' => __('Entsorgungsbericht'), 'icon' => 'query_stats', 'modal' => false, 'matches' => ['disposal.reports.*']],
                 ],
             ];
         }

@@ -13,7 +13,9 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'elektro',
     'label' => 'Elektro',
-    'version' => 1,
+    // v2 (Feature 100): Entsorgungs-Modul empfohlen + AVV-Presets für
+    // Kabel/Batterien (Altgeräte-Mitnahme von der Baustelle/beim Kunden).
+    'version' => 2,
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.
     'modules_recommended' => [
@@ -28,8 +30,16 @@ return [
         'module.fuhrpark',
         'module.asset_compliance',
         'module.bau',
+        'module.entsorgung',
     ],
     'classifications' => [
+        // Feature 100: Elektro-typische Ergänzungen zu den AVV-Plattform-Defaults.
+        'waste_code' => [
+            ['code' => 'avv_170410_h', 'label' => '17 04 10* — Kabel mit Öl, Kohlenteer oder anderen gefährlichen Stoffen'],
+            ['code' => 'avv_170411', 'label' => '17 04 11 — Kabel (nicht gefährlich)'],
+            ['code' => 'avv_200133_h', 'label' => '20 01 33* — Gemischte Batterien (mit gefährlichen)'],
+            ['code' => 'avv_200134', 'label' => '20 01 34 — Batterien (nicht gefährlich)'],
+        ],
         'entry_type' => [
             ['code' => 'installation', 'label' => 'Installation'],
             ['code' => 'wartung', 'label' => 'Wartung'],

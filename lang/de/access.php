@@ -166,6 +166,7 @@ return [
         'sustainability' => 'Nachhaltigkeit & ESG',
         'claims' => 'Reklamation & Gewährleistung',
         'rental' => 'Geräteverleih',
+        'disposal' => 'Entsorgung & Nachweise',
         'asset-finance' => 'Leasing & Asset-Verträge',
         'asset-compliance' => 'Prüfmittel & Kalibrierung',
         'contracts' => 'Vertragsverwaltung',
@@ -629,6 +630,11 @@ return [
         'rental.handover' => 'Übergaben und Rücknahmen protokollieren',
         'rental.finance' => 'Mietpositionen und Kautionen freigeben und abrechnen',
         'rental.rates' => 'Verleih-Preislisten pflegen',
+        // Entsorgungsakte (Feature 100)
+        'disposal.viewAny' => 'Entsorgungsakten auflisten',
+        'disposal.view' => 'Entsorgungsakte einsehen',
+        'disposal.manage' => 'Entsorgungsakten anlegen und führen',
+        'disposal.complete' => 'Entsorgungsakten abschließen und stornieren',
 
         // Leasing/Finanzierung (Feature 074)
         'assetFinance.viewAny' => 'Leasingakten auflisten',

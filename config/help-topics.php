@@ -88,6 +88,8 @@ return [
         'offline.*' => 'offline.changes',
         // Geräte-/Maschinenverleih (Feature 073)
         'rental.*' => 'rental.overview',
+        // Entsorgungsakte (Feature 100, module.entsorgung)
+        'disposal.*' => 'disposal.overview',
         // Leasing/Finanzierung/Asset-Verträge (Feature 074)
         'asset-finance.*' => 'asset-finance.overview',
         // Prüfmittel/Eichung/Kalibrierung (Feature 075)

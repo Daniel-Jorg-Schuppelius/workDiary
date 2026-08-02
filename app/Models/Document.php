@@ -117,7 +117,8 @@ class Document extends Model {
     public function customerId(): ?int {
         return match ($this->documentable_type) {
             Customer::class => $this->documentable_id !== null ? (int) $this->documentable_id : null,
-            Project::class, DiaryEntry::class, Asset::class => ($cid = $this->documentable?->getAttribute('customer_id')) !== null ? (int) $cid : null,
+            Project::class, DiaryEntry::class, Asset::class,
+            \App\Models\Disposal\DisposalJob::class => ($cid = $this->documentable?->getAttribute('customer_id')) !== null ? (int) $cid : null,
             default => null,
         };
     }
@@ -167,6 +168,14 @@ class Document extends Model {
                     ->orWhere(function (Builder $q) use ($organizationId, $customerId): void {
                         $q->where('documentable_type', Asset::class)
                             ->whereIn('documentable_id', Asset::query()
+                                ->where('organization_id', $organizationId)
+                                ->where('customer_id', $customerId)
+                                ->select('id'));
+                    })
+                    // Entsorgungsakte (Feature 100): Kundennachweis + Belege.
+                    ->orWhere(function (Builder $q) use ($organizationId, $customerId): void {
+                        $q->where('documentable_type', \App\Models\Disposal\DisposalJob::class)
+                            ->whereIn('documentable_id', \App\Models\Disposal\DisposalJob::query()
                                 ->where('organization_id', $organizationId)
                                 ->where('customer_id', $customerId)
                                 ->select('id'));

@@ -13,7 +13,9 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'facility',
     'label' => 'Facility Management und Hausmeisterdienste',
-    'version' => 1,
+    // v2 (Feature 100): Entsorgungs-Modul empfohlen + AVV-Presets für
+    // Leuchtmittel/Batterien/Verpackungen (Objekt-Räumungen).
+    'version' => 2,
     // Feature 082 (MVP-379): vorgeschlagener Start-Arbeitsbereich. Nur ein
     // Default-Vorschlag (D16), greift solange die Org keinen eigenen Default
     // setzt und der Nutzer keine eigene Wahl getroffen hat.
@@ -32,8 +34,15 @@ return [
         'module.fuhrpark',
         'module.standorterfassung',
         'module.contracts',
+        'module.entsorgung',
     ],
     'classifications' => [
+        // Feature 100: FM-typische Ergänzungen zu den AVV-Plattform-Defaults.
+        'waste_code' => [
+            ['code' => 'avv_150110_h', 'label' => '15 01 10* — Verpackungen mit gefährlichen Restanhaftungen'],
+            ['code' => 'avv_200133_h', 'label' => '20 01 33* — Gemischte Batterien (mit gefährlichen)'],
+            ['code' => 'avv_200134', 'label' => '20 01 34 — Batterien (nicht gefährlich)'],
+        ],
         'entry_type' => [
             ['code' => 'objektkontrolle', 'label' => 'Objektkontrolle'],
             ['code' => 'maengelmeldung', 'label' => 'Mängelmeldung'],

@@ -34,6 +34,7 @@ enum ClassificationDomain: string implements HasLabel {
     case Allergen = 'allergen';
     case Trade = 'trade';
     case PermitType = 'permit_type';
+    case WasteCode = 'waste_code';
 
     /** Anzeigename der Domäne (Label-Helfer, nie rohen Enum-Wert in Views). */
     public function label(): string {
@@ -51,6 +52,7 @@ enum ClassificationDomain: string implements HasLabel {
             self::Allergen => (string) __('Allergene'),
             self::Trade => (string) __('Gewerke'),
             self::PermitType => (string) __('Genehmigungsarten'),
+            self::WasteCode => (string) __('Abfallschlüssel (AVV)'),
         };
     }
 }

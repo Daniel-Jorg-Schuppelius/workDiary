@@ -145,6 +145,7 @@ return [
         'sustainability' => 'Durabilité et ESG',
         'claims' => 'Réclamations et garantie',
         'rental' => 'Location de matériel',
+        'disposal' => 'Élimination et justificatifs',
         'asset-finance' => 'Leasing et contrats d\'actifs',
         'asset-compliance' => 'Moyens de contrôle et étalonnage',
         'contracts' => 'Gestion des contrats',
@@ -586,6 +587,10 @@ return [
         'rental.handover' => 'Consigner remises et retours',
         'rental.finance' => 'Valider et facturer loyers et cautions',
         'rental.rates' => 'Gérer les grilles tarifaires de location',
+        'disposal.viewAny' => 'Lister les dossiers d\'élimination',
+        'disposal.view' => 'Consulter un dossier d\'élimination',
+        'disposal.manage' => 'Créer et gérer les dossiers d\'élimination',
+        'disposal.complete' => 'Clôturer et annuler les dossiers d\'élimination',
 
         // Leasing / financement (fonctionnalité 074)
         'assetFinance.viewAny' => 'Lister les dossiers de leasing',

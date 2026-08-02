@@ -13,7 +13,9 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'it',
     'label' => 'IT-Service / Managed Services',
-    'version' => 1,
+    // v2 (Feature 100): Entsorgungs-Modul empfohlen + AVV-Presets für
+    // Datenträger/Batterien (Altgeräte-Rücknahme beim Kunden).
+    'version' => 2,
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.
     'modules_recommended' => [
@@ -29,8 +31,15 @@ return [
         'module.agile_projects',
         'module.contracts',
         'module.lager',
+        'module.entsorgung',
     ],
     'classifications' => [
+        // Feature 100: IT-typische Ergänzungen zu den AVV-Plattform-Defaults.
+        'waste_code' => [
+            ['code' => 'avv_168001', 'label' => '16 80 01 — Magnetische und optische Datenträger'],
+            ['code' => 'avv_200133_h', 'label' => '20 01 33* — Gemischte Batterien (mit gefährlichen)'],
+            ['code' => 'avv_200134', 'label' => '20 01 34 — Batterien (nicht gefährlich)'],
+        ],
         'entry_type' => [
             ['code' => 'incident', 'label' => 'Incident'],
             ['code' => 'request', 'label' => 'Request'],

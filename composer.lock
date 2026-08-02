@@ -1507,16 +1507,16 @@
         },
         {
             "name": "dschuppelius/php-common-toolkit",
-            "version": "v1.22.3",
+            "version": "v1.23",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DSchuppelius/php-common-toolkit.git",
-                "reference": "6fd278fbb76ae6bd0f5b32b1abe2af7737918e99"
+                "reference": "ee949379d1a027178bbe595ebb81321b11701c7f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/6fd278fbb76ae6bd0f5b32b1abe2af7737918e99",
-                "reference": "6fd278fbb76ae6bd0f5b32b1abe2af7737918e99",
+                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/ee949379d1a027178bbe595ebb81321b11701c7f",
+                "reference": "ee949379d1a027178bbe595ebb81321b11701c7f",
                 "shasum": ""
             },
             "require": {
@@ -1552,9 +1552,9 @@
             "description": "Project description.",
             "support": {
                 "issues": "https://github.com/DSchuppelius/php-common-toolkit/issues",
-                "source": "https://github.com/DSchuppelius/php-common-toolkit/tree/v1.22.3"
+                "source": "https://github.com/DSchuppelius/php-common-toolkit/tree/v1.23"
             },
-            "time": "2026-08-01T14:22:05+00:00"
+            "time": "2026-08-02T08:14:53+00:00"
         },
         {
             "name": "dschuppelius/php-config-toolkit",
@@ -13716,16 +13716,16 @@
         },
         {
             "name": "laravel/pint",
-            "version": "v1.30.2",
+            "version": "v1.30.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/pint.git",
-                "reference": "de440809cb86055b43e7ae979bed3baf8d29ef5a"
+                "reference": "19ca6de4ce07869f61f09863e37e81562ebc0a9b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/pint/zipball/de440809cb86055b43e7ae979bed3baf8d29ef5a",
-                "reference": "de440809cb86055b43e7ae979bed3baf8d29ef5a",
+                "url": "https://api.github.com/repos/laravel/pint/zipball/19ca6de4ce07869f61f09863e37e81562ebc0a9b",
+                "reference": "19ca6de4ce07869f61f09863e37e81562ebc0a9b",
                 "shasum": ""
             },
             "require": {
@@ -13782,7 +13782,7 @@
                 "issues": "https://github.com/laravel/pint/issues",
                 "source": "https://github.com/laravel/pint"
             },
-            "time": "2026-08-01T01:14:35+00:00"
+            "time": "2026-08-02T01:28:21+00:00"
         },
         {
             "name": "mockery/mockery",
@@ -15783,5 +15783,5 @@
         "php": "^8.4"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }

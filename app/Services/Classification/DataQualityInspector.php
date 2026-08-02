@@ -162,6 +162,7 @@ class DataQualityInspector {
             ClassificationDomain::Allergen => (string) __('Allergene'),
             ClassificationDomain::Trade => (string) __('Gewerke'),
             ClassificationDomain::PermitType => (string) __('Genehmigungsarten'),
+            ClassificationDomain::WasteCode => (string) __('Abfallschlüssel (AVV)'),
             null => $domain,
         };
     }

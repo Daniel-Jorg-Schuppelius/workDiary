@@ -347,6 +347,85 @@ class DemoShowcaseSeeder {
         }
     }
 
+    public function seedDisposal(Organization $organization, ?User $actor): int {
+        if ($actor === null) {
+            return 0;
+        }
+
+        try {
+            $customer = \App\Models\Customer::query()
+                ->where('organization_id', $organization->id)
+                ->orderBy('id')
+                ->first();
+            if ($customer === null) {
+                return 0;
+            }
+
+            // Entsorgungsfachbetrieb als externes Kontaktprofil (Feature 033).
+            $disposer = \App\Models\ExternalContact::query()->create([
+                'organization_id' => $organization->id,
+                'name' => (string) __('Muster-Entsorgung GmbH (Demo)'),
+                'email' => 'entsorgung@example.com',
+                'role' => (string) __('Entsorgungsfachbetrieb'),
+                'party' => 'other',
+            ]);
+
+            $service = app(\App\Services\Disposal\DisposalJobService::class);
+            $job = $service->open($organization, $actor, [
+                'customer_id' => $customer->id,
+                'responsible_user_id' => $actor->id,
+                'picked_up_on' => now()->subDays(3)->toDateString(),
+                'notes' => (string) __('Demo-Entsorgungsvorgang: Altgeräte-Abholung mit Datenträger-Behandlung.'),
+            ]);
+
+            $server = $service->addItem($job, $actor, [
+                'category' => (string) __('Server'),
+                'manufacturer' => 'Muster-IT',
+                'serial_number' => 'DEMO-SRV-001',
+                'quantity' => 1,
+                'weight_kg' => '18.5',
+                'avv_code' => '20 01 35*',
+                'has_data_storage' => true,
+            ]);
+            $service->addItem($job, $actor, [
+                'category' => (string) __('Monitor'),
+                'quantity' => 4,
+                'weight_kg' => '22.0',
+                'avv_code' => '20 01 36',
+            ]);
+
+            $service->transition($job->refresh(), $actor, \App\Enums\Disposal\DisposalJobStatus::Collected);
+            $service->transition($job->refresh(), $actor, \App\Enums\Disposal\DisposalJobStatus::InTreatment);
+
+            $service->addTreatment($server, $actor, [
+                'media_type' => \App\Enums\Disposal\DataMediumType::Hdd->value,
+                'method' => \App\Enums\Disposal\MediaTreatmentMethod::Shredding->value,
+                'din_category' => \App\Enums\Disposal\DinCategory::H->value,
+                'security_level' => 5,
+                'protection_class' => 2,
+                'treated_at' => now()->subDays(2),
+                'evidence_reference' => 'DEMO-VERNICHTUNG-4711',
+            ]);
+
+            $service->transition($job->refresh(), $actor, \App\Enums\Disposal\DisposalJobStatus::HandedOver);
+            $service->addHandover($job->refresh(), $actor, [
+                'external_contact_id' => $disposer->id,
+                'proof_type' => \App\Enums\Disposal\DisposalProofType::TransferNote->value,
+                'document_number' => 'UES-2026-0815',
+                'handed_over_on' => now()->subDay()->toDateString(),
+                'certificate_reference' => 'EfbV-Zert. DEMO-99',
+            ]);
+            // Bewusst nicht abgeschlossen: das Prüfpanel zeigt die fehlende
+            // Übernahme-Unterschrift als letztes Abschluss-Gate.
+
+            return 1;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::info('Demo-Seeder: Entsorgungs-Demo übersprungen: ' . $e->getMessage());
+
+            return 0;
+        }
+    }
+
     public function seedAssetFinance(Organization $organization, ?User $actor): int {
         if ($actor === null) {
             return 0;

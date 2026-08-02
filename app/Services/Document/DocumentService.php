@@ -74,6 +74,45 @@ class DocumentService {
     }
 
     /**
+     * Legt ein Dokument inkl. Erst-Version aus einem bereits vorliegenden
+     * Inhalts-String an (statt einer UploadedFile) — für app-generierte
+     * Dateien wie den Entsorgungs-Kundennachweis (Feature 100). Metadaten
+     * analog {@see create()}, Speicherung analog {@see addVersionFromContents()}.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public function createFromContents(?Model $documentable, User $creator, array $attributes, string $contents, string $originalName, ?string $mime = null): Document {
+        $type = $this->parseType((string) ($attributes['document_type'] ?? ''));
+        $status = DocumentStatus::tryFrom((string) ($attributes['status'] ?? DocumentStatus::Active->value))
+            ?? DocumentStatus::Active;
+        [$validFrom, $validUntil] = $this->parseValidity($attributes);
+
+        $document = DB::transaction(function () use ($documentable, $creator, $attributes, $type, $status, $validFrom, $validUntil, $contents, $originalName, $mime): Document {
+            $document = Document::query()->create([
+                'organization_id' => $documentable?->getAttribute('organization_id') ?: $creator->organization_id,
+                'documentable_type' => $documentable?->getMorphClass(),
+                'documentable_id' => $documentable?->getKey(),
+                'title' => $attributes['title'],
+                'document_type' => $type->value,
+                'status' => $status->value,
+                'valid_from' => $validFrom,
+                'valid_until' => $validUntil,
+                'description' => $attributes['description'] ?? null,
+                'created_by_user_id' => $creator->id,
+                'confidential' => (bool) ($attributes['confidential'] ?? false),
+            ]);
+
+            $this->addVersionFromContents($document, $creator, $contents, $originalName, $mime, $attributes['version_note'] ?? null, 'generated');
+
+            return $document->fresh(['currentVersion']) ?? $document;
+        });
+
+        app(\App\Services\Metrics\OperationsMetricsService::class)->increment('documents.created', (int) $document->organization_id);
+
+        return $document;
+    }
+
+    /**
      * Hängt eine neue Datei-Version an (version_no hochzählen,
      * current_version_id umsetzen).
      */
@@ -91,8 +130,8 @@ class DocumentService {
      * bei der Konfliktauflösung „Remote als neue lokale Version importieren"
      * (Feature 058, Rang 18). Speicherung/Versionierung analog {@see storeVersion}.
      */
-    public function addVersionFromContents(Document $document, User $actor, string $contents, string $originalName, ?string $mime = null, ?string $note = null): DocumentVersion {
-        return DB::transaction(function () use ($document, $actor, $contents, $originalName, $mime, $note): DocumentVersion {
+    public function addVersionFromContents(Document $document, User $actor, string $contents, string $originalName, ?string $mime = null, ?string $note = null, string $source = 'webdav-import'): DocumentVersion {
+        return DB::transaction(function () use ($document, $actor, $contents, $originalName, $mime, $note, $source): DocumentVersion {
             $nextNo = (int) $document->versions()->max('version_no') + 1;
 
             $ext = '';
@@ -125,7 +164,7 @@ class DocumentService {
                 'actor_user_id' => $actor->id,
                 'version_no' => $nextNo,
                 'original_name' => $version->original_name,
-                'source' => 'webdav-import',
+                'source' => $source,
             ]);
 
             return $version;

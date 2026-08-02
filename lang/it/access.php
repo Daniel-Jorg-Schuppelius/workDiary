@@ -145,6 +145,7 @@ return [
         'sustainability' => 'Sostenibilità ed ESG',
         'claims' => 'Reclami e garanzia',
         'rental' => 'Noleggio attrezzature',
+        'disposal' => 'Smaltimento e attestati',
         'asset-finance' => 'Leasing e contratti asset',
         'asset-compliance' => 'Strumenti di misura e taratura',
         'contracts' => 'Gestione contratti',
@@ -586,6 +587,10 @@ return [
         'rental.handover' => 'Registrare consegne e restituzioni',
         'rental.finance' => 'Approvare e fatturare canoni e cauzioni',
         'rental.rates' => 'Gestire i listini di noleggio',
+        'disposal.viewAny' => 'Elencare le pratiche di smaltimento',
+        'disposal.view' => 'Consultare la pratica di smaltimento',
+        'disposal.manage' => 'Creare e gestire le pratiche di smaltimento',
+        'disposal.complete' => 'Concludere e annullare le pratiche di smaltimento',
 
         // Leasing / finanziamento (funzionalità 074)
         'assetFinance.viewAny' => 'Elencare le pratiche di leasing',

@@ -166,6 +166,7 @@ return [
         'sustainability' => 'Sustainability & ESG',
         'claims' => 'Claims & warranty',
         'rental' => 'Equipment rental',
+        'disposal' => 'Disposal & proofs',
         'asset-finance' => 'Leasing & asset contracts',
         'asset-compliance' => 'Test equipment & calibration',
         'contracts' => 'Contract management',
@@ -629,6 +630,11 @@ return [
         'rental.handover' => 'Record handovers and returns',
         'rental.finance' => 'Release and invoice rental charges and deposits',
         'rental.rates' => 'Maintain rental rate cards',
+        // Disposal case (feature 100)
+        'disposal.viewAny' => 'List disposal cases',
+        'disposal.view' => 'View disposal case',
+        'disposal.manage' => 'Create and manage disposal cases',
+        'disposal.complete' => 'Complete and cancel disposal cases',
 
         // Leasing / asset finance (feature 074)
         'assetFinance.viewAny' => 'List leasing files',

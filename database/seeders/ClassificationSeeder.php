@@ -139,6 +139,28 @@ class ClassificationSeeder extends Seeder {
                 'transport' => 'Transport / Logistik',
                 'reinigung' => 'Reinigung',
             ],
+            // AVV-Abfallschlüssel (Feature 100): gängige Schlüssel für
+            // Elektro-Altgeräte, Datenträger, Batterien und Toner nach der
+            // Abfallverzeichnis-Verordnung — universelle gesetzliche Liste
+            // (analog Allergene), daher als Plattform-Default. Label-Format:
+            // „<AVV-Schlüssel> — <Beschreibung>"; Stern * = gefährlich.
+            ClassificationDomain::WasteCode->value => [
+                'avv_160211_h' => '16 02 11* — Geräte mit FCKW/HFCKW/HFKW',
+                'avv_160213_h' => '16 02 13* — Geräte mit gefährlichen Bauteilen',
+                'avv_160214' => '16 02 14 — Geräte ohne gefährliche Bauteile',
+                'avv_160215_h' => '16 02 15* — Entnommene gefährliche Bauteile',
+                'avv_160216' => '16 02 16 — Entnommene Bauteile (nicht gefährlich)',
+                'avv_160601_h' => '16 06 01* — Bleibatterien',
+                'avv_160602_h' => '16 06 02* — Ni-Cd-Batterien',
+                'avv_160604' => '16 06 04 — Alkalibatterien',
+                'avv_160605' => '16 06 05 — Andere Batterien und Akkumulatoren',
+                'avv_200121_h' => '20 01 21* — Leuchtstoffröhren und quecksilberhaltige Abfälle',
+                'avv_200123_h' => '20 01 23* — Gebrauchte FCKW-haltige Geräte',
+                'avv_200135_h' => '20 01 35* — Elektro-Altgeräte mit gefährlichen Bauteilen',
+                'avv_200136' => '20 01 36 — Elektro-Altgeräte ohne gefährliche Bauteile',
+                'avv_080317_h' => '08 03 17* — Tonerabfälle mit gefährlichen Bestandteilen',
+                'avv_080318' => '08 03 18 — Tonerabfälle (nicht gefährlich)',
+            ],
             // Genehmigungsarten (Behördliche Genehmigungen).
             ClassificationDomain::PermitType->value => [
                 'sondernutzung' => 'Sondernutzung öffentl. Raum',

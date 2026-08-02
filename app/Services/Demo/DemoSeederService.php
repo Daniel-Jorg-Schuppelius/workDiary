@@ -258,6 +258,7 @@ class DemoSeederService {
 
             // Verleih-Demo (Feature 073, MVP-269).
             $counts['rental'] = $showcase->seedRental($organization, $users->first());
+            $counts['disposal'] = $showcase->seedDisposal($organization, $users->first());
 
             // Leasing-Demo (Feature 074, MVP-280).
             $counts['asset_finance'] = $showcase->seedAssetFinance($organization, $users->first());

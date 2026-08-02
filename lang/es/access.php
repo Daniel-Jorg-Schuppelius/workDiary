@@ -145,6 +145,7 @@ return [
         'sustainability' => 'Sostenibilidad y ESG',
         'claims' => 'Reclamaciones y garantía',
         'rental' => 'Alquiler de equipos',
+        'disposal' => 'Eliminación y justificantes',
         'asset-finance' => 'Leasing y contratos de activos',
         'asset-compliance' => 'Equipos de medición y calibración',
         'contracts' => 'Gestión de contratos',
@@ -586,6 +587,10 @@ return [
         'rental.handover' => 'Registrar entregas y devoluciones',
         'rental.finance' => 'Aprobar y facturar cargos y fianzas',
         'rental.rates' => 'Gestionar tarifas de alquiler',
+        'disposal.viewAny' => 'Listar expedientes de eliminación',
+        'disposal.view' => 'Consultar expediente de eliminación',
+        'disposal.manage' => 'Crear y gestionar expedientes de eliminación',
+        'disposal.complete' => 'Cerrar y anular expedientes de eliminación',
 
         // Leasing / financiación (funcionalidad 074)
         'assetFinance.viewAny' => 'Listar expedientes de leasing',

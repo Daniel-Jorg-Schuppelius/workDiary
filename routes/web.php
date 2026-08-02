@@ -1663,6 +1663,32 @@ Route::middleware('auth')->group(function () {
             Route::post('kaution/{deposit}/abrechnen', [\App\Http\Controllers\Rental\RentalBillingController::class, 'settleDeposit'])->name('deposits.settle');
         });
 
+        // ── Entsorgungsakten (Feature 100, module.entsorgung) ──────────────
+        // Routen MÜSSEN disposal.* heißen (Modul-Gate in config/plans.php).
+        Route::prefix('entsorgung')->name('disposal.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Disposal\DisposalJobController::class, 'index'])->name('index');
+            Route::get('neu', [\App\Http\Controllers\Disposal\DisposalJobController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Disposal\DisposalJobController::class, 'store'])->name('store');
+            Route::get('bericht', [\App\Http\Controllers\Reporting\DisposalReportController::class, 'index'])->name('reports.index');
+            Route::get('{disposalJob}', [\App\Http\Controllers\Disposal\DisposalJobController::class, 'show'])->name('show');
+            Route::get('{disposalJob}/bearbeiten', [\App\Http\Controllers\Disposal\DisposalJobController::class, 'edit'])->name('edit');
+            Route::put('{disposalJob}', [\App\Http\Controllers\Disposal\DisposalJobController::class, 'update'])->name('update');
+            Route::get('{disposalJob}/nachweis.pdf', [\App\Http\Controllers\Disposal\DisposalJobController::class, 'pdf'])->name('pdf');
+            Route::post('{disposalJob}/abholen', [\App\Http\Controllers\Disposal\DisposalJobController::class, 'collect'])->name('collect');
+            Route::post('{disposalJob}/behandlung', [\App\Http\Controllers\Disposal\DisposalJobController::class, 'startTreatment'])->name('treatment');
+            Route::post('{disposalJob}/uebergeben', [\App\Http\Controllers\Disposal\DisposalJobController::class, 'markHandedOver'])->name('handed-over');
+            Route::post('{disposalJob}/unterschreiben', [\App\Http\Controllers\Disposal\DisposalJobController::class, 'sign'])->name('sign');
+            Route::post('{disposalJob}/abschliessen', [\App\Http\Controllers\Disposal\DisposalJobController::class, 'complete'])->name('complete');
+            Route::post('{disposalJob}/stornieren', [\App\Http\Controllers\Disposal\DisposalJobController::class, 'cancel'])->name('cancel');
+            Route::post('{disposalJob}/positionen', [\App\Http\Controllers\Disposal\DisposalItemController::class, 'store'])->name('items.store');
+            Route::put('positionen/{disposalItem}', [\App\Http\Controllers\Disposal\DisposalItemController::class, 'update'])->name('items.update');
+            Route::delete('positionen/{disposalItem}', [\App\Http\Controllers\Disposal\DisposalItemController::class, 'destroy'])->name('items.destroy');
+            Route::post('positionen/{disposalItem}/behandlungen', [\App\Http\Controllers\Disposal\DisposalItemController::class, 'storeTreatment'])->name('treatments.store');
+            Route::delete('behandlungen/{dataMediaTreatment}', [\App\Http\Controllers\Disposal\DisposalItemController::class, 'destroyTreatment'])->name('treatments.destroy');
+            Route::post('{disposalJob}/uebergaben', [\App\Http\Controllers\Disposal\DisposalHandoverController::class, 'store'])->name('handovers.store');
+            Route::delete('uebergaben/{disposalHandover}', [\App\Http\Controllers\Disposal\DisposalHandoverController::class, 'destroy'])->name('handovers.destroy');
+        });
+
         // ── Leasing/Finanzierung/Asset-Verträge (Feature 074, module.asset_finance) ──
         Route::prefix('leasing')->name('asset-finance.')->group(function (): void {
             Route::get('/', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'index'])->name('index');

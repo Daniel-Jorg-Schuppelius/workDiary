@@ -54,6 +54,7 @@ enum PermissionGroup: string implements HasLabel {
     case Claims = 'claims';
     case Domains = 'domains';
     case Rental = 'rental';
+    case Disposal = 'disposal';
     case AssetFinance = 'asset-finance';
     case AssetCompliance = 'asset-compliance';
     case Contracts = 'contracts';
@@ -99,6 +100,7 @@ enum PermissionGroup: string implements HasLabel {
             self::Claims => 'assignment_return',
             self::Domains => 'dns',
             self::Rental => 'forklift',
+            self::Disposal => 'recycling',
             self::AssetFinance => 'request_quote',
             self::AssetCompliance => 'rule_settings',
             self::Contracts => 'contract',

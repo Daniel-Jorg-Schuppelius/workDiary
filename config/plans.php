@@ -58,6 +58,7 @@ return [
             'module.sustainability',
             'module.claims',
             'module.rental',
+            'module.entsorgung',
             'module.asset_compliance',
             'module.contracts',
             'module.kasse',
@@ -97,6 +98,7 @@ return [
             'module.sustainability',
             'module.claims',
             'module.rental',
+            'module.entsorgung',
             'module.asset_finance',
             'module.asset_compliance',
             'module.contracts',
@@ -118,6 +120,7 @@ return [
         'module.sustainability' => 'Nachhaltigkeit & ESG',
         'module.claims' => 'Reklamation & Gewährleistung',
         'module.rental' => 'Geräte- & Maschinenverleih',
+        'module.entsorgung' => 'Altgeräte-Entsorgung & Nachweise',
         'module.asset_finance' => 'Leasing & Asset-Verträge',
         'module.asset_compliance' => 'Prüfmittel & Kalibrierung',
         'module.contracts' => 'Vertragsverwaltung & Fristen',
@@ -163,6 +166,7 @@ return [
         'module.sustainability' => 'ESG-Bewertungen, Aktivitätsdaten mit CO₂e-Faktoren, Maßnahmen, Ziele und VSME-Berichtsvorbereitung.',
         'module.claims' => 'Reklamationsakten mit Bewertung, Entscheidung, RMA-Rückläufern, Maßnahmen, kaufmännischen Folgen und Lieferantenregress.',
         'module.rental' => 'Verleihakten mit Verfügbarkeitskalender, Reservierung, Übergabe-/Rücknahmeprotokollen, Kaution und Faktura-Übergabe.',
+        'module.entsorgung' => 'Entsorgungsakten für Altgeräte: Geräteliste mit AVV-Schlüsseln, Datenträger-Behandlung nach DIN 66399, Entsorger-Übergabe und prüffester Kundennachweis im Portal.',
         'module.asset_finance' => 'Leasing- und Finanzierungsakten mit Konditionen-Snapshot, Fristenkalender, Nutzungslimits und Soll-Ist-Sicht.',
         'module.asset_compliance' => 'Prüfprofile, Prüfpflichten, Prüfprotokolle, Kalibrierzertifikate und Einsatzsperren für prüfpflichtige Assets.',
         'module.contracts' => 'Allgemeine Vertragsakten beliebiger Art mit Laufzeit-/Verlängerungslogik, Kündigungsfrist, Indexierungsregel und Obligationen-/Vertragskalender.',
@@ -310,6 +314,7 @@ return [
         'sustainability.*' => 'module.sustainability', // Feature 071 Nachhaltigkeit/ESG
         'claims.*' => 'module.claims', // Feature 072 Reklamation/Gewährleistung/Rückläufer
         'rental.*' => 'module.rental', // Feature 073 Geräte-/Maschinenverleih
+        'disposal.*' => 'module.entsorgung', // Feature 100 Entsorgungsakte
         'asset-finance.*' => 'module.asset_finance', // Feature 074 Leasing/Finanzierung/Asset-Verträge
         'asset-compliance.*' => 'module.asset_compliance', // Feature 075 Prüfmittel/Eichung/Kalibrierung
         'contracts.*' => 'module.contracts', // Welle D — Allgemeines Contract-Lifecycle-Management
@@ -411,6 +416,7 @@ return [
         'module.sustainability' => false,   // Bewertungs-/Berichtsnachweise → Aufbewahrung         // Rechnungen → GoBD / §147 AO (10 J.)
         'module.claims' => false,           // Reklamations-/Gewährleistungsnachweise → Aufbewahrung
         'module.rental' => false,           // Übergabe-/Rücknahme-/Abrechnungsnachweise → Aufbewahrung
+        'module.entsorgung' => false,       // Entsorgungs-/Datenschutznachweise (ElektroG/NachwV/DSGVO) → Aufbewahrung
         'module.asset_finance' => false,    // Vertrags-/Fristen-/Kostennachweise → Aufbewahrung
         'module.asset_compliance' => false, // Prüfprotokolle/Zertifikate → unveränderbare Nachweise
         'module.contracts' => false,        // Vertrags-/Fristennachweise → Aufbewahrung (GoBD/§147 AO)

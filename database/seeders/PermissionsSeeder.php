@@ -270,6 +270,13 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::RentalManage,
             PermissionEnum::RentalHandover,
             PermissionEnum::RentalRates,
+            // Feature 100: Entsorgungsakten operativ führen (Geräteliste,
+            // Behandlung, Übergabe) inkl. bewachtem Abschluss — die Gates
+            // (Unterschrift, Behandlungs-/Nachweispflicht) sichern den Rest.
+            PermissionEnum::DisposalViewAny,
+            PermissionEnum::DisposalView,
+            PermissionEnum::DisposalManage,
+            PermissionEnum::DisposalComplete,
             // Welle D (CLM): allgemeine Vertragsakten operativ führen inkl.
             // Vertragskalender (Obligationen).
             PermissionEnum::ContractViewAny,
@@ -556,6 +563,9 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::RentalViewAny,
             PermissionEnum::RentalView,
             PermissionEnum::RentalFinance,
+            // Feature 100: Entsorgungsnachweise lesend (Abrechnung/Compliance).
+            PermissionEnum::DisposalViewAny,
+            PermissionEnum::DisposalView,
             // Feature 074: Leasingakten führen inkl. vertraulicher
             // Konditionen (Raten/Restwerte) und Fristen (Controlling).
             PermissionEnum::AssetFinanceViewAny,

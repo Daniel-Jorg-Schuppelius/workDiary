@@ -625,6 +625,7 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(\App\Models\Print\PrintOrder::class, \App\Policies\Print\PrintOrderPolicy::class);
         // Feature 073: Geräte-/Maschinenverleih (Akte + versionierte Preislisten).
         Gate::policy(\App\Models\Rental\RentalCase::class, \App\Policies\Rental\RentalCasePolicy::class);
+        Gate::policy(\App\Models\Disposal\DisposalJob::class, \App\Policies\Disposal\DisposalJobPolicy::class);
         Gate::policy(\App\Models\Rental\RentalRateCard::class, \App\Policies\Rental\RentalRateCardPolicy::class);
         // Feature 074: Leasing/Finanzierung (vertrauliche Konditionen).
         Gate::policy(\App\Models\AssetFinance\AssetFinanceContract::class, \App\Policies\AssetFinance\AssetFinanceContractPolicy::class);
