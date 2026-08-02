@@ -1,7 +1,7 @@
 ---
 title: "Open times"
 topic: finance.open-times
-version: 1
+version: 2
 audience: []
 related:
     - finance.transfers
@@ -17,6 +17,13 @@ times slip through before an invoicing run.
 What counts as "open"? An entry that has not been consumed by any
 billing path yet — neither by a local invoice nor by a customer
 account closing or a facturation handover.
+
+Customers with a running balance (special terms in "customer account"
+or "retainer" mode) are **not** listed: their times are not invoiced
+but settled through the monthly block on the customer file — here they
+would be permanent residents. A note above the list states how many
+entries are hidden this way. Customers in "monthly invoice" mode stay
+visible, they run through normal invoicing.
 
 Features:
 

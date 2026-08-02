@@ -44,6 +44,15 @@
                         :hint="__('finance.open_times.kpi.stale_hint')" />
         </div>
 
+        @if ($ledgerManagedCount > 0)
+            {{-- Saldo-geführte Kunden (Konto-/Pauschal-Modus) sind ausgeblendet;
+                 der Zähler hält die Kontrollfunktion der Liste aufrecht. --}}
+            <div class="alert text-sm">
+                <x-icon name="info" />
+                <span>{{ trans_choice('finance.open_times.ledger_managed', $ledgerManagedCount, ['count' => $ledgerManagedCount]) }}</span>
+            </div>
+        @endif
+
         @if ($invoicedMismatches->isNotEmpty())
             <div class="rounded-box border border-warning/40 bg-warning/5 px-4 py-3">
                 <p class="text-sm font-medium">{{ __('finance.open_times.mismatch.heading') }}</p>

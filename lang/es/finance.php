@@ -340,6 +340,7 @@ return [
             'non_billable' => 'no facturable',
             'late' => 'registro tardío',
         ],
+        'ledger_managed' => ':count registro abierto pasa por una cuenta de cliente o una cuota fija y se liquida en la ficha del cliente — aquí oculto a propósito.|:count registros abiertos pasan por una cuenta de cliente o una cuota fija y se liquidan en la ficha del cliente — aquí ocultos a propósito.',
         'mismatch' => [
             'heading' => 'Órdenes «Facturado» con tiempos abiertos',
             'hint' => 'Estas órdenes están marcadas como facturadas, pero sus tiempos facturables aún no han sido consumidos por ningún canal de facturación.',

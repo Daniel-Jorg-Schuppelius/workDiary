@@ -341,6 +341,7 @@ return [
             'non_billable' => 'non fatturabile',
             'late' => 'registrazione tardiva',
         ],
+        'ledger_managed' => ':count registrazione aperta passa da un conto cliente o da un forfait e viene liquidata nella scheda cliente — qui volutamente nascosta.|:count registrazioni aperte passano da un conto cliente o da un forfait e vengono liquidate nella scheda cliente — qui volutamente nascoste.',
         'mismatch' => [
             'heading' => 'Incarichi «Fatturato» con tempi aperti',
             'hint' => 'Questi incarichi sono contrassegnati come fatturati, ma i loro tempi fatturabili non sono ancora stati consumati da alcun canale di fatturazione.',

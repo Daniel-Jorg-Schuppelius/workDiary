@@ -350,4 +350,87 @@ class OpenTimesWorklistTest extends TestCase {
             ->assertOk()
             ->assertSee(__('finance.open_times.mark_billed.title'));
     }
+
+    /**
+     * Kunde mit laufendem Leistungssaldo (Feature 098) + ein Zeiteintrag darauf.
+     *
+     * @param  'account'|'retainer'|'invoice'  $mode
+     */
+    private function ledgerCustomerEntry(string $mode, string $description): TimeEntry {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        \App\Models\Billing\CustomerBillingAgreement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'mode' => $mode,
+            'active' => true,
+        ]);
+        $project = Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+        ]);
+
+        return $this->openEntry(['project_id' => $project->id, 'description' => $description]);
+    }
+
+    public function test_account_and_retainer_customers_are_hidden_but_counted(): void {
+        $this->openEntry(['description' => 'Normale Fakturierung']);
+        $this->ledgerCustomerEntry('account', 'Kundenkonto-Zeit');
+        $this->ledgerCustomerEntry('retainer', 'Pauschal-Zeit');
+
+        $response = $this->actingAs($this->accountant)
+            ->get(route('finance.open-times.index'))
+            ->assertOk()
+            ->assertSee('Normale Fakturierung')
+            ->assertDontSee('Kundenkonto-Zeit')
+            ->assertDontSee('Pauschal-Zeit');
+
+        // Kontrollfunktion: die ausgeblendeten Zeiten werden gezählt gemeldet.
+        $this->assertSame(2, $response->viewData('ledgerManagedCount'));
+    }
+
+    public function test_monthly_invoice_mode_stays_visible(): void {
+        // Modus „monatliche Rechnung" läuft über die normale Pipeline und
+        // gehört daher weiterhin in die Arbeitsliste.
+        $this->ledgerCustomerEntry('invoice', 'Monatsrechnungs-Zeit');
+
+        $this->actingAs($this->accountant)
+            ->get(route('finance.open-times.index'))
+            ->assertOk()
+            ->assertSee('Monatsrechnungs-Zeit');
+    }
+
+    public function test_inactive_agreement_does_not_hide_entries(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        \App\Models\Billing\CustomerBillingAgreement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'mode' => 'retainer',
+            'active' => false,
+        ]);
+        $project = Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+        ]);
+        $this->openEntry(['project_id' => $project->id, 'description' => 'Alte Pauschale beendet']);
+
+        $this->actingAs($this->accountant)
+            ->get(route('finance.open-times.index'))
+            ->assertOk()
+            ->assertSee('Alte Pauschale beendet');
+    }
+
+    public function test_mark_billed_skips_ledger_managed_customers(): void {
+        // Die Massenaktion darf nie mehr treffen als die Liste zeigt — sonst
+        // reißt sie Konto-Zeiten aus dem Monatsabschluss.
+        $normal = $this->openEntry(['date' => now()->subDays(60)->toDateString()]);
+        $ledger = $this->ledgerCustomerEntry('retainer', 'Pauschal-Altbestand');
+        $ledger->update(['date' => now()->subDays(60)->toDateString()]);
+
+        $this->actingAs($this->accountant)
+            ->post(route('finance.open-times.mark-billed'), ['cutoff' => now()->subDays(30)->toDateString()])
+            ->assertRedirect(route('finance.open-times.index'));
+
+        $this->assertTrue($normal->refresh()->exported);
+        $this->assertFalse($ledger->refresh()->exported);
+    }
 }

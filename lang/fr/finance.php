@@ -241,6 +241,7 @@ return [
             'non_billable' => 'non facturable',
             'late' => 'saisie tardive',
         ],
+        'ledger_managed' => ':count saisie ouverte passe par un compte client ou un forfait et est réglée sur la fiche client — volontairement masquée ici.|:count saisies ouvertes passent par un compte client ou un forfait et sont réglées sur la fiche client — volontairement masquées ici.',
         'mismatch' => [
             'heading' => 'Missions « Facturé » avec des temps ouverts',
             'hint' => 'Ces missions sont marquées comme facturées, mais leurs temps facturables n\'ont encore été consommés par aucun canal de facturation.',

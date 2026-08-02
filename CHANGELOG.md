@@ -818,6 +818,16 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   Sync ziehen den Zahlstatus jetzt mit; zudem band `lexoffice:sync-vouchers`
   den Organisations-Kontext nicht, wodurch der Belegabruf den API-Key einer
   fremden Organisation hätte verwenden können.
+- Offene Zeiten (MVP-460): Kunden mit laufendem Leistungssaldo (Sonderkonditionen
+  im Modus „Kundenkonto" oder „Pauschale") standen in der Fakturierungs-
+  Arbeitsliste, obwohl ihre Zeiten nie fakturiert, sondern über den Monatsblock
+  der Kundenakte abgerechnet werden — sie wurden erst beim Monatsabschluss
+  `exported` und waren bis dahin Dauergäste, die Anzahl, offene Zeit und
+  erwarteten Netto-Erlös verfälschten. Sie sind jetzt aus Liste, CSV-Export,
+  Digest-Mail und der Massenaktion „Als abgerechnet markieren" ausgenommen; ein
+  Hinweis über der Liste nennt die Zahl der ausgeblendeten Einträge, damit die
+  Kontrollfunktion erhalten bleibt. Kunden im Modus „monatliche Rechnung"
+  bleiben sichtbar — sie laufen über die normale Fakturierung.
 - Kunden-Sonderkonditionen, Pauschal-Modus (Feature 098): **die Monatszeile
   zeigte die Zahlung des Vormonats**. Retainer-Rechnungen gehen am Monatsende
   raus und werden Anfang des Folgemonats bezahlt; da Zahlungen bisher strikt

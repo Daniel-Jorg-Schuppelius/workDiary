@@ -31,7 +31,11 @@ class OpenTimesDigestCommand extends Command {
 
     public function handle(LateTimeEntryDetector $detector): int {
         $this->forEachOrganization(function (Organization $org) use ($detector): void {
+            // Gleiche Grundmenge wie die Arbeitsliste — inklusive Ausblendung
+            // saldo-geführter Kunden, sonst mahnt der Digest Zeiten an, die
+            // dort gar nicht auftauchen.
             $open = TimeEntry::query()
+                ->withoutLedgerManagedCustomers()
                 ->where('billable', true)
                 ->where('exported', false);
 

@@ -1,7 +1,7 @@
 ---
 title: "Offene Zeiten"
 topic: finance.open-times
-version: 1
+version: 2
 audience: []
 related:
     - finance.transfers
@@ -17,6 +17,14 @@ damit vor einem Rechnungslauf keine Zeiten durch die Lappen gehen.
 Was gilt als „offen"? Ein Eintrag, der noch von keinem
 Abrechnungsweg verbraucht wurde — weder von einer lokalen Rechnung
 noch vom Kundenkonto-Abschluss oder einer Faktura-Übergabe.
+
+**Nicht** in der Liste stehen Kunden mit laufendem Leistungssaldo
+(Sonderkonditionen im Modus „Kundenkonto" oder „Pauschale"): deren
+Zeiten werden nicht fakturiert, sondern über den Monatsblock der
+Kundenakte abgerechnet — sie wären hier Dauergäste. Ein Hinweis über
+der Liste nennt die Zahl der so ausgeblendeten Einträge. Kunden im
+Modus „monatliche Rechnung" bleiben sichtbar, sie laufen über die
+normale Fakturierung.
 
 Funktionen:
 

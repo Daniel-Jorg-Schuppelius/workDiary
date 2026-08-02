@@ -80,6 +80,7 @@ class OpenTimesController extends Controller {
                 ->count(),
             'staleAfterDays' => self::STALE_AFTER_DAYS,
             'latestBilledByCustomer' => $latestBilledByCustomer,
+            'ledgerManagedCount' => $this->ledgerManagedCount(),
             'invoicedMismatches' => $this->invoicedDiaryMismatches(),
             'canMarkBilled' => $this->canMarkBilled($request),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
@@ -182,7 +183,10 @@ class OpenTimesController extends Controller {
 
         // Mass-Update bewusst ohne Model-Events — wie InvoiceGenerator: keine
         // Writeback-/Audit-Kaskade für den einmaligen Altbestand-Abschluss.
+        // Saldo-geführte Kunden bleiben außen vor: die Aktion darf nie mehr
+        // treffen als die Liste zeigt, und dort schließt der Monatsabschluss ab.
         $count = TimeEntry::query()
+            ->withoutLedgerManagedCustomers()
             ->where('exported', false)
             ->whereDate('date', '<=', $cutoff->toDateString())
             ->when(! ($validated['include_non_billable'] ?? false), fn($q) => $q->where('billable', true))
@@ -268,6 +272,7 @@ class OpenTimesController extends Controller {
         $range = $withDateRange ? $this->effectiveRange($filters) : ['from' => null, 'to' => null];
 
         return TimeEntry::query()
+            ->withoutLedgerManagedCustomers()
             ->where('time_entries.exported', false)
             ->when($filters['billable'] === 'yes', fn($q) => $q->where('time_entries.billable', true))
             ->when($filters['billable'] === 'no', fn($q) => $q->where('time_entries.billable', false))
@@ -282,6 +287,19 @@ class OpenTimesController extends Controller {
             ->orderBy('customers.name')
             ->orderBy('projects.name')
             ->orderBy('time_entries.date');
+    }
+
+    /**
+     * Gegenprobe zur Ausblendung: offene Zeiten, die über einen Leistungssaldo
+     * laufen. Erhält die Kontrollfunktion der Liste — die Buchhaltung sieht,
+     * dass da etwas ist, statt dass es lautlos verschwindet.
+     */
+    private function ledgerManagedCount(): int {
+        return TimeEntry::query()
+            ->where('time_entries.exported', false)
+            ->where('time_entries.billable', true)
+            ->onlyLedgerManagedCustomers()
+            ->count();
     }
 
     /**

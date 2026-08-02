@@ -295,6 +295,55 @@ class TimeEntry extends Model {
         }
     }
 
+    /**
+     * Grenzt auf Zeiten ein, die über die Fakturierung laufen: Kunden mit
+     * laufendem Leistungssaldo (Feature 098, Konto- und Pauschal-Modus) fallen
+     * heraus. Deren Zeiten werden über den Monatsblock der Kundenakte
+     * abgerechnet und erst beim Monatsabschluss `exported` — in einer
+     * Fakturierungs-Arbeitsliste wären sie Dauergäste. Der Modus „monatliche
+     * Rechnung" bleibt drin, er nutzt die normale Pipeline.
+     *
+     * Subquery statt whereDoesntHave: greift auch in Queries, die `projects`
+     * bereits joinen, und lässt Einträge ohne Projekt (Verwaltung) sichtbar.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     * @return \Illuminate\Database\Eloquent\Builder<self>
+     */
+    public function scopeWithoutLedgerManagedCustomers(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder {
+        return $query->whereNotExists(function ($sub): void {
+            $sub->selectRaw('1')
+                ->from('projects as ledger_project')
+                ->join('customer_billing_agreements as ledger_agreement', 'ledger_agreement.customer_id', '=', 'ledger_project.customer_id')
+                ->whereColumn('ledger_project.id', 'time_entries.project_id')
+                ->where('ledger_agreement.active', true)
+                ->whereIn('ledger_agreement.mode', [
+                    \App\Enums\Billing\BillingAgreementMode::Account->value,
+                    \App\Enums\Billing\BillingAgreementMode::Retainer->value,
+                ]);
+        });
+    }
+
+    /**
+     * Gegenstück zu {@see scopeWithoutLedgerManagedCustomers()}: nur die dort
+     * ausgeblendeten Zeiten — für den Hinweis „läuft über ein Kundenkonto".
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     * @return \Illuminate\Database\Eloquent\Builder<self>
+     */
+    public function scopeOnlyLedgerManagedCustomers(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder {
+        return $query->whereExists(function ($sub): void {
+            $sub->selectRaw('1')
+                ->from('projects as ledger_project')
+                ->join('customer_billing_agreements as ledger_agreement', 'ledger_agreement.customer_id', '=', 'ledger_project.customer_id')
+                ->whereColumn('ledger_project.id', 'time_entries.project_id')
+                ->where('ledger_agreement.active', true)
+                ->whereIn('ledger_agreement.mode', [
+                    \App\Enums\Billing\BillingAgreementMode::Account->value,
+                    \App\Enums\Billing\BillingAgreementMode::Retainer->value,
+                ]);
+        });
+    }
+
     /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo {
         return $this->belongsTo(Project::class);

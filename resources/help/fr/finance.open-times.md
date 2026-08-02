@@ -1,7 +1,7 @@
 ---
 title: "Temps ouverts"
 topic: finance.open-times
-version: 1
+version: 2
 audience: []
 related:
     - finance.transfers
@@ -19,6 +19,14 @@ Qu'est-ce qui compte comme « ouvert » ? Une saisie qui n'a encore
 été consommée par aucun canal de facturation — ni par une facture
 locale, ni par la clôture du compte client, ni par une transmission
 de facturation.
+
+Les clients avec un solde courant (conditions particulières en mode
+« compte client » ou « forfait ») n'apparaissent **pas** dans la liste :
+leurs temps ne sont pas facturés mais réglés via le bloc mensuel de la
+fiche client — ils y resteraient en permanence. Une note au-dessus de la
+liste indique le nombre de saisies ainsi masquées. Les clients en mode
+« facture mensuelle » restent visibles, ils passent par la facturation
+normale.
 
 Fonctionnalités :
 

@@ -1,7 +1,7 @@
 ---
 title: "Tempi aperti"
 topic: finance.open-times
-version: 1
+version: 2
 audience: []
 related:
     - finance.transfers
@@ -18,6 +18,14 @@ fatturazione.
 Cosa conta come «aperto»? Una registrazione non ancora consumata da
 alcun canale di fatturazione — né da una fattura locale, né dalla
 chiusura del conto cliente, né da una trasmissione di fatturazione.
+
+I clienti con un saldo corrente (condizioni speciali in modalità «conto
+cliente» o «forfait») **non** compaiono nella lista: i loro tempi non
+vengono fatturati ma liquidati tramite il blocco mensile della scheda
+cliente — qui resterebbero in pianta stabile. Una nota sopra la lista
+indica quante registrazioni sono nascoste in questo modo. I clienti in
+modalità «fattura mensile» restano visibili, passano dalla fatturazione
+normale.
 
 Funzionalità:
 

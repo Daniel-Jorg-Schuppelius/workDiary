@@ -360,6 +360,7 @@ return [
             'non_billable' => 'nicht abrechenbar',
             'late' => 'Nachzügler',
         ],
+        'ledger_managed' => ':count offener Eintrag läuft über ein Kundenkonto bzw. eine Pauschale und wird auf der Kundenakte abgerechnet — hier bewusst ausgeblendet.|:count offene Einträge laufen über ein Kundenkonto bzw. eine Pauschale und werden auf der Kundenakte abgerechnet — hier bewusst ausgeblendet.',
         'mismatch' => [
             'heading' => 'Aufträge „Berechnet" mit offenen Zeiten',
             'hint' => 'Diese Aufträge sind als berechnet markiert, ihre abrechenbaren Zeiten wurden aber noch keinem Abrechnungsweg übergeben.',

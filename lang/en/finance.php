@@ -341,6 +341,7 @@ return [
             'non_billable' => 'non-billable',
             'late' => 'late entry',
         ],
+        'ledger_managed' => ':count open entry runs through a customer account or retainer and is settled on the customer file — deliberately hidden here.|:count open entries run through a customer account or retainer and are settled on the customer file — deliberately hidden here.',
         'mismatch' => [
             'heading' => 'Orders "Invoiced" with open times',
             'hint' => 'These orders are marked as invoiced, but their billable times have not been consumed by any billing path yet.',

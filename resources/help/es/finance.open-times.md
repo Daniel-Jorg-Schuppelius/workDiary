@@ -1,7 +1,7 @@
 ---
 title: "Tiempos abiertos"
 topic: finance.open-times
-version: 1
+version: 2
 audience: []
 related:
     - finance.transfers
@@ -19,6 +19,13 @@ ciclo de facturación.
 por ningún canal de facturación — ni por una factura local, ni por el
 cierre de la cuenta del cliente, ni por una transferencia de
 facturación.
+
+Los clientes con saldo corriente (condiciones especiales en modo «cuenta
+de cliente» o «cuota fija») **no** aparecen en la lista: sus tiempos no
+se facturan, sino que se liquidan mediante el bloque mensual de la ficha
+del cliente — aquí serían huéspedes permanentes. Una nota sobre la lista
+indica cuántos registros quedan ocultos así. Los clientes en modo
+«factura mensual» siguen visibles, pasan por la facturación normal.
 
 Funciones:
 
