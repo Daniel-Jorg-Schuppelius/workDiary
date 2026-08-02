@@ -13,11 +13,11 @@ declare(strict_types=1);
 namespace App\Services\Finance\Targets;
 
 use App\Enums\Finance\{TransferChannel, TransferTarget};
-use App\Models\{Customer, ExternalReference, TimeEntry};
+use App\Models\{Customer, ExternalReference};
 use App\Models\Finance\BillingTransfer;
 use App\Plugins\Easybill\Api\{EasybillClient, EasybillClientFactory};
 use App\Plugins\Easybill\{EasybillConfig, EasybillPlugin};
-use App\Services\Invoicing\BillableTimeAggregator;
+use App\Services\Finance\BillingPositionBuilder;
 use GuzzleHttp\Exception\ConnectException;
 use RuntimeException;
 
@@ -48,7 +48,7 @@ class EasybillTarget implements FacturationTarget {
     public const MARKER_PREFIX = 'workdiary:';
 
     public function __construct(
-        private readonly BillableTimeAggregator $aggregator,
+        private readonly BillingPositionBuilder $positionBuilder,
         private readonly EasybillClientFactory $clients,
     ) {}
 
@@ -82,9 +82,7 @@ class EasybillTarget implements FacturationTarget {
         $customerReference = $this->resolveCustomerReference($transfer, $client);
 
         $vatRate = (float) $config['default_vat_rate'];
-        $positions = $transfer->channel === TransferChannel::Time
-            ? $this->timePositions($transfer, $vatRate)
-            : $this->materialPositions($transfer, $vatRate);
+        $positions = $this->positions($transfer, $vatRate);
         if ($positions === []) {
             throw new RuntimeException((string) __('finance.error.no_sources'));
         }
@@ -231,61 +229,38 @@ class EasybillTarget implements FacturationTarget {
         );
     }
 
-    // ── Positionen (Aggregation identisch zu Lexoffice/sevDesk/orgaMAX) ─
+    // ── Positionen ──────────────────────────────────────────────────────
 
-    /** @return list<array<string, mixed>> */
-    private function timePositions(BillingTransfer $transfer, float $vatRate): array {
-        // Quellen über das gemeinsame Skelett (Vollaudit 2026-07, M41).
-        $entries = $this->loadTimeEntries($transfer);
-        $entriesById = $entries->keyBy('id');
+    /**
+     * Eine Position je eingefrorener {@see \App\Models\Finance\BillingTransferPosition}
+     * (MVP-487). easybill kennt keinen Artikelkatalog in workDiary — Bezeichnung,
+     * Einheit, Text und Preis kommen daher aus der Position.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function positions(BillingTransfer $transfer, float $vatRate): array {
+        // Vollständigkeits-Guard der Quellen bleibt (M41).
+        $transfer->channel === TransferChannel::Time
+            ? $this->loadTimeEntries($transfer)
+            : $this->loadMaterialUsages($transfer);
+
         $positions = [];
 
-        foreach ($this->aggregator->aggregate($entries) as $block) {
-            $hours = $block->billedHours();
-            if ($hours <= 0) {
+        foreach ($this->positionBuilder->positionsFor($transfer) as $position) {
+            if ($position->quantityFloat() <= 0) {
                 continue;
             }
-            /** @var TimeEntry|null $primary */
-            $primary = $entriesById->get($block->primaryEntryId);
-            $fallbackRate = $primary !== null && $primary->hourly_rate !== null
-                ? $primary->hourly_rate
-                : $transfer->customer->hourly_rate;
-            $rate = $block->hourlyRate() ?? $fallbackRate?->toFloat() ?? 0.0;
+
+            $description = trim($position->name . "\n" . (string) $position->description);
 
             $positions[] = [
                 'type' => 'POSITION',
-                'description' => $block->displayName($transfer),
-                'quantity' => $hours,
+                'description' => $description,
+                'quantity' => round($position->quantityFloat(), 2),
                 // easybill-Vertrag: Preise in Cents (150 = 1,50 €).
-                'single_price_net' => round($rate * 100, 2),
-                'vat_percent' => $vatRate,
-                'unit' => (string) __('finance.easybill.unit_hour'),
-            ];
-        }
-
-        return $positions;
-    }
-
-    /** @return list<array<string, mixed>> */
-    private function materialPositions(BillingTransfer $transfer, float $vatRate): array {
-        // Quellen über das gemeinsame Skelett (Vollaudit 2026-07, M41).
-        $usages = $this->loadMaterialUsages($transfer);
-
-        $positions = [];
-        foreach ($usages as $usage) {
-            $name = trim((string) $usage->description) ?: (string) __('Material');
-            $date = $usage->timesheet?->work_date?->format('d.m.Y');
-            if ($date !== null) {
-                $name .= ' (' . $date . ')';
-            }
-
-            $positions[] = [
-                'type' => 'POSITION',
-                'description' => $name,
-                'quantity' => round(($usage->quantity?->getValue()->toFloat() ?? 0.0), 2),
-                'single_price_net' => round(($usage->unit_price?->toFloat() ?? 0.0) * 100, 2),
-                'vat_percent' => $usage->tax_rate !== null ? round((float) $usage->tax_rate->getNumericValue(), 2) : $vatRate,
-                'unit' => trim((string) ($usage->unit ?? '')) ?: (string) __('finance.easybill.unit_piece'),
+                'single_price_net' => round($position->unitPriceFloat() * 100, 2),
+                'vat_percent' => $position->vat_rate !== null ? (float) $position->vat_rate : $vatRate,
+                'unit' => (string) ($position->unit_name ?: __('finance.easybill.unit_hour')),
             ];
         }
 

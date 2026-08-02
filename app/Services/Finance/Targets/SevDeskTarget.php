@@ -13,11 +13,11 @@ declare(strict_types=1);
 namespace App\Services\Finance\Targets;
 
 use App\Enums\Finance\{TransferChannel, TransferTarget};
-use App\Models\{Customer, ExternalReference, TimeEntry};
+use App\Models\{Customer, ExternalReference};
 use App\Models\Finance\BillingTransfer;
 use App\Plugins\SevDesk\Api\{SevDeskClient, SevDeskClientFactory};
 use App\Plugins\SevDesk\{SevDeskConfig, SevDeskPlugin};
-use App\Services\Invoicing\BillableTimeAggregator;
+use App\Services\Finance\BillingPositionBuilder;
 use GuzzleHttp\Exception\ConnectException;
 use RuntimeException;
 
@@ -49,7 +49,7 @@ class SevDeskTarget implements FacturationTarget {
     public const MARKER_PREFIX = 'workdiary:';
 
     public function __construct(
-        private readonly BillableTimeAggregator $aggregator,
+        private readonly BillingPositionBuilder $positionBuilder,
         private readonly SevDeskClientFactory $clients,
     ) {}
 
@@ -84,8 +84,8 @@ class SevDeskTarget implements FacturationTarget {
 
         $vatRate = (float) $config['default_vat_rate'];
         $positions = $transfer->channel === TransferChannel::Time
-            ? $this->timePositions($transfer, $vatRate, (int) $config['unity_hour_id'])
-            : $this->materialPositions($transfer, $vatRate, (int) $config['unity_piece_id']);
+            ? $this->positions($transfer, $vatRate, (int) $config['unity_hour_id'])
+            : $this->positions($transfer, $vatRate, (int) $config['unity_piece_id']);
         if ($positions === []) {
             throw new RuntimeException((string) __('finance.error.no_sources'));
         }
@@ -264,65 +264,45 @@ class SevDeskTarget implements FacturationTarget {
         );
     }
 
-    // ── Positionen (Aggregation identisch zu Lexoffice-/orgaMAX-Pfad) ───
+    // ── Positionen ──────────────────────────────────────────────────────
 
-    /** @return list<array<string, mixed>> */
-    private function timePositions(BillingTransfer $transfer, float $vatRate, int $unityHourId): array {
-        // Quellen über das gemeinsame Skelett (Vollaudit 2026-07, M41).
-        $entries = $this->loadTimeEntries($transfer);
-        $entriesById = $entries->keyBy('id');
+    /**
+     * Eine InvoicePos je eingefrorener
+     * {@see \App\Models\Finance\BillingTransferPosition} (MVP-487).
+     * sevDesk kennt in workDiary keinen Artikelkatalog — Bezeichnung, Einheit,
+     * Text und Preis kommen aus der Position; die Einheit wird auf die
+     * konfigurierte sevDesk-Unity abgebildet.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function positions(BillingTransfer $transfer, float $vatRate, int $unityId): array {
+        // Vollständigkeits-Guard der Quellen bleibt (M41).
+        $transfer->channel === TransferChannel::Time
+            ? $this->loadTimeEntries($transfer)
+            : $this->loadMaterialUsages($transfer);
+
         $positions = [];
 
-        foreach ($this->aggregator->aggregate($entries) as $block) {
-            $hours = $block->billedHours();
-            if ($hours <= 0) {
+        foreach ($this->positionBuilder->positionsFor($transfer) as $position) {
+            if ($position->quantityFloat() <= 0) {
                 continue;
             }
-            /** @var TimeEntry|null $primary */
-            $primary = $entriesById->get($block->primaryEntryId);
-            $fallbackRate = $primary !== null && $primary->hourly_rate !== null
-                ? $primary->hourly_rate
-                : $transfer->customer->hourly_rate;
-            $rate = $block->hourlyRate() ?? $fallbackRate?->toFloat() ?? 0.0;
 
-            $positions[] = [
+            $row = [
                 'objectName' => 'InvoicePos',
                 'mapAll' => true,
-                'name' => $block->displayName($transfer),
-                'quantity' => $hours,
-                'price' => round($rate, 2),
-                'taxRate' => $vatRate,
-                'unity' => ['id' => $unityHourId, 'objectName' => 'Unity'],
+                'name' => $position->name,
+                'quantity' => round($position->quantityFloat(), 2),
+                'price' => round($position->unitPriceFloat(), 2),
+                'taxRate' => $position->vat_rate !== null ? (float) $position->vat_rate : $vatRate,
+                'unity' => ['id' => $unityId, 'objectName' => 'Unity'],
             ];
-        }
 
-        return $positions;
-    }
-
-    /** @return list<array<string, mixed>> */
-    private function materialPositions(BillingTransfer $transfer, float $vatRate, int $unityPieceId): array {
-        // Quellen über das gemeinsame Skelett (Vollaudit 2026-07, M41).
-        $usages = $this->loadMaterialUsages($transfer);
-
-        $positions = [];
-        foreach ($usages as $usage) {
-            $name = trim((string) $usage->description) ?: (string) __('Material');
-            $date = $usage->timesheet?->work_date?->format('d.m.Y');
-            if ($date !== null) {
-                $name .= ' (' . $date . ')';
+            if (filled($position->description)) {
+                $row['text'] = (string) $position->description;
             }
 
-            $positions[] = [
-                'objectName' => 'InvoicePos',
-                'mapAll' => true,
-                'name' => $name,
-                'quantity' => round(($usage->quantity?->getValue()->toFloat() ?? 0.0), 2),
-                'price' => round($usage->unit_price?->toFloat() ?? 0.0, 2),
-                'taxRate' => $usage->tax_rate !== null ? round((float) $usage->tax_rate->getNumericValue(), 2) : $vatRate,
-                // sevDesk verlangt eine Katalog-Unity; freie Einheitstexte gibt
-                // der Vertrag nicht her — Standard: Stück (Pilot verifiziert).
-                'unity' => ['id' => $unityPieceId, 'objectName' => 'Unity'],
-            ];
+            $positions[] = $row;
         }
 
         return $positions;

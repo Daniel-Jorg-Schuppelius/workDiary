@@ -30,6 +30,8 @@ return [
         'billing_mode_hint' => 'Sustituye el estándar de la organización para este cliente. Con Lexoffice/DATEV la facturación local está bloqueada.',
         'billing_mode_org_hint' => 'Canal de facturación predeterminado de la organización. Los clientes pueden sustituirlo individualmente.',
         'channel' => 'Canal de traspaso',
+        'price_source' => 'Origen del precio',
+        'article' => 'Artículo',
         'target' => 'Destino del traspaso',
         'status' => 'Estado',
         'period' => 'Período de prestación',
@@ -55,6 +57,7 @@ return [
         'retry' => 'Reintentar',
         'download' => 'Descargar el paquete de entrega',
         'open_external' => 'Abrir externamente',
+        'edit_position' => 'Editar posición',
     ],
 
     'filter' => [
@@ -107,6 +110,23 @@ return [
         'unit_piece' => 'uds.',
     ],
 
+    'position' => [
+        'service_date' => '(fecha de servicio :date)',
+        'service_period' => '(periodo de servicio :from – :to)',
+        'unpriced_title' => 'Posiciones sin precio',
+        'unpriced_hint' => ':count posición(es) no tienen precio unitario. Normalmente falta una tarifa (cliente, proyecto, tarifa horaria estándar o servicio estándar) o el proyecto no es facturable. Compruébelo antes de enviar.',
+        'flat_service_hint' => 'El servicio estándar configurado no es por horas: revise la cantidad y el precio unitario de las posiciones afectadas.',
+    ],
+
+    'price_source' => [
+        'snapshot' => 'tarifa de los tiempos',
+        'entry' => 'tarifa de la entrada',
+        'customer' => 'tarifa del cliente',
+        'service' => 'precio del servicio estándar',
+        'org_default' => 'tarifa horaria estándar',
+        'none' => 'no se encontró tarifa',
+    ],
+
     'sevdesk' => [
         'introduction' => 'Entrega desde WorkDiary — :channel, período :from – :to.',
         'tax_text' => 'IVA :rate %',
@@ -120,6 +140,7 @@ return [
     'flash' => [
         'created' => 'Borrador del justificante de traspaso creado.',
         'confirmed' => 'Traspaso confirmado.',
+        'position_updated' => 'Posición actualizada.',
         'transferred' => 'Traspaso completado — las fuentes se han marcado como traspasadas.',
         'failed' => 'Traspaso marcado como fallido.',
         'voided' => 'Traspaso anulado — las fuentes se han liberado de nuevo.',

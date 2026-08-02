@@ -1857,6 +1857,10 @@ Route::middleware('auth')->group(function () {
             Route::post('{transfer}/uebertragen', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'execute'])->name('execute');
             Route::post('{transfer}/verwerfen', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'void'])->name('void');
             Route::get('{transfer}/download', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'download'])->name('download');
+            // Eingefrorene Positionen prüfen/bearbeiten (MVP-487/488).
+            Route::patch('{transfer}/positionen/{position}', [\App\Http\Controllers\Finance\TransferPositionController::class, 'update'])->name('positions.update');
+            Route::post('{transfer}/positionen/{position}/ki-text', [\App\Http\Controllers\Finance\TransferPositionController::class, 'suggest'])->name('positions.suggest');
+            Route::post('{transfer}/positionen/ki-text', [\App\Http\Controllers\Finance\TransferPositionController::class, 'suggestAll'])->name('positions.suggest-all');
         });
 
         // ── Offene Zeiten (MVP-460): Buchhaltungs-Arbeitsliste unabgerechneter

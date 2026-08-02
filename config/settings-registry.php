@@ -100,6 +100,11 @@ return [
     // Standard-Erlös je Stunde (MVP-482): greift erst, wenn weder Eintrag,
     // Kondition, Mitarbeiter, Tätigkeit, Projekt noch Kunde einen Satz setzen.
     'invoicing.default_hourly_rate' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:10000'],
+    // Standardleistung (MVP-486): Artikel des Faktura-Systems, aus dem
+    // Bezeichnung, Einheit, Standardtext, MwSt und — als Rückfall — der Preis
+    // kommen. Projekt-Abrechnungsregeln überschreiben sie.
+    'invoicing.default_service_article' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|max:64'],
+    'invoicing.default_service_plugin' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|max:32'],
     'ui.dashboard.recent_limit' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'min:1|max:1000'],
     'ui.calendar.slot_minutes' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'options' => [10, 15, 20, 30, 60]],
     // Neuigkeiten-Rail: externe Kommunikation bleibt installationsweit Opt-in.

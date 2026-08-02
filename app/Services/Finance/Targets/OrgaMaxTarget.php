@@ -13,11 +13,11 @@ declare(strict_types=1);
 namespace App\Services\Finance\Targets;
 
 use App\Enums\Finance\{TransferChannel, TransferTarget};
-use App\Models\{ExternalReference, OrgaMaxConnection, TimeEntry};
+use App\Models\{ExternalReference, OrgaMaxConnection};
 use App\Models\Finance\BillingTransfer;
 use App\Plugins\OrgaMax\Api\OrgaMaxClientFactory;
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
-use App\Services\Invoicing\BillableTimeAggregator;
+use App\Services\Finance\BillingPositionBuilder;
 use GuzzleHttp\Exception\ConnectException;
 use Orgamax\API\Client;
 use Orgamax\API\Endpoints\OrdersEndpoint;
@@ -47,7 +47,7 @@ class OrgaMaxTarget implements FacturationTarget {
     public const MARKER_PREFIX = 'workdiary:';
 
     public function __construct(
-        private readonly BillableTimeAggregator $aggregator,
+        private readonly BillingPositionBuilder $positionBuilder,
         private readonly OrgaMaxClientFactory $clients,
     ) {}
 
@@ -86,9 +86,7 @@ class OrgaMaxTarget implements FacturationTarget {
         $transfer->loadMissing(['items', 'customer']);
         $customerRef = $this->resolveCustomerReference($transfer);
 
-        $positions = $transfer->channel === TransferChannel::Time
-            ? $this->timePositions($transfer)
-            : $this->materialPositions($transfer);
+        $positions = $this->positions($transfer);
         if ($positions === []) {
             throw new RuntimeException((string) __('finance.error.no_sources'));
         }
@@ -173,51 +171,34 @@ class OrgaMaxTarget implements FacturationTarget {
         return $reference;
     }
 
-    // ── Positionen (Aggregation identisch zu Lexoffice-/Invoice-Pfad) ───
+    // ── Positionen ──────────────────────────────────────────────────────
 
-    /** @return list<array<string, mixed>> */
-    private function timePositions(BillingTransfer $transfer): array {
-        // Quellen über das gemeinsame Skelett (Vollaudit 2026-07, M41).
-        $entries = $this->loadTimeEntries($transfer);
-        $entriesById = $entries->keyBy('id');
+    /**
+     * Eine Auftragsposition je eingefrorener
+     * {@see \App\Models\Finance\BillingTransferPosition} (MVP-487). orgaMAX
+     * bekommt weiterhin frei erfasste Positionen (kein Artikelverweis), aber
+     * mit Bezeichnung, Einheit und Preis aus der geprüften Position.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function positions(BillingTransfer $transfer): array {
+        // Vollständigkeits-Guard der Quellen bleibt (M41).
+        $transfer->channel === TransferChannel::Time
+            ? $this->loadTimeEntries($transfer)
+            : $this->loadMaterialUsages($transfer);
+
         $positions = [];
 
-        foreach ($this->aggregator->aggregate($entries) as $block) {
-            $hours = $block->billedHours();
-            if ($hours <= 0) {
+        foreach ($this->positionBuilder->positionsFor($transfer) as $position) {
+            if ($position->quantityFloat() <= 0) {
                 continue;
-            }
-            /** @var TimeEntry|null $primary */
-            $primary = $entriesById->get($block->primaryEntryId);
-            $fallbackRate = $primary !== null && $primary->hourly_rate !== null
-                ? $primary->hourly_rate
-                : $transfer->customer->hourly_rate;
-            $rate = $block->hourlyRate() ?? $fallbackRate?->toFloat() ?? 0.0;
-
-            $positions[] = self::position($block->displayName($transfer), $hours, 'h', $rate);
-        }
-
-        return $positions;
-    }
-
-    /** @return list<array<string, mixed>> */
-    private function materialPositions(BillingTransfer $transfer): array {
-        // Quellen über das gemeinsame Skelett (Vollaudit 2026-07, M41).
-        $usages = $this->loadMaterialUsages($transfer);
-
-        $positions = [];
-        foreach ($usages as $usage) {
-            $name = trim((string) $usage->description) ?: (string) __('Material');
-            $date = $usage->timesheet?->work_date?->format('d.m.Y');
-            if ($date !== null) {
-                $name .= ' (' . $date . ')';
             }
 
             $positions[] = self::position(
-                $name,
-                round(($usage->quantity?->getValue()->toFloat() ?? 0.0), 2),
-                $usage->unit !== '' ? (string) $usage->unit : (string) __('invoicing.unit_piece'),
-                $usage->unit_price?->toFloat() ?? 0.0,
+                trim($position->name . (filled($position->description) ? "\n" . $position->description : '')),
+                round($position->quantityFloat(), 2),
+                (string) ($position->unit_name ?: __('invoicing.unit_piece')),
+                $position->unitPriceFloat(),
             );
         }
 

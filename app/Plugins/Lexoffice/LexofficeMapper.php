@@ -224,12 +224,16 @@ class LexofficeMapper {
                 $workedHours = (float) $group->sum(fn(\App\Services\Invoicing\BillingBlock $b) => $b->workedMinutes) / 60.0;
                 $unitPrice = $workedHours > 0 ? round($revenue / $workedHours, 2) : 0.0;
 
-                $rule = $project?->resolveBillingRule($kind?->value);
+                // Standardleistung (MVP-486): Projekt-Regel → Org-Einstellung.
+                $service = app(\App\Services\Invoicing\ServiceDefaultResolver::class)
+                    ->resolve($project?->organization, $project, $kind?->value);
 
-                $type = $rule?->item_type ?: 'service';
-                $unitName = $rule?->unit_name ?: 'Stunde';
-                $taxRate = $rule?->vat_rate !== null ? (float) $rule->vat_rate->getNumericValue() : $vatRate;
-                $netAmount = $rule?->net_unit_price !== null ? $rule->net_unit_price->toFloat() : $unitPrice;
+                $type = $service?->itemType ?: 'service';
+                $unitName = $service?->unitName ?: 'Stunde';
+                $taxRate = $service !== null && $service->vatRate !== null ? $service->vatRate : $vatRate;
+                // Der aus den Zeiten errechnete Satz gewinnt; der Listenpreis
+                // der Leistung füllt nur die Lücke (sonst 0,00 €).
+                $netAmount = $unitPrice > 0.0 ? $unitPrice : (($service !== null ? $service->netPrice : null) ?? 0.0);
 
                 $kindSuffix = $kind !== null ? ' [' . $kind->value . ']' : '';
                 // Endkunde (Fremdkunde) mit in die Buchungszeile übernehmen.
@@ -251,8 +255,11 @@ class LexofficeMapper {
                     ],
                 ];
 
-                if ($rule?->lexoffice_article_id) {
-                    $item['id'] = $rule->lexoffice_article_id;
+                if ($service?->articleId !== null) {
+                    $item['id'] = $service->articleId;
+                }
+                if (filled($service?->standardText)) {
+                    $item['description'] = (string) $service->standardText;
                 }
 
                 return $item;

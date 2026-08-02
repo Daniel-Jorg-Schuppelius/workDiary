@@ -124,9 +124,16 @@ class BillingTransferService {
         });
     }
 
-    /** draft → confirmed (sowie failed → confirmed als Retry). */
+    /**
+     * draft → confirmed (sowie failed → confirmed als Retry). Beim Bestätigen
+     * werden die Positionen eingefroren (MVP-487): ab hier senden die Ziele
+     * genau das, was die Vorschau zeigt — und der Text ist prüfbar.
+     */
     public function confirm(BillingTransfer $transfer, ?User $actor = null): BillingTransfer {
-        return $this->transition($transfer, TransferStatus::Confirmed, $actor);
+        $confirmed = $this->transition($transfer, TransferStatus::Confirmed, $actor);
+        app(BillingPositionBuilder::class)->freeze($confirmed);
+
+        return $confirmed->load('positions');
     }
 
     /**

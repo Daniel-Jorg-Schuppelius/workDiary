@@ -12,11 +12,11 @@ namespace App\Services\Finance\Targets;
 
 use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Enums\Finance\{TransferChannel, TransferTarget};
-use App\Models\{Customer, ExternalReference, TimeEntry};
+use App\Models\{Customer, ExternalReference};
 use App\Models\Finance\BillingTransfer;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeMapper, LexofficePlugin, LexofficeService};
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
-use App\Services\Invoicing\BillableTimeAggregator;
+use App\Services\Finance\BillingPositionBuilder;
 use RuntimeException;
 
 /**
@@ -24,12 +24,11 @@ use RuntimeException;
  * Lexoffice (Feature 045, „Lexoffice führt"): POST /v1/invoices OHNE
  * finalize — Lexoffice behält die Rechnungshoheit (Nummer, Finalisierung).
  *
- * - Kanal Zeit: Positionen über die bestehende Abrechnungsaggregation
- *   ({@see BillableTimeAggregator}) — dieselbe Taktung/Blockbildung wie bei
- *   lokalen Rechnungen und beim Voucher-Export; Beträge aus den
- *   rate-Snapshots der Einträge.
- * - Kanal Material: eine Position je Materialverwendung (Menge, Einheit,
- *   Einzelpreis netto).
+ * - Positionen: die beim Bestätigen eingefrorenen
+ *   {@see \App\Models\Finance\BillingTransferPosition} (MVP-487) — Taktung,
+ *   Preisfindung, Standardleistung und Text stecken im
+ *   {@see BillingPositionBuilder}, hier bleibt nur die Abbildung auf den
+ *   Lexoffice-Vertrag (inkl. Artikel-`id` und `description`).
  * - Kontakt: bestehende ExternalReference (contact) des Kunden; sonst
  *   Lookup über die Lexoffice-Kontaktsuche; als letzter Weg der bestehende
  *   pushContact-Mechanismus des {@see LexofficePlugin}.
@@ -44,7 +43,7 @@ class LexofficeTarget implements FacturationTarget {
     public const EXT_TYPE_INVOICE = 'invoice';
 
     public function __construct(
-        private readonly BillableTimeAggregator $aggregator,
+        private readonly BillingPositionBuilder $positions,
     ) {}
 
     public function supports(TransferTarget $target): bool {
@@ -62,9 +61,7 @@ class LexofficeTarget implements FacturationTarget {
         $defaults = (array) $config['defaults'];
         $currency = $customer->currency->value;
 
-        $lineItems = $transfer->channel === TransferChannel::Time
-            ? $this->timeLineItems($transfer, $currency, $defaults)
-            : $this->materialLineItems($transfer, $currency, $defaults);
+        $lineItems = $this->lineItems($transfer, $currency, $defaults);
 
         if ($lineItems === []) {
             throw new RuntimeException((string) __('finance.error.no_sources'));
@@ -126,83 +123,53 @@ class LexofficeTarget implements FacturationTarget {
     // ── Positionen ──────────────────────────────────────────────────────
 
     /**
-     * Zeit-Positionen über die BESTEHENDE Aggregation (Taktung + Blockbildung,
-     * identisch zu InvoiceGenerator/LexofficeMapper): ein lineItem je Block,
-     * quantity = aufgerundete Stunden, unitPrice = Satz aus den
-     * rate-Snapshots der Einträge.
+     * Ein lineItem je eingefrorener Position (MVP-487): Taktung, Preisfindung,
+     * Standardleistung und Text stecken im {@see BillingPositionBuilder} — hier
+     * bleibt nur die Abbildung auf den Lexoffice-Vertrag.
+     *
+     * Mit hinterlegter Standardleistung wird der Artikel referenziert
+     * (`id` + `type` service/material), sonst wie bisher `custom`. Der
+     * Positionstext (Standardtext + Leistungstext + Leistungsdatum) geht in
+     * `description` — bislang blieb das Feld ungenutzt.
      *
      * @param  array<string, mixed>  $defaults
      * @return list<array<string, mixed>>
      */
-    private function timeLineItems(BillingTransfer $transfer, string $currency, array $defaults): array {
-        // Quellen über das gemeinsame Skelett (Vollaudit 2026-07, M41).
-        $entries = $this->loadTimeEntries($transfer);
+    private function lineItems(BillingTransfer $transfer, string $currency, array $defaults): array {
+        // Vollständigkeits-Guard der Quellen bleibt (M41): fehlt eine Quelle,
+        // ist der Nachweis unvollständig — dann lieber gar nicht senden.
+        $transfer->channel === TransferChannel::Time
+            ? $this->loadTimeEntries($transfer)
+            : $this->loadMaterialUsages($transfer);
 
         $vatRate = (float) ($defaults['default_vat_rate'] ?? 19.0);
-        $entriesById = $entries->keyBy('id');
         $items = [];
 
-        foreach ($this->aggregator->aggregate($entries) as $block) {
-            $hours = $block->billedHours();
-            if ($hours <= 0) {
+        foreach ($this->positions->positionsFor($transfer) as $position) {
+            if ($position->quantityFloat() <= 0) {
                 continue;
             }
 
-            /** @var TimeEntry|null $primary */
-            $primary = $entriesById->get($block->primaryEntryId);
-            $fallbackRate = $primary !== null && $primary->hourly_rate !== null
-                ? $primary->hourly_rate
-                : $transfer->customer->hourly_rate;
-            $rate = $block->hourlyRate() ?? $fallbackRate?->toFloat() ?? 0.0;
-
-            $items[] = [
-                'type' => 'custom',
-                'name' => $block->displayName($transfer, withDescription: true),
-                'quantity' => $hours,
-                'unitName' => 'h',
+            $item = [
+                'type' => $position->article_id !== null ? 'service' : 'custom',
+                'name' => $position->name,
+                'quantity' => $position->quantityFloat(),
+                'unitName' => (string) ($position->unit_name ?: __('invoicing.unit_hour')),
                 'unitPrice' => [
                     'currency' => $currency,
-                    'netAmount' => round($rate, 2),
-                    'taxRatePercentage' => $vatRate,
+                    'netAmount' => round($position->unitPriceFloat(), 2),
+                    'taxRatePercentage' => $position->vat_rate !== null ? (float) $position->vat_rate : $vatRate,
                 ],
             ];
-        }
 
-        return $items;
-    }
-
-    /**
-     * Material-Positionen: ein lineItem je Materialverwendung (Menge,
-     * Einheit, Einzelpreis netto aus dem Verwendungs-Snapshot).
-     *
-     * @param  array<string, mixed>  $defaults
-     * @return list<array<string, mixed>>
-     */
-    private function materialLineItems(BillingTransfer $transfer, string $currency, array $defaults): array {
-        // Quellen über das gemeinsame Skelett (Vollaudit 2026-07, M41).
-        $usages = $this->loadMaterialUsages($transfer);
-
-        $vatRate = (float) ($defaults['default_vat_rate'] ?? 19.0);
-        $items = [];
-
-        foreach ($usages as $usage) {
-            $name = trim((string) $usage->description) ?: (string) __('Material');
-            $date = $usage->timesheet?->work_date?->format('d.m.Y');
-            if ($date !== null) {
-                $name .= ' (' . $date . ')';
+            if (filled($position->description)) {
+                $item['description'] = (string) $position->description;
+            }
+            if ($position->article_id !== null) {
+                $item['id'] = $position->article_id;
             }
 
-            $items[] = [
-                'type' => 'custom',
-                'name' => $name,
-                'quantity' => round(($usage->quantity?->getValue()->toFloat() ?? 0.0), 2),
-                'unitName' => $usage->unit !== '' ? (string) $usage->unit : (string) __('invoicing.unit_piece'),
-                'unitPrice' => [
-                    'currency' => $currency,
-                    'netAmount' => round($usage->unit_price?->toFloat() ?? 0.0, 2),
-                    'taxRatePercentage' => $vatRate,
-                ],
-            ];
+            $items[] = $item;
         }
 
         return $items;

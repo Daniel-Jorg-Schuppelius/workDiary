@@ -30,6 +30,8 @@ return [
         'billing_mode_hint' => 'Übersteuert den Organisations-Standard für diesen Kunden. Bei Lexoffice/DATEV ist die lokale Rechnungserstellung gesperrt.',
         'billing_mode_org_hint' => 'Standard-Fakturierungsweg der Organisation. Kunden können ihn einzeln übersteuern.',
         'channel' => 'Übergabekanal',
+        'price_source' => 'Preisquelle',
+        'article' => 'Artikel',
         'target' => 'Übergabeziel',
         'status' => 'Status',
         'period' => 'Leistungszeitraum',
@@ -55,6 +57,7 @@ return [
         'retry' => 'Erneut versuchen',
         'download' => 'Übergabepaket herunterladen',
         'open_external' => 'Extern öffnen',
+        'edit_position' => 'Position bearbeiten',
     ],
 
     'filter' => [
@@ -107,6 +110,24 @@ return [
         'unit_piece' => 'Stk.',
     ],
 
+    // Positionsaufbau der Übergabe (MVP-485–488).
+    'position' => [
+        'service_date' => '(Leistungsdatum :date)',
+        'service_period' => '(Leistungszeitraum :from – :to)',
+        'unpriced_title' => 'Positionen ohne Preis',
+        'unpriced_hint' => ':count Position(en) haben keinen Einzelpreis. Ursache ist meist ein fehlender Satz (Kunde, Projekt, Standard-Stundensatz oder Standardleistung) oder ein nicht abrechenbares Projekt. Vor dem Senden prüfen.',
+        'flat_service_hint' => 'Die hinterlegte Standardleistung ist keine Stundenleistung — Menge und Einzelpreis der betroffenen Positionen bitte prüfen.',
+    ],
+
+    'price_source' => [
+        'snapshot' => 'Satz aus den Zeiten',
+        'entry' => 'Satz des Eintrags',
+        'customer' => 'Kundensatz',
+        'service' => 'Preis der Standardleistung',
+        'org_default' => 'Standard-Stundensatz',
+        'none' => 'kein Satz gefunden',
+    ],
+
     'sevdesk' => [
         'introduction' => 'Übergabe aus WorkDiary — :channel, Zeitraum :from – :to.',
         'tax_text' => 'Umsatzsteuer :rate%',
@@ -120,6 +141,7 @@ return [
     'flash' => [
         'created' => 'Übergabenachweis-Entwurf erstellt.',
         'confirmed' => 'Übergabe bestätigt.',
+        'position_updated' => 'Position aktualisiert.',
         'transferred' => 'Übergabe abgeschlossen — Quellen wurden als übergeben markiert.',
         'failed' => 'Übergabe als fehlgeschlagen markiert.',
         'voided' => 'Übergabe verworfen — Quellen wurden wieder freigegeben.',

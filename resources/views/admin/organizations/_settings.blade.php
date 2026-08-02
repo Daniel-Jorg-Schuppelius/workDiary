@@ -68,6 +68,35 @@
                        class="input input-bordered w-full">
             </div>
 
+            {{-- Standardleistung (MVP-486): Artikel des Faktura-Systems für
+                 Bezeichnung, Einheit, Standardtext und Preis-Rückfall.
+                 Projekt-Abrechnungsregeln überschreiben sie. --}}
+            @php
+                $serviceArticles = $organization !== null
+                    ? \App\Models\LexofficeArticle::query()
+                        ->withoutGlobalScopes()
+                        ->where('organization_id', $organization->id)
+                        ->active()
+                        ->orderBy('name')
+                        ->get(['external_id', 'name', 'unit_name', 'net_unit_price', 'currency'])
+                    : collect();
+                $selectedArticle = (string) old('settings.invoicing.default_service_article', data_get($stored, 'invoicing.default_service_article', ''));
+            @endphp
+            <div class="fieldset md:col-span-2">
+                <label class="fieldset-label">{{ __('settings.invoicing.default_service_article') }}</label>
+                <select name="settings[invoicing][default_service_article]" class="select select-bordered w-full">
+                    <option value="">{{ __('settings.invoicing.default_service_none') }}</option>
+                    @foreach ($serviceArticles as $article)
+                        <option value="{{ $article->external_id }}" @selected($selectedArticle === (string) $article->external_id)>
+                            {{ $article->name }}@if ($article->unit_name) · {{ $article->unit_name }}@endif @if ($article->net_unit_price) · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($article->net_unit_price->toFloat(), 2) }} {{ $article->currency->value }}@endif
+                        </option>
+                    @endforeach
+                </select>
+                <p class="text-xs text-base-content/60 mt-1">
+                    {{ $serviceArticles->isEmpty() ? __('settings.invoicing.default_service_empty') : __('settings.invoicing.default_service_hint') }}
+                </p>
+            </div>
+
             {{-- Standard-Erlös: letzte Stufe der Satzhierarchie (MVP-482). --}}
             <div class="fieldset">
                 <label class="fieldset-label">{{ __('settings.invoicing.default_hourly_rate') }}</label>

@@ -29,4 +29,12 @@ return [
     'default_hourly_rate' => env('INVOICING_DEFAULT_HOURLY_RATE') !== null
         ? (float) env('INVOICING_DEFAULT_HOURLY_RATE')
         : null,
+
+    /*
+     * Standardleistung der Organisation: Fremd-ID eines Artikels im
+     * Faktura-System (aktuell nur Lexoffice führt einen Artikelkatalog).
+     * Projekt-Abrechnungsregeln überschreiben sie.
+     */
+    'default_service_article' => env('INVOICING_DEFAULT_SERVICE_ARTICLE'),
+    'default_service_plugin' => env('INVOICING_DEFAULT_SERVICE_PLUGIN', 'lexoffice'),
 ];

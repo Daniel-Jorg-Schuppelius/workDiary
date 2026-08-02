@@ -30,6 +30,8 @@ return [
         'billing_mode_hint' => 'Overrides the organisation default for this customer. With Lexoffice/DATEV, local invoicing is locked.',
         'billing_mode_org_hint' => 'Default billing channel of the organisation. Customers can override it individually.',
         'channel' => 'Transfer channel',
+        'price_source' => 'Price source',
+        'article' => 'Article',
         'target' => 'Transfer target',
         'status' => 'Status',
         'period' => 'Service period',
@@ -55,6 +57,7 @@ return [
         'retry' => 'Retry',
         'download' => 'Download handover package',
         'open_external' => 'Open externally',
+        'edit_position' => 'Edit position',
     ],
 
     'filter' => [
@@ -107,6 +110,23 @@ return [
         'unit_piece' => 'pcs',
     ],
 
+    'position' => [
+        'service_date' => '(service date :date)',
+        'service_period' => '(service period :from – :to)',
+        'unpriced_title' => 'Positions without a price',
+        'unpriced_hint' => ':count position(s) have no unit price. Usually a missing rate (customer, project, default hourly rate or default service) or a non-billable project. Please check before sending.',
+        'flat_service_hint' => 'The configured default service is not an hourly service — please check quantity and unit price of the affected positions.',
+    ],
+
+    'price_source' => [
+        'snapshot' => 'rate from the tracked time',
+        'entry' => 'entry rate',
+        'customer' => 'customer rate',
+        'service' => 'default service price',
+        'org_default' => 'default hourly rate',
+        'none' => 'no rate found',
+    ],
+
     'sevdesk' => [
         'introduction' => 'Handover from WorkDiary — :channel, period :from – :to.',
         'tax_text' => 'VAT :rate%',
@@ -120,6 +140,7 @@ return [
     'flash' => [
         'created' => 'Transfer receipt draft created.',
         'confirmed' => 'Transfer confirmed.',
+        'position_updated' => 'Position updated.',
         'transferred' => 'Transfer completed — sources have been marked as transferred.',
         'failed' => 'Transfer marked as failed.',
         'voided' => 'Transfer voided — sources have been released again.',

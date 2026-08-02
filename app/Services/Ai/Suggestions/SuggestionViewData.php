@@ -56,7 +56,7 @@ class SuggestionViewData {
     /**
      * Offene Vorschläge je Positions-ID.
      *
-     * @param Collection<int, Model> $items
+     * @param Collection<int, covariant Model> $items
      * @return Collection<int, AiTextSuggestion>
      */
     public function openSuggestionsFor(string $subjectType, Collection $items): Collection {

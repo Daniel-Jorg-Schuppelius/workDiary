@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Ai\Suggestions;
 
 use App\Models\Ai\AiTextSuggestion;
-use App\Models\{AuditLog, Invoice, InvoiceItem, Organization, Quote, QuoteItem, User};
+use App\Models\{AuditLog, Invoice, InvoiceItem, Organization, Quote, QuoteItem, TimeEntry, User};
+use App\Models\Finance\{BillingTransfer, BillingTransferPosition};
 use App\Services\Ai\{AiInvocationService, AiMemoryService};
 use App\Services\Ai\Contracts\AiRequestInterface;
 use App\Services\Ai\Dto\{AiInvocationResult, AiTextResult, AiTranslationResult, FormulateRequest, SummarizeRequest, TranslateRequest};
@@ -137,6 +138,53 @@ class ItemTextSuggestionService {
         return $this->invokeAndStore($organization, self::CAPABILITY_TRANSLATE, $request, $item, (string) $item->description, $user, $connectionId);
     }
 
+    /**
+     * Position einer Faktura-Übergabe (MVP-488) — nur solange die Übergabe
+     * bestätigt und noch nicht übertragen ist. Quelle des Vorschlags sind die
+     * Beschreibungen der gebündelten Zeiteinträge (Blocktext bei mehreren),
+     * nicht der bereits zusammengesetzte Positionstext; Standardtext der
+     * Leistung und Leistungsdatum kommen beim Übernehmen wieder davor bzw.
+     * dahinter.
+     */
+    public function suggestForTransferPosition(BillingTransfer $transfer, BillingTransferPosition $position, ?User $user, ?int $connectionId = null): AiTextSuggestion {
+        $this->assertTransferOpen($transfer);
+
+        $organization = $transfer->organization ?? Organization::query()->findOrFail($transfer->organization_id);
+        $customerId = (int) $transfer->customer_id;
+
+        $entryTexts = TimeEntry::query()
+            ->whereIn('id', is_array($position->source_ids) ? $position->source_ids : [])
+            ->pluck('description')
+            ->filter(static fn (?string $d): bool => filled($d))
+            ->map(static fn (?string $d): string => (string) $d)
+            ->values();
+
+        $period = $position->service_from?->format('d.m.Y');
+
+        if ($entryTexts->count() > 1) {
+            $request = new SummarizeRequest(
+                items: array_values($entryTexts->map(fn(string $t): string => $this->maskCustomerNames($organization, $t))->all()),
+                period: $period,
+                styleRules: $this->memory->styleRulesFor($organization, self::CAPABILITY_BLOCK, $customerId),
+                glossary: $this->memory->glossaryFor($organization, self::CAPABILITY_BLOCK, $customerId),
+            );
+
+            return $this->invokeAndStore($organization, self::CAPABILITY_BLOCK, $request, $position, (string) $position->description, $user, $connectionId);
+        }
+
+        $request = new FormulateRequest(
+            text: $this->maskCustomerNames($organization, (string) ($entryTexts->first() ?? $position->description)),
+            styleRules: $this->memory->styleRulesFor($organization, self::CAPABILITY_ITEM, $customerId),
+            glossary: $this->memory->glossaryFor($organization, self::CAPABILITY_ITEM, $customerId),
+            examples: $this->memory->examplesFor($organization, self::CAPABILITY_ITEM, $customerId),
+            contextHints: array_filter([
+                $period !== null ? 'Leistungsdatum: ' . $period : null,
+            ]),
+        );
+
+        return $this->invokeAndStore($organization, self::CAPABILITY_ITEM, $request, $position, (string) $position->description, $user, $connectionId);
+    }
+
     /** Angebotsposition (MVP-405) — nur im Entwurf. */
     public function suggestForQuoteItem(Quote $quote, QuoteItem $item, ?User $user, ?int $connectionId = null): AiTextSuggestion {
         if ($quote->status !== 'draft') {
@@ -172,6 +220,8 @@ class ItemTextSuggestionService {
             $this->assertInvoiceDraft($subject->invoice);
         } elseif ($subject instanceof QuoteItem && $subject->quote?->status !== 'draft') {
             throw new AiException('Die Position ist nicht mehr im Entwurf.');
+        } elseif ($subject instanceof BillingTransferPosition) {
+            $this->assertTransferOpen($subject->transfer);
         }
 
         $text = trim($editedText ?? $suggestion->suggestion);
@@ -333,6 +383,13 @@ class ItemTextSuggestionService {
     private function assertInvoiceDraft(?Invoice $invoice): void {
         if ($invoice === null || $invoice->status !== Invoice::STATUS_DRAFT) {
             throw new AiException('KI-Vorschläge sind nur im Rechnungsentwurf möglich.');
+        }
+    }
+
+    /** Übergabe-Positionen sind nur zwischen Bestätigen und Übertragen offen. */
+    private function assertTransferOpen(?BillingTransfer $transfer): void {
+        if ($transfer === null || $transfer->status !== \App\Enums\Finance\TransferStatus::Confirmed) {
+            throw new AiException('KI-Vorschläge sind nur bei einer bestätigten, noch nicht übertragenen Übergabe möglich.');
         }
     }
 

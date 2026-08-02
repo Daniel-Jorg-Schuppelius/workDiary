@@ -60,6 +60,10 @@ return [
         'billing_grouping_gap_minutes_hint' => 'Le registrazioni entro questo intervallo vengono unite in un blocco in fatturazione. Vuoto = nessun raggruppamento.',
         'default_hourly_rate' => 'Tariffa oraria predefinita (ricavo)',
         'default_hourly_rate_hint' => 'Vale quando né la registrazione, né la condizione cliente, né il collaboratore, né l’attività, né il progetto, né il cliente impostano una tariffa. Vuoto = i tempi senza tariffa restano a 0,00 €.',
+        'default_service_article' => 'Prestazione predefinita (articolo dal sistema di fatturazione)',
+        'default_service_none' => '— nessuna prestazione predefinita —',
+        'default_service_hint' => 'Fornisce denominazione, unità, testo standard e — se non si trova alcuna tariffa — il prezzo delle posizioni di trasferimento. Le regole di fatturazione del progetto la sovrascrivono.',
+        'default_service_empty' => 'Nessun articolo ancora sincronizzato — configurare il plugin Lexoffice e scaricare gli articoli.',
     ],
     'time_import' => [
         'heading' => 'Importazione tempi',

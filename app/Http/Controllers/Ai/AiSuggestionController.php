@@ -17,6 +17,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Ai\AiTextSuggestion;
 use App\Models\{Customer, Invoice, InvoiceItem, Quote, QuoteItem};
+use App\Models\Finance\BillingTransferPosition;
 use App\Services\Ai\AiMemoryService;
 use App\Services\Ai\Exceptions\AiException;
 use App\Services\Ai\Suggestions\ItemTextSuggestionService;
@@ -178,6 +179,10 @@ class AiSuggestionController extends Controller {
             Gate::authorize('update', $subject->invoice);
         } elseif ($subject instanceof QuoteItem) {
             Gate::authorize('update', $subject->quote);
+        } elseif ($subject instanceof BillingTransferPosition) {
+            // Übergabe-Positionen (MVP-488): wer bestätigen darf, darf auch den
+            // Text entscheiden.
+            Gate::authorize('confirm', $subject->transfer);
         } else {
             abort(404);
         }
@@ -189,6 +194,7 @@ class AiSuggestionController extends Controller {
         $customerId = match (true) {
             $subject instanceof InvoiceItem => $subject->invoice?->customer_id,
             $subject instanceof QuoteItem => $subject->quote?->customer_id,
+            $subject instanceof BillingTransferPosition => $subject->transfer?->customer_id,
             default => null,
         };
 

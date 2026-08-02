@@ -30,6 +30,8 @@ return [
         'billing_mode_hint' => 'Remplace le standard de l\'organisation pour ce client. Avec Lexoffice/DATEV, la facturation locale est verrouillée.',
         'billing_mode_org_hint' => 'Canal de facturation par défaut de l\'organisation. Les clients peuvent le remplacer individuellement.',
         'channel' => 'Canal de transfert',
+        'price_source' => 'Source du prix',
+        'article' => 'Article',
         'target' => 'Cible de transfert',
         'status' => 'Statut',
         'period' => 'Période de prestation',
@@ -55,6 +57,7 @@ return [
         'retry' => 'Réessayer',
         'download' => 'Télécharger le paquet de remise',
         'open_external' => 'Ouvrir en externe',
+        'edit_position' => 'Modifier la position',
     ],
 
     'filter' => [
@@ -107,6 +110,23 @@ return [
         'unit_piece' => 'pcs',
     ],
 
+    'position' => [
+        'service_date' => '(date de prestation :date)',
+        'service_period' => '(période de prestation :from – :to)',
+        'unpriced_title' => 'Positions sans prix',
+        'unpriced_hint' => ':count position(s) n’ont pas de prix unitaire. Cause habituelle : aucun taux (client, projet, taux horaire par défaut ou prestation par défaut) ou projet non facturable. À vérifier avant l’envoi.',
+        'flat_service_hint' => 'La prestation par défaut n’est pas horaire — veuillez vérifier la quantité et le prix unitaire des positions concernées.',
+    ],
+
+    'price_source' => [
+        'snapshot' => 'taux issu des temps',
+        'entry' => 'taux de la saisie',
+        'customer' => 'taux client',
+        'service' => 'prix de la prestation par défaut',
+        'org_default' => 'taux horaire par défaut',
+        'none' => 'aucun taux trouvé',
+    ],
+
     'sevdesk' => [
         'introduction' => 'Remise depuis WorkDiary — :channel, période :from – :to.',
         'tax_text' => 'TVA :rate %',
@@ -120,6 +140,7 @@ return [
     'flash' => [
         'created' => 'Brouillon du justificatif de transfert créé.',
         'confirmed' => 'Transfert confirmé.',
+        'position_updated' => 'Position mise à jour.',
         'transferred' => 'Transfert terminé — les sources ont été marquées comme transférées.',
         'failed' => 'Transfert marqué comme échoué.',
         'voided' => 'Transfert annulé — les sources ont été libérées.',

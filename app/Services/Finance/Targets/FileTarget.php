@@ -13,9 +13,10 @@ namespace App\Services\Finance\Targets;
 use App\Enums\Finance\{TransferChannel, TransferTarget};
 use App\Models\Finance\BillingTransfer;
 use App\Models\{MaterialUsage, TimeEntry};
-use App\Services\Invoicing\BillableTimeAggregator;
+use App\Services\Finance\BillingPositionBuilder;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\CSV\StringHelper;
+use CommonToolkit\Helper\Data\StringHelper as TextHelper;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
@@ -37,10 +38,10 @@ class FileTarget implements FacturationTarget {
 
     public const BASE_PATH = 'exports/finance';
 
-    private const BOM = \CommonToolkit\Helper\Data\StringHelper::BOM_UTF8;
+    private const BOM = TextHelper::BOM_UTF8;
 
     public function __construct(
-        private readonly BillableTimeAggregator $aggregator,
+        private readonly BillingPositionBuilder $positions,
     ) {}
 
     public function supports(TransferTarget $target): bool {
@@ -91,27 +92,25 @@ class FileTarget implements FacturationTarget {
 
     /**
      * Zeit-Kanal: Datum, Mitarbeiter, Projekt/Auftrag, Tätigkeit, Stunden,
-     * Satz, Betrag, Kommentar — eine Zeile je Abrechnungsblock, abschließend
-     * die Summenzeile.
+     * Satz, Betrag, Kommentar — eine Zeile je eingefrorener Position
+     * (MVP-487), abschließend die Summenzeile.
      *
-     * Blockbildung über den {@see BillableTimeAggregator} wie bei den
-     * API-Zielen und der lokalen Rechnung: das Paket zeigt damit dieselben
-     * Positionen wie die Vorschau. Vorher stand hier eine Zeile je Zeiteintrag
-     * mit den ungetakteten Item-Snapshots — bei gesetzter Taktung/Lücke wich
-     * das Paket vom tatsächlich Abgerechneten ab. Ohne Taktung (1 Min) und
-     * ohne Zusammenfassung (Lücke 0) bleibt es bei einer Zeile je Eintrag.
+     * Damit zeigt das Paket exakt dieselben Positionen wie die Vorschau und die
+     * API-Ziele: Taktung, Zusammenfassung, Preisfindung und Standardleistung
+     * stecken im {@see BillingPositionBuilder}. Vorher stand hier eine Zeile je
+     * Zeiteintrag mit den ungetakteten Item-Snapshots.
      *
      * @return list<string>
      */
     private function timeLines(BillingTransfer $transfer): array {
         $sourceIds = $transfer->items->where('source_type', TimeEntry::class)->pluck('source_id')->all();
 
-        $entries = TimeEntry::query()
+        /** @var \Illuminate\Support\Collection<int, TimeEntry> $entriesById */
+        $entriesById = TimeEntry::query()
             ->whereIn('id', $sourceIds)
-            ->with(['user:id,name', 'project.parent', 'project.customer'])
-            ->orderBy('date')
-            ->get();
-        $entriesById = $entries->keyBy('id');
+            ->with('user:id,name')
+            ->get()
+            ->keyBy('id');
 
         $rows = [StringHelper::encodeLine([
             (string) __('finance.csv.date'),
@@ -127,42 +126,32 @@ class FileTarget implements FacturationTarget {
         $totalHours = 0.0;
         $totalAmount = 0.0;
 
-        foreach ($this->aggregator->aggregate($entries) as $block) {
-            $hours = $block->billedHours();
+        foreach ($this->positions->positionsFor($transfer) as $position) {
+            $hours = $position->quantityFloat();
             if ($hours <= 0) {
                 continue;
             }
 
-            /** @var TimeEntry|null $primary */
-            $primary = $entriesById->get($block->primaryEntryId);
-            $fallbackRate = $primary !== null && $primary->hourly_rate !== null
-                ? $primary->hourly_rate
-                : $transfer->customer->hourly_rate;
-            $rate = $block->hourlyRate() ?? $fallbackRate?->toFloat() ?? 0.0;
-            $amount = round($hours * $rate, 2);
-
-            /** @var \Illuminate\Support\Collection<int, TimeEntry> $blockEntries */
-            $blockEntries = collect($block->entryIds)
+            // Ein Block kann Zeiten mehrerer Mitarbeiter bündeln.
+            $employees = collect($position->source_ids ?? [])
                 ->map(fn(int $id): ?TimeEntry => $entriesById->get($id))
-                ->filter();
+                ->filter()
+                ->map(fn(TimeEntry $e): string => (string) ($e->user->name ?? ''))
+                ->filter()->unique()->implode(', ');
 
             $rows[] = StringHelper::encodeLine([
-                $block->firstStart?->toDateString() ?? $primary?->date?->toDateString() ?? '',
-                // Ein Block kann Zeiten mehrerer Mitarbeiter bündeln.
-                $blockEntries->map(fn(TimeEntry $e): string => (string) ($e->user->name ?? ''))
-                    ->filter()->unique()->implode(', '),
-                (string) $block->project?->name,
-                $block->kind?->label() ?? '',
+                $position->service_from?->toDateString() ?? '',
+                $employees,
+                (string) $position->project?->name,
+                (string) $position->kind,
                 self::num($hours),
-                self::num($rate),
-                self::num($amount),
-                $block->description ?? $blockEntries
-                    ->map(fn(TimeEntry $e): string => trim((string) $e->description))
-                    ->filter()->unique()->implode(' | '),
+                self::num($position->unitPriceFloat()),
+                self::num($position->amountFloat()),
+                TextHelper::normalizeWhitespace((string) $position->description),
             ], ';');
 
             $totalHours += $hours;
-            $totalAmount += $amount;
+            $totalAmount += $position->amountFloat();
         }
 
         $rows[] = StringHelper::encodeLine([

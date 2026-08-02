@@ -123,6 +123,16 @@ class BillingTransfer extends Model {
         return $this->hasMany(BillingTransferItem::class);
     }
 
+    /**
+     * Eingefrorene Rechnungssicht (MVP-487): entsteht beim Bestätigen, wird
+     * von den Zielen 1:1 gesendet.
+     *
+     * @return HasMany<BillingTransferPosition, $this>
+     */
+    public function positions(): HasMany {
+        return $this->hasMany(BillingTransferPosition::class)->orderBy('position');
+    }
+
     /** @return HasMany<BillingTransferEvent, $this> */
     public function events(): HasMany {
         return $this->hasMany(BillingTransferEvent::class);

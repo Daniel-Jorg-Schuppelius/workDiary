@@ -15,12 +15,12 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, MaterialUsage, TimeEntry, User};
 use App\Models\Finance\BillingTransfer;
-use App\Services\Finance\{BillingModeResolver, BillingTransferException, BillingTransferService};
+use App\Services\Ai\Suggestions\{ItemTextSuggestionService, SuggestionViewData};
+use App\Services\Finance\{BillingModeResolver, BillingPositionBuilder, BillingTransferException, BillingTransferService};
 use App\Services\Finance\Targets\{FacturationTargetRegistry, FileTarget};
-use App\Services\Invoicing\BillableTimeAggregator;
 use App\Support\Sqid;
-use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -167,7 +167,7 @@ class FinanceTransferController extends Controller {
             MaterialUsage::class => ['timesheet:id,work_date,project_id', 'timesheet.project:id,name'],
         ]);
 
-        $positions = $this->previewPositions($transfer);
+        $positions = $this->transferPositions($transfer);
 
         return view('finance.transfers.show', [
             'transfer' => $transfer,
@@ -175,9 +175,19 @@ class FinanceTransferController extends Controller {
             // Summe der entstehenden Positionen: bei gesetzter Taktung liegt sie
             // über der Quellsumme des Transfers (die den Nachweis abbildet).
             'positionTotals' => [
-                'quantity' => array_sum(array_column($positions, 'quantity_raw')),
-                'amount' => array_sum(array_column($positions, 'amount_raw')),
+                'quantity' => (float) $positions->sum(fn($p): float => $p->quantityFloat()),
+                'amount' => (float) $positions->sum(fn($p): float => $p->amountFloat()),
             ],
+            'unpricedPositions' => $positions->filter(fn($p): bool => $p->isUnpriced())->count(),
+            // Bearbeiten nur zwischen Bestätigen und Übertragen; Menge/Preis
+            // zusätzlich nur mit finance.config (sie bestimmen den Betrag).
+            'canEditPositions' => $transfer->status === TransferStatus::Confirmed
+                && Gate::allows('confirm', $transfer),
+            'canEditPositionPrices' => Gate::allows(\App\Enums\User\Permission::FinanceConfig->value),
+            'aiUsable' => $transfer->status === TransferStatus::Confirmed
+                && app(SuggestionViewData::class)->capabilityUsable(ItemTextSuggestionService::CAPABILITY_ITEM),
+            'aiSuggestions' => app(SuggestionViewData::class)
+                ->openSuggestionsFor((new \App\Models\Finance\BillingTransferPosition)->getMorphClass(), $positions),
         ]);
     }
 
@@ -189,6 +199,15 @@ class FinanceTransferController extends Controller {
             $this->service->confirm($transfer, $this->actor());
         } catch (BillingTransferException $e) {
             return back()->withErrors(['status' => $e->getMessage()]);
+        }
+
+        // Preflight (MVP-485): eine Nullrechnung soll auffallen, bevor sie beim
+        // Zielsystem landet — gemeldet, nicht blockiert.
+        $unpriced = $transfer->positions()->where('unit_price', '<=', 0)->count();
+        if ($unpriced > 0) {
+            return back()
+                ->with('success', __('finance.flash.confirmed'))
+                ->with('warning', __('finance.position.unpriced_hint', ['count' => $unpriced]));
         }
 
         return back()->with('success', __('finance.flash.confirmed'));
@@ -304,74 +323,14 @@ class FinanceTransferController extends Controller {
     }
 
     /**
-     * Vorschau-Positionen wie das Ziel sie erzeugen würde: Zeit über die
-     * bestehende Aggregation (Taktung!), Material je Verwendung.
+     * Positionen für die Anzeige: im Entwurf frisch berechnet, ab dem
+     * Bestätigen die eingefrorenen (MVP-487). Beides liefert derselbe
+     * {@see BillingPositionBuilder} — deshalb zeigt die Vorschau, was gesendet
+     * wird.
      *
-     * @return list<array{name: string, quantity: string, unit: string, unit_price: string, amount: string, quantity_raw: float, amount_raw: float}>
+     * @return Collection<int, \App\Models\Finance\BillingTransferPosition>
      */
-    private function previewPositions(BillingTransfer $transfer): array {
-        $positions = [];
-
-        if ($transfer->channel === TransferChannel::Time) {
-            $entries = $transfer->items
-                ->where('source_type', TimeEntry::class)
-                ->map(fn($item) => $item->source)
-                ->filter()
-                ->values();
-
-            if ($entries->isEmpty()) {
-                return [];
-            }
-
-            $entries = TimeEntry::query()
-                ->whereIn('id', $entries->pluck('id'))
-                ->with(['project.parent', 'project.customer', 'project.foreignCustomer'])
-                ->orderBy('date')
-                ->get();
-            $entriesById = $entries->keyBy('id');
-
-            foreach (app(BillableTimeAggregator::class)->aggregate($entries) as $block) {
-                $hours = $block->billedHours();
-                if ($hours <= 0) {
-                    continue;
-                }
-                $primary = $entriesById->get($block->primaryEntryId);
-                $fallbackRate = $primary !== null && $primary->hourly_rate !== null
-                    ? $primary->hourly_rate
-                    : $transfer->customer->hourly_rate;
-                $rate = $block->hourlyRate() ?? $fallbackRate?->toFloat() ?? 0.0;
-
-                $projectName = $block->project?->name ?: (string) __('Leistung');
-                $kindSuffix = $block->kind !== null ? ' [' . $block->kind->value . ']' : '';
-
-                $positions[] = [
-                    'name' => $projectName . $kindSuffix,
-                    'quantity' => NumberHelper::toGermanFormat($hours, 2, withThousandsSeparator: true),
-                    'unit' => 'h',
-                    'unit_price' => NumberHelper::toGermanFormat($rate, 2, withThousandsSeparator: true),
-                    'amount' => NumberHelper::toGermanFormat(round($hours * $rate, 2), 2, withThousandsSeparator: true),
-                    'quantity_raw' => $hours,
-                    'amount_raw' => round($hours * $rate, 2),
-                ];
-            }
-
-            return $positions;
-        }
-
-        foreach ($transfer->items->where('source_type', MaterialUsage::class) as $item) {
-            /** @var MaterialUsage|null $usage */
-            $usage = $item->source;
-            $positions[] = [
-                'name' => $usage !== null ? (trim((string) $usage->description) ?: (string) __('Material')) : (string) __('finance.field.source_deleted'),
-                'quantity' => NumberHelper::toGermanFormat((float) ($item->quantity ?? 0), 2, withThousandsSeparator: true),
-                'unit' => $usage->unit ?? '',
-                'unit_price' => NumberHelper::toGermanFormat(($usage->unit_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true),
-                'amount' => NumberHelper::toGermanFormat((float) ($item->amount ?? 0), 2, withThousandsSeparator: true),
-                'quantity_raw' => (float) ($item->quantity ?? 0),
-                'amount_raw' => (float) ($item->amount ?? 0),
-            ];
-        }
-
-        return $positions;
+    private function transferPositions(BillingTransfer $transfer): Collection {
+        return app(BillingPositionBuilder::class)->positionsFor($transfer);
     }
 }

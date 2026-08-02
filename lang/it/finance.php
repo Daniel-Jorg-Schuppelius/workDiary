@@ -30,6 +30,8 @@ return [
         'billing_mode_hint' => 'Sostituisce lo standard dell\'organizzazione per questo cliente. Con Lexoffice/DATEV la fatturazione locale è bloccata.',
         'billing_mode_org_hint' => 'Canale di fatturazione predefinito dell\'organizzazione. I clienti possono sostituirlo singolarmente.',
         'channel' => 'Canale di trasferimento',
+        'price_source' => 'Origine del prezzo',
+        'article' => 'Articolo',
         'target' => 'Destinazione del trasferimento',
         'status' => 'Stato',
         'period' => 'Periodo di prestazione',
@@ -55,6 +57,7 @@ return [
         'retry' => 'Riprova',
         'download' => 'Scaricare il pacchetto di consegna',
         'open_external' => 'Aprire esternamente',
+        'edit_position' => 'Modifica posizione',
     ],
 
     'filter' => [
@@ -107,6 +110,23 @@ return [
         'unit_piece' => 'pz.',
     ],
 
+    'position' => [
+        'service_date' => '(data della prestazione :date)',
+        'service_period' => '(periodo della prestazione :from – :to)',
+        'unpriced_title' => 'Posizioni senza prezzo',
+        'unpriced_hint' => ':count posizione/i non hanno un prezzo unitario. Di norma manca una tariffa (cliente, progetto, tariffa oraria predefinita o prestazione predefinita) oppure il progetto non è fatturabile. Verificare prima dell’invio.',
+        'flat_service_hint' => 'La prestazione predefinita non è oraria — verificare quantità e prezzo unitario delle posizioni interessate.',
+    ],
+
+    'price_source' => [
+        'snapshot' => 'tariffa dai tempi',
+        'entry' => 'tariffa della registrazione',
+        'customer' => 'tariffa cliente',
+        'service' => 'prezzo della prestazione predefinita',
+        'org_default' => 'tariffa oraria predefinita',
+        'none' => 'nessuna tariffa trovata',
+    ],
+
     'sevdesk' => [
         'introduction' => 'Consegna da WorkDiary — :channel, periodo :from – :to.',
         'tax_text' => 'IVA :rate%',
@@ -120,6 +140,7 @@ return [
     'flash' => [
         'created' => 'Bozza della ricevuta di trasferimento creata.',
         'confirmed' => 'Trasferimento confermato.',
+        'position_updated' => 'Posizione aggiornata.',
         'transferred' => 'Trasferimento completato — le fonti sono state contrassegnate come trasferite.',
         'failed' => 'Trasferimento contrassegnato come fallito.',
         'voided' => 'Trasferimento annullato — le fonti sono state nuovamente liberate.',

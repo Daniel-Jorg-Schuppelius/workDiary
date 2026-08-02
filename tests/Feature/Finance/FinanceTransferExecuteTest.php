@@ -179,6 +179,57 @@ class FinanceTransferExecuteTest extends TestCase {
         });
     }
 
+    /**
+     * Standardleistung (MVP-486): Artikelbezug, Bezeichnung, Einheit und
+     * Positionstext gehen mit — vorher schickte das Ziel immer `custom` mit
+     * dem Projektnamen und ohne Beschreibung.
+     */
+    public function test_execute_lexoffice_sends_default_service_article_and_text(): void {
+        \App\Models\LexofficeArticle::create([
+            'organization_id' => $this->organization->id,
+            'external_id' => 'art-42',
+            'name' => 'IT-Dienstleistung',
+            'description' => 'Betreuung der IT-Systeme nach Aufwand.',
+            'type' => 'service',
+            'unit_name' => 'Stunde',
+            'net_unit_price' => '120.0000',
+            'currency' => 'EUR',
+            'vat_rate' => '19.00',
+        ]);
+        $this->organization->update(['settings' => array_replace_recursive(
+            (array) $this->organization->settings,
+            ['invoicing' => ['default_service_article' => 'art-42']],
+        )]);
+        app(\App\Services\Invoicing\ServiceDefaultResolver::class)->flush();
+
+        $this->makeTimeEntry(['description' => 'Serverwartung']);
+        $transfer = $this->confirmedTransfer(TransferTarget::Lexoffice);
+
+        $fake = FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'contact-uuid-1']]], 200),
+            'https://api.lexoffice.io/v1/invoices*' => FakePluginHttp::response(['id' => 'lex-invoice-2'], 201),
+        ]);
+
+        $this->post(route('finance.transfers.execute', $transfer))->assertSessionHasNoErrors();
+
+        $fake->assertSent(function (RequestInterface $request): bool {
+            if (! str_contains((string) $request->getUri(), '/invoices')) {
+                return false;
+            }
+            $item = json_decode((string) $request->getBody(), true)['lineItems'][0] ?? [];
+
+            return ($item['id'] ?? null) === 'art-42'
+                && ($item['type'] ?? null) === 'service'
+                && ($item['name'] ?? null) === 'IT-Dienstleistung'
+                && ($item['unitName'] ?? null) === 'Stunde'
+                // Kundensatz (90) schlägt den Listenpreis der Leistung (120).
+                && (float) ($item['unitPrice']['netAmount'] ?? 0) === 90.0
+                && str_contains((string) ($item['description'] ?? ''), 'Betreuung der IT-Systeme')
+                && str_contains((string) ($item['description'] ?? ''), 'Serverwartung')
+                && str_contains((string) ($item['description'] ?? ''), '01.04.2030');
+        });
+    }
+
     public function test_execute_lexoffice_uses_existing_contact_reference(): void {
         $this->makeTimeEntry();
         $transfer = $this->confirmedTransfer(TransferTarget::Lexoffice);

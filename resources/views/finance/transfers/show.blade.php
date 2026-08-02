@@ -165,9 +165,18 @@
         <x-validation-errors class="mt-3" />
     </x-card>
 
-    {{-- Entstehende Positionen (Zeit: Taktungs-Blöcke, Material: je Verwendung) --}}
+    {{-- Entstehende Positionen: im Entwurf berechnet, ab „Bestätigt" eingefroren
+         und prüfbar (MVP-487/488). --}}
     <x-card>
-        <h3 class="mb-2 text-sm font-semibold">{{ __('finance.title.positions') }}</h3>
+        <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <h3 class="text-sm font-semibold">{{ __('finance.title.positions') }}</h3>
+            @if ($aiUsable && $positions->isNotEmpty())
+                <form method="POST" action="{{ route('finance.transfers.positions.suggest-all', $transfer) }}">
+                    @csrf
+                    <x-button type="submit" tone="ghost" size="xs" icon="auto_awesome">{{ __('ai.suggestion.suggest_all') }}</x-button>
+                </form>
+            @endif
+        </div>
         <x-table>
             <x-slot:head>
                 <tr>
@@ -179,19 +188,89 @@
                 </tr>
             </x-slot:head>
             @forelse ($positions as $position)
-                <tr>
-                    <td>{{ $position['name'] }}</td>
-                    <td class="text-right tabular-nums">{{ $position['quantity'] }}</td>
-                    <td>{{ $position['unit'] }}</td>
-                    <td class="text-right tabular-nums">{{ $position['unit_price'] }}</td>
-                    <td class="text-right tabular-nums">{{ $position['amount'] }}</td>
+                <tr @class(['bg-warning/5' => $position->isUnpriced()])>
+                    <td>
+                        <div class="flex items-start gap-2">
+                            <div class="min-w-0">
+                                <span class="font-medium">{{ $position->name }}</span>
+                                @if (filled($position->description))
+                                    <p class="mt-0.5 whitespace-pre-line text-xs text-base-content/60">{{ $position->description }}</p>
+                                @endif
+                                <p class="mt-0.5 text-xs text-base-content/50">
+                                    {{ __('finance.field.price_source') }}: {{ $position->priceSourceLabel() }}
+                                    @if ($position->article_id !== null)
+                                        · {{ __('finance.field.article') }}: {{ $position->article_id }}
+                                    @endif
+                                </p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($position->quantityFloat(), 2, withThousandsSeparator: true) }}</td>
+                    <td>{{ $position->unit_name }}</td>
+                    <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($position->unitPriceFloat(), 2, withThousandsSeparator: true) }}</td>
+                    <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($position->amountFloat(), 2, withThousandsSeparator: true) }}</td>
                 </tr>
+
+                @if ($canEditPositions && $position->exists)
+                    {{-- Nachbessern vor dem Senden: Text immer, Menge/Preis nur mit finance.config. --}}
+                    <tr>
+                        <td colspan="5" class="py-1">
+                            <details class="text-xs">
+                                <summary class="cursor-pointer text-base-content/60">{{ __('finance.action.edit_position') }}</summary>
+                                <form method="POST" action="{{ route('finance.transfers.positions.update', [$transfer, $position]) }}"
+                                      class="mt-2 grid gap-2 md:grid-cols-4">
+                                    @csrf
+                                    @method('PATCH')
+                                    <div class="md:col-span-4">
+                                        <input type="text" name="name" maxlength="500" value="{{ $position->name }}"
+                                               class="input input-bordered input-sm w-full" required>
+                                    </div>
+                                    <div class="md:col-span-4">
+                                        <textarea name="description" rows="3" maxlength="4000"
+                                                  class="textarea textarea-bordered w-full">{{ $position->description }}</textarea>
+                                    </div>
+                                    @if ($canEditPositionPrices)
+                                        <input type="number" step="0.001" min="0" name="quantity" value="{{ $position->quantityFloat() }}"
+                                               class="input input-bordered input-sm w-full" aria-label="{{ __('finance.csv.quantity') }}">
+                                        <input type="number" step="0.0001" min="0" name="unit_price" value="{{ $position->unitPriceFloat() }}"
+                                               class="input input-bordered input-sm w-full" aria-label="{{ __('finance.csv.unit_price_net') }}">
+                                    @endif
+                                    <div class="flex items-center gap-2 md:col-span-2 md:justify-end">
+                                        @if ($aiUsable)
+                                            <x-button type="submit" tone="ghost" size="xs" icon="auto_awesome"
+                                                      formaction="{{ route('finance.transfers.positions.suggest', [$transfer, $position]) }}"
+                                                      formmethod="POST">{{ __('ai.suggestion.suggest') }}</x-button>
+                                        @endif
+                                        <x-button type="submit" tone="primary" size="xs" icon="save">{{ __('Speichern') }}</x-button>
+                                    </div>
+                                </form>
+                            </details>
+                        </td>
+                    </tr>
+                @endif
+
+                @if ($position->exists && ($aiSuggestions[$position->id] ?? null) !== null)
+                    <tr data-ai-suggestion-row>
+                        <td colspan="5">
+                            <x-ai-suggestion
+                                :original="$aiSuggestions[$position->id]->original"
+                                :suggestion="$aiSuggestions[$position->id]->suggestion"
+                                :provider="$aiSuggestions[$position->id]->provider"
+                                :fallback="$aiSuggestions[$position->id]->fallback_used"
+                                :cached="$aiSuggestions[$position->id]->from_cache"
+                                :accept-action="route('ai.suggestions.accept', $aiSuggestions[$position->id])"
+                                :reject-action="route('ai.suggestions.reject', $aiSuggestions[$position->id])"
+                                field-name="text"
+                            />
+                        </td>
+                    </tr>
+                @endif
             @empty
                 <x-table.empty :colspan="5"
                                :title="__('finance.empty_positions_title')"
                                :message="__('finance.empty_positions')" />
             @endforelse
-            @if (!empty($positions))
+            @if ($positions->isNotEmpty())
                 <tr class="font-semibold">
                     <td>{{ __('finance.csv.total') }}</td>
                     <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $positionTotals['quantity'], 2, withThousandsSeparator: true) }}</td>
@@ -200,6 +279,14 @@
                 </tr>
             @endif
         </x-table>
+        @if ($unpricedPositions > 0)
+            <div class="alert alert-warning mt-3 text-sm" role="alert">
+                <div>
+                    <span class="font-semibold">{{ __('finance.position.unpriced_title') }}</span>
+                    <p class="mt-0.5">{{ __('finance.position.unpriced_hint', ['count' => $unpricedPositions]) }}</p>
+                </div>
+            </div>
+        @endif
         @if ($transfer->channel === \App\Enums\Finance\TransferChannel::Time)
             <p class="mt-2 text-xs text-base-content/60">{{ __('finance.hint.positions_increment') }}</p>
         @endif

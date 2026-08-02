@@ -199,10 +199,16 @@ class InvoiceGenerator {
         }
 
         $primary = $entriesById->get($block->primaryEntryId);
-        $fallbackRate = $primary !== null && $primary->hourly_rate !== null
-            ? $primary->hourly_rate
-            : $customer->hourly_rate;
-        $rate = $block->hourlyRate() ?? $fallbackRate?->toFloat() ?? 0.0;
+        // Preisfindung zentral (MVP-485): Satz-Snapshot → Eintrag → Kunde →
+        // Standardleistung → Org-Standarderlös.
+        $service = app(ServiceDefaultResolver::class)->resolve(
+            $customer->organization,
+            $block->project,
+            $block->kind?->value,
+        );
+        $rate = app(BlockPriceResolver::class)
+            ->resolve($block, $primary, $customer, $service, (int) $customer->organization_id)
+            ->rate;
 
         return [
             'hours' => $hours,
