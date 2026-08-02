@@ -11,7 +11,7 @@
 namespace App\Plugins;
 
 use App\Models\PluginState;
-use App\Plugins\Contracts\{Plugin, PluginCapability, SlotRenderer};
+use App\Plugins\Contracts\{Plugin, PluginCapability, PluginCapabilityContract, SlotRenderer};
 use App\Plugins\Support\PluginOrgContext;
 use Illuminate\Support\Collection;
 use RuntimeException;
@@ -25,10 +25,25 @@ use RuntimeException;
  * ist (siehe {@see PluginErrorRecorder}), werden in {@see enabled()} / {@see withCapability()}
  * automatisch ausgeblendet. Über {@see all()} bleiben sie sichtbar, damit sie
  * in der Admin-UI als „deaktiviert (Auto-Disable)" angezeigt werden können.
+ *
+ * Härtung (Review 2026-08, W2e/W3e): `enabled()` ist pro Org-Kontext
+ * memoisiert (die frühere Variante feuerte ~40 Queries pro Navigationsaufbau),
+ * ein werfendes `isEnabled()` gilt als deaktiviert statt die Seite zu reißen,
+ * und inkompatible Plugins (Kernversion außerhalb min/max) werden bereits hier
+ * gefiltert — nicht erst beim nächsten stündlichen Healthcheck.
  */
 class PluginManager {
     /** @var Collection<string, Plugin> */
     private Collection $plugins;
+
+    /** @var array<int, list<string>> Aktivierte Plugin-IDs je Org-Kontext (0 = global). */
+    private array $enabledIdCache = [];
+
+    /** @var array<int, array<int, string>> Letzter bekannter Auto-Disable-Stand je Org-Kontext. */
+    private array $autoDisabledCache = [];
+
+    /** @var array<string, bool> Kompatibilität je Plugin-ID (reine Versionsrechnung). */
+    private array $compatibilityCache = [];
 
     public function __construct() {
         $this->plugins = collect();
@@ -44,6 +59,7 @@ class PluginManager {
             ));
         }
         $this->plugins->put($plugin->id(), $plugin);
+        $this->flushRuntimeCaches();
     }
 
     /** @return Collection<string, Plugin> */
@@ -53,11 +69,57 @@ class PluginManager {
 
     /** @return Collection<string, Plugin> */
     public function enabled(): Collection {
+        $key = PluginOrgContext::currentId() ?? 0;
+        $ids = $this->enabledIdCache[$key] ??= $this->computeEnabledIds();
+        $lookup = array_fill_keys($ids, true);
+
+        return $this->plugins->filter(fn(Plugin $p): bool => isset($lookup[$p->id()]));
+    }
+
+    /**
+     * Invalide die memoisierten Sichten — nach Toggle/Settings-Änderungen,
+     * Auto-Disable oder Reset (Aufrufer: Admin-Controller, ErrorRecorder).
+     */
+    public function flushRuntimeCaches(): void {
+        $this->enabledIdCache = [];
+        $this->autoDisabledCache = [];
+    }
+
+    /** @return list<string> */
+    private function computeEnabledIds(): array {
         $disabled = $this->autoDisabledIds();
 
-        return $this->plugins
-            ->reject(fn(Plugin $p): bool => in_array($p->id(), $disabled, true))
-            ->filter(fn(Plugin $p): bool => $p->isEnabled());
+        $ids = [];
+        foreach ($this->plugins as $plugin) {
+            if (in_array($plugin->id(), $disabled, true)) {
+                continue;
+            }
+            if (! $this->isCompatible($plugin)) {
+                continue;
+            }
+            try {
+                $enabled = $plugin->isEnabled();
+            } catch (\Throwable $e) {
+                // Ein werfendes isEnabled() darf keine Seite reißen (D11):
+                // Plugin gilt als deaktiviert, der Fehler landet in der Inbox.
+                $enabled = false;
+                try {
+                    app(PluginErrorRecorder::class)->record($plugin->id(), 'runtime', $e, [], PluginOrgContext::currentId());
+                } catch (\Throwable) {
+                    // Aufzeichnung darf selbst nie werfen.
+                }
+            }
+            if ($enabled) {
+                $ids[] = $plugin->id();
+            }
+        }
+
+        return $ids;
+    }
+
+    /** Kompatibilität wird beim Laden durchgesetzt (W3e) — memoisiert, reine Versionsrechnung. */
+    private function isCompatible(Plugin $plugin): bool {
+        return $this->compatibilityCache[$plugin->id()] ??= PluginCompatibility::for($plugin)->compatible;
     }
 
     public function find(string $id): ?Plugin {
@@ -124,13 +186,18 @@ class PluginManager {
     }
 
     /**
-     * Plugins that advertise the given capability identifier.
+     * Plugins that advertise the given capability identifier. Vergleich über
+     * {@see PluginCapabilityContract::identifier()} — damit funktionieren auch
+     * Registry-Capabilities außerhalb des Kern-Enums (W5e).
      *
      * @return Collection<string, Plugin>
      */
-    public function withCapability(PluginCapability $capability): Collection {
+    public function withCapability(PluginCapabilityContract|PluginCapability $capability): Collection {
+        $identifier = $capability->identifier();
+
         return $this->enabled()->filter(
-            fn(Plugin $p): bool => in_array($capability, $p->capabilities(), true),
+            fn(Plugin $p): bool => collect($p->capabilities())
+                ->contains(fn(PluginCapabilityContract $c): bool => $c->identifier() === $identifier),
         );
     }
 
@@ -138,16 +205,17 @@ class PluginManager {
      * IDs der per Auto-Disable stillgelegten Plugins für den aktuellen Kontext.
      * Eine globale Stilllegung (organization_id = null, z. B. Boot-/Schema-Fehler)
      * gilt überall; eine per-Org-Stilllegung nur, wenn ihre Organisation aktuell
-     * gebunden ist. Defensiv abgefragt — fehlt die Tabelle (vor der ersten
-     * Migration), liefern wir eine leere Liste statt zu werfen.
+     * gebunden ist. Defensiv abgefragt — bei DB-Ausfall gilt der letzte bekannte
+     * Stand dieses Requests (statt still „alles aktiv", C6-Milderung).
      *
      * @return array<int, string>
      */
     private function autoDisabledIds(): array {
+        $key = PluginOrgContext::currentId() ?? 0;
         try {
             $orgId = PluginOrgContext::currentId();
 
-            return PluginState::query()
+            return $this->autoDisabledCache[$key] = PluginState::query()
                 ->whereNotNull('disabled_reason')
                 ->where(function ($q) use ($orgId): void {
                     $q->whereNull('organization_id');
@@ -157,9 +225,10 @@ class PluginManager {
                 })
                 ->pluck('plugin_id')
                 ->unique()
+                ->values()
                 ->all();
         } catch (\Throwable) {
-            return [];
+            return $this->autoDisabledCache[$key] ?? [];
         }
     }
 }

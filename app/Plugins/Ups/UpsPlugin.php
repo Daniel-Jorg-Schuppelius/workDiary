@@ -11,10 +11,10 @@
 namespace App\Plugins\Ups;
 
 use App\Enums\Shipping\ShipmentStatus;
-use App\Models\{CarrierConnection, Organization, PluginSetting};
-use App\Plugins\Contracts\{Plugin, PluginCapability, ShippingProvider};
-use App\Plugins\PluginDefaults;
-use App\Plugins\Support\{ChecksCarrierHealth, PluginOrgContext};
+use App\Models\CarrierConnection;
+use App\Plugins\AbstractPlugin;
+use App\Plugins\Contracts\{PluginCapability, ShippingProvider};
+use App\Plugins\Support\ChecksCarrierHealth;
 use App\Plugins\Ups\Api\UpsApiClient;
 use App\Services\Shipping\{CarrierTokenCache, ShipmentLabel, ShipmentRequest, ShipperAddress, TrackingEvent, TrackingResult};
 use Illuminate\Support\Carbon;
@@ -38,11 +38,10 @@ use Throwable;
  * Die JSON-Verträge folgen der öffentlichen UPS-Doku; die Verifikation gegen
  * die echte Sandbox (self-service Developer-Account) steht aus.
  */
-class UpsPlugin implements Plugin, ShippingProvider {
-    use ChecksCarrierHealth, PluginDefaults {
-        // Carrier-Health (healthy()+healthCheck()) kommt aus dem Support-Trait.
-        ChecksCarrierHealth::healthCheck insteadof PluginDefaults;
-    }
+class UpsPlugin extends AbstractPlugin implements ShippingProvider {
+    // Carrier-Health (healthy()+healthCheck()) kommt aus dem Support-Trait —
+    // die Trait-Methode gewinnt automatisch gegen die geerbte aus AbstractPlugin.
+    use ChecksCarrierHealth;
 
     public const ID = 'ups';
 
@@ -50,10 +49,6 @@ class UpsPlugin implements Plugin, ShippingProvider {
 
     /** Carrier-Schlüssel in `carrier_connections.carrier` und der Registry. */
     public const CARRIER = 'ups';
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'UPS';
@@ -65,18 +60,6 @@ class UpsPlugin implements Plugin, ShippingProvider {
 
     public function description(): string {
         return __('Erzeugt UPS-Versandlabels (Shipping API, OAuth2 Client-Credentials), storniert Sendungen und verfolgt sie. Pro Organisation mit Client-ID/Secret und Shipper-Nummer konfiguriert; Label als GIF.');
-    }
-
-    public function isEnabled(): bool {
-        $org = PluginOrgContext::currentOrNull();
-        if ($org instanceof Organization) {
-            $row = PluginSetting::forOrganization($org->id, self::ID);
-            if ($row->exists) {
-                return $row->enabled;
-            }
-        }
-
-        return (bool) config('plugins.ups.enabled', false);
     }
 
     public function capabilities(): array {
@@ -93,17 +76,9 @@ class UpsPlugin implements Plugin, ShippingProvider {
         ];
     }
 
-    public function serviceProvider(): ?string {
-        return UpsServiceProvider::class;
-    }
-
     /** Per-Org-Konfiguration liegt in `carrier_connections` (Versand-Admin), nicht in plugin_settings. */
     public function settingsSchema(): array {
         return [];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     // --- ShippingProvider -------------------------------------------------

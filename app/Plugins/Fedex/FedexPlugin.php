@@ -11,11 +11,11 @@
 namespace App\Plugins\Fedex;
 
 use App\Enums\Shipping\ShipmentStatus;
-use App\Models\{CarrierConnection, Organization, PluginSetting};
+use App\Models\CarrierConnection;
+use App\Plugins\AbstractPlugin;
 use App\Plugins\Contracts\{Plugin, PluginCapability, ShippingProvider};
 use App\Plugins\Fedex\Api\FedexApiClient;
-use App\Plugins\PluginDefaults;
-use App\Plugins\Support\{ChecksCarrierHealth, PluginOrgContext};
+use App\Plugins\Support\ChecksCarrierHealth;
 use App\Services\Shipping\{CarrierTokenCache, ShipmentLabel, ShipmentRequest, ShipperAddress, TrackingEvent, TrackingResult};
 use Illuminate\Support\Carbon;
 use RuntimeException;
@@ -39,11 +39,10 @@ use Throwable;
  * die echte Sandbox (self-service) und die produktive Label-Zertifizierung
  * durch FedEx stehen aus.
  */
-class FedexPlugin implements Plugin, ShippingProvider {
-    use ChecksCarrierHealth, PluginDefaults {
-        // Carrier-Health (healthy()+healthCheck()) kommt aus dem Support-Trait.
-        ChecksCarrierHealth::healthCheck insteadof PluginDefaults;
-    }
+class FedexPlugin extends AbstractPlugin implements ShippingProvider {
+    // Carrier-Health (healthy()+healthCheck()) kommt aus dem Support-Trait —
+    // die Trait-Methode gewinnt automatisch gegen die geerbte aus AbstractPlugin.
+    use ChecksCarrierHealth;
 
     public const ID = 'fedex';
 
@@ -51,10 +50,6 @@ class FedexPlugin implements Plugin, ShippingProvider {
 
     /** Carrier-Schlüssel in `carrier_connections.carrier` und der Registry. */
     public const CARRIER = 'fedex';
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'FedEx';
@@ -66,18 +61,6 @@ class FedexPlugin implements Plugin, ShippingProvider {
 
     public function description(): string {
         return __('Erzeugt FedEx-Versandlabels (Ship API, OAuth2 Client-Credentials), storniert Sendungen und verfolgt sie. Pro Organisation mit Client-ID/Secret und Account-Nummer konfiguriert; Label als PDF.');
-    }
-
-    public function isEnabled(): bool {
-        $org = PluginOrgContext::currentOrNull();
-        if ($org instanceof Organization) {
-            $row = PluginSetting::forOrganization($org->id, self::ID);
-            if ($row->exists) {
-                return $row->enabled;
-            }
-        }
-
-        return (bool) config('plugins.fedex.enabled', false);
     }
 
     public function capabilities(): array {
@@ -94,17 +77,9 @@ class FedexPlugin implements Plugin, ShippingProvider {
         ];
     }
 
-    public function serviceProvider(): ?string {
-        return FedexServiceProvider::class;
-    }
-
     /** Per-Org-Konfiguration liegt in `carrier_connections` (Versand-Admin), nicht in plugin_settings. */
     public function settingsSchema(): array {
         return [];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     // --- ShippingProvider -------------------------------------------------

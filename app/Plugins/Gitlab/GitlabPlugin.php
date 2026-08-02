@@ -13,10 +13,10 @@ declare(strict_types=1);
 namespace App\Plugins\Gitlab;
 
 use App\Models\Organization;
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
 use App\Plugins\Gitlab\Api\{GitlabApiException, GitlabClientFactory};
 use App\Plugins\Gitlab\Services\GitlabIssueImporter;
-use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\PluginOrgContext;
 use Throwable;
 
@@ -39,19 +39,13 @@ use Throwable;
  *   `X-Gitlab-Token`) stößt nur an — GitLab deaktiviert Hooks nach
  *   wiederholten Fehlern selbst, das Polling schließt jede Lücke.
  */
-class GitlabPlugin implements Plugin, TaskSyncer {
-    use PluginDefaults;
-
+class GitlabPlugin extends AbstractPlugin implements TaskSyncer {
     public const ID = 'gitlab';
 
     public const SERVICE_PROVIDER = GitlabServiceProvider::class;
 
     /** ExternalReference-Typ dieses Plugins. */
     public const EXT_TYPE_ISSUE = 'issue';
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'GitLab Issues';
@@ -102,15 +96,6 @@ class GitlabPlugin implements Plugin, TaskSyncer {
         return $counters;
     }
 
-    /** Konfiguration läuft über die Auto-Form der Plugin-Karte (settingsSchema). */
-    public function adminPanel(): ?array {
-        return null;
-    }
-
-    public function serviceProvider(): ?string {
-        return self::SERVICE_PROVIDER;
-    }
-
     /** @return array<int, array{key: string, label: string, type: string, options?: array<string, string>, help?: string, required?: bool, default?: mixed}> */
     public function settingsSchema(): array {
         return [
@@ -121,10 +106,6 @@ class GitlabPlugin implements Plugin, TaskSyncer {
             ['key' => 'allow_private_network', 'label' => __('Private Adressen erlauben'), 'type' => 'boolean', 'default' => false, 'help' => __('Nur für On-Premise-Instanzen im eigenen Netz: erlaubt eine Instanz-URL mit privater/interner Adresse.')],
             ['key' => 'default_project', 'label' => __('Standard-Projekt (Sqid)'), 'type' => 'text', 'help' => __('Optional: Projekt-Kennung aus der Projekt-URL; importierte Aufgaben landen dort, sonst als globale Aufgabe.')],
         ];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     /**

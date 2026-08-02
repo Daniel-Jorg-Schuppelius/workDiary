@@ -13,10 +13,10 @@ declare(strict_types=1);
 namespace App\Plugins\Github;
 
 use App\Models\Organization;
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
 use App\Plugins\Github\Api\{GithubApiException, GithubClientFactory};
 use App\Plugins\Github\Services\GithubIssueImporter;
-use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\PluginOrgContext;
 use Throwable;
 
@@ -37,19 +37,13 @@ use Throwable;
  *   an — GitHub liefert Webhooks nicht automatisch nach (kein Auto-Redelivery),
  *   das Polling schließt die Lücke.
  */
-class GithubPlugin implements Plugin, TaskSyncer {
-    use PluginDefaults;
-
+class GithubPlugin extends AbstractPlugin implements TaskSyncer {
     public const ID = 'github';
 
     public const SERVICE_PROVIDER = GithubServiceProvider::class;
 
     /** ExternalReference-Typ dieses Plugins. */
     public const EXT_TYPE_ISSUE = 'issue';
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'GitHub Issues';
@@ -100,15 +94,6 @@ class GithubPlugin implements Plugin, TaskSyncer {
         return $counters;
     }
 
-    /** Konfiguration läuft über die Auto-Form der Plugin-Karte (settingsSchema). */
-    public function adminPanel(): ?array {
-        return null;
-    }
-
-    public function serviceProvider(): ?string {
-        return self::SERVICE_PROVIDER;
-    }
-
     /** @return array<int, array{key: string, label: string, type: string, options?: array<string, string>, help?: string, required?: bool, default?: mixed}> */
     public function settingsSchema(): array {
         return [
@@ -118,10 +103,6 @@ class GithubPlugin implements Plugin, TaskSyncer {
             ['key' => 'webhook_secret', 'label' => __('Webhook-Secret'), 'type' => 'password', 'help' => __('Optional: Shared-Secret des GitHub-Webhooks (issues-Events, X-Hub-Signature-256). Ohne Secret bleibt der Webhook-Endpunkt deaktiviert; das Polling holt alles nach.')],
             ['key' => 'default_project', 'label' => __('Standard-Projekt (Sqid)'), 'type' => 'text', 'help' => __('Optional: Projekt-Kennung aus der Projekt-URL; importierte Aufgaben landen dort, sonst als globale Aufgabe.')],
         ];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     /**

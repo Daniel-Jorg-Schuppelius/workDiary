@@ -352,6 +352,17 @@ return [
             'cadence' => ['type' => 'hourly'],
             'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
             'criticality' => 'integration',
+            'expected_runtime_minutes' => 15,
+        ],
+        // Aufbewahrung der Plugin-Fehler-Inbox (Review 2026-08, W2c):
+        // quittierte nach 30, offene nach 90 Tagen (config/plugins.php).
+        'plugin.errors_prune' => [
+            'command' => 'model:prune --model=App\\Models\\PluginError',
+            'plugin' => '*',
+            'cadence' => ['type' => 'dailyAt', 'time' => '03:40'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 2,
         ],
         'remote.sync_sessions' => [
             'command' => 'remote:sync-sessions',

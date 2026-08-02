@@ -41,10 +41,12 @@ interface Plugin {
 
     /**
      * Fähigkeiten, die dieses Plugin ankündigt. Für jede zurückgegebene
-     * {@see PluginCapability} muss das zugehörige Contract-Interface
-     * implementiert sein (s. {@see PluginCapability::interface()}).
+     * Fähigkeit muss das zugehörige Contract-Interface implementiert sein
+     * (s. {@see PluginCapabilityContract::interface()}). Kern-Fähigkeiten
+     * liefert das Enum {@see PluginCapability}; externe Plugins können eigene
+     * über die {@see \App\Plugins\CapabilityRegistry} beisteuern (W5e).
      *
-     * @return array<int, PluginCapability>
+     * @return array<int, PluginCapabilityContract>
      */
     public function capabilities(): array;
 

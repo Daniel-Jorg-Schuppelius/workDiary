@@ -37,14 +37,18 @@
     @php
         $q = mb_strtolower(trim((string) ($filters['q'] ?? '')));
         $statusFilter = (string) ($filters['status'] ?? '');
-        $filtered = collect($plugins)->filter(function ($plugin) use ($q, $statusFilter, $settings, $states) {
+        // Aktiv = Org-Setting ODER ENV-/Config-Fallback (Review 2026-08, A11) —
+        // sonst erscheint ein per ENV scharf geschaltetes Plugin als „inaktiv".
+        $effectiveEnabled = fn($plugin, $row): bool => (bool) ($row?->enabled ?? false)
+            || (bool) config('plugins.' . $plugin->id() . '.enabled', false);
+        $filtered = collect($plugins)->filter(function ($plugin) use ($q, $statusFilter, $settings, $states, $effectiveEnabled) {
             if ($q !== '' && ! str_contains(mb_strtolower($plugin->name() . ' ' . $plugin->id() . ' ' . $plugin->description()), $q)) {
                 return false;
             }
             $row = $settings[$plugin->id()] ?? null;
             $state = $states[$plugin->id()] ?? null;
             $isAutoDisabled = $state && $state->isAutoDisabled();
-            $isEnabled = (bool) ($row?->enabled ?? false);
+            $isEnabled = $effectiveEnabled($plugin, $row);
             return match ($statusFilter) {
                 'active' => $isEnabled && ! $isAutoDisabled,
                 'inactive' => ! $isEnabled && ! $isAutoDisabled,
@@ -55,16 +59,28 @@
     @endphp
 
     @if ($filtered->isEmpty())
-        <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">extension</span>'
-            :title="__('Keine Plugins gefunden')"
-            :message="__('Plugin-Klassen werden in config/plugins.php deklariert.')">
-            {{-- Prerequisite-Audit (MVP-181): Dateikonfiguration = Betreiber-
-                 Aufgabe; die Hilfe erklärt den Einrichtungsweg. --}}
-            <x-slot:action>
-                <x-help-button topic="admin.plugins" />
-            </x-slot:action>
-        </x-empty-state>
+        @if ($q !== '' || $statusFilter !== '')
+            {{-- Filterbewusster Leerzustand (E8): kein irreführender Betreiber-Hinweis. --}}
+            <x-empty-state framed
+                icon='<span class="material-symbols-outlined" aria-hidden="true">filter_alt_off</span>'
+                :title="__('Keine Treffer')"
+                :message="__('Suche/Filter treffen kein Plugin.')">
+                <x-slot:action>
+                    <a href="{{ route('admin.plugins.index') }}" class="btn btn-sm">{{ __('Filter zurücksetzen') }}</a>
+                </x-slot:action>
+            </x-empty-state>
+        @else
+            <x-empty-state framed
+                icon='<span class="material-symbols-outlined" aria-hidden="true">extension</span>'
+                :title="__('Keine Plugins gefunden')"
+                :message="__('Plugin-Klassen werden in config/plugins.php deklariert.')">
+                {{-- Prerequisite-Audit (MVP-181): Dateikonfiguration = Betreiber-
+                     Aufgabe; die Hilfe erklärt den Einrichtungsweg. --}}
+                <x-slot:action>
+                    <x-help-button topic="admin.plugins" />
+                </x-slot:action>
+            </x-empty-state>
+        @endif
     @else
         <x-table scroll="flex" :pinRows="true" table-sort="client">
             <x-slot:head>
@@ -83,21 +99,30 @@
                 @php
                     $row = $settings[$plugin->id()] ?? null;
                     $state = $states[$plugin->id()] ?? null;
-                    $isEnabled = (bool) ($row?->enabled ?? false);
+                    $isEnabled = $effectiveEnabled($plugin, $row);
+                    $isOperational = $operational[$plugin->id()] ?? false;
                     $isAutoDisabled = $state && $state->isAutoDisabled();
-                    $health = $state?->last_health_status;
+                    // Deaktivierte Plugins haben keinen Zustand (Review 2026-08, E1):
+                    // ein stehen gebliebener Health-Status wäre eine falsche Aussage.
+                    $health = $isEnabled || $isAutoDisabled ? $state?->last_health_status : null;
                     $healthClass = match ($health) {
                         'ok' => 'badge-success',
                         'degraded' => 'badge-warning',
                         'failing' => 'badge-error',
                         default => 'badge-ghost',
                     };
-                    $healthLabel = match ($health) {
-                        'ok' => __('Zustand ok'),
-                        'degraded' => __('Zustand eingeschränkt'),
-                        'failing' => __('Zustand fehlerhaft'),
+                    $healthLabel = match (true) {
+                        $health === 'ok' => __('Zustand ok'),
+                        $health === 'degraded' => __('Zustand eingeschränkt'),
+                        $health === 'failing' => __('Zustand fehlerhaft'),
+                        ! $isEnabled && ! $isAutoDisabled => __('Deaktiviert'),
                         default => __('Zustand unbekannt'),
                     };
+                    $failureCount = (int) ($state?->failure_count ?? 0);
+                    $openErrors = (int) ($errorCounts[$plugin->id()] ?? 0);
+                    $checkedAt = $isEnabled || $isAutoDisabled ? $state?->last_health_check_at : null;
+                    // Frische (W4b): Ergebnis älter als 2× Check-Intervall (stündlich) gilt als veraltet.
+                    $isStale = $checkedAt !== null && $checkedAt->lt(now()->subHours(2));
                 @endphp
                 <tr data-plugin-row="{{ $plugin->id() }}">
                     <td class="font-medium">{{ $plugin->name() }}</td>
@@ -115,24 +140,48 @@
                     </td>
                     <td class="tabular-nums text-xs text-base-content/70">
                         {{ $state?->installed_version ?? '—' }}
-                        @if ($state && $state->installed_version !== null && $state->installed_version !== $plugin->schemaVersion())
-                            <x-status-badge tone="warning" size="sm" class="ml-1" title="{{ __('Upgrade verfügbar') }}">→ {{ $plugin->schemaVersion() }}</x-status-badge>
+                        @if ($plugin->migrationsPath() !== null && ($state?->installed_version === null || version_compare((string) $state->installed_version, $plugin->schemaVersion(), '<')))
+                            {{-- Auslösbar statt Sackgasse (W6/E10): POST admin.plugins.upgrade. --}}
+                            <x-action-form :action="route('admin.plugins.upgrade', $plugin->id())" class="inline"
+                                  :confirm="__('Schema-Upgrade auf :version ausführen?', ['version' => $plugin->schemaVersion()])"
+                                  confirm-tone="primary">
+                                <button type="submit" class="badge badge-warning badge-sm ml-1" title="{{ __('Upgrade verfügbar — klicken zum Ausführen') }}">→ {{ $plugin->schemaVersion() }}</button>
+                            </x-action-form>
                         @endif
                     </td>
                     <td>
                         @if ($isAutoDisabled)
                             <x-status-badge tone="error" size="sm" title="{{ $state->disabled_reason }}">{{ __('Automatisch deaktiviert') }}</x-status-badge>
-                        @elseif ($isEnabled)
+                        @elseif ($isEnabled && $isOperational)
                             <x-status-badge tone="success" size="sm">{{ __('Plugin aktiv') }}</x-status-badge>
+                        @elseif ($isEnabled)
+                            {{-- Aktiviert, aber nicht funktionsfähig (z. B. Key fehlt) — kein falsches Grün (A11). --}}
+                            <x-status-badge tone="warning" size="sm" title="{{ __('Aktiviert, aber nicht funktionsfähig — Konfiguration prüfen (z. B. API-Key).') }}">{{ __('Aktiv (unkonfiguriert)') }}</x-status-badge>
                         @else
                             <x-status-badge tone="ghost" size="sm">{{ __('Plugin inaktiv') }}</x-status-badge>
                         @endif
                     </td>
                     <td>
-                        <span class="badge {{ $healthClass }} badge-sm" title="{{ $state?->last_health_message }}" data-health-badge>{{ $healthLabel }}</span>
-                        <span class="text-xs text-base-content/50 ml-1" data-health-time>
-                            @if ($state?->last_health_check_at){{ $state->last_health_check_at->diffForHumans() }}@endif
+                        <span class="badge {{ $healthClass }} badge-sm {{ $isStale ? 'opacity-60' : '' }}" title="{{ $isEnabled || $isAutoDisabled ? $state?->last_health_message : '' }}" data-health-badge>{{ $healthLabel }}</span>
+                        @if ($failureCount > 0)
+                            <span class="badge badge-error badge-outline badge-sm ml-1 tabular-nums" data-failure-chip title="{{ __('Aufgezeichnete Fehler in Folge — bei Schwelle :threshold wird das Plugin automatisch deaktiviert.', ['threshold' => (int) config('plugins.auto_disable_threshold', 5)]) }}">{{ $failureCount }} ⚠</span>
+                        @endif
+                        @if ($openErrors > 0)
+                            {{-- Deep-Link auf die gefilterte Fehler-Inbox (W4a / Symptom 2). --}}
+                            <a href="{{ route('admin.plugin-errors.index', ['plugin' => $plugin->id()]) }}"
+                               class="badge badge-warning badge-outline badge-sm ml-1 tabular-nums"
+                               title="{{ __('Offene Fehler dieses Plugins anzeigen') }}">{{ $openErrors }} {{ __('Fehler') }}</a>
+                        @endif
+                        <span class="text-xs text-base-content/50 ml-1" data-health-time
+                              title="{{ $state?->last_ok_at ? __('Zuletzt ok: :time', ['time' => $state->last_ok_at->diffForHumans()]) : '' }}">
+                            @if ($checkedAt)
+                                {{ $checkedAt->diffForHumans() }}@if ($state?->last_health_latency_ms !== null) · {{ $state->last_health_latency_ms }} ms @endif
+                                @if ($isStale) · {{ __('veraltet') }} @endif
+                            @endif
                         </span>
+                        @if (($isEnabled || $isAutoDisabled) && $state?->last_health_message)
+                            <div class="text-xs text-base-content/50 truncate max-w-xs" title="{{ $state->last_health_message }}">{{ $state->last_health_message }}</div>
+                        @endif
                     </td>
                     <td>
                         <div class="flex flex-wrap gap-1">
@@ -147,13 +196,19 @@
                                class="btn btn-sm btn-ghost" title="{{ __('Konfigurieren') }}">
                                 <span class="material-symbols-outlined" aria-hidden="true">settings</span>
                             </a>
+                            <a href="{{ route('admin.plugin-errors.index', ['plugin' => $plugin->id(), 'status' => 'all']) }}"
+                               class="btn btn-sm btn-ghost" title="{{ __('Fehler dieses Plugins') }}">
+                                <span class="material-symbols-outlined" aria-hidden="true">bug_report</span>
+                            </a>
                             <x-action-form :action="route('admin.plugins.toggle', $plugin->id())">
                                 <x-icon-btn type="submit" tone="ghost" size="sm" :icon="$isEnabled ? 'toggle_on' : 'toggle_off'" :label="$isEnabled ? __('Deaktivieren') : __('Aktivieren')" />
                             </x-action-form>
-                            <x-action-form :action="route('admin.plugins.health-check', $plugin->id())"
-                                  data-health-check-form data-plugin-id="{{ $plugin->id() }}" data-plugin-name="{{ $plugin->name() }}">
-                                <x-icon-btn type="submit" tone="ghost" size="sm" icon="monitor_heart" :label="__('Healthcheck ausführen')" />
-                            </x-action-form>
+                            @if ($isEnabled || $isAutoDisabled)
+                                <x-action-form :action="route('admin.plugins.health-check', $plugin->id())"
+                                      data-health-check-form data-plugin-id="{{ $plugin->id() }}" data-plugin-name="{{ $plugin->name() }}">
+                                    <x-icon-btn type="submit" tone="ghost" size="sm" icon="monitor_heart" :label="__('Healthcheck ausführen')" />
+                                </x-action-form>
+                            @endif
                             @if ($isAutoDisabled)
                                 <x-action-form :action="route('admin.plugins.reset-errors', $plugin->id())"
                                       :confirm="__('Failure-Counter zurücksetzen und Plugin wieder aktivieren?')"
@@ -189,18 +244,36 @@
     var BADGE_CLASSES = ['badge-success', 'badge-warning', 'badge-error', 'badge-ghost'];
 
     function updateRow(pluginId, data) {
+        // Auto-Disable durch diesen Check: Statusspalte + Buttons ändern sich —
+        // Seite neu laden statt halb aktualisierter Zeile (W4b/E7).
+        if (data.auto_disabled) {
+            window.location.reload();
+            return;
+        }
         var row = document.querySelector('[data-plugin-row="' + (window.CSS && CSS.escape ? CSS.escape(pluginId) : pluginId) + '"]');
         if (!row) return;
         var badge = row.querySelector('[data-health-badge]');
         var time  = row.querySelector('[data-health-time]');
+        var chip  = row.querySelector('[data-failure-chip]');
         if (badge) {
             BADGE_CLASSES.forEach(function (c) { badge.classList.remove(c); });
             badge.classList.add(STATUS_BADGE[data.status] || 'badge-ghost');
+            badge.classList.remove('opacity-60');
             badge.textContent = STATUS_LABEL[data.status] || data.status || '—';
             if (data.message) badge.setAttribute('title', data.message);
             else badge.removeAttribute('title');
         }
-        if (time) time.textContent = '{{ __('gerade eben') }}';
+        if (time) {
+            time.textContent = '{{ __('gerade eben') }}'
+                + (typeof data.latency_ms === 'number' ? ' · ' + data.latency_ms + ' ms' : '');
+        }
+        if (chip) {
+            if (typeof data.failure_count === 'number' && data.failure_count > 0) {
+                chip.textContent = data.failure_count + ' ⚠';
+            } else {
+                chip.remove();
+            }
+        }
     }
 
     document.addEventListener('submit', function (event) {

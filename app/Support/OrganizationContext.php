@@ -47,4 +47,29 @@ final class OrganizationContext {
             }
         }
     }
+
+    /**
+     * Führt $fn bewusst OHNE gebundene Organisation aus (globale Plugins,
+     * Instanz-Ebene) und stellt die vorherige Bindung im finally wieder her —
+     * ein rohes forgetInstance() würde in langlebigen Workern den Kontext
+     * dauerhaft verlieren (Plugin-System-Review 2026-08, A13).
+     *
+     * @template TReturn
+     *
+     * @param  callable(): TReturn  $fn
+     * @return TReturn
+     */
+    public static function runWithout(callable $fn): mixed {
+        $bound = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $previous = $bound instanceof Organization ? $bound : null;
+        app()->forgetInstance('currentOrganization');
+
+        try {
+            return $fn();
+        } finally {
+            if ($previous !== null) {
+                app()->instance('currentOrganization', $previous);
+            }
+        }
+    }
 }

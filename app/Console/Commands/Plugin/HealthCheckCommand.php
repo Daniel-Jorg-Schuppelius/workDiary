@@ -11,28 +11,37 @@
 namespace App\Console\Commands\Plugin;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Events\{PluginHealthChanged, PluginRecovered};
-use App\Models\{Organization, PluginState};
+use App\Models\Organization;
 use App\Plugins\Contracts\Plugin;
-use App\Plugins\{PluginCompatibility, PluginErrorRecorder, PluginHealth, PluginManager};
+use App\Plugins\{PluginHealth, PluginHealthService, PluginManager};
+use App\Support\OrganizationContext;
 use Illuminate\Console\Command;
 use Throwable;
 
 /**
- * Ruft den `healthCheck()` jedes (oder eines) Plugins auf, persistiert das
- * Ergebnis in `plugin_states` und meldet Fehler an den
- * {@see PluginErrorRecorder} (Phase: healthcheck).
+ * Dünner Aufrufer der zentralen Health-Pipeline ({@see PluginHealthService},
+ * Review 2026-08, W3): iteriert Plugins × Organisationen fehlertolerant,
+ * überspringt deaktivierte Plugins und meldet am Ende eine Zusammenfassung —
+ * damit `--no-fail` keine halb gelaufenen Checks maskiert (D4).
  */
 class HealthCheckCommand extends Command {
     use IteratesOrganizations;
 
     protected $signature = 'plugin:healthcheck
         {plugin? : Plugin-ID. Ohne Argument: alle aktiven Plugins.}
-        {--no-fail : Auch bei ungesunden Plugins mit Exit 0 beenden (für geplante Läufe — Ergebnis wird trotzdem aufgezeichnet).}';
+        {--organization= : ID oder Slug einer einzelnen Organisation, sonst alle aktiven}
+        {--no-fail : Auch bei ungesunden Plugins mit Exit 0 beenden (für geplante Läufe — Ergebnis wird trotzdem aufgezeichnet).}
+        {--fail-on-incomplete : Exit 1, wenn Organisationen wegen Iterationsfehlern übersprungen wurden (Monitoring).}';
 
     protected $description = 'Führt Healthchecks für ein oder alle Plugins durch und persistiert das Ergebnis.';
 
-    public function handle(PluginManager $manager, PluginErrorRecorder $recorder): int {
+    private int $checked = 0;
+
+    private int $skipped = 0;
+
+    private int $unhealthy = 0;
+
+    public function handle(PluginManager $manager, PluginHealthService $service): int {
         $target = $this->argument('plugin');
 
         $plugins = $target !== null
@@ -45,116 +54,97 @@ class HealthCheckCommand extends Command {
             return self::FAILURE;
         }
 
-        $exitCode = self::SUCCESS;
+        // Per-Plugin-Opt-out (W3c) — nur für den Sammel-Lauf, ein explizit
+        // angefragtes Plugin wird immer geprüft.
+        $exclude = $target === null ? (array) config('plugins.health_exclude', []) : [];
+
+        $iterationFailures = 0;
         foreach ($plugins as $plugin) {
+            if (in_array($plugin->id(), $exclude, true)) {
+                $this->skipped++;
+
+                continue;
+            }
             if ($plugin->isPerOrganization()) {
-                // Per-Org-Plugin: je Organisation mit gebundenem Kontext prüfen (jeweils gespeicherter Schlüssel).
-                foreach (Organization::query()->get() as $org) {
-                    $this->withOrganizationContext($org, function (Organization $org) use ($plugin, $recorder, &$exitCode): void {
+                // Per-Org-Plugin: je aktiver Organisation mit gebundenem Kontext
+                // prüfen — fehlertolerant, eine kaputte Org bricht nicht den
+                // Gesamtlauf ab (D2). Inaktive Organisationen werden übersprungen.
+                $iterationFailures += $this->forEachOrganization(
+                    function (Organization $org) use ($plugin, $service): void {
                         if (! $plugin->isEnabled()) {
+                            $this->skipped++;
+
                             return; // in dieser Org nicht aktiv → kein Check
                         }
-                        if ($this->checkOne($plugin, (int) $org->id, (string) $org->name, $recorder) === self::FAILURE) {
-                            $exitCode = self::FAILURE;
-                        }
-                    });
-                }
+                        $this->checkOne($plugin, (int) $org->id, (string) $org->name, $service);
+                    },
+                    scope: fn($query) => $query->where('is_active', true),
+                );
             } else {
-                // Globales Plugin: einmalig ohne Org-Kontext.
-                app()->forgetInstance('currentOrganization');
-                if ($this->checkOne($plugin, null, null, $recorder) === self::FAILURE) {
-                    $exitCode = self::FAILURE;
+                // Globales Plugin: einmalig ohne Org-Kontext (mit Restore, A13);
+                // deaktivierte werden wie im Per-Org-Zweig übersprungen (A7).
+                try {
+                    OrganizationContext::runWithout(function () use ($plugin, $service): void {
+                        if (! $plugin->isEnabled()) {
+                            $this->skipped++;
+
+                            return;
+                        }
+                        $this->checkOne($plugin, null, null, $service);
+                    });
+                } catch (Throwable $e) {
+                    $iterationFailures++;
+                    $this->error(sprintf('%s: Abbruch — %s', $plugin->id(), $e->getMessage()));
                 }
             }
         }
 
+        $this->line(sprintf(
+            'Zusammenfassung: %d geprüft, %d übersprungen, %d ungesund, %d Iterationsfehler.',
+            $this->checked,
+            $this->skipped,
+            $this->unhealthy,
+            $iterationFailures,
+        ));
+        if ($iterationFailures > 0) {
+            $this->warn('Achtung: Teile des Laufs wurden wegen Fehlern übersprungen — Ergebnisse sind unvollständig.');
+        }
+
+        if ($this->option('fail-on-incomplete') && $iterationFailures > 0) {
+            return self::FAILURE;
+        }
         // Bei `--no-fail` (geplante Läufe) zählt nur, dass die Checks liefen — ein ungesundes Plugin ist
         // ein erfasster Zustand, kein Kommando-Fehlschlag (kein irreführender „failed"; Auto-Disable bleibt).
         if ($this->option('no-fail')) {
             return self::SUCCESS;
         }
 
-        return $exitCode;
+        return $this->unhealthy > 0 || $iterationFailures > 0 ? self::FAILURE : self::SUCCESS;
     }
 
-    /**
-     * Führt einen Healthcheck für genau ein (Plugin, Organisation)-Paar aus,
-     * persistiert den Zustand und meldet Fehler org-bezogen. `$organizationId`
-     * = null → globaler Zustand.
-     */
-    private function checkOne(Plugin $plugin, ?int $organizationId, ?string $orgName, PluginErrorRecorder $recorder): int {
+    private function checkOne(Plugin $plugin, ?int $organizationId, ?string $orgName, PluginHealthService $service): void {
         $label = $plugin->id() . ($orgName !== null ? " [{$orgName}]" : '');
-
-        $state = PluginState::findOrInit($plugin->id(), $organizationId);
-        $previous = $state->last_health_status; // für Übergangs-Erkennung
-        $state->plugin_id = $plugin->id();
-        $state->organization_id = $organizationId;
-        $state->last_health_check_at = now();
-
-        // Kompatibilitätsprüfung VOR dem Healthcheck: inkompatibles Plugin gilt als failing (Auto-Disable), ohne Remote-Zugriff.
-        $compat = PluginCompatibility::for($plugin);
-        if (! $compat->compatible) {
-            $state->last_health_status = PluginHealth::STATUS_FAILING;
-            $state->last_health_message = $compat->message;
-            $state->save();
-            $this->announce($plugin->id(), $organizationId, $previous, PluginHealth::STATUS_FAILING, $compat->message);
-            $recorder->record($plugin->id(), 'compatibility', new \RuntimeException($compat->message), [
-                'min_app_version' => $compat->minAppVersion,
-                'max_app_version' => $compat->maxAppVersion,
-                'app_version' => $compat->appVersion,
-            ], $organizationId);
-            $this->warn(sprintf('  ✗ %s: inkompatibel — %s', $label, $compat->message));
-
-            return self::FAILURE;
-        }
+        $this->checked++;
 
         try {
-            $startedAt = hrtime(true);
-            $health = $plugin->healthCheck();
-            $latencyMs = (int) ((hrtime(true) - $startedAt) / 1_000_000);
-            $state->last_health_status = $health->status;
-            $state->last_health_message = $health->message;
-            if ($health->isOk()) {
-                $state->last_ok_at = now();
-            }
-            $state->save();
-            $this->announce($plugin->id(), $organizationId, $previous, $health->status, $health->message);
-
-            if ($health->isOk()) {
-                $recorder->markHealthy($plugin->id(), $organizationId);
-                $this->line(sprintf('  ✓ %s: ok %s (%dms)', $label, $health->message, $latencyMs));
-
-                return self::SUCCESS;
-            }
-            if ($health->isFailing()) {
-                $this->warn(sprintf('  ✗ %s: failing — %s (%dms)', $label, $health->message, $latencyMs));
-                $recorder->record($plugin->id(), 'healthcheck', new \RuntimeException($health->message !== '' ? $health->message : 'failing healthcheck'), [], $organizationId);
-
-                return self::FAILURE;
-            }
-            $this->line(sprintf('  ~ %s: degraded — %s (%dms)', $label, $health->message, $latencyMs));
-
-            return self::SUCCESS;
+            $result = $service->check($plugin, $organizationId);
         } catch (Throwable $e) {
-            $state->last_health_status = PluginHealth::STATUS_FAILING;
-            $state->last_health_message = $e->getMessage();
-            $state->save();
-            $this->announce($plugin->id(), $organizationId, $previous, PluginHealth::STATUS_FAILING, $e->getMessage());
-            $recorder->record($plugin->id(), 'healthcheck', $e, [], $organizationId);
-            $this->error(sprintf('  ✗ %s: exception — %s', $label, $e->getMessage()));
+            // Die Pipeline fängt Plugin-Fehler selbst; hier landen nur noch
+            // Infrastruktur-Fehler (DB weg o. Ä.) — zählen als ungesund.
+            $this->unhealthy++;
+            $this->error(sprintf('  ✗ %s: pipeline-Fehler — %s', $label, $e->getMessage()));
 
-            return self::FAILURE;
-        }
-    }
-
-    /** Feuert Status-Übergangs-Events (kein Spam: nur bei tatsächlicher Änderung). */
-    private function announce(string $pluginId, ?int $organizationId, ?string $from, string $to, string $message): void {
-        if ($from === $to) {
             return;
         }
-        PluginHealthChanged::dispatch($pluginId, $organizationId, $from, $to, $message);
-        if ($to === PluginHealth::STATUS_OK && $from !== null) {
-            PluginRecovered::dispatch($pluginId, $organizationId, $message);
+
+        $health = $result['health'];
+        match ($health->status) {
+            PluginHealth::STATUS_OK => $this->line(sprintf('  ✓ %s: ok %s (%dms)', $label, $health->message, (int) $health->latencyMs)),
+            PluginHealth::STATUS_DEGRADED => $this->line(sprintf('  ~ %s: degraded — %s (%dms)', $label, $health->message, (int) $health->latencyMs)),
+            default => $this->warn(sprintf('  ✗ %s: failing — %s (%dms)', $label, $health->message, (int) $health->latencyMs)),
+        };
+        if ($health->isFailing()) {
+            $this->unhealthy++;
         }
     }
 }

@@ -90,16 +90,25 @@ final class PluginCompatibility {
     }
 
     /**
-     * Reduziert einen Versionsstring auf den Vergleichskern: ein Suffix wie
-     * `-dev`, `-beta` o. Ä. wird abgeschnitten, damit `0.1.0-dev` nicht unter
-     * `0.1.0` rutscht. version_compare versteht zwar Suffixe, doch für den
-     * Grenzvergleich wollen wir bewusst den Release-Stand vergleichen.
+     * Reduziert einen Versionsstring auf den Vergleichskern (Review 2026-08,
+     * W3e/D8): Build-Metadaten (`+…`) sind laut SemVer vergleichsirrelevant;
+     * ein `-dev`-Suffix wird abgeschnitten, damit `0.1.0-dev` nicht unter
+     * `0.1.0` rutscht (dokumentierte Absicht). Echte Prerelease-Stufen
+     * (`-rc1`, `-beta`) bleiben erhalten — version_compare ordnet sie korrekt
+     * unter das Release; das frühere pauschale Abschneiden machte `1.0.0-rc1`
+     * fälschlich gleich `1.0.0`.
      */
     private static function normalize(string $version): string {
         $version = trim($version);
-        $dash = strpos($version, '-');
+        $plus = strpos($version, '+');
+        if ($plus !== false) {
+            $version = substr($version, 0, $plus);
+        }
+        if (str_ends_with($version, '-dev')) {
+            $version = substr($version, 0, -4);
+        }
 
-        return $dash === false ? $version : substr($version, 0, $dash);
+        return $version;
     }
 
     /** @return array{compatible: bool, code: string, message: string, min: string|null, max: string|null, app: string} */

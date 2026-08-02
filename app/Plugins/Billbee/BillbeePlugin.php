@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Plugins\Billbee;
 
-use App\Models\{Organization, PluginSetting};
+use App\Models\Organization;
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Billbee\Api\{BillbeeApiException, BillbeeClientFactory};
 use App\Plugins\Contracts\Plugin;
-use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\PluginOrgContext;
 use Throwable;
 
@@ -31,16 +31,10 @@ use Throwable;
  * - Auth: `X-Billbee-Api-Key` + Basic Auth (Billbee-Nutzer + API-Passwort);
  *   Throttle 2 req/s (429 + Retry-After macht das Toolkit).
  */
-class BillbeePlugin implements Plugin {
-    use PluginDefaults;
-
+class BillbeePlugin extends AbstractPlugin {
     public const ID = 'billbee';
 
     public const SERVICE_PROVIDER = BillbeeServiceProvider::class;
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'Billbee';
@@ -52,18 +46,6 @@ class BillbeePlugin implements Plugin {
 
     public function description(): string {
         return __('Importiert Multichannel-Bestellungen (Amazon, eBay, Otto, Kaufland, Shopify …) aus Billbee Inbox-First mit Kanalherkunft und meldet Bestände als Absolut-Updates zurück — ohne eigene Marktplatz-Zulassungen.');
-    }
-
-    public function isEnabled(): bool {
-        $organization = PluginOrgContext::currentOrNull();
-        if ($organization instanceof Organization) {
-            $setting = PluginSetting::forOrganization($organization->id, self::ID);
-            if ($setting->exists) {
-                return (bool) $setting->enabled;
-            }
-        }
-
-        return (bool) config('plugins.' . self::ID . '.enabled', false);
     }
 
     /** @return array<int, \App\Plugins\Contracts\PluginCapability> Bestand läuft über die Provider-Registry, Orders über den Spiegel. */
@@ -79,10 +61,6 @@ class BillbeePlugin implements Plugin {
         ];
     }
 
-    public function serviceProvider(): ?string {
-        return self::SERVICE_PROVIDER;
-    }
-
     /** @return array<int, array{key: string, label: string, type: string, options?: array<string, string>, help?: string, required?: bool, default?: mixed}> */
     public function settingsSchema(): array {
         return [
@@ -90,10 +68,6 @@ class BillbeePlugin implements Plugin {
             ['key' => 'username', 'label' => __('Billbee-Benutzername'), 'type' => 'text', 'required' => true],
             ['key' => 'api_password', 'label' => __('API-Passwort'), 'type' => 'password', 'required' => true, 'help' => __('Das separate API-Passwort des Billbee-Nutzers (nicht das Login-Passwort).')],
         ];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     public function healthCheck(): PluginHealth {

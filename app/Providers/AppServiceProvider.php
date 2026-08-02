@@ -743,6 +743,13 @@ class AppServiceProvider extends ServiceProvider {
             return $user->isAdmin() || $user->hasEffectivePermission('access.manage');
         });
 
+        // manage-plugins: Plugin-Verwaltung + Fehler-Inbox (Review 2026-08, W1c).
+        // Route-Middleware `can:manage-plugins` schützt auch künftig ergänzte
+        // Controller-Methoden — der frühere Inline-Guard war pro Methode zu vergessen.
+        Gate::define('manage-plugins', static function (User $user): bool {
+            return $user->isAdmin() && $user->organization_id !== null;
+        });
+
         // Sekundärer Gate::before-Hook: berücksichtigt zusätzlich via Gruppen
         // geerbte Permissions (Spaties eigener Hook prüft nur direkte + über die
         // eigene Rolle erlangte). Nur bei ability mit '.', damit keine

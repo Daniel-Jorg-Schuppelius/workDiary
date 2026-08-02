@@ -10,12 +10,11 @@
 
 namespace App\Plugins\Kimai;
 
-use App\Models\{Organization, PluginSetting};
+use App\Models\Organization;
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
 use App\Plugins\Kimai\Exceptions\KimaiApiException;
 use App\Plugins\Kimai\Sources\KimaiApiClient;
-use App\Plugins\{PluginDefaults, PluginHealth};
-use App\Plugins\Support\PluginOrgContext;
 
 /**
  * Kimai-Plugin (Migrationsimport MVP-134 + API-Rückkanal).
@@ -30,17 +29,11 @@ use App\Plugins\Support\PluginOrgContext;
  *
  * Plugin-Id ist "kimai". Pro Organisation konfigurierbar über plugin_settings.
  */
-class KimaiPlugin implements Plugin, TimeImporter {
-    use PluginDefaults;
-
+class KimaiPlugin extends AbstractPlugin implements TimeImporter {
     public const ID = 'kimai';
 
     /** Vom {@see \App\Providers\PluginServiceProvider} zur Provider-Registrierung ausgewertet. */
     public const SERVICE_PROVIDER = KimaiServiceProvider::class;
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'Kimai';
@@ -52,18 +45,6 @@ class KimaiPlugin implements Plugin, TimeImporter {
 
     public function description(): string {
         return __('Importiert Zeiteinträge aus Kimai (CSV-Export oder REST-API) und bucht erfasste Zeiten optional als Kimai-Timesheets zurück.');
-    }
-
-    public function isEnabled(): bool {
-        $org = PluginOrgContext::currentOrNull();
-        if ($org instanceof Organization) {
-            $row = PluginSetting::forOrganization($org->id, self::ID);
-            if ($row->exists) {
-                return $row->enabled;
-            }
-        }
-
-        return (bool) config('plugins.kimai.enabled', false);
     }
 
     public function capabilities(): array {
@@ -102,10 +83,6 @@ class KimaiPlugin implements Plugin, TimeImporter {
         ];
     }
 
-    public function serviceProvider(): ?string {
-        return KimaiServiceProvider::class;
-    }
-
     public function settingsSchema(): array {
         return [
             ['key' => 'default_billable', 'label' => __('Abrechenbar übernehmen'), 'type' => 'boolean', 'default' => true, 'help' => __('Wenn aus, werden importierte Zeiten nie als abrechenbar markiert.')],
@@ -120,7 +97,4 @@ class KimaiPlugin implements Plugin, TimeImporter {
         ];
     }
 
-    public function isPerOrganization(): bool {
-        return true;
-    }
 }

@@ -12,8 +12,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, PluginSetting, PluginState, User};
-use App\Plugins\{PluginCompatibility, PluginErrorRecorder, PluginManager};
+use App\Plugins\{PluginCompatibility, PluginManager};
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Throwable;
 
@@ -36,15 +37,37 @@ class PluginController extends Controller {
             ->keyBy('plugin_id');
 
         $compatibility = [];
+        $operational = [];
         foreach ($manager->all() as $plugin) {
             $compatibility[$plugin->id()] = PluginCompatibility::for($plugin);
+            // Anzeige-Wahrheit (W0d): „aktiv" heißt erst dann grün, wenn das
+            // Plugin im Org-Kontext auch funktionsfähig ist (Key vorhanden etc.).
+            // Exception-isoliert — ein werfendes isEnabled() darf die Seite nicht reißen.
+            try {
+                $operational[$plugin->id()] = $plugin->isEnabled();
+            } catch (Throwable) {
+                $operational[$plugin->id()] = false;
+            }
         }
+
+        // Offene Fehler je Plugin (W4a): Badge in der Übersicht verlinkt auf die
+        // gefilterte Inbox — eigener Org-Scope + globale Fehler, ein Query.
+        $errorCounts = \App\Models\PluginError::query()
+            ->whereNull('acknowledged_at')
+            ->where(function ($q) use ($admin): void {
+                $q->whereNull('organization_id')->orWhere('organization_id', (int) $admin->organization_id);
+            })
+            ->selectRaw('plugin_id, count(*) as open_count')
+            ->groupBy('plugin_id')
+            ->pluck('open_count', 'plugin_id');
 
         return view('admin.plugins.index', [
             'plugins' => $manager->all(),
             'settings' => $rows,
             'states' => PluginState::mapForOrganization((int) $admin->organization_id),
             'compatibility' => $compatibility,
+            'operational' => $operational,
+            'errorCounts' => $errorCounts,
             'filters' => [
                 'status' => (string) $request->string('status'),
                 'q' => (string) $request->string('q'),
@@ -64,32 +87,39 @@ class PluginController extends Controller {
         return view('admin.plugins._form_dialog', [
             'plugin' => $instance,
             'setting' => $row,
-            'schema' => $instance->settingsSchema(),
+            // Normalisiert (W5b): akzeptiert Array-Literale UND SettingsField-VOs.
+            'schema' => array_map(
+                static fn(array|\App\Plugins\Contracts\SettingsField $f): array => \App\Plugins\Contracts\SettingsField::fromArray($f)->toArray(),
+                $instance->settingsSchema(),
+            ),
             'state' => $state,
         ]);
     }
 
-    public function update(Request $request, string $plugin, PluginManager $manager): RedirectResponse {
+    public function update(Request $request, string $plugin, PluginManager $manager): RedirectResponse|JsonResponse {
         $admin = $this->ensureAdmin($request);
 
         $instance = $manager->get($plugin);
         abort_unless($instance !== null, 404);
 
-        $schema = $instance->settingsSchema();
+        // Typisiertes Schema (W5b): Regeln kommen aus FieldType::rules(),
+        // `required` gilt für ALLE Typen (vorher nur password, Befund F2).
+        $schema = array_map(
+            static fn(array|\App\Plugins\Contracts\SettingsField $f): \App\Plugins\Contracts\SettingsField => \App\Plugins\Contracts\SettingsField::fromArray($f),
+            $instance->settingsSchema(),
+        );
         $rules = ['enabled' => ['sometimes', 'boolean']];
         foreach ($schema as $field) {
-            $key = 'settings.' . $field['key'];
-            $required = (bool) ($field['required'] ?? false);
-            // Password-Felder behandeln "" als "Wert beibehalten" — required wird im
-            // Controller-Code unten geprüft (nur wenn noch gar kein Key gesetzt war).
-            $isPassword = $field['type'] === 'password';
-            $rules[$key] = match ($field['type']) {
-                'boolean' => ['sometimes', 'boolean'],
-                'select' => array_filter([$required ? 'required' : 'nullable', 'string', isset($field['options']) ? 'in:' . implode(',', array_keys($field['options'])) : null]),
-                'password' => ['nullable', 'string', 'max:1000'],
-                default => [$required ? 'required' : 'nullable', 'string', 'max:1000'],
+            $key = 'settings.' . $field->key;
+            // Secret-Felder (Flag `secret`, Default bei type=password) behandeln
+            // "" als "Wert beibehalten" — required wird im Controller-Code unten
+            // geprüft (nur wenn noch gar kein Key gesetzt war). (W1d)
+            $rules[$key] = match (true) {
+                $field->type === \App\Plugins\Contracts\FieldType::Boolean => ['sometimes', 'boolean'],
+                $field->type === \App\Plugins\Contracts\FieldType::Select => [$field->required ? 'required' : 'nullable', 'string', 'in:' . implode(',', array_keys($field->options))],
+                $field->isSecret() => ['nullable', ...$field->type->rules()],
+                default => [$field->required ? 'required' : 'nullable', ...$field->type->rules()],
             };
-            unset($isPassword);
         }
 
         $data = $request->validate($rules);
@@ -106,17 +136,19 @@ class PluginController extends Controller {
         $existing = $row->settings ?? [];
         $missing = [];
         foreach ($schema as $field) {
-            if ($field['type'] !== 'password' || empty($field['required'])) {
+            if (! $field->isSecret() || ! $field->required) {
                 continue;
             }
-            $input = (string) $request->input('settings.' . $field['key'], '');
-            $existingVal = (string) ($existing[$field['key']] ?? '');
+            $input = (string) $request->input('settings.' . $field->key, '');
+            $existingVal = (string) ($existing[$field->key] ?? '');
             if ($input === '' && $existingVal === '') {
-                $missing['settings.' . $field['key']] = __('Dieses Feld ist erforderlich.');
+                $missing['settings.' . $field->key] = __('Dieses Feld ist erforderlich.');
             }
         }
         if ($missing !== []) {
-            return redirect()->back()->withErrors($missing)->withInput();
+            // Liefert im Dialog-Flow (fetch, Accept: application/json) 422 mit
+            // errors-Bag, sonst Redirect+Flash — beide Wege zeigen die Meldung (W0h).
+            throw ValidationException::withMessages($missing);
         }
 
         $wasEnabled = (bool) $row->enabled;
@@ -126,24 +158,26 @@ class PluginController extends Controller {
         if ($row->enabled && ! $wasEnabled) {
             $compat = PluginCompatibility::for($instance);
             if (! $compat->compatible) {
-                return redirect()->back()->withInput()->with('error', __('plugins.compatibility.activation_blocked', [
-                    'message' => $compat->message,
-                ]));
+                $message = __('plugins.compatibility.activation_blocked', ['message' => $compat->message]);
+                if ($request->expectsJson()) {
+                    return response()->json(['message' => $message], 409);
+                }
+
+                return redirect()->back()->withInput()->with('error', $message);
             }
         }
 
         $settings = $row->settings ?? [];
         foreach ($schema as $field) {
-            $key = $field['key'];
-            $type = $field['type'];
+            $key = $field->key;
             $input = $request->input('settings.' . $key);
 
-            if ($type === 'boolean') {
+            if ($field->type === \App\Plugins\Contracts\FieldType::Boolean) {
                 $settings[$key] = $request->boolean('settings.' . $key);
 
                 continue;
             }
-            if ($type === 'password' && ($input === null || $input === '')) {
+            if ($field->isSecret() && ($input === null || $input === '')) {
                 // Leere Eingabe = bestehenden Key NICHT überschreiben (UX: nicht jedes Mal neu eintippen).
                 continue;
             }
@@ -163,7 +197,7 @@ class PluginController extends Controller {
                 $errors['settings.' . $field] = $message;
             }
 
-            return redirect()->back()->withErrors($errors)->withInput();
+            throw ValidationException::withMessages($errors);
         }
 
         $row->settings = $settings;
@@ -180,9 +214,64 @@ class PluginController extends Controller {
         if ((bool) $row->enabled !== $wasEnabled) {
             $this->auditIntegrationChanged($admin, $row, $wasEnabled);
         }
+        // Audit auch für Settings-Änderungen (W1d, B5): der Austausch eines
+        // API-Keys ist sicherheitsrelevanter als der Toggle. Nur Feldnamen —
+        // nie Werte — landen im Audit-Log.
+        $changedKeys = [];
+        foreach ($schema as $field) {
+            $k = $field->key;
+            if (($existing[$k] ?? null) !== ($settings[$k] ?? null)) {
+                $changedKeys[] = $k;
+            }
+        }
+        if ($changedKeys !== []) {
+            AuditLog::query()->create([
+                'organization_id' => (int) $admin->organization_id,
+                'user_id' => $admin->id,
+                'event' => 'integration.settings_changed',
+                'auditable_type' => PluginSetting::class,
+                'auditable_id' => (int) $row->id,
+                'changes' => [
+                    'integration' => (string) $row->plugin_id,
+                    'fields' => $changedKeys,
+                ],
+            ]);
+        }
+        if (! $row->enabled && $wasEnabled) {
+            // Deaktivierung invalidiert den Health-Zustand (W0c): ein stehen
+            // gebliebener Status würde in der Übersicht als aktuell wirken.
+            $this->clearHealthState($plugin, $instance->isPerOrganization() ? $orgId : null);
+        }
 
-        return redirect()->route('admin.plugins.index')
-            ->with('success', __('Plugin-Einstellungen gespeichert.'));
+        $manager->flushRuntimeCaches();
+
+        $request->session()->flash('success', __('Plugin-Einstellungen gespeichert.'));
+        if ($request->expectsJson()) {
+            // Dialog-Flow: fetch folgt Redirects transparent und würde das
+            // Flash dabei verbrauchen (W0h) — Redirect-Ziel explizit übergeben.
+            return response()->json(['redirect' => route('admin.plugins.index')]);
+        }
+
+        return redirect()->route('admin.plugins.index');
+    }
+
+    /**
+     * Setzt den persistierten Health-Zustand eines Plugins im gegebenen Kontext
+     * zurück (nur vorhandene Zeilen; legt nie neue an).
+     */
+    private function clearHealthState(string $plugin, ?int $organizationId): void {
+        PluginState::query()
+            ->where('plugin_id', $plugin)
+            ->when(
+                $organizationId === null,
+                fn($q) => $q->whereNull('organization_id'),
+                fn($q) => $q->where('organization_id', $organizationId),
+            )
+            ->update([
+                'last_health_status' => null,
+                'last_health_message' => null,
+                'last_health_check_at' => null,
+            ]);
     }
 
     private function ensureAdmin(Request $request): User {
@@ -231,6 +320,11 @@ class PluginController extends Controller {
         $orgId = (int) $admin->organization_id;
         $row->enabled ? $instance->onActivate($orgId) : $instance->onDeactivate($orgId);
         $this->auditIntegrationChanged($admin, $row, $wasEnabled);
+        if (! $row->enabled) {
+            // Deaktivierung invalidiert den Health-Zustand (W0c).
+            $this->clearHealthState($plugin, $instance->isPerOrganization() ? $orgId : null);
+        }
+        $manager->flushRuntimeCaches();
 
         return back()->with('success', $row->enabled
             ? __('Plugin aktiviert.')
@@ -259,11 +353,13 @@ class PluginController extends Controller {
     }
 
     /**
-     * Triggert einen sofortigen Healthcheck und gibt das Ergebnis als JSON
-     * zurück (für UI-Buttons / fetch). Persistiert das Ergebnis ebenso wie
-     * der scheduled Command `plugin:healthcheck`.
+     * Triggert einen sofortigen Healthcheck über die zentrale Pipeline
+     * ({@see \App\Plugins\PluginHealthService}, W3a) und gibt das Ergebnis als
+     * JSON zurück (für UI-Buttons / fetch) — inkl. failure_count/auto_disabled
+     * für das Zeilen-Update (W4b). Manuelle Checks zählen nie für den
+     * Auto-Disable (Phase `manual`, E-1).
      */
-    public function healthCheck(Request $request, string $plugin, PluginManager $manager, PluginErrorRecorder $recorder): JsonResponse {
+    public function healthCheck(Request $request, string $plugin, PluginManager $manager, \App\Plugins\PluginHealthService $service): JsonResponse|RedirectResponse {
         $admin = $this->ensureAdmin($request);
         $instance = $manager->get($plugin);
         abort_unless($instance !== null, 404);
@@ -272,54 +368,67 @@ class PluginController extends Controller {
         // healthCheck() prüft denselben gebundenen Org-Kontext); globale Plugins → null.
         $orgId = $instance->isPerOrganization() ? (int) $admin->organization_id : null;
 
-        $state = PluginState::findOrInit($plugin, $orgId);
-        $previous = $state->last_health_status;
-        $state->plugin_id = $plugin;
-        $state->organization_id = $orgId;
-        $state->last_health_check_at = now();
-
-        try {
-            $startedAt = hrtime(true);
-            $health = $instance->healthCheck();
-            $health = $health->withLatency((int) ((hrtime(true) - $startedAt) / 1_000_000));
-            $state->last_health_status = $health->status;
-            $state->last_health_message = $health->message;
-            if ($health->isOk()) {
-                $state->last_ok_at = now();
-            }
-            $state->save();
-            $this->announceHealth($plugin, $orgId, $previous, $health->status, $health->message);
-
-            if ($health->isOk()) {
-                $recorder->markHealthy($plugin, $orgId);
-            } elseif ($health->isFailing()) {
-                $recorder->record($plugin, 'healthcheck', new \RuntimeException($health->message !== '' ? $health->message : 'failing healthcheck'), [], $orgId);
+        // Deaktivierte Plugins werden nicht geprüft (W0e) — wie im Scheduler:
+        // ein Check ohne Konfiguration erzeugte sonst nur Pseudo-Fehler.
+        $settingRow = PluginSetting::forOrganization((int) $admin->organization_id, $plugin);
+        $enabled = (bool) $settingRow->enabled || (bool) config('plugins.' . $plugin . '.enabled', false);
+        if (! $enabled) {
+            $message = __('Plugin ist deaktiviert — Healthcheck nicht ausgeführt.');
+            if ($request->expectsJson()) {
+                return response()->json(['status' => 'disabled', 'message' => $message], 422);
             }
 
-            return response()->json($health->toArray() + ['checked_at' => $state->last_health_check_at->toIso8601String()]);
-        } catch (Throwable $e) {
-            $state->last_health_status = \App\Plugins\PluginHealth::STATUS_FAILING;
-            $state->last_health_message = $e->getMessage();
-            $state->save();
-            $this->announceHealth($plugin, $orgId, $previous, \App\Plugins\PluginHealth::STATUS_FAILING, $e->getMessage());
-            $recorder->record($plugin, 'healthcheck', $e, [], $orgId);
-
-            return response()->json([
-                'status' => \App\Plugins\PluginHealth::STATUS_FAILING,
-                'message' => $e->getMessage(),
-                'checked_at' => $state->last_health_check_at->toIso8601String(),
-            ], 200);
+            return back()->with('error', $message);
         }
+
+        $result = $service->check($instance, $orgId, manual: true);
+        $health = $result['health'];
+        $state = $result['state'];
+
+        if (! $request->expectsJson()) {
+            return $this->healthCheckRedirect($health->status, $health->message);
+        }
+
+        return response()->json($health->toArray() + [
+            'checked_at' => $state->last_health_check_at?->toIso8601String(),
+            'failure_count' => (int) $state->failure_count,
+            'auto_disabled' => $result['auto_disabled'],
+            'disabled_reason' => $state->disabled_reason,
+        ]);
     }
 
-    /** Feuert Status-Übergangs-Events (nur bei tatsächlicher Änderung). */
-    private function announceHealth(string $pluginId, ?int $organizationId, ?string $from, string $to, string $message): void {
-        if ($from === $to) {
-            return;
+    /**
+     * Löst ein ausstehendes Plugin-Schema-Upgrade aus (Review 2026-08, W6):
+     * der frühere „→ neue Version"-Badge war eine Sackgasse für Admins ohne
+     * Shell. Downgrades verweigert der SchemaManager.
+     */
+    public function upgrade(Request $request, string $plugin, PluginManager $manager, \App\Plugins\PluginSchemaManager $schema): RedirectResponse {
+        $this->ensureAdmin($request);
+        $instance = $manager->get($plugin);
+        abort_unless($instance !== null, 404);
+
+        if (! $schema->needsUpgrade($instance)) {
+            return back()->with('info', __('Kein Schema-Upgrade ausstehend.'));
         }
-        \App\Events\PluginHealthChanged::dispatch($pluginId, $organizationId, $from, $to, $message);
-        if ($to === \App\Plugins\PluginHealth::STATUS_OK && $from !== null) {
-            \App\Events\PluginRecovered::dispatch($pluginId, $organizationId, $message);
+
+        try {
+            $schema->upgrade($instance);
+        } catch (Throwable $e) {
+            return back()->with('error', __('Schema-Upgrade fehlgeschlagen: :message', ['message' => $e->getMessage()]));
         }
+
+        return back()->with('success', __('Schema-Upgrade ausgeführt (:version).', ['version' => $instance->schemaVersion()]));
+    }
+
+    /** Ohne JS (A16): Ergebnis als Flash statt roher JSON-Seite. */
+    private function healthCheckRedirect(string $status, string $message): RedirectResponse {
+        $label = match ($status) {
+            \App\Plugins\PluginHealth::STATUS_OK => __('Healthcheck: ok'),
+            \App\Plugins\PluginHealth::STATUS_DEGRADED => __('Healthcheck: eingeschränkt'),
+            default => __('Healthcheck: fehlerhaft'),
+        };
+        $text = $label . ($message !== '' ? ' — ' . $message : '');
+
+        return back()->with($status === \App\Plugins\PluginHealth::STATUS_OK ? 'success' : 'error', $text);
     }
 }

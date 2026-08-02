@@ -11,8 +11,8 @@
 namespace App\Plugins\Lexoffice;
 
 use App\Models\{Customer, ExternalReference, Organization, PluginSetting, Supplier, TimeEntry};
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{ContactSyncer, Plugin, PluginCapability, SlotRenderer, TimeExporter};
-use App\Plugins\{PluginDefaults, PluginHealth};
 use Carbon\CarbonImmutable;
 use GuzzleHttp\Exception\ConnectException;
 use Throwable;
@@ -27,9 +27,7 @@ use Throwable;
  * Mappings between local entities and Lexoffice ids are persisted in the
  * external_references table. The plugin id is "lexoffice".
  */
-class LexofficePlugin implements ContactSyncer, Plugin, SlotRenderer, TimeExporter {
-    use PluginDefaults;
-
+class LexofficePlugin extends AbstractPlugin implements ContactSyncer, SlotRenderer, TimeExporter {
     public const ID = 'lexoffice';
 
     public const SERVICE_PROVIDER = LexofficeServiceProvider::class;
@@ -42,10 +40,6 @@ class LexofficePlugin implements ContactSyncer, Plugin, SlotRenderer, TimeExport
         private readonly LexofficeService $service,
     ) {}
 
-    public function id(): string {
-        return self::ID;
-    }
-
     public function name(): string {
         return 'Lexoffice';
     }
@@ -57,22 +51,6 @@ class LexofficePlugin implements ContactSyncer, Plugin, SlotRenderer, TimeExport
     public function schemaVersion(): string {
         // Noch keine Plugin-eigenen Migrations; wird beim ersten Schema-Wechsel hochgezogen.
         return '1.0.0';
-    }
-
-    /**
-     * Kurzer Ping gegen den Lexoffice-/profile-Endpunkt. Antwortet die API,
-     * gilt das Plugin als gesund; 401 → failing (Key ungültig).
-     *
-     * Transiente Zustände führen bewusst zu `degraded` (nicht `failing`):
-     * `degraded` zählt NICHT auf den Auto-Disable-Zähler ein, damit ein
-     * vorübergehendes Rate-Limit (429) oder ein Netz-Hänger das Plugin nicht
-     * dauerhaft stilllegt:
-     *   - 429 (Rate-Limit) → degraded
-     *   - Netz-/Timeout-Fehler → degraded
-     *   - sonstige Fehler → failing mit Message
-     */
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     public function healthCheck(): PluginHealth {
@@ -153,10 +131,6 @@ class LexofficePlugin implements ContactSyncer, Plugin, SlotRenderer, TimeExport
             'label' => __('Lexoffice-Einstellungen'),
             'icon' => 'cloud_sync',
         ];
-    }
-
-    public function serviceProvider(): ?string {
-        return \App\Plugins\Lexoffice\LexofficeServiceProvider::class;
     }
 
     public function settingsSchema(): array {

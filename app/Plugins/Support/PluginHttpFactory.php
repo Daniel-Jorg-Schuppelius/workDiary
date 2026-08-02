@@ -65,9 +65,15 @@ class PluginHttpFactory {
      */
     protected function configureSdkClient(ClientAbstract $client, string $pluginId): ClientAbstract {
         $client->setUserAgent('workDiary-plugin/' . $pluginId);
-        $client->setTimeout(10.0);
         $client->setRequestInterval(0.0);
-        $client->setMaxRetries(3);
+        // Health-Kontext (W3c): reduziertes Timeout-Budget, max. 1 Retry.
+        if (\App\Plugins\PluginHealthService::inHealthCheck()) {
+            $client->setTimeout((float) config('plugins.health_timeout_seconds', 10));
+            $client->setMaxRetries(1);
+        } else {
+            $client->setTimeout(10.0);
+            $client->setMaxRetries(3);
+        }
 
         return $client;
     }

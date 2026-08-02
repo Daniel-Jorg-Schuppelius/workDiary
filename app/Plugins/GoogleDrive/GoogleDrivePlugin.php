@@ -13,10 +13,10 @@ namespace App\Plugins\GoogleDrive;
 use App\Enums\CloudIntake\{CloudIntakeConnectionStatus, CloudIntakeProvider};
 use App\Models\Backup\BackupTargetConnection;
 use App\Models\CloudIntake\CloudDocumentConnection;
-use App\Models\{Organization, PluginSetting};
+use App\Models\Organization;
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{BackupTarget, DocumentIntakeSource, Plugin, PluginCapability};
 use App\Plugins\GoogleDrive\Api\{GoogleDriveBackupClient, GoogleDriveClient};
-use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\Backup\BackupAccount;
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
 use App\Plugins\Support\PluginOrgContext;
@@ -30,17 +30,11 @@ use Throwable;
  * Produktiver öffentlicher Rollout bleibt bis zur Google-OAuth-Verifikation
  * blockiert (P10/Welle C).
  */
-class GoogleDrivePlugin implements BackupTarget, DocumentIntakeSource, Plugin {
-    use PluginDefaults;
-
+class GoogleDrivePlugin extends AbstractPlugin implements BackupTarget, DocumentIntakeSource {
     public const ID = 'google-drive';
 
     /** Von der Plugin-Discovery VOR der Instanziierung registriert. */
     public const SERVICE_PROVIDER = GoogleDriveServiceProvider::class;
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'Google Drive';
@@ -52,18 +46,6 @@ class GoogleDrivePlugin implements BackupTarget, DocumentIntakeSource, Plugin {
 
     public function description(): string {
         return __('cloud_intake.google.description');
-    }
-
-    public function isEnabled(): bool {
-        $org = PluginOrgContext::currentOrNull();
-        if ($org instanceof Organization) {
-            $row = PluginSetting::forOrganization($org->id, self::ID);
-            if ($row->exists) {
-                return $row->enabled;
-            }
-        }
-
-        return (bool) config('plugins.google-drive.enabled', false);
     }
 
     public function capabilities(): array {
@@ -128,17 +110,9 @@ class GoogleDrivePlugin implements BackupTarget, DocumentIntakeSource, Plugin {
         return null;
     }
 
-    public function serviceProvider(): ?string {
-        return GoogleDriveServiceProvider::class;
-    }
-
     /** Keine per-Org-Secrets: Client-ID/-Secret sind installationsweit (ENV). */
     public function settingsSchema(): array {
         return [];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     /** Health je Organisation: Konfiguration + Verbindungszustand (keine API-Probe). */

@@ -19,12 +19,19 @@ use Illuminate\Support\Carbon;
  *
  * @property int $id
  * @property string $plugin_id
+ * @property int|null $organization_id
  * @property string|null $installed_version
  * @property Carbon|null $installed_at
  * @property Carbon|null $last_health_check_at
  * @property string|null $last_health_status
  * @property string|null $last_health_message
+ * @property int|null $last_health_latency_ms
+ * @property string|null $last_health_code
+ * @property string|null $last_announced_status
+ * @property int $health_streak
+ * @property Carbon|null $last_ok_at
  * @property int $failure_count
+ * @property Carbon|null $failure_window_started_at
  * @property string|null $disabled_reason
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -41,8 +48,13 @@ class PluginState extends Model {
         'last_health_check_at',
         'last_health_status',
         'last_health_message',
+        'last_health_latency_ms',
+        'last_health_code',
+        'last_announced_status',
+        'health_streak',
         'last_ok_at',
         'failure_count',
+        'failure_window_started_at',
         'disabled_reason',
     ];
 
@@ -53,6 +65,9 @@ class PluginState extends Model {
         'last_health_check_at' => 'datetime',
         'last_ok_at' => 'datetime',
         'failure_count' => 'integer',
+        'failure_window_started_at' => 'datetime',
+        'last_health_latency_ms' => 'integer',
+        'health_streak' => 'integer',
     ];
 
     /**
@@ -63,6 +78,23 @@ class PluginState extends Model {
     public static function findOrInit(string $pluginId, ?int $organizationId = null): self {
         return static::query()
             ->firstOrNew(['plugin_id' => $pluginId, 'organization_id' => $organizationId]);
+    }
+
+    protected static function booted(): void {
+        // Sicherheitsnetz zur Manager-Memoisierung (Review 2026-08, W2e):
+        // jeder Zustands-Write invalidiert die enabled()/autoDisabled-Sicht —
+        // auch Schreibpfade außerhalb des PluginErrorRecorder bleiben frisch.
+        $flush = static function (): void {
+            try {
+                if (app()->resolved(\App\Plugins\PluginManager::class)) {
+                    app(\App\Plugins\PluginManager::class)->flushRuntimeCaches();
+                }
+            } catch (\Throwable) {
+                // Cache-Invalidierung darf nie werfen.
+            }
+        };
+        static::saved($flush);
+        static::deleted($flush);
     }
 
     public function isAutoDisabled(): bool {

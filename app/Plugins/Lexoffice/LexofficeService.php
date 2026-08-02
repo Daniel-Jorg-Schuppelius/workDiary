@@ -108,7 +108,13 @@ class LexofficeService {
             throw new RuntimeException('Lexoffice API key is not configured (LEXOFFICE_API_KEY).');
         }
 
-        return $this->client ??= new Client($this->apiKey);
+        // Über die Factory statt direkt (Review 2026-08, W5c/F6): einheitliche
+        // Transport-Defaults + im Test via FakePluginHttp mockbarer Guzzle.
+        return $this->client ??= app(PluginHttpFactory::class)->sdkClient(
+            'lexoffice',
+            $this->baseUrl,
+            fn(?\GuzzleHttp\Client $transport): Client => new Client($this->apiKey, $this->baseUrl, null, false, $transport),
+        );
     }
 
     /**

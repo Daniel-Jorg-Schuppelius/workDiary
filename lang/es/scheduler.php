@@ -124,7 +124,7 @@ return [
         'print' => ['purge_files' => 'Depurar archivos de producción de impresión tras la retención'],
         'payroll' => ['import_minimum_wages' => 'Importar salarios mínimos de la UE'],
         'plans' => ['purge' => 'Depurar datos de módulos degradados'],
-        'plugin' => ['healthcheck' => 'Comprobación de estado de plugins'],
+        'plugin' => ['healthcheck' => 'Comprobación de estado de plugins', 'errors_prune' => 'Depurar la bandeja de errores de plugins (retención)'],
         'privacy' => [
             'deadlines' => 'Comprobar plazos de solicitudes de interesados',
             'retention_scan' => 'Análisis de plazos de conservación',

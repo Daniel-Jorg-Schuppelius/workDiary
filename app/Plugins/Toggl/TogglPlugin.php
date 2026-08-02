@@ -10,10 +10,9 @@
 
 namespace App\Plugins\Toggl;
 
-use App\Models\{Organization, PluginSetting};
+use App\Models\Organization;
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
-use App\Plugins\{PluginDefaults, PluginHealth};
-use App\Plugins\Support\PluginOrgContext;
 use App\Plugins\Toggl\Sources\TogglApiClient;
 use Carbon\CarbonImmutable;
 
@@ -28,16 +27,10 @@ use Carbon\CarbonImmutable;
  * Plugin-Id ist "toggl". Pro Organisation konfigurierbar über plugin_settings;
  * ENV/config dient nur als Fallback.
  */
-class TogglPlugin implements Plugin, TimeImporter {
-    use PluginDefaults;
-
+class TogglPlugin extends AbstractPlugin implements TimeImporter {
     public const ID = 'toggl';
 
     public const SERVICE_PROVIDER = TogglServiceProvider::class;
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'Toggl Track';
@@ -49,18 +42,6 @@ class TogglPlugin implements Plugin, TimeImporter {
 
     public function description(): string {
         return __('Importiert Projekt- und Zeitdaten aus Toggl Track (API oder CSV-Export) und ordnet sie Kunden/Projekten zu.');
-    }
-
-    public function isEnabled(): bool {
-        $org = PluginOrgContext::currentOrNull();
-        if ($org instanceof Organization) {
-            $row = PluginSetting::forOrganization($org->id, self::ID);
-            if ($row->exists) {
-                return $row->enabled;
-            }
-        }
-
-        return (bool) config('plugins.toggl.enabled', false);
     }
 
     public function capabilities(): array {
@@ -86,10 +67,6 @@ class TogglPlugin implements Plugin, TimeImporter {
         ];
     }
 
-    public function serviceProvider(): ?string {
-        return TogglServiceProvider::class;
-    }
-
     public function settingsSchema(): array {
         return [
             ['key' => 'api_token', 'label' => __('Toggl API-Token'), 'type' => 'password', 'required' => true, 'help' => __('Profil → Einstellungen → API-Token in Toggl Track.')],
@@ -101,10 +78,6 @@ class TogglPlugin implements Plugin, TimeImporter {
             ['key' => 'export_enabled', 'label' => __('Zeit-Übertragung aktivieren'), 'type' => 'boolean', 'default' => false, 'help' => __('Überträgt in workDiary erfasste Zeiten gemappter Projekte nach Toggl (z. B. Fernwartungssitzungen). Angelegt wird immer für den Token-Inhaber; übertragene Einträge verhalten sich danach wie importierte — inklusive Abgleich in beide Richtungen und Löschungserkennung.')],
             ['key' => 'writeback', 'label' => __('Korrekturen zurückschreiben'), 'type' => 'boolean', 'default' => false, 'help' => __('Schreibt Korrekturen an bereits importierten Zeiten zurück nach Toggl (Änderung und Löschung). Wurde der Eintrag dort zwischenzeitlich geändert, wird nichts überschrieben — der Fall landet in der Integrations-Inbox. Abgerechnete Zeiten werden nie zurückgeschrieben.')],
         ];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     /** Health-Check: pingt /me mit dem konfigurierten Token (ohne Token: degraded, Fehler: failing). */

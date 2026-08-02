@@ -24,11 +24,16 @@ class DoctorCommand extends Command {
 
     protected $description = 'Prüft alle registrierten Plugins auf Vertrags-Konformität (IDs, Capability↔Interface, Settings-Schema, Migrations, Provider).';
 
-    private const ALLOWED_SETTING_TYPES = ['text', 'password', 'select', 'boolean'];
-
     public function handle(PluginManager $manager): int {
         $violations = [];
+        $warnings = [];
         $seen = [];
+
+        // Ohne gesetzte APP_VERSION rechnet PluginCompatibility mit dem
+        // Default `0.1.0-dev` — Plugins mit minAppVersion wären nie aktivierbar.
+        if (config('app.version') === null || str_ends_with((string) config('app.version'), '-dev')) {
+            $warnings[] = 'APP_VERSION ist ungesetzt/Dev-Default — Kompatibilitätsprüfungen laufen gegen ' . (string) config('app.version', '0.1.0-dev') . '.';
+        }
 
         foreach ($manager->all() as $plugin) {
             $id = $plugin->id();
@@ -42,9 +47,13 @@ class DoctorCommand extends Command {
             $seen[$id] = true;
 
             $this->checkCapabilities($plugin, $violations);
-            $this->checkSettingsSchema($plugin, $violations);
+            $this->checkSettingsSchema($plugin, $violations, $warnings);
             $this->checkSchema($plugin, $violations);
             $this->checkServiceProvider($plugin, $violations);
+        }
+
+        foreach ($warnings as $w) {
+            $this->warn('  ⚠ ' . $w);
         }
 
         if ($violations === []) {
@@ -66,20 +75,31 @@ class DoctorCommand extends Command {
         foreach ($plugin->capabilities() as $cap) {
             $interface = $cap->interface();
             if (! $plugin instanceof $interface) {
-                $violations[] = sprintf('%s: kündigt %s an, implementiert aber %s nicht.', $plugin->id(), $cap->name, $interface);
+                $violations[] = sprintf('%s: kündigt %s an, implementiert aber %s nicht.', $plugin->id(), $cap->identifier(), $interface);
             }
         }
     }
 
-    /** @param list<string> $violations */
-    private function checkSettingsSchema(Plugin $plugin, array &$violations): void {
+    /**
+     * @param  list<string>  $violations
+     * @param  list<string>  $warnings
+     */
+    private function checkSettingsSchema(Plugin $plugin, array &$violations, array &$warnings): void {
         foreach ($plugin->settingsSchema() as $i => $field) {
             $where = "{$plugin->id()} settingsSchema[#{$i}]";
-            if (! in_array($field['type'], self::ALLOWED_SETTING_TYPES, true)) {
-                $violations[] = sprintf('%s: unbekannter Feldtyp "%s" (erlaubt: %s).', $where, $field['type'], implode(', ', self::ALLOWED_SETTING_TYPES));
+            // Normalisierung über das typisierte Feld (W5b): ungültige Typen,
+            // Keys oder select ohne options werden dort zur Ausnahme.
+            try {
+                $normalized = \App\Plugins\Contracts\SettingsField::fromArray($field);
+            } catch (\InvalidArgumentException $e) {
+                $violations[] = "{$where}: {$e->getMessage()} (erlaubt: " . implode(', ', \App\Plugins\Contracts\FieldType::values()) . ').';
+
+                continue;
             }
-            if ($field['type'] === 'select' && empty($field['options'])) {
-                $violations[] = "{$where}: select-Feld ohne options.";
+            // Heuristik (W1d, B6): key/token/secret-artige Felder ohne
+            // Secret-Kennzeichnung landen im Klartext im HTML.
+            if (! $normalized->isSecret() && preg_match('/(secret|token|password|api_?key)$/i', $normalized->key)) {
+                $warnings[] = "{$where}: Feld \"{$normalized->key}\" wirkt geheim, ist aber nicht als secret/password gekennzeichnet.";
             }
         }
     }

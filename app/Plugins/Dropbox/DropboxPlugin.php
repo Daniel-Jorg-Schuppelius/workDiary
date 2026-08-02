@@ -12,10 +12,10 @@ namespace App\Plugins\Dropbox;
 
 use App\Models\Backup\BackupTargetConnection;
 use App\Models\CloudIntake\CloudDocumentConnection;
-use App\Models\{Organization, PluginSetting};
+use App\Models\Organization;
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{BackupTarget, DocumentIntakeSource, Plugin, PluginCapability};
 use App\Plugins\Dropbox\Api\{DropboxBackupClient, DropboxClient};
-use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\Backup\BackupAccount;
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
 use App\Plugins\Support\PluginOrgContext;
@@ -31,17 +31,11 @@ use Throwable;
  * Cloud-BACKUPZIEL — eigene Verbindung, eigene (Schreib-)Scopes,
  * strikt getrennt vom Dokumenteingang.
  */
-class DropboxPlugin implements BackupTarget, DocumentIntakeSource, Plugin {
-    use PluginDefaults;
-
+class DropboxPlugin extends AbstractPlugin implements BackupTarget, DocumentIntakeSource {
     public const ID = 'dropbox';
 
     /** Von der Plugin-Discovery VOR der Instanziierung registriert. */
     public const SERVICE_PROVIDER = DropboxServiceProvider::class;
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'Dropbox';
@@ -53,18 +47,6 @@ class DropboxPlugin implements BackupTarget, DocumentIntakeSource, Plugin {
 
     public function description(): string {
         return __('cloud_intake.dropbox.description');
-    }
-
-    public function isEnabled(): bool {
-        $org = PluginOrgContext::currentOrNull();
-        if ($org instanceof Organization) {
-            $row = PluginSetting::forOrganization($org->id, self::ID);
-            if ($row->exists) {
-                return $row->enabled;
-            }
-        }
-
-        return (bool) config('plugins.dropbox.enabled', false);
     }
 
     public function capabilities(): array {
@@ -129,17 +111,9 @@ class DropboxPlugin implements BackupTarget, DocumentIntakeSource, Plugin {
         return null;
     }
 
-    public function serviceProvider(): ?string {
-        return DropboxServiceProvider::class;
-    }
-
     /** Keine per-Org-Secrets: App-Key/-Secret sind installationsweit (ENV). */
     public function settingsSchema(): array {
         return [];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     /** Health je Organisation: Konfiguration + Verbindungszustand (keine API-Probe). */

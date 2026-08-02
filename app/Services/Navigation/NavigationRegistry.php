@@ -1294,7 +1294,20 @@ class NavigationRegistry {
                     $adminNavItems[] = ['route' => 'whistleblowing.portal.edit', 'label' => __('Meldeportal'), 'icon' => 'campaign', 'modal' => false];
                 }
                 $adminNavItems[] = ['route' => 'admin.plugins.index', 'label' => __('Plugins'), 'icon' => 'extension', 'modal' => false];
-                $adminNavItems[] = ['route' => 'admin.plugin-errors.index', 'label' => __('Plugin-Fehler'), 'icon' => 'bug_report', 'modal' => false];
+                // Zähler offener Plugin-Fehler (Review 2026-08, W4c/E5) — 60 s
+                // gecacht, org-gescopet (eigene Org + globale Fehler).
+                $peOrg = (int) (auth()->user()->organization_id ?? 0);
+                $peOpen = (int) Cache::remember(
+                    'nav-badge:plugin-errors:' . $peOrg,
+                    60,
+                    static fn(): int => \App\Models\PluginError::query()
+                        ->whereNull('acknowledged_at')
+                        ->where(static function ($q) use ($peOrg): void {
+                            $q->whereNull('organization_id')->orWhere('organization_id', $peOrg);
+                        })
+                        ->count(),
+                );
+                $adminNavItems[] = ['route' => 'admin.plugin-errors.index', 'label' => __('Plugin-Fehler'), 'icon' => 'bug_report', 'modal' => false, 'badge' => $peOpen];
 
                 // Aktive Plugins mit eigenem Admin-Panel dynamisch ins Systemmenü („Plugins").
                 foreach (app(PluginManager::class)->enabled() as $plugin) {

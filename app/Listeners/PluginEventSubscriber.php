@@ -36,6 +36,30 @@ class PluginEventSubscriber {
         } else {
             Log::info('plugin.health.changed', $context);
         }
+
+        // Ausfall aktiv melden (Review 2026-08, W3d / E-4): schon der stabile
+        // failing-Übergang (Hysterese in der Health-Pipeline) erzeugt eine
+        // Warning-Betriebsaufgabe — nicht erst der Auto-Disable (~5 h später).
+        // Der Auto-Disable bleibt Critical (handleAutoDisabled).
+        try {
+            $alerts = app(\App\Services\Operations\OperationsAlertService::class);
+            $dedupeKey = 'plugin_failing:' . $e->pluginId . ':' . ($e->organizationId ?? 0);
+            if ($e->to === PluginHealth::STATUS_FAILING) {
+                $alerts->report(new \App\Services\Operations\OperationsSignal(
+                    type: \App\Enums\Operations\OperationsTaskType::ConnectionFailing,
+                    dedupeKey: $dedupeKey,
+                    severity: \App\Enums\Operations\OperationsTaskSeverity::Warning,
+                    titleKey: 'operations.task.connection_failing',
+                    params: ['name' => $e->pluginId, 'kind' => 'plugin', 'error' => $e->message],
+                    organizationId: $e->organizationId,
+                    linkRoute: 'admin.plugins.index',
+                ));
+            } elseif ($e->from === PluginHealth::STATUS_FAILING) {
+                $alerts->resolve($dedupeKey);
+            }
+        } catch (\Throwable $t) {
+            Log::warning('operations.plugin_failing_report_failed', ['message' => $t->getMessage()]);
+        }
     }
 
     public function handleRecovered(PluginRecovered $e): void {
@@ -44,10 +68,12 @@ class PluginEventSubscriber {
             'organization_id' => $e->organizationId,
         ]);
 
-        // Betriebsaufgabe automatisch schließen (Feature 041, MVP-058).
+        // Betriebsaufgaben automatisch schließen (Feature 041, MVP-058) —
+        // sowohl den Critical-Auto-Disable als auch die Warning-Störung (W3d).
         try {
-            app(\App\Services\Operations\OperationsAlertService::class)
-                ->resolve('plugin_disabled:' . $e->pluginId . ':' . ($e->organizationId ?? 0));
+            $alerts = app(\App\Services\Operations\OperationsAlertService::class);
+            $alerts->resolve('plugin_disabled:' . $e->pluginId . ':' . ($e->organizationId ?? 0));
+            $alerts->resolve('plugin_failing:' . $e->pluginId . ':' . ($e->organizationId ?? 0));
         } catch (\Throwable $t) {
             Log::warning('operations.plugin_resolve_failed', ['message' => $t->getMessage()]);
         }

@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\SevDesk;
 
-use App\Models\{Organization, PluginSetting};
+use App\Models\Organization;
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\Plugin;
-use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\SevDesk\Api\{SevDeskApiException, SevDeskClient, SevDeskClientFactory};
 use App\Plugins\Support\PluginOrgContext;
 use Illuminate\Support\Facades\Cache;
@@ -36,16 +36,10 @@ use Throwable;
  *   GET /Tools/bookkeepingSystemVersion und erneuert den Versions-Cache
  *   des Mandanten.
  */
-class SevDeskPlugin implements Plugin {
-    use PluginDefaults;
-
+class SevDeskPlugin extends AbstractPlugin {
     public const ID = 'sevdesk';
 
     public const SERVICE_PROVIDER = SevDeskServiceProvider::class;
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'sevDesk';
@@ -59,30 +53,9 @@ class SevDeskPlugin implements Plugin {
         return __('Übergibt bestätigte Abrechnungspositionen als Rechnungsentwurf an sevDesk (API-Token gegen my.sevdesk.de): Kontakt-Projektion, idempotente Übergabe mit Quellmarker, Erkennung der Buchhaltungs-Version 1.0/2.0 je Mandant.');
     }
 
-    public function isEnabled(): bool {
-        $organization = PluginOrgContext::currentOrNull();
-        if ($organization instanceof Organization) {
-            $setting = PluginSetting::forOrganization($organization->id, self::ID);
-            if ($setting->exists) {
-                return (bool) $setting->enabled;
-            }
-        }
-
-        return (bool) config('plugins.' . self::ID . '.enabled', false);
-    }
-
     /** @return array<int, \App\Plugins\Contracts\PluginCapability> Fähigkeiten hängen am FacturationTarget-Vertrag. */
     public function capabilities(): array {
         return [];
-    }
-
-    /** Konfiguration läuft über die Auto-Form der Plugin-Karte (settingsSchema). */
-    public function adminPanel(): ?array {
-        return null;
-    }
-
-    public function serviceProvider(): ?string {
-        return self::SERVICE_PROVIDER;
     }
 
     /** @return array<int, array{key: string, label: string, type: string, options?: array<string, string>, help?: string, required?: bool, default?: mixed}> */
@@ -92,10 +65,6 @@ class SevDeskPlugin implements Plugin {
             ['key' => 'base_url', 'label' => __('API-Basis-URL'), 'type' => 'text', 'default' => 'https://my.sevdesk.de/api/v1'],
             ['key' => 'default_vat_rate', 'label' => __('Standard-USt %'), 'type' => 'text', 'default' => '19'],
         ];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     /**

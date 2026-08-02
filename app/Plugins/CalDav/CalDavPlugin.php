@@ -10,11 +10,11 @@
 
 namespace App\Plugins\CalDav;
 
-use App\Models\{CalDavConnection, Organization, PluginSetting};
+use App\Models\{CalDavConnection, Organization};
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\CalDav\Contracts\{CalDavGatewayFactory, CalendarSource};
 use App\Plugins\CalDav\Services\{CalDavRemoteCalendarGateway, CalendarPublishItem, EventCalendarSource, ScheduleCalendarSource};
-use App\Plugins\Contracts\{CalendarPublisher, Plugin, PluginCapability};
-use App\Plugins\{PluginDefaults, PluginHealth};
+use App\Plugins\Contracts\{CalendarPublisher, PluginCapability};
 use App\Plugins\Support\Calendar\{RemoteCalendarEvent, RemoteCalendarPublishService};
 use App\Plugins\Support\PluginOrgContext;
 use CommonToolkit\Enums\HashAlgorithm;
@@ -36,19 +36,13 @@ use Throwable;
  * Kündigt {@see PluginCapability::CalendarPublish} an. Rückimport externer
  * Termine ist bewusst zweite Ausbaustufe.
  */
-class CalDavPlugin implements CalendarPublisher, Plugin {
-    use PluginDefaults;
-
+class CalDavPlugin extends AbstractPlugin implements CalendarPublisher {
     public const ID = 'caldav';
 
     /** ExternalReference-Typ des CalDAV-Publishs (Bestandsdaten — nie ändern). */
     public const EXT_TYPE_CALENDAR_OBJECT = 'calendar_object';
 
     public const SERVICE_PROVIDER = CalDavServiceProvider::class;
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'CalDAV';
@@ -60,18 +54,6 @@ class CalDavPlugin implements CalendarPublisher, Plugin {
 
     public function description(): string {
         return __('Publiziert Termine idempotent in einen externen CalDAV-Kalender (Nextcloud/ownCloud, RFC 4791) — On-Premise, ohne Microsoft-/Google-Konto.');
-    }
-
-    public function isEnabled(): bool {
-        $org = PluginOrgContext::currentOrNull();
-        if ($org instanceof Organization) {
-            $row = PluginSetting::forOrganization($org->id, self::ID);
-            if ($row->exists) {
-                return $row->enabled;
-            }
-        }
-
-        return (bool) config('plugins.caldav.enabled', false);
     }
 
     public function capabilities(): array {
@@ -207,17 +189,9 @@ class CalDavPlugin implements CalendarPublisher, Plugin {
         ];
     }
 
-    public function serviceProvider(): ?string {
-        return CalDavServiceProvider::class;
-    }
-
     /** Per-Org-Konfiguration liegt in `caldav_connections` (Admin-Panel), nicht in plugin_settings. */
     public function settingsSchema(): array {
         return [];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     /** Health-Check je Organisation: aktive Anbindung suchen und die Collection anpingen. */

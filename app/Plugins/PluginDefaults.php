@@ -32,11 +32,14 @@ trait PluginDefaults {
     }
 
     /**
-     * Healthcheck-Default: Plugins ohne externen Endpunkt sind „ok".
-     * Plugins mit Remote-Anbindung sollten diese Methode überschreiben.
+     * Healthcheck-Default: bewusst „degraded" statt „ok" (Review 2026-08, A15) —
+     * ein pauschales Grün ohne jede Prüfung wäre eine falsche Gesundmeldung.
+     * Plugins mit Remote-Anbindung überschreiben die Methode (z. B. via
+     * {@see PluginHealth::pingHealth()}); rein lokale Plugins dürfen explizit
+     * `PluginHealth::ok('kein externer Endpunkt')` zurückgeben.
      */
     public function healthCheck(): PluginHealth {
-        return PluginHealth::ok();
+        return PluginHealth::degraded(__('Kein Healthcheck implementiert — Zustand unbestimmt.'), code: 'not_implemented');
     }
 
     /**

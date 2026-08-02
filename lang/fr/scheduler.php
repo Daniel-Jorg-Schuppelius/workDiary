@@ -124,7 +124,7 @@ return [
         'print' => ['purge_files' => 'Purger les fichiers de production après rétention'],
         'payroll' => ['import_minimum_wages' => 'Importer les salaires minimums UE'],
         'plans' => ['purge' => 'Purger les données de modules rétrogradés'],
-        'plugin' => ['healthcheck' => 'Contrôle de santé des plugins'],
+        'plugin' => ['healthcheck' => 'Contrôle de santé des plugins', 'errors_prune' => 'Purger la boîte d\'erreurs des plugins (rétention)'],
         'privacy' => [
             'deadlines' => 'Contrôler les délais des demandes des personnes concernées',
             'retention_scan' => 'Analyse des délais de conservation',

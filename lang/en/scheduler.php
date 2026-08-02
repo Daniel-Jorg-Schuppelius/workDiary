@@ -124,7 +124,7 @@ return [
         'print' => ['purge_files' => 'Purge print production files after retention'],
         'payroll' => ['import_minimum_wages' => 'Import EU minimum wages'],
         'plans' => ['purge' => 'Purge downgraded module data'],
-        'plugin' => ['healthcheck' => 'Plugin health check'],
+        'plugin' => ['healthcheck' => 'Plugin health check', 'errors_prune' => 'Prune plugin error inbox (retention)'],
         'privacy' => [
             'deadlines' => 'Check data subject request deadlines',
             'retention_scan' => 'Retention scan',

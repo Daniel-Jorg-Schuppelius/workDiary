@@ -124,7 +124,7 @@ return [
         'print' => ['purge_files' => 'Elimina i file di produzione di stampa dopo la conservazione'],
         'payroll' => ['import_minimum_wages' => 'Importare i salari minimi UE'],
         'plans' => ['purge' => 'Eliminare i dati dei moduli retrocessi'],
-        'plugin' => ['healthcheck' => 'Controllo di integrità dei plugin'],
+        'plugin' => ['healthcheck' => 'Controllo di integrità dei plugin', 'errors_prune' => 'Ripulire la inbox errori dei plugin (conservazione)'],
         'privacy' => [
             'deadlines' => 'Controllare le scadenze delle richieste degli interessati',
             'retention_scan' => 'Scansione dei termini di conservazione',

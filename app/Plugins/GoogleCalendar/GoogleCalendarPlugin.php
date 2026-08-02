@@ -10,10 +10,10 @@
 
 namespace App\Plugins\GoogleCalendar;
 
-use App\Models\{GoogleCalendarConnection, Organization, PluginSetting};
-use App\Plugins\Contracts\{CalendarPublisher, Plugin, PluginCapability};
+use App\Models\{GoogleCalendarConnection, Organization};
+use App\Plugins\{AbstractPlugin, PluginHealth};
+use App\Plugins\Contracts\{CalendarPublisher, PluginCapability};
 use App\Plugins\GoogleCalendar\Api\GoogleCalendarClient;
-use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\Calendar\{OrganizationEventSource, RemoteCalendarEvent, RemoteCalendarPublishService};
 use App\Plugins\Support\PluginOrgContext;
 use Closure;
@@ -35,16 +35,10 @@ use Throwable;
  *
  * Kündigt {@see PluginCapability::CalendarPublish} an.
  */
-class GoogleCalendarPlugin implements CalendarPublisher, Plugin {
-    use PluginDefaults;
-
+class GoogleCalendarPlugin extends AbstractPlugin implements CalendarPublisher {
     public const ID = 'google_calendar';
 
     public const SERVICE_PROVIDER = GoogleCalendarServiceProvider::class;
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'Google Calendar';
@@ -56,18 +50,6 @@ class GoogleCalendarPlugin implements CalendarPublisher, Plugin {
 
     public function description(): string {
         return __('google_calendar.plugin_description');
-    }
-
-    public function isEnabled(): bool {
-        $org = PluginOrgContext::currentOrNull();
-        if ($org instanceof Organization) {
-            $row = PluginSetting::forOrganization($org->id, self::ID);
-            if ($row->exists) {
-                return $row->enabled;
-            }
-        }
-
-        return (bool) config('plugins.google_calendar.enabled', false);
     }
 
     public function capabilities(): array {
@@ -129,17 +111,9 @@ class GoogleCalendarPlugin implements CalendarPublisher, Plugin {
         ];
     }
 
-    public function serviceProvider(): ?string {
-        return GoogleCalendarServiceProvider::class;
-    }
-
     /** Keine per-Org-Secrets: Client-ID/-Secret sind installationsweit (ENV). */
     public function settingsSchema(): array {
         return [];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     /** Health-Check je Organisation: billige Probe über die Kalenderliste. */

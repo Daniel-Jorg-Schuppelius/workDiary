@@ -11,11 +11,11 @@
 namespace App\Plugins\Dhl;
 
 use App\Enums\Shipping\ShipmentStatus;
-use App\Models\{CarrierConnection, Organization, PluginSetting};
-use App\Plugins\Contracts\{Plugin, PluginCapability, ShippingProvider};
+use App\Models\CarrierConnection;
+use App\Plugins\AbstractPlugin;
+use App\Plugins\Contracts\{PluginCapability, ShippingProvider};
 use App\Plugins\Dhl\Api\DhlApiClient;
-use App\Plugins\PluginDefaults;
-use App\Plugins\Support\{ChecksCarrierHealth, PluginOrgContext};
+use App\Plugins\Support\ChecksCarrierHealth;
 use App\Services\Shipping\{ShipmentLabel, ShipmentRequest, TrackingEvent, TrackingResult};
 use Illuminate\Support\Carbon;
 use RuntimeException;
@@ -37,11 +37,10 @@ use Throwable;
  * bildet die dokumentierten DHL-JSON-Verträge ab und läuft gegen die echte API
  * erst mit freigeschalteten GK-Zugangsdaten.
  */
-class DhlPlugin implements Plugin, ShippingProvider {
-    use ChecksCarrierHealth, PluginDefaults {
-        // Carrier-Health (healthy()+healthCheck()) kommt aus dem Support-Trait.
-        ChecksCarrierHealth::healthCheck insteadof PluginDefaults;
-    }
+class DhlPlugin extends AbstractPlugin implements ShippingProvider {
+    // Carrier-Health (healthy()+healthCheck()) kommt aus dem Support-Trait —
+    // die Trait-Methode gewinnt automatisch gegen die geerbte aus AbstractPlugin.
+    use ChecksCarrierHealth;
 
     public const ID = 'dhl';
 
@@ -49,10 +48,6 @@ class DhlPlugin implements Plugin, ShippingProvider {
 
     /** Carrier-Schlüssel in `carrier_connections.carrier` und der Registry. */
     public const CARRIER = 'dhl';
-
-    public function id(): string {
-        return self::ID;
-    }
 
     public function name(): string {
         return 'DHL Paket';
@@ -64,18 +59,6 @@ class DhlPlugin implements Plugin, ShippingProvider {
 
     public function description(): string {
         return __('Erzeugt DHL-Versandlabels, storniert sie und verfolgt Sendungen (Parcel DE Shipping v2 + Shipment Tracking). Pro Organisation mit GK-Zugang und dhl-api-key konfiguriert.');
-    }
-
-    public function isEnabled(): bool {
-        $org = PluginOrgContext::currentOrNull();
-        if ($org instanceof Organization) {
-            $row = PluginSetting::forOrganization($org->id, self::ID);
-            if ($row->exists) {
-                return $row->enabled;
-            }
-        }
-
-        return (bool) config('plugins.dhl.enabled', false);
     }
 
     public function capabilities(): array {
@@ -92,17 +75,9 @@ class DhlPlugin implements Plugin, ShippingProvider {
         ];
     }
 
-    public function serviceProvider(): ?string {
-        return DhlServiceProvider::class;
-    }
-
     /** Per-Org-Konfiguration liegt in `carrier_connections` (Versand-Admin), nicht in plugin_settings. */
     public function settingsSchema(): array {
         return [];
-    }
-
-    public function isPerOrganization(): bool {
-        return true;
     }
 
     // --- ShippingProvider -------------------------------------------------
