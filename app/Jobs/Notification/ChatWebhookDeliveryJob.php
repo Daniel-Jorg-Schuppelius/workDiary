@@ -20,7 +20,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\{InteractsWithQueue, SerializesModels};
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Http;
 use RuntimeException;
 use Throwable;
 
@@ -63,8 +62,13 @@ class ChatWebhookDeliveryJob implements ShouldQueue {
         }
 
         $body = $formatter->format($webhook->kind, $this->eventLabel, $this->payload);
+        $client = app(\App\Plugins\Support\PluginHttpFactory::class)->coreClient('chat-webhook', $url);
         // Keine Redirects: ein 30x auf internen Host würde den SSRF-Guard umgehen (Whitebox 2026-07).
-        $response = Http::timeout(10)->withoutRedirecting()->asJson()->post($url, $body); // Netzfehler → Exception → Retry
+        $client->setFollowRedirects(false);
+        $client->setTimeout(10.0);
+        // Kein HTTP-Retry: die Queue ist die Retry-Ebene dieses Jobs.
+        $client->setMaxRetries(1);
+        $response = $client->postJson($url, $body); // Netzfehler → Exception → Retry
 
         if ($response->successful()) {
             $webhook->forceFill(['last_delivery_at' => Carbon::now(), 'consecutive_failures' => 0])->saveQuietly();

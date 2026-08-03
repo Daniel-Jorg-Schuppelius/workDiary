@@ -14,7 +14,7 @@ namespace App\Services\Isms;
 
 use App\Enums\Isms\AdvisoryFormat;
 use App\Models\{Organization, User};
-use Illuminate\Support\Facades\Http;
+use App\Plugins\Support\PluginHttpFactory;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
 use Throwable;
@@ -35,7 +35,10 @@ class CsafFeedService {
     /** Obergrenze je Pull — die neuesten Dokumente zuerst. */
     public const DEFAULT_LIMIT = 20;
 
-    public function __construct(private readonly AdvisoryImportService $importer) {}
+    public function __construct(
+        private readonly AdvisoryImportService $importer,
+        private readonly PluginHttpFactory $http,
+    ) {}
 
     /**
      * @return array{documents: int, imported: int, skipped: int, errors: int}
@@ -52,7 +55,7 @@ class CsafFeedService {
         $skipped = 0;
         $errors = 0;
         foreach ($documentUrls as $url) {
-            $response = Http::timeout(30)->get($url);
+            $response = $this->http->coreClient('csaf', $url)->getResponse($url, [], ['timeout' => 30]);
             if ($response->failed()) {
                 $errors++;
 
@@ -116,7 +119,8 @@ class CsafFeedService {
             // Weg 2: verzeichnisbasiert (directory_url + changes.csv).
             $directoryUrl = rtrim((string) ($distribution['directory_url'] ?? ''), '/');
             if ($directoryUrl !== '') {
-                $changes = Http::timeout(30)->get($directoryUrl . '/changes.csv');
+                $changes = $this->http->coreClient('csaf', $directoryUrl)
+                    ->getResponse($directoryUrl . '/changes.csv', [], ['timeout' => 30]);
                 if ($changes->successful()) {
                     $rows = array_filter(array_map('trim', explode("\n", $changes->body())));
                     // Format: "pfad/dokument.json","2026-07-01T00:00:00Z" — neueste zuerst.
@@ -141,7 +145,7 @@ class CsafFeedService {
 
     /** @return array<string, mixed>|null */
     private function fetchJson(string $url): ?array {
-        $response = Http::timeout(30)->acceptJson()->get($url);
+        $response = $this->http->coreClient('csaf', $url)->getResponse($url, [], ['timeout' => 30]);
         if ($response->failed()) {
             return null;
         }

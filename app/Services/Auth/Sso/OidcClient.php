@@ -14,7 +14,8 @@ namespace App\Services\Auth\Sso;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2AuthorizationCodeGrant;
 use App\Models\SsoConnection;
-use Illuminate\Support\Facades\{Cache, Http, Log};
+use App\Plugins\Support\PluginHttpFactory;
+use Illuminate\Support\Facades\{Cache, Log};
 use Illuminate\Support\Str;
 use Jose\Component\Core\{AlgorithmManager, JWKSet};
 use Jose\Component\Signature\Algorithm\{ES256, PS256, RS256};
@@ -22,10 +23,11 @@ use Jose\Component\Signature\JWSVerifier;
 use Jose\Component\Signature\Serializer\CompactSerializer;
 
 /**
- * OIDC-Relying-Party für den SSO-Login (Feature 057, MVP-120). Bewusst auf
- * Laravel-Http gebaut (Http::fake-testbar) mit ID-Token-Validierung über die
- * bereits vorhandene web-token/jwt-library (JWKS, RS256/PS256/ES256 — nie
- * `none`). Pflichtprüfungen nach OIDC Core §3.1.3.7: iss exakt, aud=client_id,
+ * OIDC-Relying-Party für den SSO-Login (Feature 057, MVP-120). Transport über
+ * {@see PluginHttpFactory::coreClient} (Toolkit-Fundament, FakePluginHttp-
+ * testbar); ID-Token-Validierung über die bereits vorhandene
+ * web-token/jwt-library (JWKS, RS256/PS256/ES256 — nie `none`).
+ * Pflichtprüfungen nach OIDC Core §3.1.3.7: iss exakt, aud=client_id,
  * Signatur, exp, nonce, azp; PKCE (S256) UND nonce gemeinsam (RFC 9700).
  * PKCE-Erzeugung über das api-toolkit (toolkit-first).
  */
@@ -33,7 +35,8 @@ class OidcClient {
     private const DISCOVERY_TTL_SECONDS = 600;
     private const JWKS_TTL_SECONDS = 600;
     private const CLOCK_LEEWAY_SECONDS = 60;
-    private const HTTP_TIMEOUT_SECONDS = 10;
+
+    public function __construct(private readonly PluginHttpFactory $http) {}
 
     /**
      * OIDC-Discovery (.well-known) mit kurzem Cache. Der Issuer der Antwort
@@ -49,8 +52,8 @@ class OidcClient {
             "sso.oidc.discovery.{$connection->id}",
             self::DISCOVERY_TTL_SECONDS,
             function () use ($issuer): array {
-                $response = Http::timeout(self::HTTP_TIMEOUT_SECONDS)
-                    ->get($issuer . '/.well-known/openid-configuration');
+                $response = $this->http->coreClient('sso-oidc', $issuer)
+                    ->getResponse($issuer . '/.well-known/openid-configuration');
 
                 if (! $response->successful() || ! is_array($response->json())) {
                     throw new SsoLoginException(__('sso.error.discovery_failed'));
@@ -110,16 +113,22 @@ class OidcClient {
     public function exchangeAndVerify(SsoConnection $connection, string $code, string $verifier, string $expectedNonce): array {
         $discovery = $this->discovery($connection);
 
-        $response = Http::asForm()
-            ->timeout(self::HTTP_TIMEOUT_SECONDS)
-            ->post((string) $discovery['token_endpoint'], [
+        $tokenEndpoint = (string) $discovery['token_endpoint'];
+        $client = $this->http->coreClient('sso-oidc', $tokenEndpoint);
+        // Einmal-Code: kein Transport-Retry, ein zweiter Versuch träfe beim
+        // IdP auf einen bereits verbrauchten Authorization-Code.
+        $client->setMaxRetries(1);
+
+        $response = $client->requestResponse('post', $tokenEndpoint, [
+            'form_params' => [
                 'grant_type' => 'authorization_code',
                 'code' => $code,
                 'redirect_uri' => route('sso.oidc.callback'),
                 'client_id' => (string) $connection->client_id,
                 'client_secret' => (string) $connection->client_secret,
                 'code_verifier' => $verifier,
-            ]);
+            ],
+        ]);
 
         $idToken = $response->successful() ? $response->json('id_token') : null;
         if (! is_string($idToken) || $idToken === '') {
@@ -227,7 +236,8 @@ class OidcClient {
 
         /** @var array<string, mixed> $keys */
         $keys = Cache::remember($cacheKey, self::JWKS_TTL_SECONDS, function () use ($discovery): array {
-            $response = Http::timeout(self::HTTP_TIMEOUT_SECONDS)->get((string) $discovery['jwks_uri']);
+            $jwksUri = (string) $discovery['jwks_uri'];
+            $response = $this->http->coreClient('sso-oidc', $jwksUri)->getResponse($jwksUri);
 
             if (! $response->successful() || ! is_array($response->json('keys'))) {
                 throw new SsoLoginException(__('sso.error.jwks_failed'));

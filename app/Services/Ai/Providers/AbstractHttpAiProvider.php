@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Ai\Providers;
 
+use APIToolkit\Exceptions\{ApiException, TooManyRequestsException};
 use App\Models\Ai\AiProviderConnection;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use App\Services\Ai\Exceptions\AiProviderCallException;
@@ -51,55 +52,22 @@ abstract class AbstractHttpAiProvider {
     }
 
     /**
-     * Volle Ziel-URL aus Basis + Endpunktpfad. Pfade gehen — wie im Haus
-     * üblich (vgl. TodoistApiClient) — als volle URL an den Toolkit-Client,
-     * damit Basis-URLs mit Pfadanteil (z. B. `…/v1`) erhalten bleiben.
-     *
-     * Basis-URLs werden in der Praxis aber auch als *Endpunkt*-URL
-     * eingetragen (`https://api.openai.com/v1/responses`); stures Anhängen
-     * ergäbe dann `/v1/responses/v1/models` → 404. Taucht das erste
-     * Pfadsegment schon im Basis-Pfad auf, wird die Basis ab dessen
-     * letztem Vorkommen gekappt (letztes = so wenig wie möglich kappen,
-     * damit Gateway-Präfixe wie `…/proxy/v1` heil bleiben).
-     */
-    protected function url(string $path): string {
-        $base = rtrim($this->baseUrl(), '/');
-        $suffix = ltrim($path, '/');
-        if ($suffix === '') {
-            return $base;
-        }
-
-        $basePath = trim((string) parse_url($base, PHP_URL_PATH), '/');
-        if ($basePath !== '') {
-            $baseSegments = explode('/', $basePath);
-            $hits = array_keys($baseSegments, explode('/', explode('?', $suffix, 2)[0])[0], true);
-
-            if ($hits !== []) {
-                $drop = '/' . implode('/', array_slice($baseSegments, (int) end($hits)));
-                if (str_ends_with($base, $drop)) {
-                    $base = substr($base, 0, -strlen($drop));
-                }
-            }
-        }
-
-        return $base . '/' . $suffix;
-    }
-
-    /**
      * POST mit JSON-Body; wirft AiProviderCallException bei Transport-
-     * oder HTTP-Fehlern (redigiert).
+     * oder HTTP-Fehlern (redigiert). Konfigurations-/Tarif-Sperren aus
+     * baseUrl()/headers() werfen bereits beim Clientbau in buildUrl().
      *
      * @param array<string, mixed> $payload
      */
     protected function postJson(string $path, array $payload): Response {
-        $url = $this->url($path);
+        $url = $this->api()->buildUrl($path);
 
         try {
             $response = $this->api()->postJson($url, $payload);
-        } catch (AiProviderCallException $e) {
-            throw $e; // z. B. Konfigurations-/Tarif-Sperren aus headers()
         } catch (Throwable) {
-            throw AiProviderCallException::transport($this->providerName(), 'Transportfehler bei ' . self::redactUrl($url));
+            throw AiProviderCallException::transport(
+                $this->providerName(),
+                (string) __('ai.error.transport', ['url' => self::redactUrl($url)])
+            );
         }
 
         return $this->assertOk($response, $url);
@@ -107,14 +75,15 @@ abstract class AbstractHttpAiProvider {
 
     /** @param array<string, mixed> $query */
     protected function getJson(string $path, array $query = []): Response {
-        $url = $this->url($path);
+        $url = $this->api()->buildUrl($path);
 
         try {
             $response = $this->api()->getResponse($url, $query);
-        } catch (AiProviderCallException $e) {
-            throw $e;
         } catch (Throwable) {
-            throw AiProviderCallException::transport($this->providerName(), 'Transportfehler bei ' . self::redactUrl($url));
+            throw AiProviderCallException::transport(
+                $this->providerName(),
+                (string) __('ai.error.transport', ['url' => self::redactUrl($url)])
+            );
         }
 
         return $this->assertOk($response, $url);
@@ -124,11 +93,48 @@ abstract class AbstractHttpAiProvider {
         if ($response->status() >= 400) {
             throw AiProviderCallException::transport(
                 $this->providerName(),
-                sprintf('HTTP %d bei %s', $response->status(), self::redactUrl($url))
+                (string) __('ai.error.http_status', ['status' => $response->status(), 'url' => self::redactUrl($url)])
+                    . self::providerDetail($response)
             );
         }
 
         return $response;
+    }
+
+    /**
+     * Klartext des Anbieters zum Fehler — „HTTP 429" allein schickt einen auf
+     * die falsche Fährte (Warten hilft nicht, wenn das Kontingent leer ist).
+     * Kontingent-Erkennung + Code-Extraktion kommen aus dem api-toolkit ≥ 2.9.
+     *
+     * Bewusst NICHT bei 400/422: dort echoen Anbieter gern das fehlerhafte
+     * Feld samt Inhalt zurück, und Prompt-Inhalte gehören nicht ins
+     * Health-Tracking. Der Fehlercode ist maschinell und immer unbedenklich.
+     */
+    protected static function providerDetail(Response $response): string {
+        $status = $response->status();
+        $psr = $response->toPsrResponse();
+
+        if (TooManyRequestsException::isQuotaResponse($psr)) {
+            return ' — ' . (string) __('ai.error.provider_quota');
+        }
+
+        // Vor json() lesen: contentOf() im Toolkit startet an der aktuellen
+        // Stream-Position und sähe nach Illuminate-Reads nur noch Leerstring.
+        $code = ApiException::errorCodesOf($psr)[0] ?? '';
+
+        /** @var array<string, mixed> $body */
+        $body = (array) $response->json();
+        /** @var array<string, mixed> $error */
+        $error = (array) ($body['error'] ?? $body);
+
+        $parts = array_filter([
+            $code,
+            $status === 400 || $status === 422
+                ? ''
+                : mb_substr(is_scalar($error['message'] ?? null) ? trim((string) $error['message']) : '', 0, 160),
+        ], static fn(string $part): bool => $part !== '');
+
+        return $parts === [] ? '' : ' — ' . implode(': ', $parts);
     }
 
     /**
@@ -143,10 +149,7 @@ abstract class AbstractHttpAiProvider {
     protected function requireModel(): string {
         $model = trim((string) $this->connection->model);
         if ($model === '') {
-            throw AiProviderCallException::transport(
-                $this->providerName(),
-                'Kein Modell/Deployment an der Verbindung hinterlegt.'
-            );
+            throw AiProviderCallException::transport($this->providerName(), (string) __('ai.error.model_missing'));
         }
 
         return $model;
@@ -155,7 +158,7 @@ abstract class AbstractHttpAiProvider {
     protected function requireApiKey(): string {
         $key = (string) $this->connection->api_key;
         if ($key === '') {
-            throw AiProviderCallException::transport($this->providerName(), 'Kein API-Schlüssel hinterlegt.');
+            throw AiProviderCallException::transport($this->providerName(), (string) __('ai.error.api_key_missing'));
         }
 
         return $key;

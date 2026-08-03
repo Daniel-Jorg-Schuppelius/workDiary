@@ -51,9 +51,14 @@ return [
             'item_text' => 'Invoice: line item text',
             'block_text' => 'Invoice: summary text',
             'item_translate' => 'Invoice: translate line item',
+            'mail_text' => 'Invoice: email text',
+            'dunning_text' => 'Invoice: dunning text',
         ],
         'quotes' => [
             'item_text' => 'Quote: line item text',
+        ],
+        'portal' => [
+            'answer_translate' => 'Portal: translate reply',
         ],
     ],
     'connect' => [
@@ -148,6 +153,7 @@ return [
     'flash' => [
         'suggestion_created' => 'AI suggestion created — please review and apply or discard.',
         'suggestions_queued' => ':count suggestions are being created in the background and will appear here when done.',
+        'suggestions_aborted' => ':count suggestions created, then stopped: :error',
         'suggestion_accepted' => 'Suggestion applied.',
         'suggestion_rejected' => 'Suggestion discarded.',
         'learned' => 'Saved to AI memory — future suggestions will use the correction.',
@@ -169,9 +175,39 @@ return [
         'source_required' => 'Example pairs require a raw text.',
     ],
     'error' => [
+        'provider_quota' => 'The provider quota is used up — check the plan and billing there. Waiting does not help here.',
         'model_required' => 'This provider needs a model/deployment (e.g. gpt-4o-mini) — without it even the preflight fails.',
         'technical' => 'Technical error: :message',
         'unknown' => 'Unknown error.',
+        // Availability/routing (AiUnavailableException, AiInvocationService)
+        'module_inactive' => 'The AI module is not active for this organization.',
+        'capability_disabled' => 'The AI capability ":capability" is not enabled for this organization.',
+        'no_connection' => 'No usable provider connection is configured for the AI capability ":capability".',
+        'connection_unusable' => 'The connection ":connection" is currently unusable: :error (capability ":capability"). Once fixed, test the connection once.',
+        'connection_not_allowed' => 'The requested provider connection #:id is not allowed for this capability.',
+        'all_failed' => 'All permitted provider connections for ":capability" failed.',
+        'budget_exceeded' => 'The monthly AI budget (:family: :limit units) of this organization is exhausted.',
+        'provider_not_implemented' => 'No adapter is implemented yet for the AI provider ":provider" (coming in MVP-407–410).',
+        'unknown_capability' => 'AI capability ":capability" is not registered (config/ai.php).',
+        'verb_mismatch' => 'Request verb ":verb" does not match the capability ":capability" (expected ":expected").',
+        'verb_translate_unsupported' => 'The provider does not support the translate verb.',
+        'verb_translate_only' => 'The provider only supports the translate verb.',
+        // Transport/connection data (AiProviderCallException)
+        'transport' => 'Transport error at :url',
+        'http_status' => 'HTTP :status at :url',
+        'model_missing' => 'No model/deployment stored on the connection.',
+        'api_key_missing' => 'No API key stored.',
+        'base_url_missing' => 'No base URL stored on the connection.',
+        'resource_url_missing' => 'No resource URL stored on the connection.',
+        'deepl_free_key' => 'DeepL Free keys (…:fx) are not allowed — API Pro is required.',
+        // Suggestion guards (ItemTextSuggestionService)
+        'only_quote_draft' => 'AI suggestions are only possible on a quote draft.',
+        'only_invoice_draft' => 'AI suggestions are only possible on an invoice draft.',
+        'only_transfer_confirmed' => 'AI suggestions are only possible on a confirmed transfer that has not been submitted yet.',
+        'suggestion_decided' => 'This suggestion has already been decided.',
+        'position_not_draft' => 'The item is no longer a draft.',
+        'suggestion_subject_missing' => 'The suggestion reference no longer exists.',
+        'unexpected_result_type' => 'Unexpected result type for service texts.',
     ],
     'empty' => [
         'connections' => 'No provider connection created yet.',

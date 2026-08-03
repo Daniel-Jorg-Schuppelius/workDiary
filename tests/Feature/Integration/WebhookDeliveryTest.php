@@ -17,8 +17,9 @@ use App\Models\Integration\{WebhookDelivery, WebhookEndpoint};
 use App\Services\Integration\WebhookDispatchService;
 use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\{Http, Queue};
+use Illuminate\Support\Facades\Queue;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 class WebhookDeliveryTest extends TestCase {
@@ -92,7 +93,7 @@ class WebhookDeliveryTest extends TestCase {
     }
 
     public function test_successful_delivery_sends_correct_hmac_signature(): void {
-        Http::fake(['*' => Http::response('ok', 200)]);
+        $fake = FakePluginHttp::fake(['*' => FakePluginHttp::response('ok', 200)]);
 
         $endpoint = WebhookEndpoint::factory()
             ->subscribedTo([WebhookEvent::OpenIssueAssigned])
@@ -110,10 +111,10 @@ class WebhookDeliveryTest extends TestCase {
         $this->assertSame(WebhookDeliveryStatus::Success, $delivery->status);
         $this->assertSame(200, $delivery->http_status);
 
-        Http::assertSent(function ($request) use ($secret): bool {
-            $timestamp = $request->header(WebhookDeliveryJob::TIMESTAMP_HEADER)[0] ?? '';
-            $signature = $request->header(WebhookDeliveryJob::SIGNATURE_HEADER)[0] ?? '';
-            $expected = 'sha256=' . hash_hmac('sha256', $timestamp . '.' . $request->body(), $secret);
+        $fake->assertSent(function ($request) use ($secret): bool {
+            $timestamp = $request->getHeaderLine(WebhookDeliveryJob::TIMESTAMP_HEADER);
+            $signature = $request->getHeaderLine(WebhookDeliveryJob::SIGNATURE_HEADER);
+            $expected = 'sha256=' . hash_hmac('sha256', $timestamp . '.' . (string) $request->getBody(), $secret);
 
             return hash_equals($expected, $signature) && $signature !== 'sha256=';
         });
@@ -123,7 +124,7 @@ class WebhookDeliveryTest extends TestCase {
     }
 
     public function test_failed_delivery_is_logged_and_counts_failure(): void {
-        Http::fake(['*' => Http::response('boom', 500)]);
+        FakePluginHttp::fake(['*' => FakePluginHttp::response('boom', 500)]);
 
         $endpoint = WebhookEndpoint::factory()
             ->subscribedTo([WebhookEvent::OpenIssueAssigned])
@@ -147,7 +148,7 @@ class WebhookDeliveryTest extends TestCase {
     }
 
     public function test_endpoint_auto_disables_after_threshold_failures(): void {
-        Http::fake(['*' => Http::response('boom', 500)]);
+        FakePluginHttp::fake(['*' => FakePluginHttp::response('boom', 500)]);
 
         $endpoint = WebhookEndpoint::factory()
             ->subscribedTo([WebhookEvent::OpenIssueAssigned])
@@ -174,7 +175,7 @@ class WebhookDeliveryTest extends TestCase {
     }
 
     public function test_gone_410_auto_unsubscribes_without_retry(): void {
-        Http::fake(['*' => Http::response('gone', 410)]);
+        $fake = FakePluginHttp::fake(['*' => FakePluginHttp::response('gone', 410)]);
 
         $endpoint = WebhookEndpoint::factory()
             ->subscribedTo([WebhookEvent::OpenIssueAssigned])
@@ -196,7 +197,7 @@ class WebhookDeliveryTest extends TestCase {
         $this->assertNotNull($fresh->deleted_at);
         $this->assertFalse((bool) $fresh->active);
         $this->assertSame(0, (int) $fresh->consecutive_failures);
-        Http::assertSentCount(1);
+        $fake->assertSentCount(1);
     }
 
     public function test_disabled_endpoint_does_not_receive_publish(): void {

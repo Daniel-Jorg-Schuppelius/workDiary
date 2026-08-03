@@ -16,9 +16,9 @@ use App\Models\{ChatWebhook, Customer};
 use App\Models\Notification\NotificationRule;
 use App\Services\Notification\{ChatMessageFormatter, NotificationDispatcher};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use RuntimeException;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 /**
@@ -52,16 +52,16 @@ final class ChatWebhookTest extends TestCase {
     }
 
     public function test_teams_delivery_posts_adaptive_card(): void {
-        Http::fake(['*' => Http::response('1', 200)]);
+        $fake = FakePluginHttp::fake(['*' => FakePluginHttp::response('1', 200)]);
         $webhook = $this->webhook(ChatWebhook::KIND_TEAMS, 'https://hooks.teams.example/x');
 
         $this->runJob($webhook, ['title' => 'SLA verletzt', 'message' => 'Ticket #7', 'url' => 'https://app.example/t/7']);
 
-        Http::assertSent(function ($request): bool {
-            $data = $request->data();
+        $fake->assertSent(function ($request): bool {
+            $data = (array) json_decode((string) $request->getBody(), true);
             $content = $data['attachments'][0]['content'] ?? [];
 
-            return $request->url() === 'https://hooks.teams.example/x'
+            return (string) $request->getUri() === 'https://hooks.teams.example/x'
                 && ($data['type'] ?? null) === 'message'
                 && ($data['attachments'][0]['contentType'] ?? null) === 'application/vnd.microsoft.card.adaptive'
                 && ($content['type'] ?? null) === 'AdaptiveCard'
@@ -76,15 +76,16 @@ final class ChatWebhookTest extends TestCase {
     }
 
     public function test_mattermost_delivery_posts_text(): void {
-        Http::fake(['*' => Http::response('ok', 200)]);
+        $fake = FakePluginHttp::fake(['*' => FakePluginHttp::response('ok', 200)]);
         $webhook = $this->webhook(ChatWebhook::KIND_MATTERMOST, 'https://hooks.mm.example/y');
 
         $this->runJob($webhook, ['title' => 'Neuer Auftrag', 'message' => 'von ACME', 'url' => 'https://app.example/o/1']);
 
-        Http::assertSent(function ($request): bool {
-            $text = (string) ($request->data()['text'] ?? '');
+        $fake->assertSent(function ($request): bool {
+            $body = (array) json_decode((string) $request->getBody(), true);
+            $text = (string) ($body['text'] ?? '');
 
-            return $request->url() === 'https://hooks.mm.example/y'
+            return (string) $request->getUri() === 'https://hooks.mm.example/y'
                 && str_contains($text, '**Neuer Auftrag**')
                 && str_contains($text, 'von ACME')
                 && str_contains($text, 'https://app.example/o/1');
@@ -92,7 +93,7 @@ final class ChatWebhookTest extends TestCase {
     }
 
     public function test_failed_delivery_throws_for_retry(): void {
-        Http::fake(['*' => Http::response('boom', 500)]);
+        FakePluginHttp::fake(['*' => FakePluginHttp::response('boom', 500)]);
         $webhook = $this->webhook(ChatWebhook::KIND_MATTERMOST, 'https://hooks.mm.example/z');
 
         $this->expectException(RuntimeException::class);
@@ -112,7 +113,7 @@ final class ChatWebhookTest extends TestCase {
     }
 
     public function test_dispatcher_posts_to_chat_channel_per_matrix(): void {
-        Http::fake(['*' => Http::response('1', 200)]);
+        $fake = FakePluginHttp::fake(['*' => FakePluginHttp::response('1', 200)]);
         $event = NotificationEvent::cases()[0];
         NotificationRule::query()->create([
             'organization_id' => $this->organization->id,
@@ -125,11 +126,11 @@ final class ChatWebhookTest extends TestCase {
 
         app(NotificationDispatcher::class)->notify($event, $subject, null, ['title' => 'Hallo']);
 
-        Http::assertSent(fn ($request): bool => $request->url() === 'https://hooks.teams.example/matrix');
+        $fake->assertSent(fn ($request): bool => (string) $request->getUri() === 'https://hooks.teams.example/matrix');
     }
 
     public function test_dispatcher_skips_channel_when_matrix_disabled(): void {
-        Http::fake(['*' => Http::response('1', 200)]);
+        $fake = FakePluginHttp::fake(['*' => FakePluginHttp::response('1', 200)]);
         $event = NotificationEvent::cases()[0];
         NotificationRule::query()->create([
             'organization_id' => $this->organization->id,
@@ -142,6 +143,6 @@ final class ChatWebhookTest extends TestCase {
 
         app(NotificationDispatcher::class)->notify($event, $subject, null, ['title' => 'Hallo']);
 
-        Http::assertNotSent(fn ($request): bool => str_contains($request->url(), 'hooks.teams.example'));
+        $fake->assertNotSent(fn ($request): bool => str_contains((string) $request->getUri(), 'hooks.teams.example'));
     }
 }

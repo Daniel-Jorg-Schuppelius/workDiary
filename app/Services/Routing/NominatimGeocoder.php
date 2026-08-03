@@ -11,9 +11,10 @@
 namespace App\Services\Routing;
 
 use App\Models\GeocodeCache;
-use Illuminate\Http\Client\ConnectionException;
+use App\Plugins\Support\PluginHttpFactory;
+use GuzzleHttp\Exception\ConnectException;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\{Cache, Http, Log};
+use Illuminate\Support\Facades\{Cache, Log};
 
 /**
  * Forward geocoding via Nominatim with persistent cache and rate limit.
@@ -27,6 +28,7 @@ class NominatimGeocoder {
     public function __construct(
         /** @var array<string, mixed> */
         private array $config,
+        private readonly PluginHttpFactory $http,
     ) {}
 
     public function geocode(string $query): ?GeocodeResult {
@@ -80,18 +82,19 @@ class NominatimGeocoder {
         $email = (string) ($this->config['email'] ?? '');
         $timeout = (int) ($this->config['timeout'] ?? 8);
 
+        $client = $this->http->coreClient('nominatim', $base);
+        $client->setUserAgent($userAgent);
+        $client->setTimeout((float) $timeout);
+
         try {
-            $response = Http::withHeaders(['User-Agent' => $userAgent])
-                ->timeout($timeout)
-                ->acceptJson()
-                ->get(rtrim($base, '/') . '/search', [
-                    'q' => $query,
-                    'format' => 'jsonv2',
-                    'limit' => 1,
-                    'addressdetails' => 1,
-                    'email' => $email !== '' ? $email : null,
-                ]);
-        } catch (ConnectionException $e) {
+            $response = $client->getResponse(rtrim($base, '/') . '/search', array_filter([
+                'q' => $query,
+                'format' => 'jsonv2',
+                'limit' => 1,
+                'addressdetails' => 1,
+                'email' => $email !== '' ? $email : null,
+            ], static fn($v): bool => $v !== null));
+        } catch (ConnectException $e) {
             throw new GeocodingException('Nominatim unreachable: ' . $e->getMessage(), 0, $e);
         }
 

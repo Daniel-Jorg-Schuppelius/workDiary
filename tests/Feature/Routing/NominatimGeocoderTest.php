@@ -13,8 +13,8 @@ namespace Tests\Feature\Routing;
 use App\Models\GeocodeCache;
 use App\Services\Routing\{GeocodingException, NominatimGeocoder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Client\Request as ClientRequest;
-use Illuminate\Support\Facades\Http;
+use Psr\Http\Message\RequestInterface;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 class NominatimGeocoderTest extends TestCase {
@@ -34,14 +34,14 @@ class NominatimGeocoderTest extends TestCase {
     }
 
     public function test_resolves_and_caches_result(): void {
-        Http::fake([
-            'nominatim.test/*' => Http::response([
+        $fake = FakePluginHttp::fake([
+            'http://nominatim.test/*' => FakePluginHttp::response([
                 [
                     'lat' => '52.5200',
                     'lon' => '13.4050',
                     'display_name' => 'Berlin, Deutschland',
                 ],
-            ], 200),
+            ]),
         ]);
 
         $result = $this->geocoder()->geocode('Berlin');
@@ -52,10 +52,10 @@ class NominatimGeocoderTest extends TestCase {
         $this->assertFalse($result->fromCache);
         $this->assertDatabaseHas('geocode_cache', ['query' => 'Berlin']);
 
-        Http::assertSentCount(1);
-        Http::assertSent(function (ClientRequest $req): bool {
-            return str_starts_with($req->url(), 'http://nominatim.test/search')
-                && $req->hasHeader('User-Agent', 'workDiary-tests');
+        $fake->assertSentCount(1);
+        $fake->assertSent(function (RequestInterface $req): bool {
+            return str_starts_with((string) $req->getUri(), 'http://nominatim.test/search')
+                && $req->getHeaderLine('User-Agent') === 'workDiary-tests';
         });
     }
 
@@ -70,17 +70,17 @@ class NominatimGeocoderTest extends TestCase {
             'raw' => [],
         ]);
 
-        Http::fake();
+        $fake = FakePluginHttp::fake();
         $result = $this->geocoder()->geocode('Hamburg');
 
         $this->assertNotNull($result);
         $this->assertTrue($result->fromCache);
-        Http::assertNothingSent();
+        $fake->assertNothingSent();
     }
 
     public function test_returns_null_when_no_match(): void {
-        Http::fake([
-            'nominatim.test/*' => Http::response([], 200),
+        FakePluginHttp::fake([
+            'http://nominatim.test/*' => FakePluginHttp::response([]),
         ]);
 
         $this->assertNull($this->geocoder()->geocode('Nowheresville-123'));
@@ -88,8 +88,8 @@ class NominatimGeocoderTest extends TestCase {
     }
 
     public function test_throws_when_provider_unavailable(): void {
-        Http::fake([
-            'nominatim.test/*' => Http::response('boom', 500),
+        FakePluginHttp::fake([
+            'http://nominatim.test/*' => FakePluginHttp::response('boom', 500),
         ]);
 
         $this->expectException(GeocodingException::class);

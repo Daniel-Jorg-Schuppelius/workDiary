@@ -51,9 +51,14 @@ return [
             'item_text' => 'Facture : texte du poste',
             'block_text' => 'Facture : texte récapitulatif',
             'item_translate' => 'Facture : traduire le poste',
+            'mail_text' => 'Facture : texte de l\'e-mail',
+            'dunning_text' => 'Facture : texte de relance',
         ],
         'quotes' => [
             'item_text' => 'Devis : texte du poste',
+        ],
+        'portal' => [
+            'answer_translate' => 'Portail : traduire la réponse',
         ],
     ],
     'connect' => [
@@ -148,6 +153,7 @@ return [
     'flash' => [
         'suggestion_created' => 'Suggestion IA créée — veuillez la vérifier puis l\'appliquer ou la rejeter.',
         'suggestions_queued' => ':count suggestions sont créées en arrière-plan et apparaîtront ici une fois prêtes.',
+        'suggestions_aborted' => ':count suggestions créées, puis interrompu : :error',
         'suggestion_accepted' => 'Suggestion appliquée.',
         'suggestion_rejected' => 'Suggestion rejetée.',
         'learned' => 'Enregistré dans la mémoire IA — les prochaines suggestions utiliseront la correction.',
@@ -169,9 +175,39 @@ return [
         'source_required' => 'Les paires d\'exemples nécessitent un texte brut.',
     ],
     'error' => [
+        'provider_quota' => 'Le quota du fournisseur est épuisé — vérifiez l’abonnement et la facturation chez lui. Attendre ne sert à rien ici.',
         'model_required' => 'Ce fournisseur nécessite un modèle/déploiement (p. ex. gpt-4o-mini) — sans lui, même le test échoue.',
         'technical' => 'Erreur technique : :message',
         'unknown' => 'Erreur inconnue.',
+        // Disponibilité/routage (AiUnavailableException, AiInvocationService)
+        'module_inactive' => 'Le module IA n\'est pas actif pour cette organisation.',
+        'capability_disabled' => 'La capacité IA ":capability" n\'est pas activée pour cette organisation.',
+        'no_connection' => 'Aucune connexion fournisseur utilisable n\'est configurée pour la capacité IA ":capability".',
+        'connection_unusable' => 'La connexion ":connection" est actuellement inutilisable : :error (capacité ":capability"). Une fois le problème corrigé, testez la connexion une fois.',
+        'connection_not_allowed' => 'La connexion fournisseur demandée #:id n\'est pas autorisée pour cette capacité.',
+        'all_failed' => 'Toutes les connexions fournisseur autorisées pour ":capability" ont échoué.',
+        'budget_exceeded' => 'Le budget IA mensuel (:family : :limit unités) de cette organisation est épuisé.',
+        'provider_not_implemented' => 'Aucun adaptateur n\'est encore implémenté pour le fournisseur IA ":provider" (à venir dans MVP-407–410).',
+        'unknown_capability' => 'La capacité IA ":capability" n\'est pas enregistrée (config/ai.php).',
+        'verb_mismatch' => 'Le verbe de requête ":verb" ne correspond pas à la capacité ":capability" (attendu ":expected").',
+        'verb_translate_unsupported' => 'Le fournisseur ne prend pas en charge le verbe traduire.',
+        'verb_translate_only' => 'Le fournisseur ne prend en charge que le verbe traduire.',
+        // Transport/données de connexion (AiProviderCallException)
+        'transport' => 'Erreur de transport sur :url',
+        'http_status' => 'HTTP :status sur :url',
+        'model_missing' => 'Aucun modèle/déploiement enregistré sur la connexion.',
+        'api_key_missing' => 'Aucune clé API enregistrée.',
+        'base_url_missing' => 'Aucune URL de base enregistrée sur la connexion.',
+        'resource_url_missing' => 'Aucune URL de ressource enregistrée sur la connexion.',
+        'deepl_free_key' => 'Les clés DeepL Free (…:fx) ne sont pas autorisées — API Pro requise.',
+        // Garde-fous des suggestions (ItemTextSuggestionService)
+        'only_quote_draft' => 'Les suggestions IA ne sont possibles que sur un devis à l\'état brouillon.',
+        'only_invoice_draft' => 'Les suggestions IA ne sont possibles que sur une facture à l\'état brouillon.',
+        'only_transfer_confirmed' => 'Les suggestions IA ne sont possibles que sur un transfert confirmé et pas encore transmis.',
+        'suggestion_decided' => 'Cette suggestion a déjà été traitée.',
+        'position_not_draft' => 'La ligne n\'est plus à l\'état brouillon.',
+        'suggestion_subject_missing' => 'La référence de la suggestion n\'existe plus.',
+        'unexpected_result_type' => 'Type de résultat inattendu pour les textes de prestation.',
     ],
     'empty' => [
         'connections' => 'Aucune connexion fournisseur pour le moment.',

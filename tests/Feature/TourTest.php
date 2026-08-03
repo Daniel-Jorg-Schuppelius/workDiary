@@ -19,8 +19,9 @@ use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Database\Seeders\EntryTypeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\{Config, Http};
+use Illuminate\Support\Facades\Config;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 class TourTest extends TestCase {
@@ -250,8 +251,8 @@ class TourTest extends TestCase {
     }
 
     public function test_recalculate_uses_osrm_table_and_persists_geometry(): void {
-        Http::fake([
-            '*/table/*' => Http::response([
+        $fake = FakePluginHttp::fake([
+            '*/table/*' => FakePluginHttp::response([
                 'code' => 'Ok',
                 'distances' => [
                     [0, 1000, 2000, 500, 500],
@@ -261,7 +262,7 @@ class TourTest extends TestCase {
                     [500, 1500, 2500, 0, 0],
                 ],
             ]),
-            '*/route/*' => Http::response([
+            '*/route/*' => FakePluginHttp::response([
                 'code' => 'Ok',
                 'routes' => [[
                     'distance' => 4200.0,
@@ -304,7 +305,7 @@ class TourTest extends TestCase {
 
         $result = $service->recalculate($tour->fresh());
 
-        Http::assertSent(fn($request) => str_contains($request->url(), '/table/v1/'));
+        $fake->assertSent(fn($request) => str_contains((string) $request->getUri(), '/table/v1/'));
         $this->assertNotNull($tour->fresh()->route_geometry);
         $this->assertCount(3, $result['order']);
     }

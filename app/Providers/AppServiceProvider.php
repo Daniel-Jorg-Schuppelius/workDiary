@@ -295,7 +295,7 @@ class AppServiceProvider extends ServiceProvider {
                 'email' => Setting::get('routing.nominatim.email'),
                 'rate_limit_per_sec' => (int) Setting::get('routing.nominatim.rate_limit_per_sec', 1),
                 'timeout' => (int) Setting::get('routing.nominatim.timeout', 8),
-            ]);
+            ], app(\App\Plugins\Support\PluginHttpFactory::class));
         });
 
         // Kunden-Sonderkonditionen (Feature 098): scoped, damit der interne
@@ -314,7 +314,7 @@ class AppServiceProvider extends ServiceProvider {
                 'base_url' => Setting::get('routing.osrm.base_url'),
                 'profile' => Setting::get('routing.osrm.profile'),
                 'timeout' => (int) Setting::get('routing.osrm.timeout', 10),
-            ]);
+            ], app(\App\Plugins\Support\PluginHttpFactory::class));
         });
 
         // BrandingService cached die Organisation pro Request → einmalig

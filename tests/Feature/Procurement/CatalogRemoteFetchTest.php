@@ -12,9 +12,10 @@ namespace Tests\Feature\Procurement;
 
 use App\Models\{Supplier, SupplierCatalogItem, SupplierCatalogSource, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\{DB, Http};
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 /**
@@ -47,8 +48,8 @@ final class CatalogRemoteFetchTest extends TestCase {
 
     public function test_http_fetch_imports_datanorm(): void {
         $source = $this->source(['source_type' => 'http', 'remote_url' => 'https://feed.example.com/cat.001']);
-        Http::fake([
-            'https://feed.example.com/*' => Http::response("A;N;900001;0;Pumpe;;0;1;Stk;4500;01;200;\nA;N;900002;0;Ventil;;0;1;Stk;1900;01;200;", 200),
+        $fake = FakePluginHttp::fake([
+            'https://feed.example.com/*' => FakePluginHttp::response("A;N;900001;0;Pumpe;;0;1;Stk;4500;01;200;\nA;N;900002;0;Ventil;;0;1;Stk;1900;01;200;", 200),
         ]);
 
         $this->actingAs($this->admin)
@@ -58,7 +59,7 @@ final class CatalogRemoteFetchTest extends TestCase {
 
         $this->assertSame(2, SupplierCatalogItem::query()->where('supplier_catalog_source_id', $source->id)->count());
         $this->assertSame('45.0000', SupplierCatalogItem::query()->where('external_no', '900001')->firstOrFail()->purchase_price?->getAmount());
-        Http::assertSent(fn ($request) => $request->url() === 'https://feed.example.com/cat.001');
+        $fake->assertSent(fn ($request) => (string) $request->getUri() === 'https://feed.example.com/cat.001');
     }
 
     public function test_http_fetch_csv_uses_persisted_mapping(): void {
@@ -66,7 +67,7 @@ final class CatalogRemoteFetchTest extends TestCase {
             'format' => 'csv', 'source_type' => 'http', 'remote_url' => 'https://feed.example.com/list.csv',
             'mapping' => ['external_no' => 'ArtNr', 'name' => 'Bez', 'purchase_price' => 'EK'],
         ]);
-        Http::fake(['https://feed.example.com/*' => Http::response("ArtNr;Bez;EK\nC-1;Klemme;2,40", 200)]);
+        FakePluginHttp::fake(['https://feed.example.com/*' => FakePluginHttp::response("ArtNr;Bez;EK\nC-1;Klemme;2,40", 200)]);
 
         $this->actingAs($this->admin)
             ->post(route('supplier-catalogs.fetch', $source))
@@ -99,13 +100,13 @@ final class CatalogRemoteFetchTest extends TestCase {
     public function test_http_fetch_blocks_internal_targets(): void {
         // SSRF-Guard (MVP-091): interne/private Ziele werden nie abgerufen.
         $source = $this->source(['source_type' => 'http', 'remote_url' => 'https://127.0.0.1/secret.csv']);
-        Http::fake();
+        $fake = FakePluginHttp::fake();
 
         $this->actingAs($this->admin)
             ->post(route('supplier-catalogs.fetch', $source))
             ->assertRedirect()->assertSessionHas('error');
 
-        Http::assertNothingSent();
+        $fake->assertNothingSent();
     }
 
     public function test_ftp_fetch_blocks_internal_hosts(): void {

@@ -51,9 +51,14 @@ return [
             'item_text' => 'Rechnung: Positionstext',
             'block_text' => 'Rechnung: Sammeltext',
             'item_translate' => 'Rechnung: Position übersetzen',
+            'mail_text' => 'Rechnung: E-Mail-Text',
+            'dunning_text' => 'Rechnung: Mahntext',
         ],
         'quotes' => [
             'item_text' => 'Angebot: Positionstext',
+        ],
+        'portal' => [
+            'answer_translate' => 'Portal: Antwort übersetzen',
         ],
     ],
     'connect' => [
@@ -148,6 +153,7 @@ return [
     'flash' => [
         'suggestion_created' => 'KI-Vorschlag erstellt — bitte prüfen und übernehmen oder verwerfen.',
         'suggestions_queued' => ':count Vorschläge werden im Hintergrund erstellt und erscheinen hier nach Abschluss.',
+        'suggestions_aborted' => ':count Vorschläge erstellt, dann abgebrochen: :error',
         'suggestion_accepted' => 'Vorschlag übernommen.',
         'suggestion_rejected' => 'Vorschlag verworfen.',
         'learned' => 'Im KI-Gedächtnis gespeichert — künftige Vorschläge nutzen die Korrektur.',
@@ -169,9 +175,39 @@ return [
         'source_required' => 'Beispielpaare benötigen einen Rohtext.',
     ],
     'error' => [
+        'provider_quota' => 'Kontingent beim Anbieter aufgebraucht — Tarif und Abrechnung dort prüfen. Warten hilft hier nicht.',
         'model_required' => 'Für diesen Anbieter ist ein Modell/Deployment nötig (z. B. gpt-4o-mini) — ohne scheitert schon der Prüflauf.',
         'technical' => 'Technischer Fehler: :message',
         'unknown' => 'Unbekannter Fehler.',
+        // Verfügbarkeit/Routing (AiUnavailableException, AiInvocationService)
+        'module_inactive' => 'Das KI-Modul ist für diese Organisation nicht aktiv.',
+        'capability_disabled' => 'Die KI-Capability ":capability" ist für diese Organisation nicht freigeschaltet.',
+        'no_connection' => 'Für die KI-Capability ":capability" ist keine nutzbare Provider-Verbindung konfiguriert.',
+        'connection_unusable' => 'Die Verbindung ":connection" ist derzeit nicht nutzbar: :error (Capability ":capability"). Nach dem Beheben die Verbindung einmal prüfen.',
+        'connection_not_allowed' => 'Die angeforderte Provider-Verbindung #:id ist für diese Capability nicht zugelassen.',
+        'all_failed' => 'Alle zugelassenen Provider-Verbindungen für ":capability" sind fehlgeschlagen.',
+        'budget_exceeded' => 'Das monatliche KI-Budget (:family: :limit Einheiten) dieser Organisation ist erschöpft.',
+        'provider_not_implemented' => 'Für den KI-Provider ":provider" ist noch kein Adapter implementiert (folgt in MVP-407–410).',
+        'unknown_capability' => 'KI-Capability ":capability" ist nicht registriert (config/ai.php).',
+        'verb_mismatch' => 'Request-Verb ":verb" passt nicht zur Capability ":capability" (erwartet ":expected").',
+        'verb_translate_unsupported' => 'Provider unterstützt das Verb Übersetzen nicht.',
+        'verb_translate_only' => 'Provider unterstützt nur das Verb Übersetzen.',
+        // Transport/Verbindungsdaten (AiProviderCallException)
+        'transport' => 'Transportfehler bei :url',
+        'http_status' => 'HTTP :status bei :url',
+        'model_missing' => 'Kein Modell/Deployment an der Verbindung hinterlegt.',
+        'api_key_missing' => 'Kein API-Schlüssel hinterlegt.',
+        'base_url_missing' => 'Keine Basis-URL an der Verbindung hinterlegt.',
+        'resource_url_missing' => 'Keine Ressourcen-URL an der Verbindung hinterlegt.',
+        'deepl_free_key' => 'DeepL-Free-Schlüssel (…:fx) sind nicht zulässig — API Pro erforderlich.',
+        // Vorschlags-Wächter (ItemTextSuggestionService)
+        'only_quote_draft' => 'KI-Vorschläge sind nur im Angebotsentwurf möglich.',
+        'only_invoice_draft' => 'KI-Vorschläge sind nur im Rechnungsentwurf möglich.',
+        'only_transfer_confirmed' => 'KI-Vorschläge sind nur bei einer bestätigten, noch nicht übertragenen Übergabe möglich.',
+        'suggestion_decided' => 'Dieser Vorschlag wurde bereits entschieden.',
+        'position_not_draft' => 'Die Position ist nicht mehr im Entwurf.',
+        'suggestion_subject_missing' => 'Vorschlags-Bezug existiert nicht mehr.',
+        'unexpected_result_type' => 'Unerwarteter Ergebnistyp für Leistungstexte.',
     ],
     'empty' => [
         'connections' => 'Noch keine Provider-Verbindung angelegt.',

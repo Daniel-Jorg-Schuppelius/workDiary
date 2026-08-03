@@ -75,7 +75,10 @@
                 </x-slot:head>
                 @foreach ($funnel as $capability => $stats)
                     <tr>
-                        <td class="font-mono text-xs">{{ $capability }}</td>
+                        <td>
+                            <div>{{ \App\Services\Ai\Dto\AiCapability::labelFor((string) $capability) }}</div>
+                            <div class="font-mono text-xs text-base-content/60">{{ $capability }}</div>
+                        </td>
                         <td class="text-right tabular-nums">{{ $stats['total'] }}</td>
                         <td class="text-right tabular-nums">{{ ($stats['byStatus']['accepted'] ?? 0) + ($stats['byStatus']['edited'] ?? 0) }}</td>
                         <td class="text-right tabular-nums">{{ $stats['byStatus']['rejected'] ?? 0 }}</td>

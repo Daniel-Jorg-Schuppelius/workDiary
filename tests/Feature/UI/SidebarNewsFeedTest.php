@@ -14,8 +14,9 @@ use App\Services\UI\SidebarNewsFeedService;
 use App\Settings\SettingScope;
 use App\Support\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\{Blade, Cache, Http};
+use Illuminate\Support\Facades\{Blade, Cache};
 use RuntimeException;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 class SidebarNewsFeedTest extends TestCase {
@@ -35,8 +36,8 @@ class SidebarNewsFeedTest extends TestCase {
     }
 
     public function test_refresh_normalizes_rss_and_removes_feed_markup(): void {
-        Http::fake([
-            self::FEED_URL => Http::response(<<<'XML'
+        FakePluginHttp::fake([
+            self::FEED_URL => FakePluginHttp::response(<<<'XML'
                 <?xml version="1.0" encoding="UTF-8"?>
                 <rss version="2.0">
                   <channel>
@@ -69,8 +70,8 @@ class SidebarNewsFeedTest extends TestCase {
     }
 
     public function test_refresh_supports_atom_default_namespace(): void {
-        Http::fake([
-            self::FEED_URL => Http::response(<<<'XML'
+        FakePluginHttp::fake([
+            self::FEED_URL => FakePluginHttp::response(<<<'XML'
                 <?xml version="1.0" encoding="utf-8"?>
                 <feed xmlns="http://www.w3.org/2005/Atom">
                   <title>Heise Online</title>
@@ -91,11 +92,11 @@ class SidebarNewsFeedTest extends TestCase {
     }
 
     public function test_failed_refresh_keeps_last_successful_payload(): void {
-        Http::fake([self::FEED_URL => Http::response($this->rss('Erster Stand'), 200)]);
+        FakePluginHttp::fake([self::FEED_URL => FakePluginHttp::response($this->rss('Erster Stand'), 200)]);
         $service = app(SidebarNewsFeedService::class);
         $service->refresh();
 
-        Http::fake([self::FEED_URL => Http::response('Ausfall', 503)]);
+        FakePluginHttp::fake([self::FEED_URL => FakePluginHttp::response('Ausfall', 503)]);
 
         try {
             $service->refresh();
@@ -107,10 +108,14 @@ class SidebarNewsFeedTest extends TestCase {
 
     public function test_private_feed_target_is_rejected_before_http_request(): void {
         config(['ui.news_feed.url' => 'http://127.0.0.1/internal.xml']);
-        Http::preventStrayRequests();
+        $fake = FakePluginHttp::fake();
 
-        $this->expectException(RuntimeException::class);
-        app(SidebarNewsFeedService::class)->refresh();
+        try {
+            app(SidebarNewsFeedService::class)->refresh();
+            $this->fail('SSRF-Guard hat nicht gegriffen.');
+        } catch (RuntimeException) {
+            $fake->assertNothingSent();
+        }
     }
 
     public function test_system_settings_accept_http_feed_and_reject_other_schemes(): void {
@@ -124,8 +129,8 @@ class SidebarNewsFeedTest extends TestCase {
     }
 
     public function test_external_xml_entities_are_never_resolved(): void {
-        Http::fake([
-            self::FEED_URL => Http::response(<<<'XML'
+        FakePluginHttp::fake([
+            self::FEED_URL => FakePluginHttp::response(<<<'XML'
                 <?xml version="1.0"?>
                 <!DOCTYPE rss [<!ENTITY secret SYSTEM "file:///etc/passwd">]>
                 <rss version="2.0">
@@ -145,7 +150,7 @@ class SidebarNewsFeedTest extends TestCase {
     }
 
     public function test_help_drawer_renders_separate_accessible_news_controls(): void {
-        Http::fake([self::FEED_URL => Http::response($this->rss('Neue Funktionen im WorkDiary'), 200)]);
+        FakePluginHttp::fake([self::FEED_URL => FakePluginHttp::response($this->rss('Neue Funktionen im WorkDiary'), 200)]);
         app(SidebarNewsFeedService::class)->refresh();
 
         $html = Blade::render('<x-help-drawer />');

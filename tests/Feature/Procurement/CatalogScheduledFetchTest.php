@@ -13,8 +13,8 @@ namespace Tests\Feature\Procurement;
 use App\Models\{Supplier, SupplierCatalogImport, SupplierCatalogItem, SupplierCatalogSource};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Http;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 /**
@@ -44,8 +44,8 @@ final class CatalogScheduledFetchTest extends TestCase {
         ], $attrs));
     }
 
-    private function fakeDatanorm(): void {
-        Http::fake(['https://feed.example.com/*' => Http::response('A;N;700001;0;Rohr;;0;1;m;1500;01;100;', 200)]);
+    private function fakeDatanorm(): FakePluginHttp {
+        return FakePluginHttp::fake(['https://feed.example.com/*' => FakePluginHttp::response('A;N;700001;0;Rohr;;0;1;m;1500;01;100;', 200)]);
     }
 
     public function test_command_fetches_due_source_and_logs(): void {
@@ -66,17 +66,17 @@ final class CatalogScheduledFetchTest extends TestCase {
 
     public function test_command_skips_source_not_yet_due(): void {
         $source = $this->source(['next_fetch_at' => Carbon::now()->addHour()]);
-        $this->fakeDatanorm();
+        $fake = $this->fakeDatanorm();
 
         $this->artisan('catalog:fetch-due')->assertExitCode(0);
 
         $this->assertSame(0, SupplierCatalogItem::query()->where('supplier_catalog_source_id', $source->id)->count());
-        Http::assertNothingSent();
+        $fake->assertNothingSent();
     }
 
     public function test_command_logs_fetch_failure(): void {
         $source = $this->source(['next_fetch_at' => null]);
-        Http::fake(['https://feed.example.com/*' => Http::response('nope', 500)]);
+        FakePluginHttp::fake(['https://feed.example.com/*' => FakePluginHttp::response('nope', 500)]);
 
         $this->artisan('catalog:fetch-due')->assertExitCode(0);
 
@@ -92,11 +92,11 @@ final class CatalogScheduledFetchTest extends TestCase {
         $this->source(['source_type' => 'upload', 'next_fetch_at' => null]);
         $this->source(['active' => false, 'next_fetch_at' => null]);
         $this->source(['fetch_interval_minutes' => 0, 'next_fetch_at' => null]);
-        $this->fakeDatanorm();
+        $fake = $this->fakeDatanorm();
 
         $this->artisan('catalog:fetch-due')->assertExitCode(0);
 
-        Http::assertNothingSent();
+        $fake->assertNothingSent();
         $this->assertSame(0, SupplierCatalogImport::query()->count());
     }
 }

@@ -10,8 +10,8 @@
 
 namespace App\Services\Routing;
 
-use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Support\Facades\Http;
+use App\Plugins\Support\PluginHttpFactory;
+use GuzzleHttp\Exception\ConnectException;
 
 /**
  * Thin OSRM client. Coordinates are passed as [lng, lat] pairs to match
@@ -22,7 +22,15 @@ class OsrmRouter {
     public function __construct(
         /** @var array<string, mixed> */
         private array $config,
+        private readonly PluginHttpFactory $http,
     ) {}
+
+    private function client(string $base, int $timeout): \App\Plugins\Support\PluginApiClient {
+        $client = $this->http->coreClient('osrm', $base);
+        $client->setTimeout((float) $timeout);
+
+        return $client;
+    }
 
     /**
      * @param  array<int, array{0: float, 1: float}>  $coordinates  ordered [lng, lat] pairs
@@ -43,14 +51,12 @@ class OsrmRouter {
         $path = $base . '/route/v1/' . rawurlencode($profile) . '/' . implode(';', $segments);
 
         try {
-            $response = Http::timeout($timeout)
-                ->acceptJson()
-                ->get($path, [
-                    'overview' => 'full',
-                    'geometries' => 'geojson',
-                    'steps' => 'false',
-                ]);
-        } catch (ConnectionException $e) {
+            $response = $this->client($base, $timeout)->getResponse($path, [
+                'overview' => 'full',
+                'geometries' => 'geojson',
+                'steps' => 'false',
+            ]);
+        } catch (ConnectException $e) {
             throw new RoutingException('OSRM unreachable: ' . $e->getMessage(), 0, $e);
         }
 
@@ -99,10 +105,8 @@ class OsrmRouter {
         $path = $base . '/table/v1/' . rawurlencode($profile) . '/' . implode(';', $segments);
 
         try {
-            $response = Http::timeout($timeout)
-                ->acceptJson()
-                ->get($path, ['annotations' => 'distance']);
-        } catch (ConnectionException $e) {
+            $response = $this->client($base, $timeout)->getResponse($path, ['annotations' => 'distance']);
+        } catch (ConnectException $e) {
             throw new RoutingException('OSRM unreachable: ' . $e->getMessage(), 0, $e);
         }
 

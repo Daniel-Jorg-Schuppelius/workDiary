@@ -20,10 +20,9 @@ use App\Enums\Ai\AiFamily;
  */
 class AiBudgetExceededException extends AiException {
     public static function forFamily(AiFamily $family, int $limit): self {
-        return new self(sprintf(
-            'Das monatliche KI-Budget (%s: %d Einheiten) dieser Organisation ist erschöpft.',
-            $family->value,
-            $limit
-        ));
+        return new self((string) __('ai.error.budget_exceeded', [
+            'family' => $family->value,
+            'limit' => $limit,
+        ]));
     }
 }

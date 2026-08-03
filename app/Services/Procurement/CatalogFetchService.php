@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Procurement;
 
 use App\Models\SupplierCatalogSource;
+use App\Plugins\Support\PluginHttpFactory;
 use App\Support\UrlSafety;
-use Illuminate\Support\Facades\Http;
 use League\Flysystem\{Filesystem, FilesystemAdapter};
 use League\Flysystem\Ftp\{FtpAdapter, FtpConnectionOptions};
 use League\Flysystem\PhpseclibV3\{SftpAdapter, SftpConnectionProvider};
@@ -52,13 +52,17 @@ class CatalogFetchService {
             throw new RuntimeException((string) __('procurement.catalog.error.host_not_allowed'));
         }
 
-        $request = Http::timeout(60)->withHeaders(['Accept' => '*/*'])->withOptions(['allow_redirects' => false]);
+        $client = app(PluginHttpFactory::class)->coreClient('catalog-fetch', $url);
+        $client->setFollowRedirects(false);
+        $client->setTimeout(60.0);
+        $client->setDefaultHeaders(['Accept' => '*/*']);
+        $options = [];
         $username = trim((string) $source->remote_username);
         if ($username !== '') {
-            $request = $request->withBasicAuth($username, (string) $source->remote_password);
+            $options['auth'] = [$username, (string) $source->remote_password];
         }
 
-        $response = $request->get($url);
+        $response = $client->getResponse($url, [], $options);
         if (! $response->successful()) {
             throw new RuntimeException(sprintf('%s: HTTP %d', (string) __('procurement.catalog.error.fetch_failed'), $response->status()));
         }

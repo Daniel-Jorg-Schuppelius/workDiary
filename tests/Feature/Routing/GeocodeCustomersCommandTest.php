@@ -12,8 +12,8 @@ namespace Tests\Feature\Routing;
 
 use App\Models\Customer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 class GeocodeCustomersCommandTest extends TestCase {
@@ -28,8 +28,8 @@ class GeocodeCustomersCommandTest extends TestCase {
     }
 
     public function test_backfills_customer_coordinates(): void {
-        Http::fake([
-            'nominatim.test/*' => Http::response([
+        FakePluginHttp::fake([
+            'http://nominatim.test/*' => FakePluginHttp::response([
                 ['lat' => '52.5', 'lon' => '13.4', 'display_name' => 'Berlin'],
             ], 200),
         ]);
@@ -51,7 +51,7 @@ class GeocodeCustomersCommandTest extends TestCase {
     }
 
     public function test_skips_customers_with_existing_coordinates(): void {
-        Http::fake();
+        $fake = FakePluginHttp::fake();
 
         Customer::factory()->create([
             'organization_id' => $this->organization->id,
@@ -61,6 +61,6 @@ class GeocodeCustomersCommandTest extends TestCase {
         ]);
 
         $this->artisan('geocode:customers')->assertSuccessful();
-        Http::assertNothingSent();
+        $fake->assertNothingSent();
     }
 }

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Security;
 
 use App\Models\SecurityAdvisory;
-use Illuminate\Support\Facades\Http;
+use App\Plugins\Support\PluginHttpFactory;
 use RuntimeException;
 
 /**
@@ -27,6 +27,8 @@ use RuntimeException;
  */
 class OsvAdvisoryService {
     private const BASE_URL = 'https://api.osv.dev/v1';
+
+    public function __construct(private readonly PluginHttpFactory $http) {}
 
     /** OSV-Limit: max. 1000 Queries je Batch; konservativ chunken. */
     private const BATCH_SIZE = 500;
@@ -47,9 +49,8 @@ class OsvAdvisoryService {
                 $chunk,
             );
 
-            $response = Http::timeout(30)
-                ->acceptJson()
-                ->post(self::BASE_URL . '/querybatch', ['queries' => $queries]);
+            $response = $this->http->coreClient('osv', self::BASE_URL)
+                ->postJson(self::BASE_URL . '/querybatch', ['queries' => $queries], ['timeout' => 30]);
             if ($response->failed()) {
                 throw new RuntimeException('OSV querybatch fehlgeschlagen (HTTP ' . $response->status() . ').');
             }
@@ -188,7 +189,8 @@ class OsvAdvisoryService {
      * @return array{severity: string, cvss_vector: ?string, summary: ?string, fixed_in: ?string}
      */
     private function fetchDetails(string $id): array {
-        $response = Http::timeout(30)->acceptJson()->get(self::BASE_URL . '/vulns/' . $id);
+        $response = $this->http->coreClient('osv', self::BASE_URL)
+            ->getResponse(self::BASE_URL . '/vulns/' . $id, [], ['timeout' => 30]);
         if ($response->failed()) {
             return ['severity' => 'unknown', 'cvss_vector' => null, 'summary' => null, 'fixed_in' => null];
         }

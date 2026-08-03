@@ -12,8 +12,8 @@ namespace Tests\Feature\Admin;
 
 use App\Models\{ChatWebhook, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 /**
@@ -40,7 +40,7 @@ final class ChatAdminTest extends TestCase {
     }
 
     public function test_test_action_sends_a_message_and_reports_success(): void {
-        Http::fake(['*' => Http::response('1', 200)]);
+        $fake = FakePluginHttp::fake(['*' => FakePluginHttp::response('1', 200)]);
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $webhook = $this->webhook();
 
@@ -49,7 +49,7 @@ final class ChatAdminTest extends TestCase {
             ->assertRedirect()
             ->assertSessionHas('success');
 
-        Http::assertSent(fn ($request): bool => $request->url() === 'https://hooks.teams.example/x');
+        $fake->assertSent(fn ($request): bool => (string) $request->getUri() === 'https://hooks.teams.example/x');
     }
 
     public function test_index_shows_test_button_for_active_webhook(): void {
@@ -63,7 +63,7 @@ final class ChatAdminTest extends TestCase {
     }
 
     public function test_test_action_reports_failure_on_error_response(): void {
-        Http::fake(['*' => Http::response('boom', 500)]);
+        FakePluginHttp::fake(['*' => FakePluginHttp::response('boom', 500)]);
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $webhook = $this->webhook();
 

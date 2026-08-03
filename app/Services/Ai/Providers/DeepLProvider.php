@@ -40,7 +40,7 @@ class DeepLProvider extends AbstractHttpAiProvider implements TranslationProvide
         if (str_ends_with($key, ':fx')) {
             // Feature 025, Leitprinzip 4: Tarife mit Trainingsnutzung
             // sind technisch nicht anbindbar.
-            throw AiProviderCallException::transport('deepl', 'DeepL-Free-Schlüssel (…:fx) sind nicht zulässig — API Pro erforderlich.');
+            throw AiProviderCallException::transport('deepl', (string) __('ai.error.deepl_free_key'));
         }
 
         return ['Authorization' => 'DeepL-Auth-Key ' . $key];
@@ -112,7 +112,7 @@ class DeepLProvider extends AbstractHttpAiProvider implements TranslationProvide
         if (is_string($glossaryId) && $glossaryId !== '') {
             // Dictionary des Sprachpaars voll ersetzen (idempotent).
             try {
-                $response = $this->api()->putJson($this->url('/v3/glossaries/' . $glossaryId . '/dictionaries'), $dictionary);
+                $response = $this->api()->putJson($this->api()->buildUrl('/v3/glossaries/' . $glossaryId . '/dictionaries'), $dictionary);
                 if ($response->status() < 400) {
                     return $glossaryId;
                 }

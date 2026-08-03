@@ -18,6 +18,6 @@ namespace App\Services\Ai\Exceptions;
  */
 class UnknownAiCapabilityException extends AiException {
     public static function forKey(string $key): self {
-        return new self(sprintf('KI-Capability "%s" ist nicht registriert (config/ai.php).', $key));
+        return new self((string) __('ai.error.unknown_capability', ['capability' => $key]));
     }
 }

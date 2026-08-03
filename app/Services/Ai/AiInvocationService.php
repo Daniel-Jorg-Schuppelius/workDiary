@@ -47,12 +47,11 @@ class AiInvocationService {
         $capability = $this->registry->get($capabilityKey);
 
         if ($request->verb() !== $capability->verb) {
-            throw new AiException(sprintf(
-                'Request-Verb "%s" passt nicht zur Capability "%s" (erwartet "%s").',
-                $request->verb()->value,
-                $capabilityKey,
-                $capability->verb->value
-            ));
+            throw new AiException((string) __('ai.error.verb_mismatch', [
+                'verb' => $request->verb()->value,
+                'capability' => $capabilityKey,
+                'expected' => $capability->verb->value,
+            ]));
         }
 
         $candidates = $this->resolver->resolveCandidates($organization, $capabilityKey, $requestedConnectionId);
@@ -109,14 +108,14 @@ class AiInvocationService {
     ): AiTextResult|AiClassificationResult|AiFindResult|AiTranslationResult {
         if ($request instanceof TranslateRequest) {
             if (! $provider instanceof TranslatesTextInterface) {
-                throw new AiException('Provider unterstützt das Verb Übersetzen nicht.');
+                throw new AiException((string) __('ai.error.verb_translate_unsupported'));
             }
 
             return $provider->translate($request);
         }
 
         if (! $provider instanceof LlmProviderInterface) {
-            throw new AiException('Provider unterstützt nur das Verb Übersetzen.');
+            throw new AiException((string) __('ai.error.verb_translate_only'));
         }
 
         return match (true) {

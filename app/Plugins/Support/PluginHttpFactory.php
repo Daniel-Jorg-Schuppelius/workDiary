@@ -37,6 +37,20 @@ class PluginHttpFactory {
     }
 
     /**
+     * Client für Kern-Services außerhalb des Plugin-Systems (OSV/CSAF-Feeds,
+     * Eurostat, Update-Check, Nominatim/OSRM, …) — gleiches Toolkit-Fundament
+     * und derselbe Test-Fake wie die Plugins, nur mit neutralem User-Agent
+     * `workDiary/<service>` statt `workDiary-plugin/<id>`. Zentralisierung
+     * 2026-08 (Phase 65): Laravel-`Http::`-Direktnutzung abbauen.
+     */
+    public function coreClient(string $serviceId, string $baseUrl, float $requestInterval = 0.0): PluginApiClient {
+        $client = $this->client($serviceId, $baseUrl, $requestInterval);
+        $client->setUserAgent('workDiary/' . $serviceId);
+
+        return $client;
+    }
+
+    /**
      * Baut den Client eines Provider-SDKs (eigene {@see ClientAbstract}-
      * Ableitung, z. B. `Orgamax\API\Client`) mit denselben Transport-Defaults
      * wie {@see PluginApiClient}. `$make` erhält den Guzzle-Transport:

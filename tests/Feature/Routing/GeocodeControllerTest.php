@@ -12,8 +12,8 @@ namespace Tests\Feature\Routing;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 class GeocodeControllerTest extends TestCase {
@@ -33,8 +33,8 @@ class GeocodeControllerTest extends TestCase {
     }
 
     public function test_returns_coordinates(): void {
-        Http::fake([
-            'nominatim.test/*' => Http::response([
+        FakePluginHttp::fake([
+            'http://nominatim.test/*' => FakePluginHttp::response([
                 ['lat' => '52.52', 'lon' => '13.405', 'display_name' => 'Berlin'],
             ], 200),
         ]);
@@ -53,8 +53,8 @@ class GeocodeControllerTest extends TestCase {
     }
 
     public function test_returns_404_on_no_match(): void {
-        Http::fake([
-            'nominatim.test/*' => Http::response([], 200),
+        FakePluginHttp::fake([
+            'http://nominatim.test/*' => FakePluginHttp::response([], 200),
         ]);
 
         $user = User::factory()->user()->create(['organization_id' => $this->organization->id]);

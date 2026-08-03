@@ -16,7 +16,7 @@ use App\Support\{Setting, UrlSafety};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\{StringHelper, XmlHelper};
 use Illuminate\Http\Client\Response;
-use Illuminate\Support\Facades\{Cache, Http};
+use Illuminate\Support\Facades\Cache;
 use RuntimeException;
 use SimpleXMLElement;
 use Throwable;
@@ -34,6 +34,8 @@ final class SidebarNewsFeedService {
     public const CACHE_KEY = 'ui.news_feed.payload';
 
     private const MAX_BODY_BYTES = 524_288;
+
+    public function __construct(private readonly \App\Plugins\Support\PluginHttpFactory $http) {}
 
     /** @return list<array{title: string, url: string, source: string, published_at: string|null}> */
     public function items(): array {
@@ -105,14 +107,13 @@ final class SidebarNewsFeedService {
             throw new RuntimeException('Die Neuigkeiten-Feed-URL ist nicht öffentlich erreichbar.');
         }
 
-        $response = Http::withoutRedirecting()
-            ->connectTimeout(3)
-            ->timeout(8)
-            ->withHeaders([
-                'Accept' => 'application/atom+xml, application/rss+xml, application/xml, text/xml;q=0.9',
-                'User-Agent' => 'WorkDiary-NewsFeed/1.0',
-            ])
-            ->get($url);
+        $client = $this->http->coreClient('news-feed', $url);
+        $client->setFollowRedirects(false);
+        $client->setConnectTimeout(3.0);
+        $client->setTimeout(8.0);
+        $client->setUserAgent('WorkDiary-NewsFeed/1.0');
+        $client->setDefaultHeaders(['Accept' => 'application/atom+xml, application/rss+xml, application/xml, text/xml;q=0.9']);
+        $response = $client->getResponse($url);
 
         $this->assertUsableResponse($response);
         $parsed = $this->parse($response->body());

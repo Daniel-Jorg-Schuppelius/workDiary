@@ -13,8 +13,8 @@ namespace Tests\Feature;
 use App\Models\{MinimumWageReference, User};
 use App\Services\Payroll\EurostatMinimumWageImporter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 class EurostatMinimumWageImportTest extends TestCase {
@@ -41,7 +41,7 @@ class EurostatMinimumWageImportTest extends TestCase {
     }
 
     public function test_importer_parses_and_upserts_excluding_aggregates(): void {
-        $count = (new EurostatMinimumWageImporter)->ingest($this->jsonStat());
+        $count = app(EurostatMinimumWageImporter::class)->ingest($this->jsonStat());
 
         // DE×2 + FR×2 = 4; EU-Aggregat (len != 2) ausgeschlossen.
         $this->assertSame(4, $count);
@@ -55,7 +55,7 @@ class EurostatMinimumWageImportTest extends TestCase {
     }
 
     public function test_import_is_idempotent(): void {
-        $importer = new EurostatMinimumWageImporter;
+        $importer = app(EurostatMinimumWageImporter::class);
         $importer->ingest($this->jsonStat());
         $importer->ingest($this->jsonStat());
 
@@ -63,7 +63,7 @@ class EurostatMinimumWageImportTest extends TestCase {
     }
 
     public function test_command_imports_via_http(): void {
-        Http::fake(['ec.europa.eu/*' => Http::response($this->jsonStat(), 200)]);
+        FakePluginHttp::fake(['https://ec.europa.eu/*' => FakePluginHttp::response($this->jsonStat())]);
 
         $this->artisan('payroll:import-minimum-wages')->assertSuccessful();
 
@@ -71,7 +71,7 @@ class EurostatMinimumWageImportTest extends TestCase {
     }
 
     public function test_hr_can_trigger_import_button(): void {
-        Http::fake(['ec.europa.eu/*' => Http::response($this->jsonStat(), 200)]);
+        FakePluginHttp::fake(['https://ec.europa.eu/*' => FakePluginHttp::response($this->jsonStat())]);
         $hr = User::factory()->personalverwaltung()->create(['organization_id' => $this->organization->id]);
 
         $this->actingAs($hr)

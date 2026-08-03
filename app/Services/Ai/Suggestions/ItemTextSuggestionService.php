@@ -188,7 +188,7 @@ class ItemTextSuggestionService {
     /** Angebotsposition (MVP-405) — nur im Entwurf. */
     public function suggestForQuoteItem(Quote $quote, QuoteItem $item, ?User $user, ?int $connectionId = null): AiTextSuggestion {
         if ($quote->status !== 'draft') {
-            throw new AiException('KI-Vorschläge sind nur im Angebotsentwurf möglich.');
+            throw new AiException((string) __('ai.error.only_quote_draft'));
         }
 
         $organization = $quote->organization ?? Organization::query()->findOrFail($quote->organization_id);
@@ -212,14 +212,14 @@ class ItemTextSuggestionService {
      */
     public function accept(AiTextSuggestion $suggestion, ?User $user, ?string $editedText = null): bool {
         if (! $suggestion->isOpen()) {
-            throw new AiException('Dieser Vorschlag wurde bereits entschieden.');
+            throw new AiException((string) __('ai.error.suggestion_decided'));
         }
 
         $subject = $suggestion->subject;
         if ($subject instanceof InvoiceItem) {
             $this->assertInvoiceDraft($subject->invoice);
         } elseif ($subject instanceof QuoteItem && $subject->quote?->status !== 'draft') {
-            throw new AiException('Die Position ist nicht mehr im Entwurf.');
+            throw new AiException((string) __('ai.error.position_not_draft'));
         } elseif ($subject instanceof BillingTransferPosition) {
             $this->assertTransferOpen($subject->transfer);
         }
@@ -228,7 +228,7 @@ class ItemTextSuggestionService {
         $edited = $text !== trim($suggestion->suggestion);
 
         if (! $subject instanceof Model) {
-            throw new AiException('Vorschlags-Bezug existiert nicht mehr.');
+            throw new AiException((string) __('ai.error.suggestion_subject_missing'));
         }
 
         $subject->forceFill([
@@ -376,20 +376,20 @@ class ItemTextSuggestionService {
         return match (true) {
             $payload instanceof AiTextResult => $payload->text,
             $payload instanceof AiTranslationResult => $payload->text,
-            default => throw new AiException('Unerwarteter Ergebnistyp für Leistungstexte.'),
+            default => throw new AiException((string) __('ai.error.unexpected_result_type')),
         };
     }
 
     private function assertInvoiceDraft(?Invoice $invoice): void {
         if ($invoice === null || $invoice->status !== Invoice::STATUS_DRAFT) {
-            throw new AiException('KI-Vorschläge sind nur im Rechnungsentwurf möglich.');
+            throw new AiException((string) __('ai.error.only_invoice_draft'));
         }
     }
 
     /** Übergabe-Positionen sind nur zwischen Bestätigen und Übertragen offen. */
     private function assertTransferOpen(?BillingTransfer $transfer): void {
         if ($transfer === null || $transfer->status !== \App\Enums\Finance\TransferStatus::Confirmed) {
-            throw new AiException('KI-Vorschläge sind nur bei einer bestätigten, noch nicht übertragenen Übergabe möglich.');
+            throw new AiException((string) __('ai.error.only_transfer_confirmed'));
         }
     }
 

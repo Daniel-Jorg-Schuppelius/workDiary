@@ -11,7 +11,7 @@
 namespace App\Services\Payroll;
 
 use App\Models\MinimumWageReference;
-use Illuminate\Support\Facades\Http;
+use App\Plugins\Support\PluginHttpFactory;
 use RuntimeException;
 
 /**
@@ -28,6 +28,8 @@ use RuntimeException;
 class EurostatMinimumWageImporter {
     public const DATA_URL = 'https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/earn_mw_cur';
 
+    public function __construct(private readonly PluginHttpFactory $http) {}
+
     /** Eurostat-geo-Aggregate, die keine einzelnen Länder sind. */
     private const NON_COUNTRIES = ['EU', 'EA'];
 
@@ -37,9 +39,8 @@ class EurostatMinimumWageImporter {
      * @return int Anzahl upserteter Datenpunkte
      */
     public function import(): int {
-        $response = Http::acceptJson()
-            ->timeout(30)
-            ->get(self::DATA_URL, ['format' => 'JSON', 'lang' => 'EN', 'currency' => 'EUR']);
+        $response = $this->http->coreClient('eurostat', self::DATA_URL)
+            ->getResponse(self::DATA_URL, ['format' => 'JSON', 'lang' => 'EN', 'currency' => 'EUR'], ['timeout' => 30]);
 
         if (! $response->successful()) {
             throw new RuntimeException('Eurostat-Abruf fehlgeschlagen (HTTP ' . $response->status() . ').');

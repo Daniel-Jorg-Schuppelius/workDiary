@@ -21,9 +21,6 @@ use App\Enums\Ai\AiProviderType;
  */
 class AiProviderNotImplementedException extends AiException {
     public static function forType(AiProviderType $type): self {
-        return new self(sprintf(
-            'Für den KI-Provider "%s" ist noch kein Adapter implementiert (folgt in MVP-407–410).',
-            $type->value
-        ));
+        return new self((string) __('ai.error.provider_not_implemented', ['provider' => $type->value]));
     }
 }

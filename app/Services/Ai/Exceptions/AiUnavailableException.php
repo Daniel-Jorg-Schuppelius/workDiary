@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Ai\Exceptions;
 
+use App\Services\Ai\Dto\AiCapability;
+
 /**
  * KI ist für diesen Aufruf nicht verfügbar (Feature 025, MVP-399).
  * Der Grund-Code steuert das Verhalten der Aufrufer: alles außer
@@ -34,13 +36,13 @@ class AiUnavailableException extends AiException {
     }
 
     public static function moduleInactive(): self {
-        return new self(self::REASON_MODULE_INACTIVE, 'Das KI-Modul ist für diese Organisation nicht aktiv.');
+        return new self(self::REASON_MODULE_INACTIVE, (string) __('ai.error.module_inactive'));
     }
 
     public static function capabilityDisabled(string $capability): self {
         return new self(
             self::REASON_CAPABILITY_DISABLED,
-            sprintf('Die KI-Capability "%s" ist für diese Organisation nicht freigeschaltet.', $capability)
+            (string) __('ai.error.capability_disabled', ['capability' => AiCapability::labelFor($capability)])
         );
     }
 
@@ -51,15 +53,14 @@ class AiUnavailableException extends AiException {
      * Zuordnung war in Ordnung, kaputt war der Provider-Zugang.
      */
     public static function noConnection(string $capability, ?string $connectionName = null, ?string $connectionError = null): self {
-        $message = sprintf('Für die KI-Capability "%s" ist keine nutzbare Provider-Verbindung konfiguriert.', $capability);
+        $message = (string) __('ai.error.no_connection', ['capability' => AiCapability::labelFor($capability)]);
 
         if ($connectionName !== null && $connectionError !== null && trim($connectionError) !== '') {
-            $message = sprintf(
-                'Die Verbindung "%s" ist derzeit nicht nutzbar: %s (Capability "%s"). Nach dem Beheben die Verbindung einmal prüfen.',
-                $connectionName,
-                trim($connectionError),
-                $capability,
-            );
+            $message = (string) __('ai.error.connection_unusable', [
+                'connection' => $connectionName,
+                'error' => trim($connectionError),
+                'capability' => AiCapability::labelFor($capability),
+            ]);
         }
 
         return new self(self::REASON_NO_CONNECTION, $message);
@@ -68,14 +69,14 @@ class AiUnavailableException extends AiException {
     public static function connectionNotAllowed(int $connectionId): self {
         return new self(
             self::REASON_CONNECTION_NOT_ALLOWED,
-            sprintf('Die angeforderte Provider-Verbindung #%d ist für diese Capability nicht zugelassen.', $connectionId)
+            (string) __('ai.error.connection_not_allowed', ['id' => $connectionId])
         );
     }
 
     public static function allProvidersFailed(string $capability): self {
         return new self(
             self::REASON_ALL_FAILED,
-            sprintf('Alle zugelassenen Provider-Verbindungen für "%s" sind fehlgeschlagen.', $capability)
+            (string) __('ai.error.all_failed', ['capability' => AiCapability::labelFor($capability)])
         );
     }
 

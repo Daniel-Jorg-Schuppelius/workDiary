@@ -14,9 +14,9 @@ use App\Models\{SecurityAdvisory, User};
 use App\Services\Diagnostics\DiagnosticsService;
 use App\Services\Security\OsvAdvisoryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Client\Request as ClientRequest;
-use Illuminate\Support\Facades\Http;
+use Psr\Http\Message\RequestInterface;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 /**
@@ -36,25 +36,27 @@ final class SecurityAdvisoriesTest extends TestCase {
 
     private string $osvModified = '2026-07-01T00:00:00Z';
 
+    private FakePluginHttp $osvFake;
+
     /** Fake: laravel/framework ist betroffen, alle anderen Pakete sauber. */
     private function fakeOsv(): void {
-        Http::fake(function (ClientRequest $request) {
-            if (str_contains($request->url(), '/querybatch')) {
-                /** @var array<int, array{package: array{purl: string}}> $queries */
-                $queries = (array) ($request->data()['queries'] ?? []);
+        $this->osvFake = FakePluginHttp::fake(['*' => function (RequestInterface $request) {
+            if (str_contains((string) $request->getUri(), '/querybatch')) {
+                /** @var array{queries?: array<int, array{package: array{purl: string}}>} $body */
+                $body = (array) json_decode((string) $request->getBody(), true);
                 $results = array_map(function (array $query): array {
                     if ($this->osvAffected && str_contains($query['package']['purl'], 'laravel/framework')) {
                         return ['vulns' => [['id' => self::VULN_ID, 'modified' => $this->osvModified]]];
                     }
 
                     return [];
-                }, $queries);
+                }, (array) ($body['queries'] ?? []));
 
-                return Http::response(['results' => $results]);
+                return FakePluginHttp::response(['results' => $results]);
             }
 
-            if (str_contains($request->url(), '/vulns/' . self::VULN_ID)) {
-                return Http::response([
+            if (str_contains((string) $request->getUri(), '/vulns/' . self::VULN_ID)) {
+                return FakePluginHttp::response([
                     'id' => self::VULN_ID,
                     'summary' => 'Testlücke in laravel/framework',
                     'database_specific' => ['severity' => 'HIGH'],
@@ -66,8 +68,8 @@ final class SecurityAdvisoriesTest extends TestCase {
                 ]);
             }
 
-            return Http::response([], 404);
-        });
+            return FakePluginHttp::response([], 404);
+        }]);
     }
 
     public function test_pull_creates_updates_and_resolves(): void {
@@ -86,7 +88,10 @@ final class SecurityAdvisoriesTest extends TestCase {
         $this->assertNull($advisory->resolved_at);
 
         // Unverändertes modified → keine erneute Detail-Nachladung.
-        $detailCalls = fn(): int => count(Http::recorded(fn(ClientRequest $r): bool => str_contains($r->url(), '/vulns/')));
+        $detailCalls = fn(): int => count(array_filter(
+            $this->osvFake->recorded(),
+            static fn(array $entry): bool => str_contains((string) $entry['request']->getUri(), '/vulns/'),
+        ));
         $before = $detailCalls();
         app(OsvAdvisoryService::class)->pull();
         $this->assertSame($before, $detailCalls());

@@ -23,7 +23,7 @@ use App\Services\Numbering\NumberSequenceService;
 use App\Services\Operations\{OperationsAlertService, OperationsSignal};
 use App\Support\{Setting, UrlSafety};
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\{File, Http, Log, Mail};
+use Illuminate\Support\Facades\{File, Log, Mail};
 
 /**
  * Fehlermeldesystem (Feature 041, MVP-053): erzeugt Meldungen mit
@@ -45,6 +45,7 @@ class ProblemReportService {
         private readonly DiagnosticsService $diagnostics,
         private readonly SupportReportLogFilter $logFilter,
         private readonly OperationsAlertService $alerts,
+        private readonly \App\Plugins\Support\PluginHttpFactory $http,
     ) {}
 
     /** Org-Regel für den Diagnose-Anhang (ask/always/never). */
@@ -227,10 +228,10 @@ class ProblemReportService {
             throw new \RuntimeException('Webhook-URL nicht zulässig (SSRF-Schutz).');
         }
 
-        Http::withoutRedirecting()
-            ->timeout(10)
-            ->post($url, $report->exportPayload())
-            ->throw();
+        $client = $this->http->coreClient('problem-report', $url);
+        $client->setFollowRedirects(false);
+        $client->setTimeout(10.0);
+        $client->postJson($url, $report->exportPayload())->throw();
         $report->forceFill(['delivered_at' => now()])->save();
     }
 

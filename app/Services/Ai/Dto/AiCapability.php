@@ -38,6 +38,15 @@ final class AiCapability {
      * capability_label); fällt bei fehlender Übersetzung auf den Key zurück.
      */
     public function label(): string {
-        return Trans::or('ai.capability_label.' . $this->key, $this->key);
+        return self::labelFor($this->key);
+    }
+
+    /**
+     * Dieselbe Bezeichnung allein aus dem Key — für Stellen ohne DTO
+     * (Fehlermeldungen, Gedächtnis-Einträge, Nutzungsreport), damit der
+     * Roh-Key `invoicing.block_text` nirgends nutzersichtbar wird.
+     */
+    public static function labelFor(string $key): string {
+        return Trans::or('ai.capability_label.' . $key, $key);
     }
 }

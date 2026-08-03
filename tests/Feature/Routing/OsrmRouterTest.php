@@ -11,8 +11,8 @@
 namespace Tests\Feature\Routing;
 
 use App\Services\Routing\{OsrmRouter, RoutingException};
-use Illuminate\Http\Client\Request as ClientRequest;
-use Illuminate\Support\Facades\Http;
+use Psr\Http\Message\RequestInterface;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 class OsrmRouterTest extends TestCase {
@@ -27,8 +27,8 @@ class OsrmRouterTest extends TestCase {
     }
 
     public function test_returns_route_result(): void {
-        Http::fake([
-            'osrm.test/*' => Http::response([
+        $fake = FakePluginHttp::fake([
+            'http://osrm.test/*' => FakePluginHttp::response([
                 'code' => 'Ok',
                 'routes' => [[
                     'distance' => 12345.6,
@@ -36,7 +36,7 @@ class OsrmRouterTest extends TestCase {
                     'geometry' => ['type' => 'LineString', 'coordinates' => [[13.0, 52.0], [13.1, 52.1]]],
                     'legs' => [['summary' => 'test']],
                 ]],
-            ], 200),
+            ]),
         ]);
 
         $result = $this->router()->route([[13.0, 52.0], [13.1, 52.1]]);
@@ -47,8 +47,8 @@ class OsrmRouterTest extends TestCase {
         $this->assertSame(12, $result->durationMinutes());
         $this->assertNotNull($result->geometry);
 
-        Http::assertSent(function (ClientRequest $req): bool {
-            return str_contains($req->url(), '/route/v1/driving/');
+        $fake->assertSent(function (RequestInterface $req): bool {
+            return str_contains((string) $req->getUri(), '/route/v1/driving/');
         });
     }
 
@@ -58,8 +58,8 @@ class OsrmRouterTest extends TestCase {
     }
 
     public function test_throws_on_non_ok(): void {
-        Http::fake([
-            'osrm.test/*' => Http::response(['code' => 'NoRoute', 'routes' => []], 200),
+        FakePluginHttp::fake([
+            'http://osrm.test/*' => FakePluginHttp::response(['code' => 'NoRoute', 'routes' => []]),
         ]);
 
         $this->expectException(RoutingException::class);

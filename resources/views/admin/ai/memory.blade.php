@@ -52,7 +52,7 @@
                         <div class="text-xs text-base-content/60">{{ $entry->customer?->name }}</div>
                     @elseif ($entry->capability !== null)
                         <x-status-badge tone="ghost" size="sm">{{ __('ai.field.scope_capability') }}</x-status-badge>
-                        <div class="text-xs text-base-content/60">{{ \App\Support\Trans::or('ai.capability_label.' . $entry->capability, $entry->capability) }}</div>
+                        <div class="text-xs text-base-content/60">{{ \App\Services\Ai\Dto\AiCapability::labelFor($entry->capability) }}</div>
                     @else
                         <x-status-badge tone="neutral" size="sm">{{ __('ai.field.scope_organization') }}</x-status-badge>
                     @endif

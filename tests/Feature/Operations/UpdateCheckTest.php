@@ -15,7 +15,8 @@ use App\Services\Updates\UpdateCheckService;
 use App\Settings\SettingScope;
 use App\Support\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\{Artisan, Http};
+use Illuminate\Support\Facades\Artisan;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 class UpdateCheckTest extends TestCase {
@@ -137,24 +138,24 @@ class UpdateCheckTest extends TestCase {
     }
 
     public function test_disabled_mode_never_calls_remote(): void {
-        Http::fake();
+        $fake = FakePluginHttp::fake();
         Setting::set('updates.check_mode', 'disabled', SettingScope::System);
 
         $exit = Artisan::call('updates:check');
 
         $this->assertSame(0, $exit);
-        Http::assertNothingSent();
+        $fake->assertNothingSent();
     }
 
     public function test_manual_mode_skips_scheduled_run_but_allows_force(): void {
         Setting::set('updates.feed_url', 'https://updates.example.test/feed.json', SettingScope::System);
-        Http::fake([
-            'updates.example.test/*' => Http::response($this->signedDocument([$this->appComponent('1.3.0')])),
+        $fake = FakePluginHttp::fake([
+            'https://updates.example.test/*' => FakePluginHttp::response($this->signedDocument([$this->appComponent('1.3.0')])),
         ]);
 
         // Scheduled (ohne --force): kein Abruf im manual-Modus (Default).
         Artisan::call('updates:check');
-        Http::assertNothingSent();
+        $fake->assertNothingSent();
 
         // Manueller Lauf.
         $exit = Artisan::call('updates:check', ['--force' => true]);

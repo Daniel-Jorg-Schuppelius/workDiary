@@ -13,17 +13,17 @@ namespace Tests\Feature\Sso;
 use App\Enums\Auth\SsoProtocol;
 use App\Models\{Organization, SsoConnection, SsoIdentity, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use Jose\Component\Core\{AlgorithmManager, JWK};
 use Jose\Component\KeyManagement\JWKFactory;
 use Jose\Component\Signature\Algorithm\RS256;
 use Jose\Component\Signature\JWSBuilder;
 use Jose\Component\Signature\Serializer\CompactSerializer;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 /**
- * MVP-120: OIDC-SSO-Login. IdP komplett über Http::fake (Discovery, JWKS,
+ * MVP-120: OIDC-SSO-Login. IdP komplett über FakePluginHttp (Discovery, JWKS,
  * Token-Endpoint); ID-Tokens werden mit einem eigenen RSA-Testschlüssel
  * signiert (web-token). Verifiziert Pflichtprüfungen (state, nonce, iss, aud,
  * exp, Signatur), Kontoverknüpfung nur über Subject, E-Mail-Erstverknüpfung
@@ -56,15 +56,15 @@ final class OidcLoginTest extends TestCase {
     }
 
     private function fakeDiscoveryAndJwks(): void {
-        Http::fake([
-            self::ISSUER . '/.well-known/openid-configuration' => Http::response([
+        FakePluginHttp::fake([
+            self::ISSUER . '/.well-known/openid-configuration' => FakePluginHttp::response([
                 'issuer' => self::ISSUER,
                 'authorization_endpoint' => self::ISSUER . '/authorize',
                 'token_endpoint' => self::ISSUER . '/token',
                 'jwks_uri' => self::ISSUER . '/jwks',
                 'end_session_endpoint' => self::ISSUER . '/logout',
             ]),
-            self::ISSUER . '/jwks' => Http::response([
+            self::ISSUER . '/jwks' => FakePluginHttp::response([
                 'keys' => [$this->idpKey->toPublic()->jsonSerialize()],
             ]),
         ]);
@@ -107,11 +107,17 @@ final class OidcLoginTest extends TestCase {
         $flow = (array) session('sso.oidc');
 
         $idToken = $this->idToken($flow['nonce'], $claimOverrides);
-        Http::fake([
-            self::ISSUER . '/token' => Http::response([
+        // Neuer Fake ERSETZT die Factory-Instanz (kein Stapeln wie bei
+        // Http::fake) — JWKS wird erst im Callback geholt, also mitstubben;
+        // Discovery kommt dort bereits aus dem Cache.
+        FakePluginHttp::fake([
+            self::ISSUER . '/token' => FakePluginHttp::response([
                 'access_token' => 'at-1',
                 'token_type' => 'Bearer',
                 'id_token' => $idToken,
+            ]),
+            self::ISSUER . '/jwks' => FakePluginHttp::response([
+                'keys' => [$this->idpKey->toPublic()->jsonSerialize()],
             ]),
         ]);
 
@@ -280,8 +286,8 @@ final class OidcLoginTest extends TestCase {
     }
 
     public function test_discovery_issuer_mismatch_is_rejected(): void {
-        Http::fake([
-            self::ISSUER . '/.well-known/openid-configuration' => Http::response([
+        FakePluginHttp::fake([
+            self::ISSUER . '/.well-known/openid-configuration' => FakePluginHttp::response([
                 'issuer' => 'https://evil.example',
                 'authorization_endpoint' => self::ISSUER . '/authorize',
                 'token_endpoint' => self::ISSUER . '/token',

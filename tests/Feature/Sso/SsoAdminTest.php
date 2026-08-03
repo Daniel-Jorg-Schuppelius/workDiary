@@ -13,8 +13,8 @@ namespace Tests\Feature\Sso;
 use App\Enums\Auth\SsoProtocol;
 use App\Models\{Organization, SsoConnection, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 /**
@@ -120,8 +120,8 @@ final class SsoAdminTest extends TestCase {
             'client_id' => 'client-1',
         ]);
 
-        Http::fake([
-            'https://idp.example/.well-known/openid-configuration' => Http::response([
+        FakePluginHttp::fake([
+            'https://idp.example/.well-known/openid-configuration' => FakePluginHttp::response([
                 'issuer' => 'https://idp.example',
                 'authorization_endpoint' => 'https://idp.example/authorize',
                 'token_endpoint' => 'https://idp.example/token',

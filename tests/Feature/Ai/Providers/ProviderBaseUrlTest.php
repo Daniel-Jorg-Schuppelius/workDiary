@@ -117,6 +117,54 @@ class ProviderBaseUrlTest extends TestCase {
         }
     }
 
+    public function test_quota_error_says_what_to_do_instead_of_http_429(): void {
+        // Echter OpenAI-Körper: 429, aber „insufficient_quota" — Warten hilft
+        // nicht, das Kontingent ist leer.
+        FakePluginHttp::fake(['*' => FakePluginHttp::response([
+            'error' => [
+                'message' => 'You exceeded your current quota, please check your plan and billing details.',
+                'type' => 'insufficient_quota',
+                'code' => 'insufficient_quota',
+            ],
+        ], 429)]);
+
+        try {
+            $this->provider($this->connection(AiProviderType::OpenAi, null))->preflight();
+            $this->fail('429 wurde nicht gemappt.');
+        } catch (AiProviderCallException $e) {
+            $this->assertStringContainsString((string) __('ai.error.provider_quota'), $e->getMessage());
+        }
+    }
+
+    public function test_provider_error_code_reaches_the_message(): void {
+        FakePluginHttp::fake(['*' => FakePluginHttp::response([
+            'error' => ['message' => 'Incorrect API key provided: sk-***', 'code' => 'invalid_api_key'],
+        ], 401)]);
+
+        try {
+            $this->provider($this->connection(AiProviderType::OpenAi, null))->preflight();
+            $this->fail('401 wurde nicht gemappt.');
+        } catch (AiProviderCallException $e) {
+            $this->assertStringContainsString('invalid_api_key', $e->getMessage());
+        }
+    }
+
+    public function test_validation_errors_do_not_carry_the_provider_text(): void {
+        // 400/422 echoen gern das fehlerhafte Feld samt Inhalt — Prompt-Text
+        // gehört nicht ins Health-Tracking.
+        FakePluginHttp::fake(['*' => FakePluginHttp::response([
+            'error' => ['message' => 'Invalid value for input: Kunde Mustermann, Wartung Server', 'code' => 'invalid_request'],
+        ], 400)]);
+
+        try {
+            $this->provider($this->connection(AiProviderType::OpenAi, null))->preflight();
+            $this->fail('400 wurde nicht gemappt.');
+        } catch (AiProviderCallException $e) {
+            $this->assertStringContainsString('invalid_request', $e->getMessage());
+            $this->assertStringNotContainsString('Mustermann', $e->getMessage());
+        }
+    }
+
     public function test_fake_records_no_auth_key_in_url(): void {
         $fake = FakePluginHttp::fake(['*' => FakePluginHttp::response(['data' => []])]);
 

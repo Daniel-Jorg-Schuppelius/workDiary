@@ -27,7 +27,7 @@ class OpenAiCompatibleProvider extends AbstractLlmProvider {
     protected function baseUrl(): string {
         $base = rtrim((string) $this->connection->base_url, '/');
         if ($base === '') {
-            throw AiProviderCallException::transport($this->providerName(), 'Keine Basis-URL an der Verbindung hinterlegt.');
+            throw AiProviderCallException::transport($this->providerName(), (string) __('ai.error.base_url_missing'));
         }
 
         return $base;

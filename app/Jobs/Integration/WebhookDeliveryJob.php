@@ -19,7 +19,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\{InteractsWithQueue, SerializesModels};
 use Illuminate\Support\{Carbon, Str};
-use Illuminate\Support\Facades\Http;
 use Throwable;
 
 /**
@@ -85,19 +84,24 @@ class WebhookDeliveryJob implements ShouldQueue {
         $signature = $this->sign($endpoint->secret);
 
         try {
-            $response = Http::withHeaders([
-                self::SIGNATURE_HEADER => 'sha256=' . $signature,
-                self::TIMESTAMP_HEADER => (string) $this->timestamp,
-                self::EVENT_HEADER => (string) $delivery->event,
-                self::DELIVERY_HEADER => (string) $delivery->id,
-                'Content-Type' => 'application/json',
-                'User-Agent' => 'WorkDiary-Webhook/1',
-            ])
-                ->timeout(10)
-                // Keine Redirects: ein 30x auf internen Host würde den SSRF-Guard umgehen (Whitebox 2026-07).
-                ->withoutRedirecting()
-                ->withBody($this->body, 'application/json')
-                ->post($endpoint->url);
+            $client = app(\App\Plugins\Support\PluginHttpFactory::class)->coreClient('webhook', (string) $endpoint->url);
+            // Keine Redirects: ein 30x auf internen Host würde den SSRF-Guard umgehen (Whitebox 2026-07).
+            $client->setFollowRedirects(false);
+            $client->setTimeout(10.0);
+            $client->setUserAgent('WorkDiary-Webhook/1');
+            // Kein HTTP-Retry: die Queue ist die Retry-Ebene dieses Jobs.
+            $client->setMaxRetries(1);
+            // Signatur über den Roh-Body — deshalb body statt json-Option.
+            $response = $client->requestResponse('POST', (string) $endpoint->url, [
+                'headers' => [
+                    self::SIGNATURE_HEADER => 'sha256=' . $signature,
+                    self::TIMESTAMP_HEADER => (string) $this->timestamp,
+                    self::EVENT_HEADER => (string) $delivery->event,
+                    self::DELIVERY_HEADER => (string) $delivery->id,
+                    'Content-Type' => 'application/json',
+                ],
+                'body' => $this->body,
+            ]);
 
             $status = $response->status();
             $delivery->http_status = $status;

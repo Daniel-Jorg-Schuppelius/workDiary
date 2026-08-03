@@ -15,9 +15,10 @@ use App\Models\Isms\{IsmsAudit, IsmsAuditProgram, IsmsRequirement, IsmsVulnerabi
 use App\Models\User;
 use App\Services\Isms\{CsafFeedService, RequirementService, VexExportService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Client\Request as ClientRequest;
-use Illuminate\Support\Facades\{Http, Storage};
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Psr\Http\Message\RequestInterface;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 /**
@@ -69,11 +70,11 @@ class IsmsExpansionTest extends TestCase {
 
         $csafDocument = $this->fixture('csaf-known-affected.json');
 
-        Http::fake(function (ClientRequest $request) use ($csafDocument) {
-            $url = $request->url();
+        FakePluginHttp::fake(['*' => function (RequestInterface $request) use ($csafDocument) {
+            $url = (string) $request->getUri();
 
             if (str_contains($url, 'provider-metadata.json')) {
-                return Http::response([
+                return FakePluginHttp::response([
                     'distributions' => [
                         ['rolie' => ['feeds' => [['url' => 'https://provider.test/feed.json']]]],
                         ['directory_url' => 'https://provider.test/dir'],
@@ -81,7 +82,7 @@ class IsmsExpansionTest extends TestCase {
                 ]);
             }
             if (str_contains($url, 'feed.json')) {
-                return Http::response([
+                return FakePluginHttp::response([
                     'feed' => ['entry' => [[
                         'updated' => '2026-07-01T00:00:00Z',
                         'content' => ['src' => 'https://provider.test/docs/adv-rolie.json'],
@@ -89,14 +90,14 @@ class IsmsExpansionTest extends TestCase {
                 ]);
             }
             if (str_contains($url, 'changes.csv')) {
-                return Http::response("\"2026/adv-dir.json\",\"2026-06-30T00:00:00Z\"\n");
+                return FakePluginHttp::response("\"2026/adv-dir.json\",\"2026-06-30T00:00:00Z\"\n");
             }
             if (str_contains($url, 'adv-rolie.json') || str_contains($url, 'adv-dir.json')) {
-                return Http::response($csafDocument);
+                return FakePluginHttp::response($csafDocument);
             }
 
-            return Http::response([], 404);
-        });
+            return FakePluginHttp::response([], 404);
+        }]);
 
         $result = app(CsafFeedService::class)->pull('https://provider.test/.well-known/csaf/provider-metadata.json', $admin->organization, $admin);
 

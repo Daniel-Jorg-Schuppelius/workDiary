@@ -16,7 +16,7 @@ use App\Enums\Finance\TransferStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Finance\{BillingTransfer, BillingTransferPosition};
-use App\Services\Ai\Exceptions\AiException;
+use App\Services\Ai\Exceptions\{AiException, AiProviderCallException, AiUnavailableException};
 use App\Services\Ai\Suggestions\ItemTextSuggestionService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -198,7 +198,13 @@ class TransferPositionController extends Controller {
         return back()->with('success', __('ai.flash.suggestion_created'));
     }
 
-    /** Sammelaktion: je Position ein Vorschlag (synchron, Fehler je Position stoppen nicht). */
+    /**
+     * Sammelaktion: je Position ein Vorschlag (synchron). Ein Fehler an einer
+     * einzelnen Position hält den Lauf nicht auf — ein Provider- oder
+     * Routing-Fehler schon: der trifft jede weitere Position genauso, und das
+     * HTTP-Fundament wiederholt jeden Versuch mehrfach. Weiterlaufen hieße,
+     * denselben aussichtslosen Aufruf n-mal zu bezahlen.
+     */
     public function suggestAll(BillingTransfer $transfer): RedirectResponse {
         Gate::authorize('confirm', $transfer);
         abort_unless(self::isOpenForEditing($transfer), 403);
@@ -206,18 +212,25 @@ class TransferPositionController extends Controller {
 
         $count = 0;
         $lastError = null;
+        $aborted = false;
 
         foreach ($transfer->positions as $position) {
             try {
                 $this->suggestions->suggestForTransferPosition($transfer, $position, Auth::user());
                 $count++;
+            } catch (AiProviderCallException|AiUnavailableException $e) {
+                $lastError = $e->getMessage();
+                $aborted = true;
+                break;
             } catch (AiException $e) {
                 $lastError = $e->getMessage();
             }
         }
 
-        if ($count === 0 && $lastError !== null) {
-            return back()->with('error', $lastError);
+        if ($lastError !== null && ($count === 0 || $aborted)) {
+            return back()->with('error', $count > 0
+                ? __('ai.flash.suggestions_aborted', ['count' => $count, 'error' => $lastError])
+                : $lastError);
         }
 
         return back()->with('success', __('ai.flash.suggestions_queued', ['count' => $count]));

@@ -51,9 +51,14 @@ return [
             'item_text' => 'Factura: texto de la partida',
             'block_text' => 'Factura: texto resumen',
             'item_translate' => 'Factura: traducir la partida',
+            'mail_text' => 'Factura: texto del correo',
+            'dunning_text' => 'Factura: texto de reclamación',
         ],
         'quotes' => [
             'item_text' => 'Presupuesto: texto de la partida',
+        ],
+        'portal' => [
+            'answer_translate' => 'Portal: traducir la respuesta',
         ],
     ],
     'connect' => [
@@ -148,6 +153,7 @@ return [
     'flash' => [
         'suggestion_created' => 'Sugerencia de IA creada — revísala y aplícala o descártala.',
         'suggestions_queued' => ':count sugerencias se están creando en segundo plano y aparecerán aquí al terminar.',
+        'suggestions_aborted' => ':count sugerencias creadas, luego interrumpido: :error',
         'suggestion_accepted' => 'Sugerencia aplicada.',
         'suggestion_rejected' => 'Sugerencia descartada.',
         'learned' => 'Guardado en la memoria de IA — las próximas sugerencias usarán la corrección.',
@@ -169,9 +175,39 @@ return [
         'source_required' => 'Los pares de ejemplo requieren un texto bruto.',
     ],
     'error' => [
+        'provider_quota' => 'El cupo del proveedor está agotado — revise el plan y la facturación allí. Esperar no ayuda aquí.',
         'model_required' => 'Este proveedor necesita un modelo/despliegue (p. ej. gpt-4o-mini): sin él falla ya la prueba.',
         'technical' => 'Error técnico: :message',
         'unknown' => 'Error desconocido.',
+        // Disponibilidad/enrutamiento (AiUnavailableException, AiInvocationService)
+        'module_inactive' => 'El módulo de IA no está activo para esta organización.',
+        'capability_disabled' => 'La capacidad de IA ":capability" no está activada para esta organización.',
+        'no_connection' => 'Para la capacidad de IA ":capability" no hay ninguna conexión de proveedor utilizable configurada.',
+        'connection_unusable' => 'La conexión ":connection" no es utilizable actualmente: :error (capacidad ":capability"). Tras solucionarlo, pruebe la conexión una vez.',
+        'connection_not_allowed' => 'La conexión de proveedor solicitada #:id no está permitida para esta capacidad.',
+        'all_failed' => 'Todas las conexiones de proveedor permitidas para ":capability" han fallado.',
+        'budget_exceeded' => 'El presupuesto mensual de IA (:family: :limit unidades) de esta organización está agotado.',
+        'provider_not_implemented' => 'Para el proveedor de IA ":provider" todavía no hay ningún adaptador implementado (llegará en MVP-407–410).',
+        'unknown_capability' => 'La capacidad de IA ":capability" no está registrada (config/ai.php).',
+        'verb_mismatch' => 'El verbo de la solicitud ":verb" no coincide con la capacidad ":capability" (se esperaba ":expected").',
+        'verb_translate_unsupported' => 'El proveedor no admite el verbo traducir.',
+        'verb_translate_only' => 'El proveedor solo admite el verbo traducir.',
+        // Transporte/datos de conexión (AiProviderCallException)
+        'transport' => 'Error de transporte en :url',
+        'http_status' => 'HTTP :status en :url',
+        'model_missing' => 'No hay ningún modelo/despliegue guardado en la conexión.',
+        'api_key_missing' => 'No hay ninguna clave API guardada.',
+        'base_url_missing' => 'No hay ninguna URL base guardada en la conexión.',
+        'resource_url_missing' => 'No hay ninguna URL de recurso guardada en la conexión.',
+        'deepl_free_key' => 'Las claves DeepL Free (…:fx) no están permitidas: se requiere API Pro.',
+        // Guardas de sugerencias (ItemTextSuggestionService)
+        'only_quote_draft' => 'Las sugerencias de IA solo son posibles en el borrador de presupuesto.',
+        'only_invoice_draft' => 'Las sugerencias de IA solo son posibles en el borrador de factura.',
+        'only_transfer_confirmed' => 'Las sugerencias de IA solo son posibles en un traspaso confirmado y aún no transferido.',
+        'suggestion_decided' => 'Esta sugerencia ya se ha decidido.',
+        'position_not_draft' => 'La posición ya no está en borrador.',
+        'suggestion_subject_missing' => 'La referencia de la sugerencia ya no existe.',
+        'unexpected_result_type' => 'Tipo de resultado inesperado para los textos de prestación.',
     ],
     'empty' => [
         'connections' => 'Aún no hay conexiones de proveedores.',

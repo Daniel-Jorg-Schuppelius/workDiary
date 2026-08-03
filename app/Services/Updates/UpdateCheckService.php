@@ -18,7 +18,7 @@ use App\Services\Operations\{OperationsAlertService, OperationsSignal};
 use App\Services\Release\ReleaseManifestService;
 use App\Support\Setting;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\{Cache, Http, Log};
+use Illuminate\Support\Facades\{Cache, Log};
 use RuntimeException;
 
 /**
@@ -51,6 +51,7 @@ class UpdateCheckService {
     public function __construct(
         private readonly ReleaseManifestService $release,
         private readonly OperationsAlertService $alerts,
+        private readonly \App\Plugins\Support\PluginHttpFactory $http,
     ) {}
 
     public function mode(): string {
@@ -77,11 +78,10 @@ class UpdateCheckService {
             throw new RuntimeException('Keine Update-Feed-URL konfiguriert (updates.feed_url).');
         }
 
-        $document = Http::withoutRedirecting()
-            ->timeout(15)
-            ->get($url)
-            ->throw()
-            ->json();
+        $client = $this->http->coreClient('update-check', $url);
+        $client->setFollowRedirects(false);
+        $client->setTimeout(15.0);
+        $document = $client->getResponse($url)->throw()->json();
 
         return $this->apply(is_array($document) ? $document : [], source: 'remote');
     }
