@@ -13,6 +13,21 @@ return [
     'plugin' => [
         'description' => 'Collegare e gestire in modo controllato i domini di un account DomainReselling con i clienti.',
     ],
+    'settings' => [
+        'connection_note' => 'Le credenziali (login/password) sono gestite per connessione — non qui.',
+        'connection_note_link' => 'Vai alle connessioni DomainReselling',
+        'timeout' => 'Timeout API (secondi)',
+        'timeout_help' => 'Tempo di attesa massimo per richiesta al provider. Predefinito: 20.',
+        'check_budget_per_hour' => 'Budget di verifica per ora',
+        'check_budget_per_hour_help' => 'Numero massimo di verifiche di disponibilità per organizzazione e ora — protegge dai punti di penalità del provider. Predefinito: 300.',
+        'check_cache_ttl' => 'Cache di verifica (secondi)',
+        'check_cache_ttl_help' => 'Durata di memorizzazione di un risultato di disponibilità; i risultati in cache non consumano budget. Predefinito: 300.',
+        'list_page_size' => 'Dimensione pagina elenchi',
+        'list_page_size_help' => 'Dimensione del batch delle richieste paginate degli elenchi di domini durante la sincronizzazione. Predefinito: 100.',
+        'stale_after_hours' => 'Obsoleto dopo (ore)',
+        'stale_after_hours_help' => 'Età dei dati oltre la quale una proiezione di dominio viene contrassegnata come obsoleta. Predefinito: 24.',
+        'range_error' => 'Inserire un numero intero tra :min e :max.',
+    ],
     'health' => [
         'no_org_context' => 'Nessun contesto organizzativo.',
         'attention' => 'Almeno una connessione è bloccata.',
