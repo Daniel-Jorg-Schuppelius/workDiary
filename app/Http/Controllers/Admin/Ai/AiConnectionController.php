@@ -75,6 +75,12 @@ class AiConnectionController extends Controller {
             return back()->withInput()->with('error', __('ai.flash.family_mismatch'));
         }
 
+        // Ohne Modell scheitert schon der Prüflauf — lieber hier sagen als
+        // hinterher als Verbindungsfehler.
+        if ($provider->requiresModel() && trim((string) ($data['model'] ?? '')) === '') {
+            return back()->withInput()->withErrors(['model' => __('ai.error.model_required')]);
+        }
+
         $connection = AiProviderConnection::create([
             'name' => $data['name'],
             'family' => $family,
@@ -100,6 +106,49 @@ class AiConnectionController extends Controller {
         return redirect()->route('admin.ai.index')->with(
             $ok ? 'success' : 'error',
             $ok ? __('ai.flash.connected') : __('ai.flash.preflight_failed', ['error' => (string) $connection->fresh()?->last_error]),
+        );
+    }
+
+    /** Bearbeiten-Dialog: Name, Modell, Basis-URL — Zugangsdaten laufen über rotate(). */
+    public function edit(AiProviderConnection $connection): View {
+        Gate::authorize('update', $connection);
+
+        return view('admin.ai._connect_dialog', ['connection' => $connection]);
+    }
+
+    /**
+     * Aktualisiert die Stammdaten einer Verbindung. Ein hinterlegter
+     * Verbindungsfehler wird zurückgesetzt: er beschreibt den alten Stand und
+     * würde die Verbindung sonst dauerhaft aus der Routing-Auswahl halten
+     * ({@see \App\Models\Concerns\HasConnectionHealth::isConnectionFailing()}).
+     */
+    public function update(Request $request, AiProviderConnection $connection, AiConnectionTester $tester): RedirectResponse {
+        Gate::authorize('update', $connection);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'base_url' => ['nullable', 'string', 'max:500', 'url'],
+            'model' => ['nullable', 'string', 'max:120'],
+        ]);
+
+        if ($connection->provider->requiresModel() && trim((string) ($data['model'] ?? '')) === '') {
+            return back()->withInput()->withErrors(['model' => __('ai.error.model_required')]);
+        }
+
+        $connection->forceFill([
+            'name' => $data['name'],
+            'base_url' => $data['base_url'] ?? null,
+            'model' => $data['model'] ?? null,
+            'last_error' => null,
+            'last_error_at' => null,
+            'consecutive_failures' => 0,
+        ])->save();
+
+        $ok = $tester->test($connection);
+
+        return redirect()->route('admin.ai.index')->with(
+            $ok ? 'success' : 'error',
+            $ok ? __('ai.flash.connection_updated') : __('ai.flash.preflight_failed', ['error' => (string) $connection->fresh()?->last_error]),
         );
     }
 

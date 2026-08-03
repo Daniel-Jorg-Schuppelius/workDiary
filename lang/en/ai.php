@@ -58,6 +58,7 @@ return [
     ],
     'connect' => [
         'title' => 'Add connection',
+        'title_edit' => 'Edit AI connection',
         'legend' => 'Provider access (key is stored encrypted and never displayed)',
         'submit' => 'Create and test',
     ],
@@ -130,6 +131,7 @@ return [
     ],
     'action' => [
         'test' => 'Test connection',
+        'edit_connection' => 'Edit connection',
         'block' => 'Block',
         'unblock' => 'Unblock',
         'delete' => 'Delete',
@@ -150,6 +152,7 @@ return [
         'suggestion_rejected' => 'Suggestion discarded.',
         'learned' => 'Saved to AI memory — future suggestions will use the correction.',
         'connected' => 'Connection created and preflight passed.',
+        'connection_updated' => 'Connection updated and tested.',
         'preflight_ok' => 'Preflight passed — connection active.',
         'preflight_failed' => 'Preflight failed: :error',
         'blocked' => 'Connection blocked. No routing will use it anymore.',
@@ -166,6 +169,7 @@ return [
         'source_required' => 'Example pairs require a raw text.',
     ],
     'error' => [
+        'model_required' => 'This provider needs a model/deployment (e.g. gpt-4o-mini) — without it even the preflight fails.',
         'technical' => 'Technical error: :message',
         'unknown' => 'Unknown error.',
     ],

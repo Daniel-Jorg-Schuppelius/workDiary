@@ -58,6 +58,7 @@ return [
     ],
     'connect' => [
         'title' => 'Verbindung anlegen',
+        'title_edit' => 'KI-Verbindung bearbeiten',
         'legend' => 'Provider-Zugang (Schlüssel wird verschlüsselt gespeichert und nie angezeigt)',
         'submit' => 'Anlegen und prüfen',
     ],
@@ -130,6 +131,7 @@ return [
     ],
     'action' => [
         'test' => 'Verbindung prüfen',
+        'edit_connection' => 'Verbindung bearbeiten',
         'block' => 'Sperren',
         'unblock' => 'Entsperren',
         'delete' => 'Löschen',
@@ -150,6 +152,7 @@ return [
         'suggestion_rejected' => 'Vorschlag verworfen.',
         'learned' => 'Im KI-Gedächtnis gespeichert — künftige Vorschläge nutzen die Korrektur.',
         'connected' => 'Verbindung angelegt und Preflight bestanden.',
+        'connection_updated' => 'Verbindung aktualisiert und geprüft.',
         'preflight_ok' => 'Preflight bestanden — Verbindung aktiv.',
         'preflight_failed' => 'Preflight fehlgeschlagen: :error',
         'blocked' => 'Verbindung gesperrt. Sie wird von keinem Routing mehr verwendet.',
@@ -166,6 +169,7 @@ return [
         'source_required' => 'Beispielpaare benötigen einen Rohtext.',
     ],
     'error' => [
+        'model_required' => 'Für diesen Anbieter ist ein Modell/Deployment nötig (z. B. gpt-4o-mini) — ohne scheitert schon der Prüflauf.',
         'technical' => 'Technischer Fehler: :message',
         'unknown' => 'Unbekannter Fehler.',
     ],

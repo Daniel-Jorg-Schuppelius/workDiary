@@ -70,6 +70,8 @@
                     <td class="font-mono text-xs">{{ $connection->model ?? '—' }}</td>
                     <td class="text-right whitespace-nowrap">
                         @if ($canManage ?? false)
+                            <x-icon-btn icon="edit" size="xs" data-entry-modal-trigger
+                                        :href="route('admin.ai.edit', $connection)" :title="__('ai.action.edit_connection')" />
                             <x-action-form :action="route('admin.ai.test', $connection)">
                                 <x-icon-btn icon="wifi_tethering" size="xs" type="submit" :title="__('ai.action.test')" />
                             </x-action-form>

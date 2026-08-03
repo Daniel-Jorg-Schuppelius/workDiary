@@ -58,6 +58,7 @@ return [
     ],
     'connect' => [
         'title' => 'Aggiungi connessione',
+        'title_edit' => 'Modifica connessione IA',
         'legend' => 'Accesso al provider (la chiave è cifrata e mai visualizzata)',
         'submit' => 'Crea e verifica',
     ],
@@ -130,6 +131,7 @@ return [
     ],
     'action' => [
         'test' => 'Verifica connessione',
+        'edit_connection' => 'Modifica connessione',
         'block' => 'Blocca',
         'unblock' => 'Sblocca',
         'delete' => 'Elimina',
@@ -150,6 +152,7 @@ return [
         'suggestion_rejected' => 'Suggerimento scartato.',
         'learned' => 'Salvato nella memoria IA — i prossimi suggerimenti useranno la correzione.',
         'connected' => 'Connessione creata e preflight superato.',
+        'connection_updated' => 'Connessione aggiornata e verificata.',
         'preflight_ok' => 'Preflight superato — connessione attiva.',
         'preflight_failed' => 'Preflight fallito: :error',
         'blocked' => 'Connessione bloccata. Nessun routing la userà più.',
@@ -166,6 +169,7 @@ return [
         'source_required' => 'Le coppie di esempio richiedono un testo grezzo.',
     ],
     'error' => [
+        'model_required' => 'Questo provider richiede un modello/deployment (ad es. gpt-4o-mini) — senza, fallisce già il test.',
         'technical' => 'Errore tecnico: :message',
         'unknown' => 'Errore sconosciuto.',
     ],

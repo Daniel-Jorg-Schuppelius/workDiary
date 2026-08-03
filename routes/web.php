@@ -1575,6 +1575,10 @@ Route::middleware('auth')->group(function () {
             Route::get('capability/{capability}', [\App\Http\Controllers\Admin\Ai\AiCapabilityController::class, 'edit'])->name('capability.edit');
             Route::post('capability/{capability}', [\App\Http\Controllers\Admin\Ai\AiCapabilityController::class, 'update'])->name('capability.update');
             Route::get('vorschau/{capability}', [\App\Http\Controllers\Admin\Ai\AiCapabilityController::class, 'preview'])->name('capability.preview');
+            // Stammdaten nachbessern (MVP-493): ohne diesen Weg ließ sich ein
+            // fehlendes Modell nur durch Löschen+Neuanlegen beheben.
+            Route::get('{connection}/bearbeiten', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'edit'])->name('edit');
+            Route::patch('{connection}', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'update'])->name('update');
             Route::post('{connection}/pruefen', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'test'])->name('test');
             Route::post('{connection}/sperren', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'block'])->name('block');
             Route::post('{connection}/entsperren', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'unblock'])->name('unblock');

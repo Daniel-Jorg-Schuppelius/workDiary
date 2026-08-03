@@ -54,6 +54,17 @@ enum AiProviderType: string implements HasLabel {
         };
     }
 
+    /**
+     * Braucht der Provider ein Modell/Deployment an der Verbindung? Die
+     * LLM-Adapter fordern es beim ersten Aufruf ein
+     * ({@see \App\Services\Ai\Providers\AbstractHttpAiProvider::requireModel()});
+     * ohne Angabe scheitert schon der Prüflauf. Übersetzungsdienste kommen
+     * ohne aus.
+     */
+    public function requiresModel(): bool {
+        return $this->family() === AiFamily::Llm;
+    }
+
     /** Default für `is_local` neuer Verbindungen (Sensibilitäts-Gate). */
     public function isLocalByDefault(): bool {
         return match ($this) {
