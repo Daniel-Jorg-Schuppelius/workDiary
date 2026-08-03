@@ -60,7 +60,7 @@
                     </td>
                     <td>
                         <x-status-badge :tone="$connection->status->badge()" size="sm">{{ $connection->status->label() }}</x-status-badge>
-                        @if ($connection->isConnectionFailing())
+                        @if ($connection->hasConnectionError())
                             <x-status-badge tone="error" size="sm" :title="$connection->last_error">{{ __('ai.health.attention') }}</x-status-badge>
                         @endif
                         @if ($connection->preflight_at === null)

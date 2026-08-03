@@ -31,7 +31,7 @@
             </div>
             <p class="mb-4 text-sm text-base-content/60">{{ __('carddav.intro') }}</p>
 
-            @if ($connection && $connection->isConnectionFailing())
+            @if ($connection && $connection->hasConnectionError())
                 <div class="alert alert-warning mb-4 text-sm">
                     {{ __('carddav.health.last_error', ['error' => $connection->last_error ?? '—']) }}
                 </div>

@@ -32,6 +32,12 @@ final class ResolvedService {
         public readonly ?string $standardText,
         public readonly string $itemType,
         public readonly string $source,
+        /**
+         * Preis ausdrücklich an der Projektregel gepflegt (nicht aus dem
+         * Artikel ergänzt)? Dann schlägt er den allgemeinen Stundensatz —
+         * jemand hat ihn für dieses Projekt bewusst festgelegt.
+         */
+        public readonly bool $priceIsExplicit = false,
     ) {}
 
     /**

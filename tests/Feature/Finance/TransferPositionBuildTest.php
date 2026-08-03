@@ -195,6 +195,31 @@ class TransferPositionBuildTest extends TestCase {
         $this->assertSame(150.0, $position->unitPriceFloat());
     }
 
+    public function test_regelpreis_schlaegt_den_gepflegten_satz(): void {
+        // Ein an der Projektregel gepflegter Preis ist eine bewusste Ansage
+        // für dieses Projekt — er gewinnt auch gegen den Kundensatz.
+        $this->customer->update(['hourly_rate' => '95.00']);
+        $this->entry();
+        $this->article();
+
+        ProjectBillingRule::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'plugin_id' => 'lexoffice',
+            'applies_to_kind' => null,
+            'lexoffice_article_id' => 'art-1',
+            'item_type' => 'service',
+            'net_unit_price' => 123.45,
+            'priority' => 0,
+        ]);
+        app(ServiceDefaultResolver::class)->flush();
+
+        $position = app(BillingPositionBuilder::class)->build($this->draft())->first();
+
+        $this->assertSame(123.45, $position->unitPriceFloat());
+        $this->assertSame(BlockPrice::SOURCE_SERVICE, $position->price_source);
+    }
+
     public function test_bestaetigen_friert_die_positionen_ein(): void {
         $this->entry();
         $this->setOrgDefaultRate(90.0);

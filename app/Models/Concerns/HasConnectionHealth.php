@@ -54,8 +54,32 @@ trait HasConnectionHealth {
         ])->save();
     }
 
+    /**
+     * Gilt die Verbindung als gestört?
+     *
+     * Nur abgeschaltet (`disabled_at`) oder ab der Auto-Disable-Schwelle
+     * (`integrations.auto_disable_threshold`). Ein EINZELNER hinterlegter
+     * Fehler sperrt bewusst NICHT mehr: er beschreibt den letzten Versuch,
+     * nicht den Dauerzustand — vorher legte ein einmaliges Timeout eine
+     * Integration still, bis jemand von Hand prüfte. Der nächste echte
+     * Aufruf entscheidet stattdessen neu und meldet im Zweifel den
+     * Provider-Fehler im Klartext.
+     *
+     * Für die reine Anzeige „hier stimmt etwas nicht" gibt es
+     * {@see hasConnectionError()}.
+     */
     public function isConnectionFailing(): bool {
-        return $this->getAttribute('disabled_at') !== null
-            || $this->getAttribute('last_error') !== null;
+        if ($this->getAttribute('disabled_at') !== null) {
+            return true;
+        }
+
+        $threshold = (int) Setting::get('integrations.auto_disable_threshold', 10);
+
+        return $threshold > 0 && (int) $this->getAttribute('consecutive_failures') >= $threshold;
+    }
+
+    /** Liegt ein Fehler des letzten Versuchs vor? (Anzeige/Diagnose) */
+    public function hasConnectionError(): bool {
+        return $this->getAttribute('last_error') !== null;
     }
 }

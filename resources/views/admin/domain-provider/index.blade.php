@@ -45,7 +45,7 @@
                     @unless ($connection->pilotConfirmed())
                         <x-status-badge tone="warning" size="sm">{{ __('domain.pilot.open') }}</x-status-badge>
                     @endunless
-                    @if ($connection->isConnectionFailing())
+                    @if ($connection->hasConnectionError())
                         <x-status-badge tone="error" size="sm">{{ __('domain.health.attention') }}</x-status-badge>
                     @endif
                 </td>

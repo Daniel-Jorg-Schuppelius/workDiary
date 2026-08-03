@@ -117,9 +117,9 @@ class AiConnectionController extends Controller {
     }
 
     /**
-     * Aktualisiert die Stammdaten einer Verbindung. Ein hinterlegter
-     * Verbindungsfehler wird zurückgesetzt: er beschreibt den alten Stand und
-     * würde die Verbindung sonst dauerhaft aus der Routing-Auswahl halten
+     * Aktualisiert die Stammdaten einer Verbindung. Fehlerzähler und
+     * Auto-Abschaltung werden zurückgesetzt: sie beschreiben den alten Stand,
+     * sonst bliebe eine reparierte Verbindung abgeschaltet
      * ({@see \App\Models\Concerns\HasConnectionHealth::isConnectionFailing()}).
      */
     public function update(Request $request, AiProviderConnection $connection, AiConnectionTester $tester): RedirectResponse {
@@ -142,6 +142,7 @@ class AiConnectionController extends Controller {
             'last_error' => null,
             'last_error_at' => null,
             'consecutive_failures' => 0,
+            'disabled_at' => null,
         ])->save();
 
         $ok = $tester->test($connection);

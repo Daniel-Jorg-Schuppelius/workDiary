@@ -231,9 +231,14 @@ class LexofficeMapper {
                 $type = $service?->itemType ?: 'service';
                 $unitName = $service?->unitName ?: 'Stunde';
                 $taxRate = $service !== null && $service->vatRate !== null ? $service->vatRate : $vatRate;
-                // Der aus den Zeiten errechnete Satz gewinnt; der Listenpreis
-                // der Leistung füllt nur die Lücke (sonst 0,00 €).
-                $netAmount = $unitPrice > 0.0 ? $unitPrice : (($service !== null ? $service->netPrice : null) ?? 0.0);
+                // Ein an der Projektregel gepflegter Preis ist eine bewusste
+                // Festlegung und gewinnt; sonst zählt der aus den Zeiten
+                // errechnete Satz, und der Listenpreis der Leistung füllt nur
+                // die Lücke (sonst 0,00 €).
+                $servicePrice = $service !== null ? $service->netPrice : null;
+                $netAmount = $service?->priceIsExplicit === true && ($servicePrice ?? 0.0) > 0.0
+                    ? (float) $servicePrice
+                    : ($unitPrice > 0.0 ? $unitPrice : ($servicePrice ?? 0.0));
 
                 $kindSuffix = $kind !== null ? ' [' . $kind->value . ']' : '';
                 // Endkunde (Fremdkunde) mit in die Buchungszeile übernehmen.

@@ -20,6 +20,8 @@ use App\Services\Billing\OrganizationDefaultRateResolver;
  * fünf kopierten Ketten in den Faktura-Zielen plus Vorschau.
  *
  * Reihenfolge:
+ *  0. an der Projektregel ausdrücklich gepflegter Nettopreis (bewusste
+ *     Festlegung für dieses Projekt),
  *  1. {@see BillingBlock::hourlyRate()} — Umsatz-Snapshot der Zeiten und damit
  *     alles, was jemand gepflegt hat (Eintrag, Kundenkondition, Mitarbeiter,
  *     Tätigkeit, Projekt, Kunde),
@@ -44,6 +46,12 @@ class BlockPriceResolver {
         ?ResolvedService $service = null,
         ?int $organizationId = null,
     ): BlockPrice {
+        // Ein an der Projektregel gepflegter Preis ist eine bewusste Ansage
+        // für dieses Projekt und schlägt deshalb den allgemeinen Stundensatz.
+        if ($service?->priceIsExplicit === true && $service->netPrice !== null && $service->netPrice > 0.0) {
+            return new BlockPrice(round($service->netPrice, 2), BlockPrice::SOURCE_SERVICE);
+        }
+
         $snapshot = $block->hourlyRate();
         if ($snapshot !== null && $snapshot > 0.0) {
             return new BlockPrice(round($snapshot, 2), BlockPrice::SOURCE_SNAPSHOT);

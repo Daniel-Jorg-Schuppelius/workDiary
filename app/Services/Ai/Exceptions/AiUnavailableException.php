@@ -44,11 +44,25 @@ class AiUnavailableException extends AiException {
         );
     }
 
-    public static function noConnection(string $capability): self {
-        return new self(
-            self::REASON_NO_CONNECTION,
-            sprintf('Für die KI-Capability "%s" ist keine nutzbare Provider-Verbindung konfiguriert.', $capability)
-        );
+    /**
+     * Keine nutzbare Verbindung. Steht der Grund an der ausgefallenen
+     * Verbindung (letzter Verbindungsfehler), wird ER genannt — die reine
+     * Capability-Meldung schickte sonst auf die falsche Fährte: die
+     * Zuordnung war in Ordnung, kaputt war der Provider-Zugang.
+     */
+    public static function noConnection(string $capability, ?string $connectionName = null, ?string $connectionError = null): self {
+        $message = sprintf('Für die KI-Capability "%s" ist keine nutzbare Provider-Verbindung konfiguriert.', $capability);
+
+        if ($connectionName !== null && $connectionError !== null && trim($connectionError) !== '') {
+            $message = sprintf(
+                'Die Verbindung "%s" ist derzeit nicht nutzbar: %s (Capability "%s"). Nach dem Beheben die Verbindung einmal prüfen.',
+                $connectionName,
+                trim($connectionError),
+                $capability,
+            );
+        }
+
+        return new self(self::REASON_NO_CONNECTION, $message);
     }
 
     public static function connectionNotAllowed(int $connectionId): self {

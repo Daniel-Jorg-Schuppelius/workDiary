@@ -75,7 +75,16 @@ class AiRoutingResolver {
         }
 
         if ($candidates === []) {
-            throw AiUnavailableException::noConnection($capabilityKey);
+            // Fällt genau eine zugelassene Verbindung wegen eines
+            // hinterlegten Fehlers aus, ist DAS die Ursache — sie gehört in
+            // die Meldung, statt auf die Capability zu zeigen.
+            $blocked = $this->onlyBlockedConnection($organization, $setting);
+
+            throw AiUnavailableException::noConnection(
+                $capabilityKey,
+                $blocked?->name,
+                $blocked?->last_error,
+            );
         }
 
         return $candidates;
@@ -112,6 +121,30 @@ class AiRoutingResolver {
         }
 
         return true;
+    }
+
+    /**
+     * Genau eine zugelassene Verbindung, die wegen eines Verbindungsfehlers
+     * ausfällt — sonst null (bei mehreren Kandidaten oder anderen Gründen wie
+     * Cloud-Sperre bleibt die allgemeine Meldung richtig).
+     */
+    private function onlyBlockedConnection(Organization $organization, AiCapabilitySetting $setting): ?AiProviderConnection {
+        $allowedIds = array_map('intval', (array) ($setting->allowed_connection_ids ?? []));
+        if (count($allowedIds) !== 1) {
+            return null;
+        }
+
+        $connection = AiProviderConnection::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->whereKey($allowedIds[0])
+            ->first();
+
+        if (! $connection instanceof AiProviderConnection || $connection->isRunnable()) {
+            return null;
+        }
+
+        return $connection;
     }
 
     /** @return list<AiProviderConnection> */

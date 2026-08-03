@@ -221,6 +221,38 @@ class AiRoutingResolverTest extends TestCase {
         ));
     }
 
+    public function test_single_error_does_not_block_the_connection(): void {
+        $connection = $this->connection();
+        $connection->recordConnectionFailure('openai: HTTP 429');
+        $this->enableCapability(['allowed_connection_ids' => [$connection->id]]);
+
+        $candidates = $this->resolver()->resolveCandidates($this->organization, self::CAPABILITY);
+
+        // Ein einzelner Fehlversuch beschreibt den letzten Aufruf, nicht den
+        // Dauerzustand — sonst legt ein Timeout die Capability still.
+        $this->assertSame([(int) $connection->id], array_map(
+            static fn (AiProviderConnection $c): int => (int) $c->id,
+            $candidates
+        ));
+    }
+
+    public function test_auto_disable_threshold_blocks_the_connection(): void {
+        $connection = $this->connection();
+        $connection->forceFill(['consecutive_failures' => 10, 'last_error' => 'openai: HTTP 429'])->save();
+        $this->enableCapability(['allowed_connection_ids' => [$connection->id]]);
+
+        $this->assertFalse($connection->fresh()->isRunnable());
+
+        try {
+            $this->resolver()->resolveCandidates($this->organization, self::CAPABILITY);
+            $this->fail('Die Schwelle hat nicht gegriffen.');
+        } catch (AiUnavailableException $e) {
+            // Die Meldung nennt Verbindung und letzten Fehler statt nur die Capability.
+            $this->assertStringContainsString($connection->name, $e->getMessage());
+            $this->assertStringContainsString('HTTP 429', $e->getMessage());
+        }
+    }
+
     public function test_translation_family_connection_does_not_serve_formulate(): void {
         $translation = AiProviderConnection::factory()->translation()->create([
             'organization_id' => $this->organization->id,

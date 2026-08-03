@@ -81,6 +81,7 @@ class ServiceDefaultResolver {
             standardText: $article?->description,
             itemType: (string) ($rule->item_type ?: ($article?->type ?: 'service')),
             source: ResolvedService::SOURCE_PROJECT_RULE,
+            priceIsExplicit: ($rule->net_unit_price?->toFloat() ?? 0.0) > 0.0,
         );
     }
 

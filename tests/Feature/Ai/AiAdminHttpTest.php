@@ -98,6 +98,45 @@ class AiAdminHttpTest extends TestCase {
         $this->assertDatabaseMissing('ai_provider_connections', ['name' => 'DeepL falsch']);
     }
 
+    public function test_store_requires_a_model_for_llm_providers(): void {
+        // Ohne Modell scheitert erst der Provider-Aufruf — die Meldung soll am
+        // Formular stehen, nicht später als Verbindungsfehler.
+        $this->actingAs($this->admin)->post(route('admin.ai.store'), [
+            'name' => 'OpenAI ohne Modell',
+            'family' => 'llm',
+            'provider' => 'openai',
+            'api_key' => 'sk-test',
+        ])->assertSessionHasErrors('model');
+
+        $this->assertDatabaseMissing('ai_provider_connections', ['name' => 'OpenAI ohne Modell']);
+    }
+
+    public function test_edit_and_update_repair_a_disabled_connection(): void {
+        $connection = AiProviderConnection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'ChatGPT',
+        ]);
+        $connection->forceFill([
+            'last_error' => 'openai: HTTP 429',
+            'last_error_at' => now(),
+            'consecutive_failures' => 10,
+            'disabled_at' => now(),
+        ])->save();
+
+        $this->actingAs($this->admin)->get(route('admin.ai.edit', $connection))->assertOk()->assertSee('ChatGPT');
+
+        $this->actingAs($this->admin)->patch(route('admin.ai.update', $connection), [
+            'name' => 'ChatGPT',
+            'model' => 'gpt-4o-mini',
+        ])->assertRedirect(route('admin.ai.index'));
+
+        $fresh = $connection->fresh();
+        $this->assertSame('gpt-4o-mini', $fresh->model);
+        $this->assertNull($fresh->last_error);
+        $this->assertSame(0, (int) $fresh->consecutive_failures);
+        $this->assertNull($fresh->disabled_at, 'Reparatur muss die Auto-Abschaltung aufheben.');
+    }
+
     public function test_block_and_unblock_lifecycle(): void {
         $connection = AiProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
 
