@@ -95,6 +95,7 @@ return [
         'sevdesk_draft_created' => 'Borrador de factura creado en sevDesk:',
         'easybill_draft_created' => 'Borrador de factura creado en easybill:',
         'positions_increment' => 'Las posiciones se generan con el intervalo de facturación y la agrupación del proyecto, por lo que pueden diferir del total bruto de las fuentes. Estos son los valores que se envían al destino o al paquete de entrega.',
+        'positions_draft' => 'En un borrador las posiciones solo están calculadas. «Confirmar el traspaso» las fija; después podrá editar la denominación y el texto de servicio, unir o quitar posiciones y solicitar propuestas de texto con IA.',
         'intro_text' => 'Aparece en la parte superior del documento. Vacío = el texto estándar del destino.',
         'closing_text' => 'Aparece bajo las posiciones (Lexoffice: observación). Vacío = ninguna.',
     ],

@@ -95,6 +95,7 @@ return [
         'sevdesk_draft_created' => 'Bozza di fattura creata in sevDesk:',
         'easybill_draft_created' => 'Bozza di fattura creata in easybill:',
         'positions_increment' => 'Le posizioni nascono con l’intervallo di fatturazione e il raggruppamento del progetto — possono quindi differire dal totale grezzo delle fonti. Sono questi i valori inviati alla destinazione o scritti nel pacchetto di trasferimento.',
+        'positions_draft' => 'In bozza le posizioni sono solo calcolate. «Confermare il trasferimento» le congela — dopodiché si possono modificare denominazione e testo della prestazione, unire o rimuovere posizioni e richiedere proposte di testo con l’IA.',
         'intro_text' => 'Compare in alto sul documento. Vuoto = il testo predefinito della destinazione.',
         'closing_text' => 'Compare sotto le posizioni (Lexoffice: nota). Vuoto = nessuna.',
     ],

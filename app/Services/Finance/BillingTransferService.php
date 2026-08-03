@@ -135,7 +135,17 @@ class BillingTransferService {
      */
     public function confirm(BillingTransfer $transfer, ?User $actor = null): BillingTransfer {
         $confirmed = $this->transition($transfer, TransferStatus::Confirmed, $actor);
-        app(BillingPositionBuilder::class)->freeze($confirmed);
+        $positions = app(BillingPositionBuilder::class)->freeze($confirmed);
+
+        // Kopfzahlen folgen den eingefrorenen Positionen (MVP-491): sie sind
+        // das, was tatsächlich fakturiert wird. Die ungetaktete Quellsumme
+        // steht weiter unter den Einzelquellen — als Kopfzahl wäre sie
+        // irreführend (Taktung, Standardleistung, nachbewertete Sätze).
+        $confirmed->forceFill([
+            'position_count' => $positions->count(),
+            'total_quantity' => (string) round((float) $positions->sum(fn($p): float => $p->quantityFloat()), 2),
+            'total_amount' => (string) round((float) $positions->sum(fn($p): float => $p->amountFloat()), 2),
+        ])->save();
 
         return $confirmed->load('positions');
     }

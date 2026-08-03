@@ -213,6 +213,22 @@ class TransferPositionBuildTest extends TestCase {
         $this->assertSame(90.0, (float) $transfer->fresh()->positions->first()->unit_price);
     }
 
+    public function test_bestaetigen_setzt_die_kopfzahlen_auf_die_positionen(): void {
+        $this->entry();
+        // Satz erst nach der Erfassung gepflegt ⇒ Quellsumme 0,00 €.
+        $this->setOrgDefaultRate(90.0);
+
+        $transfer = $this->draft();
+        $this->assertSame(0.0, (float) $transfer->total_amount, 'Quellsumme bleibt 0, solange nichts nachbewertet wurde.');
+
+        app(BillingTransferService::class)->confirm($transfer, $this->accountant);
+
+        $transfer->refresh();
+        $this->assertSame(180.0, (float) $transfer->total_amount);
+        $this->assertSame(2.0, (float) $transfer->total_quantity);
+        $this->assertSame(1, (int) $transfer->position_count);
+    }
+
     public function test_leistungszeitraum_bei_mehreren_tagen(): void {
         $this->project->update(['billing_grouping_gap_minutes' => 10000]);
         $this->entry();

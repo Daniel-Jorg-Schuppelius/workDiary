@@ -95,6 +95,7 @@ return [
         'sevdesk_draft_created' => 'Invoice draft created in sevDesk:',
         'easybill_draft_created' => 'Invoice draft created in easybill:',
         'positions_increment' => 'Positions are built with the project’s billing increment and grouping — they may therefore differ from the unrounded source total. These values are sent to the target or written to the handover package.',
+        'positions_draft' => 'In a draft the positions are only calculated. “Confirm transfer” freezes them — after that you can edit name and service text, merge or remove positions and request AI text suggestions.',
         'intro_text' => 'Shown at the top of the document. Empty = the target’s previous default text.',
         'closing_text' => 'Shown below the positions (Lexoffice: remark). Empty = none.',
     ],

@@ -95,6 +95,7 @@ return [
         'sevdesk_draft_created' => 'Brouillon de facture créé dans sevDesk :',
         'easybill_draft_created' => 'Brouillon de facture créé dans easybill :',
         'positions_increment' => 'Les positions sont créées avec l’incrément de facturation et le regroupement du projet — elles peuvent donc différer du total brut des sources. Ce sont ces valeurs qui partent vers la cible ou dans le paquet de transfert.',
+        'positions_draft' => 'Dans un brouillon, les positions sont seulement calculées. « Confirmer le transfert » les fige — ensuite vous pouvez modifier le libellé et le texte de prestation, fusionner ou retirer des positions et demander des suggestions de texte par IA.',
         'intro_text' => 'Apparaît en haut du document. Vide = le texte par défaut de la cible.',
         'closing_text' => 'Apparaît sous les positions (Lexoffice : remarque). Vide = aucune.',
     ],

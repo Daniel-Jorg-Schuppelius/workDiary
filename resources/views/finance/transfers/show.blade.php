@@ -48,17 +48,19 @@
                         <dt class="text-base-content/60">{{ __('finance.field.period') }}:</dt>
                         <dd>{{ $transfer->period_from?->format('d.m.Y') ?? '—' }} – {{ $transfer->period_to?->format('d.m.Y') ?? '—' }}</dd>
                     </div>
+                    {{-- Kopfzahlen = das, was fakturiert wird (Positionen).
+                         Die ungetaktete Quellsumme steht bei den Einzelquellen. --}}
                     <div class="flex gap-2">
                         <dt class="text-base-content/60">{{ __('finance.field.position_count') }}:</dt>
-                        <dd class="tabular-nums">{{ $transfer->position_count }}</dd>
+                        <dd class="tabular-nums">{{ $positions->count() }}</dd>
                     </div>
                     <div class="flex gap-2">
                         <dt class="text-base-content/60">{{ __('finance.field.total_quantity') }}:</dt>
-                        <dd class="tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $transfer->total_quantity, 2, withThousandsSeparator: true) }}</dd>
+                        <dd class="tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $positionTotals['quantity'], 2, withThousandsSeparator: true) }}</dd>
                     </div>
                     <div class="flex gap-2">
                         <dt class="text-base-content/60">{{ __('finance.field.total_amount') }}:</dt>
-                        <dd class="tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $transfer->total_amount, 2, withThousandsSeparator: true) }}</dd>
+                        <dd class="tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $positionTotals['amount'], 2, withThousandsSeparator: true) }}</dd>
                     </div>
                     @if (filled($transfer->correction_reason))
                         <div class="flex gap-2 sm:col-span-2">
@@ -376,6 +378,14 @@
                 </tr>
             @endif
         </x-table>
+        @if ($transfer->status === \App\Enums\Finance\TransferStatus::Draft && $positions->isNotEmpty())
+            {{-- Im Entwurf sind die Positionen nur berechnet: bearbeiten und
+                 KI-Vorschläge gibt es erst ab „Bestätigt" (dann eingefroren). --}}
+            <div class="alert alert-info mt-3 text-sm" role="alert">
+                <x-icon name="info" />
+                <span>{{ __('finance.hint.positions_draft') }}</span>
+            </div>
+        @endif
         @if ($unpricedPositions > 0)
             <div class="alert alert-warning mt-3 text-sm" role="alert">
                 <div>

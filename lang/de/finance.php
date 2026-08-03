@@ -97,6 +97,7 @@ return [
         'sevdesk_draft_created' => 'Rechnungsentwurf in sevDesk angelegt:',
         'easybill_draft_created' => 'Rechnungsentwurf in easybill angelegt:',
         'positions_increment' => 'Positionen entstehen mit Taktung und Zusammenfassung des Projekts — sie können daher von der ungetakteten Quellsumme abweichen. Diese Werte gehen an das Ziel bzw. in das Übergabepaket.',
+        'positions_draft' => 'Im Entwurf sind die Positionen nur berechnet. Erst „Übergabe bestätigen" schreibt sie fest — danach lassen sich Bezeichnung und Leistungstext bearbeiten, Positionen zusammenfassen oder entfernen und KI-Textvorschläge anfordern.',
         'intro_text' => 'Steht oben auf dem Beleg. Leer = der bisherige Standardtext des Ziels.',
         'closing_text' => 'Steht unter den Positionen (Lexoffice: Schlussbemerkung). Leer = keine.',
     ],
