@@ -64,6 +64,10 @@ return [
         'default_service_none' => '— nessuna prestazione predefinita —',
         'default_service_hint' => 'Fornisce denominazione, unità, testo standard e — se non si trova alcuna tariffa — il prezzo delle posizioni di trasferimento. Le regole di fatturazione del progetto la sovrascrivono.',
         'default_service_empty' => 'Nessun articolo ancora sincronizzato — configurare il plugin Lexoffice e scaricare gli articoli.',
+        'transfer_intro_text' => 'Modello: testo introduttivo del trasferimento',
+        'transfer_closing_text' => 'Modello: nota finale del trasferimento',
+        'transfer_text_hint' => 'Viene copiato nella ricevuta alla creazione del trasferimento ed è lì modificabile. Segnaposto: :customer, :from, :to, :channel. Vuoto = il testo predefinito della destinazione.',
+        'transfer_closing_hint' => 'Come sopra; senza modello vale il testo di fattura del cliente, altrimenti la nota resta vuota.',
     ],
     'time_import' => [
         'heading' => 'Importazione tempi',

@@ -10,6 +10,7 @@
 
 return [
     'title' => [
+        'texts' => 'Rechnungstexte',
         'module' => 'Finanzschnittstelle',
         'transfers' => 'Übergabenachweise',
         'transfer' => 'Übergabenachweis',
@@ -30,6 +31,11 @@ return [
         'billing_mode_hint' => 'Übersteuert den Organisations-Standard für diesen Kunden. Bei Lexoffice/DATEV ist die lokale Rechnungserstellung gesperrt.',
         'billing_mode_org_hint' => 'Standard-Fakturierungsweg der Organisation. Kunden können ihn einzeln übersteuern.',
         'channel' => 'Übergabekanal',
+        'corrects' => 'Korrektur zu #:id',
+        'corrected_by' => 'korrigiert durch #:id',
+        'correction_reason' => 'Korrekturgrund',
+        'intro_text' => 'Einleitungstext',
+        'closing_text' => 'Schlussbemerkung',
         'price_source' => 'Preisquelle',
         'article' => 'Artikel',
         'target' => 'Übergabeziel',
@@ -58,10 +64,28 @@ return [
         'download' => 'Übergabepaket herunterladen',
         'open_external' => 'Extern öffnen',
         'edit_position' => 'Position bearbeiten',
+        'correct' => 'Korrektur anlegen',
+        'merge_positions' => 'Ausgewählte zusammenfassen',
+        'move_up' => 'Nach oben',
+        'move_down' => 'Nach unten',
+        'remove_position' => 'Position entfernen',
     ],
 
     'filter' => [
         'all' => 'Alle',
+    ],
+
+    // Ereignisprotokoll: Vorgänge (Verben), nicht Zustände — daher eigene Keys
+    // statt enums.finance.transfer-status. Unbekannte Werte fallen roh durch.
+    'event' => [
+        'created' => 'Angelegt',
+        'created_as_correction' => 'Als Korrektur angelegt',
+        'correction_created' => 'Korrektur angelegt',
+        'draft' => 'Auf Entwurf zurückgesetzt',
+        'confirmed' => 'Bestätigt',
+        'transferred' => 'Übergeben',
+        'failed' => 'Fehlgeschlagen',
+        'voided' => 'Verworfen',
     ],
 
     'hint' => [
@@ -73,9 +97,13 @@ return [
         'sevdesk_draft_created' => 'Rechnungsentwurf in sevDesk angelegt:',
         'easybill_draft_created' => 'Rechnungsentwurf in easybill angelegt:',
         'positions_increment' => 'Positionen entstehen mit Taktung und Zusammenfassung des Projekts — sie können daher von der ungetakteten Quellsumme abweichen. Diese Werte gehen an das Ziel bzw. in das Übergabepaket.',
+        'intro_text' => 'Steht oben auf dem Beleg. Leer = der bisherige Standardtext des Ziels.',
+        'closing_text' => 'Steht unter den Positionen (Lexoffice: Schlussbemerkung). Leer = keine.',
     ],
 
     'confirm_execute' => 'Übergabe jetzt an das Ziel übertragen? Bei Erfolg werden die Quellen als übergeben markiert.',
+    'confirm_correct' => 'Eine Korrektur-Übergabe mit denselben Zeiten anlegen? Der bisherige Nachweis bleibt unverändert stehen und wird als korrigiert vermerkt. Lexoffice kann Belege weder ändern noch löschen — bitte den dort angelegten Entwurf von Hand löschen, sonst steht er doppelt.',
+    'confirm_remove_position' => 'Diese Position von der Rechnung nehmen? Die zugrunde liegende Zeit bleibt dem Nachweis zugeordnet und damit abgerechnet — sie erscheint nur nicht mehr auf dem Beleg.',
     'confirm_void' => 'Übergabe verwerfen? Die Quellen werden wieder freigegeben.',
 
     'empty_title' => 'Keine Übergabenachweise',
@@ -142,6 +170,10 @@ return [
         'created' => 'Übergabenachweis-Entwurf erstellt.',
         'confirmed' => 'Übergabe bestätigt.',
         'position_updated' => 'Position aktualisiert.',
+        'correction_created' => 'Korrektur-Übergabe angelegt — Positionen prüfen, bestätigen und erneut übertragen.',
+        'texts_updated' => 'Rechnungstexte gespeichert.',
+        'position_removed' => 'Position entfernt.',
+        'positions_merged' => 'Positionen zusammengefasst.',
         'transferred' => 'Übergabe abgeschlossen — Quellen wurden als übergeben markiert.',
         'failed' => 'Übergabe als fehlgeschlagen markiert.',
         'voided' => 'Übergabe verworfen — Quellen wurden wieder freigegeben.',
@@ -154,6 +186,8 @@ return [
         'void_after_transfer' => 'Eine bereits übergebene Übergabe kann nicht verworfen werden — bitte Storno-/Differenzübergabe verwenden.',
         'entry_already_transferred' => 'Der Zeiteintrag wurde bereits an die Fakturierung übergeben und kann nicht mehr korrigiert werden.',
         'target_not_allowed' => 'Dieses Ziel ist für den Fakturierungsweg „:mode" nicht zulässig.',
+        'correction_only_transferred' => 'Eine Korrektur ist nur zu einer bereits übergebenen Übergabe möglich.',
+        'merge_needs_two' => 'Zum Zusammenfassen mindestens zwei Positionen auswählen.',
         'lexoffice_not_configured' => 'Lexoffice ist für diese Organisation nicht konfiguriert (API-Key fehlt).',
         'sevdesk_not_configured' => 'sevDesk ist für diese Organisation nicht konfiguriert (API-Token fehlt).',
         'sevdesk_outcome_unclear' => 'Ausgang der sevDesk-Übergabe unklar (Zeitüberschreitung nach dem Senden) — nicht blind wiederholen; der nächste Lauf gleicht über den Quellmarker ab.',

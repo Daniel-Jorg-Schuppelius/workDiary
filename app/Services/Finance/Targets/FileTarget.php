@@ -81,13 +81,24 @@ class FileTarget implements FacturationTarget {
      * @return list<string>
      */
     private function headComments(BillingTransfer $transfer): array {
-        return [
+        $lines = [
             '# ' . __('finance.csv.package_title'),
             '# ' . __('finance.field.customer') . ': ' . $transfer->customer->name,
             '# ' . __('finance.field.channel') . ': ' . $transfer->channel->label(),
             '# ' . __('finance.field.period') . ': ' . ($transfer->period_from?->toDateString() ?? '—') . ' – ' . ($transfer->period_to?->toDateString() ?? '—'),
             '# ' . __('finance.field.payload_hash') . ': ' . $transfer->payload_hash,
         ];
+
+        // Rechnungstexte des Nachweises (MVP-491) als Kopfzeilen — im
+        // CSV-Paket gibt es keine Beleg-Textfelder.
+        foreach (['intro_text' => 'finance.field.intro_text', 'closing_text' => 'finance.field.closing_text'] as $field => $label) {
+            $text = trim((string) $transfer->{$field});
+            if ($text !== '') {
+                $lines[] = '# ' . __($label) . ': ' . TextHelper::normalizeWhitespace($text);
+            }
+        }
+
+        return $lines;
     }
 
     /**

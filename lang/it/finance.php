@@ -10,6 +10,7 @@
 
 return [
     'title' => [
+        'texts' => 'Testi della fattura',
         'module' => 'Interfaccia finanziaria',
         'transfers' => 'Ricevute di trasferimento',
         'transfer' => 'Ricevuta di trasferimento',
@@ -30,6 +31,11 @@ return [
         'billing_mode_hint' => 'Sostituisce lo standard dell\'organizzazione per questo cliente. Con Lexoffice/DATEV la fatturazione locale è bloccata.',
         'billing_mode_org_hint' => 'Canale di fatturazione predefinito dell\'organizzazione. I clienti possono sostituirlo singolarmente.',
         'channel' => 'Canale di trasferimento',
+        'corrects' => 'correzione di #:id',
+        'corrected_by' => 'corretto da #:id',
+        'correction_reason' => 'Motivo della correzione',
+        'intro_text' => 'Testo introduttivo',
+        'closing_text' => 'Nota finale',
         'price_source' => 'Origine del prezzo',
         'article' => 'Articolo',
         'target' => 'Destinazione del trasferimento',
@@ -58,10 +64,26 @@ return [
         'download' => 'Scaricare il pacchetto di consegna',
         'open_external' => 'Aprire esternamente',
         'edit_position' => 'Modifica posizione',
+        'correct' => 'Crea correzione',
+        'merge_positions' => 'Unisci selezionate',
+        'move_up' => 'Sposta su',
+        'move_down' => 'Sposta giù',
+        'remove_position' => 'Rimuovi posizione',
     ],
 
     'filter' => [
         'all' => 'Tutti',
+    ],
+
+    'event' => [
+        'created' => 'Creato',
+        'created_as_correction' => 'Creato come correzione',
+        'correction_created' => 'Correzione creata',
+        'draft' => 'Riportato a bozza',
+        'confirmed' => 'Confermato',
+        'transferred' => 'Trasferito',
+        'failed' => 'Fallito',
+        'voided' => 'Annullato',
     ],
 
     'hint' => [
@@ -73,9 +95,13 @@ return [
         'sevdesk_draft_created' => 'Bozza di fattura creata in sevDesk:',
         'easybill_draft_created' => 'Bozza di fattura creata in easybill:',
         'positions_increment' => 'Le posizioni nascono con l’intervallo di fatturazione e il raggruppamento del progetto — possono quindi differire dal totale grezzo delle fonti. Sono questi i valori inviati alla destinazione o scritti nel pacchetto di trasferimento.',
+        'intro_text' => 'Compare in alto sul documento. Vuoto = il testo predefinito della destinazione.',
+        'closing_text' => 'Compare sotto le posizioni (Lexoffice: nota). Vuoto = nessuna.',
     ],
 
     'confirm_execute' => 'Trasferire ora alla destinazione? In caso di successo le fonti verranno contrassegnate come consegnate.',
+    'confirm_correct' => 'Creare un trasferimento di correzione con gli stessi tempi? La ricevuta precedente resta invariata e viene contrassegnata come corretta. Lexoffice non può né modificare né eliminare i documenti — eliminare a mano la bozza creata lì, altrimenti resterà doppia.',
+    'confirm_remove_position' => 'Rimuovere questa posizione dalla fattura? Il tempo sottostante resta associato alla ricevuta e quindi fatturato — semplicemente non compare più sul documento.',
     'confirm_void' => 'Annullare questo trasferimento? Le fonti verranno nuovamente liberate.',
 
     'empty_title' => 'Nessuna ricevuta di trasferimento',
@@ -141,6 +167,10 @@ return [
         'created' => 'Bozza della ricevuta di trasferimento creata.',
         'confirmed' => 'Trasferimento confermato.',
         'position_updated' => 'Posizione aggiornata.',
+        'correction_created' => 'Trasferimento di correzione creato — verificare le posizioni, confermare e trasferire di nuovo.',
+        'texts_updated' => 'Testi della fattura salvati.',
+        'position_removed' => 'Posizione rimossa.',
+        'positions_merged' => 'Posizioni unite.',
         'transferred' => 'Trasferimento completato — le fonti sono state contrassegnate come trasferite.',
         'failed' => 'Trasferimento contrassegnato come fallito.',
         'voided' => 'Trasferimento annullato — le fonti sono state nuovamente liberate.',
@@ -153,6 +183,8 @@ return [
         'void_after_transfer' => 'Un trasferimento già consegnato non può essere annullato — utilizzare un trasferimento di storno/differenza.',
         'entry_already_transferred' => 'La registrazione oraria è già stata consegnata alla fatturazione e non può più essere corretta.',
         'target_not_allowed' => 'Questa destinazione non è consentita per il canale di fatturazione «:mode».',
+        'correction_only_transferred' => 'Una correzione è possibile solo per un trasferimento già consegnato.',
+        'merge_needs_two' => 'Selezionare almeno due posizioni da unire.',
         'lexoffice_not_configured' => 'Lexoffice non è configurato per questa organizzazione (chiave API mancante).',
         'sevdesk_not_configured' => 'sevDesk non è configurato per questa organizzazione (token API mancante).',
         'sevdesk_outcome_unclear' => 'Esito della consegna a sevDesk incerto (timeout dopo l\'invio) — non ripetere alla cieca; la prossima esecuzione riconcilia tramite il marcatore di origine.',

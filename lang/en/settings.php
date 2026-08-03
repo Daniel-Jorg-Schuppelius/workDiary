@@ -72,6 +72,10 @@ return [
         'default_service_none' => '— no default service —',
         'default_service_hint' => 'Provides name, unit, standard text and — when no rate can be resolved — the price of the handover positions. Billing rules on the project override it.',
         'default_service_empty' => 'No articles synchronised yet — set up the Lexoffice plugin and fetch articles.',
+        'transfer_intro_text' => 'Template: transfer introduction',
+        'transfer_closing_text' => 'Template: transfer closing remark',
+        'transfer_text_hint' => 'Copied into the receipt when a transfer is created and editable there. Placeholders: :customer, :from, :to, :channel. Empty = the target’s previous default text.',
+        'transfer_closing_hint' => 'As above; without a template the customer’s invoice text applies, otherwise the closing remark stays empty.',
     ],
     'time_import' => [
         'heading' => 'Time import',

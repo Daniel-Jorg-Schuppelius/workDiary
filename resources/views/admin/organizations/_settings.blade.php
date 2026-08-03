@@ -97,6 +97,20 @@
                 </p>
             </div>
 
+            {{-- Rechnungstexte-Vorlagen der Übergabe (MVP-491). --}}
+            <div class="fieldset md:col-span-2">
+                <label class="fieldset-label">{{ __('settings.invoicing.transfer_intro_text') }}</label>
+                <textarea name="settings[invoicing][transfer_intro_text]" rows="2" maxlength="2000"
+                          class="textarea textarea-bordered w-full">{{ old('settings.invoicing.transfer_intro_text', data_get($stored, 'invoicing.transfer_intro_text', '')) }}</textarea>
+                <p class="text-xs text-base-content/60 mt-1">{{ __('settings.invoicing.transfer_text_hint') }}</p>
+            </div>
+            <div class="fieldset md:col-span-2">
+                <label class="fieldset-label">{{ __('settings.invoicing.transfer_closing_text') }}</label>
+                <textarea name="settings[invoicing][transfer_closing_text]" rows="2" maxlength="2000"
+                          class="textarea textarea-bordered w-full">{{ old('settings.invoicing.transfer_closing_text', data_get($stored, 'invoicing.transfer_closing_text', '')) }}</textarea>
+                <p class="text-xs text-base-content/60 mt-1">{{ __('settings.invoicing.transfer_closing_hint') }}</p>
+            </div>
+
             {{-- Standard-Erlös: letzte Stufe der Satzhierarchie (MVP-482). --}}
             <div class="fieldset">
                 <label class="fieldset-label">{{ __('settings.invoicing.default_hourly_rate') }}</label>

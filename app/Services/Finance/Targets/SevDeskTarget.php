@@ -97,11 +97,14 @@ class SevDeskTarget implements FacturationTarget {
             throw new RuntimeException('sevDesk /SevUser returned no user for contactPerson.');
         }
 
-        $intro = (string) __('finance.sevdesk.introduction', [
-            'channel' => $transfer->channel->label(),
-            'from' => $transfer->period_from?->format('d.m.Y') ?? '—',
-            'to' => $transfer->period_to?->format('d.m.Y') ?? '—',
-        ]);
+        // Rechnungstexte des Nachweises (MVP-491), sonst der Standardtext.
+        $intro = filled($transfer->intro_text)
+            ? (string) $transfer->intro_text
+            : (string) __('finance.sevdesk.introduction', [
+                'channel' => $transfer->channel->label(),
+                'from' => $transfer->period_from?->format('d.m.Y') ?? '—',
+                'to' => $transfer->period_to?->format('d.m.Y') ?? '—',
+            ]);
 
         $invoice = [
             'objectName' => 'Invoice',
@@ -115,6 +118,7 @@ class SevDeskTarget implements FacturationTarget {
             'contact' => ['id' => (int) $contactReference->external_id, 'objectName' => 'Contact'],
             'contactPerson' => ['id' => (int) $sevUserId, 'objectName' => 'SevUser'],
             'header' => $intro,
+            'footText' => filled($transfer->closing_text) ? (string) $transfer->closing_text : '',
             // Quellmarker in der internen Notiz — Grundlage der Reconciliation
             // und des Übergabenachweises (erscheint nicht auf dem Beleg).
             'customerInternalNote' => $intro . ' [' . $marker . ']',

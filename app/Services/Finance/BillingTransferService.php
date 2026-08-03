@@ -99,6 +99,10 @@ class BillingTransferService {
                 'total_quantity' => (string) round((float) $sources->sum('quantity'), 2),
                 'payload_hash' => self::hashPositions($positions),
                 'created_by_user_id' => $actorId,
+                'intro_text' => $this->renderText($customer, 'transfer_intro_text', $channel, $period),
+                'closing_text' => $this->renderText($customer, 'transfer_closing_text', $channel, $period)
+                    ?? ($customer->invoice_text !== null && trim((string) $customer->invoice_text) !== ''
+                        ? trim((string) $customer->invoice_text) : null),
             ]);
 
             foreach ($sources as $source) {
@@ -134,6 +138,106 @@ class BillingTransferService {
         app(BillingPositionBuilder::class)->freeze($confirmed);
 
         return $confirmed->load('positions');
+    }
+
+    /**
+     * Korrektur-Übergabe zu einem bereits übergebenen Nachweis (MVP-490).
+     *
+     * Der ursprüngliche Nachweis bleibt unverändert und unveränderlich — die
+     * Korrektur ist ein EIGENER Nachweis, der über `corrects_transfer_id` auf
+     * ihn zeigt. Damit bleibt sichtbar, was ursprünglich rausging und was es
+     * abgelöst hat, statt einen ausgelieferten Beleg still zurückzudrehen.
+     *
+     * Sie erbt dieselben Quellen (die Zeiten sind bereits verbraucht und
+     * bleiben es) und startet als Entwurf: Bestätigen friert die Positionen
+     * neu ein — damit greifen zwischenzeitlich korrigierte Sätze und
+     * Standardleistungen —, danach sind Texte prüfbar und das Übertragen legt
+     * beim Ziel einen frischen Beleg an. Den alten Entwurf löscht man im
+     * Zielsystem von Hand: Lexoffice kennt für Belege weder Update noch Delete.
+     */
+    public function createCorrection(BillingTransfer $original, ?string $reason = null, ?User $actor = null): BillingTransfer {
+        if (! $original->wasTransferred()) {
+            throw new BillingTransferException(
+                'correctionNotTransferred',
+                (string) __('finance.error.correction_only_transferred'),
+                ['status' => $original->status->value, 'transfer_id' => $original->id],
+            );
+        }
+
+        $original->loadMissing('items');
+        if ($original->items->isEmpty()) {
+            throw new BillingTransferException(
+                'noSources',
+                (string) __('finance.error.no_sources'),
+                ['transfer_id' => $original->id],
+            );
+        }
+
+        $actorId = $this->resolveActorId($actor);
+
+        return DB::transaction(function () use ($original, $reason, $actorId): BillingTransfer {
+            /** @var list<array<string, mixed>> $positions */
+            $positions = array_values($original->items->map(fn(BillingTransferItem $item): array => [
+                'type' => $item->source_type,
+                'id' => (int) $item->source_id,
+                'date' => null,
+                'quantity' => (float) $item->quantity,
+                'amount' => (float) $item->amount,
+                'unit' => $item->unit,
+                'unit_price' => $item->unit_price !== null ? (float) $item->unit_price : null,
+                'tax_rate' => $item->tax_rate !== null ? (float) $item->tax_rate : null,
+                'cost_position' => $item->cost_position,
+            ])->all());
+
+            /** @var BillingTransfer $correction */
+            $correction = BillingTransfer::query()->create([
+                'organization_id' => $original->organization_id,
+                'customer_id' => $original->customer_id,
+                'channel' => $original->channel,
+                'target' => $original->target,
+                'status' => TransferStatus::Draft,
+                'corrects_transfer_id' => $original->id,
+                'correction_reason' => $reason !== null && trim($reason) !== '' ? mb_substr(trim($reason), 0, 500) : null,
+                'period_from' => $original->period_from?->toDateString(),
+                'period_to' => $original->period_to?->toDateString(),
+                'position_count' => $original->items->count(),
+                'total_amount' => (string) round((float) $original->items->sum('amount'), 2),
+                'total_quantity' => (string) round((float) $original->items->sum('quantity'), 2),
+                'payload_hash' => self::hashPositions($positions),
+                'created_by_user_id' => $actorId,
+                'intro_text' => $original->intro_text,
+                'closing_text' => $original->closing_text,
+            ]);
+
+            // Quellen 1:1 übernehmen — dieselben Zeiten, jetzt unter dem
+            // korrigierenden Nachweis.
+            foreach ($original->items as $item) {
+                $correction->items()->create([
+                    'source_type' => $item->source_type,
+                    'source_id' => $item->source_id,
+                    'amount' => $item->amount,
+                    'quantity' => $item->quantity,
+                    'unit' => $item->unit,
+                    'unit_price' => $item->unit_price,
+                    'tax_rate' => $item->tax_rate,
+                    'cost_position' => $item->cost_position,
+                ]);
+            }
+
+            $this->recordEvent($correction, 'created_as_correction', $actorId, [
+                'corrects_transfer_id' => (int) $original->id,
+                'reason' => $correction->correction_reason,
+            ]);
+
+            // Auch am Original vermerken: das Ereignis ist eine Kind-Zeile und
+            // rührt den unveränderlichen Nachweis selbst nicht an.
+            $this->recordEvent($original, 'correction_created', $actorId, [
+                'correction_transfer_id' => (int) $correction->id,
+                'reason' => $correction->correction_reason,
+            ]);
+
+            return $correction->refresh()->load('items');
+        });
     }
 
     /**
@@ -267,6 +371,28 @@ class BillingTransferService {
     }
 
     // ── intern ─────────────────────────────────────────────────────────
+
+    /**
+     * Rechnungstext aus der Org-Vorlage (MVP-491), Platzhalter aufgelöst.
+     * Der Text wird beim Anlegen materialisiert — was am Nachweis steht, geht
+     * auch raus, unabhängig von späteren Vorlagenänderungen.
+     *
+     * @param  array{from?: string|CarbonInterface|null, to?: string|CarbonInterface|null}  $period
+     */
+    private function renderText(Customer $customer, string $key, TransferChannel $channel, array $period): ?string {
+        $settings = $customer->organization?->invoicingSettings() ?? [];
+        $template = trim((string) ($settings[$key] ?? ''));
+        if ($template === '') {
+            return null;
+        }
+
+        return strtr($template, [
+            ':customer' => (string) $customer->name,
+            ':channel' => $channel->label(),
+            ':from' => ! empty($period['from']) ? Carbon::parse($period['from'])->format('d.m.Y') : '—',
+            ':to' => ! empty($period['to']) ? Carbon::parse($period['to'])->format('d.m.Y') : '—',
+        ]);
+    }
 
     /**
      * Übergabefähige Zeiteinträge: abrechenbar, noch nicht exportiert, dem

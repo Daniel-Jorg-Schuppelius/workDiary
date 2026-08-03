@@ -10,6 +10,7 @@
 
 return [
     'title' => [
+        'texts' => 'Textos de la factura',
         'module' => 'Interfaz financiera',
         'transfers' => 'Justificantes de traspaso',
         'transfer' => 'Justificante de traspaso',
@@ -30,6 +31,11 @@ return [
         'billing_mode_hint' => 'Sustituye el estándar de la organización para este cliente. Con Lexoffice/DATEV la facturación local está bloqueada.',
         'billing_mode_org_hint' => 'Canal de facturación predeterminado de la organización. Los clientes pueden sustituirlo individualmente.',
         'channel' => 'Canal de traspaso',
+        'corrects' => 'corrección de #:id',
+        'corrected_by' => 'corregido por #:id',
+        'correction_reason' => 'Motivo de la corrección',
+        'intro_text' => 'Texto de introducción',
+        'closing_text' => 'Observación final',
         'price_source' => 'Origen del precio',
         'article' => 'Artículo',
         'target' => 'Destino del traspaso',
@@ -58,10 +64,26 @@ return [
         'download' => 'Descargar el paquete de entrega',
         'open_external' => 'Abrir externamente',
         'edit_position' => 'Editar posición',
+        'correct' => 'Crear corrección',
+        'merge_positions' => 'Unir seleccionadas',
+        'move_up' => 'Subir',
+        'move_down' => 'Bajar',
+        'remove_position' => 'Quitar posición',
     ],
 
     'filter' => [
         'all' => 'Todos',
+    ],
+
+    'event' => [
+        'created' => 'Creado',
+        'created_as_correction' => 'Creado como corrección',
+        'correction_created' => 'Corrección creada',
+        'draft' => 'Devuelto a borrador',
+        'confirmed' => 'Confirmado',
+        'transferred' => 'Traspasado',
+        'failed' => 'Fallido',
+        'voided' => 'Anulado',
     ],
 
     'hint' => [
@@ -73,9 +95,13 @@ return [
         'sevdesk_draft_created' => 'Borrador de factura creado en sevDesk:',
         'easybill_draft_created' => 'Borrador de factura creado en easybill:',
         'positions_increment' => 'Las posiciones se generan con el intervalo de facturación y la agrupación del proyecto, por lo que pueden diferir del total bruto de las fuentes. Estos son los valores que se envían al destino o al paquete de entrega.',
+        'intro_text' => 'Aparece en la parte superior del documento. Vacío = el texto estándar del destino.',
+        'closing_text' => 'Aparece bajo las posiciones (Lexoffice: observación). Vacío = ninguna.',
     ],
 
     'confirm_execute' => '¿Traspasar ahora al destino? Si tiene éxito, las fuentes se marcarán como entregadas.',
+    'confirm_correct' => '¿Crear un traspaso de corrección con los mismos tiempos? El justificante anterior queda sin cambios y se marca como corregido. Lexoffice no puede modificar ni eliminar documentos: elimine a mano el borrador creado allí, de lo contrario quedará duplicado.',
+    'confirm_remove_position' => '¿Quitar esta posición de la factura? El tiempo subyacente sigue vinculado al justificante y por tanto facturado: solo deja de aparecer en el documento.',
     'confirm_void' => '¿Anular este traspaso? Las fuentes se liberarán de nuevo.',
 
     'empty_title' => 'No hay justificantes de traspaso',
@@ -141,6 +167,10 @@ return [
         'created' => 'Borrador del justificante de traspaso creado.',
         'confirmed' => 'Traspaso confirmado.',
         'position_updated' => 'Posición actualizada.',
+        'correction_created' => 'Traspaso de corrección creado: revise las posiciones, confirme y vuelva a traspasar.',
+        'texts_updated' => 'Textos de la factura guardados.',
+        'position_removed' => 'Posición quitada.',
+        'positions_merged' => 'Posiciones unidas.',
         'transferred' => 'Traspaso completado — las fuentes se han marcado como traspasadas.',
         'failed' => 'Traspaso marcado como fallido.',
         'voided' => 'Traspaso anulado — las fuentes se han liberado de nuevo.',
@@ -153,6 +183,8 @@ return [
         'void_after_transfer' => 'Un traspaso ya entregado no puede anularse — utilice un traspaso de anulación/diferencia.',
         'entry_already_transferred' => 'El registro de tiempo ya se ha entregado a la facturación y no puede corregirse más.',
         'target_not_allowed' => 'Este destino no está permitido para el canal de facturación «:mode».',
+        'correction_only_transferred' => 'Una corrección solo es posible en un traspaso ya entregado.',
+        'merge_needs_two' => 'Seleccione al menos dos posiciones para unir.',
         'lexoffice_not_configured' => 'Lexoffice no está configurado para esta organización (falta la clave API).',
         'sevdesk_not_configured' => 'sevDesk no está configurado para esta organización (falta el token de API).',
         'sevdesk_outcome_unclear' => 'Resultado de la entrega a sevDesk incierto (tiempo de espera agotado tras el envío): no reintentar a ciegas; la próxima ejecución concilia mediante el marcador de origen.',

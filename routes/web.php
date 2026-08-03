@@ -1856,6 +1856,14 @@ Route::middleware('auth')->group(function () {
             Route::post('{transfer}/bestaetigen', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'confirm'])->name('confirm');
             Route::post('{transfer}/uebertragen', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'execute'])->name('execute');
             Route::post('{transfer}/verwerfen', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'void'])->name('void');
+            // Rechnungstexte des Belegs (MVP-491).
+            Route::patch('{transfer}/texte', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'updateTexts'])->name('texts.update');
+            // Positions-Aktionen: entfernen, verschieben, zusammenfassen (MVP-492).
+            Route::delete('{transfer}/positionen/{position}', [\App\Http\Controllers\Finance\TransferPositionController::class, 'destroy'])->name('positions.destroy');
+            Route::post('{transfer}/positionen/{position}/verschieben', [\App\Http\Controllers\Finance\TransferPositionController::class, 'move'])->name('positions.move');
+            Route::post('{transfer}/positionen/zusammenfassen', [\App\Http\Controllers\Finance\TransferPositionController::class, 'merge'])->name('positions.merge');
+            // Korrektur-Übergabe zu einem übergebenen Nachweis (MVP-490).
+            Route::post('{transfer}/korrigieren', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'correct'])->name('correct');
             Route::get('{transfer}/download', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'download'])->name('download');
             // Eingefrorene Positionen prüfen/bearbeiten (MVP-487/488).
             Route::patch('{transfer}/positionen/{position}', [\App\Http\Controllers\Finance\TransferPositionController::class, 'update'])->name('positions.update');

@@ -10,6 +10,7 @@
 
 return [
     'title' => [
+        'texts' => 'Textes de facture',
         'module' => 'Interface financière',
         'transfers' => 'Justificatifs de transfert',
         'transfer' => 'Justificatif de transfert',
@@ -30,6 +31,11 @@ return [
         'billing_mode_hint' => 'Remplace le standard de l\'organisation pour ce client. Avec Lexoffice/DATEV, la facturation locale est verrouillée.',
         'billing_mode_org_hint' => 'Canal de facturation par défaut de l\'organisation. Les clients peuvent le remplacer individuellement.',
         'channel' => 'Canal de transfert',
+        'corrects' => 'correction du #:id',
+        'corrected_by' => 'corrigé par #:id',
+        'correction_reason' => 'Motif de la correction',
+        'intro_text' => 'Texte d’introduction',
+        'closing_text' => 'Remarque finale',
         'price_source' => 'Source du prix',
         'article' => 'Article',
         'target' => 'Cible de transfert',
@@ -58,10 +64,26 @@ return [
         'download' => 'Télécharger le paquet de remise',
         'open_external' => 'Ouvrir en externe',
         'edit_position' => 'Modifier la position',
+        'correct' => 'Créer une correction',
+        'merge_positions' => 'Fusionner la sélection',
+        'move_up' => 'Monter',
+        'move_down' => 'Descendre',
+        'remove_position' => 'Retirer la position',
     ],
 
     'filter' => [
         'all' => 'Tous',
+    ],
+
+    'event' => [
+        'created' => 'Créé',
+        'created_as_correction' => 'Créé comme correction',
+        'correction_created' => 'Correction créée',
+        'draft' => 'Remis au brouillon',
+        'confirmed' => 'Confirmé',
+        'transferred' => 'Transféré',
+        'failed' => 'Échoué',
+        'voided' => 'Annulé',
     ],
 
     'hint' => [
@@ -73,9 +95,13 @@ return [
         'sevdesk_draft_created' => 'Brouillon de facture créé dans sevDesk :',
         'easybill_draft_created' => 'Brouillon de facture créé dans easybill :',
         'positions_increment' => 'Les positions sont créées avec l’incrément de facturation et le regroupement du projet — elles peuvent donc différer du total brut des sources. Ce sont ces valeurs qui partent vers la cible ou dans le paquet de transfert.',
+        'intro_text' => 'Apparaît en haut du document. Vide = le texte par défaut de la cible.',
+        'closing_text' => 'Apparaît sous les positions (Lexoffice : remarque). Vide = aucune.',
     ],
 
     'confirm_execute' => 'Transférer maintenant vers la cible ? En cas de succès, les sources seront marquées comme remises.',
+    'confirm_correct' => 'Créer un transfert de correction avec les mêmes temps ? Le justificatif précédent reste inchangé et est marqué comme corrigé. Lexoffice ne peut ni modifier ni supprimer les documents — supprimez le brouillon créé là-bas à la main, sinon il existera en double.',
+    'confirm_remove_position' => 'Retirer cette position de la facture ? Le temps sous-jacent reste rattaché au justificatif et donc facturé — il n’apparaît simplement plus sur le document.',
     'confirm_void' => 'Annuler ce transfert ? Les sources seront de nouveau libérées.',
 
     'empty_title' => 'Aucun justificatif de transfert',
@@ -141,6 +167,10 @@ return [
         'created' => 'Brouillon du justificatif de transfert créé.',
         'confirmed' => 'Transfert confirmé.',
         'position_updated' => 'Position mise à jour.',
+        'correction_created' => 'Transfert de correction créé — vérifiez les positions, confirmez et transférez de nouveau.',
+        'texts_updated' => 'Textes de facture enregistrés.',
+        'position_removed' => 'Position retirée.',
+        'positions_merged' => 'Positions fusionnées.',
         'transferred' => 'Transfert terminé — les sources ont été marquées comme transférées.',
         'failed' => 'Transfert marqué comme échoué.',
         'voided' => 'Transfert annulé — les sources ont été libérées.',
@@ -153,6 +183,8 @@ return [
         'void_after_transfer' => 'Un transfert déjà livré ne peut pas être annulé — veuillez utiliser un transfert d\'annulation/de différence.',
         'entry_already_transferred' => 'L\'entrée de temps a déjà été remise à la facturation et ne peut plus être corrigée.',
         'target_not_allowed' => 'Cette cible n\'est pas autorisée pour le canal de facturation « :mode ».',
+        'correction_only_transferred' => 'Une correction n’est possible que pour un transfert déjà remis.',
+        'merge_needs_two' => 'Sélectionnez au moins deux positions à fusionner.',
         'lexoffice_not_configured' => 'Lexoffice n\'est pas configuré pour cette organisation (clé API manquante).',
         'sevdesk_not_configured' => 'sevDesk n\'est pas configuré pour cette organisation (jeton API manquant).',
         'sevdesk_outcome_unclear' => 'Résultat de la remise sevDesk incertain (délai dépassé après l\'envoi) — ne pas réessayer aveuglément ; le prochain passage rapproche via le marqueur source.',

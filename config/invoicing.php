@@ -37,4 +37,12 @@ return [
      */
     'default_service_article' => env('INVOICING_DEFAULT_SERVICE_ARTICLE'),
     'default_service_plugin' => env('INVOICING_DEFAULT_SERVICE_PLUGIN', 'lexoffice'),
+
+    /*
+     * Vorlagen für die Rechnungstexte einer Faktura-Übergabe (MVP-491).
+     * Platzhalter: :customer, :from, :to, :channel. Leer = der bisherige
+     * Standardtext je Ziel (finance.<ziel>.introduction).
+     */
+    'transfer_intro_text' => null,
+    'transfer_closing_text' => null,
 ];

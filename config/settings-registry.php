@@ -105,6 +105,10 @@ return [
     // kommen. Projekt-Abrechnungsregeln überschreiben sie.
     'invoicing.default_service_article' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|max:64'],
     'invoicing.default_service_plugin' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|max:32'],
+    // Rechnungstexte der Übergabe (MVP-491): Vorlage für Einleitung und
+    // Schlussbemerkung; Platzhalter :customer, :from, :to, :channel.
+    'invoicing.transfer_intro_text' => ['type' => 'text', 'scopes' => ['organization'], 'rules' => 'nullable|max:2000'],
+    'invoicing.transfer_closing_text' => ['type' => 'text', 'scopes' => ['organization'], 'rules' => 'nullable|max:2000'],
     'ui.dashboard.recent_limit' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'min:1|max:1000'],
     'ui.calendar.slot_minutes' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'options' => [10, 15, 20, 30, 60]],
     // Neuigkeiten-Rail: externe Kommunikation bleibt installationsweit Opt-in.

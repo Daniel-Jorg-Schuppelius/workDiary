@@ -39,6 +39,10 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $period_from
  * @property Carbon|null $period_to
  * @property int $position_count
+ * @property int|null $corrects_transfer_id
+ * @property string|null $correction_reason
+ * @property string|null $intro_text
+ * @property string|null $closing_text
  * @property string|null $total_amount
  * @property string|null $total_quantity
  * @property string $payload_hash
@@ -70,6 +74,10 @@ class BillingTransfer extends Model {
         'period_from',
         'period_to',
         'position_count',
+        'corrects_transfer_id',
+        'correction_reason',
+        'intro_text',
+        'closing_text',
         'total_amount',
         'total_quantity',
         'payload_hash',
@@ -111,6 +119,26 @@ class BillingTransfer extends Model {
                 throw new \RuntimeException('Ein übergebener BillingTransfer darf nicht gelöscht werden.');
             }
         });
+    }
+
+    /**
+     * Nachweis, den dieser hier korrigiert (MVP-490) — null bei einer
+     * Erstübergabe.
+     *
+     * @return BelongsTo<BillingTransfer, $this>
+     */
+    public function corrects(): BelongsTo {
+        return $this->belongsTo(self::class, 'corrects_transfer_id');
+    }
+
+    /**
+     * Korrekturen zu diesem Nachweis. Der ursprüngliche bleibt unverändert;
+     * die Kette macht sichtbar, was ihn abgelöst hat.
+     *
+     * @return HasMany<BillingTransfer, $this>
+     */
+    public function corrections(): HasMany {
+        return $this->hasMany(self::class, 'corrects_transfer_id');
     }
 
     /** @return BelongsTo<Customer, $this> */

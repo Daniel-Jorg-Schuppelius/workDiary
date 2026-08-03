@@ -161,7 +161,9 @@ class FinanceTransferController extends Controller {
     public function show(BillingTransfer $transfer): View {
         Gate::authorize('view', $transfer);
 
-        $transfer->load(['customer:id,name,currency,hourly_rate', 'creator:id,name', 'externalReference', 'events' => fn($q) => $q->orderBy('id')]);
+        $transfer->load(['customer:id,name,currency,hourly_rate', 'creator:id,name', 'externalReference',
+            'corrects:id,status,transferred_at', 'corrections:id,corrects_transfer_id,status,created_at',
+            'events' => fn($q) => $q->orderBy('id')]);
         $transfer->items->loadMorph('source', [
             TimeEntry::class => ['project:id,name', 'user:id,name'],
             MaterialUsage::class => ['timesheet:id,work_date,project_id', 'timesheet.project:id,name'],
@@ -181,10 +183,15 @@ class FinanceTransferController extends Controller {
             'unpricedPositions' => $positions->filter(fn($p): bool => $p->isUnpriced())->count(),
             // Bearbeiten nur zwischen Bestätigen und Übertragen; Menge/Preis
             // zusätzlich nur mit finance.config (sie bestimmen den Betrag).
-            'canEditPositions' => $transfer->status === TransferStatus::Confirmed
-                && Gate::allows('confirm', $transfer),
+            'canEditPositions' => Gate::allows('confirm', $transfer)
+                && TransferPositionController::isOpenForEditing($transfer),
+            // Korrektur-Übergabe zu einem übergebenen Nachweis (MVP-490).
+            'canEditTexts' => Gate::allows('confirm', $transfer) && self::textsEditable($transfer),
+            'canCorrect' => $transfer->wasTransferred()
+                && Gate::allows('markTransferred', $transfer)
+                && Gate::allows(\App\Enums\User\Permission::FinanceConfig->value),
             'canEditPositionPrices' => Gate::allows(\App\Enums\User\Permission::FinanceConfig->value),
-            'aiUsable' => $transfer->status === TransferStatus::Confirmed
+            'aiUsable' => TransferPositionController::isOpenForEditing($transfer)
                 && app(SuggestionViewData::class)->capabilityUsable(ItemTextSuggestionService::CAPABILITY_ITEM),
             'aiSuggestions' => app(SuggestionViewData::class)
                 ->openSuggestionsFor((new \App\Models\Finance\BillingTransferPosition)->getMorphClass(), $positions),
@@ -242,6 +249,64 @@ class FinanceTransferController extends Controller {
         $this->service->markTransferred($transfer, $result->externalReference, $result->filePath, $this->actor());
 
         return back()->with('success', __('finance.flash.transferred'));
+    }
+
+    /**
+     * Rechnungstexte des Nachweises (MVP-491): Einleitung und Schlussbemerkung
+     * des Belegs. Änderbar, solange nichts rausgegangen ist.
+     */
+    public function updateTexts(Request $request, BillingTransfer $transfer): RedirectResponse {
+        Gate::authorize('confirm', $transfer);
+        abort_unless(self::textsEditable($transfer), 403);
+
+        $data = $request->validate([
+            'intro_text' => ['nullable', 'string', 'max:2000'],
+            'closing_text' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $transfer->update([
+            'intro_text' => filled($data['intro_text'] ?? null) ? trim((string) $data['intro_text']) : null,
+            'closing_text' => filled($data['closing_text'] ?? null) ? trim((string) $data['closing_text']) : null,
+        ]);
+
+        $transfer->events()->create([
+            'organization_id' => $transfer->organization_id,
+            'event' => 'texts_edited',
+            'actor_user_id' => Auth::id(),
+            'payload' => ['intro' => filled($transfer->intro_text), 'closing' => filled($transfer->closing_text)],
+            'created_at' => now(),
+        ]);
+
+        return back()->with('success', __('finance.flash.texts_updated'));
+    }
+
+    /** Belegtexte sind bis zur Übergabe änderbar (Entwurf oder bestätigt). */
+    public static function textsEditable(BillingTransfer $transfer): bool {
+        return in_array($transfer->status, [TransferStatus::Draft, TransferStatus::Confirmed], true);
+    }
+
+    /**
+     * Korrektur-Übergabe zu einem übergebenen Nachweis (MVP-490): legt einen
+     * neuen Nachweis mit denselben Quellen an, der ausdrücklich auf den
+     * ursprünglichen verweist. Der alte bleibt unverändert stehen.
+     */
+    public function correct(Request $request, BillingTransfer $transfer): RedirectResponse {
+        Gate::authorize('markTransferred', $transfer);
+        abort_unless(Gate::allows(\App\Enums\User\Permission::FinanceConfig->value), 403);
+
+        $data = $request->validate([
+            'reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        try {
+            $correction = $this->service->createCorrection($transfer, $data['reason'] ?? null, $this->actor());
+        } catch (BillingTransferException $e) {
+            return back()->withErrors(['status' => $e->getMessage()]);
+        }
+
+        return redirect()
+            ->route('finance.transfers.show', $correction)
+            ->with('success', __('finance.flash.correction_created'));
     }
 
     /** draft|confirmed → voided (Quellen wieder frei). */

@@ -196,6 +196,151 @@ class TransferPositionReviewTest extends TestCase {
         $this->assertNotNull($position->ai_assisted_at);
     }
 
+    public function test_korrektur_erzeugt_eigenen_nachweis_mit_verweis(): void {
+        $this->actingAs($this->orgAdmin());
+        $transfer = $this->confirmedTransfer();
+        app(BillingTransferService::class)->markTransferred($transfer, null, 'exports/finance/test.csv', $this->accountant);
+        $transfer = $transfer->fresh();
+
+        $this->post(route('finance.transfers.correct', $transfer), ['reason' => 'Nullpositionen'])
+            ->assertSessionHasNoErrors();
+
+        $correction = BillingTransfer::query()->where('corrects_transfer_id', $transfer->id)->firstOrFail();
+        $this->assertSame(\App\Enums\Finance\TransferStatus::Draft, $correction->status);
+        $this->assertSame('Nullpositionen', $correction->correction_reason);
+        $this->assertSame($transfer->items->count(), $correction->items->count());
+
+        // Das Original bleibt unangetastet — nur ein Ereignis kommt hinzu.
+        $transfer->refresh();
+        $this->assertSame(\App\Enums\Finance\TransferStatus::Transferred, $transfer->status);
+        $this->assertNotNull($transfer->transferred_at);
+        $this->assertDatabaseHas('billing_transfer_events', [
+            'billing_transfer_id' => $transfer->id,
+            'event' => 'correction_created',
+        ]);
+        $this->assertDatabaseHas('billing_transfer_events', [
+            'billing_transfer_id' => $correction->id,
+            'event' => 'created_as_correction',
+        ]);
+    }
+
+    public function test_korrektur_ist_bestaetigbar_und_erneut_uebertragbar(): void {
+        $this->actingAs($this->orgAdmin());
+        $transfer = $this->confirmedTransfer();
+        app(BillingTransferService::class)->markTransferred($transfer, null, 'exports/finance/test.csv', $this->accountant);
+
+        $correction = app(BillingTransferService::class)->createCorrection($transfer->fresh(), 'Textkorrektur', $this->accountant);
+        app(BillingTransferService::class)->confirm($correction, $this->accountant);
+
+        // Positionen sind neu eingefroren und wieder bearbeitbar.
+        $position = $correction->fresh()->positions->first();
+        $this->assertNotNull($position);
+        $this->patch(route('finance.transfers.positions.update', [$correction, $position]), [
+            'name' => 'Korrigierte Bezeichnung',
+        ])->assertSessionHasNoErrors();
+        $this->assertSame('Korrigierte Bezeichnung', $position->fresh()->name);
+    }
+
+    public function test_korrektur_nur_nach_uebergabe(): void {
+        $this->actingAs($this->orgAdmin());
+        $transfer = $this->confirmedTransfer();
+
+        $this->post(route('finance.transfers.correct', $transfer))->assertSessionHasErrors('status');
+        $this->assertSame(0, BillingTransfer::query()->where('corrects_transfer_id', $transfer->id)->count());
+    }
+
+    public function test_ohne_finance_config_keine_korrektur(): void {
+        $transfer = $this->confirmedTransfer();
+        app(BillingTransferService::class)->markTransferred($transfer, null, 'exports/finance/test.csv', $this->accountant);
+
+        $this->post(route('finance.transfers.correct', $transfer->fresh()))->assertForbidden();
+    }
+
+    public function test_rechnungstexte_werden_vorbelegt_und_sind_aenderbar(): void {
+        $this->organization->update(['settings' => array_replace_recursive((array) $this->organization->settings, [
+            'invoicing' => [
+                'transfer_intro_text' => 'Leistungen für :customer (:from – :to)',
+                'transfer_closing_text' => 'Zahlbar ohne Abzug.',
+            ],
+        ])]);
+
+        $transfer = $this->confirmedTransfer();
+
+        $this->assertStringContainsString($this->customer->name, (string) $transfer->intro_text);
+        $this->assertStringContainsString('01.04.2030', (string) $transfer->intro_text);
+        $this->assertSame('Zahlbar ohne Abzug.', $transfer->closing_text);
+
+        $this->patch(route('finance.transfers.texts.update', $transfer), [
+            'intro_text' => 'Von Hand angepasst',
+            'closing_text' => '',
+        ])->assertSessionHasNoErrors();
+
+        $transfer->refresh();
+        $this->assertSame('Von Hand angepasst', $transfer->intro_text);
+        $this->assertNull($transfer->closing_text);
+        $this->assertDatabaseHas('billing_transfer_events', [
+            'billing_transfer_id' => $transfer->id,
+            'event' => 'texts_edited',
+        ]);
+    }
+
+    public function test_rechnungstexte_nach_uebergabe_gesperrt(): void {
+        $transfer = $this->confirmedTransfer();
+        app(BillingTransferService::class)->markTransferred($transfer, null, 'exports/finance/test.csv', $this->accountant);
+
+        $this->patch(route('finance.transfers.texts.update', $transfer->fresh()), ['intro_text' => 'Zu spät'])
+            ->assertForbidden();
+    }
+
+    public function test_positionen_verschieben_entfernen_zusammenfassen(): void {
+        $this->actingAs($this->orgAdmin());
+
+        // Zweiter Eintrag an einem anderen Tag ⇒ zwei Positionen.
+        TimeEntry::factory()->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->accountant->id,
+            'date' => '2030-04-02',
+            'started_at' => '2030-04-02 09:00:00',
+            'ended_at' => '2030-04-02 10:00:00',
+            'minutes' => 60,
+            'kind' => TimeEntryKind::Work->value,
+            'billable' => true,
+            'exported' => false,
+            'description' => 'Zweiter Tag',
+        ]);
+        $transfer = $this->confirmedTransfer();
+        $this->assertGreaterThanOrEqual(2, $transfer->positions->count());
+
+        $first = $transfer->positions->first();
+        $second = $transfer->positions->skip(1)->first();
+
+        // Verschieben tauscht die Reihenfolge.
+        $this->post(route('finance.transfers.positions.move', [$transfer, $first]), ['direction' => 'down'])
+            ->assertSessionHasNoErrors();
+        $this->assertSame(2, (int) $first->fresh()->position);
+        $this->assertSame(1, (int) $second->fresh()->position);
+
+        // Zusammenfassen addiert Menge und Betrag.
+        $expectedQuantity = round($first->quantityFloat() + $second->quantityFloat(), 3);
+        $this->post(route('finance.transfers.positions.merge', $transfer), [
+            'positions' => [$first->id, $second->id],
+        ])->assertSessionHasNoErrors();
+
+        $merged = $transfer->fresh()->positions;
+        $this->assertCount(1, $merged);
+        $this->assertSame($expectedQuantity, $merged->first()->quantityFloat());
+
+        // Entfernen löscht die letzte Position.
+        $this->delete(route('finance.transfers.positions.destroy', [$transfer, $merged->first()]))
+            ->assertSessionHasNoErrors();
+        $this->assertCount(0, $transfer->fresh()->positions);
+        $this->assertDatabaseHas('billing_transfer_events', [
+            'billing_transfer_id' => $transfer->id,
+            'event' => 'position_removed',
+        ]);
+    }
+
     public function test_ohne_ki_recht_kein_vorschlag(): void {
         $transfer = $this->confirmedTransfer();
         $position = $transfer->positions->first();

@@ -10,6 +10,7 @@
 
 return [
     'title' => [
+        'texts' => 'Invoice texts',
         'module' => 'Finance interface',
         'transfers' => 'Transfer receipts',
         'transfer' => 'Transfer receipt',
@@ -30,6 +31,11 @@ return [
         'billing_mode_hint' => 'Overrides the organisation default for this customer. With Lexoffice/DATEV, local invoicing is locked.',
         'billing_mode_org_hint' => 'Default billing channel of the organisation. Customers can override it individually.',
         'channel' => 'Transfer channel',
+        'corrects' => 'correction of #:id',
+        'corrected_by' => 'corrected by #:id',
+        'correction_reason' => 'Correction reason',
+        'intro_text' => 'Introduction',
+        'closing_text' => 'Closing remark',
         'price_source' => 'Price source',
         'article' => 'Article',
         'target' => 'Transfer target',
@@ -58,10 +64,26 @@ return [
         'download' => 'Download handover package',
         'open_external' => 'Open externally',
         'edit_position' => 'Edit position',
+        'correct' => 'Create correction',
+        'merge_positions' => 'Merge selected',
+        'move_up' => 'Move up',
+        'move_down' => 'Move down',
+        'remove_position' => 'Remove position',
     ],
 
     'filter' => [
         'all' => 'All',
+    ],
+
+    'event' => [
+        'created' => 'Created',
+        'created_as_correction' => 'Created as correction',
+        'correction_created' => 'Correction created',
+        'draft' => 'Reset to draft',
+        'confirmed' => 'Confirmed',
+        'transferred' => 'Transferred',
+        'failed' => 'Failed',
+        'voided' => 'Voided',
     ],
 
     'hint' => [
@@ -73,9 +95,13 @@ return [
         'sevdesk_draft_created' => 'Invoice draft created in sevDesk:',
         'easybill_draft_created' => 'Invoice draft created in easybill:',
         'positions_increment' => 'Positions are built with the project’s billing increment and grouping — they may therefore differ from the unrounded source total. These values are sent to the target or written to the handover package.',
+        'intro_text' => 'Shown at the top of the document. Empty = the target’s previous default text.',
+        'closing_text' => 'Shown below the positions (Lexoffice: remark). Empty = none.',
     ],
 
     'confirm_execute' => 'Transfer to the target now? On success the sources will be marked as handed over.',
+    'confirm_correct' => 'Create a correction transfer with the same time entries? The previous receipt stays unchanged and is marked as corrected. Lexoffice can neither change nor delete documents — please delete the draft created there by hand, otherwise it exists twice.',
+    'confirm_remove_position' => 'Remove this position from the invoice? The underlying time stays attached to the receipt and therefore billed — it just no longer appears on the document.',
     'confirm_void' => 'Void this transfer? The sources will be released again.',
 
     'empty_title' => 'No transfer receipts',
@@ -141,6 +167,10 @@ return [
         'created' => 'Transfer receipt draft created.',
         'confirmed' => 'Transfer confirmed.',
         'position_updated' => 'Position updated.',
+        'correction_created' => 'Correction transfer created — review the positions, confirm and hand over again.',
+        'texts_updated' => 'Invoice texts saved.',
+        'position_removed' => 'Position removed.',
+        'positions_merged' => 'Positions merged.',
         'transferred' => 'Transfer completed — sources have been marked as transferred.',
         'failed' => 'Transfer marked as failed.',
         'voided' => 'Transfer voided — sources have been released again.',
@@ -153,6 +183,8 @@ return [
         'void_after_transfer' => 'A transfer that has already been delivered cannot be voided — please use a cancellation/difference transfer.',
         'entry_already_transferred' => 'The time entry has already been handed over to invoicing and can no longer be corrected.',
         'target_not_allowed' => 'This target is not allowed for the billing channel ":mode".',
+        'correction_only_transferred' => 'A correction is only possible for a transfer that has already been handed over.',
+        'merge_needs_two' => 'Select at least two positions to merge.',
         'lexoffice_not_configured' => 'Lexoffice is not configured for this organisation (API key missing).',
         'sevdesk_not_configured' => 'sevDesk is not configured for this organisation (API token missing).',
         'sevdesk_outcome_unclear' => 'Outcome of the sevDesk handover unclear (timeout after sending) — do not retry blindly; the next run reconciles via the source marker.',

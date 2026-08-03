@@ -64,6 +64,10 @@ return [
         'default_service_none' => '— sin servicio estándar —',
         'default_service_hint' => 'Aporta denominación, unidad, texto estándar y —si no se encuentra ninguna tarifa— el precio de las posiciones del traspaso. Las reglas de facturación del proyecto lo sobrescriben.',
         'default_service_empty' => 'Aún no hay artículos sincronizados: configure el plugin de Lexoffice y descargue los artículos.',
+        'transfer_intro_text' => 'Plantilla: texto de introducción del traspaso',
+        'transfer_closing_text' => 'Plantilla: observación final del traspaso',
+        'transfer_text_hint' => 'Se copia en el justificante al crear el traspaso y allí es editable. Marcadores: :customer, :from, :to, :channel. Vacío = el texto estándar del destino.',
+        'transfer_closing_hint' => 'Como arriba; sin plantilla se aplica el texto de factura del cliente, si no la observación queda vacía.',
     ],
     'time_import' => [
         'heading' => 'Importación de tiempos',

@@ -30,6 +30,16 @@
                 </h2>
                 <div class="mt-2 flex flex-wrap items-center gap-2 text-sm">
                     <x-status-badge :tone="$transfer->status->tone()">{{ $transfer->status->label() }}</x-status-badge>
+                    @if ($transfer->corrects !== null)
+                        <a class="link" href="{{ route('finance.transfers.show', $transfer->corrects) }}">
+                            <x-status-badge tone="warning" outline>{{ __('finance.field.corrects', ['id' => $transfer->corrects->id]) }}</x-status-badge>
+                        </a>
+                    @endif
+                    @foreach ($transfer->corrections as $correction)
+                        <a class="link" href="{{ route('finance.transfers.show', $correction) }}">
+                            <x-status-badge tone="warning" outline>{{ __('finance.field.corrected_by', ['id' => $correction->id]) }}</x-status-badge>
+                        </a>
+                    @endforeach
                     <x-status-badge :tone="$transfer->channel->tone()" outline>{{ $transfer->channel->label() }}</x-status-badge>
                     <x-status-badge :tone="$transfer->target->tone()" outline>{{ $transfer->target->label() }}</x-status-badge>
                 </div>
@@ -50,6 +60,12 @@
                         <dt class="text-base-content/60">{{ __('finance.field.total_amount') }}:</dt>
                         <dd class="tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $transfer->total_amount, 2, withThousandsSeparator: true) }}</dd>
                     </div>
+                    @if (filled($transfer->correction_reason))
+                        <div class="flex gap-2 sm:col-span-2">
+                            <dt class="text-base-content/60">{{ __('finance.field.correction_reason') }}:</dt>
+                            <dd>{{ $transfer->correction_reason }}</dd>
+                        </div>
+                    @endif
                     <div class="flex gap-2 sm:col-span-2">
                         <dt class="text-base-content/60">{{ __('finance.field.payload_hash') }}:</dt>
                         <dd class="break-all font-mono text-xs">{{ $transfer->payload_hash }}</dd>
@@ -154,6 +170,18 @@
                         </x-action-form>
                     @endcan
                 @endif
+                @if ($canCorrect)
+                    {{-- Korrektur-Übergabe (MVP-490): neuer Nachweis mit denselben
+                         Quellen; der alte bleibt unverändert stehen. --}}
+                    <x-action-form :action="route('finance.transfers.correct', $transfer)"
+                          data-confirm-title="{{ __('finance.action.correct') }}"
+                          :confirm="__('finance.confirm_correct')"
+                          confirm-icon="difference"
+                          confirm-tone="warning"
+                          :confirm-label="__('finance.action.correct')">
+                        <x-icon-btn icon="difference" tone="warning" size="sm" type="submit" show-label>{{ __('finance.action.correct') }}</x-icon-btn>
+                    </x-action-form>
+                @endif
                 @if ($transfer->file_path !== null && $transfer->status === \App\Enums\Finance\TransferStatus::Transferred)
                     <x-icon-btn icon="download" tone="outline" size="sm"
                                 :href="route('finance.transfers.download', $transfer)"
@@ -165,21 +193,64 @@
         <x-validation-errors class="mt-3" />
     </x-card>
 
+    {{-- Rechnungstexte des Belegs (MVP-491): gehen als Einleitung und
+         Schlussbemerkung ans Ziel. --}}
+    <x-card>
+        <h3 class="mb-2 text-sm font-semibold">{{ __('finance.title.texts') }}</h3>
+        @if ($canEditTexts)
+            <form method="POST" action="{{ route('finance.transfers.texts.update', $transfer) }}" class="grid gap-3">
+                @csrf
+                @method('PATCH')
+                <x-textarea-field name="intro_text" :label="__('finance.field.intro_text')" rows="3" maxlength="2000"
+                                  :value="old('intro_text', $transfer->intro_text)"
+                                  :hint="__('finance.hint.intro_text')" />
+                <x-textarea-field name="closing_text" :label="__('finance.field.closing_text')" rows="3" maxlength="2000"
+                                  :value="old('closing_text', $transfer->closing_text)"
+                                  :hint="__('finance.hint.closing_text')" />
+                <div class="flex justify-end">
+                    <x-button type="submit" tone="primary" size="sm" icon="save">{{ __('Speichern') }}</x-button>
+                </div>
+            </form>
+        @else
+            <dl class="grid gap-2 text-sm">
+                <div>
+                    <dt class="text-base-content/60">{{ __('finance.field.intro_text') }}</dt>
+                    <dd class="whitespace-pre-line">{{ $transfer->intro_text ?: '—' }}</dd>
+                </div>
+                <div>
+                    <dt class="text-base-content/60">{{ __('finance.field.closing_text') }}</dt>
+                    <dd class="whitespace-pre-line">{{ $transfer->closing_text ?: '—' }}</dd>
+                </div>
+            </dl>
+        @endif
+    </x-card>
+
     {{-- Entstehende Positionen: im Entwurf berechnet, ab „Bestätigt" eingefroren
          und prüfbar (MVP-487/488). --}}
     <x-card>
         <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
             <h3 class="text-sm font-semibold">{{ __('finance.title.positions') }}</h3>
-            @if ($aiUsable && $positions->isNotEmpty())
-                <form method="POST" action="{{ route('finance.transfers.positions.suggest-all', $transfer) }}">
-                    @csrf
-                    <x-button type="submit" tone="ghost" size="xs" icon="auto_awesome">{{ __('ai.suggestion.suggest_all') }}</x-button>
-                </form>
-            @endif
+            <div class="flex flex-wrap items-center gap-2">
+                @if ($canEditPositions && $canEditPositionPrices && $positions->count() > 1)
+                    <x-button type="submit" form="merge-positions" tone="ghost" size="xs" icon="merge">{{ __('finance.action.merge_positions') }}</x-button>
+                @endif
+                @if ($aiUsable && $positions->isNotEmpty())
+                    <form method="POST" action="{{ route('finance.transfers.positions.suggest-all', $transfer) }}">
+                        @csrf
+                        <x-button type="submit" tone="ghost" size="xs" icon="auto_awesome">{{ __('ai.suggestion.suggest_all') }}</x-button>
+                    </form>
+                @endif
+            </div>
         </div>
+        @if ($canEditPositions && $canEditPositionPrices && $positions->count() > 1)
+            <form method="POST" action="{{ route('finance.transfers.positions.merge', $transfer) }}" id="merge-positions">@csrf</form>
+        @endif
         <x-table>
             <x-slot:head>
                 <tr>
+                    @if ($canEditPositions && $canEditPositionPrices && $positions->count() > 1)
+                        <th class="w-8"></th>
+                    @endif
                     <th>{{ __('finance.csv.position') }}</th>
                     <th class="text-right">{{ __('finance.csv.quantity') }}</th>
                     <th>{{ __('finance.csv.unit') }}</th>
@@ -189,6 +260,14 @@
             </x-slot:head>
             @forelse ($positions as $position)
                 <tr @class(['bg-warning/5' => $position->isUnpriced()])>
+                    @if ($canEditPositions && $canEditPositionPrices && $positions->count() > 1)
+                        <td class="align-top">
+                            @if ($position->exists)
+                                <input type="checkbox" form="merge-positions" name="positions[]" value="{{ $position->id }}"
+                                       class="checkbox checkbox-sm" aria-label="{{ __('finance.action.merge_positions') }}">
+                            @endif
+                        </td>
+                    @endif
                     <td>
                         <div class="flex items-start gap-2">
                             <div class="min-w-0">
@@ -214,7 +293,7 @@
                 @if ($canEditPositions && $position->exists)
                     {{-- Nachbessern vor dem Senden: Text immer, Menge/Preis nur mit finance.config. --}}
                     <tr>
-                        <td colspan="5" class="py-1">
+                        <td colspan="{{ $canEditPositionPrices && $positions->count() > 1 ? 6 : 5 }}" class="py-1">
                             <details class="text-xs">
                                 <summary class="cursor-pointer text-base-content/60">{{ __('finance.action.edit_position') }}</summary>
                                 <form method="POST" action="{{ route('finance.transfers.positions.update', [$transfer, $position]) }}"
@@ -235,7 +314,13 @@
                                         <input type="number" step="0.0001" min="0" name="unit_price" value="{{ $position->unitPriceFloat() }}"
                                                class="input input-bordered input-sm w-full" aria-label="{{ __('finance.csv.unit_price_net') }}">
                                     @endif
-                                    <div class="flex items-center gap-2 md:col-span-2 md:justify-end">
+                                    <div class="flex flex-wrap items-center gap-2 md:col-span-2 md:justify-end">
+                                        <x-button type="submit" tone="ghost" size="xs" icon="arrow_upward"
+                                                  formaction="{{ route('finance.transfers.positions.move', [$transfer, $position]) }}"
+                                                  formmethod="POST" name="direction" value="up">{{ __('finance.action.move_up') }}</x-button>
+                                        <x-button type="submit" tone="ghost" size="xs" icon="arrow_downward"
+                                                  formaction="{{ route('finance.transfers.positions.move', [$transfer, $position]) }}"
+                                                  formmethod="POST" name="direction" value="down">{{ __('finance.action.move_down') }}</x-button>
                                         @if ($aiUsable)
                                             <x-button type="submit" tone="ghost" size="xs" icon="auto_awesome"
                                                       formaction="{{ route('finance.transfers.positions.suggest', [$transfer, $position]) }}"
@@ -244,6 +329,18 @@
                                         <x-button type="submit" tone="primary" size="xs" icon="save">{{ __('Speichern') }}</x-button>
                                     </div>
                                 </form>
+                                @if ($canEditPositionPrices)
+                                    <x-action-form :action="route('finance.transfers.positions.destroy', [$transfer, $position])"
+                                          method="DELETE"
+                                          class="mt-2"
+                                          data-confirm-title="{{ __('finance.action.remove_position') }}"
+                                          :confirm="__('finance.confirm_remove_position')"
+                                          confirm-icon="delete"
+                                          confirm-tone="error"
+                                          :confirm-label="__('finance.action.remove_position')">
+                                        <x-button type="submit" tone="ghost" size="xs" icon="delete">{{ __('finance.action.remove_position') }}</x-button>
+                                    </x-action-form>
+                                @endif
                             </details>
                         </td>
                     </tr>
@@ -251,7 +348,7 @@
 
                 @if ($position->exists && ($aiSuggestions[$position->id] ?? null) !== null)
                     <tr data-ai-suggestion-row>
-                        <td colspan="5">
+                        <td colspan="{{ $canEditPositions && $canEditPositionPrices && $positions->count() > 1 ? 6 : 5 }}">
                             <x-ai-suggestion
                                 :original="$aiSuggestions[$position->id]->original"
                                 :suggestion="$aiSuggestions[$position->id]->suggestion"
@@ -266,13 +363,13 @@
                     </tr>
                 @endif
             @empty
-                <x-table.empty :colspan="5"
+                <x-table.empty :colspan="$canEditPositions && $canEditPositionPrices && $positions->count() > 1 ? 6 : 5"
                                :title="__('finance.empty_positions_title')"
                                :message="__('finance.empty_positions')" />
             @endforelse
             @if ($positions->isNotEmpty())
                 <tr class="font-semibold">
-                    <td>{{ __('finance.csv.total') }}</td>
+                    <td @if ($canEditPositions && $canEditPositionPrices && $positions->count() > 1) colspan="2" @endif>{{ __('finance.csv.total') }}</td>
                     <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $positionTotals['quantity'], 2, withThousandsSeparator: true) }}</td>
                     <td colspan="2"></td>
                     <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $positionTotals['amount'], 2, withThousandsSeparator: true) }}</td>
@@ -362,7 +459,7 @@
             @foreach ($transfer->events as $event)
                 <li class="flex flex-wrap items-center gap-2">
                     <span class="font-mono text-xs text-base-content/50">{{ $event->created_at?->format('d.m.Y H:i:s') }}</span>
-                    <x-status-badge tone="ghost" outline>{{ $event->event }}</x-status-badge>
+                    <x-status-badge tone="ghost" outline>{{ \App\Support\Trans::or('finance.event.' . $event->event, $event->event) }}</x-status-badge>
                     @if (data_get($event->payload, 'failure_reason'))
                         <span class="text-error">{{ data_get($event->payload, 'failure_reason') }}</span>
                     @endif

@@ -75,6 +75,10 @@ return [
         'default_service_none' => '— keine Standardleistung —',
         'default_service_hint' => 'Liefert Bezeichnung, Einheit, Standardtext und — falls kein Satz auffindbar ist — den Preis der Übergabe-Positionen. Abrechnungs-Regeln am Projekt überschreiben sie.',
         'default_service_empty' => 'Noch keine Artikel synchronisiert — Lexoffice-Plugin einrichten und Artikel abrufen.',
+        'transfer_intro_text' => 'Vorlage: Einleitungstext der Übergabe',
+        'transfer_closing_text' => 'Vorlage: Schlussbemerkung der Übergabe',
+        'transfer_text_hint' => 'Wird beim Anlegen einer Übergabe in den Nachweis kopiert und ist dort bearbeitbar. Platzhalter: :customer, :from, :to, :channel. Leer = der bisherige Standardtext des Ziels.',
+        'transfer_closing_hint' => 'Wie oben; ohne Vorlage greift der Rechnungstext des Kunden, sonst bleibt die Schlussbemerkung leer.',
     ],
     'time_import' => [
         'heading' => 'Zeit-Import',

@@ -73,6 +73,117 @@ class TransferPositionController extends Controller {
         return back()->with('success', __('finance.flash.position_updated'));
     }
 
+    /**
+     * Position aus der Übergabe nehmen (MVP-492). Die zugrunde liegende Zeit
+     * bleibt dem Nachweis zugeordnet und damit verbraucht — sie verschwindet
+     * nur von der Rechnung. Für ein echtes Freigeben ist der Nachweis zu
+     * verwerfen und neu anzulegen.
+     */
+    public function destroy(BillingTransfer $transfer, BillingTransferPosition $position): RedirectResponse {
+        $this->authorizePosition($transfer, $position);
+        abort_unless(Gate::allows(Permission::FinanceConfig->value), 403);
+
+        $number = (int) $position->position;
+        $position->delete();
+        $this->renumber($transfer);
+
+        $transfer->events()->create([
+            'organization_id' => $transfer->organization_id,
+            'event' => 'position_removed',
+            'actor_user_id' => Auth::id(),
+            'payload' => ['position' => $number],
+            'created_at' => now(),
+        ]);
+
+        return back()->with('success', __('finance.flash.position_removed'));
+    }
+
+    /** Position eine Stelle nach oben oder unten (MVP-492). */
+    public function move(Request $request, BillingTransfer $transfer, BillingTransferPosition $position): RedirectResponse {
+        $this->authorizePosition($transfer, $position);
+
+        $direction = (string) $request->input('direction');
+        abort_unless(in_array($direction, ['up', 'down'], true), 422);
+
+        $neighbour = $transfer->positions()
+            ->where('position', $direction === 'up' ? '<' : '>', $position->position)
+            ->orderBy('position', $direction === 'up' ? 'desc' : 'asc')
+            ->first();
+
+        if ($neighbour !== null) {
+            $own = (int) $position->position;
+            $position->update(['position' => (int) $neighbour->position]);
+            $neighbour->update(['position' => $own]);
+        }
+
+        return back();
+    }
+
+    /**
+     * Mehrere Positionen zu einer zusammenfassen (MVP-492): Mengen und Beträge
+     * addieren, Texte verketten, Quellen vereinigen. Der Einzelpreis ergibt
+     * sich aus Betrag / Menge — sonst liefe die Summe am Betrag vorbei.
+     */
+    public function merge(Request $request, BillingTransfer $transfer): RedirectResponse {
+        Gate::authorize('confirm', $transfer);
+        abort_unless(self::isOpenForEditing($transfer), 403);
+        abort_unless(Gate::allows(Permission::FinanceConfig->value), 403);
+
+        $data = $request->validate([
+            'positions' => ['required', 'array', 'min:2'],
+            'positions.*' => ['integer'],
+        ]);
+
+        $positions = $transfer->positions()->whereIn('id', $data['positions'])->orderBy('position')->get();
+        if ($positions->count() < 2) {
+            return back()->withErrors(['positions' => __('finance.error.merge_needs_two')]);
+        }
+
+        /** @var BillingTransferPosition $target */
+        $target = $positions->first();
+        $quantity = round((float) $positions->sum(fn(BillingTransferPosition $p): float => $p->quantityFloat()), 3);
+        $amount = round((float) $positions->sum(fn(BillingTransferPosition $p): float => $p->amountFloat()), 2);
+
+        $sourceIds = $positions->flatMap(fn(BillingTransferPosition $p): array => is_array($p->source_ids) ? $p->source_ids : [])
+            ->unique()->values()->all();
+        $descriptions = $positions
+            ->map(fn(BillingTransferPosition $p): string => trim((string) $p->description))
+            ->filter()->unique()->implode("\n");
+        $from = $positions->min('service_from');
+        $to = $positions->max('service_to');
+
+        $target->update([
+            'quantity' => $quantity,
+            'amount' => $amount,
+            'unit_price' => $quantity > 0 ? round($amount / $quantity, 4) : $target->unitPriceFloat(),
+            'description' => $descriptions !== '' ? $descriptions : null,
+            'source_ids' => $sourceIds,
+            'service_from' => $from,
+            'service_to' => $to,
+        ]);
+
+        $transfer->positions()->whereIn('id', $positions->skip(1)->pluck('id'))->delete();
+        $this->renumber($transfer);
+
+        $transfer->events()->create([
+            'organization_id' => $transfer->organization_id,
+            'event' => 'positions_merged',
+            'actor_user_id' => Auth::id(),
+            'payload' => ['count' => $positions->count(), 'into' => (int) $target->id],
+            'created_at' => now(),
+        ]);
+
+        return back()->with('success', __('finance.flash.positions_merged'));
+    }
+
+    /** Lückenlose Nummerierung nach Entfernen/Zusammenfassen. */
+    private function renumber(BillingTransfer $transfer): void {
+        $index = 0;
+        foreach ($transfer->positions()->orderBy('position')->get() as $position) {
+            $position->update(['position' => ++$index]);
+        }
+    }
+
     /** KI-Textvorschlag für eine Position (Feature 084 / MVP-488). */
     public function suggest(BillingTransfer $transfer, BillingTransferPosition $position): RedirectResponse {
         $this->authorizePosition($transfer, $position);
@@ -90,7 +201,7 @@ class TransferPositionController extends Controller {
     /** Sammelaktion: je Position ein Vorschlag (synchron, Fehler je Position stoppen nicht). */
     public function suggestAll(BillingTransfer $transfer): RedirectResponse {
         Gate::authorize('confirm', $transfer);
-        abort_unless($transfer->status === TransferStatus::Confirmed, 403);
+        abort_unless(self::isOpenForEditing($transfer), 403);
         abort_unless(Gate::allows(Permission::AiUse->value), 403);
 
         $count = 0;
@@ -115,8 +226,15 @@ class TransferPositionController extends Controller {
     private function authorizePosition(BillingTransfer $transfer, BillingTransferPosition $position): void {
         Gate::authorize('confirm', $transfer);
         abort_unless((int) $position->billing_transfer_id === (int) $transfer->id, 404);
-        // Nur zwischen Bestätigen und Übertragen: davor gibt es keine
-        // eingefrorenen Positionen, danach hängt der Beleg beim Zielsystem.
-        abort_unless($transfer->status === TransferStatus::Confirmed, 403);
+        abort_unless(self::isOpenForEditing($transfer), 403);
+    }
+
+    /**
+     * Bearbeitbar ist eine Position zwischen Bestätigen und Übertragen. Für
+     * einen bereits übergebenen Nachweis führt der Weg über „Korrektur
+     * vorbereiten" (MVP-489) — der setzt ihn zurück auf bestätigt.
+     */
+    public static function isOpenForEditing(BillingTransfer $transfer): bool {
+        return $transfer->status === TransferStatus::Confirmed;
     }
 }

@@ -51,42 +51,8 @@ class LexofficeTarget implements FacturationTarget {
     }
 
     public function transfer(BillingTransfer $transfer): TargetResult {
-        $config = LexofficeConfig::resolve($transfer->organization_id);
-        if (empty($config['api_key'])) {
-            throw new RuntimeException((string) __('finance.error.lexoffice_not_configured'));
-        }
-
-        $transfer->loadMissing(['items', 'customer']);
-        $customer = $transfer->customer;
-        $defaults = (array) $config['defaults'];
-        $currency = $customer->currency->value;
-
-        $lineItems = $this->lineItems($transfer, $currency, $defaults);
-
-        if ($lineItems === []) {
-            throw new RuntimeException((string) __('finance.error.no_sources'));
-        }
-
-        $contactId = $this->resolveContactId($customer, $config);
-
-        $from = $transfer->period_from?->toDateString();
-        $to = $transfer->period_to?->toDateString();
-
-        $payload = [
-            'voucherDate' => now()->format('Y-m-d\TH:i:s.vP'),
-            'address' => ['contactId' => $contactId],
-            'lineItems' => $lineItems,
-            'totalPrice' => ['currency' => $currency],
-            'taxConditions' => ['taxType' => (string) ($defaults['default_tax_type'] ?? 'net')],
-            'shippingConditions' => $from !== null && $to !== null
-                ? ['shippingType' => 'serviceperiod', 'shippingDate' => $from . 'T00:00:00.000+01:00', 'shippingEndDate' => $to . 'T00:00:00.000+01:00']
-                : ['shippingType' => 'none'],
-            'introduction' => (string) __('finance.lexoffice.introduction', [
-                'channel' => $transfer->channel->label(),
-                'from' => $from ?? '—',
-                'to' => $to ?? '—',
-            ]),
-        ];
+        $config = $this->config($transfer);
+        $payload = $this->invoicePayload($transfer, $config);
 
         // Rechnungsentwurf — bewusst KEIN ?finalize=true (Hoheit bei Lexoffice).
         $response = $this->api($config)->postJson($config['base_url'] . '/invoices', $payload);
@@ -118,6 +84,71 @@ class LexofficeTarget implements FacturationTarget {
 
         // Keine App-URL aus SDK/Config ableitbar → externalUrl bewusst weglassen.
         return new TargetResult(externalReference: $reference);
+    }
+
+    /**
+     * Rechnungs-Payload: Positionen, Kontakt, Steuer- und
+     * Leistungszeitraum-Konditionen.
+     *
+     * Bewusst nur für die Anlage — die Lexoffice-API kennt für Belege weder
+     * Update noch Delete (im SDK haben nur Vouchers/Articles/Contacts ein
+     * update()/delete()). Korrekturen laufen deshalb über „Korrektur
+     * vorbereiten" am Nachweis: Entwurf drüben löschen, hier neu übertragen.
+     *
+     * @param  array{api_key: ?string, base_url: string, defaults: array<string, mixed>}  $config
+     * @return array<string, mixed>
+     */
+    private function invoicePayload(BillingTransfer $transfer, array $config): array {
+        $transfer->loadMissing(['items', 'customer']);
+        $customer = $transfer->customer;
+        $defaults = (array) $config['defaults'];
+        $currency = $customer->currency->value;
+
+        $lineItems = $this->lineItems($transfer, $currency, $defaults);
+        if ($lineItems === []) {
+            throw new RuntimeException((string) __('finance.error.no_sources'));
+        }
+
+        $from = $transfer->period_from?->toDateString();
+        $to = $transfer->period_to?->toDateString();
+
+        $payload = [
+            'voucherDate' => now()->format('Y-m-d\TH:i:s.vP'),
+            'address' => ['contactId' => $this->resolveContactId($customer, $config)],
+            'lineItems' => $lineItems,
+            'totalPrice' => ['currency' => $currency],
+            'taxConditions' => ['taxType' => (string) ($defaults['default_tax_type'] ?? 'net')],
+            'shippingConditions' => $from !== null && $to !== null
+                ? ['shippingType' => 'serviceperiod', 'shippingDate' => $from . 'T00:00:00.000+01:00', 'shippingEndDate' => $to . 'T00:00:00.000+01:00']
+                : ['shippingType' => 'none'],
+            // Rechnungstexte des Nachweises (MVP-491); ohne sie der bisherige
+            // Standardtext, damit nie ein leerer Beleg rausgeht.
+            'introduction' => filled($transfer->intro_text)
+                ? (string) $transfer->intro_text
+                : (string) __('finance.lexoffice.introduction', [
+                    'channel' => $transfer->channel->label(),
+                    'from' => $from ?? '—',
+                    'to' => $to ?? '—',
+                ]),
+        ];
+
+        if (filled($transfer->closing_text)) {
+            $payload['remark'] = (string) $transfer->closing_text;
+        }
+
+        return $payload;
+    }
+
+    /**
+     * @return array{api_key: ?string, base_url: string, defaults: array<string, mixed>}
+     */
+    private function config(BillingTransfer $transfer): array {
+        $config = LexofficeConfig::resolve($transfer->organization_id);
+        if (empty($config['api_key'])) {
+            throw new RuntimeException((string) __('finance.error.lexoffice_not_configured'));
+        }
+
+        return $config;
     }
 
     // ── Positionen ──────────────────────────────────────────────────────

@@ -87,11 +87,14 @@ class EasybillTarget implements FacturationTarget {
             throw new RuntimeException((string) __('finance.error.no_sources'));
         }
 
-        $intro = (string) __('finance.easybill.introduction', [
-            'channel' => $transfer->channel->label(),
-            'from' => $transfer->period_from?->format('d.m.Y') ?? '—',
-            'to' => $transfer->period_to?->format('d.m.Y') ?? '—',
-        ]);
+        // Rechnungstexte des Nachweises (MVP-491), sonst der Standardtext.
+        $intro = filled($transfer->intro_text)
+            ? (string) $transfer->intro_text
+            : (string) __('finance.easybill.introduction', [
+                'channel' => $transfer->channel->label(),
+                'from' => $transfer->period_from?->format('d.m.Y') ?? '—',
+                'to' => $transfer->period_to?->format('d.m.Y') ?? '—',
+            ]);
 
         $document = [
             'type' => 'INVOICE',
@@ -99,6 +102,7 @@ class EasybillTarget implements FacturationTarget {
             'currency' => $transfer->customer->currency->value,
             'document_date' => now()->format('Y-m-d'),
             'text_prefix' => $intro,
+            'text' => filled($transfer->closing_text) ? (string) $transfer->closing_text : '',
             // Quellmarker: easybill-Feld external_id trägt die Idempotenz-
             // Kennung — Grundlage der Reconciliation (erscheint nicht auf dem Beleg).
             'external_id' => $marker,

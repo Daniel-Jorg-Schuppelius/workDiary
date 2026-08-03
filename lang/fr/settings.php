@@ -64,6 +64,10 @@ return [
         'default_service_none' => '— aucune prestation par défaut —',
         'default_service_hint' => 'Fournit le libellé, l’unité, le texte standard et — si aucun taux n’est trouvé — le prix des positions de transfert. Les règles de facturation du projet la remplacent.',
         'default_service_empty' => 'Aucun article synchronisé — configurez le plugin Lexoffice et récupérez les articles.',
+        'transfer_intro_text' => 'Modèle : texte d’introduction du transfert',
+        'transfer_closing_text' => 'Modèle : remarque finale du transfert',
+        'transfer_text_hint' => 'Copié dans le justificatif à la création du transfert et modifiable sur place. Variables : :customer, :from, :to, :channel. Vide = le texte par défaut de la cible.',
+        'transfer_closing_hint' => 'Comme ci-dessus ; sans modèle, le texte de facture du client s’applique, sinon la remarque reste vide.',
     ],
     'time_import' => [
         'heading' => 'Import des temps',
