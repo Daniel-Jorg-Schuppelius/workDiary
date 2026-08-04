@@ -635,6 +635,8 @@ class InvoiceController extends Controller {
         abort_unless($item->invoice_id === $invoice->id, 404);
         $data = $request->validated();
 
+        $oldDescription = (string) $item->description;
+
         $item->update([
             'service_date' => $data['service_date'] ?? null,
             'description' => $data['description'],
@@ -647,6 +649,13 @@ class InvoiceController extends Controller {
             'tax_category' => array_key_exists('tax_category', $data) ? $data['tax_category'] : $item->tax_category,
             'position' => $data['position'] ?? $item->position,
         ]);
+
+        // Wörterbuch-Kandidaten aus der manuellen Korrektur — Aufnahme NUR
+        // über den bestätigten „Merken?"-Dialog, nie still.
+        $pairs = \App\Services\Invoicing\TextCorrectionDiff::candidates($oldDescription, (string) $data['description']);
+        if ($pairs !== []) {
+            session()->flash('text_correction_learn', ['pairs' => $pairs]);
+        }
 
         $this->refreshTotals($invoice);
 

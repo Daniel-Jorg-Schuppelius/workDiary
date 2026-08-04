@@ -1586,6 +1586,18 @@ Route::middleware('auth')->group(function () {
             Route::delete('{connection}', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'destroy'])->name('destroy');
         });
 
+        // ── Schreibfehler-Wörterbuch (Pflege, finance.config) ──
+        Route::prefix('admin/woerterbuch')->name('admin.text-corrections.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Admin\Invoicing\TextCorrectionController::class, 'index'])->name('index');
+            // Statische Segmente VOR dem {correction}-Wildcard.
+            Route::get('neu', [\App\Http\Controllers\Admin\Invoicing\TextCorrectionController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\Invoicing\TextCorrectionController::class, 'store'])->name('store');
+            Route::get('{correction}/bearbeiten', [\App\Http\Controllers\Admin\Invoicing\TextCorrectionController::class, 'edit'])->name('edit');
+            Route::patch('{correction}', [\App\Http\Controllers\Admin\Invoicing\TextCorrectionController::class, 'update'])->name('update');
+            Route::post('{correction}/umschalten', [\App\Http\Controllers\Admin\Invoicing\TextCorrectionController::class, 'toggle'])->name('toggle');
+            Route::delete('{correction}', [\App\Http\Controllers\Admin\Invoicing\TextCorrectionController::class, 'destroy'])->name('destroy');
+        });
+
         // ── KI-Leistungstexte an Belegen (Feature 084, module.ai) ──
         // Gating via config/plans.routes: ai.suggestions.* → module.ai.
         Route::prefix('ki/vorschlaege')->name('ai.suggestions.')->group(function (): void {
@@ -1599,6 +1611,9 @@ Route::middleware('auth')->group(function () {
             Route::post('{suggestion}/uebernehmen', [\App\Http\Controllers\Ai\AiSuggestionController::class, 'accept'])->name('accept');
             Route::post('{suggestion}/verwerfen', [\App\Http\Controllers\Ai\AiSuggestionController::class, 'reject'])->name('reject');
         });
+
+        // Wörterbuch-Lernen aus manuellen Belegtext-Korrekturen (bestätigter Dialog).
+        Route::post('woerterbuch/merken', \App\Http\Controllers\Invoicing\TextCorrectionLearnController::class)->name('text-corrections.learn');
 
         Route::prefix('domains')->name('domains.')->group(function (): void {
             Route::get('/', [\App\Http\Controllers\Domain\DomainController::class, 'index'])->name('index');

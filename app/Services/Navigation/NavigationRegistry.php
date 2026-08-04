@@ -1217,6 +1217,7 @@ class NavigationRegistry {
                 }
                 if (Gate::allows(Permission::FinanceConfig->value)) {
                     $adminNavItems[] = ['route' => 'finance.bank-accounts.index', 'label' => __('bank.title.accounts'), 'icon' => 'account_balance', 'modal' => false];
+                    $adminNavItems[] = ['route' => 'admin.text-corrections.index', 'label' => __('textcorrections.title.index'), 'icon' => 'spellcheck', 'modal' => false, 'matches' => ['admin.text-corrections.*']];
                 }
                 if (Gate::allows(Permission::FormTemplateViewAny->value)) {
                     $adminNavItems[] = ['route' => 'form-templates.index', 'label' => __('form.title.templates'), 'icon' => 'assignment', 'modal' => false];

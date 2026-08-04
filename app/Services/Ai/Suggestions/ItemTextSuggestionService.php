@@ -19,6 +19,7 @@ use App\Services\Ai\{AiInvocationService, AiMemoryService};
 use App\Services\Ai\Contracts\AiRequestInterface;
 use App\Services\Ai\Dto\{AiInvocationResult, AiTextResult, AiTranslationResult, FormulateRequest, SummarizeRequest, TranslateRequest};
 use App\Services\Ai\Exceptions\AiException;
+use App\Services\Invoicing\TextCorrectionService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -42,6 +43,7 @@ class ItemTextSuggestionService {
     public function __construct(
         private readonly AiInvocationService $invocation,
         private readonly AiMemoryService $memory,
+        private readonly TextCorrectionService $corrections,
     ) {}
 
     /** Einzel- oder Blocktext für eine Rechnungsposition im Entwurf. */
@@ -95,7 +97,9 @@ class ItemTextSuggestionService {
         $entryTexts = $item->timeEntries()
             ->pluck('description')
             ->filter(static fn (?string $d): bool => filled($d))
-            ->map(static fn (?string $d): string => (string) $d)
+            // Wörterbuch-Vorreinigung: bekannte Schreibfehler deterministisch
+            // beheben, bevor die KI formuliert (stabilere Cache-Keys).
+            ->map(fn (?string $d): string => (string) $this->corrections->apply((string) $d, (int) $organization->id))
             ->values();
 
         if ($entryTexts->count() > 1) {
@@ -156,7 +160,8 @@ class ItemTextSuggestionService {
             ->whereIn('id', is_array($position->source_ids) ? $position->source_ids : [])
             ->pluck('description')
             ->filter(static fn (?string $d): bool => filled($d))
-            ->map(static fn (?string $d): string => (string) $d)
+            // Wörterbuch-Vorreinigung wie in buildForInvoiceItem().
+            ->map(fn (?string $d): string => (string) $this->corrections->apply((string) $d, (int) $organization->id))
             ->values();
 
         $period = $position->service_from?->format('d.m.Y');

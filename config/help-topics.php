@@ -45,6 +45,8 @@ return [
         'me.functions' => 'navigation.customize',
         // PDF-Dokumentdesign / Firmenbogen (Feature 076, Phase 28)
         'admin.document-design.*' => 'admin.document-design',
+        // Schreibfehler-Wörterbuch für Positionstexte
+        'admin.text-corrections.*' => 'admin.text-corrections',
         // orgaMAX-Buchhaltung-Plugin (Feature 077, Phase 29)
         'admin.orgamax.*' => 'admin.orgamax',
         // ── Nachträge 2026-07-10: Phasen 19–24 + Lücken-Sweep ──────────

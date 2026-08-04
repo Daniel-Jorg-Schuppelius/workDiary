@@ -15,7 +15,7 @@ namespace App\Services\Finance;
 use App\Enums\Finance\TransferChannel;
 use App\Models\Finance\{BillingTransfer, BillingTransferPosition};
 use App\Models\{MaterialUsage, TimeEntry};
-use App\Services\Invoicing\{BillableTimeAggregator, BlockPrice, BlockPriceResolver, ServiceDefaultResolver};
+use App\Services\Invoicing\{BillableTimeAggregator, BlockPrice, BlockPriceResolver, ServiceDefaultResolver, TextCorrectionService};
 use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -36,6 +36,7 @@ class BillingPositionBuilder {
         private readonly BillableTimeAggregator $aggregator,
         private readonly BlockPriceResolver $prices,
         private readonly ServiceDefaultResolver $services,
+        private readonly TextCorrectionService $corrections,
     ) {}
 
     /**
@@ -133,7 +134,7 @@ class BillingPositionBuilder {
                 'source_ids' => $block->entryIds,
                 'primary_source_id' => $block->primaryEntryId,
                 'name' => $this->positionName($block, $transfer, $service?->name),
-                'description' => $this->positionText($service?->standardText, $blockEntries, $from, $to),
+                'description' => $this->positionText($service?->standardText, $blockEntries, $from, $to, (int) $transfer->organization_id),
                 'quantity' => round($hours, 3),
                 'unit_name' => $service?->unitName ?: $this->timeUnit($transfer),
                 'unit_price' => round($price->rate, 4),
@@ -180,7 +181,7 @@ class BillingPositionBuilder {
                 'kind' => null,
                 'source_ids' => [(int) $usage->id],
                 'primary_source_id' => (int) $usage->id,
-                'name' => trim((string) $usage->description) ?: (string) __('Material'),
+                'name' => (string) $this->corrections->apply(trim((string) $usage->description), (int) $transfer->organization_id) ?: (string) __('Material'),
                 'description' => $date !== null
                     ? (string) __('finance.position.service_date', ['date' => \Illuminate\Support\Carbon::parse($date)->format('d.m.Y')])
                     : null,
@@ -224,7 +225,7 @@ class BillingPositionBuilder {
      *
      * @param  Collection<int, TimeEntry>  $entries
      */
-    private function positionText(?string $standardText, Collection $entries, ?string $from, ?string $to): ?string {
+    private function positionText(?string $standardText, Collection $entries, ?string $from, ?string $to, int $organizationId): ?string {
         $parts = [];
 
         $standardText = trim((string) $standardText);
@@ -232,8 +233,10 @@ class BillingPositionBuilder {
             $parts[] = $standardText;
         }
 
+        // Wörterbuch vor unique(): korrigierte Duplikate fallen zusammen.
+        // Standardtext (kuratierte Stammdaten) und Datums-Label bleiben unkorrigiert.
         $work = $entries
-            ->map(fn(TimeEntry $e): string => StringHelper::normalizeWhitespace((string) $e->description))
+            ->map(fn(TimeEntry $e): string => (string) $this->corrections->apply(StringHelper::normalizeWhitespace((string) $e->description), $organizationId))
             ->filter(fn(string $text): bool => $text !== '')
             ->unique()
             ->implode('; ');

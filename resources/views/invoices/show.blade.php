@@ -247,6 +247,7 @@
             : collect();
     @endphp
     @include('ai._learn_prompt')
+    @include('invoicing._text_correction_learn')
     @if ($aiSuggestEnabled && $invoice->items->isNotEmpty())
         <div class="flex justify-end">
             <x-action-form :action="route('ai.suggestions.invoice-all', $invoice)">

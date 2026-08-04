@@ -227,6 +227,8 @@
         @endif
     </x-card>
 
+    @include('invoicing._text_correction_learn')
+
     {{-- Entstehende Positionen: im Entwurf berechnet, ab „Bestätigt" eingefroren
          und prüfbar (MVP-487/488). --}}
     <x-card>

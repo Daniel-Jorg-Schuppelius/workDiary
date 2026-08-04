@@ -347,4 +347,68 @@ class TransferPositionReviewTest extends TestCase {
 
         $this->post(route('finance.transfers.positions.suggest', [$transfer, $position]))->assertForbidden();
     }
+
+    public function test_manuelle_wortkorrektur_bietet_merken_dialog_an(): void {
+        $transfer = $this->confirmedTransfer();
+        $position = $transfer->positions->first();
+        $position->update(['description' => 'Server geprüfft']);
+
+        $this->patch(route('finance.transfers.positions.update', [$transfer, $position]), [
+            'name' => (string) $position->name,
+            'description' => 'Server geprüft',
+        ])->assertSessionHas('text_correction_learn', [
+            'pairs' => [['wrong' => 'geprüfft', 'correct' => 'geprüft']],
+        ]);
+    }
+
+    public function test_umbau_ohne_wortersetzung_bietet_kein_merken_an(): void {
+        $transfer = $this->confirmedTransfer();
+        $position = $transfer->positions->first();
+        $position->update(['description' => 'Server geprüft']);
+
+        $this->patch(route('finance.transfers.positions.update', [$transfer, $position]), [
+            'name' => (string) $position->name,
+            'description' => 'Server geprüft und Update eingespielt',
+        ])->assertSessionMissing('text_correction_learn');
+    }
+
+    public function test_merken_endpoint_legt_gelernten_eintrag_an(): void {
+        $this->post(route('text-corrections.learn'), [
+            'wrong' => 'geprüfft',
+            'correct' => 'geprüft',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('text_corrections', [
+            'organization_id' => $this->organization->id,
+            'wrong_normalized' => 'geprüfft',
+            'correct' => 'geprüft',
+            'origin' => \App\Models\TextCorrection::ORIGIN_LEARNED,
+            'active' => true,
+        ]);
+    }
+
+    public function test_merken_duplikat_erhoeht_verwendung_statt_doppelt_anzulegen(): void {
+        \App\Models\TextCorrection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'wrong' => 'Geprüfft',
+            'correct' => 'geprüft',
+        ]);
+
+        $this->post(route('text-corrections.learn'), [
+            'wrong' => 'geprüfft',
+            'correct' => 'geprüft',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame(1, \App\Models\TextCorrection::query()->count());
+        $this->assertSame(1, (int) \App\Models\TextCorrection::query()->first()->usage_count);
+    }
+
+    public function test_merken_ohne_belegrecht_verboten(): void {
+        $this->actingAs($this->orgUser());
+
+        $this->post(route('text-corrections.learn'), [
+            'wrong' => 'geprüfft',
+            'correct' => 'geprüft',
+        ])->assertForbidden();
+    }
 }

@@ -267,4 +267,42 @@ class TransferPositionBuildTest extends TestCase {
         $this->assertStringContainsString('Server geprüft', (string) $position->description);
         $this->assertStringContainsString('Update eingespielt', (string) $position->description);
     }
+
+    public function test_woerterbuch_korrigiert_vorschau_und_eingefrorene_positionen(): void {
+        \App\Models\TextCorrection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'wrong' => 'geprüfft',
+            'correct' => 'geprüft',
+        ]);
+        $entry = $this->entry(['description' => 'Server geprüfft']);
+        $this->setOrgDefaultRate(90.0);
+
+        // Vorschau (build) korrigiert …
+        $transfer = $this->draft();
+        $preview = app(BillingPositionBuilder::class)->build($transfer)->first();
+        $this->assertStringContainsString('Server geprüft', (string) $preview->description);
+        $this->assertStringNotContainsString('geprüfft', (string) $preview->description);
+
+        // … und die eingefrorene Fassung identisch (freeze → build).
+        app(BillingTransferService::class)->confirm($transfer, $this->accountant);
+        $frozen = $transfer->fresh()->positions->first();
+        $this->assertStringContainsString('Server geprüft', (string) $frozen->description);
+
+        // Quelldaten bleiben unangetastet.
+        $this->assertSame('Server geprüfft', $entry->fresh()->description);
+    }
+
+    public function test_inaktiver_woerterbuch_eintrag_wirkt_nicht(): void {
+        \App\Models\TextCorrection::factory()->inactive()->create([
+            'organization_id' => $this->organization->id,
+            'wrong' => 'geprüfft',
+            'correct' => 'geprüft',
+        ]);
+        $this->entry(['description' => 'Server geprüfft']);
+        $this->setOrgDefaultRate(90.0);
+
+        $position = app(BillingPositionBuilder::class)->build($this->draft())->first();
+
+        $this->assertStringContainsString('Server geprüfft', (string) $position->description);
+    }
 }

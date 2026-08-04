@@ -309,6 +309,10 @@ class AppServiceProvider extends ServiceProvider {
         // Organisation wird pro Request/Job einmal gelesen.
         $this->app->scoped(\App\Services\Billing\OrganizationDefaultRateResolver::class);
 
+        // Schreibfehler-Wörterbuch: Map je Organisation wird pro Request/Job
+        // einmal geladen (scoped, nie static — Octane/Worker).
+        $this->app->scoped(\App\Services\Invoicing\TextCorrectionService::class);
+
         $this->app->scoped(OsrmRouter::class, function (): OsrmRouter {
             return new OsrmRouter([
                 'base_url' => Setting::get('routing.osrm.base_url'),
@@ -593,6 +597,7 @@ class AppServiceProvider extends ServiceProvider {
         Protocol::observe(ProtocolObserver::class);
 
         Gate::policy(\App\Models\IdeaMap::class, \App\Policies\IdeaMapPolicy::class);
+        Gate::policy(\App\Models\TextCorrection::class, \App\Policies\TextCorrectionPolicy::class);
         // Agiles Projektmanagement (Feature 064).
         Gate::policy(\App\Models\Agile\AgileBoard::class, \App\Policies\Agile\AgileBoardPolicy::class);
         Gate::policy(\App\Models\Agile\AgileWorkItem::class, \App\Policies\Agile\AgileWorkItemPolicy::class);

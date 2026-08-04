@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\{Auth, DB};
 class InvoiceGenerator {
     public function __construct(
         private readonly NumberSequenceService $numberSequence,
+        private readonly TextCorrectionService $corrections,
     ) {}
 
     /**
@@ -216,6 +217,7 @@ class InvoiceGenerator {
             'description' => $this->bookingLine(
                 $this->describeBlock($block, $primary),
                 $block->project?->foreignCustomer,
+                (int) $customer->organization_id,
             ),
             'service_date' => $block->firstStart?->toDateString() ?? optional($primary?->date)->toDateString(),
         ];
@@ -405,7 +407,7 @@ class InvoiceGenerator {
                 $invoice->items()->create([
                     'material_usage_id' => $usage->id,
                     'service_date' => optional($usage->timesheet?->work_date)->toDateString(),
-                    'description' => $this->bookingLine($materialDesc, $usage->timesheet?->project?->foreignCustomer),
+                    'description' => $this->bookingLine($materialDesc, $usage->timesheet?->project?->foreignCustomer, (int) $invoice->organization_id),
                     'quantity' => $usage->quantity?->getNumericValue() ?? '0',
                     'unit' => $usage->unit ?: (string) __('invoicing.unit_piece'),
                     'unit_price' => $usage->unit_price?->getAmount() ?? '0',
@@ -445,7 +447,7 @@ class InvoiceGenerator {
             $invoice->items()->create([
                 'tour_id' => $charge->tour->id,
                 'service_date' => $charge->date->toDateString(),
-                'description' => $this->bookingLine($charge->description, $foreignCustomer),
+                'description' => $this->bookingLine($charge->description, $foreignCustomer, (int) $invoice->organization_id),
                 'quantity' => (string) $charge->quantity,
                 'unit' => $charge->unit,
                 'unit_price' => (string) $charge->unitPrice,
@@ -495,7 +497,10 @@ class InvoiceGenerator {
      * je Position erkennbar, für welchen Endkunden abgerechnet wird — auch wenn
      * eine Rechnung mehrere Endkunden des Kunden zusammenfasst.
      */
-    private function bookingLine(string $description, ?ForeignCustomer $foreignCustomer): string {
+    private function bookingLine(string $description, ?ForeignCustomer $foreignCustomer, int $organizationId): string {
+        // Wörterbuch-Korrektur vor der Endkunden-Präfixierung — das Präfix
+        // selbst (Kundenname) bleibt unkorrigiert.
+        $description = (string) $this->corrections->apply($description, $organizationId);
         if ($foreignCustomer === null) {
             return $description;
         }

@@ -18,6 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Finance\{BillingTransfer, BillingTransferPosition};
 use App\Services\Ai\Exceptions\{AiException, AiProviderCallException, AiUnavailableException};
 use App\Services\Ai\Suggestions\ItemTextSuggestionService;
+use App\Services\Invoicing\TextCorrectionDiff;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 
@@ -42,6 +43,8 @@ class TransferPositionController extends Controller {
             'unit_price' => ['nullable', 'numeric', 'min:0', 'max:1000000'],
         ]);
 
+        $oldDescription = (string) $position->description;
+
         $attributes = [
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
@@ -56,6 +59,13 @@ class TransferPositionController extends Controller {
         }
 
         $position->update($attributes);
+
+        // Wörterbuch-Kandidaten aus der manuellen Korrektur — Aufnahme NUR
+        // über den bestätigten „Merken?"-Dialog, nie still.
+        $pairs = TextCorrectionDiff::candidates($oldDescription, (string) ($attributes['description'] ?? ''));
+        if ($pairs !== []) {
+            session()->flash('text_correction_learn', ['pairs' => $pairs]);
+        }
 
         // Nachvollziehbarkeit über die bestehende Ereignis-Hash-Kette.
         $transfer->events()->create([
