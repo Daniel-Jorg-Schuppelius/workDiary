@@ -12,6 +12,18 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/*
+ * 2026-08-04 UMDATIERT von `2026_08_02_120000_…` (MigrationPortabilityTest):
+ * der FK auf `external_contacts` (Migration 2026_09_30_100000) lag vor deren
+ * Erstellung — frische MySQL-Installationen brachen mit errno 150.
+ * Bestands-DBs, die die Migration unter dem ALTEN Namen verbucht haben,
+ * brauchen EINMALIG:
+ *   UPDATE migrations
+ *      SET migration = '2026_09_30_101000_create_disposal_module_tables'
+ *    WHERE migration = '2026_08_02_120000_create_disposal_module_tables';
+ * (sonst versucht `migrate` die Tabellen erneut anzulegen).
+ */
+
 /**
  * Feature 100 (Phase 56, MVP-474/475): Entsorgungsakte für Altgeräte-Rücknahme.
  *
