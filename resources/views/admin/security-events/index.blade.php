@@ -71,7 +71,7 @@
                 <tr>
                     <td class="text-xs text-base-content/70 whitespace-nowrap">{{ $event->occurred_at->format('d.m.Y H:i:s') }}</td>
                     <td><code class="text-xs">{{ $event->getRawOriginal('event') }}</code></td>
-                    <td><code class="text-xs">{{ $event->ip ?? '—' }}</code></td>
+                    <td><code class="text-xs">{{ $event->ip?->getValue() ?? '—' }}</code></td>
                     <td class="text-xs max-w-md truncate" title="{{ collect($event->meta ?? [])->map(fn($v, $k) => $k . '=' . $v)->implode(' ') }}">
                         {{ collect($event->meta ?? [])->map(fn($v, $k) => $k . '=' . $v)->implode(' ') ?: '—' }}
                     </td>

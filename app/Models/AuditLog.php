@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
  * `php artisan audit:verify`. Einziger Schreibpfad ist {@see static::create()}
  * (keine rohen Inserts).
  *
+ * @property \CommonToolkit\ValueObjects\IpAddress|null $ip
+ *
  * @phpstan-consistent-constructor
  */
 class AuditLog extends Model implements HashChainable {

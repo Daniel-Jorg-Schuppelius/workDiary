@@ -132,7 +132,7 @@ return [
     ],
 
     'easybill' => [
-        'introduction' => 'Transfer from WorkDiary — :channel, period :from – :to.',
+        'introduction' => 'We invoice the goods and services provided in the period :from – :to as follows.',
         'unit_hour' => 'hrs',
         'unit_piece' => 'pcs',
     ],
@@ -155,12 +155,12 @@ return [
     ],
 
     'sevdesk' => [
-        'introduction' => 'Handover from WorkDiary — :channel, period :from – :to.',
+        'introduction' => 'We invoice the goods and services provided in the period :from – :to as follows.',
         'tax_text' => 'VAT :rate%',
     ],
 
     'lexoffice' => [
-        'introduction' => 'Handover from WorkDiary — :channel, period :from – :to.',
+        'introduction' => 'We invoice the goods and services provided as follows.',
         'delivery_title' => 'Delivery note',
     ],
 

@@ -281,7 +281,7 @@ class SecurityOverviewService {
             'recent' => $recent->map(static fn(AuditLog $log): array => [
                 'event' => (string) $log->event,
                 'user' => $log->user?->name,
-                'ip' => $log->ip,
+                'ip' => $log->ip?->getValue(),
                 'subject' => $log->auditable_type !== ''
                     ? class_basename((string) $log->auditable_type) . ' #' . $log->auditable_id
                     : null,

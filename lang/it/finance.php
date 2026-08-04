@@ -132,7 +132,7 @@ return [
     ],
 
     'easybill' => [
-        'introduction' => 'Trasferimento da WorkDiary — :channel, periodo :from – :to.',
+        'introduction' => 'Vi fatturiamo come segue le nostre forniture e prestazioni per il periodo :from – :to.',
         'unit_hour' => 'ore',
         'unit_piece' => 'pz.',
     ],
@@ -155,12 +155,12 @@ return [
     ],
 
     'sevdesk' => [
-        'introduction' => 'Consegna da WorkDiary — :channel, periodo :from – :to.',
+        'introduction' => 'Vi fatturiamo come segue le nostre forniture e prestazioni per il periodo :from – :to.',
         'tax_text' => 'IVA :rate%',
     ],
 
     'lexoffice' => [
-        'introduction' => 'Consegna da WorkDiary — :channel, periodo :from – :to.',
+        'introduction' => 'Vi fatturiamo come segue le nostre forniture e prestazioni.',
         'delivery_title' => 'Documento di trasporto',
     ],
 

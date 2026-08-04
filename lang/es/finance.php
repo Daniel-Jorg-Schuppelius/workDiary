@@ -132,7 +132,7 @@ return [
     ],
 
     'easybill' => [
-        'introduction' => 'Transferencia desde WorkDiary — :channel, periodo :from – :to.',
+        'introduction' => 'Les facturamos como sigue nuestras entregas y servicios del periodo :from – :to.',
         'unit_hour' => 'h',
         'unit_piece' => 'uds.',
     ],
@@ -155,12 +155,12 @@ return [
     ],
 
     'sevdesk' => [
-        'introduction' => 'Entrega desde WorkDiary — :channel, período :from – :to.',
+        'introduction' => 'Les facturamos como sigue nuestras entregas y servicios del período :from – :to.',
         'tax_text' => 'IVA :rate %',
     ],
 
     'lexoffice' => [
-        'introduction' => 'Entrega desde WorkDiary — :channel, período :from – :to.',
+        'introduction' => 'Les facturamos como sigue nuestras entregas y servicios.',
         'delivery_title' => 'Albarán',
     ],
 

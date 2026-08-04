@@ -134,7 +134,7 @@ return [
     ],
 
     'easybill' => [
-        'introduction' => 'Übergabe aus WorkDiary — :channel, Zeitraum :from – :to.',
+        'introduction' => 'Unsere Lieferungen/Leistungen im Zeitraum :from – :to stellen wir Ihnen wie folgt in Rechnung.',
         'unit_hour' => 'Std.',
         'unit_piece' => 'Stk.',
     ],
@@ -158,12 +158,12 @@ return [
     ],
 
     'sevdesk' => [
-        'introduction' => 'Übergabe aus WorkDiary — :channel, Zeitraum :from – :to.',
+        'introduction' => 'Unsere Lieferungen/Leistungen im Zeitraum :from – :to stellen wir Ihnen wie folgt in Rechnung.',
         'tax_text' => 'Umsatzsteuer :rate%',
     ],
 
     'lexoffice' => [
-        'introduction' => 'Übergabe aus WorkDiary — :channel, Zeitraum :from – :to.',
+        'introduction' => 'Unsere Lieferungen/Leistungen stellen wir Ihnen wie folgt in Rechnung.',
         'delivery_title' => 'Lieferschein',
     ],
 

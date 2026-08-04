@@ -82,13 +82,17 @@ class SecurityOverviewPageTest extends TestCase {
             'auditable_type' => User::class,
             'auditable_id' => $admin->id,
             'changes' => ['bytes' => 1024],
+            // Regressionsschutz: IpAddress-VO ohne __toString — muss als
+            // Klarwert gerendert werden, nicht als Objekt (Prod-Fehler 2026-08-04).
+            'ip' => '203.0.113.7',
         ]);
 
         $this->actingAs($admin)
             ->get(route('admin.security.index'))
             ->assertOk()
             ->assertSee(__('security.section.support_access'))
-            ->assertSee('support.reportGenerated');
+            ->assertSee('support.reportGenerated')
+            ->assertSee('203.0.113.7');
     }
 
     public function test_index_shows_encryption_status_section(): void {
