@@ -11,7 +11,6 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Enums\Diary\Status;
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, DiaryEntry, Project, TimeEntry, User};
 use App\Services\Invoicing\LateTimeEntryDetector;
@@ -29,14 +28,13 @@ use Illuminate\View\View;
  * `exported` ist der kanonische Verbraucht-Flag aller Abrechnungspfade
  * (InvoiceGenerator, Kontomodus, Faktura-Übergabe).
  *
- * Zeitraum: ohne explizite from/to-Filter gilt die Header-Zeitauswahl.
- * Die Warn-KPIs (Nachzügler, älter als 45 Tage) und der Prüfhinweis bleiben
- * bewusst zeitraumunabhängig — sie sollen gerade auf Altbestand außerhalb
- * des sichtbaren Fensters aufmerksam machen.
+ * Zeitraum: die Liste ist bewusst zeitraum-los — nur explizite from/to-Filter
+ * schränken ein, die Header-Zeitauswahl gilt hier NICHT. Sonst verschwinden
+ * Kunden, deren offene Zeiten komplett vor dem gewählten Fenster liegen,
+ * lautlos aus der Arbeitsliste. Die Warn-KPIs (Nachzügler, älter als 45 Tage)
+ * und der Prüfhinweis ignorieren zusätzlich auch die expliziten Filter.
  */
 class OpenTimesController extends Controller {
-    use ResolvesGlobalDateRange;
-
     /** Ab diesem Alter (Tage seit Leistungsdatum) gilt ein offener Eintrag als überfällig. */
     public const STALE_AFTER_DAYS = 45;
 
@@ -237,24 +235,18 @@ class OpenTimesController extends Controller {
     }
 
     /**
-     * Effektiver Listen-Zeitraum: explizite from/to-Filter (auch einseitig)
-     * haben Vorrang und übersteuern die Header-Zeitauswahl komplett; ohne
-     * beide gilt der global gewählte Zeitraum aus dem Header-Widget.
+     * Effektiver Listen-Zeitraum: nur explizite from/to-Filter (auch einseitig)
+     * schränken ein. Die Header-Zeitauswahl gilt hier bewusst nicht — eine
+     * Offene-Posten-Liste darf Altbestand nie lautlos ausblenden.
      *
      * @param  array{customer:string, project:string, user:string, from:string, to:string, billable:string}  $filters
      * @return array{from: ?string, to: ?string}
      */
     private function effectiveRange(array $filters): array {
-        if ($filters['from'] !== '' || $filters['to'] !== '') {
-            return [
-                'from' => $filters['from'] !== '' ? $filters['from'] : null,
-                'to' => $filters['to'] !== '' ? $filters['to'] : null,
-            ];
-        }
-
-        [$from, $to] = $this->globalDateRangeBounds();
-
-        return ['from' => $from->toDateString(), 'to' => $to->toDateString()];
+        return [
+            'from' => $filters['from'] !== '' ? $filters['from'] : null,
+            'to' => $filters['to'] !== '' ? $filters['to'] : null,
+        ];
     }
 
     /**

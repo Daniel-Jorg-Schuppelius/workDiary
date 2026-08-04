@@ -305,4 +305,49 @@ class TransferPositionBuildTest extends TestCase {
 
         $this->assertStringContainsString('Server geprüfft', (string) $position->description);
     }
+
+    // ── Endkunde (Fremdkunde des Projekts) in Bezeichnung und Text ──────────
+
+    private function foreignCustomer(?string $company, string $name): \App\Models\ForeignCustomer {
+        return \App\Models\ForeignCustomer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+            'name' => $name,
+            'company' => $company,
+        ]);
+    }
+
+    public function test_endkunde_erscheint_in_bezeichnung_und_text(): void {
+        $this->project->update(['foreign_customer_id' => $this->foreignCustomer(null, 'Kiesewetter')->id]);
+        $this->entry();
+        $this->setOrgDefaultRate(90.0);
+
+        $position = app(BillingPositionBuilder::class)->build($this->draft())->first();
+
+        $this->assertStringStartsWith(__('Endkunde :name', ['name' => 'Kiesewetter']) . ' · ', (string) $position->name);
+        $this->assertStringContainsString(__('Endkunde :name', ['name' => 'Kiesewetter']), (string) $position->description);
+        $this->assertStringContainsString('Server geprüft', (string) $position->description);
+    }
+
+    public function test_endkunde_firma_hat_vorrang_vor_dem_namen(): void {
+        // Gleiche Auflösung wie in der Direktrechnung (InvoiceGenerator::bookingLine).
+        $this->project->update(['foreign_customer_id' => $this->foreignCustomer('Sysdec', 'Gunnar Geithner')->id]);
+        $this->entry();
+        $this->setOrgDefaultRate(90.0);
+
+        $position = app(BillingPositionBuilder::class)->build($this->draft())->first();
+
+        $this->assertStringStartsWith(__('Endkunde :name', ['name' => 'Sysdec']) . ' · ', (string) $position->name);
+        $this->assertStringNotContainsString('Gunnar Geithner', (string) $position->name);
+    }
+
+    public function test_ohne_endkunde_kein_endkunde_praefix(): void {
+        $this->entry();
+        $this->setOrgDefaultRate(90.0);
+
+        $position = app(BillingPositionBuilder::class)->build($this->draft())->first();
+
+        $this->assertStringNotContainsString(__('Endkunde'), (string) $position->name);
+        $this->assertStringNotContainsString(__('Endkunde'), (string) $position->description);
+    }
 }

@@ -14,7 +14,7 @@ namespace App\Services\Finance;
 
 use App\Enums\Finance\TransferChannel;
 use App\Models\Finance\{BillingTransfer, BillingTransferPosition};
-use App\Models\{MaterialUsage, TimeEntry};
+use App\Models\{ForeignCustomer, MaterialUsage, Project, TimeEntry};
 use App\Services\Invoicing\{BillableTimeAggregator, BlockPrice, BlockPriceResolver, ServiceDefaultResolver, TextCorrectionService};
 use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Collection;
@@ -123,6 +123,7 @@ class BillingPositionBuilder {
 
             $from = $block->firstStart?->toDateString() ?? $primary?->date?->toDateString();
             $to = $block->lastEnd?->toDateString() ?? $from;
+            $endCustomer = $this->endCustomerName($block->project);
 
             $positions->push(new BillingTransferPosition([
                 'organization_id' => $transfer->organization_id,
@@ -133,8 +134,8 @@ class BillingPositionBuilder {
                 'kind' => $block->kind?->value,
                 'source_ids' => $block->entryIds,
                 'primary_source_id' => $block->primaryEntryId,
-                'name' => $this->positionName($block, $transfer, $service?->name),
-                'description' => $this->positionText($service?->standardText, $blockEntries, $from, $to, (int) $transfer->organization_id),
+                'name' => $this->positionName($block, $transfer, $service?->name, $endCustomer),
+                'description' => $this->positionText($service?->standardText, $blockEntries, $from, $to, (int) $transfer->organization_id, $endCustomer),
                 'quantity' => round($hours, 3),
                 'unit_name' => $service?->unitName ?: $this->timeUnit($transfer),
                 'unit_price' => round($price->rate, 4),
@@ -157,7 +158,7 @@ class BillingPositionBuilder {
 
         $usages = MaterialUsage::query()
             ->whereIn('id', $items->keys()->all())
-            ->with(['timesheet:id,work_date,project_id', 'timesheet.project:id,name'])
+            ->with(['timesheet:id,work_date,project_id', 'timesheet.project:id,name,foreign_customer_id', 'timesheet.project.foreignCustomer'])
             ->get()
             ->sortBy(fn(MaterialUsage $u): string => $u->timesheet?->work_date?->toDateString() ?? '')
             ->values();
@@ -171,6 +172,16 @@ class BillingPositionBuilder {
             $quantity = round((float) ($itemQuantity ?? ($usage->quantity?->getValue()->toFloat() ?? 0.0)), 3);
             $unitPrice = $usage->unit_price?->toFloat() ?? 0.0;
             $date = $usage->timesheet?->work_date?->toDateString();
+            $endCustomer = $this->endCustomerName($usage->timesheet?->project);
+
+            $name = (string) $this->corrections->apply(trim((string) $usage->description), (int) $transfer->organization_id) ?: (string) __('Material');
+            $descriptionParts = [];
+            if ($endCustomer !== null) {
+                $descriptionParts[] = (string) __('Endkunde :name', ['name' => $endCustomer]);
+            }
+            if ($date !== null) {
+                $descriptionParts[] = (string) __('finance.position.service_date', ['date' => \Illuminate\Support\Carbon::parse($date)->format('d.m.Y')]);
+            }
 
             $positions->push(new BillingTransferPosition([
                 'organization_id' => $transfer->organization_id,
@@ -181,10 +192,8 @@ class BillingPositionBuilder {
                 'kind' => null,
                 'source_ids' => [(int) $usage->id],
                 'primary_source_id' => (int) $usage->id,
-                'name' => (string) $this->corrections->apply(trim((string) $usage->description), (int) $transfer->organization_id) ?: (string) __('Material'),
-                'description' => $date !== null
-                    ? (string) __('finance.position.service_date', ['date' => \Illuminate\Support\Carbon::parse($date)->format('d.m.Y')])
-                    : null,
+                'name' => $endCustomer !== null ? __('Endkunde :name', ['name' => $endCustomer]) . ' · ' . $name : $name,
+                'description' => $descriptionParts === [] ? null : implode("\n", $descriptionParts),
                 'quantity' => $quantity,
                 'unit_name' => trim((string) ($usage->unit ?? '')) ?: (string) __('invoicing.unit_piece'),
                 'unit_price' => round($unitPrice, 4),
@@ -210,23 +219,45 @@ class BillingPositionBuilder {
 
     /**
      * Bezeichnung: Name der Standardleistung, sonst wie bisher
-     * Projekt + Tätigkeitsart + Zeitraum.
+     * Projekt + Tätigkeitsart + Zeitraum. Hat das Projekt einen Fremdkunden,
+     * wird der Endkunde vorangestellt (analog {@see \App\Services\Invoicing\InvoiceGenerator}).
      */
-    private function positionName(\App\Services\Invoicing\BillingBlock $block, BillingTransfer $transfer, ?string $serviceName): string {
+    private function positionName(\App\Services\Invoicing\BillingBlock $block, BillingTransfer $transfer, ?string $serviceName, ?string $endCustomer): string {
         $serviceName = trim((string) $serviceName);
+        $name = $serviceName !== '' ? $serviceName : $block->displayName($transfer);
 
-        return $serviceName !== '' ? $serviceName : $block->displayName($transfer);
+        return $endCustomer !== null ? __('Endkunde :name', ['name' => $endCustomer]) . ' · ' . $name : $name;
     }
 
     /**
-     * Positionstext: Standardtext der Leistung, darunter der Leistungstext aus
-     * den Zeiteinträgen (dedupliziert) und das Leistungsdatum. Der Leistungstext
+     * Anzeigename des Endkunden (Fremdkunde des Projekts): Firma vor Name —
+     * dieselbe Auflösung wie in der Direktrechnung (InvoiceGenerator).
+     */
+    private function endCustomerName(?Project $project): ?string {
+        $foreign = $project?->foreignCustomer;
+        if (! $foreign instanceof ForeignCustomer) {
+            return null;
+        }
+
+        $name = trim((string) ($foreign->company ?: $foreign->name));
+
+        return $name !== '' ? $name : null;
+    }
+
+    /**
+     * Positionstext: Endkunde (falls das Projekt einen Fremdkunden hat), dann
+     * Standardtext der Leistung, darunter der Leistungstext aus den
+     * Zeiteinträgen (dedupliziert) und das Leistungsdatum. Der Leistungstext
      * ist die Grundlage für den KI-Vorschlag (MVP-488).
      *
      * @param  Collection<int, TimeEntry>  $entries
      */
-    private function positionText(?string $standardText, Collection $entries, ?string $from, ?string $to, int $organizationId): ?string {
+    private function positionText(?string $standardText, Collection $entries, ?string $from, ?string $to, int $organizationId, ?string $endCustomer = null): ?string {
         $parts = [];
+
+        if ($endCustomer !== null) {
+            $parts[] = (string) __('Endkunde :name', ['name' => $endCustomer]);
+        }
 
         $standardText = trim((string) $standardText);
         if ($standardText !== '') {

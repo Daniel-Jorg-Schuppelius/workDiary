@@ -18,7 +18,8 @@ use Tests\TestCase;
 /**
  * Offene Zeiten (MVP-460): Buchhaltungs-Arbeitsliste unabgerechneter Zeiten —
  * Sicht-Gate timeEntry.viewAny, Filter, Summen (H:MM + dezimal), CSV,
- * Header-Zeitauswahl als Default-Zeitraum, Altbestand-Abschluss (Stichtag).
+ * zeitraum-lose Liste (nur explizite from/to-Filter schränken ein),
+ * Altbestand-Abschluss (Stichtag).
  */
 class OpenTimesWorklistTest extends TestCase {
     use RefreshDatabase;
@@ -34,11 +35,6 @@ class OpenTimesWorklistTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-
-        // Die Liste folgt der Header-Zeitauswahl; für die Bestandstests
-        // (Filter/Summen/CSV) den Zeitraum weit aufziehen, damit die relativen
-        // Eintragsdaten nicht am Monatsanfang aus dem Default-Fenster fallen.
-        $this->session($this->dateRangeSession(now()->subYear()->toDateString(), now()->toDateString()));
 
         $this->accountant = User::factory()->buchhaltung()->create(['organization_id' => $this->organization->id]);
         $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
@@ -217,9 +213,11 @@ class OpenTimesWorklistTest extends TestCase {
             ->assertSee('Serverumzug Abgeschlossen');
     }
 
-    // ── Header-Zeitauswahl als Default-Zeitraum ─────────────────────────────
+    // ── Zeitraum: Liste ignoriert die Header-Zeitauswahl ────────────────────
 
-    public function test_list_follows_header_date_range_and_warn_kpis_stay_global(): void {
+    public function test_list_ignores_header_date_range(): void {
+        // Header eng auf die letzten 10 Tage gestellt — Altbestand muss trotzdem
+        // in der Liste stehen: offene Posten fallen nie lautlos aus dem Fenster.
         $this->openEntry(['description' => 'Eintrag im Fenster', 'date' => now()->subDays(5)->toDateString()]);
         $this->openEntry(['description' => 'Altbestand-Eintrag', 'date' => now()->subDays(100)->toDateString()]);
 
@@ -229,19 +227,20 @@ class OpenTimesWorklistTest extends TestCase {
 
         $response->assertOk()
             ->assertSee('Eintrag im Fenster')
-            ->assertDontSee('Altbestand-Eintrag');
-        // Warn-KPI „älter als 45 Tage" zählt zeitraumunabhängig weiter.
+            ->assertSee('Altbestand-Eintrag');
+        // Warn-KPI „älter als 45 Tage" zählt weiterhin.
         $this->assertSame(1, $response->viewData('staleCount'));
     }
 
-    public function test_explicit_period_filter_overrides_header_range(): void {
+    public function test_explicit_period_filter_narrows_list(): void {
+        $this->openEntry(['description' => 'Eintrag im Fenster', 'date' => now()->subDays(5)->toDateString()]);
         $this->openEntry(['description' => 'Altbestand-Eintrag', 'date' => now()->subDays(100)->toDateString()]);
 
         $this->actingAs($this->accountant)
-            ->withSession($this->dateRangeSession(now()->subDays(10)->toDateString(), now()->toDateString()))
-            ->get(route('finance.open-times.index', ['from' => now()->subDays(120)->toDateString()]))
+            ->get(route('finance.open-times.index', ['from' => now()->subDays(10)->toDateString()]))
             ->assertOk()
-            ->assertSee('Altbestand-Eintrag');
+            ->assertSee('Eintrag im Fenster')
+            ->assertDontSee('Altbestand-Eintrag');
     }
 
     // ── Altbestand-Abschluss: bis Stichtag als abgerechnet markieren ────────
