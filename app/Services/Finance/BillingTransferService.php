@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\DB;
 /**
  * Statusmaschine für Übergabenachweise (Feature 045, „Freigabe und Aggregation"):
  *
- *   createDraft() → confirm() → markTransferred()
+ *   createDraft() → confirm() → markTransferred() → cancel() (Storno)
  *                             ↘ markFailed() → confirm() (Retry)
  *   draft|confirmed → void()
  *
@@ -33,6 +33,10 @@ use Illuminate\Support\Facades\DB;
  *  - Erst markTransferred() verbraucht die Quellen (exported/billed = true,
  *    atomar in DB::transaction).
  *  - void() gibt Quellen nur frei, wenn der Transfer NIE transferred war.
+ *  - cancel() ist der dokumentierte Rückweg NACH der Übergabe (Storno): gibt
+ *    die Quellen frei und lässt den Nachweis als `cancelled` stehen.
+ *  - Freigaben (void/cancel) überspringen Quellen, die ein ANDERER Nachweis
+ *    mit Status confirmed|transferred noch hält (Korrektur-Ketten).
  *
  * Jede Statusänderung schreibt ein {@see BillingTransferEvent} in die
  * revisionssichere Hash-Kette (config('audit.chains'), `audit:verify`).
@@ -166,7 +170,10 @@ class BillingTransferService {
      * Zielsystem von Hand: Lexoffice kennt für Belege weder Update noch Delete.
      */
     public function createCorrection(BillingTransfer $original, ?string $reason = null, ?User $actor = null): BillingTransfer {
-        if (! $original->wasTransferred()) {
+        // Nur zu einem AKTUELL übergebenen Nachweis — nach einem Storno sind
+        // die Quellen frei und gehören in eine frische Übergabe, nicht in eine
+        // Korrektur (die würde sie am Reservierungs-Schutz vorbei erneut binden).
+        if ($original->status !== TransferStatus::Transferred) {
             throw new BillingTransferException(
                 'correctionNotTransferred',
                 (string) __('finance.error.correction_only_transferred'),
@@ -365,6 +372,40 @@ class BillingTransferService {
     }
 
     /**
+     * transferred → cancelled (Storno): der Rückweg, wenn der beim Ziel
+     * entstandene Beleg-Entwurf verworfen wurde (z. B. orgaMAX-Auftrag oder
+     * Lexoffice-Entwurf von Hand gelöscht, Datei-Paket nicht verwendet). Gibt
+     * die Quellen wieder frei — außer solchen, die ein anderer Nachweis
+     * (confirmed|transferred) hält, etwa eine bestätigte Korrektur-Übergabe.
+     *
+     * Der Nachweis selbst bleibt mit `transferred_at` als historischem
+     * Übergabe-Beleg stehen; Grund/Akteur dokumentiert das `cancelled`-Ereignis
+     * in der Hash-Kette. Den Beleg im Zielsystem entfernt der Storno NICHT —
+     * das bestätigt der Nutzer im Dialog.
+     */
+    public function cancel(BillingTransfer $transfer, ?string $reason = null, ?User $actor = null): BillingTransfer {
+        $this->assertTransition($transfer, TransferStatus::Cancelled);
+
+        $actorId = $this->resolveActorId($actor);
+
+        return DB::transaction(function () use ($transfer, $reason, $actorId): BillingTransfer {
+            $released = $this->setSourceFlags($transfer, false);
+
+            $transfer->fill(['status' => TransferStatus::Cancelled])->save();
+
+            $this->recordEvent($transfer, 'cancelled', $actorId, [
+                'status' => TransferStatus::Cancelled->value,
+                'reason' => $reason !== null && trim($reason) !== '' ? mb_substr(trim($reason), 0, 500) : null,
+                'released_sources' => $released,
+                'external_reference_id' => $transfer->external_reference_id,
+                'file_path' => $transfer->file_path,
+            ]);
+
+            return $transfer->refresh();
+        });
+    }
+
+    /**
      * Kanonischer SHA-256-Hash über die Positionsliste (deterministische
      * Reihenfolge und Serialisierung).
      *
@@ -511,24 +552,72 @@ class BillingTransferService {
      * Setzt bzw. löscht die Verbrauchs-Flags der Quellen dieses Transfers
      * (TimeEntry.exported / MaterialUsage.billed). saveQuietly analog
      * InvoiceGenerator — kein Observer-/Recalc-Rauschen.
+     *
+     * Beim Freigeben (void/cancel) bleiben Quellen verbraucht, die ein
+     * ANDERER Nachweis mit Status confirmed|transferred hält — sonst würde
+     * z. B. das Verwerfen einer Korrektur-Übergabe die Zeiten des
+     * ursprünglichen, übergebenen Nachweises freigeben.
+     *
+     * @return int Anzahl der tatsächlich umgestellten Quellen.
      */
-    private function setSourceFlags(BillingTransfer $transfer, bool $consumed): void {
-        foreach ($transfer->items()->get() as $item) {
+    private function setSourceFlags(BillingTransfer $transfer, bool $consumed): int {
+        $items = $transfer->items()->get();
+        $held = $consumed ? [] : $this->sourcesHeldElsewhere($transfer, $items);
+        $changed = 0;
+
+        foreach ($items as $item) {
             /** @var BillingTransferItem $item */
+            if (in_array((int) $item->source_id, $held[$item->source_type] ?? [], true)) {
+                continue;
+            }
+
             if ($item->source_type === TimeEntry::class) {
                 $entry = TimeEntry::query()->find($item->source_id);
                 if ($entry !== null && (bool) $entry->exported !== $consumed) {
                     $entry->exported = $consumed;
                     $entry->saveQuietly();
+                    $changed++;
                 }
             } elseif ($item->source_type === MaterialUsage::class) {
                 $usage = MaterialUsage::query()->find($item->source_id);
                 if ($usage !== null && (bool) $usage->billed !== $consumed) {
                     $usage->billed = $consumed;
                     $usage->saveQuietly();
+                    $changed++;
                 }
             }
         }
+
+        return $changed;
+    }
+
+    /**
+     * Quellen dieses Transfers, die zusätzlich in einem ANDEREN Nachweis mit
+     * Status confirmed|transferred hängen (Korrektur-Ketten, Doppel-Drafts).
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection<int, BillingTransferItem>  $items
+     * @return array<string, list<int>> source_type => fremdgehaltene source_ids
+     */
+    private function sourcesHeldElsewhere(BillingTransfer $transfer, \Illuminate\Database\Eloquent\Collection $items): array {
+        if ($items->isEmpty()) {
+            return [];
+        }
+
+        $held = [];
+        foreach ($items->groupBy('source_type') as $sourceType => $group) {
+            $ids = BillingTransferItem::query()
+                ->join('billing_transfers', 'billing_transfers.id', '=', 'billing_transfer_items.billing_transfer_id')
+                ->where('billing_transfers.id', '!=', $transfer->id)
+                ->whereIn('billing_transfers.status', [TransferStatus::Confirmed->value, TransferStatus::Transferred->value])
+                ->whereNull('billing_transfers.deleted_at')
+                ->where('billing_transfer_items.source_type', $sourceType)
+                ->whereIn('billing_transfer_items.source_id', $group->pluck('source_id')->all())
+                ->pluck('billing_transfer_items.source_id');
+
+            $held[(string) $sourceType] = array_values(array_map(static fn($id): int => (int) $id, $ids->all()));
+        }
+
+        return $held;
     }
 
     /** Validierter Statuswechsel + Persistenz + Hash-Ketten-Event. */

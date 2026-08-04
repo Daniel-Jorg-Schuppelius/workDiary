@@ -17,7 +17,7 @@ use App\Models\{Customer, Organization, Project, TimeEntry, User};
 use App\Models\Finance\BillingTransfer;
 use App\Services\Finance\BillingTransferService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{BuildsPolicyActors, WithOrganization};
 use Tests\TestCase;
 
 /**
@@ -26,6 +26,7 @@ use Tests\TestCase;
  * billing_mode, void-Regeln und Mandantentrennung (Cross-Org 404).
  */
 class FinanceTransferUiTest extends TestCase {
+    use BuildsPolicyActors;
     use RefreshDatabase;
     use WithOrganization;
 
@@ -230,6 +231,42 @@ class FinanceTransferUiTest extends TestCase {
             ->assertSessionHasErrors('status');
 
         $this->assertSame(TransferStatus::Transferred, $transfer->fresh()->status);
+    }
+
+    // ── Storno (cancel) ─────────────────────────────────────────────────
+
+    public function test_cancel_requires_finance_config(): void {
+        $transfer = $this->makeDraft();
+        $service = app(BillingTransferService::class);
+        $service->confirm($transfer, $this->accountant);
+        $service->markTransferred($transfer->fresh(), filePath: 'exports/finance/x.csv', actor: $this->accountant);
+
+        // Buchhaltung ohne finance.config: kein Storno.
+        $this->actingAs($this->accountant)
+            ->post(route('finance.transfers.cancel', $transfer))
+            ->assertForbidden();
+
+        $this->assertSame(TransferStatus::Transferred, $transfer->fresh()->status);
+    }
+
+    public function test_cancel_releases_sources_after_transfer(): void {
+        $transfer = $this->makeDraft();
+        $service = app(BillingTransferService::class);
+        $service->confirm($transfer, $this->accountant);
+        $service->markTransferred($transfer->fresh(), filePath: 'exports/finance/x.csv', actor: $this->accountant);
+
+        $entryId = (int) $transfer->items()->firstOrFail()->source_id;
+        $this->assertTrue((bool) TimeEntry::query()->findOrFail($entryId)->exported);
+
+        $this->grantPermissions($this->accountant, [\App\Enums\User\Permission::FinanceConfig]);
+
+        $this->actingAs($this->accountant->fresh())
+            ->from(route('finance.transfers.show', $transfer))
+            ->post(route('finance.transfers.cancel', $transfer), ['reason' => 'Beleg im Ziel verworfen'])
+            ->assertRedirect(route('finance.transfers.show', $transfer));
+
+        $this->assertSame(TransferStatus::Cancelled, $transfer->fresh()->status);
+        $this->assertFalse((bool) TimeEntry::query()->findOrFail($entryId)->exported);
     }
 
     // ── Mandantentrennung ───────────────────────────────────────────────

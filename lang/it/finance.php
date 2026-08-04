@@ -58,6 +58,7 @@ return [
         'mark_transferred' => 'Segnare come trasferito',
         'mark_failed' => 'Segnare come fallito',
         'void' => 'Annullare il trasferimento',
+        'cancel_transfer' => 'Stornare il trasferimento',
         'show' => 'Mostra',
         'execute' => 'Trasferire ora',
         'retry' => 'Riprova',
@@ -84,6 +85,7 @@ return [
         'transferred' => 'Trasferito',
         'failed' => 'Fallito',
         'voided' => 'Annullato',
+        'cancelled' => 'Stornato',
     ],
 
     'hint' => [
@@ -104,6 +106,7 @@ return [
     'confirm_correct' => 'Creare un trasferimento di correzione con gli stessi tempi? La ricevuta precedente resta invariata e viene contrassegnata come corretta. Lexoffice non può né modificare né eliminare i documenti — eliminare a mano la bozza creata lì, altrimenti resterà doppia.',
     'confirm_remove_position' => 'Rimuovere questa posizione dalla fattura? Il tempo sottostante resta associato alla ricevuta e quindi fatturato — semplicemente non compare più sul documento.',
     'confirm_void' => 'Annullare questo trasferimento? Le fonti verranno nuovamente liberate.',
+    'confirm_cancel_transfer' => 'Stornare questo trasferimento? I tempi o il materiale verranno nuovamente liberati — tranne le fonti ancora trattenute da un trasferimento di correzione confermato. La bozza creata presso la destinazione NON verrà eliminata — rimuoverla manualmente se ancora presente.',
 
     'empty_title' => 'Nessuna ricevuta di trasferimento',
     'empty_message' => 'Non è ancora stato preparato alcun trasferimento.',
@@ -175,6 +178,7 @@ return [
         'transferred' => 'Trasferimento completato — le fonti sono state contrassegnate come trasferite.',
         'failed' => 'Trasferimento contrassegnato come fallito.',
         'voided' => 'Trasferimento annullato — le fonti sono state nuovamente liberate.',
+        'cancelled' => 'Trasferimento stornato — le fonti sono state nuovamente liberate.',
     ],
 
     'error' => [

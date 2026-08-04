@@ -185,10 +185,16 @@ class FinanceTransferController extends Controller {
             // zusätzlich nur mit finance.config (sie bestimmen den Betrag).
             'canEditPositions' => Gate::allows('confirm', $transfer)
                 && TransferPositionController::isOpenForEditing($transfer),
-            // Korrektur-Übergabe zu einem übergebenen Nachweis (MVP-490).
             'canEditTexts' => Gate::allows('confirm', $transfer) && self::textsEditable($transfer),
-            'canCorrect' => $transfer->wasTransferred()
+            // Korrektur-Übergabe zu einem übergebenen Nachweis (MVP-490) —
+            // nur solange er nicht storniert ist (danach sind die Quellen frei
+            // und gehören in eine frische Übergabe).
+            'canCorrect' => $transfer->status === TransferStatus::Transferred
                 && Gate::allows('markTransferred', $transfer)
+                && Gate::allows(\App\Enums\User\Permission::FinanceConfig->value),
+            // Storno eines übergebenen Nachweises: gibt die Quellen frei.
+            'canCancel' => $transfer->status === TransferStatus::Transferred
+                && Gate::allows('cancel', $transfer)
                 && Gate::allows(\App\Enums\User\Permission::FinanceConfig->value),
             'canEditPositionPrices' => Gate::allows(\App\Enums\User\Permission::FinanceConfig->value),
             'aiUsable' => TransferPositionController::isOpenForEditing($transfer)
@@ -322,6 +328,29 @@ class FinanceTransferController extends Controller {
         return redirect()
             ->route('finance.transfers.index')
             ->with('success', __('finance.flash.voided'));
+    }
+
+    /**
+     * transferred → cancelled (Storno): Rückweg, wenn der beim Ziel entstandene
+     * Beleg-Entwurf verworfen wurde. Gibt die Quellen wieder frei (soweit kein
+     * anderer Nachweis sie hält); den Beleg im Zielsystem entfernt der Storno
+     * NICHT — das bestätigt der Nutzer im Dialog.
+     */
+    public function cancel(Request $request, BillingTransfer $transfer): RedirectResponse {
+        Gate::authorize('cancel', $transfer);
+        abort_unless(Gate::allows(\App\Enums\User\Permission::FinanceConfig->value), 403);
+
+        $data = $request->validate([
+            'reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        try {
+            $this->service->cancel($transfer, $data['reason'] ?? null, $this->actor());
+        } catch (BillingTransferException $e) {
+            return back()->withErrors(['status' => $e->getMessage()]);
+        }
+
+        return back()->with('success', __('finance.flash.cancelled'));
     }
 
     /** Download des Datei-Übergabepakets (Gate-geprüft, Pfad-sicher). */

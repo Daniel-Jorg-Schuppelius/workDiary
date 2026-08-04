@@ -1011,6 +1011,7 @@ return [
             'transferred' => 'Trasferito',
             'failed' => 'Fallito',
             'voided' => 'Annullato',
+            'cancelled' => 'Stornato',
         ],
         'chart-of-accounts' => [
             'skr03' => 'SKR03',

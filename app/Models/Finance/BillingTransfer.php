@@ -106,11 +106,16 @@ class BillingTransfer extends Model {
             // Unveränderlich nach Übergabe: der Service setzt transferred_at
             // innerhalb der markTransferred()-Transaktion (confirmed →
             // transferred ist erlaubt, weil der ORIGINAL-Wert noch leer ist).
+            // Einzige Ausnahme: der Storno (transferred → cancelled), der
+            // ausschließlich den Status wechselt — jede weitere Feldänderung
+            // bleibt verboten, ebenso jede Änderung NACH dem Storno.
             $originalStatus = $transfer->getOriginal('status');
             if ($transfer->getOriginal('transferred_at') !== null
                 || $originalStatus === TransferStatus::Transferred
                 || $originalStatus === TransferStatus::Transferred->value) {
-                throw new \RuntimeException('BillingTransfer ist nach erfolgter Übergabe unveränderlich.');
+                if (! self::isCancellationUpdate($transfer)) {
+                    throw new \RuntimeException('BillingTransfer ist nach erfolgter Übergabe unveränderlich.');
+                }
             }
         });
 
@@ -179,6 +184,22 @@ class BillingTransfer extends Model {
     /** Wurde der Transfer jemals erfolgreich übergeben? (Quellen verbraucht) */
     public function wasTransferred(): bool {
         return $this->transferred_at !== null || $this->status === TransferStatus::Transferred;
+    }
+
+    /**
+     * Erlaubte Ausnahme vom Unveränderlichkeits-Guard: der Storno-Übergang
+     * transferred → cancelled, der NUR den Status wechselt. transferred_at
+     * bleibt als historischer Übergabe-Nachweis stehen; Grund und Akteur
+     * dokumentiert das `cancelled`-Ereignis in der Hash-Kette.
+     */
+    private static function isCancellationUpdate(self $transfer): bool {
+        $originalStatus = $transfer->getOriginal('status');
+        $wasTransferred = $originalStatus === TransferStatus::Transferred
+            || $originalStatus === TransferStatus::Transferred->value;
+
+        return $wasTransferred
+            && $transfer->status === TransferStatus::Cancelled
+            && array_diff(array_keys($transfer->getDirty()), ['status', 'updated_at']) === [];
     }
 
     /** @return Factory<BillingTransfer> */

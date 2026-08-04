@@ -58,6 +58,7 @@ return [
         'mark_transferred' => 'Marquer comme transféré',
         'mark_failed' => 'Marquer comme échoué',
         'void' => 'Annuler le transfert',
+        'cancel_transfer' => 'Extourner le transfert',
         'show' => 'Afficher',
         'execute' => 'Transférer maintenant',
         'retry' => 'Réessayer',
@@ -84,6 +85,7 @@ return [
         'transferred' => 'Transféré',
         'failed' => 'Échoué',
         'voided' => 'Annulé',
+        'cancelled' => 'Extourné',
     ],
 
     'hint' => [
@@ -104,6 +106,7 @@ return [
     'confirm_correct' => 'Créer un transfert de correction avec les mêmes temps ? Le justificatif précédent reste inchangé et est marqué comme corrigé. Lexoffice ne peut ni modifier ni supprimer les documents — supprimez le brouillon créé là-bas à la main, sinon il existera en double.',
     'confirm_remove_position' => 'Retirer cette position de la facture ? Le temps sous-jacent reste rattaché au justificatif et donc facturé — il n’apparaît simplement plus sur le document.',
     'confirm_void' => 'Annuler ce transfert ? Les sources seront de nouveau libérées.',
+    'confirm_cancel_transfer' => 'Extourner ce transfert ? Les temps ou le matériel seront de nouveau libérés — sauf les sources encore retenues par un transfert de correction confirmé. Le brouillon créé chez la cible ne sera PAS supprimé — veuillez le retirer là-bas à la main s’il existe encore.',
 
     'empty_title' => 'Aucun justificatif de transfert',
     'empty_message' => 'Aucun transfert n\'a encore été préparé.',
@@ -175,6 +178,7 @@ return [
         'transferred' => 'Transfert terminé — les sources ont été marquées comme transférées.',
         'failed' => 'Transfert marqué comme échoué.',
         'voided' => 'Transfert annulé — les sources ont été libérées.',
+        'cancelled' => 'Transfert extourné — les sources ont été libérées.',
     ],
 
     'error' => [

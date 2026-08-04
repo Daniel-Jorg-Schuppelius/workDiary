@@ -58,6 +58,7 @@ return [
         'mark_transferred' => 'Mark as transferred',
         'mark_failed' => 'Mark as failed',
         'void' => 'Void transfer',
+        'cancel_transfer' => 'Cancel transfer',
         'show' => 'Show',
         'execute' => 'Transfer now',
         'retry' => 'Retry',
@@ -84,6 +85,7 @@ return [
         'transferred' => 'Transferred',
         'failed' => 'Failed',
         'voided' => 'Voided',
+        'cancelled' => 'Cancelled',
     ],
 
     'hint' => [
@@ -104,6 +106,7 @@ return [
     'confirm_correct' => 'Create a correction transfer with the same time entries? The previous receipt stays unchanged and is marked as corrected. Lexoffice can neither change nor delete documents — please delete the draft created there by hand, otherwise it exists twice.',
     'confirm_remove_position' => 'Remove this position from the invoice? The underlying time stays attached to the receipt and therefore billed — it just no longer appears on the document.',
     'confirm_void' => 'Void this transfer? The sources will be released again.',
+    'confirm_cancel_transfer' => 'Cancel this transfer? The times or material will be released again — except sources still held by a confirmed correction transfer. The draft document created at the target will NOT be deleted — please remove it there manually if it still exists.',
 
     'empty_title' => 'No transfer receipts',
     'empty_message' => 'No transfers have been prepared yet.',
@@ -175,6 +178,7 @@ return [
         'transferred' => 'Transfer completed — sources have been marked as transferred.',
         'failed' => 'Transfer marked as failed.',
         'voided' => 'Transfer voided — sources have been released again.',
+        'cancelled' => 'Transfer cancelled — sources have been released again.',
     ],
 
     'error' => [

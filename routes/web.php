@@ -1875,6 +1875,8 @@ Route::middleware('auth')->group(function () {
             Route::post('{transfer}/bestaetigen', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'confirm'])->name('confirm');
             Route::post('{transfer}/uebertragen', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'execute'])->name('execute');
             Route::post('{transfer}/verwerfen', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'void'])->name('void');
+            // Storno eines übergebenen Nachweises: gibt die Quellen wieder frei.
+            Route::post('{transfer}/stornieren', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'cancel'])->name('cancel');
             // Rechnungstexte des Belegs (MVP-491).
             Route::patch('{transfer}/texte', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'updateTexts'])->name('texts.update');
             // Positions-Aktionen: entfernen, verschieben, zusammenfassen (MVP-492).

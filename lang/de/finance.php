@@ -58,6 +58,7 @@ return [
         'mark_transferred' => 'Als übergeben markieren',
         'mark_failed' => 'Als fehlgeschlagen markieren',
         'void' => 'Übergabe verwerfen',
+        'cancel_transfer' => 'Übergabe stornieren',
         'show' => 'Anzeigen',
         'execute' => 'Übertragen',
         'retry' => 'Erneut versuchen',
@@ -86,6 +87,7 @@ return [
         'transferred' => 'Übergeben',
         'failed' => 'Fehlgeschlagen',
         'voided' => 'Verworfen',
+        'cancelled' => 'Storniert',
     ],
 
     'hint' => [
@@ -106,6 +108,7 @@ return [
     'confirm_correct' => 'Eine Korrektur-Übergabe mit denselben Zeiten anlegen? Der bisherige Nachweis bleibt unverändert stehen und wird als korrigiert vermerkt. Lexoffice kann Belege weder ändern noch löschen — bitte den dort angelegten Entwurf von Hand löschen, sonst steht er doppelt.',
     'confirm_remove_position' => 'Diese Position von der Rechnung nehmen? Die zugrunde liegende Zeit bleibt dem Nachweis zugeordnet und damit abgerechnet — sie erscheint nur nicht mehr auf dem Beleg.',
     'confirm_void' => 'Übergabe verwerfen? Die Quellen werden wieder freigegeben.',
+    'confirm_cancel_transfer' => 'Übergabe stornieren? Die Zeiten bzw. das Material werden wieder freigegeben — außer Quellen, die eine bestätigte Korrektur-Übergabe noch hält. Der beim Ziel angelegte Beleg-Entwurf wird dadurch NICHT gelöscht — bitte dort von Hand entfernen, falls noch vorhanden.',
 
     'empty_title' => 'Keine Übergabenachweise',
     'empty_message' => 'Es wurden noch keine Übergaben vorbereitet.',
@@ -178,6 +181,7 @@ return [
         'transferred' => 'Übergabe abgeschlossen — Quellen wurden als übergeben markiert.',
         'failed' => 'Übergabe als fehlgeschlagen markiert.',
         'voided' => 'Übergabe verworfen — Quellen wurden wieder freigegeben.',
+        'cancelled' => 'Übergabe storniert — Quellen wurden wieder freigegeben.',
     ],
 
     'error' => [

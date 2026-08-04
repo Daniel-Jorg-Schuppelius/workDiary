@@ -1011,6 +1011,7 @@ return [
             'transferred' => 'Übergeben',
             'failed' => 'Fehlgeschlagen',
             'voided' => 'Verworfen',
+            'cancelled' => 'Storniert',
         ],
         // DATEV-Buchungsstapel (Feature 045, Priorität 2).
         'chart-of-accounts' => [

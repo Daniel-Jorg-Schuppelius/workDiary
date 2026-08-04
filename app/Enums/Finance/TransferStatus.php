@@ -16,12 +16,15 @@ use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 /**
  * Statusmaschine eines Übergabenachweises (Feature 045):
  *
- *   draft → confirmed → transferred
+ *   draft → confirmed → transferred → cancelled (Storno)
  *                     ↘ failed → confirmed (Retry)
  *   draft|confirmed → voided
  *
- * `transferred` ist final (Quellen sind verbraucht); Korrekturen laufen über
- * Storno-/Differenzübergaben (Teil B), nie über stilles Zurücksetzen.
+ * `transferred` bleibt der Verbraucht-Nachweis; ein Storno (`cancelled`) ist
+ * der EINZIGE dokumentierte Rückweg — für den Fall, dass der beim Ziel
+ * entstandene Beleg-Entwurf verworfen wurde. Er gibt die Quellen wieder frei
+ * (soweit kein anderer Nachweis sie hält) und ist selbst final. Stilles
+ * Zurücksetzen gibt es weiterhin nicht.
  */
 enum TransferStatus: string implements HasLabel, HasStatusTransitions {
     use \App\Enums\Concerns\HasTransitions;
@@ -33,6 +36,7 @@ enum TransferStatus: string implements HasLabel, HasStatusTransitions {
     case Transferred = 'transferred';
     case Failed = 'failed';
     case Voided = 'voided';
+    case Cancelled = 'cancelled';
 
     public function label(): string {
         return (string) __('enums.finance.transfer-status.' . $this->value);
@@ -46,6 +50,7 @@ enum TransferStatus: string implements HasLabel, HasStatusTransitions {
             self::Transferred => 'success',
             self::Failed => 'error',
             self::Voided => 'ghost',
+            self::Cancelled => 'warning',
         };
     }
 
@@ -59,7 +64,8 @@ enum TransferStatus: string implements HasLabel, HasStatusTransitions {
             self::Draft => [self::Confirmed, self::Voided],
             self::Confirmed => [self::Transferred, self::Failed, self::Voided],
             self::Failed => [self::Confirmed],
-            self::Transferred, self::Voided => [],
+            self::Transferred => [self::Cancelled],
+            self::Voided, self::Cancelled => [],
         };
     }
 

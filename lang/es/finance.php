@@ -58,6 +58,7 @@ return [
         'mark_transferred' => 'Marcar como traspasado',
         'mark_failed' => 'Marcar como fallido',
         'void' => 'Anular el traspaso',
+        'cancel_transfer' => 'Cancelar el traspaso',
         'show' => 'Mostrar',
         'execute' => 'Traspasar ahora',
         'retry' => 'Reintentar',
@@ -84,6 +85,7 @@ return [
         'transferred' => 'Traspasado',
         'failed' => 'Fallido',
         'voided' => 'Anulado',
+        'cancelled' => 'Cancelado',
     ],
 
     'hint' => [
@@ -104,6 +106,7 @@ return [
     'confirm_correct' => '¿Crear un traspaso de corrección con los mismos tiempos? El justificante anterior queda sin cambios y se marca como corregido. Lexoffice no puede modificar ni eliminar documentos: elimine a mano el borrador creado allí, de lo contrario quedará duplicado.',
     'confirm_remove_position' => '¿Quitar esta posición de la factura? El tiempo subyacente sigue vinculado al justificante y por tanto facturado: solo deja de aparecer en el documento.',
     'confirm_void' => '¿Anular este traspaso? Las fuentes se liberarán de nuevo.',
+    'confirm_cancel_transfer' => '¿Cancelar este traspaso? Los tiempos o el material se liberarán de nuevo — excepto las fuentes que aún retenga un traspaso de corrección confirmado. El borrador creado en el destino NO se eliminará — elimínelo allí manualmente si todavía existe.',
 
     'empty_title' => 'No hay justificantes de traspaso',
     'empty_message' => 'Aún no se ha preparado ningún traspaso.',
@@ -175,6 +178,7 @@ return [
         'transferred' => 'Traspaso completado — las fuentes se han marcado como traspasadas.',
         'failed' => 'Traspaso marcado como fallido.',
         'voided' => 'Traspaso anulado — las fuentes se han liberado de nuevo.',
+        'cancelled' => 'Traspaso cancelado — las fuentes se han liberado de nuevo.',
     ],
 
     'error' => [

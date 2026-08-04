@@ -172,6 +172,19 @@
                         </x-action-form>
                     @endcan
                 @endif
+                @if ($canCancel)
+                    {{-- Storno eines übergebenen Nachweises: Rückweg, wenn der
+                         Beleg-Entwurf beim Ziel verworfen wurde — gibt die
+                         Quellen wieder frei. --}}
+                    <x-action-form :action="route('finance.transfers.cancel', $transfer)"
+                          data-confirm-title="{{ __('finance.action.cancel_transfer') }}"
+                          :confirm="__('finance.confirm_cancel_transfer')"
+                          confirm-icon="undo"
+                          confirm-tone="error"
+                          :confirm-label="__('finance.action.cancel_transfer')">
+                        <x-icon-btn icon="undo" tone="error" size="sm" type="submit" show-label>{{ __('finance.action.cancel_transfer') }}</x-icon-btn>
+                    </x-action-form>
+                @endif
                 @if ($canCorrect)
                     {{-- Korrektur-Übergabe (MVP-490): neuer Nachweis mit denselben
                          Quellen; der alte bleibt unverändert stehen. --}}
@@ -474,6 +487,9 @@
                     <x-status-badge tone="ghost" outline>{{ \App\Support\Trans::or('finance.event.' . $event->event, $event->event) }}</x-status-badge>
                     @if (data_get($event->payload, 'failure_reason'))
                         <span class="text-error">{{ data_get($event->payload, 'failure_reason') }}</span>
+                    @endif
+                    @if ($event->event === 'cancelled' && data_get($event->payload, 'reason'))
+                        <span class="text-base-content/70">{{ data_get($event->payload, 'reason') }}</span>
                     @endif
                 </li>
             @endforeach

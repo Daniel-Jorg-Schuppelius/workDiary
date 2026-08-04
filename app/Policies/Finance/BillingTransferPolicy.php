@@ -50,6 +50,11 @@ class BillingTransferPolicy {
         return $this->manageChannel($user, $transfer);
     }
 
+    /** Storno eines übergebenen Nachweises (zusätzlich finance.config im Controller). */
+    public function cancel(User $user, BillingTransfer $transfer): bool {
+        return $this->manageChannel($user, $transfer);
+    }
+
     private function manageChannel(User $user, BillingTransfer $transfer): bool {
         return $user->can($transfer->channel->permission()->value);
     }

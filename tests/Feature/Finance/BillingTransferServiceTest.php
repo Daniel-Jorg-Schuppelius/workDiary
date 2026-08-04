@@ -349,6 +349,127 @@ class BillingTransferServiceTest extends TestCase {
         $this->assertSame(TransferStatus::Transferred, $transfer->fresh()->status);
     }
 
+    public function test_cancel_releases_sources_from_transferred_transfer(): void {
+        $entry = $this->makeTimeEntry();
+
+        $transfer = $this->service->createDraft($this->customer, TransferChannel::Time, TransferTarget::Datev);
+        $this->service->confirm($transfer);
+        $transfer = $this->service->markTransferred($transfer->fresh(), filePath: 'exports/datev/run-1.zip');
+        $this->assertTrue((bool) $entry->fresh()->exported);
+
+        $transfer = $this->service->cancel($transfer->fresh(), 'Auftrag im Zielsystem verworfen', $this->admin);
+
+        $this->assertSame(TransferStatus::Cancelled, $transfer->status);
+        // Die Übergabe-Historie bleibt stehen — kein stilles Zurücksetzen.
+        $this->assertNotNull($transfer->transferred_at);
+        $this->assertFalse((bool) $entry->fresh()->exported);
+
+        // Grund und Umfang stehen im Hash-Ketten-Ereignis; Kette bleibt intakt.
+        $event = BillingTransferEvent::query()
+            ->where('billing_transfer_id', $transfer->id)
+            ->where('event', 'cancelled')
+            ->firstOrFail();
+        $this->assertSame('Auftrag im Zielsystem verworfen', data_get($event->payload, 'reason'));
+        $this->assertSame(1, (int) data_get($event->payload, 'released_sources'));
+        $this->artisan('audit:verify', ['--chain' => 'billing_transfer_events'])->assertExitCode(0);
+
+        // Quelle ist wieder übergabefähig.
+        $again = $this->service->createDraft($this->customer, TransferChannel::Time, TransferTarget::Datev);
+        $this->assertSame(1, $again->items()->count());
+    }
+
+    public function test_cancel_releases_material_sources(): void {
+        $usage = $this->makeMaterialUsage();
+
+        $transfer = $this->service->createDraft($this->customer, TransferChannel::Material, TransferTarget::Lexoffice);
+        $this->service->confirm($transfer);
+        $transfer = $this->service->markTransferred($transfer->fresh());
+        $this->assertTrue((bool) $usage->fresh()->billed);
+
+        $this->service->cancel($transfer->fresh());
+
+        $this->assertFalse((bool) $usage->fresh()->billed);
+    }
+
+    public function test_cancel_is_rejected_before_transfer(): void {
+        $this->makeTimeEntry();
+
+        $transfer = $this->service->createDraft($this->customer, TransferChannel::Time, TransferTarget::Datev);
+        $this->service->confirm($transfer);
+
+        try {
+            $this->service->cancel($transfer->fresh());
+            $this->fail('cancel() vor transferred muss fehlschlagen');
+        } catch (BillingTransferException $e) {
+            $this->assertSame('illegalTransition', $e->reasonCode);
+        }
+    }
+
+    public function test_cancel_keeps_sources_held_by_confirmed_correction(): void {
+        $entry = $this->makeTimeEntry();
+
+        $original = $this->service->createDraft($this->customer, TransferChannel::Time, TransferTarget::Datev);
+        $this->service->confirm($original);
+        $original = $this->service->markTransferred($original->fresh());
+
+        $correction = $this->service->createCorrection($original, 'Preis falsch', $this->admin);
+        $this->service->confirm($correction);
+
+        // Storno des Originals: die bestätigte Korrektur hält die Quellen weiter.
+        $original = $this->service->cancel($original->fresh());
+
+        $this->assertSame(TransferStatus::Cancelled, $original->status);
+        $this->assertTrue((bool) $entry->fresh()->exported);
+    }
+
+    public function test_cancelled_transfer_remains_immutable(): void {
+        $this->makeTimeEntry();
+
+        $transfer = $this->service->createDraft($this->customer, TransferChannel::Time, TransferTarget::File);
+        $this->service->confirm($transfer);
+        $transfer = $this->service->markTransferred($transfer->fresh());
+        $transfer = $this->service->cancel($transfer->fresh());
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('unveränderlich');
+
+        $transfer->fresh()->update(['file_path' => 'exports/datev/manipuliert.zip']);
+    }
+
+    public function test_void_of_correction_keeps_sources_of_transferred_original(): void {
+        $entry = $this->makeTimeEntry();
+
+        $original = $this->service->createDraft($this->customer, TransferChannel::Time, TransferTarget::Datev);
+        $this->service->confirm($original);
+        $original = $this->service->markTransferred($original->fresh());
+
+        $correction = $this->service->createCorrection($original, null, $this->admin);
+        $this->service->confirm($correction);
+
+        // Verwerfen der Korrektur darf die vom übergebenen Original
+        // verbrauchten Zeiten NICHT freigeben (Regression).
+        $this->service->void($correction->fresh());
+
+        $this->assertTrue((bool) $entry->fresh()->exported);
+        $this->assertSame(TransferStatus::Transferred, $original->fresh()->status);
+    }
+
+    public function test_correction_of_cancelled_transfer_is_rejected(): void {
+        $this->makeTimeEntry();
+
+        $transfer = $this->service->createDraft($this->customer, TransferChannel::Time, TransferTarget::Datev);
+        $this->service->confirm($transfer);
+        $transfer = $this->service->markTransferred($transfer->fresh());
+        $transfer = $this->service->cancel($transfer->fresh());
+
+        try {
+            $this->service->createCorrection($transfer->fresh());
+            $this->fail('createCorrection() nach Storno muss fehlschlagen');
+        } catch (BillingTransferException $e) {
+            $this->assertSame('correctionNotTransferred', $e->reasonCode);
+        }
+    }
+
     public function test_events_are_append_only(): void {
         $this->makeTimeEntry();
         $transfer = $this->service->createDraft($this->customer, TransferChannel::Time, TransferTarget::Datev);
