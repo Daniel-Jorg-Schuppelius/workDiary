@@ -21,7 +21,9 @@ return [
     'default_project' => [
         'name' => env('PROJECT_DEFAULT_NAME', 'Wartung'),
         'color' => env('PROJECT_DEFAULT_COLOR', '#64748b'),
-        'billable' => (bool) env('PROJECT_DEFAULT_BILLABLE', true),
+        // null (Default) = Abrechenbarkeit vom Kunden erben; explizit true/false
+        // setzt ein Override am Standardprojekt, das das Kunden-Flag übersteuert.
+        'billable' => env('PROJECT_DEFAULT_BILLABLE'),
     ],
 
     /*

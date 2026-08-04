@@ -44,6 +44,22 @@ class DefaultProjectTest extends TestCase {
         $this->assertSame((int) $this->organization->id, (int) $default->organization_id);
     }
 
+    public function test_default_project_inherits_billable_from_customer(): void {
+        // Kein explizites billable-Override am Standardprojekt: ein nicht
+        // abrechenbarer Kunde darf über sein Standardprojekt keine
+        // abrechenbaren Zeiten erzeugen (sonst hängt er ewig in Offene Zeiten,
+        // weil der Billable-Sync Overrides nie anfasst).
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'billable' => false,
+        ]);
+
+        $default = $customer->defaultProject();
+        $this->assertNotNull($default);
+        $this->assertNull($default->billable, 'Standardprojekt muss billable erben (NULL), nicht überschreiben');
+        $this->assertFalse($default->effectiveBillable(), 'geerbtes billable folgt dem Kunden-Flag');
+    }
+
     public function test_default_project_or_create_returns_existing(): void {
         $customer = Customer::factory()->create([
             'organization_id' => $this->organization->id,

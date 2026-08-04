@@ -248,12 +248,18 @@ class Customer extends Model {
 
     /**
      * Standardprojekt des Kunden oder lazy anlegen (vom CustomerObserver bei `created`, auch als UI-/Service-Fallback).
+     *
+     * billable bleibt ohne Config-Override NULL (erbt vom Kunden) — ein
+     * explizites billable=1 würde nicht abrechenbare Kunden dauerhaft in
+     * „Offene Zeiten" halten, weil der Billable-Sync Overrides nie anfasst.
      */
     public function defaultProjectOrCreate(): Project {
         $existing = $this->defaultProject();
         if ($existing instanceof Project) {
             return $existing;
         }
+
+        $billable = config('project.default_project.billable');
 
         /** @var Project $project */
         $project = $this->projects()->create([
@@ -262,7 +268,7 @@ class Customer extends Model {
             'color' => (string) config('project.default_project.color', '#64748b'),
             'status' => ProjectStatus::Active->value,
             'is_default' => true,
-            'billable' => (bool) config('project.default_project.billable', true),
+            'billable' => $billable === null ? null : filter_var($billable, FILTER_VALIDATE_BOOL),
             'global_activities' => true,
         ]);
 
