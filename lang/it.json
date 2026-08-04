@@ -173,6 +173,7 @@
     ":profile · :gross :currency, fällig :due": ":profile · :gross :currency, scadenza :due",
     ":proposed Vorschlag/Vorschläge erzeugt, :exempt Ausnahme(n).": ":proposed proposta/e generata/e, :exempt eccezione/i.",
     ":pushed zurückgebucht, :skipped übersprungen, :failed fehlgeschlagen.": ":pushed ricaricati, :skipped saltati, :failed non riusciti.",
+    ":removed lokale Einträge entfernt (in Toggl gelöscht).": ":removed voci locali rimosse (eliminate in Toggl).",
     ":responses Antworten auf :closed gelöste Tickets.": ":responses risposte su :closed ticket risolti.",
     ":title — fällig am :date.": ":title — scadenza il :date.",
     ":total Fälle, :cost € Kosten": ":total casi, :cost € di costi",

@@ -54,7 +54,11 @@ class TogglImportCommand extends Command {
             $this->info("Toggl-Import für Organisation #{$org->id} ({$org->name}) [{$from->toDateString()} – {$to->toDateString()}]...");
             try {
                 $result = $service->importFromApi($org, $config, $from, $to);
-                $this->line("  created: {$result['created']}, skipped: {$result['skipped']}, unmatched: {$result['unmatched']}");
+                $removed = $result['removed'];
+                $this->line("  created: {$result['created']}, skipped: {$result['skipped']}, unmatched: {$result['unmatched']}, updated: {$result['updated']}, conflicts: {$result['conflicts']}, removed: {$removed}");
+                if ($removed > 0) {
+                    $this->warn("  {$removed} lokale Einträge entfernt (drüben gelöscht).");
+                }
             } catch (\Throwable $e) {
                 $this->error("  Fehler: {$e->getMessage()}");
             }

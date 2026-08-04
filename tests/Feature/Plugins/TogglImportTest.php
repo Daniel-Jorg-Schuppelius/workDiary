@@ -283,6 +283,45 @@ class TogglImportTest extends TestCase {
     }
 
     /**
+     * Löschungen dürfen nur aus einem vollständigen Abruf abgeleitet werden:
+     * bricht ein Teil des Laufs still ab (hier: die Workspace-Liste), gälten
+     * alle ungelieferten Einträge fälschlich als drüben gelöscht — so gingen
+     * am 01./02.08.2026 real 50+44 Einträge verloren (Flip-Flop).
+     */
+    public function test_api_import_entfernt_geloeschte_nur_nach_vollstaendigem_abruf(): void {
+        $config = $this->enableToggl();
+        $project = $this->customerWithProject('Acme', 'Website');
+        $clients = [['id' => 5, 'name' => 'Acme']];
+        $projects = [['id' => 9, 'name' => 'Website', 'client_id' => 5, 'workspace_id' => 1]];
+        $entry111 = ['id' => 111, 'workspace_id' => 1, 'project_id' => 9, 'start' => '2026-05-26T10:00:00+00:00', 'stop' => '2026-05-26T10:45:00+00:00', 'billable' => true, 'description' => 'Bugfix'];
+        $entry222 = ['id' => 222, 'workspace_id' => 1, 'project_id' => 9, 'start' => '2026-05-26T12:00:00+00:00', 'stop' => '2026-05-26T12:30:00+00:00', 'billable' => true, 'description' => 'Review'];
+        $from = CarbonImmutable::parse('2026-05-25');
+        $to = CarbonImmutable::parse('2026-05-27');
+
+        // Erstimport: beide Einträge kommen an.
+        $this->fakeApi(timeEntries: [$entry111, $entry222], clients: $clients, projects: $projects);
+        $this->service()->importFromApi($this->organization, $config, $from, $to);
+        $this->assertSame(2, TimeEntry::query()->where('project_id', $project->id)->count());
+
+        // Teilabruf: die Workspace-Liste bricht ab (500) — Eintrag 222 fehlt
+        // in der Lieferung, darf aber NICHT als gelöscht gelten.
+        FakePluginHttp::fake([
+            'https://api.track.toggl.com/api/v9/me/time_entries*' => FakePluginHttp::response([$entry111], 200),
+            'https://api.track.toggl.com/api/v9/me*' => FakePluginHttp::response(['email' => 'tech@example.com', 'clients' => $clients, 'projects' => $projects], 200),
+            'https://api.track.toggl.com/api/v9/workspaces' => FakePluginHttp::response(['error' => 'boom'], 500),
+        ]);
+        $partial = $this->service()->importFromApi($this->organization, $config, $from, $to);
+        $this->assertSame(0, $partial['removed']);
+        $this->assertSame(2, TimeEntry::query()->where('project_id', $project->id)->count());
+
+        // Vollständiger Lauf ohne 222 → jetzt ist es eine echte Löschung.
+        $this->fakeApi(timeEntries: [$entry111], clients: $clients, projects: $projects);
+        $complete = $this->service()->importFromApi($this->organization, $config, $from, $to);
+        $this->assertSame(1, $complete['removed']);
+        $this->assertSame(1, TimeEntry::query()->where('project_id', $project->id)->count());
+    }
+
+    /**
      * Toggl Free meldet billable=false für JEDEN Eintrag (Premium-Feature) —
      * das ist kein Signal: der Eintrag erbt die effektive Projekt-Abrechenbarkeit.
      */

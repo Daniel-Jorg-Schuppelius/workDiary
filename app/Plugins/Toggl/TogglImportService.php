@@ -45,12 +45,12 @@ class TogglImportService extends MatchingTimeImportService {
      * Holt die Zeiteinträge der Toggl-API im Fenster [$from, $to] und verarbeitet sie.
      *
      * @param  array<string, mixed>  $config  Ergebnis von {@see TogglConfig::resolve()}
-     * @return array{created: int, skipped: int, unmatched: int}
+     * @return array{created: int, skipped: int, unmatched: int, updated: int, conflicts: int, removed: int}
      */
     public function importFromApi(Organization $organization, array $config, CarbonImmutable $from, CarbonImmutable $to): array {
         $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id']);
         if (! $client->isConfigured()) {
-            return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'updated' => 0, 'conflicts' => 0];
+            return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'updated' => 0, 'conflicts' => 0, 'removed' => 0];
         }
 
         // Workspace-Namen für die Inbox-Anzeige (Gruppen sind je Workspace getrennt).
@@ -78,9 +78,12 @@ class TogglImportService extends MatchingTimeImportService {
             $organization,
             $this->mapEntries(array_values($entries), $workspaceNames),
             $config,
-            // Der Lauf liest /me PLUS alle Workspaces vollständig — fehlende
-            // Einträge sind drüben gelöscht.
-            new RemoteSyncWindow($from, $to),
+            // Löschungen dürfen nur aus einem nachweislich vollständigen Lauf
+            // abgeleitet werden: bricht /me, die Workspace-Liste oder die
+            // Reports-Pagination still ab (429/Timeout/Rechte), gälte alles
+            // Ungelieferte fälschlich als drüben gelöscht — Massenlöschung
+            // lokaler Zeiten (passiert am 01./02.08.2026: 50+44 Einträge).
+            RemoteSyncWindow::whenComplete($client->isFetchComplete(), $from, $to),
         );
     }
 

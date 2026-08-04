@@ -35,12 +35,25 @@ class TogglApiClient implements RemoteTimeWriter {
 
     private ?PluginApiClient $api = null;
 
+    /**
+     * Ob seit Instanziierung alle Eintrags-Abrufe vollständig waren. Degradiert
+     * bei stillen Abbrüchen (/me, Workspace-Liste, Reports-Pagination) — die
+     * Löschungserkennung darf dann NICHT laufen, sonst gilt alles Ungelieferte
+     * fälschlich als drüben gelöscht (Massenlöschung, siehe RemoteSyncWindow).
+     */
+    private bool $fetchComplete = true;
+
     public function __construct(
         private readonly ?string $apiToken,
         private readonly string $baseUrl = 'https://api.track.toggl.com/api/v9',
         /** Optionaler Workspace-Filter; null = alle Workspaces des Tokens. */
         private readonly ?int $workspaceId = null,
     ) {}
+
+    /** Waren alle Eintrags-Abrufe dieser Instanz vollständig? */
+    public function isFetchComplete(): bool {
+        return $this->fetchComplete;
+    }
 
     public function isConfigured(): bool {
         return $this->apiToken !== null && $this->apiToken !== '';
@@ -76,6 +89,8 @@ class TogglApiClient implements RemoteTimeWriter {
             ], ['timeout' => 20]);
 
         if (! $response->successful()) {
+            $this->fetchComplete = false;
+
             return [];
         }
 
@@ -198,6 +213,10 @@ class TogglApiClient implements RemoteTimeWriter {
 
         $response = $this->api()->getResponse($this->baseUrl . '/workspaces', [], ['timeout' => 20]);
         if (! $response->successful()) {
+            // Ohne Workspace-Liste liest der Import-Lauf keinen einzigen
+            // Workspace über die Reports-API — der Lauf ist unvollständig.
+            $this->fetchComplete = false;
+
             return [];
         }
 
@@ -446,6 +465,8 @@ class TogglApiClient implements RemoteTimeWriter {
 
             $response = $this->api()->postJson($url, $payload, ['timeout' => 60]);
             if (! $response->successful()) {
+                $this->fetchComplete = false;
+
                 break;
             }
 

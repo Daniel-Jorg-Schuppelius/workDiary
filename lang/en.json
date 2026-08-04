@@ -173,6 +173,7 @@
     ":profile · :gross :currency, fällig :due": ":profile · :gross :currency, due :due",
     ":proposed Vorschlag/Vorschläge erzeugt, :exempt Ausnahme(n).": ":proposed proposal(s) generated, :exempt exemption(s).",
     ":pushed zurückgebucht, :skipped übersprungen, :failed fehlgeschlagen.": ":pushed pushed back, :skipped skipped, :failed failed.",
+    ":removed lokale Einträge entfernt (in Toggl gelöscht).": ":removed local entries removed (deleted in Toggl).",
     ":responses Antworten auf :closed gelöste Tickets.": ":responses responses for :closed resolved tickets.",
     ":title — fällig am :date.": ":title — due on :date.",
     ":total Fälle, :cost € Kosten": ":total cases, :cost € costs",

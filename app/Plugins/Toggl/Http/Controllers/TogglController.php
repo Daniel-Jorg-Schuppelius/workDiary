@@ -566,9 +566,16 @@ class TogglController extends Controller {
                 : (string) __('Import abgeschlossen.'));
     }
 
-    /** @param array{created: int, skipped: int, unmatched: int} $result */
+    /** @param array{created: int, skipped: int, unmatched: int, updated?: int, conflicts?: int, removed?: int} $result */
     private function importMessage(array $result): string {
-        return (string) __(':created gebucht, :skipped übersprungen, :unmatched in der Inbox.', $result);
+        $message = (string) __(':created gebucht, :skipped übersprungen, :unmatched in der Inbox.', $result);
+
+        $removed = (int) ($result['removed'] ?? 0);
+        if ($removed > 0) {
+            $message .= ' ' . __(':removed lokale Einträge entfernt (in Toggl gelöscht).', ['removed' => $removed]);
+        }
+
+        return $message;
     }
 
     /** Lädt eine Toggl-Mapping-Reference der Organisation oder bricht mit 404 ab. */

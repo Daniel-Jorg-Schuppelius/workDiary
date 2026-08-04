@@ -173,6 +173,7 @@
     ":profile · :gross :currency, fällig :due": ":profile · :gross :currency, vence :due",
     ":proposed Vorschlag/Vorschläge erzeugt, :exempt Ausnahme(n).": ":proposed propuesta(s) generada(s), :exempt excepción(es).",
     ":pushed zurückgebucht, :skipped übersprungen, :failed fehlgeschlagen.": ":pushed devueltos, :skipped omitidos, :failed fallidos.",
+    ":removed lokale Einträge entfernt (in Toggl gelöscht).": ":removed entradas locales eliminadas (borradas en Toggl).",
     ":responses Antworten auf :closed gelöste Tickets.": ":responses respuestas de :closed tickets resueltos.",
     ":title — fällig am :date.": ":title — vence el :date.",
     ":total Fälle, :cost € Kosten": ":total casos, :cost € de costes",
