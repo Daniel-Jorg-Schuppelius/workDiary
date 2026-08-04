@@ -13,6 +13,7 @@ namespace App\Console\Commands\Billing;
 use App\Console\Concerns\IteratesOrganizations;
 use App\Models\{Customer, Organization, TimeEntry};
 use App\Support\Sqid;
+use CommonToolkit\Helper\Data\DateHelper;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -38,24 +39,50 @@ class ReopenTimesCommand extends Command {
 
     protected $signature = 'billing:reopen-times '
         . self::ORGANIZATION_OPTION
-        . ' {--from= : Leistungsdatum ab (YYYY-MM-DD), Pflicht}'
-        . ' {--to= : Leistungsdatum bis (YYYY-MM-DD)}'
+        . ' {--from= : Leistungsdatum ab (YYYY-MM-DD oder TT.MM.JJJJ), Pflicht}'
+        . ' {--to= : Leistungsdatum bis (YYYY-MM-DD oder TT.MM.JJJJ)}'
         . ' {--customer= : Kundennummer, Sqid oder ID eines einzelnen Kunden}'
         . ' {--apply : Änderungen schreiben (sonst Dry-Run)}';
 
     protected $description = 'Öffnet fälschlich als abgerechnet markierte Zeiten ab einem Leistungsdatum wieder. Rechnungs-, Übergabe- und saldo-geführte Zeiten bleiben unangetastet. Ohne --apply nur Dry-Run.';
 
     public function handle(): int {
-        $from = trim((string) $this->option('from'));
-        if ($from === '') {
+        $fromRaw = trim((string) $this->option('from'));
+        if ($fromRaw === '') {
             $this->error('--from ist Pflicht (Leistungsdatum ab, z. B. --from=2026-04-01).');
 
             return self::FAILURE;
         }
 
+        // Strikt parsen (ISO oder deutsches Format): ein unlesbares Datum
+        // ginge sonst als roher String in den Vergleich und schaltete den
+        // Filter faktisch ab ('2019-04-29' >= '01.04.2027' ist als
+        // Stringvergleich wahr — die Massenaktion träfe ALLE Zeiten).
+        $from = DateHelper::parseFlexible($fromRaw)?->format('Y-m-d');
+        if ($from === null) {
+            $this->error(sprintf('--from=%s ist kein lesbares Datum (YYYY-MM-DD oder TT.MM.JJJJ).', $fromRaw));
+
+            return self::FAILURE;
+        }
+
+        $toRaw = trim((string) $this->option('to'));
+        $to = null;
+        if ($toRaw !== '') {
+            $to = DateHelper::parseFlexible($toRaw)?->format('Y-m-d');
+            if ($to === null) {
+                $this->error(sprintf('--to=%s ist kein lesbares Datum (YYYY-MM-DD oder TT.MM.JJJJ).', $toRaw));
+
+                return self::FAILURE;
+            }
+        }
+
+        if ($from > now()->toDateString()) {
+            $this->warn(sprintf('Hinweis: --from=%s liegt in der Zukunft — es wird nichts zu öffnen geben.', $from));
+        }
+
         $apply = (bool) $this->option('apply');
 
-        $failures = $this->forEachOrganization(function (Organization $org) use ($from, $apply): void {
+        $failures = $this->forEachOrganization(function (Organization $org) use ($from, $to, $apply): void {
             $customerId = $this->customerId();
             if ($this->option('customer') !== null && $this->option('customer') !== '' && $customerId === null) {
                 $this->warn(sprintf('Organisation #%d (%s): Kunde nicht gefunden — übersprungen.', $org->id, $org->name));
@@ -63,7 +90,7 @@ class ReopenTimesCommand extends Command {
                 return;
             }
 
-            $query = $this->query($from, $customerId);
+            $query = $this->query($from, $to, $customerId);
             $total = (clone $query)->count();
 
             if ($total === 0) {
@@ -73,7 +100,7 @@ class ReopenTimesCommand extends Command {
             }
 
             // Übersicht je Kunde, damit vor dem Schreiben sichtbar ist, wen es trifft.
-            foreach ($this->byCustomer($from, $customerId) as $row) {
+            foreach ($this->byCustomer($from, $to, $customerId) as $row) {
                 $this->line(sprintf(
                     '  %s: %d Einträge (%s – %s)',
                     $row['customer_name'],
@@ -93,7 +120,7 @@ class ReopenTimesCommand extends Command {
                 $org->audit('time_entries.reopened', [
                     'count' => $total,
                     'from' => $from,
-                    'to' => trim((string) $this->option('to')) ?: null,
+                    'to' => $to,
                     'customer_id' => $customerId,
                 ]);
             }
@@ -111,13 +138,11 @@ class ReopenTimesCommand extends Command {
     }
 
     /** @return Builder<TimeEntry> */
-    private function query(string $from, ?int $customerId): Builder {
-        $to = trim((string) $this->option('to'));
-
+    private function query(string $from, ?string $to, ?int $customerId): Builder {
         return TimeEntry::query()
             ->where('exported', true)
             ->whereDate('date', '>=', $from)
-            ->when($to !== '', fn(Builder $q) => $q->whereDate('date', '<=', $to))
+            ->when($to !== null, fn(Builder $q) => $q->whereDate('date', '<=', $to))
             ->when($customerId !== null, fn(Builder $q) => $q->whereHas('project', fn(Builder $p) => $p->where('customer_id', $customerId)))
             // Saldo-geführte Kunden: dort ist `exported` das Ergebnis des
             // Monatsabschlusses, kein Abrechnungs-Versehen.
@@ -143,8 +168,8 @@ class ReopenTimesCommand extends Command {
      *
      * @return array<int, array{customer_name: string, entries: int, first_date: string, last_date: string}>
      */
-    private function byCustomer(string $from, ?int $customerId): array {
-        $rows = $this->query($from, $customerId)
+    private function byCustomer(string $from, ?string $to, ?int $customerId): array {
+        $rows = $this->query($from, $to, $customerId)
             ->leftJoin('projects', 'projects.id', '=', 'time_entries.project_id')
             ->leftJoin('customers', 'customers.id', '=', 'projects.customer_id')
             ->reorder()

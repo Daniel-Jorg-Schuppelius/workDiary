@@ -229,6 +229,36 @@ class EtsyReceiptImportTest extends TestCase {
         $this->assertTrue((bool) data_get($this->connection->refresh()->last_sync_counters, 'truncated'));
     }
 
+    public function test_sku_mapping_links_unique_variant_and_stages_the_rest(): void {
+        $article = \App\Models\Article::factory()->create(['organization_id' => $this->organization->id]);
+        $variant = \App\Models\ArticleVariant::factory()->create(['article_id' => $article->id, 'sku' => 'SKU-1']);
+
+        $this->fakeReceipts([
+            $this->receipt(900, null, 'A B'),
+            $this->receipt(901, null, 'C D', ['transactions' => [[
+                'transaction_id' => 9011,
+                'listing_id' => 222,
+                'sku' => 'UNBEKANNT',
+                'quantity' => 1,
+            ]]]),
+        ]);
+        app(EtsyReceiptImportService::class)->import($this->organization);
+
+        $mapped = \App\Models\ExternalArticleMapping::query()
+            ->where('plugin_id', EtsyPlugin::ID)
+            ->where('external_id', '111')
+            ->firstOrFail();
+        $this->assertSame($variant->id, (int) $mapped->article_variant_id);
+        $this->assertSame('synced', $mapped->sync_status);
+
+        $pending = \App\Models\ExternalArticleMapping::query()
+            ->where('plugin_id', EtsyPlugin::ID)
+            ->where('external_id', '222')
+            ->firstOrFail();
+        $this->assertNull($pending->article_variant_id);
+        $this->assertSame('pending', $pending->sync_status);
+    }
+
     public function test_admin_page_lists_receipts(): void {
         $this->fakeReceipts([$this->receipt(900, 501, 'Max Muster')]);
         app(EtsyReceiptImportService::class)->import($this->organization);

@@ -14,8 +14,9 @@ namespace App\Plugins\Etsy\Http\Controllers;
 
 use App\Models\{EtsyConnection, EtsyReceipt, IntegrationInboxItem, User};
 use App\Plugins\Etsy\Api\{EtsyClientFactory, EtsyOAuthGrant};
-use App\Plugins\Etsy\Services\{EtsyLedgerImportService, EtsyReceiptImportService};
 use App\Plugins\Etsy\{EtsyConfig, EtsyPlugin};
+use App\Plugins\Etsy\Services\{EtsyLedgerImportService, EtsyReceiptImportService};
+use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
 use App\Services\Integration\IntegrationOutboxService;
 use Illuminate\Database\Eloquent\Model;
@@ -33,6 +34,10 @@ use Throwable;
  * Etsy-Portal und den Bestellspiegel mit Versand-Aktion (MVP-497).
  */
 class EtsyAdminController extends ConnectionOAuthController {
+    // Trait erneut einbinden: die admin()/organization()-Helfer sind private
+    // und damit aus der Basisklasse nicht sichtbar (Muster Calendly).
+    use ResolvesPluginOrgContext;
+
     public function index(Request $request): View {
         $admin = $this->admin();
         $organization = $this->organization($admin);

@@ -62,7 +62,10 @@ final class EtsyWebhookTest extends TestCase {
         ]);
     }
 
-    /** @param array<string, mixed> $payload */
+    /**
+     * @param array<string, mixed> $payload
+     * @return TestResponse<\Illuminate\Http\Response>
+     */
     private function postWebhook(array $payload, ?string $token = null, ?string $signature = null, ?int $timestamp = null, string $webhookId = 'msg-1'): TestResponse {
         $token ??= (string) $this->connection->webhook_token;
         $raw = (string) json_encode($payload);

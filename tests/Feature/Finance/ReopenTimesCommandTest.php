@@ -215,6 +215,33 @@ class ReopenTimesCommandTest extends TestCase {
         $this->assertTrue((bool) $foreign->fresh()->exported);
     }
 
+    public function test_deutsches_datum_wird_geparst(): void {
+        $before = $this->closedEntry('2026-03-15');
+        $after = $this->closedEntry('2026-04-14');
+
+        $this->artisan('billing:reopen-times', [
+            '--from' => '01.04.2026',
+            '--apply' => true,
+        ])->assertSuccessful();
+
+        $this->assertTrue((bool) $before->fresh()->exported, 'Vor dem Stichtag muss geschlossen bleiben.');
+        $this->assertFalse((bool) $after->fresh()->exported);
+    }
+
+    public function test_unlesbares_datum_bricht_ab(): void {
+        // Regression: ein unlesbares Datum ging als roher String in den
+        // Vergleich und schaltete den Filter ab — die Massenaktion hätte
+        // ALLE geschlossenen Zeiten getroffen.
+        $entry = $this->closedEntry('2026-04-14');
+
+        $this->artisan('billing:reopen-times', [
+            '--from' => 'kein-datum',
+            '--apply' => true,
+        ])->assertFailed();
+
+        $this->assertTrue((bool) $entry->fresh()->exported);
+    }
+
     public function test_ohne_from_bricht_ab(): void {
         $entry = $this->closedEntry('2026-04-14');
 

@@ -13,9 +13,8 @@ namespace Tests\Feature\Plugins\Etsy;
 use App\Models\{EtsyConnection, Organization, PluginSetting, User};
 use App\Plugins\Etsy\Api\EtsyOAuthGrant;
 use App\Plugins\Etsy\EtsyPlugin;
-use GuzzleHttp\Client as GuzzleClient;
+use GuzzleHttp\{Client as GuzzleClient, HandlerStack};
 use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response as Psr7Response;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -74,8 +73,10 @@ final class EtsyOAuthTest extends TestCase {
         $this->assertStringContainsString('client_id=ks-1', $location);
 
         parse_str((string) parse_url($location, PHP_URL_QUERY), $query);
+        $state = $query['state'] ?? '';
+        $this->assertIsString($state);
 
-        return (string) $query['state'];
+        return $state;
     }
 
     public function test_start_requires_configured_seller_app(): void {

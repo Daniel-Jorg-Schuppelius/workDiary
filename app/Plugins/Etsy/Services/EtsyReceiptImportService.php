@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Etsy\Services;
 
-use App\Models\{Customer, EtsyConnection, EtsyReceipt, Organization};
+use App\Models\{ArticleVariant, Customer, EtsyConnection, EtsyReceipt, ExternalArticleMapping, Organization};
 use App\Plugins\Etsy\Api\EtsyClientFactory;
 use App\Plugins\Etsy\{EtsyConfig, EtsyPlugin};
 use App\Services\Integration\{IntegrationResolver, MatchProfileRegistry};
@@ -155,6 +155,52 @@ class EtsyReceiptImportService {
         );
 
         $row->wasRecentlyCreated ? $counters['imported']++ : $counters['updated']++;
+
+        $this->mapArticles($organization, $row->items ?? []);
+    }
+
+    /**
+     * SKU→Artikel-Zuordnung (MVP-495, Muster BillbeeArticleMappingService):
+     * je Transaction-Position eine `ExternalArticleMapping`-Zeile
+     * (external_id = Etsy-listing_id, external_number = SKU); eindeutige
+     * SKU-Treffer im Variantenstamm werden verlinkt, der Rest bleibt als
+     * `pending` sichtbar — kein Inbox-Fall (Policy, Feature-Doku).
+     *
+     * @param array<int, mixed> $items
+     */
+    private function mapArticles(Organization $organization, array $items): void {
+        foreach ($items as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+            $listingId = isset($item['listing_id']) ? (string) $item['listing_id'] : '';
+            if ($listingId === '') {
+                continue;
+            }
+            $sku = trim((string) ($item['sku'] ?? ''));
+
+            $variant = $sku !== ''
+                ? ArticleVariant::query()->withoutGlobalScopes()
+                    ->where('sku', $sku)
+                    ->whereHas('article', fn($q) => $q->withoutGlobalScopes()->where('organization_id', $organization->id))
+                    ->first()
+                : null;
+
+            ExternalArticleMapping::query()->updateOrCreate(
+                [
+                    'organization_id' => $organization->id,
+                    'plugin_id' => EtsyPlugin::ID,
+                    'external_id' => $listingId,
+                ],
+                [
+                    'external_number' => $sku !== '' ? $sku : null,
+                    'article_variant_id' => $variant?->id,
+                    'article_id' => $variant?->article_id,
+                    'sync_status' => $variant !== null ? 'synced' : 'pending',
+                    'last_synced_at' => now(),
+                ],
+            );
+        }
     }
 
     /**

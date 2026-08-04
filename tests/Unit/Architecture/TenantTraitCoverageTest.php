@@ -128,6 +128,11 @@ class TenantTraitCoverageTest extends TestCase {
         // signing_key, dann Signaturprüfung); nullable organization_id, kein
         // Global-Scope. Siehe Allow-List im Audit-Doc.
         \App\Models\CalendlyWebhookDelivery::class,
+        // Etsy-Webhook-Dedup (Feature 101, MVP-496): analog Todoist/Calendly ein
+        // Betriebsprotokoll, das VOR der Org-Zuordnung entsteht (webhook_token→
+        // Connection, dann Svix-Signaturprüfung); nullable organization_id,
+        // kein Global-Scope. Siehe Allow-List im Audit-Doc.
+        \App\Models\EtsyWebhookDelivery::class,
         // Restore-Test-Register (Feature 017): plattformweites Protokoll der
         // Wiederherstellungs-Tests — analog BackupHeartbeat findet der
         // Restore-Vorgang ohne Tenant-Kontext statt. Siehe Allow-List im Audit-Doc.
