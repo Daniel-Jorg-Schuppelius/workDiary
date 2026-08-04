@@ -100,6 +100,7 @@ return [
             'events' => 'Recupero eventi dominio',
         ],
         'easybill' => ['sync' => 'Recupero documenti easybill'],
+        'etsy' => ['sync' => 'Sincronizzazione Etsy'],
         'integration' => ['purge_inbox' => 'Ripulire la inbox delle integrazioni'],
         'finance' => ['open_times_digest' => 'Digest dei tempi aperti per la contabilità'],
         'inventory' => ['cycle_counts' => 'Avvio inventario ciclico', 'expiring_lots' => 'Monitoraggio TMC (lotti in scadenza)'],

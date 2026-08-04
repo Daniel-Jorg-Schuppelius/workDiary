@@ -100,6 +100,7 @@ return [
             'events' => 'Domain-Ereignisse abrufen',
         ],
         'easybill' => ['sync' => 'easybill-Belegabruf'],
+        'etsy' => ['sync' => 'Etsy-Abgleich'],
         'integration' => ['purge_inbox' => 'Integrations-Inbox bereinigen'],
         'finance' => ['open_times_digest' => 'Offene-Zeiten-Digest an die Buchhaltung'],
         'inventory' => ['cycle_counts' => 'Zyklische Inventur anstoßen', 'expiring_lots' => 'MHD-Überwachung (ablaufende Chargen)'],

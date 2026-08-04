@@ -494,6 +494,15 @@ return [
             'criticality' => 'integration',
             'expected_runtime_minutes' => 10,
         ],
+        // --- Etsy-Marktplatz-Sync (Feature 101, MVP-495/498) ---
+        'etsy.sync' => [
+            'command' => 'etsy:sync',
+            'plugin' => 'etsy',
+            'cadence' => ['type' => 'everyFifteenMinutes'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 10,
+        ],
         // --- easybill-Beleg-Rückabruf (Feature 093, MVP-431) ---
         'easybill.sync' => [
             'command' => 'easybill:sync',

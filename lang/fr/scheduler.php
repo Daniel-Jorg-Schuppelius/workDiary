@@ -100,6 +100,7 @@ return [
             'events' => 'Récupérer les événements de domaine',
         ],
         'easybill' => ['sync' => 'Récupération de documents easybill'],
+        'etsy' => ['sync' => 'Synchronisation Etsy'],
         'integration' => ['purge_inbox' => 'Purger la boîte de réception d\'intégration'],
         'finance' => ['open_times_digest' => 'Digest des temps ouverts pour la comptabilité'],
         'inventory' => ['cycle_counts' => 'Lancer l\'inventaire tournant', 'expiring_lots' => 'Surveillance DLUO (lots expirants)'],

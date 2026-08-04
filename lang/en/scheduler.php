@@ -100,6 +100,7 @@ return [
             'events' => 'Fetch domain events',
         ],
         'easybill' => ['sync' => 'easybill document retrieval'],
+        'etsy' => ['sync' => 'Etsy sync'],
         'integration' => ['purge_inbox' => 'Purge integration inbox'],
         'finance' => ['open_times_digest' => 'Open-times digest for accounting'],
         'inventory' => ['cycle_counts' => 'Trigger cycle counts', 'expiring_lots' => 'Best-before monitoring (expiring lots)'],
