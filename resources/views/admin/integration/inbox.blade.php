@@ -66,7 +66,10 @@
                 'target' => $filters['target'] !== 'all' ? $filters['target'] : null,
             ], fn(?string $v): bool => $v !== null && $v !== '');
         @endphp
-        <div role="tablist" class="tabs tabs-box mb-4 flex-nowrap overflow-x-auto">
+        {{-- shrink-0: die Page-Shell ist eine höhenbegrenzte Flex-Spalte —
+             ohne shrink-0 wird die Tab-Leiste vertikal gestaucht (vgl.
+             projects/show). --}}
+        <div role="tablist" class="tabs tabs-box mb-4 w-full shrink-0 flex-nowrap overflow-x-auto">
             <a role="tab"
                href="{{ route('admin.integration.inbox', $tabParams) }}"
                class="tab whitespace-nowrap {{ $filters['plugin'] === 'all' ? 'tab-active' : '' }}">{{ __('Alle Quellen') }}</a>
