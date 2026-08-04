@@ -13,9 +13,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Customer, ForeignCustomer, IntegrationInboxItem, Organization, Project, User};
+use App\Models\{Customer, ForeignCustomer, IntegrationInboxItem, Organization, Project, TimeEntry, User};
 use App\Services\Integration\{InboxActionService, InboxGroupBookerRegistry, MatchProfileRegistry};
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\{MorphTo, Relation};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB};
 use Illuminate\View\View;
@@ -44,12 +45,29 @@ class IntegrationInboxController extends Controller {
             ->when($caseType !== 'all', fn($q) => $q->where('case_type', $caseType))
             ->when($plugin !== 'all', fn($q) => $q->where('plugin_id', $plugin))
             ->when($target !== 'all', fn($q) => $q->where('target_type', $target))
-            ->with('referenceable')
+            // Zeiteintrag-Kontext (Datum/Zeit/Projekt/Kunde) wird je Item
+            // angezeigt — die Relationen kommen ohne N+1 mit.
+            ->with(['referenceable' => function (Relation $relation): void {
+                if ($relation instanceof MorphTo) {
+                    $relation->morphWith([TimeEntry::class => ['project.customer', 'user:id,name']]);
+                }
+            }])
             ->orderByDesc('id');
 
         $plugins = IntegrationInboxItem::query()
             ->where('organization_id', $user->organization_id)
             ->distinct()->orderBy('plugin_id')->pluck('plugin_id')->all();
+
+        // Offene Einzel-Items je Quelle für die Quellen-Tabs — unabhängig vom
+        // aktiven Plugin-Filter, damit die Tab-Zähler stabil bleiben.
+        $pluginOpenCounts = IntegrationInboxItem::query()
+            ->where('organization_id', $user->organization_id)
+            ->whereNull('group_key')
+            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->selectRaw('plugin_id, COUNT(*) AS aggregate')
+            ->groupBy('plugin_id')
+            ->pluck('aggregate', 'plugin_id')
+            ->all();
 
         // Offene Zeit-Import-Gruppen je Plugin (nur wenn Status-Filter sie zeigt).
         $groups = collect();
@@ -91,6 +109,7 @@ class IntegrationInboxController extends Controller {
             'foreignCustomers' => $foreignCustomers,
             'filters' => ['status' => $status, 'case' => $caseType, 'plugin' => $plugin, 'target' => $target],
             'plugins' => $plugins,
+            'pluginOpenCounts' => $pluginOpenCounts,
             'targets' => $registry->options(),
             'assignTargets' => $assignTargets,
             'openCount' => $this->openCount($user),

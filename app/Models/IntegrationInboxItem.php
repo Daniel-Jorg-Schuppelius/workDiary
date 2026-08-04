@@ -120,6 +120,36 @@ class IntegrationInboxItem extends Model {
     }
 
     /**
+     * Menschenlesbarer Titel: bekannte technische Schlüssel (Outbox-Operationen
+     * wie `toggl.time_entry.update`, Import-Reason-Codes) werden übersetzt,
+     * alles andere kommt unverändert aus `display_title`. Import-Konflikte
+     * setzen gar keinen Titel — dort trägt der Reason-Code die Bedeutung.
+     */
+    public function displayTitleText(): ?string {
+        $title = trim((string) $this->display_title);
+
+        if (preg_match('/^([a-z0-9_-]+)\.time_entry\.(update|delete)$/', $title, $m) === 1) {
+            $plugin = ucfirst($m[1]);
+
+            return $m[2] === 'delete'
+                ? (string) __('Zeit-Löschung nicht nach :plugin übertragen', ['plugin' => $plugin])
+                : (string) __('Zeit-Änderung nicht nach :plugin übertragen', ['plugin' => $plugin]);
+        }
+
+        if ($title === '') {
+            $reason = (string) (($this->remote_snapshot ?? [])['reason'] ?? '');
+
+            return match ($reason) {
+                'remote_changed_after_export' => (string) __('Zeiteintrag extern geändert (bereits abgerechnet)'),
+                'remote_deleted_after_export' => (string) __('Zeiteintrag extern gelöscht (bereits abgerechnet)'),
+                default => null,
+            };
+        }
+
+        return $title;
+    }
+
+    /**
      * Der lokale (Haupt-)Kandidat bei conflict/ambiguous.
      *
      * @return MorphTo<Model, $this>

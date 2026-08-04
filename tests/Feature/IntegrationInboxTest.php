@@ -50,6 +50,78 @@ class IntegrationInboxTest extends TestCase {
         $this->actingAs($this->admin)->get(route('admin.integration.inbox'))->assertOk();
     }
 
+    public function test_index_shows_plugin_tabs(): void {
+        $this->item();
+        $this->item(['plugin_id' => 'fritzbox', 'dedupe_key' => 'client:fb-1']);
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.integration.inbox'))
+            ->assertOk()
+            ->assertSee(__('Alle Quellen'))
+            ->assertSee(route('admin.integration.inbox', ['plugin' => 'toggl']), escape: false)
+            ->assertSee(route('admin.integration.inbox', ['plugin' => 'fritzbox']), escape: false);
+    }
+
+    public function test_conflict_item_shows_translated_title_and_time_entry_context(): void {
+        // Outbox-Fehlschlag wie aus IntegrationOutboxDeliveryJob::compensateEntry():
+        // technischer Operations-Key als Titel, betroffener Zeiteintrag als referenceable.
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Semso Multimedia']);
+        $project = \App\Models\Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'name' => 'Fernwartung',
+        ]);
+        $entry = \App\Models\TimeEntry::factory()->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $project->id,
+            'user_id' => $this->admin->id,
+            'date' => '2026-07-31',
+            'started_at' => '2026-07-31 11:28:00',
+            'ended_at' => '2026-07-31 11:32:00',
+            'minutes' => 4,
+            'description' => 'PC-SEMSO (Starten der Maschine)',
+        ]);
+        $this->item([
+            'case_type' => IntegrationInboxItem::CASE_CONFLICT,
+            'target_type' => (new \App\Models\TimeEntry)->getMorphClass(),
+            'external_type' => 'toggl.time_entry.update',
+            'dedupe_key' => 'outbox-failed:toggl-entry-update:toggl:1:1',
+            'referenceable_type' => $entry->getMorphClass(),
+            'referenceable_id' => $entry->id,
+            'display_title' => 'toggl.time_entry.update',
+            'display_subtitle' => 'extern nicht bestätigt',
+        ]);
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.integration.inbox'))
+            ->assertOk()
+            // Technischer Key wird übersetzt statt roh angezeigt …
+            ->assertSee(__('Zeit-Änderung nicht nach :plugin übertragen', ['plugin' => 'Toggl']))
+            ->assertDontSee('toggl.time_entry.update')
+            // … und der betroffene Zeiteintrag ist erkennbar.
+            ->assertSee('31.07.2026')
+            ->assertSee('PC-SEMSO (Starten der Maschine)')
+            ->assertSee('Fernwartung')
+            ->assertSee('Semso Multimedia');
+    }
+
+    public function test_conflict_item_with_deleted_time_entry_shows_fallback(): void {
+        $this->item([
+            'case_type' => IntegrationInboxItem::CASE_CONFLICT,
+            'target_type' => (new \App\Models\TimeEntry)->getMorphClass(),
+            'dedupe_key' => 'outbox-failed:toggl-entry-update:toggl:2:2',
+            'referenceable_type' => (new \App\Models\TimeEntry)->getMorphClass(),
+            'referenceable_id' => 424242,
+            'display_title' => 'toggl.time_entry.delete',
+        ]);
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.integration.inbox'))
+            ->assertOk()
+            ->assertSee(__('Zeit-Löschung nicht nach :plugin übertragen', ['plugin' => 'Toggl']))
+            ->assertSee(__('Zeiteintrag #:id existiert nicht mehr', ['id' => 424242]));
+    }
+
     public function test_assign_links_to_existing_and_writes_reference(): void {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Bestand GmbH']);
         $item = $this->item();

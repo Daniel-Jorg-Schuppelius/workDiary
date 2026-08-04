@@ -37,12 +37,11 @@
                     <option value="{{ $value }}" @selected($filters['case'] === $value)>{{ $label }}</option>
                 @endforeach
             </select>
-            <select name="plugin" class="select select-sm select-bordered" data-autosubmit>
-                <option value="all" @selected($filters['plugin'] === 'all')>{{ __('Alle Quellen') }}</option>
-                @foreach ($plugins as $p)
-                    <option value="{{ $p }}" @selected($filters['plugin'] === $p)>{{ $p }}</option>
-                @endforeach
-            </select>
+            {{-- Quelle wird über die Tabs unter dem Kopf gewählt; der aktive
+                 Tab bleibt beim Umschalten der übrigen Filter erhalten. --}}
+            @if ($filters['plugin'] !== 'all')
+                <input type="hidden" name="plugin" value="{{ $filters['plugin'] }}">
+            @endif
             <select name="target" class="select select-sm select-bordered" data-autosubmit>
                 <option value="all" @selected($filters['target'] === 'all')>{{ __('Alle Entitäten') }}</option>
                 @foreach ($targets as $type => $label)
@@ -53,6 +52,36 @@
     </x-slot:actions>
 
     @php $customerOptions = $assignTargets[\App\Models\Customer::class] ?? (reset($assignTargets) ?: []); @endphp
+
+    {{-- Quellen-Tabs: eine Ansicht je Plugin (Toggl, FritzBox, …), Zähler =
+         offene Einzel-Items der Quelle (Gruppen hängen an eigenen Zählern). --}}
+    @if ($plugins !== [])
+        {{-- Nur Nicht-Default-Filter wandern in die Tab-Links: status hat
+             Default „open" (auch „all" ist dort eine echte Wahl!), case/target
+             haben Default „all". --}}
+        @php
+            $tabParams = array_filter([
+                'status' => $filters['status'] !== IntegrationInboxItem::STATUS_OPEN ? $filters['status'] : null,
+                'case' => $filters['case'] !== 'all' ? $filters['case'] : null,
+                'target' => $filters['target'] !== 'all' ? $filters['target'] : null,
+            ], fn(?string $v): bool => $v !== null && $v !== '');
+        @endphp
+        <div role="tablist" class="tabs tabs-box mb-4 flex-nowrap overflow-x-auto">
+            <a role="tab"
+               href="{{ route('admin.integration.inbox', $tabParams) }}"
+               class="tab whitespace-nowrap {{ $filters['plugin'] === 'all' ? 'tab-active' : '' }}">{{ __('Alle Quellen') }}</a>
+            @foreach ($plugins as $p)
+                <a role="tab"
+                   href="{{ route('admin.integration.inbox', array_merge($tabParams, ['plugin' => $p])) }}"
+                   class="tab whitespace-nowrap gap-1.5 {{ $filters['plugin'] === $p ? 'tab-active' : '' }}">
+                    {{ $p }}
+                    @if (($pluginOpenCounts[$p] ?? 0) > 0)
+                        <span class="badge badge-xs badge-warning tabular-nums">{{ $pluginOpenCounts[$p] }}</span>
+                    @endif
+                </a>
+            @endforeach
+        </div>
+    @endif
 
     @if ($errors->any())
         <div class="alert alert-error mb-4 text-sm">
@@ -149,9 +178,13 @@
                                     <option value="{{ $sqid }}">{{ $label }}</option>
                                 @endforeach
                             </select>
-                            <button type="submit" class="btn btn-sm btn-primary">{{ __('An Gerät binden & buchen') }}</button>
-                            <a href="{{ route('admin.remote-support.pending.index') }}" class="btn btn-sm btn-ghost">{{ __('Neues Gerät / Mehrkundengerät …') }}</a>
-                            <button type="submit" form="{{ $dismissFormId }}" class="btn btn-sm btn-ghost">{{ __('Gruppe verwerfen') }}</button>
+                            {{-- Aktionen rechtsbündig, Primär-Aktion ganz rechts — wie auf
+                                 den übrigen Kacheln (customer_project, Einzel-Items). --}}
+                            <div class="ms-auto flex flex-wrap items-center justify-end gap-2">
+                                <a href="{{ route('admin.remote-support.pending.index') }}" class="btn btn-sm btn-ghost">{{ __('Neues Gerät / Mehrkundengerät …') }}</a>
+                                <button type="submit" form="{{ $dismissFormId }}" class="btn btn-sm btn-ghost">{{ __('Gruppe verwerfen') }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary">{{ __('An Gerät binden & buchen') }}</button>
+                            </div>
                         </form>
                     @elseif ($form === 'phone_number')
                         {{-- FritzBox: unbekannte Rufnummer einem Kunden/Endkunden zuordnen.
@@ -185,15 +218,21 @@
                                     <span class="text-sm">{{ __('Nummer dauerhaft merken') }}</span>
                                 </label>
                             @endif
-                            <button type="submit" name="action" value="assign" class="btn btn-sm btn-primary">{{ __('Zuordnen & buchen') }}</button>
-                            @if (! $g['shared'])
-                                <button type="submit" name="action" value="shared" class="btn btn-sm btn-outline"
-                                        title="{{ __('Künftige Anrufe dieser Nummer landen einzeln zur Zuordnung in der Inbox (z. B. Dienstleister-Hotline im Kundenauftrag).') }}">{{ __('Geteilte Nummer') }}</button>
-                                <button type="submit" name="action" value="ignore" class="btn btn-sm btn-ghost"
-                                        data-confirm-dialog data-confirm-message="{{ __('Diese Nummer dauerhaft ignorieren? Künftige Anrufe werden nicht mehr importiert.') }}">{{ __('Nummer ignorieren') }}</button>
-                            @endif
-                            <button type="submit" form="{{ $dismissFormId }}" class="btn btn-sm btn-ghost"
-                                    title="{{ __('Nur diese Anrufe verwerfen — die Nummer taucht beim nächsten Import wieder auf.') }}">{{ __('Gruppe verwerfen') }}</button>
+                            {{-- Aktionen rechtsbündig, Primär-Aktion ganz rechts — wie auf
+                                 den übrigen Kacheln (customer_project, Einzel-Items). --}}
+                            <div class="ms-auto flex flex-wrap items-center justify-end gap-2">
+                                @if (! $g['shared'])
+                                    <button type="submit" name="action" value="ignore" class="btn btn-sm btn-ghost"
+                                            data-confirm-dialog data-confirm-message="{{ __('Diese Nummer dauerhaft ignorieren? Künftige Anrufe werden nicht mehr importiert.') }}">{{ __('Nummer ignorieren') }}</button>
+                                @endif
+                                <button type="submit" form="{{ $dismissFormId }}" class="btn btn-sm btn-ghost"
+                                        title="{{ __('Nur diese Anrufe verwerfen — die Nummer taucht beim nächsten Import wieder auf.') }}">{{ __('Gruppe verwerfen') }}</button>
+                                @if (! $g['shared'])
+                                    <button type="submit" name="action" value="shared" class="btn btn-sm btn-outline"
+                                            title="{{ __('Künftige Anrufe dieser Nummer landen einzeln zur Zuordnung in der Inbox (z. B. Dienstleister-Hotline im Kundenauftrag).') }}">{{ __('Geteilte Nummer') }}</button>
+                                @endif
+                                <button type="submit" name="action" value="assign" class="btn btn-sm btn-primary">{{ __('Zuordnen & buchen') }}</button>
+                            </div>
                         </form>
                     @elseif ($form === 'b2b_order')
                         {{-- openTRANS-Bestellung (Feature 099): Kunde bestätigen/wählen,
@@ -208,8 +247,12 @@
                                     <option value="{{ $sqid }}">{{ $label }}</option>
                                 @endforeach
                             </select>
-                            <button type="submit" class="btn btn-sm btn-primary">{{ __('Als Auftrag buchen') }}</button>
-                            <button type="submit" form="{{ $dismissFormId }}" class="btn btn-sm btn-ghost">{{ __('Gruppe verwerfen') }}</button>
+                            {{-- Aktionen rechtsbündig, Primär-Aktion ganz rechts — wie auf
+                                 den übrigen Kacheln (customer_project, Einzel-Items). --}}
+                            <div class="ms-auto flex flex-wrap items-center justify-end gap-2">
+                                <button type="submit" form="{{ $dismissFormId }}" class="btn btn-sm btn-ghost">{{ __('Gruppe verwerfen') }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary">{{ __('Als Auftrag buchen') }}</button>
+                            </div>
                         </form>
                     @else
                     <form method="POST" action="{{ route('admin.integration.inbox.group.book') }}" class="grid gap-3 {{ $form === 'customer_project' ? 'md:grid-cols-3' : 'md:grid-cols-2' }}"
@@ -357,11 +400,68 @@
                     </div>
 
                     <div class="mb-3">
-                        <div class="font-semibold">{{ $item->display_title ?: __('(ohne Titel)') }}</div>
+                        <div class="font-semibold">{{ $item->displayTitleText() ?: __('(ohne Titel)') }}</div>
                         @if ($item->display_subtitle)
-                            <div class="text-sm text-base-content/60">{{ $item->display_subtitle }}</div>
+                            {{-- Gespeicherte Klartexte laufen durch __(): bekannte
+                                 Meldungen („extern nicht bestätigt") werden übersetzt,
+                                 unbekannte bleiben unverändert. --}}
+                            <div class="text-sm text-base-content/60">{{ __($item->display_subtitle) }}</div>
                         @endif
                     </div>
+
+                    {{-- Betroffener Zeiteintrag: ohne Datum/Zeit/Projekt ist ein
+                         Konflikt nicht entscheidbar (Nutzerbefund 2026-08-04). --}}
+                    @php
+                        $timeEntry = $item->referenceable instanceof \App\Models\TimeEntry ? $item->referenceable : null;
+                        $timeMorph = (new \App\Models\TimeEntry)->getMorphClass();
+                        $snapshotSides = array_filter([
+                            __('Lokal') => (array) (($item->remote_snapshot ?? [])['local'] ?? []),
+                            __('Remote') => (array) (($item->remote_snapshot ?? [])['remote'] ?? []),
+                        ], fn(array $side): bool => $side !== []);
+                        $tz = \App\Support\Tz::current();
+                    @endphp
+                    @if ($timeEntry !== null)
+                        <div class="mb-3 flex flex-wrap items-baseline gap-x-2 rounded bg-base-200/40 p-2 text-sm">
+                            <span class="font-medium tabular-nums">{{ $timeEntry->date?->format('d.m.Y') }}</span>
+                            @if ($timeEntry->started_at)
+                                <span class="tabular-nums">{{ $timeEntry->started_at->format('H:i') }}–{{ $timeEntry->ended_at?->format('H:i') ?? '…' }}</span>
+                            @endif
+                            <span class="tabular-nums">· {{ \App\Support\Formats::duration((int) $timeEntry->minutes, 'clock') }}</span>
+                            @if ($timeEntry->project)
+                                <span>· {{ $timeEntry->project->name }}@if ($timeEntry->project->customer) <span class="text-base-content/60">({{ $timeEntry->project->customer->name }})</span>@endif</span>
+                            @endif
+                            @if ($timeEntry->user)
+                                <span class="text-base-content/60">· {{ $timeEntry->user->name }}</span>
+                            @endif
+                            @if (trim((string) $timeEntry->description) !== '')
+                                <div class="w-full text-base-content/70">{{ \Illuminate\Support\Str::limit((string) $timeEntry->description, 160) }}</div>
+                            @endif
+                        </div>
+                    @elseif ($item->referenceable_type === $timeMorph && $item->referenceable_id !== null)
+                        <div class="mb-3 text-sm text-base-content/60">{{ __('Zeiteintrag #:id existiert nicht mehr', ['id' => $item->referenceable_id]) }}</div>
+                    @endif
+                    @if ($snapshotSides !== [])
+                        <div class="mb-3 space-y-1 text-xs">
+                            @foreach ($snapshotSides as $sideLabel => $side)
+                                @php
+                                    $sideStart = isset($side['started_at']) ? \Carbon\CarbonImmutable::parse((string) $side['started_at'])->setTimezone($tz) : null;
+                                    $sideEnd = isset($side['ended_at']) ? \Carbon\CarbonImmutable::parse((string) $side['ended_at'])->setTimezone($tz) : null;
+                                @endphp
+                                <div class="flex flex-wrap items-baseline gap-x-2">
+                                    <span class="w-14 font-semibold">{{ $sideLabel }}</span>
+                                    @if ($sideStart)
+                                        <span class="tabular-nums">{{ $sideStart->format('d.m.Y H:i') }}–{{ $sideEnd?->format('H:i') ?? '…' }}</span>
+                                    @endif
+                                    @if (isset($side['minutes']))
+                                        <span class="tabular-nums">· {{ (int) $side['minutes'] }} {{ __('Min') }}</span>
+                                    @endif
+                                    @if (trim((string) ($side['description'] ?? '')) !== '')
+                                        <span class="text-base-content/70">· {{ \Illuminate\Support\Str::limit((string) $side['description'], 100) }}</span>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
 
                     @if ($item->case_type === IntegrationInboxItem::CASE_CONFLICT && $diff !== [])
                         <div class="mb-3 grid grid-cols-2 gap-3 text-xs">
