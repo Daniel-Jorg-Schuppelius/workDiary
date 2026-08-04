@@ -77,7 +77,7 @@
                 <a role="tab"
                    href="{{ route('admin.integration.inbox', array_merge($tabParams, ['plugin' => $p])) }}"
                    class="tab whitespace-nowrap gap-1.5 {{ $filters['plugin'] === $p ? 'tab-active' : '' }}">
-                    {{ $p }}
+                    {{ $pluginNames[$p] ?? $p }}
                     @if (($pluginOpenCounts[$p] ?? 0) > 0)
                         <span class="badge badge-xs badge-warning tabular-nums">{{ $pluginOpenCounts[$p] }}</span>
                     @endif
@@ -103,7 +103,7 @@
                 @php $form = $g['form'] ?? 'customer_project'; @endphp
                 <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                     <div class="mb-3 flex flex-wrap items-center gap-2">
-                        <span class="badge badge-sm badge-info">{{ $g['plugin_id'] }}</span>
+                        <span class="badge badge-sm badge-info">{{ $pluginNames[$g['plugin_id']] ?? $g['plugin_id'] }}</span>
                         @if ($form === 'asset')
                             <span class="font-semibold">{{ $g['alias'] ?: $g['remote_id'] }}</span>
                             <span class="text-sm text-base-content/60">· {{ $g['provider'] }}</span>
@@ -394,7 +394,7 @@
                             };
                         @endphp
                         <span class="badge badge-sm {{ $caseBadge }}">{{ $caseLabels[$item->case_type] ?? $item->case_type }}</span>
-                        <span class="badge badge-sm badge-outline">{{ $item->plugin_id }}</span>
+                        <span class="badge badge-sm badge-outline">{{ $pluginNames[$item->plugin_id] ?? $item->plugin_id }}</span>
                         <span class="badge badge-sm badge-outline">{{ $targetLabel }}</span>
                         @unless ($item->isOpen())
                             <span class="badge badge-sm badge-success">{{ $statusLabels[$item->status] ?? $item->status }}</span>

@@ -27,7 +27,7 @@ use Illuminate\View\View;
  * Entscheidungen aus. Siehe ../WorkDiary-Architecture/features/053.
  */
 class IntegrationInboxController extends Controller {
-    public function index(Request $request, MatchProfileRegistry $registry, InboxGroupBookerRegistry $bookers): View {
+    public function index(Request $request, MatchProfileRegistry $registry, InboxGroupBookerRegistry $bookers, \App\Plugins\PluginManager $pluginManager): View {
         $user = $this->authorizeBilling();
         $organization = $this->organizationOf($user);
 
@@ -102,6 +102,18 @@ class IntegrationInboxController extends Controller {
             ? $this->foreignCustomerOptions($user)
             : [];
 
+        // Anzeigenamen der Quellen (Plugin::name()) für Tabs und Badges —
+        // über Items UND Gruppen; Nicht-Plugin-Quellen (CSV-Import,
+        // Mail-Intake) bekommen feste Labels.
+        $pluginNames = [];
+        foreach (array_unique(array_merge($plugins, $groups->pluck('plugin_id')->all())) as $pid) {
+            $pluginNames[$pid] = match ($pid) {
+                IntegrationInboxItem::PLUGIN_CSV => (string) __('CSV-Import'),
+                \App\Services\Mail\MailIntakeService::PLUGIN_ID => (string) __('E-Mail-Eingang'),
+                default => $pluginManager->find($pid)?->name() ?? ucfirst($pid),
+            };
+        }
+
         return view('admin.integration.inbox', [
             'items' => $query->paginate(25)->withQueryString(),
             'groups' => $groups,
@@ -109,6 +121,7 @@ class IntegrationInboxController extends Controller {
             'foreignCustomers' => $foreignCustomers,
             'filters' => ['status' => $status, 'case' => $caseType, 'plugin' => $plugin, 'target' => $target],
             'plugins' => $plugins,
+            'pluginNames' => $pluginNames,
             'pluginOpenCounts' => $pluginOpenCounts,
             'targets' => $registry->options(),
             'assignTargets' => $assignTargets,
