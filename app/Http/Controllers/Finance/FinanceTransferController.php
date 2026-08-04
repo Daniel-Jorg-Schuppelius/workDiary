@@ -59,10 +59,18 @@ class FinanceTransferController extends Controller {
             ->when(TransferStatus::tryFrom($filters['status']) !== null, fn($q) => $q->where('status', $filters['status']))
             ->orderByDesc('created_at');
 
-        // Globaler Header-Zeitraum, Überlappung mit Leistungszeitraum (offene Grenzen = Treffer).
+        // Globaler Header-Zeitraum, Überlappung mit Leistungszeitraum (offene
+        // Grenzen = Treffer). Gilt nur für ABGESCHLOSSENE Nachweise: aktive
+        // (Entwurf/Bestätigt/Fehlgeschlagen) sind Arbeitsvorrat und bleiben
+        // immer sichtbar — sonst „verschwindet" eine frisch angelegte
+        // Übergabe, deren Leistungszeitraum nicht ins Header-Fenster fällt.
         $range = $this->globalDateRange();
-        $query->where(fn($q) => $q->whereNull('period_to')->orWhereDate('period_to', '>=', $range['from']->toDateString()));
-        $query->where(fn($q) => $q->whereNull('period_from')->orWhereDate('period_from', '<=', $range['to']->toDateString()));
+        $activeStatuses = [TransferStatus::Draft->value, TransferStatus::Confirmed->value, TransferStatus::Failed->value];
+        $query->where(fn($q) => $q
+            ->whereIn('status', $activeStatuses)
+            ->orWhere(fn($closed) => $closed
+                ->where(fn($p) => $p->whereNull('period_to')->orWhereDate('period_to', '>=', $range['from']->toDateString()))
+                ->where(fn($p) => $p->whereNull('period_from')->orWhereDate('period_from', '<=', $range['to']->toDateString()))));
 
         $hasActiveFilters = $customerId !== null
             || TransferChannel::tryFrom($filters['channel']) !== null
