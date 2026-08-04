@@ -106,6 +106,47 @@ class TogglApiClient implements RemoteTimeWriter {
     }
 
     /**
+     * Aktueller Fremdstand EINES Eintrags (Konflikt-Ansicht der Inbox):
+     * `ok` mit normalisierten Werten, `missing` wenn drüben gelöscht (404),
+     * `error` bei Transport-/Auth-Problemen — der Aufrufer unterscheidet
+     * „gibt es nicht mehr" bewusst von „nicht erreichbar".
+     *
+     * @return array{status: 'ok'|'missing'|'error', entry: array<string, mixed>|null}
+     */
+    public function fetchEntry(int $id): array {
+        if (! $this->isConfigured()) {
+            return ['status' => 'error', 'entry' => null];
+        }
+
+        $response = $this->api()
+            ->getResponse($this->baseUrl . '/me/time_entries/' . $id, [], ['timeout' => 15]);
+
+        if ($response->status() === 404) {
+            return ['status' => 'missing', 'entry' => null];
+        }
+        if (! $response->successful()) {
+            return ['status' => 'error', 'entry' => null];
+        }
+
+        $record = $response->json();
+        if (! is_array($record) || $record === []) {
+            return ['status' => 'missing', 'entry' => null];
+        }
+
+        $stop = isset($record['stop']) && is_string($record['stop']) && $record['stop'] !== '' ? $record['stop'] : null;
+        $duration = isset($record['duration']) ? (int) $record['duration'] : null;
+
+        return ['status' => 'ok', 'entry' => [
+            'started_at' => isset($record['start']) && is_string($record['start']) ? $record['start'] : null,
+            'ended_at' => $stop,
+            // Laufender Timer: duration ist negativ — dann keine Minuten melden.
+            'minutes' => $duration !== null && $duration >= 0 ? (int) round($duration / 60) : null,
+            'description' => (string) ($record['description'] ?? ''),
+            'billable' => isset($record['billable']) ? (bool) $record['billable'] : null,
+        ]];
+    }
+
+    /**
      * Lädt Projekte + Clients über `/me?with_related_data=true`.
      *
      * @return array{0: array<int, array{name: string, client_id: ?int}>, 1: array<int, string>, 2: ?string}

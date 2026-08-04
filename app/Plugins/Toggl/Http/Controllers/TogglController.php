@@ -11,7 +11,7 @@
 namespace App\Plugins\Toggl\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Customer, ExternalReference, ForeignCustomer, IntegrationInboxItem, Organization, Project};
+use App\Models\{Customer, ExternalReference, ForeignCustomer, IntegrationInboxItem, Organization, Project, TimeEntry};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Toggl\Sources\{ApiWorkspaceSource, TogglApiClient, TogglWorkspaceReader};
 use App\Plugins\Toggl\{TogglArchiveException, TogglConfig, TogglExportArchiveService, TogglExportImporter, TogglExportService, TogglImportService, TogglOptionBuilder, TogglPlugin};
@@ -109,6 +109,65 @@ class TogglController extends Controller {
         $result = $this->service->importFromApi($this->organization($admin), $config, $from, $to);
 
         return back()->with('status', $this->importMessage($result));
+    }
+
+    /**
+     * Fremdstand eines Konflikt-Items nachladen (Inbox): holt den aktuellen
+     * Toggl-Stand des betroffenen Eintrags und legt ihn als Lokal/Remote-Paar
+     * am Item ab — Outbox-Fehlschläge speichern sonst keinen Fremdstand, der
+     * Konflikt wäre ohne Blick in Toggl nicht entscheidbar.
+     */
+    public function inspectConflict(IntegrationInboxItem $item): RedirectResponse {
+        $admin = $this->admin();
+        abort_unless((int) $item->organization_id === (int) $admin->organization_id, 404);
+        abort_unless($item->plugin_id === TogglPlugin::ID && $item->case_type === IntegrationInboxItem::CASE_CONFLICT, 404);
+
+        $config = TogglConfig::resolve($admin->organization_id);
+        if ($config['api_token'] === null) {
+            return back()->withErrors(['api_token' => __('Kein Toggl API-Token hinterlegt.')]);
+        }
+
+        $togglId = $this->togglEntryId($item);
+        if ($togglId === null) {
+            return back()->withErrors(['item' => __('Keine Toggl-Eintrags-ID am Konflikt gefunden.')]);
+        }
+
+        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id']);
+        $result = $client->fetchEntry($togglId);
+        if ($result['status'] === 'error') {
+            return back()->withErrors(['item' => __('Fremdstand konnte nicht geladen werden (Toggl nicht erreichbar?).')]);
+        }
+
+        // Lokal/Remote-Paar in der Struktur, die die Inbox-Ansicht rendert.
+        $snapshot = (array) ($item->remote_snapshot ?? []);
+        $entry = $item->referenceable;
+        if ($entry instanceof TimeEntry) {
+            $snapshot['local'] = [
+                'started_at' => $entry->started_at?->toIso8601String(),
+                'ended_at' => $entry->ended_at?->toIso8601String(),
+                'minutes' => $entry->minutes,
+                'description' => $entry->description,
+            ];
+        }
+        $snapshot['remote'] = $result['entry'];
+        $snapshot['remote_missing'] = $result['status'] === 'missing';
+        $snapshot['inspected_at'] = now()->toIso8601String();
+        $item->forceFill(['remote_snapshot' => $snapshot])->save();
+
+        return back()->with('status', $result['status'] === 'missing'
+            ? (string) __('Fremdstand geladen: Eintrag existiert in Toggl nicht (mehr).')
+            : (string) __('Fremdstand aus Toggl geladen.'));
+    }
+
+    /** Numerische Toggl-Eintrags-ID aus external_id bzw. dedupe_key (`toggl:<id>`). */
+    private function togglEntryId(IntegrationInboxItem $item): ?int {
+        foreach ([(string) $item->external_id, (string) $item->dedupe_key] as $haystack) {
+            if (preg_match('/toggl:(\d+)/', $haystack, $m) === 1) {
+                return (int) $m[1];
+            }
+        }
+
+        return null;
     }
 
     public function uploadCsv(Request $request): RedirectResponse {

@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['web', 'auth'])->group(function (): void {
     Route::get('admin/toggl', [TogglController::class, 'index'])->name('admin.toggl.index');
     Route::post('admin/toggl/sync', [TogglController::class, 'sync'])->name('admin.toggl.sync');
+    Route::post('admin/toggl/conflict/{item}/inspect', [TogglController::class, 'inspectConflict'])->name('admin.toggl.conflict.inspect');
     Route::post('admin/toggl/export-api', [TogglController::class, 'exportApi'])->name('admin.toggl.export-api');
     Route::post('admin/toggl/import-csv', [TogglController::class, 'uploadCsv'])->name('admin.toggl.import-csv');
 

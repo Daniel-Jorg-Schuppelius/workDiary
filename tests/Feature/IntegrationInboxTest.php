@@ -105,6 +105,78 @@ class IntegrationInboxTest extends TestCase {
             ->assertSee('Semso Multimedia');
     }
 
+    /** Konflikt-Item mit Zeiteintrag + Toggl-Plugin-Setup für inspectConflict. */
+    private function togglConflictItem(): array {
+        \App\Models\PluginSetting::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => 'toggl',
+            'enabled' => true,
+            'settings' => ['api_token' => 'test-token'],
+        ]);
+        $entry = \App\Models\TimeEntry::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->admin->id,
+            'date' => '2026-07-31',
+            'started_at' => '2026-07-31 11:00:00',
+            'ended_at' => '2026-07-31 11:30:00',
+            'minutes' => 30,
+            'description' => 'Lokale Beschreibung',
+        ]);
+        $item = $this->item([
+            'case_type' => IntegrationInboxItem::CASE_CONFLICT,
+            'target_type' => (new \App\Models\TimeEntry)->getMorphClass(),
+            'external_type' => 'toggl.time_entry.update',
+            'external_id' => '55',
+            'dedupe_key' => 'outbox-failed:toggl-entry-update:toggl:123:1785666039',
+            'referenceable_type' => $entry->getMorphClass(),
+            'referenceable_id' => $entry->id,
+            'display_title' => 'toggl.time_entry.update',
+        ]);
+
+        return [$item, $entry];
+    }
+
+    public function test_toggl_conflict_inspect_loads_remote_state(): void {
+        [$item] = $this->togglConflictItem();
+        \Tests\Support\FakePluginHttp::fake([
+            'https://api.track.toggl.com/api/v9/me/time_entries/123' => \Tests\Support\FakePluginHttp::response([
+                'id' => 123,
+                'start' => '2026-07-31T09:00:00+00:00',
+                'stop' => '2026-07-31T09:45:00+00:00',
+                'duration' => 2700,
+                'description' => 'Remote-Beschreibung',
+                'billable' => true,
+            ], 200),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.toggl.conflict.inspect', $item))
+            ->assertRedirect()
+            ->assertSessionHas('status');
+
+        $snapshot = $item->refresh()->remote_snapshot;
+        $this->assertSame('Remote-Beschreibung', $snapshot['remote']['description']);
+        $this->assertSame(45, $snapshot['remote']['minutes']);
+        $this->assertFalse($snapshot['remote_missing']);
+        $this->assertSame('Lokale Beschreibung', $snapshot['local']['description']);
+    }
+
+    public function test_toggl_conflict_inspect_marks_deleted_remote(): void {
+        [$item] = $this->togglConflictItem();
+        \Tests\Support\FakePluginHttp::fake([
+            'https://api.track.toggl.com/api/v9/me/time_entries/123' => \Tests\Support\FakePluginHttp::response(null, 404),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.toggl.conflict.inspect', $item))
+            ->assertRedirect()
+            ->assertSessionHas('status');
+
+        $snapshot = $item->refresh()->remote_snapshot;
+        $this->assertTrue($snapshot['remote_missing']);
+        $this->assertNull($snapshot['remote']);
+    }
+
     public function test_conflict_item_with_deleted_time_entry_shows_fallback(): void {
         $this->item([
             'case_type' => IntegrationInboxItem::CASE_CONFLICT,

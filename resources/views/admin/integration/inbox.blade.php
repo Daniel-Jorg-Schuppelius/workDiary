@@ -421,6 +421,7 @@
                             __('Lokal') => (array) (($item->remote_snapshot ?? [])['local'] ?? []),
                             __('Remote') => (array) (($item->remote_snapshot ?? [])['remote'] ?? []),
                         ], fn(array $side): bool => $side !== []);
+                        $remoteMissing = (bool) (($item->remote_snapshot ?? [])['remote_missing'] ?? false);
                         $tz = \App\Support\Tz::current();
                     @endphp
                     @if ($timeEntry !== null)
@@ -443,8 +444,14 @@
                     @elseif ($item->referenceable_type === $timeMorph && $item->referenceable_id !== null)
                         <div class="mb-3 text-sm text-base-content/60">{{ __('Zeiteintrag #:id existiert nicht mehr', ['id' => $item->referenceable_id]) }}</div>
                     @endif
-                    @if ($snapshotSides !== [])
+                    @if ($snapshotSides !== [] || $remoteMissing)
                         <div class="mb-3 space-y-1 text-xs">
+                            @if ($remoteMissing)
+                                <div class="flex flex-wrap items-baseline gap-x-2">
+                                    <span class="w-14 font-semibold">{{ __('Remote') }}</span>
+                                    <span class="text-warning">{{ __('In Toggl nicht (mehr) vorhanden') }}</span>
+                                </div>
+                            @endif
                             @foreach ($snapshotSides as $sideLabel => $side)
                                 @php
                                     $sideStart = isset($side['started_at']) ? \Carbon\CarbonImmutable::parse((string) $side['started_at'])->setTimezone($tz) : null;
@@ -536,6 +543,14 @@
                                     <button class="btn btn-sm btn-ghost">{{ __($item->plugin_id . '.conflict.action.detach') }}</button>
                                 </form>
                             @elseif ($item->case_type === IntegrationInboxItem::CASE_CONFLICT)
+                                @if ($item->plugin_id === \App\Plugins\Toggl\TogglPlugin::ID)
+                                    {{-- Outbox-Fehlschläge speichern keinen Fremdstand —
+                                         auf Klick den aktuellen Toggl-Stand nachladen. --}}
+                                    <form method="POST" action="{{ route('admin.toggl.conflict.inspect', $item) }}">
+                                        @csrf
+                                        <button class="btn btn-sm btn-outline">{{ __('Fremdstand laden') }}</button>
+                                    </form>
+                                @endif
                                 <form method="POST" action="{{ route('admin.integration.inbox.accept-remote', $item) }}">
                                     @csrf
                                     <button class="btn btn-sm btn-primary">{{ __('Remote übernehmen') }}</button>
