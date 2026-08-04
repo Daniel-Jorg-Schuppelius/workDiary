@@ -83,7 +83,7 @@ class DomainSyncService {
      */
     public function syncDomains(DomainProviderConnection $connection, string $userDepth = 'ALL', ?DomainProviderAdapter $adapter = null): int {
         $adapter ??= $this->resolver->for($connection);
-        $pageSize = DomainResellingConfig::resolve()['list_page_size'];
+        $pageSize = DomainResellingConfig::resolve((int) $connection->organization_id)['list_page_size'];
         $first = 0;
         $total = 0;
 
@@ -161,7 +161,7 @@ class DomainSyncService {
 
     /** Markiert Projektionen älter als das Datenalter-Budget als veraltet. */
     public function markStale(DomainProviderConnection $connection): int {
-        $threshold = Carbon::now()->subHours(DomainResellingConfig::resolve()['stale_after_hours']);
+        $threshold = Carbon::now()->subHours(DomainResellingConfig::resolve((int) $connection->organization_id)['stale_after_hours']);
 
         return DomainProjection::query()
             ->where('connection_id', $connection->id)

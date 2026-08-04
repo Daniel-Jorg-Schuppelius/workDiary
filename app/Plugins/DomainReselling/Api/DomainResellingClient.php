@@ -33,10 +33,13 @@ use App\Plugins\Support\PluginHttpFactory;
 class DomainResellingClient {
     private string $callUrl;
 
+    private float $timeout;
+
     public function __construct(private readonly DomainProviderConnection $connection) {
-        $config = DomainResellingConfig::resolve();
+        $config = DomainResellingConfig::resolve((int) $connection->organization_id);
         $base = DomainResellingConfig::endpointUrl($connection->environment);
         $this->callUrl = $base . $config['call_path'];
+        $this->timeout = (float) $config['timeout'];
     }
 
     /**
@@ -46,7 +49,7 @@ class DomainResellingClient {
      */
     public function call(string $command, array $params = [], bool $mutating = false): DomainResponse {
         $client = app(PluginHttpFactory::class)->client('domainreselling', DomainResellingConfig::endpointUrl($this->connection->environment));
-        $client->setTimeout((float) DomainResellingConfig::resolve()['timeout']);
+        $client->setTimeout($this->timeout);
         if ($mutating) {
             // Ein einziger Versuch (kein Retry) — Mutationen werden ohne
             // Providerprüfung nie automatisch wiederholt. (Toolkit-Minimum: 1.)

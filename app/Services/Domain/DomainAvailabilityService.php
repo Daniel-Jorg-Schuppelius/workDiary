@@ -34,7 +34,7 @@ class DomainAvailabilityService {
      * @return list<array{domain: string, available: bool, premium: bool, price: ?float, currency: ?string, class: ?string, cached: bool}>
      */
     public function check(DomainProviderConnection $connection, array $domains): array {
-        $config = DomainResellingConfig::resolve();
+        $config = DomainResellingConfig::resolve((int) $connection->organization_id);
         $ttl = $config['check_cache_ttl'];
         $results = [];
         $toQuery = [];
@@ -129,7 +129,7 @@ class DomainAvailabilityService {
     }
 
     private function consumeBudget(DomainProviderConnection $connection, int $units): void {
-        $config = DomainResellingConfig::resolve();
+        $config = DomainResellingConfig::resolve((int) $connection->organization_id);
         $key = sprintf('domain:checkbudget:%d:%s', (int) $connection->organization_id, date('YmdH'));
         $used = (int) Cache::get($key, 0);
         if ($used + $units > $config['check_budget_per_hour']) {
