@@ -171,6 +171,50 @@ class ReopenTimesCommandTest extends TestCase {
         ]);
     }
 
+    public function test_kundenfilter_akzeptiert_kundennummer(): void {
+        $this->customer->update(['number' => 'K-1005']);
+
+        $other = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $otherProject = Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $other->id,
+        ]);
+        $mine = $this->closedEntry('2026-04-13');
+        $foreign = $this->closedEntry('2026-04-13', $otherProject);
+
+        $this->artisan('billing:reopen-times', [
+            '--from' => '2026-04-01',
+            '--customer' => 'K-1005',
+            '--apply' => true,
+        ])->assertSuccessful();
+
+        $this->assertFalse((bool) $mine->fresh()->exported);
+        $this->assertTrue((bool) $foreign->fresh()->exported);
+    }
+
+    public function test_numerische_kundennummer_gewinnt_vor_interner_id(): void {
+        // Kundennummer des einen Kunden == interne ID des anderen: der im UI
+        // sichtbare Wert (die Kundennummer) muss gewinnen.
+        $other = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $this->customer->update(['number' => (string) $other->id]);
+
+        $otherProject = Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $other->id,
+        ]);
+        $mine = $this->closedEntry('2026-04-13');
+        $foreign = $this->closedEntry('2026-04-13', $otherProject);
+
+        $this->artisan('billing:reopen-times', [
+            '--from' => '2026-04-01',
+            '--customer' => (string) $other->id,
+            '--apply' => true,
+        ])->assertSuccessful();
+
+        $this->assertFalse((bool) $mine->fresh()->exported);
+        $this->assertTrue((bool) $foreign->fresh()->exported);
+    }
+
     public function test_ohne_from_bricht_ab(): void {
         $entry = $this->closedEntry('2026-04-14');
 

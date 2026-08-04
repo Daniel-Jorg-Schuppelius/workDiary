@@ -40,7 +40,7 @@ class ReopenTimesCommand extends Command {
         . self::ORGANIZATION_OPTION
         . ' {--from= : Leistungsdatum ab (YYYY-MM-DD), Pflicht}'
         . ' {--to= : Leistungsdatum bis (YYYY-MM-DD)}'
-        . ' {--customer= : ID oder Sqid eines einzelnen Kunden}'
+        . ' {--customer= : Kundennummer, Sqid oder ID eines einzelnen Kunden}'
         . ' {--apply : Änderungen schreiben (sonst Dry-Run)}';
 
     protected $description = 'Öffnet fälschlich als abgerechnet markierte Zeiten ab einem Leistungsdatum wieder. Rechnungs-, Übergabe- und saldo-geführte Zeiten bleiben unangetastet. Ohne --apply nur Dry-Run.';
@@ -161,11 +161,21 @@ class ReopenTimesCommand extends Command {
         ])->values()->all();
     }
 
-    /** Kunden-Option als ID oder Sqid; null = alle Kunden der Organisation. */
+    /**
+     * Kunden-Option als Kundennummer, Sqid oder interne ID; null = alle Kunden
+     * der Organisation. Die Kundennummer gewinnt bewusst vor der numerischen
+     * ID: sie ist der im UI sichtbare Wert — eine rein numerische Kundennummer
+     * darf nicht als interne ID eines anderen Kunden fehlinterpretiert werden.
+     */
     private function customerId(): ?int {
-        $value = (string) ($this->option('customer') ?? '');
+        $value = trim((string) ($this->option('customer') ?? ''));
         if ($value === '') {
             return null;
+        }
+
+        $byNumber = Customer::query()->where('number', $value)->value('id');
+        if ($byNumber !== null) {
+            return (int) $byNumber;
         }
 
         $id = Sqid::decodeOrNumeric(Customer::class, $value);
