@@ -25,6 +25,6 @@
         "resolveJsonModule": true,
         "types": []
     },
-    "include": ["resources/js/**/*.js"],
+    "include": ["resources/js/**/*.js", "resources/js/**/*.d.ts"],
     "exclude": ["node_modules", "public/build"]
 }

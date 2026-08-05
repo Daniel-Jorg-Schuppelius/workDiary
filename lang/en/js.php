@@ -17,6 +17,7 @@ return [
     ],
     'schedule' => [
         'move_failed' => 'Move failed.',
+        'suggest_failed' => 'Could not load suggestions.',
     ],
     'kanban' => [
         'invalid_move' => 'This status change is not part of the order workflow.',

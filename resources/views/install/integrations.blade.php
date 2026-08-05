@@ -80,7 +80,13 @@
                     subject.value = 'mailto:admin@' + window.location.hostname;
                 }
             } catch (e) {
-                alert(@json(__('Schlüssel konnten nicht erzeugt werden. Bitte erneut versuchen.')));
+                const msg = @json(__('Schlüssel konnten nicht erzeugt werden. Bitte erneut versuchen.'));
+                if (typeof window.notifyAction === 'function') {
+                    window.notifyAction({ tone: 'error', message: msg });
+                } else {
+                    // browser-dialog-ok: Install-Layout ohne Notify-Dialoge.
+                    alert(msg);
+                }
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = original;

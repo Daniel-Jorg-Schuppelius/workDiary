@@ -49,6 +49,7 @@ function notify(tone, message) {
     if (typeof window.notifyAction === "function") {
         window.notifyAction({ tone, message });
     } else {
+        // browser-dialog-ok: Fallback, falls die Notify-Infrastruktur nicht geladen ist.
         window.alert(message);
     }
 }

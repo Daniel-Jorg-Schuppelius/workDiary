@@ -17,6 +17,7 @@ return [
     ],
     'schedule' => [
         'move_failed' => 'Fehler beim Verschieben.',
+        'suggest_failed' => 'Vorschläge konnten nicht geladen werden.',
     ],
     'kanban' => [
         'invalid_move' => 'Dieser Statuswechsel ist im Auftragsworkflow nicht vorgesehen.',

@@ -12,6 +12,7 @@ return [
     ],
     'schedule' => [
         'move_failed' => 'Error al mover.',
+        'suggest_failed' => 'No se pudieron cargar las sugerencias.',
     ],
     'kanban' => [
         'invalid_move' => 'Este cambio de estado no está previsto en el flujo de trabajo del pedido.',

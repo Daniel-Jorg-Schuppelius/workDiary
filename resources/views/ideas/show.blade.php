@@ -164,6 +164,7 @@
             'labels' => [
                 'new_node' => __('ideas.editor.new_node'),
                 'confirm_delete_node' => __('ideas.editor.confirm_delete_node'),
+                'delete' => __('ideas.editor.delete'),
                 'convert_task' => __('ideas.editor.convert_task'),
                 'convert_project' => __('ideas.editor.convert_project'),
                 'convert_knowledge' => __('ideas.editor.convert_knowledge'),

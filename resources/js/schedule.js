@@ -232,7 +232,7 @@ async function scheduleSuggestStaffing(date, shiftTypeSqid, typeName) {
     try {
         data = await apiFetch("GET", url);
     } catch (e) {
-        alert(e.message || "Error");
+        notifyError(e.message ?? __("js.schedule.suggest_failed"));
         return;
     }
     const suggestions = Array.isArray(data?.suggestions) ? data.suggestions : [];

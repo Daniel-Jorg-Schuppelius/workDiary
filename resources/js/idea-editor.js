@@ -359,7 +359,14 @@ export function registerIdeaEditor(Alpine) {
         async removeNode(sqid) {
             const n = this.node(sqid);
             if (!n || n.is_root) return;
-            if (!window.confirm(this.t("confirm_delete_node"))) return;
+            const ok = await (window.confirmAction
+                ? window.confirmAction({
+                      message: this.t("confirm_delete_node"),
+                      label: this.t("delete"),
+                      icon: "delete",
+                  })
+                : Promise.resolve(true));
+            if (!ok) return;
             const json = await this.api("DELETE", this.urlFor("destroy", sqid));
             if (json?.ok) {
                 const removeTree = (s) => {

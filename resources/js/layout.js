@@ -198,7 +198,8 @@ import { html, setHtml } from "./lib/html.js";
                     // Programmatic API: returns Promise<void>
                     window.notifyAction = function (opts) {
                         if (!notifyDialog) {
-                            try { window.alert((opts && opts.message) || String(opts || '')); } catch (e) { /* ignore */ }
+                            // browser-dialog-ok: letzter Ausweg, falls die Notify-Dialoge (noch) nicht im DOM sind.
+                            try { window.alert((typeof opts === 'object' && opts && opts.message) || String(opts || '')); } catch (e) { /* ignore */ }
                             return Promise.resolve();
                         }
                         return new Promise(function (resolve) {
