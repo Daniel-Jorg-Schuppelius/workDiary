@@ -42,7 +42,7 @@ use Throwable;
  * Dokumenteingang aus OneDrive/SharePoint über eigene, von der
  * Kalender-Verbindung getrennte {@see CloudDocumentConnection}s.
  */
-class MsgraphPlugin extends AbstractPlugin implements BackupTarget, CalendarPublisher, DocumentIntakeSource {
+class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\DocumentIntakeSubscriptions, BackupTarget, CalendarPublisher, DocumentIntakeSource {
     public const ID = 'msgraph';
 
     public const SERVICE_PROVIDER = MsgraphServiceProvider::class;
@@ -73,8 +73,8 @@ class MsgraphPlugin extends AbstractPlugin implements BackupTarget, CalendarPubl
         return (new MsgraphIntakeClient($connection))->account();
     }
 
-    public function intakeContainers(CloudDocumentConnection $connection): array {
-        return (new MsgraphIntakeClient($connection))->containers();
+    public function intakeContainers(CloudDocumentConnection $connection, ?string $search = null): array {
+        return (new MsgraphIntakeClient($connection))->containers($search);
     }
 
     public function intakeChanges(CloudDocumentConnection $connection, ?string $checkpoint): IntakeChangePage {
@@ -83,6 +83,16 @@ class MsgraphPlugin extends AbstractPlugin implements BackupTarget, CalendarPubl
 
     public function intakeDownload(CloudDocumentConnection $connection, IntakeItem $item): StreamInterface {
         return (new MsgraphIntakeClient($connection))->download($item);
+    }
+
+    // ── DocumentIntakeSubscriptions (MS365-Plan §8) ─────────────────────
+
+    public function intakeSubscribe(CloudDocumentConnection $connection): void {
+        app(\App\Plugins\Msgraph\Services\MsgraphSubscriptionService::class)->ensure($connection);
+    }
+
+    public function intakeUnsubscribe(CloudDocumentConnection $connection): void {
+        app(\App\Plugins\Msgraph\Services\MsgraphSubscriptionService::class)->unsubscribe($connection);
     }
 
     // ── BackupTarget (Feature 017 Phase 32, MVP-363) ────────────────────
@@ -173,7 +183,11 @@ class MsgraphPlugin extends AbstractPlugin implements BackupTarget, CalendarPubl
         return [];
     }
 
-    /** Health-Check je Organisation: billige Probe über die Kalenderliste. */
+    /**
+     * Health-Check je Organisation: billige Live-Probe über die Kalenderliste;
+     * Intake-/Backup-Verbindungen fließen über ihren GESPEICHERTEN Status ein
+     * (reauth_required/blocked → degraded), ohne zusätzliche API-Aufrufe.
+     */
     public function healthCheck(): PluginHealth {
         if (! MsgraphConfig::isConfigured()) {
             return PluginHealth::degraded(__('msgraph.health.not_configured'));
@@ -184,20 +198,60 @@ class MsgraphPlugin extends AbstractPlugin implements BackupTarget, CalendarPubl
             return PluginHealth::ok(__('msgraph.health.no_org_context'));
         }
 
+        $sideNotice = $this->blockedSideConnectionsNotice($org);
+
         $connection = MsgraphConnection::query()->where('organization_id', $org->id)->first();
         if (! $connection instanceof MsgraphConnection || $connection->status === MsgraphConnection::STATUS_DISCONNECTED) {
-            return PluginHealth::degraded(__('msgraph.health.no_connection'));
+            return PluginHealth::degraded($sideNotice ?? __('msgraph.health.no_connection'));
         }
         if (! $connection->isActive()) {
-            return PluginHealth::degraded(__('msgraph.health.inactive'));
+            return PluginHealth::degraded($sideNotice ?? __('msgraph.health.inactive'));
         }
 
         try {
-            return (new MsgraphCalendarClient($connection))->ping()
-                ? PluginHealth::ok(__('msgraph.health.ok'))
-                : PluginHealth::failing(__('msgraph.health.failing'), 'unreachable');
+            if (! (new MsgraphCalendarClient($connection))->ping()) {
+                return PluginHealth::failing(__('msgraph.health.failing'), 'unreachable');
+            }
         } catch (Throwable $e) {
             return PluginHealth::failing(__('msgraph.health.error', ['class' => class_basename($e)]));
         }
+
+        return $sideNotice !== null
+            ? PluginHealth::degraded($sideNotice)
+            : PluginHealth::ok(__('msgraph.health.ok'));
+    }
+
+    /**
+     * Intake-/Backup-Verbindungen der Organisation mit reauth_required/blocked
+     * (gespeicherter Lebenszyklus-Status, keine Live-Probe). null = alles ok.
+     */
+    private function blockedSideConnectionsNotice(Organization $org): ?string {
+        $intake = CloudDocumentConnection::query()
+            ->where('organization_id', $org->id)
+            ->where('provider', \App\Enums\CloudIntake\CloudIntakeProvider::Microsoft)
+            ->whereIn('status', [
+                \App\Enums\CloudIntake\CloudIntakeConnectionStatus::ReauthRequired,
+                \App\Enums\CloudIntake\CloudIntakeConnectionStatus::Blocked,
+            ])->count();
+
+        $backup = BackupTargetConnection::query()
+            ->where('organization_id', $org->id)
+            ->where('provider', \App\Enums\Backup\BackupProvider::Microsoft)
+            ->whereIn('status', [
+                \App\Enums\Backup\BackupTargetStatus::ReauthRequired,
+                \App\Enums\Backup\BackupTargetStatus::Blocked,
+            ])->count();
+
+        // Mail-Verbindung (Feature 102): auto-disabled = Versand steht.
+        $mail = \App\Models\MsgraphMailConnection::query()
+            ->where('organization_id', $org->id)
+            ->whereNotNull('disabled_at')
+            ->count();
+
+        if ($intake === 0 && $backup === 0 && $mail === 0) {
+            return null;
+        }
+
+        return __('msgraph.health.side_connections', ['intake' => $intake, 'backup' => $backup, 'mail' => $mail]);
     }
 }

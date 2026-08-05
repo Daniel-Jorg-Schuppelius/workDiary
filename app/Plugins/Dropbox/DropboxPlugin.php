@@ -62,8 +62,8 @@ class DropboxPlugin extends AbstractPlugin implements BackupTarget, DocumentInta
         return (new DropboxClient($connection))->account();
     }
 
-    public function intakeContainers(CloudDocumentConnection $connection): array {
-        return (new DropboxClient($connection))->containers();
+    public function intakeContainers(CloudDocumentConnection $connection, ?string $search = null): array {
+        return (new DropboxClient($connection))->containers(); // Dropbox: keine Container-Suche
     }
 
     public function intakeChanges(CloudDocumentConnection $connection, ?string $checkpoint): IntakeChangePage {

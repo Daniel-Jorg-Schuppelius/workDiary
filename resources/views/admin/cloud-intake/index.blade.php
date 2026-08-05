@@ -79,13 +79,54 @@
 
                     {{-- Container + Stammordner (Konzept §Verbindung und Preflight) --}}
                     @if ($canManage ?? false)
+                        @php
+                            $pickerActive = (int) ($containerConnectionId ?? 0) === (int) $connection->id;
+                            $pickerOptions = $pickerActive ? ($containerOptions ?? []) : [];
+                        @endphp
+                        @if ($connection->external_account_id !== null)
+                            {{-- Container-Picker: lädt die wählbaren Container serverseitig
+                                 (SharePoint-Muster) — bei Microsoft findet die Suche zusätzlich
+                                 SharePoint-Bibliotheken passender Sites. --}}
+                            <form method="GET" action="{{ route('admin.cloud-intake.index') }}" class="flex flex-wrap items-end gap-2">
+                                <input type="hidden" name="containers" value="{{ $connection->id }}">
+                                <div class="fieldset flex-1 min-w-60">
+                                    <label class="fieldset-label" for="ci-search-{{ $connection->id }}">{{ __('cloud_intake.picker.search_label') }}</label>
+                                    <input id="ci-search-{{ $connection->id }}" type="text" name="container_search" maxlength="190"
+                                           value="{{ $pickerActive ? ($containerSearch ?? '') : '' }}"
+                                           class="input input-sm input-bordered w-full" placeholder="{{ __('cloud_intake.picker.search_placeholder') }}">
+                                </div>
+                                <x-icon-btn icon="search" tone="ghost" size="sm" type="submit" show-label>{{ __('cloud_intake.picker.load') }}</x-icon-btn>
+                            </form>
+                            @if ($pickerActive && ($containerLoadFailed ?? false))
+                                <div role="alert" class="alert alert-warning text-sm">
+                                    <x-icon name="warning" />
+                                    <span>{{ __('cloud_intake.picker.load_failed') }}</span>
+                                </div>
+                            @endif
+                        @endif
                         <form method="POST" action="{{ route('admin.cloud-intake.folder', $connection) }}" class="flex flex-wrap items-end gap-2">
                             @csrf
                             <div class="fieldset">
                                 <label class="fieldset-label" for="ci-container-{{ $connection->id }}">{{ __('cloud_intake.field.container') }}</label>
-                                <input id="ci-container-{{ $connection->id }}" type="text" name="container_id" required maxlength="512"
-                                       value="{{ old('container_id', $connection->container_id) }}"
-                                       class="input input-sm input-bordered font-mono w-52">
+                                @if ($pickerOptions !== [])
+                                    <select id="ci-container-{{ $connection->id }}" name="container_id" required
+                                            class="select select-sm select-bordered w-72">
+                                        @php $known = false; @endphp
+                                        @foreach ($pickerOptions as $option)
+                                            @php $known = $known || $option->id === $connection->container_id; @endphp
+                                            <option value="{{ $option->id }}" @selected($option->id === old('container_id', $connection->container_id))>
+                                                {{ $option->label }}@if ($option->kind) ({{ $option->kind }})@endif
+                                            </option>
+                                        @endforeach
+                                        @if (! $known && $connection->container_id)
+                                            <option value="{{ $connection->container_id }}" selected>{{ $connection->container_id }}</option>
+                                        @endif
+                                    </select>
+                                @else
+                                    <input id="ci-container-{{ $connection->id }}" type="text" name="container_id" required maxlength="512"
+                                           value="{{ old('container_id', $connection->container_id) }}"
+                                           class="input input-sm input-bordered font-mono w-52">
+                                @endif
                             </div>
                             <div class="fieldset">
                                 <label class="fieldset-label" for="ci-rootid-{{ $connection->id }}">{{ __('cloud_intake.field.root_folder_id') }}</label>

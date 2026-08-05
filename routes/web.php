@@ -56,6 +56,11 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login')->
 Route::post('/login', [LoginController::class, 'login'])->middleware(['guest', 'throttle:login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+// Passwortloser Passkey-Primär-Login (MS365-Plan G3): Discoverable
+// Credentials + User-Verification-Pflicht ersetzen Passwort UND 2FA.
+Route::post('/login/passkey/options', [\App\Http\Controllers\Auth\PasskeyLoginController::class, 'options'])->middleware('guest')->name('login.passkey.options');
+Route::post('/login/passkey', [\App\Http\Controllers\Auth\PasskeyLoginController::class, 'verify'])->middleware(['guest', 'throttle:login'])->name('login.passkey');
+
 // Zweiter Login-Schritt (Zwei-Faktor): session-basiert (auth.2fa.id), daher
 // weder guest- noch auth-Middleware. Der Controller prüft die Session selbst.
 Route::get('/two-factor-challenge', [TwoFactorChallengeController::class, 'create'])->name('two-factor.login');

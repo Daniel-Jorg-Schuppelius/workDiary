@@ -81,6 +81,7 @@ return [
             'cloud-verify' => 'Cloud-Backup-Prüfung',
         ],
         'billbee' => ['sync' => 'Billbee-Abgleich'],
+        'caldav' => ['publish' => 'CalDAV-Kalender-Publish-Abgleich'],
         'carddav' => ['sync' => 'CardDAV-Abgleich'],
         'catalog' => ['fetch_due' => 'Katalogquellen abrufen'],
         'chat' => [
@@ -101,6 +102,7 @@ return [
         ],
         'easybill' => ['sync' => 'easybill-Belegabruf'],
         'etsy' => ['sync' => 'Etsy-Abgleich'],
+        'google-calendar' => ['publish' => 'Google-Kalender-Publish-Abgleich'],
         'integration' => ['purge_inbox' => 'Integrations-Inbox bereinigen'],
         'finance' => ['open_times_digest' => 'Offene-Zeiten-Digest an die Buchhaltung'],
         'inventory' => ['cycle_counts' => 'Zyklische Inventur anstoßen', 'expiring_lots' => 'MHD-Überwachung (ablaufende Chargen)'],
@@ -113,6 +115,10 @@ return [
         ],
         'location' => ['purge_points' => 'Standort-Rohpunkte bereinigen'],
         'mail' => ['poll' => 'Mail-Eingang abrufen'],
+        'msgraph' => [
+            'publish' => 'Microsoft-365-Kalender-Publish-Abgleich',
+            'subscriptions' => 'Microsoft-365-Webhook-Subscriptions erneuern',
+        ],
         'maintenance' => ['scan_due' => 'Wartungspläne auf Fälligkeit prüfen'],
         'notifications' => ['scan_deadlines' => 'Fristen prüfen und erinnern'],
         'news-feed' => ['refresh' => 'Neuigkeiten-Feed aktualisieren'],

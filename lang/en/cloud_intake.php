@@ -32,6 +32,12 @@ return [
         'container' => 'Container/drive',
         'root_folder_id' => 'Root folder ID (optional)',
     ],
+    'picker' => [
+        'search_label' => 'Search containers',
+        'search_placeholder' => 'empty = own drives; a search term also finds SharePoint libraries',
+        'load' => 'Load containers',
+        'load_failed' => 'Containers could not be loaded — please enter the ID manually.',
+    ],
     'action' => [
         'connect_dropbox' => 'Connect Dropbox',
         'connect_microsoft' => 'Connect Microsoft 365',

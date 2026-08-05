@@ -15,8 +15,8 @@ use App\Plugins\Lexoffice\Jobs\{SyncOwnerVouchersJob, SyncVouchersJob};
 use App\Plugins\Lexoffice\{LexofficePlugin, LexofficeVoucherSync};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
-use Tests\Support\FakePluginHttp;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 /**

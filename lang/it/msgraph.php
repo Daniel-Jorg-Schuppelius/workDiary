@@ -22,6 +22,7 @@ return [
         'no_org_context' => 'Configurato (nessuna organizzazione nel contesto).',
         'no_connection' => 'Nessuna connessione Microsoft 365 stabilita.',
         'inactive' => 'La connessione Microsoft 365 è disconnessa o disattivata.',
+        'side_connections' => 'Le connessioni secondarie Microsoft 365 richiedono attenzione (:intake ricezione documenti, :backup backup, :mail mail — ripetere l’accesso o verificare gli scope).',
         'ok' => 'Connesso — elenco calendari disponibile.',
         'failing' => 'Microsoft Graph non raggiungibile o accesso negato.',
         'error' => 'Errore Microsoft Graph (:class).',
@@ -39,6 +40,8 @@ return [
         'help' => 'In quale calendario dell\'account collegato viene pubblicato. Senza selezione viene usato il calendario predefinito.',
         'target' => 'Calendario',
         'default' => 'Calendario predefinito',
+        'teams_meetings' => 'Creare i nuovi eventi come riunioni Teams (link di partecipazione)',
+        'teams_meetings_hint' => 'Riguarda solo gli eventi pubblicati ex novo — Graph non può riportare «offline» un evento esistente.',
     ],
 
     'flash' => [

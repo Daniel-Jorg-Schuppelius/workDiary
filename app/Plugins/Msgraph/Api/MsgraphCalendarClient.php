@@ -54,11 +54,19 @@ class MsgraphCalendarClient implements RemoteCalendarGateway {
             ? $this->base . '/me/calendars/' . rawurlencode($calendarId) . '/events'
             : $this->base . '/me/events';
 
+        $payload = $this->payload($event) + ['transactionId' => $event->uid];
+        // Teams-Meeting-Link (MS365-Plan C1): Opt-in je Verbindung, NUR beim
+        // Anlegen — Graph kann ein Online-Meeting nicht wieder entfernen,
+        // Bestandstermine bleiben deshalb unangetastet.
+        if ($this->connection->teams_meetings) {
+            $payload += ['isOnlineMeeting' => true, 'onlineMeetingProvider' => 'teamsForBusiness'];
+        }
+
         try {
             // transactionId (≤ 255 Zeichen, nur beim Anlegen erlaubt) macht
             // den Create Graph-seitig idempotent — Queue-/Lauf-Wiederholungen
             // erzeugen kein Duplikat, selbst wenn die Referenz noch fehlt.
-            $response = $this->api->postJson($url, $this->payload($event) + ['transactionId' => $event->uid]);
+            $response = $this->api->postJson($url, $payload);
         } catch (Throwable) {
             return null;
         }

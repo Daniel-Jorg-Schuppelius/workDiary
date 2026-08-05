@@ -10,14 +10,21 @@
 
 namespace App\Plugins\Msgraph;
 
-use App\Plugins\Msgraph\Api\MsgraphOAuth;
+use App\Plugins\Msgraph\Api\{MsgraphMailOAuth, MsgraphOAuth};
+use App\Plugins\Msgraph\Mail\{MsgraphMailTransport, StampOrganizationMailHeader};
 use App\Plugins\Support\PluginServiceProviderBase;
+use Illuminate\Mail\Events\MessageSending;
+use Illuminate\Support\Facades\{Event, Mail};
 
 /**
  * Plugin-eigener ServiceProvider (MVP-328, Bauturbo A8). Registriert
  * Config-Defaults, Routen, Views und den Publish-Command;
- * {@see MsgraphOAuth} ist Singleton — Tests ersetzen ihn durch eine Variante
- * mit Guzzle-MockHandler (Todoist-Muster).
+ * {@see MsgraphOAuth}/{@see MsgraphMailOAuth} sind Singletons — Tests ersetzen
+ * sie durch Varianten mit Guzzle-MockHandler (Todoist-Muster).
+ *
+ * Feature 102: registriert außerdem den Symfony-Mailer-Transport `msgraph`
+ * (Aktivierung über `MAIL_MAILER=msgraph` bzw. eine failover-Kette) und den
+ * Org-Routing-Header-Listener für die Mandantenauflösung im Queue-Worker.
  */
 class MsgraphServiceProvider extends PluginServiceProviderBase {
     protected function pluginId(): string {
@@ -26,11 +33,18 @@ class MsgraphServiceProvider extends PluginServiceProviderBase {
 
     protected function registerPlugin(): void {
         $this->app->singleton(MsgraphOAuth::class, fn(): MsgraphOAuth => new MsgraphOAuth());
+        $this->app->singleton(MsgraphMailOAuth::class, fn(): MsgraphMailOAuth => new MsgraphMailOAuth());
 
         if ($this->app->runningInConsole()) {
             $this->commands([
                 Console\MsgraphPublishCommand::class,
+                Console\MsgraphSubscriptionsCommand::class,
             ]);
         }
+    }
+
+    protected function bootPlugin(): void {
+        Mail::extend('msgraph', fn(): MsgraphMailTransport => new MsgraphMailTransport());
+        Event::listen(MessageSending::class, StampOrganizationMailHeader::class);
     }
 }

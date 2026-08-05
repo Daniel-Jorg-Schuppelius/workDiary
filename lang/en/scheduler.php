@@ -81,6 +81,7 @@ return [
             'cloud-verify' => 'Cloud backup check',
         ],
         'billbee' => ['sync' => 'Billbee sync'],
+        'caldav' => ['publish' => 'CalDAV calendar publish reconciliation'],
         'carddav' => ['sync' => 'CardDAV sync'],
         'catalog' => ['fetch_due' => 'Fetch catalog sources'],
         'chat' => [
@@ -101,6 +102,7 @@ return [
         ],
         'easybill' => ['sync' => 'easybill document retrieval'],
         'etsy' => ['sync' => 'Etsy sync'],
+        'google-calendar' => ['publish' => 'Google Calendar publish reconciliation'],
         'integration' => ['purge_inbox' => 'Purge integration inbox'],
         'finance' => ['open_times_digest' => 'Open-times digest for accounting'],
         'inventory' => ['cycle_counts' => 'Trigger cycle counts', 'expiring_lots' => 'Best-before monitoring (expiring lots)'],
@@ -113,6 +115,10 @@ return [
         ],
         'location' => ['purge_points' => 'Purge raw location points'],
         'mail' => ['poll' => 'Poll mail intake'],
+        'msgraph' => [
+            'publish' => 'Microsoft 365 calendar publish reconciliation',
+            'subscriptions' => 'Renew Microsoft 365 webhook subscriptions',
+        ],
         'maintenance' => ['scan_due' => 'Check maintenance plans for due work'],
         'notifications' => ['scan_deadlines' => 'Scan deadlines and notify'],
         'news-feed' => ['refresh' => 'Refresh news feed'],

@@ -40,6 +40,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $idp_certificate_next
  * @property int|null $created_by
  * @property \Illuminate\Support\Carbon|null $last_login_at
+ * @property bool $jit_provisioning
+ * @property string|null $jit_role
  */
 class SsoConnection extends Model {
     use Auditable;
@@ -57,6 +59,8 @@ class SsoConnection extends Model {
         'active',
         'enforced',
         'allow_email_link',
+        'jit_provisioning',
+        'jit_role',
         'allow_private_network',
         'issuer',
         'client_id',
@@ -76,6 +80,7 @@ class SsoConnection extends Model {
         'active' => 'boolean',
         'enforced' => 'boolean',
         'allow_email_link' => 'boolean',
+        'jit_provisioning' => 'boolean',
         'allow_private_network' => 'boolean',
         'client_secret' => 'encrypted',
         'last_login_at' => 'datetime',

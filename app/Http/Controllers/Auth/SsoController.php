@@ -124,6 +124,8 @@ class SsoController extends Controller {
             $user = $this->login->resolveUser($connection, [
                 'subject' => (string) $claims['sub'],
                 'email' => $email,
+                // Anzeigename fürs JIT-Provisioning (G2); nie Matching-Schlüssel.
+                'name' => is_string($claims['name'] ?? null) ? $claims['name'] : null,
             ]);
         } catch (SsoLoginException $e) {
             return $this->failed($e->getMessage());

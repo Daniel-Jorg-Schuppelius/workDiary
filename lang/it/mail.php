@@ -37,6 +37,7 @@ return [
 
     'field' => [
         'name' => 'Etichetta',
+        'transport' => 'Trasporto',
         'host' => 'Server IMAP',
         'port' => 'Porta',
         'encryption' => 'Cifratura',
@@ -76,11 +77,16 @@ return [
         'dms_failed' => 'Importazione nell’archivio documenti non riuscita.',
         'already_resolved' => 'Questa voce è già risolta.',
         'password_required' => 'Una nuova casella richiede una password.',
+        'msgraph_connection_required' => 'Una casella Microsoft 365 richiede prima la connessione di invio e-mail nel plugin Microsoft 365 (scope Mail.ReadWrite).',
         'customer_required' => 'Nessun cliente associato.',
     ],
     'reference' => [
         'customer_number' => 'Numero cliente nel testo: :number',
         'invoice_number' => 'Numero fattura nel testo: :number',
         'project_number' => 'Numero progetto nel testo: :number',
+    ],
+    'transport' => [
+        'msgraph' => 'Microsoft 365 (Graph)',
+        'msgraph_hint' => 'Microsoft 365: usa la connessione mail Graph dell’organizzazione — nessuna credenziale IMAP necessaria.',
     ],
 ];

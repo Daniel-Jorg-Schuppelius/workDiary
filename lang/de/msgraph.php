@@ -22,6 +22,7 @@ return [
         'no_org_context' => 'Konfiguriert (keine Organisation im Kontext).',
         'no_connection' => 'Keine Microsoft-365-Verbindung hergestellt.',
         'inactive' => 'Microsoft-365-Verbindung ist getrennt oder deaktiviert.',
+        'side_connections' => 'Microsoft-365-Nebenverbindungen brauchen Aufmerksamkeit (:intake Dokumenteingang, :backup Backup, :mail Mail — erneut anmelden oder Scopes prüfen).',
         'ok' => 'Verbunden — Kalenderliste abrufbar.',
         'failing' => 'Microsoft Graph nicht erreichbar oder Zugriff verweigert.',
         'error' => 'Microsoft-Graph-Fehler (:class).',
@@ -39,6 +40,8 @@ return [
         'help' => 'In welchen Kalender des verbundenen Kontos publiziert wird. Ohne Auswahl der Standardkalender.',
         'target' => 'Kalender',
         'default' => 'Standardkalender',
+        'teams_meetings' => 'Neue Termine als Teams-Meeting anlegen (Beitrittslink)',
+        'teams_meetings_hint' => 'Wirkt nur auf neu publizierte Termine — ein bestehender Termin kann Graph-seitig nicht wieder „offline" gestellt werden.',
     ],
 
     'flash' => [

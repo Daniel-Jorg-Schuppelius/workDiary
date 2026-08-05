@@ -38,11 +38,13 @@ interface DocumentIntakeSource {
 
     /**
      * Wählbare Quell-Container (Drive/Bibliothek/Shared Drive/Namespace)
-     * für die Admin-Auswahl.
+     * für die Admin-Auswahl. `$search` ist optional: Provider mit durchsuchbaren
+     * Container-Räumen (z. B. SharePoint-Sites bei Microsoft Graph) liefern
+     * dann zusätzlich passende Treffer; Provider ohne Suche ignorieren ihn.
      *
      * @return list<IntakeContainer>
      */
-    public function intakeContainers(CloudDocumentConnection $connection): array;
+    public function intakeContainers(CloudDocumentConnection $connection, ?string $search = null): array;
 
     /**
      * Änderungen seit dem Checkpoint (null = Erstlauf ab Stammordner),

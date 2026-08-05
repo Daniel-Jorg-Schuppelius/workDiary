@@ -22,16 +22,19 @@ use Illuminate\Support\Facades\Log;
  *
  * - Account-Linking NUR über iss+sub bzw. IdP+NameID — nie über E-Mail
  *   (mutable/unverified, nOAuth-Angriff). E-Mail-Matching ist ein bewusstes
- *   Opt-in je Verbindung und greift nur bei genau einem Treffer in der
- *   eigenen Organisation.
- * - SSO legt NIE Konten an und vergibt NIE Rollen (DoD Phase 11).
+ *   Opt-in je Verbindung, greift nur bei genau einem Treffer in der eigenen
+ *   Organisation und ist für Entra-Verbindungen GESPERRT (nOAuth: der
+ *   email-Claim ist in Fremd-Tenants frei setzbar — {@see EntraIssuer}).
+ * - Konten anlegen nur über das explizite JIT-Opt-in der Verbindung
+ *   (MS365-Plan G2): neuer Nutzer mit Standardrolle, Lizenz-Limit-Guard,
+ *   niemals stilles Verknüpfen mit einem BESTEHENDEN Konto per E-Mail.
  * - {@see User::canLogin()} (deactivated_at) gilt auch nach erfolgreichem
  *   IdP-Login; Portal-Konten (customer_id) sind ausgeschlossen.
  * - Mandantengrenze: das Konto muss zur Organisation der Verbindung gehören.
  */
 class SsoLoginService {
     /**
-     * @param array{subject: string, email: string|null} $identity
+     * @param array{subject: string, email: string|null, name?: string|null} $identity
      */
     public function resolveUser(SsoConnection $connection, array $identity): User {
         $subject = $identity['subject'];
@@ -44,7 +47,11 @@ class SsoLoginService {
         $user = $existing?->user()->withoutGlobalScopes()->first();
 
         if (! $user instanceof User) {
-            $user = $this->linkByEmail($connection, $subject, $identity['email']);
+            $user = $this->linkByEmail($connection, $subject, $identity['email'])
+                ?? $this->provisionJit($connection, $subject, $identity);
+        }
+        if (! $user instanceof User) {
+            $this->reject($connection, 'unknown_identity');
         }
 
         $this->assertLoginAllowed($connection, $user);
@@ -63,9 +70,16 @@ class SsoLoginService {
         $connection->audit('sso.login', ['user_id' => $user->id, 'protocol' => $connection->protocol->value]);
     }
 
-    private function linkByEmail(SsoConnection $connection, string $subject, ?string $email): User {
+    private function linkByEmail(SsoConnection $connection, string $subject, ?string $email): ?User {
         if (! $connection->allow_email_link || ! filled($email)) {
-            $this->reject($connection, 'unknown_identity');
+            return null;
+        }
+
+        // Entra-Abwehr (nOAuth, MS365-Plan G1): auch für Alt-Konfigurationen,
+        // die vor dem Konfigurations-Guard angelegt wurden — der email-Claim
+        // aus Entra ist als Matching-Schlüssel grundsätzlich untauglich.
+        if (EntraIssuer::isEntra((string) $connection->issuer)) {
+            $this->reject($connection, 'email_link_untrusted_idp');
         }
 
         $candidates = User::query()
@@ -77,8 +91,11 @@ class SsoLoginService {
             ->limit(2)
             ->get();
 
-        if ($candidates->count() !== 1) {
-            $this->reject($connection, $candidates->isEmpty() ? 'unknown_identity' : 'ambiguous_email');
+        if ($candidates->count() > 1) {
+            $this->reject($connection, 'ambiguous_email');
+        }
+        if ($candidates->isEmpty()) {
+            return null; // ggf. JIT (Opt-in) — sonst unknown_identity
         }
 
         /** @var User $user */
@@ -90,6 +107,70 @@ class SsoLoginService {
             'subject' => $subject,
         ]);
         $connection->audit('sso.identity_linked', ['user_id' => $user->id]);
+
+        return $user;
+    }
+
+    /**
+     * JIT-Provisioning (Opt-in je Verbindung, MS365-Plan G2): legt beim ersten
+     * IdP-Login ein NEUES Konto an. Bewusst niemals ein Verknüpfen mit einem
+     * bestehenden Konto (das wäre E-Mail-Matching durch die Hintertür) —
+     * E-Mail-Kollision ⇒ Ablehnung. Lizenz-Nutzerlimit wie bei manueller
+     * Anlage ({@see \App\Services\Plan\LimitGuard}).
+     *
+     * @param array{subject: string, email: string|null, name?: string|null} $identity
+     */
+    private function provisionJit(SsoConnection $connection, string $subject, array $identity): ?User {
+        if (! $connection->jit_provisioning) {
+            return null;
+        }
+
+        $email = mb_strtolower(trim((string) ($identity['email'] ?? '')));
+        if ($email === '' || filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+            $this->reject($connection, 'jit_email_missing');
+        }
+
+        if (User::query()->withoutGlobalScopes()->whereRaw('LOWER(email) = ?', [$email])->exists()) {
+            // Konto existiert bereits (gleiche oder fremde Org) — kein stilles
+            // Übernehmen; Verknüpfung nur manuell bzw. via allow_email_link.
+            $this->reject($connection, 'jit_email_conflict');
+        }
+
+        $organization = $connection->organization()->withoutGlobalScopes()->first();
+        if ($organization === null) {
+            $this->reject($connection, 'jit_organization_missing');
+        }
+
+        try {
+            app(\App\Services\Licensing\LimitGuard::class)->ensureCanCreateUser($organization);
+        } catch (\Throwable) {
+            $this->reject($connection, 'jit_user_limit_reached');
+        }
+
+        $name = trim((string) ($identity['name'] ?? ''));
+        $user = User::query()->create([
+            'organization_id' => $connection->organization_id,
+            'name' => $name !== '' ? $name : (string) strstr($email, '@', true),
+            'email' => $email,
+            // Zufallspasswort: Login läuft über den IdP; Passwort-Reset bleibt
+            // möglich, solange kein SSO-Zwang (enforced) greift.
+            'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(40)),
+            'must_change_password' => false,
+            'is_new_system' => true,
+        ]);
+
+        $role = trim((string) $connection->jit_role);
+        if ($role !== '') {
+            app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($connection->organization_id);
+            $user->assignRole(\Spatie\Permission\Models\Role::findOrCreate($role, 'web'));
+        }
+
+        SsoIdentity::query()->create([
+            'sso_connection_id' => $connection->id,
+            'user_id' => $user->id,
+            'subject' => $subject,
+        ]);
+        $connection->audit('sso.user_provisioned', ['user_id' => $user->id, 'role' => $role !== '' ? $role : null]);
 
         return $user;
     }

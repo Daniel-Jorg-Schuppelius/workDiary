@@ -81,6 +81,7 @@ return [
             'cloud-verify' => 'Vérification de la sauvegarde cloud',
         ],
         'billbee' => ['sync' => 'Synchronisation Billbee'],
+        'caldav' => ['publish' => 'Rapprochement de publication du calendrier CalDAV'],
         'carddav' => ['sync' => 'Synchronisation CardDAV'],
         'catalog' => ['fetch_due' => 'Récupérer les sources de catalogue'],
         'chat' => [
@@ -101,6 +102,7 @@ return [
         ],
         'easybill' => ['sync' => 'Récupération de documents easybill'],
         'etsy' => ['sync' => 'Synchronisation Etsy'],
+        'google-calendar' => ['publish' => 'Rapprochement de publication du calendrier Google'],
         'integration' => ['purge_inbox' => 'Purger la boîte de réception d\'intégration'],
         'finance' => ['open_times_digest' => 'Digest des temps ouverts pour la comptabilité'],
         'inventory' => ['cycle_counts' => 'Lancer l\'inventaire tournant', 'expiring_lots' => 'Surveillance DLUO (lots expirants)'],
@@ -113,6 +115,10 @@ return [
         ],
         'location' => ['purge_points' => 'Purger les points de localisation bruts'],
         'mail' => ['poll' => 'Relever la boîte mail entrante'],
+        'msgraph' => [
+            'publish' => 'Rapprochement de publication du calendrier Microsoft 365',
+            'subscriptions' => 'Renouveler les abonnements webhook Microsoft 365',
+        ],
         'maintenance' => ['scan_due' => 'Vérifier les plans de maintenance échus'],
         'notifications' => ['scan_deadlines' => 'Contrôler les échéances et notifier'],
         'news-feed' => ['refresh' => 'Actualiser le fil d’actualités'],

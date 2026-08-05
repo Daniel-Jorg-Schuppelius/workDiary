@@ -206,6 +206,26 @@ final class MsgraphConnectionTest extends TestCase {
         $this->assertSame(PluginHealth::STATUS_DEGRADED, (new MsgraphPlugin())->healthCheck()->status);
     }
 
+    public function test_health_degrades_when_side_connections_need_reauth(): void {
+        $this->connection();
+        FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/calendars*' => FakePluginHttp::response(['value' => [['id' => 'cal-1', 'name' => 'Kalender']]]),
+        ]);
+        $this->assertTrue((new MsgraphPlugin())->healthCheck()->isOk());
+
+        // Intake-Verbindung mit gespeichertem Reauth-Status → degraded,
+        // obwohl die Kalender-Probe weiterhin ok ist (keine Live-Zusatzprobe).
+        \App\Models\CloudIntake\CloudDocumentConnection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'provider' => \App\Enums\CloudIntake\CloudIntakeProvider::Microsoft,
+            'status' => \App\Enums\CloudIntake\CloudIntakeConnectionStatus::ReauthRequired,
+        ]);
+
+        $health = (new MsgraphPlugin())->healthCheck();
+        $this->assertSame(PluginHealth::STATUS_DEGRADED, $health->status);
+        $this->assertStringContainsString('1', (string) $health->message);
+    }
+
     public function test_401_triggers_refresh_and_exactly_one_retry(): void {
         // Token-Endpunkt (Refresh) liefert ein frisches Token-Set.
         $this->fakeTokenEndpoint([

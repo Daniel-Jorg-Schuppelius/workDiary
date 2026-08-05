@@ -59,13 +59,17 @@ class MsgraphIntakeClient {
         );
     }
 
+    /** Obergrenze der Site-Treffer, deren Bibliotheken aufgelöst werden (je Site 1 Request). */
+    private const SITE_SEARCH_LIMIT = 5;
+
     /**
-     * Eigene Drives (OneDrive) als Container; SharePoint-Bibliotheken werden
-     * über {@see sites()}/{@see siteDrives()} der Ordner-Auswahl zugeführt.
+     * Eigene Drives (OneDrive) als Container; mit `$search` zusätzlich die
+     * Dokumentbibliotheken passender SharePoint-Sites
+     * ({@see sites()}/{@see siteDrives()}) — Label „Site — Bibliothek".
      *
      * @return list<IntakeContainer>
      */
-    public function containers(): array {
+    public function containers(?string $search = null): array {
         $response = $this->api->getResponse($this->base . '/me/drives');
         if (! $response->successful()) {
             throw new RuntimeException('Graph /me/drives fehlgeschlagen (HTTP ' . $response->status() . ').');
@@ -80,6 +84,24 @@ class MsgraphIntakeClient {
                 label: (string) ($drive['name'] ?? 'Drive'),
                 kind: (string) ($drive['driveType'] ?? 'drive'),
             );
+        }
+
+        $search = trim((string) $search);
+        if ($search !== '') {
+            $seen = array_flip(array_map(static fn (IntakeContainer $c): string => $c->id, $containers));
+            foreach (array_slice($this->sites($search), 0, self::SITE_SEARCH_LIMIT) as $site) {
+                foreach ($this->siteDrives($site['id']) as $drive) {
+                    if (isset($seen[$drive->id])) {
+                        continue;
+                    }
+                    $seen[$drive->id] = true;
+                    $containers[] = new IntakeContainer(
+                        id: $drive->id,
+                        label: $site['label'] !== '' ? $site['label'] . ' — ' . $drive->label : $drive->label,
+                        kind: $drive->kind,
+                    );
+                }
+            }
         }
 
         return $containers;
@@ -132,6 +154,57 @@ class MsgraphIntakeClient {
         }
 
         return $containers;
+    }
+
+    // ── Change-Notification-Subscriptions (MS365-Plan §8) ───────────────
+    // Der Webhook-EMPFÄNGER existierte seit MVP-354 — hier die Sender-Seite:
+    // Anlage/Erneuerung/Abmeldung der Graph-Subscription auf dem Drive-Root.
+    // driveItem-Subscriptions: nur changeType=updated, Laufzeit < 30 Tage.
+
+    /**
+     * Legt die Subscription an; Rückgabe = Graph-ID + Ablauf.
+     *
+     * @return array{id: string, expires_at: string}
+     */
+    public function createSubscription(string $notificationUrl, string $resource, string $clientState, \DateTimeInterface $expiresAt): array {
+        $response = $this->api->postJson($this->base . '/subscriptions', [
+            'changeType' => 'updated',
+            'notificationUrl' => $notificationUrl,
+            'resource' => $resource,
+            'clientState' => $clientState,
+            'expirationDateTime' => $expiresAt->format('Y-m-d\TH:i:s\Z'),
+        ]);
+        if (! $response->successful()) {
+            throw new RuntimeException('Graph POST /subscriptions fehlgeschlagen (HTTP ' . $response->status() . ').');
+        }
+
+        return [
+            'id' => (string) $response->json('id', ''),
+            'expires_at' => (string) $response->json('expirationDateTime', ''),
+        ];
+    }
+
+    /** Verlängert die Subscription; false = 404 (abgelaufen/gelöscht → neu anlegen). */
+    public function renewSubscription(string $subscriptionId, \DateTimeInterface $expiresAt): bool {
+        $response = $this->api->requestResponse('patch', $this->base . '/subscriptions/' . rawurlencode($subscriptionId), [
+            'json' => ['expirationDateTime' => $expiresAt->format('Y-m-d\TH:i:s\Z')],
+        ]);
+        if ($response->status() === 404) {
+            return false;
+        }
+        if (! $response->successful()) {
+            throw new RuntimeException('Graph PATCH /subscriptions fehlgeschlagen (HTTP ' . $response->status() . ').');
+        }
+
+        return true;
+    }
+
+    /** Meldet die Subscription ab (404 = bereits weg, idempotent ok). */
+    public function deleteSubscription(string $subscriptionId): void {
+        $response = $this->api->deleteResponse($this->base . '/subscriptions/' . rawurlencode($subscriptionId));
+        if (! $response->successful() && $response->status() !== 404) {
+            throw new RuntimeException('Graph DELETE /subscriptions fehlgeschlagen (HTTP ' . $response->status() . ').');
+        }
     }
 
     public function changes(?string $checkpoint): IntakeChangePage {

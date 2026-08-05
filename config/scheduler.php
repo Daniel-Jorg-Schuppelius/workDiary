@@ -415,7 +415,9 @@ return [
         // --- Cloud-Dokumenteingang (Feature 080, MVP-359) ---
         'cloud-intake.sync' => [
             'command' => 'cloud-intake:sync',
-            'plugin' => 'dropbox,google-drive,sharepoint',
+            // Plugin-IDs der Intake-Adapter (CloudIntakeProvider::pluginId) — Microsoft läuft
+            // über das Msgraph-Plugin, nicht über das capability-lose Sharepoint-Mirror-Plugin.
+            'plugin' => 'dropbox,google-drive,msgraph,nextcloud',
             'cadence' => ['type' => 'everyFifteenMinutes'],
             'allowed' => ['everyFiveMinutes', 'everyFifteenMinutes', 'everyThirtyMinutes', 'hourly'],
             'criticality' => 'integration',
@@ -444,6 +446,43 @@ return [
             'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
             'criticality' => 'integration',
             'expected_runtime_minutes' => 10,
+        ],
+        // --- Kalender-Publish-Abgleich (MVP-126/328, Bauturbo A8/A11): täglicher
+        // Voll-Publish als Reconciliation; Einzeltermine gehen weiterhin sofort
+        // über den ereignisgetriebenen CalendarEventPublishJob raus. ---
+        'caldav.publish' => [
+            'command' => 'caldav:publish',
+            'plugin' => 'caldav',
+            'cadence' => ['type' => 'dailyAt', 'time' => '04:35'],
+            'allowed' => ['everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 15,
+        ],
+        'msgraph.publish' => [
+            'command' => 'msgraph:publish',
+            'plugin' => 'msgraph',
+            'cadence' => ['type' => 'dailyAt', 'time' => '04:45'],
+            'allowed' => ['everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 15,
+        ],
+        // Graph-Change-Notification-Subscriptions des Dokumenteingangs
+        // (MS365-Plan §8): täglich anlegen/erneuern (driveItem < 30 Tage).
+        'msgraph.subscriptions' => [
+            'command' => 'msgraph:subscriptions',
+            'plugin' => 'msgraph',
+            'cadence' => ['type' => 'dailyAt', 'time' => '04:20'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 5,
+        ],
+        'google-calendar.publish' => [
+            'command' => 'google-calendar:publish',
+            'plugin' => 'google_calendar',
+            'cadence' => ['type' => 'dailyAt', 'time' => '04:55'],
+            'allowed' => ['everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 15,
         ],
         'openproject.push' => [
             'command' => 'openproject:push',

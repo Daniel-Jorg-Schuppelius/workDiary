@@ -111,10 +111,49 @@ class WebAuthnService {
             ],
             authenticatorSelection: AuthenticatorSelectionCriteria::create(
                 userVerification: AuthenticatorSelectionCriteria::USER_VERIFICATION_REQUIREMENT_PREFERRED,
-                residentKey: AuthenticatorSelectionCriteria::RESIDENT_KEY_REQUIREMENT_DISCOURAGED,
+                // PREFERRED statt DISCOURAGED (MS365-Plan G3): neue Registrierungen
+                // werden discoverable (Passkey) und taugen damit auch für den
+                // passwortlosen Primär-Login; reine Security-Keys ohne
+                // Resident-Speicher registrieren sich weiterhin.
+                residentKey: AuthenticatorSelectionCriteria::RESIDENT_KEY_REQUIREMENT_PREFERRED,
             ),
             excludeCredentials: $exclude,
         );
+    }
+
+    /**
+     * Discoverable-Credential-Optionen (Passkey-Primär-Login, MS365-Plan G3):
+     * KEINE allowCredentials (der Authenticator wählt den Passkey), User
+     * Verification PFLICHT — der Passkey ersetzt Passwort UND zweiten Faktor.
+     */
+    public function discoverableRequestOptions(string $host): PublicKeyCredentialRequestOptions {
+        return PublicKeyCredentialRequestOptions::create(
+            random_bytes(32),
+            rpId: $this->rpId($host),
+            allowCredentials: [],
+            userVerification: PublicKeyCredentialRequestOptions::USER_VERIFICATION_REQUIREMENT_REQUIRED,
+        );
+    }
+
+    /**
+     * Credential-Datensatz zur Browser-Antwort (Lookup über die credential_id) —
+     * für den identitätslosen Passkey-Login. Bewusst NUR das rawId-Feld aus dem
+     * JSON (base64url, wie gespeichert): der Lookup entscheidet Policy-Guards
+     * (Portal/deaktiviert/SSO-Zwang) VOR der teuren Deserialisierung; die
+     * kryptografische Prüfung übernimmt {@see verifyAssertion()}.
+     */
+    public function credentialOwner(string $browserJson): ?TwoFactorCredential {
+        $data = json_decode($browserJson, true);
+        $rawId = is_array($data) && is_string($data['rawId'] ?? null) ? $data['rawId'] : '';
+        if ($rawId === '') {
+            return null;
+        }
+
+        return TwoFactorCredential::query()
+            ->where('type', TwoFactorType::Webauthn->value)
+            ->where('credential_id', $rawId)
+            ->whereNotNull('confirmed_at')
+            ->first();
     }
 
     /** Anmelde-Optionen (Assertion) für den geparkten Nutzer. */
