@@ -234,8 +234,9 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Doc
                 \App\Enums\CloudIntake\CloudIntakeConnectionStatus::Blocked,
             ])->count();
 
+        // Backupziele sind PLATTFORMWEIT (bewusst ohne organization_id) —
+        // ein blockiertes Microsoft-Ziel betrifft alle Organisationen.
         $backup = BackupTargetConnection::query()
-            ->where('organization_id', $org->id)
             ->where('provider', \App\Enums\Backup\BackupProvider::Microsoft)
             ->whereIn('status', [
                 \App\Enums\Backup\BackupTargetStatus::ReauthRequired,
