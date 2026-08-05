@@ -43,7 +43,8 @@ class DomainSyncService {
     /** Subuser-/Subreseller-Hierarchie (Herkunft/Tiefe/Parent bleiben erhalten). */
     public function syncResellerAccounts(DomainProviderConnection $connection, ?DomainProviderAdapter $adapter = null): int {
         $adapter ??= $this->resolver->for($connection);
-        $response = $adapter->execute('QueryUserList', [], DomainCapabilityArea::Subuser);
+        // wide=1: erst der Verbose-Modus liefert UserClass/Aktivstatus/Saldo.
+        $response = $adapter->execute('QueryUserList', ['wide' => 1], DomainCapabilityArea::Subuser);
 
         $count = 0;
         foreach ($response->rows() as $row) {
@@ -88,10 +89,14 @@ class DomainSyncService {
         $total = 0;
 
         do {
+            // wide=1 ist PFLICHT: ohne Verbose-Modus liefert die echte API nur
+            // die Domainnamen — USER (→ Reseller-Verknüpfung), Registrar,
+            // Status und Ablauf fehlen dann komplett (Live-Befund 2026-08-05).
             $response = $adapter->execute('QueryDomainList', [
                 'userdepth' => $userDepth,
                 'first' => $first,
                 'limit' => $pageSize,
+                'wide' => 1,
             ], DomainCapabilityArea::Domains);
 
             $rows = $response->rows();
@@ -181,6 +186,31 @@ class DomainSyncService {
                 ->first();
         }
 
+        // Die echte Listenantwort präfixt die Felder mit DOMAIN…
+        // (DOMAINREGISTRAR, DOMAINSTATUS, …) — die unpräfixierten Namen bleiben
+        // als Fallback für StatusDomain-artige Antworten erhalten.
+        $values = [
+            'connection_id' => $connection->id,
+            'external_domain' => $domain,
+            'external_user' => $user ?? '',
+            'reseller_account_id' => $reseller?->id,
+            'registrar' => $this->field($row, ['registrar', 'domainregistrar']),
+            'status' => $this->field($row, ['status', 'domainstatus']),
+            'sync_status' => DomainSyncStatus::Current->value,
+            'renewal_mode' => DomainRenewalMode::fromProvider($this->field($row, ['renewalmode', 'domainrenewalmode']))?->value,
+            'expiration_at' => $this->date($this->field($row, ['expirationdate', 'expiration', 'registrationexpirationdate', 'domainregistrationexpirationdate'])),
+            'raw_hash' => CryptoHelper::hash(JsonHelper::encode($row)),
+            'synced_at' => Carbon::now(),
+        ];
+        // Diese Daten liefert NUR StatusDomain — die Liste würde per Detail-
+        // abgleich gefüllte Werte sonst bei jedem Sync wieder auf null setzen.
+        foreach (['accounting_at' => ['paiddate', 'accountingdate'], 'failure_at' => ['failuredate'], 'finalization_at' => ['finalizationdate']] as $column => $keys) {
+            $value = $this->date($this->field($row, $keys));
+            if ($value !== null) {
+                $values[$column] = $value;
+            }
+        }
+
         // Org-weit eindeutig je Domainname: dieselbe Domain aktualisiert genau
         // EINE Zeile, auch wenn sie über eine andere Verbindung gemeldet wird
         // (connection_id „wandert" mit, keine Doppelzeile → keine Doppelbuchung).
@@ -189,22 +219,7 @@ class DomainSyncService {
                 'organization_id' => $connection->organization_id,
                 'domain_hash' => DomainProjection::hashFor($domain),
             ],
-            [
-                'connection_id' => $connection->id,
-                'external_domain' => $domain,
-                'external_user' => $user ?? '',
-                'reseller_account_id' => $reseller?->id,
-                'registrar' => $this->field($row, ['registrar']),
-                'status' => $this->field($row, ['status']),
-                'sync_status' => DomainSyncStatus::Current->value,
-                'renewal_mode' => DomainRenewalMode::fromProvider($this->field($row, ['renewalmode']))?->value,
-                'expiration_at' => $this->date($this->field($row, ['expirationdate', 'expiration'])),
-                'accounting_at' => $this->date($this->field($row, ['paiddate', 'accountingdate'])),
-                'failure_at' => $this->date($this->field($row, ['failuredate'])),
-                'finalization_at' => $this->date($this->field($row, ['finalizationdate'])),
-                'raw_hash' => CryptoHelper::hash(JsonHelper::encode($row)),
-                'synced_at' => Carbon::now(),
-            ],
+            $values,
         );
     }
 
@@ -223,16 +238,27 @@ class DomainSyncService {
             'next_action' => $this->field($row, ['nextaction']),
             'transferlock' => $this->boolField($row, ['transferlock'], (bool) $projection->transferlock),
             'registration_at' => $this->date($this->field($row, ['registrationdate', 'createddate'])) ?? $projection->registration_at,
-            'expiration_at' => $this->date($this->field($row, ['expirationdate', 'expiration'])) ?? $projection->expiration_at,
+            'expiration_at' => $this->date($this->field($row, ['expirationdate', 'expiration', 'registrationexpirationdate'])) ?? $projection->expiration_at,
             'accounting_at' => $this->date($this->field($row, ['paiddate', 'accountingdate'])) ?? $projection->accounting_at,
             'failure_at' => $this->date($this->field($row, ['failuredate'])) ?? $projection->failure_at,
             'finalization_at' => $this->date($this->field($row, ['finalizationdate'])) ?? $projection->finalization_at,
             'renewal_price' => $this->decimal($this->field($row, ['renewalprice', 'price'])),
-            'renewal_currency' => $this->currency($this->field($row, ['currency']))?->value,
+            'renewal_currency' => $this->currency($this->field($row, ['currency', 'renewalcurrency']))?->value,
             'revision' => $this->field($row, ['revision', 'roid']),
             'raw_hash' => $response->rawHash(),
             'synced_at' => Carbon::now(),
         ]);
+
+        // StatusDomain liefert USER — Einzelabgleich heilt damit auch eine
+        // fehlende/veraltete Reseller-Verknüpfung (Selbstheilung ohne Vollsync).
+        $user = $this->field($row, ['user', 'owner']);
+        if ($user !== null && $user !== '') {
+            $projection->external_user = $user;
+            $projection->reseller_account_id = DomainResellerAccount::query()
+                ->where('connection_id', $projection->connection_id)
+                ->where('external_user', $user)
+                ->first()?->id;
+        }
     }
 
     /**

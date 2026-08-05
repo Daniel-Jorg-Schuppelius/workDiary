@@ -12,7 +12,7 @@ namespace Tests\Feature\Domain;
 
 use App\Enums\Domain\{DomainConnectionStatus, DomainProviderCommandStatus, DomainSyncStatus};
 use App\Models\{Customer, ExternalReference, User};
-use App\Models\Domain\{DomainAccountingEntry, DomainProjection, DomainProviderConnection};
+use App\Models\Domain\{DomainAccountingEntry, DomainProjection, DomainProviderConnection, DomainResellerAccount};
 use App\Plugins\Support\Domain\DomainRateBudgetException;
 use App\Services\Domain\{DomainAccountingService, DomainActionException, DomainAvailabilityService, DomainCommandService, DomainConnectionService, DomainCustomerMappingService, DomainDangerousActionService, DomainDnsService, DomainEventPollingService, DomainInvoiceService, DomainReportService, DomainSyncService};
 use Illuminate\Database\QueryException;
@@ -213,6 +213,77 @@ class DomainServiceTest extends TestCase {
         $connection->refresh();
         $this->assertSame(DomainConnectionStatus::Blocked, $connection->status);
         $this->assertSame('auth_code_530', $connection->last_error);
+    }
+
+    public function test_domain_list_sync_sends_wide_and_maps_real_property_names(): void {
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $reseller = DomainResellerAccount::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'external_user' => 'lds-systems',
+        ]);
+
+        FakeDomainResellingTransport::fake([
+            'QueryDomainList' => function (array $params): string {
+                // Ohne wide=1 liefert die echte API nur Domainnamen (kein USER
+                // → keine Reseller-Verknüpfung); Live-Befund 2026-08-05.
+                \PHPUnit\Framework\Assert::assertSame('1', $params['wide'] ?? null);
+
+                return implode("\n", [
+                    'code=200',
+                    'property[DOMAIN][0]=lds-endkunde.de',
+                    'property[USER][0]=lds-systems',
+                    'property[DOMAINREGISTRAR][0]=DENIC',
+                    'property[DOMAINSTATUS][0]=ACTIVE',
+                    'property[DOMAINRENEWALMODE][0]=AUTORENEW',
+                    'property[DOMAINREGISTRATIONEXPIRATIONDATE][0]=2027-03-01 00:00:00',
+                    'EOF',
+                ]) . "\n";
+            },
+        ]);
+
+        app(DomainSyncService::class)->syncDomains($connection, 'ALL');
+
+        $domain = DomainProjection::query()->where('domain_hash', DomainProjection::hashFor('lds-endkunde.de'))->firstOrFail();
+        $this->assertSame($reseller->id, $domain->reseller_account_id);
+        $this->assertSame('lds-systems', $domain->external_user);
+        $this->assertSame('DENIC', $domain->registrar);
+        $this->assertSame('ACTIVE', $domain->status);
+        $this->assertSame('2027-03-01', $domain->expiration_at?->toDateString());
+    }
+
+    public function test_refresh_domain_relinks_reseller_from_status_user(): void {
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $reseller = DomainResellerAccount::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'external_user' => 'lds-systems',
+        ]);
+        // Altbestand aus einem Sync OHNE wide: keine Verknüpfung, kein Ablauf.
+        $domain = DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'reseller_account_id' => null,
+            'external_user' => '',
+            'expiration_at' => null,
+            'external_domain' => 'heilung.de',
+            'domain_hash' => DomainProjection::hashFor('heilung.de'),
+        ]);
+
+        FakeDomainResellingTransport::fake([
+            'StatusDomain' => FakeDomainResellingTransport::properties([[
+                'registrar' => 'DENIC',
+                'registrationexpirationdate' => '2027-03-01 00:00:00',
+                'user' => 'lds-systems',
+            ]]),
+        ]);
+
+        app(DomainSyncService::class)->refreshDomain($domain);
+
+        $domain->refresh();
+        $this->assertSame($reseller->id, $domain->reseller_account_id);
+        $this->assertSame('lds-systems', $domain->external_user);
+        $this->assertSame('2027-03-01', $domain->expiration_at?->toDateString());
     }
 
     public function test_own_holding_excludes_from_unmapped_and_yields_to_assignment(): void {
