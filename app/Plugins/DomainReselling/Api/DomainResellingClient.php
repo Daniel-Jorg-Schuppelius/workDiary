@@ -21,9 +21,12 @@ use App\Plugins\Support\PluginHttpFactory;
  * MVP-385).
  *
  *  - AUSSCHLIESSLICH POST an die feste `call.cgi`-URL — Login/Passwort liegen
- *    im Body, nie in URL/Query/Logs.
+ *    als `s_login`/`s_pw` (Parameternamen laut API-Handbuch) im Body, nie in
+ *    URL/Query/Logs.
  *  - Antwort ist Plaintext; {@see DomainResponseParser} normalisiert sie und
- *    verlangt den abschließenden `EOF`-Marker.
+ *    verlangt den abschließenden `EOF`-Marker. Echte FEHLERantworten kommen
+ *    ohne `[RESPONSE]`/`EOF` (live belegt: 530) — ein geparster Fehlercode
+ *    wird bei Lese-Befehlen deshalb durchgereicht statt als unklar verworfen.
  *  - Für MUTATIONEN werden Transport-Retries abgeschaltet (kein Doppel-Submit
  *    ohne Idempotenzschlüssel); der unklare Ausgang wird oben reconciled.
  *
@@ -57,8 +60,8 @@ class DomainResellingClient {
         }
 
         $form = [
-            'login' => $this->connection->login,
-            'password' => (string) $this->connection->password,
+            's_login' => $this->connection->login,
+            's_pw' => (string) $this->connection->password,
             'command' => $command,
         ];
         if ($this->connection->default_user !== null && $this->connection->default_user !== '') {
@@ -82,7 +85,12 @@ class DomainResellingClient {
 
         $parsed = DomainResponseParser::parse($response->body());
         if (! $parsed->hasEof) {
-            throw DomainProviderException::incomplete($command);
+            // Fehlerantworten der echten API tragen KEIN EOF. Für Lese-Befehle
+            // ist ein geparster Fehlercode ein definitives Ergebnis; nur bei
+            // Mutationen (oder ohne Fehlercode) bleibt der Ausgang unklar.
+            if ($mutating || $parsed->code < 400) {
+                throw DomainProviderException::incomplete($command);
+            }
         }
 
         return $parsed;

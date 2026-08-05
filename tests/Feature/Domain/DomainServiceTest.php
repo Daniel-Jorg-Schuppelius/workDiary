@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Domain;
 
-use App\Enums\Domain\{DomainProviderCommandStatus, DomainSyncStatus};
+use App\Enums\Domain\{DomainConnectionStatus, DomainProviderCommandStatus, DomainSyncStatus};
 use App\Models\{Customer, ExternalReference, User};
 use App\Models\Domain\{DomainAccountingEntry, DomainProjection, DomainProviderConnection};
 use App\Plugins\Support\Domain\DomainRateBudgetException;
@@ -192,7 +192,7 @@ class DomainServiceTest extends TestCase {
     }
 
     public function test_connection_test_activates_and_sets_capabilities(): void {
-        FakeDomainResellingTransport::fake(['CheckAuthentication' => "code=200\ndescription=ok\nEOF\n"]);
+        FakeDomainResellingTransport::fake(['StatusUser' => "code=200\ndescription=ok\nEOF\n"]);
         $connection = DomainProviderConnection::factory()->draft()->create(['organization_id' => $this->organization->id]);
 
         $this->assertTrue(app(DomainConnectionService::class)->test($connection));
@@ -201,6 +201,18 @@ class DomainServiceTest extends TestCase {
         $this->assertIsArray($connection->capabilities);
         // Rechnungen bleiben gesperrt.
         $this->assertFalse($connection->capabilities['invoices']);
+    }
+
+    public function test_connection_test_records_auth_code_on_failure(): void {
+        // Echte API: Auth-Fehler kommen ohne [RESPONSE]/EOF — der Code muss
+        // trotzdem im last_error sichtbar sein (nicht als „incomplete").
+        FakeDomainResellingTransport::fake(['StatusUser' => "code = 530\ndescription = Authentication failed"]);
+        $connection = DomainProviderConnection::factory()->draft()->create(['organization_id' => $this->organization->id]);
+
+        $this->assertFalse(app(DomainConnectionService::class)->test($connection));
+        $connection->refresh();
+        $this->assertSame(DomainConnectionStatus::Blocked, $connection->status);
+        $this->assertSame('auth_code_530', $connection->last_error);
     }
 
     public function test_domain_maps_to_single_customer_org_wide_without_duplicates(): void {

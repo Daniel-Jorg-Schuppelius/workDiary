@@ -75,19 +75,48 @@ class DomainResellingTransportTest extends TestCase {
             '*call.cgi' => FakePluginHttp::response("code=200\ndescription=ok\nEOF\n"),
         ]);
 
-        $response = (new DomainResellingClient($this->connection()))->call('CheckAuthentication');
+        $response = (new DomainResellingClient($this->connection()))->call('StatusUser');
 
         $this->assertTrue($response->isSuccess());
         $fake->assertSent(function (RequestInterface $request): bool {
             $url = (string) $request->getUri();
             $body = (string) $request->getBody();
 
+            // Handbuch-Parameternamen s_login/s_pw — NICHT login/password
+            // (die echte API sieht das Passwort sonst gar nicht, live belegt:
+            // „Authentication failed; empty password").
             return $request->getMethod() === 'POST'
                 && ! str_contains($url, 'secret-pw')
                 && ! str_contains($url, 'password')
-                && str_contains($body, 'command=CheckAuthentication')
-                && str_contains($body, 'login=reseller1');
+                && str_contains($body, 'command=StatusUser')
+                && str_contains($body, 's_login=reseller1')
+                && str_contains($body, 's_pw=secret-pw')
+                && ! str_contains($body, '&login=')
+                && ! str_contains($body, '&password=');
         });
+    }
+
+    public function test_error_response_without_eof_surfaces_provider_code_on_reads(): void {
+        // Live-Verhalten der echten API: Fehlerantworten (z. B. 530) kommen
+        // OHNE [RESPONSE]-Header und OHNE EOF-Marker.
+        FakePluginHttp::fake([
+            '*call.cgi' => FakePluginHttp::response("code = 530\ndescription = Authentication failed"),
+        ]);
+
+        $response = (new DomainResellingClient($this->connection()))->call('StatusUser');
+
+        $this->assertSame(530, $response->code);
+        $this->assertSame('Authentication failed', $response->description);
+        $this->assertFalse($response->isSuccess());
+    }
+
+    public function test_mutating_error_without_eof_stays_incomplete(): void {
+        FakePluginHttp::fake([
+            '*call.cgi' => FakePluginHttp::response("code = 549\ndescription = Command failed"),
+        ]);
+
+        $this->expectException(DomainProviderException::class);
+        (new DomainResellingClient($this->connection()))->call('AddDomain', ['domain' => 'x.com'], true);
     }
 
     public function test_incomplete_response_throws(): void {

@@ -49,7 +49,7 @@ class DomainHttpTest extends TestCase {
     }
 
     public function test_store_creates_and_activates_connection(): void {
-        FakeDomainResellingTransport::fake(['CheckAuthentication' => "code=200\ndescription=ok\nEOF\n"]);
+        FakeDomainResellingTransport::fake(['StatusUser' => "code=200\ndescription=ok\nEOF\n"]);
 
         $this->actingAs($this->admin)->post(route('admin.domain-provider.store'), [
             'name' => 'DR Test',

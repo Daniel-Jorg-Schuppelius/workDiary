@@ -18,10 +18,12 @@ use Throwable;
 
 /**
  * Verbindungsprüfung und Fähigkeitserkennung des DomainReselling-Kontos
- * (Feature 083, MVP-385). `CheckAuthentication` ist der Health-Ping; nur bei
- * erfolgreichem, vollständigem Ergebnis wird die Verbindung aktiv. Die
- * Fähigkeitsmatrix bleibt konservativ (Rechnungen gesperrt), bis ein realer
- * Pilot mehr belegt.
+ * (Feature 083, MVP-385). `StatusUser` ohne `subuser`-Parameter (= eigenes
+ * Konto) ist der Health-Ping; nur bei erfolgreichem, vollständigem Ergebnis
+ * wird die Verbindung aktiv. `CheckAuthentication` eignet sich NICHT: es
+ * prüft laut Handbuch das Passwort eines Subusers (Pflichtparameter
+ * `subuser`+`password`). Die Fähigkeitsmatrix bleibt konservativ
+ * (Rechnungen gesperrt), bis ein realer Pilot mehr belegt.
  */
 class DomainConnectionService {
     public function __construct(private readonly DomainProviderResolver $resolver) {}
@@ -33,7 +35,7 @@ class DomainConnectionService {
     public function test(DomainProviderConnection $connection): bool {
         try {
             $adapter = $this->resolver->for($connection);
-            $response = $adapter->execute('CheckAuthentication', [], DomainCapabilityArea::Authentication);
+            $response = $adapter->execute('StatusUser', [], DomainCapabilityArea::Authentication);
 
             if (! $response->isSuccess()) {
                 $connection->recordConnectionFailure('auth_code_' . $response->code);
