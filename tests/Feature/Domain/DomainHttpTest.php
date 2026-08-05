@@ -12,8 +12,8 @@ namespace Tests\Feature\Domain;
 
 use App\Enums\Domain\DomainConnectionStatus;
 use App\Enums\User\Permission;
-use App\Models\Domain\{DomainProjection, DomainProviderConnection};
-use App\Models\{Organization, User};
+use App\Models\{Customer, ForeignCustomer, Organization, User};
+use App\Models\Domain\{DomainProjection, DomainProviderConnection, DomainResellerAccount};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\FakeDomainResellingTransport;
@@ -121,6 +121,101 @@ class DomainHttpTest extends TestCase {
             ->get(route('customers.show', $customer))
             ->assertOk()
             ->assertDontSee('kundendomain.de');
+    }
+
+    public function test_customer_and_foreign_customer_assignment_via_http(): void {
+        $this->admin->givePermissionTo(Permission::DomainCustomerAssign->value);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $foreign = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id]);
+        $other = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $domain = DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'external_domain' => 'zuweisung.de',
+            'domain_hash' => DomainProjection::hashFor('zuweisung.de'),
+        ]);
+
+        // Endkunde eines ANDEREN Kunden wird abgelehnt.
+        $this->actingAs($this->admin)->post(route('domains.customer', $domain), [
+            'customer' => $other->sqid,
+            'foreign_customer' => $foreign->sqid,
+        ])->assertSessionHas('error');
+        $this->assertNull($domain->refresh()->customer_id);
+
+        // Passender Endkunde wird mit dem Kunden gespeichert.
+        $this->actingAs($this->admin)->post(route('domains.customer', $domain), [
+            'customer' => $customer->sqid,
+            'foreign_customer' => $foreign->sqid,
+        ])->assertSessionHas('success');
+        $domain->refresh();
+        $this->assertSame($customer->id, $domain->customer_id);
+        $this->assertSame($foreign->id, $domain->foreign_customer_id);
+    }
+
+    public function test_own_holding_toggle_clears_customer_mapping(): void {
+        $this->admin->givePermissionTo(Permission::DomainCustomerAssign->value);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $domain = DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'customer_id' => $customer->id,
+            'external_domain' => 'eigene.de',
+            'domain_hash' => DomainProjection::hashFor('eigene.de'),
+        ]);
+
+        $this->actingAs($this->admin)->post(route('domains.customer', $domain), ['own' => '1'])->assertSessionHas('success');
+        $domain->refresh();
+        $this->assertTrue($domain->is_own_holding);
+        $this->assertNull($domain->customer_id);
+
+        $this->actingAs($this->admin)->post(route('domains.customer', $domain), ['own' => '0']);
+        $this->assertFalse($domain->refresh()->is_own_holding);
+    }
+
+    public function test_reseller_assignment_groups_domains_in_customer_file(): void {
+        $this->admin->givePermissionTo(Permission::DomainCustomerAssign->value);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $reseller = DomainResellerAccount::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'external_user' => 'lds-systems',
+        ]);
+        DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'reseller_account_id' => $reseller->id,
+            'external_domain' => 'lds-kunde.de',
+            'domain_hash' => DomainProjection::hashFor('lds-kunde.de'),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('domain-reseller.customer', $reseller), ['customer' => $customer->sqid])
+            ->assertSessionHas('success');
+        $this->assertSame($customer->id, $reseller->refresh()->customer_id);
+
+        // Kundenakte gruppiert die Subuser-Domain ohne Einzelzuordnung.
+        $this->actingAs($this->admin)->get(route('customers.show', $customer))->assertOk()->assertSee('lds-kunde.de');
+    }
+
+    public function test_show_renders_customer_suggestions(): void {
+        $this->admin->givePermissionTo(Permission::DomainCustomerAssign->value);
+        Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Vorschlag GmbH',
+            'email' => 'info@vorschlag.de',
+        ]);
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $domain = DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'external_domain' => 'vorschlag.de',
+            'domain_hash' => DomainProjection::hashFor('vorschlag.de'),
+        ]);
+
+        $this->actingAs($this->admin)->get(route('domains.show', $domain))->assertOk()->assertSee('Vorschlag GmbH');
     }
 
     public function test_free_plan_blocks_domain_module(): void {

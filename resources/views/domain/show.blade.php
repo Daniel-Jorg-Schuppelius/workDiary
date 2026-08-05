@@ -42,14 +42,60 @@
             </x-detail-grid>
         </x-card>
 
-        {{-- Kundenzuordnung --}}
+        {{-- Kunden-/Endkunden-Zuordnung + Eigenbestand --}}
         <x-card :title="__('domain.field.customer')">
-            <p class="text-sm">{{ $domain->customer?->name ?? __('domain.mapping.none') }}</p>
+            @if ($domain->is_own_holding)
+                <p class="text-sm">{{ __('domain.mapping.own_holding') }}</p>
+            @else
+                <p class="text-sm">
+                    {{ $domain->customer?->name ?? __('domain.mapping.none') }}
+                    @if ($domain->foreignCustomer !== null)
+                        <span class="text-base-content/60">· {{ __('domain.mapping.foreign_customer') }}: {{ $domain->foreignCustomer->name }}</span>
+                    @endif
+                </p>
+            @endif
             @if ($can['assign'])
-                <x-action-form :action="route('domains.customer', $domain)" class="mt-2 flex gap-2">
-                    <input type="text" name="customer" class="input input-sm input-bordered w-full"
-                           placeholder="{{ __('domain.mapping.customer_sqid') }}" aria-label="{{ __('domain.mapping.customer_sqid') }}">
-                    <x-icon-btn icon="save" size="sm" type="submit" :title="__('domain.action.save')" />
+                {{-- Match-Vorschläge (nachvollziehbare Merkmale, nie automatisch bestätigt) --}}
+                @if ($suggestions !== [])
+                    <div class="mt-2 flex flex-wrap gap-1">
+                        @foreach ($suggestions as $suggestion)
+                            <x-action-form :action="route('domains.customer', $domain)">
+                                <input type="hidden" name="customer" value="{{ $suggestion['customer']->sqid }}">
+                                <button type="submit" class="btn btn-xs btn-outline">
+                                    {{ $suggestion['customer']->name }}
+                                    <span class="text-base-content/50">({{ __('domain.mapping.reason_' . $suggestion['reason']) }})</span>
+                                </button>
+                            </x-action-form>
+                        @endforeach
+                    </div>
+                @endif
+                @unless ($domain->is_own_holding)
+                    <x-action-form :action="route('domains.customer', $domain)" class="mt-2 space-y-2">
+                        <select name="customer" class="select select-sm select-bordered w-full" aria-label="{{ __('domain.field.customer') }}">
+                            <option value="">{{ __('domain.mapping.none') }}</option>
+                            @foreach ($customers as $mappableCustomer)
+                                <option value="{{ $mappableCustomer->sqid }}" @selected($domain->customer_id === $mappableCustomer->id)>{{ $mappableCustomer->name }}</option>
+                            @endforeach
+                        </select>
+                        @if ($foreignCustomers->isNotEmpty())
+                            <select name="foreign_customer" class="select select-sm select-bordered w-full" aria-label="{{ __('domain.mapping.foreign_customer') }}">
+                                <option value="">{{ __('domain.mapping.no_foreign_customer') }}</option>
+                                @foreach ($foreignCustomers as $foreignCustomer)
+                                    <option value="{{ $foreignCustomer->sqid }}" @selected($domain->foreign_customer_id === $foreignCustomer->id)>{{ $foreignCustomer->name }}</option>
+                                @endforeach
+                            </select>
+                        @endif
+                        <div class="flex justify-end">
+                            <x-icon-btn icon="save" size="sm" type="submit" show-label>{{ __('domain.action.save') }}</x-icon-btn>
+                        </div>
+                    </x-action-form>
+                @endunless
+                {{-- Eigenbestand-Umschalter (schließt Kundenzuordnung aus) --}}
+                <x-action-form :action="route('domains.customer', $domain)" class="mt-2">
+                    <input type="hidden" name="own" value="{{ $domain->is_own_holding ? '0' : '1' }}">
+                    <button type="submit" class="btn btn-xs btn-ghost">
+                        {{ $domain->is_own_holding ? __('domain.mapping.own_clear') : __('domain.mapping.own_mark') }}
+                    </button>
                 </x-action-form>
             @endif
         </x-card>

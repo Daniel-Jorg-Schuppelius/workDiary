@@ -26,6 +26,7 @@
             <x-slot:head>
                 <tr>
                     <th>{{ __('Domain') }}</th>
+                    <th>{{ __('Endkunde') }}</th>
                     <th>{{ __('Registrar') }}</th>
                     <th>{{ __('Status') }}</th>
                     <th>{{ __('Läuft ab') }}</th>
@@ -34,12 +35,13 @@
             @forelse ($customerDomains as $domain)
                 <tr>
                     <td><a href="{{ route('domains.show', $domain) }}" class="link link-hover">{{ $domain->external_domain }}</a></td>
+                    <td class="text-sm">{{ $domain->foreignCustomer?->name ?? '—' }}</td>
                     <td class="text-sm">{{ $domain->registrar ?? '—' }}</td>
                     <td class="text-sm">{{ $domain->status ?? '—' }}</td>
                     <td class="tabular-nums text-sm">{{ $domain->expiration_at?->fdate() ?? '—' }}</td>
                 </tr>
             @empty
-                <x-table.empty :colspan="4" :title="__('Keine Domains zugeordnet.')" compact />
+                <x-table.empty :colspan="5" :title="__('Keine Domains zugeordnet.')" compact />
             @endforelse
         </x-table>
     </x-card>

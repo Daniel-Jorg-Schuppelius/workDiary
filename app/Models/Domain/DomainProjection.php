@@ -12,7 +12,7 @@ namespace App\Models\Domain;
 
 use App\Enums\Domain\{DomainRenewalMode, DomainSyncStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\Customer;
+use App\Models\{Customer, ForeignCustomer};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -34,6 +34,8 @@ use Illuminate\Support\Carbon;
  * @property string $external_user
  * @property int|null $reseller_account_id
  * @property int|null $customer_id
+ * @property int|null $foreign_customer_id
+ * @property bool $is_own_holding
  * @property string|null $registrar
  * @property string|null $status
  * @property DomainSyncStatus $sync_status
@@ -68,6 +70,8 @@ class DomainProjection extends Model {
         'external_user',
         'reseller_account_id',
         'customer_id',
+        'foreign_customer_id',
+        'is_own_holding',
         'registrar',
         'status',
         'sync_status',
@@ -92,6 +96,7 @@ class DomainProjection extends Model {
         'renewal_mode' => DomainRenewalMode::class,
         'renewal_currency' => CurrencyCode::class,
         'transferlock' => 'boolean',
+        'is_own_holding' => 'boolean',
         'registration_at' => 'date',
         'expiration_at' => 'date',
         'accounting_at' => 'date',
@@ -124,6 +129,15 @@ class DomainProjection extends Model {
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class, 'customer_id');
+    }
+
+    /**
+     * Endkunde des zugeordneten Kunden (Reseller-Fall).
+     *
+     * @return BelongsTo<ForeignCustomer, $this>
+     */
+    public function foreignCustomer(): BelongsTo {
+        return $this->belongsTo(ForeignCustomer::class, 'foreign_customer_id');
     }
 
     /** @return BelongsTo<DomainResellerAccount, $this> */

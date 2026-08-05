@@ -41,16 +41,19 @@ class DomainResellerController extends Controller {
     public function show(DomainResellerAccount $reseller, DomainInvoiceService $invoices): View {
         Gate::authorize('view', $reseller);
 
-        $reseller->load(['customer', 'connection', 'domains.customer']);
+        $reseller->load(['customer', 'connection', 'domains.customer', 'domains.foreignCustomer']);
         $entries = DomainAccountingEntry::query()
             ->where('reseller_account_id', $reseller->id)
             ->orderByDesc('entry_date')
             ->limit(100)
             ->get();
+        $canAssign = Gate::allows('assignCustomer', $reseller);
 
         return view('domain.reseller.show', [
             'reseller' => $reseller,
             'entries' => $entries,
+            'canAssign' => $canAssign,
+            'customers' => $canAssign ? Customer::query()->orderBy('name')->get(['id', 'name']) : collect(),
             'canViewAccounting' => Gate::allows('viewAccounting', $reseller),
             'invoicesAvailable' => $invoices->isAvailable($reseller->providerConnection()),
             'invoiceBlockedReason' => $invoices->blockedReason(),

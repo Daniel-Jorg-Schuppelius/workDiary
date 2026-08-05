@@ -14,7 +14,7 @@ use App\Enums\Domain\{DomainConnectionStatus, DomainProviderCommandStatus, Domai
 use App\Models\{Customer, ExternalReference, User};
 use App\Models\Domain\{DomainAccountingEntry, DomainProjection, DomainProviderConnection};
 use App\Plugins\Support\Domain\DomainRateBudgetException;
-use App\Services\Domain\{DomainAccountingService, DomainActionException, DomainAvailabilityService, DomainCommandService, DomainConnectionService, DomainCustomerMappingService, DomainDangerousActionService, DomainDnsService, DomainEventPollingService, DomainInvoiceService, DomainSyncService};
+use App\Services\Domain\{DomainAccountingService, DomainActionException, DomainAvailabilityService, DomainCommandService, DomainConnectionService, DomainCustomerMappingService, DomainDangerousActionService, DomainDnsService, DomainEventPollingService, DomainInvoiceService, DomainReportService, DomainSyncService};
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -213,6 +213,36 @@ class DomainServiceTest extends TestCase {
         $connection->refresh();
         $this->assertSame(DomainConnectionStatus::Blocked, $connection->status);
         $this->assertSame('auth_code_530', $connection->last_error);
+    }
+
+    public function test_own_holding_excludes_from_unmapped_and_yields_to_assignment(): void {
+        $connection = \App\Models\Domain\DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $domain = DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'external_domain' => 'firmendomain.de',
+            'domain_hash' => DomainProjection::hashFor('firmendomain.de'),
+        ]);
+        $mapping = app(DomainCustomerMappingService::class);
+        $reports = app(DomainReportService::class);
+
+        $this->assertTrue($reports->unmapped((int) $this->organization->id)->contains('id', $domain->id));
+
+        $mapping->markOwnHolding($domain);
+        $this->assertTrue($domain->refresh()->is_own_holding);
+        $this->assertFalse($reports->unmapped((int) $this->organization->id)->contains('id', $domain->id));
+
+        // Kundenzuordnung hebt den Eigenbestand auf; fremder Endkunde wird verworfen.
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $foreignOfOther = \App\Models\ForeignCustomer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => Customer::factory()->create(['organization_id' => $this->organization->id])->id,
+        ]);
+        $mapping->assign($domain, $customer, $this->actor, $foreignOfOther);
+        $domain->refresh();
+        $this->assertFalse($domain->is_own_holding);
+        $this->assertSame($customer->id, $domain->customer_id);
+        $this->assertNull($domain->foreign_customer_id);
     }
 
     public function test_domain_maps_to_single_customer_org_wide_without_duplicates(): void {

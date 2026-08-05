@@ -10,7 +10,7 @@
 
 namespace App\Services\Domain;
 
-use App\Models\{Customer, ExternalReference, User};
+use App\Models\{Customer, ExternalReference, ForeignCustomer, User};
 use App\Models\Domain\{DomainProjection, DomainResellerAccount};
 use App\Plugins\DomainReselling\DomainResellingPlugin;
 
@@ -71,10 +71,20 @@ class DomainCustomerMappingService {
 
     /**
      * Ordnet die Domain einem Kunden zu (kein Provider-Move). Legt/aktualisiert
-     * die ExternalReference als bestätigte Zuordnung.
+     * die ExternalReference als bestätigte Zuordnung. Optional mit Endkunde
+     * (Fremdkunde DES Kunden, Reseller-Fall) — ein fremder Endkunde wird
+     * verworfen. Eine Kundenzuordnung hebt das Eigenbestand-Flag auf.
      */
-    public function assign(DomainProjection $projection, Customer $customer, ?User $actor = null): void {
-        $projection->forceFill(['customer_id' => $customer->id])->save();
+    public function assign(DomainProjection $projection, Customer $customer, ?User $actor = null, ?ForeignCustomer $foreignCustomer = null): void {
+        if ($foreignCustomer !== null && $foreignCustomer->customer_id !== $customer->id) {
+            $foreignCustomer = null;
+        }
+
+        $projection->forceFill([
+            'customer_id' => $customer->id,
+            'foreign_customer_id' => $foreignCustomer?->id,
+            'is_own_holding' => false,
+        ])->save();
 
         ExternalReference::link(
             $projection->organization_id,
@@ -86,14 +96,33 @@ class DomainCustomerMappingService {
         );
     }
 
-    /** Hebt die Kundenzuordnung wieder auf. */
+    /** Hebt Kunden- und Endkunden-Zuordnung wieder auf (auch Eigenbestand). */
     public function clearAssignment(DomainProjection $projection): void {
-        $projection->forceFill(['customer_id' => null])->save();
+        $projection->forceFill([
+            'customer_id' => null,
+            'foreign_customer_id' => null,
+            'is_own_holding' => false,
+        ])->save();
 
         ExternalReference::query()
             ->forPlugin($projection->organization_id, DomainResellingPlugin::ID, 'domain')
             ->forExternalId(mb_strtolower($projection->external_domain))
             ->delete();
+    }
+
+    /**
+     * Kennzeichnet die Domain als Eigenbestand (gehört der eigenen Firma).
+     * Eigenbestand schließt eine Kundenzuordnung aus — sie wird aufgehoben;
+     * Berichte zählen die Domain nicht mehr als „ohne Kundenzuordnung".
+     */
+    public function markOwnHolding(DomainProjection $projection): void {
+        $this->clearAssignment($projection);
+        $projection->forceFill(['is_own_holding' => true])->save();
+    }
+
+    /** Hebt die Eigenbestand-Kennzeichnung wieder auf. */
+    public function clearOwnHolding(DomainProjection $projection): void {
+        $projection->forceFill(['is_own_holding' => false])->save();
     }
 
     /**

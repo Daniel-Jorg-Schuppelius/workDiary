@@ -139,6 +139,7 @@ class CustomerController extends Controller {
                 ->where('customer_id', $customer->id)
                 ->pluck('id');
             $customerDomains = \App\Models\Domain\DomainProjection::query()
+                ->with('foreignCustomer:id,name')
                 ->where(function ($q) use ($customer, $resellerAccountIds): void {
                     $q->where('customer_id', $customer->id);
                     if ($resellerAccountIds->isNotEmpty()) {

@@ -30,6 +30,21 @@
             <x-detail-grid.row :label="__('domain.reseller.balance')" class="tabular-nums"
                                :value="$reseller->balance_snapshot !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $reseller->balance_snapshot, 2, withThousandsSeparator: true) . ' ' . ($reseller->currency?->value ?? '') : '—'" />
         </x-detail-grid>
+        {{-- Kundenzuordnung des Subusers: gruppiert dessen Domains in der
+             Kundenakte („geführt unter Subuser …"), ohne direkte
+             Domain-Zuordnungen zu überschreiben. --}}
+        @if ($canAssign)
+            <x-action-form :action="route('domain-reseller.customer', $reseller)" class="mt-3 flex gap-2">
+                <select name="customer" class="select select-sm select-bordered w-full" aria-label="{{ __('domain.field.customer') }}">
+                    <option value="">{{ __('domain.mapping.none') }}</option>
+                    @foreach ($customers as $mappableCustomer)
+                        <option value="{{ $mappableCustomer->sqid }}" @selected($reseller->customer_id === $mappableCustomer->id)>{{ $mappableCustomer->name }}</option>
+                    @endforeach
+                </select>
+                <x-icon-btn icon="save" size="sm" type="submit" :title="__('domain.action.save')" />
+            </x-action-form>
+            <p class="mt-1 text-xs text-base-content/60">{{ __('domain.mapping.reseller_hint') }}</p>
+        @endif
     </x-card>
 
     {{-- Portfolio --}}

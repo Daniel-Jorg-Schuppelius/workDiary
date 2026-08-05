@@ -87,6 +87,7 @@ class DomainReportService {
         return DomainProjection::query()
             ->where('organization_id', $organizationId)
             ->whereNull('customer_id')
+            ->where('is_own_holding', false)
             ->where(function ($q): void {
                 $q->whereNull('reseller_account_id')
                     ->orWhereDoesntHave('resellerAccount', fn ($r) => $r->whereNotNull('customer_id'));
