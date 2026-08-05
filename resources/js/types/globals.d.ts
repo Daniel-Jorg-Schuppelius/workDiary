@@ -19,7 +19,28 @@ declare global {
     }
 
     interface Window {
-        confirmAction?: (opts: string | ConfirmActionOptions) => Promise<boolean>;
+        confirmAction?: (
+            opts: string | ConfirmActionOptions,
+        ) => Promise<boolean>;
         notifyAction?: (opts: string | NotifyActionOptions) => Promise<void>;
+
+        // Untypisierte globale Interop — via window.* exponiert (Third-Party
+        // ohne @types bzw. projekteigene Laufzeit-Helfer/Seed-Daten aus dem
+        // Layout). Bewusst `any`, da sie dynamisch aufgerufen, per `new`
+        // instanziiert, gelesen und geschrieben werden.
+        Alpine?: any;
+        Echo?: any;
+        Pusher?: any;
+        SignaturePad?: any;
+        __?: any;
+        __formats?: any;
+        __initFlatpickr?: any;
+        __layout?: any;
+        __scheduleConfig?: any;
+        __theme?: any;
+        __translations?: any;
+        refreshChatChannelList?: any;
+        refreshChatUnread?: any;
+        workDiaryMap?: any;
     }
 }

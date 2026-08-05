@@ -4,20 +4,21 @@
         "target": "ES2022",
         "module": "ESNext",
         "moduleResolution": "Bundler",
-        "lib": ["ES2022", "DOM", "DOM.Iterable"],
-
+        "lib": [
+            "ES2022",
+            "DOM",
+            "DOM.Iterable"
+        ],
         // Prüft die bestehenden .js-Module über JSDoc, ohne Umbenennung.
         // Eine spätere .ts-Portierung bleibt damit ein mechanischer Schritt.
         "allowJs": true,
         "checkJs": true,
         "noEmit": true,
-
         // Einstiegsstufe: strict ist aus, damit die Baseline über die
         // gewachsenen Module tragbar bleibt. Die Escaping-Grenze hängt nicht
         // daran — SafeHtml ist ein Klassentyp und wirkt unabhängig von strict.
         "strict": false,
         "noImplicitAny": false,
-
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
         "allowSyntheticDefaultImports": true,
@@ -25,6 +26,12 @@
         "resolveJsonModule": true,
         "types": []
     },
-    "include": ["resources/js/**/*.js", "resources/js/**/*.d.ts"],
-    "exclude": ["node_modules", "public/build"]
+    "include": [
+        "resources/js/**/*.js",
+        "resources/js/**/*.d.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "public/build"
+    ]
 }

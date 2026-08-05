@@ -210,6 +210,7 @@ function initTable(table) {
     setIcons(table, state.index, state.dir);
 }
 
+/** @param {Document|Element} [root] */
 function initAll(root = document) {
     root.querySelectorAll("table[data-sortable]").forEach(initTable);
 }

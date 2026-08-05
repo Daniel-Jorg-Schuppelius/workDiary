@@ -329,8 +329,11 @@ export function registerIdeaCanvas(Alpine) {
                         "Content-Type": "application/json",
                         Accept: "application/json",
                         "X-CSRF-TOKEN":
-                            document.querySelector('meta[name="csrf-token"]')
-                                ?.content || "",
+                            /** @type {HTMLMetaElement} */ (
+                                document.querySelector(
+                                    'meta[name="csrf-token"]',
+                                )
+                            )?.content || "",
                     },
                     body: JSON.stringify({
                         lock_version: this.lockVersion,
@@ -395,10 +398,11 @@ export function registerIdeaCanvas(Alpine) {
             if (blob) this.download(blob, this.exportName("png"));
         },
         exportName(ext) {
-            const base = (this.cfg.map?.title || "idea-map")
-                .replace(/[^\p{L}\p{N}_-]+/gu, "-")
-                .replace(/^-+|-+$/g, "")
-                .slice(0, 60) || "idea-map";
+            const base =
+                (this.cfg.map?.title || "idea-map")
+                    .replace(/[^\p{L}\p{N}_-]+/gu, "-")
+                    .replace(/^-+|-+$/g, "")
+                    .slice(0, 60) || "idea-map";
             return `${base}.${ext}`;
         },
         download(blob, name) {

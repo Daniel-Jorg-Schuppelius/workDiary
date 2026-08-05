@@ -10,7 +10,9 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 function csrf() {
-    const m = document.querySelector('meta[name="csrf-token"]');
+    const m = /** @type {HTMLMetaElement} */ (
+        document.querySelector('meta[name="csrf-token"]')
+    );
     return m ? m.content : "";
 }
 
@@ -91,7 +93,9 @@ export async function pushUnsubscribe() {
 }
 
 export function bindPushToggle(selector = "[data-push-toggle]") {
-    document.querySelectorAll(selector).forEach(async (el) => {
+    /** @type {NodeListOf<HTMLElement>} */ (
+        document.querySelectorAll(selector)
+    ).forEach(async (el) => {
         const status = await pushStatus();
         el.dataset.state = status;
         updateLabel(el, status);

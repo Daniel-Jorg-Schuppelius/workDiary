@@ -8,7 +8,11 @@
 // wird automatisch der erste).
 
 function csrfToken() {
-    return document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || "";
+    return (
+        document
+            .querySelector('meta[name="csrf-token"]')
+            ?.getAttribute("content") || ""
+    );
 }
 
 async function postBooking(url, payload) {
@@ -35,14 +39,18 @@ function payloadFromForm(form) {
 }
 
 export function bindQuickBook() {
-    const panel = document.querySelector("[data-qb-panel]");
+    const panel = /** @type {HTMLElement | null} */ (
+        document.querySelector("[data-qb-panel]")
+    );
     if (!panel) return;
     const url = panel.getAttribute("data-qb-url");
     if (!url) return;
 
     // (a) Fallback-Formular je Block: submit abfangen → JSON posten → reload.
     panel.addEventListener("submit", async (event) => {
-        const form = event.target.closest(".qb-form");
+        const form = /** @type {HTMLFormElement | null} */ (
+            /** @type {HTMLElement} */ (event.target).closest(".qb-form")
+        );
         if (!form) return;
         // Ungültiges Formular (kein Projekt) → native Validierung greifen lassen.
         if (!form.reportValidity()) {
@@ -60,7 +68,9 @@ export function bindQuickBook() {
     // (b) Ctrl/Cmd+Enter im Block-Formular = buchen + weiter.
     panel.addEventListener("keydown", (event) => {
         if (event.key !== "Enter" || !(event.ctrlKey || event.metaKey)) return;
-        const form = event.target.closest(".qb-form");
+        const form = /** @type {HTMLFormElement | null} */ (
+            /** @type {HTMLElement} */ (event.target).closest(".qb-form")
+        );
         if (!form) return;
         event.preventDefault();
         form.requestSubmit();
@@ -68,7 +78,9 @@ export function bindQuickBook() {
 
     // (c) Drag eines Blocks auf ein Projekt-Ziel.
     panel.addEventListener("dragstart", (event) => {
-        const block = event.target.closest("[data-qb-block]");
+        const block = /** @type {HTMLElement} */ (event.target).closest(
+            "[data-qb-block]",
+        );
         if (!block) return;
         event.dataTransfer.effectAllowed = "copy";
         event.dataTransfer.setData(
@@ -81,7 +93,9 @@ export function bindQuickBook() {
     });
 
     panel.addEventListener("dragover", (event) => {
-        const target = event.target.closest("[data-qb-target]");
+        const target = /** @type {HTMLElement} */ (event.target).closest(
+            "[data-qb-target]",
+        );
         if (!target) return;
         event.preventDefault();
         event.dataTransfer.dropEffect = "copy";
@@ -89,12 +103,16 @@ export function bindQuickBook() {
     });
 
     panel.addEventListener("dragleave", (event) => {
-        const target = event.target.closest("[data-qb-target]");
+        const target = /** @type {HTMLElement} */ (event.target).closest(
+            "[data-qb-target]",
+        );
         target?.classList.remove("qb-target-over");
     });
 
     panel.addEventListener("drop", async (event) => {
-        const target = event.target.closest("[data-qb-target]");
+        const target = /** @type {HTMLElement} */ (event.target).closest(
+            "[data-qb-target]",
+        );
         if (!target) return;
         event.preventDefault();
         target.classList.remove("qb-target-over");

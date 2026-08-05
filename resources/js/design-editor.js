@@ -45,7 +45,9 @@ export function registerDesignEditor(Alpine) {
 
         // ── Auswahl & Boxen ───────────────────────────────────────────────
         contentKey() {
-            return this.page === "first" ? "content_first" : "content_following";
+            return this.page === "first"
+                ? "content_first"
+                : "content_following";
         },
         contentBox() {
             const m = this.layout[this.contentKey()];
@@ -61,7 +63,9 @@ export function registerDesignEditor(Alpine) {
             m.left = round1(clamp(box.x, 0, PAGE_W - 10));
             m.top = round1(clamp(box.y, 0, PAGE_H - 10));
             m.right = round1(clamp(PAGE_W - box.x - box.width, 0, PAGE_W - 10));
-            m.bottom = round1(clamp(PAGE_H - box.y - box.height, 0, PAGE_H - 10));
+            m.bottom = round1(
+                clamp(PAGE_H - box.y - box.height, 0, PAGE_H - 10),
+            );
             this.dirty = true;
         },
         boxFor(key, index = null) {
@@ -74,19 +78,30 @@ export function registerDesignEditor(Alpine) {
                 this.setContentBox(box);
                 return;
             }
-            const target = key === "blocked" ? this.layout.blocked_areas[index] : this.layout[key];
+            const target =
+                key === "blocked"
+                    ? this.layout.blocked_areas[index]
+                    : this.layout[key];
             if (!target) return;
             target.x = round1(clamp(box.x, 0, PAGE_W - 1));
             target.y = round1(clamp(box.y, 0, PAGE_H - 1));
-            if ("width" in target || "width" in box) target.width = round1(clamp(box.width, 5, PAGE_W));
-            if ("height" in target) target.height = round1(clamp(box.height ?? target.height, 3, PAGE_H));
+            if ("width" in target || "width" in box)
+                target.width = round1(clamp(box.width, 5, PAGE_W));
+            if ("height" in target)
+                target.height = round1(
+                    clamp(box.height ?? target.height, 3, PAGE_H),
+                );
             this.dirty = true;
         },
         select(key, index = null) {
             this.selected = { key, index };
         },
         isSelected(key, index = null) {
-            return this.selected && this.selected.key === key && this.selected.index === index;
+            return (
+                this.selected &&
+                this.selected.key === key &&
+                this.selected.index === index
+            );
         },
 
         // Skalierung: Box (mm) → CSS-Prozente der A4-Vorschaufläche.
@@ -101,17 +116,29 @@ export function registerDesignEditor(Alpine) {
         startDrag(event, key, index = null, mode = "move") {
             if (!this.editable) return;
             this.select(key, index);
-            const rect = event.currentTarget.closest("[data-page-canvas]").getBoundingClientRect();
+            const rect = event.currentTarget
+                .closest("[data-page-canvas]")
+                .getBoundingClientRect();
             const box = { ...this.boxFor(key, index) };
             box.height = box.height ?? 8;
-            this.drag = { key, index, mode, box, rect, startX: event.clientX, startY: event.clientY };
+            this.drag = {
+                key,
+                index,
+                mode,
+                box,
+                rect,
+                startX: event.clientX,
+                startY: event.clientY,
+            };
             event.preventDefault();
         },
         onPointerMove(event) {
             if (!this.drag) return;
             const { rect, box, mode, key, index } = this.drag;
-            const dx = ((event.clientX - this.drag.startX) / rect.width) * PAGE_W;
-            const dy = ((event.clientY - this.drag.startY) / rect.height) * PAGE_H;
+            const dx =
+                ((event.clientX - this.drag.startX) / rect.width) * PAGE_W;
+            const dy =
+                ((event.clientY - this.drag.startY) / rect.height) * PAGE_H;
             const next = { ...box };
             if (mode === "move") {
                 next.x = box.x + dx;
@@ -136,7 +163,9 @@ export function registerDesignEditor(Alpine) {
             }[event.key];
             if (!delta) return;
             event.preventDefault();
-            const box = { ...this.boxFor(this.selected.key, this.selected.index) };
+            const box = {
+                ...this.boxFor(this.selected.key, this.selected.index),
+            };
             box.x += delta[0];
             box.y += delta[1];
             this.setBox(this.selected.key, this.selected.index, box);
@@ -156,7 +185,14 @@ export function registerDesignEditor(Alpine) {
             this.dirty = true;
         },
         addBlockedArea() {
-            this.layout.blocked_areas.push({ page: "all", x: 150, y: 250, width: 40, height: 30, label: "" });
+            this.layout.blocked_areas.push({
+                page: "all",
+                x: 150,
+                y: 250,
+                width: 40,
+                height: 30,
+                label: "",
+            });
             this.select("blocked", this.layout.blocked_areas.length - 1);
             this.dirty = true;
         },
@@ -184,7 +220,9 @@ export function registerDesignEditor(Alpine) {
                     headers: {
                         "Content-Type": "application/json",
                         Accept: "application/json",
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content,
+                        "X-CSRF-TOKEN": /** @type {HTMLMetaElement} */ (
+                            document.querySelector('meta[name="csrf-token"]')
+                        ).content,
                     },
                     body: JSON.stringify({
                         layout: this.layout,
@@ -194,7 +232,10 @@ export function registerDesignEditor(Alpine) {
                 });
                 const data = await response.json();
                 if (!response.ok) {
-                    this.message = { tone: "error", text: data.message || "Fehler beim Speichern." };
+                    this.message = {
+                        tone: "error",
+                        text: data.message || "Fehler beim Speichern.",
+                    };
                     return;
                 }
                 this.preflight = data.preflight;

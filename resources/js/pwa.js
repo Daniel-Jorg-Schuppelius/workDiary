@@ -9,12 +9,17 @@
  * Installations-Prompt (beforeinstallprompt).
  */
 
-const SW_VERSION = (document.querySelector('meta[name="app-version"]')?.content) || "1";
+const SW_VERSION =
+    /** @type {HTMLMetaElement} */ (
+        document.querySelector('meta[name="app-version"]')
+    )?.content || "1";
 
 export async function registerServiceWorker() {
     if (!("serviceWorker" in navigator)) return null;
     try {
-        return await navigator.serviceWorker.register(`/sw.js?v=${encodeURIComponent(SW_VERSION)}`);
+        return await navigator.serviceWorker.register(
+            `/sw.js?v=${encodeURIComponent(SW_VERSION)}`,
+        );
     } catch (e) {
         console.warn("[PWA] Service Worker konnte nicht registriert werden", e);
         return null;
@@ -22,7 +27,9 @@ export async function registerServiceWorker() {
 }
 
 export function bindInstallPrompt() {
-    const btn = document.querySelector("[data-pwa-install]");
+    const btn = /** @type {HTMLElement} */ (
+        document.querySelector("[data-pwa-install]")
+    );
 
     // Ohne Install-Button: NICHT preventDefault aufrufen, sonst meckert Chrome
     // ("Banner not shown: beforeinstallpromptevent.preventDefault() called.").

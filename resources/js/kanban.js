@@ -81,7 +81,9 @@ function submitLifecycle(url, fields) {
 }
 
 function openActionDialog(dialogId, url) {
-    const dlg = document.getElementById(dialogId);
+    const dlg = /** @type {HTMLDialogElement | null} */ (
+        document.getElementById(dialogId)
+    );
     const form = dlg?.querySelector("form");
     if (!dlg || !form || typeof dlg.showModal !== "function") return false;
     form.action = url;
@@ -125,9 +127,12 @@ function handleDrop(card, column) {
 }
 
 function init() {
-    const board = document.querySelector("[data-kanban-board]");
+    const board = /** @type {HTMLElement | null} */ (
+        document.querySelector("[data-kanban-board]")
+    );
     if (!board) return;
 
+    /** @type {HTMLElement | null} */
     let dragCard = null;
 
     const clearHighlights = () => {
@@ -137,10 +142,11 @@ function init() {
     };
 
     board.addEventListener("dragstart", (event) => {
-        const card =
+        const card = /** @type {HTMLElement | null} */ (
             event.target instanceof Element
                 ? event.target.closest("[data-kanban-card]")
-                : null;
+                : null
+        );
         if (!card) return;
         dragCard = card;
         card.classList.add("opacity-50");
@@ -158,7 +164,8 @@ function init() {
         clearHighlights();
     });
 
-    board.querySelectorAll("[data-kanban-column]").forEach((column) => {
+    board.querySelectorAll("[data-kanban-column]").forEach((col) => {
+        const column = /** @type {HTMLElement} */ (col);
         column.addEventListener("dragover", (event) => {
             if (!dragCard) return;
             event.preventDefault();

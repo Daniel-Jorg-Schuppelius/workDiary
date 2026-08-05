@@ -34,7 +34,9 @@ document.addEventListener("DOMContentLoaded", function () {
     document
         .getElementById("btn-open-type-manager")
         ?.addEventListener("click", function () {
-            document.getElementById("shift-type-manager")?.showModal();
+            /** @type {HTMLDialogElement | null} */ (
+                document.getElementById("shift-type-manager")
+            )?.showModal();
         });
 
     // Shift dialog: save + delete
@@ -74,7 +76,9 @@ document.addEventListener("click", (event) => {
     if (!target) return;
 
     // Besetzungsvorschlag anfordern (Button neben offenem Slot)
-    const suggest = target.closest("[data-slot-suggest]");
+    const suggest = /** @type {HTMLElement | null} */ (
+        target.closest("[data-slot-suggest]")
+    );
     if (suggest) {
         event.stopPropagation();
         scheduleSuggestStaffing(
@@ -86,7 +90,9 @@ document.addEventListener("click", (event) => {
     }
 
     // Vorschlag übernehmen (Button im Vorschlags-Dialog)
-    const assign = target.closest("[data-assign-suggest]");
+    const assign = /** @type {HTMLElement | null} */ (
+        target.closest("[data-assign-suggest]")
+    );
     if (assign) {
         scheduleAssignSuggested(
             assign.dataset.date,
@@ -97,7 +103,9 @@ document.addEventListener("click", (event) => {
     }
 
     // Offenen Slot besetzen → Dialog mit Datum + Typ vorbelegt
-    const slot = target.closest("[data-slot-open]");
+    const slot = /** @type {HTMLElement | null} */ (
+        target.closest("[data-slot-open]")
+    );
     if (slot) {
         event.stopPropagation();
         openShiftDialog({
@@ -108,7 +116,9 @@ document.addEventListener("click", (event) => {
     }
 
     // Bestehende Schicht bearbeiten (Badge)
-    const badge = target.closest("[data-shift-edit]");
+    const badge = /** @type {HTMLElement | null} */ (
+        target.closest("[data-shift-edit]")
+    );
     if (badge) {
         event.stopPropagation();
         let payload = null;
@@ -122,7 +132,9 @@ document.addEventListener("click", (event) => {
     }
 
     // Schichttyp bearbeiten / löschen (Zeilen im Typ-Manager)
-    const typeEdit = target.closest("[data-type-edit]");
+    const typeEdit = /** @type {HTMLElement | null} */ (
+        target.closest("[data-type-edit]")
+    );
     if (typeEdit) {
         let payload = null;
         try {
@@ -133,14 +145,18 @@ document.addEventListener("click", (event) => {
         if (payload) shiftTypeOpenEdit(typeEdit.dataset.typeEdit, payload);
         return;
     }
-    const typeDelete = target.closest("[data-type-delete]");
+    const typeDelete = /** @type {HTMLElement | null} */ (
+        target.closest("[data-type-delete]")
+    );
     if (typeDelete) {
         shiftTypeDelete(typeDelete.dataset.typeDelete);
         return;
     }
 
     // Leere Zelle → neue Schicht (Badges/Slots sind oben bereits abgefangen)
-    const cell = target.closest("[data-schedule-cell]");
+    const cell = /** @type {HTMLElement | null} */ (
+        target.closest("[data-schedule-cell]")
+    );
     if (cell) {
         if (target.closest(".schedule-shift-badge")) return;
         openShiftDialog({
@@ -151,10 +167,11 @@ document.addEventListener("click", (event) => {
 });
 
 document.addEventListener("dragstart", (event) => {
-    const badge =
+    const badge = /** @type {HTMLElement | null} */ (
         event.target instanceof Element
             ? event.target.closest("[data-shift-drag]")
-            : null;
+            : null
+    );
     if (!badge) return;
     _dragShiftId = badge.dataset.shiftDrag;
     event.dataTransfer.effectAllowed = "move";
@@ -171,10 +188,11 @@ document.addEventListener("dragover", (event) => {
 });
 
 document.addEventListener("drop", (event) => {
-    const cell =
+    const cell = /** @type {HTMLElement | null} */ (
         event.target instanceof Element
             ? event.target.closest("[data-schedule-drop]")
-            : null;
+            : null
+    );
     if (!cell) return;
     scheduleDropCell(event, cell.dataset.date, cell.dataset.dropUser || null);
 });
@@ -190,8 +208,12 @@ function applyShiftTypeDefaults(event) {
     const types = Array.isArray(_cfg?.shiftTypes) ? _cfg.shiftTypes : [];
     const t = types.find((x) => String(x.id) === String(id));
     if (!t) return;
-    const startEl = document.getElementById("shift-dialog-start");
-    const endEl = document.getElementById("shift-dialog-end");
+    const startEl = /** @type {HTMLInputElement | null} */ (
+        document.getElementById("shift-dialog-start")
+    );
+    const endEl = /** @type {HTMLInputElement | null} */ (
+        document.getElementById("shift-dialog-end")
+    );
     const ds = (t.default_start_time ?? "").slice(0, 5);
     const de = (t.default_end_time ?? "").slice(0, 5);
     if (startEl && ds) startEl.value = ds;
@@ -235,12 +257,16 @@ async function scheduleSuggestStaffing(date, shiftTypeSqid, typeName) {
         notifyError(e.message ?? __("js.schedule.suggest_failed"));
         return;
     }
-    const suggestions = Array.isArray(data?.suggestions) ? data.suggestions : [];
+    const suggestions = Array.isArray(data?.suggestions)
+        ? data.suggestions
+        : [];
     renderStaffingSuggestions(date, shiftTypeSqid, typeName, suggestions);
 }
 
 function renderStaffingSuggestions(date, shiftTypeSqid, typeName, suggestions) {
-    let dlg = document.getElementById("staffing-suggest-dialog");
+    let dlg = /** @type {HTMLDialogElement | null} */ (
+        document.getElementById("staffing-suggest-dialog")
+    );
     if (!dlg) {
         dlg = document.createElement("dialog");
         dlg.id = "staffing-suggest-dialog";
@@ -251,46 +277,73 @@ function renderStaffingSuggestions(date, shiftTypeSqid, typeName, suggestions) {
         ? suggestions.map((s) => {
               const reasons = (s.reasons || []).map((r) => escHtml(r));
               const warnings = (s.warnings || []).length
-                  ? html`<div class="text-warning text-[0.7rem]">⚠ ${(s.warnings || []).map((w) => escHtml(w))}</div>`
+                  ? html`<div class="text-warning text-[0.7rem]">
+                        ⚠ ${(s.warnings || []).map((w) => escHtml(w))}
+                    </div>`
                   : "";
               return html`<tr class="hover">
-                    <td>${s.name}</td>
-                    <td class="text-right"><span class="badge badge-sm">${Number(s.score)}</span></td>
-                    <td class="text-[0.7rem] opacity-80">${reasons}${warnings}</td>
-                    <td class="text-right">
-                      <button type="button" class="btn btn-primary btn-xs"
-                        data-assign-suggest
-                        data-date="${date}"
-                        data-slot-type-sqid="${shiftTypeSqid}"
-                        data-user-sqid="${s.user_sqid}">
-                        Zuweisen
+                  <td>${s.name}</td>
+                  <td class="text-right">
+                      <span class="badge badge-sm">${Number(s.score)}</span>
+                  </td>
+                  <td class="text-[0.7rem] opacity-80">
+                      ${reasons}${warnings}
+                  </td>
+                  <td class="text-right">
+                      <button
+                          type="button"
+                          class="btn btn-primary btn-xs"
+                          data-assign-suggest
+                          data-date="${date}"
+                          data-slot-type-sqid="${shiftTypeSqid}"
+                          data-user-sqid="${s.user_sqid}"
+                      >
+                          Zuweisen
                       </button>
-                    </td>
-                  </tr>`;
+                  </td>
+              </tr>`;
           })
-        : html`<tr><td colspan="4" class="text-center text-sm opacity-60">Keine geeigneten Kandidaten</td></tr>`;
+        : html`<tr>
+              <td colspan="4" class="text-center text-sm opacity-60">
+                  Keine geeigneten Kandidaten
+              </td>
+          </tr>`;
 
     setHtml(
         dlg,
-        html`
-      <div class="modal-box max-w-2xl">
-        <h3 class="text-lg font-semibold mb-1">Besetzungsvorschläge</h3>
-        <p class="text-sm opacity-70 mb-3">${typeName} · ${date}</p>
-        <table class="table table-sm table-zebra">
-          <thead><tr><th>Mitarbeiter</th><th class="text-right">Score</th><th>Begründung</th><th></th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-        <div class="modal-action">
-          <form method="dialog"><button class="btn btn-sm">Schließen</button></form>
-        </div>
-      </div>
-      <form method="dialog" class="modal-backdrop"><button>close</button></form>`,
+        html` <div class="modal-box max-w-2xl">
+                <h3 class="text-lg font-semibold mb-1">Besetzungsvorschläge</h3>
+                <p class="text-sm opacity-70 mb-3">${typeName} · ${date}</p>
+                <table class="table table-sm table-zebra">
+                    <thead>
+                        <tr>
+                            <th>Mitarbeiter</th>
+                            <th class="text-right">Score</th>
+                            <th>Begründung</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows}
+                    </tbody>
+                </table>
+                <div class="modal-action">
+                    <form method="dialog">
+                        <button class="btn btn-sm">Schließen</button>
+                    </form>
+                </div>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+                <button>close</button>
+            </form>`,
     );
     dlg.showModal();
 }
 
 function scheduleAssignSuggested(date, shiftTypeSqid, userSqid) {
-    const dlg = document.getElementById("staffing-suggest-dialog");
+    const dlg = /** @type {HTMLDialogElement | null} */ (
+        document.getElementById("staffing-suggest-dialog")
+    );
     if (dlg) dlg.close();
     openShiftDialog({ date, shiftTypeId: shiftTypeSqid, userId: userSqid });
 }
@@ -302,20 +355,28 @@ function openShiftDialog({
     shift = null,
     shiftTypeId = null,
 } = {}) {
-    const dlg = document.getElementById("shift-dialog");
+    const dlg = /** @type {HTMLDialogElement | null} */ (
+        document.getElementById("shift-dialog")
+    );
     if (!dlg) return;
 
     const isEdit = !!shiftId;
 
     // Reset form
-    document.getElementById("shift-dialog-form").reset();
-    document.getElementById("shift-dialog-id").value = isEdit ? shiftId : "";
+    /** @type {HTMLFormElement} */ (
+        document.getElementById("shift-dialog-form")
+    ).reset();
+    /** @type {HTMLInputElement} */ (
+        document.getElementById("shift-dialog-id")
+    ).value = isEdit ? shiftId : "";
     document.getElementById("shift-dialog-error").classList.add("hidden");
     document.getElementById("shift-dialog-compliance")?.classList.add("hidden");
     document
         .getElementById("shift-dialog-override-row")
         ?.classList.add("hidden");
-    const _ovr = document.getElementById("shift-dialog-override");
+    const _ovr = /** @type {HTMLInputElement | null} */ (
+        document.getElementById("shift-dialog-override")
+    );
     if (_ovr) _ovr.checked = false;
     document
         .getElementById("shift-dialog-delete")
@@ -343,13 +404,27 @@ function openShiftDialog({
         : _t("Schicht anlegen");
 
     // Populate fields
-    const userEl = document.getElementById("shift-dialog-user");
-    const dateEl = document.getElementById("shift-dialog-date");
-    const typeEl = document.getElementById("shift-dialog-type");
-    const startEl = document.getElementById("shift-dialog-start");
-    const endEl = document.getElementById("shift-dialog-end");
-    const noteEl = document.getElementById("shift-dialog-note");
-    const statEl = document.getElementById("shift-dialog-status");
+    const userEl = /** @type {HTMLSelectElement | null} */ (
+        document.getElementById("shift-dialog-user")
+    );
+    const dateEl = /** @type {HTMLInputElement | null} */ (
+        document.getElementById("shift-dialog-date")
+    );
+    const typeEl = /** @type {HTMLSelectElement | null} */ (
+        document.getElementById("shift-dialog-type")
+    );
+    const startEl = /** @type {HTMLInputElement | null} */ (
+        document.getElementById("shift-dialog-start")
+    );
+    const endEl = /** @type {HTMLInputElement | null} */ (
+        document.getElementById("shift-dialog-end")
+    );
+    const noteEl = /** @type {HTMLInputElement | null} */ (
+        document.getElementById("shift-dialog-note")
+    );
+    const statEl = /** @type {HTMLSelectElement | null} */ (
+        document.getElementById("shift-dialog-status")
+    );
 
     if (isEdit && shift) {
         if (userEl?.tagName === "SELECT") userEl.value = shift.user_id ?? "";
@@ -371,31 +446,55 @@ function openShiftDialog({
 async function onShiftDialogSave(event) {
     event.preventDefault();
 
-    const id = document.getElementById("shift-dialog-id").value;
+    const id = /** @type {HTMLInputElement} */ (
+        document.getElementById("shift-dialog-id")
+    ).value;
     const isEdit = !!id;
     const errEl = document.getElementById("shift-dialog-error");
-    const saveBtn = document.getElementById("shift-dialog-save");
+    const saveBtn = /** @type {HTMLButtonElement | null} */ (
+        document.getElementById("shift-dialog-save")
+    );
     const compEl = document.getElementById("shift-dialog-compliance");
     const compList = document.getElementById("shift-dialog-compliance-list");
     const overrideRow = document.getElementById("shift-dialog-override-row");
-    const overrideEl = document.getElementById("shift-dialog-override");
+    const overrideEl = /** @type {HTMLInputElement | null} */ (
+        document.getElementById("shift-dialog-override")
+    );
 
     errEl.classList.add("hidden");
     saveBtn.disabled = true;
     saveBtn.textContent = "…";
 
     const body = {
-        user_id: document.getElementById("shift-dialog-user")?.value ?? null,
-        date: document.getElementById("shift-dialog-date").value,
+        user_id:
+            /** @type {HTMLInputElement | null} */ (
+                document.getElementById("shift-dialog-user")
+            )?.value ?? null,
+        date: /** @type {HTMLInputElement} */ (
+            document.getElementById("shift-dialog-date")
+        ).value,
         shift_type_id:
-            document.getElementById("shift-dialog-type").value || null,
-        start_time: document.getElementById("shift-dialog-start").value || null,
-        end_time: document.getElementById("shift-dialog-end").value || null,
-        note: document.getElementById("shift-dialog-note").value || null,
+            /** @type {HTMLInputElement} */ (
+                document.getElementById("shift-dialog-type")
+            ).value || null,
+        start_time:
+            /** @type {HTMLInputElement} */ (
+                document.getElementById("shift-dialog-start")
+            ).value || null,
+        end_time:
+            /** @type {HTMLInputElement} */ (
+                document.getElementById("shift-dialog-end")
+            ).value || null,
+        note:
+            /** @type {HTMLInputElement} */ (
+                document.getElementById("shift-dialog-note")
+            ).value || null,
     };
     if (isEdit) {
         body.status =
-            document.getElementById("shift-dialog-status")?.value ?? undefined;
+            /** @type {HTMLInputElement | null} */ (
+                document.getElementById("shift-dialog-status")
+            )?.value ?? undefined;
     }
     if (overrideEl?.checked) {
         body.override_compliance = 1;
@@ -414,12 +513,16 @@ async function onShiftDialogSave(event) {
             // Soft warnings (mode=warn) — kurz anzeigen, dann reload.
             showComplianceWarnings(data.compliance_warnings, false);
             setTimeout(() => {
-                document.getElementById("shift-dialog").close();
+                /** @type {HTMLDialogElement} */ (
+                    document.getElementById("shift-dialog")
+                ).close();
                 window.location.reload();
             }, 1500);
             return;
         }
-        document.getElementById("shift-dialog").close();
+        /** @type {HTMLDialogElement} */ (
+            document.getElementById("shift-dialog")
+        ).close();
         window.location.reload();
     } catch (err) {
         // Compliance-Block (mode=block)?
@@ -455,7 +558,9 @@ function showComplianceWarnings(violations, allowOverride) {
 }
 
 async function onShiftDialogDelete() {
-    const id = document.getElementById("shift-dialog-id").value;
+    const id = /** @type {HTMLInputElement} */ (
+        document.getElementById("shift-dialog-id")
+    ).value;
     if (!id) return;
     const ok = await (window.confirmAction
         ? window.confirmAction({
@@ -467,7 +572,9 @@ async function onShiftDialogDelete() {
 
     try {
         await apiFetch("DELETE", `${_cfg.routes.shiftsDestroy}/${id}`);
-        document.getElementById("shift-dialog").close();
+        /** @type {HTMLDialogElement} */ (
+            document.getElementById("shift-dialog")
+        ).close();
         window.location.reload();
     } catch (err) {
         notifyError(err.message ?? _t("Fehler beim Löschen."));
@@ -475,11 +582,15 @@ async function onShiftDialogDelete() {
 }
 
 async function onShiftDialogPublish() {
-    const id = document.getElementById("shift-dialog-id").value;
+    const id = /** @type {HTMLInputElement} */ (
+        document.getElementById("shift-dialog-id")
+    ).value;
     if (!id) return;
     try {
         await apiFetch("PATCH", `${_cfg.routes.shiftsPublish}/${id}/publish`);
-        document.getElementById("shift-dialog").close();
+        /** @type {HTMLDialogElement} */ (
+            document.getElementById("shift-dialog")
+        ).close();
         window.location.reload();
     } catch (err) {
         notifyError(err.message ?? _t("Fehler beim Veröffentlichen."));
@@ -487,11 +598,15 @@ async function onShiftDialogPublish() {
 }
 
 async function onShiftDialogConfirm() {
-    const id = document.getElementById("shift-dialog-id").value;
+    const id = /** @type {HTMLInputElement} */ (
+        document.getElementById("shift-dialog-id")
+    ).value;
     if (!id) return;
     try {
         await apiFetch("PATCH", `${_cfg.routes.shiftsConfirm}/${id}/confirm`);
-        document.getElementById("shift-dialog").close();
+        /** @type {HTMLDialogElement} */ (
+            document.getElementById("shift-dialog")
+        ).close();
         window.location.reload();
     } catch (err) {
         notifyError(err.message ?? _t("Fehler beim Bestätigen."));
@@ -501,18 +616,30 @@ async function onShiftDialogConfirm() {
 /* ─────────────────── Shift-type manager ──────────────────────── */
 
 function shiftTypeOpenEdit(typeId, type) {
-    document.getElementById("shift-type-form")?.reset();
-    document.getElementById("shift-type-id").value = typeId;
-    document.getElementById("shift-type-name").value = type.name ?? "";
-    document.getElementById("shift-type-abbr").value = type.abbreviation ?? "";
-    document.getElementById("shift-type-color").value = type.color ?? "#3b82f6";
-    document.getElementById("shift-type-start").value = (
-        type.default_start_time ?? ""
-    ).slice(0, 5);
-    document.getElementById("shift-type-end").value = (
-        type.default_end_time ?? ""
-    ).slice(0, 5);
-    const active = document.getElementById("shift-type-active");
+    /** @type {HTMLFormElement | null} */ (
+        document.getElementById("shift-type-form")
+    )?.reset();
+    /** @type {HTMLInputElement} */ (
+        document.getElementById("shift-type-id")
+    ).value = typeId;
+    /** @type {HTMLInputElement} */ (
+        document.getElementById("shift-type-name")
+    ).value = type.name ?? "";
+    /** @type {HTMLInputElement} */ (
+        document.getElementById("shift-type-abbr")
+    ).value = type.abbreviation ?? "";
+    /** @type {HTMLInputElement} */ (
+        document.getElementById("shift-type-color")
+    ).value = type.color ?? "#3b82f6";
+    /** @type {HTMLInputElement} */ (
+        document.getElementById("shift-type-start")
+    ).value = (type.default_start_time ?? "").slice(0, 5);
+    /** @type {HTMLInputElement} */ (
+        document.getElementById("shift-type-end")
+    ).value = (type.default_end_time ?? "").slice(0, 5);
+    const active = /** @type {HTMLInputElement | null} */ (
+        document.getElementById("shift-type-active")
+    );
     if (active) active.checked = type.is_active ?? true;
 
     document.getElementById("shift-type-form-title").textContent = _t(
@@ -522,36 +649,60 @@ function shiftTypeOpenEdit(typeId, type) {
 }
 
 function shiftTypeResetForm() {
-    document.getElementById("shift-type-form")?.reset();
-    document.getElementById("shift-type-id").value = "";
+    /** @type {HTMLFormElement | null} */ (
+        document.getElementById("shift-type-form")
+    )?.reset();
+    /** @type {HTMLInputElement} */ (
+        document.getElementById("shift-type-id")
+    ).value = "";
     document.getElementById("shift-type-form-title").textContent = _t(
         "Neuen Schichttyp anlegen",
     );
-    document.getElementById("shift-type-color").value = "#3b82f6";
-    document.getElementById("shift-type-active").checked = true;
+    /** @type {HTMLInputElement} */ (
+        document.getElementById("shift-type-color")
+    ).value = "#3b82f6";
+    /** @type {HTMLInputElement} */ (
+        document.getElementById("shift-type-active")
+    ).checked = true;
     document.getElementById("shift-type-error")?.classList.add("hidden");
 }
 
 async function onShiftTypeSave(event) {
     event.preventDefault();
 
-    const id = document.getElementById("shift-type-id").value;
+    const id = /** @type {HTMLInputElement} */ (
+        document.getElementById("shift-type-id")
+    ).value;
     const isEdit = !!id;
     const errEl = document.getElementById("shift-type-error");
-    const saveBtn = document.getElementById("shift-type-save");
+    const saveBtn = /** @type {HTMLButtonElement | null} */ (
+        document.getElementById("shift-type-save")
+    );
 
     errEl?.classList.add("hidden");
     saveBtn.disabled = true;
 
-    const active = document.getElementById("shift-type-active");
+    const active = /** @type {HTMLInputElement | null} */ (
+        document.getElementById("shift-type-active")
+    );
     const body = {
-        name: document.getElementById("shift-type-name").value,
-        abbreviation: document.getElementById("shift-type-abbr").value,
-        color: document.getElementById("shift-type-color").value,
+        name: /** @type {HTMLInputElement} */ (
+            document.getElementById("shift-type-name")
+        ).value,
+        abbreviation: /** @type {HTMLInputElement} */ (
+            document.getElementById("shift-type-abbr")
+        ).value,
+        color: /** @type {HTMLInputElement} */ (
+            document.getElementById("shift-type-color")
+        ).value,
         default_start_time:
-            document.getElementById("shift-type-start").value || null,
+            /** @type {HTMLInputElement} */ (
+                document.getElementById("shift-type-start")
+            ).value || null,
         default_end_time:
-            document.getElementById("shift-type-end").value || null,
+            /** @type {HTMLInputElement} */ (
+                document.getElementById("shift-type-end")
+            ).value || null,
         is_active: active ? (active.checked ? 1 : 0) : 1,
     };
 
@@ -612,7 +763,9 @@ function addTypeOption(type) {
 function updateTypeOption(id, type) {
     const sel = document.getElementById("shift-dialog-type");
     if (!sel) return;
-    const opt = sel.querySelector(`option[value="${id}"]`);
+    const opt = /** @type {HTMLElement | null} */ (
+        sel.querySelector(`option[value="${id}"]`)
+    );
     if (!opt) {
         addTypeOption(type);
         return;
@@ -639,7 +792,9 @@ function updateTypeRow(id, type) {
     const row = document.querySelector(`[data-type-row="${id}"]`);
     if (!row) return;
     const q = (sel) => row.querySelector(sel);
-    const colorSwatch = row.querySelector("span.inline-block");
+    const colorSwatch = /** @type {HTMLElement | null} */ (
+        row.querySelector("span.inline-block")
+    );
     if (colorSwatch)
         colorSwatch.style.backgroundColor = type.color ?? "#6b7280";
     const abbrEl = document.getElementById(`type-abbr-${id}`);
@@ -662,17 +817,45 @@ function addTypeRow(type) {
     // Deklarationen. Eine Wert-Allowlist entscheidet.
     setHtml(
         tr,
-        html`
-        <td><span class="inline-block h-4 w-4 rounded" style="background:${escCssValue(type.color)};"></span></td>
-        <td class="font-mono font-bold" id="type-abbr-${type.id}">${type.abbreviation}</td>
-        <td id="type-name-${type.id}">${type.name}</td>
-        <td id="type-start-${type.id}">${type.default_start_time ?? "–"}</td>
-        <td id="type-end-${type.id}">${type.default_end_time ?? "–"}</td>
-        <td><span class="badge badge-sm ${type.is_active ? "badge-success" : "badge-ghost"}">${type.is_active ? "ja" : "nein"}</span></td>
-        <td class="text-right">
-            <button type="button" data-type-edit="${type.id}" data-type-payload="${JSON.stringify(type)}" class="btn btn-sm btn-ghost">Bearbeiten</button>
-            <button type="button" data-type-delete="${type.id}" class="btn btn-sm btn-ghost text-error">Löschen</button>
-        </td>`,
+        html` <td>
+                <span
+                    class="inline-block h-4 w-4 rounded"
+                    style="background:${escCssValue(type.color)};"
+                ></span>
+            </td>
+            <td class="font-mono font-bold" id="type-abbr-${type.id}">
+                ${type.abbreviation}
+            </td>
+            <td id="type-name-${type.id}">${type.name}</td>
+            <td id="type-start-${type.id}">
+                ${type.default_start_time ?? "–"}
+            </td>
+            <td id="type-end-${type.id}">${type.default_end_time ?? "–"}</td>
+            <td>
+                <span
+                    class="badge badge-sm ${type.is_active
+                        ? "badge-success"
+                        : "badge-ghost"}"
+                    >${type.is_active ? "ja" : "nein"}</span
+                >
+            </td>
+            <td class="text-right">
+                <button
+                    type="button"
+                    data-type-edit="${type.id}"
+                    data-type-payload="${JSON.stringify(type)}"
+                    class="btn btn-sm btn-ghost"
+                >
+                    Bearbeiten
+                </button>
+                <button
+                    type="button"
+                    data-type-delete="${type.id}"
+                    class="btn btn-sm btn-ghost text-error"
+                >
+                    Löschen
+                </button>
+            </td>`,
     );
     tbody.appendChild(tr);
 }
@@ -706,7 +889,7 @@ async function apiFetch(method, url, body = null) {
             const msgs = Object.values(json.errors).flat().join(" ");
             const e = new Error(msgs);
             if (Array.isArray(compliance)) {
-                e.complianceViolations = compliance;
+                /** @type {any} */ (e).complianceViolations = compliance;
             }
             throw e;
         }

@@ -44,11 +44,14 @@ const setStatus = (root, text, { loading = false } = {}) => {
         setHtml(
             el,
             html`
-            <span class="inline-flex items-center gap-2">
-                <span class="loading loading-spinner loading-xs text-primary" aria-hidden="true"></span>
-                <span>${text}</span>
-            </span>
-        `,
+                <span class="inline-flex items-center gap-2">
+                    <span
+                        class="loading loading-spinner loading-xs text-primary"
+                        aria-hidden="true"
+                    ></span>
+                    <span>${text}</span>
+                </span>
+            `,
         );
     } else {
         el.textContent = text;
@@ -61,7 +64,9 @@ const renderHint = (root, message) => {
     if (!results) return;
     setHtml(
         results,
-        html`<div class="px-4 py-8 text-center text-sm text-base-content/50">${message}</div>`,
+        html`<div class="px-4 py-8 text-center text-sm text-base-content/50">
+            ${message}
+        </div>`,
     );
     flatItems = [];
     activeIndex = -1;
@@ -79,41 +84,76 @@ const renderResults = (root, groups, allUrl = null) => {
     const parts = [];
     flatItems = [];
     groups.forEach((group) => {
-        parts.push(html`<div class="px-4 pt-3 pb-1 text-[0.65rem] uppercase tracking-[0.15em] text-base-content/50 flex items-center gap-1.5">
-            <span class="material-symbols-outlined text-[0.95rem]" aria-hidden="true">${group.icon || "search"}</span>
-            <span>${group.label}</span>
-        </div>`);
+        parts.push(
+            html`<div
+                class="px-4 pt-3 pb-1 text-[0.65rem] uppercase tracking-[0.15em] text-base-content/50 flex items-center gap-1.5"
+            >
+                <span
+                    class="material-symbols-outlined text-[0.95rem]"
+                    aria-hidden="true"
+                    >${group.icon || "search"}</span
+                >
+                <span>${group.label}</span>
+            </div>`,
+        );
         const items = group.items.map((item) => {
             const idx = flatItems.length;
             flatItems.push(item);
             // safeUrl statt HTML-Escaping: gegen `javascript:` schützt nur eine
             // Protokoll-Allowlist, Entity-Escaping greift im href-Kontext nicht.
             return html`<li>
-                <a href="${safeUrl(item.url)}"
-                   data-gs-item
-                   data-gs-index="${idx}"
-                   class="flex items-start gap-3 rounded-box px-3 py-2 hover:bg-base-200 focus:bg-base-200 focus:outline-none">
-                    <span class="material-symbols-outlined text-base text-base-content/60" aria-hidden="true">${group.icon || "search"}</span>
+                <a
+                    href="${safeUrl(item.url)}"
+                    data-gs-item
+                    data-gs-index="${idx}"
+                    class="flex items-start gap-3 rounded-box px-3 py-2 hover:bg-base-200 focus:bg-base-200 focus:outline-none"
+                >
+                    <span
+                        class="material-symbols-outlined text-base text-base-content/60"
+                        aria-hidden="true"
+                        >${group.icon || "search"}</span
+                    >
                     <span class="flex-1 min-w-0">
-                        <span class="block text-sm font-medium truncate">${item.title}</span>
-                        ${item.subtitle ? html`<span class="block text-xs text-base-content/60 truncate">${item.subtitle}</span>` : ""}
+                        <span class="block text-sm font-medium truncate"
+                            >${item.title}</span
+                        >
+                        ${item.subtitle
+                            ? html`<span
+                                  class="block text-xs text-base-content/60 truncate"
+                                  >${item.subtitle}</span
+                              >`
+                            : ""}
                     </span>
                 </a>
             </li>`;
         });
-        parts.push(html`<ul class="px-1">${items}</ul>`);
+        parts.push(
+            html`<ul class="px-1">
+                ${items}
+            </ul>`,
+        );
     });
     // Vollaudit 2026-07 (M8): Link auf die Vollergebnisseite mit Filtern.
     if (allUrl) {
         const idx = flatItems.length;
         flatItems.push({ url: allUrl });
-        parts.push(html`<div class="border-t border-base-200 mt-2 px-1 pt-1">
-            <a href="${safeUrl(allUrl)}" data-gs-item data-gs-index="${idx}"
-               class="flex items-center gap-2 rounded-box px-3 py-2 text-sm font-medium hover:bg-base-200 focus:bg-base-200 focus:outline-none">
-                <span class="material-symbols-outlined text-base" aria-hidden="true">manage_search</span>
-                <span>${__("alle Treffer →")}</span>
-            </a>
-        </div>`);
+        parts.push(
+            html`<div class="border-t border-base-200 mt-2 px-1 pt-1">
+                <a
+                    href="${safeUrl(allUrl)}"
+                    data-gs-item
+                    data-gs-index="${idx}"
+                    class="flex items-center gap-2 rounded-box px-3 py-2 text-sm font-medium hover:bg-base-200 focus:bg-base-200 focus:outline-none"
+                >
+                    <span
+                        class="material-symbols-outlined text-base"
+                        aria-hidden="true"
+                        >manage_search</span
+                    >
+                    <span>${__("alle Treffer →")}</span>
+                </a>
+            </div>`,
+        );
     }
     setHtml(results, html`${parts}`);
     activeIndex = -1;
@@ -135,15 +175,18 @@ const updateActive = (root) => {
 const fetchResults = async (root, term) => {
     setStatus(root, __("Suche …"), { loading: true });
     try {
-        const res = await fetch(`${searchUrl()}?q=${encodeURIComponent(term)}`, {
-            method: "GET",
-            credentials: "same-origin",
-            headers: {
-                Accept: "application/json",
-                "X-Requested-With": "XMLHttpRequest",
-                "X-CSRF-TOKEN": csrfToken(),
+        const res = await fetch(
+            `${searchUrl()}?q=${encodeURIComponent(term)}`,
+            {
+                method: "GET",
+                credentials: "same-origin",
+                headers: {
+                    Accept: "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRF-TOKEN": csrfToken(),
+                },
             },
-        });
+        );
         if (!res.ok) {
             setStatus(root, __("Suche fehlgeschlagen."));
             return;
@@ -163,7 +206,10 @@ const onInput = (root) => {
     lastQuery = term;
     if (term.length < MIN_LEN) {
         setStatus(root, "");
-        renderHint(root, __("Tippe mindestens 2 Zeichen, um Ergebnisse zu sehen."));
+        renderHint(
+            root,
+            __("Tippe mindestens 2 Zeichen, um Ergebnisse zu sehen."),
+        );
         return;
     }
     if (debounceTimer) clearTimeout(debounceTimer);
@@ -192,27 +238,45 @@ const onKeydown = (root, e) => {
 };
 
 const openDialog = () => {
-    const dlg = document.getElementById(DIALOG_ID);
+    const dlg = /** @type {HTMLDialogElement} */ (
+        document.getElementById(DIALOG_ID)
+    );
     if (!dlg) return;
     if (typeof dlg.showModal === "function") {
-        try { dlg.showModal(); } catch (_) { /* already open */ }
+        try {
+            dlg.showModal();
+        } catch (_) {
+            /* already open */
+        }
     } else {
         dlg.setAttribute("open", "");
     }
     const root = dlg.querySelector("[data-global-search-root]");
-    const input = root ? root.querySelector("[data-global-search-input]") : null;
+    const input = /** @type {HTMLInputElement} */ (
+        root ? root.querySelector("[data-global-search-input]") : null
+    );
     if (input) {
         input.value = "";
-        if (root) renderHint(root, __("Tippe mindestens 2 Zeichen, um Ergebnisse zu sehen."));
+        if (root)
+            renderHint(
+                root,
+                __("Tippe mindestens 2 Zeichen, um Ergebnisse zu sehen."),
+            );
         setTimeout(() => input.focus(), 30);
     }
 };
 
 const closeDialog = () => {
-    const dlg = document.getElementById(DIALOG_ID);
+    const dlg = /** @type {HTMLDialogElement} */ (
+        document.getElementById(DIALOG_ID)
+    );
     if (!dlg) return;
     if (typeof dlg.close === "function") {
-        try { dlg.close(); } catch (_) { /* not open */ }
+        try {
+            dlg.close();
+        } catch (_) {
+            /* not open */
+        }
     } else {
         dlg.removeAttribute("open");
     }

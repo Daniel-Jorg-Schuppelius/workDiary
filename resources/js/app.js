@@ -126,9 +126,9 @@ const applyNormalizedTimeInput = (el) => {
         return;
     }
 
-    if (el._flatpickr) {
+    if (/** @type {any} */ (el)._flatpickr) {
         // Kein triggerChange hier, sonst kann ein change->normalize->setDate-Loop entstehen.
-        el._flatpickr.setDate(normalized, false, "H:i");
+        /** @type {any} */ (el)._flatpickr.setDate(normalized, false, "H:i");
         el.dispatchEvent(new Event("input", { bubbles: true }));
         el.dispatchEvent(new Event("change", { bubbles: true }));
     } else {
@@ -274,7 +274,9 @@ window.__initFlatpickr = (el) => {
 };
 
 // Wochen-Auswahl: type="week" -> type="text" + weekSelect-Plugin (lokalisiert)
-document.querySelectorAll('input[type="week"]').forEach((el) => {
+/** @type {NodeListOf<HTMLInputElement>} */ (
+    document.querySelectorAll('input[type="week"]')
+).forEach((el) => {
     const original = el.getAttribute("value") || ""; // z. B. "2026-W18"
     el.setAttribute("type", "text");
 
@@ -292,7 +294,7 @@ document.querySelectorAll('input[type="week"]').forEach((el) => {
 
     flatpickr(el, {
         locale,
-        plugins: [new weekSelect()],
+        plugins: [new /** @type {any} */ (weekSelect)()],
         dateFormat: "Y-\\WW",
         defaultDate: initialDate,
         weekNumbers: true,
@@ -307,7 +309,9 @@ document.querySelectorAll('input[type="week"]').forEach((el) => {
             const dayNum = tmp.getUTCDay() || 7;
             tmp.setUTCDate(tmp.getUTCDate() + 4 - dayNum);
             const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
-            const weekNo = Math.ceil(((tmp - yearStart) / 86400000 + 1) / 7);
+            const weekNo = Math.ceil(
+                ((Number(tmp) - Number(yearStart)) / 86400000 + 1) / 7,
+            );
             const isoYear = tmp.getUTCFullYear();
             const isoWeek = String(weekNo).padStart(2, "0");
             instance.input.value = `${isoYear}-W${isoWeek}`;
@@ -327,17 +331,19 @@ document.querySelectorAll('input[type="week"]').forEach((el) => {
     };
     const stored = localStorage.getItem(STORAGE_KEY) === "1";
     apply(stored);
-    document.querySelectorAll("input[data-week-fit]").forEach((cb) => {
+    /** @type {NodeListOf<HTMLInputElement>} */ (
+        document.querySelectorAll("input[data-week-fit]")
+    ).forEach((cb) => {
         cb.checked = stored;
         cb.addEventListener("change", () => {
             apply(cb.checked);
             localStorage.setItem(STORAGE_KEY, cb.checked ? "1" : "0");
             // andere Checkboxen synchronisieren (falls mehrere im DOM)
-            document
-                .querySelectorAll("input[data-week-fit]")
-                .forEach((other) => {
-                    if (other !== cb) other.checked = cb.checked;
-                });
+            /** @type {NodeListOf<HTMLInputElement>} */ (
+                document.querySelectorAll("input[data-week-fit]")
+            ).forEach((other) => {
+                if (other !== cb) other.checked = cb.checked;
+            });
         });
     });
 })();
@@ -354,12 +360,18 @@ if (typeof document !== "undefined") {
 // Recurrence-Mode-Toggle: delegierter Listener für [data-recurrence-select]-Selects
 // (funktioniert sowohl für statisch geladene als auch per Dialog nachgeladene Formulare)
 document.addEventListener("change", (e) => {
-    const sel = e.target.closest("select[data-recurrence-select]");
+    const sel = /** @type {HTMLSelectElement} */ (
+        /** @type {HTMLElement} */ (e.target).closest(
+            "select[data-recurrence-select]",
+        )
+    );
     if (!sel) return;
     const form = sel.closest("[data-recurrence-form]");
     if (!form) return;
     const val = sel.value;
-    form.querySelectorAll("[data-recurrence-show]").forEach((el) => {
+    /** @type {NodeListOf<HTMLElement>} */ (
+        form.querySelectorAll("[data-recurrence-show]")
+    ).forEach((el) => {
         const modes = el.getAttribute("data-recurrence-show").split(" ");
         el.hidden = !modes.includes(val);
     });
@@ -370,9 +382,17 @@ document.addEventListener("change", (e) => {
 // zugehörigen Radio — verhindert stille required_if-Fehlschläge, wenn der
 // Nutzer nur das vorbefüllte Feld nutzt, ohne den Radio umzuschalten.
 document.addEventListener("focusin", (e) => {
-    const label = e.target.closest("label[data-radio-activate]");
-    if (!label || e.target.matches("input[type=radio]")) return;
-    const radio = label.querySelector("input[type=radio]");
+    const label = /** @type {HTMLElement} */ (e.target).closest(
+        "label[data-radio-activate]",
+    );
+    if (
+        !label ||
+        /** @type {HTMLElement} */ (e.target).matches("input[type=radio]")
+    )
+        return;
+    const radio = /** @type {HTMLInputElement} */ (
+        label.querySelector("input[type=radio]")
+    );
     if (radio && !radio.checked) {
         radio.checked = true;
         radio.dispatchEvent(new Event("change", { bubbles: true }));
@@ -384,32 +404,47 @@ document.addEventListener("focusin", (e) => {
 // fremde Optgroups in Projekt-/Fremdkunden-Selects aus — verhindert die
 // 422-Ablehnung „Projekt gehört nicht zum gewählten Kunden".
 const applyInboxCustomerFilter = (form) => {
-    const mode = form.querySelector('input[name="customer_mode"]:checked')?.value;
+    const mode = form.querySelector(
+        'input[name="customer_mode"]:checked',
+    )?.value;
     const customer = form.querySelector('select[name="customer"]')?.value || "";
     // internal → nur kundenlose Gruppen; new → keine Bestandsauswahl;
     // existing mit Kunde → nur dieser; sonst alles zeigen.
     const wanted =
-        mode === "internal" ? "" :
-        mode === "new" ? "__none__" :
-        mode === "existing" && customer !== "" ? customer : null;
+        mode === "internal"
+            ? ""
+            : mode === "new"
+              ? "__none__"
+              : mode === "existing" && customer !== ""
+                ? customer
+                : null;
 
     // Gewählter Fremdkunde (Endkunde) schränkt die Projektauswahl zusätzlich
     // ein: „neu" → keine Bestandsprojekte (gehören nie dem neuen Endkunden),
     // „bestehend" mit Auswahl → nur dessen Projekte, sonst keine Einschränkung.
-    const foreignMode = form.querySelector('input[name="foreign_mode"]:checked')?.value;
-    const foreignSel = form.querySelector('select[name="foreign_customer"]')?.value || "";
+    const foreignMode = form.querySelector(
+        'input[name="foreign_mode"]:checked',
+    )?.value;
+    const foreignSel =
+        form.querySelector('select[name="foreign_customer"]')?.value || "";
     const wantedForeign =
-        wanted === null || wanted === "" || wanted === "__none__" ? null :
-        foreignMode === "new" ? "__none__" :
-        foreignMode === "existing" && foreignSel !== "" ? foreignSel :
-        foreignMode === "none" ? "" : null;
+        wanted === null || wanted === "" || wanted === "__none__"
+            ? null
+            : foreignMode === "new"
+              ? "__none__"
+              : foreignMode === "existing" && foreignSel !== ""
+                ? foreignSel
+                : foreignMode === "none"
+                  ? ""
+                  : null;
 
     ["project", "foreign_customer"].forEach((name) => {
         const sel = form.querySelector(`select[name="${name}"]`);
         if (!sel) return;
         let cleared = false;
         sel.querySelectorAll("optgroup[data-customer]").forEach((group) => {
-            const groupShow = wanted === null || group.dataset.customer === wanted;
+            const groupShow =
+                wanted === null || group.dataset.customer === wanted;
             let anyVisible = false;
             group.querySelectorAll("option").forEach((opt) => {
                 let show = groupShow;
@@ -431,19 +466,32 @@ const applyInboxCustomerFilter = (form) => {
         // Fremdkunden-Fieldset: sichtbar machen, dass der gewählte Kunde
         // Endkunden hat (Hinweis mit Anzahl); ohne Treffer ist „bestehend" sinnlos.
         if (name === "foreign_customer") {
-            const visible = sel.querySelectorAll("optgroup[data-customer]:not([hidden]) option:not([hidden])").length;
+            const visible = sel.querySelectorAll(
+                "optgroup[data-customer]:not([hidden]) option:not([hidden])",
+            ).length;
             const fieldset = sel.closest("fieldset");
             const hint = fieldset?.querySelector("[data-foreign-hint]");
-            const existingRadio = fieldset?.querySelector('input[name="foreign_mode"][value="existing"]');
+            const existingRadio = fieldset?.querySelector(
+                'input[name="foreign_mode"][value="existing"]',
+            );
             if (hint) {
-                const showHint = wanted !== null && wanted !== "__none__" && wanted !== "" && visible > 0;
+                const showHint =
+                    wanted !== null &&
+                    wanted !== "__none__" &&
+                    wanted !== "" &&
+                    visible > 0;
                 hint.hidden = !showHint;
-                if (showHint) hint.textContent = (hint.dataset.hintTemplate || ":count").replace(":count", String(visible));
+                if (showHint)
+                    hint.textContent = (
+                        hint.dataset.hintTemplate || ":count"
+                    ).replace(":count", String(visible));
             }
             if (existingRadio) {
                 existingRadio.disabled = visible === 0;
                 if (visible === 0 && existingRadio.checked) {
-                    const none = fieldset.querySelector('input[name="foreign_mode"][value="none"]');
+                    const none = fieldset.querySelector(
+                        'input[name="foreign_mode"][value="none"]',
+                    );
                     if (none) none.checked = true;
                 }
             }
@@ -451,12 +499,16 @@ const applyInboxCustomerFilter = (form) => {
     });
 };
 document.addEventListener("change", (e) => {
-    const trigger = e.target.closest('select[name="customer"], select[name="foreign_customer"], input[name="customer_mode"], input[name="foreign_mode"]');
+    const trigger = /** @type {HTMLElement} */ (e.target).closest(
+        'select[name="customer"], select[name="foreign_customer"], input[name="customer_mode"], input[name="foreign_mode"]',
+    );
     const form = trigger?.closest("form[data-customer-filter]");
     if (form) applyInboxCustomerFilter(form);
 });
 document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll("form[data-customer-filter]").forEach(applyInboxCustomerFilter);
+    document
+        .querySelectorAll("form[data-customer-filter]")
+        .forEach(applyInboxCustomerFilter);
 });
 
 // Generischer Dialog-Close-Handler:
@@ -464,9 +516,11 @@ document.addEventListener("DOMContentLoaded", () => {
 // Ergänzt den entry-modal-spezifischen Handler weiter unten und greift für alle
 // Standalone-<x-modal :embedded="false">-Dialoge (action-confirm, shift-dialog, …).
 document.addEventListener("click", (event) => {
-    const close = event.target.closest("[data-entry-modal-close]");
+    const close = /** @type {HTMLElement} */ (event.target).closest(
+        "[data-entry-modal-close]",
+    );
     if (!close) return;
-    const dialog = close.closest("dialog");
+    const dialog = /** @type {HTMLDialogElement} */ (close.closest("dialog"));
     if (!dialog) return;
     event.preventDefault();
     if (typeof dialog.close === "function") {
@@ -490,19 +544,21 @@ document.addEventListener("click", (event) => {
         setHtml(
             dialog,
             html`
-            <div class="modal-box wd-modal-box wd-modal-box--standard p-0">
-                <div id="entry-modal-body"></div>
-            </div>
-            <form method="dialog" class="modal-backdrop">
-                <button aria-label="Close">close</button>
-            </form>
-        `,
+                <div class="modal-box wd-modal-box wd-modal-box--standard p-0">
+                    <div id="entry-modal-body"></div>
+                </div>
+                <form method="dialog" class="modal-backdrop">
+                    <button aria-label="Close">close</button>
+                </form>
+            `,
         );
         document.body.appendChild(dialog);
         dialogBody = dialog.querySelector("#entry-modal-body");
 
         dialog.addEventListener("click", (event) => {
-            const close = event.target.closest("[data-entry-modal-close]");
+            const close = /** @type {HTMLElement} */ (event.target).closest(
+                "[data-entry-modal-close]",
+            );
             if (close) {
                 event.preventDefault();
                 dialog.close();
@@ -938,11 +994,16 @@ document.addEventListener("click", (event) => {
         setHtml(
             body,
             html`
-            <div class="flex flex-col items-center justify-center gap-3 p-12 text-base-content/70">
-                <span class="loading loading-spinner loading-lg text-primary" aria-hidden="true"></span>
-                <span class="text-sm">${loadingMsg}</span>
-            </div>
-        `,
+                <div
+                    class="flex flex-col items-center justify-center gap-3 p-12 text-base-content/70"
+                >
+                    <span
+                        class="loading loading-spinner loading-lg text-primary"
+                        aria-hidden="true"
+                    ></span>
+                    <span class="text-sm">${loadingMsg}</span>
+                </div>
+            `,
         );
         if (typeof modal.showModal === "function") {
             modal.showModal();
@@ -952,11 +1013,17 @@ document.addEventListener("click", (event) => {
             setHtml(
                 body,
                 html`
-                <div class="p-6 space-y-3">
-                    <p class="text-sm text-error">${loadFailedMsg}</p>
-                    <a href="${safeUrl(rawUrl)}" target="_blank" rel="noopener" class="btn btn-sm btn-ghost">${__("js.dialog.open_in_new_tab")}</a>
-                </div>
-            `,
+                    <div class="p-6 space-y-3">
+                        <p class="text-sm text-error">${loadFailedMsg}</p>
+                        <a
+                            href="${safeUrl(rawUrl)}"
+                            target="_blank"
+                            rel="noopener"
+                            class="btn btn-sm btn-ghost"
+                            >${__("js.dialog.open_in_new_tab")}</a
+                        >
+                    </div>
+                `,
             );
         };
 
@@ -978,11 +1045,17 @@ document.addEventListener("click", (event) => {
             setHtml(
                 body,
                 html`
-                <div class="p-6 space-y-3">
-                    <p class="text-sm text-warning">${message}</p>
-                    <button type="button" data-mode-switch-retry class="btn btn-sm btn-primary">${label}</button>
-                </div>
-            `,
+                    <div class="p-6 space-y-3">
+                        <p class="text-sm text-warning">${message}</p>
+                        <button
+                            type="button"
+                            data-mode-switch-retry
+                            class="btn btn-sm btn-primary"
+                        >
+                            ${label}
+                        </button>
+                    </div>
+                `,
             );
             const retryBtn = body.querySelector("[data-mode-switch-retry]");
             if (!retryBtn) return;

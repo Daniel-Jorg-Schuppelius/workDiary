@@ -173,7 +173,8 @@ function bindNewsRail() {
             toggle.setAttribute("aria-label", label);
             toggle.setAttribute("title", label);
         }
-        if (toggleIcon) toggleIcon.textContent = paused ? "play_arrow" : "pause";
+        if (toggleIcon)
+            toggleIcon.textContent = paused ? "play_arrow" : "pause";
     };
 
     const showItem = (index) => {
@@ -266,7 +267,9 @@ function isOpen() {
 
 function openDrawer(options = {}) {
     const { focus = true } = options;
-    const drawer = document.querySelector(DRAWER_SELECTOR);
+    const drawer = /** @type {HTMLElement} */ (
+        document.querySelector(DRAWER_SELECTOR)
+    );
     const backdrop = document.querySelector(BACKDROP_SELECTOR);
     if (!drawer) return;
 
@@ -321,7 +324,9 @@ function renderTopicError(message) {
 function renderFallback(message = null) {
     const bodyEl = document.querySelector("[data-help-body]");
     const footerEl = document.querySelector("[data-help-footer]");
-    const template = document.querySelector(FALLBACK_TEMPLATE_SELECTOR);
+    const template = /** @type {HTMLTemplateElement} */ (
+        document.querySelector(FALLBACK_TEMPLATE_SELECTOR)
+    );
 
     currentTopic = null;
     currentLocale = null;
@@ -530,7 +535,9 @@ async function submitFeedback(helpful) {
 
 function bindHelpDrawer() {
     document.addEventListener("click", (event) => {
-        const trigger = event.target.closest("[data-help-trigger]");
+        const trigger = /** @type {HTMLElement} */ (event.target).closest(
+            "[data-help-trigger]",
+        );
         if (trigger) {
             event.preventDefault();
             const topic = trigger.getAttribute("data-help-topic");
@@ -548,20 +555,26 @@ function bindHelpDrawer() {
             }
             return;
         }
-        const closeBtn = event.target.closest("[data-help-close]");
+        const closeBtn = /** @type {HTMLElement} */ (event.target).closest(
+            "[data-help-close]",
+        );
         if (closeBtn) {
             event.preventDefault();
             closeDrawer();
             return;
         }
-        const backdrop = event.target.closest(BACKDROP_SELECTOR);
+        const backdrop = /** @type {HTMLElement} */ (event.target).closest(
+            BACKDROP_SELECTOR,
+        );
         if (backdrop) {
             // Nur mobil erreichbar — auf Desktop gibt es keinen Backdrop und
             // Klicks außerhalb schließen die nicht-modale Sidebar bewusst NICHT.
             closeDrawer();
             return;
         }
-        const feedbackBtn = event.target.closest("[data-help-feedback]");
+        const feedbackBtn = /** @type {HTMLElement} */ (event.target).closest(
+            "[data-help-feedback]",
+        );
         if (feedbackBtn) {
             const value = feedbackBtn.getAttribute("data-help-feedback");
             submitFeedback(value === "1");
@@ -569,7 +582,9 @@ function bindHelpDrawer() {
         }
         // Footer (Feedback/Aktionen) ein-/ausklappen — schafft auf niedrigen
         // Bildschirmen Platz für den Hilfetext.
-        const footerToggle = event.target.closest("[data-help-footer-toggle]");
+        const footerToggle = /** @type {HTMLElement} */ (event.target).closest(
+            "[data-help-footer-toggle]",
+        );
         if (footerToggle) {
             event.preventDefault();
             toggleFooter();
@@ -578,7 +593,9 @@ function bindHelpDrawer() {
 
     // Suche im Fallback-Panel (Inhalt wird dynamisch geklont → Delegation).
     document.addEventListener("submit", (event) => {
-        const form = event.target.closest("[data-help-search-form]");
+        const form = /** @type {HTMLElement} */ (event.target).closest(
+            "[data-help-search-form]",
+        );
         if (!form) return;
         event.preventDefault();
         runFallbackSearch(form);
@@ -600,7 +617,7 @@ function bindHelpDrawer() {
             !event.ctrlKey &&
             !event.altKey
         ) {
-            const target = event.target;
+            const target = /** @type {HTMLElement} */ (event.target);
             const isFormField =
                 target &&
                 (target.tagName === "INPUT" ||
@@ -624,7 +641,9 @@ function bindHelpDrawer() {
             if (drawer) {
                 drawer.classList.add("help-no-anim");
                 requestAnimationFrame(() => {
-                    requestAnimationFrame(() => drawer.classList.remove("help-no-anim"));
+                    requestAnimationFrame(() =>
+                        drawer.classList.remove("help-no-anim"),
+                    );
                 });
             }
             if (isOpen()) {

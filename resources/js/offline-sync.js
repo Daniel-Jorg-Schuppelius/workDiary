@@ -98,7 +98,9 @@ async function clearAll() {
 }
 
 async function updateBadge() {
-    const badge = document.querySelector("[data-sync-status]");
+    const badge = /** @type {HTMLElement} */ (
+        document.querySelector("[data-sync-status]")
+    );
     if (!badge) return;
 
     try {
@@ -161,7 +163,10 @@ async function flush() {
 
             const data = await response.json();
             for (const result of data.results || []) {
-                if (result.status === "applied" || result.status === "duplicate") {
+                if (
+                    result.status === "applied" ||
+                    result.status === "duplicate"
+                ) {
                     await outboxDelete(result.client_uuid);
                 } else {
                     // rejected/conflict: aus der Outbox nehmen (kein Endlos-
@@ -218,7 +223,8 @@ function buildPayload(type, form) {
         // checked-Zustände); Dateien/Unterschriften bleiben dem Online-Weg
         // vorbehalten (Konzept §5) und werden übersprungen.
         const payload = {
-            template: form.querySelector('[name="form_template_id"]')?.value || "",
+            template:
+                form.querySelector('[name="form_template_id"]')?.value || "",
             values: {},
         };
         const kind = form.querySelector('[name="subject_kind"]')?.value;
@@ -280,7 +286,10 @@ function bindForms() {
     // §3.4: Abmelden leert die Gerätedaten.
     document.addEventListener("submit", (event) => {
         const form = event.target;
-        if (form instanceof HTMLFormElement && form.action.includes("/logout")) {
+        if (
+            form instanceof HTMLFormElement &&
+            form.action.includes("/logout")
+        ) {
             clearAll().catch(() => {});
         }
     });
@@ -310,39 +319,66 @@ async function rejectedDelete(clientUuid) {
 }
 
 async function renderChangesPage(root) {
-    const template = document.querySelector("[data-sync-item-template]");
+    const template = /** @type {HTMLTemplateElement} */ (
+        document.querySelector("[data-sync-item-template]")
+    );
     if (!template) return;
 
     const typeLabel = (type) =>
-        root.dataset["labelType" + (type || "").replace(/[.-](\w)/g, (_, c) => c.toUpperCase()).replace(/^(\w)/, (_, c) => c.toUpperCase())] || type;
+        root.dataset[
+            "labelType" +
+                (type || "")
+                    .replace(/[.-](\w)/g, (_, c) => c.toUpperCase())
+                    .replace(/^(\w)/, (_, c) => c.toUpperCase())
+        ] || type;
 
     const sections = {
-        outbox: { items: await outboxAll(), label: root.dataset.labelPending, retry: false },
-        rejected: { items: await rejectedAll(), label: root.dataset.labelRejected, retry: true },
+        outbox: {
+            items: await outboxAll(),
+            label: root.dataset.labelPending,
+            retry: false,
+        },
+        rejected: {
+            items: await rejectedAll(),
+            label: root.dataset.labelRejected,
+            retry: true,
+        },
     };
 
     let total = 0;
     for (const [name, section] of Object.entries(sections)) {
         const el = root.querySelector(`[data-offline-section="${name}"]`);
         if (!el) continue;
-        el.querySelector("[data-section-heading]").textContent = section.label || name;
+        el.querySelector("[data-section-heading]").textContent =
+            section.label || name;
         const list = el.querySelector("[data-section-list]");
         list.textContent = "";
         el.hidden = section.items.length === 0;
         total += section.items.length;
 
         for (const item of section.items) {
-            const node = template.content.firstElementChild.cloneNode(true);
-            node.querySelector("[data-item-type]").textContent = typeLabel(item.type);
-            node.querySelector("[data-item-time]").textContent = item.captured_at || item.rejected_at || "";
+            const node = /** @type {HTMLElement} */ (
+                template.content.firstElementChild.cloneNode(true)
+            );
+            node.querySelector("[data-item-type]").textContent = typeLabel(
+                item.type,
+            );
+            node.querySelector("[data-item-time]").textContent =
+                item.captured_at || item.rejected_at || "";
 
-            const errorsEl = node.querySelector("[data-item-errors]");
+            const errorsEl = /** @type {HTMLElement} */ (
+                node.querySelector("[data-item-errors]")
+            );
             if (item.errors) {
-                errorsEl.textContent = Object.values(item.errors).flat().join(" ");
+                errorsEl.textContent = Object.values(item.errors)
+                    .flat()
+                    .join(" ");
                 errorsEl.hidden = false;
             }
 
-            const retryBtn = node.querySelector("[data-item-retry]");
+            const retryBtn = /** @type {HTMLElement} */ (
+                node.querySelector("[data-item-retry]")
+            );
             if (section.retry && item.payload) {
                 retryBtn.hidden = false;
                 retryBtn.addEventListener("click", async () => {
@@ -358,11 +394,16 @@ async function renderChangesPage(root) {
                 });
             }
 
-            node.querySelector("[data-item-discard]").addEventListener("click", async () => {
-                await (name === "outbox" ? outboxDelete(item.client_uuid) : rejectedDelete(item.client_uuid));
-                updateBadge();
-                renderChangesPage(root);
-            });
+            node.querySelector("[data-item-discard]").addEventListener(
+                "click",
+                async () => {
+                    await (name === "outbox"
+                        ? outboxDelete(item.client_uuid)
+                        : rejectedDelete(item.client_uuid));
+                    updateBadge();
+                    renderChangesPage(root);
+                },
+            );
 
             list.appendChild(node);
         }

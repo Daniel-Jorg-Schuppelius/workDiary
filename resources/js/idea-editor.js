@@ -37,7 +37,8 @@ export function registerIdeaEditor(Alpine) {
             const el = document.getElementById(configElId);
             this.cfg = JSON.parse(el?.textContent || "{}");
             (this.cfg.nodes || []).forEach((n) => (this.nodes[n.sqid] = n));
-            this.rootSqid = (this.cfg.nodes || []).find((n) => n.is_root)?.sqid || null;
+            this.rootSqid =
+                (this.cfg.nodes || []).find((n) => n.is_root)?.sqid || null;
             this.rebuildOrder();
             this.selected = this.rootSqid;
 
@@ -45,7 +46,8 @@ export function registerIdeaEditor(Alpine) {
             // Canvas-Tab über ein Fenster-Event zum idempotenten Mount anstoßen;
             // zurück zur Gliederung ggf. den vom Canvas geänderten Stand nachladen.
             this.$watch("view", (v) => {
-                if (v === "canvas") window.dispatchEvent(new CustomEvent("idea-canvas-show"));
+                if (v === "canvas")
+                    window.dispatchEvent(new CustomEvent("idea-canvas-show"));
                 if (v === "outline" && this.canvasDirty) {
                     this.canvasDirty = false;
                     this.reload();
@@ -68,12 +70,16 @@ export function registerIdeaEditor(Alpine) {
             if (this.cfg.urls.presence) {
                 this.heartbeat();
                 const timer = setInterval(() => this.heartbeat(), 30000);
-                window.addEventListener("beforeunload", () => clearInterval(timer));
+                window.addEventListener("beforeunload", () =>
+                    clearInterval(timer),
+                );
             }
         },
 
         async heartbeat() {
-            const json = await this.api("POST", this.cfg.urls.presence).catch(() => null);
+            const json = await this.api("POST", this.cfg.urls.presence).catch(
+                () => null,
+            );
             if (json?.editing) this.editing = json.editing;
         },
 
@@ -82,7 +88,11 @@ export function registerIdeaEditor(Alpine) {
         async convertNode(target) {
             if (!this.selected) return;
             this.convertResult = null;
-            const json = await this.api("POST", this.urlFor("convert", this.selected), { target });
+            const json = await this.api(
+                "POST",
+                this.urlFor("convert", this.selected),
+                { target },
+            );
             if (json?.reference) {
                 const n = this.node(this.selected);
                 if (!json.existing) {
@@ -172,7 +182,12 @@ export function registerIdeaEditor(Alpine) {
                     headers: {
                         "Content-Type": "application/json",
                         Accept: "application/json",
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.content || "",
+                        "X-CSRF-TOKEN":
+                            /** @type {HTMLMetaElement | null} */ (
+                                document.querySelector(
+                                    'meta[name="csrf-token"]',
+                                )
+                            )?.content || "",
                     },
                     body: body ? JSON.stringify(body) : undefined,
                 });
@@ -183,8 +198,11 @@ export function registerIdeaEditor(Alpine) {
                 if (!res.ok) {
                     // 422: Laravel liefert {message, errors:{feld:[…]}} — erste
                     // konkrete Feldmeldung zeigen statt des generischen Rohtexts.
-                    const firstFieldError = json.errors ? Object.values(json.errors)[0]?.[0] : null;
-                    this.error = firstFieldError || json.message || res.statusText;
+                    const firstFieldError = json.errors
+                        ? Object.values(json.errors)[0]?.[0]
+                        : null;
+                    this.error =
+                        firstFieldError || json.message || res.statusText;
                     return null;
                 }
                 return json;
@@ -193,7 +211,10 @@ export function registerIdeaEditor(Alpine) {
             }
         },
         urlFor(action, sqid) {
-            return (this.cfg.urls[action] || "").replace("__NODE__", sqid || "");
+            return (this.cfg.urls[action] || "").replace(
+                "__NODE__",
+                sqid || "",
+            );
         },
 
         // Canvas über eine Gliederungs-Änderung informieren: er lädt beim
@@ -233,7 +254,9 @@ export function registerIdeaEditor(Alpine) {
             this.$nextTick(() => this.focusTitleInput(sqid));
         },
         focusTitleInput(sqid) {
-            const input = this.$root?.querySelector(`[data-title-input="${sqid}"]`);
+            const input = this.$root?.querySelector(
+                `[data-title-input="${sqid}"]`,
+            );
             if (input) {
                 input.focus();
                 input.select();
@@ -254,7 +277,11 @@ export function registerIdeaEditor(Alpine) {
                 lock_version: n.lock_version,
             });
             if (json?.conflict) {
-                this.conflict = { node: sqid, mine: payload, current: json.conflict };
+                this.conflict = {
+                    node: sqid,
+                    mine: payload,
+                    current: json.conflict,
+                };
                 return;
             }
             if (json?.node) this.applyNode(json.node);
@@ -271,7 +298,8 @@ export function registerIdeaEditor(Alpine) {
             if ((note ?? "") !== (n.note ?? "")) payload.note = note || null;
             const st = status || null;
             if (st !== (n.node_status ?? null)) payload.node_status = st;
-            if (Object.keys(payload).length > 0) await this.patchNode(this.selected, payload);
+            if (Object.keys(payload).length > 0)
+                await this.patchNode(this.selected, payload);
         },
         async closeDetails(note, status) {
             await this.saveDetails(note, status);
@@ -280,22 +308,30 @@ export function registerIdeaEditor(Alpine) {
         // Varianten für Direktiven: lesen Notiz/Status selbst aus $refs —
         // `$refs.detailNote?.value` wäre im CSP-Build nicht auswertbar.
         saveDetailsFromRefs() {
-            return this.saveDetails(this.$refs.detailNote?.value, this.$refs.detailStatus?.value);
+            return this.saveDetails(
+                this.$refs.detailNote?.value,
+                this.$refs.detailStatus?.value,
+            );
         },
         closeDetailsFromRefs() {
-            return this.closeDetails(this.$refs.detailNote?.value, this.$refs.detailStatus?.value);
+            return this.closeDetails(
+                this.$refs.detailNote?.value,
+                this.$refs.detailStatus?.value,
+            );
         },
 
         // Farb-Swatches der Detail-Ansicht (MVP-135): Farbwert → DaisyUI-bg-Klasse.
         swatchClass(color) {
-            return {
-                default: "bg-base-300",
-                primary: "bg-primary",
-                success: "bg-success",
-                warning: "bg-warning",
-                error: "bg-error",
-                info: "bg-info",
-            }[color] || "bg-base-300";
+            return (
+                {
+                    default: "bg-base-300",
+                    primary: "bg-primary",
+                    success: "bg-success",
+                    warning: "bg-warning",
+                    error: "bg-error",
+                    info: "bg-info",
+                }[color] || "bg-base-300"
+            );
         },
 
         // Konfliktdialog (MVP-108): fremden Stand übernehmen ODER eigenen
@@ -328,7 +364,9 @@ export function registerIdeaEditor(Alpine) {
             await this.moveNode(sqid, parent.parent);
         },
         async moveNode(sqid, newParentSqid) {
-            const json = await this.api("POST", this.urlFor("move", sqid), { parent: newParentSqid });
+            const json = await this.api("POST", this.urlFor("move", sqid), {
+                parent: newParentSqid,
+            });
             if (json?.node) this.applyNode(json.node);
         },
         async moveUp(sqid) {
@@ -346,7 +384,11 @@ export function registerIdeaEditor(Alpine) {
             if (target < 0 || target >= siblings.length) return;
             siblings.splice(idx, 1);
             siblings.splice(target, 0, sqid);
-            const json = await this.api("POST", this.urlFor("reorder", n.parent), { children: siblings });
+            const json = await this.api(
+                "POST",
+                this.urlFor("reorder", n.parent),
+                { children: siblings },
+            );
             if (json?.ok) {
                 siblings.forEach((s, i) => {
                     if (this.nodes[s]) this.nodes[s].sort_order = i;
@@ -382,7 +424,10 @@ export function registerIdeaEditor(Alpine) {
         },
         async undoDelete() {
             if (!this.lastDeleted) return;
-            const json = await this.api("POST", this.urlFor("restore", this.lastDeleted));
+            const json = await this.api(
+                "POST",
+                this.urlFor("restore", this.lastDeleted),
+            );
             if (json?.node) {
                 this.lastDeleted = null;
                 await this.reload();
@@ -431,10 +476,15 @@ export function registerIdeaEditor(Alpine) {
             } else if (event.key === "ArrowUp" || event.key === "ArrowDown") {
                 event.preventDefault();
                 const idx = this.order.indexOf(sqid);
-                const next = this.order[idx + (event.key === "ArrowDown" ? 1 : -1)];
+                const next =
+                    this.order[idx + (event.key === "ArrowDown" ? 1 : -1)];
                 if (next) {
                     this.selected = next;
-                    this.$nextTick(() => this.$root.querySelector(`[data-node-row="${next}"]`)?.focus());
+                    this.$nextTick(() =>
+                        this.$root
+                            .querySelector(`[data-node-row="${next}"]`)
+                            ?.focus(),
+                    );
                 }
             }
         },

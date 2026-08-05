@@ -30,7 +30,9 @@ document.addEventListener("change", (event) => {
     if (!el) return;
 
     // Filter-Selects/-Inputs: Formular direkt abschicken.
-    const auto = el.closest("[data-autosubmit]");
+    const auto = /** @type {HTMLInputElement | null} */ (
+        el.closest("[data-autosubmit]")
+    );
     if (auto && auto.form) {
         if (auto.getAttribute("data-autosubmit") === "request") {
             auto.form.requestSubmit();
@@ -41,14 +43,18 @@ document.addEventListener("change", (event) => {
     }
 
     // Navigations-Select: Option-Wert ist eine URL.
-    const nav = el.closest("[data-navigate-select]");
+    const nav = /** @type {HTMLSelectElement | null} */ (
+        el.closest("[data-navigate-select]")
+    );
     if (nav) {
         if (nav.value) window.location.href = nav.value;
         return;
     }
 
     // "Alle auswählen"-Checkbox: setzt alle Ziel-Checkboxen im Scope.
-    const checkAll = el.closest("[data-check-all]");
+    const checkAll = /** @type {HTMLInputElement | null} */ (
+        el.closest("[data-check-all]")
+    );
     if (checkAll) {
         const selector = checkAll.getAttribute("data-check-all");
         if (!selector) return;
@@ -58,17 +64,22 @@ document.addEventListener("change", (event) => {
                 : checkAll.closest("table") ||
                   checkAll.closest("form") ||
                   document;
-        scope.querySelectorAll(selector).forEach((cb) => {
+        /** @type {NodeListOf<HTMLInputElement>} */ (
+            scope.querySelectorAll(selector)
+        ).forEach((cb) => {
             cb.checked = checkAll.checked;
         });
         return;
     }
 
     // Farb-Vorschau neben Farb-Selects (Entry-Types/Expense-Categories).
-    const colorSel = el.closest("select[data-color-preview]");
+    const colorSel = /** @type {HTMLSelectElement | null} */ (
+        el.closest("select[data-color-preview]")
+    );
     if (colorSel && colorSel.previousElementSibling) {
-        colorSel.previousElementSibling.style.backgroundColor =
-            "var(--color-" + colorSel.value + ")";
+        /** @type {HTMLElement} */ (
+            colorSel.previousElementSibling
+        ).style.backgroundColor = "var(--color-" + colorSel.value + ")";
     }
 });
 
@@ -79,8 +90,8 @@ document.addEventListener("click", (event) => {
     // Dialog öffnen.
     const opener = target.closest("[data-open-dialog]");
     if (opener) {
-        const dlg = document.getElementById(
-            opener.getAttribute("data-open-dialog"),
+        const dlg = /** @type {HTMLDialogElement | null} */ (
+            document.getElementById(opener.getAttribute("data-open-dialog"))
         );
         if (dlg && typeof dlg.showModal === "function") {
             event.preventDefault();
@@ -96,7 +107,9 @@ document.addEventListener("click", (event) => {
     }
 
     // Eingabefeld-Inhalt markieren (Share-/Token-Felder).
-    const selectable = target.closest("input[data-select-on-click]");
+    const selectable = /** @type {HTMLInputElement | null} */ (
+        target.closest("input[data-select-on-click]")
+    );
     if (selectable) {
         selectable.select();
         return;
@@ -128,11 +141,14 @@ document.addEventListener("click", (event) => {
     if (copier) {
         let text = copier.getAttribute("data-copy-text");
         if (text === null) {
-            const src = document.getElementById(
-                copier.getAttribute("data-copy-target"),
+            const src = /** @type {HTMLElement | null} */ (
+                document.getElementById(copier.getAttribute("data-copy-target"))
             );
             if (!src) return;
-            text = "value" in src ? src.value : (src.textContent ?? "");
+            text =
+                "value" in src
+                    ? /** @type {any} */ (src).value
+                    : (src.textContent ?? "");
         }
         navigator.clipboard?.writeText(text).then(() => {
             const feedback = copier.getAttribute("data-copy-feedback");
@@ -146,7 +162,9 @@ document.addEventListener("keydown", (event) => {
     if (event.key !== "Enter" || event.shiftKey) return;
     const el =
         event.target instanceof Element
-            ? event.target.closest("[data-submit-on-enter]")
+            ? /** @type {HTMLInputElement | null} */ (
+                  event.target.closest("[data-submit-on-enter]")
+              )
             : null;
     if (!el || !el.form) return;
     event.preventDefault();

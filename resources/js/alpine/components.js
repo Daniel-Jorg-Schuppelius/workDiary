@@ -31,11 +31,21 @@ export function registerAlpineComponents(Alpine) {
         },
         get display() {
             const p = (n) => String(n).padStart(2, "0");
-            return p(Math.floor(this.s / 3600)) + ":" + p(Math.floor((this.s % 3600) / 60)) + ":" + p(this.s % 60);
+            return (
+                p(Math.floor(this.s / 3600)) +
+                ":" +
+                p(Math.floor((this.s % 3600) / 60)) +
+                ":" +
+                p(this.s % 60)
+            );
         },
         get displayShort() {
             const p = (n) => String(n).padStart(2, "0");
-            return p(Math.floor(this.s / 3600)) + ":" + p(Math.floor((this.s % 3600) / 60));
+            return (
+                p(Math.floor(this.s / 3600)) +
+                ":" +
+                p(Math.floor((this.s % 3600) / 60))
+            );
         },
     }));
 
@@ -54,7 +64,8 @@ export function registerAlpineComponents(Alpine) {
             this.persistKey = d.tabPersist || null;
             this.urlSync = d.tabUrlSync !== undefined;
             this.allowed = d.tabAllowed ? d.tabAllowed.split(",") : null;
-            const ok = (v) => Boolean(v) && (!this.allowed || this.allowed.includes(v));
+            const ok = (v) =>
+                Boolean(v) && (!this.allowed || this.allowed.includes(v));
             if (this.persistKey) {
                 const stored = localStorage.getItem(this.persistKey);
                 if (ok(stored)) {
@@ -62,7 +73,9 @@ export function registerAlpineComponents(Alpine) {
                 }
             }
             if (this.urlSync) {
-                const fromQuery = new URLSearchParams(window.location.search).get("tab");
+                const fromQuery = new URLSearchParams(
+                    window.location.search,
+                ).get("tab");
                 const fromHash = window.location.hash.replace("#", "");
                 this.tab = ok(fromQuery)
                     ? fromQuery
@@ -79,9 +92,11 @@ export function registerAlpineComponents(Alpine) {
         // Stehende Footer-Panels (x-pagination standing) mit data-tab-footer
         // nur beim zugehörigen Tab zeigen — Tabs sind hier clientseitig.
         syncTabFooters() {
-            document.querySelectorAll("[data-tab-footer]").forEach((el) => {
-                el.hidden = el.dataset.tabFooter !== this.tab;
-            });
+            document
+                .querySelectorAll("[data-tab-footer]")
+                .forEach((/** @type {HTMLElement} */ el) => {
+                    el.hidden = el.dataset.tabFooter !== this.tab;
+                });
         },
         setTab(name) {
             this.tab = name;
@@ -151,71 +166,98 @@ export function registerAlpineComponents(Alpine) {
             this.setGroup(key, false);
         },
         setGroup(key, checked) {
-            this.$root.querySelectorAll('input[data-group="' + key + '"]').forEach((el) => {
-                el.checked = checked;
-            });
+            this.$root
+                .querySelectorAll('input[data-group="' + key + '"]')
+                .forEach((el) => {
+                    el.checked = checked;
+                });
         },
     }));
 
     // Heute-Ansicht: Live-Anwesenheit, Soll/Ist, Saldo + Fortschritt.
-    Alpine.data("todayCounters", (isLive, baseAttendance, entriesMin, target, renderedAtIso) => ({
-        isLive,
-        baseAttendance,
-        entriesMin,
-        target,
-        renderedAt: 0,
-        now: 0,
-        init() {
-            this.renderedAt = new Date(renderedAtIso).getTime();
-            this.now = Date.now();
-            if (this.isLive) {
-                setInterval(() => {
-                    this.now = Date.now();
-                }, 1000);
-            }
-        },
-        get extraMinutes() {
-            return this.isLive ? Math.max(0, Math.floor((this.now - this.renderedAt) / 60000)) : 0;
-        },
-        get attendanceMin() {
-            return this.baseAttendance + this.extraMinutes;
-        },
-        get untrackedMin() {
-            return Math.max(0, this.attendanceMin - this.entriesMin);
-        },
-        get balance() {
-            return this.attendanceMin - this.target;
-        },
-        get progress() {
-            return this.target > 0 ? Math.min(100, Math.round((this.attendanceMin / this.target) * 100)) : 0;
-        },
-        fmt(m) {
-            const sign = m < 0 ? "-" : "";
-            const abs = Math.abs(m);
-            return sign + Math.floor(abs / 60) + ":" + String(abs % 60).padStart(2, "0") + " h";
-        },
-        get attendanceFmt() {
-            return this.fmt(this.attendanceMin);
-        },
-        get untrackedFmt() {
-            return this.fmt(this.untrackedMin);
-        },
-        get balanceFmt() {
-            return this.fmt(this.balance);
-        },
-        get untrackedBorderClass() {
-            return this.untrackedMin > 0 ? "border-warning/40" : "border-base-300";
-        },
-        get untrackedTextClass() {
-            return this.untrackedMin > 0 ? "text-warning" : "text-base-content";
-        },
-        get balanceTextClass() {
-            return this.balance >= 0 ? "text-success" : "text-error";
-        },
-        get balanceProgressClass() {
-            return this.balance >= 0 ? "progress-success" : "progress-warning";
-        },
-    }));
+    Alpine.data(
+        "todayCounters",
+        (isLive, baseAttendance, entriesMin, target, renderedAtIso) => ({
+            isLive,
+            baseAttendance,
+            entriesMin,
+            target,
+            renderedAt: 0,
+            now: 0,
+            init() {
+                this.renderedAt = new Date(renderedAtIso).getTime();
+                this.now = Date.now();
+                if (this.isLive) {
+                    setInterval(() => {
+                        this.now = Date.now();
+                    }, 1000);
+                }
+            },
+            get extraMinutes() {
+                return this.isLive
+                    ? Math.max(
+                          0,
+                          Math.floor((this.now - this.renderedAt) / 60000),
+                      )
+                    : 0;
+            },
+            get attendanceMin() {
+                return this.baseAttendance + this.extraMinutes;
+            },
+            get untrackedMin() {
+                return Math.max(0, this.attendanceMin - this.entriesMin);
+            },
+            get balance() {
+                return this.attendanceMin - this.target;
+            },
+            get progress() {
+                return this.target > 0
+                    ? Math.min(
+                          100,
+                          Math.round((this.attendanceMin / this.target) * 100),
+                      )
+                    : 0;
+            },
+            fmt(m) {
+                const sign = m < 0 ? "-" : "";
+                const abs = Math.abs(m);
+                return (
+                    sign +
+                    Math.floor(abs / 60) +
+                    ":" +
+                    String(abs % 60).padStart(2, "0") +
+                    " h"
+                );
+            },
+            get attendanceFmt() {
+                return this.fmt(this.attendanceMin);
+            },
+            get untrackedFmt() {
+                return this.fmt(this.untrackedMin);
+            },
+            get balanceFmt() {
+                return this.fmt(this.balance);
+            },
+            get untrackedBorderClass() {
+                return this.untrackedMin > 0
+                    ? "border-warning/40"
+                    : "border-base-300";
+            },
+            get untrackedTextClass() {
+                return this.untrackedMin > 0
+                    ? "text-warning"
+                    : "text-base-content";
+            },
+            get balanceTextClass() {
+                return this.balance >= 0 ? "text-success" : "text-error";
+            },
+            get balanceProgressClass() {
+                return this.balance >= 0
+                    ? "progress-success"
+                    : "progress-warning";
+            },
+        }),
+    );
 
     // Diary-Formular: Eintragstyp steuert Pflichtfelder/Flags + Modus-Abschnitte.
     Alpine.data("diaryEntryForm", () => ({
@@ -322,30 +364,33 @@ export function registerAlpineComponents(Alpine) {
     }));
 
     // Krankmeldungs-Dialog: Tage-Berechnung + AU-Pflicht-Hinweis.
-    Alpine.data("sickLeaveForm", (start, end, kind, threshold, hasExisting) => ({
-        start,
-        end,
-        kind,
-        threshold,
-        hasExisting,
-        get days() {
-            if (!this.start || !this.end) {
-                return 0;
-            }
-            const s = new Date(this.start);
-            const e = new Date(this.end);
-            if (isNaN(s) || isNaN(e) || e < s) {
-                return 0;
-            }
-            return Math.round((e - s) / 86400000) + 1;
-        },
-        get requiresAu() {
-            return !this.hasExisting && this.days >= this.threshold;
-        },
-        isKind(v) {
-            return this.kind === v;
-        },
-    }));
+    Alpine.data(
+        "sickLeaveForm",
+        (start, end, kind, threshold, hasExisting) => ({
+            start,
+            end,
+            kind,
+            threshold,
+            hasExisting,
+            get days() {
+                if (!this.start || !this.end) {
+                    return 0;
+                }
+                const s = /** @type {any} */ (new Date(this.start));
+                const e = /** @type {any} */ (new Date(this.end));
+                if (isNaN(s) || isNaN(e) || e < s) {
+                    return 0;
+                }
+                return Math.round((e - s) / 86400000) + 1;
+            },
+            get requiresAu() {
+                return !this.hasExisting && this.days >= this.threshold;
+            },
+            isKind(v) {
+                return this.kind === v;
+            },
+        }),
+    );
 
     // Projekt-Formular: Eltern-Projekt erbt Kunde; steuert Fremdkunden-Auswahl.
     Alpine.data("projectForm", () => ({
@@ -359,7 +404,9 @@ export function registerAlpineComponents(Alpine) {
             this.parentId = d.parentId || "";
             this.parentCustomers = JSON.parse(d.parentCustomers || "{}");
             this.customerId = d.customerId || "";
-            this.foreignCustomersByCustomer = JSON.parse(d.foreignCustomers || "{}");
+            this.foreignCustomersByCustomer = JSON.parse(
+                d.foreignCustomers || "{}",
+            );
             this.foreignCustomerId = d.foreignCustomerId || "";
         },
         get hasParent() {
@@ -369,13 +416,17 @@ export function registerAlpineComponents(Alpine) {
             return !this.hasParent;
         },
         get parentCustomerId() {
-            return this.hasParent ? this.parentCustomers[this.parentId] ?? "" : "";
+            return this.hasParent
+                ? (this.parentCustomers[this.parentId] ?? "")
+                : "";
         },
         get effectiveCustomerId() {
             return this.hasParent ? this.parentCustomerId : this.customerId;
         },
         get availableForeignCustomers() {
-            return this.foreignCustomersByCustomer[this.effectiveCustomerId] ?? [];
+            return (
+                this.foreignCustomersByCustomer[this.effectiveCustomerId] ?? []
+            );
         },
         get showForeignCustomer() {
             return !this.hasParent && this.availableForeignCustomers.length > 0;
@@ -388,7 +439,11 @@ export function registerAlpineComponents(Alpine) {
             if (this.hasParent && this.parentCustomerId) {
                 this.customerId = String(this.parentCustomerId);
             }
-            if (!this.availableForeignCustomers.some((fc) => fc.sqid === this.foreignCustomerId)) {
+            if (
+                !this.availableForeignCustomers.some(
+                    (fc) => fc.sqid === this.foreignCustomerId,
+                )
+            ) {
                 this.foreignCustomerId = "";
             }
         },
@@ -426,11 +481,29 @@ export function registerAlpineComponents(Alpine) {
             return this.editable ? "cursor-move" : "";
         },
         get barStyle() {
-            return "left:" + this.offsetPct + "%; width:" + this.widthPct + "%; background-color:" + this.color;
+            return (
+                "left:" +
+                this.offsetPct +
+                "%; width:" +
+                this.widthPct +
+                "%; background-color:" +
+                this.color
+            );
         },
         get label() {
             const s = this.addDays(this.fromIso, this.offset);
-            return this.fmt(s) + (this.duration > 0 ? "–" + this.fmt(this.addDays(this.fromIso, this.offset + this.duration)) : "");
+            return (
+                this.fmt(s) +
+                (this.duration > 0
+                    ? "–" +
+                      this.fmt(
+                          this.addDays(
+                              this.fromIso,
+                              this.offset + this.duration,
+                          ),
+                      )
+                    : "")
+            );
         },
         _dayWidth(el) {
             const t = el.closest("[data-track]");
@@ -449,7 +522,13 @@ export function registerAlpineComponents(Alpine) {
         _begin(e, mode) {
             e.preventDefault();
             const bar = e.target.closest("[data-bar]");
-            this._d = { mode, x: e.clientX, o: this.offset, du: this.duration, dw: this._dayWidth(bar) };
+            this._d = {
+                mode,
+                x: e.clientX,
+                o: this.offset,
+                du: this.duration,
+                dw: this._dayWidth(bar),
+            };
             const move = (ev) => this._move(ev);
             const up = () => {
                 this._end();
@@ -467,7 +546,10 @@ export function registerAlpineComponents(Alpine) {
             if (this._d.mode === "move") {
                 this.offset = Math.max(0, this._d.o + dd);
             } else if (this._d.mode === "l") {
-                const newOffset = Math.max(0, Math.min(this._d.o + dd, this._d.o + this._d.du));
+                const newOffset = Math.max(
+                    0,
+                    Math.min(this._d.o + dd, this._d.o + this._d.du),
+                );
                 this.duration = this._d.du + (this._d.o - newOffset);
                 this.offset = newOffset;
             } else {
@@ -478,7 +560,8 @@ export function registerAlpineComponents(Alpine) {
             if (!this._d) {
                 return;
             }
-            const changed = this.offset !== this._d.o || this.duration !== this._d.du;
+            const changed =
+                this.offset !== this._d.o || this.duration !== this._d.du;
             this._d = null;
             if (changed) {
                 this.persist();
@@ -487,10 +570,17 @@ export function registerAlpineComponents(Alpine) {
         persist() {
             fetch(this.url, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json", Accept: "application/json", "X-CSRF-TOKEN": this.csrf },
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    "X-CSRF-TOKEN": this.csrf,
+                },
                 body: JSON.stringify({
                     start_date: this.addDays(this.fromIso, this.offset),
-                    due_date: this.addDays(this.fromIso, this.offset + this.duration),
+                    due_date: this.addDays(
+                        this.fromIso,
+                        this.offset + this.duration,
+                    ),
                 }),
             }).catch(() => {});
         },
@@ -515,12 +605,25 @@ export function registerAlpineComponents(Alpine) {
             const c = JSON.parse(this.$el.dataset.config || "{}");
             this.type = c.type || "flextime";
             this.unit = c.unit || "minutes";
-            this.d = { weekly: c.weekly ?? 0, daily: c.daily ?? 0, breakAfter: c.breakAfter ?? 0, breakMin: c.breakMin ?? 0 };
+            this.d = {
+                weekly: c.weekly ?? 0,
+                daily: c.daily ?? 0,
+                breakAfter: c.breakAfter ?? 0,
+                breakMin: c.breakMin ?? 0,
+            };
             const src = c.days || {};
             const days = {};
             for (let iso = 1; iso <= 7; iso++) {
                 const v = src[iso] ?? src[String(iso)] ?? {};
-                days["d" + iso] = { enabled: false, mode: "hours", hours: "", start: "", end: "", break: "", ...v };
+                days["d" + iso] = {
+                    enabled: false,
+                    mode: "hours",
+                    hours: "",
+                    start: "",
+                    end: "",
+                    break: "",
+                    ...v,
+                };
             }
             this.days = days;
         },
@@ -572,7 +675,11 @@ export function registerAlpineComponents(Alpine) {
                 return 0;
             }
             if (day.mode === "times") {
-                return Math.max(0, this.minutesBetween(day.start, day.end) - (parseInt(day.break, 10) || 0));
+                return Math.max(
+                    0,
+                    this.minutesBetween(day.start, day.end) -
+                        (parseInt(day.break, 10) || 0),
+                );
             }
             return this.toMin(day.hours);
         },
@@ -580,7 +687,9 @@ export function registerAlpineComponents(Alpine) {
             return this.fmt(this.dayMinutes(iso));
         },
         dayMinutesLabel(iso) {
-            return this.day(iso)?.enabled ? this.fmt(this.dayMinutes(iso)) : "–";
+            return this.day(iso)?.enabled
+                ? this.fmt(this.dayMinutes(iso))
+                : "–";
         },
         minutesBetween(start, end) {
             const re = /^\d{1,2}:\d{2}$/;
@@ -593,10 +702,18 @@ export function registerAlpineComponents(Alpine) {
         },
         fmt(min) {
             const m = Math.max(0, Math.round(min));
-            return Math.floor(m / 60) + ":" + String(m % 60).padStart(2, "0") + " h";
+            return (
+                Math.floor(m / 60) +
+                ":" +
+                String(m % 60).padStart(2, "0") +
+                " h"
+            );
         },
         get weeklyTotalMinutes() {
-            return [1, 2, 3, 4, 5, 6, 7].reduce((sum, iso) => sum + this.dayMinutes(iso), 0);
+            return [1, 2, 3, 4, 5, 6, 7].reduce(
+                (sum, iso) => sum + this.dayMinutes(iso),
+                0,
+            );
         },
         get weeklyTotalFmt() {
             return this.fmt(this.weeklyTotalMinutes);
@@ -606,14 +723,23 @@ export function registerAlpineComponents(Alpine) {
                 return;
             }
             const conv = (val) => {
-                const mins = this.unit === "hours" ? this.parse(val) * 60 : this.parse(val);
-                return u === "hours" ? +(mins / 60).toFixed(2) : Math.round(mins);
+                const mins =
+                    this.unit === "hours"
+                        ? this.parse(val) * 60
+                        : this.parse(val);
+                return u === "hours"
+                    ? +(mins / 60).toFixed(2)
+                    : Math.round(mins);
             };
             for (const k of Object.keys(this.d)) {
                 this.d[k] = conv(this.d[k]);
             }
             for (const k of Object.keys(this.days)) {
-                if (this.days[k] && this.days[k].hours !== undefined && this.days[k].hours !== "") {
+                if (
+                    this.days[k] &&
+                    this.days[k].hours !== undefined &&
+                    this.days[k].hours !== ""
+                ) {
                     this.days[k].hours = conv(this.days[k].hours);
                 }
             }
@@ -623,7 +749,14 @@ export function registerAlpineComponents(Alpine) {
 
     // Liegenschafts-Picker (Customer → Site → Building → Floor → Room).
     Alpine.data("facilityPicker", () => ({
-        data: { customers: [], foreignCustomers: [], sites: [], buildings: [], floors: [], rooms: [] },
+        data: {
+            customers: [],
+            foreignCustomers: [],
+            sites: [],
+            buildings: [],
+            floors: [],
+            rooms: [],
+        },
         withRoom: false,
         withForeignCustomer: false,
         customer_id: null,
@@ -671,16 +804,33 @@ export function registerAlpineComponents(Alpine) {
             });
         },
         autoSelectSingles() {
-            if (this.customer_id != null && this.site_id == null && this.filteredSites.length === 1) {
+            if (
+                this.customer_id != null &&
+                this.site_id == null &&
+                this.filteredSites.length === 1
+            ) {
                 this.site_id = this.filteredSites[0].id;
             }
-            if (this.site_id != null && this.building_id == null && this.filteredBuildings.length === 1) {
+            if (
+                this.site_id != null &&
+                this.building_id == null &&
+                this.filteredBuildings.length === 1
+            ) {
                 this.building_id = this.filteredBuildings[0].id;
             }
-            if (this.building_id != null && this.floor_id == null && this.filteredFloors.length === 1) {
+            if (
+                this.building_id != null &&
+                this.floor_id == null &&
+                this.filteredFloors.length === 1
+            ) {
                 this.floor_id = this.filteredFloors[0].id;
             }
-            if (this.withRoom && this.floor_id != null && this.room_id == null && this.filteredRooms.length === 1) {
+            if (
+                this.withRoom &&
+                this.floor_id != null &&
+                this.room_id == null &&
+                this.filteredRooms.length === 1
+            ) {
                 this.room_id = this.filteredRooms[0].id;
             }
         },
@@ -688,13 +838,18 @@ export function registerAlpineComponents(Alpine) {
             if (this.customer_id == null) {
                 return this.data.sites;
             }
-            return this.data.sites.filter((s) => s.customer_id == null || s.customer_id === this.customer_id);
+            return this.data.sites.filter(
+                (s) =>
+                    s.customer_id == null || s.customer_id === this.customer_id,
+            );
         },
         get filteredForeignCustomers() {
             if (this.customer_id == null) {
                 return [];
             }
-            return (this.data.foreignCustomers ?? []).filter((fc) => fc.customer_id === this.customer_id);
+            return (this.data.foreignCustomers ?? []).filter(
+                (fc) => fc.customer_id === this.customer_id,
+            );
         },
         get filteredBuildings() {
             if (this.site_id == null) {
@@ -702,16 +857,22 @@ export function registerAlpineComponents(Alpine) {
                     return this.data.buildings;
                 }
                 const siteIds = new Set(this.filteredSites.map((s) => s.id));
-                return this.data.buildings.filter((b) => siteIds.has(b.site_id));
+                return this.data.buildings.filter((b) =>
+                    siteIds.has(b.site_id),
+                );
             }
-            return this.data.buildings.filter((b) => b.site_id === this.site_id);
+            return this.data.buildings.filter(
+                (b) => b.site_id === this.site_id,
+            );
         },
         get filteredFloors() {
             if (this.building_id == null) {
                 const bIds = new Set(this.filteredBuildings.map((b) => b.id));
                 return this.data.floors.filter((f) => bIds.has(f.building_id));
             }
-            return this.data.floors.filter((f) => f.building_id === this.building_id);
+            return this.data.floors.filter(
+                (f) => f.building_id === this.building_id,
+            );
         },
         get filteredRooms() {
             let rooms = this.data.rooms;
@@ -719,10 +880,16 @@ export function registerAlpineComponents(Alpine) {
                 rooms = rooms.filter((r) => r.floor_id === this.floor_id);
             } else {
                 const fIds = new Set(this.filteredFloors.map((f) => f.id));
-                rooms = rooms.filter((r) => r.floor_id == null || fIds.has(r.floor_id));
+                rooms = rooms.filter(
+                    (r) => r.floor_id == null || fIds.has(r.floor_id),
+                );
             }
             if (this.customer_id != null) {
-                rooms = rooms.filter((r) => r.customer_id == null || r.customer_id === this.customer_id);
+                rooms = rooms.filter(
+                    (r) =>
+                        r.customer_id == null ||
+                        r.customer_id === this.customer_id,
+                );
             }
             return rooms;
         },
@@ -747,13 +914,17 @@ export function registerAlpineComponents(Alpine) {
                 }
             }
             if (this.floor_id != null && this.building_id == null) {
-                const floor = this.data.floors.find((f) => f.id === this.floor_id);
+                const floor = this.data.floors.find(
+                    (f) => f.id === this.floor_id,
+                );
                 if (floor) {
                     this.building_id = floor.building_id;
                 }
             }
             if (this.building_id != null && this.site_id == null) {
-                const building = this.data.buildings.find((b) => b.id === this.building_id);
+                const building = this.data.buildings.find(
+                    (b) => b.id === this.building_id,
+                );
                 if (building) {
                     this.site_id = building.site_id;
                 }
@@ -767,14 +938,20 @@ export function registerAlpineComponents(Alpine) {
         },
         onCustomerChange() {
             if (this.foreign_customer_id != null) {
-                const fc = (this.data.foreignCustomers ?? []).find((f) => f.id === this.foreign_customer_id);
+                const fc = (this.data.foreignCustomers ?? []).find(
+                    (f) => f.id === this.foreign_customer_id,
+                );
                 if (!fc || fc.customer_id !== this.customer_id) {
                     this.foreign_customer_id = null;
                 }
             }
             if (this.site_id != null) {
                 const site = this.data.sites.find((s) => s.id === this.site_id);
-                if (!site || (site.customer_id != null && site.customer_id !== this.customer_id)) {
+                if (
+                    !site ||
+                    (site.customer_id != null &&
+                        site.customer_id !== this.customer_id)
+                ) {
                     this.site_id = null;
                     this.building_id = null;
                     this.floor_id = null;
@@ -786,7 +963,9 @@ export function registerAlpineComponents(Alpine) {
         },
         onSiteChange() {
             if (this.building_id != null) {
-                const b = this.data.buildings.find((x) => x.id === this.building_id);
+                const b = this.data.buildings.find(
+                    (x) => x.id === this.building_id,
+                );
                 if (!b || b.site_id !== this.site_id) {
                     this.building_id = null;
                     this.floor_id = null;
@@ -834,13 +1013,29 @@ export function registerAlpineComponents(Alpine) {
             highlight: 0,
             init() {
                 const cfg = JSON.parse(this.$el.dataset.config || "{}");
-                this.all = (cfg.all ?? []).map((t) => ({ id: String(t.id ?? ""), name: String(t.name ?? ""), color: t.color ?? null }));
+                this.all = (cfg.all ?? []).map((t) => ({
+                    id: String(t.id ?? ""),
+                    name: String(t.name ?? ""),
+                    color: t.color ?? null,
+                }));
                 byId = new Map(this.all.map((t) => [t.id, t]));
                 this.recentIds = (cfg.recentIds ?? []).map(String);
                 this.quickLimit = cfg.quickLimit ?? 8;
                 this.allowCreate = cfg.allowCreate !== false;
-                const initialExisting = (cfg.selectedIds ?? []).map((id) => byId.get(String(id))).filter(Boolean).map((t) => ({ ...t, isNew: false, key: "e" + t.id }));
-                const initialNew = (cfg.initialNew ?? []).map((n) => String(n).trim()).filter(Boolean).map((name) => ({ id: null, name, color: null, isNew: true, key: "n" + newKey++ }));
+                const initialExisting = (cfg.selectedIds ?? [])
+                    .map((id) => byId.get(String(id)))
+                    .filter(Boolean)
+                    .map((t) => ({ ...t, isNew: false, key: "e" + t.id }));
+                const initialNew = (cfg.initialNew ?? [])
+                    .map((n) => String(n).trim())
+                    .filter(Boolean)
+                    .map((name) => ({
+                        id: null,
+                        name,
+                        color: null,
+                        isNew: true,
+                        key: "n" + newKey++,
+                    }));
                 this.selected = [...initialExisting, ...initialNew];
             },
             get existingIds() {
@@ -854,20 +1049,31 @@ export function registerAlpineComponents(Alpine) {
             },
             get selectedKeyset() {
                 return {
-                    ids: new Set(this.selected.filter((t) => !t.isNew).map((t) => t.id)),
-                    names: new Set(this.selected.map((t) => t.name.toLowerCase())),
+                    ids: new Set(
+                        this.selected.filter((t) => !t.isNew).map((t) => t.id),
+                    ),
+                    names: new Set(
+                        this.selected.map((t) => t.name.toLowerCase()),
+                    ),
                 };
             },
             get quickPicks() {
                 const ids = this.selectedKeyset.ids;
-                const ordered = this.recentIds.length ? this.recentIds.map((id) => byId.get(id)).filter(Boolean) : this.all;
-                return ordered.filter((t) => !ids.has(t.id)).slice(0, this.quickLimit);
+                const ordered = this.recentIds.length
+                    ? this.recentIds.map((id) => byId.get(id)).filter(Boolean)
+                    : this.all;
+                return ordered
+                    .filter((t) => !ids.has(t.id))
+                    .slice(0, this.quickLimit);
             },
             get filtered() {
                 const ids = this.selectedKeyset.ids;
                 const q = this.query.trim().toLowerCase();
                 const pool = this.all.filter((t) => !ids.has(t.id));
-                const matches = q === "" ? pool : pool.filter((t) => t.name.toLowerCase().includes(q));
+                const matches =
+                    q === ""
+                        ? pool
+                        : pool.filter((t) => t.name.toLowerCase().includes(q));
                 return matches.slice(0, 8);
             },
             get canCreate() {
@@ -892,7 +1098,9 @@ export function registerAlpineComponents(Alpine) {
                 return this.quickPicks.length > 0;
             },
             get showMenu() {
-                return this.open && (this.filtered.length > 0 || this.canCreate);
+                return (
+                    this.open && (this.filtered.length > 0 || this.canCreate)
+                );
             },
             get queryTrimmed() {
                 return this.query.trim();
@@ -901,7 +1109,13 @@ export function registerAlpineComponents(Alpine) {
                 return tag.isNew ? "badge-success" : "badge-primary";
             },
             chipStyle(tag) {
-                return tag.color ? "background-color:" + tag.color + ";border-color:" + tag.color + ";color:#fff" : "";
+                return tag.color
+                    ? "background-color:" +
+                          tag.color +
+                          ";border-color:" +
+                          tag.color +
+                          ";color:#fff"
+                    : "";
             },
             dotStyle(tag) {
                 return "background:" + tag.color;
@@ -939,7 +1153,9 @@ export function registerAlpineComponents(Alpine) {
                     return;
                 }
                 const ql = name.toLowerCase();
-                const existing = this.all.find((t) => t.name.toLowerCase() === ql);
+                const existing = this.all.find(
+                    (t) => t.name.toLowerCase() === ql,
+                );
                 if (existing) {
                     this.addExisting(existing);
                     return;
@@ -948,7 +1164,13 @@ export function registerAlpineComponents(Alpine) {
                     this.resetInput();
                     return;
                 }
-                this.selected.push({ id: null, name, color: null, isNew: true, key: "n" + newKey++ });
+                this.selected.push({
+                    id: null,
+                    name,
+                    color: null,
+                    isNew: true,
+                    key: "n" + newKey++,
+                });
                 this.resetInput();
             },
             remove(item) {
@@ -956,7 +1178,11 @@ export function registerAlpineComponents(Alpine) {
             },
             enterPressed() {
                 const list = this.filtered;
-                if (list.length && this.highlight >= 0 && this.highlight < list.length) {
+                if (
+                    list.length &&
+                    this.highlight >= 0 &&
+                    this.highlight < list.length
+                ) {
                     this.addExisting(list[this.highlight]);
                 } else if (this.canCreate) {
                     this.createNew();
@@ -1004,7 +1230,10 @@ export function registerAlpineComponents(Alpine) {
             if (!c) {
                 return;
             }
-            this.pad = new SignaturePadClass(c, { penColor: "#111", backgroundColor: "rgba(255,255,255,0)" });
+            this.pad = new SignaturePadClass(c, {
+                penColor: "#111",
+                backgroundColor: "rgba(255,255,255,0)",
+            });
             this.pad.addEventListener("endStroke", () => {
                 this.isEmpty = this.pad.isEmpty();
                 if (this.$refs.sigInput) {
@@ -1108,14 +1337,18 @@ export function registerAlpineComponents(Alpine) {
         conditions: {},
         init() {
             this.conditions = JSON.parse(this.$el.dataset.conditions || "{}");
-            this.vals = Object.assign({}, JSON.parse(this.$el.dataset.initial || "{}"));
+            this.vals = Object.assign(
+                {},
+                JSON.parse(this.$el.dataset.initial || "{}"),
+            );
         },
         track(e) {
             const t = e.target;
             if (!t || !t.name) return;
             const m = String(t.name).match(/^values\[([^\]]+)\]$/);
             if (!m) return;
-            this.vals[m[1]] = t.type === "checkbox" ? (t.checked ? "1" : "0") : t.value;
+            this.vals[m[1]] =
+                t.type === "checkbox" ? (t.checked ? "1" : "0") : t.value;
         },
         visible(key) {
             const c = this.conditions[key];
@@ -1144,7 +1377,9 @@ export function registerAlpineComponents(Alpine) {
     Alpine.data("reminderOffsets", () => ({
         items: [],
         init() {
-            this.items = JSON.parse(this.$el.dataset.items || "[]").map((v) => ({ value: v }));
+            this.items = JSON.parse(this.$el.dataset.items || "[]").map(
+                (v) => ({ value: v }),
+            );
         },
         add() {
             this.items.push({ value: 60 });
@@ -1176,7 +1411,10 @@ export function registerAlpineComponents(Alpine) {
         run() {
             this.testing = true;
             this.result = null;
-            fetch(url, { method: "POST", headers: { "X-CSRF-TOKEN": csrf, Accept: "application/json" } })
+            fetch(url, {
+                method: "POST",
+                headers: { "X-CSRF-TOKEN": csrf, Accept: "application/json" },
+            })
                 .then((r) => r.json())
                 .then((d) => {
                     this.result = d;
@@ -1221,12 +1459,27 @@ export function registerAlpineComponents(Alpine) {
             for (const k in this.colors) {
                 s += "--color-" + k + ":" + this.colors[k] + ";";
             }
-            s += "--color-base-content:" + this.content(this.colors["base-100"]) + ";";
-            ["primary", "secondary", "accent", "neutral", "info", "success", "warning", "error"].forEach(
-                (k) => {
-                    s += "--color-" + k + "-content:" + this.content(this.colors[k]) + ";";
-                },
-            );
+            s +=
+                "--color-base-content:" +
+                this.content(this.colors["base-100"]) +
+                ";";
+            [
+                "primary",
+                "secondary",
+                "accent",
+                "neutral",
+                "info",
+                "success",
+                "warning",
+                "error",
+            ].forEach((k) => {
+                s +=
+                    "--color-" +
+                    k +
+                    "-content:" +
+                    this.content(this.colors[k]) +
+                    ";";
+            });
             return s;
         },
     }));
@@ -1251,7 +1504,10 @@ export function registerAlpineComponents(Alpine) {
             }
             // Änderungen INNERHALB der Vorschau (Ausschluss-Checkboxen) dürfen
             // keinen Reload auslösen — sonst verlöre die Auswahl ihren Stand.
-            if (event.target && event.target.closest("[data-invoice-preview]")) {
+            if (
+                event.target &&
+                event.target.closest("[data-invoice-preview]")
+            ) {
                 return;
             }
             this.schedulePreview();
@@ -1274,7 +1530,13 @@ export function registerAlpineComponents(Alpine) {
             }
             const fields = new FormData(form);
             const params = new URLSearchParams();
-            ["customer_id", "project_id", "foreign_customer_id", "from", "to"].forEach((name) => {
+            [
+                "customer_id",
+                "project_id",
+                "foreign_customer_id",
+                "from",
+                "to",
+            ].forEach((name) => {
                 const value = fields.get(name);
                 if (value) params.set(name, String(value));
             });
@@ -1374,7 +1636,10 @@ export function registerAlpineComponents(Alpine) {
             return this.selected.length > 0;
         },
         allSelected() {
-            return this.pairs.length > 0 && this.selected.length === this.pairs.length;
+            return (
+                this.pairs.length > 0 &&
+                this.selected.length === this.pairs.length
+            );
         },
         toggleAll() {
             this.selected = this.allSelected() ? [] : [...this.pairs];
@@ -1411,7 +1676,9 @@ export function registerAlpineComponents(Alpine) {
         // Ohne Fremdkunden-Wahl nur firmendirekte Projekte (fc = null).
         get projects() {
             const fc = this.foreign === "" ? null : this.foreign;
-            return (this.projectMap[this.customer] ?? []).filter((p) => (p.fc ?? null) === fc);
+            return (this.projectMap[this.customer] ?? []).filter(
+                (p) => (p.fc ?? null) === fc,
+            );
         },
         get noCustomer() {
             return this.customer === "";
@@ -1444,8 +1711,13 @@ export function registerAlpineComponents(Alpine) {
             const fc = ds.suggestForeign ?? "";
             this.applyPreset(sqid, fc);
             this.$refs.list?.querySelectorAll("tr").forEach((tr) => {
-                const cb = tr.querySelector('input[type=checkbox][name="pending_ids[]"]');
-                if (cb) cb.checked = tr.dataset.suggestCustomer === sqid && (tr.dataset.suggestForeign ?? "") === fc;
+                const cb = tr.querySelector(
+                    'input[type=checkbox][name="pending_ids[]"]',
+                );
+                if (cb)
+                    cb.checked =
+                        tr.dataset.suggestCustomer === sqid &&
+                        (tr.dataset.suggestForeign ?? "") === fc;
             });
         },
     }));
@@ -1462,9 +1734,11 @@ export function registerAlpineComponents(Alpine) {
             // $root statt $el: in Direktiven zeigt $el auf den Klick-Button.
             const root = this.$root;
             const s = this.suggest;
-            const tabs = root.querySelectorAll('input[type=radio].tab');
+            const tabs = root.querySelectorAll("input[type=radio].tab");
             if (s.shared) {
-                root.querySelectorAll('input[type=checkbox][name="shared_remote"]').forEach((cb) => (cb.checked = true));
+                root.querySelectorAll(
+                    'input[type=checkbox][name="shared_remote"]',
+                ).forEach((cb) => (cb.checked = true));
             }
             if (s.asset) {
                 const sel = root.querySelector('select[name="asset_id"]');
@@ -1477,15 +1751,20 @@ export function registerAlpineComponents(Alpine) {
                 // Kunde + Endkunde über die remoteAssign-Komponente des
                 // „Neues Gerät"-Formulars setzen (kaskadierende Selects).
                 const form = root.querySelector('form[x-data="remoteAssign"]');
-                const data = form && window.Alpine ? window.Alpine.$data(form) : null;
+                const data =
+                    form && window.Alpine ? window.Alpine.$data(form) : null;
                 if (data && typeof data.applyPreset === "function") {
                     data.applyPreset(s.customer, s.foreign || "");
                 }
                 tabs[1]?.click();
             }
             if (s.matchcode) {
-                root.querySelectorAll('input[name="matchcode"]').forEach((inp) => (inp.value = s.matchcode));
-                root.querySelectorAll('input[name="matchcode_scope"]').forEach((inp) => (inp.value = s.matchcodeScope || "customer"));
+                root.querySelectorAll('input[name="matchcode"]').forEach(
+                    (inp) => (inp.value = s.matchcode),
+                );
+                root.querySelectorAll('input[name="matchcode_scope"]').forEach(
+                    (inp) => (inp.value = s.matchcodeScope || "customer"),
+                );
             }
         },
     }));
