@@ -111,6 +111,134 @@
             @endif
         </div>
 
+        {{-- Kontakt-Push (Feature 102, Schnitt D) --}}
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('msgraph_contacts.heading') }}</h2>
+                @if ($contactConnection && $contactConnection->isActive())
+                    <span class="badge badge-success badge-sm">{{ __('msgraph_contacts.badge_connected') }}</span>
+                @elseif ($contactConnection)
+                    <span class="badge badge-ghost badge-sm">{{ __('msgraph_contacts.badge_inactive') }}</span>
+                @endif
+            </div>
+            <p class="text-sm text-base-content/60">{{ __('msgraph_contacts.intro') }}</p>
+
+            @if ($contactConnection && $contactConnection->isActive())
+                @if ($contactConnection->account_label)
+                    <p class="text-sm">{{ __('msgraph_contacts.account') }}: <span class="font-mono">{{ $contactConnection->account_label }}</span></p>
+                @endif
+                @if ($contactConnection->last_error)
+                    <div role="alert" class="alert alert-warning text-sm">
+                        <span>{{ $contactConnection->last_error }} <span class="text-base-content/60">({{ $contactConnection->last_error_at?->ftime() }})</span></span>
+                    </div>
+                @endif
+                <form method="POST" action="{{ route('admin.msgraph.contacts.disconnect') }}">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-ghost">{{ __('msgraph_contacts.disconnect') }}</button>
+                </form>
+            @elseif ($configured)
+                <form method="POST" action="{{ route('admin.msgraph.contacts.oauth.start') }}">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-primary">{{ __('msgraph_contacts.connect') }}</button>
+                </form>
+            @endif
+        </div>
+
+        {{-- To-Do-Sync (Feature 102, Schnitt E) --}}
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('msgraph_tasks.heading') }}</h2>
+                @if ($taskConnection && $taskConnection->isActive())
+                    <span class="badge badge-success badge-sm">{{ __('msgraph_tasks.badge_connected') }}</span>
+                @elseif ($taskConnection)
+                    <span class="badge badge-ghost badge-sm">{{ __('msgraph_tasks.badge_inactive') }}</span>
+                @endif
+            </div>
+            <p class="text-sm text-base-content/60">{{ __('msgraph_tasks.intro') }}</p>
+
+            @if ($taskConnection && $taskConnection->isActive())
+                @if ($taskConnection->account_label)
+                    <p class="text-sm">{{ __('msgraph_tasks.account') }}: <span class="font-mono">{{ $taskConnection->account_label }}</span></p>
+                @endif
+
+                {{-- Zuordnungen --}}
+                @if ($taskLinks->isNotEmpty())
+                    <x-table>
+                        <x-slot:head>
+                            <tr>
+                                <th>{{ __('msgraph_tasks.link.list') }}</th>
+                                <th>{{ __('msgraph_tasks.link.target') }}</th>
+                                <th>{{ __('msgraph_tasks.link.mode') }}</th>
+                                <th></th>
+                            </tr>
+                        </x-slot:head>
+                        @foreach ($taskLinks as $link)
+                            <tr>
+                                <td>{{ $link->todo_list_name ?? $link->todo_list_id }}</td>
+                                <td>{{ $link->target_kind === 'project' ? ($link->project?->name ?? '—') : __('msgraph_tasks.link.global') }}</td>
+                                <td>{{ __('msgraph_tasks.mode.' . $link->sync_mode) }}</td>
+                                <td class="text-right">
+                                    <x-action-form :action="route('admin.msgraph.tasks.links.destroy', $link)" method="DELETE"
+                                          :confirm="__('msgraph_tasks.link.remove_confirm')"
+                                          :confirm-label="__('msgraph_tasks.link.remove')">
+                                        <x-icon-btn icon="link_off" tone="error" size="xs" type="submit" :label="__('msgraph_tasks.link.remove')" />
+                                    </x-action-form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </x-table>
+                @endif
+
+                {{-- Neue Zuordnung --}}
+                <form method="POST" action="{{ route('admin.msgraph.tasks.links.store') }}" class="flex flex-wrap items-end gap-2">
+                    @csrf
+                    <label class="form-control">
+                        <span class="label-text">{{ __('msgraph_tasks.link.list') }}</span>
+                        <select name="todo_list_id" class="select select-bordered select-sm w-56" required>
+                            @foreach ($todoLists as $list)
+                                <option value="{{ $list['id'] }}">{{ $list['name'] }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                    <label class="form-control">
+                        <span class="label-text">{{ __('msgraph_tasks.link.target') }}</span>
+                        <select name="target_kind" class="select select-bordered select-sm">
+                            <option value="project">{{ __('msgraph_tasks.link.project') }}</option>
+                            <option value="global_kanban">{{ __('msgraph_tasks.link.global') }}</option>
+                        </select>
+                    </label>
+                    <label class="form-control">
+                        <span class="label-text">{{ __('msgraph_tasks.link.project') }}</span>
+                        <select name="project_id" class="select select-bordered select-sm w-48">
+                            <option value="">—</option>
+                            @foreach ($projects as $project)
+                                <option value="{{ $project->id }}">{{ $project->name }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                    <label class="form-control">
+                        <span class="label-text">{{ __('msgraph_tasks.link.mode') }}</span>
+                        <select name="sync_mode" class="select select-bordered select-sm">
+                            <option value="bidirectional">{{ __('msgraph_tasks.mode.bidirectional') }}</option>
+                            <option value="todo_to_workdiary">{{ __('msgraph_tasks.mode.todo_to_workdiary') }}</option>
+                            <option value="workdiary_to_todo">{{ __('msgraph_tasks.mode.workdiary_to_todo') }}</option>
+                        </select>
+                    </label>
+                    <x-icon-btn icon="add_link" tone="primary" size="sm" type="submit" show-label>{{ __('msgraph_tasks.link.add') }}</x-icon-btn>
+                </form>
+
+                <form method="POST" action="{{ route('admin.msgraph.tasks.disconnect') }}">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-ghost">{{ __('msgraph_tasks.disconnect') }}</button>
+                </form>
+            @elseif ($configured)
+                <form method="POST" action="{{ route('admin.msgraph.tasks.oauth.start') }}">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-primary">{{ __('msgraph_tasks.connect') }}</button>
+                </form>
+            @endif
+        </div>
+
         {{-- Ziel-Kalender --}}
         @if ($connection && $connection->isActive())
             <form method="POST" action="{{ route('admin.msgraph.calendar.store') }}"
@@ -134,6 +262,13 @@
                     <input type="checkbox" name="teams_meetings" value="1" class="checkbox checkbox-sm"
                            @checked(old('teams_meetings', $connection->teams_meetings))>
                     {{ __('msgraph.calendar.teams_meetings') }}
+                </label>
+
+                <label class="flex items-center gap-2 text-sm" title="{{ __('msgraph.calendar.two_way_hint') }}">
+                    <input type="hidden" name="two_way" value="0">
+                    <input type="checkbox" name="two_way" value="1" class="checkbox checkbox-sm"
+                           @checked(old('two_way', $connection->two_way))>
+                    {{ __('msgraph.calendar.two_way') }}
                 </label>
 
                 <div class="flex justify-end">

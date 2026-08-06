@@ -43,6 +43,14 @@
         @endif
     </x-entity-header>
 
+    {{-- Plugin-Aktionen (View-Slot, z. B. Outlook-Kontakt-Push, Feature 102 D) --}}
+    @php
+        $pluginActions = app(\App\Plugins\PluginManager::class)->renderSlot('customer-show.actions', $customer);
+    @endphp
+    @if ($pluginActions !== '')
+        <div class="mb-3 flex flex-wrap items-center gap-2">{!! $pluginActions !!}</div>
+    @endif
+
     <x-identifier-issues :issues="$identifierIssues ?? []" />
 
     {{-- KPI — zeitbezogene Werte folgen dem globalen Header-Zeitraum (AGENTS.md §8);

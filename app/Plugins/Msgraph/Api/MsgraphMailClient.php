@@ -28,18 +28,30 @@ use Throwable;
  * {@see \App\Plugins\Msgraph\Mail\MsgraphMailTransport}; dieser Client bleibt
  * reiner HTTP-Zugriff.
  */
-class MsgraphMailClient {
+class MsgraphMailClient implements GraphSubscriptionClient {
+    use Concerns\ManagesGraphSubscriptions;
+
+    /** Chunk-Größe der Anhangs-Upload-Session: Vielfaches von 320 KiB (Graph-Vorgabe). */
+    public const UPLOAD_CHUNK_SIZE = 10 * 320 * 1024;
+
     private PluginApiClient $api;
+
+    /** Auth-loser Client für Chunk-PUTs an die selbst-autorisierende Session-URL. */
+    private PluginApiClient $uploadApi;
 
     private string $base;
 
     public function __construct(private readonly MsgraphMailConnection $connection) {
         $this->base = MsgraphConfig::resolve()['api_base'];
         $this->api = app(PluginHttpFactory::class)->client(MsgraphPlugin::ID, $this->base);
+        $this->uploadApi = app(PluginHttpFactory::class)->client(MsgraphPlugin::ID, $this->base);
 
-        // Grant nur bei vorhandener Installation-Konfiguration — ohne ihn
-        // bleibt das Bearer-Token nutzbar, nur ohne Refresh-Möglichkeit.
-        $grant = MsgraphConfig::isConfigured() ? app(MsgraphMailOAuth::class)->grant() : null;
+        // Grant nur bei vorhandener Konfiguration — ohne ihn bleibt das
+        // Bearer-Token nutzbar, nur ohne Refresh-Möglichkeit. Org der
+        // Verbindung explizit (Variante B: per-Org-App, queue-sicher —
+        // der Mail-Transport läuft im Worker ohne Org-Kontext).
+        $orgId = (int) $connection->organization_id;
+        $grant = MsgraphConfig::isConfigured($orgId) ? app(MsgraphMailOAuth::class)->grantFor($orgId) : null;
         $this->api->setAuthentication(new OAuth2BearerAuthentication(new ConnectionTokenStore($this->connection), $grant));
     }
 
@@ -58,6 +70,73 @@ class MsgraphMailClient {
         if (! $response->successful()) {
             // Nur Statuscode — nie Payload/Empfänger/Token in Fehlermeldungen.
             throw new RuntimeException('Graph sendMail fehlgeschlagen (HTTP ' . $response->status() . ').');
+        }
+    }
+
+    // ── Große Anhänge (> 3 MiB): Draft + Upload-Session (braucht Mail.ReadWrite) ──
+
+    /**
+     * Legt einen Nachrichten-Entwurf an (für den Upload-Session-Versandweg).
+     *
+     * @param  array<string, mixed>  $message
+     */
+    public function createDraft(array $message): string {
+        $response = $this->api->postJson($this->base . '/me/messages', $message);
+        if (! $response->successful()) {
+            throw new RuntimeException('Graph POST /me/messages (Draft) fehlgeschlagen (HTTP ' . $response->status() . ') — großer Anhang braucht den Scope Mail.ReadWrite.');
+        }
+
+        $id = $response->json('id');
+        if (! is_string($id) || $id === '') {
+            throw new RuntimeException('Graph-Draft ohne ID angelegt.');
+        }
+
+        return $id;
+    }
+
+    /**
+     * Lädt einen großen Anhang über eine Upload-Session an den Draft
+     * (Chunk-PUTs in 320-KiB-Vielfachen, laut Graph-Doku OHNE
+     * Authorization-Header — die Session-URL ist selbst-autorisierend).
+     */
+    public function uploadAttachment(string $messageId, string $name, string $contentType, string $bytes): void {
+        $session = $this->api->postJson($this->base . '/me/messages/' . rawurlencode($messageId) . '/attachments/createUploadSession', [
+            'AttachmentItem' => [
+                'attachmentType' => 'file',
+                'name' => $name,
+                'contentType' => $contentType,
+                'size' => strlen($bytes),
+            ],
+        ]);
+        $uploadUrl = (string) $session->json('uploadUrl', '');
+        if (! $session->successful() || $uploadUrl === '') {
+            throw new RuntimeException('Graph createUploadSession (Anhang) fehlgeschlagen (HTTP ' . $session->status() . ').');
+        }
+
+        $total = strlen($bytes);
+        for ($offset = 0; $offset < $total; $offset += self::UPLOAD_CHUNK_SIZE) {
+            $chunk = substr($bytes, $offset, self::UPLOAD_CHUNK_SIZE);
+            $last = $offset + strlen($chunk) - 1;
+
+            $response = $this->uploadApi->requestResponse('put', $uploadUrl, [
+                'headers' => [
+                    'Content-Length' => (string) strlen($chunk),
+                    'Content-Range' => sprintf('bytes %d-%d/%d', $offset, $last, $total),
+                ],
+                'body' => $chunk,
+            ]);
+            // Zwischenchunks: 200/202; letzter Chunk: 201 mit Attachment.
+            if (! $response->successful()) {
+                throw new RuntimeException('Graph-Anhangs-Chunk fehlgeschlagen (HTTP ' . $response->status() . ').');
+            }
+        }
+    }
+
+    /** Versendet den Draft (`POST /me/messages/{id}/send`, 202). */
+    public function sendDraft(string $messageId): void {
+        $response = $this->api->postJson($this->base . '/me/messages/' . rawurlencode($messageId) . '/send');
+        if (! $response->successful()) {
+            throw new RuntimeException('Graph Draft-Send fehlgeschlagen (HTTP ' . $response->status() . ').');
         }
     }
 

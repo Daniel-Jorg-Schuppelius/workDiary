@@ -38,13 +38,16 @@ class MsgraphBackupClient {
     private string $base;
 
     public function __construct(BackupTargetConnection $connection) {
-        $config = MsgraphConfig::resolve();
+        // Backupziele sind PLATTFORMWEIT — immer die Instanz-App (kein Org-Overlay).
+        $config = MsgraphConfig::resolve(MsgraphConfig::INSTANCE);
         $factory = app(PluginHttpFactory::class);
         $this->base = $config['api_base'];
         $this->api = $factory->client(MsgraphPlugin::ID, $this->base);
         $this->uploadApi = $factory->client(MsgraphPlugin::ID, $this->base);
 
-        $grant = MsgraphConfig::isConfigured() ? app(MsgraphBackupOAuth::class)->grant() : null;
+        $grant = MsgraphConfig::isConfigured(MsgraphConfig::INSTANCE)
+            ? app(MsgraphBackupOAuth::class)->grantFor(MsgraphConfig::INSTANCE)
+            : null;
         $this->api->setAuthentication(new OAuth2BearerAuthentication(new ConnectionTokenStore($connection, 'granted_scopes', scopeAsArray: true), $grant));
     }
 

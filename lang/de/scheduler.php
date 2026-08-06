@@ -116,8 +116,10 @@ return [
         'location' => ['purge_points' => 'Standort-Rohpunkte bereinigen'],
         'mail' => ['poll' => 'Mail-Eingang abrufen'],
         'msgraph' => [
+            'calendar-import' => 'Zwei-Wege-Kalender-Rückimport',
             'publish' => 'Microsoft-365-Kalender-Publish-Abgleich',
             'subscriptions' => 'Microsoft-365-Webhook-Subscriptions erneuern',
+            'todo-sync' => 'Microsoft-To-Do-Abgleich',
         ],
         'maintenance' => ['scan_due' => 'Wartungspläne auf Fälligkeit prüfen'],
         'notifications' => ['scan_deadlines' => 'Fristen prüfen und erinnern'],

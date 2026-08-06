@@ -58,9 +58,11 @@ class SharepointDriveClient implements RemoteFileGateway {
         $this->api = $factory->client(SharepointPlugin::ID, $this->base);
         $this->uploadApi = $factory->client(SharepointPlugin::ID, $this->base);
 
-        // Grant nur bei vorhandener Installation-Konfiguration — ohne ihn
-        // bleibt das Bearer-Token nutzbar, nur ohne Refresh-Möglichkeit.
-        $grant = SharepointConfig::isConfigured() ? app(SharepointOAuth::class)->grant() : null;
+        // Grant nur bei vorhandener Konfiguration — ohne ihn bleibt das
+        // Bearer-Token nutzbar, nur ohne Refresh-Möglichkeit. Org der
+        // Verbindung explizit (Variante B: per-Org-App, queue-sicher).
+        $orgId = (int) $connection->organization_id;
+        $grant = SharepointConfig::isConfigured($orgId) ? app(SharepointOAuth::class)->grantFor($orgId) : null;
         $this->api->setAuthentication(new OAuth2BearerAuthentication(new ConnectionTokenStore($this->connection), $grant));
     }
 

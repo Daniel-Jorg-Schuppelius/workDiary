@@ -38,6 +38,7 @@ class MsgraphBackupTargetController extends BackupTargetOAuthController {
     }
 
     protected function isConfigured(): bool {
-        return MsgraphConfig::isConfigured();
+        // Plattformweiter Flow — bewusst nur die Instanz-App (kein Org-Overlay).
+        return MsgraphConfig::isConfigured(MsgraphConfig::INSTANCE);
     }
 }

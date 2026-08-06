@@ -14,6 +14,42 @@ return [
     'plugin_description' => 'Publie les rendez-vous de manière idempotente dans un calendrier Microsoft 365 (Microsoft Graph, OAuth2) — publication seule, calendrier cible sélectionnable.',
     'not_configured_hint' => 'MSGRAPH_CLIENT_ID/SECRET (et MSGRAPH_TENANT si nécessaire) ne sont pas définis — la connexion nécessite d\'abord un enregistrement d\'application dans le tenant Microsoft.',
 
+    // Présence Teams sur la page de présence (Feature 102, F).
+    'presence' => [
+        'heading' => 'Équipe (statut Teams)',
+        'state' => [
+            'Available' => 'Disponible',
+            'AvailableIdle' => 'Disponible (inactif)',
+            'Busy' => 'Occupé',
+            'BusyIdle' => 'Occupé (inactif)',
+            'DoNotDisturb' => 'Ne pas déranger',
+            'Away' => 'Absent',
+            'BeRightBack' => 'De retour bientôt',
+            'Offline' => 'Hors ligne',
+            'PresenceUnknown' => 'Inconnu',
+        ],
+    ],
+    // Free/busy dans le dialogue d’événement (Feature 102, C2).
+    'availability' => [
+        'check' => 'Vérifier la disponibilité (Microsoft 365)',
+        'hint' => 'Libre/occupé des participants sélectionnés sur le créneau — sans détails des rendez-vous.',
+        'missing_input' => 'Veuillez choisir le début, la fin et au moins un participant.',
+        'no_connection' => 'Aucune connexion de calendrier Microsoft 365 active.',
+        'failed' => 'La requête de disponibilité a échoué.',
+        'free' => 'libre',
+        'busy' => 'occupé',
+        'unknown' => 'inconnu',
+    ],
+    // Enregistrement d’application par organisation (Feature 102 variante B).
+    'settings' => [
+        'client_id' => 'ID client (enregistrement d’application propre)',
+        'client_id_help' => 'Vide = l’application de l’installation. Une application Entra propre doit enregistrer les mêmes URIs de redirection.',
+        'client_secret' => 'Secret client',
+        'client_secret_help' => 'Stocké chiffré ; laisser vide pour conserver la valeur enregistrée.',
+        'tenant' => 'Tenant (ID d’annuaire)',
+        'tenant_help' => 'GUID du tenant Entra ; vide = valeur de l’application d’instance (par défaut « common »).',
+        'tenant_invalid' => 'Le tenant doit être un GUID d’annuaire (ou common/organizations/consumers).',
+    ],
     'health' => [
         'badge_ok' => 'Connecté',
         'badge_failing' => 'Injoignable',
@@ -42,6 +78,8 @@ return [
         'default' => 'Calendrier par défaut',
         'teams_meetings' => 'Créer les nouveaux événements comme réunions Teams (lien de participation)',
         'teams_meetings_hint' => 'Ne concerne que les événements nouvellement publiés — Graph ne peut pas remettre un événement existant « hors ligne ».',
+        'two_way' => 'Bidirectionnel : importer les changements externes comme propositions',
+        'two_way_hint' => 'Import delta du calendrier cible — nouveaux événements externes, modifications externes et suppressions deviennent des cas de la boîte d’intégration (jamais de création aveugle).',
     ],
 
     'flash' => [

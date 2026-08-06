@@ -35,7 +35,10 @@ class TransferStatusTest extends TestCase {
     }
 
     public function test_transferred_and_voided_are_final(): void {
-        $this->assertSame([], TransferStatus::Transferred->allowedTransitions());
+        // Storno 2026-08: transferred darf nach cancelled (gibt Zeiten frei);
+        // voided und cancelled bleiben final.
+        $this->assertSame([TransferStatus::Cancelled], TransferStatus::Transferred->allowedTransitions());
         $this->assertSame([], TransferStatus::Voided->allowedTransitions());
+        $this->assertSame([], TransferStatus::Cancelled->allowedTransitions());
     }
 }

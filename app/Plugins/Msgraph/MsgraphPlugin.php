@@ -42,10 +42,16 @@ use Throwable;
  * Dokumenteingang aus OneDrive/SharePoint über eigene, von der
  * Kalender-Verbindung getrennte {@see CloudDocumentConnection}s.
  */
-class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\DocumentIntakeSubscriptions, BackupTarget, CalendarPublisher, DocumentIntakeSource {
+class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\ContactSyncer, \App\Plugins\Contracts\DocumentIntakeSubscriptions, \App\Plugins\Contracts\SlotRenderer, \App\Plugins\Contracts\TaskSyncer, BackupTarget, CalendarPublisher, DocumentIntakeSource {
     public const ID = 'msgraph';
 
     public const SERVICE_PROVIDER = MsgraphServiceProvider::class;
+
+    /** ExternalReference-Typ des Kontakt-Pushs (Schnitt D). */
+    public const EXT_TYPE_CONTACT = 'contact';
+
+    /** ExternalReference-Typ des To-Do-Syncs (Schnitt E). */
+    public const EXT_TYPE_TODO_TASK = 'todo_task';
 
     public function name(): string {
         return 'Microsoft 365';
@@ -62,9 +68,18 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Doc
     public function capabilities(): array {
         return [
             PluginCapability::CalendarPublish,
+            PluginCapability::ContactSync,
+            PluginCapability::TaskSync,
             PluginCapability::DocumentIntake,
             PluginCapability::BackupTarget,
         ];
+    }
+
+    // ── TaskSyncer (Feature 102, Schnitt E) ─────────────────────────────
+
+    /** @return array{created: int, updated: int, unchanged: int, conflicts: int, inbox: int, failed: int} */
+    public function syncTasks(Organization $organization): array {
+        return app(\App\Plugins\Msgraph\Services\MsgraphTodoSyncService::class)->syncOrganization($organization);
     }
 
     // ── DocumentIntakeSource (Feature 080, MVP-354) ─────────────────────
@@ -83,6 +98,177 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Doc
 
     public function intakeDownload(CloudDocumentConnection $connection, IntakeItem $item): StreamInterface {
         return (new MsgraphIntakeClient($connection))->download($item);
+    }
+
+    // ── ContactSyncer (Feature 102, Schnitt D) ──────────────────────────
+
+    /**
+     * Pusht den Kunden idempotent als Outlook-Kontakt des verbundenen Kontos:
+     * bestehende {@see \App\Models\ExternalReference} ⇒ PATCH; remote gelöscht
+     * (404) ⇒ Neuanlage; sonst POST mit Immutable-ID. Keine Dubletten.
+     */
+    public function pushContact(\App\Models\Customer $customer): string {
+        $connection = \App\Models\MsgraphContactConnection::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $customer->organization_id)
+            ->first();
+        if (! $connection instanceof \App\Models\MsgraphContactConnection || ! $connection->isActive()) {
+            throw new \RuntimeException((string) __('msgraph_contacts.flash.no_connection'));
+        }
+
+        $client = new \App\Plugins\Msgraph\Api\MsgraphContactsClient($connection);
+        $payload = $this->contactPayload($customer);
+
+        $ref = \App\Models\ExternalReference::query()
+            ->withoutGlobalScopes()
+            ->where('plugin_id', self::ID)
+            ->where('external_type', self::EXT_TYPE_CONTACT)
+            ->where('referenceable_type', $customer->getMorphClass())
+            ->where('referenceable_id', $customer->getKey())
+            ->first();
+
+        try {
+            $externalId = null;
+            if ($ref instanceof \App\Models\ExternalReference && trim((string) $ref->external_id) !== '') {
+                if ($client->updateContact((string) $ref->external_id, $payload)) {
+                    $externalId = (string) $ref->external_id;
+                }
+                // 404: remote gelöscht → unten neu anlegen (Referenz wird ersetzt).
+            }
+            $externalId ??= $client->createContact($payload);
+        } catch (\Throwable $e) {
+            $connection->recordConnectionFailure(class_basename($e));
+
+            throw $e;
+        }
+
+        \App\Models\ExternalReference::query()->withoutGlobalScopes()->updateOrCreate(
+            [
+                'plugin_id' => self::ID,
+                'external_type' => self::EXT_TYPE_CONTACT,
+                'referenceable_type' => $customer->getMorphClass(),
+                'referenceable_id' => $customer->getKey(),
+            ],
+            [
+                'organization_id' => $customer->organization_id,
+                'external_id' => $externalId,
+                'synced_at' => now(),
+            ],
+        );
+
+        $connection->recordConnectionSuccess();
+        $connection->markPushed();
+
+        return $externalId;
+    }
+
+    /**
+     * Graph-`contact`-Struktur aus dem Kunden (nur belegte Felder).
+     *
+     * @return array<string, mixed>
+     */
+    private function contactPayload(\App\Models\Customer $customer): array {
+        $displayName = trim((string) ($customer->contact_name ?: $customer->name));
+
+        $payload = [
+            'displayName' => $displayName,
+            'fileAs' => (string) $customer->name,
+        ];
+        if (trim((string) $customer->company) !== '') {
+            $payload['companyName'] = trim((string) $customer->company);
+        }
+        if (trim((string) $customer->email) !== '') {
+            $payload['emailAddresses'] = [['address' => trim((string) $customer->email), 'name' => $displayName]];
+        }
+        if (trim((string) $customer->phone) !== '') {
+            $payload['businessPhones'] = [trim((string) $customer->phone)];
+        }
+        if (trim((string) $customer->mobile) !== '') {
+            $payload['mobilePhone'] = trim((string) $customer->mobile);
+        }
+        if (trim((string) $customer->homepage) !== '') {
+            $payload['businessHomePage'] = trim((string) $customer->homepage);
+        }
+
+        $address = array_filter([
+            'street' => trim((string) $customer->address_street),
+            'postalCode' => trim((string) $customer->address_zip),
+            'city' => trim((string) $customer->address_city),
+            'countryOrRegion' => trim((string) $customer->country),
+        ], static fn (string $value): bool => $value !== '');
+        if ($address !== []) {
+            $payload['businessAddress'] = $address;
+        }
+
+        return $payload;
+    }
+
+    // ── SlotRenderer: Push-Button in der Kundenakte (Schnitt D) ─────────
+
+    public function renderActions(string $slot, mixed $context = null): ?string {
+        if (! $this->isEnabled()) {
+            return null;
+        }
+
+        // F: Teams-Presence-Panel der Anwesenheitsseite (Kalender-Verbindung
+        // mit erweitertem Scope Presence.Read.All; ohne Scope still aus).
+        if ($slot === 'attendance-index.aside') {
+            $org = PluginOrgContext::currentOrNull();
+            if (! $org instanceof Organization) {
+                return null;
+            }
+            $members = \App\Models\User::query()
+                ->where('organization_id', $org->id)
+                ->whereNull('customer_id')
+                ->whereNull('deactivated_at')
+                ->orderBy('name')
+                ->limit(50)
+                ->get(['id', 'name', 'email']);
+            $presence = app(\App\Plugins\Msgraph\Services\MsgraphPresenceService::class)->presenceForUsers($org, $members);
+            if ($presence === []) {
+                return null; // keine Verbindung/kein Scope → Panel weglassen
+            }
+
+            return view('msgraph::attendance.presence', ['members' => $members, 'presence' => $presence])->render();
+        }
+
+        // C2: Free/Busy-Prüfung im Termin-Dialog (Kalender-Grant genügt).
+        if ($slot === 'event-form.aside') {
+            $org = PluginOrgContext::currentOrNull();
+            $calendar = $org instanceof Organization
+                ? MsgraphConnection::query()->where('organization_id', $org->id)->first()
+                : null;
+            if (! $calendar instanceof MsgraphConnection || ! $calendar->isActive()) {
+                return null;
+            }
+
+            return view('msgraph::events.availability')->render();
+        }
+
+        if ($slot !== 'customer-show.actions' || ! $context instanceof \App\Models\Customer) {
+            return null;
+        }
+
+        $connection = \App\Models\MsgraphContactConnection::query()
+            ->where('organization_id', $context->organization_id)
+            ->first();
+        if (! $connection instanceof \App\Models\MsgraphContactConnection || ! $connection->isActive()) {
+            return null;
+        }
+
+        $url = route('customers.msgraph.contact.push', $context);
+        $csrf = csrf_token();
+        $label = e((string) __('msgraph_contacts.push_button'));
+
+        return <<<HTML
+            <form method="POST" action="{$url}" class="inline">
+                <input type="hidden" name="_token" value="{$csrf}">
+                <button type="submit" class="btn btn-sm btn-ghost">
+                    <span class="material-symbols-outlined" aria-hidden="true">contact_page</span>
+                    <span>{$label}</span>
+                </button>
+            </form>
+        HTML;
     }
 
     // ── DocumentIntakeSubscriptions (MS365-Plan §8) ─────────────────────
@@ -178,8 +364,40 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Doc
         ];
     }
 
-    /** Keine per-Org-Secrets: Client-ID/-Secret/Tenant sind installationsweit (ENV). */
+    /**
+     * Per-Org-App-Registrierung (Feature 102 Variante B): Organisationen können
+     * eine EIGENE Entra-App hinterlegen (encrypted in `plugin_settings`);
+     * leer = Instanz-App aus der ENV. Endpunkte/Scopes bleiben BEWUSST
+     * config-only ({@see MsgraphConfig}). Redirect-URIs der eigenen App müssen
+     * identisch zur Instanz-App registriert sein (vier Callbacks).
+     */
     public function settingsSchema(): array {
+        return [
+            \App\Plugins\Contracts\SettingsField::text('client_id', __('msgraph.settings.client_id'),
+                help: __('msgraph.settings.client_id_help'))->toArray(),
+            \App\Plugins\Contracts\SettingsField::password('client_secret', __('msgraph.settings.client_secret'),
+                help: __('msgraph.settings.client_secret_help'))->toArray(),
+            \App\Plugins\Contracts\SettingsField::text('tenant', __('msgraph.settings.tenant'),
+                help: __('msgraph.settings.tenant_help'))->toArray(),
+        ];
+    }
+
+    /**
+     * Tenant-Format prüfen (GUID oder Multi-Tenant-Endpunkt); leere Felder
+     * sind gültig (Fallback auf die Instanz-App).
+     *
+     * @param  array<string, mixed>  $settings
+     * @return array<string, string>
+     */
+    public function validateSettings(array $settings): array {
+        $tenant = trim((string) ($settings['tenant'] ?? ''));
+        if ($tenant !== ''
+            && ! in_array(strtolower($tenant), ['common', 'organizations', 'consumers'], true)
+            && preg_match('/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/', $tenant) !== 1
+        ) {
+            return ['tenant' => (string) __('msgraph.settings.tenant_invalid')];
+        }
+
         return [];
     }
 
@@ -234,8 +452,9 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Doc
                 \App\Enums\CloudIntake\CloudIntakeConnectionStatus::Blocked,
             ])->count();
 
+        // Backupziele sind PLATTFORMWEIT (bewusst ohne organization_id) —
+        // ein blockiertes Microsoft-Ziel betrifft alle Organisationen.
         $backup = BackupTargetConnection::query()
-            ->where('organization_id', $org->id)
             ->where('provider', \App\Enums\Backup\BackupProvider::Microsoft)
             ->whereIn('status', [
                 \App\Enums\Backup\BackupTargetStatus::ReauthRequired,

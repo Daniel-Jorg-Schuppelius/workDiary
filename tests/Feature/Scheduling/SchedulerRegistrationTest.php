@@ -86,6 +86,10 @@ class SchedulerRegistrationTest extends TestCase {
         'google-calendar:publish' => ['55 4 * * *', true, true],
         // MS365-Plan §8: Graph-Subscription-Anlage/-Renewal (Sender-Seite).
         'msgraph:subscriptions' => ['20 4 * * *', true, true],
+        // Feature 102 Schnitt E: Microsoft-To-Do-Abgleich (Todoist-Muster).
+        'msgraph:todo-sync' => ['0 * * * *', true, true],
+        // Feature 102 C3: Zwei-Wege-Kalender-Rückimport (Opt-in two_way).
+        'msgraph:calendar-import' => ['0 * * * *', true, true],
         'openproject:push' => ['0 * * * *', true, true],
         'workdiary:backup:check-restore' => ['0 5 * * *', true, true],
         'maintenance:scan-due' => ['30 5 * * *', true, true],

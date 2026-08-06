@@ -57,8 +57,10 @@ final class WebhookTenantTest extends TestCase {
      */
     private const INBOUND_ENDPOINTS = [
         'api/webhooks/dropbox',
+        'api/webhooks/etsy/{token}',
         'api/webhooks/google-drive',
         'api/webhooks/msgraph-intake',
+        'api/webhooks/msgraph',
         'api/webhooks/github/{setting}',
         'api/webhooks/gitlab/{setting}',
         'api/webhooks/zammad/{connection}',

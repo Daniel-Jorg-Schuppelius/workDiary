@@ -30,6 +30,31 @@ Route::middleware(['web', 'auth'])->group(function (): void {
     Route::post('admin/msgraph/publish', [MsgraphAdminController::class, 'publish'])->name('admin.msgraph.publish');
 });
 
+// ── Kontakt-Push (Feature 102, Schnitt D) ───────────────────────────────
+// Fünfter Grant (Contacts.ReadWrite); Push-Button sitzt in der Kundenakte
+// (Slot 'customer-show.actions'), die Verbindung im Msgraph-Admin-Panel.
+Route::middleware(['web', 'auth'])->group(function (): void {
+    Route::post('admin/msgraph/contacts/oauth/start', [\App\Plugins\Msgraph\Http\Controllers\MsgraphContactsController::class, 'startOAuth'])->name('admin.msgraph.contacts.oauth.start');
+    Route::get('admin/msgraph/contacts/oauth/callback', [\App\Plugins\Msgraph\Http\Controllers\MsgraphContactsController::class, 'oauthCallback'])->name('admin.msgraph.contacts.oauth.callback');
+    Route::post('admin/msgraph/contacts/disconnect', [\App\Plugins\Msgraph\Http\Controllers\MsgraphContactsController::class, 'disconnect'])->name('admin.msgraph.contacts.disconnect');
+    Route::post('customers/{customer}/msgraph/contact', [\App\Plugins\Msgraph\Http\Controllers\MsgraphContactsController::class, 'push'])->name('customers.msgraph.contact.push');
+});
+
+// ── Free/Busy im Termin-Dialog (Feature 102, C2) ────────────────────────
+Route::middleware(['web', 'auth'])
+    ->get('msgraph/availability', \App\Plugins\Msgraph\Http\Controllers\MsgraphAvailabilityController::class)
+    ->name('msgraph.availability');
+
+// ── To-Do-Sync (Feature 102, Schnitt E) ─────────────────────────────────
+// Sechster Grant (Tasks.ReadWrite); Listen-Zuordnungen im Msgraph-Admin-Panel.
+Route::middleware(['web', 'auth'])->group(function (): void {
+    Route::post('admin/msgraph/tasks/oauth/start', [\App\Plugins\Msgraph\Http\Controllers\MsgraphTasksController::class, 'startOAuth'])->name('admin.msgraph.tasks.oauth.start');
+    Route::get('admin/msgraph/tasks/oauth/callback', [\App\Plugins\Msgraph\Http\Controllers\MsgraphTasksController::class, 'oauthCallback'])->name('admin.msgraph.tasks.oauth.callback');
+    Route::post('admin/msgraph/tasks/disconnect', [\App\Plugins\Msgraph\Http\Controllers\MsgraphTasksController::class, 'disconnect'])->name('admin.msgraph.tasks.disconnect');
+    Route::post('admin/msgraph/tasks/links', [\App\Plugins\Msgraph\Http\Controllers\MsgraphTasksController::class, 'storeLink'])->name('admin.msgraph.tasks.links.store');
+    Route::delete('admin/msgraph/tasks/links/{link}', [\App\Plugins\Msgraph\Http\Controllers\MsgraphTasksController::class, 'destroyLink'])->name('admin.msgraph.tasks.links.destroy');
+});
+
 // ── Graph-Mail-Versand (Feature 102) ────────────────────────────────────
 // Eigener Grant (Mail.Send), getrennt von Kalender/Intake/Backup; die
 // Verbindung wird im Msgraph-Admin-Panel verwaltet.
@@ -52,6 +77,12 @@ Route::middleware(['web', 'auth'])->group(function (): void {
 Route::middleware(['api', 'throttle:webhook-ingest'])
     ->post('api/webhooks/msgraph-intake', \App\Plugins\Msgraph\Http\Controllers\MsgraphIntakeWebhookController::class)
     ->name('api.webhooks.msgraph-intake');
+
+// Generischer Graph-Webhook (Feature 102, Folgeausbau): Zwei-Wege-Kalender,
+// To-Do-Listen, Graph-Postfächer — Zuordnung über subscriptionId+clientState.
+Route::middleware(['api', 'throttle:webhook-ingest'])
+    ->post('api/webhooks/msgraph', \App\Plugins\Msgraph\Http\Controllers\MsgraphChangeWebhookController::class)
+    ->name('api.webhooks.msgraph');
 
 // ── Cloud-Backupziel (Feature 017 Phase 32, MVP-363) ────────────────────
 // Systemweiter OAuth-Flow (Plattform-Admin, Policy im Controller);

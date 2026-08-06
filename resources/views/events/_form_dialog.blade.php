@@ -235,6 +235,9 @@
         </div>
     </x-form-group>
 
+    {{-- Plugin-Erweiterungen (View-Slot, z. B. M365-Free/Busy, Feature 102 C2) --}}
+    {!! app(\App\Plugins\PluginManager::class)->renderSlot('event-form.aside', $event) !!}
+
     {{-- Teilnehmer -------------------------------------------------------- --}}
     <x-form-group :legend="__('Teilnehmer')" icon="group" tone="info">
         <div x-data="repeater"

@@ -30,7 +30,9 @@ use RuntimeException;
  * Tombstones sind Graph-Item-IDs (deleted-Facette); der Runner matcht
  * id-zuerst, `path:`-Tombstones (Dropbox) über den Quellpfad.
  */
-class MsgraphIntakeClient {
+class MsgraphIntakeClient implements GraphSubscriptionClient {
+    use Concerns\ManagesGraphSubscriptions;
+
     private \App\Plugins\Support\PluginApiClient $api;
 
     private string $base;
@@ -40,7 +42,9 @@ class MsgraphIntakeClient {
         $this->base = $config['api_base'];
         $this->api = app(PluginHttpFactory::class)->client(MsgraphPlugin::ID, $this->base);
 
-        $grant = MsgraphConfig::isConfigured() ? app(MsgraphIntakeOAuth::class)->grant() : null;
+        // Org der Verbindung explizit (Variante B: per-Org-App, queue-sicher).
+        $orgId = (int) $connection->organization_id;
+        $grant = MsgraphConfig::isConfigured($orgId) ? app(MsgraphIntakeOAuth::class)->grantFor($orgId) : null;
         $this->api->setAuthentication(new OAuth2BearerAuthentication(new ConnectionTokenStore($connection, 'granted_scopes', scopeAsArray: true), $grant));
     }
 
@@ -156,56 +160,9 @@ class MsgraphIntakeClient {
         return $containers;
     }
 
-    // ── Change-Notification-Subscriptions (MS365-Plan §8) ───────────────
-    // Der Webhook-EMPFÄNGER existierte seit MVP-354 — hier die Sender-Seite:
-    // Anlage/Erneuerung/Abmeldung der Graph-Subscription auf dem Drive-Root.
-    // driveItem-Subscriptions: nur changeType=updated, Laufzeit < 30 Tage.
-
-    /**
-     * Legt die Subscription an; Rückgabe = Graph-ID + Ablauf.
-     *
-     * @return array{id: string, expires_at: string}
-     */
-    public function createSubscription(string $notificationUrl, string $resource, string $clientState, \DateTimeInterface $expiresAt): array {
-        $response = $this->api->postJson($this->base . '/subscriptions', [
-            'changeType' => 'updated',
-            'notificationUrl' => $notificationUrl,
-            'resource' => $resource,
-            'clientState' => $clientState,
-            'expirationDateTime' => $expiresAt->format('Y-m-d\TH:i:s\Z'),
-        ]);
-        if (! $response->successful()) {
-            throw new RuntimeException('Graph POST /subscriptions fehlgeschlagen (HTTP ' . $response->status() . ').');
-        }
-
-        return [
-            'id' => (string) $response->json('id', ''),
-            'expires_at' => (string) $response->json('expirationDateTime', ''),
-        ];
-    }
-
-    /** Verlängert die Subscription; false = 404 (abgelaufen/gelöscht → neu anlegen). */
-    public function renewSubscription(string $subscriptionId, \DateTimeInterface $expiresAt): bool {
-        $response = $this->api->requestResponse('patch', $this->base . '/subscriptions/' . rawurlencode($subscriptionId), [
-            'json' => ['expirationDateTime' => $expiresAt->format('Y-m-d\TH:i:s\Z')],
-        ]);
-        if ($response->status() === 404) {
-            return false;
-        }
-        if (! $response->successful()) {
-            throw new RuntimeException('Graph PATCH /subscriptions fehlgeschlagen (HTTP ' . $response->status() . ').');
-        }
-
-        return true;
-    }
-
-    /** Meldet die Subscription ab (404 = bereits weg, idempotent ok). */
-    public function deleteSubscription(string $subscriptionId): void {
-        $response = $this->api->deleteResponse($this->base . '/subscriptions/' . rawurlencode($subscriptionId));
-        if (! $response->successful() && $response->status() !== 404) {
-            throw new RuntimeException('Graph DELETE /subscriptions fehlgeschlagen (HTTP ' . $response->status() . ').');
-        }
-    }
+    // Change-Notification-Subscriptions (MS365-Plan §8): Sender-Seite über den
+    // Trait {@see Concerns\ManagesGraphSubscriptions} — driveItem-Subscriptions:
+    // nur changeType=updated, Laufzeit < 30 Tage.
 
     public function changes(?string $checkpoint): IntakeChangePage {
         if ($checkpoint === null || $checkpoint === '') {

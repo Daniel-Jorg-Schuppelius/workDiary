@@ -116,8 +116,10 @@ return [
         'location' => ['purge_points' => 'Purge raw location points'],
         'mail' => ['poll' => 'Poll mail intake'],
         'msgraph' => [
+            'calendar-import' => 'Two-way calendar import',
             'publish' => 'Microsoft 365 calendar publish reconciliation',
             'subscriptions' => 'Renew Microsoft 365 webhook subscriptions',
+            'todo-sync' => 'Microsoft To Do sync',
         ],
         'maintenance' => ['scan_due' => 'Check maintenance plans for due work'],
         'notifications' => ['scan_deadlines' => 'Scan deadlines and notify'],

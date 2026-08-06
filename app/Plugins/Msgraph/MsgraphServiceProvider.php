@@ -10,9 +10,13 @@
 
 namespace App\Plugins\Msgraph;
 
+use App\Models\Task;
 use App\Plugins\Msgraph\Api\{MsgraphMailOAuth, MsgraphOAuth};
 use App\Plugins\Msgraph\Mail\{MsgraphMailTransport, StampOrganizationMailHeader};
+use App\Plugins\Msgraph\Observers\MsgraphTodoTaskObserver;
+use App\Plugins\Msgraph\Services\MsgraphOutboxDispatcher;
 use App\Plugins\Support\PluginServiceProviderBase;
+use App\Services\Integration\IntegrationOutboxDispatcherResolver;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Facades\{Event, Mail};
 
@@ -34,11 +38,16 @@ class MsgraphServiceProvider extends PluginServiceProviderBase {
     protected function registerPlugin(): void {
         $this->app->singleton(MsgraphOAuth::class, fn(): MsgraphOAuth => new MsgraphOAuth());
         $this->app->singleton(MsgraphMailOAuth::class, fn(): MsgraphMailOAuth => new MsgraphMailOAuth());
+        $this->app->singleton(Api\MsgraphContactsOAuth::class, fn(): Api\MsgraphContactsOAuth => new Api\MsgraphContactsOAuth());
+
+        $this->app->singleton(Api\MsgraphTasksOAuth::class, fn(): Api\MsgraphTasksOAuth => new Api\MsgraphTasksOAuth());
 
         if ($this->app->runningInConsole()) {
             $this->commands([
+                Console\MsgraphCalendarImportCommand::class,
                 Console\MsgraphPublishCommand::class,
                 Console\MsgraphSubscriptionsCommand::class,
+                Console\MsgraphTodoSyncCommand::class,
             ]);
         }
     }
@@ -46,5 +55,10 @@ class MsgraphServiceProvider extends PluginServiceProviderBase {
     protected function bootPlugin(): void {
         Mail::extend('msgraph', fn(): MsgraphMailTransport => new MsgraphMailTransport());
         Event::listen(MessageSending::class, StampOrganizationMailHeader::class);
+
+        // Live-Export nach Microsoft To Do (Folgeausbau, Todoist-Muster):
+        // Observer enqueued nur — die Übertragung läuft über die Outbox.
+        Task::observe(MsgraphTodoTaskObserver::class);
+        $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new MsgraphOutboxDispatcher());
     }
 }

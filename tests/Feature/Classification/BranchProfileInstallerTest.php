@@ -38,7 +38,10 @@ class BranchProfileInstallerTest extends TestCase {
         $result = $this->installer->install($this->org, 'it', $this->actor);
 
         $this->assertSame('it', $result['profile_code']);
-        $this->assertSame(1, $result['version']);
+        // Version aus der Profildatei statt hart kodiert — Profil-Updates
+        // (z. B. v2 durch Feature 100 Entsorgung) brechen den Test sonst.
+        $profile = require database_path('data/branchprofiles/it.php');
+        $this->assertSame((int) $profile['version'], $result['version']);
 
         $this->assertGreaterThan(0, Classification::query()->where('organization_id', $this->org->id)->count());
         $this->assertGreaterThan(0, ClassificationRequirement::query()->where('organization_id', $this->org->id)->count());

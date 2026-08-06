@@ -19,6 +19,9 @@
                         show-label>{{ __('Heute-Übersicht') }}</x-icon-btn>
         </x-slot:actions>
 
+        {{-- Plugin-Erweiterungen (View-Slot, z. B. Teams-Presence, Feature 102 F) --}}
+        {!! app(\App\Plugins\PluginManager::class)->renderSlot('attendance-index.aside') !!}
+
         <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
             <x-table table-sort="server"
                      :route="route('attendance.index')"

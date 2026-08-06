@@ -72,10 +72,22 @@ class MsgraphMailTransport extends AbstractTransport {
         $email->getHeaders()->remove(self::HEADER_ORGANIZATION);
 
         try {
-            (new MsgraphMailClient($connection))->sendMail(
-                $this->payloadFrom($email, $connection),
-                $connection->save_to_sent_items,
-            );
+            $client = new MsgraphMailClient($connection);
+            $payload = $this->payloadFrom($email, $connection);
+            $large = $this->extractLargeAttachments($email);
+
+            if ($large === []) {
+                $client->sendMail($payload, $connection->save_to_sent_items);
+            } else {
+                // Große Anhänge (> 3 MiB): Draft + Upload-Session + Send
+                // (braucht Mail.ReadWrite; saveToSentItems ist beim
+                // Draft-Weg immer aktiv — Graph legt den Draft im Postfach ab).
+                $draftId = $client->createDraft($payload);
+                foreach ($large as $attachment) {
+                    $client->uploadAttachment($draftId, $attachment['name'], $attachment['contentType'], $attachment['bytes']);
+                }
+                $client->sendDraft($draftId);
+            }
         } catch (Throwable $e) {
             // Health-Zähler (Auto-Disable, MVP-178); nur Fehlerklasse, nie Payload.
             $connection->recordConnectionFailure(class_basename($e));
@@ -159,8 +171,13 @@ class MsgraphMailTransport extends AbstractTransport {
             $message['from'] = ['emailAddress' => ['address' => $from]];
         }
 
+        // Kleine Anhänge inline; große (> 3 MiB) laufen über den
+        // Draft-/Upload-Session-Weg ({@see extractLargeAttachments()}).
         $attachments = [];
         foreach ($email->getAttachments() as $part) {
+            if (strlen($part->getBody()) > self::INLINE_ATTACHMENT_LIMIT) {
+                continue;
+            }
             $attachments[] = $this->attachment($part);
         }
         if ($attachments !== []) {
@@ -201,20 +218,37 @@ class MsgraphMailTransport extends AbstractTransport {
 
     /** @return array<string, string> */
     private function attachment(DataPart $part): array {
-        $bytes = $part->getBody();
-        if (strlen($bytes) > self::INLINE_ATTACHMENT_LIMIT) {
-            // Bewusste Pilot-Grenze: Upload-Sessions (3–150 MB) sind nicht
-            // implementiert — klarer Fehler statt stillem 413 von Graph.
-            throw new TransportException('Anhang überschreitet die Graph-Inline-Grenze von 3 MiB (Upload-Session nicht implementiert).');
-        }
-
         $filename = $part->getFilename();
 
         return [
             '@odata.type' => '#microsoft.graph.fileAttachment',
             'name' => $filename !== null && $filename !== '' ? $filename : 'anhang',
             'contentType' => $part->getMediaType() . '/' . $part->getMediaSubtype(),
-            'contentBytes' => base64_encode($bytes),
+            'contentBytes' => base64_encode($part->getBody()),
         ];
+    }
+
+    /**
+     * Anhänge über der Inline-Grenze (Graph verlangt für 3–150 MB eine
+     * Upload-Session am Draft).
+     *
+     * @return list<array{name: string, contentType: string, bytes: string}>
+     */
+    private function extractLargeAttachments(Email $email): array {
+        $large = [];
+        foreach ($email->getAttachments() as $part) {
+            $bytes = $part->getBody();
+            if (strlen($bytes) <= self::INLINE_ATTACHMENT_LIMIT) {
+                continue;
+            }
+            $filename = $part->getFilename();
+            $large[] = [
+                'name' => $filename !== null && $filename !== '' ? $filename : 'anhang',
+                'contentType' => $part->getMediaType() . '/' . $part->getMediaSubtype(),
+                'bytes' => $bytes,
+            ];
+        }
+
+        return $large;
     }
 }

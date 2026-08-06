@@ -16,15 +16,18 @@ use App\Plugins\Msgraph\Services\MsgraphSubscriptionService;
 use Illuminate\Console\Command;
 
 /**
- * Graph-Change-Notification-Subscriptions des Dokumenteingangs sicherstellen
- * (MS365-Plan §8): fehlende anlegen, ablaufende erneuern (driveItem < 30 Tage).
- * Läuft täglich über den Scheduler; Fehler zählen auf den Verbindungs-Health.
+ * Graph-Change-Notification-Subscriptions sicherstellen (MS365-Plan §8 +
+ * Feature 102 Folgeausbau): Dokumenteingang (driveItem < 30 Tage),
+ * Zwei-Wege-Kalender und Graph-Postfächer (Outlook < 7 Tage) sowie
+ * importierende To-Do-Listen-Links (todoTask < 3 Tage) — fehlende anlegen,
+ * ablaufende erneuern. Läuft täglich über den Scheduler; Fehler zählen auf
+ * den Verbindungs-Health.
  */
 class MsgraphSubscriptionsCommand extends Command {
     protected $signature = 'msgraph:subscriptions
         {--organization= : ID einer einzelnen Organisation, sonst alle}';
 
-    protected $description = 'Stellt Graph-Change-Notification-Subscriptions des Microsoft-Dokumenteingangs sicher (anlegen/erneuern).';
+    protected $description = 'Stellt Graph-Change-Notification-Subscriptions sicher (Dokumenteingang, Zwei-Wege-Kalender, To-Do-Listen, Graph-Postfächer).';
 
     public function handle(MsgraphSubscriptionService $subscriptions): int {
         $orgOption = $this->option('organization');

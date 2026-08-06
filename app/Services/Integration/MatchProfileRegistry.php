@@ -14,7 +14,7 @@ namespace App\Services\Integration;
 
 use App\Models\{Article, Customer, Supplier};
 use App\Services\Integration\Match\MatchProfile;
-use App\Services\Integration\Profiles\{ArticleMatchProfile, CustomerMatchProfile, SupplierMatchProfile};
+use App\Services\Integration\Profiles\{ArticleMatchProfile, CustomerMatchProfile, EventMatchProfile, SupplierMatchProfile};
 
 /**
  * Liefert das {@see MatchProfile} zu einer Ziel-Entität (Morph-Klasse). Neue
@@ -27,6 +27,8 @@ class MatchProfileRegistry {
         Customer::class => CustomerMatchProfile::class,
         Supplier::class => SupplierMatchProfile::class,
         Article::class => ArticleMatchProfile::class,
+        // Feature 102 (C3-Übernahme): Kalender-Vorschläge → Event anlegen.
+        \App\Models\Event::class => EventMatchProfile::class,
     ];
 
     public function for(string $targetType): ?MatchProfile {
@@ -43,6 +45,7 @@ class MatchProfileRegistry {
             Article::class => (string) __('Artikel'),
             \App\Models\Project::class => (string) __('Projekt'),
             \App\Models\Asset::class => (string) __('Gerät'),
+            \App\Models\Event::class => (string) __('Termin'),
             default => class_basename($targetType),
         };
     }
