@@ -32,7 +32,7 @@
                     <th>{{ __('Läuft ab') }}</th>
                 </tr>
             </x-slot:head>
-            @forelse ($customerDomains as $domain)
+            @forelse ($customerDomains->take(10) as $domain)
                 <tr>
                     <td><a href="{{ route('domains.show', $domain) }}" class="link link-hover">{{ $domain->external_domain }}</a></td>
                     <td class="text-sm">{{ $domain->foreignCustomer?->name ?? '—' }}</td>
@@ -44,5 +44,32 @@
                 <x-table.empty :colspan="5" :title="__('Keine Domains zugeordnet.')" compact />
             @endforelse
         </x-table>
+        @if ($customerDomains->count() > 10)
+            <details>
+                <summary class="cursor-pointer select-none border-t border-base-300 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-base-content/50 hover:bg-base-200">
+                    {{ __('Alle anzeigen') }} <span class="font-normal">(+{{ $customerDomains->count() - 10 }})</span>
+                </summary>
+                <x-table bare>
+                    <x-slot:head>
+                        <tr>
+                            <th>{{ __('Domain') }}</th>
+                            <th>{{ __('Endkunde') }}</th>
+                            <th>{{ __('Registrar') }}</th>
+                            <th>{{ __('Status') }}</th>
+                            <th>{{ __('Läuft ab') }}</th>
+                        </tr>
+                    </x-slot:head>
+                    @foreach ($customerDomains->slice(10) as $domain)
+                        <tr>
+                            <td><a href="{{ route('domains.show', $domain) }}" class="link link-hover">{{ $domain->external_domain }}</a></td>
+                            <td class="text-sm">{{ $domain->foreignCustomer?->name ?? '—' }}</td>
+                            <td class="text-sm">{{ $domain->registrar ?? '—' }}</td>
+                            <td class="text-sm">{{ $domain->status ?? '—' }}</td>
+                            <td class="tabular-nums text-sm">{{ $domain->expiration_at?->fdate() ?? '—' }}</td>
+                        </tr>
+                    @endforeach
+                </x-table>
+            </details>
+        @endif
     </x-card>
 @endcan

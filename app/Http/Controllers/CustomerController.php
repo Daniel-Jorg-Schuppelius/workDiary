@@ -86,6 +86,19 @@ class CustomerController extends Controller {
             ->whereIn('project_id', $projectIds)
             ->sum('rate');
 
+        // Zeitraum-gebundene KPI-Werte (globaler Header-Zeitraum, AGENTS.md §8):
+        // „Erfasste Zeit" und „Umsatz (kalk.)" zeigen primär den Zeitraum,
+        // die Gesamtwerte nur noch als kleinen Zusatz.
+        [$rangeFrom, $rangeTo] = $this->globalDateRangeBounds();
+        $rangeMinutes = (int) TimeEntry::query()
+            ->whereIn('project_id', $projectIds)
+            ->whereBetween('date', [$rangeFrom->toDateString(), $rangeTo->toDateString()])
+            ->sum('minutes');
+        $rangeRate = (float) TimeEntry::query()
+            ->whereIn('project_id', $projectIds)
+            ->whereBetween('date', [$rangeFrom->toDateString(), $rangeTo->toDateString()])
+            ->sum('rate');
+
         $lexoffice = $plugins->withCapability(PluginCapability::TimeExport)->get(LexofficePlugin::ID);
         $lexofficeContactRef = $lexoffice
             ? ExternalReference::query()
@@ -117,6 +130,38 @@ class CustomerController extends Controller {
             ->limit(500)
             ->get()
             : collect();
+
+        // Lexoffice-Belege desselben Kunden im Header-Zeitraum (Belegsicht +
+        // fakturierter Umsatz der KPI).
+        $lexofficeVoucherCache = $lexoffice
+            ? LexofficeVoucher::query()
+            ->where('customer_id', $customer->getKey())
+            ->where('archived', false)
+            ->whereBetween('voucher_date', [
+                $lexofficeVoucherRange['from']->startOfDay(),
+                $lexofficeVoucherRange['to']->endOfDay(),
+            ])
+            ->orderByDesc('voucher_date')
+            ->limit(500)
+            ->get()
+            : collect();
+
+        // Tatsächlich fakturierter Umsatz im Zeitraum (Lexoffice-Belege + lokale
+        // Rechnungen) — ergänzt den kalkulatorischen Umsatz aus erfassten Zeiten.
+        // Gleiche Logik wie die Rechnungssumme in partials/_documents.
+        $invoiceTypes = ['invoice', 'salesinvoice', 'purchaseinvoice'];
+        $voidStatuses = ['voided', 'cancelled'];
+        $invoicedRange = 0.0;
+        foreach ($localInvoices as $inv) {
+            if (in_array($inv->type, $invoiceTypes, true) && ! in_array($inv->status, $voidStatuses, true)) {
+                $invoicedRange += $inv->total?->toFloat() ?? 0.0;
+            }
+        }
+        foreach ($lexofficeVoucherCache as $voucher) {
+            if (in_array($voucher->voucher_type, $invoiceTypes, true) && ! in_array($voucher->voucher_status, $voidStatuses, true)) {
+                $invoicedRange += $voucher->total_amount?->toFloat() ?? 0.0;
+            }
+        }
 
         // Vollwertige Kunden-Timeline (MVP-340): serverseitiger Typ-Filter + Nachlade-Fenster (Muster wie DiaryController).
         /** @var User $viewer */
@@ -199,23 +244,15 @@ class CustomerController extends Controller {
             'statsRangeLabel' => $this->globalDateRange()['label'],
             'totalMinutes' => $totalMinutes,
             'totalRate' => $totalRate,
+            'rangeMinutes' => $rangeMinutes,
+            'rangeRate' => $rangeRate,
+            'invoicedRange' => $invoicedRange,
             'lexofficePlugin' => $lexoffice,
             'lexofficeContactRef' => $lexofficeContactRef,
             'lexofficeVouchers' => $lexofficeVouchers,
             'lexofficeVoucherRange' => $lexofficeVoucherRange,
             'localInvoices' => $localInvoices,
-            'lexofficeVoucherCache' => $lexoffice
-                ? LexofficeVoucher::query()
-                ->where('customer_id', $customer->getKey())
-                ->where('archived', false)
-                ->whereBetween('voucher_date', [
-                    $lexofficeVoucherRange['from']->startOfDay(),
-                    $lexofficeVoucherRange['to']->endOfDay(),
-                ])
-                ->orderByDesc('voucher_date')
-                ->limit(500)
-                ->get()
-                : collect(),
+            'lexofficeVoucherCache' => $lexofficeVoucherCache,
             'attachments' => $customer->attachments()->get(),
             'tags' => $customer->tags()->get(),
             'auditLogs' => AuditLog::query()

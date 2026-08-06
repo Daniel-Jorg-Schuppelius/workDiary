@@ -39,7 +39,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $cancel_reason
  * @property Carbon|null $sent_at
  * @property int $sent_count
- * @property \CommonToolkit\Enums\CurrencyCode $currency
+ * @property CurrencyCode $currency
  * @property Money|null $subtotal
  * @property \CommonToolkit\ValueObjects\Percentage|null $tax_rate
  * @property Money|null $tax_amount
@@ -116,11 +116,20 @@ class Invoice extends Model {
      * (saveQuietly interner Abgleichspfade umgeht den Guard bewusst.)
      */
     public const MUTABLE_AFTER_ISSUE = [
-        'status', 'paid_on', 'sent_at', 'sent_count',
-        'cancelled_at', 'cancelled_by', 'cancel_reason',
-        'external_number', 'number_source', 'updated_at',
-        'dunning_level', 'dunned_at', // Mahnstatus ist Lifecycle, kein Beleginhalt
-        'objection_at', 'objection_note', // Widerspruch (§ 14 Abs. 2 UStG) ist Lifecycle
+        'status',
+        'paid_on',
+        'sent_at',
+        'sent_count',
+        'cancelled_at',
+        'cancelled_by',
+        'cancel_reason',
+        'external_number',
+        'number_source',
+        'updated_at',
+        'dunning_level',
+        'dunned_at', // Mahnstatus ist Lifecycle, kein Beleginhalt
+        'objection_at',
+        'objection_note', // Widerspruch (§ 14 Abs. 2 UStG) ist Lifecycle
     ];
 
     protected $fillable = [
@@ -169,7 +178,7 @@ class Invoice extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
-        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
+        'currency' => CurrencyCode::class,
         'is_reverse_charge' => 'boolean',
         'party_snapshot' => 'array',
         'tax_breakdown' => 'array',
@@ -271,7 +280,7 @@ class Invoice extends Model {
     public function documentDiscountTotal(): Money {
         $currency = $this->currencyCode();
         $lineNetSum = Money::sum(
-            $this->items->map(fn (InvoiceItem $i): Money => $i->amount ?? Money::zero($currency))->all(),
+            $this->items->map(fn(InvoiceItem $i): Money => $i->amount ?? Money::zero($currency))->all(),
             $currency
         );
 
@@ -467,9 +476,9 @@ class Invoice extends Model {
      * angerechnet, sobald eine nicht stornierte Schlussrechnung eine solche
      * Position trägt — die Abschlagsrechnung selbst wird nie mutiert.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany<InvoiceItem, $this>
+     * @return HasMany<InvoiceItem, $this>
      */
-    public function settlementItems(): \Illuminate\Database\Eloquent\Relations\HasMany {
+    public function settlementItems(): HasMany {
         return $this->hasMany(InvoiceItem::class, 'settled_invoice_id');
     }
 

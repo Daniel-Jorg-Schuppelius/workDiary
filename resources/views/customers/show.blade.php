@@ -45,12 +45,22 @@
 
     <x-identifier-issues :issues="$identifierIssues ?? []" />
 
-    {{-- KPI --}}
-    @php $timeFormatted = \App\Support\Formats::duration($totalMinutes, 'clock'); @endphp
-    <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    {{-- KPI — zeitbezogene Werte folgen dem globalen Header-Zeitraum (AGENTS.md §8);
+         Gesamt- bzw. kalkulatorische Werte stehen als kleiner Zusatz. --}}
+    @php
+        $cur = $customer->currency->value;
+        $timeRange = \App\Support\Formats::duration($rangeMinutes, 'clock');
+        $timeTotal = \App\Support\Formats::duration($totalMinutes, 'clock');
+        $fmtMoney = fn (float $v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) . ' ' . $cur;
+    @endphp
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <x-kpi-tile :label="__('Projekte')" :value="$projects->count()" tone="neutral" />
-        <x-kpi-tile :label="__('Erfasste Zeit')" :value="$timeFormatted" tone="neutral" />
-        <x-kpi-tile :label="__('Umsatz (kalk.)')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totalRate, 2, withThousandsSeparator: true) . ' ' . $customer->currency->value" tone="neutral" />
+        <x-kpi-tile :label="__('Erfasste Zeit')" :value="$timeRange" tone="neutral"
+                    :hint="$statsRangeLabel . ' · ' . __('gesamt :value', ['value' => $timeTotal])" />
+        <x-kpi-tile :label="__('Umsatz (kalk.)')" :value="$fmtMoney($rangeRate)" tone="neutral"
+                    :hint="$statsRangeLabel . ' · ' . __('gesamt :value', ['value' => $fmtMoney($totalRate)])" />
+        <x-kpi-tile :label="__('Fakturiert')" :value="$fmtMoney($invoicedRange)" tone="neutral"
+                    :hint="$statsRangeLabel" />
     </div>
 
     {{-- Stammdaten --}}
@@ -107,110 +117,118 @@
         </x-card>
     </div>
 
-    {{-- Projekte --}}
-    <x-card :title="__('Projekte')" icon="folder" :count="$projects->count()">
-        @isset($defaultProject)
-            <x-slot:actions>
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('projects.timesheets.create', $defaultProject)"
-                            show-label>{{ __('Stundenzettel') }}</x-icon-btn>
-            </x-slot:actions>
-        @endisset
-
-        @isset($defaultProject)
-            <div class="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-box border border-primary/30 bg-primary/5 px-3 py-2 text-sm">
-                <div class="flex items-center gap-2 min-w-0">
-                    <x-icon name="star" class="text-primary" :filled="true" />
-                    <a class="link link-hover truncate font-medium" href="{{ route('projects.show', $defaultProject) }}">{{ $defaultProject->name }}</a>
-                    <x-status-badge tone="ghost">{{ __('Standardprojekt') }}</x-status-badge>
-                </div>
-                <span class="text-xs text-base-content/60">{{ __('Auto-Bucket für Ad-hoc-/Notfalleinsätze') }}</span>
-            </div>
-        @endisset
-
-        @if ($projects->isEmpty())
-            <x-empty-state compact icon='<span class="material-symbols-outlined">folder_off</span>'
-                           :title="__('Keine Projekte')"
-                           :message="__('Diesem Kunden sind noch keine Projekte zugeordnet.')" />
-        @else
-            @php
-                // Nach Endkunde (Fremdkunde) gruppieren: erst Projekte direkt bei
-                // der Firma, dann je Endkunde alphabetisch — nur wenn es überhaupt
-                // Endkunden-Projekte gibt, sonst flache Liste wie bisher.
-                $directProjects = $projects->filter(fn($p) => $p->foreign_customer_id === null)->values();
-                $foreignProjectGroups = $projects->filter(fn($p) => $p->foreign_customer_id !== null)
-                    ->groupBy('foreign_customer_id')
-                    ->sortBy(fn($group) => mb_strtolower((string) $group->first()->foreignCustomer?->name));
-            @endphp
-            @if ($foreignProjectGroups->isEmpty())
-                @include('customers._project_list_items', ['items' => $projects])
-            @else
-                {{-- Gruppen zugeklappt: erst der Klick auf die Überschrift zeigt
-                     die Projekte — bei vielen Endkunden bleibt die Karte kompakt. --}}
-                <div class="space-y-1">
-                    @if ($directProjects->isNotEmpty())
-                        <details>
-                            <summary class="cursor-pointer select-none rounded-md px-1 py-1.5 text-xs font-semibold uppercase tracking-wide text-base-content/50 hover:bg-base-200">
-                                {{ __('Direkt bei der Firma') }}
-                                <span class="font-normal">({{ $directProjects->count() }})</span>
-                            </summary>
-                            <div class="pb-2 pl-1">
-                                @include('customers._project_list_items', ['items' => $directProjects])
-                            </div>
-                        </details>
-                    @endif
-                    @foreach ($foreignProjectGroups as $group)
-                        @php $groupForeign = $group->first()->foreignCustomer; @endphp
-                        <details>
-                            <summary class="cursor-pointer select-none rounded-md px-1 py-1.5 text-xs font-semibold uppercase tracking-wide text-base-content/50 hover:bg-base-200">
-                                {{ $groupForeign?->name ?? '—' }}
-                                <span class="font-normal">({{ $group->count() }})</span>
-                            </summary>
-                            <div class="pb-2 pl-1">
-                                @if ($groupForeign)
-                                    <a class="link link-hover text-xs" href="{{ route('foreign-customers.show', $groupForeign) }}">{{ __('Zum Fremdkunden') }} →</a>
-                                @endif
-                                @include('customers._project_list_items', ['items' => $group->values()])
-                            </div>
-                        </details>
-                    @endforeach
-                </div>
-            @endif
-        @endif
-    </x-card>
-
-    {{-- Fremdkunden (Endkunden dieser Firma) --}}
+    {{-- Projekte & Fremdkunden — als Tabs; je Bereich die aktivsten 10 (nach
+         erfassten Stunden), der Rest aufklappbar. --}}
     @php
+        // Stunden je Projekt aus der Gesamt-Statistik (Sortierung „aktivste zuerst").
+        $projectMinutes = collect($statsTotal['by_project'] ?? [])
+            ->mapWithKeys(fn ($r) => [(int) $r['project_id'] => (int) $r['minutes']]);
+        $projectsByHours = $projects->sortByDesc(fn ($p) => $projectMinutes[$p->id] ?? 0)->values();
+        $topProjects = $projectsByHours->take(10);
+        $restProjects = $projectsByHours->slice(10)->values();
+
         $foreignCustomers = $customer->foreignCustomers()
             ->whereNull('archived_at')
             ->withCount('projects')
             ->get();
+        // Stunden je Fremdkunde = Summe der Stunden seiner Projekte.
+        $foreignMinutes = $projects->whereNotNull('foreign_customer_id')
+            ->groupBy('foreign_customer_id')
+            ->map(fn ($grp) => $grp->sum(fn ($p) => $projectMinutes[$p->id] ?? 0));
+        $foreignByHours = $foreignCustomers->sortByDesc(fn ($fc) => $foreignMinutes[$fc->id] ?? 0)->values();
+        $topForeign = $foreignByHours->take(10);
+        $restForeign = $foreignByHours->slice(10)->values();
     @endphp
-    <x-card>
+    <x-card x-data="tabs('projects')" data-tab-allowed="projects,foreign">
         <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <h2 class="flex items-center gap-2 font-semibold">
-                <x-icon name="groups" class="text-base-content/60" /> {{ __('Fremdkunden') }}
-                <span class="font-normal text-base-content/50">({{ $foreignCustomers->count() }})</span>
-            </h2>
-            @can('create', App\Models\ForeignCustomer::class)
-                <x-icon-btn icon="add" size="xs" data-entry-modal-trigger
-                            :href="route('foreign-customers.create', ['customer' => $customer->sqid])"
-                            show-label>{{ __('Fremdkunde anlegen') }}</x-icon-btn>
-            @endcan
+            <div role="tablist" class="tabs tabs-box tabs-sm">
+                <button role="tab" class="tab" :class="tabClass('projects')" @click="setTab('projects')">
+                    {{ __('Projekte') }}<span class="ml-1 font-normal opacity-60">{{ $projects->count() }}</span>
+                </button>
+                <button role="tab" class="tab" :class="tabClass('foreign')" @click="setTab('foreign')">
+                    {{ __('Fremdkunden') }}<span class="ml-1 font-normal opacity-60">{{ $foreignCustomers->count() }}</span>
+                </button>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <div x-show="isTab('projects')" x-cloak>
+                    @isset($defaultProject)
+                        <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger
+                                    :href="route('projects.timesheets.create', $defaultProject)"
+                                    show-label>{{ __('Stundenzettel') }}</x-icon-btn>
+                    @endisset
+                </div>
+                <div x-show="isTab('foreign')" x-cloak>
+                    @can('create', App\Models\ForeignCustomer::class)
+                        <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger
+                                    :href="route('foreign-customers.create', ['customer' => $customer->sqid])"
+                                    show-label>{{ __('Fremdkunde anlegen') }}</x-icon-btn>
+                    @endcan
+                </div>
+            </div>
         </div>
-        @if ($foreignCustomers->isEmpty())
-            <p class="text-sm text-base-content/60">{{ __('Keine Fremdkunden. Endkunden dieser Firma hier erfassen, um Zeiten/Abrechnung pro Endkunde zu trennen.') }}</p>
-        @else
-            <ul class="divide-y divide-base-200">
-                @foreach ($foreignCustomers as $fc)
-                    <li class="flex items-center justify-between py-1.5 text-sm">
-                        <a class="link link-hover" href="{{ route('foreign-customers.show', $fc) }}">{{ $fc->name }}</a>
-                        <span class="text-base-content/50 tabular-nums">{{ trans_choice(':count Projekt|:count Projekte', $fc->projects_count, ['count' => $fc->projects_count]) }}</span>
-                    </li>
-                @endforeach
-            </ul>
-        @endif
+
+        {{-- Projekte --}}
+        <div x-show="isTab('projects')" x-cloak>
+            @isset($defaultProject)
+                <div class="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-box border border-primary/30 bg-primary/5 px-3 py-2 text-sm">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <x-icon name="star" class="text-primary" :filled="true" />
+                        <a class="link link-hover truncate font-medium" href="{{ route('projects.show', $defaultProject) }}">{{ $defaultProject->name }}</a>
+                        <x-status-badge tone="ghost">{{ __('Standardprojekt') }}</x-status-badge>
+                    </div>
+                    <span class="text-xs text-base-content/60">{{ __('Auto-Bucket für Ad-hoc-/Notfalleinsätze') }}</span>
+                </div>
+            @endisset
+
+            @if ($projects->isEmpty())
+                <x-empty-state compact icon='<span class="material-symbols-outlined">folder_off</span>'
+                               :title="__('Keine Projekte')"
+                               :message="__('Diesem Kunden sind noch keine Projekte zugeordnet.')" />
+            @else
+                @include('customers._project_list_items', ['items' => $topProjects, 'showForeign' => true])
+                @if ($restProjects->isNotEmpty())
+                    <details class="mt-2">
+                        <summary class="cursor-pointer select-none rounded-md px-1 py-1.5 text-xs font-semibold uppercase tracking-wide text-base-content/50 hover:bg-base-200">
+                            {{ __('Alle anzeigen') }} <span class="font-normal">(+{{ $restProjects->count() }})</span>
+                        </summary>
+                        <div class="pt-1">
+                            @include('customers._project_list_items', ['items' => $restProjects, 'showForeign' => true])
+                        </div>
+                    </details>
+                @endif
+            @endif
+        </div>
+
+        {{-- Fremdkunden (Endkunden dieser Firma) --}}
+        <div x-show="isTab('foreign')" x-cloak>
+            @if ($foreignCustomers->isEmpty())
+                <p class="text-sm text-base-content/60">{{ __('Keine Fremdkunden. Endkunden dieser Firma hier erfassen, um Zeiten/Abrechnung pro Endkunde zu trennen.') }}</p>
+            @else
+                <ul class="divide-y divide-base-200">
+                    @foreach ($topForeign as $fc)
+                        <li class="flex items-center justify-between py-1.5 text-sm">
+                            <a class="link link-hover" href="{{ route('foreign-customers.show', $fc) }}">{{ $fc->name }}</a>
+                            <span class="text-base-content/50 tabular-nums">{{ trans_choice(':count Projekt|:count Projekte', $fc->projects_count, ['count' => $fc->projects_count]) }}</span>
+                        </li>
+                    @endforeach
+                </ul>
+                @if ($restForeign->isNotEmpty())
+                    <details class="mt-2">
+                        <summary class="cursor-pointer select-none rounded-md px-1 py-1.5 text-xs font-semibold uppercase tracking-wide text-base-content/50 hover:bg-base-200">
+                            {{ __('Alle anzeigen') }} <span class="font-normal">(+{{ $restForeign->count() }})</span>
+                        </summary>
+                        <ul class="mt-1 divide-y divide-base-200">
+                            @foreach ($restForeign as $fc)
+                                <li class="flex items-center justify-between py-1.5 text-sm">
+                                    <a class="link link-hover" href="{{ route('foreign-customers.show', $fc) }}">{{ $fc->name }}</a>
+                                    <span class="text-base-content/50 tabular-nums">{{ trans_choice(':count Projekt|:count Projekte', $fc->projects_count, ['count' => $fc->projects_count]) }}</span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </details>
+                @endif
+            @endif
+        </div>
     </x-card>
 
     {{-- Auswertung pro Kunde --}}
@@ -238,7 +256,13 @@
                             <div class="font-['Space_Grotesk'] text-xl font-semibold">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($set['billable_minutes'] / 60, 2, withThousandsSeparator: true) }} h</div>
                         </div>
                     </div>
-                    @if (count($set['by_project']) > 0)
+                    @php
+                        // Aktivste Projekte zuerst; darüber hinaus aufklappbar.
+                        $statRows = collect($set['by_project'])->sortByDesc('minutes')->values();
+                        $statTop = $statRows->take(10);
+                        $statRest = $statRows->slice(10)->values();
+                    @endphp
+                    @if ($statRows->isNotEmpty())
                         <x-table table-sort="client" bare>
                             <x-slot:head>
                                 <tr>
@@ -247,7 +271,7 @@
                                     <x-table.th sort type="number" align="right">{{ __('abrechenbar') }}</x-table.th>
                                 </tr>
                             </x-slot:head>
-                            @foreach ($set['by_project'] as $row)
+                            @foreach ($statTop as $row)
                                 <tr>
                                     <td>
                                         @if ($row['is_default'])
@@ -263,6 +287,39 @@
                                 </tr>
                             @endforeach
                         </x-table>
+                        @if ($statRest->isNotEmpty())
+                            <details class="mt-2">
+                                <summary class="cursor-pointer select-none rounded-md px-1 py-1.5 text-xs font-semibold uppercase tracking-wide text-base-content/50 hover:bg-base-200">
+                                    {{ __('Alle anzeigen') }} <span class="font-normal">(+{{ $statRest->count() }})</span>
+                                </summary>
+                                <div class="pt-1">
+                                    <x-table table-sort="client" bare>
+                                        <x-slot:head>
+                                            <tr>
+                                                <x-table.th sort>{{ __('Projekt') }}</x-table.th>
+                                                <x-table.th sort type="number" align="right">{{ __('Stunden') }}</x-table.th>
+                                                <x-table.th sort type="number" align="right">{{ __('abrechenbar') }}</x-table.th>
+                                            </tr>
+                                        </x-slot:head>
+                                        @foreach ($statRest as $row)
+                                            <tr>
+                                                <td>
+                                                    @if ($row['is_default'])
+                                                        <x-icon name="star" class="text-primary align-middle" :filled="true" size="1rem" />
+                                                    @endif
+                                                    {{ $row['name'] }}
+                                                    @if (! empty($row['foreign_customer']))
+                                                        <span class="text-base-content/50">— {{ $row['foreign_customer'] }}</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-right" data-sort-value="{{ (float) $row['minutes'] }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['minutes'] / 60, 2, withThousandsSeparator: true) }}</td>
+                                                <td class="text-right" data-sort-value="{{ (float) $row['billable_minutes'] }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['billable_minutes'] / 60, 2, withThousandsSeparator: true) }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </x-table>
+                                </div>
+                            </details>
+                        @endif
                     @endif
                 </div>
             @endforeach
