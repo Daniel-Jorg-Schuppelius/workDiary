@@ -77,7 +77,7 @@ class CustomerController extends Controller {
             ->orderBy('name')
             ->get();
 
-        $projectIds = $projects->pluck('id')->map(static fn ($id): int => (int) $id)->all();
+        $projectIds = $projects->pluck('id')->map(static fn($id): int => (int) $id)->all();
 
         $totalMinutes = (int) TimeEntry::query()
             ->whereIn('project_id', $projectIds)
