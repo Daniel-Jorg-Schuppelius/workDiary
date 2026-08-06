@@ -22,6 +22,7 @@ use App\Services\Import\DirectCsvImportService;
 use App\Services\Stammdaten\{ContactMasterDataPusher, IdentifierIssueDetector};
 use App\Support\{CsvExport, Setting};
 // HINWEIS: Lexoffice-Push liegt im Plugin (LexofficeCustomerController); Imports oben nur noch für die Show-View.
+use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -76,7 +77,7 @@ class CustomerController extends Controller {
             ->orderBy('name')
             ->get();
 
-        $projectIds = $projects->pluck('id')->all();
+        $projectIds = $projects->pluck('id')->map(static fn ($id): int => (int) $id)->all();
 
         $totalMinutes = (int) TimeEntry::query()
             ->whereIn('project_id', $projectIds)
@@ -163,6 +164,10 @@ class CustomerController extends Controller {
             }
         }
 
+        // Kompakte 12-Monats-Trends (Zeiteinsatz + fakturierter Umsatz) für die
+        // Diagramme in der Kundenakte, verankert am Ende des Header-Zeitraums.
+        $monthlyTrends = $this->customerMonthlyTrends($customer, $projectIds, $rangeTo);
+
         // Vollwertige Kunden-Timeline (MVP-340): serverseitiger Typ-Filter + Nachlade-Fenster (Muster wie DiaryController).
         /** @var User $viewer */
         $viewer = Auth::user();
@@ -247,6 +252,8 @@ class CustomerController extends Controller {
             'rangeMinutes' => $rangeMinutes,
             'rangeRate' => $rangeRate,
             'invoicedRange' => $invoicedRange,
+            'chartHours' => $monthlyTrends['hours'],
+            'chartRevenue' => $monthlyTrends['revenue'],
             'lexofficePlugin' => $lexoffice,
             'lexofficeContactRef' => $lexofficeContactRef,
             'lexofficeVouchers' => $lexofficeVouchers,
@@ -263,6 +270,97 @@ class CustomerController extends Controller {
                 ->limit(20)
                 ->get(),
         ]);
+    }
+
+    /**
+     * Kompakte Monats-Trends (letzte 12 Monate bis $anchor) für die Kundenakte:
+     * Zeiteinsatz (abrechenbar / nicht abrechenbar) und tatsächlich fakturierter
+     * Umsatz (Lexoffice-Belege + lokale Rechnungen, gleiche Typ-/Statuslogik wie
+     * die Umsatz-KPI). Buckets werden in PHP gefüllt (DB-agnostisch).
+     *
+     * @param  array<int>  $projectIds
+     * @return array{hours: list<array<string, float|string>>, revenue: list<array<string, float|string>>}
+     */
+    private function customerMonthlyTrends(Customer $customer, array $projectIds, CarbonImmutable $anchor): array {
+        $start = $anchor->startOfMonth()->subMonthsNoOverflow(11);
+        $end = $anchor->endOfMonth();
+
+        /** @var array<string, CarbonImmutable> $months */
+        $months = [];
+        for ($i = 0; $i < 12; $i++) {
+            $m = $start->addMonthsNoOverflow($i);
+            $months[$m->format('Y-m')] = $m;
+        }
+
+        $minutes = array_fill_keys(array_keys($months), 0);
+        $billableMinutes = array_fill_keys(array_keys($months), 0);
+        if ($projectIds !== []) {
+            TimeEntry::query()
+                ->whereIn('project_id', $projectIds)
+                ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+                ->get(['date', 'minutes', 'billable'])
+                ->each(function (TimeEntry $e) use (&$minutes, &$billableMinutes): void {
+                    $ym = $e->date instanceof \Carbon\CarbonInterface ? $e->date->format('Y-m') : substr((string) $e->date, 0, 7);
+                    if (! isset($minutes[$ym])) {
+                        return;
+                    }
+                    $minutes[$ym] += (int) $e->minutes;
+                    if ($e->billable) {
+                        $billableMinutes[$ym] += (int) $e->minutes;
+                    }
+                });
+        }
+
+        // Fakturierter Umsatz je Monat — gleiche Typ-/Statuslogik wie $invoicedRange.
+        $invoiceTypes = ['invoice', 'salesinvoice', 'purchaseinvoice'];
+        $voidStatuses = ['voided', 'cancelled'];
+        $revenue = array_fill_keys(array_keys($months), 0.0);
+
+        LexofficeVoucher::query()
+            ->where('customer_id', $customer->getKey())
+            ->where('archived', false)
+            ->whereIn('voucher_type', $invoiceTypes)
+            ->whereNotIn('voucher_status', $voidStatuses)
+            ->whereBetween('voucher_date', [$start->startOfDay(), $end->endOfDay()])
+            ->get()
+            ->each(function (LexofficeVoucher $v) use (&$revenue): void {
+                $ym = $v->voucher_date instanceof \Carbon\CarbonInterface ? $v->voucher_date->format('Y-m') : substr((string) $v->voucher_date, 0, 7);
+                if (isset($revenue[$ym])) {
+                    $revenue[$ym] += $v->total_amount?->toFloat() ?? 0.0;
+                }
+            });
+
+        if (Gate::allows('viewAny', Invoice::class)) {
+            Invoice::query()
+                ->where('customer_id', $customer->getKey())
+                ->whereIn('type', $invoiceTypes)
+                ->whereNotIn('status', $voidStatuses)
+                ->whereBetween('issued_on', [$start->toDateString(), $end->toDateString()])
+                ->get()
+                ->each(function (Invoice $inv) use (&$revenue): void {
+                    $ym = $inv->issued_on instanceof \Carbon\CarbonInterface ? $inv->issued_on->format('Y-m') : substr((string) $inv->issued_on, 0, 7);
+                    if (isset($revenue[$ym])) {
+                        $revenue[$ym] += $inv->total?->toFloat() ?? 0.0;
+                    }
+                });
+        }
+
+        $hours = [];
+        $revenueSeries = [];
+        foreach ($months as $ym => $m) {
+            $label = $m->isoFormat('MMM YY');
+            $hours[] = [
+                'x' => $label,
+                'billable' => round($billableMinutes[$ym] / 60, 1),
+                'nonbillable' => round(max(0, $minutes[$ym] - $billableMinutes[$ym]) / 60, 1),
+            ];
+            $revenueSeries[] = [
+                'x' => $label,
+                'eur' => round($revenue[$ym], 2),
+            ];
+        }
+
+        return ['hours' => $hours, 'revenue' => $revenueSeries];
     }
 
     public function create(): View {

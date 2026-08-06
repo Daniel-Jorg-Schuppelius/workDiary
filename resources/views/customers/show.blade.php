@@ -64,6 +64,24 @@
                     :hint="$statsRangeLabel . ' · ' . __('kalk. :value', ['value' => $fmtMoney($rangeRate)])" />
     </div>
 
+    {{-- Kompakte Monats-Trends (12 Monate): Zeiteinsatz & fakturierter Umsatz —
+         schneller Überblick über Auslastung und Erlös. --}}
+    <div class="grid grid-cols-1 gap-3 xl:grid-cols-2">
+        <x-charts.stacked-bar :title="__('Zeiteinsatz je Monat')" unit="h"
+                              :series="$chartHours"
+                              :bands="[
+                                  ['key' => 'billable', 'label' => __('abrechenbar')],
+                                  ['key' => 'nonbillable', 'label' => __('nicht abrechenbar'), 'hatch' => true],
+                              ]"
+                              :x-label="__('Monat')"
+                              :note="__('Erfasste Stunden der letzten 12 Monate.')" />
+        <x-charts.stacked-bar :title="__('Umsatz je Monat (fakturiert)')" unit="€"
+                              :series="$chartRevenue"
+                              :bands="[['key' => 'eur', 'label' => __('Umsatz')]]"
+                              :x-label="__('Monat')"
+                              :note="__('Fakturierte Belege (Lexoffice + lokale Rechnungen) der letzten 12 Monate.')" />
+    </div>
+
     {{-- Stammdaten --}}
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <x-card :title="__('Kontakt')" icon="contacts">
