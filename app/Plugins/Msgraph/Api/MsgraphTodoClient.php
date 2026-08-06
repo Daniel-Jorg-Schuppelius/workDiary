@@ -1,0 +1,165 @@
+<?php
+/*
+ * Created on   : Thu Aug 06 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : MsgraphTodoClient.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace App\Plugins\Msgraph\Api;
+
+use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
+use App\Models\MsgraphTaskConnection;
+use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
+use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
+use RuntimeException;
+use Throwable;
+
+/**
+ * Microsoft-To-Do-Gateway (Feature 102, Schnitt E) auf dem
+ * `php-api-toolkit`-Fundament: OAuth2-Bearer über den org-gebundenen
+ * {@see ConnectionTokenStore} inkl. transparentem Refresh.
+ *
+ * - Listen: `GET /me/todo/lists` (Paging via `@odata.nextLink`).
+ * - Aufgaben: `GET /me/todo/lists/{id}/tasks` — VOLLSTÄNDIGE Sicht für den
+ *   Abgleich (Delta-Queries sind ein Folgeausbau, Muster Intake-Client).
+ * - Anlegen mit `linkedResources` (Rückverweis in die WorkDiary-Aufgabe);
+ *   Ändern per PATCH, 404 = remote gelöscht (Aufrufer entscheidet).
+ */
+class MsgraphTodoClient {
+    private PluginApiClient $api;
+
+    private string $base;
+
+    public function __construct(private readonly MsgraphTaskConnection $connection) {
+        $this->base = MsgraphConfig::resolve()['api_base'];
+        $this->api = app(PluginHttpFactory::class)->client(MsgraphPlugin::ID, $this->base);
+
+        // Org der Verbindung explizit (Variante B: per-Org-App, queue-sicher).
+        $orgId = (int) $connection->organization_id;
+        $grant = MsgraphConfig::isConfigured($orgId) ? app(MsgraphTasksOAuth::class)->grantFor($orgId) : null;
+        $this->api->setAuthentication(new OAuth2BearerAuthentication(new ConnectionTokenStore($this->connection), $grant));
+    }
+
+    /**
+     * To-Do-Listen des Kontos (für die Zuordnungs-Auswahl).
+     *
+     * @return list<array{id: string, name: string}>
+     */
+    public function lists(): array {
+        $out = [];
+        $url = $this->base . '/me/todo/lists';
+        $query = ['$top' => '100'];
+        do {
+            $response = $this->api->getResponse($url, $query);
+            if (! $response->successful()) {
+                throw new RuntimeException('Graph /me/todo/lists fehlgeschlagen (HTTP ' . $response->status() . ').');
+            }
+            foreach ((array) $response->json('value', []) as $row) {
+                if (is_array($row) && is_string($row['id'] ?? null) && $row['id'] !== '') {
+                    $out[] = ['id' => $row['id'], 'name' => (string) ($row['displayName'] ?? $row['id'])];
+                }
+            }
+            $url = $response->json('@odata.nextLink');
+            $query = []; // nextLink trägt die Parameter bereits
+        } while (is_string($url) && $url !== '');
+
+        return $out;
+    }
+
+    /**
+     * Alle Aufgaben einer Liste (vollständige Sicht, Paging aufgelöst).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function tasks(string $listId): array {
+        $out = [];
+        $url = $this->base . '/me/todo/lists/' . rawurlencode($listId) . '/tasks';
+        $query = ['$top' => '100'];
+        do {
+            $response = $this->api->getResponse($url, $query);
+            if (! $response->successful()) {
+                throw new RuntimeException('Graph todo tasks fehlgeschlagen (HTTP ' . $response->status() . ').');
+            }
+            foreach ((array) $response->json('value', []) as $row) {
+                if (is_array($row)) {
+                    /** @var array<string, mixed> $row */
+                    $out[] = $row;
+                }
+            }
+            $url = $response->json('@odata.nextLink');
+            $query = [];
+        } while (is_string($url) && $url !== '');
+
+        return $out;
+    }
+
+    /**
+     * Legt eine Aufgabe an; Rückgabe = Graph-Task-ID.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    public function createTask(string $listId, array $payload): string {
+        $response = $this->api->postJson($this->base . '/me/todo/lists/' . rawurlencode($listId) . '/tasks', $payload);
+        if (! $response->successful()) {
+            throw new RuntimeException('Graph POST todo task fehlgeschlagen (HTTP ' . $response->status() . ').');
+        }
+
+        $id = $response->json('id');
+        if (! is_string($id) || $id === '') {
+            throw new RuntimeException('Graph-To-Do-Task ohne ID angelegt.');
+        }
+
+        return $id;
+    }
+
+    /**
+     * Aktualisiert eine Aufgabe; false = 404 (remote gelöscht).
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    public function updateTask(string $listId, string $taskId, array $payload): bool {
+        $response = $this->api->requestResponse('patch', $this->base . '/me/todo/lists/' . rawurlencode($listId) . '/tasks/' . rawurlencode($taskId), [
+            'json' => $payload,
+        ]);
+        if ($response->status() === 404) {
+            return false;
+        }
+        if (! $response->successful()) {
+            throw new RuntimeException('Graph PATCH todo task fehlgeschlagen (HTTP ' . $response->status() . ').');
+        }
+
+        return true;
+    }
+
+    /**
+     * Bestätigte Kontoidentität (`GET /me`) für das Admin-Panel.
+     *
+     * @return array{id: string, label: string}
+     */
+    public function account(): array {
+        $response = $this->api->getResponse($this->base . '/me');
+        if (! $response->successful()) {
+            throw new RuntimeException('Graph /me fehlgeschlagen (HTTP ' . $response->status() . ').');
+        }
+
+        /** @var array{id?: string, displayName?: string, mail?: string, userPrincipalName?: string} $data */
+        $data = (array) $response->json();
+
+        return [
+            'id' => (string) ($data['id'] ?? ''),
+            'label' => trim((string) ($data['displayName'] ?? '') . ' <' . (string) ($data['mail'] ?? $data['userPrincipalName'] ?? '') . '>'),
+        ];
+    }
+
+    /** Liveness/Auth-Check: Listen erreichbar. */
+    public function ping(): bool {
+        try {
+            return $this->api->getResponse($this->base . '/me/todo/lists', ['$top' => '1', '$select' => 'id'])->successful();
+        } catch (Throwable) {
+            return false;
+        }
+    }
+}

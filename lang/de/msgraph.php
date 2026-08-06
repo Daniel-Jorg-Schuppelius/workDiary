@@ -14,6 +14,42 @@ return [
     'plugin_description' => 'Publiziert Termine idempotent in einen Microsoft-365-Kalender (Microsoft Graph, OAuth2) — Nur-Publish, Ziel-Kalender wählbar.',
     'not_configured_hint' => 'MSGRAPH_CLIENT_ID/SECRET (und ggf. MSGRAPH_TENANT) sind nicht gesetzt — die Verbindung kann erst nach der App-Registrierung im Microsoft-Tenant hergestellt werden.',
 
+    // Teams-Presence auf der Anwesenheitsseite (Feature 102, F).
+    'presence' => [
+        'heading' => 'Team (Teams-Status)',
+        'state' => [
+            'Available' => 'Verfügbar',
+            'AvailableIdle' => 'Verfügbar (inaktiv)',
+            'Busy' => 'Beschäftigt',
+            'BusyIdle' => 'Beschäftigt (inaktiv)',
+            'DoNotDisturb' => 'Nicht stören',
+            'Away' => 'Abwesend',
+            'BeRightBack' => 'Bin gleich zurück',
+            'Offline' => 'Offline',
+            'PresenceUnknown' => 'Unbekannt',
+        ],
+    ],
+    // Free/Busy im Termin-Dialog (Feature 102, C2).
+    'availability' => [
+        'check' => 'Verfügbarkeit prüfen (Microsoft 365)',
+        'hint' => 'Frei/belegt der gewählten Teilnehmer im Zeitfenster — ohne Termindetails.',
+        'missing_input' => 'Bitte Beginn, Ende und mindestens einen Teilnehmer wählen.',
+        'no_connection' => 'Keine aktive Microsoft-365-Kalender-Verbindung.',
+        'failed' => 'Verfügbarkeitsabfrage fehlgeschlagen.',
+        'free' => 'frei',
+        'busy' => 'belegt',
+        'unknown' => 'unbekannt',
+    ],
+    // Per-Org-App-Registrierung (Feature 102 Variante B, Plugin-Settings-Dialog).
+    'settings' => [
+        'client_id' => 'Client-ID (eigene App-Registrierung)',
+        'client_id_help' => 'Leer = Instanz-App der Installation. Eigene Entra-App muss dieselben Redirect-URIs registrieren.',
+        'client_secret' => 'Client-Secret',
+        'client_secret_help' => 'Wird verschlüsselt gespeichert; leer lassen = gespeicherten Wert behalten.',
+        'tenant' => 'Tenant (Verzeichnis-ID)',
+        'tenant_help' => 'GUID des Entra-Tenants; leer = Wert der Instanz-App (Default „common").',
+        'tenant_invalid' => 'Tenant muss eine Verzeichnis-GUID sein (oder common/organizations/consumers).',
+    ],
     'health' => [
         'badge_ok' => 'Verbunden',
         'badge_failing' => 'Nicht erreichbar',
@@ -42,6 +78,8 @@ return [
         'default' => 'Standardkalender',
         'teams_meetings' => 'Neue Termine als Teams-Meeting anlegen (Beitrittslink)',
         'teams_meetings_hint' => 'Wirkt nur auf neu publizierte Termine — ein bestehender Termin kann Graph-seitig nicht wieder „offline" gestellt werden.',
+        'two_way' => 'Zwei-Wege: externe Änderungen als Inbox-Vorschläge importieren',
+        'two_way_hint' => 'Delta-Rückimport des Ziel-Kalenders — neue externe Termine, externe Änderungen an publizierten und Löschungen landen als Fälle in der Integrations-Inbox (nie blinde Anlage).',
     ],
 
     'flash' => [

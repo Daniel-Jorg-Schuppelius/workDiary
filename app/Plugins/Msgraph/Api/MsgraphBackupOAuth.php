@@ -10,19 +10,18 @@
 
 namespace App\Plugins\Msgraph\Api;
 
-use App\Plugins\Msgraph\MsgraphConfig;
-use App\Plugins\Support\PluginOAuthGrant;
-
 /**
  * OAuth2-Authorization-Code-Grant (+ PKCE) für das Microsoft-Graph-BACKUPZIEL
  * (Feature 017 Phase 32, MVP-363). Getrennt von Kalender- und Intake-Flow:
  * eigener Redirect, eigene Scopes (Files.ReadWrite als engste produktiv
  * verfügbare delegierte Berechtigung — bestätigtes Integrationskonto!).
+ * Backupziele sind PLATTFORMWEIT — es gilt immer die Instanz-App (ENV),
+ * der Org-Kontext-Fallback der Basis läuft dort ins Leere.
  */
-class MsgraphBackupOAuth extends PluginOAuthGrant {
+class MsgraphBackupOAuth extends MsgraphGrantBase {
     /** @return array<string, string|int|bool> */
     protected function config(): array {
-        return MsgraphConfig::resolve();
+        return \App\Plugins\Msgraph\MsgraphConfig::resolve(\App\Plugins\Msgraph\MsgraphConfig::INSTANCE);
     }
 
     protected function callbackRouteName(): string {

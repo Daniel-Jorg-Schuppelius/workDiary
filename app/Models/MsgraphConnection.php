@@ -32,6 +32,9 @@ use Illuminate\Support\Carbon;
  * @property string|null $calendar_id
  * @property string|null $calendar_name
  * @property bool $teams_meetings
+ * @property bool $two_way
+ * @property string|null $calendar_delta_link
+ * @property Carbon|null $last_imported_at
  * @property string $status
  * @property Carbon|null $last_published_at
  */
@@ -62,8 +65,11 @@ class MsgraphConnection extends Model implements RemoteCalendarConnection {
         'calendar_id',
         'calendar_name',
         'teams_meetings',
+        'two_way',
+        'calendar_delta_link',
         'status',
         'last_published_at',
+        'last_imported_at',
     ];
 
     /** @var array<string, string> */
@@ -72,7 +78,9 @@ class MsgraphConnection extends Model implements RemoteCalendarConnection {
         'refresh_token' => 'encrypted',
         'token_expires_at' => 'datetime',
         'teams_meetings' => 'boolean',
+        'two_way' => 'boolean',
         'last_published_at' => 'datetime',
+        'last_imported_at' => 'datetime',
         'last_error_at' => 'datetime',
         'disabled_at' => 'datetime',
         'connected_at' => 'datetime',

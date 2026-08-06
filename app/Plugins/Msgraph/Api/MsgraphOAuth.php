@@ -10,20 +10,13 @@
 
 namespace App\Plugins\Msgraph\Api;
 
-use App\Plugins\Msgraph\MsgraphConfig;
-use App\Plugins\Support\PluginOAuthGrant;
-
 /**
  * OAuth2-Authorization-Code-Grant (+ PKCE) gegen die Microsoft Identity
  * Platform (MVP-328, Bauturbo A8); authorize_url/token_url kommen aus
- * MsgraphConfig bereits mit eingesetztem Tenant (Default 'common').
+ * MsgraphConfig bereits mit eingesetztem Tenant (Default 'common');
+ * per-Org-App-Registrierungen über {@see MsgraphGrantBase} (Variante B).
  */
-class MsgraphOAuth extends PluginOAuthGrant {
-    /** @return array<string, string|int|bool> */
-    protected function config(): array {
-        return MsgraphConfig::resolve();
-    }
-
+class MsgraphOAuth extends MsgraphGrantBase {
     protected function callbackRouteName(): string {
         return 'admin.msgraph.oauth.callback';
     }

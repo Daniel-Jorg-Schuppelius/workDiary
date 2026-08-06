@@ -114,6 +114,7 @@ class UserOrgScopingRuleTest extends TestCase {
         'app/Services/Scim/ScimUserService.php' => 'SCIM-userName-/E-Mail-Uniqueness (global, RFC 7644 uniqueness).',
         'app/Services/Import/Specs/UserSpec.php' => 'Import-Dedup per E-Mail (global, Login-Identität); Anlage setzt organization_id.',
         'app/Services/Install/OrganizationProvisioner.php' => 'Installer: bestehendes Konto per E-Mail suchen (läuft vor/ohne Org-Kontext).',
+        'app/Services/Auth/Sso/SsoLoginService.php' => 'JIT-Provisioning (MVP-502): E-Mail-Kollisionsprüfung BEWUSST global (users.email unique, Login-Identität) — Kollision ⇒ Ablehnung statt Konto-Anlage/Verknüpfung (nOAuth-Schutz).',
         // Plattformweite Betreiber-Sichten (globaler Admin, keine Org-Bindung).
         'app/Http/Controllers/Admin/DemoTenantController.php' => 'Plattform-Admin listet Plattform-Admins (is_platform_admin), Cross-Tenant per Definition.',
         'app/Http/Controllers/Admin/LicenseAdminController.php' => 'Plattformweite Nutzerzahl als Lizenz-Fallback (globaler Betreiber-Kontext).',

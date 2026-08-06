@@ -40,7 +40,9 @@ class MsgraphIntakeClient {
         $this->base = $config['api_base'];
         $this->api = app(PluginHttpFactory::class)->client(MsgraphPlugin::ID, $this->base);
 
-        $grant = MsgraphConfig::isConfigured() ? app(MsgraphIntakeOAuth::class)->grant() : null;
+        // Org der Verbindung explizit (Variante B: per-Org-App, queue-sicher).
+        $orgId = (int) $connection->organization_id;
+        $grant = MsgraphConfig::isConfigured($orgId) ? app(MsgraphIntakeOAuth::class)->grantFor($orgId) : null;
         $this->api->setAuthentication(new OAuth2BearerAuthentication(new ConnectionTokenStore($connection, 'granted_scopes', scopeAsArray: true), $grant));
     }
 

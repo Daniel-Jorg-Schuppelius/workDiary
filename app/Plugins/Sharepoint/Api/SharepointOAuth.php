@@ -27,4 +27,9 @@ class SharepointOAuth extends PluginOAuthGrant {
     protected function callbackRouteName(): string {
         return 'admin.sharepoint.oauth.callback';
     }
+
+    /** Org explizit (Variante B: per-Org-App, queue-sicherer Token-Refresh). */
+    public function grantFor(?int $organizationId): \APIToolkit\API\Authentication\OAuth2\OAuth2AuthorizationCodeGrant {
+        return $this->buildGrant(SharepointConfig::resolve($organizationId));
+    }
 }

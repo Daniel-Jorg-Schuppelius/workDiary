@@ -37,9 +37,12 @@ class MsgraphMailClient {
         $this->base = MsgraphConfig::resolve()['api_base'];
         $this->api = app(PluginHttpFactory::class)->client(MsgraphPlugin::ID, $this->base);
 
-        // Grant nur bei vorhandener Installation-Konfiguration — ohne ihn
-        // bleibt das Bearer-Token nutzbar, nur ohne Refresh-Möglichkeit.
-        $grant = MsgraphConfig::isConfigured() ? app(MsgraphMailOAuth::class)->grant() : null;
+        // Grant nur bei vorhandener Konfiguration — ohne ihn bleibt das
+        // Bearer-Token nutzbar, nur ohne Refresh-Möglichkeit. Org der
+        // Verbindung explizit (Variante B: per-Org-App, queue-sicher —
+        // der Mail-Transport läuft im Worker ohne Org-Kontext).
+        $orgId = (int) $connection->organization_id;
+        $grant = MsgraphConfig::isConfigured($orgId) ? app(MsgraphMailOAuth::class)->grantFor($orgId) : null;
         $this->api->setAuthentication(new OAuth2BearerAuthentication(new ConnectionTokenStore($this->connection), $grant));
     }
 
@@ -114,7 +117,7 @@ class MsgraphMailClient {
         /** @var array{value?: list<array<string, mixed>>} $data */
         $data = (array) $response->json();
 
-        return array_values((array) ($data['value'] ?? []));
+        return $data['value'] ?? [];
     }
 
     /**

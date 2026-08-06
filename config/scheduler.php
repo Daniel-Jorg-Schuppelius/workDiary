@@ -466,6 +466,24 @@ return [
             'criticality' => 'integration',
             'expected_runtime_minutes' => 15,
         ],
+        // Zwei-Wege-Kalender-Rückimport (Feature 102, C3; nur two_way-Opt-in).
+        'msgraph.calendar-import' => [
+            'command' => 'msgraph:calendar-import',
+            'plugin' => 'msgraph',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 10,
+        ],
+        // Microsoft-To-Do-Abgleich (Feature 102, Schnitt E; Todoist-Muster).
+        'msgraph.todo-sync' => [
+            'command' => 'msgraph:todo-sync',
+            'plugin' => 'msgraph',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 15,
+        ],
         // Graph-Change-Notification-Subscriptions des Dokumenteingangs
         // (MS365-Plan §8): täglich anlegen/erneuern (driveItem < 30 Tage).
         'msgraph.subscriptions' => [

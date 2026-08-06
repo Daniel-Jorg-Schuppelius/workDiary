@@ -14,6 +14,42 @@ return [
     'plugin_description' => 'Publishes appointments idempotently to a Microsoft 365 calendar (Microsoft Graph, OAuth2) — publish-only, selectable target calendar.',
     'not_configured_hint' => 'MSGRAPH_CLIENT_ID/SECRET (and MSGRAPH_TENANT if needed) are not set — the connection requires an app registration in the Microsoft tenant first.',
 
+    // Teams presence on the attendance page (Feature 102, F).
+    'presence' => [
+        'heading' => 'Team (Teams status)',
+        'state' => [
+            'Available' => 'Available',
+            'AvailableIdle' => 'Available (idle)',
+            'Busy' => 'Busy',
+            'BusyIdle' => 'Busy (idle)',
+            'DoNotDisturb' => 'Do not disturb',
+            'Away' => 'Away',
+            'BeRightBack' => 'Be right back',
+            'Offline' => 'Offline',
+            'PresenceUnknown' => 'Unknown',
+        ],
+    ],
+    // Free/busy in the event dialog (Feature 102, C2).
+    'availability' => [
+        'check' => 'Check availability (Microsoft 365)',
+        'hint' => 'Free/busy of the selected participants in the time window — without event details.',
+        'missing_input' => 'Please choose start, end and at least one participant.',
+        'no_connection' => 'No active Microsoft 365 calendar connection.',
+        'failed' => 'Availability lookup failed.',
+        'free' => 'free',
+        'busy' => 'busy',
+        'unknown' => 'unknown',
+    ],
+    // Per-org app registration (Feature 102 variant B, plugin settings dialog).
+    'settings' => [
+        'client_id' => 'Client ID (own app registration)',
+        'client_id_help' => 'Empty = the installation’s instance app. An own Entra app must register the same redirect URIs.',
+        'client_secret' => 'Client secret',
+        'client_secret_help' => 'Stored encrypted; leave empty to keep the stored value.',
+        'tenant' => 'Tenant (directory ID)',
+        'tenant_help' => 'GUID of the Entra tenant; empty = the instance app’s value (default “common”).',
+        'tenant_invalid' => 'Tenant must be a directory GUID (or common/organizations/consumers).',
+    ],
     'health' => [
         'badge_ok' => 'Connected',
         'badge_failing' => 'Unreachable',
@@ -42,6 +78,8 @@ return [
         'default' => 'Default calendar',
         'teams_meetings' => 'Create new events as Teams meetings (join link)',
         'teams_meetings_hint' => 'Only affects newly published events — Graph cannot revert an existing event to offline.',
+        'two_way' => 'Two-way: import external changes as inbox proposals',
+        'two_way_hint' => 'Delta import of the target calendar — new external events, external edits to published ones and deletions become integration inbox cases (never blind creation).',
     ],
 
     'flash' => [

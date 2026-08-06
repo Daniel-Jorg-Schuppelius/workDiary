@@ -14,6 +14,42 @@ return [
     'plugin_description' => 'Publica citas de forma idempotente en un calendario de Microsoft 365 (Microsoft Graph, OAuth2): solo publicación, calendario de destino seleccionable.',
     'not_configured_hint' => 'MSGRAPH_CLIENT_ID/SECRET (y MSGRAPH_TENANT si procede) no están configurados: la conexión requiere primero un registro de aplicación en el tenant de Microsoft.',
 
+    // Presencia de Teams en la página de asistencia (Feature 102, F).
+    'presence' => [
+        'heading' => 'Equipo (estado de Teams)',
+        'state' => [
+            'Available' => 'Disponible',
+            'AvailableIdle' => 'Disponible (inactivo)',
+            'Busy' => 'Ocupado',
+            'BusyIdle' => 'Ocupado (inactivo)',
+            'DoNotDisturb' => 'No molestar',
+            'Away' => 'Ausente',
+            'BeRightBack' => 'Vuelvo enseguida',
+            'Offline' => 'Sin conexión',
+            'PresenceUnknown' => 'Desconocido',
+        ],
+    ],
+    // Free/busy en el diálogo de eventos (Feature 102, C2).
+    'availability' => [
+        'check' => 'Comprobar disponibilidad (Microsoft 365)',
+        'hint' => 'Libre/ocupado de los participantes seleccionados en la franja horaria — sin detalles de citas.',
+        'missing_input' => 'Elija inicio, fin y al menos un participante.',
+        'no_connection' => 'No hay conexión de calendario de Microsoft 365 activa.',
+        'failed' => 'La consulta de disponibilidad falló.',
+        'free' => 'libre',
+        'busy' => 'ocupado',
+        'unknown' => 'desconocido',
+    ],
+    // Registro de aplicación por organización (Feature 102 variante B).
+    'settings' => [
+        'client_id' => 'ID de cliente (registro de aplicación propio)',
+        'client_id_help' => 'Vacío = la aplicación de la instalación. Una aplicación Entra propia debe registrar las mismas URIs de redirección.',
+        'client_secret' => 'Secreto de cliente',
+        'client_secret_help' => 'Se guarda cifrado; dejar vacío para conservar el valor almacenado.',
+        'tenant' => 'Tenant (ID de directorio)',
+        'tenant_help' => 'GUID del tenant de Entra; vacío = valor de la aplicación de la instancia (por defecto «common»).',
+        'tenant_invalid' => 'El tenant debe ser un GUID de directorio (o common/organizations/consumers).',
+    ],
     'health' => [
         'badge_ok' => 'Conectado',
         'badge_failing' => 'Inaccesible',
@@ -42,6 +78,8 @@ return [
         'default' => 'Calendario predeterminado',
         'teams_meetings' => 'Crear los eventos nuevos como reuniones de Teams (enlace de acceso)',
         'teams_meetings_hint' => 'Solo afecta a los eventos publicados nuevos — Graph no puede volver a poner «offline» un evento existente.',
+        'two_way' => 'Bidireccional: importar cambios externos como propuestas',
+        'two_way_hint' => 'Importación delta del calendario de destino — los eventos externos nuevos, ediciones externas y borrados se convierten en casos de la bandeja de integraciones (nunca creación a ciegas).',
     ],
 
     'flash' => [

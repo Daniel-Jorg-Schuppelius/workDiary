@@ -52,6 +52,28 @@ class MsgraphAdminController extends ConnectionOAuthController {
         // Graph-Mail-Verbindung (Feature 102): eigener Grant, eigene Sektion.
         $mailConnection = \App\Models\MsgraphMailConnection::query()->where('organization_id', $organization->id)->first();
 
+        // Kontakt-Verbindung (Feature 102, Schnitt D): fünfter Grant.
+        $contactConnection = \App\Models\MsgraphContactConnection::query()->where('organization_id', $organization->id)->first();
+
+        // To-Do-Sync (Feature 102, Schnitt E): sechster Grant + Listen-Zuordnungen.
+        $taskConnection = \App\Models\MsgraphTaskConnection::query()->where('organization_id', $organization->id)->first();
+        $todoLists = [];
+        if ($taskConnection instanceof \App\Models\MsgraphTaskConnection && $taskConnection->isActive()) {
+            try {
+                $todoLists = (new \App\Plugins\Msgraph\Api\MsgraphTodoClient($taskConnection))->lists();
+            } catch (Throwable) {
+                $todoLists = [];
+            }
+        }
+        $taskLinks = \App\Models\MsgraphTaskListLink::query()
+            ->where('organization_id', $organization->id)
+            ->orderBy('todo_list_name')
+            ->get();
+        $projects = \App\Models\Project::query()
+            ->where('organization_id', $organization->id)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
         return view('msgraph::admin.index', [
             'configured' => MsgraphConfig::isConfigured(),
             'connection' => $connection,
@@ -59,6 +81,11 @@ class MsgraphAdminController extends ConnectionOAuthController {
             'health' => $health,
             'mailConnection' => $mailConnection,
             'mailerActive' => \App\Plugins\Msgraph\Mail\MsgraphMailTransport::inDefaultMailerChain(),
+            'contactConnection' => $contactConnection,
+            'taskConnection' => $taskConnection,
+            'todoLists' => $todoLists,
+            'taskLinks' => $taskLinks,
+            'projects' => $projects,
         ]);
     }
 
@@ -109,6 +136,7 @@ class MsgraphAdminController extends ConnectionOAuthController {
         $data = $request->validate([
             'calendar_id' => ['nullable', 'string', 'max:512'],
             'teams_meetings' => ['nullable', 'boolean'],
+            'two_way' => ['nullable', 'boolean'],
         ]);
 
         $calendarId = trim((string) ($data['calendar_id'] ?? ''));
@@ -126,13 +154,19 @@ class MsgraphAdminController extends ConnectionOAuthController {
             $calendarName = (string) $match['name'];
         }
 
+        // Kalender-Wechsel = neues Delta-Fenster: Checkpoint verwerfen (C3).
+        $calendarChanged = ($calendarId !== '' ? $calendarId : null) !== $connection->calendar_id;
+
         $connection->forceFill([
             'calendar_id' => $calendarId !== '' ? $calendarId : null,
             'calendar_name' => $calendarName,
             // Teams-Meeting-Link (C1): wirkt nur auf NEU publizierte Termine.
             'teams_meetings' => $request->boolean('teams_meetings'),
+            // Zwei-Wege (C3): Rückimport als Inbox-Vorschläge (Opt-in).
+            'two_way' => $request->boolean('two_way'),
+            'calendar_delta_link' => $calendarChanged ? null : $connection->calendar_delta_link,
         ])->save();
-        $connection->audit('msgraph.calendar_selected', ['calendar_name' => $calendarName ?? 'default', 'teams_meetings' => $connection->teams_meetings]);
+        $connection->audit('msgraph.calendar_selected', ['calendar_name' => $calendarName ?? 'default', 'teams_meetings' => $connection->teams_meetings, 'two_way' => $connection->two_way]);
 
         return back()->with('success', __('msgraph.flash.calendar_saved'));
     }

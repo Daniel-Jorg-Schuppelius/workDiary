@@ -14,6 +14,42 @@ return [
     'plugin_description' => 'Pubblica gli appuntamenti in modo idempotente in un calendario Microsoft 365 (Microsoft Graph, OAuth2) — solo pubblicazione, calendario di destinazione selezionabile.',
     'not_configured_hint' => 'MSGRAPH_CLIENT_ID/SECRET (ed eventualmente MSGRAPH_TENANT) non sono impostati — la connessione richiede prima una registrazione dell\'app nel tenant Microsoft.',
 
+    // Presenza Teams nella pagina delle presenze (Feature 102, F).
+    'presence' => [
+        'heading' => 'Team (stato Teams)',
+        'state' => [
+            'Available' => 'Disponibile',
+            'AvailableIdle' => 'Disponibile (inattivo)',
+            'Busy' => 'Occupato',
+            'BusyIdle' => 'Occupato (inattivo)',
+            'DoNotDisturb' => 'Non disturbare',
+            'Away' => 'Assente',
+            'BeRightBack' => 'Torno subito',
+            'Offline' => 'Offline',
+            'PresenceUnknown' => 'Sconosciuto',
+        ],
+    ],
+    // Free/busy nel dialogo evento (Feature 102, C2).
+    'availability' => [
+        'check' => 'Verifica disponibilità (Microsoft 365)',
+        'hint' => 'Libero/occupato dei partecipanti selezionati nella finestra oraria — senza dettagli degli appuntamenti.',
+        'missing_input' => 'Selezionare inizio, fine e almeno un partecipante.',
+        'no_connection' => 'Nessuna connessione calendario Microsoft 365 attiva.',
+        'failed' => 'Richiesta di disponibilità non riuscita.',
+        'free' => 'libero',
+        'busy' => 'occupato',
+        'unknown' => 'sconosciuto',
+    ],
+    // Registrazione app per organizzazione (Feature 102 variante B).
+    'settings' => [
+        'client_id' => 'ID client (registrazione app propria)',
+        'client_id_help' => 'Vuoto = l’app dell’installazione. Un’app Entra propria deve registrare le stesse URI di reindirizzamento.',
+        'client_secret' => 'Segreto client',
+        'client_secret_help' => 'Salvato cifrato; lasciare vuoto per mantenere il valore memorizzato.',
+        'tenant' => 'Tenant (ID directory)',
+        'tenant_help' => 'GUID del tenant Entra; vuoto = valore dell’app di istanza (predefinito «common»).',
+        'tenant_invalid' => 'Il tenant deve essere un GUID di directory (oppure common/organizations/consumers).',
+    ],
     'health' => [
         'badge_ok' => 'Connesso',
         'badge_failing' => 'Non raggiungibile',
@@ -42,6 +78,8 @@ return [
         'default' => 'Calendario predefinito',
         'teams_meetings' => 'Creare i nuovi eventi come riunioni Teams (link di partecipazione)',
         'teams_meetings_hint' => 'Riguarda solo gli eventi pubblicati ex novo — Graph non può riportare «offline» un evento esistente.',
+        'two_way' => 'Bidirezionale: importare le modifiche esterne come proposte',
+        'two_way_hint' => 'Importazione delta del calendario di destinazione — nuovi eventi esterni, modifiche esterne e cancellazioni diventano casi della inbox delle integrazioni (mai creazione cieca).',
     ],
 
     'flash' => [

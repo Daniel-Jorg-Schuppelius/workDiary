@@ -116,8 +116,10 @@ return [
         'location' => ['purge_points' => 'Purger les points de localisation bruts'],
         'mail' => ['poll' => 'Relever la boîte mail entrante'],
         'msgraph' => [
+            'calendar-import' => 'Import bidirectionnel du calendrier',
             'publish' => 'Rapprochement de publication du calendrier Microsoft 365',
             'subscriptions' => 'Renouveler les abonnements webhook Microsoft 365',
+            'todo-sync' => 'Synchronisation Microsoft To Do',
         ],
         'maintenance' => ['scan_due' => 'Vérifier les plans de maintenance échus'],
         'notifications' => ['scan_deadlines' => 'Contrôler les échéances et notifier'],

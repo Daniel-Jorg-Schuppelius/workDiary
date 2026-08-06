@@ -42,4 +42,10 @@ return [
     // Für Shared-Mailbox-Absender (from_address) zusätzlich 'Mail.Send.Shared' ergänzen
     // (plus Exchange-Recht „Send As"/„Send on Behalf" für das verbundene Konto).
     'mail_scopes' => env('MSGRAPH_MAIL_SCOPES', 'offline_access User.Read Mail.Send'),
+    // Kontakt-Push (Feature 102, Schnitt D): eigene Verbindung je Organisation,
+    // delegated Contacts.ReadWrite (nur die Kontakte des verbundenen Kontos).
+    'contacts_scopes' => env('MSGRAPH_CONTACTS_SCOPES', 'offline_access User.Read Contacts.ReadWrite'),
+    // To-Do-Sync (Feature 102, Schnitt E): eigene Verbindung je Organisation,
+    // delegated Tasks.ReadWrite (nur die To-Do-Listen des verbundenen Kontos).
+    'tasks_scopes' => env('MSGRAPH_TASKS_SCOPES', 'offline_access User.Read Tasks.ReadWrite'),
 ];

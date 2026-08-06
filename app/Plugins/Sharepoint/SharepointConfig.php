@@ -25,12 +25,16 @@ namespace App\Plugins\Sharepoint;
  */
 class SharepointConfig {
     /** @return array{client_id: string, client_secret: string, tenant: string, api_base: string, authorize_url: string, token_url: string, scopes: string} */
-    public static function resolve(): array {
-        $tenant = trim((string) (config('plugins.sharepoint.tenant') ?: config('plugins.msgraph.tenant', 'common'))) ?: 'common';
+    public static function resolve(?int $organizationId = null): array {
+        // Fallback-Kette (Variante B): eigene SHAREPOINT_*-ENV → per-Org-App
+        // des Msgraph-Plugins (Settings-Overlay) → Msgraph-Instanz-ENV.
+        $msgraph = \App\Plugins\Msgraph\MsgraphConfig::resolve($organizationId);
+
+        $tenant = trim((string) (config('plugins.sharepoint.tenant') ?: $msgraph['tenant'])) ?: 'common';
 
         return [
-            'client_id' => (string) (config('plugins.sharepoint.client_id') ?: config('plugins.msgraph.client_id', '')),
-            'client_secret' => (string) (config('plugins.sharepoint.client_secret') ?: config('plugins.msgraph.client_secret', '')),
+            'client_id' => (string) (config('plugins.sharepoint.client_id') ?: $msgraph['client_id']),
+            'client_secret' => (string) (config('plugins.sharepoint.client_secret') ?: $msgraph['client_secret']),
             'tenant' => $tenant,
             'api_base' => rtrim((string) config('plugins.sharepoint.api_base', 'https://graph.microsoft.com/v1.0'), '/'),
             'authorize_url' => str_replace('{tenant}', $tenant, (string) config('plugins.sharepoint.authorize_url', 'https://login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize')),
@@ -39,8 +43,8 @@ class SharepointConfig {
         ];
     }
 
-    public static function isConfigured(): bool {
-        $config = self::resolve();
+    public static function isConfigured(?int $organizationId = null): bool {
+        $config = self::resolve($organizationId);
 
         return $config['client_id'] !== '' && $config['client_secret'] !== '';
     }

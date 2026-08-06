@@ -40,8 +40,16 @@ abstract class PluginOAuthGrant {
     }
 
     public function grant(): OAuth2AuthorizationCodeGrant {
-        $config = $this->config();
+        return $this->buildGrant($this->config());
+    }
 
+    /**
+     * Grant aus einer konkreten Config bauen — Einstiegspunkt für org-bewusste
+     * Subklassen (per-Org-App-Registrierungen, Feature 102 Variante B).
+     *
+     * @param array<string, string|int|bool> $config
+     */
+    protected function buildGrant(array $config): OAuth2AuthorizationCodeGrant {
         return new OAuth2AuthorizationCodeGrant(
             clientId: (string) $config['client_id'],
             clientSecret: (string) $config['client_secret'],

@@ -34,7 +34,9 @@ final class PluginSettingsResolver {
     public static function for(string $pluginId, ?int $organizationId = null, ?string $configKey = null): self {
         $organizationId ??= PluginOrgContext::currentId();
         $row = null;
-        if ($organizationId !== null) {
+        // IDs ≤ 0 sind keine reale Organisation (0 = Instanz-Sentinel bzw.
+        // ungesetzte Stub-Verbindung) → reine Config-Auflösung, kein DB-Zugriff.
+        if ($organizationId !== null && $organizationId > 0) {
             $row = PluginSetting::query()
                 ->withoutGlobalScopes()
                 ->where('organization_id', $organizationId)
