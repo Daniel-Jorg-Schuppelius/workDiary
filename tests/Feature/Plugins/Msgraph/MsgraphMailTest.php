@@ -241,6 +241,48 @@ final class MsgraphMailTest extends TestCase {
         $this->assertSame(1, (int) $fresh->consecutive_failures);
         $this->assertNotNull($fresh->last_error);
     }
+
+    public function test_large_attachment_uses_draft_upload_session_and_send(): void {
+        $this->connection();
+        $fake = FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/messages/draft-1/attachments/createUploadSession' => FakePluginHttp::response(['uploadUrl' => 'https://upload.graph.test/session-1']),
+            'https://graph.microsoft.com/v1.0/me/messages/draft-1/send' => FakePluginHttp::response(null, 202),
+            'https://graph.microsoft.com/v1.0/me/messages' => FakePluginHttp::response(['id' => 'draft-1'], 201),
+            'https://upload.graph.test/session-1' => FakePluginHttp::response(null, 201),
+        ]);
+
+        Mail::mailer('msgraph')->to('kunde@example.test')->send(new MsgraphLargeAttachmentTestMail());
+
+        // Kein sendMail-Direktversand — der Draft-Weg übernimmt.
+        $fake->assertNotSent(fn ($request): bool => str_contains((string) $request->getUri(), '/me/sendMail'));
+
+        // Draft trägt den kleinen Anhang inline, den großen NICHT.
+        $fake->assertSent(function ($request): bool {
+            if ($request->getMethod() !== 'POST' || ! str_ends_with((string) $request->getUri(), '/me/messages')) {
+                return false;
+            }
+            /** @var array{subject?: string, attachments?: list<array{name?: string}>} $payload */
+            $payload = (array) json_decode((string) $request->getBody(), true);
+            $attachments = (array) ($payload['attachments'] ?? []);
+
+            return ($payload['subject'] ?? null) === 'Große Anlage'
+                && count($attachments) === 1
+                && (($attachments[0]['name'] ?? null) === 'klein.pdf');
+        });
+
+        // Upload-Session-Chunk: Content-Range über die Gesamtgröße, an die Session-URL.
+        $size = \App\Plugins\Msgraph\Mail\MsgraphMailTransport::INLINE_ATTACHMENT_LIMIT + 1;
+        $fake->assertSent(fn ($request): bool => $request->getMethod() === 'PUT'
+            && str_contains((string) $request->getUri(), 'upload.graph.test')
+            && $request->getHeaderLine('Content-Range') === sprintf('bytes 0-%d/%d', $size - 1, $size));
+
+        $fake->assertSent(fn ($request): bool => $request->getMethod() === 'POST'
+            && str_ends_with((string) $request->getUri(), '/me/messages/draft-1/send'));
+
+        $fresh = MsgraphMailConnection::query()->firstOrFail();
+        $this->assertNotNull($fresh->last_sent_at);
+        $this->assertSame(0, (int) $fresh->consecutive_failures);
+    }
 }
 
 /** Benannte Test-Mailable (PHPStan-freundlich): HTML-Body, X-Header, PDF-Anhang. */
@@ -277,6 +319,28 @@ class MsgraphOrgHeaderTestMail extends Mailable {
 
     public function headers(): Headers {
         return new Headers(text: [\App\Plugins\Msgraph\Mail\MsgraphMailTransport::HEADER_ORGANIZATION => (string) $this->organizationId]);
+    }
+}
+
+/** Test-Mailable mit einem Anhang über der 3-MiB-Inline-Grenze (Draft-/Upload-Session-Weg). */
+class MsgraphLargeAttachmentTestMail extends Mailable {
+    public function envelope(): Envelope {
+        return new Envelope(subject: 'Große Anlage');
+    }
+
+    public function content(): Content {
+        return new Content(htmlString: '<p>Scan im Anhang</p>');
+    }
+
+    /** @return array<int, Attachment> */
+    public function attachments(): array {
+        return [
+            Attachment::fromData(static fn (): string => 'PDF-KLEIN', 'klein.pdf')->withMime('application/pdf'),
+            Attachment::fromData(
+                static fn (): string => str_repeat('X', \App\Plugins\Msgraph\Mail\MsgraphMailTransport::INLINE_ATTACHMENT_LIMIT + 1),
+                'scan-gross.tiff',
+            )->withMime('image/tiff'),
+        ];
     }
 }
 

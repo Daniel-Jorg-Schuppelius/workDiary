@@ -14,6 +14,7 @@ use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
 use App\Models\MsgraphTaskConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
+use App\Services\CloudIntake\StaleCheckpointException;
 use RuntimeException;
 use Throwable;
 
@@ -23,12 +24,14 @@ use Throwable;
  * {@see ConnectionTokenStore} inkl. transparentem Refresh.
  *
  * - Listen: `GET /me/todo/lists` (Paging via `@odata.nextLink`).
- * - Aufgaben: `GET /me/todo/lists/{id}/tasks` — VOLLSTÄNDIGE Sicht für den
- *   Abgleich (Delta-Queries sind ein Folgeausbau, Muster Intake-Client).
+ * - Aufgaben: `GET /me/todo/lists/{id}/tasks` — VOLLSTÄNDIGE Sicht; für
+ *   Folgeläufe {@see tasksDelta()} (nur Änderungen inkl. `@removed`).
  * - Anlegen mit `linkedResources` (Rückverweis in die WorkDiary-Aufgabe);
  *   Ändern per PATCH, 404 = remote gelöscht (Aufrufer entscheidet).
  */
-class MsgraphTodoClient {
+class MsgraphTodoClient implements GraphSubscriptionClient {
+    use Concerns\ManagesGraphSubscriptions;
+
     private PluginApiClient $api;
 
     private string $base;
@@ -94,6 +97,44 @@ class MsgraphTodoClient {
         } while (is_string($url) && $url !== '');
 
         return $out;
+    }
+
+    /**
+     * Delta-Seite der Aufgaben einer Liste (Feature 102, Folgeausbau): erste
+     * Seite ohne Checkpoint = vollständige Sicht inkl. finalem Delta-Token;
+     * Folge-Aufrufe über die absolute Checkpoint-URL liefern nur Änderungen —
+     * gelöschte Aufgaben als `@removed`-Einträge. 410 Gone (Token abgelaufen)
+     * ⇒ {@see StaleCheckpointException}, der Aufrufer startet voll neu.
+     *
+     * @return array{items: list<array<string, mixed>>, checkpoint: string, hasMore: bool}
+     */
+    public function tasksDelta(string $listId, ?string $checkpoint): array {
+        if ($checkpoint === null || $checkpoint === '') {
+            $response = $this->api->getResponse($this->base . '/me/todo/lists/' . rawurlencode($listId) . '/tasks/delta', ['$top' => '100']);
+        } else {
+            $response = $this->api->getResponse($checkpoint); // absolute next-/deltaLink-URL
+        }
+
+        if ($response->status() === 410) {
+            throw new StaleCheckpointException('To-Do-Delta-Token abgelaufen (410 Gone).');
+        }
+        if (! $response->successful()) {
+            throw new RuntimeException('Graph todo tasks/delta fehlgeschlagen (HTTP ' . $response->status() . ').');
+        }
+
+        /** @var array{value?: list<array<string, mixed>>, '@odata.nextLink'?: string, '@odata.deltaLink'?: string} $data */
+        $data = (array) $response->json();
+
+        // Direkt aus dem Array — json('@odata.…') würde die Punkte als
+        // Pfad-Notation deuten (Intake-Client-Muster).
+        $nextLink = isset($data['@odata.nextLink']) ? (string) $data['@odata.nextLink'] : null;
+        $deltaLink = isset($data['@odata.deltaLink']) ? (string) $data['@odata.deltaLink'] : null;
+
+        return [
+            'items' => $data['value'] ?? [],
+            'checkpoint' => (string) ($nextLink ?? $deltaLink ?? ''),
+            'hasMore' => $nextLink !== null && $nextLink !== '',
+        ];
     }
 
     /**

@@ -164,6 +164,93 @@ final class MsgraphCalendarImportTest extends TestCase {
         $this->assertDatabaseHas('integration_inbox_items', ['dedupe_key' => 'calendar-deleted:evt-geloescht']);
     }
 
+    // ── Folgeausbau: Vorschlag-Übernahme („Neu anlegen" → Event) ────────
+
+    public function test_proposal_carries_mapped_snapshot_and_inbox_create_builds_event(): void {
+        $connection = $this->connection();
+        FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/calendarView/delta*' => FakePluginHttp::response([
+                'value' => [$this->remoteEvent(['organizer' => ['emailAddress' => ['address' => 'orga@extern.example']]])],
+                '@odata.deltaLink' => 'https://graph.microsoft.com/v1.0/me/calendarView/delta?token=m1',
+            ]),
+        ]);
+        app(MsgraphCalendarImportService::class)->run($connection->fresh());
+
+        $item = IntegrationInboxItem::query()->firstOrFail();
+        $mapped = (array) $item->mapped_snapshot;
+        $expectedStart = Carbon::parse('2026-08-20T09:00:00', 'UTC')
+            ->setTimezone((string) config('app.timezone'))
+            ->format('Y-m-d H:i:s');
+        $this->assertSame('Externer Kundentermin', $mapped['title'] ?? null);
+        $this->assertSame('meeting', $mapped['event_type'] ?? null);
+        $this->assertSame($expectedStart, $mapped['started_at'] ?? null);
+        $this->assertSame('orga@extern.example', $mapped['external_contact_note'] ?? null);
+
+        // „Neu anlegen" über die generische Inbox-Aktion: Event + Referenz —
+        // der Publish führt den Termin fortan (Zwei-Wege-Bindung).
+        $event = app(\App\Services\Integration\InboxActionService::class)->createFromItem($item);
+
+        $this->assertInstanceOf(Event::class, $event);
+        $this->assertSame('Externer Kundentermin', $event->title);
+        $this->assertSame($expectedStart, $event->started_at?->format('Y-m-d H:i:s'));
+        $this->assertDatabaseHas('external_references', [
+            'plugin_id' => MsgraphPlugin::ID,
+            'external_type' => RemoteCalendarPublishService::EXTERNAL_TYPE,
+            'external_id' => 'evt-extern',
+            'referenceable_id' => $event->getKey(),
+        ]);
+        $this->assertSame(IntegrationInboxItem::STATUS_RESOLVED_CREATED, $item->fresh()?->status);
+    }
+
+    // ── Folgeausbau: Serien-Master → RRULE ──────────────────────────────
+
+    public function test_series_master_proposal_maps_recurrence_to_rrule(): void {
+        $connection = $this->connection();
+        FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/calendarView/delta*' => FakePluginHttp::response([
+                'value' => [$this->remoteEvent([
+                    'id' => 'evt-serie-master',
+                    'subject' => 'Jour fixe',
+                    'type' => 'seriesMaster',
+                    'recurrence' => [
+                        'pattern' => ['type' => 'weekly', 'interval' => 2, 'daysOfWeek' => ['monday', 'wednesday']],
+                        'range' => ['type' => 'endDate', 'endDate' => '2026-12-31'],
+                    ],
+                ])],
+                '@odata.deltaLink' => 'https://graph.microsoft.com/v1.0/me/calendarView/delta?token=serie',
+            ]),
+        ]);
+
+        $result = app(MsgraphCalendarImportService::class)->run($connection->fresh());
+
+        $this->assertSame(1, $result['proposals']);
+        $mapped = (array) IntegrationInboxItem::query()->firstOrFail()->mapped_snapshot;
+        $this->assertSame('FREQ=WEEKLY;BYDAY=MO,WE;INTERVAL=2;UNTIL=20261231', $mapped['recurrence_rule'] ?? null);
+        $this->assertSame('2026-12-31', $mapped['series_until'] ?? null);
+
+        // Nicht abbildbares Muster ⇒ Einzeltermin-Übernahme (Regel bleibt leer).
+        FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/calendarView/delta?token=serie' => FakePluginHttp::response([
+                'value' => [$this->remoteEvent([
+                    'id' => 'evt-serie-unbekannt',
+                    'type' => 'seriesMaster',
+                    'recurrence' => [
+                        'pattern' => ['type' => 'relativeYearly'],
+                        'range' => ['type' => 'noEnd'],
+                    ],
+                ])],
+                '@odata.deltaLink' => 'https://graph.microsoft.com/v1.0/me/calendarView/delta?token=serie2',
+            ]),
+        ]);
+        app(MsgraphCalendarImportService::class)->run($connection->fresh());
+
+        $fallback = (array) IntegrationInboxItem::query()
+            ->where('dedupe_key', 'calendar-proposal:evt-serie-unbekannt')
+            ->firstOrFail()
+            ->mapped_snapshot;
+        $this->assertArrayNotHasKey('recurrence_rule', $fallback);
+    }
+
     public function test_command_runs_only_for_two_way_connections(): void {
         $this->connection(['two_way' => false]);
         $idle = FakePluginHttp::fake();

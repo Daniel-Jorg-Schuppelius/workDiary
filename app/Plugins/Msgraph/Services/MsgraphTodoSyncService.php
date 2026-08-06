@@ -16,6 +16,8 @@ use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Models\{ExternalReference, IntegrationInboxItem, MsgraphTaskConnection, MsgraphTaskListLink, Organization, Task};
 use App\Plugins\Msgraph\Api\MsgraphTodoClient;
 use App\Plugins\Msgraph\MsgraphPlugin;
+use App\Plugins\Msgraph\Observers\MsgraphTodoTaskObserver;
+use App\Services\CloudIntake\StaleCheckpointException;
 use Illuminate\Support\Collection;
 use Throwable;
 
@@ -31,9 +33,12 @@ use Throwable;
  *
  * Unterschiede zu Todoist (bewusst, To-Do-API): keine Abschnitte, keine
  * Bearbeiter-Zuordnung, keine Unteraufgaben (Checklist-Items sind kein
- * Task-Baum); Export läuft im Sync-Lauf (Observer-Live-Spiegelung ist ein
- * dokumentierter Folgeausbau). Neue Exporte tragen eine `linkedResource`
- * zurück zur WorkDiary-Aufgabe.
+ * Task-Baum). Neue Exporte tragen eine `linkedResource` zurück zur
+ * WorkDiary-Aufgabe. Der Import läuft über die Delta-Query (Checkpoint
+ * `delta_link` je Listen-Link); der Export zusätzlich live über den
+ * {@see \App\Plugins\Msgraph\Observers\MsgraphTodoTaskObserver} →
+ * {@see MsgraphOutboxDispatcher} ({@see exportTask()}) — der Sync-Lauf
+ * bleibt die heilende Quelle.
  */
 class MsgraphTodoSyncService {
     /** Felder des gemeinsamen base-Snapshots (Konfliktbasis). */
@@ -86,7 +91,7 @@ class MsgraphTodoSyncService {
         $client = new MsgraphTodoClient($connection);
 
         if ($link->importsFromTodo()) {
-            $result = $this->import($link, collect($client->tasks($link->todo_list_id)));
+            $result = $this->importFromRemote($link, $client);
             foreach ($counters as $key => $value) {
                 $counters[$key] = $value + $result[$key];
             }
@@ -105,6 +110,106 @@ class MsgraphTodoSyncService {
     }
 
     // ── Import: To Do → WorkDiary (3-Wege-Kern, Todoist-Muster) ─────────
+
+    /**
+     * Import über die Delta-Query (Folgeausbau): ohne Checkpoint liefert die
+     * Delta-Kette die VOLLSTÄNDIGE Sicht (inkl. Lösch-Voll-Abgleich), mit
+     * Checkpoint nur Änderungen — `@removed`-Einträge werden explizit als
+     * remote-gelöscht behandelt, `flagRemoteDeletions()` entfällt dort
+     * (Teilsicht!). Abgelaufener Checkpoint (410) ⇒ Neuaufbau ab voller Sicht.
+     *
+     * @return array{created: int, updated: int, unchanged: int, conflicts: int, inbox: int, failed: int}
+     */
+    private function importFromRemote(MsgraphTaskListLink $link, MsgraphTodoClient $client): array {
+        $checkpoint = trim((string) $link->delta_link);
+        $incremental = $checkpoint !== '';
+
+        try {
+            [$items, $newCheckpoint] = $this->collectDelta($client, $link->todo_list_id, $incremental ? $checkpoint : null);
+        } catch (StaleCheckpointException) {
+            $link->forceFill(['delta_link' => null])->save();
+            [$items, $newCheckpoint] = $this->collectDelta($client, $link->todo_list_id, null);
+            $incremental = false;
+        }
+
+        $remoteTasks = collect($items);
+        $result = $incremental
+            ? $this->importDelta($link, $remoteTasks)
+            // Erstlauf: @removed defensiv ausfiltern (volle Sicht kennt nur Bestand).
+            : $this->import($link, $remoteTasks->filter(fn (array $t): bool => ! isset($t['@removed']))->values());
+
+        if ($newCheckpoint !== '') {
+            $link->forceFill(['delta_link' => $newCheckpoint])->save();
+        }
+
+        return $result;
+    }
+
+    /**
+     * Löst die Delta-Kette vollständig auf (nextLink-Seiten bis zum deltaLink).
+     *
+     * @return array{0: list<array<string, mixed>>, 1: string}
+     */
+    private function collectDelta(MsgraphTodoClient $client, string $listId, ?string $checkpoint): array {
+        $items = [];
+        do {
+            $page = $client->tasksDelta($listId, $checkpoint);
+            foreach ($page['items'] as $item) {
+                $items[] = $item;
+            }
+            $checkpoint = $page['checkpoint'];
+        } while ($page['hasMore']);
+
+        return [$items, (string) $checkpoint];
+    }
+
+    /**
+     * Inkrementeller Import einer Delta-Änderungsmenge (Teilsicht).
+     *
+     * @param  Collection<int, array<string, mixed>>  $changes
+     * @return array{created: int, updated: int, unchanged: int, conflicts: int, inbox: int, failed: int}
+     */
+    private function importDelta(MsgraphTaskListLink $link, Collection $changes): array {
+        $counters = self::emptyCounters();
+
+        $removedIds = $changes
+            ->filter(fn (array $t): bool => isset($t['@removed']))
+            ->pluck('id')
+            ->map(fn ($id) => (string) $id)
+            ->filter(fn (string $id): bool => $id !== '')
+            ->values();
+        $active = $changes->filter(fn (array $t): bool => ! isset($t['@removed']))->values();
+
+        /** @var Collection<string, ExternalReference> $references */
+        $references = ExternalReference::query()
+            ->forPlugin($link->organization_id, MsgraphPlugin::ID, MsgraphPlugin::EXT_TYPE_TODO_TASK)
+            ->whereIn('external_id', $active->pluck('id')->map(fn ($id) => (string) $id)->all())
+            ->get()
+            ->keyBy('external_id');
+
+        foreach ($active as $remote) {
+            try {
+                $counters[$this->importOne($link, $remote, $references)]++;
+            } catch (Throwable) {
+                $counters['failed']++;
+            }
+        }
+
+        // Teilsicht: NUR explizit gemeldete Löschungen markieren.
+        foreach ($removedIds as $externalId) {
+            $reference = ExternalReference::query()
+                ->forPlugin($link->organization_id, MsgraphPlugin::ID, MsgraphPlugin::EXT_TYPE_TODO_TASK)
+                ->where('external_id', $externalId)
+                ->first();
+            if ($reference !== null
+                && ($reference->payload['list_id'] ?? null) === $link->todo_list_id
+                && $this->markRemoteDeleted($link, $reference)) {
+                $counters['inbox']++;
+            }
+        }
+
+        return $counters;
+    }
 
     /**
      * @param  Collection<int, array<string, mixed>>  $remoteTasks
@@ -148,7 +253,9 @@ class MsgraphTodoSyncService {
         $mapped = $this->mapRemote($remote);
 
         if ($reference === null) {
-            $task = Task::query()->create([
+            // In suppressed() gekapselt, damit der created-Export-Trigger die
+            // Import-Übernahme nicht als Echo zurück nach To Do spiegelt.
+            $task = MsgraphTodoTaskObserver::suppressed(fn (): Task => Task::query()->create([
                 'organization_id' => $link->organization_id,
                 'project_id' => $link->target_kind === MsgraphTaskListLink::KIND_PROJECT ? $link->project_id : null,
                 'is_global' => $link->target_kind === MsgraphTaskListLink::KIND_GLOBAL_KANBAN,
@@ -157,7 +264,7 @@ class MsgraphTodoSyncService {
                 'status' => $mapped['status'],
                 'priority' => $mapped['priority'],
                 'due_date' => $mapped['due_date'],
-            ]);
+            ]));
 
             $references->put($externalId, ExternalReference::query()->create([
                 'organization_id' => $link->organization_id,
@@ -236,7 +343,7 @@ class MsgraphTodoSyncService {
         }
 
         if ($changes !== []) {
-            $task->forceFill($changes)->save();
+            MsgraphTodoTaskObserver::suppressed(fn () => $task->forceFill($changes)->save());
         }
 
         // base nur für übernommene Felder fortschreiben — Konfliktfelder
@@ -258,7 +365,23 @@ class MsgraphTodoSyncService {
         return $conflicts !== [] ? 'conflicts' : 'updated';
     }
 
-    // ── Export: WorkDiary → To Do (im Sync-Lauf) ────────────────────────
+    // ── Export: WorkDiary → To Do (im Sync-Lauf + live via Outbox) ──────
+
+    /**
+     * Live-Export einer einzelnen Aufgabe ({@see MsgraphOutboxDispatcher},
+     * Folgeausbau): exakt die Export-Logik des Sync-Laufs — base-Diff,
+     * Konflikt-Sperre, remote-gelöscht-Markierung, Create mit linkedResource.
+     *
+     * @return 'created'|'updated'|'unchanged'|null
+     */
+    public function exportTask(MsgraphTaskListLink $link, MsgraphTaskConnection $connection, Task $task): ?string {
+        $reference = ExternalReference::query()
+            ->forPlugin($link->organization_id, MsgraphPlugin::ID, MsgraphPlugin::EXT_TYPE_TODO_TASK)
+            ->forReferenceable($task)
+            ->first();
+
+        return $this->exportOne($link, new MsgraphTodoClient($connection), $task, $reference);
+    }
 
     /** @return array{created: int, updated: int, unchanged: int, conflicts: int, inbox: int, failed: int} */
     private function export(MsgraphTaskListLink $link, MsgraphTodoClient $client): array {

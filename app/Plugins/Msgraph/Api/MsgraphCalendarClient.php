@@ -30,7 +30,9 @@ use Throwable;
  * - Ändern: PATCH `/me/events/{id}`; Löschen: DELETE (404 = idempotent ok).
  * - Fehlersemantik wie CalDAV-Gateway: Transport-/HTTP-Fehler ⇒ null/false.
  */
-class MsgraphCalendarClient implements RemoteCalendarGateway {
+class MsgraphCalendarClient implements RemoteCalendarGateway, GraphSubscriptionClient {
+    use Concerns\ManagesGraphSubscriptions;
+
     private PluginApiClient $api;
 
     private string $base;

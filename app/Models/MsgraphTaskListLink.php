@@ -29,6 +29,10 @@ use Illuminate\Support\Carbon;
  * @property int|null $project_id
  * @property string $sync_mode
  * @property string $status
+ * @property string|null $delta_link
+ * @property string|null $subscription_id
+ * @property Carbon|null $subscription_expires_at
+ * @property string|null $webhook_secret
  * @property Carbon|null $last_run_at
  * @property array<string, int>|null $last_run_counters
  */
@@ -64,10 +68,17 @@ class MsgraphTaskListLink extends Model {
         'last_run_counters',
     ];
 
+    /** @var list<string> */
+    protected $hidden = [
+        'webhook_secret',
+    ];
+
     /** @var array<string, string> */
     protected $casts = [
         'last_run_at' => 'datetime',
         'last_run_counters' => 'array',
+        'subscription_expires_at' => 'datetime',
+        'webhook_secret' => 'encrypted',
     ];
 
     /** @return BelongsTo<Project, $this> */

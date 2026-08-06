@@ -78,6 +78,12 @@ Route::middleware(['api', 'throttle:webhook-ingest'])
     ->post('api/webhooks/msgraph-intake', \App\Plugins\Msgraph\Http\Controllers\MsgraphIntakeWebhookController::class)
     ->name('api.webhooks.msgraph-intake');
 
+// Generischer Graph-Webhook (Feature 102, Folgeausbau): Zwei-Wege-Kalender,
+// To-Do-Listen, Graph-Postfächer — Zuordnung über subscriptionId+clientState.
+Route::middleware(['api', 'throttle:webhook-ingest'])
+    ->post('api/webhooks/msgraph', \App\Plugins\Msgraph\Http\Controllers\MsgraphChangeWebhookController::class)
+    ->name('api.webhooks.msgraph');
+
 // ── Cloud-Backupziel (Feature 017 Phase 32, MVP-363) ────────────────────
 // Systemweiter OAuth-Flow (Plattform-Admin, Policy im Controller);
 // eigene Verbindung + Schreib-Scopes, getrennt vom Dokumenteingang.

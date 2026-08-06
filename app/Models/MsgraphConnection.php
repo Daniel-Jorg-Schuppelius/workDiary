@@ -35,6 +35,9 @@ use Illuminate\Support\Carbon;
  * @property bool $two_way
  * @property string|null $calendar_delta_link
  * @property Carbon|null $last_imported_at
+ * @property string|null $subscription_id
+ * @property Carbon|null $subscription_expires_at
+ * @property string|null $webhook_secret
  * @property string $status
  * @property Carbon|null $last_published_at
  */
@@ -54,6 +57,7 @@ class MsgraphConnection extends Model implements RemoteCalendarConnection {
     protected $hidden = [
         'access_token',
         'refresh_token',
+        'webhook_secret',
     ];
 
     protected $fillable = [
@@ -79,6 +83,8 @@ class MsgraphConnection extends Model implements RemoteCalendarConnection {
         'token_expires_at' => 'datetime',
         'teams_meetings' => 'boolean',
         'two_way' => 'boolean',
+        'subscription_expires_at' => 'datetime',
+        'webhook_secret' => 'encrypted',
         'last_published_at' => 'datetime',
         'last_imported_at' => 'datetime',
         'last_error_at' => 'datetime',

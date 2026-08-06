@@ -11,9 +11,10 @@
 namespace Tests\Feature\Plugins\Msgraph;
 
 use App\Enums\Task\{TaskPriority, TaskStatus};
-use App\Models\{ExternalReference, IntegrationInboxItem, MsgraphTaskConnection, MsgraphTaskListLink, Project, Task, User};
+use App\Models\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry, MsgraphTaskConnection, MsgraphTaskListLink, Project, Task, User};
 use App\Plugins\Contracts\{PluginCapability, TaskSyncer};
 use App\Plugins\Msgraph\MsgraphPlugin;
+use App\Plugins\Msgraph\Services\MsgraphOutboxDispatcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -225,5 +226,139 @@ final class MsgraphTodoSyncTest extends TestCase {
         ]);
 
         $this->artisan('msgraph:todo-sync')->assertExitCode(0);
+    }
+
+    // ── Folgeausbau: Delta-Queries ──────────────────────────────────────
+
+    public function test_import_uses_delta_checkpoint_and_flags_only_reported_removals(): void {
+        $this->connection();
+        $project = Project::factory()->create(['organization_id' => $this->organization->id]);
+        $link = $this->link($project);
+
+        FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/delta*' => FakePluginHttp::response([
+                'value' => [$this->remoteTask(), $this->remoteTask(['id' => 'todo-2', 'title' => 'Backup prüfen'])],
+                '@odata.deltaLink' => 'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/delta?$deltatoken=chk-1',
+            ]),
+        ]);
+        $first = (new MsgraphPlugin())->syncTasks($this->organization);
+
+        $this->assertSame(2, $first['created']);
+        $this->assertStringContainsString('chk-1', (string) $link->fresh()?->delta_link);
+
+        // Folgelauf über den Checkpoint: NUR gemeldete Änderungen — die
+        // Teilsicht flaggt nicht alles Fehlende, sondern nur @removed.
+        $fake = FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/delta?$deltatoken=chk-1' => FakePluginHttp::response([
+                'value' => [['id' => 'todo-1', '@removed' => ['reason' => 'deleted']]],
+                '@odata.deltaLink' => 'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/delta?$deltatoken=chk-2',
+            ]),
+        ]);
+        $second = (new MsgraphPlugin())->syncTasks($this->organization);
+
+        $this->assertSame(1, $second['inbox']);
+        $fake->assertSent(fn ($request): bool => str_contains(urldecode((string) $request->getUri()), 'chk-1'));
+        $this->assertSame(2, Task::query()->count()); // nie löschen
+        $this->assertArrayHasKey('remote_deleted_at', (array) ExternalReference::query()->where('external_id', 'todo-1')->firstOrFail()->payload);
+        $this->assertArrayNotHasKey('remote_deleted_at', (array) ExternalReference::query()->where('external_id', 'todo-2')->firstOrFail()->payload);
+        $this->assertStringContainsString('chk-2', (string) $link->fresh()?->delta_link);
+    }
+
+    public function test_stale_delta_checkpoint_restarts_with_full_view(): void {
+        $this->connection();
+        $project = Project::factory()->create(['organization_id' => $this->organization->id]);
+        $link = $this->link($project);
+        $link->forceFill(['delta_link' => 'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/delta?$deltatoken=stale'])->save();
+
+        // Exaktes Muster ZUERST — die Wildcard fängt sonst auch die stale-URL.
+        FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/delta?$deltatoken=stale' => FakePluginHttp::response(null, 410),
+            'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/delta*' => FakePluginHttp::response([
+                'value' => [$this->remoteTask()],
+                '@odata.deltaLink' => 'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/delta?$deltatoken=frisch',
+            ]),
+        ]);
+
+        $result = (new MsgraphPlugin())->syncTasks($this->organization);
+
+        $this->assertSame(1, $result['created']);
+        $this->assertSame(0, $result['failed']);
+        $this->assertStringContainsString('frisch', (string) $link->fresh()?->delta_link);
+    }
+
+    // ── Folgeausbau: Live-Export (Observer → Outbox → Dispatcher) ───────
+
+    public function test_local_changes_enqueue_outbox_and_dispatcher_exports(): void {
+        $this->connection();
+        $project = Project::factory()->create(['organization_id' => $this->organization->id]);
+        $this->link($project, ['sync_mode' => MsgraphTaskListLink::MODE_WORKDIARY_TO_TODO]);
+
+        // Anlage → todo-task.create in der Outbox (Observer enqueued nur).
+        $task = Task::query()->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $project->id,
+            'title' => 'Firewall-Regeln prüfen',
+            'status' => TaskStatus::Open->value,
+            'priority' => TaskPriority::High->value,
+        ]);
+
+        $createEntry = IntegrationOutboxEntry::query()->withoutGlobalScopes()
+            ->where('plugin_id', MsgraphPlugin::ID)
+            ->where('operation', MsgraphOutboxDispatcher::OP_TODO_TASK_CREATE)
+            ->firstOrFail();
+
+        $fake = FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks' => FakePluginHttp::response(['id' => 'todo-live'], 201),
+        ]);
+        $this->assertTrue((new MsgraphOutboxDispatcher())->dispatch($createEntry));
+
+        $fake->assertSent(function ($request): bool {
+            /** @var array{title?: string, linkedResources?: list<array{applicationName?: string}>} $payload */
+            $payload = (array) json_decode((string) $request->getBody(), true);
+
+            return $request->getMethod() === 'POST'
+                && ($payload['title'] ?? null) === 'Firewall-Regeln prüfen'
+                && (($payload['linkedResources'][0]['applicationName'] ?? null) === 'WorkDiary');
+        });
+        $this->assertDatabaseHas('external_references', ['external_id' => 'todo-live', 'referenceable_id' => $task->id]);
+
+        // Änderung an verknüpfter Aufgabe → todo-task.update, PATCH + Basis-Fortschreibung.
+        $task->refresh()->forceFill(['title' => 'Firewall-Regeln prüfen und dokumentieren'])->save();
+
+        $updateEntry = IntegrationOutboxEntry::query()->withoutGlobalScopes()
+            ->where('plugin_id', MsgraphPlugin::ID)
+            ->where('operation', MsgraphOutboxDispatcher::OP_TODO_TASK_UPDATE)
+            ->firstOrFail();
+
+        $patch = FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/todo-live' => FakePluginHttp::response(['id' => 'todo-live']),
+        ]);
+        $this->assertTrue((new MsgraphOutboxDispatcher())->dispatch($updateEntry));
+
+        $patch->assertSent(fn ($request): bool => $request->getMethod() === 'PATCH'
+            && str_ends_with((string) $request->getUri(), '/tasks/todo-live'));
+        $reference = ExternalReference::query()->where('external_id', 'todo-live')->firstOrFail();
+        $this->assertSame('Firewall-Regeln prüfen und dokumentieren', $reference->payload['base']['title'] ?? null);
+    }
+
+    public function test_import_writes_do_not_enqueue_export_echo(): void {
+        $this->connection();
+        $project = Project::factory()->create(['organization_id' => $this->organization->id]);
+        $this->link($project, ['sync_mode' => MsgraphTaskListLink::MODE_BIDIRECTIONAL]);
+
+        FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/delta*' => FakePluginHttp::response(['value' => [$this->remoteTask()]]),
+        ]);
+        (new MsgraphPlugin())->syncTasks($this->organization);
+        $this->assertSame(1, Task::query()->count());
+
+        // Remote-Änderung übernehmen (3-Wege-Update) — ebenfalls kein Echo.
+        FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/delta*' => FakePluginHttp::response(['value' => [$this->remoteTask(['title' => 'Server patchen (remote)'])]]),
+        ]);
+        (new MsgraphPlugin())->syncTasks($this->organization);
+
+        $this->assertSame('Server patchen (remote)', Task::query()->firstOrFail()->title);
+        $this->assertSame(0, IntegrationOutboxEntry::query()->withoutGlobalScopes()->where('plugin_id', MsgraphPlugin::ID)->count());
     }
 }

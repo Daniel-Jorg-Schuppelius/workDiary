@@ -60,6 +60,7 @@ final class WebhookTenantTest extends TestCase {
         'api/webhooks/etsy/{token}',
         'api/webhooks/google-drive',
         'api/webhooks/msgraph-intake',
+        'api/webhooks/msgraph',
         'api/webhooks/github/{setting}',
         'api/webhooks/gitlab/{setting}',
         'api/webhooks/zammad/{connection}',

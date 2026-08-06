@@ -34,6 +34,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $active
  * @property int|null $created_by
  * @property \Illuminate\Support\Carbon|null $last_polled_at
+ * @property string|null $subscription_id
+ * @property \Illuminate\Support\Carbon|null $subscription_expires_at
+ * @property string|null $webhook_secret
  */
 class EmailConnection extends Model {
     use Auditable;
@@ -57,6 +60,7 @@ class EmailConnection extends Model {
     /** Geheimnisse nie serialisieren/auditieren. */
     protected $hidden = [
         'password',
+        'webhook_secret',
     ];
 
     protected $fillable = [
@@ -85,6 +89,8 @@ class EmailConnection extends Model {
         'einvoice_intake' => 'boolean',
         'callreport_intake' => 'boolean',
         'last_polled_at' => 'datetime',
+        'subscription_expires_at' => 'datetime',
+        'webhook_secret' => 'encrypted',
     ];
 
     public function isMsgraph(): bool {

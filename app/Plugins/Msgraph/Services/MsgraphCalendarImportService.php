@@ -128,7 +128,9 @@ class MsgraphCalendarImportService {
         }
 
         // Externer Termin ohne Referenz → Vorschlag (nie blind anlegen).
-        if ($this->stage($connection, 'calendar-proposal:' . $remoteId, IntegrationInboxItem::CASE_UNMATCHED, $this->snapshot($item), (string) ($item['subject'] ?? '—'), null)) {
+        // mapped_snapshot trägt die Event-Attribute für „Neu anlegen"
+        // (EventMatchProfile::create über die generische Inbox-Aktion).
+        if ($this->stage($connection, 'calendar-proposal:' . $remoteId, IntegrationInboxItem::CASE_UNMATCHED, $this->snapshot($item), (string) ($item['subject'] ?? '—'), null, $this->eventAttributes($item))) {
             $counters['proposals']++;
         }
     }
@@ -154,12 +156,147 @@ class MsgraphCalendarImportService {
     }
 
     /**
+     * Event-Attribute für die Inbox-Übernahme („Neu anlegen" →
+     * {@see \App\Services\Integration\Profiles\EventMatchProfile::create()}).
+     * Zeiten werden in die App-Zeitzone konvertiert; Serien-Master erhalten
+     * eine RRULE (recurr-Format) für die gängigen Graph-Muster — nicht
+     * abbildbare Muster ergeben einen Einzeltermin (Regel bleibt leer).
+     *
+     * @param  array<string, mixed>  $item
+     * @return array<string, mixed>
+     */
+    private function eventAttributes(array $item): array {
+        $timezone = (string) config('app.timezone', 'Europe/Berlin');
+        $parse = static function (mixed $node) use ($timezone): ?string {
+            if (! is_array($node) || ! is_string($node['dateTime'] ?? null)) {
+                return null;
+            }
+
+            return Carbon::parse($node['dateTime'], (string) ($node['timeZone'] ?? 'UTC'))
+                ->setTimezone($timezone)
+                ->format('Y-m-d H:i:s');
+        };
+
+        $attributes = [
+            'title' => (string) (($item['subject'] ?? '') !== '' ? $item['subject'] : '—'),
+            'event_type' => 'meeting',
+            'started_at' => $parse($item['start'] ?? null),
+            'ended_at' => $parse($item['end'] ?? null),
+            'is_all_day' => (bool) ($item['isAllDay'] ?? false),
+            'timezone' => $timezone,
+        ];
+
+        $organizer = $item['organizer']['emailAddress']['address'] ?? null;
+        if (is_string($organizer) && $organizer !== '') {
+            $attributes['external_contact_note'] = $organizer;
+        }
+
+        // Serien-Master (C3-Ausbau #5): Graph-Recurrence → RRULE.
+        if (($item['type'] ?? null) === 'seriesMaster' && is_array($item['recurrence'] ?? null)) {
+            $mapped = $this->recurrenceRule($item['recurrence']);
+            if ($mapped['rule'] !== null) {
+                $attributes['recurrence_rule'] = $mapped['rule'];
+            }
+            if ($mapped['until'] !== null) {
+                $attributes['series_until'] = $mapped['until'];
+            }
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Graph-Recurrence → RFC-5545-RRULE (recurr): daily/weekly/
+     * absoluteMonthly/relativeMonthly/absoluteYearly; Range endDate → UNTIL,
+     * numbered → COUNT. Unbekannte Muster ⇒ null (Einzeltermin-Übernahme).
+     *
+     * @param  array<string, mixed>  $recurrence
+     * @return array{rule: string|null, until: string|null}
+     */
+    private function recurrenceRule(array $recurrence): array {
+        $pattern = (array) ($recurrence['pattern'] ?? []);
+        $range = (array) ($recurrence['range'] ?? []);
+        $interval = max(1, (int) ($pattern['interval'] ?? 1));
+
+        $dayMap = ['monday' => 'MO', 'tuesday' => 'TU', 'wednesday' => 'WE', 'thursday' => 'TH', 'friday' => 'FR', 'saturday' => 'SA', 'sunday' => 'SU'];
+        $indexMap = ['first' => 1, 'second' => 2, 'third' => 3, 'fourth' => 4, 'last' => -1];
+
+        $parts = null;
+        switch ((string) ($pattern['type'] ?? '')) {
+            case 'daily':
+                $parts = ['FREQ=DAILY'];
+
+                break;
+            case 'weekly':
+                $days = [];
+                foreach ((array) ($pattern['daysOfWeek'] ?? []) as $day) {
+                    $mapped = $dayMap[strtolower((string) $day)] ?? null;
+                    if ($mapped !== null) {
+                        $days[] = $mapped;
+                    }
+                }
+                $parts = ['FREQ=WEEKLY'];
+                if ($days !== []) {
+                    $parts[] = 'BYDAY=' . implode(',', $days);
+                }
+
+                break;
+            case 'absoluteMonthly':
+                $parts = ['FREQ=MONTHLY'];
+                if ((int) ($pattern['dayOfMonth'] ?? 0) > 0) {
+                    $parts[] = 'BYMONTHDAY=' . (int) $pattern['dayOfMonth'];
+                }
+
+                break;
+            case 'relativeMonthly':
+                $index = $indexMap[strtolower((string) ($pattern['index'] ?? 'first'))] ?? 1;
+                $day = null;
+                foreach ((array) ($pattern['daysOfWeek'] ?? []) as $candidate) {
+                    $day = $dayMap[strtolower((string) $candidate)] ?? null;
+                    if ($day !== null) {
+                        break;
+                    }
+                }
+                if ($day === null) {
+                    break;
+                }
+                $parts = ['FREQ=MONTHLY', 'BYDAY=' . $index . $day];
+
+                break;
+            case 'absoluteYearly':
+                $parts = ['FREQ=YEARLY'];
+
+                break;
+        }
+
+        if ($parts === null) {
+            return ['rule' => null, 'until' => null];
+        }
+
+        if ($interval > 1) {
+            $parts[] = 'INTERVAL=' . $interval;
+        }
+
+        $until = null;
+        $rangeType = (string) ($range['type'] ?? 'noEnd');
+        if ($rangeType === 'endDate' && is_string($range['endDate'] ?? null) && $range['endDate'] !== '') {
+            $until = (string) $range['endDate'];
+            $parts[] = 'UNTIL=' . str_replace('-', '', $until);
+        } elseif ($rangeType === 'numbered' && (int) ($range['numberOfOccurrences'] ?? 0) > 0) {
+            $parts[] = 'COUNT=' . (int) $range['numberOfOccurrences'];
+        }
+
+        return ['rule' => implode(';', $parts), 'until' => $until];
+    }
+
+    /**
      * Inbox-Fall deduplizieren + anlegen.
      *
      * @param  array<string, mixed>  $snapshot
+     * @param  array<string, mixed>|null  $mapped  Event-Attribute für „Neu anlegen"
      * @return bool true = NEUER Fall
      */
-    private function stage(MsgraphConnection $connection, string $dedupeKey, string $caseType, array $snapshot, string $title, ?ExternalReference $reference): bool {
+    private function stage(MsgraphConnection $connection, string $dedupeKey, string $caseType, array $snapshot, string $title, ?ExternalReference $reference, ?array $mapped = null): bool {
         $item = IntegrationInboxItem::query()->firstOrCreate([
             'organization_id' => $connection->organization_id,
             'plugin_id' => MsgraphPlugin::ID,
@@ -174,6 +311,7 @@ class MsgraphCalendarImportService {
             'referenceable_type' => $reference?->referenceable_type,
             'referenceable_id' => $reference?->referenceable_id,
             'remote_snapshot' => $snapshot,
+            'mapped_snapshot' => $mapped,
             'display_title' => $title !== '' ? $title : '—',
             'display_subtitle' => (string) ($connection->calendar_name ?? __('msgraph.calendar.default')),
             'occurred_at' => now(),
