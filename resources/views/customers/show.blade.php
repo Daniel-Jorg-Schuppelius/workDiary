@@ -53,14 +53,15 @@
         $timeTotal = \App\Support\Formats::duration($totalMinutes, 'clock');
         $fmtMoney = fn (float $v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) . ' ' . $cur;
     @endphp
-    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <x-kpi-tile :label="__('Projekte')" :value="$projects->count()" tone="neutral" />
         <x-kpi-tile :label="__('Erfasste Zeit')" :value="$timeRange" tone="neutral"
                     :hint="$statsRangeLabel . ' · ' . __('gesamt :value', ['value' => $timeTotal])" />
-        <x-kpi-tile :label="__('Umsatz (kalk.)')" :value="$fmtMoney($rangeRate)" tone="neutral"
-                    :hint="$statsRangeLabel . ' · ' . __('gesamt :value', ['value' => $fmtMoney($totalRate)])" />
-        <x-kpi-tile :label="__('Fakturiert')" :value="$fmtMoney($invoicedRange)" tone="neutral"
-                    :hint="$statsRangeLabel" />
+        {{-- Umsatz = tatsächlich fakturiert (Buchhaltung: Lexoffice-Belege + lokale
+             Rechnungen); der kalkulatorische Wert aus erfassten Zeiten × Satz nur
+             als kleiner Zusatz — er ist ohne gepflegte Stundensätze wenig aussagekräftig. --}}
+        <x-kpi-tile :label="__('Umsatz')" :value="$fmtMoney($invoicedRange)" tone="neutral"
+                    :hint="$statsRangeLabel . ' · ' . __('kalk. :value', ['value' => $fmtMoney($rangeRate)])" />
     </div>
 
     {{-- Stammdaten --}}
