@@ -32,7 +32,8 @@ use RuntimeException;
 class ValuationService implements InventoryValuationStrategy {
     public const SCALE = 4;
 
-    public function __construct(private readonly InventoryLedger $ledger) {}
+    public function __construct(private readonly InventoryLedger $ledger) {
+    }
 
     public function method(): ValuationMethod {
         return ValuationMethod::MovingAverage;
@@ -74,9 +75,60 @@ class ValuationService implements InventoryValuationStrategy {
             ])->save();
 
             return $this->ledger->post(new StockPosting(
-                $variant, $warehouse, StockState::Physical, $qty, StockMovementType::Receipt,
-                OwnershipType::Own, actorUserId: $actorUserId, source: $source,
-                costUnit: $unitCost, costTotal: $addValue, currency: $currency,
+                $variant,
+                $warehouse,
+                StockState::Physical,
+                $qty,
+                StockMovementType::Receipt,
+                OwnershipType::Own,
+                actorUserId: $actorUserId,
+                source: $source,
+                costUnit: $unitCost,
+                costTotal: $addValue,
+                currency: $currency,
+            ));
+        });
+    }
+
+    /**
+     * Rückbuchung eines Abgangs ins Lager (Bewegungsart Return): wie ein
+     * Wareneingang zum angegebenen Stückkostenwert, aber als klar erkennbare
+     * Gegenbuchung im Journal (referenziert die ursprüngliche Bewegung als source).
+     */
+    public function returnToStock(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null): StockMovement {
+        $qty = DecimalQty::positive($qty);
+        $unitCost = DecimalQty::positive($unitCost);
+
+        return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $source): StockMovement {
+            $valuation = $this->valuationFor($variant, $warehouse);
+            $oldQty = $valuation->exists ? $valuation->qty_on_hand : '0';
+            $oldAvg = $valuation->exists ? ($valuation->avg_cost?->getAmount() ?? '0') : '0';
+
+            $newQty = bcadd($oldQty, $qty, self::SCALE);
+            $oldValue = bcmul($oldQty, $oldAvg, self::SCALE);
+            $addValue = bcmul($qty, $unitCost, self::SCALE);
+            $newValue = bcadd($oldValue, $addValue, self::SCALE);
+            $newAvg = NumberHelper::divideOrDefault($newValue, $newQty, self::SCALE, $unitCost);
+
+            $valuation->fill([
+                'organization_id' => $variant->organization_id,
+                'avg_cost' => $newAvg,
+                'qty_on_hand' => $newQty,
+                'currency' => $currency,
+            ])->save();
+
+            return $this->ledger->post(new StockPosting(
+                $variant,
+                $warehouse,
+                StockState::Physical,
+                $qty,
+                StockMovementType::Return,
+                OwnershipType::Own,
+                actorUserId: $actorUserId,
+                source: $source,
+                costUnit: $unitCost,
+                costTotal: $addValue,
+                currency: $currency,
             ));
         });
     }
@@ -104,9 +156,15 @@ class ValuationService implements InventoryValuationStrategy {
             ])->save();
 
             return $this->ledger->post(new StockPosting(
-                $variant, $warehouse, StockState::Physical, bcmul($qty, '-1', self::SCALE), StockMovementType::Issue,
-                OwnershipType::Own, actorUserId: $actorUserId,
-                costUnit: $avg, costTotal: $costTotal,
+                $variant,
+                $warehouse,
+                StockState::Physical,
+                bcmul($qty, '-1', self::SCALE),
+                StockMovementType::Issue,
+                OwnershipType::Own,
+                actorUserId: $actorUserId,
+                costUnit: $avg,
+                costTotal: $costTotal,
             ));
         });
     }

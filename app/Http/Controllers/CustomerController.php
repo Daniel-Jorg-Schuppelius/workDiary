@@ -13,7 +13,7 @@ namespace App\Http\Controllers;
 use App\Enums\Import\ImportEntity;
 use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery, ResolvesGlobalDateRange};
 use App\Http\Requests\SaveCustomerRequest;
-use App\Models\{AuditLog, Customer, ExternalReference, Invoice, LexofficeVoucher, Organization, Tag, TimeEntry, User};
+use App\Models\{AuditLog, Customer, ExternalReference, Invoice, LexofficeVoucher, MaterialCostAllocation, Organization, Tag, TimeEntry, User};
 use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
@@ -164,8 +164,20 @@ class CustomerController extends Controller {
             }
         }
 
-        // Kompakte 12-Monats-Trends (Zeiteinsatz + fakturierter Umsatz) für die
-        // Diagramme in der Kundenakte, verankert am Ende des Header-Zeitraums.
+        // Einem Kunden zugeordnete Materialkosten im Zeitraum + Gewinn.
+        $materialAllocations = $customer->materialCostAllocations()
+            ->with(['project:id,name', 'source'])
+            ->orderByDesc('allocated_on')
+            ->limit(100)
+            ->get();
+        $materialRange = (float) $customer->materialCostAllocations()
+            ->whereBetween('allocated_on', [$rangeFrom->toDateString(), $rangeTo->toDateString()])
+            ->get()
+            ->sum(static fn(MaterialCostAllocation $a): float => $a->allocated_amount?->toFloat() ?? 0.0);
+        $profitRange = $invoicedRange - $materialRange;
+
+        // Kompakte 12-Monats-Trends (Zeiteinsatz + fakturierter Umsatz vs.
+        // Materialkosten) für die Diagramme, verankert am Ende des Header-Zeitraums.
         $monthlyTrends = $this->customerMonthlyTrends($customer, $projectIds, $rangeTo);
 
         // Vollwertige Kunden-Timeline (MVP-340): serverseitiger Typ-Filter + Nachlade-Fenster (Muster wie DiaryController).
@@ -252,6 +264,10 @@ class CustomerController extends Controller {
             'rangeMinutes' => $rangeMinutes,
             'rangeRate' => $rangeRate,
             'invoicedRange' => $invoicedRange,
+            'materialRange' => $materialRange,
+            'profitRange' => $profitRange,
+            'materialAllocations' => $materialAllocations,
+            'inventoryModuleActive' => app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.lager'),
             'chartHours' => $monthlyTrends['hours'],
             'chartRevenue' => $monthlyTrends['revenue'],
             'lexofficePlugin' => $lexoffice,
@@ -345,6 +361,19 @@ class CustomerController extends Controller {
                 });
         }
 
+        // Materialkosten je Monat (nach allocated_on) für die Umsatz-Gegenüberstellung.
+        $material = array_fill_keys(array_keys($months), 0.0);
+        $customer->materialCostAllocations()
+            ->whereBetween('allocated_on', [$start->toDateString(), $end->toDateString()])
+            ->get()
+            ->each(function (MaterialCostAllocation $a) use (&$material): void {
+                $ym = $a->allocated_on->format('Y-m');
+                if (isset($material[$ym])) {
+                    $material[$ym] += $a->allocated_amount?->toFloat() ?? 0.0;
+                }
+            });
+        $hasMaterial = array_sum($material) > 0.0;
+
         $hours = [];
         $revenueSeries = [];
         foreach ($months as $ym => $m) {
@@ -354,10 +383,16 @@ class CustomerController extends Controller {
                 'billable' => round($billableMinutes[$ym] / 60, 1),
                 'nonbillable' => round(max(0, $minutes[$ym] - $billableMinutes[$ym]) / 60, 1),
             ];
-            $revenueSeries[] = [
+            $point = [
                 'x' => $label,
                 'y' => round($revenue[$ym], 2),
             ];
+            // Zweitserie (Materialkosten) nur, wenn überhaupt zugeordnet — sonst
+            // keine leere Vergleichsspalte.
+            if ($hasMaterial) {
+                $point['y2'] = round($material[$ym], 2);
+            }
+            $revenueSeries[] = $point;
         }
 
         return ['hours' => $hours, 'revenue' => $revenueSeries];

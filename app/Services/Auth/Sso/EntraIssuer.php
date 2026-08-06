@@ -37,7 +37,7 @@ final class EntraIssuer {
     /** Erster Pfadabschnitt muss die Tenant-GUID sein (nie common/organizations/consumers). */
     public static function isTenantSpecific(string $issuer): bool {
         $path = trim((string) parse_url($issuer, PHP_URL_PATH), '/');
-        $first = strtolower(explode('/', $path)[0] ?? '');
+        $first = strtolower(explode('/', $path)[0]);
 
         if (in_array($first, self::MULTI_TENANT_SEGMENTS, true)) {
             return false;

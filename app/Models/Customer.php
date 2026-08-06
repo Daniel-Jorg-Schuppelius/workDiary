@@ -174,9 +174,9 @@ class Customer extends Model {
      */
     public static function uniqueSlug(string $name, ?int $organizationId, ?int $ignoreId = null): string {
         return self::resolveUniqueSlug($name, 'kunde', fn(string $slug): bool =>
-            // TENANT-BYPASS: ohne Global Scope, weil $organizationId explizit übergeben wird;
-            // der explizite where('organization_id', ...) erhält die Mandantengrenze.
-            static::query()
+        // TENANT-BYPASS: ohne Global Scope, weil $organizationId explizit übergeben wird;
+        // der explizite where('organization_id', ...) erhält die Mandantengrenze.
+        static::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
             ->where('slug', $slug)
@@ -283,6 +283,11 @@ class Customer extends Model {
     /** @return HasOne<\App\Models\Billing\CustomerBillingAgreement, $this> */
     public function billingAgreement(): HasOne {
         return $this->hasOne(\App\Models\Billing\CustomerBillingAgreement::class);
+    }
+
+    /** @return HasMany<MaterialCostAllocation, $this> */
+    public function materialCostAllocations(): HasMany {
+        return $this->hasMany(MaterialCostAllocation::class);
     }
 
     public function hasProjects(): bool {

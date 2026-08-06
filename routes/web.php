@@ -1089,6 +1089,13 @@ Route::middleware('auth')->group(function () {
         Route::post('customers/{customer}/billing/statements/{statement}/voucher', [\App\Http\Controllers\Customers\RetainerBillingController::class, 'linkVoucher'])->name('customers.billing.retainer.voucher.link');
         Route::delete('customers/{customer}/billing/statements/{statement}/voucher', [\App\Http\Controllers\Customers\RetainerBillingController::class, 'unlinkVoucher'])->name('customers.billing.retainer.voucher.unlink');
 
+        // ── Materialkosten-Zuordnung & Gewinn (Umsatz − Material) ────────────────
+        Route::get('customers/{customer}/material-costs/create', [\App\Http\Controllers\Customers\MaterialCostAllocationController::class, 'create'])->name('customers.material-costs.create');
+        Route::post('customers/{customer}/material-costs', [\App\Http\Controllers\Customers\MaterialCostAllocationController::class, 'store'])->name('customers.material-costs.store');
+        Route::get('customers/{customer}/material-costs/stock/create', [\App\Http\Controllers\Customers\MaterialCostAllocationController::class, 'createStock'])->name('customers.material-costs.stock.create');
+        Route::post('customers/{customer}/material-costs/stock', [\App\Http\Controllers\Customers\MaterialCostAllocationController::class, 'storeStock'])->name('customers.material-costs.stock.store');
+        Route::delete('customers/{customer}/material-costs/{allocation}', [\App\Http\Controllers\Customers\MaterialCostAllocationController::class, 'destroy'])->name('customers.material-costs.destroy');
+
         // ── Fremdkunden (Endkunden einer Firma) ──────────────────────────────────
         Route::resource('foreign-customers', ForeignCustomerController::class)->parameters(['foreign-customers' => 'foreignCustomer']);
         Route::post('foreign-customers/{foreignCustomer}/archive', [ForeignCustomerController::class, 'archive'])->name('foreign-customers.archive');

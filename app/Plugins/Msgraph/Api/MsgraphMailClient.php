@@ -114,7 +114,7 @@ class MsgraphMailClient {
         /** @var array{value?: list<array<string, mixed>>} $data */
         $data = (array) $response->json();
 
-        return array_values((array) ($data['value'] ?? []));
+        return $data['value'] ?? [];
     }
 
     /**

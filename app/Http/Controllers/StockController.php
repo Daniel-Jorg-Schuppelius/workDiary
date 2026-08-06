@@ -12,8 +12,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\Inventory\OwnershipType;
 use App\Enums\User\Permission as P;
-use App\Models\{ArticleVariant, StockLevelSetting, StockMovement, StockReservation, Warehouse};
-use App\Services\Inventory\{InventoryLedger, ReservationService, StockLevelService, ValuationService};
+use App\Models\{ArticleVariant, Customer, StockLevelSetting, StockMovement, StockReservation, Warehouse};
+use App\Services\Inventory\{CustomerStockAllocationService, InventoryLedger, ReservationService, StockLevelService, ValuationService};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -30,7 +30,8 @@ class StockController extends Controller {
         private readonly ValuationService $valuation,
         private readonly ReservationService $reservations,
         private readonly StockLevelService $levels,
-    ) {}
+    ) {
+    }
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', Warehouse::class);
@@ -92,6 +93,8 @@ class StockController extends Controller {
                 ->where('status', \App\Enums\Article\ArticleStatus::Active->value)
                 ->orderBy('id')->limit(500)->get(),
             'ownerships' => OwnershipType::cases(),
+            // Optionaler Kunde für Materialkosten-Buchung beim Eigenbestand-Abgang.
+            'costCustomers' => Customer::query()->whereNull('archived_at')->orderBy('name')->limit(500)->get(['id', 'name']),
         ]);
     }
 
@@ -131,6 +134,7 @@ class StockController extends Controller {
             'qty' => ['required', 'numeric', 'gt:0'],
             'ownership' => ['required', \Illuminate\Validation\Rule::enum(OwnershipType::class)],
             'allow_negative' => ['sometimes', 'boolean'],
+            'cost_customer' => ['nullable', 'string'],
         ]);
 
         $warehouse = Warehouse::query()->findOrFail(Sqid::decodeOrNumeric(Warehouse::class, $data['warehouse']));
@@ -139,11 +143,22 @@ class StockController extends Controller {
         $qty = (string) $data['qty'];
         $actor = Auth::id() !== null ? (int) Auth::id() : null;
 
+        // Eigenbestand-Abgang, der zugleich Materialkosten auf einen Kunden
+        // bucht (gleiche Buchung wie in der Kundenakte): nur bei movement=issue
+        // und Eigenbestand — sonst normaler Abgang.
+        $costCustomer = null;
+        if (! empty($data['cost_customer'])) {
+            $costCustomerId = Sqid::decodeOrNumeric(Customer::class, (string) $data['cost_customer']);
+            $costCustomer = $costCustomerId !== null ? Customer::query()->find($costCustomerId) : null;
+        }
+
         // Vollaudit 2026-07 (M19, E2): chargen-/serienpflichtige Artikel nicht
         // still als anonymer Bestand buchen (Reservierung/Freigabe bleibt zulässig).
         $article = $variant->article;
-        if (in_array((string) $data['movement'], ['receipt', 'issue'], true)
-            && (($article->batch_required ?? false) || ($article->serial_required ?? false))) {
+        if (
+            in_array((string) $data['movement'], ['receipt', 'issue'], true)
+            && (($article->batch_required ?? false) || ($article->serial_required ?? false))
+        ) {
             return back()->with('error', __('inventory.error.tracked_article_manual_move'));
         }
 
@@ -165,7 +180,9 @@ class StockController extends Controller {
         try {
             match ((string) $data['movement']) {
                 'receipt' => $this->ledger->receipt($variant, $warehouse, $qty, $ownership, actorUserId: $actor),
-                'issue' => $this->ledger->issue($variant, $warehouse, $qty, $ownership, allowNegative: $allowNegative, actorUserId: $actor),
+                'issue' => $costCustomer instanceof Customer && $ownership === OwnershipType::Own
+                    ? app(CustomerStockAllocationService::class)->issueForCustomer($costCustomer, $variant, $warehouse, $qty, actorUserId: $actor)
+                    : $this->ledger->issue($variant, $warehouse, $qty, $ownership, allowNegative: $allowNegative, actorUserId: $actor),
                 'reserve' => $this->ledger->reserve($variant, $warehouse, $qty, $ownership, actorUserId: $actor),
                 'release' => $this->ledger->releaseReservation($variant, $warehouse, $qty, $ownership, actorUserId: $actor),
                 default => throw new RuntimeException('Unbekannte Bewegungsart.'),

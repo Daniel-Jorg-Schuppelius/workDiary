@@ -71,6 +71,15 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div class="fieldset">
+                            <label class="fieldset-label">{{ __('customer-material.book_to_customer') }}</label>
+                            <select name="cost_customer" class="select select-sm select-bordered">
+                                <option value="">{{ __('customer-material.no_customer') }}</option>
+                                @foreach ($costCustomers as $c)
+                                    <option value="{{ $c->sqid }}">{{ $c->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         <label class="label cursor-pointer gap-2">
                             <input type="hidden" name="allow_negative" value="0">
                             <input type="checkbox" name="allow_negative" value="1" class="checkbox checkbox-sm">

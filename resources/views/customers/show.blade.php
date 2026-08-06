@@ -52,8 +52,9 @@
         $timeRange = \App\Support\Formats::duration($rangeMinutes, 'clock');
         $timeTotal = \App\Support\Formats::duration($totalMinutes, 'clock');
         $fmtMoney = fn (float $v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) . ' ' . $cur;
+        $margin = $invoicedRange > 0.0 ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($profitRange / $invoicedRange * 100, 1) . ' %' : null;
     @endphp
-    <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <x-kpi-tile :label="__('Projekte')" :value="$projects->count()" tone="neutral" />
         <x-kpi-tile :label="__('Erfasste Zeit')" :value="$timeRange" tone="neutral"
                     :hint="$statsRangeLabel . ' · ' . __('gesamt :value', ['value' => $timeTotal])" />
@@ -62,6 +63,10 @@
              als kleiner Zusatz — er ist ohne gepflegte Stundensätze wenig aussagekräftig. --}}
         <x-kpi-tile :label="__('Umsatz')" :value="$fmtMoney($invoicedRange)" tone="neutral"
                     :hint="$statsRangeLabel . ' · ' . __('kalk. :value', ['value' => $fmtMoney($rangeRate)])" />
+        {{-- Gewinn = fakturierter Umsatz − zugeordnete Materialkosten im Zeitraum. --}}
+        <x-kpi-tile :label="__('Gewinn (kalk.)')" :value="$fmtMoney($profitRange)"
+                    :tone="$profitRange >= 0.0 ? 'success' : 'error'"
+                    :hint="$margin !== null ? $statsRangeLabel . ' · ' . __('Marge :value', ['value' => $margin]) : $statsRangeLabel" />
     </div>
 
     {{-- Kompakte Monats-Trends (12 Monate): Zeiteinsatz & fakturierter Umsatz —
@@ -77,8 +82,8 @@
                               :note="__('Erfasste Stunden der letzten 12 Monate.')" />
         <x-charts.bar :title="__('Umsatz je Monat (fakturiert)')" unit="€"
                       :series="$chartRevenue"
-                      :x-label="__('Monat')" y-label="€"
-                      :note="__('Fakturierte Belege (Lexoffice + lokale Rechnungen) der letzten 12 Monate.')" />
+                      :x-label="__('Monat')" y-label="{{ __('Umsatz') }}" :y2-label="__('Materialkosten')"
+                      :note="__('Fakturierte Belege (Lexoffice + lokale Rechnungen) vs. zugeordnete Materialkosten, letzte 12 Monate.')" />
     </div>
 
     {{-- Stammdaten --}}
@@ -438,6 +443,11 @@
     {{-- Sonderkonditionen & Abrechnungskonto (Feature 098) — nur mit update-Recht. --}}
     @can('update', $customer)
         @include('customers._billing_panel')
+    @endcan
+
+    {{-- Materialkosten & Gewinn (Umsatz − Materialkosten) — nur mit update-Recht. --}}
+    @can('update', $customer)
+        @include('customers._material_panel')
     @endcan
 
     @include('customers._timeline_panel', ['customer' => $customer])
