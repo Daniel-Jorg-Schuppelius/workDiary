@@ -32,6 +32,12 @@ return [
         'container' => 'Container/drive',
         'root_folder_id' => 'ID cartella radice (opzionale)',
     ],
+    'picker' => [
+        'search_label' => 'Cerca contenitori',
+        'search_placeholder' => 'vuoto = drive propri; un termine di ricerca trova anche le raccolte SharePoint',
+        'load' => 'Carica contenitori',
+        'load_failed' => 'Impossibile caricare i contenitori — inserire l’ID manualmente.',
+    ],
     'action' => [
         'connect_dropbox' => 'Collega Dropbox',
         'connect_microsoft' => 'Collega Microsoft 365',

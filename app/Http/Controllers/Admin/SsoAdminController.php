@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\Auth\SsoProtocol;
+use App\Enums\User\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\{Organization, ScimGroup, ScimToken, SsoConnection, Team, User};
 use App\Services\Auth\Sso\{OidcClient, SamlClient, SsoLoginException};
@@ -91,6 +92,8 @@ class SsoAdminController extends Controller {
             'active' => ['sometimes', 'boolean'],
             'enforced' => ['sometimes', 'boolean'],
             'allow_email_link' => ['sometimes', 'boolean'],
+            'jit_provisioning' => ['sometimes', 'boolean'],
+            'jit_role' => ['nullable', Rule::in([UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value])],
             'allow_private_network' => ['sometimes', 'boolean'],
             'issuer' => ['nullable', 'string', 'max:500', 'url'],
             'client_id' => ['nullable', 'string', 'max:255'],
@@ -105,7 +108,7 @@ class SsoAdminController extends Controller {
         $protocol = SsoProtocol::from((string) $data['protocol']);
         $allowPrivate = $request->boolean('allow_private_network');
 
-        $errors = $this->validateProtocolFields($protocol, $data, $allowPrivate);
+        $errors = $this->validateProtocolFields($protocol, $data, $allowPrivate, $request->boolean('allow_email_link'));
         if ($errors !== []) {
             return back()->withErrors($errors)->withInput();
         }
@@ -120,6 +123,8 @@ class SsoAdminController extends Controller {
             'active' => $request->boolean('active'),
             'enforced' => $request->boolean('enforced'),
             'allow_email_link' => $request->boolean('allow_email_link'),
+            'jit_provisioning' => $request->boolean('jit_provisioning'),
+            'jit_role' => (($data['jit_role'] ?? null) ?: null),
             'allow_private_network' => $allowPrivate,
             'issuer' => $protocol === SsoProtocol::Oidc ? (($data['issuer'] ?? null) ?: null) : null,
             'client_id' => $protocol === SsoProtocol::Oidc ? (($data['client_id'] ?? null) ?: null) : null,
@@ -222,7 +227,7 @@ class SsoAdminController extends Controller {
      * @param array<string, mixed> $data
      * @return array<string, string>
      */
-    private function validateProtocolFields(SsoProtocol $protocol, array $data, bool $allowPrivate): array {
+    private function validateProtocolFields(SsoProtocol $protocol, array $data, bool $allowPrivate, bool $allowEmailLink = false): array {
         $errors = [];
 
         if ($protocol === SsoProtocol::Oidc) {
@@ -236,6 +241,17 @@ class SsoAdminController extends Controller {
             // DNS-Rebinding-sichere Laufzeitprüfung sitzt im OidcClient.
             if ($issuer !== '' && ! $allowPrivate && ! UrlSafety::isAcceptableExternalHttpUrl($issuer)) {
                 $errors['issuer'] = __('sso.error.url_not_public');
+            }
+            // Entra-Härtung (MS365-Plan G1): tenant-spezifischer Issuer Pflicht
+            // (common/organizations = Issuer-Template-Falle) und kein
+            // E-Mail-Linking (nOAuth — email-Claim in Fremd-Tenants frei setzbar).
+            if ($issuer !== '' && \App\Services\Auth\Sso\EntraIssuer::isEntra($issuer)) {
+                if (! \App\Services\Auth\Sso\EntraIssuer::isTenantSpecific($issuer)) {
+                    $errors['issuer'] = __('sso.error.entra_issuer_not_tenant_specific');
+                }
+                if ($allowEmailLink) {
+                    $errors['allow_email_link'] = __('sso.error.entra_email_link_forbidden');
+                }
             }
         } else {
             foreach (['idp_entity_id', 'idp_sso_url', 'idp_certificate'] as $field) {

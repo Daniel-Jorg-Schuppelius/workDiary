@@ -23,11 +23,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property int $organization_id
  * @property string $name
- * @property string $host
+ * @property string $transport
+ * @property string|null $host
  * @property int $port
  * @property string $encryption
- * @property string $username
- * @property string $password
+ * @property string|null $username
+ * @property string|null $password
  * @property string $folder
  * @property string|null $processed_folder
  * @property bool $active
@@ -44,6 +45,12 @@ class EmailConnection extends Model {
 
     use HasSqid;
 
+    /** Klassisches IMAP-Postfach (Zugangsdaten am Datensatz). */
+    public const TRANSPORT_IMAP = 'imap';
+
+    /** Microsoft-Graph-Postfach (nutzt die Graph-Mail-Verbindung der Organisation). */
+    public const TRANSPORT_MSGRAPH = 'msgraph';
+
     /** Tabellenname explizit (defensiv, konsistent zur Migration). */
     protected $table = 'email_connections';
 
@@ -55,6 +62,7 @@ class EmailConnection extends Model {
     protected $fillable = [
         'organization_id',
         'name',
+        'transport',
         'host',
         'port',
         'encryption',
@@ -79,8 +87,20 @@ class EmailConnection extends Model {
         'last_polled_at' => 'datetime',
     ];
 
-    /** Betriebsbereit: aktiv geschaltet und vollständig konfiguriert. */
+    public function isMsgraph(): bool {
+        return $this->getAttribute('transport') === self::TRANSPORT_MSGRAPH;
+    }
+
+    /**
+     * Betriebsbereit: aktiv geschaltet und vollständig konfiguriert.
+     * Graph-Postfächer brauchen keine eigenen Zugangsdaten — sie nutzen die
+     * Graph-Mail-Verbindung der Organisation (Feature 102).
+     */
     public function isActive(): bool {
+        if ($this->isMsgraph()) {
+            return $this->active;
+        }
+
         return $this->active && $this->host !== '' && $this->username !== '' && $this->password !== '';
     }
 }

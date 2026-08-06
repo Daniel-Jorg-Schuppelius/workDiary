@@ -18,7 +18,7 @@ namespace App\Plugins\Msgraph;
  * (Default 'common' = Multi-Tenant).
  */
 class MsgraphConfig {
-    /** @return array{client_id: string, client_secret: string, tenant: string, api_base: string, authorize_url: string, token_url: string, scopes: string, intake_scopes: string, intake_page_size: int, backup_scopes: string} */
+    /** @return array{client_id: string, client_secret: string, tenant: string, api_base: string, authorize_url: string, token_url: string, scopes: string, intake_scopes: string, intake_page_size: int, backup_scopes: string, mail_scopes: string} */
     public static function resolve(): array {
         $tenant = trim((string) config('plugins.msgraph.tenant', 'common')) ?: 'common';
 
@@ -35,6 +35,8 @@ class MsgraphConfig {
             'intake_page_size' => (int) config('plugins.msgraph.intake_page_size', 200),
             // Cloud-Backupziel (Feature 017 Phase 32, MVP-363).
             'backup_scopes' => (string) config('plugins.msgraph.backup_scopes', 'offline_access User.Read Files.ReadWrite'),
+            // Graph-Mail-Versand (Feature 102).
+            'mail_scopes' => (string) config('plugins.msgraph.mail_scopes', 'offline_access User.Read Mail.Send'),
         ];
     }
 

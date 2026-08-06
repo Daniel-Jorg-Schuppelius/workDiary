@@ -32,6 +32,12 @@ return [
         'container' => 'Container/Drive',
         'root_folder_id' => 'Stammordner-ID (optional)',
     ],
+    'picker' => [
+        'search_label' => 'Container suchen',
+        'search_placeholder' => 'leer = eigene Drives; Suchtext findet zusätzlich SharePoint-Bibliotheken',
+        'load' => 'Container laden',
+        'load_failed' => 'Container konnten nicht geladen werden — bitte ID manuell eintragen.',
+    ],
     'action' => [
         'connect_dropbox' => 'Dropbox verbinden',
         'connect_microsoft' => 'Microsoft 365 verbinden',

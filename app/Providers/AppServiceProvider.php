@@ -52,7 +52,9 @@ class AppServiceProvider extends ServiceProvider {
 
         // E-Mail-Eingang (Feature 056): IMAP-Transport über webklex/php-imap;
         // Tests binden ein Fake-Gateway. Der Intake-Kern hängt nur am Interface.
-        $this->app->singleton(\App\Services\Mail\MailboxGateway::class, \App\Services\Mail\ImapMailboxGateway::class);
+        // Transport-Weiche (Feature 102): IMAP bleibt Default, msgraph-Postfächer
+        // laufen über die Graph-Mail-Verbindung der Organisation.
+        $this->app->singleton(\App\Services\Mail\MailboxGateway::class, \App\Services\Mail\TransportSelectingMailboxGateway::class);
 
         // Settings-Registry (Feature 067, MVP-173): Definitionen werden je
         // Prozess einmal aus config/settings-registry.php hydriert.

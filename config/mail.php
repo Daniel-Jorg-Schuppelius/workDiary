@@ -78,6 +78,14 @@ return [
             'path' => env('MAIL_SENDMAIL_PATH', '/usr/sbin/sendmail -bs -i'),
         ],
 
+        // Microsoft-Graph-Versand über das Msgraph-Plugin (Feature 102):
+        // POST /me/sendMail mit delegated Mail.Send, Verbindung je Organisation
+        // (msgraph_mail_connections). Aktivierung: MAIL_MAILER=msgraph oder
+        // eine failover-Kette wie ['msgraph', 'smtp', 'log'].
+        'msgraph' => [
+            'transport' => 'msgraph',
+        ],
+
         'log' => [
             'transport' => 'log',
             'channel' => env('MAIL_LOG_CHANNEL'),

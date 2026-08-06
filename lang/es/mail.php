@@ -37,6 +37,7 @@ return [
 
     'field' => [
         'name' => 'Etiqueta',
+        'transport' => 'Transporte',
         'host' => 'Servidor IMAP',
         'port' => 'Puerto',
         'encryption' => 'Cifrado',
@@ -76,11 +77,16 @@ return [
         'dms_failed' => 'Importación al archivo de documentos fallida.',
         'already_resolved' => 'Esta entrada ya está resuelta.',
         'password_required' => 'Un buzón nuevo requiere una contraseña.',
+        'msgraph_connection_required' => 'Un buzón de Microsoft 365 requiere primero la conexión de envío de correo en el plugin de Microsoft 365 (scope Mail.ReadWrite).',
         'customer_required' => 'Ningún cliente asociado.',
     ],
     'reference' => [
         'customer_number' => 'Número de cliente en el texto: :number',
         'invoice_number' => 'Número de factura en el texto: :number',
         'project_number' => 'Número de proyecto en el texto: :number',
+    ],
+    'transport' => [
+        'msgraph' => 'Microsoft 365 (Graph)',
+        'msgraph_hint' => 'Microsoft 365: usa la conexión de correo Graph de la organización — no se necesitan credenciales IMAP.',
     ],
 ];

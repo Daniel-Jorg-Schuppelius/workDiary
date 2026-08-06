@@ -63,6 +63,8 @@ class SchedulerRegistrationTest extends TestCase {
         'events:check-certificates' => ['0 6 * * *', true, true],
         'events:materialize-recurrences' => ['0 2 * * *', true, true],
         'plugin:healthcheck --no-fail' => ['0 * * * *', true, true],
+        // Plugin-Review 2026-08: Bereinigung quittierter/alter Plugin-Fehler.
+        'model:prune --model=App\\Models\\PluginError' => ['40 3 * * *', true, true],
         'remote:sync-sessions' => ['0 * * * *', true, true],
         'toggl:import' => ['0 * * * *', true, true],
         'toggl:push' => ['0 * * * *', true, true],
@@ -77,6 +79,13 @@ class SchedulerRegistrationTest extends TestCase {
         'workdiary:backup:verify' => ['30 3 * * 6', true, true],
         // Neu mit Bauturbo A9 (MVP-329): CardDAV-Kontakt-Lese-Sync.
         'carddav:sync' => ['0 * * * *', true, true],
+        // Kalender-Publish-Reconciliation (MS365-Integrationsplan 2026-08, S2):
+        // täglicher Voll-Publish; Einzeltermine weiterhin ereignisgetrieben.
+        'caldav:publish' => ['35 4 * * *', true, true],
+        'msgraph:publish' => ['45 4 * * *', true, true],
+        'google-calendar:publish' => ['55 4 * * *', true, true],
+        // MS365-Plan §8: Graph-Subscription-Anlage/-Renewal (Sender-Seite).
+        'msgraph:subscriptions' => ['20 4 * * *', true, true],
         'openproject:push' => ['0 * * * *', true, true],
         'workdiary:backup:check-restore' => ['0 5 * * *', true, true],
         'maintenance:scan-due' => ['30 5 * * *', true, true],
@@ -89,6 +98,8 @@ class SchedulerRegistrationTest extends TestCase {
         'jtl:sync' => ['0 * * * *', true, true],
         // Neu mit Feature 093 (MVP-433/434): Billbee-Multichannel-Sync.
         'billbee:sync' => ['*/15 * * * *', true, true],
+        // Neu mit Feature 101 (MVP-495/498): Etsy-Marktplatz-Sync.
+        'etsy:sync' => ['*/15 * * * *', true, true],
         // Neu mit Feature 093 (MVP-431): easybill-Beleg-Rückabruf.
         'easybill:sync' => ['0 * * * *', true, true],
         // Neu mit Feature 077 (MVP-313): orgaMAX-Projektions-Sync.

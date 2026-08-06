@@ -89,6 +89,26 @@ final class MsgraphPublishTest extends TestCase {
         $silent->assertNothingSent();
     }
 
+    public function test_teams_meeting_optin_marks_new_events_online(): void {
+        $this->connection(['teams_meetings' => true]);
+        $this->event();
+
+        $fake = FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/events' => FakePluginHttp::response(['id' => 'AAMk-9'], 201),
+        ]);
+
+        (new MsgraphPlugin())->publishCalendar($this->organization);
+
+        // C1: Opt-in setzt isOnlineMeeting + teamsForBusiness NUR beim Anlegen.
+        $fake->assertSent(function (RequestInterface $request): bool {
+            $body = (array) json_decode((string) $request->getBody(), true);
+
+            return $request->getMethod() === 'POST'
+                && ($body['isOnlineMeeting'] ?? null) === true
+                && ($body['onlineMeetingProvider'] ?? null) === 'teamsForBusiness';
+        });
+    }
+
     public function test_changed_event_is_updated_not_duplicated(): void {
         $this->connection();
         $event = $this->event();

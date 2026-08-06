@@ -110,6 +110,19 @@
                             <input type="checkbox" name="allow_email_link" value="1" class="checkbox checkbox-sm" @checked(old('allow_email_link', $conn->allow_email_link ?? false))>
                             {{ __('sso.field.email_link') }}
                         </label>
+                        <label class="flex items-center gap-2" title="{{ __('sso.field.jit_hint') }}">
+                            <input type="checkbox" name="jit_provisioning" value="1" class="checkbox checkbox-sm" @checked(old('jit_provisioning', $conn->jit_provisioning ?? false))>
+                            {{ __('sso.field.jit') }}
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <span>{{ __('sso.field.jit_role') }}</span>
+                            <select name="jit_role" class="select select-bordered select-xs">
+                                <option value="">{{ __('sso.field.jit_role_none') }}</option>
+                                @foreach ([\App\Enums\User\UserRole::User->value, \App\Enums\User\UserRole::Buchhaltung->value, \App\Enums\User\UserRole::Admin->value] as $roleOption)
+                                    <option value="{{ $roleOption }}" @selected(old('jit_role', $conn->jit_role ?? '') === $roleOption)>{{ $roleOption }}</option>
+                                @endforeach
+                            </select>
+                        </label>
                         <label class="flex items-center gap-2" title="{{ __('sso.field.private_network_hint') }}">
                             <input type="checkbox" name="allow_private_network" value="1" class="checkbox checkbox-sm" @checked(old('allow_private_network', $conn->allow_private_network ?? false))>
                             {{ __('sso.field.private_network') }}

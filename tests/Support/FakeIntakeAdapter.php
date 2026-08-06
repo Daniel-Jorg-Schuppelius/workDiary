@@ -38,7 +38,7 @@ class FakeIntakeAdapter implements DocumentIntakeSource {
         return new IntakeAccount('fake-account', 'Fake <fake@example.test>');
     }
 
-    public function intakeContainers(CloudDocumentConnection $connection): array {
+    public function intakeContainers(CloudDocumentConnection $connection, ?string $search = null): array {
         return [];
     }
 

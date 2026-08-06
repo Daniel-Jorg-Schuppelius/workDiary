@@ -81,6 +81,7 @@ return [
             'cloud-verify' => 'Verifica del backup cloud',
         ],
         'billbee' => ['sync' => 'Sincronizzazione Billbee'],
+        'caldav' => ['publish' => 'Riconciliazione pubblicazione calendario CalDAV'],
         'carddav' => ['sync' => 'Sincronizzazione CardDAV'],
         'catalog' => ['fetch_due' => 'Recuperare le fonti di catalogo'],
         'chat' => [
@@ -101,6 +102,7 @@ return [
         ],
         'easybill' => ['sync' => 'Recupero documenti easybill'],
         'etsy' => ['sync' => 'Sincronizzazione Etsy'],
+        'google-calendar' => ['publish' => 'Riconciliazione pubblicazione calendario Google'],
         'integration' => ['purge_inbox' => 'Ripulire la inbox delle integrazioni'],
         'finance' => ['open_times_digest' => 'Digest dei tempi aperti per la contabilità'],
         'inventory' => ['cycle_counts' => 'Avvio inventario ciclico', 'expiring_lots' => 'Monitoraggio TMC (lotti in scadenza)'],
@@ -113,6 +115,10 @@ return [
         ],
         'location' => ['purge_points' => 'Ripulire i punti di posizione grezzi'],
         'mail' => ['poll' => 'Recupero posta in arrivo'],
+        'msgraph' => [
+            'publish' => 'Riconciliazione pubblicazione calendario Microsoft 365',
+            'subscriptions' => 'Rinnovo delle sottoscrizioni webhook Microsoft 365',
+        ],
         'maintenance' => ['scan_due' => 'Controllare i piani di manutenzione in scadenza'],
         'notifications' => ['scan_deadlines' => 'Controllare le scadenze e notificare'],
         'news-feed' => ['refresh' => 'Aggiorna il feed di notizie'],

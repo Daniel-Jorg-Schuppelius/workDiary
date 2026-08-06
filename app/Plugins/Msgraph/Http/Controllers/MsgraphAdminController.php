@@ -49,11 +49,16 @@ class MsgraphAdminController extends ConnectionOAuthController {
             }
         }
 
+        // Graph-Mail-Verbindung (Feature 102): eigener Grant, eigene Sektion.
+        $mailConnection = \App\Models\MsgraphMailConnection::query()->where('organization_id', $organization->id)->first();
+
         return view('msgraph::admin.index', [
             'configured' => MsgraphConfig::isConfigured(),
             'connection' => $connection,
             'calendars' => $calendars,
             'health' => $health,
+            'mailConnection' => $mailConnection,
+            'mailerActive' => \App\Plugins\Msgraph\Mail\MsgraphMailTransport::inDefaultMailerChain(),
         ]);
     }
 
@@ -103,6 +108,7 @@ class MsgraphAdminController extends ConnectionOAuthController {
 
         $data = $request->validate([
             'calendar_id' => ['nullable', 'string', 'max:512'],
+            'teams_meetings' => ['nullable', 'boolean'],
         ]);
 
         $calendarId = trim((string) ($data['calendar_id'] ?? ''));
@@ -123,8 +129,10 @@ class MsgraphAdminController extends ConnectionOAuthController {
         $connection->forceFill([
             'calendar_id' => $calendarId !== '' ? $calendarId : null,
             'calendar_name' => $calendarName,
+            // Teams-Meeting-Link (C1): wirkt nur auf NEU publizierte Termine.
+            'teams_meetings' => $request->boolean('teams_meetings'),
         ])->save();
-        $connection->audit('msgraph.calendar_selected', ['calendar_name' => $calendarName ?? 'default']);
+        $connection->audit('msgraph.calendar_selected', ['calendar_name' => $calendarName ?? 'default', 'teams_meetings' => $connection->teams_meetings]);
 
         return back()->with('success', __('msgraph.flash.calendar_saved'));
     }

@@ -29,7 +29,7 @@ use Throwable;
  * Trennen löscht weder Nachweise noch importierte Dokumente.
  */
 class CloudIntakeAdminController extends Controller {
-    public function index(): View {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', CloudDocumentConnection::class);
 
         $connections = CloudDocumentConnection::query()
@@ -45,11 +45,35 @@ class CloudIntakeAdminController extends Controller {
             ->paginate(25, pageName: 'protokoll')
             ->withQueryString();
 
+        // Container-Picker (SharePoint-Muster): auf Anforderung die wählbaren
+        // Container GENAU EINER Verbindung laden — nie beim reinen Seitenaufruf
+        // für alle Verbindungen (je Aufruf externe API-Requests). Fehler → leer;
+        // die Freitext-Eingabe bleibt als Fallback.
+        $containerConnectionId = (int) $request->query('containers', 0);
+        $containerSearch = trim((string) $request->query('container_search', ''));
+        $containerOptions = [];
+        $containerLoadFailed = false;
+        $pickerConnection = $connections->firstWhere('id', $containerConnectionId);
+        if ($pickerConnection instanceof CloudDocumentConnection && $pickerConnection->external_account_id !== null) {
+            $plugin = app(PluginManager::class)->find($pickerConnection->provider->pluginId());
+            if ($plugin instanceof DocumentIntakeSource) {
+                try {
+                    $containerOptions = $plugin->intakeContainers($pickerConnection, $containerSearch !== '' ? $containerSearch : null);
+                } catch (Throwable) {
+                    $containerLoadFailed = true;
+                }
+            }
+        }
+
         return view('admin.cloud-intake.index', [
             'connections' => $connections,
             'items' => $items,
             'canManage' => Gate::allows('create', CloudDocumentConnection::class),
             'canManageRoutes' => Gate::allows('create', CloudDocumentRoute::class),
+            'containerConnectionId' => $containerConnectionId,
+            'containerSearch' => $containerSearch,
+            'containerOptions' => $containerOptions,
+            'containerLoadFailed' => $containerLoadFailed,
         ]);
     }
 
@@ -94,6 +118,18 @@ class CloudIntakeAdminController extends Controller {
         $this->refreshStatus($connection);
         $connection->audit('cloudIntake.folderSelected', ['path' => $normalized]);
 
+        // Change-Notification (MS365-Plan §8): Subscription auf dem neu
+        // gewählten Container best-effort anlegen — der tägliche Renewal-Job
+        // holt Fehlschläge nach, Polling funktioniert auch ohne.
+        $plugin = app(PluginManager::class)->find($connection->provider->pluginId());
+        if ($plugin instanceof \App\Plugins\Contracts\DocumentIntakeSubscriptions) {
+            try {
+                $plugin->intakeSubscribe($connection->fresh() ?? $connection);
+            } catch (Throwable) {
+                // bewusst still — Webhooks sind nur Beschleuniger.
+            }
+        }
+
         return back()->with('success', __('cloud_intake.flash.folder_selected'));
     }
 
@@ -137,6 +173,13 @@ class CloudIntakeAdminController extends Controller {
     /** Verbindung trennen: Tokens/Checkpoint weg, Nachweise bleiben. */
     public function disconnect(CloudDocumentConnection $connection): RedirectResponse {
         Gate::authorize('delete', $connection);
+
+        // Subscription abmelden, solange das Token noch gültig ist
+        // (best effort — Provider räumen abgelaufene Subscriptions selbst ab).
+        $plugin = app(PluginManager::class)->find($connection->provider->pluginId());
+        if ($plugin instanceof \App\Plugins\Contracts\DocumentIntakeSubscriptions) {
+            $plugin->intakeUnsubscribe($connection);
+        }
 
         $connection->audit('cloudIntake.disconnected', ['provider' => $connection->provider->value]);
         // nullOnDelete an den Nachweisen — importierte Dokumente bleiben.

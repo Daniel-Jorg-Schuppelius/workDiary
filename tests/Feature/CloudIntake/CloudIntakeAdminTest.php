@@ -10,12 +10,13 @@
 
 namespace Tests\Feature\CloudIntake;
 
-use App\Enums\CloudIntake\{CloudIntakeConnectionStatus, CloudIntakeRouteTarget};
+use App\Enums\CloudIntake\{CloudIntakeConnectionStatus, CloudIntakeProvider, CloudIntakeRouteTarget};
 use App\Enums\User\Permission;
 use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentRoute};
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 /**
@@ -53,6 +54,48 @@ class CloudIntakeAdminTest extends TestCase {
 
         $this->actingAs($stranger)->get(route('admin.cloud-intake.index'))->assertForbidden();
         $this->actingAs($this->admin)->get(route('admin.cloud-intake.index'))->assertOk();
+    }
+
+    public function test_index_loads_container_picker_options_on_demand(): void {
+        config(['plugins.msgraph.client_id' => 'cid', 'plugins.msgraph.client_secret' => 'sec']);
+        $connection = $this->connection([
+            'provider' => CloudIntakeProvider::Microsoft,
+            'external_account_id' => 'acc-1',
+        ]);
+
+        FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/drives' => FakePluginHttp::response([
+                'value' => [['id' => 'drive-7', 'name' => 'Picker-OneDrive', 'driveType' => 'business']],
+            ]),
+            'https://graph.microsoft.com/v1.0/sites?search=Projekt' => FakePluginHttp::response(['value' => []]),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.cloud-intake.index', ['containers' => $connection->id, 'container_search' => 'Projekt']))
+            ->assertOk()
+            ->assertSee('Picker-OneDrive');
+
+        // Ohne Picker-Parameter keine API-Aufrufe beim Seitenaufruf.
+        $fresh = FakePluginHttp::fake();
+        $this->actingAs($this->admin)->get(route('admin.cloud-intake.index'))->assertOk();
+        $fresh->assertNothingSent();
+    }
+
+    public function test_index_shows_fallback_warning_when_container_load_fails(): void {
+        config(['plugins.msgraph.client_id' => 'cid', 'plugins.msgraph.client_secret' => 'sec']);
+        $connection = $this->connection([
+            'provider' => CloudIntakeProvider::Microsoft,
+            'external_account_id' => 'acc-1',
+        ]);
+
+        FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/*' => FakePluginHttp::response(['error' => 'boom'], 500),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.cloud-intake.index', ['containers' => $connection->id]))
+            ->assertOk()
+            ->assertSee(__('cloud_intake.picker.load_failed'));
     }
 
     public function test_select_folder_resets_checkpoint_and_blocks_overlap(): void {

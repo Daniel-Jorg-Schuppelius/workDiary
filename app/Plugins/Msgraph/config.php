@@ -38,4 +38,8 @@ return [
     // Cloud-Backupziel (Feature 017 Phase 32): eigene systemweite Verbindung. Files.ReadWrite ist die engste
     // produktiv verfügbare delegierte Berechtigung — nur für ein bestätigtes Integrationskonto (Konzept §Bedrohungsmodell).
     'backup_scopes' => env('MSGRAPH_BACKUP_SCOPES', 'offline_access User.Read Files.ReadWrite'),
+    // Graph-Mail-Versand (Feature 102): eigene Verbindung je Organisation, delegated Mail.Send.
+    // Für Shared-Mailbox-Absender (from_address) zusätzlich 'Mail.Send.Shared' ergänzen
+    // (plus Exchange-Recht „Send As"/„Send on Behalf" für das verbundene Konto).
+    'mail_scopes' => env('MSGRAPH_MAIL_SCOPES', 'offline_access User.Read Mail.Send'),
 ];

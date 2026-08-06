@@ -30,6 +30,16 @@ Route::middleware(['web', 'auth'])->group(function (): void {
     Route::post('admin/msgraph/publish', [MsgraphAdminController::class, 'publish'])->name('admin.msgraph.publish');
 });
 
+// ── Graph-Mail-Versand (Feature 102) ────────────────────────────────────
+// Eigener Grant (Mail.Send), getrennt von Kalender/Intake/Backup; die
+// Verbindung wird im Msgraph-Admin-Panel verwaltet.
+Route::middleware(['web', 'auth'])->group(function (): void {
+    Route::post('admin/msgraph/mail/oauth/start', [\App\Plugins\Msgraph\Http\Controllers\MsgraphMailController::class, 'startOAuth'])->name('admin.msgraph.mail.oauth.start');
+    Route::get('admin/msgraph/mail/oauth/callback', [\App\Plugins\Msgraph\Http\Controllers\MsgraphMailController::class, 'oauthCallback'])->name('admin.msgraph.mail.oauth.callback');
+    Route::post('admin/msgraph/mail/disconnect', [\App\Plugins\Msgraph\Http\Controllers\MsgraphMailController::class, 'disconnect'])->name('admin.msgraph.mail.disconnect');
+    Route::post('admin/msgraph/mail/settings', [\App\Plugins\Msgraph\Http\Controllers\MsgraphMailController::class, 'storeSettings'])->name('admin.msgraph.mail.settings');
+});
+
 // ── Cloud-Dokumenteingang (Feature 080, MVP-354) ────────────────────────
 // Eigener LESENDER Intake-Flow, getrennt von der Kalender-Verbindung.
 Route::middleware(['web', 'auth'])->group(function (): void {

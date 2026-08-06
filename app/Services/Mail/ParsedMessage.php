@@ -43,6 +43,9 @@ final class ParsedMessage {
         public readonly ?string $inReplyTo = null,
         public readonly array $references = [],
         public readonly bool $isAutoSubmitted = false,
+        // Provider-ID für Nicht-IMAP-Transporte (Graph-Message-ID, Feature 102);
+        // IMAP adressiert weiterhin über die numerische UID.
+        public readonly ?string $externalId = null,
     ) {}
 
     /**

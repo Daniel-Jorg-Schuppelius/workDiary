@@ -87,8 +87,16 @@
                     <input type="text" name="name" value="{{ old('name') }}" class="input input-bordered input-sm" required>
                 </label>
                 <label class="form-control">
+                    <span class="label-text">{{ __('mail.field.transport') }}</span>
+                    <select name="transport" class="select select-bordered select-sm">
+                        <option value="imap" @selected(old('transport', 'imap') === 'imap')>IMAP</option>
+                        <option value="msgraph" @selected(old('transport') === 'msgraph')>{{ __('mail.transport.msgraph') }}</option>
+                    </select>
+                    <span class="label-text-alt text-base-content/60">{{ __('mail.transport.msgraph_hint') }}</span>
+                </label>
+                <label class="form-control">
                     <span class="label-text">{{ __('mail.field.host') }}</span>
-                    <input type="text" name="host" value="{{ old('host') }}" placeholder="imap.example.com" class="input input-bordered input-sm" required>
+                    <input type="text" name="host" value="{{ old('host') }}" placeholder="imap.example.com" class="input input-bordered input-sm">
                 </label>
                 <label class="form-control">
                     <span class="label-text">{{ __('mail.field.port') }}</span>

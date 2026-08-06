@@ -32,6 +32,12 @@ return [
         'container' => 'Conteneur/drive',
         'root_folder_id' => 'ID du dossier racine (optionnel)',
     ],
+    'picker' => [
+        'search_label' => 'Rechercher des conteneurs',
+        'search_placeholder' => 'vide = ses propres drives ; un terme de recherche trouve aussi les bibliothèques SharePoint',
+        'load' => 'Charger les conteneurs',
+        'load_failed' => 'Impossible de charger les conteneurs — saisissez l’ID manuellement.',
+    ],
     'action' => [
         'connect_dropbox' => 'Connecter Dropbox',
         'connect_microsoft' => 'Connecter Microsoft 365',

@@ -67,8 +67,8 @@ class NextcloudPlugin extends AbstractPlugin implements BackupTarget, DocumentIn
         return (new NextcloudIntakeClient($connection))->account();
     }
 
-    public function intakeContainers(CloudDocumentConnection $connection): array {
-        return (new NextcloudIntakeClient($connection))->containers();
+    public function intakeContainers(CloudDocumentConnection $connection, ?string $search = null): array {
+        return (new NextcloudIntakeClient($connection))->containers(); // Nextcloud: keine Container-Suche
     }
 
     public function intakeChanges(CloudDocumentConnection $connection, ?string $checkpoint): IntakeChangePage {

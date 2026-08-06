@@ -32,6 +32,12 @@ return [
         'container' => 'Contenedor/unidad',
         'root_folder_id' => 'ID de carpeta raíz (opcional)',
     ],
+    'picker' => [
+        'search_label' => 'Buscar contenedores',
+        'search_placeholder' => 'vacío = unidades propias; un término de búsqueda también encuentra bibliotecas de SharePoint',
+        'load' => 'Cargar contenedores',
+        'load_failed' => 'No se pudieron cargar los contenedores — introduzca el ID manualmente.',
+    ],
     'action' => [
         'connect_dropbox' => 'Conectar Dropbox',
         'connect_microsoft' => 'Conectar Microsoft 365',

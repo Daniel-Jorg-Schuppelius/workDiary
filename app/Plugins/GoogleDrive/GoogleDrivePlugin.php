@@ -61,8 +61,8 @@ class GoogleDrivePlugin extends AbstractPlugin implements BackupTarget, Document
         return (new GoogleDriveClient($connection))->account();
     }
 
-    public function intakeContainers(CloudDocumentConnection $connection): array {
-        return (new GoogleDriveClient($connection))->containers();
+    public function intakeContainers(CloudDocumentConnection $connection, ?string $search = null): array {
+        return (new GoogleDriveClient($connection))->containers(); // Shared-Drive-Suche: bei Bedarf nachrüstbar
     }
 
     public function intakeChanges(CloudDocumentConnection $connection, ?string $checkpoint): IntakeChangePage {

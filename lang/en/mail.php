@@ -37,6 +37,7 @@ return [
 
     'field' => [
         'name' => 'Label',
+        'transport' => 'Transport',
         'host' => 'IMAP server',
         'port' => 'Port',
         'encryption' => 'Encryption',
@@ -76,11 +77,16 @@ return [
         'dms_failed' => 'DMS import failed.',
         'already_resolved' => 'This entry has already been resolved.',
         'password_required' => 'A new mailbox requires a password.',
+        'msgraph_connection_required' => 'A Microsoft 365 mailbox requires the mail sending connection in the Microsoft 365 plugin first (scope Mail.ReadWrite).',
         'customer_required' => 'No customer assigned.',
     ],
     'reference' => [
         'customer_number' => 'Customer number in text: :number',
         'invoice_number' => 'Invoice number in text: :number',
         'project_number' => 'Project number in text: :number',
+    ],
+    'transport' => [
+        'msgraph' => 'Microsoft 365 (Graph)',
+        'msgraph_hint' => 'Microsoft 365: uses the organization’s Graph mail connection — no IMAP credentials needed.',
     ],
 ];

@@ -69,6 +69,23 @@
             </x-button>
         </form>
 
+        {{-- Passkey-Primär-Login (MS365-Plan G3): passwortlos via Discoverable
+             Credential; der Block versteckt sich ohne WebAuthn-Support. --}}
+        <div class="mt-4" data-webauthn-block>
+            <x-button
+                type="button"
+                tone="ghost"
+                class="w-full rounded-2xl"
+                data-webauthn-assert
+                data-options="{{ route('login.passkey.options') }}"
+                data-target="{{ route('login.passkey') }}"
+                data-error="passkey-login-error"
+            >
+                {{ __('Mit Passkey anmelden') }}
+            </x-button>
+            <p id="passkey-login-error" class="mt-2 hidden text-center text-sm text-error"></p>
+        </div>
+
         {{-- Single-Sign-on (Feature 057): Einstieg über die Organisations-Kennung. --}}
         <p class="mt-4 text-center text-sm text-base-content/70">
             <a href="{{ route('sso.discover') }}" class="text-primary transition hover:opacity-80">{{ __('Mit Single-Sign-on anmelden') }}</a>
@@ -84,4 +101,8 @@
         <a href="{{ route('register') }}" class="text-primary transition hover:opacity-80">{{ __('Organisation registrieren') }}</a>
     </p>
     @endif
+@endsection
+
+@section('after-body')
+    @include('partials.webauthn-script')
 @endsection

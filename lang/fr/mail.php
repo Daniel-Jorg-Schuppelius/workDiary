@@ -37,6 +37,7 @@ return [
 
     'field' => [
         'name' => 'Libellé',
+        'transport' => 'Transport',
         'host' => 'Serveur IMAP',
         'port' => 'Port',
         'encryption' => 'Chiffrement',
@@ -76,11 +77,16 @@ return [
         'dms_failed' => 'Reprise dans la gestion documentaire échouée.',
         'already_resolved' => 'Cette entrée est déjà résolue.',
         'password_required' => 'Une nouvelle boîte nécessite un mot de passe.',
+        'msgraph_connection_required' => 'Une boîte Microsoft 365 nécessite d’abord la connexion d’envoi de mails dans le plugin Microsoft 365 (scope Mail.ReadWrite).',
         'customer_required' => 'Aucun client associé.',
     ],
     'reference' => [
         'customer_number' => 'Numéro de client dans le texte : :number',
         'invoice_number' => 'Numéro de facture dans le texte : :number',
         'project_number' => 'Numéro de projet dans le texte : :number',
+    ],
+    'transport' => [
+        'msgraph' => 'Microsoft 365 (Graph)',
+        'msgraph_hint' => 'Microsoft 365 : utilise la connexion mail Graph de l’organisation — pas d’identifiants IMAP nécessaires.',
     ],
 ];

@@ -37,6 +37,7 @@ return [
 
     'field' => [
         'name' => 'Bezeichnung',
+        'transport' => 'Transport',
         'host' => 'IMAP-Server',
         'port' => 'Port',
         'encryption' => 'Verschlüsselung',
@@ -76,11 +77,16 @@ return [
         'dms_failed' => 'DMS-Übernahme fehlgeschlagen.',
         'already_resolved' => 'Der Eintrag ist bereits aufgelöst.',
         'password_required' => 'Für ein neues Postfach ist ein Passwort erforderlich.',
+        'msgraph_connection_required' => 'Für ein Microsoft-365-Postfach muss zuerst der Mail-Versand im Microsoft-365-Plugin verbunden werden (Scope Mail.ReadWrite).',
         'customer_required' => 'Kein Kunde zugeordnet.',
     ],
     'reference' => [
         'customer_number' => 'Kundennummer im Text: :number',
         'invoice_number' => 'Rechnungsnummer im Text: :number',
         'project_number' => 'Projektnummer im Text: :number',
+    ],
+    'transport' => [
+        'msgraph' => 'Microsoft 365 (Graph)',
+        'msgraph_hint' => 'Microsoft 365: nutzt die Graph-Mail-Verbindung der Organisation — IMAP-Zugangsdaten entfallen.',
     ],
 ];

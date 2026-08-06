@@ -52,10 +52,13 @@ class MailAdminController extends Controller {
         $data = $request->validate([
             'connection' => ['nullable', 'string'],
             'name' => ['required', 'string', 'max:120'],
-            'host' => ['required', 'string', 'max:190'],
-            'port' => ['required', 'integer', 'min:1', 'max:65535'],
-            'encryption' => ['required', 'in:ssl,tls,none'],
-            'username' => ['required', 'string', 'max:190'],
+            // Feature 102: msgraph-Postfächer nutzen die Graph-Mail-Verbindung
+            // der Organisation — IMAP-Zugangsdaten entfallen dann.
+            'transport' => ['nullable', 'in:' . EmailConnection::TRANSPORT_IMAP . ',' . EmailConnection::TRANSPORT_MSGRAPH],
+            'host' => ['required_if:transport,imap', 'nullable', 'string', 'max:190'],
+            'port' => ['required_if:transport,imap', 'nullable', 'integer', 'min:1', 'max:65535'],
+            'encryption' => ['required_if:transport,imap', 'nullable', 'in:ssl,tls,none'],
+            'username' => ['required_if:transport,imap', 'nullable', 'string', 'max:190'],
             'password' => ['nullable', 'string', 'max:255'],
             'folder' => ['required', 'string', 'max:190'],
             'processed_folder' => ['nullable', 'string', 'max:190'],
@@ -64,15 +67,27 @@ class MailAdminController extends Controller {
             'callreport_intake' => ['nullable', 'boolean'],
         ]);
 
+        $transport = (string) ($data['transport'] ?? EmailConnection::TRANSPORT_IMAP);
+        $isMsgraph = $transport === EmailConnection::TRANSPORT_MSGRAPH;
+
+        // Graph-Postfach braucht eine aktive Graph-Mail-Verbindung der Org.
+        if ($isMsgraph) {
+            $mail = \App\Models\MsgraphMailConnection::query()->where('organization_id', $organization->id)->first();
+            if (! $mail instanceof \App\Models\MsgraphMailConnection || ! $mail->isActive()) {
+                return back()->with('error', __('mail.flash.msgraph_connection_required'))->withInput();
+            }
+        }
+
         $connection = $this->resolveConnectionForEdit($organization, $data['connection'] ?? null);
 
         $attributes = [
             'organization_id' => $organization->id,
             'name' => (string) $data['name'],
-            'host' => trim((string) $data['host']),
-            'port' => (int) $data['port'],
-            'encryption' => (string) $data['encryption'],
-            'username' => (string) $data['username'],
+            'transport' => $transport,
+            'host' => $isMsgraph ? null : trim((string) $data['host']),
+            'port' => $isMsgraph ? 0 : (int) $data['port'],
+            'encryption' => $isMsgraph ? 'none' : (string) $data['encryption'],
+            'username' => $isMsgraph ? null : (string) $data['username'],
             'folder' => trim((string) $data['folder']) ?: 'INBOX',
             'processed_folder' => filled($data['processed_folder'] ?? null) ? trim((string) $data['processed_folder']) : null,
             'active' => (bool) ($data['active'] ?? false),
@@ -82,7 +97,9 @@ class MailAdminController extends Controller {
         ];
 
         $password = trim((string) ($data['password'] ?? ''));
-        if ($password !== '') {
+        if ($isMsgraph) {
+            $attributes['password'] = null;
+        } elseif ($password !== '') {
             $attributes['password'] = $password;
         } elseif (! $connection->exists) {
             return back()->with('error', __('mail.flash.password_required'))->withInput();

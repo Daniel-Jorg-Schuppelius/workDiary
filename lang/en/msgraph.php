@@ -22,6 +22,7 @@ return [
         'no_org_context' => 'Configured (no organization in context).',
         'no_connection' => 'No Microsoft 365 connection established.',
         'inactive' => 'Microsoft 365 connection is disconnected or disabled.',
+        'side_connections' => 'Microsoft 365 side connections need attention (:intake document intake, :backup backup, :mail mail — re-authenticate or check scopes).',
         'ok' => 'Connected — calendar list available.',
         'failing' => 'Microsoft Graph unreachable or access denied.',
         'error' => 'Microsoft Graph error (:class).',
@@ -39,6 +40,8 @@ return [
         'help' => 'Which calendar of the connected account is published to. Without a selection, the default calendar is used.',
         'target' => 'Calendar',
         'default' => 'Default calendar',
+        'teams_meetings' => 'Create new events as Teams meetings (join link)',
+        'teams_meetings_hint' => 'Only affects newly published events — Graph cannot revert an existing event to offline.',
     ],
 
     'flash' => [
