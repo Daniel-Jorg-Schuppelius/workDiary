@@ -356,7 +356,7 @@ class CustomerController extends Controller {
             ];
             $revenueSeries[] = [
                 'x' => $label,
-                'eur' => round($revenue[$ym], 2),
+                'y' => round($revenue[$ym], 2),
             ];
         }
 

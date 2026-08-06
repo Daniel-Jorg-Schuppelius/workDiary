@@ -65,7 +65,7 @@
     </div>
 
     {{-- Kompakte Monats-Trends (12 Monate): Zeiteinsatz & fakturierter Umsatz —
-         schneller Überblick über Auslastung und Erlös. --}}
+         zwei nach Monat ausgerichtete Diagramme als Gegenüberstellung. --}}
     <div class="grid grid-cols-1 gap-3 xl:grid-cols-2">
         <x-charts.stacked-bar :title="__('Zeiteinsatz je Monat')" unit="h"
                               :series="$chartHours"
@@ -75,11 +75,10 @@
                               ]"
                               :x-label="__('Monat')"
                               :note="__('Erfasste Stunden der letzten 12 Monate.')" />
-        <x-charts.stacked-bar :title="__('Umsatz je Monat (fakturiert)')" unit="€"
-                              :series="$chartRevenue"
-                              :bands="[['key' => 'eur', 'label' => __('Umsatz')]]"
-                              :x-label="__('Monat')"
-                              :note="__('Fakturierte Belege (Lexoffice + lokale Rechnungen) der letzten 12 Monate.')" />
+        <x-charts.bar :title="__('Umsatz je Monat (fakturiert)')" unit="€"
+                      :series="$chartRevenue"
+                      :x-label="__('Monat')" y-label="€"
+                      :note="__('Fakturierte Belege (Lexoffice + lokale Rechnungen) der letzten 12 Monate.')" />
     </div>
 
     {{-- Stammdaten --}}
