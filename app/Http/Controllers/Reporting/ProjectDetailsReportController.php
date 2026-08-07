@@ -334,8 +334,8 @@ class ProjectDetailsReportController extends Controller {
         $typeByDiary = $diaryIds === []
             ? []
             : DiaryEntry::query()->whereIn('id', $diaryIds)->pluck('entry_type_id', 'id')
-                ->map(static fn($v): ?int => $v !== null ? (int) $v : null)
-                ->all();
+            ->map(static fn($v): ?int => $v !== null ? (int) $v : null)
+            ->all();
 
         /** @var array<int, array<int|string, int>> $byMonthType Monat → Typ-ID|'rest' → Minuten */
         $byMonthType = [];
