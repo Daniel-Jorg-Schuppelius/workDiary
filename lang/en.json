@@ -9609,5 +9609,7 @@
     "Stammlieferant": "Core supplier",
     "Strategisch": "Strategic",
     "alle übrigen aktiven Lieferanten": "all other active suppliers",
-    "keine Belege im Zeitraum, oder R ≤ 2 ohne hohe Ausgaben": "no vouchers in the period, or R ≤ 2 without high spend"
+    "keine Belege im Zeitraum, oder R ≤ 2 ohne hohe Ausgaben": "no vouchers in the period, or R ≤ 2 without high spend",
+    "Belege je Monat (12 Monate)": "Vouchers per month (12 months)",
+    "Anzahl Einkaufsbelege dieses Lieferanten je Monat.": "Number of purchase vouchers of this supplier per month."
 }

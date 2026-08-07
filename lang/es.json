@@ -9609,5 +9609,7 @@
     "Stammlieferant": "Proveedor habitual",
     "Strategisch": "Estratégico",
     "alle übrigen aktiven Lieferanten": "todos los demás proveedores activos",
-    "keine Belege im Zeitraum, oder R ≤ 2 ohne hohe Ausgaben": "sin comprobantes en el periodo, o R ≤ 2 sin gasto elevado"
+    "keine Belege im Zeitraum, oder R ≤ 2 ohne hohe Ausgaben": "sin comprobantes en el periodo, o R ≤ 2 sin gasto elevado",
+    "Belege je Monat (12 Monate)": "Comprobantes por mes (12 meses)",
+    "Anzahl Einkaufsbelege dieses Lieferanten je Monat.": "Número de comprobantes de compra de este proveedor por mes."
 }

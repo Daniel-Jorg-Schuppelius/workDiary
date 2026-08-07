@@ -9609,5 +9609,7 @@
     "Stammlieferant": "Fornitore abituale",
     "Strategisch": "Strategico",
     "alle übrigen aktiven Lieferanten": "tutti gli altri fornitori attivi",
-    "keine Belege im Zeitraum, oder R ≤ 2 ohne hohe Ausgaben": "nessun documento nel periodo, o R ≤ 2 senza spesa elevata"
+    "keine Belege im Zeitraum, oder R ≤ 2 ohne hohe Ausgaben": "nessun documento nel periodo, o R ≤ 2 senza spesa elevata",
+    "Belege je Monat (12 Monate)": "Documenti per mese (12 mesi)",
+    "Anzahl Einkaufsbelege dieses Lieferanten je Monat.": "Numero di documenti di acquisto di questo fornitore per mese."
 }

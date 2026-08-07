@@ -193,6 +193,43 @@ class SupplierAnalysisReportBuilder {
     }
 
     /**
+     * Belegzahl je Monat der letzten zwölf Monate für EINEN Lieferanten —
+     * Gegenstück zum Ausgaben-Diagramm der Lieferanten-Detailseite.
+     *
+     * @return list<array{x: string, y: int}>
+     */
+    public function supplierMonthlyVoucherCountSeries(int $supplierId, CarbonImmutable $to): array {
+        $start = $to->subMonthsNoOverflow(11)->startOfMonth();
+
+        $months = [];
+        for ($i = 0; $i < 12; $i++) {
+            $months[$start->addMonthsNoOverflow($i)->format('Y-m')] = 0;
+        }
+
+        LexofficeVoucher::query()
+            ->where('supplier_id', $supplierId)
+            ->where('archived', false)
+            ->whereNotNull('voucher_date')
+            ->whereBetween('voucher_date', [$start->toDateString(), $to->toDateString()])
+            ->whereIn('voucher_type', self::EXPENSE_TYPES)
+            ->whereNotIn('voucher_status', ['draft', 'voided'])
+            ->get(['voucher_date'])
+            ->each(function (LexofficeVoucher $voucher) use (&$months): void {
+                $month = $voucher->voucher_date?->format('Y-m');
+                if ($month !== null && array_key_exists($month, $months)) {
+                    $months[$month]++;
+                }
+            });
+
+        $series = [];
+        foreach ($months as $month => $count) {
+            $series[] = ['x' => CarbonImmutable::parse($month . '-01')->format('m.Y'), 'y' => $count];
+        }
+
+        return $series;
+    }
+
+    /**
      * Ausgaben-Aggregate je Lieferant im Zeitraum (Beleg-Spiegel).
      *
      * @return array<int, array{spend:float, open:float, count:int, last:?string}>

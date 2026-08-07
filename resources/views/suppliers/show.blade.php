@@ -54,13 +54,17 @@
         </div>
     @endif
 
-    {{-- Ausgabenverlauf (12 Monate) — Finanzsicht, nur für Auswertungsberechtigte.
-         Einzelchart auf halbe Breite begrenzen, sonst dominiert er die Seite. --}}
+    {{-- Kompakte Monats-Trends (12 Monate): Ausgaben & Belegzahl — zwei nach
+         Monat ausgerichtete Diagramme als Gegenüberstellung (analog Kunde);
+         Finanzsicht, nur für Auswertungsberechtigte. --}}
     @if (($spendSeries ?? null) !== null)
-        <div class="lg:max-w-2xl">
-            <x-charts.bar :title="__('Ausgaben (12 Monate)')" unit="€" :series="$spendSeries"
+        <div class="grid grid-cols-1 gap-3 xl:grid-cols-2">
+            <x-charts.bar :title="__('Ausgaben je Monat (12 Monate)')" unit="€" :series="$spendSeries"
                           :x-label="__('Monat')" :y-label="__('Ausgaben')"
                           :note="__('Einkaufsbelege dieses Lieferanten je Monat; Gutschriften mindern.')" />
+            <x-charts.bar :title="__('Belege je Monat (12 Monate)')" :unit="__('Belege')" :series="$voucherCountSeries"
+                          :x-label="__('Monat')" :y-label="__('Belege')"
+                          :note="__('Anzahl Einkaufsbelege dieses Lieferanten je Monat.')" />
         </div>
     @endif
 
