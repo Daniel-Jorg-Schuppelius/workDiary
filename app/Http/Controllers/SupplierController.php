@@ -87,8 +87,10 @@ class SupplierController extends Controller {
         // Ausgabenverlauf (12 Monate) — Finanzsicht, nur report.view/Admin.
         $spendSeries = null;
         $authUser = Auth::user();
-        if ($authUser instanceof \App\Models\User
-            && ($authUser->isAdmin() || $authUser->can(\App\Enums\User\Permission::ReportView->value))) {
+        if (
+            $authUser instanceof \App\Models\User
+            && ($authUser->isAdmin() || $authUser->can(\App\Enums\User\Permission::ReportView->value))
+        ) {
             $spendSeries = app(\App\Services\Reporting\SupplierAnalysisReportBuilder::class)
                 ->supplierMonthlySpendSeries((int) $supplier->id, $lexofficeVoucherRange['to']);
         }

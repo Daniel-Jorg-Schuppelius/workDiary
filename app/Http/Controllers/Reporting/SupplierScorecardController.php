@@ -45,7 +45,8 @@ class SupplierScorecardController extends Controller {
 
     private const DRILL_PER_PAGE = 50;
 
-    public function __construct(private readonly SupplierScorecardService $service) {}
+    public function __construct(private readonly SupplierScorecardService $service) {
+    }
 
     public function index(Request $request): View {
         $this->authorizeReport($request);

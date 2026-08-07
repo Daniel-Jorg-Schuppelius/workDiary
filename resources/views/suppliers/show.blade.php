@@ -54,11 +54,14 @@
         </div>
     @endif
 
-    {{-- Ausgabenverlauf (12 Monate) — Finanzsicht, nur für Auswertungsberechtigte. --}}
+    {{-- Ausgabenverlauf (12 Monate) — Finanzsicht, nur für Auswertungsberechtigte.
+         Einzelchart auf halbe Breite begrenzen, sonst dominiert er die Seite. --}}
     @if (($spendSeries ?? null) !== null)
-        <x-charts.bar :title="__('Ausgaben (12 Monate)')" unit="€" :series="$spendSeries"
-                      :x-label="__('Monat')" :y-label="__('Ausgaben')"
-                      :note="__('Einkaufsbelege dieses Lieferanten je Monat; Gutschriften mindern.')" />
+        <div class="lg:max-w-2xl">
+            <x-charts.bar :title="__('Ausgaben (12 Monate)')" unit="€" :series="$spendSeries"
+                          :x-label="__('Monat')" :y-label="__('Ausgaben')"
+                          :note="__('Einkaufsbelege dieses Lieferanten je Monat; Gutschriften mindern.')" />
+        </div>
     @endif
 
     {{-- Stammdaten --}}
