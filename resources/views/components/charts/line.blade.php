@@ -28,12 +28,18 @@
 
 @php
     $points = collect($series)->values();
-    $width = 640; $height = 240; $pad = 36;
+    // Ab ~9 Punkten überlappen waagerechte X-Labels — dann schräg (−40°) mit mehr Fußraum.
+    $rotateLabels = $points->count() > 8;
+    $width = 640; $pad = 36;
+    $padB = $rotateLabels ? 84 : 44;
+    $height = 240 + ($rotateLabels ? 48 : 0);
     $maxY = max(1, (int) ceil((float) $points->max('y')));
     $stepX = $points->count() > 1 ? ($width - 2 * $pad) / ($points->count() - 1) : 0;
     $sx = fn(int $i): float => $pad + $i * $stepX;
-    $sy = fn(float $v): float => $height - $pad - ($v / $maxY) * ($height - 2 * $pad);
+    $sy = fn(float $v): float => $height - $padB - ($v / $maxY) * ($height - $pad - $padB);
     $path = $points->map(fn(array $p, int $i): string => ($i === 0 ? 'M' : 'L') . round($sx($i), 1) . ' ' . round($sy((float) $p['y']), 1))->implode(' ');
+    // X-Achsenbeschriftung ausdünnen: höchstens ~10 Labels, letzter Punkt immer.
+    $labelEvery = max(1, (int) ceil($points->count() / 10));
 @endphp
 
 <figure class="wd-chart rounded-box border border-base-300 bg-base-100 p-3">
@@ -56,16 +62,27 @@
         </div>
     @else
         <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="mt-2 w-full">
-            <line x1="{{ $pad }}" y1="{{ $height - $pad }}" x2="{{ $width - $pad }}" y2="{{ $height - $pad }}" class="stroke-base-300" stroke-width="1" />
-            <line x1="{{ $pad }}" y1="{{ $pad }}" x2="{{ $pad }}" y2="{{ $height - $pad }}" class="stroke-base-300" stroke-width="1" />
+            <line x1="{{ $pad }}" y1="{{ $height - $padB }}" x2="{{ $width - $pad }}" y2="{{ $height - $padB }}" class="stroke-base-300" stroke-width="1" />
+            <line x1="{{ $pad }}" y1="{{ $pad }}" x2="{{ $pad }}" y2="{{ $height - $padB }}" class="stroke-base-300" stroke-width="1" />
             <text x="{{ $pad - 6 }}" y="{{ $pad }}" text-anchor="end" class="fill-base-content/60 text-[10px]">{{ $maxY }}</text>
-            <text x="{{ $pad - 6 }}" y="{{ $height - $pad }}" text-anchor="end" class="fill-base-content/60 text-[10px]">0</text>
+            <text x="{{ $pad - 6 }}" y="{{ $height - $padB }}" text-anchor="end" class="fill-base-content/60 text-[10px]">0</text>
             @if ($ideal && $points->count() > 1)
                 <line x1="{{ $sx(0) }}" y1="{{ $sy((float) $points->first()['y']) }}"
                       x2="{{ $sx($points->count() - 1) }}" y2="{{ $sy(0) }}"
                       class="stroke-base-content/30" stroke-width="1" stroke-dasharray="5 4" />
             @endif
             <path d="{{ $path }}" fill="none" class="stroke-primary" stroke-width="2" />
+            @foreach ($points as $i => $point)
+                @if ($i % $labelEvery === 0 || $i === $points->count() - 1)
+                    @if ($rotateLabels)
+                        <text x="{{ round($sx($i), 1) }}" y="{{ $height - $padB + 12 }}" text-anchor="end"
+                              transform="rotate(-40 {{ round($sx($i), 1) }} {{ $height - $padB + 12 }})"
+                              class="fill-base-content/60 text-[10px]">{{ \Illuminate\Support\Str::limit((string) $point['x'], 18, '…') }}</text>
+                    @else
+                        <text x="{{ round($sx($i), 1) }}" y="{{ $height - $padB + 14 }}" text-anchor="middle" class="fill-base-content/60 text-[10px]">{{ \Illuminate\Support\Str::limit((string) $point['x'], 10, '…') }}</text>
+                    @endif
+                @endif
+            @endforeach
             @foreach ($points as $i => $point)
                 <a @if (!empty($point['url'])) href="{{ $point['url'] }}" @endif tabindex="0"
                    aria-label="{{ $point['x'] }}: {{ $point['y'] }} {{ $unit }}">

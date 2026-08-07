@@ -1,7 +1,7 @@
 @props([
     'size'         => 'sm',
     'zebra'        => true,
-    'pinRows'      => false,
+    'pinRows'      => true,
     'scroll'       => 'x',
     'tableSort'    => 'none',  // none | client | server
     'route'        => null,    // nur sort=server
@@ -67,7 +67,10 @@
         $bare                        => 'overflow-x-auto',
         $scroll === 'flex'           => 'min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100',
         $scroll === 'none'           => 'rounded-box border border-base-300 bg-base-100 shadow-xs',
-        default                      => 'overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-xs',
+        // Standard: eigener, gedeckelter Scrollbereich, damit der (via
+        // table-pin-rows) fixierte Kopf beim Scrollen stehen bleibt statt mit
+        // der Seite wegzuscrollen. Kurze Tabellen bleiben unverändert.
+        default                      => 'max-h-[70vh] overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs',
     };
 
     // Leerzustand: explizit erzwungen (empty=true) ODER automatisch, wenn der

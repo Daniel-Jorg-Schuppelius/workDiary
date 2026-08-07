@@ -110,7 +110,7 @@ class ProjectDetailsReportController extends Controller {
             'yearRate' => $yearRate,
             'standardFilters' => $filters,
             'filterFields' => $filterFields,
-            'timelineSeries' => $this->timelineSeries($entries, $rangeFrom, $rangeTo, $year),
+            'timelineSeries' => $this->timelineSeries($entries, $rangeFrom, $rangeTo, $year, (string) app(\App\Services\UI\DateRangeContext::class)->current()['unit']),
             'planIstSeries' => $planIst['series'],
             'planIstMedian' => $planIst['median'],
             'typeMonthlySeries' => $typeMonthly['series'],
@@ -163,7 +163,7 @@ class ProjectDetailsReportController extends Controller {
             ->where('project_id', $project->id)
             ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
             ->when($filterUserId !== null, fn($q) => $q->where('user_id', $filterUserId))
-            ->select('user_id', 'date', 'minutes', 'rate', 'diary_entry_id')
+            ->select('user_id', 'date', 'started_at', 'minutes', 'rate', 'diary_entry_id')
             ->get();
         if (! $seesAll) {
             $entries = $entries->where('user_id', $userId);
@@ -188,19 +188,47 @@ class ProjectDetailsReportController extends Controller {
     }
 
     /**
-     * Stundenverlauf über den effektiven Zeitraum — Tagesbuckets bei kurzen,
-     * Wochenbuckets (ISO-KW) bei langen Zeiträumen; begrenzt auf das
+     * Stundenverlauf über den effektiven Zeitraum — die Bucket-Granularität
+     * folgt der Header-Zeitangabe ({@see ChartBucket}: Tag→Stunden,
+     * Woche→Tage, Monat/Quartal→Wochen, Jahr→Monate); begrenzt auf das
      * Berichtsjahr, aus dem die Monatswerte stammen.
      *
      * @param  \Illuminate\Support\Collection<int, TimeEntry>  $entries
      * @return list<array{x: string, y: float}>
      */
-    private function timelineSeries($entries, CarbonImmutable $rangeFrom, CarbonImmutable $rangeTo, int $year): array {
+    private function timelineSeries($entries, CarbonImmutable $rangeFrom, CarbonImmutable $rangeTo, int $year, string $unit): array {
         $yearStart = (CarbonImmutable::create($year, 1, 1) ?: CarbonImmutable::now()->startOfYear())->startOfDay();
         $from = $rangeFrom->max($yearStart)->startOfDay();
         $to = $rangeTo->min($yearStart->endOfYear())->startOfDay();
         if ($to->lessThan($from)) {
             return [];
+        }
+
+        $granularity = \App\Support\ChartBucket::granularity($unit, $from, $to);
+
+        // Tag → Stundenverlauf (00–23 Uhr) aus started_at.
+        if ($granularity === 'hour') {
+            $byHour = array_fill(0, 24, 0);
+            $total = 0;
+            foreach ($entries as $e) {
+                $day = Carbon::parse((string) $e->date)->toDateString();
+                if ($day < $from->toDateString() || $day > $to->toDateString()) {
+                    continue;
+                }
+                $hour = $e->started_at !== null ? (int) Carbon::parse((string) $e->started_at)->format('G') : 0;
+                $byHour[$hour] += (int) $e->minutes;
+                $total += (int) $e->minutes;
+            }
+            if ($total === 0) {
+                return [];
+            }
+
+            $series = [];
+            for ($h = 0; $h < 24; $h++) {
+                $series[] = ['x' => sprintf('%02d:00', $h), 'y' => round($byHour[$h] / 60, 1)];
+            }
+
+            return $series;
         }
 
         /** @var array<string, int> $minutesByDay */
@@ -218,26 +246,18 @@ class ProjectDetailsReportController extends Controller {
             return []; // Leerzustand statt Null-Linie (§Diagramm-UX).
         }
 
-        $series = [];
-        if ($from->diffInDays($to) <= 62) {
-            for ($cursor = $from; $cursor->lte($to); $cursor = $cursor->addDay()) {
-                $series[] = [
-                    'x' => $cursor->format('d.m.'),
-                    'y' => round(($minutesByDay[$cursor->toDateString()] ?? 0) / 60, 1),
-                ];
-            }
-
-            return $series;
-        }
-
-        /** @var array<string, int> $minutesByWeek */
-        $minutesByWeek = [];
+        // Tage in Buckets der gewählten Granularität aggregieren (sortierstabil).
+        /** @var array<string, array{label: string, min: int}> $buckets */
+        $buckets = [];
         for ($cursor = $from; $cursor->lte($to); $cursor = $cursor->addDay()) {
-            $week = sprintf('KW %02d', $cursor->isoWeek);
-            $minutesByWeek[$week] = ($minutesByWeek[$week] ?? 0) + ($minutesByDay[$cursor->toDateString()] ?? 0);
+            [$key, $label] = \App\Support\ChartBucket::keyLabel($granularity, $cursor);
+            $buckets[$key] ??= ['label' => $label, 'min' => 0];
+            $buckets[$key]['min'] += $minutesByDay[$cursor->toDateString()] ?? 0;
         }
-        foreach ($minutesByWeek as $week => $minutes) {
-            $series[] = ['x' => $week, 'y' => round($minutes / 60, 1)];
+
+        $series = [];
+        foreach ($buckets as $bucket) {
+            $series[] = ['x' => $bucket['label'], 'y' => round($bucket['min'] / 60, 1)];
         }
 
         return $series;
