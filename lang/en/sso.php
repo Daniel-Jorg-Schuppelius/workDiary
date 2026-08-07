@@ -32,11 +32,26 @@ return [
     'break_glass_heading' => 'Break-glass accounts',
     'break_glass_hint' => 'Non-federated emergency accounts that may keep signing in with a password despite enforced SSO. Every use is audited. Keep at least one account, otherwise an IdP outage locks the organization out.',
     'no_break_glass' => 'No break-glass account defined.',
+    'domains_heading' => 'Email domains',
+    'domains_hint' => 'WorkDiary derives the matching organization from the login email domain. Domains are globally unique.',
+    'no_domains' => 'No email domain assigned yet.',
+
+    'provider' => [
+        'custom' => 'Custom OIDC provider',
+        'microsoft' => 'Microsoft 365',
+        'google' => 'Google Workspace',
+    ],
+
+    'choose' => [
+        'hint' => 'Multiple sign-in providers are configured for :org. Please choose.',
+    ],
 
     'discover' => [
         'hint' => 'Enter your organization identifier to start signing in via your identity provider.',
         'org_label' => 'Organization identifier',
         'org_placeholder' => 'e.g. acme-inc',
+        'email_label' => 'Email address',
+        'email_placeholder' => 'e.g. name@company.com',
         'submit' => 'Continue to identity provider',
         'back_to_login' => 'Back to sign-in',
     ],
@@ -49,6 +64,12 @@ return [
     'field' => [
         'label' => 'Label',
         'label_placeholder' => 'e.g. Entra ID production',
+        'tenant' => 'Directory (tenant)',
+        'tenant_placeholder' => 'Tenant GUID or verified domain',
+        'tenant_hint' => 'Tenant-specific — never common/organizations.',
+        'tenant_keep' => 'leave empty = unchanged',
+        'domain' => 'Email domain',
+        'domain_placeholder' => 'e.g. company.com',
         'team_none' => '— no team —',
         'start_url' => 'SSO start URL',
         'callback_url' => 'Redirect/callback URL (register at the IdP)',
@@ -87,6 +108,8 @@ return [
         'remove_connection' => 'Remove connection',
         'break_glass_add' => 'Set as break-glass account',
         'break_glass_remove' => 'Remove',
+        'domain_add' => 'Add domain',
+        'domain_remove' => 'Remove',
     ],
 
     'col' => [
@@ -113,6 +136,8 @@ return [
         'connection_removed' => 'Connection removed.',
         'break_glass_added' => 'Break-glass account set.',
         'break_glass_removed' => 'Break-glass status removed.',
+        'domain_added' => 'Email domain added.',
+        'domain_removed' => 'Email domain removed.',
     ],
 
     'error' => [
@@ -124,6 +149,11 @@ return [
         'jwks_failed' => 'The identity provider’s signing keys could not be loaded.',
         'no_account' => 'No WorkDiary account is linked to this identity. Please contact your administrator.',
         'org_without_sso' => 'No single sign-on is configured for this identifier.',
+        'email_without_sso' => 'No single sign-on is set up for this email domain.',
+        'tenant_required' => 'Microsoft 365 requires the directory (tenant).',
+        'google_issuer_invalid' => 'For Google Workspace only the official issuer https://accounts.google.com is allowed.',
+        'domain_invalid' => 'Please enter a valid email domain.',
+        'domain_taken' => 'This email domain is already assigned to another organization.',
         'flow_expired' => 'The SSO sign-in has expired. Please try again.',
         'module_disabled' => 'Single sign-on is not available for this organization.',
         'url_not_public' => 'The URL is not publicly reachable. For internal identity providers enable “Allow IdP on private network”.',

@@ -145,6 +145,34 @@ final class MsgraphConnectionTest extends TestCase {
         $this->assertStringNotContainsString('refresh-token-456', $auditChanges);
     }
 
+    public function test_oauth_callback_in_popup_mode_returns_postmessage_page(): void {
+        $this->fakeTokenEndpoint([
+            'access_token' => 'secret-token-123',
+            'refresh_token' => 'refresh-token-456',
+            'expires_in' => 3600,
+            'token_type' => 'Bearer',
+        ]);
+
+        // Start im Popup-Modus (Frontend hängt popup=1 an).
+        $start = $this->actingAs($this->admin)->post(route('admin.msgraph.oauth.start'), ['popup' => '1']);
+        $start->assertRedirect();
+        parse_str((string) parse_url((string) $start->headers->get('Location'), PHP_URL_QUERY), $query);
+        $state = $this->queryParam($query, 'state');
+        $this->assertNotSame('', $state);
+
+        $response = $this->actingAs($this->admin)
+            ->get(route('admin.msgraph.oauth.callback', ['state' => $state, 'code' => 'auth-code']));
+
+        // Popup: kein Redirect, sondern die Abschlussseite mit postMessage …
+        $response->assertOk();
+        $response->assertSee('workdiary-oauth', false);
+        $response->assertSee('"success"', false);
+        // … der Flash bleibt in der Session (das Opener-Fenster lädt neu).
+        $response->assertSessionHas('success');
+
+        $this->assertSame(MsgraphConnection::STATUS_ACTIVE, MsgraphConnection::query()->firstOrFail()->status);
+    }
+
     public function test_oauth_state_is_single_use(): void {
         $this->fakeTokenEndpoint(['access_token' => 'secret-token-123', 'token_type' => 'Bearer']);
 
@@ -161,6 +189,7 @@ final class MsgraphConnectionTest extends TestCase {
     }
 
     public function test_oauth_callback_rejects_unknown_state(): void {
+
         $this->actingAs($this->admin)
             ->get(route('admin.msgraph.oauth.callback', ['state' => 'forged', 'code' => 'auth-code']))
             ->assertRedirect(route('admin.msgraph.index'))

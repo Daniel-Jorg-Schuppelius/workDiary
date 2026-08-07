@@ -15,10 +15,12 @@ use App\Enums\CloudIntake\{CloudIntakeConnectionStatus, CloudIntakeProvider};
 use App\Http\Controllers\Controller;
 use App\Models\CloudIntake\CloudDocumentConnection;
 use App\Models\{Organization, User};
+use App\Plugins\Support\Concerns\HandlesOAuthPopup;
 use App\Plugins\Support\{OAuthStateHandshake, PluginOrgContext};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 /**
@@ -30,6 +32,8 @@ use Throwable;
  * token_access_type) liefern die Subklassen als Hook.
  */
 abstract class IntakeOAuthController extends Controller {
+    use HandlesOAuthPopup;
+
     abstract protected function provider(): CloudIntakeProvider;
 
     /** Anzeigename neu angelegter Verbindungen (z. B. "Dropbox"). */
@@ -83,7 +87,7 @@ abstract class IntakeOAuthController extends Controller {
         ['state' => $state, 'verifier' => $verifier] = $this->handshake()->start(
             (int) $organization->id,
             (int) $admin->id,
-            extra: ['connection_id' => $connectionId],
+            extra: ['connection_id' => $connectionId, 'popup' => $this->oauthPopupRequested($request)],
         );
 
         $url = $this->grant()->getAuthorizationUrl($state, $this->scopes(), $this->extraAuthorizeParams(), $verifier);
@@ -92,7 +96,7 @@ abstract class IntakeOAuthController extends Controller {
     }
 
     /** Callback: state einmalig einlösen, Code+PKCE tauschen, Konto bestätigen. */
-    public function oauthCallback(Request $request): RedirectResponse {
+    public function oauthCallback(Request $request): Response {
         Gate::authorize('create', CloudDocumentConnection::class);
         $admin = $this->admin();
         $organization = $this->organization($admin);
@@ -104,15 +108,17 @@ abstract class IntakeOAuthController extends Controller {
             return $this->backToOverview()->with('error', __('cloud_intake.flash.state_invalid'));
         }
 
+        $isPopup = $this->oauthPayloadIsPopup($payload);
+
         if ($code === '') {
-            return $this->backToOverview()->with('error', __('cloud_intake.flash.oauth_denied'));
+            return $this->respondToOAuth($isPopup, false, $this->backToOverview()->with('error', __('cloud_intake.flash.oauth_denied')));
         }
 
         try {
             $token = $this->grant()->exchangeAuthorizationCode($code, OAuthStateHandshake::verifierFrom($payload));
         } catch (Throwable $e) {
             // Nur die Fehlerklasse — nie Payload/Token.
-            return $this->backToOverview()->with('error', __('cloud_intake.flash.oauth_failed', ['class' => class_basename($e)]));
+            return $this->respondToOAuth($isPopup, false, $this->backToOverview()->with('error', __('cloud_intake.flash.oauth_failed', ['class' => class_basename($e)])));
         }
 
         $connection = $this->resolveConnection($organization, $payload['connection_id'] ?? null, $admin);
@@ -139,14 +145,14 @@ abstract class IntakeOAuthController extends Controller {
         } catch (Throwable $e) {
             $connection->recordConnectionFailure(class_basename($e));
 
-            return $this->backToOverview()->with('error', __('cloud_intake.flash.account_failed', ['class' => class_basename($e)]));
+            return $this->respondToOAuth($isPopup, false, $this->backToOverview()->with('error', __('cloud_intake.flash.account_failed', ['class' => class_basename($e)])));
         }
 
         $connection->forceFill(['status' => $this->connectedStatus($connection)])->save();
 
         $connection->audit('cloudIntake.connected', ['by_user_id' => (int) $admin->id, 'provider' => $this->provider()->value]);
 
-        return $this->backToOverview()->with('success', __('cloud_intake.flash.connected'));
+        return $this->respondToOAuth($isPopup, true, $this->backToOverview()->with('success', __('cloud_intake.flash.connected')));
     }
 
     private function handshake(): OAuthStateHandshake {

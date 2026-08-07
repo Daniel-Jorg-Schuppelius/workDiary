@@ -7,19 +7,23 @@
 
 @section('content')
     <div class="rounded-4xl border border-base-300 bg-base-100 p-8 shadow-xs">
-        {{-- Bewusst GET: die Kennung ist kein Geheimnis, der Flow bleibt lesezeichenfähig. --}}
+        {{-- Bewusst GET: die E-Mail-Domain ist kein Geheimnis, der Flow bleibt lesezeichenfähig. --}}
         <form method="GET" action="{{ route('sso.discover') }}" class="space-y-5">
             <div>
-                <label for="org" class="mb-2 block text-sm font-medium text-base-content">{{ __('sso.discover.org_label') }}</label>
+                <label for="email" class="mb-2 block text-sm font-medium text-base-content">{{ __('sso.discover.email_label') }}</label>
                 <input
-                    id="org"
-                    name="org"
-                    type="text"
-                    value="{{ old('org', request('org')) }}"
+                    id="email"
+                    name="email"
+                    type="email"
+                    value="{{ old('email', request('email')) }}"
                     autofocus
-                    class="w-full rounded-2xl border border-base-content/20 bg-base-200/80 px-4 py-3 text-base-content placeholder-base-content/40 transition focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/25 @error('org') ring-2 ring-error/40 @enderror"
-                    placeholder="{{ __('sso.discover.org_placeholder') }}"
+                    autocomplete="email"
+                    class="w-full rounded-2xl border border-base-content/20 bg-base-200/80 px-4 py-3 text-base-content placeholder-base-content/40 transition focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/25 @error('email') ring-2 ring-error/40 @enderror"
+                    placeholder="{{ __('sso.discover.email_placeholder') }}"
                 >
+                @error('email')
+                    <p class="mt-2 text-sm text-error">{{ $message }}</p>
+                @enderror
                 @error('org')
                     <p class="mt-2 text-sm text-error">{{ $message }}</p>
                 @enderror

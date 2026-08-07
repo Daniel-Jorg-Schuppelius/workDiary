@@ -199,6 +199,11 @@ class Organization extends Model {
         return $this->hasMany(User::class);
     }
 
+    /** @return HasMany<OrganizationSsoDomain, $this> */
+    public function ssoDomains(): HasMany {
+        return $this->hasMany(OrganizationSsoDomain::class);
+    }
+
     /**
      * Aktive Nutzer dieser Organisation – Bezugsgröße für das Lizenz-Nutzerlimit
      * (Feature 021). User nutzen keinen BelongsToOrganization-GlobalScope, daher

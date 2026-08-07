@@ -47,7 +47,7 @@
                     </form>
                 </div>
             @elseif ($configured)
-                <form method="POST" action="{{ route('admin.google-calendar.oauth.start') }}">
+                <form method="POST" action="{{ route('admin.google-calendar.oauth.start') }}" data-oauth-popup>
                     @csrf
                     <button type="submit" class="btn btn-sm btn-primary">{{ __('google_calendar.action.connect') }}</button>
                 </form>

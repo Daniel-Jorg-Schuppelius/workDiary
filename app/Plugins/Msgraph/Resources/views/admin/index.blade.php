@@ -47,7 +47,7 @@
                     </form>
                 </div>
             @elseif ($configured)
-                <form method="POST" action="{{ route('admin.msgraph.oauth.start') }}">
+                <form method="POST" action="{{ route('admin.msgraph.oauth.start') }}" data-oauth-popup>
                     @csrf
                     <button type="submit" class="btn btn-sm btn-primary">{{ __('msgraph.action.connect') }}</button>
                 </form>
@@ -104,7 +104,7 @@
                     <button type="submit" class="btn btn-sm btn-ghost">{{ __('msgraph_mail.disconnect') }}</button>
                 </form>
             @elseif ($configured)
-                <form method="POST" action="{{ route('admin.msgraph.mail.oauth.start') }}">
+                <form method="POST" action="{{ route('admin.msgraph.mail.oauth.start') }}" data-oauth-popup>
                     @csrf
                     <button type="submit" class="btn btn-sm btn-primary">{{ __('msgraph_mail.connect') }}</button>
                 </form>
@@ -137,7 +137,7 @@
                     <button type="submit" class="btn btn-sm btn-ghost">{{ __('msgraph_contacts.disconnect') }}</button>
                 </form>
             @elseif ($configured)
-                <form method="POST" action="{{ route('admin.msgraph.contacts.oauth.start') }}">
+                <form method="POST" action="{{ route('admin.msgraph.contacts.oauth.start') }}" data-oauth-popup>
                     @csrf
                     <button type="submit" class="btn btn-sm btn-primary">{{ __('msgraph_contacts.connect') }}</button>
                 </form>
@@ -232,7 +232,7 @@
                     <button type="submit" class="btn btn-sm btn-ghost">{{ __('msgraph_tasks.disconnect') }}</button>
                 </form>
             @elseif ($configured)
-                <form method="POST" action="{{ route('admin.msgraph.tasks.oauth.start') }}">
+                <form method="POST" action="{{ route('admin.msgraph.tasks.oauth.start') }}" data-oauth-popup>
                     @csrf
                     <button type="submit" class="btn btn-sm btn-primary">{{ __('msgraph_tasks.connect') }}</button>
                 </form>

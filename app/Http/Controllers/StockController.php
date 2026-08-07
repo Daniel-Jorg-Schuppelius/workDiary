@@ -52,7 +52,7 @@ class StockController extends Controller {
                 ->pluck('article_variant_id')
                 ->all();
 
-            /** @var array<int, \App\Models\StockLevelSetting> $levelByVariant */
+            /** @var array<int, StockLevelSetting> $levelByVariant */
             $levelByVariant = StockLevelSetting::query()
                 ->where('warehouse_id', $selected->id)
                 ->get()->keyBy('article_variant_id')->all();

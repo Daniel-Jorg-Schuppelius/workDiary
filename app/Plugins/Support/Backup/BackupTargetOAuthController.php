@@ -17,11 +17,13 @@ use App\Models\Backup\BackupTargetConnection;
 use App\Models\User;
 use App\Plugins\Contracts\BackupTarget;
 use App\Plugins\PluginManager;
+use App\Plugins\Support\Concerns\HandlesOAuthPopup;
 use App\Services\Backup\BackupNaming;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Cache, Gate};
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 /**
@@ -34,6 +36,8 @@ use Throwable;
  * Ziel sichtbar auf `blocked` (keine Sonderwege).
  */
 abstract class BackupTargetOAuthController extends Controller {
+    use HandlesOAuthPopup;
+
     private const STATE_TTL_SECONDS = 600;
 
     abstract protected function provider(): BackupProvider;
@@ -78,6 +82,7 @@ abstract class BackupTargetOAuthController extends Controller {
             'user_id' => (int) $admin->id,
             'connection_id' => $connectionId,
             'pkce_verifier' => $verifier,
+            'popup' => $this->oauthPopupRequested($request),
         ], self::STATE_TTL_SECONDS);
 
         $url = $this->grant()->getAuthorizationUrl($state, $this->scopes(), $this->extraAuthorizeParams(), $verifier);
@@ -86,7 +91,7 @@ abstract class BackupTargetOAuthController extends Controller {
     }
 
     /** Callback: state einmalig einlösen, Code+PKCE tauschen, Ziel einrichten. */
-    public function oauthCallback(Request $request): RedirectResponse {
+    public function oauthCallback(Request $request): Response {
         Gate::authorize('create', BackupTargetConnection::class);
         $admin = $this->admin();
 
@@ -98,15 +103,17 @@ abstract class BackupTargetOAuthController extends Controller {
             return $this->backToOverview()->with('error', __('backup_targets.flash.state_invalid'));
         }
 
+        $isPopup = (bool) ($payload['popup'] ?? false);
+
         if ($code === '') {
-            return $this->backToOverview()->with('error', __('backup_targets.flash.oauth_denied'));
+            return $this->respondToOAuth($isPopup, false, $this->backToOverview()->with('error', __('backup_targets.flash.oauth_denied')));
         }
 
         try {
             $token = $this->grant()->exchangeAuthorizationCode($code, (string) ($payload['pkce_verifier'] ?? '') ?: null);
         } catch (Throwable $e) {
             // Nur die Fehlerklasse — nie Payload/Token.
-            return $this->backToOverview()->with('error', __('backup_targets.flash.oauth_failed', ['class' => class_basename($e)]));
+            return $this->respondToOAuth($isPopup, false, $this->backToOverview()->with('error', __('backup_targets.flash.oauth_failed', ['class' => class_basename($e)])));
         }
 
         $connection = $this->resolveConnection($payload['connection_id'] ?? null, $admin);
@@ -130,12 +137,12 @@ abstract class BackupTargetOAuthController extends Controller {
             $connection->forceFill(['status' => BackupTargetStatus::Blocked])->save();
             $connection->audit('backupTarget.scopeBlocked', ['by_user_id' => (int) $admin->id, 'provider' => $this->provider()->value]);
 
-            return $this->backToOverview()->with('error', __('backup_targets.flash.scope_missing', ['scope' => $this->requiredScope()]));
+            return $this->respondToOAuth($isPopup, false, $this->backToOverview()->with('error', __('backup_targets.flash.scope_missing', ['scope' => $this->requiredScope()])));
         }
 
         $adapter = $this->adapter();
         if ($adapter === null) {
-            return $this->backToOverview()->with('error', __('backup_targets.flash.not_configured'));
+            return $this->respondToOAuth($isPopup, false, $this->backToOverview()->with('error', __('backup_targets.flash.not_configured')));
         }
 
         // Kontoidentität + Quota bestätigen, Pseudonym-Stammordner anlegen.
@@ -155,12 +162,12 @@ abstract class BackupTargetOAuthController extends Controller {
         } catch (Throwable $e) {
             $connection->recordConnectionFailure(class_basename($e));
 
-            return $this->backToOverview()->with('error', __('backup_targets.flash.account_failed', ['class' => class_basename($e)]));
+            return $this->respondToOAuth($isPopup, false, $this->backToOverview()->with('error', __('backup_targets.flash.account_failed', ['class' => class_basename($e)])));
         }
 
         $connection->audit('backupTarget.connected', ['by_user_id' => (int) $admin->id, 'provider' => $this->provider()->value]);
 
-        return $this->backToOverview()->with('success', __('backup_targets.flash.connected'));
+        return $this->respondToOAuth($isPopup, true, $this->backToOverview()->with('success', __('backup_targets.flash.connected')));
     }
 
     private function adapter(): ?BackupTarget {

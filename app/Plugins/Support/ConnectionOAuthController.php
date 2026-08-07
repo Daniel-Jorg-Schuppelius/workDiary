@@ -12,9 +12,10 @@ namespace App\Plugins\Support;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
+use App\Plugins\Support\Concerns\{HandlesOAuthPopup, ResolvesPluginOrgContext};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 /**
@@ -27,6 +28,7 @@ use Throwable;
  * Identitätsabgleich, Webhook-Abmeldung) liefern die Subklassen als Hooks.
  */
 abstract class ConnectionOAuthController extends Controller {
+    use HandlesOAuthPopup;
     use ResolvesPluginOrgContext;
 
     /** OAuth-Grant-Builder des Plugins (Container-Singleton = Test-Austauschpunkt). */
@@ -108,7 +110,7 @@ abstract class ConnectionOAuthController extends Controller {
     protected function beforeDisconnect(Model $connection): void {}
 
     /** Startet den OAuth-Flow: org- und sitzungsgebundener Einmal-state (+ PKCE). */
-    public function startOAuth(): RedirectResponse {
+    public function startOAuth(Request $request): RedirectResponse {
         $admin = $this->admin();
         $organization = $this->organization($admin);
 
@@ -116,8 +118,9 @@ abstract class ConnectionOAuthController extends Controller {
             return back()->with('error', $this->flashMessage('not_configured'));
         }
 
+        $extra = $this->oauthPopupRequested($request) ? ['popup' => true] : [];
         ['state' => $state, 'verifier' => $verifier] = $this->handshake()
-            ->start((int) $organization->id, (int) $admin->id, withPkce: $this->usesPkce());
+            ->start((int) $organization->id, (int) $admin->id, withPkce: $this->usesPkce(), extra: $extra);
 
         $oauth = $this->oauth();
         $url = $oauth->grant()->getAuthorizationUrl($state, $oauth->scopes(), $this->extraAuthorizeParams(), $verifier);
@@ -126,7 +129,7 @@ abstract class ConnectionOAuthController extends Controller {
     }
 
     /** OAuth-Callback: state prüfen (einmalig!), Code (+ PKCE) tauschen, Verbindung speichern. */
-    public function oauthCallback(Request $request): RedirectResponse {
+    public function oauthCallback(Request $request): Response {
         $admin = $this->admin();
         $organization = $this->organization($admin);
 
@@ -140,8 +143,10 @@ abstract class ConnectionOAuthController extends Controller {
             return $this->backToOverview()->with('error', $this->flashMessage('state_invalid'));
         }
 
+        $isPopup = $this->oauthPayloadIsPopup($payload);
+
         if ($code === '') {
-            return $this->backToOverview()->with('error', $this->flashMessage('oauth_denied'));
+            return $this->respondToOAuth($isPopup, false, $this->backToOverview()->with('error', $this->flashMessage('oauth_denied')));
         }
 
         $oauth = $this->oauth();
@@ -149,7 +154,7 @@ abstract class ConnectionOAuthController extends Controller {
             $token = $oauth->grant()->exchangeAuthorizationCode($code, OAuthStateHandshake::verifierFrom($payload));
         } catch (Throwable $e) {
             // Nur die Fehlerklasse — nie Payload/Token.
-            return $this->backToOverview()->with('error', $this->flashMessage('oauth_failed', ['class' => class_basename($e)]));
+            return $this->respondToOAuth($isPopup, false, $this->backToOverview()->with('error', $this->flashMessage('oauth_failed', ['class' => class_basename($e)])));
         }
 
         $model = $this->connectionModel();
@@ -174,7 +179,7 @@ abstract class ConnectionOAuthController extends Controller {
         // @phpstan-ignore method.notFound
         $connection->audit($this->pluginKey() . '.connected', ['by_user_id' => (int) $admin->id]);
 
-        return $this->backToOverview()->with('success', $this->flashMessage('connected'));
+        return $this->respondToOAuth($isPopup, true, $this->backToOverview()->with('success', $this->flashMessage('connected')));
     }
 
     /** Trennt die Verbindung (auditiert); Zuordnungen/Referenzen bleiben erhalten. */

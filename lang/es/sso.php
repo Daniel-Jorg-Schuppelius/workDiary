@@ -32,11 +32,26 @@ return [
     'break_glass_heading' => 'Cuentas de emergencia (break-glass)',
     'break_glass_hint' => 'Cuentas de emergencia no federadas que pueden seguir iniciando sesión con contraseña pese al SSO obligatorio. Cada uso queda auditado. Mantenga al menos una cuenta; de lo contrario, una caída del IdP bloquea a la organización.',
     'no_break_glass' => 'No hay ninguna cuenta de emergencia definida.',
+    'domains_heading' => 'Dominios de correo',
+    'domains_hint' => 'WorkDiary deduce la organización a partir del dominio de correo del inicio de sesión. Los dominios son únicos a nivel global.',
+    'no_domains' => 'Aún no se ha asignado ningún dominio de correo.',
+
+    'provider' => [
+        'custom' => 'Proveedor OIDC personalizado',
+        'microsoft' => 'Microsoft 365',
+        'google' => 'Google Workspace',
+    ],
+
+    'choose' => [
+        'hint' => 'Hay varios proveedores de inicio de sesión configurados para :org. Elija uno.',
+    ],
 
     'discover' => [
         'hint' => 'Introduzca el identificador de su organización para iniciar sesión a través de su proveedor de identidad.',
         'org_label' => 'Identificador de la organización',
         'org_placeholder' => 'p. ej. acme-sl',
+        'email_label' => 'Correo electrónico',
+        'email_placeholder' => 'p. ej. nombre@empresa.es',
         'submit' => 'Continuar al proveedor de identidad',
         'back_to_login' => 'Volver al inicio de sesión',
     ],
@@ -49,6 +64,12 @@ return [
     'field' => [
         'label' => 'Etiqueta',
         'label_placeholder' => 'p. ej. Entra ID producción',
+        'tenant' => 'Directorio (inquilino)',
+        'tenant_placeholder' => 'GUID del inquilino o dominio verificado',
+        'tenant_hint' => 'Específico del inquilino — nunca common/organizations.',
+        'tenant_keep' => 'dejar vacío = sin cambios',
+        'domain' => 'Dominio de correo',
+        'domain_placeholder' => 'p. ej. empresa.es',
         'team_none' => '— sin equipo —',
         'start_url' => 'URL de inicio SSO',
         'callback_url' => 'URL de redirección/callback (registrar en el IdP)',
@@ -87,6 +108,8 @@ return [
         'remove_connection' => 'Eliminar conexión',
         'break_glass_add' => 'Definir como cuenta de emergencia',
         'break_glass_remove' => 'Quitar',
+        'domain_add' => 'Añadir dominio',
+        'domain_remove' => 'Eliminar',
     ],
 
     'col' => [
@@ -113,6 +136,8 @@ return [
         'connection_removed' => 'Conexión eliminada.',
         'break_glass_added' => 'Cuenta de emergencia definida.',
         'break_glass_removed' => 'Estado de emergencia retirado.',
+        'domain_added' => 'Dominio de correo añadido.',
+        'domain_removed' => 'Dominio de correo eliminado.',
     ],
 
     'error' => [
@@ -124,6 +149,11 @@ return [
         'jwks_failed' => 'No se pudieron cargar las claves de firma del proveedor de identidad.',
         'no_account' => 'Ninguna cuenta de WorkDiary está vinculada a esta identidad. Póngase en contacto con su administración.',
         'org_without_sso' => 'No hay inicio de sesión único configurado para este identificador.',
+        'email_without_sso' => 'No hay inicio de sesión único configurado para este dominio de correo.',
+        'tenant_required' => 'Microsoft 365 requiere el directorio (inquilino).',
+        'google_issuer_invalid' => 'Para Google Workspace solo se permite el emisor oficial https://accounts.google.com.',
+        'domain_invalid' => 'Introduzca un dominio de correo válido.',
+        'domain_taken' => 'Este dominio de correo ya está asignado a otra organización.',
         'flow_expired' => 'El inicio de sesión SSO ha caducado. Inténtelo de nuevo.',
         'module_disabled' => 'El inicio de sesión único no está disponible para esta organización.',
         'url_not_public' => 'La URL no es accesible públicamente. Para proveedores internos active «Permitir IdP en red privada».',

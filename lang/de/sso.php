@@ -32,11 +32,26 @@ return [
     'break_glass_heading' => 'Break-Glass-Konten',
     'break_glass_hint' => 'Nicht föderierte Notfallkonten, die sich trotz SSO-Pflicht weiter mit Passwort anmelden dürfen. Jede Nutzung wird auditiert. Mindestens ein Konto behalten, sonst sperrt ein IdP-Ausfall die Organisation aus.',
     'no_break_glass' => 'Kein Break-Glass-Konto festgelegt.',
+    'domains_heading' => 'E-Mail-Domains',
+    'domains_hint' => 'Aus der E-Mail-Domain der Anmeldung leitet WorkDiary die passende Organisation ab. Domains sind global eindeutig.',
+    'no_domains' => 'Noch keine E-Mail-Domain zugeordnet.',
+
+    'provider' => [
+        'custom' => 'Eigener OIDC-Anbieter',
+        'microsoft' => 'Microsoft 365',
+        'google' => 'Google Workspace',
+    ],
+
+    'choose' => [
+        'hint' => 'Für :org sind mehrere Anmeldeanbieter eingerichtet. Bitte wählen.',
+    ],
 
     'discover' => [
         'hint' => 'Geben Sie die Kennung Ihrer Organisation ein, um die Anmeldung über Ihren Identitätsanbieter zu starten.',
         'org_label' => 'Organisations-Kennung',
         'org_placeholder' => 'z. B. muster-gmbh',
+        'email_label' => 'E-Mail-Adresse',
+        'email_placeholder' => 'z. B. name@firma.de',
         'submit' => 'Weiter zum Identitätsanbieter',
         'back_to_login' => 'Zurück zur Anmeldung',
     ],
@@ -49,6 +64,12 @@ return [
     'field' => [
         'label' => 'Bezeichnung',
         'label_placeholder' => 'z. B. Entra ID Produktion',
+        'tenant' => 'Verzeichnis (Tenant)',
+        'tenant_placeholder' => 'Tenant-GUID oder verifizierte Domain',
+        'tenant_hint' => 'Tenant-spezifisch — nie common/organizations.',
+        'tenant_keep' => 'leer lassen = unverändert',
+        'domain' => 'E-Mail-Domain',
+        'domain_placeholder' => 'z. B. firma.de',
         'team_none' => '— kein Team —',
         'start_url' => 'SSO-Start-URL',
         'callback_url' => 'Redirect-/Callback-URL (beim IdP registrieren)',
@@ -87,6 +108,8 @@ return [
         'remove_connection' => 'Verbindung entfernen',
         'break_glass_add' => 'Als Break-Glass-Konto festlegen',
         'break_glass_remove' => 'Entziehen',
+        'domain_add' => 'Domain hinzufügen',
+        'domain_remove' => 'Entfernen',
     ],
 
     'col' => [
@@ -113,6 +136,8 @@ return [
         'connection_removed' => 'Verbindung entfernt.',
         'break_glass_added' => 'Break-Glass-Konto festgelegt.',
         'break_glass_removed' => 'Break-Glass-Status entzogen.',
+        'domain_added' => 'E-Mail-Domain hinzugefügt.',
+        'domain_removed' => 'E-Mail-Domain entfernt.',
     ],
 
     'error' => [
@@ -124,6 +149,11 @@ return [
         'jwks_failed' => 'Die Signaturschlüssel des Identitätsanbieters konnten nicht geladen werden.',
         'no_account' => 'Für diese Identität ist kein WorkDiary-Konto verknüpft. Bitte wenden Sie sich an Ihre Administration.',
         'org_without_sso' => 'Für diese Kennung ist kein Single-Sign-on eingerichtet.',
+        'email_without_sso' => 'Für diese E-Mail-Domain ist kein Single-Sign-on eingerichtet.',
+        'tenant_required' => 'Für Microsoft 365 ist die Angabe des Verzeichnisses (Tenant) erforderlich.',
+        'google_issuer_invalid' => 'Für Google Workspace ist nur der offizielle Issuer https://accounts.google.com zulässig.',
+        'domain_invalid' => 'Bitte eine gültige E-Mail-Domain angeben.',
+        'domain_taken' => 'Diese E-Mail-Domain ist bereits einer anderen Organisation zugeordnet.',
         'flow_expired' => 'Die SSO-Anmeldung ist abgelaufen. Bitte erneut versuchen.',
         'module_disabled' => 'Single-Sign-on ist für diese Organisation nicht verfügbar.',
         'url_not_public' => 'Die URL ist nicht öffentlich erreichbar. Für interne Identitätsanbieter die Option „IdP im privaten Netz erlauben" setzen.',

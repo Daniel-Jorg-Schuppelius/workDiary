@@ -32,11 +32,26 @@ return [
     'break_glass_heading' => 'Account break-glass',
     'break_glass_hint' => 'Account di emergenza non federati che possono continuare ad accedere con password nonostante l’SSO obbligatorio. Ogni utilizzo viene registrato nell’audit. Mantenere almeno un account, altrimenti un guasto dell’IdP blocca l’organizzazione.',
     'no_break_glass' => 'Nessun account break-glass definito.',
+    'domains_heading' => 'Domini e-mail',
+    'domains_hint' => 'WorkDiary determina l’organizzazione dal dominio e-mail di accesso. I domini sono univoci a livello globale.',
+    'no_domains' => 'Nessun dominio e-mail ancora associato.',
+
+    'provider' => [
+        'custom' => 'Provider OIDC personalizzato',
+        'microsoft' => 'Microsoft 365',
+        'google' => 'Google Workspace',
+    ],
+
+    'choose' => [
+        'hint' => 'Per :org sono configurati più provider di accesso. Scegliere.',
+    ],
 
     'discover' => [
         'hint' => 'Inserisci l’identificativo della tua organizzazione per avviare l’accesso tramite il tuo provider di identità.',
         'org_label' => 'Identificativo organizzazione',
         'org_placeholder' => 'ad es. acme-srl',
+        'email_label' => 'Indirizzo e-mail',
+        'email_placeholder' => 'es. nome@azienda.it',
         'submit' => 'Continua verso il provider di identità',
         'back_to_login' => 'Torna all’accesso',
     ],
@@ -49,6 +64,12 @@ return [
     'field' => [
         'label' => 'Etichetta',
         'label_placeholder' => 'ad es. Entra ID produzione',
+        'tenant' => 'Directory (tenant)',
+        'tenant_placeholder' => 'GUID del tenant o dominio verificato',
+        'tenant_hint' => 'Specifico del tenant — mai common/organizations.',
+        'tenant_keep' => 'lasciare vuoto = invariato',
+        'domain' => 'Dominio e-mail',
+        'domain_placeholder' => 'es. azienda.it',
         'team_none' => '— nessun team —',
         'start_url' => 'URL di avvio SSO',
         'callback_url' => 'URL di redirect/callback (da registrare presso l’IdP)',
@@ -87,6 +108,8 @@ return [
         'remove_connection' => 'Rimuovi connessione',
         'break_glass_add' => 'Imposta come account break-glass',
         'break_glass_remove' => 'Rimuovi',
+        'domain_add' => 'Aggiungi dominio',
+        'domain_remove' => 'Rimuovi',
     ],
 
     'col' => [
@@ -113,6 +136,8 @@ return [
         'connection_removed' => 'Connessione rimossa.',
         'break_glass_added' => 'Account break-glass impostato.',
         'break_glass_removed' => 'Stato break-glass rimosso.',
+        'domain_added' => 'Dominio e-mail aggiunto.',
+        'domain_removed' => 'Dominio e-mail rimosso.',
     ],
 
     'error' => [
@@ -124,6 +149,11 @@ return [
         'jwks_failed' => 'Impossibile caricare le chiavi di firma del provider di identità.',
         'no_account' => 'Nessun account WorkDiary è collegato a questa identità. Contattare l’amministrazione.',
         'org_without_sso' => 'Per questo identificativo non è configurato alcun single sign-on.',
+        'email_without_sso' => 'Nessun single sign-on configurato per questo dominio e-mail.',
+        'tenant_required' => 'Microsoft 365 richiede la directory (tenant).',
+        'google_issuer_invalid' => 'Per Google Workspace è consentito solo l’issuer ufficiale https://accounts.google.com.',
+        'domain_invalid' => 'Inserire un dominio e-mail valido.',
+        'domain_taken' => 'Questo dominio e-mail è già associato a un’altra organizzazione.',
         'flow_expired' => 'L’accesso SSO è scaduto. Riprovare.',
         'module_disabled' => 'Il single sign-on non è disponibile per questa organizzazione.',
         'url_not_public' => 'L’URL non è raggiungibile pubblicamente. Per provider interni attivare «Consenti IdP su rete privata».',

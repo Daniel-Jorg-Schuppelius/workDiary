@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Enums\Auth\SsoProtocol;
+use App\Enums\Auth\{SsoProtocol, SsoProviderType};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $id
  * @property int $organization_id
  * @property SsoProtocol $protocol
+ * @property SsoProviderType $provider_type
  * @property string $label
  * @property bool $active
  * @property bool $enforced
@@ -55,6 +56,7 @@ class SsoConnection extends Model {
     protected $fillable = [
         'organization_id',
         'protocol',
+        'provider_type',
         'label',
         'active',
         'enforced',
@@ -77,6 +79,7 @@ class SsoConnection extends Model {
 
     protected $casts = [
         'protocol' => SsoProtocol::class,
+        'provider_type' => SsoProviderType::class,
         'active' => 'boolean',
         'enforced' => 'boolean',
         'allow_email_link' => 'boolean',

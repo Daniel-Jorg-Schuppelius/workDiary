@@ -75,6 +75,7 @@ Route::post('/two-factor-challenge/webauthn', [TwoFactorChallengeController::cla
 // bootstrap/app.php) und SP-Metadata. Modul-Gating im Controller.
 Route::get('/sso', [\App\Http\Controllers\Auth\SsoController::class, 'discover'])->name('sso.discover')->middleware('guest');
 Route::get('/sso/oidc/callback', [\App\Http\Controllers\Auth\SsoController::class, 'oidcCallback'])->name('sso.oidc.callback')->middleware('guest');
+Route::get('/sso/{slug}/choose', [\App\Http\Controllers\Auth\SsoController::class, 'choose'])->name('sso.choose')->middleware('guest')->where('slug', '[a-z0-9-]+');
 Route::get('/sso/{slug}/start', [\App\Http\Controllers\Auth\SsoController::class, 'start'])->name('sso.start')->middleware('guest')->where('slug', '[a-z0-9-]+');
 Route::post('/sso/{slug}/saml/acs', [\App\Http\Controllers\Auth\SsoController::class, 'samlAcs'])->name('sso.saml.acs')->middleware('guest')->where('slug', '[a-z0-9-]+');
 Route::get('/sso/{slug}/saml/metadata', [\App\Http\Controllers\Auth\SsoController::class, 'metadata'])->name('sso.saml.metadata')->where('slug', '[a-z0-9-]+');
@@ -1309,6 +1310,8 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/sso/connections', [\App\Http\Controllers\Admin\SsoAdminController::class, 'saveConnection'])->name('admin.sso.connections.save');
         Route::post('admin/sso/connections/{connection}/test', [\App\Http\Controllers\Admin\SsoAdminController::class, 'testConnection'])->name('admin.sso.connections.test');
         Route::delete('admin/sso/connections/{connection}', [\App\Http\Controllers\Admin\SsoAdminController::class, 'destroyConnection'])->name('admin.sso.connections.destroy');
+        Route::post('admin/sso/domains', [\App\Http\Controllers\Admin\SsoAdminController::class, 'addDomain'])->name('admin.sso.domains.add');
+        Route::delete('admin/sso/domains/{domain}', [\App\Http\Controllers\Admin\SsoAdminController::class, 'removeDomain'])->name('admin.sso.domains.remove');
         Route::post('admin/sso/break-glass', [\App\Http\Controllers\Admin\SsoAdminController::class, 'toggleBreakGlass'])->name('admin.sso.break-glass.toggle');
 
         // ── B2B-Katalogzugang (Admin, Feature 099, module.b2b_katalog) ──

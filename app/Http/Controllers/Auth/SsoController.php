@@ -13,9 +13,11 @@ namespace App\Http\Controllers\Auth;
 use App\Enums\Auth\SsoProtocol;
 use App\Http\Controllers\Auth\Concerns\ResolvesWorkMode;
 use App\Http\Controllers\Controller;
-use App\Models\{Organization, SsoConnection, User};
+use App\Models\{Organization, OrganizationSsoDomain, SsoConnection, User};
 use App\Services\Auth\Sso\{OidcClient, SamlClient, SsoLoginException, SsoLoginService};
 use App\Services\Licensing\FeatureFlagResolver;
+use App\Services\SqidEncoder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -37,13 +39,23 @@ class SsoController extends Controller {
         private readonly SsoLoginService $login,
     ) {}
 
-    /** Einstieg von der Login-Seite: Organisations-Kennung abfragen. */
+    /** Einstieg von der Login-Seite: E-Mail-Adresse → Organisation (Domain-Mapping) bzw. Kennung. */
     public function discover(Request $request): View|RedirectResponse {
+        $email = trim((string) $request->query('email', ''));
+        if ($email !== '') {
+            $organization = $this->organizationByEmail($email);
+            if (! $organization instanceof Organization) {
+                return redirect()->route('sso.discover')->withErrors(['email' => __('sso.error.email_without_sso')])->withInput();
+            }
+
+            return $this->routeToOrganization($organization);
+        }
+
         $slug = trim((string) $request->query('org', ''));
         if ($slug !== '') {
             $organization = Organization::query()->where('slug', $slug)->first();
-            if ($organization instanceof Organization && $this->activeConnection($organization) !== null) {
-                return redirect()->route('sso.start', ['slug' => $organization->slug]);
+            if ($organization instanceof Organization && $this->activeConnections($organization)->isNotEmpty()) {
+                return $this->routeToOrganization($organization);
             }
 
             return redirect()->route('sso.discover')->withErrors(['org' => __('sso.error.org_without_sso')])->withInput();
@@ -52,12 +64,31 @@ class SsoController extends Controller {
         return view('auth.sso-discover');
     }
 
+    /** Anbieterauswahl, wenn eine Organisation mehrere aktive SSO-Verbindungen hat. */
+    public function choose(string $slug): View|RedirectResponse {
+        $organization = $this->organization($slug);
+        $connections = $this->activeConnections($organization);
+
+        if ($connections->isEmpty()) {
+            abort(404);
+        }
+        if ($connections->count() === 1) {
+            return redirect()->route('sso.start', ['slug' => $organization->slug, 'connection' => $connections->first()->sqid]);
+        }
+
+        return view('auth.sso-choose', ['organization' => $organization, 'connections' => $connections]);
+    }
+
     /** SP-initiierter Login-Start (OIDC bevorzugt, sonst SAML). */
     public function start(Request $request, string $slug): RedirectResponse {
         $organization = $this->organization($slug);
-        $connection = $this->activeConnection($organization);
+        $connection = $this->selectConnection($organization, (string) $request->query('connection', ''));
 
         if (! $connection instanceof SsoConnection) {
+            // Mehrere aktive Verbindungen, keine eindeutig gewählt → Anbieterauswahl.
+            if ($this->activeConnections($organization)->count() > 1) {
+                return redirect()->route('sso.choose', ['slug' => $organization->slug]);
+            }
             abort(404);
         }
 
@@ -229,13 +260,70 @@ class SsoController extends Controller {
         return $organization;
     }
 
-    private function activeConnection(Organization $organization): ?SsoConnection {
+    /**
+     * Alle aktiven SSO-Verbindungen einer Organisation (OIDC zuerst). Bewusst
+     * ohne Global Scopes — läuft im Gast-Kontext (Login) ohne currentOrganization.
+     *
+     * @return Collection<int, SsoConnection>
+     */
+    private function activeConnections(Organization $organization): Collection {
         return SsoConnection::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->where('active', true)
             ->orderByRaw("CASE protocol WHEN 'oidc' THEN 0 ELSE 1 END")
-            ->first();
+            ->orderBy('id')
+            ->get();
+    }
+
+    /**
+     * Wählt die zu startende Verbindung: präzise per Sqid (Anbieterauswahl),
+     * sonst die einzige aktive. Bei Mehrdeutigkeit null → Auswahlseite.
+     */
+    private function selectConnection(Organization $organization, string $connectionSqid): ?SsoConnection {
+        $connections = $this->activeConnections($organization);
+
+        $connectionSqid = trim($connectionSqid);
+        if ($connectionSqid !== '') {
+            $decoded = app(SqidEncoder::class)->decode(SsoConnection::class, $connectionSqid);
+
+            return $decoded !== null
+                ? $connections->firstWhere('id', $decoded)
+                : null;
+        }
+
+        return $connections->count() === 1 ? $connections->first() : null;
+    }
+
+    /** Aus der E-Mail-Domain die SSO-Organisation ableiten (nur mit aktiver Verbindung). */
+    private function organizationByEmail(string $email): ?Organization {
+        $domain = OrganizationSsoDomain::normalize($email);
+        if ($domain === '') {
+            return null;
+        }
+
+        $mapping = OrganizationSsoDomain::query()->where('domain', $domain)->first();
+        if (! $mapping instanceof OrganizationSsoDomain) {
+            return null;
+        }
+
+        $organization = Organization::query()->find($mapping->organization_id);
+        if (! $organization instanceof Organization || $this->activeConnections($organization)->isEmpty()) {
+            return null;
+        }
+
+        return $organization;
+    }
+
+    /** 1 aktive Verbindung → direkter Start; mehrere → Anbieterauswahl. */
+    private function routeToOrganization(Organization $organization): RedirectResponse {
+        $connections = $this->activeConnections($organization);
+        $only = $connections->first();
+        if ($only !== null && $connections->count() === 1) {
+            return redirect()->route('sso.start', ['slug' => $organization->slug, 'connection' => $only->sqid]);
+        }
+
+        return redirect()->route('sso.choose', ['slug' => $organization->slug]);
     }
 
     private function connection(Organization $organization, SsoProtocol $protocol, bool $activeOnly): SsoConnection {

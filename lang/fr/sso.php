@@ -32,11 +32,26 @@ return [
     'break_glass_heading' => 'Comptes de secours (break-glass)',
     'break_glass_hint' => 'Comptes d’urgence non fédérés qui peuvent continuer à se connecter par mot de passe malgré le SSO obligatoire. Chaque utilisation est auditée. Conservez au moins un compte, sinon une panne de l’IdP bloque l’organisation.',
     'no_break_glass' => 'Aucun compte de secours défini.',
+    'domains_heading' => 'Domaines e-mail',
+    'domains_hint' => 'WorkDiary déduit l’organisation correspondante du domaine e-mail de connexion. Les domaines sont uniques au niveau global.',
+    'no_domains' => 'Aucun domaine e-mail associé pour l’instant.',
+
+    'provider' => [
+        'custom' => 'Fournisseur OIDC personnalisé',
+        'microsoft' => 'Microsoft 365',
+        'google' => 'Google Workspace',
+    ],
+
+    'choose' => [
+        'hint' => 'Plusieurs fournisseurs de connexion sont configurés pour :org. Veuillez choisir.',
+    ],
 
     'discover' => [
         'hint' => 'Saisissez l’identifiant de votre organisation pour démarrer la connexion via votre fournisseur d’identité.',
         'org_label' => 'Identifiant de l’organisation',
         'org_placeholder' => 'p. ex. acme-sarl',
+        'email_label' => 'Adresse e-mail',
+        'email_placeholder' => 'p. ex. nom@entreprise.fr',
         'submit' => 'Continuer vers le fournisseur d’identité',
         'back_to_login' => 'Retour à la connexion',
     ],
@@ -49,6 +64,12 @@ return [
     'field' => [
         'label' => 'Libellé',
         'label_placeholder' => 'p. ex. Entra ID production',
+        'tenant' => 'Annuaire (locataire)',
+        'tenant_placeholder' => 'GUID du locataire ou domaine vérifié',
+        'tenant_hint' => 'Spécifique au locataire — jamais common/organizations.',
+        'tenant_keep' => 'laisser vide = inchangé',
+        'domain' => 'Domaine e-mail',
+        'domain_placeholder' => 'p. ex. entreprise.fr',
         'team_none' => '— aucune équipe —',
         'start_url' => 'URL de démarrage SSO',
         'callback_url' => 'URL de redirection/callback (à enregistrer chez l’IdP)',
@@ -87,6 +108,8 @@ return [
         'remove_connection' => 'Supprimer la connexion',
         'break_glass_add' => 'Définir comme compte de secours',
         'break_glass_remove' => 'Retirer',
+        'domain_add' => 'Ajouter un domaine',
+        'domain_remove' => 'Supprimer',
     ],
 
     'col' => [
@@ -113,6 +136,8 @@ return [
         'connection_removed' => 'Connexion supprimée.',
         'break_glass_added' => 'Compte de secours défini.',
         'break_glass_removed' => 'Statut de secours retiré.',
+        'domain_added' => 'Domaine e-mail ajouté.',
+        'domain_removed' => 'Domaine e-mail supprimé.',
     ],
 
     'error' => [
@@ -124,6 +149,11 @@ return [
         'jwks_failed' => 'Les clés de signature du fournisseur d’identité n’ont pas pu être chargées.',
         'no_account' => 'Aucun compte WorkDiary n’est lié à cette identité. Veuillez contacter votre administration.',
         'org_without_sso' => 'Aucune authentification unique n’est configurée pour cet identifiant.',
+        'email_without_sso' => 'Aucune authentification unique n’est configurée pour ce domaine e-mail.',
+        'tenant_required' => 'Microsoft 365 nécessite l’annuaire (locataire).',
+        'google_issuer_invalid' => 'Pour Google Workspace, seul l’émetteur officiel https://accounts.google.com est autorisé.',
+        'domain_invalid' => 'Veuillez indiquer un domaine e-mail valide.',
+        'domain_taken' => 'Ce domaine e-mail est déjà associé à une autre organisation.',
         'flow_expired' => 'La connexion SSO a expiré. Veuillez réessayer.',
         'module_disabled' => 'L’authentification unique n’est pas disponible pour cette organisation.',
         'url_not_public' => 'L’URL n’est pas accessible publiquement. Pour les fournisseurs internes, activez « Autoriser un IdP sur réseau privé ».',

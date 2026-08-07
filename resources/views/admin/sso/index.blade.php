@@ -20,13 +20,21 @@
             </div>
         </div>
 
-        {{-- OIDC-/SAML-Verbindungen (MVP-120/121): eine je Protokoll. --}}
-        @foreach ([['protocol' => 'oidc', 'connection' => $oidcConnection], ['protocol' => 'saml', 'connection' => $samlConnection]] as $entry)
+        {{-- OIDC-Verbindungen je Anbieter (custom/Microsoft/Google) + SAML. --}}
+        @php
+            $entries = [];
+            foreach (\App\Enums\Auth\SsoProviderType::cases() as $pt) {
+                $entries[] = ['protocol' => 'oidc', 'provider_type' => $pt, 'connection' => $oidcConnections->get($pt->value)];
+            }
+            $entries[] = ['protocol' => 'saml', 'provider_type' => \App\Enums\Auth\SsoProviderType::Custom, 'connection' => $samlConnection];
+        @endphp
+        @foreach ($entries as $entry)
             @php($conn = $entry['connection'])
             @php($isOidc = $entry['protocol'] === 'oidc')
+            @php($providerType = $entry['provider_type'])
             <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                 <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
-                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ $isOidc ? __('sso.oidc_heading') : __('sso.saml_heading') }}</h2>
+                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ $isOidc ? __('sso.oidc_heading') . ' — ' . $providerType->label() : __('sso.saml_heading') }}</h2>
                     <div class="flex items-center gap-2">
                         @if ($conn)
                             @if ($conn->active)
@@ -55,16 +63,32 @@
                 <form method="POST" action="{{ route('admin.sso.connections.save') }}" class="space-y-3">
                     @csrf
                     <input type="hidden" name="protocol" value="{{ $entry['protocol'] }}">
+                    @if ($isOidc)
+                        <input type="hidden" name="provider_type" value="{{ $providerType->value }}">
+                    @endif
                     <div class="grid gap-3 md:grid-cols-2">
                         <label class="form-control">
                             <span class="label-text">{{ __('sso.field.label') }}</span>
                             <input type="text" name="label" value="{{ old('label', $conn->label ?? '') }}" class="input input-bordered input-sm" required>
                         </label>
                         @if ($isOidc)
-                            <label class="form-control">
-                                <span class="label-text">{{ __('sso.field.issuer') }}</span>
-                                <input type="url" name="issuer" value="{{ old('issuer', $conn->issuer ?? '') }}" placeholder="https://login.example.org/realms/firma" class="input input-bordered input-sm">
-                            </label>
+                            @if ($providerType === \App\Enums\Auth\SsoProviderType::Microsoft)
+                                <label class="form-control">
+                                    <span class="label-text">{{ __('sso.field.tenant') }}</span>
+                                    <input type="text" name="tenant" value="{{ old('tenant') }}" placeholder="{{ __('sso.field.tenant_placeholder') }}" class="input input-bordered input-sm" autocomplete="off">
+                                    <span class="label-text-alt text-base-content/60">{{ $conn?->issuer ? __('sso.field.tenant_keep') : __('sso.field.tenant_hint') }}</span>
+                                </label>
+                            @elseif ($providerType === \App\Enums\Auth\SsoProviderType::Google)
+                                <div class="form-control">
+                                    <span class="label-text">{{ __('sso.field.issuer') }}</span>
+                                    <code class="mt-1 inline-block rounded bg-base-200 px-2 py-1.5 text-xs">{{ \App\Enums\Auth\SsoProviderType::GOOGLE_ISSUER }}</code>
+                                </div>
+                            @else
+                                <label class="form-control">
+                                    <span class="label-text">{{ __('sso.field.issuer') }}</span>
+                                    <input type="url" name="issuer" value="{{ old('issuer', $conn->issuer ?? '') }}" placeholder="https://login.example.org/realms/firma" class="input input-bordered input-sm">
+                                </label>
+                            @endif
                             <label class="form-control">
                                 <span class="label-text">{{ __('sso.field.client_id') }}</span>
                                 <input type="text" name="client_id" value="{{ old('client_id', $conn->client_id ?? '') }}" class="input input-bordered input-sm" autocomplete="off">
@@ -149,6 +173,39 @@
                 @endif
             </div>
         @endforeach
+
+        {{-- E-Mail-Domain-Discovery: aus der E-Mail-Adresse leitet der Login die
+             passende Organisation ab. Domains sind global eindeutig. --}}
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('sso.domains_heading') }}</h2>
+            <p class="mb-2 text-xs text-base-content/60">{{ __('sso.domains_hint') }}</p>
+
+            @if ($ssoDomains->isEmpty())
+                <p class="mb-2 text-sm text-base-content/60">{{ __('sso.no_domains') }}</p>
+            @else
+                <ul class="mb-2 space-y-1">
+                    @foreach ($ssoDomains as $ssoDomain)
+                        <li class="flex items-center justify-between gap-2 text-sm">
+                            <span class="font-mono">{{ $ssoDomain->domain }}</span>
+                            <form method="POST" action="{{ route('admin.sso.domains.remove', $ssoDomain->sqid) }}">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('sso.action.domain_remove') }}</button>
+                            </form>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+
+            <form method="POST" action="{{ route('admin.sso.domains.add') }}" class="flex flex-wrap items-end gap-2">
+                @csrf
+                <label class="form-control">
+                    <span class="label-text">{{ __('sso.field.domain') }}</span>
+                    <input type="text" name="domain" value="{{ old('domain') }}" placeholder="{{ __('sso.field.domain_placeholder') }}" class="input input-bordered input-sm w-64">
+                </label>
+                <button type="submit" class="btn btn-sm btn-primary">{{ __('sso.action.domain_add') }}</button>
+            </form>
+        </div>
 
         {{-- Break-Glass: nicht föderierte Notfallkonten, die trotz SSO-Pflicht
              lokal anmelden dürfen (DoD MVP-120). Änderung wird auditiert. --}}
