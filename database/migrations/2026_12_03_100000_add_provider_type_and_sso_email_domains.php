@@ -26,37 +26,61 @@ use Illuminate\Support\Facades\Schema;
  */
 return new class extends Migration {
     public function up(): void {
-        Schema::table('sso_connections', function (Blueprint $table) {
-            // custom|microsoft|google (App\Enums\Auth\SsoProviderType)
-            $table->string('provider_type', 16)->default('custom')->after('protocol');
-        });
+        if (! Schema::hasColumn('sso_connections', 'provider_type')) {
+            Schema::table('sso_connections', function (Blueprint $table) {
+                // custom|microsoft|google (App\Enums\Auth\SsoProviderType)
+                $table->string('provider_type', 16)->default('custom')->after('protocol');
+            });
+        }
 
-        Schema::table('sso_connections', function (Blueprint $table) {
-            $table->dropUnique('sso_conn_org_protocol_unique');
-            $table->unique(['organization_id', 'protocol', 'provider_type'], 'sso_conn_org_protocol_provider_unique');
-        });
+        // Neue, FK-taugliche Unique-Constraint ZUERST anlegen (organization_id
+        // bleibt führend), erst dann die alte entfernen — sonst verweigert
+        // MySQL das Droppen des Index, der die Fremdschlüssel-Spalte stützt
+        // (Fehler 1553). Existenz-Guards machen die Migration wiederholbar.
+        if (! Schema::hasIndex('sso_connections', 'sso_conn_org_protocol_provider_unique')) {
+            Schema::table('sso_connections', function (Blueprint $table) {
+                $table->unique(['organization_id', 'protocol', 'provider_type'], 'sso_conn_org_protocol_provider_unique');
+            });
+        }
+        if (Schema::hasIndex('sso_connections', 'sso_conn_org_protocol_unique')) {
+            Schema::table('sso_connections', function (Blueprint $table) {
+                $table->dropUnique('sso_conn_org_protocol_unique');
+            });
+        }
 
-        Schema::create('organization_sso_domains', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
-            $table->string('domain', 191); // normalisiert kleingeschrieben, ohne führendes @
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->timestamps();
+        if (! Schema::hasTable('organization_sso_domains')) {
+            Schema::create('organization_sso_domains', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
+                $table->string('domain', 191); // normalisiert kleingeschrieben, ohne führendes @
+                $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+                $table->timestamps();
 
-            $table->unique('domain', 'org_sso_domain_unique');
-        });
+                $table->unique('domain', 'org_sso_domain_unique');
+            });
+        }
     }
 
     public function down(): void {
         Schema::dropIfExists('organization_sso_domains');
 
-        Schema::table('sso_connections', function (Blueprint $table) {
-            $table->dropUnique('sso_conn_org_protocol_provider_unique');
-            $table->unique(['organization_id', 'protocol'], 'sso_conn_org_protocol_unique');
-        });
+        // Erst die alte Unique-Constraint wiederherstellen (stützt den FK),
+        // dann die neue entfernen — spiegelbildlich zur FK-Restriktion in up().
+        if (! Schema::hasIndex('sso_connections', 'sso_conn_org_protocol_unique')) {
+            Schema::table('sso_connections', function (Blueprint $table) {
+                $table->unique(['organization_id', 'protocol'], 'sso_conn_org_protocol_unique');
+            });
+        }
+        if (Schema::hasIndex('sso_connections', 'sso_conn_org_protocol_provider_unique')) {
+            Schema::table('sso_connections', function (Blueprint $table) {
+                $table->dropUnique('sso_conn_org_protocol_provider_unique');
+            });
+        }
 
-        Schema::table('sso_connections', function (Blueprint $table) {
-            $table->dropColumn('provider_type');
-        });
+        if (Schema::hasColumn('sso_connections', 'provider_type')) {
+            Schema::table('sso_connections', function (Blueprint $table) {
+                $table->dropColumn('provider_type');
+            });
+        }
     }
 };
