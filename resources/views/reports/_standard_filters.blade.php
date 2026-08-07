@@ -45,18 +45,21 @@
         <select id="{{ $idPrefix }}-project" name="project" class="select select-sm select-bordered w-full" data-autosubmit>
             <option value="">{{ __('Alle Projekte') }}</option>
             {{-- Ohne Kundenfilter nach Kunde gruppieren, damit erkennbar ist,
-                 welches Projekt zu welchem Kunden gehört. --}}
+                 welches Projekt zu welchem Kunden gehört. Projekte mit Fremdkunde
+                 (Endkunde) hängen dessen Namen an (App-Konvention, disambiguiert
+                 gleichnamige Projekte verschiedener Endkunden). --}}
+            @php($projectLabel = fn ($p) => $p->name . ($p->foreignCustomer ? ' — ' . $p->foreignCustomer->name : ''))
             @if ($standardFilters->customerId === null)
                 @foreach (($filterProjects ?? collect())->groupBy(fn ($p) => $p->customer?->name ?? __('Ohne Kunde')) as $groupName => $groupProjects)
                     <optgroup label="{{ $groupName }}">
                         @foreach ($groupProjects as $option)
-                            <option value="{{ $option->sqid }}" @selected($standardFilters->projectId === $option->id)>{{ $option->name }}</option>
+                            <option value="{{ $option->sqid }}" @selected($standardFilters->projectId === $option->id)>{{ $projectLabel($option) }}</option>
                         @endforeach
                     </optgroup>
                 @endforeach
             @else
                 @foreach ($filterProjects ?? [] as $option)
-                    <option value="{{ $option->sqid }}" @selected($standardFilters->projectId === $option->id)>{{ $option->name }}</option>
+                    <option value="{{ $option->sqid }}" @selected($standardFilters->projectId === $option->id)>{{ $projectLabel($option) }}</option>
                 @endforeach
             @endif
         </select>

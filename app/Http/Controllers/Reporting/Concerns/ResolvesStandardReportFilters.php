@@ -153,10 +153,10 @@ trait ResolvesStandardReportFilters {
         if (in_array('project', $fields, true)) {
             $customerId = $filters?->customerId;
             $options['filterProjects'] = Project::query()
-                ->with('customer:id,name')
+                ->with(['customer:id,name', 'foreignCustomer:id,name'])
                 ->whereNull('archived_at')
                 ->when($customerId !== null, fn($q) => $q->where('customer_id', $customerId))
-                ->orderBy('name')->get(['id', 'name', 'customer_id']);
+                ->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']);
         }
         if (in_array('user', $fields, true)) {
             $options['filterUsers'] = User::query()->inCurrentOrganization()
