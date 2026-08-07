@@ -15,7 +15,7 @@
 @php
     $fmt = fn (int $min): string => \App\Support\Formats::duration($min, 'clock');
     $linkParams = array_filter(array_merge(
-        ['min_minutes' => $minMinutes > 0 ? $minMinutes : null],
+        ['min_minutes' => $minMinutes > 0 ? $minMinutes : null, 'hide_zero' => $hideZero ? 1 : null],
         $standardFilters->toQueryParams(),
     ));
 @endphp
@@ -40,6 +40,12 @@
         <x-filter-field :label="__('Mindest-Aufwand (Minuten)')" for="rep-min-minutes">
             <input id="rep-min-minutes" type="number" name="min_minutes" value="{{ $minMinutes }}" min="0" class="input input-sm input-bordered w-36" />
         </x-filter-field>
+        <label class="flex shrink-0 cursor-pointer items-center gap-2" for="customers-hide-zero"
+               title="{{ __('Nur Kunden mit Aktivität im Zeitraum anzeigen (ohne reine Nullzeilen).') }}">
+            <input type="checkbox" id="customers-hide-zero" name="hide_zero" value="1"
+                   @checked($hideZero) class="toggle toggle-primary toggle-sm" data-autosubmit>
+            <span class="text-sm text-base-content/75">{{ __('Kunden ohne Werte ausblenden') }}</span>
+        </label>
     </x-filter-bar>
 
     <div class="chart-grid grid gap-3 xl:grid-cols-2">

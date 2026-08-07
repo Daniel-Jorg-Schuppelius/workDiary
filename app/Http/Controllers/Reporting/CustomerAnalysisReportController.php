@@ -33,6 +33,7 @@ class CustomerAnalysisReportController extends Controller {
         [$from, $to] = $this->resolveRange($request);
 
         $minMinutes = max(0, (int) $request->integer('min_minutes', 0));
+        $hideZero = $request->boolean('hide_zero');
         $filterFields = ['project', 'user', 'entry_type', 'include_excluded'];
         $filters = $this->standardFilters($request, $filterFields, $from, $to);
         // Legacy-Parameter (project_id/user_id — alte Bookmarks) ins Standard-Set
@@ -59,9 +60,14 @@ class CustomerAnalysisReportController extends Controller {
 
         $rows = collect($this->builder->build($from, $to, $projectId, $userId, $filters->entryTypeId, $excludedCustomerIds))
             ->filter(static fn(array $row): bool => $row['totalMinutes'] >= $minMinutes)
+            ->when($hideZero, fn($c) => $c->filter(static fn(array $row): bool => $row['entryCount'] > 0
+                || $row['totalMinutes'] > 0
+                || $row['reworkEntryCount'] > 0
+                || $row['openIssueCount'] > 0
+                || $row['escalationCount'] > 0))
             ->values();
 
-        $exportFilters = array_merge(['min_minutes' => $minMinutes], $filters->toAuditArray());
+        $exportFilters = array_merge(['min_minutes' => $minMinutes, 'hide_zero' => $hideZero], $filters->toAuditArray());
         $label = CarbonFmt::fdate($from) . ' – ' . CarbonFmt::fdate($to);
 
         if ($request->query('export') === 'csv') {
@@ -90,6 +96,7 @@ class CustomerAnalysisReportController extends Controller {
             'to' => $to,
             'label' => $label,
             'minMinutes' => $minMinutes,
+            'hideZero' => $hideZero,
             'projectId' => $projectId,
             'userId' => $userId,
             'topByMinutes' => $topByMinutes,
