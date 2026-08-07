@@ -30,7 +30,7 @@
     </x-slot:toolbar>
 
     <x-filter-bar :action="route('reports.project-details')" :reset="route('reports.project-details')">
-        @include('reports._standard_filters', ['idPrefix' => 'project-details'])
+        @include('reports._standard_filters', ['idPrefix' => 'project-details', 'projectRequired' => true])
     </x-filter-bar>
 
     <div class="chart-grid grid gap-3 xl:grid-cols-2">

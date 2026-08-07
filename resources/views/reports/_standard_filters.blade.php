@@ -43,7 +43,11 @@
 @if (in_array('project', $filterFields, true))
     <x-filter-field :label="__('Projekt')" for="{{ $idPrefix }}-project" class="min-w-44">
         <select id="{{ $idPrefix }}-project" name="project" class="select select-sm select-bordered w-full" data-autosubmit>
-            <option value="">{{ __('Alle Projekte') }}</option>
+            {{-- Reports, die genau EIN Projekt zeigen (z. B. Projekt-Details),
+                 setzen projectRequired=true → keine sinnlose „Alle"-Option. --}}
+            @unless ($projectRequired ?? false)
+                <option value="">{{ __('Alle Projekte') }}</option>
+            @endunless
             {{-- Ohne Kundenfilter nach Kunde gruppieren, damit erkennbar ist,
                  welches Projekt zu welchem Kunden gehört. Projekte mit Fremdkunde
                  (Endkunde) hängen dessen Namen an (App-Konvention, disambiguiert
