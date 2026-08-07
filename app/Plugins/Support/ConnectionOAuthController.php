@@ -104,10 +104,12 @@ abstract class ConnectionOAuthController extends Controller {
     }
 
     /** Hook nach dem Persistieren der Tokens (z. B. Kontoidentität laden). */
-    protected function afterConnected(Model $connection, User $admin): void {}
+    protected function afterConnected(Model $connection, User $admin): void {
+    }
 
     /** Hook vor dem Trennen (z. B. Webhook-Abmeldung — Token ist noch gültig). */
-    protected function beforeDisconnect(Model $connection): void {}
+    protected function beforeDisconnect(Model $connection): void {
+    }
 
     /** Startet den OAuth-Flow: org- und sitzungsgebundener Einmal-state (+ PKCE). */
     public function startOAuth(Request $request): RedirectResponse {

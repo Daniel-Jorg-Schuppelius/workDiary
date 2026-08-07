@@ -30,8 +30,7 @@ function openNamedPopup() {
 }
 
 document.addEventListener("submit", (event) => {
-    const form =
-        event.target instanceof HTMLFormElement ? event.target : null;
+    const form = event.target instanceof HTMLFormElement ? event.target : null;
     if (!form || !form.matches("form[data-oauth-popup]")) return;
 
     const popup = openNamedPopup();

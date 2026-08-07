@@ -55,7 +55,7 @@ class SsoAdminController extends Controller {
                 ->get(),
             'scimBaseUrl' => url('/scim/v2'),
             'issuedToken' => session('scim_issued_token'),
-            'oidcConnections' => $connections->where('protocol', SsoProtocol::Oidc)->keyBy(fn (SsoConnection $c) => $c->provider_type->value),
+            'oidcConnections' => $connections->where('protocol', SsoProtocol::Oidc)->keyBy(fn(SsoConnection $c) => $c->provider_type->value),
             'samlConnection' => $connections->firstWhere('protocol', SsoProtocol::Saml),
             'ssoDomains' => OrganizationSsoDomain::query()
                 ->where('organization_id', $organization->id)
@@ -285,10 +285,10 @@ class SsoAdminController extends Controller {
         $decoded = app(SqidEncoder::class)->decode(User::class, (string) $request->input('user', ''));
         $user = $decoded !== null
             ? User::query()
-                ->whereKey($decoded)
-                ->where('organization_id', $organization->id)
-                ->whereNull('customer_id')
-                ->first()
+            ->whereKey($decoded)
+            ->where('organization_id', $organization->id)
+            ->whereNull('customer_id')
+            ->first()
             : null;
         abort_unless($user instanceof User, 404);
 

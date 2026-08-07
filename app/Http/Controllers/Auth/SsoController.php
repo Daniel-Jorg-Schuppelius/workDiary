@@ -37,7 +37,8 @@ class SsoController extends Controller {
         private readonly OidcClient $oidc,
         private readonly SamlClient $saml,
         private readonly SsoLoginService $login,
-    ) {}
+    ) {
+    }
 
     /** Einstieg von der Login-Seite: E-Mail-Adresse → Organisation (Domain-Mapping) bzw. Kennung. */
     public function discover(Request $request): View|RedirectResponse {
