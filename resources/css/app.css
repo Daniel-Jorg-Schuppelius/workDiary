@@ -37,7 +37,11 @@
 .qb-target-over {
     border-style: solid;
     border-color: var(--color-primary, currentColor);
-    background-color: color-mix(in oklab, var(--color-primary, currentColor) 15%, transparent);
+    background-color: color-mix(
+        in oklab,
+        var(--color-primary, currentColor) 15%,
+        transparent
+    );
 }
 
 /* ------------------------------------------------------------------ */
@@ -222,7 +226,9 @@
         padding-right: var(--wd-main-pad);
     }
     .wd-page-fill:not(:has(> main.flex-col)) > main > *,
-    .wd-page-fill:not(:has(> main.flex-col)) > main > .wd-page-shell.wd-has-scroll {
+    .wd-page-fill:not(:has(> main.flex-col))
+        > main
+        > .wd-page-shell.wd-has-scroll {
         padding-right: 0;
     }
     /* „Nur Inhalt": Auf Handys das Panel-Chrome für ALLE Seiten zurücknehmen
@@ -259,7 +265,9 @@
         height: auto;
         min-height: 0;
         overflow: visible;
-        padding-bottom: calc(var(--app-footer-h) + var(--sidebar-gap)) !important;
+        padding-bottom: calc(
+            var(--app-footer-h) + var(--sidebar-gap)
+        ) !important;
     }
     .wd-page-fill:has(#chat-root) > main {
         flex: 0 0 auto;
@@ -357,17 +365,25 @@
 
 /* ------------------------------------------------------------------ */
 /* App-weite Größenkontrolle der Chart-<figure> (`wd-chart`): Das SVG   */
-/* skaliert per `w-full` proportional in die Höhe. Ein EINZELNES        */
-/* (Standalone-)Diagramm über die volle Seitenbreite wird dadurch viel  */
-/* zu hoch. Deshalb Standalone-Charts app-weit auf eine lesbare Breite  */
-/* deckeln; im `chart-grid` füllt die Kachel weiterhin die volle        */
-/* Spaltenbreite (Override hebt den Deckel auf).                        */
+/* skaliert per `w-full` proportional in die Höhe — ein volles,         */
+/* seitenbreites Diagramm würde dadurch überhoch. Voll breit lassen,    */
+/* aber die Höhe deckeln; damit die Grenze greift (nicht nur clippt),   */
+/* wird die Figure zur Flex-Spalte und das SVG darf schrumpfen          */
+/* (preserveAspectRatio zentriert den Inhalt ohne Verzerrung). Die      */
+/* Datentabelle behält ihren eigenen Scroll (max-h-48).                 */
 /* ------------------------------------------------------------------ */
 .wd-chart {
-    max-width: 48rem;
+    max-width: 100%;
+    max-height: 715px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
-.chart-grid > .wd-chart {
-    max-width: none;
+.wd-chart > svg {
+    min-height: 0;
+}
+.wd-chart .wd-chart-table {
+    min-height: 0;
 }
 
 /* ------------------------------------------------------------------ */
@@ -1703,7 +1719,9 @@
        steuert die Join-Rundung über --join-ss/--join-es; wir übertragen die
        linke Rundung daher auf den ersten sichtbaren Input hinter dem
        versteckten Original. */
-    .join > input.flatpickr-input[type="hidden"]:first-child + input:not([type="hidden"]) {
+    .join
+        > input.flatpickr-input[type="hidden"]:first-child
+        + input:not([type="hidden"]) {
         --join-ss: var(--radius-field);
         --join-es: var(--radius-field);
     }
