@@ -79,7 +79,7 @@
 
     {{-- Kompakte Monats-Trends (12 Monate): Zeiteinsatz & fakturierter Umsatz —
          zwei nach Monat ausgerichtete Diagramme als Gegenüberstellung. --}}
-    <div class="grid grid-cols-1 gap-3 xl:grid-cols-2">
+    <div class="chart-grid grid grid-cols-1 gap-3 xl:grid-cols-2">
         <x-charts.stacked-bar :title="__('Zeiteinsatz je Monat')" unit="h"
                               :series="$chartHours"
                               :bands="[

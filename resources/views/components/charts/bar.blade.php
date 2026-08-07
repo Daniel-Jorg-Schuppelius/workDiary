@@ -41,7 +41,7 @@
     $uid = 'hatch-' . uniqid();
 @endphp
 
-<figure class="rounded-box border border-base-300 bg-base-100 p-3">
+<figure class="wd-chart rounded-box border border-base-300 bg-base-100 p-3">
     <figcaption>
         <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ $title }}</span>
         <span class="ml-2 text-xs text-base-content/60">

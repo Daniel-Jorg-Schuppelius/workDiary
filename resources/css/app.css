@@ -356,6 +356,21 @@
 }
 
 /* ------------------------------------------------------------------ */
+/* App-weite Größenkontrolle der Chart-<figure> (`wd-chart`): Das SVG   */
+/* skaliert per `w-full` proportional in die Höhe. Ein EINZELNES        */
+/* (Standalone-)Diagramm über die volle Seitenbreite wird dadurch viel  */
+/* zu hoch. Deshalb Standalone-Charts app-weit auf eine lesbare Breite  */
+/* deckeln; im `chart-grid` füllt die Kachel weiterhin die volle        */
+/* Spaltenbreite (Override hebt den Deckel auf).                        */
+/* ------------------------------------------------------------------ */
+.wd-chart {
+    max-width: 48rem;
+}
+.chart-grid > .wd-chart {
+    max-width: none;
+}
+
+/* ------------------------------------------------------------------ */
 /* Opt-out aus Chromiums experimentellem base-select (daisyUI 5 setzt   */
 /* `appearance: base-select`): Bei einfachem <select>-Markup clippt     */
 /* Chromium den gewählten Eintrag dort NICHT — lange Labels malen über  */

@@ -58,7 +58,7 @@
          Monat ausgerichtete Diagramme als Gegenüberstellung (analog Kunde);
          Finanzsicht, nur für Auswertungsberechtigte. --}}
     @if (($spendSeries ?? null) !== null)
-        <div class="grid grid-cols-1 gap-3 xl:grid-cols-2">
+        <div class="chart-grid grid grid-cols-1 gap-3 xl:grid-cols-2">
             <x-charts.bar :title="__('Ausgaben je Monat (12 Monate)')" unit="€" :series="$spendSeries"
                           :x-label="__('Monat')" :y-label="__('Ausgaben')"
                           :note="__('Einkaufsbelege dieses Lieferanten je Monat; Gutschriften mindern.')" />
