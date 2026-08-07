@@ -377,7 +377,6 @@
     max-height: 715px;
     display: flex;
     flex-direction: column;
-    min-height: 0;
 }
 .wd-chart > svg {
     min-height: 0;
