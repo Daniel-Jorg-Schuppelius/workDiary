@@ -44,9 +44,21 @@
     <x-filter-field :label="__('Projekt')" for="{{ $idPrefix }}-project" class="min-w-44">
         <select id="{{ $idPrefix }}-project" name="project" class="select select-sm select-bordered w-full" data-autosubmit>
             <option value="">{{ __('Alle Projekte') }}</option>
-            @foreach ($filterProjects ?? [] as $option)
-                <option value="{{ $option->sqid }}" @selected($standardFilters->projectId === $option->id)>{{ $option->name }}</option>
-            @endforeach
+            {{-- Ohne Kundenfilter nach Kunde gruppieren, damit erkennbar ist,
+                 welches Projekt zu welchem Kunden gehört. --}}
+            @if ($standardFilters->customerId === null)
+                @foreach (($filterProjects ?? collect())->groupBy(fn ($p) => $p->customer?->name ?? __('Ohne Kunde')) as $groupName => $groupProjects)
+                    <optgroup label="{{ $groupName }}">
+                        @foreach ($groupProjects as $option)
+                            <option value="{{ $option->sqid }}" @selected($standardFilters->projectId === $option->id)>{{ $option->name }}</option>
+                        @endforeach
+                    </optgroup>
+                @endforeach
+            @else
+                @foreach ($filterProjects ?? [] as $option)
+                    <option value="{{ $option->sqid }}" @selected($standardFilters->projectId === $option->id)>{{ $option->name }}</option>
+                @endforeach
+            @endif
         </select>
     </x-filter-field>
 @endif
