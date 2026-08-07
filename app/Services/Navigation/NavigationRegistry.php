@@ -42,7 +42,8 @@ class NavigationRegistry {
         private readonly FeatureFlagResolver $features,
         private readonly NavGate $gate,
         private readonly NavFocusService $focus,
-    ) {}
+    ) {
+    }
 
     /**
      * Baut alle Menüstrukturen für den aktuellen Nutzer/Request.
@@ -314,10 +315,11 @@ class NavigationRegistry {
                         // zugängliche Seite, bleibt sichtbar, wenn nur eines von beiden (Recht/Modul) verfügbar ist.
                         [
                             'route' => (Gate::allows('viewAny', \App\Models\Document::class)
-                                    && $this->features->isEnabled('module.documents'))
+                                && $this->features->isEnabled('module.documents'))
                                 ? 'documents.index' : 'form-submissions.index',
                             'label' => __('document.title.index') . ' & ' . __('form.title.submissions'),
-                            'icon' => 'folder_open', 'modal' => false,
+                            'icon' => 'folder_open',
+                            'modal' => false,
                             'matches' => ['documents.*', 'form-submissions.*'],
                         ],
                         ['route' => 'knowledge.index', 'label' => __('knowledge.title.index'), 'icon' => 'school', 'modal' => false, 'matches' => ['knowledge.*']],
@@ -526,9 +528,11 @@ class NavigationRegistry {
         // MVP-456: Personenbeförderung — erscheint nur mit installiertem
         // Branchenprofil taxi-mietwagen (Profil-Gate wie im Controller).
         $navOrganization = $user?->organization;
-        if ($navOrganization !== null
+        if (
+            $navOrganization !== null
             && app(\App\Services\Passenger\PassengerRideService::class)->isPassengerProfileActive($navOrganization)
-            && Gate::allows('viewAny', \App\Models\Passenger\PassengerRide::class)) {
+            && Gate::allows('viewAny', \App\Models\Passenger\PassengerRide::class)
+        ) {
             $sidebarSections[] = [
                 'key' => 'passenger',
                 'label' => __('passenger.nav.section'),
@@ -542,9 +546,11 @@ class NavigationRegistry {
         }
         // MVP-459: Druckaufträge — erscheint nur mit installiertem
         // Branchenprofil druck-kopiershop (Profil-Gate wie im Controller).
-        if ($navOrganization !== null
+        if (
+            $navOrganization !== null
             && app(\App\Services\Print\PrintOrderService::class)->isPrintProfileActive($navOrganization)
-            && Gate::allows('viewAny', \App\Models\Print\PrintOrder::class)) {
+            && Gate::allows('viewAny', \App\Models\Print\PrintOrder::class)
+        ) {
             $sidebarSections[] = [
                 'key' => 'print',
                 'label' => __('print.nav.section'),
@@ -823,6 +829,10 @@ class NavigationRegistry {
                         ($user?->isAdmin() || $user?->can(Permission::ReportView->value))
                             ? ['route' => 'reports.payment-behavior', 'label' => __('Zahlungsverhalten'), 'icon' => 'schedule_send', 'modal' => false, 'matches' => ['reports.payment-behavior']]
                             : null,
+                        // Lieferantenanalyse (MVP-472): Ausgaben/Beschaffung je Lieferant → Finanzdaten, nur report.view/Admin.
+                        ($user?->isAdmin() || $user?->can(Permission::ReportView->value))
+                            ? ['route' => 'reports.suppliers', 'label' => __('Lieferantenanalyse'), 'icon' => 'local_shipping', 'modal' => false, 'matches' => ['reports.suppliers']]
+                            : null,
                         ['route' => 'reports.expenses', 'label' => __('Spesen'), 'icon' => 'receipt_long', 'modal' => false, 'matches' => ['reports.expenses']],
                         // Externe Auszahlungen: sensible Vergütungsdaten → nur für Payroll-Berechtigte.
                         $user?->can(Permission::UserPayrollManage->value)
@@ -1074,9 +1084,11 @@ class NavigationRegistry {
         $out = [];
         foreach ($groups as $group) {
             $key = (string) ($group['key'] ?? '');
-            if ($key === 'master'
+            if (
+                $key === 'master'
                 || isset($set[self::KEY_SECTION . $key])
-                || isset($set[self::KEY_CREATE . $key])) {
+                || isset($set[self::KEY_CREATE . $key])
+            ) {
                 $out[] = $group;
             }
         }
@@ -1230,9 +1242,9 @@ class NavigationRegistry {
                     $iiOrg = $user->organization_id;
                     $iiOpen = $iiOrg !== null
                         ? \App\Models\IntegrationInboxItem::query()
-                            ->where('organization_id', $iiOrg)
-                            ->where('status', \App\Models\IntegrationInboxItem::STATUS_OPEN)
-                            ->count()
+                        ->where('organization_id', $iiOrg)
+                        ->where('status', \App\Models\IntegrationInboxItem::STATUS_OPEN)
+                        ->count()
                         : 0;
                     $adminNavItems[] = ['route' => 'admin.integration.inbox', 'label' => __('Zuordnungs-Inbox'), 'icon' => 'rule', 'modal' => false, 'matches' => ['admin.integration.*'], 'badge' => $iiOpen];
                 }
@@ -1240,9 +1252,9 @@ class NavigationRegistry {
                     $rsOrg = $user->organization;
                     $rsPending = $rsOrg !== null
                         ? \App\Models\RemotePendingSession::query()
-                            ->where('organization_id', $rsOrg->id)
-                            ->where('status', \App\Models\RemotePendingSession::STATUS_OPEN)
-                            ->count()
+                        ->where('organization_id', $rsOrg->id)
+                        ->where('status', \App\Models\RemotePendingSession::STATUS_OPEN)
+                        ->count()
                         : 0;
                     $adminNavItems[] = ['route' => 'admin.remote-support.pending.index', 'label' => __('Fernwartung – Inbox'), 'icon' => 'inbox', 'modal' => false, 'badge' => $rsPending];
                 }

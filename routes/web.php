@@ -2733,6 +2733,10 @@ Route::middleware('auth')->group(function () {
             ->name('reports.utilization');
         Route::get('reports/payment-behavior', [\App\Http\Controllers\Reporting\PaymentBehaviorReportController::class, 'index'])
             ->name('reports.payment-behavior');
+        // Lieferantenanalyse (MVP-472): Einkaufs-Pendant zur Kundenanalyse,
+        // Ausgaben aus dem Beleg-Spiegel (ohne Lager nutzbar), report.view-gated.
+        Route::get('reports/suppliers', [\App\Http\Controllers\Reporting\SupplierAnalysisReportController::class, 'index'])
+            ->name('reports.suppliers');
         Route::get('reports/customers/drilldown/open-issues', [\App\Http\Controllers\Reporting\CustomerDrilldownReportController::class, 'openIssues'])
             ->name('reports.customers.drilldown.open-issues');
         Route::get('reports/customers/drilldown/protocols', [\App\Http\Controllers\Reporting\CustomerDrilldownReportController::class, 'protocols'])

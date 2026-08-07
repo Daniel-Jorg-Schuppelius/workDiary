@@ -76,6 +76,8 @@ class ReportChartsSmokeTest extends TestCase {
             'customer-retention' => ['reports.customer-retention', []],
             'utilization' => ['reports.utilization', []],
             'payment-behavior' => ['reports.payment-behavior', []],
+            // Lieferantenanalyse (MVP-472).
+            'suppliers' => ['reports.suppliers', []],
         ];
     }
 

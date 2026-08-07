@@ -264,6 +264,7 @@ return [
         'reports.customer-retention' => 'reports.customer-retention',
         'reports.utilization' => 'reports.utilization',
         'reports.payment-behavior' => 'reports.payment-behavior',
+        'reports.suppliers' => 'reports.supplier-analysis',
         'reports.*' => 'reports.overview',
 
         // Onboarding
