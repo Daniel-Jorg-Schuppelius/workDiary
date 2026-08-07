@@ -64,13 +64,15 @@
     $wrapperBase = match (true) {
         $bare && $scroll === 'flex'  => 'min-h-0 flex-1 overflow-hidden',
         $bare && $scroll === 'none'  => '',
-        $bare                        => 'overflow-x-auto',
+        // Bare-Tabellen (in Cards) KEIN eigener overflow-Wrapper: der sonst
+        // entstehende, ungebundene vertikale Scrollcontainer würde den
+        // (via table-pin-rows) fixierten Kopf an sich binden statt an den
+        // Seiten-Scrollport (<main> der wd-page-fill-Seite bzw. den Chart-
+        // Scrollbereich). Horizontaler Überlauf läuft über <main> (overflow:auto).
+        $bare                        => '',
         $scroll === 'flex'           => 'min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100',
         $scroll === 'none'           => 'rounded-box border border-base-300 bg-base-100 shadow-xs',
-        // Standard: eigener, gedeckelter Scrollbereich, damit der (via
-        // table-pin-rows) fixierte Kopf beim Scrollen stehen bleibt statt mit
-        // der Seite wegzuscrollen. Kurze Tabellen bleiben unverändert.
-        default                      => 'max-h-[70vh] overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs',
+        default                      => 'overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-xs',
     };
 
     // Leerzustand: explizit erzwungen (empty=true) ODER automatisch, wenn der
