@@ -68,6 +68,7 @@ class ReportPdfTenantTest extends TestCase {
         'reports.qualifications',
         'reports.sla',
         'reports.suppliers',
+        'reports.supplier-value',
         'reports.week-by-user',
         'reports.work-balance',
     ];

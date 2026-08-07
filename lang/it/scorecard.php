@@ -11,6 +11,9 @@ return [
     'weights_hint' => 'Ponderazione punteggio complessivo: puntualità :ontime %, tasso di reclamo :complaints %, qualità ISMS :quality %, andamento prezzi :price %. Gli indicatori non disponibili vengono ignorati e i pesi ri-normalizzati.',
     'empty_ranking' => 'Ancora nessun fornitore con dati di acquisto, reclamo o ISMS valutabili nel periodo.',
 
+    'chart_ranking' => 'Punteggio complessivo per fornitore (top 15)',
+    'unit_score' => 'Punteggio',
+
     'col_supplier' => 'Fornitore',
     'col_overall' => 'Punteggio complessivo',
     'no_data' => 'nessun dato',

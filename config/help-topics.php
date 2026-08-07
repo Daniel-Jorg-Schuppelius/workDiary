@@ -265,6 +265,7 @@ return [
         'reports.utilization' => 'reports.utilization',
         'reports.payment-behavior' => 'reports.payment-behavior',
         'reports.suppliers' => 'reports.supplier-analysis',
+        'reports.supplier-value' => 'reports.supplier-value',
         'reports.*' => 'reports.overview',
 
         // Onboarding

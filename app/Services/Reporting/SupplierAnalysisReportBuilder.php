@@ -156,6 +156,43 @@ class SupplierAnalysisReportBuilder {
     }
 
     /**
+     * Monatliche Ausgaben der letzten zwölf Monate für EINEN Lieferanten —
+     * Datenreihe für das Ausgaben-Diagramm der Lieferanten-Detailseite.
+     *
+     * @return list<array{x: string, y: float}>
+     */
+    public function supplierMonthlySpendSeries(int $supplierId, CarbonImmutable $to): array {
+        $start = $to->subMonthsNoOverflow(11)->startOfMonth();
+
+        $months = [];
+        for ($i = 0; $i < 12; $i++) {
+            $months[$start->addMonthsNoOverflow($i)->format('Y-m')] = 0.0;
+        }
+
+        LexofficeVoucher::query()
+            ->where('supplier_id', $supplierId)
+            ->where('archived', false)
+            ->whereNotNull('voucher_date')
+            ->whereBetween('voucher_date', [$start->toDateString(), $to->toDateString()])
+            ->whereIn('voucher_type', self::EXPENSE_TYPES)
+            ->whereNotIn('voucher_status', ['draft', 'voided'])
+            ->get(['voucher_type', 'voucher_date', 'total_amount'])
+            ->each(function (LexofficeVoucher $voucher) use (&$months): void {
+                $month = $voucher->voucher_date?->format('Y-m');
+                if ($month !== null && array_key_exists($month, $months)) {
+                    $months[$month] += $this->signedAmount($voucher);
+                }
+            });
+
+        $series = [];
+        foreach ($months as $month => $sum) {
+            $series[] = ['x' => CarbonImmutable::parse($month . '-01')->format('m.Y'), 'y' => round($sum, 2)];
+        }
+
+        return $series;
+    }
+
+    /**
      * Ausgaben-Aggregate je Lieferant im Zeitraum (Beleg-Spiegel).
      *
      * @return array<int, array{spend:float, open:float, count:int, last:?string}>

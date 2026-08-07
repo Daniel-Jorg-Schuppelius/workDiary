@@ -54,6 +54,13 @@
         </div>
     @endif
 
+    {{-- Ausgabenverlauf (12 Monate) — Finanzsicht, nur für Auswertungsberechtigte. --}}
+    @if (($spendSeries ?? null) !== null)
+        <x-charts.bar :title="__('Ausgaben (12 Monate)')" unit="€" :series="$spendSeries"
+                      :x-label="__('Monat')" :y-label="__('Ausgaben')"
+                      :note="__('Einkaufsbelege dieses Lieferanten je Monat; Gutschriften mindern.')" />
+    @endif
+
     {{-- Stammdaten --}}
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <x-card :title="__('Kontakt')" icon="contacts">

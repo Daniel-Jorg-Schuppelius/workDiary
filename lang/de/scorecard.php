@@ -10,6 +10,8 @@ return [
     'apply' => 'Anzeigen',
     'weights_hint' => 'Gewichtung Gesamt-Score: Termintreue :ontime %, Reklamationsquote :complaints %, ISMS-Qualität :quality %, Preisentwicklung :price %. Nicht verfügbare Kennzahlen werden übersprungen und die Gewichte re-normalisiert.',
     'empty_ranking' => 'Noch keine Lieferanten mit auswertbaren Einkaufs-, Reklamations- oder ISMS-Daten im Zeitraum.',
+    'chart_ranking' => 'Gesamt-Score je Lieferant (Top 15)',
+    'unit_score' => 'Score',
 
     'col_supplier' => 'Lieferant',
     'col_overall' => 'Gesamt-Score',

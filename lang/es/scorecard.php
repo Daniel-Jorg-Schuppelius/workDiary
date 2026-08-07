@@ -11,6 +11,9 @@ return [
     'weights_hint' => 'Ponderación de la puntuación global: puntualidad :ontime %, tasa de reclamaciones :complaints %, calidad ISMS :quality %, evolución de precios :price %. Los indicadores no disponibles se omiten y los pesos se re-normalizan.',
     'empty_ranking' => 'Aún no hay proveedores con datos de compra, reclamación o ISMS evaluables en el periodo.',
 
+    'chart_ranking' => 'Puntuación global por proveedor (top 15)',
+    'unit_score' => 'Puntuación',
+
     'col_supplier' => 'Proveedor',
     'col_overall' => 'Puntuación global',
     'no_data' => 'sin datos',

@@ -2737,6 +2737,9 @@ Route::middleware('auth')->group(function () {
         // Ausgaben aus dem Beleg-Spiegel (ohne Lager nutzbar), report.view-gated.
         Route::get('reports/suppliers', [\App\Http\Controllers\Reporting\SupplierAnalysisReportController::class, 'index'])
             ->name('reports.suppliers');
+        // Lieferantenwert (MVP-473): RFM/Portfolio-Pendant zum Kundenwert.
+        Route::get('reports/supplier-value', [\App\Http\Controllers\Reporting\SupplierValueReportController::class, 'index'])
+            ->name('reports.supplier-value');
         Route::get('reports/customers/drilldown/open-issues', [\App\Http\Controllers\Reporting\CustomerDrilldownReportController::class, 'openIssues'])
             ->name('reports.customers.drilldown.open-issues');
         Route::get('reports/customers/drilldown/protocols', [\App\Http\Controllers\Reporting\CustomerDrilldownReportController::class, 'protocols'])

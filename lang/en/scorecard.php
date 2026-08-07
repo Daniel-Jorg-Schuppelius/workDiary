@@ -10,6 +10,8 @@ return [
     'apply' => 'Show',
     'weights_hint' => 'Overall score weighting: on-time delivery :ontime %, complaint rate :complaints %, ISMS quality :quality %, price trend :price %. Unavailable metrics are skipped and the weights re-normalised.',
     'empty_ranking' => 'No suppliers with evaluable purchasing, complaint or ISMS data in this period yet.',
+    'chart_ranking' => 'Overall score per supplier (top 15)',
+    'unit_score' => 'Score',
 
     'col_supplier' => 'Supplier',
     'col_overall' => 'Overall score',

@@ -11,6 +11,9 @@ return [
     'weights_hint' => 'Pondération du score global : ponctualité :ontime %, taux de réclamation :complaints %, qualité ISMS :quality %, évolution des prix :price %. Les indicateurs indisponibles sont ignorés et les poids re-normalisés.',
     'empty_ranking' => 'Aucun fournisseur avec des données d’achat, de réclamation ou ISMS exploitables sur la période.',
 
+    'chart_ranking' => 'Score global par fournisseur (top 15)',
+    'unit_score' => 'Score',
+
     'col_supplier' => 'Fournisseur',
     'col_overall' => 'Score global',
     'no_data' => 'aucune donnée',

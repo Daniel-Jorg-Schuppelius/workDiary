@@ -55,12 +55,33 @@ class SupplierScorecardController extends Controller {
 
         return view('reports.supplier-scorecards.index', [
             'rows' => $this->paginate($rows, self::PER_PAGE, $request),
+            'scoreSeries' => $this->scoreSeries($rows),
             'from' => $from,
             'to' => $to,
             'label' => $this->globalDateRange()['label'],
             'weights' => $this->service->weights(),
             'metricVersion' => SupplierScorecardService::METRIC_VERSION,
         ]);
+    }
+
+    /**
+     * Gesamt-Score je Lieferant (Top 15) für das Ranking-Übersichtsdiagramm —
+     * „keine Daten"-Lieferanten (overall null) bleiben außen vor. Drilldown auf
+     * die Detail-Scorecard.
+     *
+     * @param  list<array<string, mixed>>  $rows
+     * @return list<array{x: string, y: int, url: string}>
+     */
+    private function scoreSeries(array $rows): array {
+        return array_values(collect($rows)
+            ->filter(static fn(array $row): bool => $row['overall'] !== null)
+            ->take(15)
+            ->map(static fn(array $row): array => [
+                'x' => (string) $row['supplier_name'],
+                'y' => (int) $row['overall'],
+                'url' => route('supplier-scorecards.show', $row['supplier']),
+            ])
+            ->all());
     }
 
     public function show(Request $request, Supplier $supplier): View {

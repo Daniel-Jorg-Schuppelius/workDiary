@@ -56,6 +56,11 @@
         ]) }}</span>
     </div>
 
+    @if (! empty($scoreSeries))
+        <x-charts.bar-h :title="__('scorecard.chart_ranking')" :unit="__('scorecard.unit_score')" :series="$scoreSeries"
+                        :x-label="__('scorecard.col_supplier')" :y-label="__('scorecard.col_overall')" />
+    @endif
+
     @if ($rows->total() === 0)
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">local_shipping</span>'
                        :title="__('scorecard.empty_ranking')" />

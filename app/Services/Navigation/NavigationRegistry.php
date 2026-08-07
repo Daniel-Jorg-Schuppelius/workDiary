@@ -833,6 +833,10 @@ class NavigationRegistry {
                         ($user?->isAdmin() || $user?->can(Permission::ReportView->value))
                             ? ['route' => 'reports.suppliers', 'label' => __('Lieferantenanalyse'), 'icon' => 'local_shipping', 'modal' => false, 'matches' => ['reports.suppliers']]
                             : null,
+                        // Lieferantenwert (MVP-473): RFM/Portfolio je Lieferant → Finanzdaten, nur report.view/Admin.
+                        ($user?->isAdmin() || $user?->can(Permission::ReportView->value))
+                            ? ['route' => 'reports.supplier-value', 'label' => __('Lieferantenwert'), 'icon' => 'diamond', 'modal' => false, 'matches' => ['reports.supplier-value']]
+                            : null,
                         ['route' => 'reports.expenses', 'label' => __('Spesen'), 'icon' => 'receipt_long', 'modal' => false, 'matches' => ['reports.expenses']],
                         // Externe Auszahlungen: sensible Vergütungsdaten → nur für Payroll-Berechtigte.
                         $user?->can(Permission::UserPayrollManage->value)
