@@ -205,11 +205,11 @@ class AuditActivityReportController extends Controller {
      */
     private function topActorsSeries(array $byUser): array {
         return array_values(collect($byUser)
-            ->map(static fn (array $row): array => [
+            ->map(static fn(array $row): array => [
                 'x' => $row['user'] !== null ? (string) $row['user']->name : '—',
                 'y' => $row['count'],
             ])
-            ->filter(static fn (array $point): bool => $point['y'] > 0)
+            ->filter(static fn(array $point): bool => $point['y'] > 0)
             ->take(15)
             ->all());
     }
@@ -245,7 +245,7 @@ class AuditActivityReportController extends Controller {
         $topEvents = array_slice(array_keys($eventTotals), 0, 4);
         $hasRest = count($eventTotals) > count($topEvents);
 
-        $bands = array_map(fn (string $event): array => [
+        $bands = array_map(fn(string $event): array => [
             'key' => $event,
             'label' => Lang::has('audit-events.' . $event) ? (string) __('audit-events.' . $event) : $event,
         ], $topEvents);
@@ -325,7 +325,7 @@ class AuditActivityReportController extends Controller {
     private function exportPdf(array $byEvent, array $byType, array $byUser, $recent, array $totals, string $from, string $to, array $timelineSeries, array $exportFilters, Request $request): SymfonyResponse {
         $filename = sprintf('audit_%s_%s.pdf', $from, $to);
         // Zeitreihe im Druck als bar-h (letzte 24 Datenpunkte, Nullen raus).
-        $printSeries = array_values(array_filter($timelineSeries, static fn (array $point): bool => $point['y'] > 0));
+        $printSeries = array_values(array_filter($timelineSeries, static fn(array $point): bool => $point['y'] > 0));
         $printSeries = array_slice($printSeries, -24);
         return $this->pdfDownload('reports.pdf.audit-activity', [
             'byEvent' => $byEvent,

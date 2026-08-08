@@ -43,7 +43,8 @@ class AbsencesReportController extends Controller {
     public function __construct(
         private readonly HolidayService $holidayService,
         private readonly VacationBalanceService $balanceService,
-    ) {}
+    ) {
+    }
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();

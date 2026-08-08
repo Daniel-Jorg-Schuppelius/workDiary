@@ -35,7 +35,8 @@ class DataQualityReportController extends Controller {
     use ResolvesGlobalDateRange;
     use ResolvesStandardReportFilters;
 
-    public function __construct(private readonly DataQualityInspector $inspector) {}
+    public function __construct(private readonly DataQualityInspector $inspector) {
+    }
 
     public function index(Request $request): View {
         $user = $request->user();

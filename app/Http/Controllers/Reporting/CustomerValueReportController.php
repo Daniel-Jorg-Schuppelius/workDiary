@@ -34,7 +34,8 @@ class CustomerValueReportController extends Controller {
     use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
-    public function __construct(private readonly CustomerValueReportBuilder $builder) {}
+    public function __construct(private readonly CustomerValueReportBuilder $builder) {
+    }
 
     public function index(Request $request): View|Response|SymfonyResponse {
         $authUser = Auth::user();

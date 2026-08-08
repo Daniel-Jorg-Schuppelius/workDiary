@@ -41,7 +41,8 @@ class SicknessReportController extends Controller {
     public function __construct(
         private readonly HolidayService $holidayService,
         private readonly ContinuedPaymentService $continuedPayment,
-    ) {}
+    ) {
+    }
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();

@@ -40,7 +40,8 @@ class EconomicsReportController extends Controller {
     public function __construct(
         private readonly EconomicsReportBuilder $builder,
         private readonly ReportTargetEvaluator $targets,
-    ) {}
+    ) {
+    }
 
     public function index(Request $request): View|Response|SymfonyResponse {
         $authUser = Auth::user();
@@ -255,9 +256,23 @@ class EconomicsReportController extends Controller {
         $filename = sprintf('wirtschaftlichkeit_%s_%s.csv', $from, $to);
         $out = [];
         $out[] = [
-            'Ebene', 'Name', 'Kunde', 'AbrechenbarMin', 'NichtAbrechenbarMin', 'GesamtMin',
-            'NichtAbrechenbarAnteilProzent', 'ErloesEUR', 'KostenEUR', 'DeckungsbeitragEUR', 'MargeProzent',
-            'PlanMin', 'IstMin', 'PlanIstDeltaMin', 'PlanBudgetEUR', 'IstKostenEUR', 'PlanIstDeltaEUR',
+            'Ebene',
+            'Name',
+            'Kunde',
+            'AbrechenbarMin',
+            'NichtAbrechenbarMin',
+            'GesamtMin',
+            'NichtAbrechenbarAnteilProzent',
+            'ErloesEUR',
+            'KostenEUR',
+            'DeckungsbeitragEUR',
+            'MargeProzent',
+            'PlanMin',
+            'IstMin',
+            'PlanIstDeltaMin',
+            'PlanBudgetEUR',
+            'IstKostenEUR',
+            'PlanIstDeltaEUR',
         ];
 
         foreach ($byCustomer as $r) {
@@ -272,8 +287,17 @@ class EconomicsReportController extends Controller {
             $num = static fn($v): string => $v === null ? '' : NumberHelper::toUSFormat((float) $v, 2);
             $out[] = [''];
             $out[] = [
-                'LVPosition', 'Nachtrag', 'Kurztext', 'MengeAufmass', 'Einheit',
-                'ErloesAufmassEUR', 'ZeitMin', 'KostenZeitEUR', 'KostenMaterialEUR', 'KostenEUR', 'DeckungsbeitragEUR',
+                'LVPosition',
+                'Nachtrag',
+                'Kurztext',
+                'MengeAufmass',
+                'Einheit',
+                'ErloesAufmassEUR',
+                'ZeitMin',
+                'KostenZeitEUR',
+                'KostenMaterialEUR',
+                'KostenEUR',
+                'DeckungsbeitragEUR',
             ];
             foreach ($byBoq['positions'] as $p) {
                 $out[] = [
@@ -292,8 +316,17 @@ class EconomicsReportController extends Controller {
             }
             $u = $byBoq['unassigned'];
             $out[] = [
-                '(ohne Zuordnung)', '', '', '', '',
-                '', (string) $u['timeMinutes'], $num($u['costTime']), $num($u['costMaterial']), $num($u['cost']), '',
+                '(ohne Zuordnung)',
+                '',
+                '',
+                '',
+                '',
+                '',
+                (string) $u['timeMinutes'],
+                $num($u['costTime']),
+                $num($u['costMaterial']),
+                $num($u['cost']),
+                '',
             ];
         }
 

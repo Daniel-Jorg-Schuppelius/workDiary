@@ -152,7 +152,7 @@ class SafetyReportController extends Controller {
      * @return list<array{key: string, label: string}>
      */
     private function statusBands(): array {
-        return array_map(static fn (SafetyEventStatus $status): array => [
+        return array_map(static fn(SafetyEventStatus $status): array => [
             'key' => $status->value,
             'label' => $status->label(),
         ], SafetyEventStatus::cases());

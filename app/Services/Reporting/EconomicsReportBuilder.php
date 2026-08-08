@@ -49,7 +49,8 @@ use Illuminate\Support\Collection;
  * Plan-Werte gegen Ist-Minuten und Ist-Kosten.
  */
 class EconomicsReportBuilder {
-    public function __construct(private readonly TravelChargeService $travelCharges = new TravelChargeService()) {}
+    public function __construct(private readonly TravelChargeService $travelCharges = new TravelChargeService()) {
+    }
 
     /**
      * Wirtschaftlichkeit je Projekt im Zeitraum.
@@ -115,7 +116,7 @@ class EconomicsReportBuilder {
             ->whereIn('id', $projects->pluck('customer_id')->filter()->unique()->all())
             ->get()
             ->keyBy('id');
-        $customerNames = $customers->map(static fn (Customer $c): string => (string) $c->name);
+        $customerNames = $customers->map(static fn(Customer $c): string => (string) $c->name);
 
         return array_values($projects
             ->map(function (Project $project) use ($fromDate, $toDate, $customerNames, $customers): array {
@@ -212,14 +213,14 @@ class EconomicsReportBuilder {
         $projectsByCustomer = Project::query()
             ->when($projectId !== null, fn($q) => $q->whereKey($projectId))
             ->get(['id', 'customer_id', 'time_budget', 'budget'])
-            ->groupBy(static fn (Project $p): int => (int) $p->customer_id);
+            ->groupBy(static fn(Project $p): int => (int) $p->customer_id);
 
         return array_values($customers
             ->map(function (Customer $customer) use ($fromDate, $toDate, $projectsByCustomer, $projectId): array {
                 /** @var \Illuminate\Support\Collection<int, Project> $customerProjects */
                 $customerProjects = $projectsByCustomer->get((int) $customer->id, collect());
 
-                $projectIds = array_values($customerProjects->pluck('id')->map(static fn ($v): int => (int) $v)->all());
+                $projectIds = array_values($customerProjects->pluck('id')->map(static fn($v): int => (int) $v)->all());
 
                 $time = $this->timeAggregate(
                     TimeEntry::query()
@@ -241,8 +242,8 @@ class EconomicsReportBuilder {
                     $travel = $this->travelAggregate($fromDate, $toDate, customerId: (int) $customer->id, customer: $customer, projectIds: $projectIds);
                 }
 
-                $planMinutes = $customerProjects->sum(static fn (Project $p): int => (int) $p->time_budget);
-                $planBudget = $customerProjects->sum(static fn (Project $p): float => ($p->budget?->toFloat() ?? 0.0));
+                $planMinutes = $customerProjects->sum(static fn(Project $p): int => (int) $p->time_budget);
+                $planBudget = $customerProjects->sum(static fn(Project $p): float => ($p->budget?->toFloat() ?? 0.0));
 
                 $row = $this->composeRow(
                     $time,
@@ -621,7 +622,7 @@ class EconomicsReportBuilder {
             ->orderBy('position')
             ->get(['id', 'bill_of_quantity_id', 'reference_no', 'short_text', 'type', 'unit', 'unit_price', 'is_addendum', 'position']);
 
-        $itemIds = $items->pluck('id')->map(static fn ($v): int => (int) $v)->all();
+        $itemIds = $items->pluck('id')->map(static fn($v): int => (int) $v)->all();
 
         // Aufmaß im Zeitraum (Erlös-Basis) je Position.
         $measured = BoqItemProgress::query()

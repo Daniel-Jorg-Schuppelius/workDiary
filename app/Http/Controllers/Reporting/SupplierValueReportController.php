@@ -34,7 +34,8 @@ class SupplierValueReportController extends Controller {
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
 
-    public function __construct(private readonly SupplierValueReportBuilder $builder) {}
+    public function __construct(private readonly SupplierValueReportBuilder $builder) {
+    }
 
     public function index(Request $request): View|Response|SymfonyResponse {
         $authUser = Auth::user();

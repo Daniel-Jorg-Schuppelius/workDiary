@@ -166,7 +166,7 @@ class ArbZgComplianceReportController extends Controller {
      * @return list<array{key: string, label: string}>
      */
     private function kindBands(): array {
-        return array_map(fn (string $kind): array => [
+        return array_map(fn(string $kind): array => [
             'key' => $kind,
             'label' => (string) __('compliance.report.kind.' . $kind),
         ], $this->kinds());
@@ -192,7 +192,7 @@ class ArbZgComplianceReportController extends Controller {
             }
             $heatmapRows[] = [
                 'label' => (string) $r['user']->name,
-                'cells' => array_map(static fn (int $count): array => ['value' => $count], array_values($cells)),
+                'cells' => array_map(static fn(int $count): array => ['value' => $count], array_values($cells)),
             ];
         }
 
@@ -241,7 +241,7 @@ class ArbZgComplianceReportController extends Controller {
         // Team-Aggregation: Befunde je Team (User können mehreren Teams angehören).
         $teamNames = Team::query()->whereNull('archived_at')->pluck('name', 'id');
         $teamIdsByUser = DB::table('team_user')
-            ->whereIn('user_id', array_map(static fn (array $r): int => (int) $r['user']->id, $rows))
+            ->whereIn('user_id', array_map(static fn(array $r): int => (int) $r['user']->id, $rows))
             ->get(['user_id', 'team_id'])
             ->groupBy('user_id');
         $byTeam = [];

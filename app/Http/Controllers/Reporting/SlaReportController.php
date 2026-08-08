@@ -44,7 +44,8 @@ class SlaReportController extends Controller {
     public function __construct(
         private readonly ReportTargetEvaluator $targets,
         private readonly SlaQuotaService $quotas,
-    ) {}
+    ) {
+    }
 
     public function index(Request $request): View|SymfonyResponse {
         Gate::authorize('viewAny', SlaViolation::class);
