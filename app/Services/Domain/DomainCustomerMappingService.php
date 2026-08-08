@@ -34,7 +34,7 @@ class DomainCustomerMappingService {
         $suggestions = [];
         $seen = [];
 
-// 1) Bereits bestätigte Zuordnung dieser Domain. Die Referenz bildet
+        // 1) Bereits bestätigte Zuordnung dieser Domain. Die Referenz bildet
         //    „Provider-Domain ↔ Domain-Projektion" ab; der bestätigte Kunde
         //    liegt im payload — ein Kunde darf beliebig viele Domains halten.
         $ref = ExternalReference::query()
