@@ -12,12 +12,15 @@ namespace App\Services\Reporting;
 
 use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
-use App\Models\{Asset, DiaryEntry, OpenIssue, Protocol};
+use App\Models\{Asset, DiaryEntry, ExternalReference, OpenIssue, Protocol, TimeEntry};
 use Carbon\CarbonImmutable;
 
 /**
  * Produkt-/Objekt-/Raumanalyse (MVP-041): Aufträge, offene Punkte, Defekte
  * und Defektrate je Asset / Produktgruppe / Modell, inkl. Drilldown-Filter.
+ * Ergänzt (MVP-476) um Fernwartungs-Kennzahlen (Sitzungen/Wartungszeit) aus
+ * dem RemoteSupport-Plugin — zeigt, welche Geräte/Modelle die meiste
+ * Betreuung ziehen (0, wenn das Plugin nicht genutzt wird).
  *
  * Reine Datenaufbereitung, getrennt vom Controller (HTTP-Filter, CSV/PDF,
  * Audit), Muster wie {@see PlanIstReportBuilder}.
@@ -35,6 +38,8 @@ class AssetAnalysisReportBuilder {
      *   escalationCount:int,
      *   defectCount:int,
      *   defectRate:float,
+     *   maintenanceSessions:int,
+     *   maintenanceMinutes:int,
      *   lastIncidentAt:?string,
      *   drilldown:array<string,mixed>
      * }>
@@ -65,6 +70,8 @@ class AssetAnalysisReportBuilder {
 
         /** @var list<int> $assetIds */
         $assetIds = $assets->pluck('id')->map(static fn($v): int => (int) $v)->values()->all();
+
+        $maintByAsset = $this->maintenanceByAsset($assetIds, $from, $to);
 
         $entryRows = DiaryEntry::query()
             ->whereIn('asset_id', $assetIds)
@@ -186,12 +193,16 @@ class AssetAnalysisReportBuilder {
             $openCount = 0;
             $escCount = 0;
             $defectCount = 0;
+            $maintSessions = 0;
+            $maintMinutes = 0;
             $lastIncident = null;
             foreach ($group['assetIds'] as $aid) {
                 $entryCount += count($entriesByAsset[$aid] ?? []);
                 $openCount += $openByAsset[$aid] ?? 0;
                 $escCount += $escByAsset[$aid] ?? 0;
                 $defectCount += $defectByAsset[$aid]['defects'] ?? 0;
+                $maintSessions += $maintByAsset[$aid]['sessions'] ?? 0;
+                $maintMinutes += $maintByAsset[$aid]['minutes'] ?? 0;
                 $candidate = $defectByAsset[$aid]['last'] ?? null;
                 if ($candidate !== null && ($lastIncident === null || $candidate > $lastIncident)) {
                     $lastIncident = $candidate;
@@ -222,6 +233,8 @@ class AssetAnalysisReportBuilder {
                 'escalationCount' => $escCount,
                 'defectCount' => $defectCount,
                 'defectRate' => $defectRate,
+                'maintenanceSessions' => $maintSessions,
+                'maintenanceMinutes' => $maintMinutes,
                 'lastIncidentAt' => $lastIncident,
                 'drilldown' => $drilldownFilter,
             ];
@@ -231,5 +244,61 @@ class AssetAnalysisReportBuilder {
             ?: strnatcasecmp($a['label'], $b['label']));
 
         return $rows;
+    }
+
+    /**
+     * Fernwartungs-Kennzahlen je Asset im Zeitraum aus dem RemoteSupport-Plugin.
+     * Jede gebuchte Sitzung trägt eine ExternalReference (plugin `remote-support`,
+     * Typ `session`) auf ihren TimeEntry; das Asset steht im `payload.asset_id`.
+     * Je TimeEntry existiert genau EINE primäre Session-Referenz — Minuten werden
+     * daher nicht doppelt gezählt. Ohne aktives Plugin bleibt alles 0.
+     *
+     * @param  list<int>  $assetIds
+     * @return array<int, array{sessions:int, minutes:int}>
+     */
+    private function maintenanceByAsset(array $assetIds, CarbonImmutable $from, CarbonImmutable $to): array {
+        if ($assetIds === []) {
+            return [];
+        }
+
+        $assetSet = array_fill_keys($assetIds, true);
+        $timeEntryMorph = (new TimeEntry())->getMorphClass();
+
+        // TimeEntry-ID → Asset-ID aus den Session-Referenzen (payload.asset_id).
+        /** @var array<int, int> $entryToAsset */
+        $entryToAsset = [];
+        ExternalReference::query()
+            ->where('plugin_id', 'remote-support')
+            ->where('external_type', 'session')
+            ->where('referenceable_type', $timeEntryMorph)
+            ->get(['referenceable_id', 'payload'])
+            ->each(function (ExternalReference $ref) use (&$entryToAsset, $assetSet): void {
+                $assetId = (int) ($ref->payload['asset_id'] ?? 0);
+                if ($assetId > 0 && isset($assetSet[$assetId])) {
+                    $entryToAsset[(int) $ref->referenceable_id] = $assetId;
+                }
+            });
+
+        if ($entryToAsset === []) {
+            return [];
+        }
+
+        /** @var array<int, array{sessions:int, minutes:int}> $byAsset */
+        $byAsset = [];
+        TimeEntry::query()
+            ->whereIn('id', array_keys($entryToAsset))
+            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->get(['id', 'minutes'])
+            ->each(function (TimeEntry $entry) use (&$byAsset, $entryToAsset): void {
+                $assetId = $entryToAsset[(int) $entry->id] ?? null;
+                if ($assetId === null) {
+                    return;
+                }
+                $byAsset[$assetId] ??= ['sessions' => 0, 'minutes' => 0];
+                $byAsset[$assetId]['sessions']++;
+                $byAsset[$assetId]['minutes'] += (int) $entry->minutes;
+            });
+
+        return $byAsset;
     }
 }

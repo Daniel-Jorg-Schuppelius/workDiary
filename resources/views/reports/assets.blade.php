@@ -55,11 +55,19 @@
     {{-- Feature 002: Diagramme (Defekt-Pareto + Defektrate der aktiven Ebene) --}}
     @php
         $dimLabel = match ($groupBy) { 'group' => __('Produktgruppe'), 'model' => __('Modell'), default => __('Asset') };
+        // Fernwartungs-Kennzahlen (MVP-476) nur zeigen, wenn welche vorliegen —
+        // sonst reine Nullspalten für Orgs ohne RemoteSupport-Plugin.
+        $hasMaintenance = collect($rows)->sum('maintenanceSessions') > 0;
     @endphp
     <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.pareto :title="__('Defekte im Zeitraum (Top 20)')" :unit="__('Defekte')" :series="$defectsSeries" :x-label="$dimLabel" :y-label="__('Defekte')" />
         <x-charts.bar :title="__('Defektrate (Top 15)')" unit="%" :series="$defectRateSeries" :x-label="$dimLabel" :y-label="__('Defektrate %')" />
     </div>
+    @if ($hasMaintenance)
+        <x-charts.bar-h :title="__('Wartungszeit je :dim (Top 15)', ['dim' => $dimLabel])" unit="h" :series="$maintenanceSeries"
+                        :x-label="$dimLabel" :y-label="__('Wartungszeit')"
+                        :note="__('Fernwartungssitzungen (AnyDesk/TeamViewer) je Gerät/Modell im Zeitraum.')" />
+    @endif
 
     <x-card>
         <div class="mb-3 text-xs text-base-content/60">{{ __('Zeitraum') }}: {{ $label }}</div>
@@ -77,6 +85,10 @@
                     <x-table.th sort type="number" align="right">{{ __('Eskaliert') }}</x-table.th>
                     <x-table.th sort type="number" align="right">{{ __('Defekte') }}</x-table.th>
                     <x-table.th sort type="number" align="right">{{ __('Defektrate %') }}</x-table.th>
+                    @if ($hasMaintenance)
+                        <x-table.th sort type="number" align="right">{{ __('Wartungssitzungen') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Wartungszeit') }}</x-table.th>
+                    @endif
                     <x-table.th sort type="date">{{ __('Letzter Vorfall') }}</x-table.th>
                 </x-slot:head>
                 @foreach($rows as $row)
@@ -106,6 +118,10 @@
                             @endif
                         </td>
                         <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row['defectRate'], 2, withThousandsSeparator: true) }}</td>
+                        @if ($hasMaintenance)
+                            <td class="text-right tabular-nums">{{ $row['maintenanceSessions'] }}</td>
+                            <td class="text-right tabular-nums" data-sort-value="{{ $row['maintenanceMinutes'] }}">{{ $row['maintenanceMinutes'] > 0 ? \App\Support\Formats::duration($row['maintenanceMinutes'], 'clock') : '—' }}</td>
+                        @endif
                         <td @if ($row['lastIncidentAt']) data-sort-value="{{ \Illuminate\Support\Carbon::parse($row['lastIncidentAt'])->format('Y-m-d') }}" @endif>{{ $row['lastIncidentAt'] ? \Illuminate\Support\Carbon::parse($row['lastIncidentAt'])->fdate() : '—' }}</td>
                     </tr>
                 @endforeach

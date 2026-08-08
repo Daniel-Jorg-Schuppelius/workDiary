@@ -9611,5 +9611,9 @@
     "alle übrigen aktiven Lieferanten": "all other active suppliers",
     "keine Belege im Zeitraum, oder R ≤ 2 ohne hohe Ausgaben": "no vouchers in the period, or R ≤ 2 without high spend",
     "Belege je Monat (12 Monate)": "Vouchers per month (12 months)",
-    "Anzahl Einkaufsbelege dieses Lieferanten je Monat.": "Number of purchase vouchers of this supplier per month."
+    "Anzahl Einkaufsbelege dieses Lieferanten je Monat.": "Number of purchase vouchers of this supplier per month.",
+    "Wartungssitzungen": "Maintenance sessions",
+    "Wartungszeit": "Maintenance time",
+    "Wartungszeit je :dim (Top 15)": "Maintenance time per :dim (top 15)",
+    "Fernwartungssitzungen (AnyDesk/TeamViewer) je Gerät/Modell im Zeitraum.": "Remote maintenance sessions (AnyDesk/TeamViewer) per device/model in the period."
 }

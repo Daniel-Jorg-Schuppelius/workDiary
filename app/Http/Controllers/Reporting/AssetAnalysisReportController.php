@@ -94,6 +94,7 @@ class AssetAnalysisReportController extends Controller {
             'filterFields' => $filterFields,
             'defectsSeries' => $this->defectsSeries($rows),
             'defectRateSeries' => $this->defectRateSeries($rows),
+            'maintenanceSeries' => $this->maintenanceSeries($rows),
             ...$this->standardFilterOptions($filterFields, $filters),
             'categories' => Asset::query()
                 ->whereNotNull('category_code')
@@ -121,7 +122,7 @@ class AssetAnalysisReportController extends Controller {
      * Defektprotokolle (der AssetDrilldownReportController liest die
      * Legacy-Parameternamen aus dem drilldown-Array der Zeile).
      *
-     * @param  list<array{key:string,label:string,assetCount:int,entryCount:int,openIssueCount:int,escalationCount:int,defectCount:int,defectRate:float,lastIncidentAt:?string,drilldown:array<string,mixed>}>  $rows
+     * @param  list<array{key:string,label:string,assetCount:int,entryCount:int,openIssueCount:int,escalationCount:int,defectCount:int,defectRate:float,maintenanceSessions:int,maintenanceMinutes:int,lastIncidentAt:?string,drilldown:array<string,mixed>}>  $rows
      * @return list<array{x: string, y: int, url: string}>
      */
     private function defectsSeries(array $rows): array {
@@ -141,7 +142,7 @@ class AssetAnalysisReportController extends Controller {
      * Defektrate (%) je Gruppierungsebene, Top 15 — eine Zeitreihe geben die
      * Builder-Daten nicht her (nur Aggregatzeilen je Gruppe).
      *
-     * @param  list<array{key:string,label:string,assetCount:int,entryCount:int,openIssueCount:int,escalationCount:int,defectCount:int,defectRate:float,lastIncidentAt:?string,drilldown:array<string,mixed>}>  $rows
+     * @param  list<array{key:string,label:string,assetCount:int,entryCount:int,openIssueCount:int,escalationCount:int,defectCount:int,defectRate:float,maintenanceSessions:int,maintenanceMinutes:int,lastIncidentAt:?string,drilldown:array<string,mixed>}>  $rows
      * @return list<array{x: string, y: float, url: string}>
      */
     private function defectRateSeries(array $rows): array {
@@ -158,9 +159,31 @@ class AssetAnalysisReportController extends Controller {
     }
 
     /**
+     * Wartungszeit (Stunden) je Gruppierungsebene, Top 15 — aus den
+     * Fernwartungs-Sitzungen (RemoteSupport-Plugin). Zeigt, welche Geräte/
+     * Modelle die meiste Betreuung ziehen; ohne Plugin leer. Kein Drilldown
+     * (Sitzungsliste ist kein eigener Report).
+     *
+     * @param  list<array{key:string,label:string,assetCount:int,entryCount:int,openIssueCount:int,escalationCount:int,defectCount:int,defectRate:float,maintenanceSessions:int,maintenanceMinutes:int,lastIncidentAt:?string,drilldown:array<string,mixed>}>  $rows
+     * @return list<array{x: string, y: float}>
+     */
+    private function maintenanceSeries(array $rows): array {
+        return array_values(collect($rows)
+            ->filter(static fn(array $row): bool => $row['maintenanceMinutes'] > 0)
+            ->sortByDesc('maintenanceMinutes')
+            ->take(15)
+            ->map(static fn(array $row): array => [
+                'x' => $row['label'],
+                'y' => round($row['maintenanceMinutes'] / 60, 1),
+            ])
+            ->all());
+    }
+
+    /**
      * @param  list<array{
      *   key:string,label:string,assetCount:int,entryCount:int,openIssueCount:int,
-     *   escalationCount:int,defectCount:int,defectRate:float,lastIncidentAt:?string,
+     *   escalationCount:int,defectCount:int,defectRate:float,maintenanceSessions:int,
+     *   maintenanceMinutes:int,lastIncidentAt:?string,
      *   drilldown:array<string,mixed>
      * }>  $rows
      * @param  array<string, mixed>  $filters
@@ -181,6 +204,8 @@ class AssetAnalysisReportController extends Controller {
             'Eskaliert',
             'Defekte',
             'DefektrateProzent',
+            'Wartungssitzungen',
+            'WartungszeitMinuten',
             'LetzterVorfall',
         ];
 
@@ -193,6 +218,8 @@ class AssetAnalysisReportController extends Controller {
                 $row['escalationCount'],
                 $row['defectCount'],
                 NumberHelper::toUSFormat((float) $row['defectRate'], 2),
+                $row['maintenanceSessions'],
+                $row['maintenanceMinutes'],
                 $row['lastIncidentAt'] ?? '',
             ];
         }
@@ -209,7 +236,8 @@ class AssetAnalysisReportController extends Controller {
     /**
      * @param  list<array{
      *   key:string,label:string,assetCount:int,entryCount:int,openIssueCount:int,
-     *   escalationCount:int,defectCount:int,defectRate:float,lastIncidentAt:?string,
+     *   escalationCount:int,defectCount:int,defectRate:float,maintenanceSessions:int,
+     *   maintenanceMinutes:int,lastIncidentAt:?string,
      *   drilldown:array<string,mixed>
      * }>  $rows
      * @param  list<array{x: string, y: int, url: string}>  $defectsSeries

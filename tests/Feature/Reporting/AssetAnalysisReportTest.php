@@ -105,6 +105,54 @@ class AssetAnalysisReportTest extends TestCase {
         $this->assertGreaterThan(0, $row['defectRate']);
     }
 
+    public function test_aggregates_remote_maintenance_sessions_and_time_per_asset(): void {
+        $asset = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Server B',
+            'asset_no' => 'AS-B-0001',
+            'category_code' => 'server',
+        ]);
+
+        // Zwei Fernwartungs-Sitzungen (je ein TimeEntry mit session-ExternalReference).
+        foreach ([30, 45] as $minutes) {
+            $start = now()->subDays(2)->setTime(9, 0);
+            $entry = \App\Models\TimeEntry::create([
+                'organization_id' => $this->organization->id,
+                'project_id' => $this->project->id,
+                'user_id' => $this->user->id,
+                'date' => $start->toDateString(),
+                'started_at' => $start->toDateTimeString(),
+                'ended_at' => $start->copy()->addMinutes($minutes)->toDateTimeString(),
+                'kind' => \App\Enums\TimeEntry\TimeEntryKind::Work->value,
+                'description' => 'Fernwartung',
+                'billable' => true,
+            ]);
+
+            \App\Models\ExternalReference::create([
+                'organization_id' => $this->organization->id,
+                'plugin_id' => 'remote-support',
+                'external_type' => 'session',
+                'referenceable_type' => $entry->getMorphClass(),
+                'referenceable_id' => $entry->id,
+                'external_id' => 'anydesk:session-' . $minutes,
+                'payload' => ['provider' => 'anydesk', 'remote_id' => '123', 'asset_id' => $asset->id, 'linked' => false],
+                'synced_at' => now(),
+            ]);
+        }
+
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(now()->subMonth()->startOfMonth(), now()->endOfMonth()))
+            ->get(route('reports.assets'));
+        $response->assertOk();
+
+        /** @var list<array<string, mixed>> $rows */
+        $rows = $response->viewData('rows');
+        $row = collect($rows)->firstWhere('label', 'AS-B-0001 — Server B');
+        $this->assertNotNull($row);
+        $this->assertSame(2, $row['maintenanceSessions']);
+        $this->assertSame(75, $row['maintenanceMinutes']);
+    }
+
     public function test_group_by_model_aggregates_assets(): void {
         Asset::factory()->count(2)->create([
             'organization_id' => $this->organization->id,
