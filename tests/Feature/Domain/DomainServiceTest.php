@@ -11,7 +11,7 @@
 namespace Tests\Feature\Domain;
 
 use App\Enums\Domain\{DomainConnectionStatus, DomainProviderCommandStatus, DomainSyncStatus};
-use App\Models\{Customer, ExternalReference, User};
+use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, User};
 use App\Models\Domain\{DomainAccountingEntry, DomainProjection, DomainProviderConnection, DomainResellerAccount};
 use App\Plugins\Support\Domain\DomainRateBudgetException;
 use App\Services\Domain\{DomainAccountingService, DomainActionException, DomainAvailabilityService, DomainCommandService, DomainConnectionService, DomainCustomerMappingService, DomainDangerousActionService, DomainDnsService, DomainEventPollingService, DomainInvoiceService, DomainReportService, DomainSyncService};
@@ -359,5 +359,56 @@ class DomainServiceTest extends TestCase {
             'external_domain' => 'shared.de',
             'domain_hash' => $hash,
         ]);
+    }
+
+    public function test_customer_may_hold_multiple_domains_via_alias(): void {
+        FakeDomainResellingTransport::fake([]);
+        $connection = $this->connection();
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $mapping = app(DomainCustomerMappingService::class);
+
+        $first = DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'external_domain' => 'erste.de',
+            'domain_hash' => DomainProjection::hashFor('erste.de'),
+        ]);
+        $second = DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'external_domain' => 'zweite.de',
+            'domain_hash' => DomainProjection::hashFor('zweite.de'),
+        ]);
+
+        // Zweite Domain auf denselben Kunden darf extref_unique nicht verletzen.
+        $mapping->assign($first, $customer, $this->actor);
+        $mapping->assign($second, $customer, $this->actor);
+
+        // Genau EINE Primär-Referenz je Kunde, die weitere Domain als Alias.
+        $this->assertSame(1, ExternalReference::query()
+            ->where('external_type', 'domain')
+            ->where('referenceable_type', Customer::class)
+            ->where('referenceable_id', $customer->id)
+            ->count());
+        $this->assertDatabaseHas('external_reference_aliases', [
+            'plugin_id' => 'domainreselling',
+            'external_type' => 'domain',
+            'external_id' => 'zweite.de',
+            'referenceable_type' => Customer::class,
+            'referenceable_id' => $customer->id,
+        ]);
+
+        // Beide Domains schlagen denselben Kunden vor (Primär- wie Alias-Weg).
+        $this->assertSame($customer->id, $mapping->suggestFor($first)[0]['customer']->id);
+        $this->assertSame($customer->id, $mapping->suggestFor($second)[0]['customer']->id);
+
+        // Aufheben einer Domain trifft nur diese, die andere bleibt zugeordnet.
+        $mapping->clearAssignment($second);
+        $this->assertDatabaseMissing('external_reference_aliases', ['external_id' => 'zweite.de']);
+        $this->assertSame($customer->id, $mapping->suggestFor($first)[0]['customer']->id);
+        $this->assertEmpty(array_filter(
+            $mapping->suggestFor($second),
+            fn (array $s): bool => $s['reason'] === 'external_reference',
+        ));
     }
 }
