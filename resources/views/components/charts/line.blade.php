@@ -40,6 +40,32 @@
     $path = $points->map(fn(array $p, int $i): string => ($i === 0 ? 'M' : 'L') . round($sx($i), 1) . ' ' . round($sy((float) $p['y']), 1))->implode(' ');
     // X-Achsenbeschriftung ausdünnen: höchstens ~10 Labels, letzter Punkt immer.
     $labelEvery = max(1, (int) ceil($points->count() / 10));
+
+    // Kontrakt für die optionale Chart.js-Verbesserung am Bildschirm (charts.js).
+    $chartDatasets = [[
+        'label' => $yLabel ?? $unit,
+        'data' => $points->map(fn(array $p): float => (float) $p['y'])->all(),
+        'kind' => 'line', 'role' => 'primary',
+    ]];
+    if ($ideal && $points->count() > 1) {
+        $y0 = (float) $points->first()['y'];
+        $lastIdx = $points->count() - 1;
+        $chartDatasets[] = [
+            'label' => __('Ideal'),
+            'data' => $points->map(fn(array $p, int $i): float => round($y0 * (1 - $i / $lastIdx), 2))->all(),
+            'kind' => 'line', 'role' => 'ideal', 'dashed' => true,
+        ];
+    }
+    $chartSpec = [
+        'type' => 'line',
+        'title' => $title,
+        'unit' => $unit,
+        'xLabel' => $xLabel,
+        'yLabel' => $yLabel ?? $unit,
+        'labels' => $points->map(fn(array $p): string => (string) $p['x'])->all(),
+        'urls' => $points->map(fn(array $p) => $p['url'] ?? null)->all(),
+        'datasets' => $chartDatasets,
+    ];
 @endphp
 
 <figure class="wd-chart rounded-box border border-base-300 bg-base-100 p-3">
@@ -61,7 +87,8 @@
             <x-empty-state icon="show_chart" :title="__('Noch keine Daten für dieses Diagramm.')" compact />
         </div>
     @else
-        <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="mt-2 w-full">
+        @include('components.charts._canvas', ['spec' => $chartSpec])
+        <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="wd-chart-svg mt-2 w-full">
             <line x1="{{ $pad }}" y1="{{ $height - $padB }}" x2="{{ $width - $pad }}" y2="{{ $height - $padB }}" class="stroke-base-300" stroke-width="1" />
             <line x1="{{ $pad }}" y1="{{ $pad }}" x2="{{ $pad }}" y2="{{ $height - $padB }}" class="stroke-base-300" stroke-width="1" />
             <text x="{{ $pad - 6 }}" y="{{ $pad }}" text-anchor="end" class="fill-base-content/60 text-[10px]">{{ $maxY }}</text>

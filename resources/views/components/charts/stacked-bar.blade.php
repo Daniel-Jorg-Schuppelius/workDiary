@@ -47,6 +47,23 @@
     // gleiche Semantik wie die Zweitserie in bar-h/waterfall.
     $hasHatch = $bandList->contains(fn(array $b): bool => ! empty($b['hatch']));
     $uid = 'hatch-sb-' . uniqid();
+
+    // Kontrakt für die optionale Chart.js-Verbesserung am Bildschirm (charts.js).
+    $chartSpec = [
+        'type' => 'bar',
+        'stacked' => true,
+        'title' => $title,
+        'unit' => $unit,
+        'xLabel' => $xLabel,
+        'yLabel' => $unit,
+        'labels' => $points->map(fn(array $p): string => (string) $p['x'])->all(),
+        'urls' => $points->map(fn(array $p) => $p['url'] ?? null)->all(),
+        'datasets' => $bandList->map(fn(array $b): array => [
+            'label' => $b['label'],
+            'data' => $points->map(fn(array $p) => (float) ($p[$b['key']] ?? 0))->all(),
+            'kind' => 'bar', 'role' => 'band', 'hatch' => ! empty($b['hatch']),
+        ])->all(),
+    ];
 @endphp
 
 <figure class="wd-chart rounded-box border border-base-300 bg-base-100 p-3">
@@ -68,7 +85,8 @@
             <x-empty-state icon="stacked_bar_chart" :title="__('Noch keine Daten für dieses Diagramm.')" compact />
         </div>
     @else
-        <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="mt-2 w-full">
+        @include('components.charts._canvas', ['spec' => $chartSpec])
+        <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="wd-chart-svg mt-2 w-full">
             @if ($hasHatch)
                 <defs>
                     <pattern id="{{ $uid }}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">

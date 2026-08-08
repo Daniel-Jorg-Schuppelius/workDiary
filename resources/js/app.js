@@ -20,6 +20,7 @@ import { registerServiceWorker, bindInstallPrompt } from "./pwa.js";
 import { initOfflineSync } from "./offline-sync.js";
 import { __ } from "./i18n.js";
 import { html, setHtml, safeUrl, trustedServerHtml } from "./lib/html.js";
+import { initCharts } from "./charts.js";
 import "./sortable-tables.js";
 import "./bulk-selection.js";
 import "./inline-actions.js";
@@ -52,6 +53,11 @@ registerIdeaEditor(Alpine);
 registerIdeaCanvas(Alpine);
 registerDesignEditor(Alpine);
 Alpine.start();
+
+// Interaktive Diagramme (Progressive Enhancement): lädt Chart.js nur, wenn
+// enhancebare `figure.wd-chart` auf der Seite sind. Ohne JS / im PDF bleibt das
+// serverseitige SVG die Darstellung.
+initCharts();
 
 const htmlLang = (document.documentElement.lang || "de").toLowerCase();
 const isGerman = htmlLang.startsWith("de");
