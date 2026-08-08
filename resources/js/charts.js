@@ -35,7 +35,7 @@
  */
 /**
  * @typedef {Object} ChartSpec
- * @property {ChartKind|'boxplot'} type
+ * @property {ChartKind|'boxplot'|'scatter'} type
  * @property {boolean} [stacked]
  * @property {boolean} [horizontal]
  * @property {boolean} [waterfall]
@@ -55,6 +55,8 @@
  * @property {Array<number|null>} [targets]
  * @property {number[][]} [bands]
  * @property {string} [targetLabel]
+ * @property {Array<{x:number,y:number,label?:string}>} [points]
+ * @property {Array<{label:string,value:number}>} [percentiles]
  */
 
 /** @type {Promise<any>|null} */
@@ -174,6 +176,9 @@ function hatchPattern(color) {
 function buildConfig(spec, theme, reduceMotion) {
     if (spec.type === "boxplot") {
         return buildBoxplotConfig(spec, theme, reduceMotion);
+    }
+    if (spec.type === "scatter") {
+        return buildScatterConfig(spec, theme, reduceMotion);
     }
     if (spec.waterfall === true) {
         return buildWaterfallConfig(spec, theme, reduceMotion);
@@ -320,6 +325,108 @@ function buildConfig(spec, theme, reduceMotion) {
 }
 
 /**
+ * Punktdiagramm mit horizontalen Perzentil-Linien. Die X-Position ist ordinal
+ * (Reihenfolge der Punkte = fachliche Sortierung, z. B. Inaktivität); die
+ * X-Ticks werden ausgeblendet, die Bedeutung steckt in Tooltip/Tabelle.
+ * @param {ChartSpec} spec
+ * @param {ReturnType<typeof readTheme>} theme
+ * @param {boolean} reduceMotion
+ * @returns {Record<string, any>}
+ */
+function buildScatterConfig(spec, theme, reduceMotion) {
+    const points = spec.points ?? [];
+    const percentiles = spec.percentiles ?? [];
+    const lastX = Math.max(0, points.length - 1);
+    const dashes = [
+        [4, 3],
+        [7, 3],
+        [2, 3],
+    ];
+    /** @type {Array<Record<string, any>>} */
+    const datasets = [
+        {
+            type: "scatter",
+            label: spec.unit ?? "",
+            data: points,
+            backgroundColor: withAlpha(theme.primary, 0.8),
+            borderColor: theme.surface,
+            borderWidth: 1,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            order: 1,
+        },
+    ];
+    percentiles.forEach((p, i) => {
+        datasets.push({
+            type: "line",
+            label: p.label,
+            data: [
+                { x: 0, y: p.value },
+                { x: lastX, y: p.value },
+            ],
+            borderColor: theme.muted,
+            borderWidth: 1,
+            borderDash: dashes[i % dashes.length],
+            pointRadius: 0,
+            fill: false,
+            order: 2,
+        });
+    });
+
+    return {
+        type: "scatter",
+        data: { datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: reduceMotion ? false : { duration: 500 },
+            plugins: {
+                legend: {
+                    display: percentiles.length > 0,
+                    labels: {
+                        color: theme.text,
+                        filter: (/** @type {any} */ item) => item.datasetIndex !== 0,
+                    },
+                },
+                tooltip: {
+                    callbacks: {
+                        label: (/** @type {any} */ ctx) => {
+                            const raw = ctx.raw ?? {};
+                            const name = typeof raw.label === "string" ? raw.label : "";
+                            return `${name}: ${ctx.parsed.y} ${spec.unit ?? ""}`.trim();
+                        },
+                    },
+                },
+            },
+            scales: {
+                x: {
+                    type: "linear",
+                    min: -0.5,
+                    max: lastX + 0.5,
+                    grid: { color: theme.grid },
+                    ticks: { display: false },
+                    title: {
+                        display: typeof spec.xLabel === "string" && spec.xLabel !== "",
+                        text: spec.xLabel,
+                        color: theme.text,
+                    },
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: theme.grid },
+                    ticks: { color: theme.text },
+                    title: {
+                        display: typeof spec.yLabel === "string" && spec.yLabel !== "",
+                        text: spec.yLabel,
+                        color: theme.text,
+                    },
+                },
+            },
+        },
+    };
+}
+
+/**
  * Boxplot-Konfiguration (horizontal): die fünf Kennwerte kommen vorberechnet
  * aus dem Builder; das Boxplot-Plugin rendert Box/Whisker/Median.
  * @param {ChartSpec} spec
@@ -353,8 +460,14 @@ function buildBoxplotConfig(spec, theme, reduceMotion) {
             animation: reduceMotion ? false : { duration: 500 },
             plugins: { legend: { display: false } },
             scales: {
-                x: { grid: { color: theme.grid }, ticks: { color: theme.text } },
-                y: { grid: { color: theme.grid }, ticks: { color: theme.text } },
+                x: {
+                    grid: { color: theme.grid },
+                    ticks: { color: theme.text },
+                },
+                y: {
+                    grid: { color: theme.grid },
+                    ticks: { color: theme.text },
+                },
             },
         },
     };
@@ -372,7 +485,11 @@ function buildWaterfallConfig(spec, theme, reduceMotion) {
     const ranges = spec.ranges ?? [];
     const kinds = spec.kinds ?? [];
     const colorFor = (/** @type {string} */ kind) =>
-        kind === "up" ? theme.success : kind === "down" ? theme.error : theme.muted;
+        kind === "up"
+            ? theme.success
+            : kind === "down"
+              ? theme.error
+              : theme.muted;
     return {
         type: "bar",
         data: {
@@ -381,7 +498,9 @@ function buildWaterfallConfig(spec, theme, reduceMotion) {
                 {
                     label: spec.unit ?? "",
                     data: ranges,
-                    backgroundColor: ranges.map((_, i) => withAlpha(colorFor(kinds[i]), 0.75)),
+                    backgroundColor: ranges.map((_, i) =>
+                        withAlpha(colorFor(kinds[i]), 0.75),
+                    ),
                     borderColor: ranges.map((_, i) => colorFor(kinds[i])),
                     borderWidth: 1,
                     borderSkipped: false,
@@ -403,7 +522,10 @@ function buildWaterfallConfig(spec, theme, reduceMotion) {
                         autoSkip: true,
                     },
                 },
-                y: { grid: { color: theme.grid }, ticks: { color: theme.text } },
+                y: {
+                    grid: { color: theme.grid },
+                    ticks: { color: theme.text },
+                },
             },
         },
     };
@@ -458,19 +580,27 @@ function buildBulletConfig(spec, theme, reduceMotion) {
             responsive: true,
             maintainAspectRatio: false,
             animation: reduceMotion ? false : { duration: 500 },
-            plugins: { legend: { display: hasTarget, labels: { color: theme.text } } },
+            plugins: {
+                legend: { display: hasTarget, labels: { color: theme.text } },
+            },
             scales: {
                 x: {
                     beginAtZero: true,
                     grid: { color: theme.grid },
                     ticks: { color: theme.text },
                     title: {
-                        display: typeof spec.yLabel === "string" && spec.yLabel !== "",
+                        display:
+                            typeof spec.yLabel === "string" &&
+                            spec.yLabel !== "",
                         text: spec.yLabel,
                         color: theme.text,
                     },
                 },
-                y: { type: "category", grid: { color: theme.grid }, ticks: { color: theme.text } },
+                y: {
+                    type: "category",
+                    grid: { color: theme.grid },
+                    ticks: { color: theme.text },
+                },
             },
         },
     };
@@ -551,10 +681,16 @@ async function enhance(figure) {
     if (spec === null || typeof spec.type !== "string") {
         return;
     }
-    // bar/line brauchen datasets; boxplot/waterfall/bullet tragen ihre Werte separat.
+    // bar/line brauchen datasets; boxplot/scatter/waterfall/bullet tragen ihre Werte separat.
     const specialType =
-        spec.type === "boxplot" || spec.waterfall === true || spec.bullet === true;
-    if (! specialType && (! Array.isArray(spec.datasets) || spec.datasets.length === 0)) {
+        spec.type === "boxplot" ||
+        spec.type === "scatter" ||
+        spec.waterfall === true ||
+        spec.bullet === true;
+    if (
+        !specialType &&
+        (!Array.isArray(spec.datasets) || spec.datasets.length === 0)
+    ) {
         return;
     }
 
@@ -576,7 +712,7 @@ async function enhance(figure) {
             /** @type {any} */ _event,
             /** @type {any[]} */ elements,
         ) => {
-            if (elements.length === 0) {
+            if (elements.length === 0 || elements[0].datasetIndex !== 0) {
                 return;
             }
             const target = urls[elements[0].index];

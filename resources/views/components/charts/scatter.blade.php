@@ -30,6 +30,25 @@
     $sx = fn(int $i): float => $pad + $i * $stepX;
     $sy = fn(float $v): float => $height - $pad - ($v / $maxY) * ($height - 2 * $pad);
     $dashes = ['4 3', '7 3', '2 3'];
+
+    // Kontrakt für die optionale Chart.js-Verbesserung am Bildschirm (charts.js).
+    $chartSpec = [
+        'type' => 'scatter',
+        'title' => $title,
+        'unit' => $unit,
+        'xLabel' => $xLabel,
+        'yLabel' => $yLabel ?? $unit,
+        'urls' => $points->map(fn(array $p) => $p['url'] ?? null)->all(),
+        'points' => $points->map(fn(array $p, int $i): array => [
+            'x' => $i,
+            'y' => (float) $p['y'],
+            'label' => (string) ($p['label'] ?? $p['x']),
+        ])->all(),
+        'percentiles' => collect($percentiles)->map(fn($value, $label): array => [
+            'label' => (string) $label,
+            'value' => (float) $value,
+        ])->values()->all(),
+    ];
 @endphp
 
 <figure class="wd-chart rounded-box border border-base-300 bg-base-100 p-3">
@@ -51,7 +70,8 @@
             <x-empty-state icon="scatter_plot" :title="__('Noch keine Daten für dieses Diagramm.')" compact />
         </div>
     @else
-        <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="mt-2 w-full">
+        @include('components.charts._canvas', ['spec' => $chartSpec])
+        <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="wd-chart-svg mt-2 w-full">
             <line x1="{{ $pad }}" y1="{{ $height - $pad }}" x2="{{ $width - $pad }}" y2="{{ $height - $pad }}" class="stroke-base-300" stroke-width="1" />
             <line x1="{{ $pad }}" y1="{{ $pad }}" x2="{{ $pad }}" y2="{{ $height - $pad }}" class="stroke-base-300" stroke-width="1" />
             <text x="{{ $pad - 6 }}" y="{{ $pad }}" text-anchor="end" class="fill-base-content/60 text-[10px]">{{ $maxY }}</text>
