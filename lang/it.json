@@ -9647,5 +9647,10 @@
     "je Tag": "al giorno",
     "je Woche": "a settimana",
     "Quartal": "Trimestre",
-    "Auftragseingang :per": "Ordini in entrata :per"
+    "Auftragseingang :per": "Ordini in entrata :per",
+    "Erfasste Stunden der letzten 12 Monate; gestrichelt = Vorjahres-Gesamt.": "Ore registrate negli ultimi 12 mesi; tratteggiato = totale anno precedente.",
+    "Fakturierte Belege (Lexoffice + lokale Rechnungen) vs. zugeordnete Materialkosten, letzte 12 Monate; gestrichelt = Vorjahr.": "Documenti fatturati (Lexoffice + fatture locali) vs. costi materiali allocati, ultimi 12 mesi; tratteggiato = anno precedente.",
+    "Ideal": "Ideale",
+    "Vorjahr": "Anno precedente",
+    "Zweitwert": "Valore secondario"
 }

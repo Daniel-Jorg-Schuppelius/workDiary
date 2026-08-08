@@ -87,11 +87,13 @@
                                   ['key' => 'nonbillable', 'label' => __('nicht abrechenbar'), 'hatch' => true],
                               ]"
                               :x-label="__('Monat')"
-                              :note="__('Erfasste Stunden der letzten 12 Monate.')" />
+                              :compare-label="__('Vorjahr')"
+                              :note="__('Erfasste Stunden der letzten 12 Monate; gestrichelt = Vorjahres-Gesamt.')" />
         <x-charts.bar :title="__('Umsatz je Monat (fakturiert)')" unit="€"
                       :series="$chartRevenue"
                       :x-label="__('Monat')" y-label="{{ __('Umsatz') }}" :y2-label="__('Materialkosten')"
-                      :note="__('Fakturierte Belege (Lexoffice + lokale Rechnungen) vs. zugeordnete Materialkosten, letzte 12 Monate.')" />
+                      :compare-label="__('Vorjahr')"
+                      :note="__('Fakturierte Belege (Lexoffice + lokale Rechnungen) vs. zugeordnete Materialkosten, letzte 12 Monate; gestrichelt = Vorjahr.')" />
     </div>
 
     {{-- Stammdaten --}}

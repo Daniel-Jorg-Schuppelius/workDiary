@@ -9647,5 +9647,10 @@
     "je Tag": "per day",
     "je Woche": "per week",
     "Quartal": "Quarter",
-    "Auftragseingang :per": "Incoming orders :per"
+    "Auftragseingang :per": "Incoming orders :per",
+    "Erfasste Stunden der letzten 12 Monate; gestrichelt = Vorjahres-Gesamt.": "Recorded hours over the last 12 months; dashed = prior-year total.",
+    "Fakturierte Belege (Lexoffice + lokale Rechnungen) vs. zugeordnete Materialkosten, letzte 12 Monate; gestrichelt = Vorjahr.": "Invoiced vouchers (Lexoffice + local invoices) vs. allocated material costs, last 12 months; dashed = prior year.",
+    "Ideal": "Ideal",
+    "Vorjahr": "Prior year",
+    "Zweitwert": "Secondary value"
 }

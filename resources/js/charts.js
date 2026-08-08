@@ -204,7 +204,7 @@ function buildConfig(spec, theme, reduceMotion) {
             borderColor: base,
             borderWidth: isLine ? 2 : ds.hatch === true ? 1.5 : 0,
             spanGaps: true,
-            stack: stacked ? "stack" : undefined,
+            stack: stacked && !isLine ? "stack" : undefined,
         };
         if (isLine) {
             dataset.backgroundColor = base;
@@ -385,14 +385,16 @@ function buildScatterConfig(spec, theme, reduceMotion) {
                     display: percentiles.length > 0,
                     labels: {
                         color: theme.text,
-                        filter: (/** @type {any} */ item) => item.datasetIndex !== 0,
+                        filter: (/** @type {any} */ item) =>
+                            item.datasetIndex !== 0,
                     },
                 },
                 tooltip: {
                     callbacks: {
                         label: (/** @type {any} */ ctx) => {
                             const raw = ctx.raw ?? {};
-                            const name = typeof raw.label === "string" ? raw.label : "";
+                            const name =
+                                typeof raw.label === "string" ? raw.label : "";
                             return `${name}: ${ctx.parsed.y} ${spec.unit ?? ""}`.trim();
                         },
                     },
@@ -406,7 +408,9 @@ function buildScatterConfig(spec, theme, reduceMotion) {
                     grid: { color: theme.grid },
                     ticks: { display: false },
                     title: {
-                        display: typeof spec.xLabel === "string" && spec.xLabel !== "",
+                        display:
+                            typeof spec.xLabel === "string" &&
+                            spec.xLabel !== "",
                         text: spec.xLabel,
                         color: theme.text,
                     },
@@ -416,7 +420,9 @@ function buildScatterConfig(spec, theme, reduceMotion) {
                     grid: { color: theme.grid },
                     ticks: { color: theme.text },
                     title: {
-                        display: typeof spec.yLabel === "string" && spec.yLabel !== "",
+                        display:
+                            typeof spec.yLabel === "string" &&
+                            spec.yLabel !== "",
                         text: spec.yLabel,
                         color: theme.text,
                     },

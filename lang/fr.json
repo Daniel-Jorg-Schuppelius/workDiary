@@ -9647,5 +9647,10 @@
     "je Tag": "par jour",
     "je Woche": "par semaine",
     "Quartal": "Trimestre",
-    "Auftragseingang :per": "Entrées de commandes :per"
+    "Auftragseingang :per": "Entrées de commandes :per",
+    "Erfasste Stunden der letzten 12 Monate; gestrichelt = Vorjahres-Gesamt.": "Heures enregistrées sur les 12 derniers mois ; en pointillé = total de l’année précédente.",
+    "Fakturierte Belege (Lexoffice + lokale Rechnungen) vs. zugeordnete Materialkosten, letzte 12 Monate; gestrichelt = Vorjahr.": "Justificatifs facturés (Lexoffice + factures locales) vs. coûts matériels affectés, 12 derniers mois ; en pointillé = année précédente.",
+    "Ideal": "Idéal",
+    "Vorjahr": "Année précédente",
+    "Zweitwert": "Valeur secondaire"
 }

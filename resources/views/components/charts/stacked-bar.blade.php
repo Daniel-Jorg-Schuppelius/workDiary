@@ -26,6 +26,7 @@
     'computedAt' => null,
     'note' => null,           // Datenbasis-Hinweis unter dem Titel (MVP-470)
     'xLabel' => null,
+    'compareLabel' => null,  // Label der optionalen Vergleichslinie ($point['compare'], z. B. Vorjahr)
 ])
 
 @php
@@ -37,7 +38,9 @@
     $padB = $rotateLabels ? 84 : 36;
     $height = 240 + ($rotateLabels ? 48 : 0);
     $totals = $points->map(fn(array $p): float => (float) $bandList->sum(fn(array $b) => (float) ($p[$b['key']] ?? 0)));
-    $maxY = max(1, (int) ceil((float) $totals->max()));
+    // Optionale Vergleichslinie (z. B. Vorjahres-Gesamt) je Kategorie.
+    $hasCompare = $points->contains(fn(array $p): bool => array_key_exists('compare', $p) && $p['compare'] !== null);
+    $maxY = max(1, (int) ceil(max((float) $totals->max(), (float) ($hasCompare ? $points->max('compare') : 0))));
     $slot_ = $points->count() > 0 ? ($width - 2 * $pad) / $points->count() : 0;
     $barW = max(6, min(38, $slot_ * 0.55));
     $sy = fn(float $v): float => $height - $padB - ($v / $maxY) * ($height - $pad - $padB);
@@ -58,11 +61,21 @@
         'yLabel' => $unit,
         'labels' => $points->map(fn(array $p): string => (string) $p['x'])->all(),
         'urls' => $points->map(fn(array $p) => $p['url'] ?? null)->all(),
-        'datasets' => $bandList->map(fn(array $b): array => [
-            'label' => $b['label'],
-            'data' => $points->map(fn(array $p) => (float) ($p[$b['key']] ?? 0))->all(),
-            'kind' => 'bar', 'role' => 'band', 'hatch' => ! empty($b['hatch']),
-        ])->all(),
+        'datasets' => (function () use ($bandList, $points, $hasCompare, $compareLabel) {
+            $sets = $bandList->map(fn(array $b): array => [
+                'label' => $b['label'],
+                'data' => $points->map(fn(array $p) => (float) ($p[$b['key']] ?? 0))->all(),
+                'kind' => 'bar', 'role' => 'band', 'hatch' => ! empty($b['hatch']),
+            ])->all();
+            if ($hasCompare) {
+                $sets[] = [
+                    'label' => $compareLabel ?? __('Vergleich'),
+                    'data' => $points->map(fn(array $p) => ($p['compare'] ?? null) === null ? null : (float) $p['compare'])->all(),
+                    'kind' => 'line', 'role' => 'compare', 'dashed' => true,
+                ];
+            }
+            return $sets;
+        })(),
     ];
 @endphp
 
@@ -140,6 +153,21 @@
                     <text x="{{ round($cx, 1) }}" y="{{ $height - $padB + 12 }}" text-anchor="middle" class="fill-base-content/60 text-[10px]">{{ \Illuminate\Support\Str::limit((string) $point['x'], 10, '…') }}</text>
                 @endif
             @endforeach
+            @if ($hasCompare)
+                @php
+                    $cmp = $points->map(fn(array $p, int $i): ?array => ($p['compare'] ?? null) === null ? null : [
+                        'x' => $pad + ($i + 0.5) * $slot_,
+                        'y' => $sy((float) $p['compare']),
+                    ])->filter()->values();
+                @endphp
+                @if ($cmp->count() > 1)
+                    <polyline fill="none" class="stroke-accent" stroke-width="2" stroke-dasharray="4 3"
+                              points="{{ $cmp->map(fn(array $c): string => round($c['x'], 1) . ',' . round($c['y'], 1))->implode(' ') }}" />
+                @endif
+                @foreach ($cmp as $c)
+                    <circle cx="{{ round($c['x'], 1) }}" cy="{{ round($c['y'], 1) }}" r="2.5" class="fill-accent" />
+                @endforeach
+            @endif
         </svg>
         <p class="mt-1 flex flex-wrap gap-3 text-xs">
             @foreach ($bandList as $bandIndex => $band)
@@ -161,6 +189,15 @@
             @endforeach
         </p>
 
+        @if ($hasCompare)
+            <p class="mt-1 text-xs text-base-content/60">
+                <span class="inline-flex items-center gap-1">
+                    <svg width="16" height="8" aria-hidden="true"><line x1="0" y1="4" x2="16" y2="4" class="stroke-accent" stroke-width="2" stroke-dasharray="4 3" /></svg>
+                    {{ $compareLabel ?? __('Vergleich') }}
+                </span>
+            </p>
+        @endif
+
         <div class="wd-chart-table mt-2 max-h-48 overflow-y-auto">
             <x-table bare>
                 <x-slot:head>
@@ -168,6 +205,7 @@
                         <th>{{ $xLabel ?? __('Kategorie') }}</th>
                         @foreach ($bandList as $band)<th class="text-right">{{ $band['label'] }}</th>@endforeach
                         <th class="text-right">Σ</th>
+                        @if ($hasCompare)<th class="text-right">{{ $compareLabel ?? __('Vergleich') }}</th>@endif
                     </tr>
                 </x-slot:head>
                 @foreach ($points as $i => $point)
@@ -181,6 +219,7 @@
                         </td>
                         @foreach ($bandList as $band)<td class="text-right tabular-nums">{{ $point[$band['key']] ?? 0 }}</td>@endforeach
                         <td class="text-right font-semibold tabular-nums">{{ $totals[$i] }}</td>
+                        @if ($hasCompare)<td class="text-right tabular-nums">{{ $point['compare'] ?? '—' }}</td>@endif
                     </tr>
                 @endforeach
             </x-table>

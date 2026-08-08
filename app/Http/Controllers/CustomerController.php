@@ -308,21 +308,32 @@ class CustomerController extends Controller {
             $months[$m->format('Y-m')] = $m;
         }
 
+        // Vorjahresvergleich: dieselben Monate ein Jahr früher als compare-Linie/-Spalte.
+        $prevStart = $start->subYearsNoOverflow(1);
+        /** @var array<string, string> $prevKeyOf  aktueller Y-m => Vorjahres-Y-m */
+        $prevKeyOf = [];
+        foreach ($months as $ym => $m) {
+            $prevKeyOf[$ym] = $m->subYearsNoOverflow(1)->format('Y-m');
+        }
+        $prevMinutes = array_fill_keys(array_values($prevKeyOf), 0);
+        $prevRevenue = array_fill_keys(array_values($prevKeyOf), 0.0);
+
         $minutes = array_fill_keys(array_keys($months), 0);
         $billableMinutes = array_fill_keys(array_keys($months), 0);
         if ($projectIds !== []) {
             TimeEntry::query()
                 ->whereIn('project_id', $projectIds)
-                ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+                ->whereBetween('date', [$prevStart->toDateString(), $end->toDateString()])
                 ->get(['date', 'minutes', 'billable'])
-                ->each(function (TimeEntry $e) use (&$minutes, &$billableMinutes): void {
+                ->each(function (TimeEntry $e) use (&$minutes, &$billableMinutes, &$prevMinutes): void {
                     $ym = $e->date instanceof \Carbon\CarbonInterface ? $e->date->format('Y-m') : substr((string) $e->date, 0, 7);
-                    if (! isset($minutes[$ym])) {
-                        return;
-                    }
-                    $minutes[$ym] += (int) $e->minutes;
-                    if ($e->billable) {
-                        $billableMinutes[$ym] += (int) $e->minutes;
+                    if (isset($minutes[$ym])) {
+                        $minutes[$ym] += (int) $e->minutes;
+                        if ($e->billable) {
+                            $billableMinutes[$ym] += (int) $e->minutes;
+                        }
+                    } elseif (isset($prevMinutes[$ym])) {
+                        $prevMinutes[$ym] += (int) $e->minutes;
                     }
                 });
         }
@@ -337,12 +348,15 @@ class CustomerController extends Controller {
             ->where('archived', false)
             ->whereIn('voucher_type', $invoiceTypes)
             ->whereNotIn('voucher_status', $voidStatuses)
-            ->whereBetween('voucher_date', [$start->startOfDay(), $end->endOfDay()])
+            ->whereBetween('voucher_date', [$prevStart->startOfDay(), $end->endOfDay()])
             ->get()
-            ->each(function (LexofficeVoucher $v) use (&$revenue): void {
+            ->each(function (LexofficeVoucher $v) use (&$revenue, &$prevRevenue): void {
                 $ym = $v->voucher_date instanceof \Carbon\CarbonInterface ? $v->voucher_date->format('Y-m') : substr((string) $v->voucher_date, 0, 7);
+                $amount = $v->total_amount?->toFloat() ?? 0.0;
                 if (isset($revenue[$ym])) {
-                    $revenue[$ym] += $v->total_amount?->toFloat() ?? 0.0;
+                    $revenue[$ym] += $amount;
+                } elseif (isset($prevRevenue[$ym])) {
+                    $prevRevenue[$ym] += $amount;
                 }
             });
 
@@ -351,12 +365,15 @@ class CustomerController extends Controller {
                 ->where('customer_id', $customer->getKey())
                 ->whereIn('type', $invoiceTypes)
                 ->whereNotIn('status', $voidStatuses)
-                ->whereBetween('issued_on', [$start->toDateString(), $end->toDateString()])
+                ->whereBetween('issued_on', [$prevStart->toDateString(), $end->toDateString()])
                 ->get()
-                ->each(function (Invoice $inv) use (&$revenue): void {
+                ->each(function (Invoice $inv) use (&$revenue, &$prevRevenue): void {
                     $ym = $inv->issued_on instanceof \Carbon\CarbonInterface ? $inv->issued_on->format('Y-m') : substr((string) $inv->issued_on, 0, 7);
+                    $amount = $inv->total?->toFloat() ?? 0.0;
                     if (isset($revenue[$ym])) {
-                        $revenue[$ym] += $inv->total?->toFloat() ?? 0.0;
+                        $revenue[$ym] += $amount;
+                    } elseif (isset($prevRevenue[$ym])) {
+                        $prevRevenue[$ym] += $amount;
                     }
                 });
         }
@@ -373,16 +390,24 @@ class CustomerController extends Controller {
                 }
             });
         $hasMaterial = array_sum($material) > 0.0;
+        $hasPrevHours = array_sum($prevMinutes) > 0;
+        $hasPrevRevenue = array_sum($prevRevenue) > 0.0;
 
         $hours = [];
         $revenueSeries = [];
         foreach ($months as $ym => $m) {
             $label = $m->isoFormat('MMM YY');
-            $hours[] = [
+            $prevKey = $prevKeyOf[$ym];
+            $hourRow = [
                 'x' => $label,
                 'billable' => round($billableMinutes[$ym] / 60, 1),
                 'nonbillable' => round(max(0, $minutes[$ym] - $billableMinutes[$ym]) / 60, 1),
             ];
+            // Vorjahres-Gesamtstunden als Vergleichslinie (nur wenn es Vorjahresdaten gibt).
+            if ($hasPrevHours) {
+                $hourRow['compare'] = round(($prevMinutes[$prevKey] ?? 0) / 60, 1);
+            }
+            $hours[] = $hourRow;
             $point = [
                 'x' => $label,
                 'y' => round($revenue[$ym], 2),
@@ -391,6 +416,9 @@ class CustomerController extends Controller {
             // keine leere Vergleichsspalte.
             if ($hasMaterial) {
                 $point['y2'] = round($material[$ym], 2);
+            }
+            if ($hasPrevRevenue) {
+                $point['compare'] = round($prevRevenue[$prevKey] ?? 0.0, 2);
             }
             $revenueSeries[] = $point;
         }

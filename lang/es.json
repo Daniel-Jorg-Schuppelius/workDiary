@@ -9647,5 +9647,10 @@
     "je Tag": "por día",
     "je Woche": "por semana",
     "Quartal": "Trimestre",
-    "Auftragseingang :per": "Entrada de pedidos :per"
+    "Auftragseingang :per": "Entrada de pedidos :per",
+    "Erfasste Stunden der letzten 12 Monate; gestrichelt = Vorjahres-Gesamt.": "Horas registradas en los últimos 12 meses; discontinuo = total del año anterior.",
+    "Fakturierte Belege (Lexoffice + lokale Rechnungen) vs. zugeordnete Materialkosten, letzte 12 Monate; gestrichelt = Vorjahr.": "Comprobantes facturados (Lexoffice + facturas locales) vs. costes de material asignados, últimos 12 meses; discontinuo = año anterior.",
+    "Ideal": "Ideal",
+    "Vorjahr": "Año anterior",
+    "Zweitwert": "Valor secundario"
 }
