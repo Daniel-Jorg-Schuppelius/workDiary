@@ -31,11 +31,13 @@
  * @property {DatasetRole} role
  * @property {boolean} [hatch]
  * @property {boolean} [dashed]
+ * @property {'percent'} [axis]
  */
 /**
  * @typedef {Object} ChartSpec
  * @property {ChartKind} type
  * @property {boolean} [stacked]
+ * @property {boolean} [horizontal]
  * @property {string} title
  * @property {string} [unit]
  * @property {string} [xLabel]
@@ -52,12 +54,13 @@ let chartLibPromise = null;
 /** Lädt Chart.js + Zoom-Plugin einmalig und registriert die Bausteine. */
 function loadChartLib() {
     if (chartLibPromise === null) {
-        chartLibPromise = Promise.all([import("chart.js"), import("chartjs-plugin-zoom")]).then(
-            ([core, zoom]) => {
-                core.Chart.register(...core.registerables, zoom.default);
-                return core.Chart;
-            },
-        );
+        chartLibPromise = Promise.all([
+            import("chart.js"),
+            import("chartjs-plugin-zoom"),
+        ]).then(([core, zoom]) => {
+            core.Chart.register(...core.registerables, zoom.default);
+            return core.Chart;
+        });
     }
     return chartLibPromise;
 }
@@ -69,7 +72,9 @@ function loadChartLib() {
  * @returns {string}
  */
 function cssVar(name, fallback) {
-    const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    const value = getComputedStyle(document.documentElement)
+        .getPropertyValue(name)
+        .trim();
     return value !== "" ? value : fallback;
 }
 
@@ -151,6 +156,8 @@ function hatchPattern(color) {
  */
 function buildConfig(spec, theme, reduceMotion) {
     const stacked = spec.stacked === true;
+    const horizontal = spec.horizontal === true;
+    const hasPercent = spec.datasets.some((ds) => ds.axis === "percent");
     const manyPoints = spec.labels.length > 12;
 
     const datasets = spec.datasets.map((ds, index) => {
@@ -178,7 +185,14 @@ function buildConfig(spec, theme, reduceMotion) {
         } else {
             dataset.borderRadius = 3;
             dataset.maxBarThickness = 42;
-            dataset.backgroundColor = ds.hatch === true ? hatchPattern(base) : gradientFor(base);
+            dataset.backgroundColor =
+                ds.hatch === true
+                    ? hatchPattern(base)
+                    : gradientFor(base, horizontal);
+        }
+        if (ds.axis === "percent") {
+            dataset.yAxisID = "y1";
+            dataset.fill = false;
         }
         return dataset;
     });
@@ -199,13 +213,66 @@ function buildConfig(spec, theme, reduceMotion) {
 
     /** @type {Record<string, any>} */
     const plugins = {
-        legend: { display: spec.datasets.length > 1, labels: { color: theme.text } },
+        legend: {
+            display: spec.datasets.length > 1,
+            labels: { color: theme.text },
+        },
         tooltip: { mode: "index", intersect: false },
     };
     if (manyPoints) {
         plugins.zoom = {
-            pan: { enabled: true, mode: "x" },
-            zoom: { wheel: { enabled: true }, drag: { enabled: false }, pinch: { enabled: true }, mode: "x" },
+            pan: { enabled: true, mode: horizontal ? "y" : "x" },
+            zoom: {
+                wheel: { enabled: true },
+                drag: { enabled: false },
+                pinch: { enabled: true },
+                mode: horizontal ? "y" : "x",
+            },
+        };
+    }
+
+    const catTitle = typeof spec.xLabel === "string" ? spec.xLabel : "";
+    const valTitle = typeof spec.yLabel === "string" ? spec.yLabel : "";
+    /** @type {Record<string, any>} */
+    const scales = {
+        x: {
+            stacked,
+            beginAtZero: horizontal,
+            grid: { color: theme.grid },
+            ticks: {
+                color: theme.text,
+                maxRotation: horizontal ? 0 : spec.labels.length > 8 ? 40 : 0,
+                autoSkip: true,
+            },
+            title: {
+                display: (horizontal ? valTitle : catTitle) !== "",
+                text: horizontal ? valTitle : catTitle,
+                color: theme.text,
+            },
+        },
+        y: {
+            stacked,
+            beginAtZero: !horizontal,
+            grid: { color: theme.grid },
+            ticks: { color: theme.text },
+            title: {
+                display: (horizontal ? catTitle : valTitle) !== "",
+                text: horizontal ? catTitle : valTitle,
+                color: theme.text,
+            },
+        },
+    };
+    if (hasPercent) {
+        scales.y1 = {
+            position: "right",
+            beginAtZero: true,
+            min: 0,
+            max: 100,
+            grid: { drawOnChartArea: false },
+            ticks: {
+                color: theme.text,
+                callback: (/** @type {number} */ value) => `${value}%`,
+            },
         };
     }
 
@@ -213,44 +280,45 @@ function buildConfig(spec, theme, reduceMotion) {
         type: spec.type,
         data: { labels: spec.labels, datasets },
         options: {
+            indexAxis: horizontal ? "y" : "x",
             responsive: true,
             maintainAspectRatio: false,
             animation: reduceMotion ? false : { duration: 500 },
             interaction: { mode: "index", intersect: false },
-            scales: {
-                x: {
-                    stacked,
-                    grid: { color: theme.grid },
-                    ticks: { color: theme.text, maxRotation: spec.labels.length > 8 ? 40 : 0, autoSkip: true },
-                    title: { display: typeof spec.xLabel === "string" && spec.xLabel !== "", text: spec.xLabel, color: theme.text },
-                },
-                y: {
-                    stacked,
-                    beginAtZero: true,
-                    grid: { color: theme.grid },
-                    ticks: { color: theme.text },
-                    title: { display: typeof spec.yLabel === "string" && spec.yLabel !== "", text: spec.yLabel, color: theme.text },
-                },
-            },
+            scales,
             plugins,
         },
     };
 }
 
 /**
- * Weicher Vertikal-Verlauf für Säulen; als scriptable Funktion, weil die
- * Chart-Fläche erst zur Zeichenzeit bekannt ist.
+ * Weicher Verlauf für Säulen; als scriptable Funktion, weil die Chart-Fläche
+ * erst zur Zeichenzeit bekannt ist. Richtung folgt der Balkenausrichtung.
  * @param {string} color
+ * @param {boolean} [horizontal]
  * @returns {(context: any) => CanvasGradient|string}
  */
-function gradientFor(color) {
+function gradientFor(color, horizontal) {
     return (context) => {
         const chart = context.chart;
         const { ctx, chartArea } = chart;
         if (!chartArea) {
             return color;
         }
-        const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+        const gradient =
+            horizontal === true
+                ? ctx.createLinearGradient(
+                      chartArea.left,
+                      0,
+                      chartArea.right,
+                      0,
+                  )
+                : ctx.createLinearGradient(
+                      0,
+                      chartArea.bottom,
+                      0,
+                      chartArea.top,
+                  );
         gradient.addColorStop(0, withAlpha(color, 0.55));
         gradient.addColorStop(1, color);
         return gradient;
@@ -266,7 +334,9 @@ function gradientFor(color) {
  */
 function withAlpha(color, alpha) {
     if (/^#([0-9a-f]{6})$/i.test(color)) {
-        const value = Math.round(alpha * 255).toString(16).padStart(2, "0");
+        const value = Math.round(alpha * 255)
+            .toString(16)
+            .padStart(2, "0");
         return `${color}${value}`;
     }
     return `color-mix(in oklab, ${color} ${Math.round(alpha * 100)}%, transparent)`;
@@ -278,7 +348,10 @@ function withAlpha(color, alpha) {
  */
 async function enhance(figure) {
     const holder = figure.querySelector("[data-wd-chart]");
-    if (!(holder instanceof HTMLElement) || holder.dataset.wdChartInit === "1") {
+    if (
+        !(holder instanceof HTMLElement) ||
+        holder.dataset.wdChartInit === "1"
+    ) {
         return;
     }
     holder.dataset.wdChartInit = "1";
@@ -290,7 +363,11 @@ async function enhance(figure) {
     } catch {
         return;
     }
-    if (spec === null || !Array.isArray(spec.datasets) || spec.datasets.length === 0) {
+    if (
+        spec === null ||
+        !Array.isArray(spec.datasets) ||
+        spec.datasets.length === 0
+    ) {
         return;
     }
 
@@ -302,11 +379,16 @@ async function enhance(figure) {
         holder.appendChild(canvas);
         holder.hidden = false;
 
-        const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const reduceMotion = window.matchMedia(
+            "(prefers-reduced-motion: reduce)",
+        ).matches;
         const config = buildConfig(spec, readTheme(), reduceMotion);
 
         const urls = Array.isArray(spec.urls) ? spec.urls : [];
-        config.options.onClick = (/** @type {any} */ _event, /** @type {any[]} */ elements) => {
+        config.options.onClick = (
+            /** @type {any} */ _event,
+            /** @type {any[]} */ elements,
+        ) => {
             if (elements.length === 0) {
                 return;
             }
@@ -337,7 +419,10 @@ export function initCharts(root) {
     const scope = root ?? document;
     const figures = scope.querySelectorAll("figure.wd-chart");
     figures.forEach((figure) => {
-        if (figure instanceof HTMLElement && figure.querySelector("[data-wd-chart]") !== null) {
+        if (
+            figure instanceof HTMLElement &&
+            figure.querySelector("[data-wd-chart]") !== null
+        ) {
             void enhance(figure);
         }
     });

@@ -41,6 +41,29 @@
         $running += (float) $p['y'];
         return ['x' => $pad + ($i + 0.5) * $slot_, 'y' => $syPct($running / $total * 100), 'pct' => round($running / $total * 100)];
     });
+
+    // Kontrakt für die optionale Chart.js-Verbesserung am Bildschirm (charts.js).
+    $chartSpec = [
+        'type' => 'bar',
+        'title' => $title,
+        'unit' => $unit,
+        'xLabel' => $xLabel,
+        'yLabel' => $yLabel ?? $unit,
+        'labels' => $points->map(fn(array $p): string => (string) $p['x'])->all(),
+        'urls' => $points->map(fn(array $p) => $p['url'] ?? null)->all(),
+        'datasets' => [
+            [
+                'label' => $yLabel ?? $unit,
+                'data' => $points->map(fn(array $p): float => (float) $p['y'])->all(),
+                'kind' => 'bar', 'role' => 'primary',
+            ],
+            [
+                'label' => (string) __('Kumuliert %'),
+                'data' => $cumPoints->map(fn(array $p): float => (float) $p['pct'])->all(),
+                'kind' => 'line', 'role' => 'compare', 'axis' => 'percent',
+            ],
+        ],
+    ];
 @endphp
 
 <figure class="wd-chart rounded-box border border-base-300 bg-base-100 p-3">
@@ -61,7 +84,8 @@
             <x-empty-state icon="align_vertical_bottom" :title="__('Noch keine Daten für dieses Diagramm.')" compact />
         </div>
     @else
-        <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="mt-2 w-full">
+        @include('components.charts._canvas', ['spec' => $chartSpec])
+        <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="wd-chart-svg mt-2 w-full">
             <line x1="{{ $pad }}" y1="{{ $height - $padB }}" x2="{{ $width - $pad }}" y2="{{ $height - $padB }}" class="stroke-base-300" stroke-width="1" />
             <line x1="{{ $pad }}" y1="{{ $pad }}" x2="{{ $pad }}" y2="{{ $height - $padB }}" class="stroke-base-300" stroke-width="1" />
             <text x="{{ $pad - 6 }}" y="{{ $pad }}" text-anchor="end" class="fill-base-content/60 text-[10px]">{{ $maxY }}</text>

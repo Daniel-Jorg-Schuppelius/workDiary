@@ -36,6 +36,31 @@
     $maxY = max(1, (float) $points->max('y'), (float) ($hasSecond ? $points->max('y2') : 0));
     $len = fn(float $v): float => max(0, $v / $maxY) * $areaW;
     $uid = 'hatch-h-' . uniqid();
+
+    // Kontrakt für die optionale Chart.js-Verbesserung am Bildschirm (charts.js).
+    $chartDatasets = [[
+        'label' => $yLabel ?? $unit,
+        'data' => $points->map(fn(array $p): float => (float) $p['y'])->all(),
+        'kind' => 'bar', 'role' => 'primary',
+    ]];
+    if ($hasSecond) {
+        $chartDatasets[] = [
+            'label' => $y2Label ?? __('Zweitwert'),
+            'data' => $points->map(fn(array $p) => ($p['y2'] ?? null) === null ? null : (float) $p['y2'])->all(),
+            'kind' => 'bar', 'role' => 'second', 'hatch' => true,
+        ];
+    }
+    $chartSpec = [
+        'type' => 'bar',
+        'horizontal' => true,
+        'title' => $title,
+        'unit' => $unit,
+        'xLabel' => $xLabel,
+        'yLabel' => $yLabel ?? $unit,
+        'labels' => $points->map(fn(array $p): string => (string) $p['x'])->all(),
+        'urls' => $points->map(fn(array $p) => $p['url'] ?? null)->all(),
+        'datasets' => $chartDatasets,
+    ];
 @endphp
 
 <figure class="wd-chart rounded-box border border-base-300 bg-base-100 p-3">
@@ -56,7 +81,8 @@
             <x-empty-state icon="bar_chart" :title="__('Noch keine Daten für dieses Diagramm.')" compact />
         </div>
     @else
-        <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="mt-2 w-full">
+        @include('components.charts._canvas', ['spec' => $chartSpec])
+        <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="wd-chart-svg mt-2 w-full">
             <defs>
                 <pattern id="{{ $uid }}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
                     <line x1="0" y1="0" x2="0" y2="6" class="stroke-secondary" stroke-width="2" />
