@@ -43,13 +43,13 @@ class DomainCustomerMappingService {
             ->where('referenceable_type', Customer::class)
             ->value('referenceable_id')
             ?? ExternalReferenceAlias::query()
-                ->withoutGlobalScopes()
-                ->where('organization_id', $orgId)
-                ->where('plugin_id', DomainResellingPlugin::ID)
-                ->where('external_type', 'domain')
-                ->where('external_id', $domain)
-                ->where('referenceable_type', Customer::class)
-                ->value('referenceable_id');
+            ->withoutGlobalScopes()
+            ->where('organization_id', $orgId)
+            ->where('plugin_id', DomainResellingPlugin::ID)
+            ->where('external_type', 'domain')
+            ->where('external_id', $domain)
+            ->where('referenceable_type', Customer::class)
+            ->value('referenceable_id');
         if ($confirmedCustomerId !== null) {
             $customer = Customer::query()->whereKey($confirmedCustomerId)->first();
             if ($customer !== null) {

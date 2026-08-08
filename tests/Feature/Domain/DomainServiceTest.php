@@ -408,7 +408,7 @@ class DomainServiceTest extends TestCase {
         $this->assertSame($customer->id, $mapping->suggestFor($first)[0]['customer']->id);
         $this->assertEmpty(array_filter(
             $mapping->suggestFor($second),
-            fn (array $s): bool => $s['reason'] === 'external_reference',
+            fn(array $s): bool => $s['reason'] === 'external_reference',
         ));
     }
 }
