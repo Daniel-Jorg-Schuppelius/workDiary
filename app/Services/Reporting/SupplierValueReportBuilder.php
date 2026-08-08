@@ -11,6 +11,7 @@
 namespace App\Services\Reporting;
 
 use App\Models\{LexofficeVoucher, Supplier};
+use App\Support\ChartBucket;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -140,37 +141,47 @@ class SupplierValueReportBuilder {
     }
 
     /**
-     * Monatliche Ausgaben der letzten zwölf Monate je Lieferant —
+     * Ausgaben je Lieferant im Zeitraum, in der Header-Granularität —
      * Sparkline-Reihe der Risikoliste.
      *
      * @param  list<int>  $supplierIds
-     * @return array<int, list<float>> supplierId → 12 Monatswerte (alt → neu)
+     * @return array<int, list<float>> supplierId → Werte je Bucket (alt → neu)
      */
-    public function monthlySpendSeries(array $supplierIds, CarbonImmutable $to): array {
+    public function monthlySpendSeries(array $supplierIds, CarbonImmutable $from, CarbonImmutable $to, string $unit): array {
         if ($supplierIds === []) {
             return [];
         }
 
-        $start = $to->subMonthsNoOverflow(11)->startOfMonth();
-        $months = [];
-        for ($i = 0; $i < 12; $i++) {
-            $months[] = $start->addMonthsNoOverflow($i)->format('Y-m');
+        $granularity = ChartBucket::granularity($unit, $from, $to);
+        if ($granularity === 'hour') {
+            $granularity = 'day';
+        }
+        /** @var list<string> $bucketKeys */
+        $bucketKeys = [];
+        for ($cursor = $from->startOfDay(); $cursor->lte($to); $cursor = $cursor->addDay()) {
+            $key = ChartBucket::keyLabel($granularity, $cursor)[0];
+            if (! in_array($key, $bucketKeys, true)) {
+                $bucketKeys[] = $key;
+            }
         }
 
-        $bySupplier = array_fill_keys($supplierIds, array_fill_keys($months, 0.0));
+        $bySupplier = array_fill_keys($supplierIds, array_fill_keys($bucketKeys, 0.0));
         LexofficeVoucher::query()
             ->whereIn('supplier_id', $supplierIds)
             ->where('archived', false)
             ->whereNotNull('voucher_date')
-            ->whereBetween('voucher_date', [$start->toDateString(), $to->toDateString()])
+            ->whereBetween('voucher_date', [$from->toDateString(), $to->toDateString()])
             ->whereIn('voucher_type', self::EXPENSE_TYPES)
             ->whereNotIn('voucher_status', ['draft', 'voided'])
             ->get(['supplier_id', 'voucher_type', 'voucher_date', 'total_amount'])
-            ->each(function (LexofficeVoucher $voucher) use (&$bySupplier): void {
+            ->each(function (LexofficeVoucher $voucher) use (&$bySupplier, $granularity): void {
                 $sid = (int) $voucher->supplier_id;
-                $month = $voucher->voucher_date?->format('Y-m');
-                if ($month !== null && isset($bySupplier[$sid][$month])) {
-                    $bySupplier[$sid][$month] += $this->signedAmount($voucher);
+                if ($voucher->voucher_date === null) {
+                    return;
+                }
+                $key = ChartBucket::keyLabel($granularity, CarbonImmutable::parse($voucher->voucher_date->toDateString()))[0];
+                if (isset($bySupplier[$sid][$key])) {
+                    $bySupplier[$sid][$key] += $this->signedAmount($voucher);
                 }
             });
 

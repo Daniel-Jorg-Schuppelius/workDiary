@@ -50,10 +50,10 @@
     </div>
 
     <div class="chart-grid grid gap-3 xl:grid-cols-2">
-        <x-charts.line :title="__('Offene Befunde je Monat')" :unit="__('Befunde')"
-                       :series="$openMonthlySeries" :x-label="__('Monat')" :y-label="__('Offen')" />
-        <x-charts.stacked-bar :title="__('Befunde je Monat nach Verstoßart')" :unit="__('Befunde')"
-                              :series="$monthlyKindSeries" :bands="$kindBands" :x-label="__('Monat')" />
+        <x-charts.line :title="__('Offene Befunde :per', ['per' => $periodPhrase])" :unit="__('Befunde')"
+                       :series="$openMonthlySeries" :x-label="$periodAxis" :y-label="__('Offen')" />
+        <x-charts.stacked-bar :title="__('Befunde :per nach Verstoßart', ['per' => $periodPhrase])" :unit="__('Befunde')"
+                              :series="$monthlyKindSeries" :bands="$kindBands" :x-label="$periodAxis" />
     </div>
 
     <x-card :title="__('Verstöße je Regel und Monat')" icon="calendar_month">

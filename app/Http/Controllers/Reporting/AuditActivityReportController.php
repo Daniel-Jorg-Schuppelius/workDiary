@@ -14,7 +14,8 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{AuditLog, User};
-use Carbon\Carbon;
+use App\Support\ChartBucket;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Lang;
@@ -33,9 +34,6 @@ class AuditActivityReportController extends Controller {
     use WritesReportCsv;
 
     private const RECENT_LIMIT = 100;
-
-    /** Ab dieser Zeitraumlänge bündelt die Verlaufskurve je Woche statt je Tag. */
-    private const WEEKLY_THRESHOLD_DAYS = 62;
 
     public function index(Request $request): View|SymfonyResponse {
         abort_unless($this->viewerIsAdmin(), 403);
@@ -109,9 +107,9 @@ class AuditActivityReportController extends Controller {
 
         $exportFilters = $filters->toAuditArray();
         $dailyBuckets = $this->dailyEventBuckets($base);
-        $span = (int) $from->diffInDays($to, true) + 1;
-        $timelineSeries = $this->timelineSeries($dailyBuckets, $span > self::WEEKLY_THRESHOLD_DAYS);
-        [$monthlyEventSeries, $eventBands] = $this->monthlyEventSeries($dailyBuckets);
+        $granularity = $this->bucketGranularity($from, $to);
+        $timelineSeries = $this->timelineSeries($dailyBuckets, $granularity);
+        [$monthlyEventSeries, $eventBands] = $this->monthlyEventSeries($dailyBuckets, $granularity);
 
         if ($request->query('export') === 'csv') {
             return $this->exportCsv($byEvent, $byType, $byUser, $recent, $from->toDateString(), $to->toDateString(), $exportFilters, $request);
@@ -142,6 +140,8 @@ class AuditActivityReportController extends Controller {
             'topActorsSeries' => $this->topActorsSeries($byUser),
             'monthlyEventSeries' => $monthlyEventSeries,
             'eventBands' => $eventBands,
+            'periodPhrase' => $this->periodPhrase($granularity),
+            'periodAxis' => $this->periodAxisLabel($granularity),
             ...$this->standardFilterOptions(['user'], $filters),
         ]);
     }
@@ -169,29 +169,29 @@ class AuditActivityReportController extends Controller {
     }
 
     /**
-     * Ereignisse je Tag — bei langen Zeiträumen (> 62 Tage) je ISO-Woche.
+     * Ereignisverlauf, aggregiert in der Granularität des Header-Zeitraums.
      *
      * @param  array<string, array<string, int>>  $dailyBuckets
+     * @param  'day'|'week'|'month'|'quarter'  $granularity
      * @return list<array{x: string, y: int}>
      */
-    private function timelineSeries(array $dailyBuckets, bool $weekly): array {
+    private function timelineSeries(array $dailyBuckets, string $granularity): array {
         if ($dailyBuckets === []) {
             return []; // Leerzustand statt Null-Linie (§Diagramm-UX).
         }
 
-        /** @var array<string, int> $byBucket */
+        /** @var array<string, array{label: string, y: int}> $byBucket */
         $byBucket = [];
         foreach ($dailyBuckets as $day => $byEvent) {
-            $date = Carbon::parse($day);
-            $label = $weekly
-                ? sprintf('KW %02d/%02d', $date->isoWeek, $date->isoWeekYear % 100)
-                : $date->format('d.m.');
-            $byBucket[$label] = ($byBucket[$label] ?? 0) + array_sum($byEvent);
+            [$key, $label] = ChartBucket::keyLabel($granularity, CarbonImmutable::parse((string) $day));
+            $byBucket[$key] ??= ['label' => $label, 'y' => 0];
+            $byBucket[$key]['y'] += array_sum($byEvent);
         }
+        ksort($byBucket, SORT_STRING);
 
         $series = [];
-        foreach ($byBucket as $label => $count) {
-            $series[] = ['x' => $label, 'y' => $count];
+        foreach ($byBucket as $bucket) {
+            $series[] = ['x' => $bucket['label'], 'y' => $bucket['y']];
         }
 
         return $series;
@@ -215,24 +215,29 @@ class AuditActivityReportController extends Controller {
     }
 
     /**
-     * Ereignisse je Monat, gestapelt nach Event-Typ (Top 4 + Rest).
+     * Ereignisse je Bucket (adaptiv zur Header-Granularität), gestapelt nach
+     * Event-Typ (Top 4 + Rest).
      *
      * @param  array<string, array<string, int>>  $dailyBuckets
+     * @param  'day'|'week'|'month'|'quarter'  $granularity
      * @return array{0: list<array<string, string|int>>, 1: list<array{key: string, label: string}>}
      */
-    private function monthlyEventSeries(array $dailyBuckets): array {
+    private function monthlyEventSeries(array $dailyBuckets, string $granularity): array {
         /** @var array<string, int> $eventTotals */
         $eventTotals = [];
-        /** @var array<string, array<string, int>> $byMonth */
-        $byMonth = [];
+        /** @var array<string, array<string, int>> $byBucket */
+        $byBucket = [];
+        /** @var array<string, string> $labelByKey */
+        $labelByKey = [];
         foreach ($dailyBuckets as $day => $byEvent) {
-            $monthKey = substr($day, 0, 7);
+            [$key, $label] = ChartBucket::keyLabel($granularity, CarbonImmutable::parse((string) $day));
+            $labelByKey[$key] = $label;
             foreach ($byEvent as $event => $count) {
                 $eventTotals[$event] = ($eventTotals[$event] ?? 0) + $count;
-                $byMonth[$monthKey][$event] = ($byMonth[$monthKey][$event] ?? 0) + $count;
+                $byBucket[$key][$event] = ($byBucket[$key][$event] ?? 0) + $count;
             }
         }
-        if ($byMonth === []) {
+        if ($byBucket === []) {
             return [[], []];
         }
 
@@ -248,10 +253,10 @@ class AuditActivityReportController extends Controller {
             $bands[] = ['key' => 'other', 'label' => (string) __('Sonstige')];
         }
 
-        ksort($byMonth, SORT_STRING);
+        ksort($byBucket, SORT_STRING);
         $series = [];
-        foreach ($byMonth as $monthKey => $byEvent) {
-            $point = ['x' => Carbon::parse($monthKey . '-01')->translatedFormat('M Y')];
+        foreach ($byBucket as $key => $byEvent) {
+            $point = ['x' => $labelByKey[$key]];
             $rest = 0;
             foreach ($byEvent as $event => $count) {
                 if (in_array($event, $topEvents, true)) {

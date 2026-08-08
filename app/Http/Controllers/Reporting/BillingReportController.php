@@ -15,7 +15,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{Customer, Invoice, TimeEntry};
 use App\Services\Reporting\{LexofficeRevenueMirror, ReportFilters};
-use Carbon\Carbon;
+use App\Support\ChartBucket;
+use Carbon\{Carbon, CarbonImmutable};
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
@@ -85,6 +86,8 @@ class BillingReportController extends Controller {
             'monthlyBillableSeries' => $monthly['series'],
             'billableBands' => $monthly['bands'],
             'customerRevenueSeries' => $this->customerRevenueSeries($perCustomer, $filters),
+            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($filters->from, $filters->to)),
+            'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($filters->from, $filters->to)),
             ...$this->standardFilterOptions($filterFields, $filters),
         ]);
     }
@@ -113,24 +116,24 @@ class BillingReportController extends Controller {
             return ['series' => [], 'bands' => $bands]; // Leerzustand (§Diagramm-UX).
         }
 
-        /** @var array<string, array{billable: int, non_billable: int}> $byMonth */
-        $byMonth = [];
+        /** @var array<string, array{billable: int, non_billable: int}> $byKey */
+        $byKey = [];
+        $granularity = $this->bucketGranularity($filters->from, $filters->to);
         foreach ($entries as $entry) {
-            $key = $entry->date?->format('Y-m');
-            if ($key === null) {
+            if ($entry->date === null) {
                 continue;
             }
-            $byMonth[$key] ??= ['billable' => 0, 'non_billable' => 0];
-            $byMonth[$key][$entry->billable ? 'billable' : 'non_billable'] += (int) $entry->minutes;
+            $key = ChartBucket::keyLabel($granularity, CarbonImmutable::parse($entry->date->toDateString()))[0];
+            $byKey[$key] ??= ['billable' => 0, 'non_billable' => 0];
+            $byKey[$key][$entry->billable ? 'billable' : 'non_billable'] += (int) $entry->minutes;
         }
 
         $series = [];
-        for ($cursor = $filters->from->startOfMonth(); $cursor->lte($filters->to); $cursor = $cursor->addMonth()) {
-            $key = $cursor->format('Y-m');
+        foreach ($this->buildBucketsInRange($filters->from, $filters->to) as $bucket) {
             $series[] = [
-                'x' => $cursor->translatedFormat('M Y'),
-                'billable' => round(($byMonth[$key]['billable'] ?? 0) / 60, 1),
-                'non_billable' => round(($byMonth[$key]['non_billable'] ?? 0) / 60, 1),
+                'x' => $bucket['shortLabel'],
+                'billable' => round(($byKey[$bucket['key']]['billable'] ?? 0) / 60, 1),
+                'non_billable' => round(($byKey[$bucket['key']]['non_billable'] ?? 0) / 60, 1),
             ];
         }
 

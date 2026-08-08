@@ -34,8 +34,7 @@ class SupplierValueReportController extends Controller {
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
 
-    public function __construct(private readonly SupplierValueReportBuilder $builder) {
-    }
+    public function __construct(private readonly SupplierValueReportBuilder $builder) {}
 
     public function index(Request $request): View|Response|SymfonyResponse {
         $authUser = Auth::user();
@@ -56,7 +55,9 @@ class SupplierValueReportController extends Controller {
         $riskRows = $this->builder->riskRows($result['rows'], $riskShare);
         $riskSparklines = $this->builder->monthlySpendSeries(
             array_map(static fn(array $row): int => $row['supplierId'], $riskRows),
+            $from,
             $to,
+            $this->globalUnit(),
         );
 
         $exportFilters = ['risk_share' => $riskShare];
@@ -85,6 +86,7 @@ class SupplierValueReportController extends Controller {
             'spendSeries' => $this->spendSeries($result['rows']),
             'dependencyScatter' => $this->dependencyScatter($result['rows']),
             'segmentSeries' => $this->segmentSeries($result['segments'], $riskShare),
+            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($from, $to)),
         ]);
     }
 

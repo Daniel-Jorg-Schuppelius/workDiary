@@ -18,6 +18,7 @@ use App\Models\{SickLeave, User};
 use App\Services\HolidayService;
 use App\Services\Reporting\ReportFilters;
 use App\Services\Sickness\ContinuedPaymentService;
+use App\Support\ChartBucket;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
@@ -53,7 +54,7 @@ class SicknessReportController extends Controller {
         $leaves = $this->loadLeaves($fromDate, $toDate, $scope, $userId, $filters);
         $rows = $this->aggregate($fromDate, $toDate, $leaves);
         $totals = $this->totals($rows);
-        $months = $this->buildMonthsInRange($fromDate, $toDate);
+        $months = $this->buildBucketsInRange($fromDate, $toDate);
         $monthlySeries = $this->monthlySickSeries($fromDate, $toDate, $leaves, $months);
 
         return view('reports.sickness', [
@@ -66,6 +67,8 @@ class SicknessReportController extends Controller {
             'standardFilters' => $filters,
             'filterFields' => ['user', 'team'],
             'monthlySeries' => $monthlySeries,
+            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($fromDate, $toDate)),
+            'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($fromDate, $toDate)),
             'monthlyMedian' => $monthlySeries === [] ? null : NumberHelper::median(array_column($monthlySeries, 'y')),
             'monthLabels' => array_column($months, 'shortLabel'),
             'heatmapRows' => $this->userMonthHeatmapRows($fromDate, $toDate, $leaves, $rows, $months),
@@ -96,10 +99,11 @@ class SicknessReportController extends Controller {
     }
 
     /**
-     * Kranktage (Werktage) je Monat über alle gefilterten Mitarbeiter.
+     * Kranktage (Werktage) je Bucket (adaptiv zur Header-Granularität) über
+     * alle gefilterten Mitarbeiter.
      *
      * @param  Collection<int, SickLeave>  $leaves
-     * @param  list<array{key:string,year:int,month:int,label:string,shortLabel:string}>  $months
+     * @param  list<array{key:string,label:string,shortLabel:string}>  $months
      * @return list<array{x: string, y: int}>
      */
     private function monthlySickSeries(CarbonImmutable $from, CarbonImmutable $to, Collection $leaves, array $months): array {
@@ -132,7 +136,7 @@ class SicknessReportController extends Controller {
      *
      * @param  Collection<int, SickLeave>  $leaves
      * @param  array<int, array{user: User, sick_workdays:int, sick_calendar_days:int, episodes:int, follow_ups:int, with_au:int, entitlement_days:int, used_days:int, remaining_days:int, exhausted:bool, chain_start:?string, exhaustion_date:?string}>  $rows
-     * @param  list<array{key:string,year:int,month:int,label:string,shortLabel:string}>  $months
+     * @param  list<array{key:string,label:string,shortLabel:string}>  $months
      * @return list<array{label: string, cells: list<array{value: int}>}>
      */
     private function userMonthHeatmapRows(CarbonImmutable $from, CarbonImmutable $to, Collection $leaves, array $rows, array $months): array {
@@ -172,6 +176,7 @@ class SicknessReportController extends Controller {
      * @param  array<string, int>  $buckets
      */
     private function addWorkdaysPerMonth(array &$buckets, SickLeave $leave, CarbonImmutable $from, CarbonImmutable $to): void {
+        $granularity = $this->bucketGranularity($from, $to);
         $start = $leave->start_date->greaterThan($from) ? CarbonImmutable::parse($leave->start_date->toDateString()) : $from;
         $end = $leave->end_date->lessThan($to) ? CarbonImmutable::parse($leave->end_date->toDateString()) : $to;
         if ($start->greaterThan($end)) {
@@ -180,7 +185,7 @@ class SicknessReportController extends Controller {
 
         $cursor = $start->startOfMonth();
         while ($cursor->lte($end)) {
-            $monthKey = $cursor->format('Y-m');
+            $monthKey = ChartBucket::keyLabel($granularity, $cursor)[0];
             $chunkStart = $start->greaterThan($cursor) ? $start : $cursor;
             $chunkEnd = $end->lessThan($cursor->endOfMonth()) ? $end : $cursor->endOfMonth();
             if (array_key_exists($monthKey, $buckets)) {

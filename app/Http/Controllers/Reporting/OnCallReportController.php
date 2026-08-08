@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{EmergencyAssignment, OnCallShift, User};
 use App\Services\Reporting\ReportFilters;
+use App\Support\ChartBucket;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
@@ -68,6 +69,8 @@ class OnCallReportController extends Controller {
             'heatmapRows' => $heatmapRows,
             'weekLabels' => $weekLabels,
             'monthlyAssignmentSeries' => $this->monthlyAssignmentSeries($fromDate, $toDate, $scope, $userId, $filters),
+            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($fromDate, $toDate)),
+            'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($fromDate, $toDate)),
             ...$this->standardFilterOptions(['user', 'team'], $filters),
         ]);
     }
@@ -244,12 +247,14 @@ class OnCallReportController extends Controller {
     }
 
     /**
-     * Einsätze je Monat über den Zeitraum — leere Serie statt Null-Achse
-     * (§Diagramm-UX). Zählung nach (geklemmtem) Einsatzbeginn.
+     * Einsätze je Bucket (adaptiv zur Header-Granularität) über den Zeitraum —
+     * leere Serie statt Null-Achse (§Diagramm-UX). Zählung nach (geklemmtem)
+     * Einsatzbeginn.
      *
      * @return list<array{x: string, y: int}>
      */
     private function monthlyAssignmentSeries(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): array {
+        $granularity = $this->bucketGranularity($from, $to);
         $q = EmergencyAssignment::query()
             ->where('is_archived', false)
             ->where('start_at', '<', $to)
@@ -263,7 +268,7 @@ class OnCallReportController extends Controller {
         $byMonth = [];
         foreach ($q->get() as $assignment) {
             $start = $assignment->start_at->greaterThan($from) ? $assignment->start_at->toImmutable() : $from;
-            $key = $start->format('Y-m');
+            $key = ChartBucket::keyLabel($granularity, $start)[0];
             $byMonth[$key] = ($byMonth[$key] ?? 0) + 1;
         }
         if ($byMonth === []) {
@@ -271,8 +276,8 @@ class OnCallReportController extends Controller {
         }
 
         $series = [];
-        foreach ($this->buildMonthsInRange($from, $to) as $month) {
-            $series[] = ['x' => $month['shortLabel'], 'y' => (int) ($byMonth[$month['key']] ?? 0)];
+        foreach ($this->buildBucketsInRange($from, $to) as $bucket) {
+            $series[] = ['x' => $bucket['shortLabel'], 'y' => (int) ($byMonth[$bucket['key']] ?? 0)];
         }
 
         return $series;

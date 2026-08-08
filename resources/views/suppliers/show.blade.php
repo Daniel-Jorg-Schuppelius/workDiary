@@ -54,17 +54,17 @@
         </div>
     @endif
 
-    {{-- Kompakte Monats-Trends (12 Monate): Ausgaben & Belegzahl — zwei nach
-         Monat ausgerichtete Diagramme als Gegenüberstellung (analog Kunde);
+    {{-- Kompakte Trends im gewählten Zeitraum: Ausgaben & Belegzahl — zwei
+         zeitlich ausgerichtete Diagramme als Gegenüberstellung (analog Kunde);
          Finanzsicht, nur für Auswertungsberechtigte. --}}
     @if (($spendSeries ?? null) !== null)
         <div class="chart-grid grid grid-cols-1 gap-3 xl:grid-cols-2">
-            <x-charts.bar :title="__('Ausgaben je Monat (12 Monate)')" unit="€" :series="$spendSeries"
-                          :x-label="__('Monat')" :y-label="__('Ausgaben')"
-                          :note="__('Einkaufsbelege dieses Lieferanten je Monat; Gutschriften mindern.')" />
-            <x-charts.bar :title="__('Belege je Monat (12 Monate)')" :unit="__('Belege')" :series="$voucherCountSeries"
-                          :x-label="__('Monat')" :y-label="__('Belege')"
-                          :note="__('Anzahl Einkaufsbelege dieses Lieferanten je Monat.')" />
+            <x-charts.bar :title="__('Ausgaben :per', ['per' => $periodPhrase])" unit="€" :series="$spendSeries"
+                          :x-label="$periodAxis" :y-label="__('Ausgaben')"
+                          :note="__('Einkaufsbelege dieses Lieferanten im Zeitraum; Gutschriften mindern.')" />
+            <x-charts.bar :title="__('Belege :per', ['per' => $periodPhrase])" :unit="__('Belege')" :series="$voucherCountSeries"
+                          :x-label="$periodAxis" :y-label="__('Belege')"
+                          :note="__('Anzahl Einkaufsbelege dieses Lieferanten im Zeitraum.')" />
         </div>
     @endif
 

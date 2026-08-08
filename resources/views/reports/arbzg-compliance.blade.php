@@ -38,8 +38,8 @@
     </x-filter-bar>
 
     <div class="chart-grid grid gap-3 xl:grid-cols-2">
-        <x-charts.stacked-bar :title="__('Befunde je Monat nach Verstoßart')" :unit="__('Befunde')"
-                              :series="$monthlyKindSeries" :bands="$kindBands" :x-label="__('Monat')" />
+        <x-charts.stacked-bar :title="__('Befunde :per nach Verstoßart', ['per' => $periodPhrase])" :unit="__('Befunde')"
+                              :series="$monthlyKindSeries" :bands="$kindBands" :x-label="$periodAxis" />
         <x-charts.heatmap
             :title="__('Befunde je Mitarbeiter und Monat')"
             :unit="__('Befunde')"

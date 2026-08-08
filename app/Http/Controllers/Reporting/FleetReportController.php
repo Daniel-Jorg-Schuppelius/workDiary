@@ -15,7 +15,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{EnergyLog, TravelLog, Vehicle};
 use App\Services\Reporting\ReportFilters;
-use Carbon\{Carbon, CarbonImmutable};
+use App\Support\ChartBucket;
+use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
@@ -67,6 +68,8 @@ class FleetReportController extends Controller {
             'filterFields' => ['user'],
             'vehicleKmSeries' => $vehicleKmSeries,
             'monthlyKmSeries' => $this->monthlyKmSeries($fromDate, $toDate, $scope, $userId, $filters),
+            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($fromDate, $toDate)),
+            'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($fromDate, $toDate)),
             ...$this->standardFilterOptions(['user'], $filters),
         ]);
     }
@@ -223,12 +226,13 @@ class FleetReportController extends Controller {
     }
 
     /**
-     * Kilometer je Monat über den Zeitraum (leere Serie statt Null-Achse,
-     * §Diagramm-UX).
+     * Kilometer je Bucket (adaptiv zur Header-Granularität; leere Serie statt
+     * Null-Achse, §Diagramm-UX).
      *
      * @return list<array{x: string, y: float}>
      */
     private function monthlyKmSeries(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): array {
+        $granularity = $this->bucketGranularity($from, $to);
         $q = TravelLog::query()
             ->whereNotNull('vehicle_id')
             ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
@@ -238,19 +242,19 @@ class FleetReportController extends Controller {
         }
         $filters->applyUserAndTeam($q);
 
-        /** @var array<string, float> $byMonth */
-        $byMonth = [];
+        /** @var array<string, float> $byKey */
+        $byKey = [];
         foreach ($q->get() as $t) {
-            $key = Carbon::parse((string) $t->date)->format('Y-m');
-            $byMonth[$key] = ($byMonth[$key] ?? 0.0) + (float) $t->distance_km;
+            $key = ChartBucket::keyLabel($granularity, CarbonImmutable::parse((string) $t->date))[0];
+            $byKey[$key] = ($byKey[$key] ?? 0.0) + (float) $t->distance_km;
         }
-        if ($byMonth === [] || array_sum($byMonth) <= 0) {
+        if ($byKey === [] || array_sum($byKey) <= 0) {
             return [];
         }
 
         $series = [];
-        foreach ($this->buildMonthsInRange($from, $to) as $month) {
-            $series[] = ['x' => $month['shortLabel'], 'y' => round($byMonth[$month['key']] ?? 0.0, 1)];
+        foreach ($this->buildBucketsInRange($from, $to) as $bucket) {
+            $series[] = ['x' => $bucket['shortLabel'], 'y' => round($byKey[$bucket['key']] ?? 0.0, 1)];
         }
 
         return $series;

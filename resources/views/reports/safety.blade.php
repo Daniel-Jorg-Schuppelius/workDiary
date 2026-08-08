@@ -20,11 +20,11 @@
     </div>
 
     <div class="chart-grid mt-4 grid gap-3 xl:grid-cols-2">
-        <x-charts.bar :title="__('Ereignisse je Monat')" :unit="__('Ereignisse')"
-                      :series="$monthlySeries" :x-label="__('Monat')" :y-label="__('Ereignisse')"
+        <x-charts.bar :title="__('Ereignisse :per', ['per' => $periodPhrase])" :unit="__('Ereignisse')"
+                      :series="$monthlySeries" :x-label="$periodAxis" :y-label="__('Ereignisse')"
                       :y2-label="__('davon geschlossen')" />
-        <x-charts.stacked-bar :title="__('Ereignisse je Monat nach Status')" :unit="__('Ereignisse')"
-                              :series="$statusMonthlySeries" :bands="$statusBands" :x-label="__('Monat')" />
+        <x-charts.stacked-bar :title="__('Ereignisse :per nach Status', ['per' => $periodPhrase])" :unit="__('Ereignisse')"
+                              :series="$statusMonthlySeries" :bands="$statusBands" :x-label="$periodAxis" />
     </div>
 
     <div class="mt-4 grid gap-4 lg:grid-cols-2">

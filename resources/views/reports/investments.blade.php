@@ -19,7 +19,7 @@
     </x-filter-bar>
 
     <div class="chart-grid grid gap-3 xl:grid-cols-2">
-        <x-charts.bar :title="__('Ist-Investitionen (€) je Monat (nur positive)')" unit="€" :series="$monthlyActualSeries" :x-label="__('Monat')" :y-label="__('Ist (€)')" />
+        <x-charts.bar :title="__('Ist-Investitionen (€) :per (nur positive)', ['per' => $periodPhrase])" unit="€" :series="$monthlyActualSeries" :x-label="$periodAxis" :y-label="__('Ist (€)')" />
         <x-charts.bar-h :title="__('Genehmigtes Volumen je Kategorie')" unit="€" :series="$categoryVolumeSeries" :x-label="__('Kategorie')" :y-label="__('Genehmigt (€)')" />
     </div>
 

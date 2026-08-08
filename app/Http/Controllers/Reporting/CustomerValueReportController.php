@@ -64,7 +64,9 @@ class CustomerValueReportController extends Controller {
         $riskRows = $this->builder->riskRows($result['rows'], $riskDays);
         $riskSparklines = $this->builder->monthlyRevenueSeries(
             array_map(static fn(array $row): int => $row['customerId'], $riskRows),
+            $from,
             $to,
+            $this->globalUnit(),
         );
 
         $exportFilters = array_merge(['risk_days' => $riskDays], $filters->toAuditArray());
@@ -95,6 +97,7 @@ class CustomerValueReportController extends Controller {
             'revenueSeries' => $this->revenueSeries($result['rows'], $filters),
             'riskScatter' => $this->riskScatter($result['rows'], $filters),
             'segmentSeries' => $this->segmentSeries($result['segments'], $filters, $riskDays),
+            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($from, $to)),
             ...$this->standardFilterOptions($filterFields, $filters),
         ]);
     }

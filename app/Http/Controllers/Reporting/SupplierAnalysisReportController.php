@@ -39,8 +39,7 @@ class SupplierAnalysisReportController extends Controller {
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
 
-    public function __construct(private readonly SupplierAnalysisReportBuilder $builder) {
-    }
+    public function __construct(private readonly SupplierAnalysisReportBuilder $builder) {}
 
     public function index(Request $request): View|Response|SymfonyResponse {
         $authUser = Auth::user();
@@ -84,8 +83,10 @@ class SupplierAnalysisReportController extends Controller {
             'hideZero' => $hideZero,
             'withProcurement' => $withProcurement,
             'spendSeries' => $this->spendSeries(array_values($rows->all())),
-            'monthlySpendSeries' => $this->builder->monthlySpendSeries($to),
+            'monthlySpendSeries' => $this->builder->monthlySpendSeries($from, $to, $this->globalUnit()),
             'openSeries' => $this->openSeries(array_values($rows->all())),
+            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($from, $to)),
+            'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($from, $to)),
         ]);
     }
 

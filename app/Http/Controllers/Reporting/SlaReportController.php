@@ -18,6 +18,7 @@ use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardR
 use App\Models\{ServiceTicket, SlaContractQuota, SlaViolation, User};
 use App\Services\Reporting\{ReportFilters, ReportTargetEvaluator};
 use App\Services\ServiceTicket\{SlaQuotaService, SlaViolationService};
+use App\Support\ChartBucket;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
@@ -90,6 +91,8 @@ class SlaReportController extends Controller {
             'filterFields' => ['customer', 'include_excluded'],
             'complianceSeries' => $complianceSeries,
             'complianceMedian' => $complianceMedian,
+            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($fromDate, $toDate)),
+            'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($fromDate, $toDate)),
             'violationCustomerSeries' => $violationCustomerSeries,
             ...$this->standardFilterOptions(['customer', 'include_excluded'], $filters),
         ]));
@@ -236,14 +239,16 @@ class SlaReportController extends Controller {
     }
 
     /**
-     * SLA-Erfüllung (%) je Monat des Zeitraums + Median über die Monate.
-     * Bezugsmenge je Monat: gemeldete Tickets mit Lösungsfrist; Verletzungen
-     * zählen im Monat des Fristbruchs. Monate ohne Bezugsmenge entfallen;
-     * ohne jede Bezugsmenge → leere Serie (§Diagramm-UX).
+     * SLA-Erfüllung (%) je Bucket (adaptiv zur Header-Granularität) des
+     * Zeitraums + Median über die Buckets. Bezugsmenge je Bucket: gemeldete
+     * Tickets mit Lösungsfrist; Verletzungen zählen im Bucket des Fristbruchs.
+     * Buckets ohne Bezugsmenge entfallen; ohne jede Bezugsmenge → leere Serie
+     * (§Diagramm-UX).
      *
      * @return array{0: list<array{x: string, y: float}>, 1: float|null}
      */
     private function monthlyComplianceSeries(CarbonImmutable $from, CarbonImmutable $to, ReportFilters $filters): array {
+        $granularity = $this->bucketGranularity($from, $to);
         // Feature 002: gleiche Ausblendungs-/Übersteuerungsregel wie aggregate().
         $excluded = $filters->customerId === null && $filters->projectId === null
             ? $filters->excludedCustomerIds
@@ -260,7 +265,7 @@ class SlaReportController extends Controller {
             ))
             ->get(['reported_at']);
         foreach ($tickets as $ticket) {
-            $key = CarbonImmutable::parse((string) $ticket->reported_at)->format('Y-m');
+            $key = ChartBucket::keyLabel($granularity, CarbonImmutable::parse((string) $ticket->reported_at))[0];
             $relevantByMonth[$key] = ($relevantByMonth[$key] ?? 0) + 1;
         }
         if ($relevantByMonth === []) {
@@ -275,18 +280,18 @@ class SlaReportController extends Controller {
             ->when($excluded !== [], fn($q) => $q->whereDoesntHave('serviceTicket', fn($t) => $t->whereIn('customer_id', $excluded)))
             ->get(['breached_at']);
         foreach ($breaches as $violation) {
-            $key = CarbonImmutable::parse((string) $violation->breached_at)->format('Y-m');
+            $key = ChartBucket::keyLabel($granularity, CarbonImmutable::parse((string) $violation->breached_at))[0];
             $violationsByMonth[$key] = ($violationsByMonth[$key] ?? 0) + 1;
         }
 
         $series = [];
-        foreach ($this->buildMonthsInRange($from, $to) as $month) {
-            $relevant = $relevantByMonth[$month['key']] ?? 0;
+        foreach ($this->buildBucketsInRange($from, $to) as $bucket) {
+            $relevant = $relevantByMonth[$bucket['key']] ?? 0;
             if ($relevant <= 0) {
                 continue; // Ohne Bezugsmenge keine Quote ausweisbar.
             }
-            $met = max(0, $relevant - ($violationsByMonth[$month['key']] ?? 0));
-            $series[] = ['x' => $month['shortLabel'], 'y' => round($met / $relevant * 100, 1)];
+            $met = max(0, $relevant - ($violationsByMonth[$bucket['key']] ?? 0));
+            $series[] = ['x' => $bucket['shortLabel'], 'y' => round($met / $relevant * 100, 1)];
         }
 
         $values = array_column($series, 'y');

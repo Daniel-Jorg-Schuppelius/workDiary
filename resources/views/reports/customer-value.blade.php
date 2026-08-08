@@ -89,7 +89,7 @@
                         <th>{{ __('Kunde') }}</th>
                         <th class="text-right">{{ __('Erlös im Zeitraum') }}</th>
                         <th class="text-right">{{ __('Tage seit letzter Leistung') }}</th>
-                        <th>{{ __('Erlösverlauf (12 Monate)') }}</th>
+                        <th>{{ __('Erlösverlauf im Zeitraum') }}</th>
                     </tr>
                 </x-slot:head>
                 @foreach ($riskRows as $row)
@@ -101,7 +101,7 @@
                         </td>
                         <td class="text-right tabular-nums">{{ $eur($row['revenue']) }}</td>
                         <td class="text-right tabular-nums">{{ $row['recencyDays'] }}</td>
-                        <td><x-charts.sparkline :values="$riskSparklines[$row['customerId']] ?? []" unit="€" :label="__('Monatserlös')" /></td>
+                        <td><x-charts.sparkline :values="$riskSparklines[$row['customerId']] ?? []" unit="€" :label="__('Erlös :per', ['per' => $periodPhrase])" /></td>
                     </tr>
                 @endforeach
             </x-table>

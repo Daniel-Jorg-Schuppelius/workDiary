@@ -73,8 +73,8 @@
     <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.pareto :title="__('Ausgaben je Lieferant (Top 20)')" unit="€" :series="$spendSeries" :x-label="__('Lieferant')" y-label="€"
                          :note="__('Datenbasis: Einkaufsbelege im Zeitraum; Klick öffnet die Lieferanten-Detailseite.')" />
-        <x-charts.bar :title="__('Ausgaben je Monat (12 Monate)')" unit="€" :series="$monthlySpendSeries" :x-label="__('Monat')" :y-label="__('Ausgaben')"
-                      :note="__('Org-weite Gesamtausgaben je Monat — unabhängig vom gewählten Zeitraumfilter.')" />
+        <x-charts.bar :title="__('Ausgaben :per', ['per' => $periodPhrase])" unit="€" :series="$monthlySpendSeries" :x-label="$periodAxis" :y-label="__('Ausgaben')"
+                      :note="__('Org-weite Gesamtausgaben im gewählten Zeitraum.')" />
     </div>
     <x-charts.bar-h :title="__('Offener Betrag je Lieferant (Top 15)')" unit="€" :series="$openSeries" :x-label="__('Lieferant')" :y-label="__('Offener Betrag')"
                     :note="__('Offene Verbindlichkeiten aus nicht vollständig bezahlten Einkaufsbelegen.')" />

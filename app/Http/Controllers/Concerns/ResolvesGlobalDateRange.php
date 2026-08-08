@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Concerns;
 
 use App\Services\UI\DateRangeContext;
+use App\Support\ChartBucket;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 
@@ -21,7 +22,7 @@ use Illuminate\Http\Request;
  */
 trait ResolvesGlobalDateRange {
     /**
-     * @return array{from: CarbonImmutable, to: CarbonImmutable, preset: string, label: string}
+     * @return array{from: CarbonImmutable, to: CarbonImmutable, preset: string, effectivePreset: string, label: string, unit: string, isoWeekLabel: ?string}
      */
     protected function globalDateRange(): array {
         return app(DateRangeContext::class)->current();
@@ -88,5 +89,79 @@ trait ResolvesGlobalDateRange {
         }
 
         return $months;
+    }
+
+    /**
+     * Einheit des global gewählten Zeitraums (Header-Widget) für adaptive
+     * Diagramm-Granularität. Fällt bei fehlender Angabe auf 'custom' zurück.
+     */
+    protected function globalUnit(): string {
+        $unit = $this->globalDateRange()['unit'];
+
+        return $unit !== '' ? $unit : 'custom';
+    }
+
+    /**
+     * Granularität für die Zeitachse eines Diagramms, abgeleitet aus dem global
+     * gewählten Zeitraum ({@see ChartBucket::granularity()}). Die 'hour'-Stufe
+     * wird auf 'day' reduziert: Report-Datensätze dieser Gruppe sind
+     * datumsgenau (kein Tageszeit-Bezug), ein Ein-Tages-Zeitraum ergibt genau
+     * einen Tages-Bucket.
+     *
+     * @return 'day'|'week'|'month'|'quarter'
+     */
+    protected function bucketGranularity(CarbonImmutable $from, CarbonImmutable $to, ?string $unit = null): string {
+        $granularity = ChartBucket::granularity($unit ?? $this->globalUnit(), $from, $to);
+
+        return $granularity === 'hour' ? 'day' : $granularity;
+    }
+
+    /**
+     * Adaptive Zeit-Buckets für [von,bis] in der Granularität des global
+     * gewählten Zeitraums (Tag→Tag, Woche→Tag, Monat/Quartal→Woche, Jahr→Monat,
+     * mehrjährig→Quartal). Ersetzt {@see buildMonthsInRange()} für Diagramme,
+     * die auf die Header-Zeitangabe reagieren. Reihenfolge ist sortierstabil,
+     * Schlüssel entstehen über {@see ChartBucket::keyLabel()} — Aufrufer mappen
+     * Einzeldaten mit demselben Aufruf auf den passenden Bucket-Schlüssel.
+     *
+     * @return list<array{key: string, label: string, shortLabel: string}>
+     */
+    protected function buildBucketsInRange(CarbonImmutable $from, CarbonImmutable $to, ?string $unit = null): array {
+        $granularity = $this->bucketGranularity($from, $to, $unit);
+
+        /** @var array<string, array{key: string, label: string, shortLabel: string}> $buckets */
+        $buckets = [];
+        for ($cursor = $from->startOfDay(); $cursor->lte($to); $cursor = $cursor->addDay()) {
+            [$key, $label] = ChartBucket::keyLabel($granularity, $cursor);
+            $buckets[$key] ??= ['key' => $key, 'label' => $label, 'shortLabel' => $label];
+        }
+
+        return array_values($buckets);
+    }
+
+    /**
+     * Lokalisierte „je <Periode>"-Phrase für einen adaptiven Diagrammtitel
+     * (Platzhalter `:per`), passend zur Granularität aus {@see bucketGranularity()}.
+     */
+    protected function periodPhrase(string $granularity): string {
+        return match ($granularity) {
+            'week' => __('je Woche'),
+            'month' => __('je Monat'),
+            'quarter' => __('je Quartal'),
+            default => __('je Tag'),
+        };
+    }
+
+    /**
+     * Lokalisiertes Achswort (X-Achse) passend zur Granularität aus
+     * {@see bucketGranularity()}.
+     */
+    protected function periodAxisLabel(string $granularity): string {
+        return match ($granularity) {
+            'week' => __('Woche'),
+            'month' => __('Monat'),
+            'quarter' => __('Quartal'),
+            default => __('Tag'),
+        };
     }
 }

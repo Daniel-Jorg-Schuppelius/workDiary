@@ -45,7 +45,7 @@
 
     {{-- Feature 002: Diagramme (Abrechenbarkeit je Monat + Umsatz-Pareto) --}}
     <div class="chart-grid grid gap-3 xl:grid-cols-2">
-        <x-charts.stacked-bar :title="__('Abrechenbare und nicht abrechenbare Stunden je Monat')" unit="h" :series="$monthlyBillableSeries" :bands="$billableBands" :x-label="__('Monat')" />
+        <x-charts.stacked-bar :title="__('Abrechenbare und nicht abrechenbare Stunden :per', ['per' => $periodPhrase])" unit="h" :series="$monthlyBillableSeries" :bands="$billableBands" :x-label="$periodAxis" />
         <x-charts.pareto :title="__('Umsatz je Kunde (Top 15)')" unit="€" :series="$customerRevenueSeries" :x-label="__('Kunde')" :y-label="__('Brutto (€)')"
                          :note="__('Lokale Rechnungen plus gespiegelte Belege aus dem Buchhaltungsprogramm (Lexoffice); von der App übergebene Rechnungen zählen nur einmal, Gutschriften negativ.')" />
     </div>

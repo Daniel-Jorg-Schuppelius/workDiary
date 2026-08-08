@@ -16,7 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\ResolvesStandardReportFilters;
 use App\Models\{Customer, DiaryEntry, User};
 use App\Services\Classification\DataQualityInspector;
-use App\Support\CarbonFmt;
+use App\Support\{CarbonFmt, ChartBucket};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -71,13 +71,16 @@ class DataQualityReportController extends Controller {
             'standardFilters' => $filters,
             'filterFields' => $filterFields,
             'gapsMonthlySeries' => $this->gapsMonthlySeries($report['rows'], $from, $to),
+            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($from, $to)),
+            'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($from, $to)),
             'gapsByCustomerSeries' => $this->gapsByCustomerSeries($report['rows'], $customerByEntry),
             ...$this->standardFilterOptions($filterFields, $filters),
         ]);
     }
 
     /**
-     * Aufträge mit fehlenden Pflichtklassifikationen je Monat.
+     * Aufträge mit fehlenden Pflichtklassifikationen je Bucket (adaptiv zur
+     * Header-Granularität).
      *
      * @param  list<array{id:int, sqid:string, title:string, date:string|null, gaps: list<array{domain:string, label:string, severity:string, blocking:bool, phase:string}>}>  $rows
      * @return list<array{x: string, y: int}>
@@ -87,25 +90,26 @@ class DataQualityReportController extends Controller {
             return []; // Leerzustand statt Null-Serie (§Diagramm-UX).
         }
 
-        $months = $this->buildMonthsInRange($from, $to);
+        $granularity = $this->bucketGranularity($from, $to);
+        $buckets = $this->buildBucketsInRange($from, $to);
         /** @var array<string, int> $byMonth */
         $byMonth = [];
-        foreach ($months as $month) {
-            $byMonth[$month['key']] = 0;
+        foreach ($buckets as $bucket) {
+            $byMonth[$bucket['key']] = 0;
         }
         foreach ($rows as $row) {
             if ($row['date'] === null) {
                 continue;
             }
-            $monthKey = substr($row['date'], 0, 7);
+            $monthKey = ChartBucket::keyLabel($granularity, CarbonImmutable::parse((string) $row['date']))[0];
             if (array_key_exists($monthKey, $byMonth)) {
                 $byMonth[$monthKey]++;
             }
         }
 
         $series = [];
-        foreach ($months as $month) {
-            $series[] = ['x' => $month['shortLabel'], 'y' => $byMonth[$month['key']]];
+        foreach ($buckets as $bucket) {
+            $series[] = ['x' => $bucket['shortLabel'], 'y' => $byMonth[$bucket['key']]];
         }
 
         return $series;

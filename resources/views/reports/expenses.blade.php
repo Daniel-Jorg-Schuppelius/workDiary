@@ -21,7 +21,7 @@
     </x-filter-bar>
 
     <div class="chart-grid grid gap-3 xl:grid-cols-2">
-        <x-charts.stacked-bar :title="__('Spesen (€) je Monat nach Kategorie')" unit="€" :series="$monthlyCategorySeries" :bands="$categoryBands" :x-label="__('Monat')" />
+        <x-charts.stacked-bar :title="__('Spesen (€) :per nach Kategorie', ['per' => $periodPhrase])" unit="€" :series="$monthlyCategorySeries" :bands="$categoryBands" :x-label="$periodAxis" />
         <x-charts.bar-h :title="__('Top-Verursacher (Top 15)')" unit="€" :series="$topSpenderSeries" :x-label="__('Mitarbeiter')" :y-label="__('Brutto (€)')" />
     </div>
 

@@ -48,7 +48,7 @@
             :x-label="__('Mitarbeiter')"
             :format="$fmtChart"
         />
-        <x-charts.bar :title="__('Einsätze je Monat')" :unit="__('Einsätze')" :series="$monthlyAssignmentSeries" :x-label="__('Monat')" :y-label="__('Anzahl')" />
+        <x-charts.bar :title="__('Einsätze :per', ['per' => $periodPhrase])" :unit="__('Einsätze')" :series="$monthlyAssignmentSeries" :x-label="$periodAxis" :y-label="__('Anzahl')" />
     </div>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">

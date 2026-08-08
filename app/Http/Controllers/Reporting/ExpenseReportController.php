@@ -15,6 +15,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{ResolvesReportScope, ResolvesStandardReportFilters};
 use App\Models\Expense;
+use App\Support\ChartBucket;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
@@ -90,6 +91,8 @@ class ExpenseReportController extends Controller {
             'monthlyCategorySeries' => $monthlyCategorySeries,
             'categoryBands' => $categoryBands,
             'topSpenderSeries' => $this->topSpenderSeries($totalsPerUser),
+            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($from, $to)),
+            'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($from, $to)),
             ...$this->standardFilterOptions(['user', 'team', 'project'], $filters),
         ]);
     }
@@ -106,15 +109,16 @@ class ExpenseReportController extends Controller {
             return [[], []];
         }
 
-        /** @var array<string, array<string, float>> $byMonthCategory */
-        $byMonthCategory = [];
+        $granularity = $this->bucketGranularity($from, $to);
+        /** @var array<string, array<string, float>> $byBucketCategory */
+        $byBucketCategory = [];
         /** @var array<string, float> $categoryTotals */
         $categoryTotals = [];
         foreach ($expenses as $expense) {
             $category = $expense->category->label ?? '—';
-            $month = $expense->date->format('Y-m');
+            $bucketKey = ChartBucket::keyLabel($granularity, CarbonImmutable::parse((string) $expense->date))[0];
             $amount = ($expense->amount_gross?->toFloat() ?? 0.0);
-            $byMonthCategory[$month][$category] = ($byMonthCategory[$month][$category] ?? 0.0) + $amount;
+            $byBucketCategory[$bucketKey][$category] = ($byBucketCategory[$bucketKey][$category] ?? 0.0) + $amount;
             $categoryTotals[$category] = ($categoryTotals[$category] ?? 0.0) + $amount;
         }
 
@@ -135,12 +139,12 @@ class ExpenseReportController extends Controller {
         }
 
         $series = [];
-        foreach ($this->buildMonthsInRange($from, $to) as $month) {
-            $row = ['x' => $month['shortLabel']];
+        foreach ($this->buildBucketsInRange($from, $to) as $bucket) {
+            $row = ['x' => $bucket['shortLabel']];
             foreach ($bands as $band) {
                 $row[$band['key']] = 0.0;
             }
-            foreach ($byMonthCategory[$month['key']] ?? [] as $category => $amount) {
+            foreach ($byBucketCategory[$bucket['key']] ?? [] as $category => $amount) {
                 $key = $keyByCategory[$category] ?? 'rest';
                 if (! $hasRest && ! isset($keyByCategory[$category])) {
                     continue;

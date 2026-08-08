@@ -15,7 +15,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{MaterialUsage, Project};
 use App\Services\Reporting\ReportFilters;
-use Carbon\{Carbon, CarbonImmutable};
+use App\Support\ChartBucket;
+use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
@@ -66,6 +67,8 @@ class MaterialReportController extends Controller {
             'filterFields' => $filterFields,
             'materialValueSeries' => $paretoSeries,
             'monthlyCostSeries' => $this->monthlyCostSeries($aggregation['monthly'], $fromDate, $toDate),
+            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($fromDate, $toDate)),
+            'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($fromDate, $toDate)),
             ...$this->standardFilterOptions($filterFields, $filters),
         ]);
     }
@@ -86,6 +89,7 @@ class MaterialReportController extends Controller {
      * }
      */
     private function aggregate(string $from, string $to, string $scope, int $userId, ReportFilters $filters): array {
+        $granularity = $this->bucketGranularity(CarbonImmutable::parse($from), CarbonImmutable::parse($to));
         $q = MaterialUsage::query()
             ->with(['material:id,sku,name,unit', 'timesheet:id,work_date'])
             ->whereHas('timesheet', function ($w) use ($from, $to, $scope, $userId, $filters): void {
@@ -120,8 +124,8 @@ class MaterialReportController extends Controller {
         foreach ($usages as $u) {
             $workDate = $u->timesheet?->work_date;
             if ($workDate !== null) {
-                $monthKey = Carbon::parse((string) $workDate)->format('Y-m');
-                $byMonth[$monthKey] = ($byMonth[$monthKey] ?? 0.0) + ($u->line_total_net?->toFloat() ?? 0.0);
+                $key = ChartBucket::keyLabel($granularity, CarbonImmutable::parse((string) $workDate))[0];
+                $byMonth[$key] = ($byMonth[$key] ?? 0.0) + ($u->line_total_net?->toFloat() ?? 0.0);
             }
             $mid = $u->material_id !== null ? (int) $u->material_id : null;
             $material = $mid !== null ? $u->material : null;
@@ -182,8 +186,8 @@ class MaterialReportController extends Controller {
     }
 
     /**
-     * Materialkosten (netto, €) je Monat über den Zeitraum — leere Serie
-     * statt Null-Achse (§Diagramm-UX).
+     * Materialkosten (netto, €) je Bucket (adaptiv zur Header-Granularität)
+     * über den Zeitraum — leere Serie statt Null-Achse (§Diagramm-UX).
      *
      * @param  array<string, float>  $byMonth
      * @return list<array{x: string, y: float}>
@@ -194,8 +198,8 @@ class MaterialReportController extends Controller {
         }
 
         $series = [];
-        foreach ($this->buildMonthsInRange($from, $to) as $month) {
-            $series[] = ['x' => $month['shortLabel'], 'y' => round($byMonth[$month['key']] ?? 0.0, 2)];
+        foreach ($this->buildBucketsInRange($from, $to) as $bucket) {
+            $series[] = ['x' => $bucket['shortLabel'], 'y' => round($byMonth[$bucket['key']] ?? 0.0, 2)];
         }
 
         return $series;

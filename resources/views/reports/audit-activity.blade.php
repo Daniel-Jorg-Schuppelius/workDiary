@@ -55,8 +55,8 @@
                         :series="$topActorsSeries" :x-label="__('Benutzer')" :y-label="__('Events')" />
     </div>
 
-    <x-charts.stacked-bar :title="__('Ereignisse je Monat nach Typ')" :unit="__('Events')"
-                          :series="$monthlyEventSeries" :bands="$eventBands" :x-label="__('Monat')" />
+    <x-charts.stacked-bar :title="__('Ereignisse :per nach Typ', ['per' => $periodPhrase])" :unit="__('Events')"
+                          :series="$monthlyEventSeries" :bands="$eventBands" :x-label="$periodAxis" />
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <x-card>

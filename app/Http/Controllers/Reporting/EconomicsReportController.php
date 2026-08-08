@@ -145,6 +145,8 @@ class EconomicsReportController extends Controller {
             'marginVolumeSeries' => $scatter['series'],
             'marginPercentiles' => $scatter['percentiles'],
             'monthlySeries' => $this->monthlySeries($filters, $excludedCustomerIds),
+            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($filters->from, $filters->to)),
+            'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($filters->from, $filters->to)),
             'byCustomer' => $byCustomer,
             'byProject' => $byProject,
             'topProjects' => $topProjects,
@@ -227,7 +229,7 @@ class EconomicsReportController extends Controller {
      * @return list<array{x: string, y: float, y2: float}>
      */
     private function monthlySeries(ReportFilters $filters, array $excludedCustomerIds = []): array {
-        $months = $this->builder->timeByMonth($filters->from, $filters->to, $filters->customerId, $filters->projectId, $excludedCustomerIds);
+        $months = $this->builder->timeByMonth($filters->from, $filters->to, $this->globalUnit(), $filters->customerId, $filters->projectId, $excludedCustomerIds);
 
         $hasData = collect($months)->contains(
             static fn(array $month): bool => $month['revenue'] > 0.0 || $month['cost'] > 0.0,

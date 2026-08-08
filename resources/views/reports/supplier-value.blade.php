@@ -85,7 +85,7 @@
                         <th>{{ __('Lieferant') }}</th>
                         <th class="text-right">{{ __('Ausgaben im Zeitraum') }}</th>
                         <th class="text-right">{{ __('Ausgabenanteil') }}</th>
-                        <th>{{ __('Ausgabenverlauf (12 Monate)') }}</th>
+                        <th>{{ __('Ausgabenverlauf im Zeitraum') }}</th>
                     </tr>
                 </x-slot:head>
                 @foreach ($riskRows as $row)
@@ -97,7 +97,7 @@
                         </td>
                         <td class="text-right tabular-nums">{{ $eur($row['spend']) }}</td>
                         <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['spendShare'], 1) }} %</td>
-                        <td><x-charts.sparkline :values="$riskSparklines[$row['supplierId']] ?? []" unit="€" :label="__('Monatsausgaben')" /></td>
+                        <td><x-charts.sparkline :values="$riskSparklines[$row['supplierId']] ?? []" unit="€" :label="__('Ausgaben :per', ['per' => $periodPhrase])" /></td>
                     </tr>
                 @endforeach
             </x-table>

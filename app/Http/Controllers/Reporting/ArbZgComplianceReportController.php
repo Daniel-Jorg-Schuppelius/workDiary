@@ -19,7 +19,7 @@ use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardR
 use App\Models\{ComplianceFinding, Organization, Team, TimeCorrectionRequest, User};
 use App\Services\Compliance\{AttendanceComplianceChecker, ComplianceFindingService, ComplianceScanService};
 use App\Services\Reporting\ReportFilters;
-use App\Support\Sqid;
+use App\Support\{ChartBucket, Sqid};
 use Carbon\{Carbon, CarbonImmutable};
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{RedirectResponse, Request, Response};
@@ -97,6 +97,8 @@ class ArbZgComplianceReportController extends Controller {
             'kindBands' => $this->kindBands(),
             'heatmapRows' => $heatmapRows,
             'monthLabels' => $monthLabels,
+            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($from, $to)),
+            'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($from, $to)),
             ...$this->standardFilterOptions(['user', 'team'], $filters),
         ]);
     }
@@ -131,18 +133,19 @@ class ArbZgComplianceReportController extends Controller {
      * @return list<array<string, string|int>>
      */
     private function monthlyKindSeries(array $rows, CarbonImmutable $from, CarbonImmutable $to): array {
-        $months = $this->buildMonthsInRange($from, $to);
-        /** @var array<string, array<string, int>> $byMonth */
-        $byMonth = [];
-        foreach ($months as $month) {
-            $byMonth[$month['key']] = array_fill_keys($this->kinds(), 0);
+        $granularity = $this->bucketGranularity($from, $to);
+        $bucketList = $this->buildBucketsInRange($from, $to);
+        /** @var array<string, array<string, int>> $byKey */
+        $byKey = [];
+        foreach ($bucketList as $bucket) {
+            $byKey[$bucket['key']] = array_fill_keys($this->kinds(), 0);
         }
         $total = 0;
         foreach ($rows as $r) {
             foreach ($r['findings'] as $f) {
-                $monthKey = substr((string) $f['date'], 0, 7);
-                if (isset($byMonth[$monthKey][(string) $f['kind']])) {
-                    $byMonth[$monthKey][(string) $f['kind']]++;
+                $key = ChartBucket::keyLabel($granularity, CarbonImmutable::parse((string) $f['date']))[0];
+                if (isset($byKey[$key][(string) $f['kind']])) {
+                    $byKey[$key][(string) $f['kind']]++;
                     $total++;
                 }
             }
@@ -152,8 +155,8 @@ class ArbZgComplianceReportController extends Controller {
         }
 
         $series = [];
-        foreach ($months as $month) {
-            $series[] = ['x' => $month['shortLabel']] + $byMonth[$month['key']];
+        foreach ($bucketList as $bucket) {
+            $series[] = ['x' => $bucket['shortLabel']] + $byKey[$bucket['key']];
         }
 
         return $series;
@@ -275,6 +278,8 @@ class ArbZgComplianceReportController extends Controller {
             'openMonthlySeries' => $this->openMonthlySeries($rows, $from, $to),
             'monthlyKindSeries' => $this->monthlyKindSeries($rows, $from, $to),
             'kindBands' => $this->kindBands(),
+            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($from, $to)),
+            'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($from, $to)),
             ...$this->standardFilterOptions(['team'], $filters),
         ]);
     }
@@ -288,18 +293,19 @@ class ArbZgComplianceReportController extends Controller {
      * @return list<array{x: string, y: int}>
      */
     private function openMonthlySeries(array $rows, CarbonImmutable $from, CarbonImmutable $to): array {
-        $months = $this->buildMonthsInRange($from, $to);
-        /** @var array<string, int> $byMonth */
-        $byMonth = [];
-        foreach ($months as $month) {
-            $byMonth[$month['key']] = 0;
+        $granularity = $this->bucketGranularity($from, $to);
+        $bucketList = $this->buildBucketsInRange($from, $to);
+        /** @var array<string, int> $byKey */
+        $byKey = [];
+        foreach ($bucketList as $bucket) {
+            $byKey[$bucket['key']] = 0;
         }
         $total = 0;
         foreach ($rows as $r) {
             foreach ($r['findings'] as $f) {
-                $monthKey = substr((string) $f['date'], 0, 7);
-                if (($f['corrected'] ?? false) !== true && array_key_exists($monthKey, $byMonth)) {
-                    $byMonth[$monthKey]++;
+                $key = ChartBucket::keyLabel($granularity, CarbonImmutable::parse((string) $f['date']))[0];
+                if (($f['corrected'] ?? false) !== true && array_key_exists($key, $byKey)) {
+                    $byKey[$key]++;
                     $total++;
                 }
             }
@@ -309,8 +315,8 @@ class ArbZgComplianceReportController extends Controller {
         }
 
         $series = [];
-        foreach ($months as $month) {
-            $series[] = ['x' => $month['shortLabel'], 'y' => $byMonth[$month['key']]];
+        foreach ($bucketList as $bucket) {
+            $series[] = ['x' => $bucket['shortLabel'], 'y' => $byKey[$bucket['key']]];
         }
 
         return $series;

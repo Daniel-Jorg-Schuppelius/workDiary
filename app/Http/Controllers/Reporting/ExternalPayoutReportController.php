@@ -15,7 +15,8 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\ResolvesStandardReportFilters;
 use App\Models\{TimeEntry, User};
-use Carbon\{Carbon, CarbonImmutable};
+use App\Support\ChartBucket;
+use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -124,23 +125,26 @@ class ExternalPayoutReportController extends Controller {
             'standardFilters' => $filters,
             'filterFields' => ['user'],
             'monthlyPayoutSeries' => $this->monthlyPayoutSeries($externals, $from, $to),
+            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($from, $to)),
+            'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($from, $to)),
             'payoutByUserSeries' => $this->payoutByUserSeries($rows),
             ...$this->standardFilterOptions(['user'], $filters),
         ]);
     }
 
     /**
-     * Auszahlungen (€) je Monat: zeitbasierte Vergütung nach Monat der
-     * Zeiteinträge, Monatspauschalen je Zeitraum-Monat, Einsatzpauschalen
-     * nach Einsatztagen, Einmalpauschalen im ersten Monat. Leere Serie statt
-     * Null-Achse (§Diagramm-UX).
+     * Auszahlungen (€) je Bucket (adaptiv zur Header-Granularität):
+     * zeitbasierte Vergütung nach Zeitraum der Zeiteinträge, Monatspauschalen
+     * je Zeitraum-Bucket, Einsatzpauschalen nach Einsatztagen, Einmalpauschalen
+     * im ersten Bucket. Leere Serie statt Null-Achse (§Diagramm-UX).
      *
      * @param  \Illuminate\Support\Collection<int, User>  $externals
      * @return list<array{x: string, y: float}>
      */
     private function monthlyPayoutSeries($externals, CarbonImmutable $from, CarbonImmutable $to): array {
-        $months = $this->buildMonthsInRange($from, $to);
-        if ($externals->isEmpty() || $months === []) {
+        $granularity = $this->bucketGranularity($from, $to);
+        $buckets = $this->buildBucketsInRange($from, $to);
+        if ($externals->isEmpty() || $buckets === []) {
             return [];
         }
 
@@ -163,16 +167,16 @@ class ExternalPayoutReportController extends Controller {
                 ->get(['user_id', 'date', 'minutes']);
             foreach ($entries as $entry) {
                 $uid = (int) $entry->user_id;
-                $date = Carbon::parse((string) $entry->date);
-                $ym = $date->format('Y-m');
+                $date = CarbonImmutable::parse((string) $entry->date);
+                $ym = ChartBucket::keyLabel($granularity, $date)[0];
                 $minutesByUserMonth[$uid][$ym] = ($minutesByUserMonth[$uid][$ym] ?? 0) + (int) $entry->minutes;
                 $daysByUserMonth[$uid][$ym][$date->toDateString()] = true;
             }
         }
 
         /** @var array<string, float> $byMonth */
-        $byMonth = array_fill_keys(array_column($months, 'key'), 0.0);
-        $firstMonth = (string) $months[0]['key'];
+        $byMonth = array_fill_keys(array_column($buckets, 'key'), 0.0);
+        $firstMonth = (string) $buckets[0]['key'];
 
         foreach ($externals as $user) {
             $uid = (int) $user->id;
@@ -208,8 +212,8 @@ class ExternalPayoutReportController extends Controller {
         }
 
         $series = [];
-        foreach ($months as $month) {
-            $series[] = ['x' => $month['shortLabel'], 'y' => round($byMonth[$month['key']] ?? 0.0, 2)];
+        foreach ($buckets as $bucket) {
+            $series[] = ['x' => $bucket['shortLabel'], 'y' => round($byMonth[$bucket['key']] ?? 0.0, 2)];
         }
 
         return $series;

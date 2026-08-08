@@ -56,7 +56,7 @@
         <x-charts.bar-h :title="__('Top-Deckungsbeiträge je Projekt (nur positive)')" unit="€" :series="$contributionSeries" :x-label="__('Projekt')" :y-label="__('Deckungsbeitrag (€)')" />
         <x-charts.scatter :title="__('Marge vs. Volumen je Projekt (nur Marge ≥ 0)')" unit="%" :series="$marginVolumeSeries" :percentiles="$marginPercentiles" :x-label="__('Projekt')" :y-label="__('Marge %')" />
     </div>
-    <x-charts.bar :title="__('Erlös und Kosten aus Zeiten je Monat')" unit="€" :series="$monthlySeries" :x-label="__('Monat')" :y-label="__('Erlös (Zeit)')" :y2-label="__('Kosten (Zeit)')" />
+    <x-charts.bar :title="__('Erlös und Kosten aus Zeiten :per', ['per' => $periodPhrase])" unit="€" :series="$monthlySeries" :x-label="$periodAxis" :y-label="__('Erlös (Zeit)')" :y2-label="__('Kosten (Zeit)')" />
 
     {{-- Feature 002: Zielwert Deckungsbeitrags-Marge (Soll/Ist) --}}
     @if($marginTarget !== null)

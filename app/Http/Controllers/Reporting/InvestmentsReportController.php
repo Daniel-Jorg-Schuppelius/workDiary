@@ -20,6 +20,7 @@ use App\Models\Investments\{InvestmentActual, InvestmentBudgetRequest, Investmen
 use App\Models\User;
 use App\Services\Investments\InvestmentService;
 use App\Services\Reporting\ReportFilters;
+use App\Support\ChartBucket;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
@@ -101,6 +102,8 @@ class InvestmentsReportController extends Controller {
             'statusOptions' => $statusOptions,
             'monthlyActualSeries' => $this->monthlyActualSeries($from, $to, $filters),
             'categoryVolumeSeries' => $this->categoryVolumeSeries($rows),
+            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($from, $to)),
+            'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($from, $to)),
         ]);
     }
 
@@ -113,28 +116,29 @@ class InvestmentsReportController extends Controller {
      * @return list<array{x: string, y: float}>
      */
     private function monthlyActualSeries(CarbonImmutable $from, CarbonImmutable $to, ReportFilters $filters): array {
+        $granularity = $this->bucketGranularity($from, $to);
         $actuals = InvestmentActual::query()
             ->whereBetween('occurred_on', [$from->toDateString(), $to->toDateString()])
             ->when($filters->status !== null, fn($q) => $q->whereHas('investmentCase', fn($c) => $c->where('status', $filters->status)))
             ->get(['amount', 'occurred_on']);
 
-        /** @var array<string, float> $byMonth */
-        $byMonth = [];
+        /** @var array<string, float> $byKey */
+        $byKey = [];
         foreach ($actuals as $actual) {
-            $key = CarbonImmutable::parse((string) $actual->occurred_on)->format('Y-m');
-            $byMonth[$key] = ($byMonth[$key] ?? 0.0) + (float) $actual->amount;
+            $key = ChartBucket::keyLabel($granularity, CarbonImmutable::parse((string) $actual->occurred_on))[0];
+            $byKey[$key] = ($byKey[$key] ?? 0.0) + (float) $actual->amount;
         }
-        if ($byMonth === [] || array_sum($byMonth) <= 0) {
+        if ($byKey === [] || array_sum($byKey) <= 0) {
             return [];
         }
 
         $series = [];
-        foreach ($this->buildMonthsInRange($from, $to) as $month) {
-            $sum = round($byMonth[$month['key']] ?? 0.0, 2);
+        foreach ($this->buildBucketsInRange($from, $to) as $bucket) {
+            $sum = round($byKey[$bucket['key']] ?? 0.0, 2);
             if ($sum < 0) {
                 continue; // bar kann keine negativen Werte darstellen (s. Titel).
             }
-            $series[] = ['x' => $month['shortLabel'], 'y' => $sum];
+            $series[] = ['x' => $bucket['shortLabel'], 'y' => $sum];
         }
 
         return $series;

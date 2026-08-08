@@ -15,6 +15,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\ResolvesStandardReportFilters;
 use App\Models\SafetyEvent;
+use App\Support\ChartBucket;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -66,6 +67,8 @@ class SafetyReportController extends Controller {
             'monthlySeries' => $this->monthlySeries($events, $fromDate, $toDate),
             'statusMonthlySeries' => $this->statusMonthlySeries($events, $fromDate, $toDate),
             'statusBands' => $this->statusBands(),
+            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($fromDate, $toDate)),
+            'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($fromDate, $toDate)),
             ...$this->standardFilterOptions(['user', 'team'], $filters),
         ]);
     }
@@ -81,29 +84,30 @@ class SafetyReportController extends Controller {
             return []; // Leerzustand statt Null-Serie (§Diagramm-UX).
         }
 
-        $months = $this->buildMonthsInRange($from, $to);
-        /** @var array<string, array{total: int, closed: int}> $byMonth */
-        $byMonth = [];
-        foreach ($months as $month) {
-            $byMonth[$month['key']] = ['total' => 0, 'closed' => 0];
+        $granularity = $this->bucketGranularity($from, $to);
+        $bucketList = $this->buildBucketsInRange($from, $to);
+        /** @var array<string, array{total: int, closed: int}> $byKey */
+        $byKey = [];
+        foreach ($bucketList as $bucket) {
+            $byKey[$bucket['key']] = ['total' => 0, 'closed' => 0];
         }
         foreach ($events as $event) {
-            $monthKey = $event->occurred_at->format('Y-m');
-            if (! array_key_exists($monthKey, $byMonth)) {
+            $key = ChartBucket::keyLabel($granularity, CarbonImmutable::parse((string) $event->occurred_at))[0];
+            if (! array_key_exists($key, $byKey)) {
                 continue;
             }
-            $byMonth[$monthKey]['total']++;
+            $byKey[$key]['total']++;
             if ($event->status === SafetyEventStatus::Closed) {
-                $byMonth[$monthKey]['closed']++;
+                $byKey[$key]['closed']++;
             }
         }
 
         $series = [];
-        foreach ($months as $month) {
+        foreach ($bucketList as $bucket) {
             $series[] = [
-                'x' => $month['shortLabel'],
-                'y' => $byMonth[$month['key']]['total'],
-                'y2' => $byMonth[$month['key']]['closed'],
+                'x' => $bucket['shortLabel'],
+                'y' => $byKey[$bucket['key']]['total'],
+                'y2' => $byKey[$bucket['key']]['closed'],
             ];
         }
 
@@ -122,22 +126,23 @@ class SafetyReportController extends Controller {
         }
 
         $statusValues = array_column(SafetyEventStatus::cases(), 'value');
-        $months = $this->buildMonthsInRange($from, $to);
-        /** @var array<string, array<string, int>> $byMonth */
-        $byMonth = [];
-        foreach ($months as $month) {
-            $byMonth[$month['key']] = array_fill_keys($statusValues, 0);
+        $granularity = $this->bucketGranularity($from, $to);
+        $bucketList = $this->buildBucketsInRange($from, $to);
+        /** @var array<string, array<string, int>> $byKey */
+        $byKey = [];
+        foreach ($bucketList as $bucket) {
+            $byKey[$bucket['key']] = array_fill_keys($statusValues, 0);
         }
         foreach ($events as $event) {
-            $monthKey = $event->occurred_at->format('Y-m');
-            if (isset($byMonth[$monthKey][$event->status->value])) {
-                $byMonth[$monthKey][$event->status->value]++;
+            $key = ChartBucket::keyLabel($granularity, CarbonImmutable::parse((string) $event->occurred_at))[0];
+            if (isset($byKey[$key][$event->status->value])) {
+                $byKey[$key][$event->status->value]++;
             }
         }
 
         $series = [];
-        foreach ($months as $month) {
-            $series[] = ['x' => $month['shortLabel']] + $byMonth[$month['key']];
+        foreach ($bucketList as $bucket) {
+            $series[] = ['x' => $bucket['shortLabel']] + $byKey[$bucket['key']];
         }
 
         return $series;

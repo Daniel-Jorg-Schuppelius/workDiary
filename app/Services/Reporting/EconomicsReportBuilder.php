@@ -13,6 +13,7 @@ namespace App\Services\Reporting;
 use App\Enums\Expense\ExpenseStatus;
 use App\Models\{BillOfQuantity, BoqItem, BoqItemMapping, BoqItemProgress, Customer, Expense, Material, MaterialUsage, Project, TimeEntry, Timesheet, TravelLog};
 use App\Services\Travel\TravelChargeService;
+use App\Support\ChartBucket;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -513,7 +514,7 @@ class EconomicsReportBuilder {
      *         ausgeblendeter Kunden entfallen; Übersteuerung regelt der Aufrufer.
      * @return list<array{month: string, monthLabel: string, revenue: float, cost: float}>
      */
-    public function timeByMonth(CarbonImmutable $from, CarbonImmutable $to, ?int $customerId = null, ?int $projectId = null, array $excludedCustomerIds = []): array {
+    public function timeByMonth(CarbonImmutable $from, CarbonImmutable $to, string $unit, ?int $customerId = null, ?int $projectId = null, array $excludedCustomerIds = []): array {
         /** @var Collection<int, TimeEntry> $entries */
         $entries = TimeEntry::query()
             ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
@@ -528,28 +529,39 @@ class EconomicsReportBuilder {
             ))
             ->get(['date', 'billable', 'rate', 'internal_rate']);
 
-        /** @var array<string, array{revenue: float, cost: float}> $byMonth */
-        $byMonth = [];
-        foreach ($entries as $entry) {
-            $key = $entry->date?->format('Y-m');
-            if ($key === null) {
-                continue;
-            }
-            $byMonth[$key] ??= ['revenue' => 0.0, 'cost' => 0.0];
-            if ($entry->billable) {
-                $byMonth[$key]['revenue'] += ($entry->rate?->toFloat() ?? 0.0);
-            }
-            $byMonth[$key]['cost'] += ($entry->internal_rate?->toFloat() ?? 0.0);
+        $granularity = ChartBucket::granularity($unit, $from, $to);
+        if ($granularity === 'hour') {
+            $granularity = 'day';
         }
 
+        /** @var array<string, array{revenue: float, cost: float}> $byKey */
+        $byKey = [];
+        foreach ($entries as $entry) {
+            if ($entry->date === null) {
+                continue;
+            }
+            $key = ChartBucket::keyLabel($granularity, CarbonImmutable::parse($entry->date->toDateString()))[0];
+            $byKey[$key] ??= ['revenue' => 0.0, 'cost' => 0.0];
+            if ($entry->billable) {
+                $byKey[$key]['revenue'] += ($entry->rate?->toFloat() ?? 0.0);
+            }
+            $byKey[$key]['cost'] += ($entry->internal_rate?->toFloat() ?? 0.0);
+        }
+
+        /** @var array<string, true> $seen */
+        $seen = [];
         $series = [];
-        for ($cursor = $from->startOfMonth(); $cursor->lte($to); $cursor = $cursor->addMonth()) {
-            $key = $cursor->format('Y-m');
+        for ($cursor = $from->startOfDay(); $cursor->lte($to); $cursor = $cursor->addDay()) {
+            [$key, $label] = ChartBucket::keyLabel($granularity, $cursor);
+            if (isset($seen[$key])) {
+                continue;
+            }
+            $seen[$key] = true;
             $series[] = [
                 'month' => $key,
-                'monthLabel' => $cursor->translatedFormat('M Y'),
-                'revenue' => round($byMonth[$key]['revenue'] ?? 0.0, 2),
-                'cost' => round($byMonth[$key]['cost'] ?? 0.0, 2),
+                'monthLabel' => $label,
+                'revenue' => round($byKey[$key]['revenue'] ?? 0.0, 2),
+                'cost' => round($byKey[$key]['cost'] ?? 0.0, 2),
             ];
         }
 

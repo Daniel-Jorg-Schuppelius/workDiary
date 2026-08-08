@@ -18,6 +18,7 @@ use App\Models\{FlexBalance, SickLeave, User, Vacation};
 use App\Services\Absence\VacationBalanceService;
 use App\Services\HolidayService;
 use App\Services\Reporting\ReportFilters;
+use App\Support\ChartBucket;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
@@ -95,6 +96,8 @@ class AbsencesReportController extends Controller {
             'filterFields' => ['user', 'team', 'status'],
             'monthlyTypeSeries' => $monthlyTypeSeries,
             'typeBands' => $typeBands,
+            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($fromDate, $toDate)),
+            'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($fromDate, $toDate)),
             'remainingSeries' => $this->remainingVacationSeries($rows),
             ...$this->standardFilterOptions(['user', 'team'], $filters),
         ]);
@@ -123,15 +126,16 @@ class AbsencesReportController extends Controller {
      * @return list<array<string, string|int>>
      */
     private function monthlyTypeSeries(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): array {
-        $months = $this->buildMonthsInRange($from, $to);
-        if ($months === []) {
+        $granularity = $this->bucketGranularity($from, $to);
+        $bucketList = $this->buildBucketsInRange($from, $to);
+        if ($bucketList === []) {
             return [];
         }
 
-        /** @var array<string, array<string, int>> $buckets [Y-m][band] => Werktage */
+        /** @var array<string, array<string, int>> $buckets [bucketKey][band] => Werktage */
         $buckets = [];
-        foreach ($months as $month) {
-            $buckets[$month['key']] = ['vacation' => 0, 'sick' => 0, 'special' => 0, 'unpaid' => 0];
+        foreach ($bucketList as $bucket) {
+            $buckets[$bucket['key']] = ['vacation' => 0, 'sick' => 0, 'special' => 0, 'unpaid' => 0];
         }
 
         $vacQ = Vacation::query();
@@ -154,7 +158,7 @@ class AbsencesReportController extends Controller {
             if ($bandKey === null) {
                 continue;
             }
-            $this->addWorkdaysPerMonth($buckets, $bandKey, $v->start_date, $v->end_date, $from, $to);
+            $this->addWorkdaysPerBucket($buckets, $granularity, $bandKey, $v->start_date, $v->end_date, $from, $to);
         }
 
         $sickQ = SickLeave::query()
@@ -168,7 +172,7 @@ class AbsencesReportController extends Controller {
         /** @var Collection<int, SickLeave> $sickLeaves */
         $sickLeaves = $sickQ->get();
         foreach ($sickLeaves as $s) {
-            $this->addWorkdaysPerMonth($buckets, 'sick', $s->start_date, $s->end_date, $from, $to);
+            $this->addWorkdaysPerBucket($buckets, $granularity, 'sick', $s->start_date, $s->end_date, $from, $to);
         }
 
         $total = 0;
@@ -180,8 +184,8 @@ class AbsencesReportController extends Controller {
         }
 
         $series = [];
-        foreach ($months as $month) {
-            $series[] = ['x' => $month['shortLabel'], ...$buckets[$month['key']]];
+        foreach ($bucketList as $bucket) {
+            $series[] = ['x' => $bucket['shortLabel'], ...$buckets[$bucket['key']]];
         }
 
         return $series;
@@ -189,26 +193,26 @@ class AbsencesReportController extends Controller {
 
     /**
      * Verteilt die Werktage einer Abwesenheit (auf den Report-Zeitraum
-     * geklammert) monatsweise auf die Chart-Buckets.
+     * geklammert) tagesweise auf die adaptiven Chart-Buckets.
      *
-     * @param  array<string, array<string, int>>  $buckets  [Y-m][band] => Werktage
+     * @param  array<string, array<string, int>>  $buckets  [bucketKey][band] => Werktage
+     * @param  'day'|'week'|'month'|'quarter'  $granularity
      */
-    private function addWorkdaysPerMonth(array &$buckets, string $bandKey, CarbonInterface $startDate, CarbonInterface $endDate, CarbonImmutable $from, CarbonImmutable $to): void {
+    private function addWorkdaysPerBucket(array &$buckets, string $granularity, string $bandKey, CarbonInterface $startDate, CarbonInterface $endDate, CarbonImmutable $from, CarbonImmutable $to): void {
         $start = $startDate->greaterThan($from) ? CarbonImmutable::parse($startDate->toDateString()) : $from;
         $end = $endDate->lessThan($to) ? CarbonImmutable::parse($endDate->toDateString()) : $to;
         if ($start->greaterThan($end)) {
             return;
         }
 
-        $cursor = $start->startOfMonth();
-        while ($cursor->lte($end)) {
-            $monthKey = $cursor->format('Y-m');
-            $chunkStart = $start->greaterThan($cursor) ? $start : $cursor;
-            $chunkEnd = $end->lessThan($cursor->endOfMonth()) ? $end : $cursor->endOfMonth();
-            if (isset($buckets[$monthKey])) {
-                $buckets[$monthKey][$bandKey] += $this->countWorkdays($chunkStart, $chunkEnd);
+        for ($cursor = $start->startOfDay(); $cursor->lte($end); $cursor = $cursor->addDay()) {
+            if (! $cursor->isWeekday() || $this->holidayService->isHoliday($cursor)) {
+                continue;
             }
-            $cursor = $cursor->addMonth();
+            $key = ChartBucket::keyLabel($granularity, $cursor)[0];
+            if (isset($buckets[$key])) {
+                $buckets[$key][$bandKey] += 1;
+            }
         }
     }
 

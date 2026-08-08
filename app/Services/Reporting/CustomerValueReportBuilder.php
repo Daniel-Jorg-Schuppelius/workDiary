@@ -11,6 +11,7 @@
 namespace App\Services\Reporting;
 
 use App\Models\{Customer, DiaryEntry, Invoice, Project, TimeEntry};
+use App\Support\ChartBucket;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -169,21 +170,28 @@ class CustomerValueReportBuilder {
     }
 
     /**
-     * Monatlicher Erlös (abrechenbare rate-Snapshots) der letzten zwölf
-     * Monate je Kunde — Sparkline-Reihe der Risikoliste.
+     * Erlös (abrechenbare rate-Snapshots) je Kunde im Zeitraum, in der
+     * Header-Granularität — Sparkline-Reihe der Risikoliste.
      *
      * @param  list<int>  $customerIds
-     * @return array<int, list<float>> customerId → 12 Monatswerte (alt → neu)
+     * @return array<int, list<float>> customerId → Werte je Bucket (alt → neu)
      */
-    public function monthlyRevenueSeries(array $customerIds, CarbonImmutable $to): array {
+    public function monthlyRevenueSeries(array $customerIds, CarbonImmutable $from, CarbonImmutable $to, string $unit): array {
         if ($customerIds === []) {
             return [];
         }
 
-        $start = $to->subMonthsNoOverflow(11)->startOfMonth();
-        $months = [];
-        for ($i = 0; $i < 12; $i++) {
-            $months[] = $start->addMonthsNoOverflow($i)->format('Y-m');
+        $granularity = ChartBucket::granularity($unit, $from, $to);
+        if ($granularity === 'hour') {
+            $granularity = 'day';
+        }
+        /** @var list<string> $bucketKeys */
+        $bucketKeys = [];
+        for ($cursor = $from->startOfDay(); $cursor->lte($to); $cursor = $cursor->addDay()) {
+            $key = ChartBucket::keyLabel($granularity, $cursor)[0];
+            if (! in_array($key, $bucketKeys, true)) {
+                $bucketKeys[] = $key;
+            }
         }
 
         $projectToCustomer = Project::query()
@@ -192,18 +200,24 @@ class CustomerValueReportBuilder {
             ->mapWithKeys(static fn(Project $p): array => [(int) $p->id => (int) $p->customer_id])
             ->all();
 
-        $byCustomer = array_fill_keys($customerIds, array_fill_keys($months, 0.0));
+        $byCustomer = array_fill_keys($customerIds, array_fill_keys($bucketKeys, 0.0));
         if ($projectToCustomer !== []) {
             TimeEntry::query()
-                ->whereBetween('date', [$start->toDateString(), $to->toDateString()])
+                ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
                 ->whereIn('project_id', array_keys($projectToCustomer))
                 ->where('billable', true)
                 ->get(['project_id', 'date', 'rate'])
-                ->each(function (TimeEntry $e) use (&$byCustomer, $projectToCustomer): void {
+                ->each(function (TimeEntry $e) use (&$byCustomer, $projectToCustomer, $granularity): void {
                     $cid = $projectToCustomer[(int) $e->project_id] ?? null;
-                    $month = $e->date instanceof \Carbon\CarbonInterface ? $e->date->format('Y-m') : substr((string) $e->date, 0, 7);
-                    if ($cid !== null && isset($byCustomer[$cid][$month])) {
-                        $byCustomer[$cid][$month] += ($e->rate?->toFloat() ?? 0.0);
+                    if ($cid === null) {
+                        return;
+                    }
+                    $day = $e->date instanceof \Carbon\CarbonInterface
+                        ? CarbonImmutable::parse($e->date->toDateString())
+                        : CarbonImmutable::parse((string) $e->date);
+                    $key = ChartBucket::keyLabel($granularity, $day)[0];
+                    if (isset($byCustomer[$cid][$key])) {
+                        $byCustomer[$cid][$key] += ($e->rate?->toFloat() ?? 0.0);
                     }
                 });
         }

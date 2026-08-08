@@ -93,8 +93,8 @@ class SupplierController extends Controller {
             && ($authUser->isAdmin() || $authUser->can(\App\Enums\User\Permission::ReportView->value))
         ) {
             $spendBuilder = app(\App\Services\Reporting\SupplierAnalysisReportBuilder::class);
-            $spendSeries = $spendBuilder->supplierMonthlySpendSeries((int) $supplier->id, $lexofficeVoucherRange['to']);
-            $voucherCountSeries = $spendBuilder->supplierMonthlyVoucherCountSeries((int) $supplier->id, $lexofficeVoucherRange['to']);
+            $spendSeries = $spendBuilder->supplierMonthlySpendSeries((int) $supplier->id, $lexofficeVoucherRange['from'], $lexofficeVoucherRange['to'], $this->globalUnit());
+            $voucherCountSeries = $spendBuilder->supplierMonthlyVoucherCountSeries((int) $supplier->id, $lexofficeVoucherRange['from'], $lexofficeVoucherRange['to'], $this->globalUnit());
         }
 
         return view('suppliers.show', [
@@ -103,6 +103,8 @@ class SupplierController extends Controller {
             'procurementStats' => $procurementStats,
             'spendSeries' => $spendSeries,
             'voucherCountSeries' => $voucherCountSeries,
+            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($lexofficeVoucherRange['from'], $lexofficeVoucherRange['to'])),
+            'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($lexofficeVoucherRange['from'], $lexofficeVoucherRange['to'])),
             'lexofficePlugin' => $lexoffice,
             'lexofficeContactRef' => $lexofficeContactRef,
             'lexofficeVoucherRange' => $lexofficeVoucherRange,

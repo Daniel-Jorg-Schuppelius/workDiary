@@ -18,6 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\Applications\{ApplicationContractNegotiation, ApplicationOpportunity, JobApplication};
 use App\Models\User;
+use App\Support\ChartBucket;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
@@ -74,14 +75,17 @@ class ApplicationsReportController extends Controller {
             'filterFields' => ['status'],
             'statusOptions' => $statusOptions,
             'monthlySeries' => $this->monthlySeries($recruiting['monthly'] ?? [], $fromDate, $toDate),
+            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($fromDate, $toDate)),
+            'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($fromDate, $toDate)),
             'funnelSeries' => $this->funnelSeries($recruiting['pipeline'] ?? []),
         ]);
     }
 
     /**
-     * Bewerbungseingang je Monat (Eingangsdatum, sonst Anlagedatum) — nur
-     * aggregierte Zählungen, keine Bewerberdaten (PII bleibt verschlüsselt).
-     * Leere Serie statt Null-Linie (§Diagramm-UX).
+     * Bewerbungseingang je Bucket (adaptiv zur Header-Granularität;
+     * Eingangsdatum, sonst Anlagedatum) — nur aggregierte Zählungen, keine
+     * Bewerberdaten (PII bleibt verschlüsselt). Leere Serie statt Null-Linie
+     * (§Diagramm-UX).
      *
      * @param  array<string, int>  $monthly
      * @return list<array{x: string, y: int}>
@@ -92,8 +96,8 @@ class ApplicationsReportController extends Controller {
         }
 
         $series = [];
-        foreach ($this->buildMonthsInRange($from, $to) as $month) {
-            $series[] = ['x' => $month['shortLabel'], 'y' => $monthly[$month['key']] ?? 0];
+        foreach ($this->buildBucketsInRange($from, $to) as $bucket) {
+            $series[] = ['x' => $bucket['shortLabel'], 'y' => $monthly[$bucket['key']] ?? 0];
         }
 
         return $series;
@@ -161,6 +165,7 @@ class ApplicationsReportController extends Controller {
      * @return array{pipeline: array<string, int>, sources: array<string, int>, monthly: array<string, int>, avg_days_to_accept: float|null}
      */
     private function aggregateRecruiting(string $from, string $to, ?string $status): array {
+        $granularity = $this->bucketGranularity(CarbonImmutable::parse($from), CarbonImmutable::parse($to));
         $pipeline = [];
         $sources = [];
         $monthly = [];
@@ -173,7 +178,8 @@ class ApplicationsReportController extends Controller {
         foreach ($applications as $application) {
             $pipeline[(string) $application->status] = ($pipeline[(string) $application->status] ?? 0) + 1;
             $sources[(string) $application->source] = ($sources[(string) $application->source] ?? 0) + 1;
-            $monthKey = ($application->received_at ?? $application->created_at)?->format('Y-m');
+            $date = $application->received_at ?? $application->created_at;
+            $monthKey = $date !== null ? ChartBucket::keyLabel($granularity, CarbonImmutable::parse((string) $date))[0] : null;
             if ($monthKey !== null) {
                 $monthly[$monthKey] = ($monthly[$monthKey] ?? 0) + 1;
             }

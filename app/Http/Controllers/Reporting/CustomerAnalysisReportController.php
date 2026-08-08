@@ -27,8 +27,7 @@ class CustomerAnalysisReportController extends Controller {
     use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
-    public function __construct(private readonly CustomerAnalysisReportBuilder $builder) {
-    }
+    public function __construct(private readonly CustomerAnalysisReportBuilder $builder) {}
 
     public function index(Request $request): View|Response|SymfonyResponse {
         [$from, $to] = $this->resolveRange($request);
