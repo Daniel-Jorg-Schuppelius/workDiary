@@ -34,7 +34,8 @@ class AssetAnalysisReportController extends Controller {
     use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
-    public function __construct(private readonly AssetAnalysisReportBuilder $builder) {}
+    public function __construct(private readonly AssetAnalysisReportBuilder $builder) {
+    }
 
     public function index(Request $request): View|Response|SymfonyResponse {
         [$from, $to] = $this->resolveRange($request);
