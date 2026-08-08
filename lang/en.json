@@ -9646,5 +9646,6 @@
     "je Quartal": "per quarter",
     "je Tag": "per day",
     "je Woche": "per week",
-    "Quartal": "Quarter"
+    "Quartal": "Quarter",
+    "Auftragseingang :per": "Incoming orders :per"
 }

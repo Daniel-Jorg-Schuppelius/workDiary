@@ -13,6 +13,7 @@ namespace App\Services\Reporting;
 use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
 use App\Models\{Customer, DiaryEntry, OpenIssue, Project, Protocol, TimeEntry};
+use App\Support\ChartBucket;
 use Carbon\CarbonImmutable;
 
 /**
@@ -159,20 +160,24 @@ class CustomerAnalysisReportBuilder {
     }
 
     /**
-     * Auftragseingang pro Tag der letzten 30 Tage (kundenübergreifend) —
-     * dasselbe Zeitfenster wie {@see trend30d()}, als Tagesreihe für den
-     * Trend-Linienchart des Kundenreports.
+     * Auftragseingang je Zeit-Bucket im gewählten Zeitraum (kundenübergreifend),
+     * in der Header-Granularität — Tagesreihe für den Trend-Linienchart des
+     * Kundenreports.
      *
+     * @param  'day'|'week'|'month'|'quarter'  $granularity
      * @param  list<int>  $excludedCustomerIds  Feature 002; kundenlose Einträge bleiben sichtbar.
-     * @return list<array{date: CarbonImmutable, count: int}>
+     * @return list<array{label: string, count: int}>
      */
-    public function dailyEntrySeries30d(CarbonImmutable $to, ?int $projectId, ?int $userId, ?int $entryTypeId = null, array $excludedCustomerIds = []): array {
-        $from = $to->subDays(29)->startOfDay();
+    public function entrySeries(CarbonImmutable $from, CarbonImmutable $to, string $granularity, ?int $projectId, ?int $userId, ?int $entryTypeId = null, array $excludedCustomerIds = []): array {
+        /** @var array<string, array{label: string, count: int}> $buckets */
+        $buckets = [];
+        for ($cursor = $from->startOfDay(); $cursor->lte($to); $cursor = $cursor->addDay()) {
+            [$key, $label] = ChartBucket::keyLabel($granularity, $cursor);
+            $buckets[$key] ??= ['label' => $label, 'count' => 0];
+        }
 
-        /** @var array<string, int> $byDay */
-        $byDay = [];
         DiaryEntry::query()
-            ->whereBetween('created_at', [$from, $to])
+            ->whereBetween('created_at', [$from->startOfDay(), $to])
             ->when($projectId !== null, fn($q) => $q->where('project_id', $projectId))
             ->when($userId !== null, fn($q) => $q->where('user_id', $userId))
             ->when($entryTypeId !== null, fn($q) => $q->where('entry_type_id', $entryTypeId))
@@ -181,19 +186,13 @@ class CustomerAnalysisReportBuilder {
                 fn($w) => $w->whereNull('customer_id')->orWhereNotIn('customer_id', $excludedCustomerIds),
             ))
             ->pluck('created_at')
-            ->each(function ($createdAt) use (&$byDay): void {
-                $key = CarbonImmutable::parse((string) $createdAt)->toDateString();
-                $byDay[$key] = ($byDay[$key] ?? 0) + 1;
+            ->each(function ($createdAt) use (&$buckets, $granularity): void {
+                $key = ChartBucket::keyLabel($granularity, CarbonImmutable::parse((string) $createdAt))[0];
+                if (isset($buckets[$key])) {
+                    $buckets[$key]['count']++;
+                }
             });
 
-        $series = [];
-        for ($cursor = $from; $cursor->lte($to); $cursor = $cursor->addDay()) {
-            $series[] = [
-                'date' => $cursor,
-                'count' => $byDay[$cursor->toDateString()] ?? 0,
-            ];
-        }
-
-        return $series;
+        return array_values($buckets);
     }
 }

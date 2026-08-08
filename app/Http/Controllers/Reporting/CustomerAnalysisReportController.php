@@ -105,8 +105,10 @@ class CustomerAnalysisReportController extends Controller {
             'standardFilters' => $filters,
             'filterFields' => $filterFields,
             'customerHoursSeries' => $this->customerHoursSeries(array_values($rows->all()), $filters),
-            'trendSeries' => $this->trendSeries($to, $filters, $excludedCustomerIds),
+            'trendSeries' => $this->trendSeries($from, $to, $filters, $excludedCustomerIds),
             'openIssuesSeries' => $this->openIssuesSeries(array_values($rows->all()), $filters),
+            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($from, $to)),
+            'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($from, $to)),
             ...$this->standardFilterOptions($filterFields, $filters),
         ]);
     }
@@ -134,21 +136,23 @@ class CustomerAnalysisReportController extends Controller {
     }
 
     /**
-     * Auftragseingang pro Tag der letzten 30 Tage (Trend-Linienchart).
+     * Auftragseingang je Zeit-Bucket im gewählten Zeitraum (adaptive
+     * Header-Granularität), als Trend-Linienchart.
      *
      * @param  list<int>  $excludedCustomerIds
      * @return list<array{x: string, y: int}>
      */
-    private function trendSeries(\Carbon\CarbonImmutable $to, ReportFilters $filters, array $excludedCustomerIds = []): array {
-        $daily = $this->builder->dailyEntrySeries30d($to, $filters->projectId, $filters->userId, $filters->entryTypeId, $excludedCustomerIds);
-        if (array_sum(array_column($daily, 'count')) === 0) {
+    private function trendSeries(\Carbon\CarbonImmutable $from, \Carbon\CarbonImmutable $to, ReportFilters $filters, array $excludedCustomerIds = []): array {
+        $granularity = $this->bucketGranularity($from, $to);
+        $series = $this->builder->entrySeries($from, $to, $granularity, $filters->projectId, $filters->userId, $filters->entryTypeId, $excludedCustomerIds);
+        if (array_sum(array_column($series, 'count')) === 0) {
             return []; // Leerzustand statt Null-Linie (§Diagramm-UX).
         }
 
         return array_map(static fn(array $point): array => [
-            'x' => $point['date']->format('d.m.'),
+            'x' => $point['label'],
             'y' => $point['count'],
-        ], $daily);
+        ], $series);
     }
 
     /**
