@@ -28,6 +28,7 @@
         "@fullcalendar/interaction": "^6.1.20",
         "@fullcalendar/list": "^6.1.20",
         "@fullcalendar/timegrid": "^6.1.20",
+        "@sgratzl/chartjs-chart-boxplot": "^4.4.5",
         "alpinejs": "^3.15.12",
         "chart.js": "^4.5.1",
         "chartjs-plugin-zoom": "^2.2.0",

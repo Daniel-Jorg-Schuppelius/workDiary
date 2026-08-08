@@ -35,6 +35,19 @@
     $hi = max($lo + 1, (float) ($points->max('max') ?? 1));
     $sx = fn(float $v): float => $labelW + (($v - $lo) / ($hi - $lo)) * $areaW;
     $num = fn(float $v): string => rtrim(rtrim(number_format($v, 2, '.', ''), '0'), '.');
+
+    // Kontrakt für die optionale Chart.js-Verbesserung am Bildschirm (charts.js).
+    $chartSpec = [
+        'type' => 'boxplot',
+        'title' => $title,
+        'unit' => $unit,
+        'labels' => $points->map(fn(array $p): string => (string) $p['x'])->all(),
+        'urls' => $points->map(fn(array $p) => $p['url'] ?? null)->all(),
+        'boxes' => $points->map(fn(array $p): array => [
+            'min' => (float) $p['min'], 'q1' => (float) $p['q1'], 'median' => (float) $p['median'],
+            'q3' => (float) $p['q3'], 'max' => (float) $p['max'],
+        ])->all(),
+    ];
 @endphp
 
 <figure class="wd-chart rounded-box border border-base-300 bg-base-100 p-3">
@@ -55,7 +68,8 @@
             <x-empty-state icon="candlestick_chart" :title="__('Noch keine Daten für dieses Diagramm.')" compact />
         </div>
     @else
-        <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="mt-2 w-full">
+        @include('components.charts._canvas', ['spec' => $chartSpec])
+        <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="wd-chart-svg mt-2 w-full">
             <line x1="{{ $labelW }}" y1="{{ $padTop }}" x2="{{ $labelW }}" y2="{{ $height - $padBottom }}" class="stroke-base-300" stroke-width="1" />
             <line x1="{{ $labelW }}" y1="{{ $height - $padBottom }}" x2="{{ $labelW + $areaW }}" y2="{{ $height - $padBottom }}" class="stroke-base-300" stroke-width="1" />
             <text x="{{ $labelW }}" y="{{ $height - $padBottom + 12 }}" text-anchor="middle" class="fill-base-content/60 text-[10px]">{{ $num($lo) }}</text>

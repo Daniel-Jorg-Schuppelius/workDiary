@@ -53,6 +53,20 @@
     $barW = max(8, min(44, $slot_ * 0.6));
     $uid = 'hatch-wf-' . uniqid();
     $fmt = fn(float $v): string => ($v > 0 ? '+' : ($v < 0 ? '−' : '±')) . rtrim(rtrim(number_format(abs($v), 2, '.', ''), '0'), '.');
+
+    // Kontrakt für die optionale Chart.js-Verbesserung am Bildschirm (charts.js).
+    $chartSpec = [
+        'type' => 'bar',
+        'waterfall' => true,
+        'title' => $title,
+        'unit' => $unit,
+        'xLabel' => $xLabel,
+        'yLabel' => $yLabel,
+        'labels' => $cols->map(fn(array $c): string => (string) $c['x'])->all(),
+        'urls' => $cols->map(fn(array $c) => $c['url'] ?? null)->all(),
+        'ranges' => $cols->map(fn(array $c): array => [(float) $c['from'], (float) $c['to']])->all(),
+        'kinds' => $cols->map(fn(array $c): string => $c['type'] === 'total' ? 'total' : (((float) ($c['delta'] ?? 0)) >= 0 ? 'up' : 'down'))->all(),
+    ];
 @endphp
 
 <figure class="wd-chart rounded-box border border-base-300 bg-base-100 p-3">
@@ -73,7 +87,8 @@
             <x-empty-state icon="waterfall_chart" :title="__('Noch keine Daten für dieses Diagramm.')" compact />
         </div>
     @else
-        <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="mt-2 w-full">
+        @include('components.charts._canvas', ['spec' => $chartSpec])
+        <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="wd-chart-svg mt-2 w-full">
             <defs>
                 <pattern id="{{ $uid }}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
                     <line x1="0" y1="0" x2="0" y2="6" class="stroke-secondary" stroke-width="2" />

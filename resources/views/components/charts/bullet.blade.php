@@ -41,6 +41,20 @@
         (float) $points->max(fn (array $p): float => (float) max(array_merge([0], (array) ($p['bands'] ?? [])))),
     );
     $len = fn(float $v): float => max(0, min(1, $v / $maxY)) * $areaW;
+
+    // Kontrakt für die optionale Chart.js-Verbesserung am Bildschirm (charts.js).
+    $chartSpec = [
+        'type' => 'bar',
+        'bullet' => true,
+        'title' => $title,
+        'unit' => $unit,
+        'yLabel' => $yLabel ?? $unit,
+        'targetLabel' => (string) $targetLabel,
+        'labels' => $points->map(fn(array $p): string => (string) $p['x'])->all(),
+        'urls' => $points->map(fn(array $p) => $p['url'] ?? null)->all(),
+        'values' => $points->map(fn(array $p): float => (float) $p['y'])->all(),
+        'targets' => $points->map(fn(array $p) => ($p['target'] ?? null) === null ? null : (float) $p['target'])->all(),
+    ];
 @endphp
 
 <figure class="wd-chart rounded-box border border-base-300 bg-base-100 p-3">
@@ -61,7 +75,8 @@
             <x-empty-state icon="bar_chart" :title="__('Noch keine Daten für dieses Diagramm.')" compact />
         </div>
     @else
-        <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="mt-2 w-full">
+        @include('components.charts._canvas', ['spec' => $chartSpec])
+        <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="wd-chart-svg mt-2 w-full">
             <line x1="{{ $labelW }}" y1="{{ $padTop }}" x2="{{ $labelW }}" y2="{{ $height - $padBottom }}" class="stroke-base-300" stroke-width="1" />
             @foreach ($points as $i => $point)
                 @php

@@ -35,9 +35,11 @@
  */
 /**
  * @typedef {Object} ChartSpec
- * @property {ChartKind} type
+ * @property {ChartKind|'boxplot'} type
  * @property {boolean} [stacked]
  * @property {boolean} [horizontal]
+ * @property {boolean} [waterfall]
+ * @property {boolean} [bullet]
  * @property {string} title
  * @property {string} [unit]
  * @property {string} [xLabel]
@@ -45,20 +47,33 @@
  * @property {number|null} [median]
  * @property {string[]} labels
  * @property {Array<string|null>} [urls]
- * @property {ChartDataset[]} datasets
+ * @property {ChartDataset[]} [datasets]
+ * @property {Array<{min:number,q1:number,median:number,q3:number,max:number}>} [boxes]
+ * @property {Array<[number, number]>} [ranges]
+ * @property {Array<'total'|'up'|'down'>} [kinds]
+ * @property {number[]} [values]
+ * @property {Array<number|null>} [targets]
+ * @property {number[][]} [bands]
+ * @property {string} [targetLabel]
  */
 
 /** @type {Promise<any>|null} */
 let chartLibPromise = null;
 
-/** Lädt Chart.js + Zoom-Plugin einmalig und registriert die Bausteine. */
+/** Lädt Chart.js + Zoom-/Boxplot-Plugin einmalig und registriert die Bausteine. */
 function loadChartLib() {
     if (chartLibPromise === null) {
         chartLibPromise = Promise.all([
             import("chart.js"),
             import("chartjs-plugin-zoom"),
-        ]).then(([core, zoom]) => {
-            core.Chart.register(...core.registerables, zoom.default);
+            import("@sgratzl/chartjs-chart-boxplot"),
+        ]).then(([core, zoom, box]) => {
+            core.Chart.register(
+                ...core.registerables,
+                zoom.default,
+                box.BoxPlotController,
+                box.BoxAndWiskers,
+            );
             return core.Chart;
         });
     }
@@ -88,6 +103,8 @@ function readTheme() {
         grid: cssVar("--color-base-300", "#e5e7eb"),
         text: cssVar("--color-base-content", "#374151"),
         surface: cssVar("--color-base-100", "#ffffff"),
+        success: cssVar("--color-success", "#16a34a"),
+        error: cssVar("--color-error", "#dc2626"),
         palette: [
             cssVar("--color-primary", "#2563eb"),
             cssVar("--color-secondary", "#7c3aed"),
@@ -155,12 +172,23 @@ function hatchPattern(color) {
  * @returns {Record<string, any>}
  */
 function buildConfig(spec, theme, reduceMotion) {
+    if (spec.type === "boxplot") {
+        return buildBoxplotConfig(spec, theme, reduceMotion);
+    }
+    if (spec.waterfall === true) {
+        return buildWaterfallConfig(spec, theme, reduceMotion);
+    }
+    if (spec.bullet === true) {
+        return buildBulletConfig(spec, theme, reduceMotion);
+    }
+
+    const datasetsIn = spec.datasets ?? [];
     const stacked = spec.stacked === true;
     const horizontal = spec.horizontal === true;
-    const hasPercent = spec.datasets.some((ds) => ds.axis === "percent");
+    const hasPercent = datasetsIn.some((ds) => ds.axis === "percent");
     const manyPoints = spec.labels.length > 12;
 
-    const datasets = spec.datasets.map((ds, index) => {
+    const datasets = datasetsIn.map((ds, index) => {
         const base = colorForRole(theme, ds.role, index);
         const isLine = ds.kind === "line";
         /** @type {Record<string, any>} */
@@ -214,7 +242,7 @@ function buildConfig(spec, theme, reduceMotion) {
     /** @type {Record<string, any>} */
     const plugins = {
         legend: {
-            display: spec.datasets.length > 1,
+            display: (spec.datasets ?? []).length > 1,
             labels: { color: theme.text },
         },
         tooltip: { mode: "index", intersect: false },
@@ -292,6 +320,163 @@ function buildConfig(spec, theme, reduceMotion) {
 }
 
 /**
+ * Boxplot-Konfiguration (horizontal): die fünf Kennwerte kommen vorberechnet
+ * aus dem Builder; das Boxplot-Plugin rendert Box/Whisker/Median.
+ * @param {ChartSpec} spec
+ * @param {ReturnType<typeof readTheme>} theme
+ * @param {boolean} reduceMotion
+ * @returns {Record<string, any>}
+ */
+function buildBoxplotConfig(spec, theme, reduceMotion) {
+    return {
+        type: "boxplot",
+        data: {
+            labels: spec.labels,
+            datasets: [
+                {
+                    label: spec.unit ?? "",
+                    data: spec.boxes ?? [],
+                    backgroundColor: withAlpha(theme.primary, 0.3),
+                    borderColor: theme.primary,
+                    borderWidth: 1.5,
+                    medianColor: theme.primary,
+                    itemRadius: 0,
+                    outlierRadius: 2,
+                    outlierBackgroundColor: theme.muted,
+                },
+            ],
+        },
+        options: {
+            indexAxis: "y",
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: reduceMotion ? false : { duration: 500 },
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { color: theme.grid }, ticks: { color: theme.text } },
+                y: { grid: { color: theme.grid }, ticks: { color: theme.text } },
+            },
+        },
+    };
+}
+
+/**
+ * Waterfall/Brücke: Start-/Endbestand + schwebende Δ-Balken (`[from,to]`),
+ * Zunahmen grün, Abnahmen rot, Bestandssäulen neutral.
+ * @param {ChartSpec} spec
+ * @param {ReturnType<typeof readTheme>} theme
+ * @param {boolean} reduceMotion
+ * @returns {Record<string, any>}
+ */
+function buildWaterfallConfig(spec, theme, reduceMotion) {
+    const ranges = spec.ranges ?? [];
+    const kinds = spec.kinds ?? [];
+    const colorFor = (/** @type {string} */ kind) =>
+        kind === "up" ? theme.success : kind === "down" ? theme.error : theme.muted;
+    return {
+        type: "bar",
+        data: {
+            labels: spec.labels,
+            datasets: [
+                {
+                    label: spec.unit ?? "",
+                    data: ranges,
+                    backgroundColor: ranges.map((_, i) => withAlpha(colorFor(kinds[i]), 0.75)),
+                    borderColor: ranges.map((_, i) => colorFor(kinds[i])),
+                    borderWidth: 1,
+                    borderSkipped: false,
+                    borderRadius: 2,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: reduceMotion ? false : { duration: 500 },
+            plugins: { legend: { display: false } },
+            scales: {
+                x: {
+                    grid: { color: theme.grid },
+                    ticks: {
+                        color: theme.text,
+                        maxRotation: spec.labels.length > 8 ? 40 : 0,
+                        autoSkip: true,
+                    },
+                },
+                y: { grid: { color: theme.grid }, ticks: { color: theme.text } },
+            },
+        },
+    };
+}
+
+/**
+ * Bullet: horizontale Ist-Balken je Kennzahl mit Ziel-Marker (Raute).
+ * Qualitative Bänder sind sekundär und bleiben der SVG-Variante vorbehalten.
+ * @param {ChartSpec} spec
+ * @param {ReturnType<typeof readTheme>} theme
+ * @param {boolean} reduceMotion
+ * @returns {Record<string, any>}
+ */
+function buildBulletConfig(spec, theme, reduceMotion) {
+    const targets = spec.targets ?? [];
+    /** @type {Array<Record<string, any>>} */
+    const datasets = [
+        {
+            type: "bar",
+            label: spec.yLabel ?? spec.unit ?? "",
+            data: spec.values ?? [],
+            backgroundColor: gradientFor(theme.primary, true),
+            borderColor: theme.primary,
+            borderWidth: 0,
+            borderRadius: 3,
+            maxBarThickness: 18,
+            order: 2,
+        },
+    ];
+    const targetPoints = targets.map((t, i) =>
+        t === null ? null : { x: t, y: spec.labels[i] },
+    );
+    const hasTarget = targetPoints.some((p) => p !== null);
+    if (hasTarget) {
+        datasets.push({
+            type: "scatter",
+            label: spec.targetLabel ?? "",
+            data: targetPoints,
+            pointStyle: "rectRot",
+            radius: 6,
+            hoverRadius: 7,
+            borderColor: theme.accent,
+            backgroundColor: theme.accent,
+            order: 1,
+        });
+    }
+    return {
+        type: "bar",
+        data: { labels: spec.labels, datasets },
+        options: {
+            indexAxis: "y",
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: reduceMotion ? false : { duration: 500 },
+            plugins: { legend: { display: hasTarget, labels: { color: theme.text } } },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    grid: { color: theme.grid },
+                    ticks: { color: theme.text },
+                    title: {
+                        display: typeof spec.yLabel === "string" && spec.yLabel !== "",
+                        text: spec.yLabel,
+                        color: theme.text,
+                    },
+                },
+                y: { type: "category", grid: { color: theme.grid }, ticks: { color: theme.text } },
+            },
+        },
+    };
+}
+
+/**
  * Weicher Verlauf für Säulen; als scriptable Funktion, weil die Chart-Fläche
  * erst zur Zeichenzeit bekannt ist. Richtung folgt der Balkenausrichtung.
  * @param {string} color
@@ -363,11 +548,13 @@ async function enhance(figure) {
     } catch {
         return;
     }
-    if (
-        spec === null ||
-        !Array.isArray(spec.datasets) ||
-        spec.datasets.length === 0
-    ) {
+    if (spec === null || typeof spec.type !== "string") {
+        return;
+    }
+    // bar/line brauchen datasets; boxplot/waterfall/bullet tragen ihre Werte separat.
+    const specialType =
+        spec.type === "boxplot" || spec.waterfall === true || spec.bullet === true;
+    if (! specialType && (! Array.isArray(spec.datasets) || spec.datasets.length === 0)) {
         return;
     }
 
