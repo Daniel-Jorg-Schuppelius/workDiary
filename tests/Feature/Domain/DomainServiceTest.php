@@ -11,7 +11,7 @@
 namespace Tests\Feature\Domain;
 
 use App\Enums\Domain\{DomainConnectionStatus, DomainProviderCommandStatus, DomainSyncStatus};
-use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, User};
+use App\Models\{Customer, ExternalReference, User};
 use App\Models\Domain\{DomainAccountingEntry, DomainProjection, DomainProviderConnection, DomainResellerAccount};
 use App\Plugins\Support\Domain\DomainRateBudgetException;
 use App\Services\Domain\{DomainAccountingService, DomainActionException, DomainAvailabilityService, DomainCommandService, DomainConnectionService, DomainCustomerMappingService, DomainDangerousActionService, DomainDnsService, DomainEventPollingService, DomainInvoiceService, DomainReportService, DomainSyncService};
@@ -72,7 +72,11 @@ class DomainServiceTest extends TestCase {
         $mapping->assign($domain, $customer, $this->actor);
         $domain->refresh();
         $this->assertSame($customer->id, $domain->customer_id);
-        $this->assertDatabaseHas('external_references', ['external_type' => 'domain', 'external_id' => 'kunde.de', 'referenceable_id' => $customer->id]);
+        $ref = ExternalReference::query()->withoutGlobalScopes()
+            ->where('external_type', 'domain')->where('external_id', 'kunde.de')->firstOrFail();
+        $this->assertSame($domain->getMorphClass(), $ref->referenceable_type);
+        $this->assertSame($domain->id, $ref->referenceable_id);
+        $this->assertSame($customer->id, $ref->payload['customer_id']);
     }
 
     public function test_dangerous_delete_requires_name_and_four_eyes(): void {
@@ -361,7 +365,7 @@ class DomainServiceTest extends TestCase {
         ]);
     }
 
-    public function test_customer_may_hold_multiple_domains_via_alias(): void {
+    public function test_customer_may_hold_multiple_domains(): void {
         FakeDomainResellingTransport::fake([]);
         $connection = $this->connection();
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
@@ -380,31 +384,34 @@ class DomainServiceTest extends TestCase {
             'domain_hash' => DomainProjection::hashFor('zweite.de'),
         ]);
 
-        // Zweite Domain auf denselben Kunden darf extref_unique nicht verletzen.
+        // Zwei Domains auf denselben Kunden dürfen extref_unique nicht verletzen.
         $mapping->assign($first, $customer, $this->actor);
         $mapping->assign($second, $customer, $this->actor);
 
-        // Genau EINE Primär-Referenz je Kunde, die weitere Domain als Alias.
-        $this->assertSame(1, ExternalReference::query()
+        // Je Domain genau EINE Referenz auf die jeweilige Projektion, Kunde im
+        // payload — kein Alias-Umweg.
+        $this->assertSame(2, ExternalReference::query()->withoutGlobalScopes()
             ->where('external_type', 'domain')
-            ->where('referenceable_type', Customer::class)
-            ->where('referenceable_id', $customer->id)
+            ->whereIn('external_id', ['erste.de', 'zweite.de'])
             ->count());
-        $this->assertDatabaseHas('external_reference_aliases', [
-            'plugin_id' => 'domainreselling',
-            'external_type' => 'domain',
-            'external_id' => 'zweite.de',
-            'referenceable_type' => Customer::class,
-            'referenceable_id' => $customer->id,
-        ]);
+        $this->assertDatabaseCount('external_reference_aliases', 0);
+        foreach ([$first, $second] as $projection) {
+            $ref = ExternalReference::query()->withoutGlobalScopes()
+                ->where('external_type', 'domain')
+                ->where('external_id', $projection->external_domain)
+                ->firstOrFail();
+            $this->assertSame($projection->getMorphClass(), $ref->referenceable_type);
+            $this->assertSame($projection->id, $ref->referenceable_id);
+            $this->assertSame($customer->id, $ref->payload['customer_id']);
+        }
 
-        // Beide Domains schlagen denselben Kunden vor (Primär- wie Alias-Weg).
+        // Beide Domains schlagen denselben Kunden vor.
         $this->assertSame($customer->id, $mapping->suggestFor($first)[0]['customer']->id);
         $this->assertSame($customer->id, $mapping->suggestFor($second)[0]['customer']->id);
 
         // Aufheben einer Domain trifft nur diese, die andere bleibt zugeordnet.
         $mapping->clearAssignment($second);
-        $this->assertDatabaseMissing('external_reference_aliases', ['external_id' => 'zweite.de']);
+        $this->assertDatabaseMissing('external_references', ['external_type' => 'domain', 'external_id' => 'zweite.de']);
         $this->assertSame($customer->id, $mapping->suggestFor($first)[0]['customer']->id);
         $this->assertEmpty(array_filter(
             $mapping->suggestFor($second),

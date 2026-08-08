@@ -10,7 +10,7 @@
 
 namespace App\Services\Domain;
 
-use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, User};
+use App\Models\{Customer, ExternalReference, ForeignCustomer, User};
 use App\Models\Domain\{DomainProjection, DomainResellerAccount};
 use App\Plugins\DomainReselling\DomainResellingPlugin;
 
@@ -34,22 +34,14 @@ class DomainCustomerMappingService {
         $suggestions = [];
         $seen = [];
 
-        // 1) Bereits bestätigte Zuordnung dieser Domain. Ein Kunde darf mehrere
-        //    Domains halten: die erste liegt als Primär-Referenz, jede weitere
-        //    als Alias (extref_unique lässt je Kunde nur EINE Primär-Referenz).
-        $confirmedCustomerId = ExternalReference::query()
+// 1) Bereits bestätigte Zuordnung dieser Domain. Die Referenz bildet
+        //    „Provider-Domain ↔ Domain-Projektion" ab; der bestätigte Kunde
+        //    liegt im payload — ein Kunde darf beliebig viele Domains halten.
+        $ref = ExternalReference::query()
             ->forPlugin($orgId, DomainResellingPlugin::ID, 'domain')
             ->forExternalId($domain)
-            ->where('referenceable_type', Customer::class)
-            ->value('referenceable_id')
-            ?? ExternalReferenceAlias::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $orgId)
-            ->where('plugin_id', DomainResellingPlugin::ID)
-            ->where('external_type', 'domain')
-            ->where('external_id', $domain)
-            ->where('referenceable_type', Customer::class)
-            ->value('referenceable_id');
+            ->first();
+        $confirmedCustomerId = is_array($ref?->payload) ? ($ref->payload['customer_id'] ?? null) : null;
         if ($confirmedCustomerId !== null) {
             $customer = Customer::query()->whereKey($confirmedCustomerId)->first();
             if ($customer !== null) {
@@ -81,7 +73,8 @@ class DomainCustomerMappingService {
 
     /**
      * Ordnet die Domain einem Kunden zu (kein Provider-Move). Legt/aktualisiert
-     * die ExternalReference als bestätigte Zuordnung. Optional mit Endkunde
+     * die ExternalReference (Ziel = Domain-Projektion; bestätigter Kunde +
+     * Urheber im payload) als bestätigte Zuordnung. Optional mit Endkunde
      * (Fremdkunde DES Kunden, Reseller-Fall) — ein fremder Endkunde wird
      * verworfen. Eine Kundenzuordnung hebt das Eigenbestand-Flag auf.
      */
@@ -96,50 +89,17 @@ class DomainCustomerMappingService {
             'is_own_holding' => false,
         ])->save();
 
-        $this->rememberCustomerReference($projection, $customer, $actor);
-    }
-
-    /**
-     * Verankert die bestätigte Domain↔Kunde-Zuordnung idempotent. Da ein Kunde
-     * mehrere Domains hält, `extref_unique` (plugin, typ, ziel) aber nur EINE
-     * Primär-Referenz je Kunde zulässt, wird die erste Domain als Primär-
-     * Referenz gespeichert und jede weitere als {@see ExternalReferenceAlias}
-     * auf denselben Kunden (Muster wie Toggl/OpenProject/RemoteSupport).
-     */
-    private function rememberCustomerReference(DomainProjection $projection, Customer $customer, ?User $actor): void {
-        $key = [
-            'organization_id' => $projection->organization_id,
-            'plugin_id' => DomainResellingPlugin::ID,
-            'external_type' => 'domain',
-            'external_id' => mb_strtolower($projection->external_domain),
-        ];
-        $target = [
-            'referenceable_type' => $customer->getMorphClass(),
-            'referenceable_id' => $customer->getKey(),
-        ];
-
-        // Diese Domain gehört jetzt (neu) zu $customer — alte Verweise auf die
-        // Domain in beiden Tabellen entfernen, danach frisch verankern.
-        ExternalReference::query()->withoutGlobalScopes()->where($key)->delete();
-        ExternalReferenceAlias::query()->withoutGlobalScopes()->where($key)->delete();
-
-        $customerHasPrimary = ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('plugin_id', DomainResellingPlugin::ID)
-            ->where('external_type', 'domain')
-            ->where($target)
-            ->exists();
-
-        if ($customerHasPrimary) {
-            ExternalReferenceAlias::query()->withoutGlobalScopes()->create($key + $target);
-
-            return;
-        }
-
-        ExternalReference::query()->withoutGlobalScopes()->create($key + $target + [
-            'payload' => ['assigned_by' => $actor?->id],
-            'synced_at' => now(),
-        ]);
+        // Ziel ist die (eindeutige) Domain-Projektion → kein extref_unique-Konflikt,
+        // auch wenn derselbe Kunde weitere Domains hält. Der bestätigte Kunde und
+        // der Urheber landen im payload.
+        ExternalReference::link(
+            $projection->organization_id,
+            DomainResellingPlugin::ID,
+            'domain',
+            $projection,
+            mb_strtolower($projection->external_domain),
+            ['customer_id' => $customer->id, 'assigned_by' => $actor?->id],
+        );
     }
 
     /** Hebt Kunden- und Endkunden-Zuordnung wieder auf (auch Eigenbestand). */
@@ -150,17 +110,9 @@ class DomainCustomerMappingService {
             'is_own_holding' => false,
         ])->save();
 
-        $domain = mb_strtolower($projection->external_domain);
         ExternalReference::query()
             ->forPlugin($projection->organization_id, DomainResellingPlugin::ID, 'domain')
-            ->forExternalId($domain)
-            ->delete();
-        ExternalReferenceAlias::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $projection->organization_id)
-            ->where('plugin_id', DomainResellingPlugin::ID)
-            ->where('external_type', 'domain')
-            ->where('external_id', $domain)
+            ->forExternalId(mb_strtolower($projection->external_domain))
             ->delete();
     }
 
