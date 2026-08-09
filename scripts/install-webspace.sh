@@ -5,6 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 APP_URL=""
+CHOWN=""
 SKIP_COMPOSER=0
 SKIP_ASSETS=0
 SKIP_MIGRATIONS=0
@@ -19,6 +20,9 @@ Usage:
 
 Options:
   --url=URL           Setzt APP_URL in .env.
+  --chown=USER:GROUP  Setzt Eigentuemer von storage/ und bootstrap/cache (braucht
+                      root; behebt root-eigene Dateien aus versehentlichen
+                      root-Laeufen, die tempnam-/Permission-Fehler ausloesen).
   --skip-composer    Ueberspringt composer install.
   --skip-assets      Ueberspringt npm ci/install und npm run build.
   --skip-migrations  Ueberspringt php artisan migrate --force.
@@ -36,6 +40,9 @@ for arg in "$@"; do
     case "$arg" in
         --url=*)
             APP_URL="${arg#*=}"
+            ;;
+        --chown=*)
+            CHOWN="${arg#*=}"
             ;;
         --skip-composer)
             SKIP_COMPOSER=1
@@ -85,6 +92,19 @@ require_php_version() {
     fi
 }
 
+preflight_webserver() {
+    # Best-effort: laeuft das Skript unprivilegiert oder unter nginx, sind das nur
+    # Hinweise (kein Abbruch). Die harten Schreibrechte-Checks kommen spaeter.
+    if command -v apachectl >/dev/null 2>&1; then
+        if ! apachectl -M 2>/dev/null | grep -qi 'rewrite_module'; then
+            echo "WARNUNG: Apache mod_rewrite ist nicht geladen — der Webserver liefert dann" >&2
+            echo "         statische Dateien statt der App. Fix: a2enmod rewrite && systemctl restart apache2" >&2
+        fi
+    fi
+    echo "Hinweis: Docroot der Domain MUSS auf public/ zeigen und AllowOverride All aktiv sein,"
+    echo "         sonst ist u. a. die .env web-erreichbar (siehe docs/systemdienste.md)."
+}
+
 env_get() {
     local key="$1"
     local line
@@ -115,6 +135,7 @@ env_set() {
 log "Pruefe Umgebung"
 require_command php
 require_php_version
+preflight_webserver
 
 if [[ "$SKIP_COMPOSER" -eq 0 ]]; then
     require_command composer
@@ -173,7 +194,25 @@ mkdir -p storage/app storage/framework/cache storage/framework/sessions storage/
 # und sonst tempnam-/Permission-Fehler beim Rendern ausloesen).
 find storage/framework/views -maxdepth 1 -type f -name '*.php' -delete 2>/dev/null || true
 find bootstrap/cache -maxdepth 1 -type f -name '*.php' -delete 2>/dev/null || true
+if [[ -n "$CHOWN" ]]; then
+    log "Setze Eigentuemer der Schreibpfade auf $CHOWN"
+    if ! chown -R "$CHOWN" storage bootstrap/cache 2>/dev/null; then
+        echo "FEHLER: chown auf '$CHOWN' fehlgeschlagen — als root ausfuehren (sudo) oder gueltige USER:GROUP angeben." >&2
+        exit 1
+    fi
+fi
 chmod -R ug+rwX storage bootstrap/cache
+# Verifizieren, dass die kritischen Pfade wirklich beschreibbar sind — sonst
+# scheitert Blade beim Kompilieren (tempnam) mit HTTP 500 statt Installer.
+for _wdir in storage/framework/views bootstrap/cache; do
+    if ! ( : > "$_wdir/.wtest.$$" ) 2>/dev/null; then
+        echo "FEHLER: $_wdir ist nicht beschreibbar (aktueller User: $(id -un))." >&2
+        echo "        Als Web-User ausfuehren oder Eigentuemer setzen:" >&2
+        echo "        sudo bash scripts/install-webspace.sh --chown=WEBUSER:GRUPPE …" >&2
+        exit 1
+    fi
+    rm -f "$_wdir/.wtest.$$"
+done
 
 log "Erzeuge Storage-Link"
 php artisan storage:link || true
