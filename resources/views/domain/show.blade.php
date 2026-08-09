@@ -70,23 +70,30 @@
                     </div>
                 @endif
                 @unless ($domain->is_own_holding)
-                    <x-action-form :action="route('domains.customer', $domain)" class="mt-2 space-y-2">
-                        <select name="customer" class="select select-sm select-bordered w-full" aria-label="{{ __('domain.field.customer') }}">
-                            <option value="">{{ __('domain.mapping.none') }}</option>
-                            @foreach ($customers as $mappableCustomer)
-                                <option value="{{ $mappableCustomer->sqid }}" @selected($domain->customer_id === $mappableCustomer->id)>{{ $mappableCustomer->name }}</option>
-                            @endforeach
-                        </select>
-                        @if ($foreignCustomers->isNotEmpty())
-                            <select name="foreign_customer" class="select select-sm select-bordered w-full" aria-label="{{ __('domain.mapping.foreign_customer') }}">
-                                <option value="">{{ __('domain.mapping.no_foreign_customer') }}</option>
-                                @foreach ($foreignCustomers as $foreignCustomer)
-                                    <option value="{{ $foreignCustomer->sqid }}" @selected($domain->foreign_customer_id === $foreignCustomer->id)>{{ $foreignCustomer->name }}</option>
+                    <x-action-form :action="route('domains.customer', $domain)" class="mt-2">
+                        <div class="space-y-2"
+                             x-data="{
+                                 map: @js($foreignByCustomer),
+                                 customer: @js($domain->customer?->sqid ?? ''),
+                                 foreign: @js($domain->foreignCustomer?->sqid ?? ''),
+                             }"
+                             x-init="$watch('customer', () => { foreign = '' })">
+                            <select name="customer" x-model="customer" class="select select-sm select-bordered w-full" aria-label="{{ __('domain.field.customer') }}">
+                                <option value="">{{ __('domain.mapping.none') }}</option>
+                                @foreach ($customers as $mappableCustomer)
+                                    <option value="{{ $mappableCustomer->sqid }}">{{ $mappableCustomer->name }}</option>
                                 @endforeach
                             </select>
-                        @endif
-                        <div class="flex justify-end">
-                            <x-icon-btn icon="save" size="sm" type="submit" show-label>{{ __('domain.action.save') }}</x-icon-btn>
+                            <select name="foreign_customer" x-model="foreign" x-show="(map[customer] ?? []).length > 0" x-cloak
+                                    class="select select-sm select-bordered w-full" aria-label="{{ __('domain.mapping.foreign_customer') }}">
+                                <option value="">{{ __('domain.mapping.no_foreign_customer') }}</option>
+                                <template x-for="fc in (map[customer] ?? [])" :key="fc.sqid">
+                                    <option :value="fc.sqid" x-text="fc.name"></option>
+                                </template>
+                            </select>
+                            <div class="flex justify-end">
+                                <x-icon-btn icon="save" size="sm" type="submit" show-label>{{ __('domain.action.save') }}</x-icon-btn>
+                            </div>
                         </div>
                     </x-action-form>
                 @endunless

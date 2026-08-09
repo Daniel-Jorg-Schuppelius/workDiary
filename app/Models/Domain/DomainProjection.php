@@ -50,6 +50,7 @@ use Illuminate\Support\Carbon;
  * @property float|string|null $renewal_price
  * @property CurrencyCode|null $renewal_currency
  * @property string|null $revision
+ * @property string|null $owner_handle
  * @property string|null $raw_hash
  * @property Carbon|null $synced_at
  */
@@ -69,6 +70,7 @@ class DomainProjection extends Model {
         'domain_hash',
         'external_user',
         'reseller_account_id',
+        'owner_handle',
         'customer_id',
         'foreign_customer_id',
         'is_own_holding',

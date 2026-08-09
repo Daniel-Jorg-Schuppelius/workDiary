@@ -153,6 +153,56 @@ class DomainHttpTest extends TestCase {
         $this->assertSame($foreign->id, $domain->foreign_customer_id);
     }
 
+    public function test_domain_show_provides_foreign_customers_for_dependent_dropdown(): void {
+        $this->admin->givePermissionTo(Permission::DomainCustomerAssign->value);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $foreign = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id, 'name' => 'Endkunde Müller']);
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        // Domain OHNE Kundenzuordnung — die Endkunden müssen für das abhängige
+        // Dropdown trotzdem im Payload stehen (Ein-Schritt-Zuordnung).
+        $domain = DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'external_domain' => 'dropdown.de',
+            'domain_hash' => DomainProjection::hashFor('dropdown.de'),
+        ]);
+
+        $this->actingAs($this->admin)->get(route('domains.show', $domain))->assertOk()->assertSee('Endkunde Müller');
+    }
+
+    public function test_reseller_bulk_assigns_customer_on_all_domains_via_http(): void {
+        $this->admin->givePermissionTo(Permission::DomainCustomerAssign->value);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $reseller = DomainResellerAccount::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'customer_id' => $customer->id,
+        ]);
+        $domain = DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'reseller_account_id' => $reseller->id,
+            'external_domain' => 'bulk.de',
+            'domain_hash' => DomainProjection::hashFor('bulk.de'),
+        ]);
+
+        $this->actingAs($this->admin)->post(route('domain-reseller.assign-domains', $reseller))->assertSessionHas('success');
+        $this->assertSame($customer->id, $domain->refresh()->customer_id);
+    }
+
+    public function test_reseller_bulk_requires_assigned_customer(): void {
+        $this->admin->givePermissionTo(Permission::DomainCustomerAssign->value);
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $reseller = DomainResellerAccount::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'customer_id' => null,
+        ]);
+
+        $this->actingAs($this->admin)->post(route('domain-reseller.assign-domains', $reseller))->assertSessionHas('error');
+    }
+
     public function test_own_holding_toggle_clears_customer_mapping(): void {
         $this->admin->givePermissionTo(Permission::DomainCustomerAssign->value);
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);

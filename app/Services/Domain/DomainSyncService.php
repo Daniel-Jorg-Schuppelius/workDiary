@@ -27,7 +27,8 @@ use Illuminate\Support\Carbon;
  * die Projektion übernommen.
  */
 class DomainSyncService {
-    public function __construct(private readonly DomainProviderResolver $resolver) {}
+    public function __construct(private readonly DomainProviderResolver $resolver) {
+    }
 
     /** Voller Abgleich: Reseller, Domains (SELF + Subuser) und Kontakte. */
     public function syncAll(DomainProviderConnection $connection): void {
@@ -211,6 +212,14 @@ class DomainSyncService {
             }
         }
 
+        // Registrant-/Owner-Contact-Handle nur setzen, wenn der Provider ihn
+        // liefert (sonst würde ein Listen-Sync einen per StatusDomain gefüllten
+        // Handle wieder löschen).
+        $ownerHandle = $this->ownerHandle($row);
+        if ($ownerHandle !== null) {
+            $values['owner_handle'] = $ownerHandle;
+        }
+
         // Org-weit eindeutig je Domainname: dieselbe Domain aktualisiert genau
         // EINE Zeile, auch wenn sie über eine andere Verbindung gemeldet wird
         // (connection_id „wandert" mit, keine Doppelzeile → keine Doppelbuchung).
@@ -245,6 +254,7 @@ class DomainSyncService {
             'renewal_price' => $this->decimal($this->field($row, ['renewalprice', 'price'])),
             'renewal_currency' => $this->currency($this->field($row, ['currency', 'renewalcurrency']))?->value,
             'revision' => $this->field($row, ['revision', 'roid']),
+            'owner_handle' => $this->ownerHandle($row) ?? $projection->owner_handle,
             'raw_hash' => $response->rawHash(),
             'synced_at' => Carbon::now(),
         ]);
@@ -270,6 +280,17 @@ class DomainSyncService {
         $rows = $response->rows();
 
         return $rows[0] ?? [];
+    }
+
+    /**
+     * Registrant-/Owner-Contact-Handle aus einer Domain(detail)-Zeile. Der
+     * Provider benennt das Feld je nach Command unterschiedlich; keiner der
+     * Namen ist garantiert vorhanden (dann null).
+     *
+     * @param  array<string, string>  $row
+     */
+    private function ownerHandle(array $row): ?string {
+        return $this->field($row, ['ownercontact', 'ownercontact0', 'registrant', 'registrantcontact', 'ownerhandle']);
     }
 
     /**

@@ -44,6 +44,12 @@
                 <x-icon-btn icon="save" size="sm" type="submit" :title="__('domain.action.save')" />
             </x-action-form>
             <p class="mt-1 text-xs text-base-content/60">{{ __('domain.mapping.reseller_hint') }}</p>
+            @if ($reseller->customer_id !== null && $reseller->domains->isNotEmpty())
+                <x-action-form :action="route('domain-reseller.assign-domains', $reseller)" class="mt-2"
+                               :confirm="__('domain.mapping.assign_all_confirm', ['customer' => $reseller->customer?->name])">
+                    <x-icon-btn icon="assignment_turned_in" size="xs" type="submit" show-label>{{ __('domain.mapping.assign_all') }}</x-icon-btn>
+                </x-action-form>
+            @endif
         @endif
     </x-card>
 

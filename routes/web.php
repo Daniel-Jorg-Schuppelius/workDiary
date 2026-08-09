@@ -1658,6 +1658,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [\App\Http\Controllers\Domain\DomainResellerController::class, 'index'])->name('index');
             Route::get('{reseller}', [\App\Http\Controllers\Domain\DomainResellerController::class, 'show'])->name('show');
             Route::post('{reseller}/kunde', [\App\Http\Controllers\Domain\DomainResellerController::class, 'assignCustomer'])->name('customer');
+            Route::post('{reseller}/domains-zuordnen', [\App\Http\Controllers\Domain\DomainResellerController::class, 'assignDomains'])->name('assign-domains');
         });
 
         // ── Geräte-/Maschinenverleih (Feature 073, module.rental) ───────

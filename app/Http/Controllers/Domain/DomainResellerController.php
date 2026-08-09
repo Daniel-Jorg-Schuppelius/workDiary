@@ -78,4 +78,20 @@ class DomainResellerController extends Controller {
 
         return back()->with('success', __('domain.flash.mapping_saved'));
     }
+
+    /**
+     * Schreibt die Kundenzuordnung des Subusers FEST auf alle seine aktuellen
+     * Domains (Bulk). Setzt einen zugeordneten Kunden am Reseller voraus.
+     */
+    public function assignDomains(Request $request, DomainResellerAccount $reseller, DomainCustomerMappingService $mapping): RedirectResponse {
+        Gate::authorize('assignCustomer', $reseller);
+
+        if ($reseller->customer_id === null) {
+            return back()->with('error', __('domain.flash.reseller_customer_required'));
+        }
+
+        $count = $mapping->assignResellerDomains($reseller, $request->user());
+
+        return back()->with('success', __('domain.flash.reseller_domains_assigned', ['count' => $count]));
+    }
 }

@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{Customer, ForeignCustomer};
 use App\Models\Domain\DomainProjection;
 use App\Services\Domain\{DomainCustomerMappingService, DomainInvoiceService, DomainSyncService};
+use App\Support\Sqid;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
@@ -83,9 +84,9 @@ class DomainController extends Controller {
             // Zuordnungsdaten: Kundenliste, Endkunden des zugeordneten Kunden
             // und Match-Vorschläge (nur solange keine Zuordnung besteht).
             'customers' => $canAssign ? Customer::query()->orderBy('name')->get(['id', 'name']) : collect(),
-            'foreignCustomers' => $canAssign && $domain->customer_id !== null
-                ? ForeignCustomer::query()->where('customer_id', $domain->customer_id)->whereNull('archived_at')->orderBy('name')->get(['id', 'name', 'customer_id'])
-                : collect(),
+            // Endkunden je Kunde (Sqid => Liste) für das abhängige Dropdown —
+            // erlaubt Kunde + Endkunde in EINEM Schritt zuzuordnen.
+            'foreignByCustomer' => $canAssign ? $this->foreignCustomersByCustomer($domain->organization_id) : [],
             'suggestions' => $canAssign && $domain->customer_id === null && ! $domain->is_own_holding
                 ? $mapping->suggestFor($domain)
                 : [],
@@ -149,9 +150,33 @@ class DomainController extends Controller {
         return back()->with('success', __('domain.flash.mapping_saved'));
     }
 
+    /**
+     * Endkunden je Kunde (Sqid des Kunden => Liste {sqid,name}) für das
+     * abhängige Endkunden-Dropdown der Domainzuordnung.
+     *
+     * @return array<string, list<array{sqid: string, name: string}>>
+     */
+    private function foreignCustomersByCustomer(?int $organizationId): array {
+        $out = [];
+        foreach (
+            ForeignCustomer::query()
+                ->where('organization_id', $organizationId)
+                ->whereNull('archived_at')
+                ->orderBy('name')
+                ->get(['id', 'name', 'customer_id']) as $fc
+        ) {
+            $out[Sqid::encode(Customer::class, (int) $fc->customer_id)][] = [
+                'sqid' => Sqid::encode(ForeignCustomer::class, (int) $fc->id),
+                'name' => (string) $fc->name,
+            ];
+        }
+
+        return $out;
+    }
+
     /** @return array<string, int> */
     private function metrics(): array {
-        $base = fn () => DomainProjection::query();
+        $base = fn() => DomainProjection::query();
 
         return [
             'expiring_90' => $base()->whereNotNull('expiration_at')->whereBetween('expiration_at', [Carbon::now(), Carbon::now()->addDays(90)])->count(),
@@ -162,7 +187,7 @@ class DomainController extends Controller {
             'unmapped' => $base()->whereNull('customer_id')->where('is_own_holding', false)
                 ->where(function ($q): void {
                     $q->whereNull('reseller_account_id')
-                        ->orWhereDoesntHave('resellerAccount', fn ($r) => $r->whereNotNull('customer_id'));
+                        ->orWhereDoesntHave('resellerAccount', fn($r) => $r->whereNotNull('customer_id'));
                 })->count(),
             'sync_issues' => $base()->whereIn('sync_status', [DomainSyncStatus::Conflict->value, DomainSyncStatus::Unknown->value])->count(),
         ];

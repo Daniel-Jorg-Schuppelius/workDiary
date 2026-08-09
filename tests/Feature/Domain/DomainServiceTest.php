@@ -418,4 +418,99 @@ class DomainServiceTest extends TestCase {
             fn(array $s): bool => $s['reason'] === 'external_reference',
         ));
     }
+
+    public function test_assign_reseller_domains_writes_customer_on_all_domains(): void {
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $reseller = DomainResellerAccount::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'customer_id' => $customer->id,
+        ]);
+        $a = DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'reseller_account_id' => $reseller->id,
+            'external_domain' => 'reseller-a.de',
+            'domain_hash' => DomainProjection::hashFor('reseller-a.de'),
+        ]);
+        $b = DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'reseller_account_id' => $reseller->id,
+            'external_domain' => 'reseller-b.de',
+            'domain_hash' => DomainProjection::hashFor('reseller-b.de'),
+        ]);
+
+        $count = app(DomainCustomerMappingService::class)->assignResellerDomains($reseller, $this->actor);
+
+        $this->assertSame(2, $count);
+        $this->assertSame($customer->id, $a->refresh()->customer_id);
+        $this->assertSame($customer->id, $b->refresh()->customer_id);
+        // Je Domain eine bestätigte Referenz (Ziel = Projektion, Kunde im payload).
+        $this->assertSame(2, ExternalReference::query()->withoutGlobalScopes()
+            ->where('external_type', 'domain')
+            ->whereIn('external_id', ['reseller-a.de', 'reseller-b.de'])
+            ->count());
+    }
+
+    public function test_assign_reseller_domains_without_customer_is_noop(): void {
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $reseller = DomainResellerAccount::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'customer_id' => null,
+        ]);
+        DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'reseller_account_id' => $reseller->id,
+            'external_domain' => 'ohne-kunde.de',
+            'domain_hash' => DomainProjection::hashFor('ohne-kunde.de'),
+        ]);
+
+        $this->assertSame(0, app(DomainCustomerMappingService::class)->assignResellerDomains($reseller, $this->actor));
+    }
+
+    public function test_portal_company_suggestion_from_registrant_matches_customer(): void {
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Beispiel GmbH']);
+        \App\Models\Domain\DomainContactProjection::query()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'external_handle' => 'P-OWNER1',
+            'snapshot' => ['organization' => 'Beispiel GmbH', 'country' => 'DE', 'type' => 'ORG'],
+        ]);
+        $domain = DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'owner_handle' => 'P-OWNER1',
+            'external_domain' => 'portal.de',
+            'domain_hash' => DomainProjection::hashFor('portal.de'),
+        ]);
+
+        $portal = array_values(array_filter(
+            app(DomainCustomerMappingService::class)->suggestFor($domain),
+            fn(array $s): bool => $s['reason'] === 'portal_company',
+        ));
+        $this->assertCount(1, $portal);
+        $this->assertSame($customer->id, $portal[0]['customer']->id);
+    }
+
+    public function test_portal_company_suggestion_absent_without_owner_handle(): void {
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Beispiel GmbH']);
+        $domain = DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'owner_handle' => null,
+            'external_domain' => 'kein-owner.de',
+            'domain_hash' => DomainProjection::hashFor('kein-owner.de'),
+        ]);
+
+        $this->assertEmpty(array_filter(
+            app(DomainCustomerMappingService::class)->suggestFor($domain),
+            fn(array $s): bool => $s['reason'] === 'portal_company',
+        ));
+    }
 }

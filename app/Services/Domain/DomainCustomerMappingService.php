@@ -11,7 +11,7 @@
 namespace App\Services\Domain;
 
 use App\Models\{Customer, ExternalReference, ForeignCustomer, User};
-use App\Models\Domain\{DomainProjection, DomainResellerAccount};
+use App\Models\Domain\{DomainContactProjection, DomainProjection, DomainResellerAccount};
 use App\Plugins\DomainReselling\DomainResellingPlugin;
 
 /**
@@ -68,7 +68,54 @@ class DomainCustomerMappingService {
             $seen[$customer->id] = true;
         }
 
+        // 3) Firmenname des Registranten aus dem Portal-Contact (nur Vorschlag).
+        //    Greift nur, wenn der Provider einen Owner-Handle geliefert hat und
+        //    der zugehörige Kontakt-Snapshot eine Organisation nennt.
+        $portalCompany = $this->registrantOrganization($projection);
+        if ($portalCompany !== null) {
+            foreach (
+                Customer::query()
+                    ->where('organization_id', $orgId)
+                    ->where(function ($q) use ($portalCompany): void {
+                        $q->whereLikeEscaped('name', $portalCompany)
+                            ->orWhereLikeEscaped('company', $portalCompany);
+                    })
+                    ->limit(5)
+                    ->get() as $customer
+            ) {
+                if (isset($seen[$customer->id])) {
+                    continue;
+                }
+                $suggestions[] = ['customer' => $customer, 'reason' => 'portal_company'];
+                $seen[$customer->id] = true;
+            }
+        }
+
         return $suggestions;
+    }
+
+    /**
+     * Firmenname des Registranten/Owners aus dem Portal-Contact-Snapshot —
+     * nur wenn ein Owner-Handle bekannt ist und der Kontakt eine Organisation
+     * nennt. Liefert sonst null.
+     */
+    private function registrantOrganization(DomainProjection $projection): ?string {
+        $handle = $projection->owner_handle;
+        if ($handle === null || $handle === '') {
+            return null;
+        }
+
+        $contact = DomainContactProjection::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $projection->organization_id)
+            ->where('connection_id', $projection->connection_id)
+            ->where('external_handle', $handle)
+            ->first();
+
+        $organization = is_array($contact?->snapshot) ? ($contact->snapshot['organization'] ?? null) : null;
+        $organization = is_string($organization) ? trim($organization) : '';
+
+        return $organization !== '' ? $organization : null;
     }
 
     /**
@@ -90,15 +137,15 @@ class DomainCustomerMappingService {
         ])->save();
 
         // Ziel ist die (eindeutige) Domain-Projektion → kein extref_unique-Konflikt,
-        // auch wenn derselbe Kunde weitere Domains hält. Der bestätigte Kunde und
-        // der Urheber landen im payload.
+        // auch wenn derselbe Kunde weitere Domains hält. Bestätigter Kunde,
+        // Endkunde und Urheber landen im payload.
         ExternalReference::link(
             $projection->organization_id,
             DomainResellingPlugin::ID,
             'domain',
             $projection,
             mb_strtolower($projection->external_domain),
-            ['customer_id' => $customer->id, 'assigned_by' => $actor?->id],
+            ['customer_id' => $customer->id, 'foreign_customer_id' => $foreignCustomer?->id, 'assigned_by' => $actor?->id],
         );
     }
 
@@ -138,5 +185,27 @@ class DomainCustomerMappingService {
      */
     public function assignReseller(DomainResellerAccount $account, Customer $customer): void {
         $account->forceFill(['customer_id' => $customer->id])->save();
+    }
+
+    /**
+     * Schreibt die Kundenzuordnung des Resellers FEST auf alle seine aktuellen
+     * Domains (Bulk). Nutzt den bereits am Reseller hinterlegten Kunden; ohne
+     * Kunden passiert nichts. Vorhandene Einzel-/Endkundenzuordnungen der
+     * Domains werden dabei auf den Reseller-Kunden vereinheitlicht. Liefert die
+     * Anzahl geschriebener Domains.
+     */
+    public function assignResellerDomains(DomainResellerAccount $account, ?User $actor = null): int {
+        $customer = $account->customer;
+        if (! $customer instanceof Customer) {
+            return 0;
+        }
+
+        $count = 0;
+        foreach ($account->domains()->get() as $domain) {
+            $this->assign($domain, $customer, $actor);
+            $count++;
+        }
+
+        return $count;
     }
 }
