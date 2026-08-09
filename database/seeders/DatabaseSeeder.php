@@ -47,8 +47,10 @@ class DatabaseSeeder extends Seeder {
         $this->call(AssetComplianceCatalogSeeder::class); // Feature 075 (P1): Prüfprofil-Vorlagen + Normen-Referenzmatrix
 
         // Demo-/Test-Benutzer würden in Produktion Faker (Dev-Dependency)
-        // benötigen und unsichere Standard-Accounts erzeugen.
-        if ($demoData) {
+        // benötigen und unsichere Standard-Accounts erzeugen. class_exists()
+        // schützt zusätzlich, falls APP_ENV=local/testing auf einer --no-dev-
+        // Installation (ohne Faker) läuft — sonst crasht UserFactory::definition().
+        if ($demoData && class_exists(\Faker\Factory::class)) {
             $this->seedDemoUsers();
         }
     }
