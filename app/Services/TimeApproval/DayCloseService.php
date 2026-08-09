@@ -17,8 +17,10 @@ use App\Services\Concerns\ResolvesActorId;
 use App\Services\Flextime\FlexCalculator;
 use App\Services\Timekeeping\BreakRuleEvaluator;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 /**
  * Statusmaschine für Tagesabschlüsse (MVP-015, ../WorkDiary-Architecture/tagesabschluss.md §3/§5).
@@ -41,7 +43,8 @@ class DayCloseService {
         private readonly FlexCalculator $flex,
         private readonly BreakRuleEvaluator $breakRules,
         private readonly MonthClosureService $monthClosures,
-    ) {}
+    ) {
+    }
 
     /** Validator mit den konfigurierten gesetzlichen Pausenregeln. */
     public function makeValidator(): DayClosureValidator {
@@ -58,13 +61,20 @@ class DayCloseService {
             return $existing;
         }
 
-        /** @var DayClosure $closure */
-        $closure = DayClosure::query()->create([
-            'organization_id' => $user->organization_id,
-            'user_id' => $user->id,
-            'day' => $day->toDateString(),
-            'status' => DayClosureStatus::Open,
-        ]);
+        try {
+            /** @var DayClosure $closure */
+            $closure = DayClosure::query()->create([
+                'organization_id' => $user->organization_id,
+                'user_id' => $user->id,
+                'day' => $day->toDateString(),
+                'status' => DayClosureStatus::Open,
+            ]);
+        } catch (UniqueConstraintViolationException $e) {
+            // Nebenläufiger Request hat den Tagesabschluss zwischen find() und
+            // create() angelegt → bestehenden Datensatz zurückgeben, kein 2. Audit.
+            return $this->find($user, $day)
+                ?? throw new RuntimeException('Day closure duplicate reported but row not found.', 0, $e);
+        }
 
         $closure->audit('dayClose.opened', ['day' => $day->toDateString()]);
 
