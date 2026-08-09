@@ -50,6 +50,18 @@ class IntegrationInboxTest extends TestCase {
         $this->actingAs($this->admin)->get(route('admin.integration.inbox'))->assertOk();
     }
 
+    public function test_index_renders_with_event_target_missing_name_column(): void {
+        // Regression: Event nutzt `title` statt `name` — die Zielauswahl darf
+        // nicht auf orderBy('name') brechen (SQLSTATE 42S22 Unknown column 'name').
+        $this->item();
+        \App\Models\Event::factory()->create([
+            'organization_id' => $this->organization->id,
+            'title' => 'Jahreshauptversammlung',
+        ]);
+
+        $this->actingAs($this->admin)->get(route('admin.integration.inbox'))->assertOk();
+    }
+
     public function test_index_shows_plugin_tabs(): void {
         $this->item();
         $this->item(['plugin_id' => 'fritzbox', 'dedupe_key' => 'client:fb-1']);
@@ -206,7 +218,9 @@ class IntegrationInboxTest extends TestCase {
         $this->assertSame(IntegrationInboxItem::STATUS_RESOLVED_LINKED, $item->status);
         $this->assertSame($customer->id, $item->resolved_to_id);
         $this->assertDatabaseHas('external_references', [
-            'plugin_id' => 'toggl', 'external_type' => 'client', 'external_id' => 'tg-1',
+            'plugin_id' => 'toggl',
+            'external_type' => 'client',
+            'external_id' => 'tg-1',
             'referenceable_id' => $customer->id,
         ]);
     }
@@ -229,8 +243,12 @@ class IntegrationInboxTest extends TestCase {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'email' => 'old@x.test']);
         $item = $this->item([
             'case_type' => IntegrationInboxItem::CASE_CONFLICT,
-            'plugin_id' => 'lexoffice', 'external_type' => 'contact', 'external_id' => 'lx-1', 'dedupe_key' => 'contact:lx-1',
-            'referenceable_type' => $customer->getMorphClass(), 'referenceable_id' => $customer->id,
+            'plugin_id' => 'lexoffice',
+            'external_type' => 'contact',
+            'external_id' => 'lx-1',
+            'dedupe_key' => 'contact:lx-1',
+            'referenceable_type' => $customer->getMorphClass(),
+            'referenceable_id' => $customer->id,
             'mapped_snapshot' => ['email' => 'new@x.test'],
             'local_snapshot' => ['email' => 'old@x.test'],
             'diff_fields' => ['email'],
@@ -248,8 +266,11 @@ class IntegrationInboxTest extends TestCase {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'email' => 'old@x.test']);
         $item = $this->item([
             'case_type' => IntegrationInboxItem::CASE_CONFLICT,
-            'referenceable_type' => $customer->getMorphClass(), 'referenceable_id' => $customer->id,
-            'mapped_snapshot' => ['email' => 'new@x.test'], 'local_snapshot' => ['email' => 'old@x.test'], 'diff_fields' => ['email'],
+            'referenceable_type' => $customer->getMorphClass(),
+            'referenceable_id' => $customer->id,
+            'mapped_snapshot' => ['email' => 'new@x.test'],
+            'local_snapshot' => ['email' => 'old@x.test'],
+            'diff_fields' => ['email'],
         ]);
 
         $this->actingAs($this->admin)
@@ -282,8 +303,10 @@ class IntegrationInboxTest extends TestCase {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
         $ref = ExternalReference::query()->create([
             'organization_id' => $this->organization->id,
-            'plugin_id' => 'toggl', 'external_type' => 'client',
-            'referenceable_type' => $customer->getMorphClass(), 'referenceable_id' => $customer->id,
+            'plugin_id' => 'toggl',
+            'external_type' => 'client',
+            'referenceable_type' => $customer->getMorphClass(),
+            'referenceable_id' => $customer->id,
             'external_id' => 'tg-9',
         ]);
 

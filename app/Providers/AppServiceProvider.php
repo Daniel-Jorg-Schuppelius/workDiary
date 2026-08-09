@@ -44,7 +44,7 @@ class AppServiceProvider extends ServiceProvider {
         // aufgelöst. Org-Kontext muss VOR der Container-Auflösung gebunden sein
         // (vgl. FetchProtocolWeatherJob).
         $this->app->bind(\App\Services\Weather\Contracts\WeatherProvider::class, static function (): \App\Services\Weather\Contracts\WeatherProvider {
-            return match (\App\Support\Setting::get('weather.provider', 'open-meteo')) {
+            return match (Setting::get('weather.provider', 'open-meteo')) {
                 'dwd' => new \App\Services\Weather\DwdProvider(new \GuzzleHttp\Client),
                 default => new \App\Services\Weather\OpenMeteoProvider(new \GuzzleHttp\Client),
             };
@@ -85,7 +85,7 @@ class AppServiceProvider extends ServiceProvider {
                     unset($payload['number']);
                     $subject->forceFill(['payload' => [...$payload, 'anonymized' => true]])->save();
                     $note = $subject->referenceable;
-                    if ($note instanceof \App\Models\CommunicationNote) {
+                    if ($note instanceof CommunicationNote) {
                         $note->forceFill(['subject' => (string) __('Anruf (anonymisiert)')])->save();
                     }
                 },
@@ -206,12 +206,12 @@ class AppServiceProvider extends ServiceProvider {
             // (N6): Purge auditiert jetzt als export.deleted und räumt Zeilen mit.
             $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
                 area: 'exports',
-                modelClass: \App\Models\TimeExport::class,
-                overdueQuery: fn($organization, $cutoff) => \App\Models\TimeExport::query()
+                modelClass: TimeExport::class,
+                overdueQuery: fn($organization, $cutoff) => TimeExport::query()
                     ->withoutGlobalScopes()
                     ->where('organization_id', $organization->id)
                     ->where('created_at', '<', $cutoff),
-                purge: function (\App\Models\TimeExport $subject): void {
+                purge: function (TimeExport $subject): void {
                     $subject->audit('export.deleted', ['reason' => 'retention', 'file_path' => $subject->file_path]);
                     $path = (string) ($subject->file_path ?? '');
                     if ($path !== '') {
@@ -468,7 +468,7 @@ class AppServiceProvider extends ServiceProvider {
         // die Diagnose-Seite, im Worker-Loop gedrosselt geschrieben.
         \Illuminate\Support\Facades\Queue::looping(static function (): void {
             static $lastWritten = null;
-            $now = \Carbon\CarbonImmutable::now();
+            $now = CarbonImmutable::now();
             if ($lastWritten !== null && $now->diffInSeconds($lastWritten, true) < 30) {
                 return;
             }
@@ -481,26 +481,26 @@ class AppServiceProvider extends ServiceProvider {
 
         // Zustellnachweis für Rechnungs-/Mahnmails (Vollaudit 2026-07, M26):
         // queued → sent + Message-ID, sobald der Mailer wirklich versendet.
-        \Illuminate\Support\Facades\Event::listen(
+        EventFacade::listen(
             \Illuminate\Mail\Events\MessageSent::class,
             \App\Listeners\RecordInvoiceMailDelivery::class,
         );
 
         // Laufzeit-Nachweise der Registry-Jobs (Feature 067, MVP-177):
         // Start/Erfolg/Fehler/Skip je Schedule-Event → runs/states.
-        \Illuminate\Support\Facades\Event::listen(
+        EventFacade::listen(
             \Illuminate\Console\Events\ScheduledTaskStarting::class,
             [\App\Scheduling\ScheduleRunRecorder::class, 'handleStarting'],
         );
-        \Illuminate\Support\Facades\Event::listen(
+        EventFacade::listen(
             \Illuminate\Console\Events\ScheduledTaskFinished::class,
             [\App\Scheduling\ScheduleRunRecorder::class, 'handleFinished'],
         );
-        \Illuminate\Support\Facades\Event::listen(
+        EventFacade::listen(
             \Illuminate\Console\Events\ScheduledTaskFailed::class,
             [\App\Scheduling\ScheduleRunRecorder::class, 'handleFailed'],
         );
-        \Illuminate\Support\Facades\Event::listen(
+        EventFacade::listen(
             \Illuminate\Console\Events\ScheduledTaskSkipped::class,
             [\App\Scheduling\ScheduleRunRecorder::class, 'handleSkipped'],
         );
@@ -518,7 +518,7 @@ class AppServiceProvider extends ServiceProvider {
         // Task→Board-Sync (Feature 064, P3): Statuswechsel außerhalb des Boards
         // schiebt das Work-Item in die erste Spalte der Zielkategorie. Kein
         // Task-Write hier → keine Endlos-Schleife mit AgileBoardService::move().
-        \App\Models\Task::saved(function (\App\Models\Task $task): void {
+        Task::saved(function (Task $task): void {
             if (! $task->wasChanged('status')) {
                 return;
             }

@@ -18,7 +18,7 @@ use App\Services\Integration\{InboxActionService, InboxGroupBookerRegistry, Matc
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{MorphTo, Relation};
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Support\Facades\{Auth, DB, Schema};
 use Illuminate\View\View;
 
 /**
@@ -179,19 +179,34 @@ class IntegrationInboxController extends Controller {
             /** @var array<string, string> $options */
             $options = [];
             /** @var class-string<Model> $type */
-            $rows = (new $type)->newQuery()
+            $model = new $type;
+            // Nicht jedes Ziel hat eine `name`-Spalte (z. B. Event → `title`).
+            $labelColumn = $this->targetLabelColumn($model);
+            $rows = $model->newQuery()
                 ->withoutGlobalScopes()
                 ->where('organization_id', $user->organization_id)
-                ->orderBy('name')
+                ->orderBy($labelColumn ?? $model->getKeyName())
                 ->limit(1000)
                 ->get();
             foreach ($rows as $row) {
-                $options[$row->getRouteKey()] = (string) ($row->getAttribute('name') ?? ('#' . $row->getKey()));
+                $label = $labelColumn !== null ? (string) ($row->getAttribute($labelColumn) ?? '') : '';
+                $options[$row->getRouteKey()] = $label !== '' ? $label : ('#' . $row->getKey());
             }
             $out[$type] = $options;
         }
 
         return $out;
+    }
+
+    /** Erste vorhandene Anzeige-/Sortierspalte des Ziel-Modells (oder null). */
+    private function targetLabelColumn(Model $model): ?string {
+        foreach (['name', 'title'] as $column) {
+            if (Schema::connection($model->getConnectionName())->hasColumn($model->getTable(), $column)) {
+                return $column;
+            }
+        }
+
+        return null;
     }
 
     public function assign(Request $request, IntegrationInboxItem $item, InboxActionService $service): RedirectResponse {

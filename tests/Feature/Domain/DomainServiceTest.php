@@ -291,7 +291,7 @@ class DomainServiceTest extends TestCase {
     }
 
     public function test_own_holding_excludes_from_unmapped_and_yields_to_assignment(): void {
-        $connection = \App\Models\Domain\DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
         $domain = DomainProjection::factory()->create([
             'organization_id' => $this->organization->id,
             'connection_id' => $connection->id,
