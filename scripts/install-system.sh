@@ -15,17 +15,25 @@
 #   --with-integrity-watch: workdiary-integrity-watch.service (braucht ext-inotify)
 #   --with-fail2ban:    Filter + Jail aus deploy/fail2ban (logpath eingesetzt)
 #
-# Aufruf (als root):
-#   scripts/install-system.sh [--with-reverb] [--with-integrity-watch]
-#                             [--with-fail2ban] [--backup-time HH:MM]
-#                             [--backup-dir PFAD] [--backup-keep-days N]
-#                             [--no-backup] [--dry-run] [--status] [--uninstall]
+# Mehrere Instanzen auf einem Host: --instance <slug> scoped ALLE erzeugten
+# Namen (workdiary-<slug>-queue.service, /etc/cron.d/workdiary-<slug>,
+# /etc/workdiary-<slug>-backup.conf, fail2ban-Jail [workdiary-<slug>]). Ohne
+# --instance gelten die klassischen, systemweiten Namen — eine zweite Instanz
+# OHNE eigenen --instance-Namen überschreibt also die erste!
 #
-# Idempotent: erneutes Ausführen überschreibt die erzeugten Dateien und lädt
-# die Dienste neu — nur /etc/workdiary-backup.conf bleibt unangetastet, außer
+# Aufruf (als root):
+#   scripts/install-system.sh [--instance NAME] [--with-reverb]
+#                             [--with-integrity-watch] [--with-fail2ban]
+#                             [--backup-time HH:MM] [--backup-dir PFAD]
+#                             [--backup-keep-days N] [--no-backup] [--dry-run]
+#                             [--status] [--uninstall]
+#
+# Idempotent je Instanz: erneutes Ausführen (mit demselben --instance) über-
+# schreibt die erzeugten Dateien und lädt die Dienste neu — nur die Backup-
+# Konfiguration (/etc/workdiary[-<slug>]-backup.conf) bleibt unangetastet, außer
 # eine --backup-dir/--backup-keep-days-Option wird explizit übergeben.
-# --uninstall entfernt alles wieder. DESTDIR (Paketbau/Test) schreibt unter
-# ein Präfix und überspringt systemctl/fail2ban-Aufrufe.
+# --uninstall (mit demselben --instance) entfernt alles wieder. DESTDIR
+# (Paketbau/Test) schreibt unter ein Präfix und überspringt systemctl/fail2ban.
 
 set -euo pipefail
 
@@ -41,6 +49,7 @@ BACKUP_TIME="23:00"
 BACKUP_DIR="/var/backups/workdiary"
 BACKUP_KEEP_DAYS=14
 BACKUP_CONF_OPTS=0
+INSTANCE=""
 DRY_RUN=0
 ACTION="install"
 
@@ -51,6 +60,7 @@ while [[ $# -gt 0 ]]; do
     --with-reverb) WITH_REVERB=1 ;;
     --with-integrity-watch) WITH_WATCH=1 ;;
     --with-fail2ban) WITH_FAIL2BAN=1 ;;
+    --instance) shift; INSTANCE="${1:?--instance braucht einen Namen}" ;;
     --no-backup) WITH_BACKUP=0 ;;
     --backup-time) shift; BACKUP_TIME="${1:?--backup-time braucht HH:MM}" ;;
     --backup-dir) shift; BACKUP_DIR="${1:?--backup-dir braucht einen Pfad}"; BACKUP_CONF_OPTS=1 ;;
@@ -99,14 +109,36 @@ BACKUP_MIN="${BACKUP_TIME##*:}";  BACKUP_MIN=$((10#$BACKUP_MIN))
 [[ "$BACKUP_DIR" == /* ]] || fail "--backup-dir erwartet einen absoluten Pfad (bekam: $BACKUP_DIR)."
 [[ "$BACKUP_KEEP_DAYS" =~ ^[1-9][0-9]*$ ]] || fail "--backup-keep-days erwartet eine positive Zahl (bekam: $BACKUP_KEEP_DAYS)."
 
-SYSTEMD_DIR="$DESTDIR/etc/systemd/system"
-CRON_FILE="$DESTDIR/etc/cron.d/workdiary"
-BACKUP_CONF="$DESTDIR/etc/workdiary-backup.conf"
-F2B_DIR="$DESTDIR/etc/fail2ban"
+# Instanzname: leer = klassische, systemweite Namen (workdiary, workdiary-queue,
+# /etc/cron.d/workdiary, /etc/workdiary-backup.conf …). Mit --instance <slug>
+# werden ALLE erzeugten Dateien instanz-scoped (workdiary-<slug>-…), sodass
+# mehrere Installationen auf einem Host koexistieren, ohne sich zu überschreiben.
+if [[ -n "$INSTANCE" ]]; then
+  [[ "$INSTANCE" =~ ^[a-z0-9][a-z0-9-]*$ ]] || fail "--instance erwartet einen Slug aus [a-z0-9-], beginnend mit [a-z0-9] (bekam: $INSTANCE)."
+  case "$INSTANCE" in
+    queue|reverb|integrity-watch|strict|backup)
+      fail "--instance darf nicht '$INSTANCE' heißen (Kollision mit Dienst-/Dateinamen)." ;;
+  esac
+  NAME="workdiary-$INSTANCE"
+else
+  NAME="workdiary"
+fi
 
-UNITS=(workdiary-queue)
-[[ $WITH_REVERB -eq 1 ]] && UNITS+=(workdiary-reverb)
-[[ $WITH_WATCH -eq 1 ]] && UNITS+=(workdiary-integrity-watch)
+SYSTEMD_DIR="$DESTDIR/etc/systemd/system"
+CRON_FILE="$DESTDIR/etc/cron.d/$NAME"
+BACKUP_CONF="$DESTDIR/etc/${NAME}-backup.conf"
+BACKUP_CONF_RUNTIME="/etc/${NAME}-backup.conf"
+BACKUP_LOG="/var/log/${NAME}-backup.log"
+F2B_DIR="$DESTDIR/etc/fail2ban"
+F2B_JAIL="$F2B_DIR/jail.d/$NAME.conf"
+
+# Rollen = Basisnamen der Unit-Templates (workdiary-<rolle>.service.template);
+# die tatsächlichen Unit-Namen sind instanz-scoped (${NAME}-<rolle>).
+ROLES=(queue)
+[[ $WITH_REVERB -eq 1 ]] && ROLES+=(reverb)
+[[ $WITH_WATCH -eq 1 ]] && ROLES+=(integrity-watch)
+UNITS=()
+for r in "${ROLES[@]}"; do UNITS+=("${NAME}-$r"); done
 
 sysctl_do() { # systemctl nur im Echtbetrieb (kein DESTDIR/dry-run)
   if [[ -n "$DESTDIR" || $DRY_RUN -eq 1 ]]; then note "(übersprungen) systemctl $*"; else systemctl "$@"; fi
@@ -118,7 +150,9 @@ render() { # $1 Template, $2 Ziel
                 -e "s|__PHP_BIN__|$PHP_BIN|g" \
                 -e "s|__RUN_USER__|$RUN_USER|g" \
                 -e "s|__BACKUP_MIN__|$BACKUP_MIN|g" \
-                -e "s|__BACKUP_HOUR__|$BACKUP_HOUR|g" "$1")
+                -e "s|__BACKUP_HOUR__|$BACKUP_HOUR|g" \
+                -e "s|__BACKUP_CONF__|$BACKUP_CONF_RUNTIME|g" \
+                -e "s|__BACKUP_LOG__|$BACKUP_LOG|g" "$1")
   if [[ $DRY_RUN -eq 1 ]]; then
     echo "--- würde schreiben: $2"
     echo "$content" | sed 's/^/    /'
@@ -138,13 +172,19 @@ write_backup_conf() {
     note "vorhanden, unverändert: $BACKUP_CONF"
     return
   fi
+  local name_setting
+  if [[ -n "$INSTANCE" ]]; then
+    name_setting="BACKUP_NAME=\"$INSTANCE\"                              # Instanzname in den Dateinamen (aus --instance)"
+  else
+    name_setting="# BACKUP_NAME=\"meine-instanz\"                              # Instanzname in den Dateinamen; Default: APP_NAME aus der App-.env"
+  fi
   local content
   content="# WorkDiary-Backup-Konfiguration — wird von scripts/backup.sh gelesen.
 # Erzeugt von scripts/install-system.sh; Änderungen hier überleben erneute
 # Installer-Läufe (nur explizite --backup-*-Optionen schreiben die Datei neu).
 BACKUP_DIR=\"$BACKUP_DIR\"
 BACKUP_KEEP_DAYS=$BACKUP_KEEP_DAYS
-# BACKUP_NAME=\"meine-instanz\"                              # Instanzname in den Dateinamen; Default: APP_NAME aus der App-.env
+$name_setting
 # BACKUP_HEARTBEAT_URL=\"https://…/admin/backup/heartbeat\"  # Default: <APP_URL>/admin/backup/heartbeat aus der App-.env
 # BACKUP_HEARTBEAT_TOKEN=\"…\"                               # Default: BACKUP_HEARTBEAT_TOKEN aus der App-.env"
   if [[ $DRY_RUN -eq 1 ]]; then
@@ -186,22 +226,22 @@ ensure_heartbeat_token() {
 # ---------------------------------------------------------------- Aktionen
 
 status() {
-  echo "WorkDiary-Systemdienste (APP_DIR=$APP_DIR):"
-  for u in workdiary-queue workdiary-reverb workdiary-integrity-watch; do
+  echo "WorkDiary-Systemdienste (Instanz=${INSTANCE:-<klassisch>}, APP_DIR=$APP_DIR):"
+  for u in "${NAME}-queue" "${NAME}-reverb" "${NAME}-integrity-watch"; do
     if [[ -f "/etc/systemd/system/$u.service" ]]; then
-      printf '  %-28s %s / %s\n' "$u" "$(systemctl is-enabled "$u" 2>/dev/null || true)" "$(systemctl is-active "$u" 2>/dev/null || true)"
+      printf '  %-32s %s / %s\n' "$u" "$(systemctl is-enabled "$u" 2>/dev/null || true)" "$(systemctl is-active "$u" 2>/dev/null || true)"
     else
-      printf '  %-28s nicht installiert\n' "$u"
+      printf '  %-32s nicht installiert\n' "$u"
     fi
   done
-  [[ -f /etc/cron.d/workdiary ]] && echo "  /etc/cron.d/workdiary        vorhanden" || echo "  /etc/cron.d/workdiary        nicht installiert"
-  [[ -f /etc/workdiary-backup.conf ]] && echo "  /etc/workdiary-backup.conf   vorhanden" || echo "  /etc/workdiary-backup.conf   nicht installiert (backup.sh nutzt Defaults)"
-  [[ -f /etc/fail2ban/jail.d/workdiary.conf ]] && echo "  fail2ban-Jail                vorhanden" || echo "  fail2ban-Jail                nicht installiert"
+  [[ -f "/etc/cron.d/$NAME" ]] && echo "  /etc/cron.d/$NAME  vorhanden" || echo "  /etc/cron.d/$NAME  nicht installiert"
+  [[ -f "/etc/${NAME}-backup.conf" ]] && echo "  /etc/${NAME}-backup.conf  vorhanden" || echo "  /etc/${NAME}-backup.conf  nicht installiert (backup.sh nutzt Defaults)"
+  [[ -f "/etc/fail2ban/jail.d/$NAME.conf" ]] && echo "  fail2ban-Jail ($NAME)  vorhanden" || echo "  fail2ban-Jail ($NAME)  nicht installiert"
 }
 
 uninstall() {
   echo "Entferne WorkDiary-Systemdienste …"
-  for u in workdiary-queue workdiary-reverb workdiary-integrity-watch; do
+  for u in "${NAME}-queue" "${NAME}-reverb" "${NAME}-integrity-watch"; do
     if [[ -f "$SYSTEMD_DIR/$u.service" ]]; then
       sysctl_do disable --now "$u" || true
       rm -f "$SYSTEMD_DIR/$u.service"; note "entfernt: $SYSTEMD_DIR/$u.service"
@@ -210,9 +250,15 @@ uninstall() {
   sysctl_do daemon-reload || true
   [[ -f "$CRON_FILE" ]] && { rm -f "$CRON_FILE"; note "entfernt: $CRON_FILE"; }
   [[ -f "$BACKUP_CONF" ]] && { rm -f "$BACKUP_CONF"; note "entfernt: $BACKUP_CONF"; }
-  if [[ -f "$F2B_DIR/jail.d/workdiary.conf" ]]; then
-    rm -f "$F2B_DIR/jail.d/workdiary.conf" "$F2B_DIR/filter.d/workdiary.conf" "$F2B_DIR/filter.d/workdiary-strict.conf"
-    note "entfernt: fail2ban-Filter/-Jail"
+  if [[ -f "$F2B_JAIL" ]]; then
+    rm -f "$F2B_JAIL"; note "entfernt: $F2B_JAIL"
+    # Gemeinsame Filter nur entfernen, wenn keine andere WorkDiary-Jail mehr da ist.
+    if ! ls "$F2B_DIR"/jail.d/workdiary*.conf >/dev/null 2>&1; then
+      rm -f "$F2B_DIR/filter.d/workdiary.conf" "$F2B_DIR/filter.d/workdiary-strict.conf"
+      note "entfernt: fail2ban-Filter (keine weitere Instanz vorhanden)"
+    else
+      note "fail2ban-Filter bleiben (weitere Instanz nutzt sie)."
+    fi
     if [[ -z "$DESTDIR" ]] && command -v fail2ban-client >/dev/null 2>&1; then fail2ban-client reload >/dev/null || true; fi
   fi
   echo "Fertig. (Die App selbst und /var/backups bleiben unangetastet.)"
@@ -220,9 +266,11 @@ uninstall() {
 
 install() {
   echo "WorkDiary-Systemdienste einrichten:"
+  note "Instanz  = ${INSTANCE:-<klassisch> (systemweite Namen)}"
   note "APP_DIR  = $APP_DIR"
   note "PHP      = $PHP_BIN ($("$PHP_BIN" -r 'echo PHP_VERSION;' 2>/dev/null || echo '?'))"
   note "RUN_USER = $RUN_USER"
+  note "Dienste  = ${UNITS[*]}"
 
   # Wächter nur mit ext-inotify (sonst Restart-Schleife im Unit).
   if [[ $WITH_WATCH -eq 1 ]] && ! "$PHP_BIN" -m 2>/dev/null | grep -qx inotify; then
@@ -238,9 +286,9 @@ install() {
     render <(grep -v 'backup.sh' "$APP_DIR/deploy/cron.d/workdiary.template") "$CRON_FILE"
   fi
 
-  # 2) systemd-Units
-  for u in "${UNITS[@]}"; do
-    render "$APP_DIR/deploy/systemd/$u.service.template" "$SYSTEMD_DIR/$u.service"
+  # 2) systemd-Units (Template nach Rolle, Zieldatei instanz-scoped)
+  for r in "${ROLES[@]}"; do
+    render "$APP_DIR/deploy/systemd/workdiary-$r.service.template" "$SYSTEMD_DIR/${NAME}-$r.service"
   done
   sysctl_do daemon-reload
   for u in "${UNITS[@]}"; do
@@ -259,9 +307,14 @@ install() {
       mkdir -p "$F2B_DIR/filter.d" "$F2B_DIR/jail.d"
       cp "$APP_DIR/deploy/fail2ban/filter.d/workdiary.conf" \
          "$APP_DIR/deploy/fail2ban/filter.d/workdiary-strict.conf" "$F2B_DIR/filter.d/"
-      sed "s|/var/www/workdiary|$APP_DIR|g; s|logpath  = .*storage/logs|logpath  = $APP_DIR/storage/logs|g" \
-        "$APP_DIR/deploy/fail2ban/jail.d/workdiary.conf.example" > "$F2B_DIR/jail.d/workdiary.conf"
-      note "geschrieben: $F2B_DIR/jail.d/workdiary.conf (+ Filter)"
+      # Bei --instance die Jail-Sektionen scopen ([workdiary-<slug>]/-strict);
+      # die filter=-Referenzen bleiben die geteilten Filter (workdiary[-strict]).
+      local f2b_sed="s|/var/www/workdiary|$APP_DIR|g; s|logpath  = .*storage/logs|logpath  = $APP_DIR/storage/logs|g"
+      if [[ -n "$INSTANCE" ]]; then
+        f2b_sed="s|^\[workdiary\]|[$NAME]|; s|^\[workdiary-strict\]|[$NAME-strict]|; $f2b_sed"
+      fi
+      sed "$f2b_sed" "$APP_DIR/deploy/fail2ban/jail.d/workdiary.conf.example" > "$F2B_JAIL"
+      note "geschrieben: $F2B_JAIL (+ Filter)"
       if [[ -z "$DESTDIR" ]]; then fail2ban-client reload >/dev/null && note "fail2ban neu geladen."; fi
     fi
   fi
@@ -270,7 +323,7 @@ install() {
   echo "Fertig. Kontrolle:"
   note "systemctl status ${UNITS[*]}"
   note "$PHP_BIN $APP_DIR/artisan schedule:list   # Scheduler-Herzschlag prüfen"
-  [[ $WITH_BACKUP -eq 1 ]] && note "Backup täglich ${BACKUP_TIME} Uhr → /var/log/workdiary-backup.log (Ziel/Retention: /etc/workdiary-backup.conf; Zeit muss in der Server-Betriebszeit liegen!)"
+  [[ $WITH_BACKUP -eq 1 ]] && note "Backup täglich ${BACKUP_TIME} Uhr → $BACKUP_LOG (Ziel/Retention: $BACKUP_CONF_RUNTIME; Zeit muss in der Server-Betriebszeit liegen!)"
   note "Backup-Einrichtung prüfen: $PHP_BIN $APP_DIR/artisan workdiary:backup:status"
 }
 

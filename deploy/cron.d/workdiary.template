@@ -1,6 +1,7 @@
 # WorkDiary Cron (MVP-454) — von scripts/install-system.sh nach
-# /etc/cron.d/workdiary gerendert.
-# Platzhalter: __APP_DIR__, __PHP_BIN__, __RUN_USER__, __BACKUP_MIN__, __BACKUP_HOUR__
+# /etc/cron.d/workdiary (bzw. /etc/cron.d/workdiary-<instanz>) gerendert.
+# Platzhalter: __APP_DIR__, __PHP_BIN__, __RUN_USER__, __BACKUP_MIN__,
+#              __BACKUP_HOUR__, __BACKUP_CONF__, __BACKUP_LOG__
 #
 # schedule:run ist der Herzschlag der App (Scheduler-Registry, Feature 067) —
 # ohne diese Zeile läuft KEIN wiederkehrender Job. Das Backup läuft als root
@@ -11,4 +12,4 @@ SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 * * * * * __RUN_USER__ __PHP_BIN__ __APP_DIR__/artisan schedule:run >> /dev/null 2>&1
-__BACKUP_MIN__ __BACKUP_HOUR__ * * * root __APP_DIR__/scripts/backup.sh >> /var/log/workdiary-backup.log 2>&1
+__BACKUP_MIN__ __BACKUP_HOUR__ * * * root BACKUP_CONF=__BACKUP_CONF__ __APP_DIR__/scripts/backup.sh >> __BACKUP_LOG__ 2>&1

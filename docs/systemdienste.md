@@ -25,6 +25,8 @@ Skriptpfad, PHP-Binary, Betriebs-User aus dem `storage/`-Owner) und richtet ein:
 ## Optionen
 
 ```text
+--instance NAME          alle erzeugten Namen instanz-scopen (workdiary-NAME-…),
+                         damit mehrere Installationen auf einem Host koexistieren
 --with-reverb            Reverb-WebSocket-Dienst mit einrichten
 --with-integrity-watch   Realtime-Integritätswächter (ext-inotify nötig)
 --with-fail2ban          fail2ban-Filter/-Jails installieren (fail2ban nötig)
@@ -42,6 +44,27 @@ Erneutes Ausführen ist gefahrlos (idempotent): Dateien werden überschrieben,
 Dienste neu geladen. Ausnahme: eine vorhandene `/etc/workdiary-backup.conf`
 bleibt unangetastet — nur explizite `--backup-dir`/`--backup-keep-days`
 schreiben sie neu. Overrides per Env: `APP_DIR`, `PHP_BIN`, `RUN_USER`.
+
+## Mehrere Instanzen auf einem Host
+
+Ohne `--instance` verwendet der Installer **feste, systemweite Namen**
+(`workdiary-queue.service`, `/etc/cron.d/workdiary`, `/etc/workdiary-backup.conf`,
+fail2ban-Jail `[workdiary]`). Eine **zweite** Installation ohne eigenen
+`--instance`-Namen überschreibt daher die erste.
+
+Für Parallelbetrieb jede Instanz mit einem eindeutigen `--instance <slug>`
+einrichten — dann werden **alle** erzeugten Namen gescoped und koexistieren:
+
+```bash
+sudo /pfad/zu/instanzA/scripts/install-system.sh --instance kunde-a
+sudo /pfad/zu/instanzB/scripts/install-system.sh --instance kunde-b
+```
+
+Ergibt z. B. `workdiary-kunde-a-queue.service`, `/etc/cron.d/workdiary-kunde-a`,
+`/etc/workdiary-kunde-a-backup.conf`, Jail `[workdiary-kunde-a]`. Die
+fail2ban-**Filter** (`filter.d/workdiary[-strict].conf`) sind geteilt und werden
+beim `--uninstall` erst entfernt, wenn keine WorkDiary-Jail mehr existiert.
+Status/Deinstallation jeweils mit demselben `--instance` aufrufen.
 
 ## Nach der Einrichtung prüfen
 

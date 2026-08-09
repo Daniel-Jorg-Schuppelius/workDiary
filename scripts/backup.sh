@@ -26,8 +26,11 @@
 set -euo pipefail
 umask 077
 
+# Konfigurationsdatei per BACKUP_CONF wählbar (Cron mehrerer Instanzen zeigt je
+# auf ihre eigene /etc/workdiary-<instanz>-backup.conf); Default systemweit.
 # shellcheck disable=SC1091
-[[ -r /etc/workdiary-backup.conf ]] && source /etc/workdiary-backup.conf
+BACKUP_CONF="${BACKUP_CONF:-/etc/workdiary-backup.conf}"
+[[ -r "$BACKUP_CONF" ]] && source "$BACKUP_CONF"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_DIR="${APP_DIR:-$(dirname "$SCRIPT_DIR")}"

@@ -22,14 +22,16 @@
 #   scripts/restore-test.sh [--stamp YYYYMMDD_HHMMSS] [--work-dir PFAD]
 #                           [--keep] [--no-record]
 #
-# Optional per Env oder /etc/workdiary-backup.conf: BACKUP_DIR, BACKUP_NAME
-# (Defaults wie scripts/backup.sh); APP_DIR, PHP_BIN wie install-system.sh.
+# Optional per Env oder Konfig (BACKUP_CONF, Default /etc/workdiary-backup.conf):
+# BACKUP_DIR, BACKUP_NAME (Defaults wie scripts/backup.sh); APP_DIR, PHP_BIN
+# wie install-system.sh.
 
 set -euo pipefail
 umask 077
 
 # shellcheck disable=SC1091
-[[ -r /etc/workdiary-backup.conf ]] && source /etc/workdiary-backup.conf
+BACKUP_CONF="${BACKUP_CONF:-/etc/workdiary-backup.conf}"
+[[ -r "$BACKUP_CONF" ]] && source "$BACKUP_CONF"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_DIR="${APP_DIR:-$(dirname "$SCRIPT_DIR")}"
