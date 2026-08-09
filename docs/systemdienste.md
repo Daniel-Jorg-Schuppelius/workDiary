@@ -12,15 +12,15 @@ sudo scripts/install-system.sh
 Der Installer ermittelt alles selbst (Installationsverzeichnis aus dem
 Skriptpfad, PHP-Binary, Betriebs-User aus dem `storage/`-Owner) und richtet ein:
 
-| Komponente | Zweck | immer? |
-| --- | --- | --- |
-| `/etc/cron.d/workdiary` | `schedule:run` minütlich (Herzschlag ALLER wiederkehrenden Jobs) + tägliches Backup (`scripts/backup.sh`) | ja |
-| `/etc/workdiary-backup.conf` | Backup-Konfiguration (Zielverzeichnis, Retention; chmod 600) — eine vorhandene Datei bleibt bei erneutem Lauf erhalten | ja (außer `--no-backup`) |
-| `BACKUP_HEARTBEAT_TOKEN` | wird in der App-`.env` erzeugt, falls er fehlt (`artisan workdiary:backup:rotate-token`) — ohne ihn registriert die Statusseite keine Backup-Läufe | ja (außer `--no-backup`) |
-| `workdiary-queue.service` | Queue-Worker — `QUEUE_CONNECTION=database`: ohne ihn bleiben Benachrichtigungen, Importe und Hintergrund-Jobs liegen | ja |
-| `workdiary-reverb.service` | WebSocket-Server (Chat/Live-Updates, `BROADCAST_CONNECTION=reverb`) | `--with-reverb` |
-| `workdiary-integrity-watch.service` | Realtime-Integritätswächter (braucht ext-inotify; der Installer prüft das) | `--with-integrity-watch` |
-| fail2ban-Filter + -Jails | OS-seitige IP-Sperren aus dem Security-Log (siehe `deploy/fail2ban/`) | `--with-fail2ban` |
+| Komponente                          | Zweck                                                                                                                                              | immer?                   |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| `/etc/cron.d/workdiary`             | `schedule:run` minütlich (Herzschlag ALLER wiederkehrenden Jobs) + tägliches Backup (`scripts/backup.sh`)                                          | ja                       |
+| `/etc/workdiary-backup.conf`        | Backup-Konfiguration (Zielverzeichnis, Retention; chmod 600) — eine vorhandene Datei bleibt bei erneutem Lauf erhalten                             | ja (außer `--no-backup`) |
+| `BACKUP_HEARTBEAT_TOKEN`            | wird in der App-`.env` erzeugt, falls er fehlt (`artisan workdiary:backup:rotate-token`) — ohne ihn registriert die Statusseite keine Backup-Läufe | ja (außer `--no-backup`) |
+| `workdiary-queue.service`           | Queue-Worker — `QUEUE_CONNECTION=database`: ohne ihn bleiben Benachrichtigungen, Importe und Hintergrund-Jobs liegen                               | ja                       |
+| `workdiary-reverb.service`          | WebSocket-Server (Chat/Live-Updates, `BROADCAST_CONNECTION=reverb`)                                                                                | `--with-reverb`          |
+| `workdiary-integrity-watch.service` | Realtime-Integritätswächter (braucht ext-inotify; der Installer prüft das)                                                                         | `--with-integrity-watch` |
+| fail2ban-Filter + -Jails            | OS-seitige IP-Sperren aus dem Security-Log (siehe `deploy/fail2ban/`)                                                                              | `--with-fail2ban`        |
 
 ## Optionen
 
