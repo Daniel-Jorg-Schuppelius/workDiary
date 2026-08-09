@@ -624,7 +624,9 @@
                                  sichtbar. Ab lg übernimmt die permanente, minimierte
                                  Hilfe-Rail rechts den Zugang, daher lg:hidden. Mit
                                  Kontext-Topic öffnet er die Seitenhilfe, ohne öffnet er
-                                 das Fallback-Panel mit Suche (Trigger ohne data-help-topic). --}}
+                                 das Fallback-Panel mit Suche (Trigger ohne data-help-topic).
+                                 Im Legacy-Modus gibt es keine In-App-Hilfe. --}}
+                            @unless ($isLegacyMode)
                             <button type="button"
                                     class="btn btn-sm btn-ghost btn-square lg:hidden"
                                     data-help-trigger
@@ -635,6 +637,7 @@
                                     aria-controls="help-drawer">
                                 <x-icon name="help" class="text-base" />
                             </button>
+                            @endunless
                             @php
                                 $_reminders = $reminderItems ?? [];
                                 $_reminderTotal = collect($_reminders)->sum(fn($r) => is_object($r) ? $r->count : (int) ($r['count'] ?? 0));
@@ -1293,7 +1296,7 @@
             <x-maintenance-window-banner />
             <x-support-banner />
         @endauth
-        <div class="mx-auto @yield('wrapper-height-class', 'wd-page-fill') w-full {{ $_wrapperMaxW }} px-2 pt-(--sidebar-gap) pb-[calc(var(--app-footer-h)+var(--sidebar-gap))] md:pb-(--sidebar-gap) sm:px-4 xl:px-8 2xl:px-12 @auth with-help-pad @unless($isLegacyMode) with-sidebar-pad @endunless @endauth">
+        <div class="mx-auto @yield('wrapper-height-class', 'wd-page-fill') w-full {{ $_wrapperMaxW }} px-2 pt-(--sidebar-gap) pb-[calc(var(--app-footer-h)+var(--sidebar-gap))] md:pb-(--sidebar-gap) sm:px-4 xl:px-8 2xl:px-12 @auth @unless($isLegacyMode) with-help-pad with-sidebar-pad @endunless @endauth">
             @if (session('success'))
                 <div class="alert alert-success mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
                     {{ session('success') }}
@@ -1498,9 +1501,12 @@
             </script>
             @endauth
 
-            {{-- In-App-Hilfe-Drawer (MVP-051): einmal pro Seite, befüllt von JS. --}}
+            {{-- In-App-Hilfe-Drawer (MVP-051): einmal pro Seite, befüllt von JS.
+                 Im Legacy-Modus nicht angeboten. --}}
             @auth
-                <x-help-drawer />
+                @unless ($isLegacyMode)
+                    <x-help-drawer />
+                @endunless
             @endauth
     </body>
 </html>

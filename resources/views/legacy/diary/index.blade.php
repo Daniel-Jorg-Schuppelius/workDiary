@@ -144,7 +144,8 @@
             </div>
 
             {{-- Tabelle mit Bulk-Aktionen --}}
-            <div class="min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs">
+            {{-- min-h-96: Mindesthöhe für kurze Viewports; flex-1 füllt sonst das Elternelement. --}}
+            <div class="min-h-96 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs">
                 <form method="POST" action="{{ route('legacy.diary.bulk') }}" id="bulk-form" class="flex h-full flex-col">
                     @csrf
                     <div class="flex-none flex flex-wrap items-center gap-2 border-b border-base-300 bg-base-200/60 px-3 py-2">
