@@ -350,7 +350,9 @@ class LegacyDashboardService {
     private function vacationKpis(Builder $query, int $total): array {
         // Drei Statuszählungen in EINER Aggregat-Query (SUM(CASE WHEN …)) statt
         // drei separater count()-Abfragen; DB-agnostisch (MySQL + SQLite-Dev).
-        $agg = (clone $query)->selectRaw('
+        // reorder() entfernt ein evtl. gesetztes ORDER BY start_date — sonst
+        // wirft MySQL Fehler 1140 (aggregate-only SELECT mit ORDER BY ohne GROUP BY).
+        $agg = (clone $query)->reorder()->selectRaw('
             SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS pending,
             SUM(CASE WHEN status = ? AND end_date >= ? THEN 1 ELSE 0 END) AS approved,
             SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS rejected
