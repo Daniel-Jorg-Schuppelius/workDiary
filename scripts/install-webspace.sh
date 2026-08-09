@@ -196,7 +196,13 @@ find storage/framework/views -maxdepth 1 -type f -name '*.php' -delete 2>/dev/nu
 find bootstrap/cache -maxdepth 1 -type f -name '*.php' -delete 2>/dev/null || true
 if [[ -n "$CHOWN" ]]; then
     log "Setze Eigentuemer der Schreibpfade auf $CHOWN"
-    if ! chown -R "$CHOWN" storage bootstrap/cache 2>/dev/null; then
+    # storage/ + bootstrap/cache immer; .env (der Wizard schreibt DB/APP_KEY) und
+    # database/ (SQLite) nur wenn vorhanden — alle vier beschreibt die App/der Wizard
+    # zur Laufzeit. Ohne das scheitert der Web-Installer an einer root-eigenen .env.
+    _chown_targets=(storage bootstrap/cache)
+    [[ -e .env ]] && _chown_targets+=(.env)
+    [[ -d database ]] && _chown_targets+=(database)
+    if ! chown -R "$CHOWN" "${_chown_targets[@]}" 2>/dev/null; then
         echo "FEHLER: chown auf '$CHOWN' fehlgeschlagen — als root ausfuehren (sudo) oder gueltige USER:GROUP angeben." >&2
         exit 1
     fi
@@ -215,7 +221,11 @@ for _wdir in storage/framework/views bootstrap/cache; do
 done
 
 log "Erzeuge Storage-Link"
-php artisan storage:link || true
+if [[ -L public/storage || -e public/storage ]]; then
+    echo "  vorhanden, uebersprungen"
+else
+    php artisan storage:link || true
+fi
 
 if [[ "$SKIP_MIGRATIONS" -eq 0 ]]; then
     log "Fuehre Datenbank-Migrationen aus"
@@ -231,7 +241,11 @@ if [[ "$SKIP_CACHE" -eq 0 ]]; then
 fi
 
 log "Starte Queue-Worker neu, falls vorhanden"
-php artisan queue:restart || true
+if [[ "$SKIP_MIGRATIONS" -eq 0 ]]; then
+    php artisan queue:restart || true
+else
+    echo "  uebersprungen (Migrationen ausgelassen — DB/cache-Tabelle evtl. noch nicht vorhanden)"
+fi
 
 cat <<'DONE'
 
