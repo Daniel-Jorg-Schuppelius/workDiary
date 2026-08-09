@@ -26,9 +26,11 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('organization_id')->nullable()->constrained('organizations')->nullOnDelete();
             $table->morphs('accountable');
-            $table->string('account_holder', 200)->nullable();
-            $table->string('iban', 64)->nullable();
-            $table->string('bic', 32)->nullable();
+            // Verschluesselte PII (Model-Cast): text statt string, da der
+            // encrypted-Cast deutlich laengere Werte erzeugt (vgl. widen-Migration).
+            $table->text('account_holder')->nullable();
+            $table->text('iban')->nullable();
+            $table->text('bic')->nullable();
             $table->string('bank_name', 200)->nullable();
             $table->boolean('is_primary')->default(false);
             $table->string('external_id', 64)->nullable();

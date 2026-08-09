@@ -30,11 +30,16 @@ return new class extends Migration {
             $table->text('tax_identification_number')->nullable()->change();
             $table->text('social_security_number')->nullable()->change();
         });
-        Schema::table('contact_bank_accounts', function (Blueprint $table): void {
-            $table->text('account_holder')->nullable()->change();
-            $table->text('iban')->nullable()->change();
-            $table->text('bic')->nullable()->change();
-        });
+        // contact_bank_accounts wird von einer create-Migration mit neuerem
+        // Zeitstempel angelegt (die die Spalten bereits als text definiert) — auf
+        // frischen Installationen existiert die Tabelle an dieser Stelle noch nicht.
+        if (Schema::hasTable('contact_bank_accounts')) {
+            Schema::table('contact_bank_accounts', function (Blueprint $table): void {
+                $table->text('account_holder')->nullable()->change();
+                $table->text('iban')->nullable()->change();
+                $table->text('bic')->nullable()->change();
+            });
+        }
         Schema::table('contact_addresses', function (Blueprint $table): void {
             $table->text('street')->nullable()->change();
             $table->text('supplement')->nullable()->change();
