@@ -159,4 +159,59 @@ class MigrationPortabilityTest extends TestCase {
                 . "Vergib einen expliziten kurzen Namen, z. B. index([...], 'kurz_idx') bzw. morphs('x', 'kurz_idx').\n"
         );
     }
+
+    /**
+     * Tabellen-Mutationen (Schema::table/DB::table) dürfen nur auf Tabellen
+     * zeigen, die zu diesem Zeitpunkt bereits erstellt sind. Eine bewusste
+     * Vorwärtsreferenz (Tabelle wird von einer SPÄTEREN create-Migration
+     * angelegt) ist nur zulässig, wenn sie im selben File per Schema::hasTable()
+     * abgesichert ist. Sonst bricht MySQL auf einer frischen DB mit `1146 (Base
+     * table or view not found)` ab — SQLite verschluckt es lautlos.
+     */
+    public function test_table_mutations_reference_already_created_tables(): void {
+        $files = $this->migrationFiles();
+
+        // Pass 1: früheste create-Migration je Tabelle (Index = Ausführungsreihenfolge).
+        $createdAt = [];
+        foreach ($files as $i => $file) {
+            $src = file_get_contents($file) ?: '';
+            if (preg_match_all('/Schema::create\(\s*[\'"]([a-z0-9_]+)[\'"]/', $src, $m)) {
+                foreach ($m[1] as $t) {
+                    if (! isset($createdAt[$t])) {
+                        $createdAt[$t] = $i;
+                    }
+                }
+            }
+        }
+
+        // Pass 2: jede Mutation prüfen.
+        $violations = [];
+        foreach ($files as $i => $file) {
+            $src = file_get_contents($file) ?: '';
+            $base = basename($file);
+
+            if (! preg_match_all('/(?:Schema::table|DB::table)\(\s*[\'"]([a-z0-9_]+)[\'"]/', $src, $rm)) {
+                continue;
+            }
+            foreach (array_unique($rm[1]) as $t) {
+                if (! isset($createdAt[$t]) || $createdAt[$t] <= $i) {
+                    continue; // Fremd-/Framework-Tabelle oder bereits (im selben File) erstellt.
+                }
+                // Vorwärtsreferenz: nur mit Schema::hasTable()-Guard im selben File zulässig.
+                if (preg_match('/Schema::hasTable\(\s*[\'"]' . preg_quote($t, '/') . '[\'"]/', $src)) {
+                    continue;
+                }
+                $violations[] = sprintf('%s: Schema::table/DB::table -> %s wird erst später angelegt (ungeschützte Vorwärtsreferenz)', $base, $t);
+            }
+        }
+
+        $this->assertSame(
+            [],
+            array_values(array_unique($violations)),
+            "Migrationen verändern Tabellen, die erst SPÄTER angelegt werden (MySQL 1146 auf frischer DB;\n"
+                . "SQLite verschluckt es lautlos). Lösung: die create-Migration vor die ändernde legen, ODER\n"
+                . "die Änderung mit `if (Schema::hasTable('tabelle')) { … }` absichern und die finale\n"
+                . "Spaltenform direkt in der create-Migration definieren.\n"
+        );
+    }
 }

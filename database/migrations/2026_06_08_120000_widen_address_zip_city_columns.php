@@ -25,6 +25,12 @@ return new class extends Migration {
         if (Schema::getConnection()->getDriverName() === 'sqlite') {
             return;
         }
+        // contact_addresses wird von einer create-Migration mit neuerem Zeitstempel
+        // angelegt (die zip/city bereits als text definiert) — auf frischen
+        // Installationen existiert die Tabelle an dieser Stelle noch nicht.
+        if (! Schema::hasTable('contact_addresses')) {
+            return;
+        }
         Schema::table('contact_addresses', function (Blueprint $table): void {
             $table->text('zip')->nullable()->change();
             $table->text('city')->nullable()->change();

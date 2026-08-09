@@ -28,8 +28,8 @@ return new class extends Migration {
             // Verschluesselte PII (Model-Cast): text statt string (vgl. widen-Migration).
             $table->text('supplement')->nullable();
             $table->text('street')->nullable();
-            $table->string('zip', 32)->nullable();
-            $table->string('city', 128)->nullable();
+            $table->text('zip')->nullable();
+            $table->text('city')->nullable();
             $table->string('country_code', 2)->nullable();
             $table->boolean('is_primary')->default(false);
             $table->string('external_id', 64)->nullable();
