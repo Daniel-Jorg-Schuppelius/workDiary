@@ -122,9 +122,11 @@ class MigrationPortabilityTest extends TestCase {
                 // Namen {table}_{col}_foreign (basiert auf der LOKALEN Spalte).
                 foreach (explode(';', $body) as $stmt) {
                     $hasExplicitName = str_contains($stmt, 'indexName');
-                    if (! $hasExplicitName
+                    if (
+                        ! $hasExplicitName
                         && preg_match('/->\s*constrained\(/', $stmt)
-                        && preg_match('/foreignId\(\s*[\'"]([a-z0-9_]+)[\'"]\s*\)/', $stmt, $fm)) {
+                        && preg_match('/foreignId\(\s*[\'"]([a-z0-9_]+)[\'"]\s*\)/', $stmt, $fm)
+                    ) {
                         $name = $table . '_' . $fm[1] . '_foreign';
                         if (strlen($name) > self::IDENTIFIER_LIMIT) {
                             $violations[] = sprintf('%s: FK %s -> %s (%d Zeichen)', $base, $fm[1], $name, strlen($name));
