@@ -25,8 +25,9 @@ return new class extends Migration {
             $table->foreignId('organization_id')->nullable()->constrained('organizations')->nullOnDelete();
             $table->morphs('addressable');
             $table->string('kind', 32)->default('billing'); // billing, shipping, default
-            $table->string('supplement', 255)->nullable();
-            $table->string('street', 255)->nullable();
+            // Verschluesselte PII (Model-Cast): text statt string (vgl. widen-Migration).
+            $table->text('supplement')->nullable();
+            $table->text('street')->nullable();
             $table->string('zip', 32)->nullable();
             $table->string('city', 128)->nullable();
             $table->string('country_code', 2)->nullable();

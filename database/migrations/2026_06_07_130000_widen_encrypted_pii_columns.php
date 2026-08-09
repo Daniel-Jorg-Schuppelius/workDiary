@@ -40,10 +40,12 @@ return new class extends Migration {
                 $table->text('bic')->nullable()->change();
             });
         }
-        Schema::table('contact_addresses', function (Blueprint $table): void {
-            $table->text('street')->nullable()->change();
-            $table->text('supplement')->nullable()->change();
-        });
+        if (Schema::hasTable('contact_addresses')) {
+            Schema::table('contact_addresses', function (Blueprint $table): void {
+                $table->text('street')->nullable()->change();
+                $table->text('supplement')->nullable()->change();
+            });
+        }
     }
 
     public function down(): void {
