@@ -12,10 +12,12 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support;
 
-use App\Models\Organization;
+use App\Models\{Organization, User};
 use App\Services\Integration\Concerns\ResolvesInboxTargets;
 use App\Services\Integration\{InboxGroupBooker, ProjectKeywordMatcher};
+use App\Support\Sqid;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Gemeinsamer Inbox-Adapter der Zeit-Migrations-Plugins: bindet die
@@ -35,6 +37,28 @@ abstract class MatchingTimeGroupBooker implements InboxGroupBooker {
     public function groups(Organization $organization): Collection {
         /** @var Collection<int, array<string, mixed>> $groups */
         $groups = $this->service->openInboxGroups($organization)->map(function (array $group) use ($organization): array {
+            // Benutzer-Zuordnungsfall (MVP-509): Projekt je Eintrag bekannt,
+            // nur der Quell-Benutzer ist nicht auflösbar — eigenes Formular.
+            if ($this->service->isUserGroupKey((string) $group['group_key'])) {
+                $email = substr((string) $group['group_key'], strlen(MatchingTimeImportService::PENDING_USER_GROUP_PREFIX));
+
+                return [
+                    'plugin_id' => $this->bookerPluginId(),
+                    'form' => 'user',
+                    'group_key' => $group['group_key'],
+                    'user_email' => $email !== MatchingTimeImportService::PENDING_USER_NO_SIGNAL ? $email : null,
+                    'client_name' => $group['client_name'],
+                    'project_name' => $group['project_name'],
+                    'workspace_name' => $group['workspace_name'],
+                    'count' => $group['count'],
+                    'minutes' => $group['minutes'],
+                    'first_seen' => $group['first_seen'],
+                    'last_seen' => $group['last_seen'],
+                    'entries' => $group['entries'],
+                    'entries_more' => $group['entries_more'],
+                ];
+            }
+
             // Fremdkunden-Treffer (Endkunde) schlägt den Kunden-Vorschlag vor —
             // der Kunde ergibt sich dann aus der Firma des Fremdkunden.
             $foreign = $this->service->suggestForeignCustomer($organization, $group['client_name']);
@@ -82,6 +106,14 @@ abstract class MatchingTimeGroupBooker implements InboxGroupBooker {
     }
 
     public function rules(): array {
+        // Benutzer-Zuordnungsfälle (MVP-509) haben ein eigenes, schlankes
+        // Formular — der Gruppen-Schlüssel des Requests entscheidet.
+        if ($this->service->isUserGroupKey((string) request()->input('group_key'))) {
+            return [
+                'user' => ['required', 'string'],
+            ];
+        }
+
         return [
             'customer_mode' => ['required', 'in:existing,new,internal'],
             'customer' => ['nullable', 'string', 'required_if:customer_mode,existing'],
@@ -96,6 +128,17 @@ abstract class MatchingTimeGroupBooker implements InboxGroupBooker {
     }
 
     public function book(Organization $organization, string $groupKey, array $input): array {
+        // Benutzer-Zuordnungsfall (MVP-509): gewählten Benutzer buchen und die
+        // E-Mail-Zuordnung merken; das Projekt löst der Service je Eintrag auf.
+        if ($this->service->isUserGroupKey($groupKey)) {
+            $userId = Sqid::decode(User::class, (string) ($input['user'] ?? ''));
+            if ($userId === null) {
+                throw ValidationException::withMessages(['user' => (string) __('Bitte einen Benutzer wählen.')]);
+            }
+
+            return $this->service->bookInboxGroup($organization, $groupKey, null, null, $userId);
+        }
+
         if (($input['customer_mode'] ?? null) === 'internal') {
             $project = $this->resolveStandaloneProject($organization, $input);
 

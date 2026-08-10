@@ -69,7 +69,7 @@ abstract class MatchingTimeImportService {
      * @param  array<int, ImportedTimeEntry>  $entries
      * @param  array<string, mixed>  $config
      * @param  RemoteSyncWindow|null  $window  Nur bei vollständigem Lauf — Grundlage der Löschungserkennung
-     * @return array{created: int, skipped: int, unmatched: int, updated: int, conflicts: int, removed: int}
+     * @return array{created: int, skipped: int, unmatched: int, unresolved_users: int, updated: int, conflicts: int, removed: int}
      */
     protected function ingest(Organization $organization, array $entries, array $config, ?RemoteSyncWindow $window = null): array {
         // Der Import darf keine Rückschreibung auslösen — die Einträge kommen ja
@@ -78,20 +78,34 @@ abstract class MatchingTimeImportService {
     }
 
     /**
+     * Einbenutzer-Modus (MVP-509): nur wenn der Administrator ihn ausdrücklich
+     * gewählt hat, dürfen Einträge ohne auflösbares Benutzersignal auf den
+     * konfigurierten Standard-Benutzer gebucht werden. Sonst entsteht ein
+     * offener Zuordnungsfall — nie eine stille Hauptbenutzer-Buchung.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    protected function singleUserMode(array $config): bool {
+        return (bool) ($config['single_user_mode'] ?? false);
+    }
+
+    /**
      * @param  array<int, ImportedTimeEntry>  $entries
      * @param  array<string, mixed>  $config
-     * @return array{created: int, skipped: int, unmatched: int, updated: int, conflicts: int, removed: int}
+     * @return array{created: int, skipped: int, unmatched: int, unresolved_users: int, updated: int, conflicts: int, removed: int}
      */
     private function ingestEntries(Organization $organization, array $entries, array $config, ?RemoteSyncWindow $window): array {
         $created = 0;
         $skipped = 0;
         $unmatched = 0;
+        $unresolvedUsers = 0;
         $updated = 0;
         $conflicts = 0;
 
+        $singleUser = $this->singleUserMode($config);
         $userId = $this->resolveBookingUserId($organization, isset($config['default_user_id']) && is_numeric($config['default_user_id']) ? (int) $config['default_user_id'] : null);
         if ($userId === null) {
-            return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'updated' => 0, 'conflicts' => 0, 'removed' => 0];
+            return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'unresolved_users' => 0, 'updated' => 0, 'conflicts' => 0, 'removed' => 0];
         }
 
         foreach ($entries as $entry) {
@@ -116,7 +130,18 @@ abstract class MatchingTimeImportService {
                 continue;
             }
 
-            $this->createTimeEntry($organization, $project, $entry, $userId, (bool) ($config['default_billable'] ?? true));
+            // MVP-509: Benutzer deterministisch auflösen. Ohne Treffer (unbekannte
+            // oder fehlende Quell-E-Mail) bucht der Lauf NICHT still auf den
+            // Hauptbenutzer, sondern stellt den Eintrag sichtbar zur Zuordnung.
+            $entryUserId = $this->resolveImportUser($organization, $entry->userEmail);
+            if ($entryUserId === null && ! $singleUser) {
+                $this->recordPendingUser($organization, $entry);
+                $unresolvedUsers++;
+
+                continue;
+            }
+
+            $this->createTimeEntry($organization, $project, $entry, $entryUserId ?? $userId, (bool) ($config['default_billable'] ?? true));
             $created++;
         }
 
@@ -124,6 +149,7 @@ abstract class MatchingTimeImportService {
             'created' => $created,
             'skipped' => $skipped,
             'unmatched' => $unmatched,
+            'unresolved_users' => $unresolvedUsers,
             'updated' => $updated,
             'conflicts' => $conflicts,
             'removed' => $this->reconcileRemoteDeletions(
@@ -489,7 +515,83 @@ abstract class MatchingTimeImportService {
             $this->rememberReference($organization, self::EXT_TYPE_CLIENT_ID, (string) $entry->clientId, $clientTarget);
         }
 
+        // Offene Zuordnungsfälle dieses Eintrags schließen (z. B. Benutzer-Fall,
+        // der durch eine inzwischen gepflegte Zuordnung buchbar wurde).
+        $this->closePendingItems($organization, $entry->entryKey, $timeEntry);
+
         return $timeEntry;
+    }
+
+    /** Gruppen-Präfix offener Benutzer-Zuordnungsfälle (MVP-509). */
+    public const PENDING_USER_GROUP_PREFIX = 'user|';
+
+    /** Gruppen-Suffix, wenn die Quelle gar kein Benutzersignal liefert. */
+    public const PENDING_USER_NO_SIGNAL = '(ohne-signal)';
+
+    /**
+     * Offener Zuordnungsfall „unbekannter Quell-Benutzer" (MVP-509): das
+     * Projekt ist auflösbar, aber die Quell-E-Mail passt zu keinem Benutzer
+     * (oder fehlt). Gruppiert je E-Mail, damit EINE Zuordnung die ganze
+     * Gruppe buchbar macht.
+     */
+    protected function recordPendingUser(Organization $organization, ImportedTimeEntry $entry): void {
+        $email = mb_strtolower(trim((string) $entry->userEmail));
+        $groupKey = self::PENDING_USER_GROUP_PREFIX . ($email !== '' ? $email : self::PENDING_USER_NO_SIGNAL);
+
+        $this->recordPendingItem($organization, $entry->entryKey, [
+            'source' => $entry->source,
+            'group_key' => $groupKey,
+            'remote_snapshot' => $this->pendingSnapshot($entry) + ['pending_reason' => 'user'],
+            'display_title' => $email !== ''
+                ? (string) __('Unbekannter Benutzer: :email', ['email' => $email])
+                : (string) __('Eintrag ohne Benutzersignal'),
+            'display_subtitle' => trim((string) $entry->projectName) !== '' ? trim((string) $entry->projectName) : null,
+            'occurred_at' => $entry->startedAt,
+        ]);
+    }
+
+    /**
+     * Schließt offene Inbox-Fälle eines Eintrags, sobald er (auf welchem Weg
+     * auch immer) gebucht wurde — sonst bliebe z. B. ein Benutzer-Fall offen,
+     * obwohl der Folgelauf nach gepflegter Zuordnung längst gebucht hat.
+     */
+    protected function closePendingItems(Organization $organization, string $entryKey, TimeEntry $timeEntry): void {
+        $items = IntegrationInboxItem::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('plugin_id', $this->pluginId())
+            ->where('dedupe_key', $this->entryExternalType() . ':' . $entryKey)
+            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->get();
+        foreach ($items as $item) {
+            $this->resolveItem($item, IntegrationInboxItem::STATUS_RESOLVED_CREATED, $timeEntry);
+        }
+    }
+
+    /**
+     * Gemeinsamer Snapshot offener Inbox-Fälle (Projekt- wie Benutzer-Fälle).
+     *
+     * @return array<string, mixed>
+     */
+    private function pendingSnapshot(ImportedTimeEntry $entry): array {
+        return [
+            'source' => $entry->source,
+            'entry_key' => $entry->entryKey,
+            'client_name' => $entry->clientName,
+            'project_name' => $entry->projectName,
+            'activity' => $entry->activity,
+            'description' => $entry->description,
+            'started_at' => $entry->startedAt->toIso8601String(),
+            'ended_at' => $entry->endedAt->toIso8601String(),
+            'billable' => $entry->billable,
+            'user_email' => $entry->userEmail,
+            'tags' => $entry->tags,
+            'client_id' => $entry->clientId,
+            'project_id' => $entry->projectId,
+            'activity_id' => $entry->activityId,
+            'workspace_id' => $entry->workspaceId,
+            'workspace_name' => $entry->workspaceName,
+        ];
     }
 
     protected function recordPending(Organization $organization, ImportedTimeEntry $entry): void {
@@ -506,24 +608,7 @@ abstract class MatchingTimeImportService {
         $this->recordPendingItem($organization, $entry->entryKey, [
             'source' => $entry->source,
             'group_key' => $groupKey,
-            'remote_snapshot' => [
-                'source' => $entry->source,
-                'entry_key' => $entry->entryKey,
-                'client_name' => $entry->clientName,
-                'project_name' => $entry->projectName,
-                'activity' => $entry->activity,
-                'description' => $entry->description,
-                'started_at' => $entry->startedAt->toIso8601String(),
-                'ended_at' => $entry->endedAt->toIso8601String(),
-                'billable' => $entry->billable,
-                'user_email' => $entry->userEmail,
-                'tags' => $entry->tags,
-                'client_id' => $entry->clientId,
-                'project_id' => $entry->projectId,
-                'activity_id' => $entry->activityId,
-                'workspace_id' => $entry->workspaceId,
-                'workspace_name' => $entry->workspaceName,
-            ],
+            'remote_snapshot' => $this->pendingSnapshot($entry),
             'display_title' => $project !== '' ? $project : (string) __('(ohne Projekt)'),
             'display_subtitle' => $client !== '' ? $client : null,
             'occurred_at' => $entry->startedAt,
@@ -582,12 +667,41 @@ abstract class MatchingTimeImportService {
             ->values();
     }
 
+    /** Ist der Gruppen-Schlüssel ein offener Benutzer-Zuordnungsfall (MVP-509)? */
+    public function isUserGroupKey(string $groupKey): bool {
+        return str_starts_with($groupKey, self::PENDING_USER_GROUP_PREFIX);
+    }
+
     /**
+     * Bucht eine offene Inbox-Gruppe.
+     *
+     * Projekt-Gruppen (Kunde|Projekt): merkt die Referenzen und bucht gegen das
+     * übergebene Projekt. Benutzer-Gruppen (`user|<email>`, MVP-509): das
+     * Projekt ist je Eintrag bereits auflösbar; ein explizit gewählter
+     * Benutzer wird als E-Mail-Zuordnung gemerkt, sodass Folgeimporte
+     * automatisch treffen. Ohne auflösbaren Benutzer bleibt ein Eintrag im
+     * Mehrbenutzer-Modus offen — nie eine stille Hauptbenutzer-Buchung.
+     *
      * @return array{created: int, skipped: int}
      */
-    public function bookInboxGroup(Organization $organization, string $groupKey, ?Customer $customer, Project $project, ?int $userId = null, ?ForeignCustomer $foreignCustomer = null): array {
+    public function bookInboxGroup(Organization $organization, string $groupKey, ?Customer $customer, ?Project $project, ?int $userId = null, ?ForeignCustomer $foreignCustomer = null): array {
         $config = $this->resolveConfig($organization->id);
-        $userId ??= $this->resolveBookingUserId($organization, isset($config['default_user_id']) && is_numeric($config['default_user_id']) ? (int) $config['default_user_id'] : null);
+        $singleUser = $this->singleUserMode($config);
+        $isUserGroup = $this->isUserGroupKey($groupKey);
+
+        // Explizite Benutzer-Wahl strikt org-gebunden — eine manipulierte
+        // Fremd-ID darf nie zum Buchungs-Benutzer werden (Cross-Tenant).
+        $explicitUser = $userId !== null
+            ? User::query()->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->whereNull('customer_id')
+                ->whereKey($userId)
+                ->first()
+            : null;
+        $explicitUserId = $explicitUser?->id !== null ? (int) $explicitUser->id : null;
+
+        $userId = $explicitUserId
+            ?? $this->resolveBookingUserId($organization, isset($config['default_user_id']) && is_numeric($config['default_user_id']) ? (int) $config['default_user_id'] : null);
         if ($userId === null) {
             return ['created' => 0, 'skipped' => 0];
         }
@@ -597,16 +711,27 @@ abstract class MatchingTimeImportService {
             return ['created' => 0, 'skipped' => 0];
         }
 
-        $firstSnap = $items->first()->remote_snapshot;
-        $clientName = trim((string) ($firstSnap['client_name'] ?? ''));
-        $projectName = trim((string) ($firstSnap['project_name'] ?? ''));
+        if ($isUserGroup) {
+            // Explizite Benutzer-Wahl als Zuordnung merken — die eigentliche
+            // Auflösung läuft dann einheitlich über resolveEntryUserId().
+            $email = substr($groupKey, strlen(self::PENDING_USER_GROUP_PREFIX));
+            if ($explicitUser !== null && $email !== '' && $email !== self::PENDING_USER_NO_SIGNAL) {
+                $this->rememberUserEmail($organization, $email, $explicitUser);
+            }
+        } else {
+            $firstSnap = $items->first()->remote_snapshot;
+            $clientName = trim((string) ($firstSnap['client_name'] ?? ''));
+            $projectName = trim((string) ($firstSnap['project_name'] ?? ''));
 
-        // Client-Referenz: der Fremdkunde (Endkunde) ist der präzisere Schlüssel —
-        // künftige Importe scopen Projekt-Matches dann auf ihn statt nur die Firma.
-        if ($customer !== null && $clientName !== '') {
-            $this->rememberReference($organization, self::EXT_TYPE_CLIENT, $clientName, $foreignCustomer ?? $customer);
+            // Client-Referenz: der Fremdkunde (Endkunde) ist der präzisere Schlüssel —
+            // künftige Importe scopen Projekt-Matches dann auf ihn statt nur die Firma.
+            if ($customer !== null && $clientName !== '') {
+                $this->rememberReference($organization, self::EXT_TYPE_CLIENT, $clientName, $foreignCustomer ?? $customer);
+            }
+            if ($project !== null) {
+                $this->rememberReference($organization, self::EXT_TYPE_PROJECT, $this->projectKey($clientName, $projectName), $project);
+            }
         }
-        $this->rememberReference($organization, self::EXT_TYPE_PROJECT, $this->projectKey($clientName, $projectName), $project);
 
         $created = 0;
         $skipped = 0;
@@ -620,12 +745,51 @@ abstract class MatchingTimeImportService {
                 continue;
             }
 
-            $timeEntry = $this->createTimeEntry($organization, $project, $entry, $userId, (bool) ($config['default_billable'] ?? true));
+            // Benutzer je Eintrag: Quell-E-Mail gewinnt; explizite Wahl bzw.
+            // Standard nur als bewusster Fallback (Einbenutzer-Modus oder
+            // ausdrückliche Auswahl beim Buchen).
+            $entryUserId = $this->resolveImportUser($organization, $entry->userEmail)
+                ?? $explicitUserId
+                ?? ($singleUser ? $userId : null);
+            if ($entryUserId === null) {
+                if (! $isUserGroup) {
+                    // Projekt ist jetzt bekannt, nur der Benutzer fehlt: Fall in
+                    // eine Benutzer-Gruppe umhängen statt still zu buchen.
+                    $this->regroupAsPendingUser($item, $entry);
+                }
+                $skipped++;
+
+                continue;
+            }
+
+            // Benutzer-Gruppen: das Projekt je Eintrag auflösen (war beim
+            // Anlegen des Falls bereits eindeutig); Parameter nur als Fallback.
+            $itemProject = $isUserGroup ? ($this->matchProject($organization, $entry) ?? $project) : $project;
+            if ($itemProject === null) {
+                // Referenz inzwischen weggefallen und kein Fallback — offen lassen.
+                $skipped++;
+
+                continue;
+            }
+
+            $timeEntry = $this->createTimeEntry($organization, $itemProject, $entry, $entryUserId, (bool) ($config['default_billable'] ?? true));
             $this->resolveItem($item, IntegrationInboxItem::STATUS_RESOLVED_CREATED, $timeEntry);
             $created++;
         }
 
         return ['created' => $created, 'skipped' => $skipped];
+    }
+
+    /** Hängt ein offenes Item in die Benutzer-Gruppe seiner Quell-E-Mail um. */
+    private function regroupAsPendingUser(IntegrationInboxItem $item, ImportedTimeEntry $entry): void {
+        $email = mb_strtolower(trim((string) $entry->userEmail));
+        $item->update([
+            'group_key' => self::PENDING_USER_GROUP_PREFIX . ($email !== '' ? $email : self::PENDING_USER_NO_SIGNAL),
+            'display_title' => $email !== ''
+                ? (string) __('Unbekannter Benutzer: :email', ['email' => $email])
+                : (string) __('Eintrag ohne Benutzersignal'),
+            'display_subtitle' => trim((string) $entry->projectName) !== '' ? trim((string) $entry->projectName) : null,
+        ]);
     }
 
     public function dismissInboxGroup(Organization $organization, string $groupKey): int {

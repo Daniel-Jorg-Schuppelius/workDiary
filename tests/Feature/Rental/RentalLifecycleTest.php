@@ -19,7 +19,7 @@ use App\Services\Asset\{AssetBlockService, AssetUsageGuard};
 use App\Services\Rental\{RentalAvailabilityService, RentalBillingService, RentalCaseService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPortalVisibility};
 use Tests\TestCase;
 
 /**
@@ -32,6 +32,7 @@ use Tests\TestCase;
 final class RentalLifecycleTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPortalVisibility;
 
     private User $admin;
 
@@ -45,6 +46,8 @@ final class RentalLifecycleTest extends TestCase {
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        // Portal-Bereichsfreigaben (MVP-511): Bestandstests laufen im Kompat-Vollumfang.
+        $this->allowPortal($this->customer);
         $this->asset = Asset::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Minibagger']);
         RentalProfile::query()->create([
             'organization_id' => $this->organization->id,

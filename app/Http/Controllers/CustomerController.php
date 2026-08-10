@@ -239,10 +239,35 @@ class CustomerController extends Controller {
             }
         }
 
+        // Portalzugänge (MVP-510): Panel nur mit Verwaltungs-Permission; die
+        // letzte Anmeldung kommt aus der geteilten sessions-Tabelle (database-
+        // Driver), max(last_activity) je Portalkonto.
+        $portalUsers = collect();
+        $portalLastLogins = [];
+        if ($viewer->isAdmin() || Gate::allows(\App\Enums\User\Permission::CustomerPortalAccessManage->value)) {
+            $portalUsers = \App\Models\User::query()
+                ->withoutGlobalScopes()
+                ->where('organization_id', $customer->organization_id)
+                ->where('customer_id', $customer->id)
+                ->orderBy('name')
+                ->get();
+            if ($portalUsers->isNotEmpty() && config('session.driver') === 'database') {
+                $portalLastLogins = \Illuminate\Support\Facades\DB::table('sessions')
+                    ->whereIn('user_id', $portalUsers->pluck('id')->all())
+                    ->groupBy('user_id')
+                    ->selectRaw('user_id, MAX(last_activity) as last_activity')
+                    ->pluck('last_activity', 'user_id')
+                    ->map(fn($ts) => \Illuminate\Support\Carbon::createFromTimestamp((int) $ts))
+                    ->all();
+            }
+        }
+
         return view('customers.show', [
             'identifierIssues' => app(IdentifierIssueDetector::class)->forContact($customer),
             'customer' => $customer,
             'customerDomains' => $customerDomains,
+            'portalUsers' => $portalUsers,
+            'portalLastLogins' => $portalLastLogins,
             'billingAgreement' => $billingAgreement,
             'billingStatements' => $billingStatements,
             'billingPayments' => $billingPayments,

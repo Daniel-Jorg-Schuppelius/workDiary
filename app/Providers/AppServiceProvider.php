@@ -836,6 +836,17 @@ class AppServiceProvider extends ServiceProvider {
             Limit::perHour(20)->by('crsh:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)),
         ]);
 
+        // Portal-Rückfragen (MVP-512): angemeldete Portalbenutzer, gegen
+        // Kommentar-Flut gedeckelt — Schlüssel ist der Portal-Account.
+        RateLimiter::for('portal-query', function (Request $request) {
+            $userId = (string) ($request->user('customer')?->getAuthIdentifier() ?? 'guest');
+
+            return [
+                Limit::perMinute(5)->by('pq:' . $userId),
+                Limit::perHour(30)->by('pqh:' . $userId),
+            ];
+        });
+
         RateLimiter::for('password', function (Request $request) {
             $userId = (string) ($request->user()?->getAuthIdentifier() ?? 'guest');
 

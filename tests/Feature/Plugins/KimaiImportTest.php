@@ -42,7 +42,11 @@ class KimaiImportTest extends TestCase {
             'organization_id' => $this->organization->id,
             'plugin_id' => KimaiPlugin::ID,
             'enabled' => true,
-            'settings' => ['default_billable' => true],
+            // Parser-/Projekt-Semantik-Tests mit Fixtures ohne auflösbare
+            // Benutzer-E-Mail — Einbenutzer-Modus (MVP-509) hält den
+            // Standard-Benutzer-Fallback aktiv; Mehrbenutzer-Semantik der
+            // gemeinsamen Basis deckt TogglUserResolutionTest ab.
+            'settings' => ['default_billable' => true, 'single_user_mode' => true],
         ]);
 
         return KimaiConfig::resolve($this->organization->id);

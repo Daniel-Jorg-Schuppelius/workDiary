@@ -115,6 +115,11 @@ class UserOrgScopingRuleTest extends TestCase {
         'app/Services/Import/Specs/UserSpec.php' => 'Import-Dedup per E-Mail (global, Login-Identität); Anlage setzt organization_id.',
         'app/Services/Install/OrganizationProvisioner.php' => 'Installer: bestehendes Konto per E-Mail suchen (läuft vor/ohne Org-Kontext).',
         'app/Services/Auth/Sso/SsoLoginService.php' => 'JIT-Provisioning (MVP-502): E-Mail-Kollisionsprüfung BEWUSST global (users.email unique, Login-Identität) — Kollision ⇒ Ablehnung statt Konto-Anlage/Verknüpfung (nOAuth-Schutz).',
+        // MVP-510: (1) E-Mail-Eindeutigkeit vor Portalkonto-Anlage (global, Login-Identität,
+        // neutrale Antwort gegen Enumeration); (2) Einladungs-Annahme löst den gehashten
+        // Einmal-Token OHNE Session/Org-Kontext auf (öffentliche Route), Org-Bindung folgt
+        // aus dem gefundenen Konto.
+        'app/Services/CustomerPortal/PortalAccessService.php' => 'Portal-Einladung: globale E-Mail-Eindeutigkeit + sessionloser Token-Lookup (Public-Route, bindet danach Org).',
         // Plattformweite Betreiber-Sichten (globaler Admin, keine Org-Bindung).
         'app/Http/Controllers/Admin/DemoTenantController.php' => 'Plattform-Admin listet Plattform-Admins (is_platform_admin), Cross-Tenant per Definition.',
         'app/Http/Controllers/Admin/LicenseAdminController.php' => 'Plattformweite Nutzerzahl als Lizenz-Fallback (globaler Betreiber-Kontext).',

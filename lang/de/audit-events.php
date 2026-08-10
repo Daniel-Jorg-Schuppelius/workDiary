@@ -152,4 +152,24 @@ return [
         'correctionRejected'        => 'Tages-Korrektur abgelehnt',
         'reopened'                  => 'Tag wieder geöffnet',
     ],
+    // Zeiteinträge (MVP-508)
+    'timeEntry' => [
+        'reassigned'                => 'Zeiteintrag anderem Benutzer zugeordnet',
+    ],
+    // Kundenportal-Zugänge (MVP-510)
+    'portal' => [
+        'query' => [
+            'withdrawn' => 'Portal-Rückfrage zurückgezogen',
+        ],
+        'visibility' => [
+            'updated' => 'Portal-Sichtbarkeit geändert',
+        ],
+        'access' => [
+            'invited'          => 'Portalzugang eingeladen',
+            'invite_resent'    => 'Portal-Einladung erneut versendet',
+            'invite_accepted'  => 'Portal-Einladung angenommen',
+            'deactivated'      => 'Portalzugang deaktiviert',
+            'reactivated'      => 'Portalzugang reaktiviert',
+        ],
+    ],
 ];

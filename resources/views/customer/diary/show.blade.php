@@ -114,5 +114,53 @@
                 </ul>
             @endif
         </section>
+
+        {{-- Rückfragen und Kommentare (MVP-512): nur mit queries-Capability;
+             die Capability erweitert diesen freigegebenen Bereich, macht aber
+             selbst nichts sichtbar. Interne Kommentare erscheinen hier nie. --}}
+        @php
+            $portalQueryUser = auth('customer')->user();
+            $portalQueryCustomer = $portalQueryUser?->customer;
+            $canQuery = $portalQueryCustomer !== null
+                && app(\App\Services\CustomerPortal\PortalVisibility::class)->allows($portalQueryCustomer, \App\Enums\CustomerPortal\PortalCapability::Queries);
+        @endphp
+        @if ($canQuery)
+            @php
+                $diaryQueries = \App\Models\CustomerQuery::query()
+                    ->withoutGlobalScopes()
+                    ->where('organization_id', $portalQueryUser->organization_id)
+                    ->where('customer_id', $portalQueryUser->customer_id)
+                    ->where('subject_type', $diary->getMorphClass())
+                    ->where('subject_id', $diary->getKey())
+                    ->with('answeredBy:id,name')
+                    ->orderByDesc('created_at')
+                    ->get();
+            @endphp
+            <section class="rounded-box border border-base-300 bg-base-100 p-4">
+                <div class="mb-2 flex items-center justify-between gap-2">
+                    <h2 class="font-semibold">{{ __('Rückfragen und Kommentare') }}</h2>
+                    <a href="{{ route('customer.queries.create', ['subject_type' => 'diary', 'subject' => $diary->sqid]) }}"
+                       class="btn btn-primary btn-sm">{{ __('Rückfrage stellen') }}</a>
+                </div>
+                @if ($diaryQueries->isEmpty())
+                    <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">contact_support</span>' :title="__('Noch keine Rückfragen zu diesem Auftrag.')" compact />
+                @else
+                    <ul class="divide-y divide-base-300 text-sm">
+                        @foreach ($diaryQueries as $query)
+                            <li class="py-2">
+                                <p class="text-xs font-semibold text-base-content/60">{{ $query->asker_name ?? __('Sie') }} ({{ __('Kunde') }}) · {{ $query->created_at?->fdatetime() }}</p>
+                                <p class="whitespace-pre-line">{{ $query->question }}</p>
+                                @if ($query->answer !== null)
+                                    <div class="mt-2 rounded-box bg-base-200/60 p-2">
+                                        <p class="text-xs font-semibold text-base-content/60">{{ $query->answeredBy?->name ?? __('Service-Team') }} ({{ __('Team') }})@if ($query->answered_at) · {{ $query->answered_at->fdatetime() }}@endif</p>
+                                        <p class="whitespace-pre-line">{{ $query->answer }}</p>
+                                    </div>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </section>
+        @endif
     </div>
 @endsection

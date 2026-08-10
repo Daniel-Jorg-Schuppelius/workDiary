@@ -20,7 +20,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\PermissionRegistrar;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPortalVisibility};
 use Tests\TestCase;
 
 /**
@@ -33,6 +33,7 @@ use Tests\TestCase;
 final class HelpdeskTimelineTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPortalVisibility;
 
     private User $agent;
 
@@ -215,6 +216,7 @@ final class HelpdeskTimelineTest extends TestCase {
         Storage::fake('local');
 
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $this->allowPortal($customer);
         $portalUser = User::factory()
             ->kunde((int) $customer->id, (int) $this->organization->id)
             ->create(['organization_id' => $this->organization->id]);

@@ -115,6 +115,9 @@
                             <span class="font-semibold">{{ $g['number'] }}</span>
                             @if ($g['name'] ?? null)<span class="text-sm text-base-content/60">· {{ $g['name'] }}</span>@endif
                             @if ($g['shared'])<span class="badge badge-sm badge-outline" title="{{ __('Geteilte Nummer — Zuordnung gilt nur für diesen Anruf') }}">{{ __('geteilt') }}</span>@endif
+                        @elseif ($form === 'user')
+                            <span class="font-semibold">{{ ($g['user_email'] ?? null) ? __('Unbekannter Benutzer: :email', ['email' => $g['user_email']]) : __('Einträge ohne Benutzersignal') }}</span>
+                            @if ($g['workspace_name'] ?? null)<span class="badge badge-sm badge-outline" title="{{ __('Toggl-Workspace') }}">{{ $g['workspace_name'] }}</span>@endif
                         @else
                             <span class="font-semibold">{{ $g['project_name'] ?: __('(ohne Projekt)') }}</span>
                             @if ($g['client_name'] ?? null)<span class="text-sm text-base-content/60">· {{ $g['client_name'] }}</span>@endif
@@ -235,6 +238,26 @@
                                             title="{{ __('Künftige Anrufe dieser Nummer landen einzeln zur Zuordnung in der Inbox (z. B. Dienstleister-Hotline im Kundenauftrag).') }}">{{ __('Geteilte Nummer') }}</button>
                                 @endif
                                 <button type="submit" name="action" value="assign" class="btn btn-sm btn-primary">{{ __('Zuordnen & buchen') }}</button>
+                            </div>
+                        </form>
+                    @elseif ($form === 'user')
+                        {{-- Benutzer-Zuordnungsfall (MVP-509): Projekt je Eintrag bekannt,
+                             nur der Quell-Benutzer fehlt. Die Wahl wird als E-Mail-Zuordnung
+                             gemerkt — Folgeimporte buchen dann automatisch richtig. --}}
+                        <form method="POST" action="{{ route('admin.integration.inbox.group.book') }}" class="flex flex-wrap items-end gap-2">
+                            @csrf
+                            <input type="hidden" name="plugin" value="{{ $g['plugin_id'] }}">
+                            <input type="hidden" name="group_key" value="{{ $g['group_key'] }}">
+                            <select name="user" required class="select select-sm select-bordered">
+                                <option value="">{{ __('… Benutzer auswählen') }}</option>
+                                @foreach ($orgUsers as $sqid => $name)
+                                    <option value="{{ $sqid }}">{{ $name }}</option>
+                                @endforeach
+                            </select>
+                            <p class="w-full text-xs text-base-content/60 md:w-auto">{{ __('Die Zuordnung wird gemerkt; künftige Importe buchen diese Quell-E-Mail automatisch auf den gewählten Benutzer.') }}</p>
+                            <div class="ms-auto flex flex-wrap items-center justify-end gap-2">
+                                <button type="submit" form="{{ $dismissFormId }}" class="btn btn-sm btn-ghost">{{ __('Gruppe verwerfen') }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary">{{ __('Benutzer zuordnen und buchen') }}</button>
                             </div>
                         </form>
                     @elseif ($form === 'b2b_order')

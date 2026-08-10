@@ -14,12 +14,13 @@ use App\Models\{Customer, DiaryEntry, Invoice, OpenIssue, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Auth, Hash};
 use Spatie\Permission\PermissionRegistrar;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPortalVisibility};
 use Tests\TestCase;
 
 class CustomerPortalAccessTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPortalVisibility;
 
     private Customer $customer;
 
@@ -33,6 +34,8 @@ class CustomerPortalAccessTest extends TestCase {
         $this->customer = Customer::factory()->create([
             'organization_id' => $this->organization->id,
         ]);
+        // Portal-Bereichsfreigaben (MVP-511): Bestandstests laufen im Kompat-Vollumfang.
+        $this->allowPortal($this->customer);
         $this->portalUser = User::factory()
             ->kunde((int) $this->customer->id, (int) $this->organization->id)
             ->create([

@@ -55,9 +55,16 @@ class TogglImportCommand extends Command {
             try {
                 $result = $service->importFromApi($org, $config, $from, $to);
                 $removed = $result['removed'];
-                $this->line("  created: {$result['created']}, skipped: {$result['skipped']}, unmatched: {$result['unmatched']}, updated: {$result['updated']}, conflicts: {$result['conflicts']}, removed: {$removed}");
+                $unresolved = $result['unresolved_users'];
+                $this->line("  created: {$result['created']}, skipped: {$result['skipped']}, unmatched: {$result['unmatched']}, unresolved_users: {$unresolved}, updated: {$result['updated']}, conflicts: {$result['conflicts']}, removed: {$removed}");
                 if ($removed > 0) {
                     $this->warn("  {$removed} lokale Einträge entfernt (drüben gelöscht).");
+                }
+                if ($unresolved > 0) {
+                    $this->warn("  {$unresolved} Einträge ohne zuordenbaren Benutzer — Zuordnung unter Toggl-Zuordnungen pflegen (keine stille Hauptbenutzer-Buchung).");
+                }
+                if ($result['incomplete']) {
+                    $this->warn('  Lauf unvollständig (Toggl nicht vollständig erreichbar) — Benutzerauflösung/Löschabgleich ausgesetzt.');
                 }
             } catch (\Throwable $e) {
                 $this->error("  Fehler: {$e->getMessage()}");

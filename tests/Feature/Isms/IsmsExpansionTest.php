@@ -114,7 +114,7 @@ class IsmsExpansionTest extends TestCase {
 
         IsmsVulnerability::query()->create([
             'organization_id' => $admin->organization_id,
-            'vuln_no' => 'VU-2026-001',
+            'vuln_no' => 1,
             'severity' => 'high',
             'identifier' => 'CVE-2026-11111',
             'title' => 'Parser-Schwachstelle',
@@ -126,7 +126,7 @@ class IsmsExpansionTest extends TestCase {
         ]);
         IsmsVulnerability::query()->create([
             'organization_id' => $admin->organization_id,
-            'vuln_no' => 'VU-2026-002',
+            'vuln_no' => 2,
             'severity' => 'medium',
             'identifier' => 'WID-2026-0001',
             'title' => 'Offene Plattformlücke',
@@ -191,7 +191,7 @@ class IsmsExpansionTest extends TestCase {
         $audit = IsmsAudit::query()->create([
             'organization_id' => $admin->organization_id,
             'isms_scope_id' => $program->isms_scope_id,
-            'audit_no' => 'AU-2027-001',
+            'audit_no' => 1,
             'title' => 'Überwachungsaudit',
             'kind' => 'internal',
             'status' => 'planned',

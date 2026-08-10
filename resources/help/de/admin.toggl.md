@@ -1,7 +1,7 @@
 ---
 title: "Toggl-Import"
 topic: admin.toggl
-version: 1
+version: 2
 audience:
     - admin
 related:
@@ -11,8 +11,9 @@ related:
 ---
 
 Der Toggl-Import übernimmt Zeiteinträge aus Toggl Track in
-WorkDiary. Der Import ist **einseitig** (nur Lesen) – es werden
-keine Zeiten nach Toggl zurückgeschrieben.
+WorkDiary. Standardmäßig liest der Import nur; optional lassen sich
+Korrekturen zurückschreiben („Korrekturen zurückschreiben") und lokal
+erfasste Zeiten übertragen („Zeit-Übertragung aktivieren").
 
 Zwei Importwege:
 
@@ -43,3 +44,19 @@ Risiken: Wiederholte Importe desselben Zeitraums können zu Dubletten
 führen, wenn Quelldaten geändert wurden – prüfe Zeitraum und
 Posteingang vor dem Übernehmen. Das Verwerfen von Einträgen ist
 endgültig.
+
+Benutzerzuordnung (MVP-509):
+
+- Jeder Toggl-Eintrag wird über die Benutzer-E-Mail des Workspaces dem
+  passenden WorkDiary-Benutzer zugeordnet: zuerst gespeicherte
+  Zuordnungen („Zuordnungen verwalten"), dann E-Mail-Gleichheit.
+- Unbekannte oder nicht abrufbare Toggl-Benutzer werden nicht still auf
+  den Hauptbenutzer gebucht — sie landen als offener Fall in der
+  Zuordnungs-Inbox. Dort wählst du den Benutzer; die Wahl wird gemerkt
+  und künftige Importe buchen automatisch richtig.
+- Nur im ausdrücklich aktivierten Einbenutzer-Modus (Plugin-Einstellung)
+  bucht der Import Einträge ohne Benutzersignal auf den
+  Standard-Benutzer.
+- Bereits falsch zugeordnete Alt-Importe repariert der Befehl
+  `toggl:repair-entry-users` (erst Dry-Run, mit `--apply` schreiben);
+  abgerechnete oder signierte Zeiten werden nie automatisch verändert.

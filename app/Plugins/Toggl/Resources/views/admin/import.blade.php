@@ -74,6 +74,25 @@
             </div>
         @endif
 
+        {{-- Benutzerzuordnung (MVP-509): Modus sichtbar machen --}}
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Benutzerzuordnung') }}</h2>
+                    @if ($singleUserMode ?? false)
+                        <p class="text-sm text-warning">
+                            {{ __('Einbenutzer-Modus aktiv: Einträge ohne zuordenbaren Toggl-Benutzer werden auf :name gebucht.', ['name' => $defaultUserName ?? '—']) }}
+                        </p>
+                    @else
+                        <p class="text-sm text-base-content/60">
+                            {{ __('Mehrbenutzer-Modus: Jeder Toggl-Eintrag wird über die Benutzer-E-Mail dem passenden Benutzer zugeordnet. Unbekannte Benutzer landen sichtbar in der Zuordnungs-Inbox — nie still beim Hauptbenutzer.') }}
+                        </p>
+                    @endif
+                </div>
+                <a href="{{ route('admin.toggl.mappings.index') }}" class="btn btn-sm btn-ghost">{{ __('Zuordnungen verwalten') }}</a>
+            </div>
+        </div>
+
         {{-- Unzugeordnete Einträge → zentrale Zuordnungs-Inbox (MVP-103) --}}
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
             <div class="flex flex-wrap items-center justify-between gap-2">

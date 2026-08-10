@@ -15,7 +15,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Spatie\Permission\PermissionRegistrar;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPortalVisibility};
 use Tests\TestCase;
 
 /**
@@ -27,6 +27,7 @@ use Tests\TestCase;
 class CustomerPortalDocumentsTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPortalVisibility;
 
     private Customer $customer;
 
@@ -41,6 +42,8 @@ class CustomerPortalDocumentsTest extends TestCase {
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
 
         $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        // Portal-Bereichsfreigaben (MVP-511): Bestandstests laufen im Kompat-Vollumfang.
+        $this->allowPortal($this->customer);
         $this->internalUser = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $this->portalUser = User::factory()
             ->kunde((int) $this->customer->id, (int) $this->organization->id)

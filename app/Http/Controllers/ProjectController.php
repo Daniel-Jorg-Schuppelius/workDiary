@@ -164,7 +164,8 @@ class ProjectController extends Controller {
         $timeDir = strtolower((string) request()->query('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
 
         $timeEntriesQuery = $project->timeEntries()
-            ->with(['user:id,name', 'task:id,title', 'tags:id,name,color'])
+            // timesheet:status für die Sperr-Anzeige der Massen-Neuzuordnung (MVP-508).
+            ->with(['user:id,name', 'task:id,title', 'tags:id,name,color', 'timesheet:id,status'])
             ->whereBetween('date', $rangeDateBounds);
         match ($timeSort) {
             // Relations-Spalten über korrelierte Subqueries sortieren.

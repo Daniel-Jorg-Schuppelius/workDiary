@@ -41,7 +41,7 @@ class ClockifyImportService extends MatchingTimeImportService {
 
     /**
      * @param  array<string, mixed>  $config
-     * @return array{created: int, skipped: int, unmatched: int}
+     * @return array{created: int, skipped: int, unmatched: int, unresolved_users: int, updated: int, conflicts: int, removed: int}
      */
     public function importFromCsv(Organization $organization, string $csvContent, array $config): array {
         return $this->ingest($organization, $this->csvParser->parse($csvContent), $config);
@@ -54,7 +54,7 @@ class ClockifyImportService extends MatchingTimeImportService {
      * lesbare Fehlermeldung mit CSV-Hinweis zurück.
      *
      * @param  array<string, mixed>  $config
-     * @return array{created: int, skipped: int, unmatched: int, error?: string}
+     * @return array{created: int, skipped: int, unmatched: int, unresolved_users?: int, updated?: int, conflicts?: int, removed?: int, error?: string}
      */
     public function importFromApi(Organization $organization, array $config, ?CarbonImmutable $from = null, ?CarbonImmutable $to = null): array {
         $client = new ClockifyApiClient(
@@ -64,7 +64,7 @@ class ClockifyImportService extends MatchingTimeImportService {
             is_string($config['workspace_id'] ?? null) ? $config['workspace_id'] : null,
         );
         if (! $client->isConfigured()) {
-            return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'error' => (string) __('Clockify-API ist nicht konfiguriert (API-Key in den Plugin-Einstellungen hinterlegen).')];
+            return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'unresolved_users' => 0, 'error' => (string) __('Clockify-API ist nicht konfiguriert (API-Key in den Plugin-Einstellungen hinterlegen).')];
         }
 
         $from ??= CarbonImmutable::now()->subDays((int) ($config['sync_window_days'] ?? 30))->startOfDay();
@@ -73,7 +73,7 @@ class ClockifyImportService extends MatchingTimeImportService {
         try {
             $rows = $client->getTimeEntries($from, $to);
         } catch (ClockifyApiException $e) {
-            return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'error' => $e->getMessage()];
+            return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'unresolved_users' => 0, 'error' => $e->getMessage()];
         }
 
         $entries = [];

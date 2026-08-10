@@ -25,7 +25,11 @@ return [
     // Wenn false, werden importierte Zeiten nie als abrechenbar markiert.
     'default_billable' => (bool) env('TOGGL_DEFAULT_BILLABLE', true),
     // Benutzer, dem importierte Zeiten zugeordnet werden (sonst Org-Owner / erster Benutzer).
+    // Greift nur im Einbenutzer-Modus oder bei ausdrücklicher Auswahl beim Buchen (MVP-509).
     'default_user_id' => env('TOGGL_DEFAULT_USER_ID'),
+    // Einbenutzer-Modus (MVP-509): Einträge ohne zuordenbaren Toggl-Benutzer auf den
+    // Standard-Benutzer buchen. Aus = offener Zuordnungsfall in der Integrations-Inbox.
+    'single_user_mode' => (bool) env('TOGGL_SINGLE_USER_MODE', false),
     // Spiegelung workDiary → Toggl (lokal erfasste Zeiten anlegen); bewusst aus.
     'export_enabled' => (bool) env('TOGGL_EXPORT_ENABLED', false),
 ];

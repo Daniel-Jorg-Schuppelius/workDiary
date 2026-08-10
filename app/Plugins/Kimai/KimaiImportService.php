@@ -39,7 +39,7 @@ class KimaiImportService extends MatchingTimeImportService {
 
     /**
      * @param  array<string, mixed>  $config
-     * @return array{created: int, skipped: int, unmatched: int}
+     * @return array{created: int, skipped: int, unmatched: int, unresolved_users: int, updated: int, conflicts: int, removed: int}
      */
     public function importFromCsv(Organization $organization, string $csvContent, array $config): array {
         return $this->ingest($organization, $this->csvParser->parse($csvContent), $config);
@@ -51,7 +51,7 @@ class KimaiImportService extends MatchingTimeImportService {
      * (end = null) werden übersprungen.
      *
      * @param  array<string, mixed>  $config
-     * @return array{created: int, skipped: int, unmatched: int, error?: string}
+     * @return array{created: int, skipped: int, unmatched: int, unresolved_users?: int, updated?: int, conflicts?: int, removed?: int, error?: string}
      */
     public function importFromApi(Organization $organization, array $config, ?CarbonImmutable $from = null, ?CarbonImmutable $to = null): array {
         $client = new KimaiApiClient(
@@ -59,7 +59,7 @@ class KimaiImportService extends MatchingTimeImportService {
             is_string($config['base_url'] ?? null) ? $config['base_url'] : null,
         );
         if (! $client->isConfigured()) {
-            return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'error' => (string) __('Kimai-API ist nicht konfiguriert (Basis-URL und API-Token in den Plugin-Einstellungen hinterlegen).')];
+            return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'unresolved_users' => 0, 'error' => (string) __('Kimai-API ist nicht konfiguriert (Basis-URL und API-Token in den Plugin-Einstellungen hinterlegen).')];
         }
 
         $from ??= CarbonImmutable::now()->subDays((int) ($config['sync_window_days'] ?? 30))->startOfDay();

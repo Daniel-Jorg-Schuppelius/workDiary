@@ -34,7 +34,9 @@
     <x-icon :name="$icon" />
     <div class="flex-1">
         <strong data-bulk-counter>0</strong>
-        <span>{{ $label ?? __(':n Einträge ausgewählt') }}</span>
+        {{-- Der Zähler steht als eigenes Element davor — das :n der
+             Label-Konvention darf nicht sichtbar mitgerendert werden. --}}
+        <span>{{ trim(str_replace(':n', '', $label ?? __(':n Einträge ausgewählt'))) }}</span>
     </div>
     <div class="flex flex-wrap items-center gap-2">
         {{ $actions ?? $slot }}

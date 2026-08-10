@@ -323,6 +323,7 @@ return [
         'timeEntry.delete' => 'Delete time entry',
         'timeEntry.create-for-others' => 'Create time entries for others',
         'timeEntry.approve' => 'Approve time entries',
+        'timeEntry.reassign' => 'Reassign time entries to other users',
 
         'timesheet.viewAny' => 'See all timesheets',
         'timesheet.create' => 'Create timesheet',
@@ -579,6 +580,8 @@ return [
         'meterReading.view' => 'View meter readings',
         'meterReading.record' => 'Record meter readings',
         'customerPortal.access' => 'Access customer portal',
+        'customerPortal.access.manage' => 'Manage customer portal access',
+        'customerPortal.visibility.manage' => 'Configure customer portal visibility',
         'customerPortal.diary.view' => 'View diary in customer portal',
         'customerPortal.timeEntry.view' => 'View time entries in customer portal',
         'customerPortal.invoice.view' => 'View invoices in customer portal',

@@ -125,6 +125,17 @@ class IntegrationInboxController extends Controller {
             'pluginOpenCounts' => $pluginOpenCounts,
             'targets' => $registry->options(),
             'assignTargets' => $assignTargets,
+            // Benutzer-Zuordnungsfälle (MVP-509): aktive interne Benutzer als
+            // Buchungsziel — Portalkonten und deaktivierte sind ausgeschlossen.
+            'orgUsers' => User::query()
+                ->withoutGlobalScopes()
+                ->where('organization_id', $user->organization_id)
+                ->whereNull('customer_id')
+                ->whereNull('deactivated_at')
+                ->orderBy('name')
+                ->get(['id', 'name'])
+                ->mapWithKeys(fn(User $u): array => [(string) $u->sqid => (string) $u->name])
+                ->all(),
             'openCount' => $this->openCount($user),
         ]);
     }

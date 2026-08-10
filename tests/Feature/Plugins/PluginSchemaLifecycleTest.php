@@ -25,6 +25,17 @@ use Tests\TestCase;
 class PluginSchemaLifecycleTest extends TestCase {
     use RefreshDatabase;
 
+    protected function setUp(): void {
+        parent::setUp();
+
+        // Plugin-Install fährt echtes DDL; auf MySQL/MariaDB committet DDL
+        // implizit die RefreshDatabase-Transaktion (Savepoints weg, DB
+        // verschmutzt). Lifecycle-Abdeckung liefert die CI auf SQLite.
+        if (in_array(\Illuminate\Support\Facades\DB::connection()->getDriverName(), ['mysql', 'mariadb'], true)) {
+            $this->markTestSkipped('Plugin-Schema-DDL ist auf MySQL/MariaDB nicht transaktional testbar.');
+        }
+    }
+
     private function manager(): PluginSchemaManager {
         return app(PluginSchemaManager::class);
     }

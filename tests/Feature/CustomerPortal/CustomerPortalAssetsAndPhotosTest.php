@@ -14,7 +14,7 @@ use App\Enums\Protocol\ProtocolVisibility;
 use App\Models\{Asset, Attachment, AttachmentConfirmation, Customer, CustomerQuery, DiaryEntry, Protocol, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPortalVisibility};
 use Tests\TestCase;
 
 /**
@@ -25,6 +25,7 @@ use Tests\TestCase;
 class CustomerPortalAssetsAndPhotosTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPortalVisibility;
 
     private Customer $customer;
 
@@ -36,6 +37,8 @@ class CustomerPortalAssetsAndPhotosTest extends TestCase {
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
 
         $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        // Portal-Bereichsfreigaben (MVP-511): Bestandstests laufen im Kompat-Vollumfang.
+        $this->allowPortal($this->customer);
         $this->portalUser = User::factory()
             ->kunde((int) $this->customer->id, (int) $this->organization->id)
             ->create(['organization_id' => $this->organization->id]);

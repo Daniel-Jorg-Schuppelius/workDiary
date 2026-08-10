@@ -14,6 +14,7 @@ use App\Console\Concerns\IteratesOrganizations;
 use App\Models\{ExternalReference, Organization, TimeEntry};
 use App\Plugins\Toggl\Sources\{TogglApiClient, TogglCsvParser};
 use App\Plugins\Toggl\{TogglConfig, TogglImportService, TogglPlugin};
+use App\Services\Timekeeping\TimeEntryEditPolicy;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
@@ -74,8 +75,12 @@ class TogglRepairEntryUsersCommand extends Command {
             $noEmail = 0;
             $unknownUser = 0;
             $notImported = 0;
+            $locked = 0;
             /** @var array<string, true> $missingEmails */
             $missingEmails = [];
+            /** @var array<int, string> $lockedDetails */
+            $lockedDetails = [];
+            $editPolicy = app(TimeEntryEditPolicy::class);
 
             foreach ($entries as $entry) {
                 $email = trim((string) $entry->userEmail);
@@ -111,18 +116,36 @@ class TogglRepairEntryUsersCommand extends Command {
                     continue;
                 }
 
+                // Abgerechnete/exportierte Zeiten und signierte/gesperrte
+                // Stundenzettel nie automatisch verändern — als Konflikt ausweisen.
+                $hard = $editPolicy->isHardLocked($timeEntry);
+                if ($hard['locked']) {
+                    $locked++;
+                    $lockedDetails[] = ($timeEntry->date?->format(\App\Support\Formats::date()) ?? '#' . $timeEntry->id)
+                        . ' (' . ($editPolicy->reasonLabel($hard['reason']) ?? (string) $hard['reason']) . ', ' . $email . ')';
+
+                    continue;
+                }
+
                 if ($apply) {
-                    $timeEntry->update(['user_id' => $userId]);
+                    // Je Modell speichern: der saving-Hook rechnet Satz-/Kosten-
+                    // Snapshot für den neuen Benutzer neu (wie MVP-508).
+                    $timeEntry->user_id = $userId;
+                    $timeEntry->unsetRelation('user');
+                    $timeEntry->save();
                 }
                 $fixed++;
             }
 
             $mode = $apply ? 'umgesetzt' : 'würden umgesetzt (Dry-Run, --apply zum Schreiben)';
             $this->info("Organisation #{$org->id} ({$org->name}):");
-            $this->line("  {$fixed} Einträge {$mode}, {$ok} bereits korrekt, {$notImported} nicht importiert/gefunden, {$unknownUser} ohne passenden Benutzer, {$noEmail} ohne E-Mail.");
+            $this->line("  {$fixed} Einträge {$mode}, {$ok} bereits korrekt, {$notImported} nicht importiert/gefunden, {$unknownUser} ohne passenden Benutzer, {$noEmail} ohne E-Mail, {$locked} gesperrt (Beleg/Signatur).");
 
             foreach (array_keys($missingEmails) as $missing) {
                 $this->warn("  Kein Benutzer/Zuordnung für E-Mail {$missing} — Einträge bleiben unverändert (Zuordnung unter Toggl-Zuordnungen anlegen).");
+            }
+            foreach ($lockedDetails as $detail) {
+                $this->warn("  Gesperrt, nicht verändert: {$detail}");
             }
         }
 

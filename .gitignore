@@ -41,3 +41,7 @@ Thumbs.db
 # Wird via wikimedia/composer-merge-plugin gemergt; bewusst NICHT committen,
 # damit fremde Entwickler ohne Zugriff auf private Pakete lauffaehig bleiben.
 /composer.local.json
+
+# Lokale PHPUnit-Konfiguration (MariaDB-Testserver dieses Rechners).
+# CI und fremde Maschinen nutzen phpunit.xml.dist (SQLite in /dev/shm).
+/phpunit.xml

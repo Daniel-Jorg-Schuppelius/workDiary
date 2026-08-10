@@ -22,6 +22,8 @@ return [
     'default_billable' => (bool) env('CLOCKIFY_DEFAULT_BILLABLE', true),
     // Benutzer, dem importierte Zeiten zugeordnet werden (sonst Org-Owner / erster Benutzer).
     'default_user_id' => env('CLOCKIFY_DEFAULT_USER_ID'),
+    // Einbenutzer-Modus (MVP-509): Einträge ohne zuordenbaren Quell-Benutzer auf den Standard-Benutzer buchen.
+    'single_user_mode' => (bool) env('CLOCKIFY_SINGLE_USER_MODE', false),
     // API-Key (Clockify → Profil → Advanced → API).
     'api_key' => env('CLOCKIFY_API_KEY'),
     // Workspace-ID (leer = Standard-Workspace des API-Keys).

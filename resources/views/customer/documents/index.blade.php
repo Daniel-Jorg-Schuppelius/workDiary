@@ -9,6 +9,13 @@
     <h1 class="text-2xl font-semibold mb-1">{{ __('document.customer.portal.title') }}</h1>
     <p class="text-sm text-base-content/60 mb-4">{{ __('document.customer.portal.subtitle') }}</p>
 
+    @php
+        // Rückfragen (MVP-512): CTA nur mit eigener Capability.
+        $portalQueryCustomer = auth('customer')->user()?->customer;
+        $canQuery = $portalQueryCustomer !== null
+            && app(\App\Services\CustomerPortal\PortalVisibility::class)->allows($portalQueryCustomer, \App\Enums\CustomerPortal\PortalCapability::Queries);
+    @endphp
+
     <x-table>
         <x-slot:head>
             <tr>
@@ -25,7 +32,11 @@
                 <td>{{ $document->document_type->label() }}</td>
                 <td class="tabular-nums">{{ $document->valid_until?->fdate() ?? '—' }}</td>
                 <td class="tabular-nums text-sm">{{ $document->customer_released_at?->fdate() ?? '—' }}</td>
-                <td class="text-right">
+                <td class="text-right whitespace-nowrap">
+                    @if ($canQuery)
+                        <a href="{{ route('customer.queries.create', ['subject_type' => 'document', 'subject' => $document->sqid]) }}"
+                           class="btn btn-ghost btn-xs">{{ __('Rückfrage') }}</a>
+                    @endif
                     @if ($document->currentVersion !== null)
                         <x-button tone="outline" size="xs" icon="download"
                                   :href="route('customer.documents.download', $document)">

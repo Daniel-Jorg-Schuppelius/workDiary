@@ -12,13 +12,15 @@ namespace App\Http\Controllers;
 
 use App\Enums\Classification\ClassificationDomain;
 use App\Http\Controllers\Concerns\{BuildsTimeEntryOptions, ProvidesTimeEntryTagPicker};
-use App\Http\Requests\SaveTimeEntryRequest;
+use App\Http\Requests\{ReassignTimeEntriesRequest, SaveTimeEntryRequest};
 use App\Models\{Project, TimeEntry};
 use App\Models\User;
 use App\Services\Billing\AgreementRateResolver;
 use App\Services\Classification\ClassificationResolver;
 use App\Services\Flextime\CoreTimeValidator;
-use Illuminate\Http\RedirectResponse;
+use App\Services\SqidEncoder;
+use App\Services\Timekeeping\TimeEntryReassignService;
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -182,5 +184,111 @@ class TimeEntryController extends Controller {
 
         return redirect()->route('projects.show', ['project' => $project, '#' => 'time'])
             ->with('success', __('Zeiteintrag gelöscht.'));
+    }
+
+    /**
+     * Vorschau-Dialog der Massen-Neuzuordnung (MVP-508): Zusammenfassung der
+     * Auswahl, gesperrte Einträge mit Grund, Zielbenutzer-Auswahl.
+     */
+    public function reassignDialog(Project $project, Request $request): View {
+        abort_unless($this->canReassign(), 403);
+
+        $encoder = app(SqidEncoder::class);
+        $ids = array_map(
+            static fn($sqid): ?int => is_string($sqid) && $sqid !== '' ? $encoder->decode(TimeEntry::class, $sqid) : null,
+            (array) $request->query('ids', []),
+        );
+
+        $preflight = app(TimeEntryReassignService::class)->preflight($project, $ids);
+
+        return view('projects._time_reassign_dialog', [
+            'project' => $project,
+            'entries' => $preflight['entries'],
+            'blocked' => $preflight['blocked'],
+            'missing' => $preflight['missing'],
+            'targets' => $this->reassignTargets($project),
+            'isDialog' => true,
+        ]);
+    }
+
+    /** Führt die Massen-Neuzuordnung aus (transaktional, siehe Service). */
+    public function reassign(Project $project, ReassignTimeEntriesRequest $request): RedirectResponse {
+        $data = $request->validated();
+
+        /** @var User $target */
+        $target = User::query()->withoutGlobalScopes()->findOrFail((int) $data['target_user_id']);
+        /** @var User $actor */
+        $actor = $request->user();
+
+        $count = app(TimeEntryReassignService::class)->reassign(
+            $project,
+            array_map(intval(...), (array) $data['ids']),
+            $target,
+            $actor,
+        );
+
+        return redirect()->route('projects.show', ['project' => $project, '#' => 'time'])
+            ->with('success', __(':n Zeiteinträge :name zugeordnet.', ['n' => $count, 'name' => $target->name]));
+    }
+
+    /**
+     * Portal-Veröffentlichung (MVP-511): setzt/entfernt customer_visible_at
+     * je Modell — kein nacktes Mass-Update, damit Audit-Events entstehen.
+     */
+    public function updatePortalVisibility(Project $project, Request $request): RedirectResponse {
+        $user = Auth::user();
+        abort_unless($user instanceof User && ($user->isAdmin() || Gate::allows(\App\Enums\User\Permission::CustomerPortalVisibilityManage->value)), 403);
+
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['required', 'string'],
+            'mode' => ['required', 'in:publish,retract'],
+        ]);
+
+        $encoder = app(SqidEncoder::class);
+        $ids = array_values(array_filter(array_map(
+            static fn($sqid): ?int => is_string($sqid) ? $encoder->decode(TimeEntry::class, $sqid) : null,
+            (array) $data['ids'],
+        )));
+
+        $entries = $project->timeEntries()->whereIn('id', $ids)->get();
+        $publish = $data['mode'] === 'publish';
+        $count = 0;
+        foreach ($entries as $entry) {
+            if ($publish === ($entry->customer_visible_at !== null)) {
+                continue;
+            }
+            $entry->customer_visible_at = $publish ? now() : null;
+            $entry->save();
+            $count++;
+        }
+
+        return redirect()->route('projects.show', ['project' => $project, '#' => 'time'])
+            ->with('success', $publish
+                ? __(':n Zeiteinträge für das Kundenportal veröffentlicht.', ['n' => $count])
+                : __(':n Zeiteinträge aus dem Kundenportal zurückgezogen.', ['n' => $count]));
+    }
+
+    /** Schreibende Massenaktion: Admin oder eigene Reassign-Permission. */
+    private function canReassign(): bool {
+        $user = Auth::user();
+
+        return $user instanceof User && ($user->isAdmin() || Gate::allows('timeEntry.reassign'));
+    }
+
+    /**
+     * Zielauswahl: aktive interne Benutzer derselben Organisation —
+     * Portalkonten (customer_id) und deaktivierte Konten sind ausgeschlossen.
+     *
+     * @return Collection<int, User>
+     */
+    private function reassignTargets(Project $project): Collection {
+        return User::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $project->organization_id)
+            ->whereNull('customer_id')
+            ->whereNull('deactivated_at')
+            ->orderBy('name')
+            ->get(['id', 'name']);
     }
 }

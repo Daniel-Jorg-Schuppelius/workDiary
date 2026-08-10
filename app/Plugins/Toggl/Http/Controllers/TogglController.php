@@ -54,10 +54,26 @@ class TogglController extends Controller {
 
         $config = TogglConfig::resolve($admin->organization_id);
 
+        // Benutzerzuordnungs-Status (MVP-509): Modus + Ziel des Einbenutzer-
+        // Fallbacks sichtbar machen, damit niemand über stille Buchungen rätselt.
+        $singleUserMode = (bool) $config['single_user_mode'];
+        $defaultUserName = null;
+        if ($singleUserMode && $organization instanceof Organization) {
+            $defaultUserId = is_numeric($config['default_user_id']) ? (int) $config['default_user_id'] : null;
+            $defaultUser = $defaultUserId !== null
+                ? \App\Models\User::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereKey($defaultUserId)->first()
+                : null;
+            $defaultUserName = $defaultUser->name
+                ?? $organization->owner->name
+                ?? (string) __('Organisations-Owner');
+        }
+
         return view('toggl::admin.import', [
             'inboxOpenCount' => $inboxOpenCount,
             'apiConfigured' => $config['api_token'] !== null,
             'exportEnabled' => (bool) $config['export_enabled'],
+            'singleUserMode' => $singleUserMode,
+            'defaultUserName' => $defaultUserName,
         ]);
     }
 
@@ -625,13 +641,22 @@ class TogglController extends Controller {
                 : (string) __('Import abgeschlossen.'));
     }
 
-    /** @param array{created: int, skipped: int, unmatched: int, updated?: int, conflicts?: int, removed?: int} $result */
+    /** @param array{created: int, skipped: int, unmatched: int, unresolved_users?: int, updated?: int, conflicts?: int, removed?: int, incomplete?: bool} $result */
     private function importMessage(array $result): string {
         $message = (string) __(':created gebucht, :skipped übersprungen, :unmatched in der Inbox.', $result);
+
+        $unresolvedUsers = (int) ($result['unresolved_users'] ?? 0);
+        if ($unresolvedUsers > 0) {
+            $message .= ' ' . __(':n ohne zuordenbaren Benutzer — Zuordnung unter „Zuordnungen verwalten" pflegen oder in der Integrations-Inbox buchen.', ['n' => $unresolvedUsers]);
+        }
 
         $removed = (int) ($result['removed'] ?? 0);
         if ($removed > 0) {
             $message .= ' ' . __(':removed lokale Einträge entfernt (in Toggl gelöscht).', ['removed' => $removed]);
+        }
+
+        if ((bool) ($result['incomplete'] ?? false)) {
+            $message .= ' ' . __('Achtung: Der Lauf war unvollständig (Toggl nicht vollständig erreichbar) — Benutzerauflösung und Löschabgleich sind ausgesetzt.');
         }
 
         return $message;

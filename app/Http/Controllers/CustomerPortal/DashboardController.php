@@ -10,25 +10,40 @@
 
 namespace App\Http\Controllers\CustomerPortal;
 
+use App\Enums\CustomerPortal\PortalCapability;
 use App\Http\Controllers\Controller;
 use App\Models\{DiaryEntry, Invoice, OpenIssue, Project, TimeEntry, User};
+use App\Services\CustomerPortal\PortalVisibility;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class DashboardController extends Controller {
-    public function __invoke(): View {
+    public function __invoke(PortalVisibility $visibility): View {
         /** @var User $user */
         $user = Auth::guard('customer')->user();
         $customerId = (int) $user->customer_id;
+        $customer = $user->customer;
 
-        $stats = [
-            'diary' => DiaryEntry::query()->where('customer_id', $customerId)->count(),
-            'time_entries' => TimeEntry::query()
-                ->whereHas('project', fn($q) => $q->where('customer_id', $customerId))
-                ->count(),
-            'invoices' => Invoice::query()->where('customer_id', $customerId)->count(),
-            'open_issues' => OpenIssue::query()
+        // Kacheln/Zähler nur für freigegebene Bereiche (MVP-511) — nicht
+        // Freigegebenes wird weder gezählt noch verlinkt.
+        $stats = [];
+        if ($customer !== null && $visibility->allows($customer, PortalCapability::Diary)) {
+            $stats['diary'] = DiaryEntry::query()->where('customer_id', $customerId)->count();
+        }
+        if ($customer !== null && $visibility->timeDetail($customer)->showsEntries()) {
+            $timeQuery = TimeEntry::query()
+                ->whereHas('project', fn($q) => $q->where('customer_id', $customerId));
+            if ($visibility->timeScope($customer) === PortalVisibility::TIME_SCOPE_PUBLISHED) {
+                $timeQuery->whereNotNull('customer_visible_at');
+            }
+            $stats['time_entries'] = $timeQuery->count();
+        }
+        if ($customer !== null && $visibility->allows($customer, PortalCapability::Invoices)) {
+            $stats['invoices'] = Invoice::query()->where('customer_id', $customerId)->count();
+        }
+        if ($customer !== null && $visibility->allows($customer, PortalCapability::OpenIssues)) {
+            $stats['open_issues'] = OpenIssue::query()
                 ->where('visibility', \App\Enums\OpenIssue\OpenIssueVisibility::Customer->value)
                 ->whereNull('closed_at')
                 ->where(function (Builder $q) use ($customerId): void {
@@ -49,12 +64,12 @@ class DashboardController extends Controller {
                                     ->select('id'));
                         });
                 })
-                ->count(),
-        ];
+                ->count();
+        }
 
         return view('customer.dashboard', [
             'user' => $user,
-            'customer' => $user->customer,
+            'customer' => $customer,
             'stats' => $stats,
         ]);
     }

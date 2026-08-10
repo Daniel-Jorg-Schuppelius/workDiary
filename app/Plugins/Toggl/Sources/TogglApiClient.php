@@ -393,6 +393,11 @@ class TogglApiClient implements RemoteTimeWriter {
             ->getResponse($this->baseUrl . '/workspaces/' . $workspaceId . '/users', [], ['timeout' => 20]);
 
         if (! $response->successful()) {
+            // Ohne Benutzerliste fehlt den Reports-Zeilen die E-Mail — der
+            // Lauf ist unvollständig: keine Löschungserkennung, und die
+            // Einträge dürfen nicht als scheinbar korrekt zugeordnet gelten.
+            $this->fetchComplete = false;
+
             return [];
         }
 

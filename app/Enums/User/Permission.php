@@ -188,6 +188,7 @@ enum Permission: string implements HasLabel {
     case TimeEntryDelete = 'timeEntry.delete';
     case TimeEntryCreateForOthers = 'timeEntry.create-for-others';
     case TimeEntryApprove = 'timeEntry.approve';
+    case TimeEntryReassign = 'timeEntry.reassign';
 
         // ── Stundenzettel ──────────────────────────────────────────────────
     case TimesheetViewAny = 'timesheet.viewAny';
@@ -538,6 +539,10 @@ enum Permission: string implements HasLabel {
     case CustomerPortalTimeEntryView = 'customerPortal.timeEntry.view';
     case CustomerPortalInvoiceView = 'customerPortal.invoice.view';
     case CustomerPortalOpenIssueView = 'customerPortal.openIssue.view';
+        // Interne Verwaltung der Portalzugänge (MVP-510).
+    case CustomerPortalAccessManage = 'customerPortal.access.manage';
+        // Sichtbare Portalbereiche/Zeitdetails je Kunde konfigurieren + Zeiten veröffentlichen (MVP-511).
+    case CustomerPortalVisibilityManage = 'customerPortal.visibility.manage';
         // ── Kunden-Rückfragen (Feature 012, intern) ─────────────
     case ProtocolCustomerQueryManage = 'protocol.customerQuery.manage';
         // ── Webhooks / Integrationen (Feature 008) ──────────────

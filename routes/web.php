@@ -1071,6 +1071,14 @@ Route::middleware('auth')->group(function () {
         Route::resource('customers', CustomerController::class);
         Route::post('customers/{customer}/archive', [CustomerController::class, 'archive'])->name('customers.archive');
         Route::post('customers/{customer}/restore', [CustomerController::class, 'restore'])->name('customers.restore');
+        // Kundenportal-Zugänge (MVP-510): Verwaltung an der Kundenakte.
+        Route::get('customers/{customer}/portal-access/create', [\App\Http\Controllers\CustomerPortalAccessController::class, 'createDialog'])->name('customers.portal-access.create');
+        Route::post('customers/{customer}/portal-access', [\App\Http\Controllers\CustomerPortalAccessController::class, 'store'])->name('customers.portal-access.store');
+        Route::post('customers/{customer}/portal-access/{portalUser}/resend', [\App\Http\Controllers\CustomerPortalAccessController::class, 'resend'])->name('customers.portal-access.resend');
+        Route::post('customers/{customer}/portal-access/{portalUser}/deactivate', [\App\Http\Controllers\CustomerPortalAccessController::class, 'deactivate'])->name('customers.portal-access.deactivate');
+        Route::post('customers/{customer}/portal-access/{portalUser}/reactivate', [\App\Http\Controllers\CustomerPortalAccessController::class, 'reactivate'])->name('customers.portal-access.reactivate');
+        // Portal-Sichtbarkeiten je Kunde (MVP-511).
+        Route::put('customers/{customer}/portal-visibility', [\App\Http\Controllers\CustomerPortalVisibilityController::class, 'update'])->name('customers.portal-visibility.update');
 
         // ── Kunden-Sonderkonditionen & Abrechnungskonto (Feature 098) ───────────
         Route::get('customers/{customer}/billing/agreement/edit', [\App\Http\Controllers\Customers\BillingAgreementController::class, 'edit'])->name('customers.billing.agreement.edit');
@@ -1997,6 +2005,12 @@ Route::middleware('auth')->group(function () {
         });
         Route::patch('projects/{project}/tasks/{task}/complete', [TaskController::class, 'complete'])->name('projects.tasks.complete');
         Route::get('time-entries/create', [TimeEntryController::class, 'pick'])->name('time-entries.create');
+        // Massen-Neuzuordnung (MVP-508) — vor der Resource, damit „reassign"
+        // nie als {time_entry}-Parameter gelesen wird.
+        Route::get('projects/{project}/time-entries/reassign', [TimeEntryController::class, 'reassignDialog'])->name('projects.time-entries.reassign-dialog');
+        Route::post('projects/{project}/time-entries/reassign', [TimeEntryController::class, 'reassign'])->name('projects.time-entries.reassign');
+        // Portal-Veröffentlichung einzelner Zeiten (MVP-511).
+        Route::post('projects/{project}/time-entries/portal-visibility', [TimeEntryController::class, 'updatePortalVisibility'])->name('projects.time-entries.portal-visibility');
         Route::resource('projects.time-entries', TimeEntryController::class)->except(['index', 'show']);
         Route::resource('projects.billing-rules', ProjectBillingRuleController::class)->except(['index', 'show', 'edit']);
         Route::patch('projects/{project}/billing-settings', [ProjectBillingRuleController::class, 'updateSettings'])->name('projects.billing-settings.update');

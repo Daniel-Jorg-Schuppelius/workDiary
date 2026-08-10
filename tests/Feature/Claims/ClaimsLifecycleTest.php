@@ -18,7 +18,7 @@ use App\Services\Claims\{ClaimCaseService, ClaimFinancialService, ClaimRmaServic
 use App\Services\Inventory\InventoryLedger;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPortalVisibility};
 use Tests\TestCase;
 
 /**
@@ -31,6 +31,7 @@ use Tests\TestCase;
 final class ClaimsLifecycleTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPortalVisibility;
 
     private User $admin;
 
@@ -42,6 +43,8 @@ final class ClaimsLifecycleTest extends TestCase {
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        // Portal-Bereichsfreigaben (MVP-511): Bestandstests laufen im Kompat-Vollumfang.
+        $this->allowPortal($this->customer);
     }
 
     private function openCase(array $overrides = []): ClaimCase {

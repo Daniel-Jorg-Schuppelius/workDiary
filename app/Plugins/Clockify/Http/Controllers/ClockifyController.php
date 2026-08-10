@@ -69,7 +69,7 @@ class ClockifyController extends Controller {
             'created' => $result['created'],
             'skipped' => $result['skipped'],
             'unmatched' => $result['unmatched'],
-        ]));
+        ]) . $this->unresolvedUsersSuffix($result));
     }
 
     /** API-Import über das Formular-Zeitfenster (leer = sync_window_days rückwirkend). */
@@ -98,6 +98,19 @@ class ClockifyController extends Controller {
             'created' => $result['created'],
             'skipped' => $result['skipped'],
             'unmatched' => $result['unmatched'],
-        ]));
+        ]) . $this->unresolvedUsersSuffix($result));
+    }
+
+    /**
+     * Hinweis auf Einträge ohne zuordenbaren Quell-Benutzer (MVP-509).
+     *
+     * @param  array<string, mixed>  $result
+     */
+    private function unresolvedUsersSuffix(array $result): string {
+        $n = (int) ($result['unresolved_users'] ?? 0);
+
+        return $n > 0
+            ? ' ' . __(':n ohne zuordenbaren Benutzer — Fälle liegen in der Integrations-Inbox.', ['n' => $n])
+            : '';
     }
 }

@@ -152,4 +152,24 @@ return [
         'correctionRejected'        => 'Day correction rejected',
         'reopened'                  => 'Day reopened',
     ],
+    // Time entries (MVP-508)
+    'timeEntry' => [
+        'reassigned'                => 'Time entry reassigned to another user',
+    ],
+    // Customer portal access (MVP-510)
+    'portal' => [
+        'query' => [
+            'withdrawn' => 'Portal query withdrawn',
+        ],
+        'visibility' => [
+            'updated' => 'Portal visibility changed',
+        ],
+        'access' => [
+            'invited'          => 'Portal access invited',
+            'invite_resent'    => 'Portal invitation re-sent',
+            'invite_accepted'  => 'Portal invitation accepted',
+            'deactivated'      => 'Portal access deactivated',
+            'reactivated'      => 'Portal access reactivated',
+        ],
+    ],
 ];

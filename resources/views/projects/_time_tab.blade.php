@@ -1,6 +1,17 @@
 {{-- Tab: Zeiterfassung — erwartet: $project, $timeEntries, $totalMinutes, $rangeMinutes, $rangeLabel, $myMinutes --}}
 @php
     $fmt = fn (int $min): string => \App\Support\Formats::duration($min, 'clock');
+    $viewer = auth()->user();
+    // Massen-Neuzuordnung (MVP-508): eigene Permission, kein update-Bypass.
+    $canReassign = $viewer !== null
+        && ($viewer->isAdmin() || \Illuminate\Support\Facades\Gate::allows('timeEntry.reassign'))
+        && $timeEntries->isNotEmpty();
+    // Portal-Veröffentlichung (MVP-511): eigene Sichtbarkeits-Permission.
+    $canPublish = $viewer !== null
+        && ($viewer->isAdmin() || \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::CustomerPortalVisibilityManage->value))
+        && $timeEntries->isNotEmpty();
+    $canBulk = $canReassign || $canPublish;
+    $editPolicy = app(\App\Services\Timekeeping\TimeEntryEditPolicy::class);
 @endphp
 
 <div class="flex flex-col gap-3">
@@ -21,6 +32,49 @@
                             show-label>{{ __('Zeiteintrag') }}</x-icon-btn>
             @endcan
         </x-slot:actions>
+        {{-- data-bulk-form als <div>: die Zeilen enthalten eigene Lösch-Formulare,
+             ein umschließendes <form> würde sie im Browser auflösen. Die Aktion
+             läuft über den Dialog-Link (data-bulk-dialog-link), kein Submit. --}}
+        @if ($canBulk)
+        <div data-bulk-form>
+            <x-bulk-toolbar :label="__(':n Zeiteinträge ausgewählt')" class="mb-2">
+                <x-slot:actions>
+                    @if ($canReassign)
+                        <a href="{{ route('projects.time-entries.reassign-dialog', $project) }}"
+                           data-bulk-dialog-link data-entry-modal-trigger
+                           class="btn btn-primary btn-sm">
+                            <x-icon name="person_add" /> {{ __('Benutzer zuordnen') }}
+                        </a>
+                    @endif
+                    @if ($canPublish)
+                        {{-- Kontrollierte Portal-Veröffentlichung (MVP-511):
+                             ids[] werden von bulk-selection.js gespiegelt. --}}
+                        <form method="POST" action="{{ route('projects.time-entries.portal-visibility', $project) }}"
+                              data-bulk-ids-form class="inline">
+                            @csrf
+                            <input type="hidden" name="mode" value="publish">
+                            <button type="submit" class="btn btn-success btn-sm"
+                                    data-confirm-dialog
+                                    data-confirm-message="{{ __('Die ausgewählten Zeiten im Kundenportal sichtbar machen? Beschreibungen erscheinen nur in der dafür freigegebenen Detailstufe.') }}"
+                                    data-confirm-label="{{ __('Veröffentlichen') }}">
+                                <x-icon name="visibility" /> {{ __('Für Portal veröffentlichen') }}
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ route('projects.time-entries.portal-visibility', $project) }}"
+                              data-bulk-ids-form class="inline">
+                            @csrf
+                            <input type="hidden" name="mode" value="retract">
+                            <button type="submit" class="btn btn-warning btn-sm"
+                                    data-confirm-dialog
+                                    data-confirm-message="{{ __('Die ausgewählten Zeiten aus dem Kundenportal zurückziehen?') }}"
+                                    data-confirm-label="{{ __('Zurückziehen') }}">
+                                <x-icon name="visibility_off" /> {{ __('Zurückziehen') }}
+                            </button>
+                        </form>
+                    @endif
+                </x-slot:actions>
+            </x-bulk-toolbar>
+        @endif
         <x-table table-sort="server" bare
                  :route="route('projects.show', $project)"
                  :current-sort="$timeSort"
@@ -29,6 +83,12 @@
                  empty-icon="schedule" :empty-title="__('Noch keine Zeiteinträge erfasst.')">
                 <x-slot:head>
                     <tr class="text-xs text-base-content/50">
+                        @if ($canBulk)
+                            <th class="w-8">
+                                <input type="checkbox" class="checkbox checkbox-sm" data-bulk-select-all
+                                       aria-label="{{ __('Alle auswählen') }}">
+                            </th>
+                        @endif
                         <x-table.th sort="date" default="desc">{{ __('Datum') }}</x-table.th>
                         <x-table.th sort="user">{{ __('Mitarbeitende') }}</x-table.th>
                         <x-table.th sort="minutes" align="right">{{ __('Zeit') }}</x-table.th>
@@ -39,12 +99,28 @@
                 </x-slot:head>
                 @foreach ($timeEntries as $entry)
                     <tr class="hover:bg-base-200/50">
+                        @if ($canBulk)
+                            @php($hardLock = $editPolicy->isHardLocked($entry))
+                            {{-- Harte Sperren blocken nur die Neuzuordnung — die
+                                 Portal-Veröffentlichung bleibt auch für abgerechnete
+                                 Zeiten erlaubt, daher kein disable bei $canPublish. --}}
+                            <td>
+                                <input type="checkbox" class="checkbox checkbox-sm"
+                                       data-bulk-checkbox value="{{ $entry->sqid }}"
+                                       @disabled($hardLock['locked'] && ! $canPublish)
+                                       @if ($hardLock['locked']) title="{{ $editPolicy->reasonLabel($hardLock['reason']) }}" @endif
+                                       aria-label="{{ __('Zeiteintrag vom :date auswählen', ['date' => $entry->date?->fdate() ?? '—']) }}">
+                            </td>
+                        @endif
                         <td class="whitespace-nowrap text-xs" data-sort-value="{{ $entry->date->format('Y-m-d') }}">{{ $entry->date->fdate() }}</td>
                         <td class="text-xs">{{ $entry->user->name ?? '—' }}</td>
                         <td class="whitespace-nowrap text-right text-xs font-medium">
                             {{ $entry->hoursFormatted() }}
                             @if (! $entry->billable)
                                 <x-status-badge tone="warning" size="xs" class="ml-1">{{ __('nicht abrechenbar') }}</x-status-badge>
+                            @endif
+                            @if ($canPublish && $entry->customer_visible_at !== null)
+                                <x-status-badge tone="info" size="xs" class="ml-1" :title="__('Im Kundenportal veröffentlicht')">{{ __('Portal') }}</x-status-badge>
                             @endif
                         </td>
                         <td class="text-xs text-base-content/70">{{ $entry->task->title ?? '—' }}</td>
@@ -79,6 +155,9 @@
                     </tr>
             @endforeach
         </x-table>
+        @if ($canBulk)
+        </div>
+        @endif
     </x-card>
 </div>
 

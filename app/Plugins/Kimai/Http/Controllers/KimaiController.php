@@ -80,7 +80,7 @@ class KimaiController extends Controller {
             'created' => $result['created'],
             'skipped' => $result['skipped'],
             'unmatched' => $result['unmatched'],
-        ]));
+        ]) . $this->unresolvedUsersSuffix($result));
     }
 
     /** Rückbuchung erfasster Zeiten gemappter Projekte als Kimai-Timesheets. */
@@ -133,6 +133,19 @@ class KimaiController extends Controller {
             'created' => $result['created'],
             'skipped' => $result['skipped'],
             'unmatched' => $result['unmatched'],
-        ]));
+        ]) . $this->unresolvedUsersSuffix($result));
+    }
+
+    /**
+     * Hinweis auf Einträge ohne zuordenbaren Quell-Benutzer (MVP-509).
+     *
+     * @param  array<string, mixed>  $result
+     */
+    private function unresolvedUsersSuffix(array $result): string {
+        $n = (int) ($result['unresolved_users'] ?? 0);
+
+        return $n > 0
+            ? ' ' . __(':n ohne zuordenbaren Benutzer — Fälle liegen in der Integrations-Inbox.', ['n' => $n])
+            : '';
     }
 }

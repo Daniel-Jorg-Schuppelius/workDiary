@@ -86,7 +86,8 @@ class KimaiPlugin extends AbstractPlugin implements TimeImporter {
     public function settingsSchema(): array {
         return [
             ['key' => 'default_billable', 'label' => __('Abrechenbar übernehmen'), 'type' => 'boolean', 'default' => true, 'help' => __('Wenn aus, werden importierte Zeiten nie als abrechenbar markiert.')],
-            ['key' => 'default_user_id', 'label' => __('Zeiten buchen für Benutzer-ID'), 'type' => 'text', 'help' => __('Optional. Leer = Organisations-Owner bzw. erster Benutzer.')],
+            ['key' => 'default_user_id', 'label' => __('Zeiten buchen für Benutzer-ID'), 'type' => 'text', 'help' => __('Optional. Leer = Organisations-Owner bzw. erster Benutzer. Greift nur im Einbenutzer-Modus oder bei ausdrücklicher Auswahl beim Buchen.')],
+            ['key' => 'single_user_mode', 'label' => __('Einbenutzer-Modus'), 'type' => 'boolean', 'default' => false, 'help' => __('Nur für Einzelarbeitsplätze: Einträge ohne zuordenbaren Quell-Benutzer werden auf den Standard-Benutzer gebucht. Wenn aus (empfohlen), landen nicht zuordenbare Benutzer sichtbar in der Integrations-Inbox statt still beim Hauptbenutzer.')],
             ['key' => 'base_url', 'label' => __('Kimai-Basis-URL'), 'type' => 'text', 'help' => __('Adresse der Kimai-Instanz, z. B. https://kimai.example.com (ohne /api).')],
             ['key' => 'api_token', 'label' => __('Kimai API-Token'), 'type' => 'password', 'help' => __('Kimai 2.x: Profil → API-Zugang. Zusammen mit der Basis-URL schaltet das den API-Import frei.')],
             ['key' => 'api_all_users', 'label' => __('Zeiten aller Benutzer abrufen'), 'type' => 'boolean', 'default' => true, 'help' => __('Braucht in Kimai das Recht view_other_timesheet; sonst kommen nur die Zeiten des Token-Benutzers.')],

@@ -45,12 +45,12 @@ class TogglImportService extends MatchingTimeImportService {
      * Holt die Zeiteinträge der Toggl-API im Fenster [$from, $to] und verarbeitet sie.
      *
      * @param  array<string, mixed>  $config  Ergebnis von {@see TogglConfig::resolve()}
-     * @return array{created: int, skipped: int, unmatched: int, updated: int, conflicts: int, removed: int}
+     * @return array{created: int, skipped: int, unmatched: int, unresolved_users: int, updated: int, conflicts: int, removed: int, incomplete: bool}
      */
     public function importFromApi(Organization $organization, array $config, CarbonImmutable $from, CarbonImmutable $to): array {
         $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id']);
         if (! $client->isConfigured()) {
-            return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'updated' => 0, 'conflicts' => 0, 'removed' => 0];
+            return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'unresolved_users' => 0, 'updated' => 0, 'conflicts' => 0, 'removed' => 0, 'incomplete' => false];
         }
 
         // Workspace-Namen für die Inbox-Anzeige (Gruppen sind je Workspace getrennt).
@@ -84,14 +84,17 @@ class TogglImportService extends MatchingTimeImportService {
             // Ungelieferte fälschlich als drüben gelöscht — Massenlöschung
             // lokaler Zeiten (passiert am 01./02.08.2026: 50+44 Einträge).
             RemoteSyncWindow::whenComplete($client->isFetchComplete(), $from, $to),
-        );
+            // Unvollständig heißt auch (MVP-509): die Workspace-Benutzerliste kann
+            // gefehlt haben — Einträge ohne E-Mail sind dann klärungsbedürftig,
+            // keine scheinbar korrekten Hauptbenutzer-Buchungen.
+        ) + ['incomplete' => ! $client->isFetchComplete()];
     }
 
     /**
      * Verarbeitet einen Toggl-Detailed-Report-CSV-Inhalt.
      *
      * @param  array<string, mixed>  $config  Ergebnis von {@see TogglConfig::resolve()}
-     * @return array{created: int, skipped: int, unmatched: int}
+     * @return array{created: int, skipped: int, unmatched: int, unresolved_users: int, updated: int, conflicts: int, removed: int}
      */
     public function importFromCsv(Organization $organization, string $csvContent, array $config): array {
         return $this->ingest($organization, $this->mapEntries($this->csvParser->parse($csvContent)), $config);
@@ -181,18 +184,23 @@ class TogglImportService extends MatchingTimeImportService {
      *
      * @return array{created: int, skipped: int}
      */
-    public function bookInboxGroup(Organization $organization, string $groupKey, ?Customer $customer, Project $project, ?int $userId = null, ?ForeignCustomer $foreignCustomer = null): array {
-        $firstSnap = (array) ($this->openInboxItems($organization)->where('group_key', $groupKey)->first()->remote_snapshot ?? []);
-        $clientId = is_numeric($firstSnap['client_id'] ?? null) ? (int) $firstSnap['client_id'] : null;
-        $projectId = is_numeric($firstSnap['project_id'] ?? null) ? (int) $firstSnap['project_id'] : null;
+    public function bookInboxGroup(Organization $organization, string $groupKey, ?Customer $customer, ?Project $project, ?int $userId = null, ?ForeignCustomer $foreignCustomer = null): array {
+        // Benutzer-Gruppen (MVP-509) tragen Einträge VERSCHIEDENER Projekte —
+        // die stabilen IDs des ersten Snapshots dürfen dann nicht pauschal auf
+        // das Fallback-Projekt gemerkt werden.
+        if (! $this->isUserGroupKey($groupKey)) {
+            $firstSnap = (array) ($this->openInboxItems($organization)->where('group_key', $groupKey)->first()->remote_snapshot ?? []);
+            $clientId = is_numeric($firstSnap['client_id'] ?? null) ? (int) $firstSnap['client_id'] : null;
+            $projectId = is_numeric($firstSnap['project_id'] ?? null) ? (int) $firstSnap['project_id'] : null;
 
-        // Wie die Namens-Referenz der Basis: der Fremdkunde (Endkunde) ist der
-        // präzisere Schlüssel für die stabile Client-ID.
-        if ($customer !== null && $clientId !== null) {
-            $this->rememberReference($organization, self::EXT_TYPE_CLIENT_ID, (string) $clientId, $foreignCustomer ?? $customer);
-        }
-        if ($projectId !== null) {
-            $this->rememberReference($organization, self::EXT_TYPE_PROJECT_ID, (string) $projectId, $project);
+            // Wie die Namens-Referenz der Basis: der Fremdkunde (Endkunde) ist der
+            // präzisere Schlüssel für die stabile Client-ID.
+            if ($customer !== null && $clientId !== null) {
+                $this->rememberReference($organization, self::EXT_TYPE_CLIENT_ID, (string) $clientId, $foreignCustomer ?? $customer);
+            }
+            if ($projectId !== null && $project !== null) {
+                $this->rememberReference($organization, self::EXT_TYPE_PROJECT_ID, (string) $projectId, $project);
+            }
         }
 
         return parent::bookInboxGroup($organization, $groupKey, $customer, $project, $userId, $foreignCustomer);

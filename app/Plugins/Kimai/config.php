@@ -23,6 +23,8 @@ return [
     'default_billable' => (bool) env('KIMAI_DEFAULT_BILLABLE', true),
     // Benutzer, dem importierte Zeiten zugeordnet werden (sonst Org-Owner / erster Benutzer).
     'default_user_id' => env('KIMAI_DEFAULT_USER_ID'),
+    // Einbenutzer-Modus (MVP-509): Einträge ohne zuordenbaren Quell-Benutzer auf den Standard-Benutzer buchen.
+    'single_user_mode' => (bool) env('KIMAI_SINGLE_USER_MODE', false),
     // Basis-URL der Kimai-Instanz (z. B. https://kimai.example.com) — ohne /api.
     'base_url' => env('KIMAI_BASE_URL'),
     // API-Token des Kimai-Benutzers (Kimai 2.x: Profil → API-Zugang).

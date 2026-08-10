@@ -52,6 +52,9 @@ class KimaiApiTest extends TestCase {
                 'default_billable' => true,
                 'base_url' => self::BASE,
                 'api_token' => 'secret-token',
+                // Einbenutzer-Modus (MVP-509): Fixtures ohne auflösbare
+                // Quell-E-Mail — Mehrbenutzer-Semantik testet TogglUserResolutionTest.
+                'single_user_mode' => true,
             ], $extra),
         ]);
 

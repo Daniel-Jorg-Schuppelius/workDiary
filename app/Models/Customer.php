@@ -112,6 +112,7 @@ class Customer extends Model {
         'billing_increment_minutes',
         'billing_grouping_gap_minutes',
         'travel_settings',
+        'portal_settings',
         'comment',
         'invoice_text',
         'invoice_template_id',
@@ -140,6 +141,8 @@ class Customer extends Model {
         'billing_increment_minutes' => 'integer',
         'billing_grouping_gap_minutes' => 'integer',
         'travel_settings' => 'array',
+        // Portal-Sichtbarkeiten (MVP-511): NULL = alles deny (Default-Deny).
+        'portal_settings' => 'array',
         'address_lat' => 'decimal:7',
         'address_lng' => 'decimal:7',
         'contact_persons' => 'array',

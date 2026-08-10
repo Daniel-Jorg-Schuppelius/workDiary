@@ -130,6 +130,8 @@ class TimeEntry extends Model {
         'customer_billing_rate_id',
         'billing_travel_minutes',
         'billing_travel_manual',
+        // Portal-Veröffentlichung (MVP-511): NULL = für Kunden unsichtbar.
+        'customer_visible_at',
     ];
 
     /** @var array<string, string> */
@@ -143,6 +145,7 @@ class TimeEntry extends Model {
         'exported' => 'boolean',
         'billing_travel_minutes' => 'integer',
         'billing_travel_manual' => 'boolean',
+        'customer_visible_at' => 'datetime',
         'hourly_rate' => MoneyCast::class . ':currency,2',
         'fixed_rate' => MoneyCast::class . ':currency,2',
         'rate' => MoneyCast::class . ':currency,2',

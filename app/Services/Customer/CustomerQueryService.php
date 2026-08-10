@@ -12,11 +12,12 @@ namespace App\Services\Customer;
 
 use App\Enums\Customer\CustomerQueryStatus;
 use App\Enums\Notification\NotificationEvent;
+use App\Mail\CustomerQueryAnsweredMail;
 use App\Models\{CustomerQuery, User};
 use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{DB, Mail};
 use InvalidArgumentException;
 
 /**
@@ -75,6 +76,15 @@ class CustomerQueryService {
             'answered_at' => Carbon::now(),
             'answered_by_user_id' => $actor->id,
         ]);
+
+        // Antwort-Benachrichtigung an den Fragesteller (MVP-512) — nur wenn
+        // eine Adresse vorliegt (Portal-Konto bzw. Signaturlink mit E-Mail).
+        $email = trim((string) $query->asker_email);
+        if ($email !== '') {
+            DB::afterCommit(function () use ($query, $email): void {
+                Mail::to($email)->send(new CustomerQueryAnsweredMail($query));
+            });
+        }
 
         return $query->refresh();
     }

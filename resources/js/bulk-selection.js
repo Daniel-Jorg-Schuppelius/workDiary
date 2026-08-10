@@ -8,9 +8,18 @@
  *  - data-bulk-toolbar        : Sticky-Toolbar (wird ein-/ausgeblendet)
  *  - data-bulk-counter        : Zähler-Element innerhalb der Toolbar
  *  - data-bulk-clear          : Button "Auswahl aufheben"
+ *  - data-bulk-dialog-link    : <a data-entry-modal-trigger>, dessen href bei
+ *                               jeder Auswahl-Änderung die gewählten Werte als
+ *                               ids[]-Query erhält (Massenaktion als Dialog)
+ *  - data-bulk-ids-form       : Formular (z. B. in der Toolbar), das bei jeder
+ *                               Auswahl-Änderung versteckte ids[]-Inputs der
+ *                               gewählten Zeilen erhält (POST-Massenaktion,
+ *                               auch wenn die Wurzel ein <div> ist)
  *
  * Aktionen werden über Submit-Buttons mit formaction="<route>" innerhalb der Form
- * ausgelöst; keine zusätzliche Routing-Logik nötig.
+ * ausgelöst; keine zusätzliche Routing-Logik nötig. Die Wurzel darf auch ein
+ * <div> sein (Dialog-Link statt Submit) — dann dürfen Zeilen eigene Formulare
+ * enthalten (z. B. Löschen), die der Submit-Guard nicht anfasst.
  */
 
 const init = (root) => {
@@ -39,6 +48,36 @@ const init = (root) => {
             selectAll.indeterminate = count > 0 && count < boxes.length;
             selectAll.checked = boxes.length > 0 && count === boxes.length;
         }
+
+        root.querySelectorAll("[data-bulk-dialog-link]").forEach((link) => {
+            if (!link.dataset.bulkDialogBase) {
+                link.dataset.bulkDialogBase = link.getAttribute("href") ?? "";
+            }
+            const params = new URLSearchParams();
+            selected.forEach((b) => params.append("ids[]", b.value));
+            link.setAttribute(
+                "href",
+                count > 0
+                    ? `${link.dataset.bulkDialogBase}?${params.toString()}`
+                    : link.dataset.bulkDialogBase,
+            );
+        });
+
+        // Auswahl in Toolbar-Formulare spiegeln — synchron statt beim Submit,
+        // damit auch programmatische Submits (confirm-dialog) die ids tragen.
+        root.querySelectorAll("[data-bulk-ids-form]").forEach((form) => {
+            form.querySelectorAll("input[data-bulk-injected]").forEach((i) =>
+                i.remove(),
+            );
+            selected.forEach((b) => {
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = "ids[]";
+                input.value = b.value;
+                input.dataset.bulkInjected = "1";
+                form.appendChild(input);
+            });
+        });
     };
 
     if (selectAll) {
@@ -67,8 +106,11 @@ const init = (root) => {
         }
     });
 
-    // Submit-Guard: wenn nichts ausgewählt → blockieren
+    // Submit-Guard: wenn nichts ausgewählt → blockieren. Nur für die
+    // Bulk-Form selbst — bubbelnde Submits innerer Zeilen-Formulare
+    // (Löschen) gehen den Guard nichts an.
     root.addEventListener("submit", (e) => {
+        if (e.target !== root) return;
         const count = checkboxes().filter((b) => b.checked).length;
         if (count === 0) {
             e.preventDefault();

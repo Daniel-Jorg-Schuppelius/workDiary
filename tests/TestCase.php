@@ -12,7 +12,8 @@ namespace Tests;
 
 use App\Support\DatabaseHealth;
 use Database\Seeders\TestingSeeder;
-use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Foundation\Testing\{RefreshDatabaseState, TestCase as BaseTestCase};
+use Tests\Support\PersistedTestDatabase;
 
 abstract class TestCase extends BaseTestCase {
     /**
@@ -25,8 +26,25 @@ abstract class TestCase extends BaseTestCase {
 
     protected string $seeder = TestingSeeder::class;
 
+    /** Prozessweiter Zustand des Fingerprint-Skips (siehe PersistedTestDatabase). */
+    private static bool $markerHandled = false;
+
     protected function setUp(): void {
+        // Vor dem App-Boot: ist die MariaDB-Test-DB aus einem früheren Lauf
+        // noch pristine, RefreshDatabase das migrate:fresh ersparen.
+        if (!RefreshDatabaseState::$migrated && !self::$markerHandled && PersistedTestDatabase::enabled() && PersistedTestDatabase::isPristine()) {
+            RefreshDatabaseState::$migrated = true;
+            self::$markerHandled = true;
+        }
+
         parent::setUp();
+
+        // Lief eben ein frisches migrate:fresh+seed (erster RefreshDatabase-Test
+        // des Prozesses), den neuen Zustand als wiederverwendbar markieren.
+        if (!self::$markerHandled && RefreshDatabaseState::$migrated && PersistedTestDatabase::enabled()) {
+            PersistedTestDatabase::storeMarker();
+            self::$markerHandled = true;
+        }
 
         // Tests sollen nicht vom gebauten Vite-Manifest abhaengen.
         $this->withoutVite();
@@ -54,5 +72,14 @@ abstract class TestCase extends BaseTestCase {
         DatabaseHealth::reset();
 
         parent::tearDown();
+
+        // RefreshDatabase setzt $migrated zurück, wenn die Verbindung beim
+        // Abbau nicht mehr in der Transaktion steckt (z. B. implizites Commit
+        // durch DDL im Test). Dann ist die DB verschmutzt → Marker weg, damit
+        // der nächste Lauf frisch migriert.
+        if (self::$markerHandled && !RefreshDatabaseState::$migrated && PersistedTestDatabase::enabled()) {
+            PersistedTestDatabase::invalidate();
+            self::$markerHandled = false;
+        }
     }
 }

@@ -323,6 +323,7 @@ return [
         'timeEntry.delete' => 'Zeiteintrag löschen',
         'timeEntry.create-for-others' => 'Zeiteinträge für andere anlegen',
         'timeEntry.approve' => 'Zeiteinträge freigeben',
+        'timeEntry.reassign' => 'Zeiteinträge anderen Benutzern zuordnen',
 
         'timesheet.viewAny' => 'Alle Stundenzettel sehen',
         'timesheet.create' => 'Stundenzettel anlegen',
@@ -579,6 +580,8 @@ return [
         'meterReading.view' => 'Zählerstände einsehen',
         'meterReading.record' => 'Zählerstände erfassen',
         'customerPortal.access' => 'Kundenportal betreten',
+        'customerPortal.access.manage' => 'Kundenportal-Zugänge verwalten',
+        'customerPortal.visibility.manage' => 'Kundenportal-Sichtbarkeiten konfigurieren',
         'customerPortal.diary.view' => 'Auftragsbuch im Kundenportal einsehen',
         'customerPortal.timeEntry.view' => 'Zeiteinträge im Kundenportal einsehen',
         'customerPortal.invoice.view' => 'Rechnungen im Kundenportal einsehen',

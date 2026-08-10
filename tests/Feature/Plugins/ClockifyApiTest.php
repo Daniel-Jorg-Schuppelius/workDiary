@@ -47,6 +47,9 @@ class ClockifyApiTest extends TestCase {
             'settings' => array_merge([
                 'default_billable' => true,
                 'api_key' => 'secret-key',
+                // Einbenutzer-Modus (MVP-509): Fixtures ohne auflösbare
+                // Quell-E-Mail — Mehrbenutzer-Semantik testet TogglUserResolutionTest.
+                'single_user_mode' => true,
             ], $extra),
         ]);
 

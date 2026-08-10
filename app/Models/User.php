@@ -266,6 +266,10 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
         'calendar_feed_token',
         'cti_extension',
         'cti_extension_hash',
+        // Portal-Einladung (MVP-510): nur der Token-HASH, nie der Klartext.
+        'portal_invite_token_hash',
+        'portal_invite_expires_at',
+        'portal_invited_at',
     ];
 
     /** @var array<string, string> */
@@ -303,6 +307,8 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
         // Eigene CTI-Durchwahl (Opt-in) at-rest verschlüsselt (Spalte als text);
         // Lookup läuft über cti_extension_hash (SHA-256 der E164-Form).
         'cti_extension' => 'encrypted',
+        'portal_invite_expires_at' => 'datetime',
+        'portal_invited_at' => 'datetime',
     ];
 
     /** @return BelongsTo<Organization, $this> */

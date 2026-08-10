@@ -119,4 +119,24 @@ return [
         'correctionRejected' => 'Correction du jour refusée',
         'reopened' => 'Jour rouvert',
     ],
+    // Saisies de temps (MVP-508)
+    'timeEntry' => [
+        'reassigned' => 'Saisie de temps réattribuée à un autre utilisateur',
+    ],
+    // Accès au portail client (MVP-510)
+    'portal' => [
+        'query' => [
+            'withdrawn' => 'Question du portail retirée',
+        ],
+        'visibility' => [
+            'updated' => 'Visibilité du portail modifiée',
+        ],
+        'access' => [
+            'invited' => 'Accès au portail invité',
+            'invite_resent' => 'Invitation au portail renvoyée',
+            'invite_accepted' => 'Invitation au portail acceptée',
+            'deactivated' => 'Accès au portail désactivé',
+            'reactivated' => 'Accès au portail réactivé',
+        ],
+    ],
 ];

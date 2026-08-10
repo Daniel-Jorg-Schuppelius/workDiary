@@ -47,6 +47,12 @@ class TogglImportTest extends TestCase {
             'enabled' => true,
             'settings' => array_merge([
                 'api_token' => 'test-token',
+                // Diese Bestandstests prüfen Projekt-/Billable-/Tag-/Referenz-
+                // Semantik mit Fixtures ohne auflösbare Benutzer-E-Mail — im
+                // ausdrücklichen Einbenutzer-Modus (MVP-509) bleibt dafür der
+                // Standard-Benutzer-Fallback aktiv. Die Mehrbenutzer-Semantik
+                // deckt TogglUserResolutionTest ab.
+                'single_user_mode' => true,
             ], $settings),
         ]);
 

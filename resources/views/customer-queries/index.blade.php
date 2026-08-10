@@ -41,6 +41,20 @@
                                     · {{ $query->created_at?->fdatetime() }}
                                 </span>
                             </div>
+                            {{-- Subject-Kontext direkt erreichbar (MVP-512). --}}
+                            @php $subjectUrl = $query->subject !== null ? \App\Support\NotificationLinks::subjectUrl($query->subject) : null; @endphp
+                            @if ($query->subject !== null)
+                                <div class="mt-1 text-xs text-base-content/60">
+                                    @if ($subjectUrl)
+                                        <a href="{{ $subjectUrl }}" class="link link-hover">{{ app(\App\Services\CustomerPortal\PortalQuerySubjects::class)->label($query->subject) }}</a>
+                                    @else
+                                        {{ app(\App\Services\CustomerPortal\PortalQuerySubjects::class)->label($query->subject) }}
+                                    @endif
+                                    @if ($query->customer)
+                                        · {{ $query->customer->name }}
+                                    @endif
+                                </div>
+                            @endif
                             <p class="mt-2 whitespace-pre-line text-sm font-medium">{{ $query->question }}</p>
                             @if ($query->answer)
                                 <div class="mt-2 border-l-2 border-primary/40 pl-3 text-sm text-base-content/80">

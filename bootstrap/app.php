@@ -169,6 +169,8 @@ return Application::configure(basePath: dirname(__DIR__))
             // `ability:` = mindestens EINE der Abilities; `abilities:` = ALLE.
             'ability' => \Laravel\Sanctum\Http\Middleware\CheckForAnyAbility::class,
             'abilities' => \Laravel\Sanctum\Http\Middleware\CheckAbilities::class,
+            // Kundenportal-Bereichsfreigaben (MVP-511): portal.capability:diary.
+            'portal.capability' => \App\Http\Middleware\EnsurePortalCapability::class,
         ]);
 
         // Token-Endpunkte ohne Session/CSRF: Backup-Heartbeat (MVP-046 §5).

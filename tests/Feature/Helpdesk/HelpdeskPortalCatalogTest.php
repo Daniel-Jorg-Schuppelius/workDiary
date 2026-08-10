@@ -14,7 +14,7 @@ use App\Enums\Form\FormFieldType;
 use App\Models\{BusinessService, Customer, FormTemplate, RequestItem, ServiceOffering, ServiceQueue, ServiceRequest, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPortalVisibility};
 use Tests\TestCase;
 
 /**
@@ -27,6 +27,7 @@ use Tests\TestCase;
 final class HelpdeskPortalCatalogTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPortalVisibility;
 
     private Customer $customer;
 
@@ -42,6 +43,8 @@ final class HelpdeskPortalCatalogTest extends TestCase {
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
 
         $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        // Portal-Bereichsfreigaben (MVP-511): Bestandstests laufen im Kompat-Vollumfang.
+        $this->allowPortal($this->customer);
         $this->portalUser = User::factory()
             ->kunde((int) $this->customer->id, (int) $this->organization->id)
             ->create(['organization_id' => $this->organization->id]);
@@ -211,6 +214,7 @@ final class HelpdeskPortalCatalogTest extends TestCase {
 
         // Zweiter Kunde derselben Org sieht die Bestellung des ersten nicht.
         $otherCustomer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $this->allowPortal($otherCustomer);
         $otherPortalUser = User::factory()
             ->kunde((int) $otherCustomer->id, (int) $this->organization->id)
             ->create(['organization_id' => $this->organization->id]);

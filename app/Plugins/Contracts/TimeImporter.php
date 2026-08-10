@@ -20,7 +20,7 @@ use App\Models\Organization;
  */
 interface TimeImporter {
     /**
-     * @return array<string, int|string>  z. B. ['created' => 3, 'skipped' => 1, 'unmatched' => 0]
+     * @return array<string, int|string|bool>  z. B. ['created' => 3, 'skipped' => 1, 'unmatched' => 0, 'incomplete' => false]
      */
     public function importTimeEntries(Organization $organization): array;
 }
