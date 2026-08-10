@@ -12,13 +12,18 @@ declare(strict_types=1);
 
 namespace App\Enums\CustomerPortal;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Zentraler, typisierter Katalog der Kundenportal-Bereiche (MVP-511).
  * Navigation, Dashboard, Routen-Gates und Konfiguration entscheiden alle
  * über DIESEN Katalog — keine verteilten if-Abfragen in Views. Neue
  * Capabilities starten für Bestandskunden immer `deny`.
  */
-enum PortalCapability: string {
+enum PortalCapability: string implements HasLabel {
+    use HasOptions;
+
     /** Aufträge/Fallakte (Auftragsbuch, Foto-Bestätigung). */
     case Diary = 'diary';
 

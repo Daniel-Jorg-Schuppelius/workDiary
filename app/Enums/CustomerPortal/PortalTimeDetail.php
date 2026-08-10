@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\CustomerPortal;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Detailtiefe der Projektzeiten im Kundenportal (MVP-511). Interne Kosten,
  * Lohnwerte, Kalkulationssätze, Integrationsdaten, Tags und interne
  * Kommentare sind unabhängig von der Stufe NIE Portalinhalt.
  */
-enum PortalTimeDetail: string {
+enum PortalTimeDetail: string implements HasLabel {
+    use HasOptions;
+
     /** Keine Zeiten sichtbar. */
     case None = 'none';
 
