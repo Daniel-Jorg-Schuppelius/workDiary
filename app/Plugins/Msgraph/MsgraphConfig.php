@@ -72,4 +72,41 @@ class MsgraphConfig {
 
         return $config['client_id'] !== '' && $config['client_secret'] !== '';
     }
+
+    /**
+     * Tenantweite Freigabe-URL (v2-Admin-Consent-Endpunkt) über alle
+     * org-gebundenen Scope-Sätze (Kalender/Mail/Kontakte/Aufgaben/Intake;
+     * Backup ist Instanz-Sache). 'common'/'consumers' sind am Endpunkt
+     * unzulässig (persönliche Konten können nicht tenantweit einwilligen)
+     * → 'organizations'. Endpunkt bleibt config-only (Leitplanke oben).
+     */
+    public static function adminConsentUrl(string $redirectUri, string $state, ?int $organizationId = null): string {
+        $config = self::resolve($organizationId);
+
+        $tenant = in_array(strtolower($config['tenant']), ['common', 'consumers'], true) ? 'organizations' : $config['tenant'];
+        $endpoint = str_replace(
+            ['{tenant}', '/oauth2/v2.0/authorize'],
+            [$tenant, '/v2.0/adminconsent'],
+            (string) config('plugins.msgraph.authorize_url', 'https://login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize'),
+        );
+
+        // Graph-Ressourcen-Scopes voll qualifizieren; OIDC-Scopes bleiben nackt.
+        $resource = (string) parse_url($config['api_base'], PHP_URL_SCHEME) . '://' . (string) parse_url($config['api_base'], PHP_URL_HOST);
+        $oidc = ['openid', 'profile', 'email', 'offline_access'];
+        $scopes = [];
+        foreach ([$config['scopes'], $config['mail_scopes'], $config['contacts_scopes'], $config['tasks_scopes'], $config['intake_scopes']] as $set) {
+            foreach (preg_split('/\s+/', trim($set)) ?: [] as $scope) {
+                if ($scope !== '') {
+                    $scopes[in_array($scope, $oidc, true) ? $scope : $resource . '/' . $scope] = true;
+                }
+            }
+        }
+
+        return $endpoint . '?' . http_build_query([
+            'client_id' => $config['client_id'],
+            'redirect_uri' => $redirectUri,
+            'state' => $state,
+            'scope' => implode(' ', array_keys($scopes)),
+        ], '', '&', PHP_QUERY_RFC3986);
+    }
 }

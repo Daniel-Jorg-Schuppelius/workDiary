@@ -93,6 +93,12 @@ class TenantTraitCoverageTest extends TestCase {
         // sso_connection_id (alle Zugriffe filtern darüber); zusätzlich prüft
         // SsoLoginService die Org des Users gegen die Org der Verbindung.
         \App\Models\SsoIdentity::class,
+        // SSO-Login-Discovery (Feature 057-Ausbau): Domain→Organisation wird im
+        // Gast-Kontext (unauthentifiziert, vor Org-Kontext) aufgelöst — ein
+        // Org-Global-Scope würde den Login brechen. Domain ist global unique;
+        // die Admin-CRUD in SsoAdminController filtert explizit auf
+        // organization_id.
+        \App\Models\OrganizationSsoDomain::class,
         // Globale Hilfe-Inhalte (HelpTopic) und anonyme Hilfe-Telemetrie (HelpView,
         // nullable organization_id) gehören bewusst nicht zur Mandantengrenze.
         HelpTopic::class,

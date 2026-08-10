@@ -82,6 +82,23 @@ return [
         'two_way_hint' => 'Importación delta del calendario de destino — los eventos externos nuevos, ediciones externas y borrados se convierten en casos de la bandeja de integraciones (nunca creación a ciegas).',
     ],
 
+    // Aplicación Entra & concesión a nivel de tenant (admin consent v2).
+    'entra' => [
+        'heading' => 'Aplicación Entra & concesión a nivel de tenant',
+        'intro' => 'Los usuarios conectan sus servicios de Microsoft 365 mediante el inicio de sesión de Microsoft (OAuth2, solo permisos delegados). Si una directiva del tenant de Microsoft impide que los usuarios den su consentimiento, un administrador de Entra puede conceder aquí los permisos una sola vez para toda la organización.',
+        'consent' => 'Conceder para la organización (admin consent)',
+        'consent_hint' => 'Abre el inicio de sesión de Microsoft; se requiere un rol de administrador de Entra en el tenant de destino. La concesión cubre calendario, envío de correo, contactos, tareas y recepción de documentos.',
+        'redirects' => 'URI de redirección para un registro de aplicación propio',
+        'redirects_hint' => 'Una aplicación Entra propia del cliente (ajustes del plugin) debe registrar exactamente estas URI como redirecciones de tipo «Web»:',
+        'redirect_calendar' => 'Calendario',
+        'redirect_mail' => 'Envío de correo',
+        'redirect_contacts' => 'Contactos',
+        'redirect_tasks' => 'Tareas (To Do)',
+        'redirect_intake' => 'Recepción de documentos',
+        'redirect_adminconsent' => 'Admin consent',
+        'redirect_backup' => 'Destino de copia de seguridad (solo aplicación de la instancia)',
+    ],
+
     'flash' => [
         'not_configured' => 'Microsoft 365 no está configurado (faltan MSGRAPH_CLIENT_ID/SECRET).',
         'state_invalid' => 'El flujo OAuth ha caducado o no es válido. Inténtelo de nuevo.',
@@ -93,5 +110,7 @@ return [
         'calendar_saved' => 'Calendario de destino guardado.',
         'calendar_invalid' => 'El calendario seleccionado no se ha encontrado.',
         'publish_done' => 'Publicación iniciada.',
+        'admin_consent_granted' => 'Concesión a nivel de tenant otorgada — los usuarios ya pueden conectarse sin solicitud de consentimiento individual.',
+        'admin_consent_failed' => 'Admin consent no otorgado (:error).',
     ],
 ];

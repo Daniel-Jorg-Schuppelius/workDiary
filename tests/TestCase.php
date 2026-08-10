@@ -31,19 +31,29 @@ abstract class TestCase extends BaseTestCase {
 
     protected function setUp(): void {
         // Vor dem App-Boot: ist die MariaDB-Test-DB aus einem früheren Lauf
-        // noch pristine, RefreshDatabase das migrate:fresh ersparen.
-        if (!RefreshDatabaseState::$migrated && !self::$markerHandled && PersistedTestDatabase::enabled() && PersistedTestDatabase::isPristine()) {
-            RefreshDatabaseState::$migrated = true;
-            self::$markerHandled = true;
+        // noch pristine, RefreshDatabase das migrate:fresh ersparen. Steht ein
+        // Neuaufbau an, parallel laufende Rebuilds drosseln (Slot-Semaphore).
+        $rebuildSlot = null;
+        if (!RefreshDatabaseState::$migrated && !self::$markerHandled && PersistedTestDatabase::enabled()) {
+            if (PersistedTestDatabase::isPristine()) {
+                RefreshDatabaseState::$migrated = true;
+                self::$markerHandled = true;
+            } else {
+                $rebuildSlot = PersistedTestDatabase::acquireRebuildSlot();
+            }
         }
 
-        parent::setUp();
+        try {
+            parent::setUp();
 
-        // Lief eben ein frisches migrate:fresh+seed (erster RefreshDatabase-Test
-        // des Prozesses), den neuen Zustand als wiederverwendbar markieren.
-        if (!self::$markerHandled && RefreshDatabaseState::$migrated && PersistedTestDatabase::enabled()) {
-            PersistedTestDatabase::storeMarker();
-            self::$markerHandled = true;
+            // Lief eben ein frisches migrate:fresh+seed (erster RefreshDatabase-Test
+            // des Prozesses), den neuen Zustand als wiederverwendbar markieren.
+            if (!self::$markerHandled && RefreshDatabaseState::$migrated && PersistedTestDatabase::enabled()) {
+                PersistedTestDatabase::storeMarker();
+                self::$markerHandled = true;
+            }
+        } finally {
+            PersistedTestDatabase::releaseRebuildSlot($rebuildSlot);
         }
 
         // Tests sollen nicht vom gebauten Vite-Manifest abhaengen.

@@ -9769,5 +9769,7 @@
     "Ideal": "Ideal",
     "Vorjahr": "Prior year",
     "Zweitwert": "Secondary value",
-    "… Benutzer auswählen": "… select user"
+    "… Benutzer auswählen": "… select user",
+    "Dieses Plugin wird auf eigenen Seiten konfiguriert:": "This plugin is configured on its own pages:",
+    "Dieses Plugin hat keine dialogbasierten Einstellungen.": "This plugin has no dialog-based settings."
 }

@@ -276,6 +276,34 @@
                 </div>
             </form>
         @endif
+
+        {{-- Entra-App & tenantweite Freigabe (Admin-Consent) --}}
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-3">
+            <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('msgraph.entra.heading') }}</h2>
+            <p class="text-sm text-base-content/60">{{ __('msgraph.entra.intro') }}</p>
+
+            @if ($configured)
+                <form method="POST" action="{{ route('admin.msgraph.adminconsent.start') }}">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-outline">{{ __('msgraph.entra.consent') }}</button>
+                </form>
+                <p class="text-xs text-base-content/60">{{ __('msgraph.entra.consent_hint') }}</p>
+            @endif
+
+            <details class="text-sm">
+                <summary class="cursor-pointer font-medium">{{ __('msgraph.entra.redirects') }}</summary>
+                <p class="mt-2 text-base-content/60">{{ __('msgraph.entra.redirects_hint') }}</p>
+                <ul class="mt-2 space-y-1">
+                    <li>{{ __('msgraph.entra.redirect_calendar') }}: <code class="select-all break-all">{{ route('admin.msgraph.oauth.callback') }}</code></li>
+                    <li>{{ __('msgraph.entra.redirect_mail') }}: <code class="select-all break-all">{{ route('admin.msgraph.mail.oauth.callback') }}</code></li>
+                    <li>{{ __('msgraph.entra.redirect_contacts') }}: <code class="select-all break-all">{{ route('admin.msgraph.contacts.oauth.callback') }}</code></li>
+                    <li>{{ __('msgraph.entra.redirect_tasks') }}: <code class="select-all break-all">{{ route('admin.msgraph.tasks.oauth.callback') }}</code></li>
+                    <li>{{ __('msgraph.entra.redirect_intake') }}: <code class="select-all break-all">{{ route('admin.cloud-intake.microsoft.oauth.callback') }}</code></li>
+                    <li>{{ __('msgraph.entra.redirect_adminconsent') }}: <code class="select-all break-all">{{ route('admin.msgraph.adminconsent.callback') }}</code></li>
+                    <li>{{ __('msgraph.entra.redirect_backup') }}: <code class="select-all break-all">{{ route('admin.backup-targets.microsoft.oauth.callback') }}</code></li>
+                </ul>
+            </details>
+        </div>
     </div>
 </x-page-shell>
 @endsection

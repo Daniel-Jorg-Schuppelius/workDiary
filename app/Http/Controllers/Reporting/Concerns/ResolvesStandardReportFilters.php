@@ -141,6 +141,14 @@ trait ResolvesStandardReportFilters {
     protected function standardFilterOptions(array $fields, ?ReportFilters $filters = null): array {
         $options = [];
 
+        // Ausgeblendete Kunden (exclude_from_reports) auch aus den Dropdowns
+        // halten — sonst leakt der Filter die Namen, die der Report versteckt.
+        // Spiegel von ReportFilters::customerExclusionActive(): explizite
+        // Kunden-/Projektwahl übersteuert die Ausblendung.
+        $hiddenCustomerIds = $filters !== null && $filters->customerId === null && $filters->projectId === null
+            ? $filters->excludedCustomerIds
+            : [];
+
         if (in_array('include_excluded', $fields, true)) {
             // Toggle nur zeigen, wenn es überhaupt ausgeblendete Kunden gibt.
             $options['hasExcludedCustomers'] = Customer::query()->where('exclude_from_reports', true)->exists();
@@ -148,7 +156,9 @@ trait ResolvesStandardReportFilters {
 
         if (in_array('customer', $fields, true)) {
             $options['filterCustomers'] = Customer::query()
-                ->whereNull('archived_at')->orderBy('name')->get(['id', 'name']);
+                ->whereNull('archived_at')
+                ->when($hiddenCustomerIds !== [], fn($q) => $q->whereNotIn('id', $hiddenCustomerIds))
+                ->orderBy('name')->get(['id', 'name']);
         }
         if (in_array('project', $fields, true)) {
             $customerId = $filters?->customerId;
@@ -156,6 +166,7 @@ trait ResolvesStandardReportFilters {
                 ->with(['customer:id,name', 'foreignCustomer:id,name'])
                 ->whereNull('archived_at')
                 ->when($customerId !== null, fn($q) => $q->where('customer_id', $customerId))
+                ->when($hiddenCustomerIds !== [], fn($q) => $q->whereNotIn('customer_id', $hiddenCustomerIds))
                 ->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']);
         }
         if (in_array('user', $fields, true)) {

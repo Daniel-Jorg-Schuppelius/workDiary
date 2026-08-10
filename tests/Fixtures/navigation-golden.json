@@ -144,6 +144,8 @@
             "/reports/safety",
             "/reports/sickness",
             "/reports/sla",
+            "/reports/supplier-value",
+            "/reports/suppliers",
             "/reports/utilization",
             "/reports/week-by-user",
             "/reports/work-balance",
@@ -314,7 +316,9 @@
             "/reports/economics",
             "/reports/expenses",
             "/reports/external-payouts",
-            "/reports/payment-behavior"
+            "/reports/payment-behavior",
+            "/reports/supplier-value",
+            "/reports/suppliers"
         ],
         "header": [
             "/account/bookmarks",

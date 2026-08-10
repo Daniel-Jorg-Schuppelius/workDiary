@@ -31,6 +31,8 @@ class PluginAdminControllerTest extends TestCase {
         $manager = new PluginManager;
         $manager->register(new AdminTestPlugin);
         $manager->register(new AdminFailingPlugin);
+        $manager->register(new AdminBarePlugin);
+        $manager->register(new AdminPanelPlugin);
         $this->app->instance(PluginManager::class, $manager);
     }
 
@@ -265,6 +267,42 @@ class PluginAdminControllerTest extends TestCase {
             ->get(route('admin.plugins.index'))
             ->assertForbidden();
     }
+
+    // ── Dialog-Fallback ohne Schema/View: Konfigurationsorte verlinken ──
+
+    public function test_dialog_without_schema_links_capability_pages(): void {
+        $response = $this->actingAs($this->admin)
+            ->get(route('admin.plugins.edit', 'adminbare'))
+            ->assertOk()
+            ->assertSee(__('Dieses Plugin wird auf eigenen Seiten konfiguriert:'))
+            ->assertSee(route('admin.cloud-intake.index'));
+
+        // Backupziele sind Plattform-Admin-Sache — für Org-Admins kein Link.
+        $response->assertDontSee(route('admin.backup-targets.index'));
+    }
+
+    public function test_dialog_without_schema_links_admin_panel(): void {
+        $this->actingAs($this->admin)
+            ->get(route('admin.plugins.edit', 'adminpanel'))
+            ->assertOk()
+            ->assertSee(__('Dieses Plugin wird auf eigenen Seiten konfiguriert:'))
+            ->assertSee('AdminPanelZiel');
+    }
+
+    public function test_dialog_without_schema_and_links_shows_plain_hint(): void {
+        $this->actingAs($this->admin)
+            ->get(route('admin.plugins.edit', 'adminbroken'))
+            ->assertOk()
+            ->assertSee(__('Dieses Plugin hat keine dialogbasierten Einstellungen.'));
+    }
+
+    public function test_dialog_with_schema_shows_fields_instead_of_hint(): void {
+        $this->actingAs($this->admin)
+            ->get(route('admin.plugins.edit', 'admintest'))
+            ->assertOk()
+            ->assertDontSee(__('Dieses Plugin wird auf eigenen Seiten konfiguriert:'))
+            ->assertDontSee(__('Dieses Plugin hat keine dialogbasierten Einstellungen.'));
+    }
 }
 
 final class AdminTestPlugin implements Plugin {
@@ -298,6 +336,78 @@ final class AdminTestPlugin implements Plugin {
         return [
             ['key' => 'api_key', 'label' => 'API', 'type' => 'password'],
         ];
+    }
+    public function healthCheck(): PluginHealth {
+        return PluginHealth::ok('reachable');
+    }
+}
+
+/** Schema-los ohne Panel, aber mit Intake-/Backup-Capabilities (Muster Nextcloud/Dropbox/GoogleDrive). */
+final class AdminBarePlugin implements Plugin {
+    use PluginDefaults;
+
+    public function id(): string {
+        return 'adminbare';
+    }
+    public function name(): string {
+        return 'AdminBare';
+    }
+    public function version(): string {
+        return '1.0.0';
+    }
+    public function description(): string {
+        return '';
+    }
+    public function isEnabled(): bool {
+        return true;
+    }
+    public function capabilities(): array {
+        return [PluginCapability::DocumentIntake, PluginCapability::BackupTarget];
+    }
+    public function adminPanel(): ?array {
+        return null;
+    }
+    public function serviceProvider(): ?string {
+        return null;
+    }
+    public function settingsSchema(): array {
+        return [];
+    }
+    public function healthCheck(): PluginHealth {
+        return PluginHealth::ok('reachable');
+    }
+}
+
+/** Schema-los mit eigenem Admin-Panel (Muster CalDav/Todoist/Zammad …). */
+final class AdminPanelPlugin implements Plugin {
+    use PluginDefaults;
+
+    public function id(): string {
+        return 'adminpanel';
+    }
+    public function name(): string {
+        return 'AdminPanel';
+    }
+    public function version(): string {
+        return '1.0.0';
+    }
+    public function description(): string {
+        return '';
+    }
+    public function isEnabled(): bool {
+        return true;
+    }
+    public function capabilities(): array {
+        return [PluginCapability::ContactSync];
+    }
+    public function adminPanel(): array {
+        return ['route' => 'admin.plugins.index', 'label' => 'AdminPanelZiel', 'icon' => 'extension'];
+    }
+    public function serviceProvider(): ?string {
+        return null;
+    }
+    public function settingsSchema(): array {
+        return [];
     }
     public function healthCheck(): PluginHealth {
         return PluginHealth::ok('reachable');

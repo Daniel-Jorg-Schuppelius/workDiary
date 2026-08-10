@@ -369,7 +369,8 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Con
      * eine EIGENE Entra-App hinterlegen (encrypted in `plugin_settings`);
      * leer = Instanz-App aus der ENV. Endpunkte/Scopes bleiben BEWUSST
      * config-only ({@see MsgraphConfig}). Redirect-URIs der eigenen App müssen
-     * identisch zur Instanz-App registriert sein (vier Callbacks).
+     * identisch zur Instanz-App registriert sein (Liste zeigt das Admin-Panel,
+     * Sektion „Entra-App & tenantweite Freigabe").
      */
     public function settingsSchema(): array {
         return [

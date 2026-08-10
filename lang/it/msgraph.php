@@ -82,6 +82,23 @@ return [
         'two_way_hint' => 'Importazione delta del calendario di destinazione — nuovi eventi esterni, modifiche esterne e cancellazioni diventano casi della inbox delle integrazioni (mai creazione cieca).',
     ],
 
+    // App Entra & autorizzazione a livello di tenant (admin consent v2).
+    'entra' => [
+        'heading' => 'App Entra & autorizzazione a livello di tenant',
+        'intro' => 'Gli utenti collegano i propri servizi Microsoft 365 tramite l\'accesso Microsoft (OAuth2, solo permessi delegati). Se un criterio del tenant Microsoft impedisce agli utenti di dare il consenso, un amministratore Entra può concedere qui i permessi una sola volta per l\'intera organizzazione.',
+        'consent' => 'Concedi per l\'organizzazione (admin consent)',
+        'consent_hint' => 'Apre l\'accesso Microsoft; è richiesto un ruolo di amministratore Entra nel tenant di destinazione. Il consenso copre calendario, invio di e-mail, contatti, attività e ricezione documenti.',
+        'redirects' => 'URI di reindirizzamento per una registrazione app propria',
+        'redirects_hint' => 'Un\'app Entra del cliente (impostazioni del plugin) deve registrare esattamente questi URI come reindirizzamenti di tipo «Web»:',
+        'redirect_calendar' => 'Calendario',
+        'redirect_mail' => 'Invio e-mail',
+        'redirect_contacts' => 'Contatti',
+        'redirect_tasks' => 'Attività (To Do)',
+        'redirect_intake' => 'Ricezione documenti',
+        'redirect_adminconsent' => 'Admin consent',
+        'redirect_backup' => 'Destinazione di backup (solo app dell\'istanza)',
+    ],
+
     'flash' => [
         'not_configured' => 'Microsoft 365 non è configurato (MSGRAPH_CLIENT_ID/SECRET mancanti).',
         'state_invalid' => 'Il flusso OAuth è scaduto o non è valido. Riprovare.',
@@ -93,5 +110,7 @@ return [
         'calendar_saved' => 'Calendario di destinazione salvato.',
         'calendar_invalid' => 'Il calendario selezionato non è stato trovato.',
         'publish_done' => 'Pubblicazione avviata.',
+        'admin_consent_granted' => 'Autorizzazione a livello di tenant concessa — gli utenti possono ora collegarsi senza richiesta di consenso individuale.',
+        'admin_consent_failed' => 'Admin consent non concesso (:error).',
     ],
 ];

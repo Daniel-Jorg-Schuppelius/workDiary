@@ -69,10 +69,48 @@
 
     @if ($plugin->settingsView() !== null)
         @include($plugin->settingsView(), ['plugin' => $plugin, 'setting' => $setting, 'schema' => $schema])
-    @else
+    @elseif ($schema !== [])
         @foreach ($schema as $field)
             @include('admin.plugins._field', ['field' => $field, 'setting' => $setting])
         @endforeach
+    @else
+        {{-- Kein Schema/keine View: Konfigurationsorte verlinken statt leerem Dialog
+             (Admin-Panel bzw. Intake-/Backup-Seiten je Capability, Gate-gefiltert). --}}
+        @php
+            $configLinks = [];
+            $panel = $plugin->adminPanel();
+            if ($panel !== null && ! empty($panel['route']) && $panel['route'] !== 'admin.plugins.edit') {
+                $routeDef = \Illuminate\Support\Facades\Route::getRoutes()->getByName((string) $panel['route']);
+                if ($routeDef !== null) {
+                    $params = count($routeDef->parameterNames()) > 0 ? [$plugin->id()] : [];
+                    $configLinks[] = ['url' => route((string) $panel['route'], $params), 'label' => $panel['label'] ?? $plugin->name(), 'icon' => $panel['icon'] ?? 'settings'];
+                }
+            }
+            $caps = $plugin->capabilities();
+            if (in_array(\App\Plugins\Contracts\PluginCapability::DocumentIntake, $caps, true)
+                && auth()->user()?->can('viewAny', \App\Models\CloudIntake\CloudDocumentConnection::class)) {
+                $configLinks[] = ['url' => route('admin.cloud-intake.index'), 'label' => __('cloud_intake.title.index'), 'icon' => 'cloud_download'];
+            }
+            if (in_array(\App\Plugins\Contracts\PluginCapability::BackupTarget, $caps, true)
+                && auth()->user()?->can('viewAny', \App\Models\Backup\BackupTargetConnection::class)) {
+                $configLinks[] = ['url' => route('admin.backup-targets.index'), 'label' => __('backup_targets.title'), 'icon' => 'cloud_upload'];
+            }
+            $configLinks = collect($configLinks)->unique('url')->all();
+        @endphp
+        <div class="alert alert-info text-sm">
+            <span class="material-symbols-outlined" aria-hidden="true">info</span>
+            <span>{{ $configLinks === [] ? __('Dieses Plugin hat keine dialogbasierten Einstellungen.') : __('Dieses Plugin wird auf eigenen Seiten konfiguriert:') }}</span>
+        </div>
+        @if ($configLinks !== [])
+            <div class="flex flex-wrap gap-2">
+                @foreach ($configLinks as $link)
+                    <a href="{{ $link['url'] }}" class="btn btn-sm btn-outline">
+                        <span class="material-symbols-outlined" aria-hidden="true">{{ $link['icon'] }}</span>
+                        {{ $link['label'] }}
+                    </a>
+                @endforeach
+            </div>
+        @endif
     @endif
 
     @if ($state && $state->isAutoDisabled())

@@ -82,6 +82,23 @@ return [
         'two_way_hint' => 'Delta-Rückimport des Ziel-Kalenders — neue externe Termine, externe Änderungen an publizierten und Löschungen landen als Fälle in der Integrations-Inbox (nie blinde Anlage).',
     ],
 
+    // Entra-App & tenantweite Freigabe (v2-Admin-Consent).
+    'entra' => [
+        'heading' => 'Entra-App & tenantweite Freigabe',
+        'intro' => 'Benutzer verbinden ihre Microsoft-365-Dienste per Microsoft-Anmeldung (OAuth2, nur delegierte Berechtigungen). Verhindert eine Richtlinie des Microsoft-Tenants die Einwilligung durch Benutzer, kann ein Entra-Administrator die Berechtigungen hier einmalig für die gesamte Organisation freigeben.',
+        'consent' => 'Für Organisation freigeben (Admin-Consent)',
+        'consent_hint' => 'Öffnet die Microsoft-Anmeldung; erforderlich ist eine Entra-Administratorrolle im Ziel-Tenant. Die Freigabe umfasst Kalender, Mail-Versand, Kontakte, Aufgaben und Dokumenteingang.',
+        'redirects' => 'Redirect-URIs für eine eigene App-Registrierung',
+        'redirects_hint' => 'Eine kundeneigene Entra-App (Plugin-Einstellungen) muss genau diese URIs als Redirects vom Typ „Web" registrieren:',
+        'redirect_calendar' => 'Kalender',
+        'redirect_mail' => 'Mail-Versand',
+        'redirect_contacts' => 'Kontakte',
+        'redirect_tasks' => 'Aufgaben (To Do)',
+        'redirect_intake' => 'Dokumenteingang',
+        'redirect_adminconsent' => 'Admin-Consent',
+        'redirect_backup' => 'Backupziel (nur Instanz-App)',
+    ],
+
     'flash' => [
         'not_configured' => 'Microsoft 365 ist nicht konfiguriert (MSGRAPH_CLIENT_ID/SECRET fehlen).',
         'state_invalid' => 'Der OAuth-Vorgang ist abgelaufen oder ungültig. Bitte erneut starten.',
@@ -93,5 +110,7 @@ return [
         'calendar_saved' => 'Ziel-Kalender gespeichert.',
         'calendar_invalid' => 'Der gewählte Kalender wurde nicht gefunden.',
         'publish_done' => 'Publish gestartet.',
+        'admin_consent_granted' => 'Tenantweite Freigabe erteilt — Benutzer können jetzt ohne eigene Einwilligungsabfrage verbinden.',
+        'admin_consent_failed' => 'Admin-Consent nicht erteilt (:error).',
     ],
 ];

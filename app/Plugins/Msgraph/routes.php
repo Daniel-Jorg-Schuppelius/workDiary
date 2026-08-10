@@ -25,6 +25,12 @@ Route::middleware(['web', 'auth'])->group(function (): void {
     Route::get('admin/msgraph/oauth/callback', [MsgraphAdminController::class, 'oauthCallback'])->name('admin.msgraph.oauth.callback');
     Route::post('admin/msgraph/disconnect', [MsgraphAdminController::class, 'disconnect'])->name('admin.msgraph.disconnect');
 
+    // Tenantweite Freigabe (v2-Admin-Consent): kein Token-Tausch, Callback
+    // wertet nur das Ergebnis aus; die Callback-URI muss in der Entra-App
+    // als Redirect registriert sein.
+    Route::post('admin/msgraph/adminconsent/start', [MsgraphAdminController::class, 'startAdminConsent'])->name('admin.msgraph.adminconsent.start');
+    Route::get('admin/msgraph/adminconsent/callback', [MsgraphAdminController::class, 'adminConsentCallback'])->name('admin.msgraph.adminconsent.callback');
+
     // Ziel-Kalender + manuelles Publish (auditierte Admin-Vorgänge).
     Route::post('admin/msgraph/calendar', [MsgraphAdminController::class, 'selectCalendar'])->name('admin.msgraph.calendar.store');
     Route::post('admin/msgraph/publish', [MsgraphAdminController::class, 'publish'])->name('admin.msgraph.publish');

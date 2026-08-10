@@ -14,7 +14,7 @@ use App\Models\MsgraphConnection;
 use App\Plugins\Msgraph\Api\{MsgraphCalendarClient, MsgraphOAuth};
 use App\Plugins\Msgraph\MsgraphConfig;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
-use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
+use App\Plugins\Support\{ConnectionOAuthController, OAuthStateHandshake, PluginOAuthGrant};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
@@ -121,6 +121,55 @@ class MsgraphAdminController extends ConnectionOAuthController {
 
     protected function disconnectedStatus(): string {
         return MsgraphConnection::STATUS_DISCONNECTED;
+    }
+
+    // ── Tenantweite Freigabe (v2-Admin-Consent) ──
+
+    /**
+     * Leitet zum v2-Admin-Consent-Endpunkt: ein Entra-Administrator genehmigt
+     * alle org-gebundenen Scope-Sätze einmalig für den gesamten Tenant —
+     * nötig, wenn eine Tenant-Richtlinie die Einwilligung durch Benutzer
+     * verbietet. State wie im OAuth-Flow: einmalig, org- und nutzergebunden.
+     */
+    public function startAdminConsent(): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        if (! MsgraphConfig::isConfigured()) {
+            return back()->with('error', __('msgraph.flash.not_configured'));
+        }
+
+        ['state' => $state] = $this->adminConsentHandshake()
+            ->start((int) $organization->id, (int) $admin->id, withPkce: false);
+
+        return redirect()->away(MsgraphConfig::adminConsentUrl(route('admin.msgraph.adminconsent.callback'), $state));
+    }
+
+    /** Rückkehr vom Admin-Consent: kein Token-Tausch — nur Ergebnis auswerten und auditieren. */
+    public function adminConsentCallback(Request $request): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        $payload = $this->adminConsentHandshake()
+            ->redeem((string) $request->query('state', ''), (int) $organization->id, (int) $admin->id);
+        if ($payload === null) {
+            return $this->backToOverview()->with('error', __('msgraph.flash.state_invalid'));
+        }
+
+        // Auch Fehlerantworten tragen admin_consent=True — error zuerst; nur
+        // der Fehlercode, nie error_description (enthält Trace-/Correlation-IDs).
+        $error = (string) $request->query('error', '');
+        if ($error !== '' || (string) $request->query('admin_consent', '') !== 'True') {
+            return $this->backToOverview()->with('error', __('msgraph.flash.admin_consent_failed', ['error' => $error !== '' ? $error : 'declined']));
+        }
+
+        $organization->audit('msgraph.admin_consent_granted', ['by_user_id' => (int) $admin->id]);
+
+        return $this->backToOverview()->with('success', __('msgraph.flash.admin_consent_granted'));
+    }
+
+    private function adminConsentHandshake(): OAuthStateHandshake {
+        return new OAuthStateHandshake('msgraph-adminconsent-state');
     }
 
     /** Wählt den Ziel-Kalender (Name wird serverseitig aus der Kalenderliste aufgelöst). */

@@ -86,6 +86,41 @@ final class PersistedTestDatabase {
         }
     }
 
+    /** Max. gleichzeitige migrate:fresh-Neuaufbauten über alle Worker. */
+    private const REBUILD_SLOTS = 4;
+
+    /**
+     * Drosselt parallele Neuaufbauten: 16 gleichzeitige Dump-Loads + ALTERs
+     * haben InnoDB in unkillbare Commit-Zustände gefahren (WSL2). Blockiert,
+     * bis einer der Slots frei ist; Handle an releaseRebuildSlot() geben.
+     *
+     * @return resource|null null, wenn kein Lock möglich ist (dann ungedrosselt)
+     */
+    public static function acquireRebuildSlot() {
+        $base = sys_get_temp_dir() . '/workdiary-test-rebuild-slot-';
+        while (true) {
+            for ($slot = 0; $slot < self::REBUILD_SLOTS; $slot++) {
+                $handle = @fopen($base . $slot . '.lock', 'c');
+                if ($handle === false) {
+                    return null;
+                }
+                if (flock($handle, LOCK_EX | LOCK_NB)) {
+                    return $handle;
+                }
+                fclose($handle);
+            }
+            usleep(200_000);
+        }
+    }
+
+    /** @param resource|null $handle */
+    public static function releaseRebuildSlot($handle): void {
+        if (is_resource($handle)) {
+            flock($handle, LOCK_UN);
+            fclose($handle);
+        }
+    }
+
     private static function pdo(): PDO {
         $database = self::databaseName();
         $socket = self::envValue('DB_SOCKET');

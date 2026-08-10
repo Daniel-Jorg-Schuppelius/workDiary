@@ -14,8 +14,10 @@ use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Models\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry, MsgraphTaskConnection, MsgraphTaskListLink, Project, Task, User};
 use App\Plugins\Contracts\{PluginCapability, TaskSyncer};
 use App\Plugins\Msgraph\MsgraphPlugin;
+use App\Plugins\Msgraph\Observers\MsgraphTodoTaskObserver;
 use App\Plugins\Msgraph\Services\MsgraphOutboxDispatcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\FakePluginHttp;
@@ -178,13 +180,15 @@ final class MsgraphTodoSyncTest extends TestCase {
         $project = Project::factory()->create(['organization_id' => $this->organization->id]);
         $this->link($project, ['sync_mode' => MsgraphTaskListLink::MODE_WORKDIARY_TO_TODO]);
 
-        $task = Task::query()->create([
+        // Ohne Live-Observer anlegen — dieser Test prüft den BATCH-Export des
+        // Sync-Laufs; der Observer-Pfad ist in test_local_changes_… abgedeckt.
+        $task = MsgraphTodoTaskObserver::suppressed(fn (): Task => Task::query()->create([
             'organization_id' => $this->organization->id,
             'project_id' => $project->id,
             'title' => 'Angebot schreiben',
             'status' => TaskStatus::Open->value,
             'priority' => TaskPriority::Urgent->value,
-        ]);
+        ]));
 
         $fake = FakePluginHttp::fake([
             'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks' => FakePluginHttp::response(['id' => 'todo-neu'], 201),
@@ -204,8 +208,9 @@ final class MsgraphTodoSyncTest extends TestCase {
         });
         $this->assertDatabaseHas('external_references', ['external_id' => 'todo-neu', 'referenceable_id' => $task->id]);
 
-        // Lokale Änderung → PATCH statt Neuanlage.
-        $task->forceFill(['title' => 'Angebot schreiben und senden'])->save();
+        // Lokale Änderung → PATCH statt Neuanlage (Observer wieder unterdrückt,
+        // der Batch-Lauf soll die Änderung übertragen).
+        MsgraphTodoTaskObserver::suppressed(fn () => $task->forceFill(['title' => 'Angebot schreiben und senden'])->save());
         $patch = FakePluginHttp::fake([
             'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/todo-neu' => FakePluginHttp::response(['id' => 'todo-neu']),
         ]);
@@ -294,6 +299,10 @@ final class MsgraphTodoSyncTest extends TestCase {
         $this->link($project, ['sync_mode' => MsgraphTaskListLink::MODE_WORKDIARY_TO_TODO]);
 
         // Anlage → todo-task.create in der Outbox (Observer enqueued nur).
+        // Queue::fake hält die Sync-Queue an — sonst würde der Delivery-Job
+        // sofort zustellen, bevor der Test den HTTP-Fake registriert hat;
+        // die Zustellung erfolgt unten bewusst manuell (Todoist-Muster).
+        Queue::fake();
         $task = Task::query()->create([
             'organization_id' => $this->organization->id,
             'project_id' => $project->id,

@@ -82,6 +82,23 @@ return [
         'two_way_hint' => 'Import delta du calendrier cible — nouveaux événements externes, modifications externes et suppressions deviennent des cas de la boîte d’intégration (jamais de création aveugle).',
     ],
 
+    // Application Entra & consentement à l'échelle du tenant (admin consent v2).
+    'entra' => [
+        'heading' => 'Application Entra & consentement à l\'échelle du tenant',
+        'intro' => 'Les utilisateurs connectent leurs services Microsoft 365 via la connexion Microsoft (OAuth2, permissions déléguées uniquement). Si une stratégie du tenant Microsoft empêche les utilisateurs de consentir, un administrateur Entra peut accorder ici les permissions une seule fois pour toute l\'organisation.',
+        'consent' => 'Accorder pour l\'organisation (admin consent)',
+        'consent_hint' => 'Ouvre la connexion Microsoft ; un rôle d\'administrateur Entra dans le tenant cible est requis. Le consentement couvre le calendrier, l\'envoi d\'e-mails, les contacts, les tâches et la réception de documents.',
+        'redirects' => 'URI de redirection pour une inscription d\'application propre',
+        'redirects_hint' => 'Une application Entra appartenant au client (paramètres du plugin) doit enregistrer exactement ces URI comme redirections de type « Web » :',
+        'redirect_calendar' => 'Calendrier',
+        'redirect_mail' => 'Envoi d\'e-mails',
+        'redirect_contacts' => 'Contacts',
+        'redirect_tasks' => 'Tâches (To Do)',
+        'redirect_intake' => 'Réception de documents',
+        'redirect_adminconsent' => 'Admin consent',
+        'redirect_backup' => 'Cible de sauvegarde (application d\'instance uniquement)',
+    ],
+
     'flash' => [
         'not_configured' => 'Microsoft 365 n\'est pas configuré (MSGRAPH_CLIENT_ID/SECRET manquants).',
         'state_invalid' => 'Le flux OAuth a expiré ou est invalide. Veuillez recommencer.',
@@ -93,5 +110,7 @@ return [
         'calendar_saved' => 'Calendrier cible enregistré.',
         'calendar_invalid' => 'Le calendrier sélectionné est introuvable.',
         'publish_done' => 'Publication lancée.',
+        'admin_consent_granted' => 'Consentement à l\'échelle du tenant accordé — les utilisateurs peuvent désormais se connecter sans demande de consentement individuelle.',
+        'admin_consent_failed' => 'Admin consent non accordé (:error).',
     ],
 ];

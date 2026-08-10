@@ -9769,5 +9769,7 @@
     "Ideal": "Ideal",
     "Vorjahr": "Año anterior",
     "Zweitwert": "Valor secundario",
-    "… Benutzer auswählen": "… seleccionar usuario"
+    "… Benutzer auswählen": "… seleccionar usuario",
+    "Dieses Plugin wird auf eigenen Seiten konfiguriert:": "Este plugin se configura en páginas propias:",
+    "Dieses Plugin hat keine dialogbasierten Einstellungen.": "Este plugin no tiene ajustes en este diálogo."
 }

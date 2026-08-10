@@ -82,6 +82,23 @@ return [
         'two_way_hint' => 'Delta import of the target calendar — new external events, external edits to published ones and deletions become integration inbox cases (never blind creation).',
     ],
 
+    // Entra app & tenant-wide grant (v2 admin consent).
+    'entra' => [
+        'heading' => 'Entra app & tenant-wide grant',
+        'intro' => 'Users connect their Microsoft 365 services through the Microsoft sign-in (OAuth2, delegated permissions only). If a Microsoft tenant policy prevents users from consenting, an Entra administrator can grant the permissions here once for the entire organization.',
+        'consent' => 'Grant for organization (admin consent)',
+        'consent_hint' => 'Opens the Microsoft sign-in; an Entra administrator role in the target tenant is required. The grant covers calendar, mail sending, contacts, tasks and document intake.',
+        'redirects' => 'Redirect URIs for a custom app registration',
+        'redirects_hint' => 'A customer-owned Entra app (plugin settings) must register exactly these URIs as redirects of type "Web":',
+        'redirect_calendar' => 'Calendar',
+        'redirect_mail' => 'Mail sending',
+        'redirect_contacts' => 'Contacts',
+        'redirect_tasks' => 'Tasks (To Do)',
+        'redirect_intake' => 'Document intake',
+        'redirect_adminconsent' => 'Admin consent',
+        'redirect_backup' => 'Backup target (instance app only)',
+    ],
+
     'flash' => [
         'not_configured' => 'Microsoft 365 is not configured (MSGRAPH_CLIENT_ID/SECRET missing).',
         'state_invalid' => 'The OAuth flow has expired or is invalid. Please start again.',
@@ -93,5 +110,7 @@ return [
         'calendar_saved' => 'Target calendar saved.',
         'calendar_invalid' => 'The selected calendar was not found.',
         'publish_done' => 'Publish started.',
+        'admin_consent_granted' => 'Tenant-wide grant issued — users can now connect without an individual consent prompt.',
+        'admin_consent_failed' => 'Admin consent was not granted (:error).',
     ],
 ];
