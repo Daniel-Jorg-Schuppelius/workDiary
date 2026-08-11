@@ -97,10 +97,9 @@ return [
 
         'failover' => [
             'transport' => 'failover',
-            'mailers' => [
-                'smtp',
-                'log',
-            ],
+            // Kette per ENV steuerbar — Empfehlung mit Graph-Versand (Feature 102):
+            // MAIL_MAILER=failover + MAIL_FAILOVER_MAILERS=msgraph,smtp,log
+            'mailers' => array_map('trim', explode(',', (string) env('MAIL_FAILOVER_MAILERS', 'smtp,log'))),
             'retry_after' => 60,
         ],
 

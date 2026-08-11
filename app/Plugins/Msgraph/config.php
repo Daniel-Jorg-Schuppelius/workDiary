@@ -29,7 +29,9 @@ return [
     'api_base' => env('MSGRAPH_API_BASE', 'https://graph.microsoft.com/v1.0'),
     'authorize_url' => env('MSGRAPH_AUTHORIZE_URL', 'https://login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize'),
     'token_url' => env('MSGRAPH_TOKEN_URL', 'https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token'),
-    'scopes' => 'offline_access Calendars.ReadWrite',
+    // Kalender-Grant; für Teams-Presence (MVP-506) um
+    // 'Presence.Read.All User.ReadBasic.All' erweitern + Verbindung neu autorisieren.
+    'scopes' => env('MSGRAPH_SCOPES', 'offline_access Calendars.ReadWrite'),
     // Cloud-Dokumenteingang (Feature 080): eigene lesende Verbindung, getrennt vom Kalender.
     // Files.Read.All (eigene + geteilte Drives) + Sites.Read.All (SharePoint); engere Scopes = Enterprise-Ausbau.
     'intake_scopes' => env('MSGRAPH_INTAKE_SCOPES', 'offline_access Files.Read.All Sites.Read.All'),

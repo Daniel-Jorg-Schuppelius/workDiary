@@ -95,6 +95,13 @@ else
     echo "  ⚠ Kein LICENSE_PUBLIC_KEY gefunden (weder storage/license-keys.env noch .env) – Sealing übersprungen."
 fi
 
+echo "→ Integritäts-Baseline neu einfrieren (MVP-439)"
+# Nach jedem Deploy ist der Code-Stand ein anderer — ohne frische Baseline
+# meldet der nächtliche integrity:verify dauerhaft Exit 2 (MissingBaseline)
+# bzw. Abweichungen. Der Freeze verankert den soeben deployten Stand.
+# --yes: nicht-interaktiv eine vorhandene Baseline überschreiben.
+php artisan integrity:freeze --yes || true
+
 echo "→ Kontrolle"
 php artisan license:show || true
 
