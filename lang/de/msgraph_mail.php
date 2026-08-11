@@ -31,5 +31,17 @@ return [
         'disconnected' => 'Mail-Versand getrennt — Zugriffstoken entfernt.',
         'no_connection' => 'Keine Microsoft-365-Mail-Verbindung hergestellt.',
         'settings_saved' => 'Mail-Einstellungen gespeichert.',
+        'test_sent' => 'Testnachricht an :to gesendet (über Microsoft Graph).',
+        'test_failed' => 'Testversand fehlgeschlagen: :error',
+        'test_no_recipient' => 'Keine Empfängeradresse — bitte eine E-Mail-Adresse angeben.',
+    ],
+
+    'test' => [
+        'subject' => ':app — Test (Microsoft 365)',
+        'body' => '<p>Diese Testnachricht wurde von :app über Microsoft Graph versendet.</p>',
+        'recipient' => 'Empfänger (optional)',
+        'recipient_placeholder' => 'Standard: verbundenes Konto',
+        'hint' => 'Sendet direkt über die Graph-Verbindung — unabhängig von MAIL_MAILER.',
+        'send' => 'Testmail senden',
     ],
 ];

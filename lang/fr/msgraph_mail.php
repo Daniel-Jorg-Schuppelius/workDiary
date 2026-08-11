@@ -31,5 +31,17 @@ return [
         'disconnected' => 'Envoi d’e-mails déconnecté — jetons d’accès supprimés.',
         'no_connection' => 'Aucune connexion mail Microsoft 365 établie.',
         'settings_saved' => 'Paramètres de messagerie enregistrés.',
+        'test_sent' => 'Message de test envoyé à :to (via Microsoft Graph).',
+        'test_failed' => 'Échec de l’envoi de test : :error',
+        'test_no_recipient' => 'Aucune adresse de destinataire — veuillez saisir une adresse e-mail.',
+    ],
+
+    'test' => [
+        'subject' => ':app — Test (Microsoft 365)',
+        'body' => '<p>Ce message de test a été envoyé par :app via Microsoft Graph.</p>',
+        'recipient' => 'Destinataire (facultatif)',
+        'recipient_placeholder' => 'Par défaut : compte connecté',
+        'hint' => 'Envoie directement via la connexion Graph — indépendamment de MAIL_MAILER.',
+        'send' => 'Envoyer un e-mail de test',
     ],
 ];

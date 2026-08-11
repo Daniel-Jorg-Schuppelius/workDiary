@@ -69,6 +69,9 @@ Route::middleware(['web', 'auth'])->group(function (): void {
     Route::get('admin/msgraph/mail/oauth/callback', [\App\Plugins\Msgraph\Http\Controllers\MsgraphMailController::class, 'oauthCallback'])->name('admin.msgraph.mail.oauth.callback');
     Route::post('admin/msgraph/mail/disconnect', [\App\Plugins\Msgraph\Http\Controllers\MsgraphMailController::class, 'disconnect'])->name('admin.msgraph.mail.disconnect');
     Route::post('admin/msgraph/mail/settings', [\App\Plugins\Msgraph\Http\Controllers\MsgraphMailController::class, 'storeSettings'])->name('admin.msgraph.mail.settings');
+    // Direkter Test-Versand über die Graph-Verbindung (umgeht MAIL_MAILER/Failover);
+    // throttle wie bei den anderen „Verbindung testen"-Routen.
+    Route::post('admin/msgraph/mail/test', [\App\Plugins\Msgraph\Http\Controllers\MsgraphMailController::class, 'sendTest'])->middleware('throttle:6,1')->name('admin.msgraph.mail.test');
 });
 
 // ── Cloud-Dokumenteingang (Feature 080, MVP-354) ────────────────────────

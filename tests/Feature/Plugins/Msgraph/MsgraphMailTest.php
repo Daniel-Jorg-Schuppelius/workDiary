@@ -242,6 +242,42 @@ final class MsgraphMailTest extends TestCase {
         $this->assertNotNull($fresh->last_error);
     }
 
+    public function test_send_test_posts_to_graph_and_defaults_to_connected_account(): void {
+        $this->connection(['account_label' => 'Max Beispiel <max@firma.example>']);
+        $fake = FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/sendMail' => FakePluginHttp::response(null, 202),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.msgraph.mail.test'))
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        // Kein eingegebener Empfänger → an das verbundene Konto selbst.
+        $fake->assertSent(function ($request): bool {
+            if (! str_contains((string) $request->getUri(), '/me/sendMail')) {
+                return false;
+            }
+            /** @var array{message: array<string, mixed>} $payload */
+            $payload = (array) json_decode((string) $request->getBody(), true);
+
+            return ($payload['message']['toRecipients'][0]['emailAddress']['address'] ?? null) === 'max@firma.example';
+        });
+        $this->assertDatabaseHas('audit_logs', ['event' => 'msgraph_mail.test_sent']);
+    }
+
+    public function test_send_test_surfaces_graph_error_as_flash(): void {
+        $this->connection(['account_label' => 'Max Beispiel <max@firma.example>']);
+        FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/sendMail' => FakePluginHttp::response(['error' => ['code' => 'ErrorSendAsDenied']], 403),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.msgraph.mail.test'), ['test_recipient' => 'ziel@example.test'])
+            ->assertRedirect()
+            ->assertSessionHas('error');
+    }
+
     public function test_large_attachment_uses_draft_upload_session_and_send(): void {
         $this->connection();
         $fake = FakePluginHttp::fake([

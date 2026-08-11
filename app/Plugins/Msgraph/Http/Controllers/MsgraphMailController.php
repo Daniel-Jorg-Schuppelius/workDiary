@@ -100,4 +100,53 @@ class MsgraphMailController extends ConnectionOAuthController {
 
         return back()->with('success', __('msgraph_mail.flash.settings_saved'));
     }
+
+    /**
+     * Sendet eine Testnachricht DIREKT über die Graph-Verbindung — unabhängig
+     * von MAIL_MAILER/Failover. Nutzt bewusst dieselben Verbindungseinstellungen
+     * (from_address, save_to_sent_items) wie der Produktivversand, damit auch
+     * ein Send-As-Problem (ErrorSendAsDenied) sofort sichtbar wird.
+     */
+    public function sendTest(Request $request): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        $connection = MsgraphMailConnection::query()->where('organization_id', $organization->id)->first();
+        if (! $connection instanceof MsgraphMailConnection) {
+            return back()->with('error', __('msgraph_mail.flash.no_connection'));
+        }
+
+        $data = $request->validate([
+            'test_recipient' => ['nullable', 'email', 'max:190'],
+        ]);
+
+        $to = trim((string) ($data['test_recipient'] ?? ''));
+        if ($to === '') {
+            // Default: an das verbundene Konto selbst (Adresse aus "Name <mail>").
+            $to = preg_match('/<([^>]+)>/', (string) $connection->account_label, $m) === 1 ? trim($m[1]) : '';
+        }
+        if ($to === '') {
+            return back()->with('error', __('msgraph_mail.flash.test_no_recipient'));
+        }
+
+        $message = [
+            'subject' => __('msgraph_mail.test.subject', ['app' => config('app.name')]),
+            'body' => ['contentType' => 'HTML', 'content' => __('msgraph_mail.test.body', ['app' => config('app.name')])],
+            'toRecipients' => [['emailAddress' => ['address' => $to]]],
+        ];
+        $from = trim((string) $connection->from_address);
+        if ($from !== '') {
+            $message['from'] = ['emailAddress' => ['address' => $from]];
+        }
+
+        try {
+            (new MsgraphMailClient($connection))->sendMail($message, (bool) $connection->save_to_sent_items);
+        } catch (Throwable $e) {
+            return back()->with('error', __('msgraph_mail.flash.test_failed', ['error' => $e->getMessage()]));
+        }
+
+        $connection->audit('msgraph_mail.test_sent', ['by_user_id' => (int) $admin->id, 'to' => $to]);
+
+        return back()->with('success', __('msgraph_mail.flash.test_sent', ['to' => $to]));
+    }
 }

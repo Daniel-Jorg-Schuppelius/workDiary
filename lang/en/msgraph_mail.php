@@ -31,5 +31,17 @@ return [
         'disconnected' => 'Mail sending disconnected — access tokens removed.',
         'no_connection' => 'No Microsoft 365 mail connection established.',
         'settings_saved' => 'Mail settings saved.',
+        'test_sent' => 'Test message sent to :to (via Microsoft Graph).',
+        'test_failed' => 'Test send failed: :error',
+        'test_no_recipient' => 'No recipient address — please enter an email address.',
+    ],
+
+    'test' => [
+        'subject' => ':app — Test (Microsoft 365)',
+        'body' => '<p>This test message was sent by :app via Microsoft Graph.</p>',
+        'recipient' => 'Recipient (optional)',
+        'recipient_placeholder' => 'Default: connected account',
+        'hint' => 'Sends directly via the Graph connection — independent of MAIL_MAILER.',
+        'send' => 'Send test email',
     ],
 ];

@@ -31,5 +31,17 @@ return [
         'disconnected' => 'Invio e-mail disconnesso — token di accesso rimossi.',
         'no_connection' => 'Nessuna connessione mail Microsoft 365 stabilita.',
         'settings_saved' => 'Impostazioni e-mail salvate.',
+        'test_sent' => 'Messaggio di prova inviato a :to (tramite Microsoft Graph).',
+        'test_failed' => 'Invio di prova non riuscito: :error',
+        'test_no_recipient' => 'Nessun indirizzo destinatario — inserire un indirizzo e-mail.',
+    ],
+
+    'test' => [
+        'subject' => ':app — Test (Microsoft 365)',
+        'body' => '<p>Questo messaggio di prova è stato inviato da :app tramite Microsoft Graph.</p>',
+        'recipient' => 'Destinatario (facoltativo)',
+        'recipient_placeholder' => 'Predefinito: account connesso',
+        'hint' => 'Invia direttamente tramite la connessione Graph — indipendentemente da MAIL_MAILER.',
+        'send' => 'Invia e-mail di prova',
     ],
 ];

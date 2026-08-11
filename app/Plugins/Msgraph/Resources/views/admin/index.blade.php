@@ -99,6 +99,18 @@
                     </div>
                 </form>
 
+                <form method="POST" action="{{ route('admin.msgraph.mail.test') }}" class="flex flex-wrap items-end gap-2 border-t border-base-300 pt-3">
+                    @csrf
+                    <label class="form-control max-w-xs grow">
+                        <span class="label-text">{{ __('msgraph_mail.test.recipient') }}</span>
+                        <input type="email" name="test_recipient" maxlength="190"
+                               class="input input-sm input-bordered"
+                               placeholder="{{ __('msgraph_mail.test.recipient_placeholder') }}">
+                        <span class="label-text-alt text-base-content/60">{{ __('msgraph_mail.test.hint') }}</span>
+                    </label>
+                    <button type="submit" class="btn btn-sm btn-outline">{{ __('msgraph_mail.test.send') }}</button>
+                </form>
+
                 <form method="POST" action="{{ route('admin.msgraph.mail.disconnect') }}">
                     @csrf
                     <button type="submit" class="btn btn-sm btn-ghost">{{ __('msgraph_mail.disconnect') }}</button>
