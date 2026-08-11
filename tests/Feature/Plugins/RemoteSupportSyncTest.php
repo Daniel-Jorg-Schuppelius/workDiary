@@ -632,6 +632,10 @@ class RemoteSupportSyncTest extends TestCase {
         $project = Project::query()->findOrFail($entry->project_id);
         $this->assertNull($project->customer_id);
         $this->assertSame('Interne Wartung', $project->name);
+        // Interne Wartung ist nie abrechenbar — sonst landen eigene Geräte
+        // als offene billable-Zeiten in der Buchhaltungs-Arbeitsliste.
+        $this->assertFalse($project->billable);
+        $this->assertFalse($entry->billable);
         $this->assertDatabaseMissing('remote_pending_sessions', ['session_id' => 'tv-own-1']);
     }
 

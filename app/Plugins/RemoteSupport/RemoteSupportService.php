@@ -410,6 +410,10 @@ class RemoteSupportService {
                 'color' => (string) config('project.default_project.color', '#64748b'),
                 'status' => ProjectStatus::Active->value,
                 'is_default' => false,
+                // Eigene Geräte ohne Kunden: nie abrechenbar — sonst stehen
+                // interne Sitzungen als offene billable-Zeiten mit Betrag in
+                // der Buchhaltungs-Arbeitsliste (kundenlos ⇒ Default true).
+                'billable' => false,
             ],
         );
     }

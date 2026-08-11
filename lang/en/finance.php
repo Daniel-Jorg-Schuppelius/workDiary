@@ -373,7 +373,6 @@ return [
             'billable' => 'Billable',
             'billable_yes' => 'Billable only',
             'billable_no' => 'Non-billable only',
-            'all_times' => 'All open times',
         ],
         'outside_range' => ':count open entry lies outside the selected period.|:count open entries lie outside the selected period.',
         'outside_range_show_all' => 'Show all open times',

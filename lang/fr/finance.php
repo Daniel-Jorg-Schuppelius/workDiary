@@ -273,7 +273,6 @@ return [
             'billable' => 'Facturable',
             'billable_yes' => 'Facturables uniquement',
             'billable_no' => 'Non facturables uniquement',
-            'all_times' => 'Tous les temps ouverts',
         ],
         'outside_range' => ':count saisie ouverte se situe en dehors de la période sélectionnée.|:count saisies ouvertes se situent en dehors de la période sélectionnée.',
         'outside_range_show_all' => 'Afficher tous les temps ouverts',

@@ -106,11 +106,12 @@
                 </select>
             </x-filter-field>
 
-            {{-- Schalter: Header-Zeitraum ignorieren, komplette Arbeitsliste zeigen. --}}
-            <label class="label cursor-pointer gap-2 self-end shrink-0 pb-1">
-                <input type="checkbox" name="all" value="1" class="checkbox checkbox-sm" @checked($filters['all'])>
-                <span class="label-text text-sm">{{ __('finance.open_times.filter.all_times') }}</span>
-            </label>
+            {{-- „Alle offenen Zeiten" wird über den Außerhalb-Hinweis aktiviert
+                 (Link unten) und beim Umfiltern beibehalten; Abschalten über
+                 den Zurücksetzen-Link der Filterleiste. --}}
+            @if ($filters['all'])
+                <input type="hidden" name="all" value="1">
+            @endif
         </x-filter-bar>
 
         @if ($outsideRangeCount > 0)
@@ -171,8 +172,20 @@
             @forelse ($entries as $entry)
                 <tr class="hover">
                     <td class="whitespace-nowrap">{{ $entry->date?->format(\App\Support\Formats::date()) ?? '—' }}</td>
-                    <td class="font-medium">{{ $entry->project?->customer?->name ?? '—' }}</td>
-                    <td>{{ $entry->project?->name ?? '—' }}</td>
+                    <td class="font-medium">
+                        @if ($entry->project?->customer !== null)
+                            <a class="link link-hover" href="{{ route('customers.show', $entry->project->customer) }}">{{ $entry->project->customer->name }}</a>
+                        @else
+                            —
+                        @endif
+                    </td>
+                    <td>
+                        @if ($entry->project !== null)
+                            <a class="link link-hover" href="{{ route('projects.show', $entry->project) }}">{{ $entry->project->name }}</a>
+                        @else
+                            —
+                        @endif
+                    </td>
                     <td>{{ $entry->user?->name ?? '—' }}</td>
                     <td class="max-w-md truncate" title="{{ $entry->description }}">{{ $entry->description }}</td>
                     <td>
