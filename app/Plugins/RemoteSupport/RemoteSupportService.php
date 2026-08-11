@@ -499,7 +499,7 @@ class RemoteSupportService {
         // Beschreibung stehen.
         $startedAt = $this->applyNoteTimeShorthand($startedAt, $session);
 
-        $entry = TimeEntry::query()->create([
+        $attributes = [
             'organization_id' => $organization->id,
             'project_id' => $project->id,
             'user_id' => $userId,
@@ -508,8 +508,17 @@ class RemoteSupportService {
             'ended_at' => $session->endedAt,
             'kind' => TimeEntryKind::Work,
             'description' => $description,
-            'billable' => $billable,
-        ]);
+        ];
+        if (! $billable) {
+            // default_billable aus → importierte Sitzungen nie abrechenbar.
+            $attributes['billable'] = false;
+        }
+        // Sonst Attribut bewusst weglassen → TimeEntry-Boot erbt
+        // effectiveBillable() des Projekts (Muster MatchingTimeImportService):
+        // Sitzungen nicht abrechenbarer Kunden landen sonst als billable=true
+        // in den Offenen Zeiten.
+
+        $entry = TimeEntry::query()->create($attributes);
 
         foreach ($usedAttempts as $attemptRow) {
             $attemptRow->update([

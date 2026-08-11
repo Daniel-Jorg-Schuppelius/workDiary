@@ -105,7 +105,24 @@
                     <option value="all" @selected($filters['billable'] === 'all')>{{ __('finance.filter.all') }}</option>
                 </select>
             </x-filter-field>
+
+            {{-- Schalter: Header-Zeitraum ignorieren, komplette Arbeitsliste zeigen. --}}
+            <label class="label cursor-pointer gap-2 self-end shrink-0 pb-1">
+                <input type="checkbox" name="all" value="1" class="checkbox checkbox-sm" @checked($filters['all'])>
+                <span class="label-text text-sm">{{ __('finance.open_times.filter.all_times') }}</span>
+            </label>
         </x-filter-bar>
+
+        @if ($outsideRangeCount > 0)
+            {{-- Offene-Posten-Schutz: Altbestand außerhalb des Zeitraums nie lautlos ausblenden. --}}
+            <div class="alert text-sm">
+                <x-icon name="event_busy" />
+                <span>{{ trans_choice('finance.open_times.outside_range', $outsideRangeCount, ['count' => $outsideRangeCount]) }}</span>
+                <a href="{{ route('finance.open-times.index', array_merge(request()->query(), ['all' => 1])) }}" class="link whitespace-nowrap">
+                    {{ __('finance.open_times.outside_range_show_all') }}
+                </a>
+            </div>
+        @endif
 
         @if (count($groups) > 0)
             <details class="rounded-box border border-base-300 bg-base-100 shadow-xs">

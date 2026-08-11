@@ -395,7 +395,10 @@ return [
             'billable' => 'Abrechenbar',
             'billable_yes' => 'Nur abrechenbare',
             'billable_no' => 'Nur nicht abrechenbare',
+            'all_times' => 'Alle offenen Zeiten',
         ],
+        'outside_range' => ':count offener Eintrag liegt außerhalb des gewählten Zeitraums.|:count offene Einträge liegen außerhalb des gewählten Zeitraums.',
+        'outside_range_show_all' => 'Alle offenen Zeiten anzeigen',
         'column' => [
             'date' => 'Datum',
             'customer' => 'Kunde',

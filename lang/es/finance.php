@@ -372,7 +372,10 @@ return [
             'billable' => 'Facturable',
             'billable_yes' => 'Solo facturables',
             'billable_no' => 'Solo no facturables',
+            'all_times' => 'Todos los tiempos abiertos',
         ],
+        'outside_range' => ':count registro abierto está fuera del período seleccionado.|:count registros abiertos están fuera del período seleccionado.',
+        'outside_range_show_all' => 'Mostrar todos los tiempos abiertos',
         'column' => [
             'date' => 'Fecha',
             'customer' => 'Cliente',

@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Enums\Diary\Status;
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, DiaryEntry, Project, TimeEntry, User};
 use App\Services\Invoicing\LateTimeEntryDetector;
@@ -28,13 +29,16 @@ use Illuminate\View\View;
  * `exported` ist der kanonische Verbraucht-Flag aller Abrechnungspfade
  * (InvoiceGenerator, Kontomodus, Faktura-Übergabe).
  *
- * Zeitraum: die Liste ist bewusst zeitraum-los — nur explizite from/to-Filter
- * schränken ein, die Header-Zeitauswahl gilt hier NICHT. Sonst verschwinden
- * Kunden, deren offene Zeiten komplett vor dem gewählten Fenster liegen,
- * lautlos aus der Arbeitsliste. Die Warn-KPIs (Nachzügler, älter als 45 Tage)
- * und der Prüfhinweis ignorieren zusätzlich auch die expliziten Filter.
+ * Zeitraum: standardmäßig gilt die Header-Zeitauswahl (explizite from/to-Filter
+ * haben als Bookmark-Override Vorrang); der Schalter „Alle offenen Zeiten"
+ * hebt die Begrenzung auf. Damit Altbestand vor dem Fenster nie lautlos
+ * verschwindet, meldet ein Zähler die Treffer außerhalb des Zeitraums, und die
+ * Warn-KPIs (Nachzügler, älter als 45 Tage) sowie der Prüfhinweis bleiben
+ * grundsätzlich zeitraumunabhängig.
  */
 class OpenTimesController extends Controller {
+    use ResolvesGlobalDateRange;
+
     /** Ab diesem Alter (Tage seit Leistungsdatum) gilt ein offener Eintrag als überfällig. */
     public const STALE_AFTER_DAYS = 45;
 
@@ -66,11 +70,20 @@ class OpenTimesController extends Controller {
         // Header-Zeitraums soll sichtbar bleiben (Zweck der Arbeitsliste).
         $unranged = $this->baseQuery($filters, withDateRange: false);
 
+        $totals = $this->totals(clone $query);
+
+        // Offene-Posten-Schutz: Treffer außerhalb des Zeitraums werden gezählt
+        // gemeldet statt lautlos ausgeblendet (Link schaltet auf „Alle").
+        $outsideRangeCount = $filters['all']
+            ? 0
+            : max(0, (clone $unranged)->reorder()->count() - $totals['count']);
+
         return view('finance.open-times.index', [
             'entries' => $entries,
             'filters' => $filters,
             'hasActiveFilters' => $this->hasActiveFilters($filters),
-            'totals' => $this->totals(clone $query),
+            'totals' => $totals,
+            'outsideRangeCount' => $outsideRangeCount,
             'groups' => $this->groupTotals(clone $query),
             'lateCount' => $this->lateDetector->countLateInQuery(clone $unranged),
             'staleCount' => (clone $unranged)->reorder()
@@ -211,7 +224,7 @@ class OpenTimesController extends Controller {
     }
 
     /**
-     * @return array{customer:string, project:string, user:string, from:string, to:string, billable:string}
+     * @return array{customer:string, project:string, user:string, from:string, to:string, billable:string, all:bool}
      */
     private function filters(Request $request): array {
         $billable = (string) $request->query('billable', 'yes');
@@ -223,30 +236,42 @@ class OpenTimesController extends Controller {
             'from' => (string) $request->query('from', ''),
             'to' => (string) $request->query('to', ''),
             'billable' => in_array($billable, ['yes', 'no', 'all'], true) ? $billable : 'yes',
+            'all' => $request->boolean('all'),
         ];
     }
 
     /**
-     * @param  array{customer:string, project:string, user:string, from:string, to:string, billable:string}  $filters
+     * @param  array{customer:string, project:string, user:string, from:string, to:string, billable:string, all:bool}  $filters
      */
     private function hasActiveFilters(array $filters): bool {
         return $filters['customer'] !== '' || $filters['project'] !== '' || $filters['user'] !== ''
-            || $filters['from'] !== '' || $filters['to'] !== '' || $filters['billable'] !== 'yes';
+            || $filters['from'] !== '' || $filters['to'] !== '' || $filters['billable'] !== 'yes'
+            || $filters['all'];
     }
 
     /**
-     * Effektiver Listen-Zeitraum: nur explizite from/to-Filter (auch einseitig)
-     * schränken ein. Die Header-Zeitauswahl gilt hier bewusst nicht — eine
-     * Offene-Posten-Liste darf Altbestand nie lautlos ausblenden.
+     * Effektiver Listen-Zeitraum: der Schalter „Alle offenen Zeiten" hebt jede
+     * Begrenzung auf; explizite from/to-Filter (auch einseitig) haben als
+     * Bookmark-Override Vorrang; sonst gilt die Header-Zeitauswahl.
      *
-     * @param  array{customer:string, project:string, user:string, from:string, to:string, billable:string}  $filters
+     * @param  array{customer:string, project:string, user:string, from:string, to:string, billable:string, all:bool}  $filters
      * @return array{from: ?string, to: ?string}
      */
     private function effectiveRange(array $filters): array {
-        return [
-            'from' => $filters['from'] !== '' ? $filters['from'] : null,
-            'to' => $filters['to'] !== '' ? $filters['to'] : null,
-        ];
+        if ($filters['all']) {
+            return ['from' => null, 'to' => null];
+        }
+
+        if ($filters['from'] !== '' || $filters['to'] !== '') {
+            return [
+                'from' => $filters['from'] !== '' ? $filters['from'] : null,
+                'to' => $filters['to'] !== '' ? $filters['to'] : null,
+            ];
+        }
+
+        [$from, $to] = $this->globalDateRangeBounds();
+
+        return ['from' => $from->toDateString(), 'to' => $to->toDateString()];
     }
 
     /**
@@ -254,7 +279,7 @@ class OpenTimesController extends Controller {
      * Left-Joins nur fürs Sortieren — Einträge ohne Projekt (z. B. Verwaltung)
      * bleiben sichtbar, gerade sie rutschen sonst durch.
      *
-     * @param  array{customer:string, project:string, user:string, from:string, to:string, billable:string}  $filters
+     * @param  array{customer:string, project:string, user:string, from:string, to:string, billable:string, all:bool}  $filters
      * @return Builder<TimeEntry>
      */
     private function baseQuery(array $filters, bool $withDateRange = true): Builder {

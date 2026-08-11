@@ -132,6 +132,36 @@ class RemoteSupportSyncTest extends TestCase {
         ]);
     }
 
+    public function test_import_inherits_non_billable_from_customer(): void {
+        // default_billable=true darf nicht abrechenbare Kunden nicht
+        // übersteuern — sonst landen Fernwartungszeiten als billable=true
+        // in den Offenen Zeiten (Boot erbt effectiveBillable()).
+        $config = $this->enableTeamViewer();
+        $asset = $this->deviceAssetWithCustomer('123456789');
+        $asset->customer->update(['billable' => false]);
+
+        $this->fakeConnections([[
+            'id' => 'tv-session-nb',
+            'deviceid' => '123456789',
+            'start_date' => CarbonImmutable::parse('2026-05-26 10:00:00')->toIso8601String(),
+            'end_date' => CarbonImmutable::parse('2026-05-26 10:45:00')->toIso8601String(),
+            'username' => 'Techniker',
+        ]]);
+
+        $result = $this->service()->import(
+            $this->organization,
+            $config,
+            CarbonImmutable::parse('2026-05-25'),
+            CarbonImmutable::parse('2026-05-27'),
+        );
+
+        $this->assertSame(1, $result['created']);
+
+        $entry = TimeEntry::query()->where('project_id', $asset->customer->defaultProject()?->id)->first();
+        $this->assertNotNull($entry);
+        $this->assertFalse($entry->billable);
+    }
+
     public function test_overlapping_same_customer_time_links_session_instead_of_double_booking(): void {
         $config = $this->enableTeamViewer();
         $asset = $this->deviceAssetWithCustomer('123456789');
