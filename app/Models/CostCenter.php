@@ -18,8 +18,9 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Kostenstellen-Stammdaten (Feature 069, Flexibilitätsplan D2): kleines
  * Model mit Code/Label je Organisation. Nutzer referenzieren per
- * nullable FK + Label-Fallback; `CostCenterRule` (Zeitexport) bleibt
- * vorerst auf String und wird per Backfill migriert.
+ * nullable FK + Label-Fallback; `CostCenterRule` (Zeitexport) ist seit
+ * Migration 2026_12_05_100100 per FK angebunden (String bleibt
+ * Code-Snapshot/Fallback, siehe CostCenterRule::effectiveCode()).
  *
  * @property int $id
  * @property int $organization_id

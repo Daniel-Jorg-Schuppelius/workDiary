@@ -96,15 +96,18 @@ class {$studly}Plugin extends AbstractPlugin {
     }
 
     public function healthCheck(): PluginHealth {
-        // Einfacher Ping-Check — für mehrstufige Prüfungen (Connection-Status,
-        // differenzierte Fehlercodes) die Stufen direkt ausformulieren.
-        return PluginHealth::pingHealth(
-            ping: fn(): bool => true, // TODO: echten Verbindungscheck einsetzen
-            unreachableMessage: __('{$studly} nicht erreichbar.'),
-            configured: \$this->isEnabled(),
-            notConfiguredMessage: __('{$studly} ist nicht konfiguriert.'),
-            notConfiguredStatus: PluginHealth::STATUS_DEGRADED,
-        );
+        // Bis ein echter Verbindungscheck existiert, meldet das Plugin bewusst
+        // "degraded" (nie still grün — Konvention wie PluginDefaults::healthCheck()).
+        // Echten Check per pingHealth() verdrahten:
+        //
+        // return PluginHealth::pingHealth(
+        //     ping: fn(): bool => \$this->client()->ping(),
+        //     unreachableMessage: __('{$studly} nicht erreichbar.'),
+        //     configured: \$this->isEnabled(),
+        //     notConfiguredMessage: __('{$studly} ist nicht konfiguriert.'),
+        //     notConfiguredStatus: PluginHealth::STATUS_DEGRADED,
+        // );
+        return PluginHealth::degraded(__('Kein Healthcheck implementiert — Zustand unbestimmt.'), code: 'not_implemented');
     }
 }
 PHP;

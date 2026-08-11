@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{CostCenterRule, Team, User};
+use App\Models\{CostCenter, CostCenterRule, Team, User};
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\SqidEncoder;
 use Illuminate\Contracts\View\View;
@@ -29,7 +29,7 @@ class CostCenterRuleController extends Controller {
         Gate::authorize('viewAny', CostCenterRule::class);
 
         $rules = CostCenterRule::query()
-            ->with(['user:id,name', 'team:id,name'])
+            ->with(['user:id,name', 'team:id,name', 'costCenter:id,code,label'])
             ->orderByDesc('priority')
             ->orderBy('id')
             ->get();
@@ -47,6 +47,7 @@ class CostCenterRuleController extends Controller {
             'rule' => new CostCenterRule(['priority' => 0]),
             'users' => $this->userOptions(),
             'teams' => $this->teamOptions(),
+            'costCenters' => $this->costCenterOptions(),
         ]);
     }
 
@@ -66,6 +67,7 @@ class CostCenterRuleController extends Controller {
             'rule' => $costCenterRule,
             'users' => $this->userOptions(),
             'teams' => $this->teamOptions(),
+            'costCenters' => $this->costCenterOptions(),
         ]);
     }
 
@@ -94,13 +96,15 @@ class CostCenterRuleController extends Controller {
         $request->merge([
             'user_id' => $request->filled('user_id') ? $encoder->decode(User::class, (string) $request->input('user_id')) : null,
             'team_id' => $request->filled('team_id') ? $encoder->decode(Team::class, (string) $request->input('team_id')) : null,
+            'cost_center_id' => $request->filled('cost_center_id') ? $encoder->decode(CostCenter::class, (string) $request->input('cost_center_id')) : null,
         ]);
 
         $data = $request->validate([
             'source' => ['required', 'in:default,user,team'],
             'user_id' => ['nullable', 'integer', 'required_if:source,user', new ExistsInCurrentOrganization('users')],
             'team_id' => ['nullable', 'integer', 'required_if:source,team', new ExistsInCurrentOrganization('teams')],
-            'cost_center' => ['required', 'string', 'max:32'],
+            'cost_center_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('cost_centers')],
+            'cost_center' => ['nullable', 'string', 'max:32', 'required_without:cost_center_id'],
             'priority' => ['required', 'integer', 'min:0', 'max:1000'],
         ]);
 
@@ -109,6 +113,14 @@ class CostCenterRuleController extends Controller {
         $data['user_id'] = $source === 'user' ? $data['user_id'] : null;
         $data['team_id'] = $source === 'team' ? $data['team_id'] : null;
         unset($data['source']);
+
+        // Stammdaten-Auswahl führt: Code-Snapshot aus dem Stammsatz übernehmen
+        // (Freitext gilt nur ohne Auswahl — Fallback-Muster wie Investments).
+        if ($data['cost_center_id'] !== null) {
+            /** @var CostCenter $costCenter */
+            $costCenter = CostCenter::query()->findOrFail($data['cost_center_id']);
+            $data['cost_center'] = $costCenter->code;
+        }
 
         return $data;
     }
@@ -119,6 +131,20 @@ class CostCenterRuleController extends Controller {
             ->orderBy('name')
             ->get(['id', 'name'])
             ->map(fn (User $u): array => ['sqid' => (string) $u->sqid, 'label' => (string) $u->name])
+            ->values()
+            ->all();
+    }
+
+    /** @return array<int, array{sqid: string, label: string}> */
+    private function costCenterOptions(): array {
+        return CostCenter::query()
+            ->where('active', true)
+            ->orderBy('code')
+            ->get(['id', 'code', 'label'])
+            ->map(fn (CostCenter $c): array => [
+                'sqid' => (string) $c->sqid,
+                'label' => $c->code . ($c->label !== $c->code ? ' — ' . $c->label : ''),
+            ])
             ->values()
             ->all();
     }

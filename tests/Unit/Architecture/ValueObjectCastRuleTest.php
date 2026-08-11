@@ -56,9 +56,9 @@ class ValueObjectCastRuleTest extends TestCase {
     /** Zahlenformatierung gehört auf das VO (`->format()`), nicht auf number_format(). */
     public function test_no_number_format_on_value_object_attributes(): void {
         $attributes = $this->exclusivelyValueObjectAttributes();
-        if ($attributes === []) {
-            $this->markTestSkipped('Noch keine VO-Casts verdrahtet.');
-        }
+        // VO-Casts sind seit 2026-07 verdrahtet — eine leere Menge heißt ab jetzt
+        // "Erkennung defekt", nicht "noch nichts zu prüfen" (die Regel darf nie still unscharf werden).
+        $this->assertNotSame([], $attributes, 'VO-Cast-Erkennung liefert keine Attribute mehr — Regex/Models prüfen.');
 
         // Der Lookahead lässt `number_format($x->tax_rate->getNumericValue(), …)` durch:
         // formatiert wird dort der Skalar, nicht das Value Object.
@@ -70,9 +70,7 @@ class ValueObjectCastRuleTest extends TestCase {
     /** VO === 'string' ist immer false — auf ->getValue()/->equals() vergleichen. */
     public function test_no_string_comparison_on_value_object_attributes(): void {
         $attributes = $this->exclusivelyValueObjectAttributes();
-        if ($attributes === []) {
-            $this->markTestSkipped('Noch keine VO-Casts verdrahtet.');
-        }
+        $this->assertNotSame([], $attributes, 'VO-Cast-Erkennung liefert keine Attribute mehr — Regex/Models prüfen.');
 
         $pattern = '/->(' . implode('|', $attributes) . ')\s*[!=]==?\s*[\'"]/';
 

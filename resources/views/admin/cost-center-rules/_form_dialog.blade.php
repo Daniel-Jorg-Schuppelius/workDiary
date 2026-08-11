@@ -27,7 +27,19 @@
             @error('source')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
-        <x-input-field name="cost_center" :label="__('costcenter.field.cost_center')" required maxlength="32"
+        <div class="fieldset">
+            <label class="fieldset-label" for="ccr-cost-center">{{ __('costcenter.field.cost_center_master') }}</label>
+            <select id="ccr-cost-center" name="cost_center_id" class="select select-bordered w-full">
+                <option value="">{{ __('costcenter.field.cost_center_master_free') }}</option>
+                @foreach ($costCenters as $c)
+                    <option value="{{ $c['sqid'] }}" @selected(old('cost_center_id', $rule->costCenter?->sqid) === $c['sqid'])>{{ $c['label'] }}</option>
+                @endforeach
+            </select>
+            <p class="text-xs text-base-content/60">{{ __('costcenter.field.cost_center_master_help') }}</p>
+            @error('cost_center_id')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
+        </div>
+
+        <x-input-field name="cost_center" :label="__('costcenter.field.cost_center')" maxlength="32"
                        :value="old('cost_center', $rule->cost_center)"
                        class="font-mono"
                        placeholder="4711" />

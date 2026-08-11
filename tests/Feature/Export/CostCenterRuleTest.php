@@ -12,9 +12,9 @@ namespace Tests\Feature\Export;
 
 use App\Enums\Attendance\AttendanceStatus;
 use App\Enums\User\Permission as P;
-use App\Models\{Attendance, CostCenterRule, MonthClosure, Team, TimeExport, User};
+use App\Models\{Attendance, CostCenter, CostCenterRule, MonthClosure, Team, TimeExport, User};
 use App\Services\TimeApproval\MonthClosureService;
-use App\Services\TimeExport\TimeExportService;
+use App\Services\TimeExport\{CostCenterResolver, TimeExportService};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -160,6 +160,87 @@ class CostCenterRuleTest extends TestCase {
         $orgB = \App\Models\Organization::factory()->create();
         $foreign = CostCenterRule::query()->create(['organization_id' => $orgB->id, 'cost_center' => 'B-1', 'priority' => 0]);
         $this->get(route('admin.cost-center-rules.edit', $foreign))->assertNotFound();
+    }
+
+    public function test_admin_crud_links_master_data_and_snapshots_code(): void {
+        $admin = $this->makeAdmin();
+        $admin->givePermissionTo([P::CostCenterRuleViewAny->value, P::CostCenterRuleManage->value]);
+        $admin->unsetRelation('permissions');
+
+        $costCenter = CostCenter::query()->create([
+            'organization_id' => $this->organization->id,
+            'code' => '4200',
+            'label' => 'Fertigung',
+            'active' => true,
+        ]);
+
+        $this->actingAs($admin);
+
+        // Ohne Auswahl UND ohne Freitext → Fehler auf dem Code-Feld.
+        $this->post(route('admin.cost-center-rules.store'), [
+            'source' => 'default',
+            'priority' => 0,
+        ])->assertSessionHasErrors('cost_center');
+
+        // Stammdaten-Auswahl genügt; der Code wird als Snapshot übernommen.
+        $this->post(route('admin.cost-center-rules.store'), [
+            'source' => 'default',
+            'cost_center_id' => (string) $costCenter->sqid,
+            'priority' => 0,
+        ])->assertRedirect(route('admin.cost-center-rules.index'));
+
+        $rule = CostCenterRule::query()->firstOrFail();
+        $this->assertSame((int) $costCenter->id, (int) $rule->cost_center_id);
+        $this->assertSame('4200', $rule->cost_center);
+    }
+
+    public function test_resolver_prefers_master_data_code_and_falls_back_after_delete(): void {
+        $user = $this->makeUser();
+
+        $costCenter = CostCenter::query()->create([
+            'organization_id' => $this->organization->id,
+            'code' => '4200',
+            'label' => 'Fertigung',
+            'active' => true,
+        ]);
+        CostCenterRule::query()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $user->id,
+            'cost_center_id' => $costCenter->id,
+            'cost_center' => '4200',
+            'priority' => 0,
+        ]);
+
+        // Stammdaten führen: Umbenennung wirkt sofort auf die Auflösung.
+        $costCenter->update(['code' => '4300']);
+        $this->assertSame('4300', (new CostCenterResolver((int) $this->organization->id))->forUser((int) $user->id));
+
+        // Gelöschter Stammsatz (nullOnDelete) → String-Snapshot greift.
+        $costCenter->delete();
+        $this->assertSame('4200', (new CostCenterResolver((int) $this->organization->id))->forUser((int) $user->id));
+    }
+
+    public function test_master_data_selection_is_org_scoped(): void {
+        $admin = $this->makeAdmin();
+        $admin->givePermissionTo([P::CostCenterRuleViewAny->value, P::CostCenterRuleManage->value]);
+        $admin->unsetRelation('permissions');
+
+        $orgB = \App\Models\Organization::factory()->create();
+        $foreign = CostCenter::query()->create([
+            'organization_id' => $orgB->id,
+            'code' => 'B-4200',
+            'label' => 'Fremd',
+            'active' => true,
+        ]);
+
+        $this->actingAs($admin);
+        $this->post(route('admin.cost-center-rules.store'), [
+            'source' => 'default',
+            'cost_center_id' => (string) $foreign->sqid,
+            'priority' => 0,
+        ])->assertSessionHasErrors('cost_center_id');
+
+        $this->assertSame(0, CostCenterRule::query()->count());
     }
 
     // ── Helfer ─────────────────────────────────────────────────────────

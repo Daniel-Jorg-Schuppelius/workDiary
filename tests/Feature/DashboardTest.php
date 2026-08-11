@@ -59,7 +59,21 @@ class DashboardTest extends TestCase {
     }
 
     public function test_dashboard_shows_team_section_for_admin(): void {
-        $this->markTestSkipped('Pre-existing test infrastructure gap: Spatie team-scoped Admin role attachment for User::factory()->admin() in tests does not match the runtime team_id resolved by SetOrganizationContext. Tracked separately.');
+        $admin = User::factory()->admin()->create();
+        DiaryEntry::factory()->for($admin)->count(2)->create(['status' => 2, 'is_archived' => false]);
+        DiaryEntry::factory()->for($admin)->create(['status' => 1, 'is_archived' => false]);
+
+        $response = $this->actingAs($admin)->get(route('dashboard'));
+
+        $response->assertOk()
+            ->assertSee(__('Offen (Team)'))
+            ->assertSee(__('In Bearbeitung (Team)'))
+            ->assertSee(__('Mitarbeitende'));
+
+        $team = $response->viewData('team');
+        $this->assertSame(2, (int) $team['kpi']['open_entries']);
+        $this->assertSame(1, (int) $team['kpi']['progress_entries']);
+        $this->assertSame(1, (int) $team['kpi']['user_count']);
     }
 
     public function test_dashboard_lists_recent_comments_on_own_entries(): void {

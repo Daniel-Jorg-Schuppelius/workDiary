@@ -41,20 +41,20 @@ class CostCenterResolver {
 
         $userRule = $rules->first(fn (CostCenterRule $r): bool => (int) $r->user_id === $userId);
         if ($userRule !== null) {
-            return $userRule->cost_center;
+            return $userRule->effectiveCode();
         }
 
         $teamIds = $this->teamIdsFor($userId);
         if ($teamIds !== []) {
             $teamRule = $rules->first(fn (CostCenterRule $r): bool => $r->team_id !== null && in_array((int) $r->team_id, $teamIds, true));
             if ($teamRule !== null) {
-                return $teamRule->cost_center;
+                return $teamRule->effectiveCode();
             }
         }
 
         $default = $rules->first(fn (CostCenterRule $r): bool => $r->user_id === null && $r->team_id === null);
 
-        return $default?->cost_center;
+        return $default?->effectiveCode();
     }
 
     /**
@@ -67,6 +67,9 @@ class CostCenterResolver {
         return $this->rules ??= CostCenterRule::query()
             ->withoutGlobalScope(OrganizationScope::class)
             ->where('organization_id', $this->organizationId)
+            // Export läuft auch ohne gebundenen Org-Kontext (Queue/CLI) —
+            // Stammdaten deshalb explizit ohne Global Scopes mitladen.
+            ->with(['costCenter' => fn ($q) => $q->withoutGlobalScopes()])
             ->orderByDesc('priority')
             ->orderBy('id')
             ->get();

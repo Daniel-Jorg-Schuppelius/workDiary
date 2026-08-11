@@ -19,6 +19,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * rescoped auf User/Team): genau eine Quelle je Regel — Benutzer ODER Team;
  * beide leer = Org-Default. Präzedenz: Benutzer > Team (höchste Priorität) >
  * Default. Aufgelöst vom {@see \App\Services\TimeExport\CostCenterResolver}.
+ *
+ * `cost_center_id` verweist auf die Stammdaten (Feature 069); der String
+ * `cost_center` bleibt Code-Snapshot/Fallback (nullOnDelete). Effektiv gilt
+ * der Stammdaten-Code, siehe {@see self::effectiveCode()}.
+ *
+ * @property int|null $cost_center_id
+ * @property string $cost_center
+ * @property-read CostCenter|null $costCenter
  */
 class CostCenterRule extends Model {
     use Auditable;
@@ -29,6 +37,7 @@ class CostCenterRule extends Model {
         'organization_id',
         'user_id',
         'team_id',
+        'cost_center_id',
         'cost_center',
         'priority',
     ];
@@ -46,5 +55,19 @@ class CostCenterRule extends Model {
     /** @return BelongsTo<Team, $this> */
     public function team(): BelongsTo {
         return $this->belongsTo(Team::class);
+    }
+
+    /** @return BelongsTo<CostCenter, $this> */
+    public function costCenter(): BelongsTo {
+        return $this->belongsTo(CostCenter::class);
+    }
+
+    /**
+     * Exportierter Kostenstellen-Code: Stammdaten führen (Umbenennung wirkt
+     * sofort auf künftige Exporte), der String-Snapshot deckt Regeln ohne
+     * bzw. mit gelöschtem Stammsatz.
+     */
+    public function effectiveCode(): string {
+        return $this->costCenter->code ?? $this->cost_center;
     }
 }

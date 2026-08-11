@@ -62,6 +62,26 @@ class IntegrationInboxTest extends TestCase {
         $this->actingAs($this->admin)->get(route('admin.integration.inbox'))->assertOk();
     }
 
+    public function test_target_search_filters_assign_targets(): void {
+        $this->item();
+        Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Alpha GmbH']);
+        Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Beta AG']);
+
+        $response = $this->actingAs($this->admin)
+            ->get(route('admin.integration.inbox', ['target_search' => 'Alpha']))
+            ->assertOk();
+
+        $targets = $response->viewData('assignTargets')[Customer::class];
+        $this->assertContains('Alpha GmbH', $targets);
+        $this->assertNotContains('Beta AG', $targets);
+
+        // Ohne Suchbegriff bleiben beide wählbar; kein Kürzungs-Hinweis nötig.
+        $full = $this->actingAs($this->admin)
+            ->get(route('admin.integration.inbox'))
+            ->assertOk();
+        $this->assertSame([], $full->viewData('assignTargetsTruncated'));
+    }
+
     public function test_index_shows_plugin_tabs(): void {
         $this->item();
         $this->item(['plugin_id' => 'fritzbox', 'dedupe_key' => 'client:fb-1']);

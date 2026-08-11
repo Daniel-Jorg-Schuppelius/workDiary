@@ -48,6 +48,12 @@
                     <option value="{{ $type }}" @selected($filters['target'] === $type)>{{ $label }}</option>
                 @endforeach
             </select>
+            {{-- Grenzt die „Zuordnen"-Auswahllisten serverseitig ein (Enter lädt
+                 neu) — nötig, sobald ein Ziel-Typ die Options-Obergrenze reißt. --}}
+            <input type="search" name="target_search" maxlength="190"
+                   value="{{ $filters['target_search'] }}"
+                   placeholder="{{ __('Zuordnungs-Auswahl suchen …') }}"
+                   class="input input-sm input-bordered w-44">
         </form>
     </x-slot:actions>
 
@@ -64,6 +70,7 @@
                 'status' => $filters['status'] !== IntegrationInboxItem::STATUS_OPEN ? $filters['status'] : null,
                 'case' => $filters['case'] !== 'all' ? $filters['case'] : null,
                 'target' => $filters['target'] !== 'all' ? $filters['target'] : null,
+                'target_search' => $filters['target_search'] !== '' ? $filters['target_search'] : null,
             ], fn(?string $v): bool => $v !== null && $v !== '');
         @endphp
         {{-- shrink-0: die Page-Shell ist eine höhenbegrenzte Flex-Spalte —
@@ -83,6 +90,12 @@
                     @endif
                 </a>
             @endforeach
+        </div>
+    @endif
+
+    @if (($assignTargetsTruncated ?? []) !== [])
+        <div class="alert alert-warning mb-4 text-sm">
+            {{ __('Einige Zuordnungslisten sind auf :max Einträge gekürzt — das Suchfeld oben rechts grenzt die Auswahl ein.', ['max' => 1000]) }}
         </div>
     @endif
 

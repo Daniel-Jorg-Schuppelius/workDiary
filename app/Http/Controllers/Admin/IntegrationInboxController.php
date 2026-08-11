@@ -27,6 +27,9 @@ use Illuminate\View\View;
  * Entscheidungen aus. Siehe ../WorkDiary-Architecture/features/053.
  */
 class IntegrationInboxController extends Controller {
+    /** Obergrenze je Ziel-Typ in der „Zuordnen"-Auswahl (darüber: Suchfeld). */
+    private const ASSIGN_TARGET_LIMIT = 1000;
+
     public function index(Request $request, MatchProfileRegistry $registry, InboxGroupBookerRegistry $bookers, \App\Plugins\PluginManager $pluginManager): View {
         $user = $this->authorizeBilling();
         $organization = $this->organizationOf($user);
@@ -35,6 +38,7 @@ class IntegrationInboxController extends Controller {
         $caseType = (string) $request->input('case', 'all');
         $plugin = (string) $request->input('plugin', 'all');
         $target = (string) $request->input('target', 'all');
+        $targetSearch = trim((string) $request->query('target_search', ''));
 
         // Gruppierte Zeit-Import-Einträge werden separat als Gruppen dargestellt;
         // die per-Eintrag-Liste zeigt nur ungruppierte Items.
@@ -83,15 +87,21 @@ class IntegrationInboxController extends Controller {
             }
         }
 
-        $assignTargets = $this->buildAssignTargets($user, $registry);
+        [$assignTargets, $assignTargetsTruncated] = $this->buildAssignTargets($user, $registry, $targetSearch);
         // Asset-Optionen für den Fernwartungs-Form-Typ „asset" (Geräte-Bindung).
         if ($groups->contains(fn(array $g): bool => ($g['form'] ?? null) === 'asset')) {
-            $assignTargets[\App\Models\Asset::class] = \App\Models\Asset::query()
+            $assetRows = \App\Models\Asset::query()
                 ->withoutGlobalScopes()
                 ->where('organization_id', $user->organization_id)
+                ->when($targetSearch !== '', fn($q) => $q->whereLikeEscaped('name', $targetSearch))
                 ->orderBy('name')
-                ->limit(1000)
-                ->get(['id', 'name'])
+                ->limit(self::ASSIGN_TARGET_LIMIT + 1)
+                ->get(['id', 'name']);
+            if ($assetRows->count() > self::ASSIGN_TARGET_LIMIT) {
+                $assignTargetsTruncated[\App\Models\Asset::class] = true;
+                $assetRows = $assetRows->take(self::ASSIGN_TARGET_LIMIT);
+            }
+            $assignTargets[\App\Models\Asset::class] = $assetRows
                 ->mapWithKeys(fn(\App\Models\Asset $a): array => [$a->getRouteKey() => (string) $a->name])
                 ->all();
         }
@@ -119,7 +129,8 @@ class IntegrationInboxController extends Controller {
             'groups' => $groups,
             'projects' => $this->projectOptions($user),
             'foreignCustomers' => $foreignCustomers,
-            'filters' => ['status' => $status, 'case' => $caseType, 'plugin' => $plugin, 'target' => $target],
+            'filters' => ['status' => $status, 'case' => $caseType, 'plugin' => $plugin, 'target' => $target, 'target_search' => $targetSearch],
+            'assignTargetsTruncated' => $assignTargetsTruncated,
             'plugins' => $plugins,
             'pluginNames' => $pluginNames,
             'pluginOpenCounts' => $pluginOpenCounts,
@@ -176,13 +187,15 @@ class IntegrationInboxController extends Controller {
 
     /**
      * Bestehende lokale Datensätze je Ziel-Typ (für die „Zuordnen"-Auswahl bei
-     * unmatched-Einträgen). Pro Typ auf 1000 begrenzt — bei größeren Beständen
-     * folgt später eine Such-Auswahl.
+     * unmatched-Einträgen). Pro Typ auf ASSIGN_TARGET_LIMIT begrenzt; `$search`
+     * (Filterleiste) grenzt die Auswahl serverseitig ein. Gekürzte Typen werden
+     * im zweiten Rückgabewert gemeldet, damit die Ansicht darauf hinweist.
      *
-     * @return array<string, array<string, string>>  targetType => [sqid => label]
+     * @return array{0: array<string, array<string, string>>, 1: array<string, bool>}  [targetType => [sqid => label], targetType => true]
      */
-    private function buildAssignTargets(User $user, MatchProfileRegistry $registry): array {
+    private function buildAssignTargets(User $user, MatchProfileRegistry $registry, string $search = ''): array {
         $out = [];
+        $truncated = [];
         foreach (array_keys($registry->options()) as $type) {
             if (! class_exists($type)) {
                 continue;
@@ -196,9 +209,14 @@ class IntegrationInboxController extends Controller {
             $rows = $model->newQuery()
                 ->withoutGlobalScopes()
                 ->where('organization_id', $user->organization_id)
+                ->when($search !== '' && $labelColumn !== null, fn($q) => $q->whereLikeEscaped((string) $labelColumn, $search))
                 ->orderBy($labelColumn ?? $model->getKeyName())
-                ->limit(1000)
+                ->limit(self::ASSIGN_TARGET_LIMIT + 1)
                 ->get();
+            if ($rows->count() > self::ASSIGN_TARGET_LIMIT) {
+                $truncated[$type] = true;
+                $rows = $rows->take(self::ASSIGN_TARGET_LIMIT);
+            }
             foreach ($rows as $row) {
                 $label = $labelColumn !== null ? (string) ($row->getAttribute($labelColumn) ?? '') : '';
                 $options[$row->getRouteKey()] = $label !== '' ? $label : ('#' . $row->getKey());
@@ -206,7 +224,7 @@ class IntegrationInboxController extends Controller {
             $out[$type] = $options;
         }
 
-        return $out;
+        return [$out, $truncated];
     }
 
     /** Erste vorhandene Anzeige-/Sortierspalte des Ziel-Modells (oder null). */
