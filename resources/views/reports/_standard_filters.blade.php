@@ -25,7 +25,7 @@
 
 <span class="inline-flex shrink-0 items-center gap-1 rounded-full border border-base-300 bg-base-200/60 px-3 py-1 text-xs text-base-content/70"
       title="{{ __('Zeitraum — über die Zeitraumwahl im Seitenkopf ändern.') }}">
-    <span class="material-symbols-outlined text-sm" aria-hidden="true">date_range</span>
+    <x-icon name="date_range" class="text-sm" />
     {{ $range['label'] }}
 </span>
 

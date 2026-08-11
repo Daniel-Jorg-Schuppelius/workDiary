@@ -35,12 +35,8 @@
                 @endforeach
             </select>
         </x-filter-field>
-        <x-filter-field :label="__('Von')" for="search-from" inline>
-            <input id="search-from" type="date" name="from" value="{{ $from }}" class="input input-sm input-bordered shrink-0">
-        </x-filter-field>
-        <x-filter-field :label="__('Bis')" for="search-to" inline>
-            <input id="search-to" type="date" name="to" value="{{ $to }}" class="input input-sm input-bordered shrink-0">
-        </x-filter-field>
+        <x-date-range class="w-80 shrink-0" :label="false" from-name="from" to-name="to"
+                      from-id="search-from" to-id="search-to" :from="$from" :to="$to" />
         @if ($selectablePersons !== null)
             <x-filter-field :label="__('Person')" for="search-person">
                 <select id="search-person" name="person" class="select select-sm select-bordered w-40 shrink-0">

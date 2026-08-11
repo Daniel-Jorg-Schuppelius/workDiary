@@ -17,7 +17,8 @@
     </x-slot:actions>
 
     <x-filter-bar :action="route('domains.accounting')" :reset="route('domains.accounting')">
-        <x-date-range name-from="from" name-to="to" :from="$filters['from'] ?? null" :to="$filters['to'] ?? null" />
+        <x-date-range class="w-80 shrink-0" :label="false" from-name="from" to-name="to"
+                      :from="$filters['from'] ?? null" :to="$filters['to'] ?? null" />
         <x-filter-field :label="__('domain.accounting.type')" for="acc-type" class="shrink-0">
             <input id="acc-type" type="text" name="type" value="{{ $filters['type'] ?? '' }}" class="input input-sm input-bordered w-40"
                    placeholder="{{ __('domain.accounting.type') }}" aria-label="{{ __('domain.accounting.type') }}">
