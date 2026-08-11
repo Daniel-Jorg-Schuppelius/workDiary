@@ -13,6 +13,15 @@
                class="input input-sm input-bordered w-full"
                placeholder="@if (! empty(data_get($setting->settings, $key))){{ __('(unverändert — leer lassen)') }}@endif"
                autocomplete="new-password">
+        @if (! empty(data_get($setting->settings, $key)))
+            {{-- Nur bei gesetztem Wert: erlaubt das Entfernen des gespeicherten
+                 Secrets (Rückfall auf Config/ENV) — überschreiben geht über das
+                 Feld selbst. Greift nur bei leerem Eingabefeld. --}}
+            <label class="mt-1 flex items-center gap-2 text-xs text-base-content/60">
+                <input type="checkbox" name="settings_reset[{{ $key }}]" value="1" class="checkbox checkbox-xs">
+                {{ __('Gespeicherten Wert löschen (auf Standard/ENV zurücksetzen)') }}
+            </label>
+        @endif
     @elseif ($field['type'] === 'boolean')
         <label class="cursor-pointer gap-3 justify-start label">
             <input type="hidden" name="settings[{{ $key }}]" value="0">

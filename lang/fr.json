@@ -9773,5 +9773,6 @@
     "Dieses Plugin wird auf eigenen Seiten konfiguriert:": "Ce plugin se configure sur ses propres pages :",
     "Dieses Plugin hat keine dialogbasierten Einstellungen.": "Ce plugin n’a pas de réglages dans ce dialogue.",
     "Zuordnungs-Auswahl suchen …": "Rechercher dans les options d’affectation …",
-    "Einige Zuordnungslisten sind auf :max Einträge gekürzt — das Suchfeld oben rechts grenzt die Auswahl ein.": "Certaines listes d’affectation sont limitées à :max entrées — le champ de recherche en haut à droite affine la sélection."
+    "Einige Zuordnungslisten sind auf :max Einträge gekürzt — das Suchfeld oben rechts grenzt die Auswahl ein.": "Certaines listes d’affectation sont limitées à :max entrées — le champ de recherche en haut à droite affine la sélection.",
+    "Gespeicherten Wert löschen (auf Standard/ENV zurücksetzen)": "Supprimer la valeur enregistrée (réinitialiser sur valeur par défaut/ENV)"
 }

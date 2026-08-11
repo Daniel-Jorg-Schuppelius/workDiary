@@ -213,6 +213,42 @@ class PluginAdminControllerTest extends TestCase {
         $this->assertSame('bestehender-key', $row->settings['api_key'] ?? null);
     }
 
+    public function test_secret_reset_removes_stored_value(): void {
+        $row = $this->enablePlugin('admintest');
+        $row->settings = ['api_key' => 'bestehender-key'];
+        $row->save();
+
+        $this->actingAs($this->admin)
+            ->put(route('admin.plugins.update', 'admintest'), [
+                'enabled' => 1,
+                'settings' => ['api_key' => ''],
+                'settings_reset' => ['api_key' => '1'],
+            ])
+            ->assertRedirect();
+
+        $row->refresh();
+        // Org-Wert entfernt → Config/ENV-Fallback greift wieder.
+        $this->assertArrayNotHasKey('api_key', $row->settings ?? []);
+    }
+
+    public function test_secret_reset_ignored_when_new_value_entered(): void {
+        $row = $this->enablePlugin('admintest');
+        $row->settings = ['api_key' => 'alt'];
+        $row->save();
+
+        // Neuer Wert UND Reset-Haken: der eingegebene Wert gewinnt.
+        $this->actingAs($this->admin)
+            ->put(route('admin.plugins.update', 'admintest'), [
+                'enabled' => 1,
+                'settings' => ['api_key' => 'neu-123'],
+                'settings_reset' => ['api_key' => '1'],
+            ])
+            ->assertRedirect();
+
+        $row->refresh();
+        $this->assertSame('neu-123', $row->settings['api_key'] ?? null);
+    }
+
     /** A12: Reset quittiert die offenen Fehler des Plugins mit — die Inbox bleibt nicht rot. */
     public function test_reset_errors_acknowledges_open_errors(): void {
         PluginError::create([

@@ -9773,5 +9773,6 @@
     "Dieses Plugin wird auf eigenen Seiten konfiguriert:": "Este plugin se configura en páginas propias:",
     "Dieses Plugin hat keine dialogbasierten Einstellungen.": "Este plugin no tiene ajustes en este diálogo.",
     "Zuordnungs-Auswahl suchen …": "Buscar en las opciones de asignación …",
-    "Einige Zuordnungslisten sind auf :max Einträge gekürzt — das Suchfeld oben rechts grenzt die Auswahl ein.": "Algunas listas de asignación están limitadas a :max entradas — el campo de búsqueda arriba a la derecha acota la selección."
+    "Einige Zuordnungslisten sind auf :max Einträge gekürzt — das Suchfeld oben rechts grenzt die Auswahl ein.": "Algunas listas de asignación están limitadas a :max entradas — el campo de búsqueda arriba a la derecha acota la selección.",
+    "Gespeicherten Wert löschen (auf Standard/ENV zurücksetzen)": "Eliminar el valor guardado (restablecer a predeterminado/ENV)"
 }

@@ -9773,5 +9773,6 @@
     "Dieses Plugin wird auf eigenen Seiten konfiguriert:": "This plugin is configured on its own pages:",
     "Dieses Plugin hat keine dialogbasierten Einstellungen.": "This plugin has no dialog-based settings.",
     "Zuordnungs-Auswahl suchen …": "Search assignment options …",
-    "Einige Zuordnungslisten sind auf :max Einträge gekürzt — das Suchfeld oben rechts grenzt die Auswahl ein.": "Some assignment lists are truncated to :max entries — the search field at the top right narrows the selection."
+    "Einige Zuordnungslisten sind auf :max Einträge gekürzt — das Suchfeld oben rechts grenzt die Auswahl ein.": "Some assignment lists are truncated to :max entries — the search field at the top right narrows the selection.",
+    "Gespeicherten Wert löschen (auf Standard/ENV zurücksetzen)": "Delete stored value (reset to default/ENV)"
 }

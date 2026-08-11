@@ -178,7 +178,14 @@ class PluginController extends Controller {
                 continue;
             }
             if ($field->isSecret() && ($input === null || $input === '')) {
-                // Leere Eingabe = bestehenden Key NICHT überschreiben (UX: nicht jedes Mal neu eintippen).
+                // Leeres Feld + „Zurücksetzen" angehakt: gespeicherten Wert
+                // ENTFERNEN → Config/ENV-Fallback greift wieder (z. B. Wechsel
+                // von eigener App auf die Instanz-App). Ohne Haken bleibt der
+                // Wert erhalten ("leer = unverändert").
+                if ($request->boolean('settings_reset.' . $key)) {
+                    unset($settings[$key]);
+                }
+
                 continue;
             }
             if ($input === null || $input === '') {
