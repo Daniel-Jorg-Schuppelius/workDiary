@@ -40,15 +40,13 @@
     </x-slot:toolbar>
 
     <x-filter-bar :action="route('reports.suppliers')" :reset="route('reports.suppliers')">
-        <x-filter-field :label="__('Mindest-Ausgaben (€)')" for="rep-min-spend">
-            <input id="rep-min-spend" type="number" name="min_spend" value="{{ $minSpend }}" min="0" class="input input-sm input-bordered w-36" />
+        <x-filter-field :label="__('Mindest-Ausgaben (€)')" for="rep-min-spend" inline>
+            <input id="rep-min-spend" type="number" name="min_spend" value="{{ $minSpend }}" min="0" class="input input-sm input-bordered w-24" />
         </x-filter-field>
-        <label class="flex shrink-0 cursor-pointer items-center gap-2" for="suppliers-hide-zero"
-               title="{{ __('Nur Lieferanten mit Aktivität im Zeitraum anzeigen (ohne reine Nullzeilen).') }}">
-            <input type="checkbox" id="suppliers-hide-zero" name="hide_zero" value="1"
-                   @checked($hideZero) class="toggle toggle-primary toggle-sm" data-autosubmit>
-            <span class="text-sm text-base-content/75">{{ __('Lieferanten ohne Werte ausblenden') }}</span>
-        </label>
+        <x-filter-toggle name="hide_zero" id="suppliers-hide-zero"
+                         :label="__('Lieferanten ohne Werte ausblenden')"
+                         :title="__('Nur Lieferanten mit Aktivität im Zeitraum anzeigen (ohne reine Nullzeilen).')"
+                         :checked="$hideZero" data-autosubmit />
     </x-filter-bar>
 
     @unless ($withProcurement)

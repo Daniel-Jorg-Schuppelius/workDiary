@@ -27,7 +27,7 @@
 <x-index-page overflow="clip" :subtitle="__('Jahresansprüche, Übertrag und Restsalden je Mitarbeiter.')">
 
     <x-filter-bar :action="route('vacation-entitlements.index')" :reset="route('vacation-entitlements.index')">
-        <x-filter-field :label="__('Jahr')" for="ve-year-filter">
+        <x-filter-field :label="__('Jahr')" for="ve-year-filter" inline>
             <input id="ve-year-filter" type="number" name="year" min="2000" max="2100" step="1"
                    class="input input-bordered input-sm w-28" value="{{ $year }}" data-autosubmit>
         </x-filter-field>

@@ -40,8 +40,8 @@
 
     <x-filter-bar :action="route('reports.customer-retention')" :reset="route('reports.customer-retention')">
         @include('reports._standard_filters', ['idPrefix' => 'customer-retention'])
-        <x-filter-field :label="__('Verloren nach (Tage ohne Leistung)')" for="cr-lost-days">
-            <input id="cr-lost-days" type="number" name="lost_days" value="{{ $lostDays }}" min="30" class="input input-sm input-bordered w-36" />
+        <x-filter-field :label="__('Verloren nach (Tage ohne Leistung)')" for="cr-lost-days" inline>
+            <input id="cr-lost-days" type="number" name="lost_days" value="{{ $lostDays }}" min="30" class="input input-sm input-bordered w-24" />
         </x-filter-field>
     </x-filter-bar>
 

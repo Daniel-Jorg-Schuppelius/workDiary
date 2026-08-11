@@ -2,18 +2,33 @@
     'label'     => null,
     'for'       => null,
     'class'     => '',
-    'showLabel' => false,   // Default: kein sichtbares Label.
-                            // In Filter-Bars sind Selects/Inputs selbsterklärend
-                            // (Default-Option "Alle …") und Höhen gleichen sich an.
-                            // Für Form-Bodies explizit `show-label` setzen.
+    'showLabel' => false,   // Label über dem Feld (Form-Bodies).
+    'inline'    => false,   // Label links neben dem Feld (Filter-Bars mit
+                            // Eingabefeldern: „60" allein sagt niemandem, dass
+                            // hier Mindestminuten stehen).
 ])
 
-<div class="flex flex-col gap-1 {{ $class }}">
-    @if ($label && $showLabel)
-        <label @if ($for) for="{{ $for }}" @endif
-               class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-base-content/60">
-            {{ $label }}
-        </label>
-    @endif
-    {{ $slot }}
-</div>
+{{-- Ohne sichtbares Label bleibt das Feld für Screenreader unbeschriftet —
+     Selects tragen ihre Bedeutung in der „Alle …"-Option, Eingabefelder nicht.
+     Daher immer ein Label rendern, im Zweifel sr-only. --}}
+@if ($inline)
+    <div class="flex shrink-0 items-center gap-2 {{ $class }}">
+        @if ($label)
+            <label @if ($for) for="{{ $for }}" @endif class="whitespace-nowrap text-sm text-base-content/75">{{ $label }}</label>
+        @endif
+        {{ $slot }}
+    </div>
+@else
+    <div class="flex flex-col gap-1 {{ $class }}">
+        @if ($label)
+            <label @if ($for) for="{{ $for }}" @endif
+                   @class([
+                       'text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-base-content/60' => $showLabel,
+                       'sr-only' => ! $showLabel,
+                   ])>
+                {{ $label }}
+            </label>
+        @endif
+        {{ $slot }}
+    </div>
+@endif

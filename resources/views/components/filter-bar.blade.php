@@ -10,11 +10,14 @@
 
     Layout-Standard (Corporate Design):
       - Hülle: rounded-box border bg-base-100 shadow-xs (wie x-card).
-      - Innen: flex flex-nowrap items-center gap-2 overflow-x-auto — Filter
-        bleiben in einer Zeile und scrollen horizontal wenn nötig.
+      - Innen: flex flex-wrap items-center gap-2 — Filter bleiben in einer
+        Zeile, solange sie passen, und brechen sonst um. Kein horizontales
+        Scrollen: dabei rutschen die Filtern-/Zurücksetzen-Schalter aus dem
+        Blickfeld, ohne dass es jemand bemerkt.
       - Filter-Felder im Slot sollen `select-sm` / `input-sm` und `shrink-0`
         tragen (Größen-Standard `sm`, kein `xs`).
-      - Aktionsblock rechts via `ml-auto shrink-0` (automatisch).
+      - Reihenfolge: Felder (order-0) → Schalter (`x-filter-toggle`, order-40)
+        → Aktionsblock (order-50, `ml-auto shrink-0`, automatisch).
 
     Slots:
       - default : Filterfelder
@@ -37,10 +40,10 @@
             @method($methodUpper)
         @endif
     @endif
-    <div class="flex flex-nowrap items-center gap-2 overflow-x-auto">
+    <div class="flex flex-wrap items-center gap-x-2 gap-y-3">
         {{ $slot }}
 
-        <div class="ml-auto flex shrink-0 items-center gap-2">
+        <div class="order-50 ml-auto flex shrink-0 items-center gap-2">
             @isset($extra)
                 {{ $extra }}
             @endisset

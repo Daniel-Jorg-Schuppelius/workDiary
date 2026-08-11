@@ -117,10 +117,8 @@
 {{-- Feature 002: org-weit ausgeblendete Kunden (customers.exclude_from_reports)
      temporär einbeziehen — Toggle erscheint nur, wenn es solche Kunden gibt. --}}
 @if (in_array('include_excluded', $filterFields, true) && ($hasExcludedCustomers ?? false))
-    <label class="flex shrink-0 cursor-pointer items-center gap-2" for="{{ $idPrefix }}-include-excluded"
-           title="{{ __('Kunden mit „In Auswertungen ausblenden“ mit anzeigen.') }}">
-        <input type="checkbox" id="{{ $idPrefix }}-include-excluded" name="include_excluded" value="1"
-               @checked($standardFilters->includeExcludedCustomers) class="toggle toggle-primary toggle-sm" data-autosubmit>
-        <span class="text-sm text-base-content/75">{{ __('Ausgeblendete Kunden einbeziehen') }}</span>
-    </label>
+    <x-filter-toggle name="include_excluded" :id="$idPrefix . '-include-excluded'"
+                     :label="__('Ausgeblendete Kunden einbeziehen')"
+                     :title="__('Kunden mit „In Auswertungen ausblenden“ mit anzeigen.')"
+                     :checked="$standardFilters->includeExcludedCustomers" data-autosubmit />
 @endif

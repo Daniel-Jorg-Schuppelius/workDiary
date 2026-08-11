@@ -19,14 +19,10 @@
         </x-slot:toolbar>
 
         <x-filter-bar :action="route('dispatch.map')" :reset="route('dispatch.map')">
-            <x-filter-field :label="__('Nur SLA-Risiko')" for="map-risk">
-                <input id="map-risk" type="checkbox" name="risk" value="1"
-                       class="toggle toggle-sm toggle-error" @checked($onlyRisk) data-autosubmit="request" />
-            </x-filter-field>
-            <x-filter-field :label="__('Nur unbestätigte')" for="map-unconfirmed">
-                <input id="map-unconfirmed" type="checkbox" name="unconfirmed" value="1"
-                       class="toggle toggle-sm" @checked($onlyUnconfirmed) data-autosubmit="request" />
-            </x-filter-field>
+            <x-filter-toggle name="risk" id="map-risk" :label="__('Nur SLA-Risiko')"
+                             :checked="$onlyRisk" tone="error" data-autosubmit="request" />
+            <x-filter-toggle name="unconfirmed" id="map-unconfirmed" :label="__('Nur unbestätigte')"
+                             :checked="$onlyUnconfirmed" data-autosubmit="request" />
             <x-filter-field :label="__('Priorität')" for="map-priority">
                 <select id="map-priority" name="priority" class="select select-sm select-bordered w-36 shrink-0" data-autosubmit="request">
                     <option value="">{{ __('alle') }}</option>

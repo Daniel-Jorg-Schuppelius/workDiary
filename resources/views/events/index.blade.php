@@ -78,13 +78,9 @@
                 </select>
             </x-filter-field>
 
-            <label class="flex shrink-0 items-center gap-2 cursor-pointer">
-                <input type="checkbox" id="ev-only-mandatory" name="only_mandatory" value="1"
-                       @checked(request('only_mandatory'))
-                       class="toggle toggle-primary toggle-sm"
-                       data-autosubmit>
-                <span class="text-sm text-base-content/75">{{ __('Nur Pflicht') }}</span>
-            </label>
+            <x-filter-toggle name="only_mandatory" id="ev-only-mandatory"
+                             :label="__('Nur Pflicht')"
+                             :checked="(bool) request('only_mandatory')" data-autosubmit />
         </x-filter-bar>
 
         <div class="grid grid-cols-1 gap-3 flex-none sm:grid-cols-2 lg:grid-cols-4">

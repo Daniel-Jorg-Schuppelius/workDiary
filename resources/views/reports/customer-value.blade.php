@@ -49,8 +49,8 @@
 
     <x-filter-bar :action="route('reports.customer-value')" :reset="route('reports.customer-value')">
         @include('reports._standard_filters', ['idPrefix' => 'customer-value'])
-        <x-filter-field :label="__('Risiko-Schwelle (Tage ohne Leistung)')" for="cv-risk-days">
-            <input id="cv-risk-days" type="number" name="risk_days" value="{{ $riskDays }}" min="1" class="input input-sm input-bordered w-36" />
+        <x-filter-field :label="__('Risiko-Schwelle (Tage ohne Leistung)')" for="cv-risk-days" inline>
+            <input id="cv-risk-days" type="number" name="risk_days" value="{{ $riskDays }}" min="1" class="input input-sm input-bordered w-24" />
         </x-filter-field>
     </x-filter-bar>
 

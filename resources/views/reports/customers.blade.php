@@ -37,15 +37,13 @@
 
     <x-filter-bar :action="route('reports.customers')" :reset="route('reports.customers')">
         @include('reports._standard_filters', ['idPrefix' => 'customers'])
-        <x-filter-field :label="__('Mindest-Aufwand (Minuten)')" for="rep-min-minutes">
-            <input id="rep-min-minutes" type="number" name="min_minutes" value="{{ $minMinutes }}" min="0" class="input input-sm input-bordered w-36" />
+        <x-filter-field :label="__('Mindest-Aufwand (Minuten)')" for="rep-min-minutes" inline>
+            <input id="rep-min-minutes" type="number" name="min_minutes" value="{{ $minMinutes }}" min="0" class="input input-sm input-bordered w-24" />
         </x-filter-field>
-        <label class="flex shrink-0 cursor-pointer items-center gap-2" for="customers-hide-zero"
-               title="{{ __('Nur Kunden mit Aktivität im Zeitraum anzeigen (ohne reine Nullzeilen).') }}">
-            <input type="checkbox" id="customers-hide-zero" name="hide_zero" value="1"
-                   @checked($hideZero) class="toggle toggle-primary toggle-sm" data-autosubmit>
-            <span class="text-sm text-base-content/75">{{ __('Kunden ohne Werte ausblenden') }}</span>
-        </label>
+        <x-filter-toggle name="hide_zero" id="customers-hide-zero"
+                         :label="__('Kunden ohne Werte ausblenden')"
+                         :title="__('Nur Kunden mit Aktivität im Zeitraum anzeigen (ohne reine Nullzeilen).')"
+                         :checked="$hideZero" data-autosubmit />
     </x-filter-bar>
 
     <div class="chart-grid grid gap-3 xl:grid-cols-2">

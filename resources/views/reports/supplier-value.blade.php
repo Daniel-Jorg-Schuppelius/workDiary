@@ -45,8 +45,8 @@
     </x-slot:toolbar>
 
     <x-filter-bar :action="route('reports.supplier-value')" :reset="route('reports.supplier-value')">
-        <x-filter-field :label="__('Risiko-Schwelle (Ausgabenanteil %)')" for="sv-risk-share">
-            <input id="sv-risk-share" type="number" name="risk_share" value="{{ $riskShare }}" min="1" step="1" class="input input-sm input-bordered w-36" />
+        <x-filter-field :label="__('Risiko-Schwelle (Ausgabenanteil %)')" for="sv-risk-share" inline>
+            <input id="sv-risk-share" type="number" name="risk_share" value="{{ $riskShare }}" min="1" step="1" class="input input-sm input-bordered w-24" />
         </x-filter-field>
     </x-filter-bar>
 
