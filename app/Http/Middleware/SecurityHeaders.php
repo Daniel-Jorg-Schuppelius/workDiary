@@ -87,13 +87,40 @@ class SecurityHeaders {
             "media-src 'self' blob:",
             "object-src 'none'",
             "base-uri 'self'",
-            "form-action 'self'",
+            // OAuth-Connect-Formulare posten an 'self', werden aber serverseitig
+            // zum Login des Providers (Microsoft/Google/…) weitergeleitet. Chrome
+            // prüft die GESAMTE Redirect-Kette gegen form-action → die Authorize-
+            // Origins der Plugins müssen erlaubt sein, sonst blockt der Connect.
+            'form-action ' . $this->formActionSources(),
             "frame-ancestors 'self'",
             "worker-src 'self' blob:",
             "manifest-src 'self'",
         ];
 
         return implode('; ', $directives);
+    }
+
+    /**
+     * form-action: 'self' plus die OAuth-Authorize-Origins aller Plugins.
+     * Ohne sie blockiert Chrome den Connect-Redirect zum Provider-Login
+     * (prüft die gesamte Redirect-Kette gegen form-action).
+     */
+    private function formActionSources(): string {
+        $origins = ["'self'"];
+
+        /** @var array<string, mixed> $plugins */
+        $plugins = (array) config('plugins', []);
+        foreach ($plugins as $config) {
+            if (! is_array($config) || ! isset($config['authorize_url'])) {
+                continue;
+            }
+            $origin = $this->originFromUrl($config['authorize_url']);
+            if ($origin !== '' && ! in_array($origin, $origins, true)) {
+                $origins[] = $origin;
+            }
+        }
+
+        return implode(' ', $origins);
     }
 
     /**

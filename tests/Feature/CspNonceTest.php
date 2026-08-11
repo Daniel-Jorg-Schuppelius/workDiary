@@ -67,6 +67,21 @@ class CspNonceTest extends TestCase {
         $response->assertSee('nonce="' . $m[1] . '"', false);
     }
 
+    public function test_form_action_allows_plugin_oauth_origins(): void {
+        $csp = (string) $this->get('/login')->headers->get('Content-Security-Policy');
+
+        // form-action muss die Provider-Login-Origins enthalten, sonst blockt
+        // Chrome den OAuth-Connect-Redirect (self → login.microsoftonline.com).
+        preg_match('/form-action ([^;]+)/', $csp, $m);
+        $formAction = $m[1] ?? '';
+
+        $this->assertStringContainsString("'self'", $formAction);
+        $this->assertStringContainsString('https://login.microsoftonline.com', $formAction);
+        $this->assertStringContainsString('https://accounts.google.com', $formAction);
+        // Kein Platzhalter/Pfad in der Origin (nur scheme://host).
+        $this->assertStringNotContainsString('{tenant}', $formAction);
+    }
+
     public function test_unsafe_eval_removed_only_with_alpine_csp_build_flag(): void {
         // Stufe 2: Alpine-CSP-Build aktiv (ALPINE_CSP_BUILD) → 'unsafe-eval' entfällt.
         config(['security.csp_script_nonce' => true]);
