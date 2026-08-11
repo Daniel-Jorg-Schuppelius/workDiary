@@ -116,7 +116,7 @@
 
         @if ($outsideRangeCount > 0)
             {{-- Offene-Posten-Schutz: Altbestand außerhalb des Zeitraums nie lautlos ausblenden. --}}
-            <div class="alert text-sm">
+            <div class="alert alert-warning text-sm">
                 <x-icon name="event_busy" />
                 <span>{{ trans_choice('finance.open_times.outside_range', $outsideRangeCount, ['count' => $outsideRangeCount]) }}</span>
                 <a href="{{ route('finance.open-times.index', array_merge(request()->query(), ['all' => 1])) }}" class="link whitespace-nowrap">
