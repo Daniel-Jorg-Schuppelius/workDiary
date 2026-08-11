@@ -120,6 +120,78 @@ function readTheme() {
     };
 }
 
+/** Mittlere Zeichenbreite der Chart.js-Standardschrift (12px), gemessen 5,8px. */
+const AXIS_CHAR_PX = 6;
+
+/** Höhe der Fußachse ohne Text (Ticks + Polster) in Pixeln. */
+const AXIS_CHROME_PX = 28;
+
+/** Vertikaler Platzbedarf eines um 40° gedrehten Labels je Pixel Textbreite. */
+const AXIS_ROTATION_FACTOR = 0.64;
+
+/**
+ * Kürzt einen Text mittig-hart auf `max` Zeichen mit Auslassungszeichen.
+ * @param {string} text
+ * @param {number} max
+ * @returns {string}
+ */
+function ellipsize(text, max) {
+    return text.length > max
+        ? `${text.slice(0, Math.max(1, max - 1)).trimEnd()}…`
+        : text;
+}
+
+/**
+ * Tick-Callback für Kategorieachsen: kürzt lange Namen (Kunden, Projekte,
+ * Artikel), damit die Beschriftung nicht die halbe Zeichenfläche frisst und
+ * die Balken zusammenstaucht. Volltext bleibt im Tooltip und in der Tabelle
+ * unter dem Diagramm. Das Zeichenbudget richtet sich nach der Chartgröße:
+ * Seitenachse ~30 % der Breite, gedrehte Fußachse so viel Textbreite, dass die
+ * Achse ein Drittel der Höhe nicht überschreitet, gerade Fußachse ihr
+ * Slot-Anteil. Ungekürzt beanspruchen 20 Firmennamen rund 60 % der Höhe — die
+ * Balken werden dann zu Strichen.
+ * @param {'side'|'rotated'|'flat'} mode
+ * @returns {(this: any, value: any) => string}
+ */
+function categoryTicks(mode) {
+    return function (value) {
+        const text = String(this.getLabelForValue(value) ?? "");
+        const chart = this.chart;
+        const count = Math.max(
+            1,
+            Array.isArray(chart.data.labels) ? chart.data.labels.length : 1,
+        );
+        const budget =
+            mode === "side"
+                ? chart.width * 0.3
+                : mode === "rotated"
+                  ? (chart.height / 3 - AXIS_CHROME_PX) / AXIS_ROTATION_FACTOR
+                  : chart.width / count;
+        // Untergrenze, damit auf schmalen Schirmen Datumsangaben ganz bleiben.
+        const min = mode === "flat" ? 10 : 8;
+        return ellipsize(text, Math.max(min, Math.floor(budget / AXIS_CHAR_PX)));
+    };
+}
+
+/**
+ * Tooltip-Überschrift mit dem ungekürzten Kategorienamen (die Achse zeigt nur
+ * die gekürzte Fassung).
+ * @param {string[]} labels
+ * @returns {(items: any[]) => string}
+ */
+function fullLabelTitle(labels) {
+    return (items) => {
+        const first = items[0];
+        if (first === undefined) {
+            return "";
+        }
+        const full = labels[first.dataIndex];
+        return typeof full === "string" && full !== ""
+            ? full
+            : String(first.label ?? "");
+    };
+}
+
 /**
  * Farbe je Dataset-Rolle.
  * @param {ReturnType<typeof readTheme>} theme
@@ -250,7 +322,11 @@ function buildConfig(spec, theme, reduceMotion) {
             display: (spec.datasets ?? []).length > 1,
             labels: { color: theme.text },
         },
-        tooltip: { mode: "index", intersect: false },
+        tooltip: {
+            mode: "index",
+            intersect: false,
+            callbacks: { title: fullLabelTitle(spec.labels) },
+        },
     };
     if (manyPoints) {
         plugins.zoom = {
@@ -266,6 +342,7 @@ function buildConfig(spec, theme, reduceMotion) {
 
     const catTitle = typeof spec.xLabel === "string" ? spec.xLabel : "";
     const valTitle = typeof spec.yLabel === "string" ? spec.yLabel : "";
+    const rotate = !horizontal && spec.labels.length > 8;
     /** @type {Record<string, any>} */
     const scales = {
         x: {
@@ -274,8 +351,11 @@ function buildConfig(spec, theme, reduceMotion) {
             grid: { color: theme.grid },
             ticks: {
                 color: theme.text,
-                maxRotation: horizontal ? 0 : spec.labels.length > 8 ? 40 : 0,
+                maxRotation: rotate ? 40 : 0,
                 autoSkip: true,
+                ...(horizontal
+                    ? {}
+                    : { callback: categoryTicks(rotate ? "rotated" : "flat") }),
             },
             title: {
                 display: (horizontal ? valTitle : catTitle) !== "",
@@ -287,7 +367,10 @@ function buildConfig(spec, theme, reduceMotion) {
             stacked,
             beginAtZero: !horizontal,
             grid: { color: theme.grid },
-            ticks: { color: theme.text },
+            ticks: {
+                color: theme.text,
+                ...(horizontal ? { callback: categoryTicks("side") } : {}),
+            },
             title: {
                 display: (horizontal ? catTitle : valTitle) !== "",
                 text: horizontal ? catTitle : valTitle,
@@ -464,7 +547,10 @@ function buildBoxplotConfig(spec, theme, reduceMotion) {
             responsive: true,
             maintainAspectRatio: false,
             animation: reduceMotion ? false : { duration: 500 },
-            plugins: { legend: { display: false } },
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { title: fullLabelTitle(spec.labels) } },
+            },
             scales: {
                 x: {
                     grid: { color: theme.grid },
@@ -472,7 +558,10 @@ function buildBoxplotConfig(spec, theme, reduceMotion) {
                 },
                 y: {
                     grid: { color: theme.grid },
-                    ticks: { color: theme.text },
+                    ticks: {
+                        color: theme.text,
+                        callback: categoryTicks("side"),
+                    },
                 },
             },
         },
@@ -518,7 +607,10 @@ function buildWaterfallConfig(spec, theme, reduceMotion) {
             responsive: true,
             maintainAspectRatio: false,
             animation: reduceMotion ? false : { duration: 500 },
-            plugins: { legend: { display: false } },
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { title: fullLabelTitle(spec.labels) } },
+            },
             scales: {
                 x: {
                     grid: { color: theme.grid },
@@ -526,6 +618,9 @@ function buildWaterfallConfig(spec, theme, reduceMotion) {
                         color: theme.text,
                         maxRotation: spec.labels.length > 8 ? 40 : 0,
                         autoSkip: true,
+                        callback: categoryTicks(
+                            spec.labels.length > 8 ? "rotated" : "flat",
+                        ),
                     },
                 },
                 y: {
@@ -588,6 +683,7 @@ function buildBulletConfig(spec, theme, reduceMotion) {
             animation: reduceMotion ? false : { duration: 500 },
             plugins: {
                 legend: { display: hasTarget, labels: { color: theme.text } },
+                tooltip: { callbacks: { title: fullLabelTitle(spec.labels) } },
             },
             scales: {
                 x: {
@@ -605,7 +701,10 @@ function buildBulletConfig(spec, theme, reduceMotion) {
                 y: {
                     type: "category",
                     grid: { color: theme.grid },
-                    ticks: { color: theme.text },
+                    ticks: {
+                        color: theme.text,
+                        callback: categoryTicks("side"),
+                    },
                 },
             },
         },

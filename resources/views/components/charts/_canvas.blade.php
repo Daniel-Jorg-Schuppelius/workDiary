@@ -14,7 +14,22 @@
      das SVG die Darstellung. $spec ist der JSON-Serialisierbare Diagramm-
      Kontrakt (siehe charts.js). --}}
 
-@php($chartJson = json_encode($spec, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))
+@php
+    $chartJson = json_encode($spec, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    $categoryCount = is_array($spec['labels'] ?? null) ? count($spec['labels']) : 0;
+    // Kategorien wachsen in die Höhe: liegende Balken brauchen Platz je Zeile,
+    // stehende ab ~9 Kategorien für die gedrehten Fußlabels. Ohne das werden
+    // Balken bei Top-20-Listen zu Strichen.
+    $sideways = ($spec['horizontal'] ?? false) === true
+        || ($spec['bullet'] ?? false) === true
+        || ($spec['type'] ?? '') === 'boxplot';
+    $heightClass = match (true) {
+        $sideways && $categoryCount > 14 => 'h-[32rem]',
+        $sideways && $categoryCount > 8 => 'h-96',
+        !$sideways && $categoryCount > 8 => 'h-72 sm:h-80',
+        default => 'h-64 sm:h-72',
+    };
+@endphp
 @if ($chartJson !== false)
-    <div class="wd-chart-canvas mt-2 h-64 sm:h-72" data-wd-chart="{{ $chartJson }}" hidden></div>
+    <div class="wd-chart-canvas mt-2 {{ $heightClass }}" data-wd-chart="{{ $chartJson }}" hidden></div>
 @endif
