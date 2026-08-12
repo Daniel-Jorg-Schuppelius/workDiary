@@ -9,7 +9,8 @@
  */
 
 return [
-    'title' => 'Calendario de Microsoft 365',
+    'title' => 'Microsoft 365',
+    'calendar_heading' => 'Calendario',
     'intro' => 'Las citas de WorkDiary se publican mediante Microsoft Graph en un calendario de la cuenta de Microsoft 365 conectada. WorkDiary sigue siendo la fuente autoritativa; las citas canceladas desaparecen allí y las ejecuciones repetidas nunca crean duplicados. Las citas externas nunca se leen.',
     'plugin_description' => 'Publica citas de forma idempotente en un calendario de Microsoft 365 (Microsoft Graph, OAuth2): solo publicación, calendario de destino seleccionable.',
     'not_configured_hint' => 'MSGRAPH_CLIENT_ID/SECRET (y MSGRAPH_TENANT si procede) no están configurados: la conexión requiere primero un registro de aplicación en el tenant de Microsoft.',

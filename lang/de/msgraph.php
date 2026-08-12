@@ -9,7 +9,8 @@
  */
 
 return [
-    'title' => 'Microsoft 365-Kalender',
+    'title' => 'Microsoft 365',
+    'calendar_heading' => 'Kalender',
     'intro' => 'WorkDiary-Termine werden über Microsoft Graph in einen Kalender des verbundenen Microsoft-365-Kontos publiziert. WorkDiary bleibt führend; abgesagte Termine verschwinden dort, wiederholte Läufe erzeugen keine Dubletten. Externe Termine werden nie gelesen.',
     'plugin_description' => 'Publiziert Termine idempotent in einen Microsoft-365-Kalender (Microsoft Graph, OAuth2) — Nur-Publish, Ziel-Kalender wählbar.',
     'not_configured_hint' => 'MSGRAPH_CLIENT_ID/SECRET (und ggf. MSGRAPH_TENANT) sind nicht gesetzt — die Verbindung kann erst nach der App-Registrierung im Microsoft-Tenant hergestellt werden.',

@@ -18,7 +18,7 @@
         {{-- Status + Aktionen --}}
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
             <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
-                <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('msgraph.title') }}</h1>
+                <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('msgraph.calendar_heading') }}</h1>
                 @if ($connection && $connection->isActive())
                     @if (($health['ok'] ?? false))
                         <span class="badge badge-success badge-sm">{{ __('msgraph.health.badge_ok') }}</span>
@@ -99,22 +99,26 @@
                     </div>
                 </form>
 
-                <form method="POST" action="{{ route('admin.msgraph.mail.test') }}" class="flex flex-wrap items-end gap-2 border-t border-base-300 pt-3">
-                    @csrf
-                    <label class="form-control max-w-xs grow">
-                        <span class="label-text">{{ __('msgraph_mail.test.recipient') }}</span>
-                        <input type="email" name="test_recipient" maxlength="190"
-                               class="input input-sm input-bordered"
-                               placeholder="{{ __('msgraph_mail.test.recipient_placeholder') }}">
-                        <span class="label-text-alt text-base-content/60">{{ __('msgraph_mail.test.hint') }}</span>
-                    </label>
-                    <button type="submit" class="btn btn-sm btn-outline">{{ __('msgraph_mail.test.send') }}</button>
-                </form>
-
-                <form method="POST" action="{{ route('admin.msgraph.mail.disconnect') }}">
-                    @csrf
-                    <button type="submit" class="btn btn-sm btn-ghost">{{ __('msgraph_mail.disconnect') }}</button>
-                </form>
+                {{-- Aktionsleiste: Testversand (links) + Trennen (rechts) --}}
+                <div class="space-y-2 border-t border-base-300 pt-3">
+                    <div class="flex flex-wrap items-end justify-between gap-3">
+                        <form method="POST" action="{{ route('admin.msgraph.mail.test') }}" class="flex items-end gap-2">
+                            @csrf
+                            <label class="form-control">
+                                <span class="label-text text-xs">{{ __('msgraph_mail.test.recipient') }}</span>
+                                <input type="email" name="test_recipient" maxlength="190"
+                                       class="input input-sm input-bordered w-56"
+                                       placeholder="{{ __('msgraph_mail.test.recipient_placeholder') }}">
+                            </label>
+                            <button type="submit" class="btn btn-sm btn-outline">{{ __('msgraph_mail.test.send') }}</button>
+                        </form>
+                        <form method="POST" action="{{ route('admin.msgraph.mail.disconnect') }}">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-ghost">{{ __('msgraph_mail.disconnect') }}</button>
+                        </form>
+                    </div>
+                    <p class="text-xs text-base-content/60">{{ __('msgraph_mail.test.hint') }}</p>
+                </div>
             @elseif ($configured)
                 <form method="POST" action="{{ route('admin.msgraph.mail.oauth.start') }}" data-oauth-popup>
                     @csrf

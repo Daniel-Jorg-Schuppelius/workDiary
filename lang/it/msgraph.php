@@ -9,7 +9,8 @@
  */
 
 return [
-    'title' => 'Calendario Microsoft 365',
+    'title' => 'Microsoft 365',
+    'calendar_heading' => 'Calendario',
     'intro' => 'Gli appuntamenti WorkDiary vengono pubblicati tramite Microsoft Graph in un calendario dell\'account Microsoft 365 collegato. WorkDiary resta la fonte autorevole; gli appuntamenti annullati vi scompaiono e le esecuzioni ripetute non creano mai duplicati. Gli appuntamenti esterni non vengono mai letti.',
     'plugin_description' => 'Pubblica gli appuntamenti in modo idempotente in un calendario Microsoft 365 (Microsoft Graph, OAuth2) — solo pubblicazione, calendario di destinazione selezionabile.',
     'not_configured_hint' => 'MSGRAPH_CLIENT_ID/SECRET (ed eventualmente MSGRAPH_TENANT) non sono impostati — la connessione richiede prima una registrazione dell\'app nel tenant Microsoft.',
