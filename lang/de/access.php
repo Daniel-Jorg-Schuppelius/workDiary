@@ -668,6 +668,7 @@ return [
         'dayClose.reopen' => 'Tagesabschluss wieder öffnen',
         'report.presence.team' => 'Anwesenheitsbericht einsehen (Team)',
         'report.presence.organization' => 'Anwesenheitsbericht einsehen (Organisation)',
+        'report.presence.emergency' => 'Notfall-Anwesenheitsliste einsehen',
         'finance.gobd.export' => 'GoBD-Export erstellen',
         'permit.viewAny' => 'Genehmigungen auflisten',
         'permit.view' => 'Genehmigung einsehen',

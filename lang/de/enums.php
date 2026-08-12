@@ -463,6 +463,7 @@ return [
         'preference' => [
             'want' => 'Wunsch',
             'avoid' => 'Abneigung',
+            'off' => 'Freiwunsch',
         ],
         'exchange_status' => [
             'requested' => 'Beantragt',

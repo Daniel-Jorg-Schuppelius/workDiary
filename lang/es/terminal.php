@@ -33,6 +33,10 @@ return [
         'uid' => 'Identificador de credencial',
         'uid_placeholder' => 'UID RFID/NFC',
         'uid_help' => 'Se almacena solo como hash (sin identificador en claro).',
+        'validity' => 'Validez',
+        'valid_from' => 'Válido desde',
+        'valid_until' => 'Válido hasta',
+        'outside_validity' => 'fuera de validez',
     ],
 
     'action' => [
@@ -40,11 +44,25 @@ return [
         'disable' => 'Desactivar',
         'assign' => 'Asignar',
         'revoke' => 'Revocar',
+        'rotate' => 'Rotar token',
+        'rotate_help' => 'Genera un nuevo token de dispositivo — el antiguo deja de ser válido de inmediato.',
     ],
 
     'col' => [
         'status' => 'Estado',
+        'status_display' => 'Indicador de estado',
         'last_seen' => 'Visto por última vez',
+    ],
+
+    'status_display' => [
+        'on' => 'Activado',
+        'off' => 'Desactivado',
+        'help' => 'Muestra saldo/vacaciones restantes en el dispositivo tras fichar (visible para terceros) — desactivado por defecto.',
+    ],
+
+    'buffer' => [
+        'label' => 'Búfer',
+        'help' => 'Eventos sin conexión notificados por el terminal aún no transmitidos.',
     ],
 
     'status' => [
@@ -59,5 +77,8 @@ return [
         'badge_assigned' => 'Credencial asignada.',
         'badge_revoked' => 'Credencial revocada.',
         'badge_taken' => 'Este identificador de credencial ya está asignado.',
+        'token_rotated' => 'Token de dispositivo rotado — nueva URL de ingesta visible una sola vez.',
+        'status_enabled' => 'Indicador de estado activado.',
+        'status_disabled' => 'Indicador de estado desactivado.',
     ],
 ];

@@ -59,6 +59,15 @@
                     </select>
                 </div>
                 <div class="fieldset">
+                    <label class="fieldset-label" for="aw-priority">{{ __('schedule.wish.priority_label') }}</label>
+                    <select id="aw-priority" name="priority" class="select select-bordered select-sm w-full">
+                        <option value="">{{ __('schedule.wish.priority_none') }}</option>
+                        @foreach ([1, 2, 3] as $prio)
+                            <option value="{{ $prio }}">{{ __('schedule.wish.priority_' . $prio) }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="fieldset">
                     <label class="fieldset-label" for="aw-start">{{ __('Von') }}</label>
                     <input id="aw-start" type="time" name="start_time" class="input input-bordered input-sm w-full">
                 </div>
@@ -95,7 +104,12 @@
                                 @endif
                             @endif
                         </td>
-                        <td><x-status-badge :tone="$window->kind->tone()" size="sm">{{ $window->kind->label() }}</x-status-badge></td>
+                        <td>
+                            <x-status-badge :tone="$window->kind->tone()" size="sm">{{ $window->kind->label() }}</x-status-badge>
+                            @if ($window->priority)
+                                <span class="text-xs opacity-60">{{ __('schedule.wish.priority_short') }} {{ $window->priority }}</span>
+                            @endif
+                        </td>
                         <td class="whitespace-nowrap">
                             @if ($window->start_time || $window->end_time)
                                 {{ \Illuminate\Support\Str::of($window->start_time)->substr(0, 5) }}–{{ \Illuminate\Support\Str::of($window->end_time)->substr(0, 5) }}
@@ -142,6 +156,15 @@
                     </select>
                 </div>
                 <div class="fieldset">
+                    <label class="fieldset-label" for="ds-priority">{{ __('schedule.wish.priority_label') }}</label>
+                    <select id="ds-priority" name="priority" class="select select-bordered select-sm w-full">
+                        <option value="">{{ __('schedule.wish.priority_none') }}</option>
+                        @foreach ([1, 2, 3] as $prio)
+                            <option value="{{ $prio }}">{{ __('schedule.wish.priority_' . $prio) }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="fieldset">
                     <label class="fieldset-label" for="ds-note">{{ __('Notiz') }}</label>
                     <input id="ds-note" type="text" name="note" class="input input-bordered input-sm w-full" maxlength="255">
                 </div>
@@ -164,7 +187,12 @@
                     <tr class="hover">
                         <td>{{ $wish->date->format('d.m.Y') }}</td>
                         <td>{{ $wish->shiftType?->name ?? __('beliebig') }}</td>
-                        <td><x-status-badge :tone="$wish->preference->tone()" size="sm">{{ $wish->preference->label() }}</x-status-badge></td>
+                        <td>
+                            <x-status-badge :tone="$wish->preference->tone()" size="sm">{{ $wish->preference->label() }}</x-status-badge>
+                            @if ($wish->priority)
+                                <span class="text-xs opacity-60">{{ __('schedule.wish.priority_short') }} {{ $wish->priority }}</span>
+                            @endif
+                        </td>
                         <td class="text-xs">{{ $wish->note }}</td>
                         <td class="text-right">
                             <form method="POST" action="{{ route('schedule.availability.desired.destroy', $wish) }}" class="inline">

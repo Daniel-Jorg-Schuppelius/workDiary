@@ -18,7 +18,7 @@
         <div class="fieldset">
             <label class="fieldset-label" for="surcharge-code">{{ __('surcharge.field.code') }}</label>
             <input id="surcharge-code" type="text" name="code" required maxlength="20"
-                   pattern="[a-z0-9][a-z0-9._-]*"
+                   pattern="[a-z0-9][a-z0-9._\-]*"
                    value="{{ old('code', $rule->code) }}"
                    class="input input-bordered w-full font-mono"
                    placeholder="night">
@@ -127,6 +127,48 @@
             </label>
             @error('active')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
+    </x-form-group>
+
+    {{-- MVP-513 (Feature 103): Bedingungen — leer = gilt für alle. --}}
+    <x-form-group :legend="__('surcharge.field.conditions')" icon="rule" tone="info" cols="3">
+        @php
+            $selectedConditions = old('condition_team_ids') !== null || old('condition_site_ids') !== null || old('condition_shift_type_ids') !== null
+                ? [
+                    'team_ids' => array_map('strval', (array) old('condition_team_ids', [])),
+                    'site_ids' => array_map('strval', (array) old('condition_site_ids', [])),
+                    'shift_type_ids' => array_map('strval', (array) old('condition_shift_type_ids', [])),
+                ]
+                : [
+                    'team_ids' => array_map(fn ($id) => \App\Support\Sqid::encode(\App\Models\Team::class, (int) $id), (array) ($rule->conditions['team_ids'] ?? [])),
+                    'site_ids' => array_map(fn ($id) => \App\Support\Sqid::encode(\App\Models\Site::class, (int) $id), (array) ($rule->conditions['site_ids'] ?? [])),
+                    'shift_type_ids' => array_map(fn ($id) => \App\Support\Sqid::encode(\App\Models\ShiftType::class, (int) $id), (array) ($rule->conditions['shift_type_ids'] ?? [])),
+                ];
+        @endphp
+        <div class="fieldset">
+            <label class="fieldset-label" for="surcharge-cond-teams">{{ __('surcharge.field.condition_teams') }}</label>
+            <select id="surcharge-cond-teams" name="condition_team_ids[]" multiple size="4" class="select select-bordered w-full h-auto">
+                @foreach ($conditionTeams as $team)
+                    <option value="{{ $team->sqid }}" @selected(in_array($team->sqid, $selectedConditions['team_ids'], true))>{{ $team->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="fieldset">
+            <label class="fieldset-label" for="surcharge-cond-sites">{{ __('surcharge.field.condition_sites') }}</label>
+            <select id="surcharge-cond-sites" name="condition_site_ids[]" multiple size="4" class="select select-bordered w-full h-auto">
+                @foreach ($conditionSites as $site)
+                    <option value="{{ $site->sqid }}" @selected(in_array($site->sqid, $selectedConditions['site_ids'], true))>{{ $site->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="fieldset">
+            <label class="fieldset-label" for="surcharge-cond-shift-types">{{ __('surcharge.field.condition_shift_types') }}</label>
+            <select id="surcharge-cond-shift-types" name="condition_shift_type_ids[]" multiple size="4" class="select select-bordered w-full h-auto">
+                @foreach ($conditionShiftTypes as $type)
+                    <option value="{{ $type->sqid }}" @selected(in_array($type->sqid, $selectedConditions['shift_type_ids'], true))>{{ $type->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <p class="text-xs text-base-content/60 sm:col-span-3">{{ __('surcharge.field.conditions_help') }}</p>
     </x-form-group>
 
     @if ($isEdit)

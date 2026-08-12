@@ -362,6 +362,16 @@ class TimeEntry extends Model {
         return $this->belongsTo(\App\Models\Billing\CustomerBillingRate::class);
     }
 
+    /**
+     * Zeitaufteilung (Feature 103, MVP-514): Anteile dieses Eintrags auf
+     * fachliche Dimensionen; Schreibzugriff nur über TimeAllocationService.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<TimeAllocation, $this>
+     */
+    public function allocations(): \Illuminate\Database\Eloquent\Relations\HasMany {
+        return $this->hasMany(TimeAllocation::class);
+    }
+
     /** @return BelongsTo<Timesheet, $this> */
     public function timesheet(): BelongsTo {
         return $this->belongsTo(Timesheet::class);

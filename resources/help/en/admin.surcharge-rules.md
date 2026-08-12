@@ -33,8 +33,15 @@ Important rules:
 - With overlapping rules the **highest percentage wins** – surcharges
   are not added up. On a tie, priority decides.
 - Time windows apply only to the kinds "Night" and "Custom".
+- Conditions (teams, sites, shift types) restrict a rule: empty =
+  applies to everyone; multiple conditions combine with AND. Sites are
+  detected via terminal clock-ins — without determinable context a
+  conditional rule does not apply. Sites may carry their own holiday
+  region (holiday surcharge at the place of work).
 - Changes affect **future exports**; already created exports remain
-  unchanged (correction via re-export).
+  unchanged (correction via re-export). Historical periods are only
+  re-evaluated by the audited recalculation (`rules:recalculate`) —
+  never by a silent rule change.
 
 Permissions: surcharge rules may only be created, edited and deleted by
 explicitly authorized staff.

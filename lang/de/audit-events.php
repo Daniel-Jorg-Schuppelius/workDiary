@@ -75,6 +75,16 @@ return [
     ],
     'report' => [
         'exported'                  => 'Report exportiert',
+        'presenceEmergencyViewed'   => 'Notfall-Anwesenheitsliste abgerufen',
+    ],
+    'rules' => [
+        'recalculated'              => 'Zeitregel-Ergebnisse neu berechnet',
+    ],
+    'timeDimension' => [
+        'type_created'              => 'Zeit-Dimensionstyp angelegt',
+        'type_toggled'              => 'Zeit-Dimensionstyp umgeschaltet',
+        'value_created'             => 'Zeit-Dimensionswert angelegt',
+        'value_deleted'             => 'Zeit-Dimensionswert gelöscht',
     ],
 
     // Lizenz / Limits

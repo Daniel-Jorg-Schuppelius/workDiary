@@ -36,8 +36,15 @@ Wichtige Regeln:
   wird nicht addiert. Bei Gleichstand entscheidet die Priorität.
 - Zeitfenster gelten nur für die Arten „Nacht" und
   „Benutzerdefiniert".
+- Bedingungen (Teams, Standorte, Schichttypen) schränken eine Regel
+  ein: leer = gilt für alle; mehrere Bedingungen sind UND-verknüpft.
+  Der Standort wird über Terminal-Stempel erkannt — ohne ermittelbaren
+  Kontext greift eine bedingte Regel nicht. Standorte können eine
+  eigene Feiertags-Region tragen (Feiertagszuschlag am Einsatzort).
 - Änderungen wirken auf **künftige Exporte**; bereits erzeugte
-  Exporte bleiben unverändert (Korrektur über Re-Export).
+  Exporte bleiben unverändert (Korrektur über Re-Export). Historische
+  Zeiträume bewertet nur die auditierte Neuberechnung
+  (`rules:recalculate`) neu — nie eine stille Regeländerung.
 
 Berechtigungen: Zuschlagsregeln dürfen nur von ausdrücklich
 berechtigten Personen angelegt, bearbeitet und gelöscht werden.

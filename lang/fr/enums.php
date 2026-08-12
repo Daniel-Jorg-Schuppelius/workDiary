@@ -463,6 +463,7 @@ return [
         'preference' => [
             'want' => 'Souhait',
             'avoid' => 'Aversion',
+            'off' => 'Souhait de repos',
         ],
         'exchange_status' => [
             'requested' => 'Demandé',

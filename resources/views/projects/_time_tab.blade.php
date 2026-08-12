@@ -140,6 +140,11 @@
                                             data-entry-modal-trigger
                                             :href="route('projects.time-entries.edit', [$project, $entry])"
                                             :label="__('Bearbeiten')" />
+                                {{-- Zeitaufteilung (Feature 103, MVP-514) --}}
+                                <x-icon-btn icon="call_split"
+                                            data-entry-modal-trigger
+                                            :href="route('time-entries.allocations.edit', $entry)"
+                                            :label="__('allocation.action.split')" />
                             @endcan
                             @can('delete', $entry)
                                 <form method="POST" action="{{ route('projects.time-entries.destroy', [$project, $entry]) }}"

@@ -85,6 +85,8 @@
             $complTitle = $compl ? "\n⚠ ".implode("\n⚠ ", $compl['messages']) : '';
             $qualGap = ($qualificationGapByShift ?? [])[$shift->id] ?? null;
             $qualTitle = $qualGap ? "\n⛔ ".__('schedule.qualification.missing').': '.implode(', ', $qualGap) : '';
+            $wish = ($wishByShift ?? [])[$shift->id] ?? null;
+            $wishTitle = $wish ? "\n".($wish['state'] === 'conflict' ? '✕ '.__('schedule.wish.conflict').': ' : '✓ ').$wish['label'] : '';
             $shiftPayload = [
                 'id' => $shift->sqid,
                 'user_id' => $shift->user?->sqid,
@@ -105,12 +107,15 @@
                  data-shift-edit="{{ $shift->sqid }}"
                  data-shift-payload="{{ json_encode($shiftPayload) }}"
              @endif
-             title="{{ $shift->shiftType?->name ?? __('Schicht') }}{{ $shift->resolvedStartTime() ? ': '.$shift->resolvedStartTime() : '' }}{{ $shift->note ? ' · '.$shift->note : '' }}{{ $complTitle }}{{ $qualTitle }}">
+             title="{{ $shift->shiftType?->name ?? __('Schicht') }}{{ $shift->resolvedStartTime() ? ': '.$shift->resolvedStartTime() : '' }}{{ $shift->note ? ' · '.$shift->note : '' }}{{ $complTitle }}{{ $qualTitle }}{{ $wishTitle }}">
             {{ $shift->shiftType?->abbreviation ?? '?' }}
             @if ($shift->resolvedStartTime() || $shift->resolvedEndTime())
                 <span class="font-normal opacity-80">{{ $shift->resolvedStartTime() ?? '' }}–{{ $shift->resolvedEndTime() ?? '' }}</span>
             @endif
             <span class="ml-auto inline-flex items-center gap-0.5">
+                @if ($wish)
+                    <span class="inline-flex h-3 w-3 items-center justify-center rounded-full bg-white/90 text-[0.55rem] font-bold {{ $wish['state'] === 'conflict' ? 'text-error' : 'text-success' }}" aria-hidden="true" title="{{ $wish['label'] }}">{{ $wish['state'] === 'conflict' ? '✕' : '✓' }}</span>
+                @endif
                 @if ($qualGap)
                     <span class="inline-flex h-3 w-3 items-center justify-center rounded-full bg-white/90 text-[0.55rem] font-bold text-error" aria-hidden="true" title="{{ __('schedule.qualification.missing') }}: {{ implode(', ', $qualGap) }}">Q</span>
                 @endif

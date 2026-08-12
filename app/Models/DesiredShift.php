@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property Carbon $date
  * @property int|null $shift_type_id
  * @property ShiftPreference $preference
+ * @property int|null $priority
  * @property string|null $note
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -46,6 +47,7 @@ class DesiredShift extends Model {
         'date',
         'shift_type_id',
         'preference',
+        'priority',
         'note',
     ];
 
@@ -53,6 +55,7 @@ class DesiredShift extends Model {
     protected $casts = [
         'date' => 'date:Y-m-d',
         'preference' => ShiftPreference::class,
+        'priority' => 'integer',
     ];
 
     /** @return BelongsTo<User, $this> */

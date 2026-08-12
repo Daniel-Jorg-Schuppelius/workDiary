@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\{AttendanceTerminal, Organization};
+use App\Models\{AttendanceTerminal, FlexBalance, Organization, User};
+use App\Services\Absence\VacationBalanceService;
 use App\Services\Attendance\TerminalStampService;
 use Illuminate\Http\{JsonResponse, Request};
 
@@ -44,7 +45,9 @@ class TerminalIngestController extends Controller {
             }
         }
 
-        $badgeUid = trim((string) ($request->input('badge_uid') ?? $request->input('badge') ?? ''));
+        // MVP-516: `credential` als Alias (herstellerneutrale Terminals senden
+        // die Kennung teils unter diesem Namen, vgl. Feature 103).
+        $badgeUid = trim((string) ($request->input('badge_uid') ?? $request->input('badge') ?? $request->input('credential') ?? ''));
         if ($badgeUid === '') {
             return response()->json(['status' => 'missing_badge'], 422);
         }
@@ -55,20 +58,63 @@ class TerminalIngestController extends Controller {
             $eventType = 'work';
         }
 
-        $status = $service->stamp(
+        // Optionaler Offline-Pufferstand des Terminals (MVP-516, Diagnose).
+        $queued = $request->has('queued') && is_numeric($request->input('queued'))
+            ? (int) $request->input('queued')
+            : null;
+
+        $result = $service->stamp(
             $terminal,
             $badgeUid,
             (string) ($request->input('event') ?? 'toggle'),
             $request->has('occurred_at') ? (string) $request->input('occurred_at') : null,
             $request->has('event_id') ? (string) $request->input('event_id') : null,
             $eventType,
+            $queued,
         );
+        $status = $result['status'];
 
         // Manipulationsversuch nachvollziehbar machen (ohne Klartext-Kennung).
         if ($status === 'unknown_badge') {
             $terminal->audit('terminal.unknown_badge', ['terminal_id' => (int) $terminal->id]);
         }
 
-        return response()->json(['status' => $status]);
+        $payload = ['status' => $status];
+        if ($terminal->show_status && $result['user'] !== null && in_array($status, ['clocked_in', 'clocked_out', 'break_started', 'break_ended'], true)) {
+            $payload += $this->statusInfo($result['user']);
+        }
+
+        return response()->json($payload);
+    }
+
+    /**
+     * MVP-516: Statusinformationen fürs Terminal-Display — nur je Terminal
+     * opt-in (`show_status`, Standard AUS: die Anzeige am Gerät ist für
+     * Umstehende sichtbar) und nur nach erfolgreichem Badge-Match.
+     *
+     * @return array<string, mixed>
+     */
+    private function statusInfo(User $user): array {
+        $info = ['employee' => (string) $user->name];
+
+        if ($user->isFlexEligible()) {
+            // Jüngste FlexBalance-Zeile trägt den kumulierten Saldo
+            // (gleiche Lesart wie die Urlaub-&-Flex-Auswertung).
+            $latest = FlexBalance::query()
+                ->where('user_id', $user->id)
+                ->orderByDesc('year')
+                ->orderByDesc('month')
+                ->first(['balance_minutes']);
+            if ($latest !== null) {
+                $info['flex_balance_minutes'] = (int) $latest->balance_minutes;
+            }
+        }
+
+        $balance = app(VacationBalanceService::class)->balanceFor((int) $user->id, (int) now()->year);
+        if ($balance->hasEntitlement) {
+            $info['vacation_days_remaining'] = $balance->remainingDays();
+        }
+
+        return $info;
     }
 }

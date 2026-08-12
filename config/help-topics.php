@@ -49,6 +49,9 @@ return [
         'admin.text-corrections.*' => 'admin.text-corrections',
         // orgaMAX-Buchhaltung-Plugin (Feature 077, Phase 29)
         'admin.orgamax.*' => 'admin.orgamax',
+        'admin.etsy.*' => 'admin.etsy',
+        // Freie Mandanten-Dimensionen (Feature 103, MVP-514 P2).
+        'admin.time-dimensions.*' => 'admin.time-dimensions',
         // ── Nachträge 2026-07-10: Phasen 19–24 + Lücken-Sweep ──────────
         // Bewerbungen/Ausschreibungen (Feature 068)
         'tenders.*' => 'applications.overview',
@@ -266,6 +269,8 @@ return [
         'reports.payment-behavior' => 'reports.payment-behavior',
         'reports.suppliers' => 'reports.supplier-analysis',
         'reports.supplier-value' => 'reports.supplier-value',
+        // Notfall-Anwesenheitsliste (Feature 103, MVP-518) — vor dem breiten Muster.
+        'reports.presence-emergency' => 'reports.presence-emergency',
         'reports.*' => 'reports.overview',
 
         // Onboarding

@@ -32,6 +32,21 @@
     <x-input-field name="address_zip" :label="__('PLZ')" :value="old('address_zip', $site?->address_zip)" maxlength="16" />
     <x-input-field name="address_city" :label="__('Ort')" :value="old('address_city', $site?->address_city)" maxlength="120" />
     <x-input-field name="country" :label="__('Land (ISO-2)')" :value="old('country', $site?->country)" maxlength="2" class="uppercase" />
+    {{-- MVP-513 P0 (Feature 103): Feiertagsregelung am Einsatzort für Zuschläge. --}}
+    <div class="fieldset">
+        <label class="fieldset-label" for="site-holiday-provider">{{ __('Feiertags-Region') }}</label>
+        <select id="site-holiday-provider" name="holiday_provider" class="select select-bordered w-full">
+            <option value="">{{ __('Feiertagsregelung der Organisation') }}</option>
+            @foreach (\App\Support\HolidayRegions::grouped() as $group => $providers)
+                <optgroup label="{{ $group }}">
+                    @foreach ($providers as $provider => $label)
+                        <option value="{{ $provider }}" @selected(old('holiday_provider', $site?->holiday_provider) === $provider)>{{ $label }}</option>
+                    @endforeach
+                </optgroup>
+            @endforeach
+        </select>
+        @error('holiday_provider')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
+    </div>
 </x-form-group>
 
 <x-form-group :legend="__('Geo-Koordinaten')" icon="my_location" tone="ghost" cols="2">

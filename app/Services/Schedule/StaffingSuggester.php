@@ -85,15 +85,17 @@ class StaffingSuggester {
             }
 
             $qualified = $this->isQualified($user, $requiredQualificationIds);
+            /** @var array{kind: AvailabilityKind, priority: ?int}|null $avail */
             $avail = $availability->get($user->id);
+            /** @var array{preference: ShiftPreference, priority: ?int}|null $pref */
             $pref = $desired->get($user->id);
 
             // Explizit als nicht verfügbar markiert → ausschließen.
-            if ($avail === AvailabilityKind::Unavailable) {
+            if ($avail !== null && $avail['kind'] === AvailabilityKind::Unavailable) {
                 continue;
             }
-            // Explizite Abneigung (avoid) → ausschließen.
-            if ($pref === ShiftPreference::Avoid) {
+            // Abneigung (avoid) und Freiwunsch (off) → ausschließen (MVP-515).
+            if ($pref !== null && $pref['preference']->isExclusion()) {
                 continue;
             }
 
@@ -110,19 +112,19 @@ class StaffingSuggester {
             }
 
             $available = false;
-            if ($avail === AvailabilityKind::Preferred) {
-                $score += 25;
+            if ($avail !== null && $avail['kind'] === AvailabilityKind::Preferred) {
+                $score += 25 + $this->priorityBonus($avail['priority']);
                 $available = true;
                 $reasons[] = (string) __('schedule.suggest.reason_preferred_window');
-            } elseif ($avail === AvailabilityKind::Available) {
+            } elseif ($avail !== null && $avail['kind'] === AvailabilityKind::Available) {
                 $score += 15;
                 $available = true;
                 $reasons[] = (string) __('schedule.suggest.reason_available');
             }
 
             $preferred = false;
-            if ($pref === ShiftPreference::Want) {
-                $score += 30;
+            if ($pref !== null && $pref['preference'] === ShiftPreference::Want) {
+                $score += 30 + $this->priorityBonus($pref['priority']);
                 $preferred = true;
                 $reasons[] = (string) __('schedule.suggest.reason_wished');
             }
@@ -177,8 +179,19 @@ class StaffingSuggester {
     }
 
     /**
+     * MVP-515: Priorität (1 = hoch … 3 = niedrig) verschiebt den Bonus um ±10.
+     */
+    private function priorityBonus(?int $priority): int {
+        return match ($priority) {
+            1 => 10,
+            3 => -10,
+            default => 0,
+        };
+    }
+
+    /**
      * @param  list<int>  $userIds
-     * @return Collection<int, AvailabilityKind> user_id → effektive Art (preferred > available > unavailable)
+     * @return Collection<int, array{kind: AvailabilityKind, priority: ?int}> user_id → effektive Art (unavailable > preferred > available) + Priorität
      */
     private function loadAvailability(array $userIds, Carbon $day): Collection {
         if ($userIds === []) {
@@ -191,11 +204,28 @@ class StaffingSuggester {
 
         $out = collect();
         foreach ($windows as $window) {
+            /** @var array{kind: AvailabilityKind, priority: ?int}|null $current */
             $current = $out->get($window->user_id);
-            $out->put($window->user_id, $this->strongerKind($current, $window->kind));
+            $kind = $this->strongerKind($current['kind'] ?? null, $window->kind);
+            // Priorität folgt der effektiven Art; bei gleicher Art gewinnt die höhere (kleinere Zahl).
+            $priority = $current === null || $kind !== $current['kind']
+                ? ($kind === $window->kind ? $window->priority : ($current['priority'] ?? null))
+                : $this->strongerPriority($current['priority'], $kind === $window->kind ? $window->priority : null);
+            $out->put($window->user_id, ['kind' => $kind, 'priority' => $priority]);
         }
 
         return $out;
+    }
+
+    private function strongerPriority(?int $a, ?int $b): ?int {
+        if ($a === null) {
+            return $b;
+        }
+        if ($b === null) {
+            return $a;
+        }
+
+        return min($a, $b);
     }
 
     private function strongerKind(?AvailabilityKind $current, AvailabilityKind $incoming): AvailabilityKind {
@@ -212,7 +242,7 @@ class StaffingSuggester {
 
     /**
      * @param  list<int>  $userIds
-     * @return Collection<int, ShiftPreference> user_id → Wunsch (avoid gewinnt über want)
+     * @return Collection<int, array{preference: ShiftPreference, priority: ?int}> user_id → Wunsch (Ausschluss avoid/off gewinnt über want) + Priorität
      */
     private function loadDesired(array $userIds, Carbon $day, ?int $shiftTypeId): Collection {
         if ($userIds === []) {
@@ -231,13 +261,29 @@ class StaffingSuggester {
 
         $out = collect();
         foreach ($rows as $row) {
+            /** @var array{preference: ShiftPreference, priority: ?int}|null $current */
             $current = $out->get($row->user_id);
-            if ($current === ShiftPreference::Avoid || $row->preference === ShiftPreference::Avoid) {
-                $out->put($row->user_id, ShiftPreference::Avoid);
+
+            if ($current !== null && $current['preference']->isExclusion()) {
+                // Ausschluss steht bereits fest; nur die Priorität nachschärfen.
+                if ($row->preference->isExclusion()) {
+                    $out->put($row->user_id, [
+                        'preference' => $current['preference'],
+                        'priority' => $this->strongerPriority($current['priority'], $row->priority),
+                    ]);
+                }
 
                 continue;
             }
-            $out->put($row->user_id, ShiftPreference::Want);
+            if ($row->preference->isExclusion()) {
+                $out->put($row->user_id, ['preference' => $row->preference, 'priority' => $row->priority]);
+
+                continue;
+            }
+            $out->put($row->user_id, [
+                'preference' => ShiftPreference::Want,
+                'priority' => $this->strongerPriority($current['priority'] ?? null, $row->priority),
+            ]);
         }
 
         return $out;

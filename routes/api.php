@@ -35,7 +35,8 @@ Route::match(['get', 'post'], 'cti/webhook/{token}', \App\Http\Controllers\Api\C
 // Badge-Scans. Auth über einen Gerätetoken im Pfad (Muster location/ingest).
 Route::post('terminal/ingest/{token}', \App\Http\Controllers\Api\TerminalIngestController::class)
     ->where('token', '[A-Za-z0-9_]+')
-    ->middleware('throttle:webhook-ingest')
+    // MVP-516: eigener Limiter (IP + Gerätetoken) statt nur IP.
+    ->middleware('throttle:terminal-ingest')
     ->name('api.terminal.ingest');
 
 Route::middleware('auth:sanctum')->group(function () {

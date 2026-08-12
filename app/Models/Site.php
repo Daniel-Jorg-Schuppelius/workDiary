@@ -54,6 +54,7 @@ class Site extends Model {
         'address_zip',
         'address_city',
         'country',
+        'holiday_provider',
         'geo_lat',
         'geo_lng',
         'is_active',

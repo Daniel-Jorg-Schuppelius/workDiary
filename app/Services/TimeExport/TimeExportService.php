@@ -52,9 +52,11 @@ class TimeExportService {
 
     public function __construct(
         private readonly MonthClosureService $closureService,
-        private readonly SurchargeCalculator $surchargeCalculator,
         private readonly HolidayService $holidays,
         private readonly FlexCalculator $flex,
+        // MVP-513: Zerlegung + Kontext + Ergebnis-Persistenz laufen über die
+        // Engine (die intern den SurchargeCalculator nutzt).
+        private readonly \App\Services\Surcharge\TimeRuleEngine $timeRuleEngine,
     ) {}
 
     /**
@@ -808,45 +810,19 @@ class TimeExportService {
             return 0;
         }
 
-        $attendances = Attendance::query()
-            ->where('user_id', $uid)
-            ->whereDate('date', '>=', $start->toDateString())
-            ->whereDate('date', '<=', $end->toDateString())
-            ->whereNotNull('started_at')
-            ->whereNotNull('ended_at')
-            ->orderBy('started_at')
-            ->get(['id', 'started_at', 'ended_at']);
-
-        // Akkumulieren: je (Regel, Kalendertag) Minuten + Quell-Attendances.
-        /** @var array<string, array{rule: SurchargeRule, date: string, minutes: int, sources: list<int>}> $acc */
-        $acc = [];
-        foreach ($attendances as $attendance) {
-            // In die Anzeige-Zeitzone umrechnen VOR dem Split an
-            // Mitternachtsgrenzen: Zuschlagsfenster und Wochentage sind lokale
-            // Begriffe (§ 3b EStG) — UTC-Instants verlören lokale Zuschläge.
-            $tz = \App\Support\Tz::current();
-            $shares = $this->surchargeCalculator->calculate(
-                CarbonImmutable::parse((string) $attendance->started_at)->setTimezone($tz),
-                CarbonImmutable::parse((string) $attendance->ended_at)->setTimezone($tz),
-                $rules,
-            );
-
-            foreach ($shares as $share) {
-                $key = $share->date . '|' . $share->rule->id;
-                if (! isset($acc[$key])) {
-                    $acc[$key] = [
-                        'rule' => $share->rule,
-                        'date' => $share->date,
-                        'minutes' => 0,
-                        'sources' => [],
-                    ];
-                }
-                $acc[$key]['minutes'] += $share->minutes;
-                $acc[$key]['sources'][] = (int) $attendance->id;
-            }
-        }
-
-        ksort($acc);
+        // MVP-513 (Feature 103): Zerlegung + Kontext (Team/Standort/Schichttyp,
+        // Feiertags-Region des Einsatzorts) laufen über die TimeRuleEngine, die
+        // je Zeitdatensatz ein TimeRuleResult mit Berechnungs-Snapshot
+        // persistiert. Die Aggregation je (Regel, Kalendertag) ist identisch
+        // zur bisherigen Logik — ohne Bedingungen ändert sich kein Ergebnis.
+        $acc = $this->timeRuleEngine->evaluateUserPeriod(
+            (int) $export->organization_id,
+            $uid,
+            $start,
+            $end,
+            $rules,
+            (int) $export->id,
+        );
 
         $rows = 0;
         foreach ($acc as $row) {

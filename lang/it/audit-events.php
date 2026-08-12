@@ -59,6 +59,16 @@ return [
     ],
     'report' => [
         'exported' => 'Report esportato',
+        'presenceEmergencyViewed' => 'Lista presenze di emergenza consultata',
+    ],
+    'rules' => [
+        'recalculated' => 'Risultati delle regole orarie ricalcolati',
+    ],
+    'timeDimension' => [
+        'type_created' => 'Tipo di dimensione temporale creato',
+        'type_toggled' => 'Tipo di dimensione temporale commutato',
+        'value_created' => 'Valore di dimensione temporale creato',
+        'value_deleted' => 'Valore di dimensione temporale eliminato',
     ],
     'limit' => [
         'exceeded' => 'Limite superato',

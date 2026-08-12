@@ -45,6 +45,9 @@ use Illuminate\Support\Collection;
  * Feiertags-Lookups befragt.
  */
 class SurchargeCalculator {
+    /** Feiertags-Rechtsraum des aktuellen calculate()-Laufs (MVP-513). */
+    private ?string $holidayProvider = null;
+
     public function __construct(
         private readonly HolidayService $holidays,
     ) {}
@@ -55,9 +58,11 @@ class SurchargeCalculator {
      * @param  CarbonInterface  $start  Beginn des (Netto-)Intervalls
      * @param  CarbonInterface  $end  Ende des Intervalls (exklusiv)
      * @param  Collection<int, SurchargeRule>  $rules  Regeln der Organisation
+     * @param  string|null  $holidayProvider  Feiertags-Rechtsraum des Einsatzorts (MVP-513); null = Org-Einstellung
      * @return list<SurchargeShare>
      */
-    public function calculate(CarbonInterface $start, CarbonInterface $end, Collection $rules): array {
+    public function calculate(CarbonInterface $start, CarbonInterface $end, Collection $rules, ?string $holidayProvider = null): array {
+        $this->holidayProvider = $holidayProvider;
         $start = CarbonImmutable::instance($start);
         $end = CarbonImmutable::instance($end);
 
@@ -171,7 +176,7 @@ class SurchargeCalculator {
         $fullDay = match ($rule->kind) {
             SurchargeKind::Saturday => $day->isSaturday(),
             SurchargeKind::Sunday => $day->isSunday(),
-            SurchargeKind::Holiday => $this->holidays->isHoliday($day),
+            SurchargeKind::Holiday => $this->holidays->isHoliday($day, $this->holidayProvider),
             SurchargeKind::Night, SurchargeKind::Custom => null,
             // M4: keine Intervall-Regeln — eigene Quellzeiten, Aggregation im
             // Zeit-Export; sie zerlegen nie Attendance-Intervalle.

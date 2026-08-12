@@ -34,6 +34,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $start_time
  * @property string|null $end_time
  * @property AvailabilityKind $kind
+ * @property int|null $priority
  * @property Carbon|null $valid_from
  * @property Carbon|null $valid_until
  * @property string|null $note
@@ -58,6 +59,7 @@ class AvailabilityWindow extends Model {
         'start_time',
         'end_time',
         'kind',
+        'priority',
         'valid_from',
         'valid_until',
         'note',
@@ -70,6 +72,7 @@ class AvailabilityWindow extends Model {
         'valid_from' => 'date:Y-m-d',
         'valid_until' => 'date:Y-m-d',
         'kind' => AvailabilityKind::class,
+        'priority' => 'integer',
     ];
 
     /** @return BelongsTo<User, $this> */

@@ -69,6 +69,7 @@ class SurchargeRule extends Model {
         'active',
         'valid_from',
         'valid_until',
+        'conditions',
     ];
 
     /** @var array<string, string> */
@@ -80,7 +81,38 @@ class SurchargeRule extends Model {
         'active' => 'boolean',
         'valid_from' => 'date',
         'valid_until' => 'date',
+        'conditions' => 'array',
     ];
+
+    /**
+     * MVP-513 (Feature 103): kombinierbare Bedingungen — jede KONFIGURIERTE
+     * (nicht-leere) Liste muss zutreffen (UND-Verknüpfung); innerhalb einer
+     * Liste genügt ein Treffer (ODER). Fehlt der Kontextwert zu einer
+     * konfigurierten Bedingung (z. B. kein Standort ermittelbar), gilt die
+     * Regel NICHT — Bedingungen sind Einschränkungen, keine Vorzugslogik.
+     *
+     * @param  array{team_ids?: list<int>, site_id?: int|null, shift_type_id?: int|null}  $context
+     */
+    public function matchesContext(array $context): bool {
+        $conditions = $this->conditions ?? [];
+
+        $teamIds = array_map('intval', (array) ($conditions['team_ids'] ?? []));
+        if ($teamIds !== [] && array_intersect($teamIds, (array) ($context['team_ids'] ?? [])) === []) {
+            return false;
+        }
+
+        $siteIds = array_map('intval', (array) ($conditions['site_ids'] ?? []));
+        if ($siteIds !== [] && ! in_array((int) ($context['site_id'] ?? 0), $siteIds, true)) {
+            return false;
+        }
+
+        $shiftTypeIds = array_map('intval', (array) ($conditions['shift_type_ids'] ?? []));
+        if ($shiftTypeIds !== [] && ! in_array((int) ($context['shift_type_id'] ?? 0), $shiftTypeIds, true)) {
+            return false;
+        }
+
+        return true;
+    }
 
     protected static function newFactory(): SurchargeRuleFactory {
         return SurchargeRuleFactory::new();

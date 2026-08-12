@@ -668,6 +668,7 @@ return [
         'dayClose.reopen' => 'Reopen day closure',
         'report.presence.team' => 'View presence report (team)',
         'report.presence.organization' => 'View presence report (organization)',
+        'report.presence.emergency' => 'View emergency attendance list',
         'finance.gobd.export' => 'Create GoBD export',
         'permit.viewAny' => 'List permits',
         'permit.view' => 'View permit',

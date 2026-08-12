@@ -867,6 +867,14 @@ class AppServiceProvider extends ServiceProvider {
         // Pfad-Token gedeckelt.
         RateLimiter::for('webhook-ingest', fn(Request $request) => Limit::perMinute(240)->by('whi:' . $request->ip()));
 
+        // Stempelterminal-Ingest (MVP-516): zusätzlich zum IP-Limit ein
+        // Limit je Gerätetoken — ein amoklaufendes/kopiertes Terminal drosselt
+        // nur sich selbst, nicht den ganzen Standort hinter einem NAT.
+        RateLimiter::for('terminal-ingest', fn(Request $request) => [
+            Limit::perMinute(240)->by('whi:' . $request->ip()),
+            Limit::perMinute(120)->by('term:' . \CommonToolkit\Helper\Data\CryptoHelper::hash((string) $request->route('token'))),
+        ]);
+
         // @feature('code') Blade-Direktive (Folge zu MVP-047): Kurzform für
         // @if (app(FeatureFlagResolver::class)->isEnabled('code')); @endfeature.
         \Illuminate\Support\Facades\Blade::if('feature', function (string $code): bool {

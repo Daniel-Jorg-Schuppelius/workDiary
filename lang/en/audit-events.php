@@ -75,6 +75,16 @@ return [
     ],
     'report' => [
         'exported'                  => 'Report exported',
+        'presenceEmergencyViewed'   => 'Emergency attendance list viewed',
+    ],
+    'rules' => [
+        'recalculated'              => 'Time rule results recalculated',
+    ],
+    'timeDimension' => [
+        'type_created'              => 'Time dimension type created',
+        'type_toggled'              => 'Time dimension type toggled',
+        'value_created'             => 'Time dimension value created',
+        'value_deleted'             => 'Time dimension value deleted',
     ],
 
     // license / limits

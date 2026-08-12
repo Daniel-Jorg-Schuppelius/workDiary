@@ -54,4 +54,15 @@ return [
     'coverage' => [
         'under_title' => 'Understaffing: open required shifts',
     ],
+    // MVP-515: priorities + wish markers in planning.
+    'wish' => [
+        'priority_label' => 'Priority',
+        'priority_none' => 'None',
+        'priority_1' => 'High (1)',
+        'priority_2' => 'Medium (2)',
+        'priority_3' => 'Low (3)',
+        'priority_short' => 'Prio',
+        'fulfilled' => 'Wish fulfilled',
+        'conflict' => 'Wish conflict',
+    ],
 ];

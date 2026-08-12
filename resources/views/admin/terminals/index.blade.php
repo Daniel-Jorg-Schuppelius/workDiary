@@ -39,6 +39,7 @@
                                 <th>{{ __('terminal.field.name') }}</th>
                                 <th>{{ __('terminal.field.site') }}</th>
                                 <th>{{ __('terminal.col.status') }}</th>
+                                <th>{{ __('terminal.col.status_display') }}</th>
                                 <th>{{ __('terminal.col.last_seen') }}</th>
                                 <th></th>
                             </tr>
@@ -54,10 +55,33 @@
                                             <span class="badge badge-ghost badge-sm">{{ __('terminal.status.inactive') }}</span>
                                         @endif
                                     </td>
-                                    <td class="text-base-content/60">{{ $terminal->last_seen_at?->diffForHumans() ?? '—' }}</td>
-                                    <td class="text-right">
+                                    <td>
+                                        <form method="POST" action="{{ route('admin.terminals.toggle-status') }}">
+                                            @csrf
+                                            <input type="hidden" name="terminal" value="{{ $terminal->sqid }}">
+                                            <button type="submit" class="btn btn-ghost btn-xs" title="{{ __('terminal.status_display.help') }}">
+                                                @if ($terminal->show_status)
+                                                    <span class="badge badge-info badge-sm">{{ __('terminal.status_display.on') }}</span>
+                                                @else
+                                                    <span class="badge badge-ghost badge-sm">{{ __('terminal.status_display.off') }}</span>
+                                                @endif
+                                            </button>
+                                        </form>
+                                    </td>
+                                    <td class="text-base-content/60">
+                                        {{ $terminal->last_seen_at?->diffForHumans() ?? '—' }}
+                                        @if (($terminal->last_buffer_size ?? 0) > 0)
+                                            <span class="badge badge-warning badge-sm" title="{{ __('terminal.buffer.help') }}">{{ __('terminal.buffer.label') }}: {{ $terminal->last_buffer_size }}</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-right whitespace-nowrap">
                                         @if ($terminal->isActive())
-                                            <form method="POST" action="{{ route('admin.terminals.disconnect') }}">
+                                            <form method="POST" action="{{ route('admin.terminals.rotate') }}" class="inline">
+                                                @csrf
+                                                <input type="hidden" name="terminal" value="{{ $terminal->sqid }}">
+                                                <button type="submit" class="btn btn-ghost btn-xs" title="{{ __('terminal.action.rotate_help') }}">{{ __('terminal.action.rotate') }}</button>
+                                            </form>
+                                            <form method="POST" action="{{ route('admin.terminals.disconnect') }}" class="inline">
                                                 @csrf
                                                 <input type="hidden" name="terminal" value="{{ $terminal->sqid }}">
                                                 <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('terminal.action.disable') }}</button>
@@ -99,6 +123,7 @@
                             <tr>
                                 <th>{{ __('terminal.badge.user') }}</th>
                                 <th>{{ __('terminal.badge.label') }}</th>
+                                <th>{{ __('terminal.badge.validity') }}</th>
                                 <th>{{ __('terminal.col.status') }}</th>
                                 <th></th>
                             </tr>
@@ -107,6 +132,16 @@
                                 <tr>
                                     <td>{{ $badge->user?->name ?? '—' }}</td>
                                     <td class="text-base-content/60">{{ $badge->label ?? '—' }}</td>
+                                    <td class="text-base-content/60 whitespace-nowrap">
+                                        @if ($badge->valid_from || $badge->valid_until)
+                                            {{ $badge->valid_from?->format('d.m.Y') ?? '…' }}–{{ $badge->valid_until?->format('d.m.Y') ?? '…' }}
+                                            @unless ($badge->isUsableOn(now()))
+                                                <span class="badge badge-warning badge-sm">{{ __('terminal.badge.outside_validity') }}</span>
+                                            @endunless
+                                        @else
+                                            —
+                                        @endif
+                                    </td>
                                     <td>
                                         @if ($badge->isActive())
                                             <span class="badge badge-success badge-sm">{{ __('terminal.status.active') }}</span>
@@ -146,6 +181,14 @@
                 <label class="form-control">
                     <span class="label-text">{{ __('terminal.badge.label') }}</span>
                     <input type="text" name="label" value="{{ old('label') }}" class="input input-bordered input-sm">
+                </label>
+                <label class="form-control">
+                    <span class="label-text">{{ __('terminal.badge.valid_from') }}</span>
+                    <input type="date" name="valid_from" value="{{ old('valid_from') }}" class="input input-bordered input-sm">
+                </label>
+                <label class="form-control">
+                    <span class="label-text">{{ __('terminal.badge.valid_until') }}</span>
+                    <input type="date" name="valid_until" value="{{ old('valid_until') }}" class="input input-bordered input-sm">
                 </label>
                 <button type="submit" class="btn btn-sm btn-primary">{{ __('terminal.action.assign') }}</button>
             </form>

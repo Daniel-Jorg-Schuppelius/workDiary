@@ -54,4 +54,15 @@ return [
     'coverage' => [
         'under_title' => 'Sous-effectif : postes requis ouverts',
     ],
+    // MVP-515 : priorités + marqueurs de souhaits dans la planification.
+    'wish' => [
+        'priority_label' => 'Priorité',
+        'priority_none' => 'Aucune',
+        'priority_1' => 'Haute (1)',
+        'priority_2' => 'Moyenne (2)',
+        'priority_3' => 'Basse (3)',
+        'priority_short' => 'Prio',
+        'fulfilled' => 'Souhait exaucé',
+        'conflict' => 'Conflit de souhait',
+    ],
 ];

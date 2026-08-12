@@ -144,6 +144,8 @@ class SiteController extends Controller {
             'address_zip' => ['nullable', 'string', 'max:16'],
             'address_city' => ['nullable', 'string', 'max:120'],
             'country' => ['nullable', 'string', 'max:2'],
+            // MVP-513 P0: Feiertags-Rechtsraum des Standorts (leer = Org-Einstellung).
+            'holiday_provider' => ['nullable', 'string', \Illuminate\Validation\Rule::in(\App\Support\HolidayRegions::providers())],
             'geo_lat' => ['nullable', 'numeric', 'between:-90,90'],
             'geo_lng' => ['nullable', 'numeric', 'between:-180,180'],
             'is_active' => ['sometimes', 'boolean'],

@@ -54,4 +54,15 @@ return [
     'coverage' => [
         'under_title' => 'Falta de personal: turnos requeridos abiertos',
     ],
+    // MVP-515: prioridades + marcadores de deseos en la planificación.
+    'wish' => [
+        'priority_label' => 'Prioridad',
+        'priority_none' => 'Ninguna',
+        'priority_1' => 'Alta (1)',
+        'priority_2' => 'Media (2)',
+        'priority_3' => 'Baja (3)',
+        'priority_short' => 'Prio',
+        'fulfilled' => 'Deseo cumplido',
+        'conflict' => 'Conflicto de deseo',
+    ],
 ];

@@ -44,10 +44,14 @@ class HolidayService {
     /**
      * Liefert eine Map [Y-m-d => Feiertagsname] für das gegebene Jahr.
      *
+     * MVP-513: $provider überschreibt optional den Org-Rechtsraum (z. B.
+     * Feiertags-Region des Einsatz-Standorts, `sites.holiday_provider`);
+     * org-eigene Zusatzfeiertage gelten unabhängig davon weiter.
+     *
      * @return array<string, string>
      */
-    public function forYear(int $year): array {
-        $provider = $this->provider();
+    public function forYear(int $year, ?string $provider = null): array {
+        $provider ??= $this->provider();
         $locale = $this->locale();
 
         if (isset($this->cache[$provider][$year])) {
@@ -93,13 +97,13 @@ class HolidayService {
         return $this->cache[$provider][$year] = $map;
     }
 
-    public function nameFor(CarbonInterface $date): ?string {
-        $map = $this->forYear((int) $date->year);
+    public function nameFor(CarbonInterface $date, ?string $provider = null): ?string {
+        $map = $this->forYear((int) $date->year, $provider);
 
         return $map[$date->format('Y-m-d')] ?? null;
     }
 
-    public function isHoliday(CarbonInterface $date): bool {
-        return $this->nameFor($date) !== null;
+    public function isHoliday(CarbonInterface $date, ?string $provider = null): bool {
+        return $this->nameFor($date, $provider) !== null;
     }
 }

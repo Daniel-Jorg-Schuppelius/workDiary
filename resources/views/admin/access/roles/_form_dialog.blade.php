@@ -21,7 +21,7 @@
                    name="name"
                    value="{{ old('name') }}"
                    class="input input-bordered w-full font-mono"
-                   pattern="[a-z0-9._-]+"
+                   pattern="[a-z0-9._\-]+"
                    maxlength="80"
                    required />
             <p class="text-xs text-base-content/60 mt-1">{{ __('access.help.role_name') }}</p>

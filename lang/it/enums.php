@@ -463,6 +463,7 @@ return [
         'preference' => [
             'want' => 'Desiderio',
             'avoid' => 'Avversione',
+            'off' => 'Giorno libero desiderato',
         ],
         'exchange_status' => [
             'requested' => 'Richiesto',

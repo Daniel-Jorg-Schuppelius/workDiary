@@ -49,12 +49,16 @@ class UserBadge extends Model {
         'user_id',
         'label',
         'badge_hash',
+        'valid_from',
+        'valid_until',
         'revoked_at',
         'created_by',
     ];
 
     /** @var array<string, string> */
     protected $casts = [
+        'valid_from' => 'date:Y-m-d',
+        'valid_until' => 'date:Y-m-d',
         'revoked_at' => 'datetime',
     ];
 
@@ -64,6 +68,17 @@ class UserBadge extends Model {
 
     public function isActive(): bool {
         return $this->revoked_at === null;
+    }
+
+    /**
+     * MVP-516: aktiv UND im Gültigkeitszeitraum (Datumsgrenzen inklusiv).
+     * `scopeActive` bleibt bewusst rein „nicht widerrufen" — die Dubletten-
+     * prüfung der Verwaltung darf abgelaufene Badges nicht übersehen.
+     */
+    public function isUsableOn(\Carbon\CarbonInterface $date): bool {
+        return $this->isActive()
+            && ($this->valid_from === null || $this->valid_from->lte($date))
+            && ($this->valid_until === null || $this->valid_until->gte($date));
     }
 
     /** @param Builder<UserBadge> $query */

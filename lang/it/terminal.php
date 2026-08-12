@@ -33,6 +33,10 @@ return [
         'uid' => 'Identificativo badge',
         'uid_placeholder' => 'UID RFID/NFC',
         'uid_help' => 'Memorizzato solo come hash (nessun identificativo in chiaro).',
+        'validity' => 'Validità',
+        'valid_from' => 'Valido dal',
+        'valid_until' => 'Valido fino al',
+        'outside_validity' => 'fuori validità',
     ],
 
     'action' => [
@@ -40,11 +44,25 @@ return [
         'disable' => 'Disattiva',
         'assign' => 'Assegna',
         'revoke' => 'Revoca',
+        'rotate' => 'Ruota token',
+        'rotate_help' => 'Genera un nuovo token del dispositivo — il vecchio diventa subito non valido.',
     ],
 
     'col' => [
         'status' => 'Stato',
+        'status_display' => 'Visualizzazione stato',
         'last_seen' => 'Ultima attività',
+    ],
+
+    'status_display' => [
+        'on' => 'Attiva',
+        'off' => 'Disattivata',
+        'help' => 'Mostra saldo/ferie residue sul dispositivo dopo la timbratura (visibile ai presenti) — disattivata di default.',
+    ],
+
+    'buffer' => [
+        'label' => 'Buffer',
+        'help' => 'Eventi offline segnalati dal terminale non ancora trasmessi.',
     ],
 
     'status' => [
@@ -59,5 +77,8 @@ return [
         'badge_assigned' => 'Badge assegnato.',
         'badge_revoked' => 'Badge revocato.',
         'badge_taken' => 'Questo identificativo badge è già assegnato.',
+        'token_rotated' => 'Token del dispositivo ruotato — nuovo URL di ingest visibile una sola volta.',
+        'status_enabled' => 'Visualizzazione stato attivata.',
+        'status_disabled' => 'Visualizzazione stato disattivata.',
     ],
 ];

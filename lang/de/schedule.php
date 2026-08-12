@@ -54,4 +54,15 @@ return [
     'coverage' => [
         'under_title' => 'Unterbesetzung: offene Soll-Schichten',
     ],
+    // MVP-515: Prioritäten + Wunsch-Marker in der Planung.
+    'wish' => [
+        'priority_label' => 'Priorität',
+        'priority_none' => 'Keine',
+        'priority_1' => 'Hoch (1)',
+        'priority_2' => 'Mittel (2)',
+        'priority_3' => 'Niedrig (3)',
+        'priority_short' => 'Prio',
+        'fulfilled' => 'Wunsch erfüllt',
+        'conflict' => 'Wunsch-Konflikt',
+    ],
 ];

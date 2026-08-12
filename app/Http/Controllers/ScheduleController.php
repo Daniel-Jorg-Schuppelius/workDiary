@@ -89,6 +89,8 @@ class ScheduleController extends Controller {
             'canSuggest' => $auth->hasPermissionTo(Permission::StaffingSuggest->value),
             'complianceByShift' => $complianceByShift,
             'qualificationGapByShift' => $this->computeQualificationGaps($shifts),
+            // MVP-515: Wunsch-erfüllt/Konflikt-Marker an zugewiesenen Schichten.
+            'wishByShift' => app(\App\Services\Schedule\WishMatcher::class)->forShifts($shifts),
             'openSlotsByDate' => $openSlots->compute($from, $to, $shifts),
             'months' => $months,
             'activeMonthKey' => $activeMonthKey,

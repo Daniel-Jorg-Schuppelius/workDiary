@@ -1378,8 +1378,17 @@ Route::middleware('auth')->group(function () {
         Route::get('admin/terminals', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'index'])->name('admin.terminals.index');
         Route::post('admin/terminals', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'storeTerminal'])->name('admin.terminals.store');
         Route::post('admin/terminals/disconnect', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'disconnectTerminal'])->name('admin.terminals.disconnect');
+        Route::post('admin/terminals/rotate', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'rotateTerminal'])->name('admin.terminals.rotate');
+        Route::post('admin/terminals/toggle-status', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'toggleStatus'])->name('admin.terminals.toggle-status');
         Route::post('admin/terminals/badges', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'storeBadge'])->name('admin.terminals.badges.store');
         Route::post('admin/terminals/badges/revoke', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'revokeBadge'])->name('admin.terminals.badges.revoke');
+
+        // ── Freie Mandanten-Dimensionen (Feature 103, MVP-514 P2) ───────────────
+        Route::get('admin/time-dimensions', [\App\Http\Controllers\Admin\TimeDimensionAdminController::class, 'index'])->name('admin.time-dimensions.index');
+        Route::post('admin/time-dimensions/types', [\App\Http\Controllers\Admin\TimeDimensionAdminController::class, 'storeType'])->name('admin.time-dimensions.types.store');
+        Route::post('admin/time-dimensions/types/{type}/toggle', [\App\Http\Controllers\Admin\TimeDimensionAdminController::class, 'toggleType'])->name('admin.time-dimensions.types.toggle');
+        Route::post('admin/time-dimensions/types/{type}/values', [\App\Http\Controllers\Admin\TimeDimensionAdminController::class, 'storeValue'])->name('admin.time-dimensions.values.store');
+        Route::delete('admin/time-dimensions/values/{value}', [\App\Http\Controllers\Admin\TimeDimensionAdminController::class, 'destroyValue'])->name('admin.time-dimensions.values.destroy');
 
         // ── Plugin-Fehler-Inbox (Admin) ─────────────────────────────────────────
         Route::middleware('can:manage-plugins')->group(function (): void {
@@ -2012,6 +2021,9 @@ Route::middleware('auth')->group(function () {
         // Portal-Veröffentlichung einzelner Zeiten (MVP-511).
         Route::post('projects/{project}/time-entries/portal-visibility', [TimeEntryController::class, 'updatePortalVisibility'])->name('projects.time-entries.portal-visibility');
         Route::resource('projects.time-entries', TimeEntryController::class)->except(['index', 'show']);
+        // Zeitaufteilung (Feature 103, MVP-514): Anteile eines Zeiteintrags auf Dimensionen.
+        Route::get('time-entries/{timeEntry}/allocations', [\App\Http\Controllers\TimeAllocationController::class, 'edit'])->name('time-entries.allocations.edit');
+        Route::put('time-entries/{timeEntry}/allocations', [\App\Http\Controllers\TimeAllocationController::class, 'update'])->name('time-entries.allocations.update');
         Route::resource('projects.billing-rules', ProjectBillingRuleController::class)->except(['index', 'show', 'edit']);
         Route::patch('projects/{project}/billing-settings', [ProjectBillingRuleController::class, 'updateSettings'])->name('projects.billing-settings.update');
         // Projektstufe der Satzhierarchie (MVP-482) — eigene Route, damit das
@@ -2739,6 +2751,9 @@ Route::middleware('auth')->group(function () {
         // Entscheidungsanalysen (Phase 53, MVP-465/466/467/468).
         Route::get('reports/customer-value', [\App\Http\Controllers\Reporting\CustomerValueReportController::class, 'index'])
             ->name('reports.customer-value');
+        // Zeitaufteilung nach Dimension (Feature 103, MVP-514 P3).
+        Route::get('reports/allocations', [\App\Http\Controllers\Reporting\AllocationReportController::class, 'index'])
+            ->name('reports.allocations');
         Route::get('reports/customer-retention', [\App\Http\Controllers\Reporting\CustomerRetentionReportController::class, 'index'])
             ->name('reports.customer-retention');
         // Kohorten-Drilldown (MVP-470): wer steckt hinter einer Heatmap-Zelle?
@@ -2798,6 +2813,9 @@ Route::middleware('auth')->group(function () {
         Route::get('reports/cohort-comparison', [\App\Http\Controllers\Reporting\CohortComparisonReportController::class, 'index'])
             ->name('reports.cohort-comparison');
         Route::get('reports/attendance', [AttendanceReportController::class, 'index'])->name('reports.attendance');
+        // Notfall-Anwesenheitsliste (Feature 103, MVP-518): bewusst NICHT modul-gegated (Arbeitsschutz).
+        Route::get('reports/presence-emergency', [\App\Http\Controllers\Reporting\PresenceEmergencyReportController::class, 'index'])
+            ->name('reports.presence-emergency');
         Route::get('reports/audit-activity', [AuditActivityReportController::class, 'index'])->name('reports.audit-activity');
         Route::get('reports/sla', [\App\Http\Controllers\Reporting\SlaReportController::class, 'index'])->name('reports.sla');
         Route::get('reports/safety', [\App\Http\Controllers\Reporting\SafetyReportController::class, 'index'])->name('reports.safety');

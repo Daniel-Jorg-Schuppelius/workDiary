@@ -29,8 +29,10 @@ use Illuminate\Support\Str;
  * @property string $name
  * @property string $token_hash
  * @property bool $active
+ * @property bool $show_status
  * @property int|null $created_by
  * @property \Illuminate\Support\Carbon|null $last_seen_at
+ * @property int|null $last_buffer_size
  */
 class AttendanceTerminal extends Model {
     use Auditable;
@@ -80,6 +82,17 @@ class AttendanceTerminal extends Model {
         ]);
 
         return [$terminal, $plain];
+    }
+
+    /**
+     * MVP-516: Gerätetoken rotieren — der alte Token ist sofort ungültig,
+     * der neue Klartext wird genau einmal zurückgegeben (Muster issue()).
+     */
+    public function rotate(): string {
+        $plain = 'term_' . Str::random(48);
+        $this->forceFill(['token_hash' => static::hashToken($plain)])->save();
+
+        return $plain;
     }
 
     public function isActive(): bool {

@@ -54,4 +54,15 @@ return [
     'coverage' => [
         'under_title' => 'Sottorganico: turni richiesti scoperti',
     ],
+    // MVP-515: priorità + indicatori dei desideri nella pianificazione.
+    'wish' => [
+        'priority_label' => 'Priorità',
+        'priority_none' => 'Nessuna',
+        'priority_1' => 'Alta (1)',
+        'priority_2' => 'Media (2)',
+        'priority_3' => 'Bassa (3)',
+        'priority_short' => 'Prio',
+        'fulfilled' => 'Desiderio esaudito',
+        'conflict' => 'Conflitto di desiderio',
+    ],
 ];

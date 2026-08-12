@@ -251,6 +251,9 @@ enum Permission: string implements HasLabel {
     case ReportPresenceTeam = 'report.presence.team';
     case ReportPresenceOrganization = 'report.presence.organization';
 
+        // ── Notfall-Anwesenheitsliste (Feature 103 · MVP-518) ──────────────
+    case ReportPresenceEmergency = 'report.presence.emergency';
+
         // ── Finanzschnittstelle (Feature 045) ──────────────────────────────
     case FinanceViewAny = 'finance.viewAny';
     case FinanceConfig = 'finance.config';

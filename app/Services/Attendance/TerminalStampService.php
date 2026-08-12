@@ -41,14 +41,20 @@ class TerminalStampService {
     /**
      * @param  string  $eventType  fachlicher Ereignistyp: `work` (Kommen/Gehen, Default)
      *                             oder `break` (Pausen-Toggle) — orthogonal zu $event.
-     * @return 'clocked_in'|'clocked_out'|'break_started'|'break_ended'|'skipped'|'unknown_badge'|'noop'|'rejected'
+     * @param  int|null  $queued  vom Terminal gemeldeter Offline-Pufferstand (MVP-516).
+     * @return array{status: 'clocked_in'|'clocked_out'|'break_started'|'break_ended'|'skipped'|'unknown_badge'|'noop'|'rejected', user: ?User}
      */
-    public function stamp(AttendanceTerminal $terminal, string $badgeUid, string $event = 'toggle', ?string $occurredAt = null, ?string $eventId = null, string $eventType = 'work'): string {
-        // Gesundheitsstatus fortschreiben (auch bei abgewiesenen Ereignissen).
-        $terminal->forceFill(['last_seen_at' => Carbon::now()])->save();
+    public function stamp(AttendanceTerminal $terminal, string $badgeUid, string $event = 'toggle', ?string $occurredAt = null, ?string $eventId = null, string $eventType = 'work', ?int $queued = null): array {
+        // Gesundheitsstatus (+ optional Pufferstand) fortschreiben — auch bei
+        // abgewiesenen Ereignissen.
+        $health = ['last_seen_at' => Carbon::now()];
+        if ($queued !== null) {
+            $health['last_buffer_size'] = max(0, $queued);
+        }
+        $terminal->forceFill($health)->save();
 
         if ($eventId !== null && $eventId !== '' && $this->alreadySeen($terminal, $eventId)) {
-            return 'skipped';
+            return ['status' => 'skipped', 'user' => null];
         }
 
         $user = $this->resolveUser((int) $terminal->organization_id, $badgeUid);
@@ -60,7 +66,7 @@ class TerminalStampService {
                 ['terminal' => $terminal->name, 'organization_id' => (int) $terminal->organization_id],
             );
 
-            return 'unknown_badge';
+            return ['status' => 'unknown_badge', 'user' => null];
         }
 
         $isBreak = strtolower(trim($eventType)) === 'break';
@@ -75,7 +81,7 @@ class TerminalStampService {
                 }
                 $attendance = $this->clock->toggleBreak($user, $context);
                 if ($attendance === null) {
-                    return 'noop'; // Pause ohne offenes Kommen
+                    return ['status' => 'noop', 'user' => $user]; // Pause ohne offenes Kommen
                 }
                 $status = $attendance->break_started_at !== null ? 'break_started' : 'break_ended';
             } else {
@@ -92,13 +98,13 @@ class TerminalStampService {
                     }
                     $attendance = $this->clock->clockOut($user, $context);
                     if ($attendance === null) {
-                        return 'noop'; // Gehen ohne offenes Kommen
+                        return ['status' => 'noop', 'user' => $user]; // Gehen ohne offenes Kommen
                     }
                     $status = 'clocked_out';
                 }
             }
         } catch (Throwable) {
-            return 'rejected'; // Doppel-Kommen, ungültige Zeit u. Ä.
+            return ['status' => 'rejected', 'user' => $user]; // Doppel-Kommen, ungültige Zeit u. Ä.
         }
 
         if ($eventId !== null && $eventId !== '') {
@@ -114,7 +120,7 @@ class TerminalStampService {
             ]);
         }
 
-        return $status;
+        return ['status' => $status, 'user' => $user];
     }
 
     private function alreadySeen(AttendanceTerminal $terminal, string $eventId): bool {
@@ -143,10 +149,14 @@ class TerminalStampService {
             return null;
         }
 
+        $today = Carbon::today();
         $badge = UserBadge::query()->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
             ->where('badge_hash', UserBadge::hashBadge($badgeUid))
             ->whereNull('revoked_at')
+            // MVP-516: Gültigkeitszeitraum — außerhalb gilt der Badge als unbekannt.
+            ->where(fn ($q) => $q->whereNull('valid_from')->orWhere('valid_from', '<=', $today))
+            ->where(fn ($q) => $q->whereNull('valid_until')->orWhere('valid_until', '>=', $today))
             ->first();
         if (! $badge instanceof UserBadge) {
             return null;

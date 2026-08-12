@@ -205,6 +205,8 @@ class PermissionsSeeder extends Seeder {
                     // Rang 38: Plan/Ist-Anwesenheit org-weit — die .view-
                     // Heuristik trifft `report.presence.organization` nicht.
                     PermissionEnum::ReportPresenceOrganization->value,
+                    // MVP-518: Notfall-Anwesenheitsliste (Evakuierung).
+                    PermissionEnum::ReportPresenceEmergency->value,
                     // Feature 068: Go-/No-go- und Gewinn-/Zusage-Entscheidungen
                     // sind GF-Sache; die .view-Heuristik trifft *.decide nicht.
                     PermissionEnum::TenderDecide->value,
@@ -382,6 +384,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ComplianceViewAny,
             // Plan/Ist-Anwesenheit der eigenen Teams (Rang 38).
             PermissionEnum::ReportPresenceTeam,
+            // MVP-518: Notfall-Anwesenheitsliste (Evakuierung).
+            PermissionEnum::ReportPresenceEmergency,
             // Arbeitszeit-Modell pflegen jetzt exklusiv Personalverwaltung +
             // Geschäftsführung (work-schedule.manage daher hier entfernt).
             PermissionEnum::FlexBalanceView,
@@ -525,6 +529,8 @@ class PermissionsSeeder extends Seeder {
             // Plan/Ist-Anwesenheit org-weit (Rang 38).
             PermissionEnum::ReportPresenceTeam,
             PermissionEnum::ReportPresenceOrganization,
+            // MVP-518: Notfall-Anwesenheitsliste (Evakuierung).
+            PermissionEnum::ReportPresenceEmergency,
             PermissionEnum::UserPayrollManage,
             PermissionEnum::UserFlexManage,
             PermissionEnum::WorkScheduleManage,

@@ -44,6 +44,7 @@ class SurchargeRuleController extends Controller {
 
         return view('admin.surcharge-rules._form_dialog', [
             'rule' => new SurchargeRule(['kind' => SurchargeKind::Night->value, 'priority' => 0, 'active' => true]),
+            ...$this->conditionOptions(),
         ]);
     }
 
@@ -61,7 +62,21 @@ class SurchargeRuleController extends Controller {
 
         return view('admin.surcharge-rules._form_dialog', [
             'rule' => $surchargeRule,
+            ...$this->conditionOptions(),
         ]);
+    }
+
+    /**
+     * MVP-513: Auswahllisten für Regel-Bedingungen (Team/Standort/Schichttyp).
+     *
+     * @return array{conditionTeams: \Illuminate\Support\Collection<int, \App\Models\Team>, conditionSites: \Illuminate\Support\Collection<int, \App\Models\Site>, conditionShiftTypes: \Illuminate\Support\Collection<int, \App\Models\ShiftType>}
+     */
+    private function conditionOptions(): array {
+        return [
+            'conditionTeams' => \App\Models\Team::query()->orderBy('name')->get(['id', 'name']),
+            'conditionSites' => \App\Models\Site::query()->orderBy('name')->get(['id', 'name']),
+            'conditionShiftTypes' => \App\Models\ShiftType::query()->orderBy('name')->get(['id', 'name']),
+        ];
     }
 
     public function update(Request $request, SurchargeRule $surchargeRule): RedirectResponse {
@@ -80,6 +95,29 @@ class SurchargeRuleController extends Controller {
 
         return redirect()->route('admin.surcharge-rules.index')
             ->with('success', __('surcharge.flash.deleted'));
+    }
+
+    /**
+     * Sqid-Listen der Bedingungs-Selects → geprüfte IDs der eigenen Org.
+     *
+     * @param  class-string<\Illuminate\Database\Eloquent\Model>  $modelClass
+     * @param  array<int, mixed>  $raw
+     * @return list<int>
+     */
+    private function decodeIds(string $modelClass, array $raw): array {
+        $ids = [];
+        foreach ($raw as $value) {
+            $id = \App\Support\Sqid::decodeOrNumeric($modelClass, (string) $value);
+            if ($id !== null && $id > 0) {
+                $ids[] = $id;
+            }
+        }
+        if ($ids === []) {
+            return [];
+        }
+
+        // Nur Datensätze der eigenen Organisation (Org-Scope aktiv).
+        return array_values(array_map('intval', $modelClass::query()->whereIn('id', $ids)->pluck('id')->all()));
     }
 
     /** @return array<string, mixed> */
@@ -109,7 +147,22 @@ class SurchargeRuleController extends Controller {
             'active' => ['required', 'boolean'],
             'valid_from' => ['nullable', 'date'],
             'valid_until' => ['nullable', 'date', 'after_or_equal:valid_from'],
+            // MVP-513: Bedingungen (leer = gilt für alle).
+            'condition_team_ids' => ['nullable', 'array'],
+            'condition_team_ids.*' => ['string'],
+            'condition_site_ids' => ['nullable', 'array'],
+            'condition_site_ids.*' => ['string'],
+            'condition_shift_type_ids' => ['nullable', 'array'],
+            'condition_shift_type_ids.*' => ['string'],
         ]);
+
+        $conditions = array_filter([
+            'team_ids' => $this->decodeIds(\App\Models\Team::class, $data['condition_team_ids'] ?? []),
+            'site_ids' => $this->decodeIds(\App\Models\Site::class, $data['condition_site_ids'] ?? []),
+            'shift_type_ids' => $this->decodeIds(\App\Models\ShiftType::class, $data['condition_shift_type_ids'] ?? []),
+        ], static fn (array $ids): bool => $ids !== []);
+        unset($data['condition_team_ids'], $data['condition_site_ids'], $data['condition_shift_type_ids']);
+        $data['conditions'] = $conditions === [] ? null : $conditions;
 
         $kind = SurchargeKind::from((string) $data['kind']);
         if ($kind->requiresWindow()) {

@@ -69,6 +69,32 @@ class TerminalAdminController extends Controller {
             ->with('success', __('terminal.flash.registered'));
     }
 
+    /** MVP-516: Gerätetoken rotieren — neue Ingest-URL wird einmalig geflasht. */
+    public function rotateTerminal(Request $request): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        $terminal = $this->resolveTerminal($organization, (string) $request->input('terminal', ''));
+        $plain = $terminal->rotate();
+        $terminal->audit('terminal.token_rotated', ['by_user_id' => (int) $admin->id]);
+
+        return back()
+            ->with('terminal_issued', ['url' => route('api.terminal.ingest', ['token' => $plain])])
+            ->with('success', __('terminal.flash.token_rotated'));
+    }
+
+    /** MVP-516: Status-Anzeige (Saldo/Resturlaub) je Terminal umschalten — Standard AUS. */
+    public function toggleStatus(Request $request): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        $terminal = $this->resolveTerminal($organization, (string) $request->input('terminal', ''));
+        $terminal->forceFill(['show_status' => ! $terminal->show_status])->save();
+        $terminal->audit('terminal.status_display_toggled', ['enabled' => (bool) $terminal->show_status, 'by_user_id' => (int) $admin->id]);
+
+        return back()->with('success', __($terminal->show_status ? 'terminal.flash.status_enabled' : 'terminal.flash.status_disabled'));
+    }
+
     /** Sperrt ein Terminal (Ingest wird nicht mehr angenommen). */
     public function disconnectTerminal(Request $request): RedirectResponse {
         $admin = $this->admin();
@@ -92,6 +118,9 @@ class TerminalAdminController extends Controller {
             'user' => ['required', 'string'],
             'badge_uid' => ['required', 'string', 'max:190'],
             'label' => ['nullable', 'string', 'max:120'],
+            // MVP-516: optionaler Gültigkeitszeitraum (z. B. befristete Kräfte).
+            'valid_from' => ['nullable', 'date'],
+            'valid_until' => ['nullable', 'date', 'after_or_equal:valid_from'],
         ]);
 
         $user = $this->resolveUser($organization, (string) $data['user']);
@@ -111,6 +140,8 @@ class TerminalAdminController extends Controller {
             'user_id' => $user->id,
             'label' => filled($data['label'] ?? null) ? (string) $data['label'] : null,
             'badge_hash' => $hash,
+            'valid_from' => $data['valid_from'] ?? null,
+            'valid_until' => $data['valid_until'] ?? null,
             'created_by' => $admin->id,
         ]);
         $badge->audit('terminal.badge_assigned', ['by_user_id' => (int) $admin->id, 'user_id' => (int) $user->id]);

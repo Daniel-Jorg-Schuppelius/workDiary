@@ -706,7 +706,7 @@ class DiagnosticsService {
      */
     public function checkTerminals(): DiagnosticSection {
         /** @var \Illuminate\Support\Collection<int, AttendanceTerminal> $terminals */
-        $terminals = AttendanceTerminal::query()->get(['id', 'name', 'active', 'last_seen_at']);
+        $terminals = AttendanceTerminal::query()->get(['id', 'name', 'active', 'last_seen_at', 'last_buffer_size']);
         $total = $terminals->count();
 
         if ($total === 0) {
@@ -732,6 +732,14 @@ class DiagnosticsService {
             $messages[] = sprintf('%d aktive(s) Terminal(s) seit über %d h ohne Kontakt.', $stale->count(), self::TERMINAL_STALE_HOURS);
         }
 
+        // MVP-516: gemeldete Offline-Puffer — Ereignisse liegen noch auf dem
+        // Gerät und fehlen in den Auswertungen, bis sie nachsynchronisiert sind.
+        $buffered = (int) $active->sum(fn (AttendanceTerminal $t): int => (int) ($t->last_buffer_size ?? 0));
+        if ($buffered > 0) {
+            $status = DiagnosticStatus::Warn;
+            $messages[] = sprintf('%d gepufferte(s) Ereignis(se) auf Terminals gemeldet (Offline-Nachlieferung ausstehend).', $buffered);
+        }
+
         return new DiagnosticSection(
             code: 'terminals',
             status: $status,
@@ -739,6 +747,7 @@ class DiagnosticsService {
                 'total' => $total,
                 'active' => $active->count(),
                 'stale' => $stale->count(),
+                'buffered' => $buffered,
             ],
             messages: $messages,
             checkedAt: CarbonImmutable::now(),

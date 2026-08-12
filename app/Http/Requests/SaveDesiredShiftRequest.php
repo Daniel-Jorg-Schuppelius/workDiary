@@ -40,8 +40,10 @@ class SaveDesiredShiftRequest extends FormRequest {
     public function rules(): array {
         return [
             'date' => ['required', 'date'],
-            'shift_type_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('shift_types')],
+            // Freiwunsch (off) gilt immer für den ganzen Tag — ohne Schichttyp.
+            'shift_type_id' => ['nullable', 'integer', 'prohibited_if:preference,' . ShiftPreference::PreferredOff->value, new \App\Rules\ExistsInCurrentOrganization('shift_types')],
             'preference' => ['required', Rule::enum(ShiftPreference::class)],
+            'priority' => ['nullable', 'integer', 'between:1,3'],
             'note' => ['nullable', 'string', 'max:255'],
         ];
     }

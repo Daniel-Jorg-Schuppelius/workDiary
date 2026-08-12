@@ -624,6 +624,7 @@ return [
         'dayClose.reopen' => 'Rouvrir une clôture journalière',
         'report.presence.team' => 'Consulter le rapport de présence (équipe)',
         'report.presence.organization' => 'Consulter le rapport de présence (organisation)',
+        'report.presence.emergency' => 'Consulter la liste de présence d\'urgence',
         'finance.gobd.export' => 'Créer un export GoBD',
         'permit.viewAny' => 'Lister les autorisations',
         'permit.view' => 'Consulter l\'autorisation',

@@ -33,6 +33,10 @@ return [
         'uid' => 'Identifiant du badge',
         'uid_placeholder' => 'UID RFID/NFC',
         'uid_help' => 'Stocké uniquement sous forme de hachage (pas d\'identifiant en clair).',
+        'validity' => 'Validité',
+        'valid_from' => 'Valable à partir du',
+        'valid_until' => 'Valable jusqu\'au',
+        'outside_validity' => 'hors validité',
     ],
 
     'action' => [
@@ -40,11 +44,25 @@ return [
         'disable' => 'Désactiver',
         'assign' => 'Attribuer',
         'revoke' => 'Révoquer',
+        'rotate' => 'Renouveler le jeton',
+        'rotate_help' => 'Génère un nouveau jeton d\'appareil — l\'ancien devient immédiatement invalide.',
     ],
 
     'col' => [
         'status' => 'Statut',
+        'status_display' => 'Affichage du statut',
         'last_seen' => 'Vu la dernière fois',
+    ],
+
+    'status_display' => [
+        'on' => 'Activé',
+        'off' => 'Désactivé',
+        'help' => 'Affiche le solde/les congés restants sur l\'appareil après le pointage (visible par des tiers) — désactivé par défaut.',
+    ],
+
+    'buffer' => [
+        'label' => 'Tampon',
+        'help' => 'Événements hors ligne signalés par le terminal, pas encore transmis.',
     ],
 
     'status' => [
@@ -59,5 +77,8 @@ return [
         'badge_assigned' => 'Badge attribué.',
         'badge_revoked' => 'Badge révoqué.',
         'badge_taken' => 'Cet identifiant de badge est déjà attribué.',
+        'token_rotated' => 'Jeton d\'appareil renouvelé — nouvelle URL d\'ingestion affichée une seule fois.',
+        'status_enabled' => 'Affichage du statut activé.',
+        'status_disabled' => 'Affichage du statut désactivé.',
     ],
 ];

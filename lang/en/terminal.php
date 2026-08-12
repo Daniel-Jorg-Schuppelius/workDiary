@@ -33,6 +33,10 @@ return [
         'uid' => 'Badge ID',
         'uid_placeholder' => 'RFID/NFC UID',
         'uid_help' => 'Stored as a hash only (no plaintext ID).',
+        'validity' => 'Validity',
+        'valid_from' => 'Valid from',
+        'valid_until' => 'Valid until',
+        'outside_validity' => 'outside window',
     ],
 
     'action' => [
@@ -40,11 +44,25 @@ return [
         'disable' => 'Disable',
         'assign' => 'Assign',
         'revoke' => 'Revoke',
+        'rotate' => 'Rotate token',
+        'rotate_help' => 'Generate a new device token — the old one becomes invalid immediately.',
     ],
 
     'col' => [
         'status' => 'Status',
+        'status_display' => 'Status display',
         'last_seen' => 'Last seen',
+    ],
+
+    'status_display' => [
+        'on' => 'On',
+        'off' => 'Off',
+        'help' => 'Shows flex balance/remaining vacation on the device after stamping (visible to bystanders) — off by default.',
+    ],
+
+    'buffer' => [
+        'label' => 'Buffer',
+        'help' => 'Offline events reported by the terminal that have not been transmitted yet.',
     ],
 
     'status' => [
@@ -59,5 +77,8 @@ return [
         'badge_assigned' => 'Badge assigned.',
         'badge_revoked' => 'Badge revoked.',
         'badge_taken' => 'This badge ID is already assigned.',
+        'token_rotated' => 'Device token rotated — new ingest URL shown once.',
+        'status_enabled' => 'Status display enabled.',
+        'status_disabled' => 'Status display disabled.',
     ],
 ];

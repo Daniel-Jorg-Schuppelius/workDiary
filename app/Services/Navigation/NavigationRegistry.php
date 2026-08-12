@@ -42,8 +42,7 @@ class NavigationRegistry {
         private readonly FeatureFlagResolver $features,
         private readonly NavGate $gate,
         private readonly NavFocusService $focus,
-    ) {
-    }
+    ) {}
 
     /**
      * Baut alle Menüstrukturen für den aktuellen Nutzer/Request.
@@ -764,6 +763,10 @@ class NavigationRegistry {
                         // Auslastung & Realisierung (MVP-467): Seite prüft viewAny(User)/Admin.
                         ['route' => 'reports.utilization', 'label' => __('Auslastung'), 'icon' => 'speed', 'modal' => false, 'matches' => ['reports.utilization']],
                         ['route' => 'reports.coverage', 'label' => __('Coverage'), 'icon' => 'group_work', 'modal' => false, 'matches' => ['reports.coverage']],
+                        // MVP-518: Notfall-Anwesenheitsliste — eigene Berechtigung, kein Modul-Gate.
+                        $user?->can(Permission::ReportPresenceEmergency->value)
+                            ? ['route' => 'reports.presence-emergency', 'label' => __('reporting.presence_emergency.nav'), 'icon' => 'emergency_home', 'modal' => false, 'matches' => ['reports.presence-emergency']]
+                            : null,
                         ['route' => 'reports.absences', 'label' => __('Urlaub & Flex'), 'icon' => 'event_busy', 'modal' => false, 'matches' => ['reports.absences']],
                         ['route' => 'reports.sickness', 'label' => __('Krankheiten'), 'icon' => 'sick', 'modal' => false, 'matches' => ['reports.sickness']],
                         ['route' => 'reports.qualifications', 'label' => __('Qualifikationen'), 'icon' => 'verified', 'modal' => false, 'matches' => ['reports.qualifications']],
@@ -792,6 +795,10 @@ class NavigationRegistry {
                         ['route' => 'reports.entry-types', 'label' => __('Auftragstypanalyse'), 'icon' => 'stacked_bar_chart', 'modal' => false, 'matches' => ['reports.entry-types']],
                         ['route' => 'reports.assets', 'label' => __('Produktanalyse'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['reports.assets']],
                         ['route' => 'reports.customer-project', 'label' => __('Kunden & Projekte'), 'icon' => 'pie_chart', 'modal' => false, 'matches' => ['reports.customer-project']],
+                        // MVP-514 P3: aufgeteilte Zeit je Dimension (Feature 103).
+                        ($user?->isAdmin() || $user?->can(Permission::ReportView->value))
+                            ? ['route' => 'reports.allocations', 'label' => __('reporting.allocations.nav'), 'icon' => 'call_split', 'modal' => false, 'matches' => ['reports.allocations']]
+                            : null,
                         ['route' => 'reports.project-details', 'label' => __('Projekt-Details'), 'icon' => 'analytics', 'modal' => false, 'matches' => ['reports.project-details']],
                         ['route' => 'reports.project-inactive', 'label' => __('Inaktive Projekte'), 'icon' => 'folder_off', 'modal' => false, 'matches' => ['reports.project-inactive']],
                         ['route' => 'reports.operations', 'label' => __('Operations'), 'icon' => 'assignment', 'modal' => false, 'matches' => ['reports.operations']],
@@ -1224,6 +1231,10 @@ class NavigationRegistry {
                 }
                 if (Gate::allows(Permission::CostCenterRuleViewAny->value)) {
                     $adminNavItems[] = ['route' => 'admin.cost-center-rules.index', 'label' => __('costcenter.title.rules'), 'icon' => 'account_balance', 'modal' => false];
+                }
+                // MVP-514 P2: freie Mandanten-Dimensionen (admin-gebunden wie Terminals).
+                if (\Illuminate\Support\Facades\Auth::user()?->isAdmin() === true) {
+                    $adminNavItems[] = ['route' => 'admin.time-dimensions.index', 'label' => __('allocation.dimensions.nav'), 'icon' => 'category', 'modal' => false, 'matches' => ['admin.time-dimensions.*']];
                 }
                 if (Gate::allows(Permission::WageTypeMappingViewAny->value)) {
                     $adminNavItems[] = ['route' => 'admin.wage-type-mappings.index', 'label' => __('wage_types.title.index'), 'icon' => 'badge', 'modal' => false];

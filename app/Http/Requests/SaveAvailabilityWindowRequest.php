@@ -36,6 +36,7 @@ class SaveAvailabilityWindowRequest extends FormRequest {
             'start_time' => ['nullable', 'date_format:H:i'],
             'end_time' => ['nullable', 'date_format:H:i', 'after:start_time'],
             'kind' => ['required', Rule::enum(AvailabilityKind::class)],
+            'priority' => ['nullable', 'integer', 'between:1,3'],
             'valid_from' => ['nullable', 'date'],
             'valid_until' => ['nullable', 'date', 'after_or_equal:valid_from'],
             'note' => ['nullable', 'string', 'max:255'],
