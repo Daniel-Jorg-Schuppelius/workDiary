@@ -4,6 +4,11 @@
     --app-footer-h: 3rem;
     --sidebar-gap: 0.75rem;
     --panel-radius: 1rem;
+    /* Mindesthöhe der flex-füllenden Tabellen-Karte (<x-table scroll="flex">):
+       Kopfzeile + vollständige Leeranzeige (Icon, Titel, Meldung) bleiben
+       sichtbar. Darunter darf die Tabelle nie zusammenschrumpfen — bei zu
+       niedrigem Viewport scrollt stattdessen die Page-Shell vertikal. */
+    --wd-table-min-h: 14rem;
 }
 @media (min-width: 1024px) {
     :root {

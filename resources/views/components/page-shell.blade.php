@@ -20,7 +20,8 @@
 
     Props:
       - gap      : Lücke zwischen Karten (Tailwind-Spacing, Default 4)
-      - overflow : "auto" (Default, Body scrollt) | "clip" (Body regelt Scroll selbst)
+      - overflow : "auto" (Default, Body scrollt) | "clip" (Body regelt Scroll selbst;
+                   vertikal bleibt ein Auto-Fallback für Mindesthöhen, s. u.)
       - height   : "standard" (Default, nutzt verfügbare Contenthöhe) | "content" (nur Inhaltshöhe)
 
     Slots:
@@ -30,7 +31,13 @@
 --}}
 
 @php
-    $overflowClass = $overflow === 'clip' ? 'overflow-clip' : 'overflow-auto';
+    // "clip" clippt nur horizontal; vertikal bleibt ein Auto-Scroll-Fallback:
+    // Kinder mit Mindesthöhe (z. B. <x-table scroll="flex">, --wd-table-min-h)
+    // dürfen bei zu niedrigem Viewport nicht unerreichbar abgeschnitten werden —
+    // dann scrollt die Shell. Solange der Inhalt passt (Normalfall: flex-1-Kinder
+    // schrumpfen exakt auf die verfügbare Höhe), erscheint kein Scrollbalken,
+    // das Verhalten ist identisch zum früheren overflow-clip.
+    $overflowClass = $overflow === 'clip' ? 'overflow-x-clip overflow-y-auto' : 'overflow-auto';
     $heightClass = $height === 'content' ? 'min-h-0' : 'h-full min-h-0 flex-1';
 @endphp
 
