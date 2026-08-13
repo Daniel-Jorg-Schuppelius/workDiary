@@ -149,6 +149,7 @@
             "/reports/sla",
             "/reports/supplier-value",
             "/reports/suppliers",
+            "/reports/time-accounts",
             "/reports/utilization",
             "/reports/week-by-user",
             "/reports/work-balance",
@@ -186,7 +187,8 @@
             "/vertraege",
             "/warehouses",
             "/week",
-            "/work-centers"
+            "/work-centers",
+            "/zeitkonten"
         ],
         "header": [
             "/account/bookmarks",
@@ -239,6 +241,7 @@
             "/admin/webhooks",
             "/admin/woerterbuch",
             "/admin/workspaces",
+            "/admin/zeitkonten",
             "/audit",
             "/chat",
             "/event-categories",
@@ -372,6 +375,7 @@
             "/admin/webhooks",
             "/admin/woerterbuch",
             "/admin/workspaces",
+            "/admin/zeitkonten",
             "/audit",
             "/holidays",
             "/notifications",

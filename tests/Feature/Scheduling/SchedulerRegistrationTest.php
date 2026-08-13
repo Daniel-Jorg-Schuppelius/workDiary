@@ -118,6 +118,8 @@ class SchedulerRegistrationTest extends TestCase {
         'compliance:scan-findings' => ['30 1 * * *', true, true],
         // Neu mit MVP-522: Rollplan-Fortschreibung.
         'shifts:roll-forward' => ['10 2 * * *', true, true],
+        // Neu mit MVP-526: Zeitkonten-Bebuchung.
+        'accounts:post' => ['40 2 * * *', true, true],
         // Neu mit Phase 36 (MVP-411): KI-Betriebslauf.
         'ai:maintenance' => ['40 5 * * *', true, true],
         // Neu mit Phase 38 (MVP-415): wiederkehrende Rechnungsentwürfe.

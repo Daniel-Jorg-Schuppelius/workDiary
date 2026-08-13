@@ -115,6 +115,29 @@ class TerminalIngestController extends Controller {
             $info['vacation_days_remaining'] = $balance->remainingDays();
         }
 
+        // MVP-526: Zusatz-Zeitkonten mit Terminal-Freigabe (jüngster Stand).
+        $accounts = \App\Models\TimeAccount::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $user->organization_id)
+            ->where('is_active', true)
+            ->where('show_on_terminal', true)
+            ->get();
+        foreach ($accounts as $account) {
+            $latest = \App\Models\TimeAccountBalance::query()
+                ->withoutGlobalScopes()
+                ->where('time_account_id', $account->getKey())
+                ->where('user_id', $user->getKey())
+                ->orderByDesc('year')
+                ->orderByDesc('month')
+                ->first();
+            $info['time_accounts'][] = [
+                'code' => $account->code,
+                'name' => $account->name,
+                'balance' => $latest !== null ? (float) $latest->balance : 0.0,
+                'formatted' => $account->unit->format($latest !== null ? (float) $latest->balance : 0.0),
+            ];
+        }
+
         return $info;
     }
 }

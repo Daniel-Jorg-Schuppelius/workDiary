@@ -54,6 +54,10 @@ return [
         'admin.time-dimensions.*' => 'admin.time-dimensions',
         // Rollpläne (MVP-522): rollierende Dienst-Vorplanung.
         'admin.shift-rotations.*' => 'admin.shift-rotations',
+        // Zeitkonten (MVP-526): Verwaltung, eigene Sicht, Auswertung.
+        'admin.time-accounts.*' => 'admin.time-accounts',
+        'time-accounts.*' => 'time-accounts.overview',
+        'reports.time-accounts' => 'time-accounts.overview',
         // ── Nachträge 2026-07-10: Phasen 19–24 + Lücken-Sweep ──────────
         // Bewerbungen/Ausschreibungen (Feature 068)
         'tenders.*' => 'applications.overview',

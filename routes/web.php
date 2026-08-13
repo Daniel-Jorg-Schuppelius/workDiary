@@ -1387,6 +1387,18 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/terminals/badges/revoke', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'revokeBadge'])->name('admin.terminals.badges.revoke');
 
         // ── Freie Mandanten-Dimensionen (Feature 103, MVP-514 P2) ───────────────
+        // ── Zeitkonten (MVP-526) ────────────────────────────────────────────────
+        Route::get('zeitkonten', [\App\Http\Controllers\TimeAccountController::class, 'index'])->name('time-accounts.index');
+        Route::get('admin/zeitkonten', [\App\Http\Controllers\Admin\TimeAccountAdminController::class, 'index'])->name('admin.time-accounts.index');
+        Route::get('admin/zeitkonten/neu', [\App\Http\Controllers\Admin\TimeAccountAdminController::class, 'create'])->name('admin.time-accounts.create');
+        Route::post('admin/zeitkonten', [\App\Http\Controllers\Admin\TimeAccountAdminController::class, 'store'])->name('admin.time-accounts.store');
+        Route::post('admin/zeitkonten/lauf', [\App\Http\Controllers\Admin\TimeAccountAdminController::class, 'post'])->name('admin.time-accounts.post');
+        Route::post('admin/zeitkonten/{account}/umschalten', [\App\Http\Controllers\Admin\TimeAccountAdminController::class, 'toggle'])->name('admin.time-accounts.toggle');
+        Route::post('admin/zeitkonten/{account}/regeln', [\App\Http\Controllers\Admin\TimeAccountAdminController::class, 'storeRule'])->name('admin.time-accounts.rules.store');
+        Route::delete('admin/zeitkonten/{account}/regeln/{rule}', [\App\Http\Controllers\Admin\TimeAccountAdminController::class, 'destroyRule'])->name('admin.time-accounts.rules.destroy');
+        Route::post('admin/zeitkonten/{account}/buchung', [\App\Http\Controllers\Admin\TimeAccountAdminController::class, 'manualEntry'])->name('admin.time-accounts.manual');
+        Route::get('reports/time-accounts', [\App\Http\Controllers\Reporting\TimeAccountsReportController::class, 'index'])->name('reports.time-accounts');
+
         // ── Rollpläne (MVP-522) ─────────────────────────────────────────────────
         Route::get('admin/rollplaene', [\App\Http\Controllers\Admin\ShiftRotationController::class, 'index'])->name('admin.shift-rotations.index');
         Route::get('admin/rollplaene/neu', [\App\Http\Controllers\Admin\ShiftRotationController::class, 'create'])->name('admin.shift-rotations.create');

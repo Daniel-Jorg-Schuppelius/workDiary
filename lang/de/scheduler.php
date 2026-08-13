@@ -92,6 +92,7 @@ return [
         'cloud-intake' => ['sync' => 'Cloud-Dokumenteingang abrufen'],
         'compliance' => ['scan_findings' => 'Compliance-Befunde prüfen'],
         'shifts' => ['roll_forward' => 'Rollpläne fortschreiben'],
+        'accounts' => ['post' => 'Zeitkonten bebuchen'],
         'events' => [
             'check_certificates' => 'Zertifikatsablauf prüfen',
             'dispatch_reminders' => 'Event-Erinnerungen versenden',

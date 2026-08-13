@@ -91,6 +91,9 @@ class TenantTraitCoverageTest extends TestCase {
         // Rollplan-Slot (MVP-522): Kind der mandantengebundenen ShiftRotation —
         // Mandantengrenze transitiv über shift_rotation_id (cascade).
         \App\Models\ShiftRotationEntry::class,
+        // Zeitkonto-Regel (MVP-526): Kind des mandantengebundenen TimeAccount —
+        // Mandantengrenze transitiv über time_account_id (cascade).
+        \App\Models\TimeAccountRule::class,
         // SSO-Kontoverknüpfung (Feature 057, MVP-120/121): Kind der mandanten-
         // gebundenen SsoConnection — Mandantengrenze transitiv über
         // sso_connection_id (alle Zugriffe filtern darüber); zusätzlich prüft

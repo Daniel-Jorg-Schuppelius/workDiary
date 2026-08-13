@@ -290,6 +290,16 @@ return [
             'criticality' => 'core',
             'expected_runtime_minutes' => 5,
         ],
+        // --- Zeitkonten-Bebuchung (MVP-526) ---
+        // Bebucht konfigurierte Zusatzkonten aus dem Bestand (append-only,
+        // idempotent) inkl. Kappungsbuchungen beim Monatsabschluss.
+        'accounts.post' => [
+            'command' => 'accounts:post',
+            'cadence' => ['type' => 'dailyAt', 'time' => '02:40'],
+            'allowed' => ['dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 5,
+        ],
         'events.check_certificates' => [
             'command' => 'events:check-certificates',
             'cadence' => ['type' => 'dailyAt', 'time' => '06:00'],
