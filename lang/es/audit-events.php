@@ -1,16 +1,463 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * Lesbare Bezeichnungen für Audit-Events (audit_logs.event). Punktnotation
+ * wird als verschachteltes Array abgelegt; AuditLog::eventLabel() fällt auf
+ * den rohen Event-String zurück, wenn ein Schlüssel fehlt. Vollständigkeit
+ * erzwingt Tests\Feature\AuditTranslationCoverageTest.
+ */
 return [
-    'created' => 'Creado',
-    'updated' => 'Actualizado',
-    'deleted' => 'Eliminado',
+    'agile' => [
+        'board' => [
+            'activated' => 'Tablero ágil activado',
+            'column_deleted' => 'Columna del tablero eliminada',
+            'column_saved' => 'Columna del tablero guardada',
+            'settings_updated' => 'Configuración del tablero modificada',
+        ],
+        'sprint' => [
+            'planned' => 'Sprint planificado',
+        ],
+    ],
+    'ai' => [
+        'invoked' => 'IA invocada',
+        'suggestion_decided' => 'Sugerencia de IA decidida',
+    ],
     'archived' => 'Archivado',
-    'restored' => 'Restaurado',
+    'asset' => [
+        'blockExceptionGranted' => 'Excepción de bloqueo de activo concedida',
+        'blockExceptionRevoked' => 'Excepción de bloqueo de activo revocada',
+        'blocked' => 'Activo bloqueado',
+        'checkedIn' => 'Activo devuelto',
+        'checkedOut' => 'Activo entregado',
+        'created' => 'Activo creado',
+        'decommissioned' => 'Activo dado de baja',
+        'defectReported' => 'Defecto de activo notificado',
+        'defectUpdated' => 'Defecto de activo actualizado',
+        'moved' => 'Activo trasladado',
+        'ownershipTransferred' => 'Propiedad del activo transferida',
+        'ownership_changed' => 'Propiedad del activo modificada',
+        'statusChanged' => 'Estado del activo modificado',
+        'unblocked' => 'Activo desbloqueado',
+        'updated' => 'Activo actualizado',
+        'useBlockedByGuard' => 'Uso del activo impedido por bloqueo',
+    ],
+    'assetAssignment' => [
+        'checkedIn' => 'Asignación de activo: devolución',
+        'checkedOut' => 'Asignación de activo: entrega',
+    ],
+    'assetCompliance' => [
+        'assigned' => 'Perfil de conformidad asignado',
+        'claimOpened' => 'Conformidad: reclamación abierta',
+        'decommissionRequested' => 'Baja solicitada',
+        'inspected' => 'Activo inspeccionado',
+        'restrictedUse' => 'Uso restringido',
+    ],
+    'assetDefect' => [
+        'reported' => 'Defecto notificado',
+        'statusChanged' => 'Estado del defecto modificado',
+    ],
+    'assetFinance' => [
+        'activated' => 'Financiación activada',
+        'closed' => 'Financiación cerrada',
+        'contractLinked' => 'Contrato de financiación vinculado',
+        'deadlineMissed' => 'Plazo de financiación incumplido',
+        'ended' => 'Financiación finalizada',
+        'optionExercised' => 'Opción de financiación ejercida',
+        'rateLinked' => 'Cuota de financiación vinculada',
+        'terminated' => 'Financiación rescindida',
+        'usageRecorded' => 'Uso registrado',
+    ],
     'auth' => [
+        'failed' => 'Inicio de sesión fallido',
         'login' => 'Inicio de sesión',
         'logout' => 'Cierre de sesión',
-        'failed' => 'Inicio de sesión fallido',
         'password_reset' => 'Restablecimiento de contraseña',
+    ],
+    'b2b_catalog' => [
+        'access_issued' => 'Acceso al catálogo B2B emitido',
+        'access_revoked' => 'Acceso al catálogo B2B revocado',
+        'access_rotated' => 'Acceso al catálogo B2B rotado',
+        'item_released' => 'Artículo del catálogo B2B publicado',
+        'item_removed' => 'Artículo del catálogo B2B eliminado',
+    ],
+    'b2b_order' => [
+        'booked' => 'Pedido B2B contabilizado',
+        'dismissed' => 'Pedido B2B descartado',
+        'received' => 'Pedido B2B recibido',
+    ],
+    'backup' => [
+        'checkRestore' => 'Restauración de backup comprobada',
+        'completed' => 'Copia de seguridad completada',
+        'generationPurged' => 'Generación de backup purgada',
+        'heartbeatReceived' => 'Heartbeat de backup recibido',
+        'holdSet' => 'Retención de backup establecida',
+        'masterKeyGenerated' => 'Clave maestra de backup generada',
+        'recoveryKeyGenerated' => 'Clave de recuperación de backup generada',
+        'restoreTested' => 'Prueba de restauración realizada',
+        'retentionDeleted' => 'Backup eliminado según retención',
+        'tokenRotated' => 'Token de backup rotado',
+        'verified' => 'Backup verificado',
+    ],
+    'backupTarget' => [
+        'connected' => 'Destino de backup conectado',
+        'disconnected' => 'Destino de backup desconectado',
+        'scopeBlocked' => 'Destino de backup: ámbito bloqueado',
+    ],
+    'branch_profile' => [
+        'installed' => 'Perfil de sucursal instalado',
+    ],
+    'caldav' => [
+        'connection_saved' => 'Conexión CalDAV guardada',
+        'disconnected' => 'CalDAV desconectado',
+        'publish_manual' => 'CalDAV publicado manualmente',
+    ],
+    'calendly' => [
+        'booking_link_created' => 'Enlace de reserva de Calendly creado',
+        'cancel_synced' => 'Cancelación de Calendly sincronizada',
+        'subscribed' => 'Webhook de Calendly suscrito',
+    ],
+    'carddav' => [
+        'addressbook_chosen' => 'Libreta de direcciones CardDAV elegida',
+        'connection_saved' => 'Conexión CardDAV guardada',
+        'disconnected' => 'CardDAV desconectado',
+        'sync_manual' => 'CardDAV sincronizado manualmente',
+    ],
+    'change' => [
+        'asset_attached' => 'Cambio: activo vinculado',
+        'asset_detached' => 'Cambio: activo desvinculado',
+        'completed' => 'Cambio completado',
+        'decided' => 'Cambio decidido',
+        'implementing' => 'Cambio en implementación',
+        'submitted' => 'Cambio presentado',
+        'tickets_linked' => 'Cambio: tickets vinculados',
+    ],
+    'change_template' => [
+        'approved' => 'Plantilla de cambio aprobada',
+        'created' => 'Plantilla de cambio creada',
+        'updated' => 'Plantilla de cambio actualizada',
+    ],
+    'chat' => [
+        'disconnected' => 'Integración de chat desconectada',
+        'webhook_created' => 'Webhook de chat creado',
+    ],
+    'classification' => [
+        'imported' => 'Clasificación importada',
+        'requirementMissing' => 'Falta requisito de clasificación',
+        'sortChanged' => 'Orden de clasificación modificado',
+    ],
+    'cloudIntake' => [
+        'connected' => 'Entrada de documentos en la nube conectada',
+        'disconnected' => 'Entrada de documentos en la nube desconectada',
+        'folderSelected' => 'Carpeta de entrada en la nube seleccionada',
+    ],
+    'communication' => [
+        'confidential' => [
+            'set' => 'Comunicación marcada como confidencial',
+            'unset' => 'Confidencialidad retirada',
+            'viewed' => 'Comunicación confidencial consultada',
+        ],
+        'deleted' => 'Nota de comunicación eliminada',
+        'followup' => [
+            'completed' => 'Seguimiento completado',
+        ],
+        'published' => 'Nota de comunicación publicada',
+    ],
+    'compliance' => [
+        'finding' => [
+            'accepted' => 'Infracción aceptada',
+            'acknowledged' => 'Infracción confirmada',
+            'detected' => 'Infracción detectada',
+            'reopened' => 'Infracción reaparecida',
+            'resolved' => 'Infracción resuelta',
+        ],
+    ],
+    'contract' => [
+        'activated' => 'Contrato activado',
+        'approved_step' => 'Etapa de aprobación del contrato concedida',
+        'cancelled' => 'Contrato anulado',
+        'concluded' => 'Contrato celebrado',
+        'ended' => 'Contrato finalizado',
+        'negotiation_opened' => 'Negociación del contrato abierta',
+        'obligationAdded' => 'Obligación contractual añadida',
+        'obligationCompleted' => 'Obligación contractual cumplida',
+        'obligationMissed' => 'Obligación contractual incumplida',
+        'review_item_added' => 'Punto de revisión del contrato añadido',
+        'review_item_resolved' => 'Punto de revisión del contrato resuelto',
+        'terminated' => 'Contrato rescindido',
+        'version_added' => 'Versión del contrato añadida',
+    ],
+    'correction' => [
+        'applyFailed' => 'Aplicación de la corrección fallida',
+    ],
+    'created' => 'Creado',
+    'crisis' => [
+        'activated' => 'Caso de crisis activado',
+        'alert_acknowledged' => 'Alerta de crisis confirmada',
+        'alert_escalated' => 'Alerta de crisis escalada',
+        'alerted' => 'Alerta de crisis emitida',
+        'all_clear' => 'Fin de alerta declarado',
+        'closed' => 'Caso de crisis cerrado',
+        'communication_approved' => 'Comunicación de crisis aprobada',
+        'communication_sent' => 'Comunicación de crisis enviada',
+        'exercise_documented' => 'Ejercicio de crisis documentado',
+        'linked' => 'Caso de crisis vinculado',
+        'reported' => 'Caso de crisis notificado',
+        'reviewed' => 'Revisión posterior de la crisis completada',
+        'team_assigned' => 'Miembro del comité de crisis asignado',
+        'team_removed' => 'Miembro del comité de crisis eliminado',
+    ],
+    'cti' => [
+        'connection_issued' => 'Conexión CTI emitida',
+        'disconnected' => 'CTI desconectado',
+    ],
+    'dayClose' => [
+        'closed' => 'Día cerrado',
+        'correctionApproved' => 'Corrección del día aprobada',
+        'correctionRejected' => 'Corrección del día rechazada',
+        'correctionRequested' => 'Corrección del día solicitada',
+        'entrySaved' => 'Cierre diario guardado',
+        'opened' => 'Cierre diario abierto',
+        'reopened' => 'Día reabierto',
+    ],
+    'deleted' => 'Eliminado',
+    'demo' => [
+        'orgCreated' => 'Organización de demostración creada',
+        'reset' => 'Inquilino de demostración restablecido',
+        'seeded' => 'Datos de demostración generados',
+    ],
+    'device' => [
+        'revoked' => 'Dispositivo revocado',
+    ],
+    'diagnostics' => [
+        'testTriggered' => 'Prueba de diagnóstico activada',
+        'viewed' => 'Diagnóstico consultado',
+    ],
+    'document' => [
+        'archived' => 'Documento archivado',
+        'confidentialAccessed' => 'Documento confidencial consultado',
+        'deleted' => 'Documento eliminado',
+        'einvoice_received' => 'Factura electrónica recibida',
+        'einvoice_xml_exported' => 'XML de factura electrónica exportado',
+        'released_to_customer' => 'Documento liberado para el cliente',
+        'revoked_from_customer' => 'Liberación al cliente retirada',
+        'version' => [
+            'added' => 'Versión del documento añadida',
+        ],
+    ],
+    'export' => [
+        'deleted' => 'Exportación eliminada',
+    ],
+    'external' => [
+        'participant' => [
+            'invited' => 'Participante externo invitado',
+            'revoked' => 'Participante externo revocado',
+        ],
+    ],
+    'finance' => [
+        'datev' => [
+            'debtors_exported' => 'Deudores DATEV exportados',
+            'gl_accounts_exported' => 'Cuentas de mayor DATEV exportadas',
+        ],
+    ],
+    'form' => [
+        'submitted' => 'Formulario enviado',
+        'template' => [
+            'activated' => 'Plantilla de formulario activada',
+            'archived' => 'Plantilla de formulario archivada',
+            'deleted' => 'Plantilla de formulario eliminada',
+        ],
+    ],
+    'gobd' => [
+        'exported' => 'Exportación GoBD creada',
+    ],
+    'google_calendar' => [
+        'calendar_selected' => 'Calendario de Google seleccionado',
+        'publish_manual' => 'Calendario de Google publicado manualmente',
+    ],
+    'idea_map' => [
+        'archived' => 'Mapa de ideas archivado',
+        'exported' => 'Mapa de ideas exportado',
+        'ownership_transferred' => 'Mapa de ideas transferido',
+        'share_granted' => 'Mapa de ideas compartido',
+        'share_revoked' => 'Compartición del mapa de ideas revocada',
+        'synced' => 'Mapa de ideas sincronizado',
+        'unarchived' => 'Mapa de ideas desarchivado',
+    ],
+    'idea_node' => [
+        'converted' => 'Nodo de idea convertido',
+        'moved' => 'Nodo de idea movido',
+    ],
+    'import' => [
+        'confirmed' => 'Importación confirmada',
+        'finished' => 'Importación finalizada',
+        'partial' => 'Importación finalizada parcialmente',
+        'preflightFailed' => 'Comprobación previa de la importación fallida',
+        'started' => 'Importación iniciada',
+    ],
+    'incoming_einvoice' => [
+        'decided' => 'Factura entrante decidida',
+        'transferred' => 'Factura entrante transferida',
+    ],
+    'integration' => [
+        'changed' => 'Integración activada/desactivada',
+        'data_ownership_changed' => 'Soberanía de los datos modificada',
+        'inbox_resolved' => 'Elemento de la bandeja resuelto',
+        'settings_changed' => 'Configuración de integración modificada',
+    ],
+    'integrity' => [
+        'check' => 'Comprobación de integridad realizada',
+        'freeze' => 'Línea base de integridad congelada',
+        'lockdown_engaged' => 'Bloqueo de integridad activado',
+        'lockdown_released' => 'Bloqueo de integridad levantado',
+    ],
+    'inventory' => [
+        'mode_changed' => 'Modo de gestión de stock modificado',
+        'negativeApproved' => 'Stock negativo aprobado',
+    ],
+    'investment' => [
+        'budget_approved' => 'Presupuesto de inversión aprobado',
+        'budget_rejected' => 'Presupuesto de inversión rechazado',
+        'budget_submitted' => 'Presupuesto de inversión solicitado',
+        'budget_supplement' => 'Presupuesto adicional solicitado',
+        'created' => 'Proyecto de inversión creado',
+        'deviation_decided' => 'Desviación de inversión decidida',
+        'linked' => 'Inversión vinculada',
+        'option_recommended' => 'Opción de inversión recomendada',
+        'reviewed' => 'Inversión revisada',
+    ],
+    'invoice' => [
+        'approved' => 'Factura aprobada',
+        'dunned' => 'Factura reclamada',
+        'einvoice_exported' => 'Factura electrónica exportada',
+        'objectionDocumented' => 'Objeción a la factura documentada',
+        'proforma_converted' => 'Proforma convertida en factura',
+    ],
+    'isms' => [
+        'audit' => [
+            'deleted' => 'Auditoría ISMS eliminada',
+            'transitioned' => 'Auditoría ISMS: estado modificado',
+        ],
+        'audit_package' => [
+            'created' => 'Paquete de auditoría creado',
+            'finalized' => 'Paquete de auditoría finalizado',
+            'token_created' => 'Token del paquete de auditoría creado',
+            'token_revoked' => 'Token del paquete de auditoría revocado',
+        ],
+        'audit_program' => [
+            'audit_attached' => 'Auditoría adjuntada al programa',
+            'created' => 'Programa de auditoría creado',
+            'deleted' => 'Programa de auditoría eliminado',
+            'status_changed' => 'Programa de auditoría: estado modificado',
+        ],
+        'certificate' => [
+            'added' => 'Certificado añadido',
+        ],
+        'control' => [
+            'deleted' => 'Control eliminado',
+        ],
+        'corrective_action' => [
+            'deleted' => 'Acción correctiva eliminada',
+            'transitioned' => 'Acción correctiva: estado modificado',
+        ],
+        'finding' => [
+            'deleted' => 'Hallazgo eliminado',
+            'reverted_to_correction' => 'Hallazgo devuelto a corrección',
+            'transitioned' => 'Hallazgo: estado modificado',
+        ],
+        'management_review' => [
+            'approved' => 'Revisión por la dirección aprobada',
+            'deleted' => 'Revisión por la dirección eliminada',
+        ],
+        'norm_status' => [
+            'expired' => 'Estado de norma caducado',
+            'transitioned' => 'Estado de norma modificado',
+        ],
+        'requirement' => [
+            'deleted' => 'Requisito ISMS eliminado',
+        ],
+        'risk' => [
+            'deleted' => 'Riesgo ISMS eliminado',
+            'transitioned' => 'Riesgo ISMS: estado modificado',
+        ],
+        'risk_assessment' => [
+            'approved' => 'Evaluación de riesgos aprobada',
+            'deleted' => 'Evaluación de riesgos eliminada',
+        ],
+        'scope' => [
+            'deleted' => 'Alcance eliminado',
+        ],
+        'security_incident' => [
+            'deleted' => 'Incidente de seguridad eliminado',
+            'transitioned' => 'Incidente de seguridad: estado modificado',
+        ],
+        'software_installation' => [
+            'deleted' => 'Instalación de software eliminada',
+        ],
+        'software_product' => [
+            'deleted' => 'Producto de software eliminado',
+        ],
+        'supplier_assessment' => [
+            'deleted' => 'Evaluación de proveedores eliminada',
+            'transitioned' => 'Evaluación de proveedores: estado modificado',
+        ],
+        'vulnerability' => [
+            'deleted' => 'Vulnerabilidad eliminada',
+            'exploitability_decided' => 'Explotabilidad decidida',
+            'transitioned' => 'Vulnerabilidad: estado modificado',
+        ],
+    ],
+    'key_handover' => [
+        'recorded' => 'Entrega de llaves registrada',
+    ],
+    'knowledge' => [
+        'archived' => 'Artículo de conocimiento archivado',
+        'deleted' => 'Artículo de conocimiento eliminado',
+        'linked' => 'Artículo de conocimiento vinculado',
+        'published' => 'Artículo de conocimiento publicado',
+        'unlinked' => 'Vínculo del artículo de conocimiento eliminado',
+    ],
+    'license' => [
+        'installed' => 'Licencia instalada',
+        'keyIssued' => 'Clave de licencia emitida',
+        'orgInstalled' => 'Licencia de la organización instalada',
+        'orgIssued' => 'Licencia de la organización emitida',
+        'orgRemoved' => 'Licencia de la organización eliminada',
+        'scopeConfigured' => 'Ámbito de la licencia configurado',
+    ],
+    'limit' => [
+        'exceeded' => 'Límite superado',
+    ],
+    'mail' => [
+        'connection_saved' => 'Conexión de correo guardada',
+        'disconnected' => 'Conexión de correo desconectada',
+    ],
+    'maintenance_plan' => [
+        'completed' => 'Mantenimiento completado',
+        'created' => 'Plan de mantenimiento creado',
+        'due_detected' => 'Mantenimiento vencido',
+        'paused' => 'Plan de mantenimiento pausado',
+        'resumed' => 'Plan de mantenimiento reanudado',
+    ],
+    'meter_reading' => [
+        'recorded' => 'Lectura de contador registrada',
+    ],
+    'month_closure' => [
+        'bundle_exported' => 'Paquete de cierre mensual exportado',
+    ],
+    'msgraph' => [
+        'admin_consent_granted' => 'Consentimiento de administrador de Microsoft 365 concedido',
+        'calendar_selected' => 'Calendario de Microsoft 365 seleccionado',
+        'publish_manual' => 'Calendario de Microsoft 365 publicado manualmente',
+    ],
+    'msgraph_mail' => [
+        'settings_saved' => 'Configuración de correo de Microsoft 365 guardada',
+        'test_sent' => 'Correo de prueba de Microsoft 365 enviado',
+    ],
+    'msgraph_tasks' => [
+        'link_removed' => 'Vínculo de lista de tareas eliminado',
+        'link_saved' => 'Vínculo de lista de tareas guardado',
     ],
     'onboarding' => [
         'completed' => 'Onboarding completado',
@@ -18,51 +465,314 @@ return [
         'stepSkipped' => 'Paso de onboarding omitido',
         'widgetDismissed' => 'Widget de onboarding descartado',
     ],
-    'backup' => [
-        'completed' => 'Copia de seguridad completada',
+    'orgamax_account_confirmed' => 'Cuenta orgaMAX confirmada',
+    'orgamax_callback_processed' => 'Callback de orgaMAX procesado',
+    'orgamax_capabilities_updated' => 'Capacidades de orgaMAX actualizadas',
+    'orgamax_disconnected' => 'orgaMAX desconectado',
+    'orgamax_intent_started' => 'Operación orgaMAX iniciada',
+    'orgamax_invoice_convert_requested' => 'orgaMAX: conversión de factura solicitada',
+    'orgamax_invoice_locked' => 'Factura orgaMAX bloqueada definitivamente',
+    'orgamax_invoice_pdf_fetched' => 'PDF de factura orgaMAX descargado',
+    'orgamax_invoice_send_requested' => 'Envío de factura orgaMAX solicitado',
+    'orgamax_payment_requested' => 'Pago orgaMAX solicitado',
+    'orgamax_scopes_missing' => 'Faltan permisos de orgaMAX',
+    'organization' => [
+        'maintenance_toggled' => 'Modo de mantenimiento conmutado',
     ],
-    'import' => [
-        'confirmed' => 'Importación confirmada',
-        'started' => 'Importación iniciada',
-        'finished' => 'Importación finalizada',
-        'partial' => 'Importación finalizada parcialmente',
-        'preflightFailed' => 'Comprobación previa de la importación fallida',
+    'overtime' => [
+        'approved' => 'Horas extra aprobadas',
+        'stage_approved' => 'Horas extra: etapa aprobada',
+        'withdrawn' => 'Solicitud de horas extra retirada',
     ],
-    'diagnostics' => [
-        'viewed' => 'Diagnóstico consultado',
-        'testTriggered' => 'Prueba de diagnóstico activada',
+    'passenger' => [
+        'concession_created' => 'Concesión creada',
+        'concession_updated' => 'Concesión actualizada',
+        'ride_accepted' => 'Trayecto aceptado',
+        'ride_anonymized' => 'Trayecto anonimizado',
+        'ride_assigned' => 'Trayecto asignado',
+        'ride_closed' => 'Trayecto cerrado',
+        'ride_completed' => 'Trayecto completado',
+        'ride_return_recorded' => 'Trayecto de vuelta registrado',
+        'ride_started' => 'Trayecto iniciado',
+        'ride_transition' => 'Trayecto: estado modificado',
+        'settlement_cash_posted' => 'Liquidación de turno: caja contabilizada',
+        'settlement_closed' => 'Liquidación de turno cerrada',
+        'settlement_created' => 'Liquidación de turno creada',
+        'settlement_updated' => 'Liquidación de turno actualizada',
+        'tariff_created' => 'Tarifa creada',
+        'tariff_rule_added' => 'Regla de tarifa añadida',
+        'tariff_rule_removed' => 'Regla de tarifa eliminada',
+        'tariff_updated' => 'Tarifa actualizada',
+        'vehicle_profile_created' => 'Perfil de vehículo creado',
+        'vehicle_profile_updated' => 'Perfil de vehículo actualizado',
     ],
-    'role' => [
-        'created' => 'Rol creado',
-        'updated' => 'Rol actualizado',
-        'deleted' => 'Rol eliminado',
-    ],
-    'user_group' => [
-        'member_added' => 'Grupo de usuarios: miembro añadido',
-        'member_removed' => 'Grupo de usuarios: miembro eliminado',
-    ],
-    // Asignación de roles/permisos (Bauturbo A17, MVP-335)
-    'user' => [
-        'role' => [
-            'assigned' => 'Rol asignado',
-            'revoked' => 'Rol revocado',
+    'payroll' => [
+        'wage' => [
+            'raised_to_minimum' => 'Salario elevado al mínimo',
         ],
-        'permission' => [
-            'granted' => 'Permiso concedido',
-            'revoked' => 'Permiso revocado',
+    ],
+    'portal' => [
+        'access' => [
+            'deactivated' => 'Acceso al portal desactivado',
+            'invite_accepted' => 'Invitación al portal aceptada',
+            'invite_resent' => 'Invitación al portal reenviada',
+            'invited' => 'Acceso al portal invitado',
+            'reactivated' => 'Acceso al portal reactivado',
+        ],
+        'query' => [
+            'withdrawn' => 'Consulta del portal retirada',
+        ],
+        'visibility' => [
+            'updated' => 'Visibilidad del portal modificada',
         ],
     ],
-    'support' => [
-        'test' => 'Prueba de soporte',
-        'reportGenerated' => 'Informe de soporte generado',
-        'reportDownloaded' => 'Informe de soporte descargado',
+    'print' => [
+        'claim_opened' => 'Impresión: reclamación abierta',
+        'file_bound' => 'Archivo de impresión vinculado de forma definitiva',
+        'files_purged' => 'Archivos de impresión purgados',
+        'order_approved' => 'Orden de impresión aprobada',
+        'order_cancelled' => 'Orden de impresión anulada',
+        'order_issued' => 'Orden de impresión emitida',
+        'order_opened' => 'Orden de impresión abierta',
+        'preflight_overridden' => 'Preflight anulado manualmente',
+        'preflight_recorded' => 'Preflight registrado',
+        'production_resumed' => 'Producción reanudada',
+        'production_started' => 'Producción iniciada',
+        'quality_checked' => 'Calidad comprobada',
+    ],
+    'privacy' => [
+        'dsr' => [
+            'exported' => 'Solicitud del interesado exportada',
+        ],
+        'overviewExported' => 'Resumen de privacidad exportado',
+        'report' => [
+            'exported' => 'Informe de protección de datos exportado',
+        ],
+        'ropa' => [
+            'exported' => 'Registro de actividades de tratamiento exportado',
+        ],
+    ],
+    'problem' => [
+        'effectiveness_checked' => 'Eficacia comprobada',
+        'known_error_published' => 'Error conocido publicado',
+        'opened' => 'Problema abierto',
+        'status_changed' => 'Problema: estado modificado',
+        'updated' => 'Problema actualizado',
+    ],
+    'protocol' => [
+        'signatureLinkOpened' => 'Enlace de firma abierto',
+        'signatureRequested' => 'Firma solicitada',
+    ],
+    'quote' => [
+        'accepted' => 'Presupuesto aceptado',
+        'approved' => 'Presupuesto aprobado',
+        'converted' => 'Presupuesto convertido',
+        'created' => 'Presupuesto creado',
+        'rejected' => 'Presupuesto rechazado',
+        'sent' => 'Presupuesto enviado',
+        'versioned' => 'Versión del presupuesto creada',
+    ],
+    'recipe' => [
+        'ingredient_allergens' => 'Alérgenos del ingrediente actualizados',
+        'menu_created' => 'Menú creado',
+        'menu_item_added' => 'Posición de menú añadida',
+        'menu_item_removed' => 'Posición de menú eliminada',
+        'profile_saved' => 'Perfil de receta guardado',
+    ],
+    'recruiting' => [
+        'application_anonymized' => 'Candidatura anonimizada',
+        'application_decided' => 'Candidatura decidida',
+        'application_exported' => 'Candidatura exportada',
+        'application_received' => 'Candidatura recibida',
+        'document_attached' => 'Documento de candidatura adjuntado',
+        'draft_invited' => 'Borrador de empleado invitado',
+        'onboarding_draft_created' => 'Borrador de onboarding creado',
+        'posting_paused' => 'Oferta de empleo pausada',
+        'posting_published' => 'Oferta de empleo publicada',
+        'public_application_received' => 'Candidatura pública recibida',
+        'requisition_created' => 'Requisición de puesto creada',
+    ],
+    'render_profile_activated' => 'Perfil de renderizado activado',
+    'rental' => [
+        'active' => 'Alquiler activo',
+        'assetSwapped' => 'Equipo de alquiler cambiado',
+        'cancelled' => 'Alquiler anulado',
+        'chargeAdded' => 'Cargo de alquiler añadido',
+        'chargeCancelled' => 'Cargo de alquiler anulado',
+        'chargesInvoiced' => 'Cargos de alquiler facturados',
+        'chargesTransferred' => 'Cargos de alquiler transferidos',
+        'claimOpened' => 'Reclamación de alquiler abierta',
+        'closed' => 'Alquiler cerrado',
+        'completed' => 'Alquiler completado',
+        'depositRequested' => 'Fianza solicitada',
+        'depositSettled' => 'Fianza liquidada',
+        'extended' => 'Alquiler prorrogado',
+        'handedOver' => 'Equipo de alquiler entregado',
+        'handoverConfirmedByCustomer' => 'Entrega confirmada por el cliente',
+        'overdue' => 'Alquiler vencido',
+        'profileSaved' => 'Perfil de alquiler guardado',
+        'reserved' => 'Alquiler reservado',
+        'returned' => 'Equipo de alquiler devuelto',
+        'termsFrozen' => 'Condiciones de alquiler congeladas',
     ],
     'report' => [
         'exported' => 'Informe exportado',
         'presenceEmergencyViewed' => 'Lista de presencia de emergencia consultada',
     ],
+    'reportView' => [
+        'created' => 'Vista de informe guardada',
+        'deleted' => 'Vista de informe eliminada',
+        'shared' => 'Vista de informe compartida',
+    ],
+    'restored' => 'Restaurado',
+    'retention' => [
+        'approved' => 'Propuesta de eliminación aprobada',
+        'purged' => 'Datos eliminados según el plan de borrado',
+        'rejected' => 'Propuesta de eliminación rechazada',
+    ],
+    'role' => [
+        'created' => 'Rol creado',
+        'deleted' => 'Rol eliminado',
+        'updated' => 'Rol actualizado',
+    ],
     'rules' => [
         'recalculated' => 'Resultados de reglas de tiempo recalculados',
+    ],
+    'scheduler' => [
+        'testRun' => 'Ejecución de prueba del planificador',
+    ],
+    'scim' => [
+        'group_mapped' => 'Grupo SCIM asignado',
+        'token_issued' => 'Token SCIM emitido',
+        'token_revoked' => 'Token SCIM revocado',
+    ],
+    'service_request' => [
+        'decided' => 'Solicitud de servicio decidida',
+        'fulfilled' => 'Solicitud de servicio atendida',
+        'submitted' => 'Solicitud de servicio presentada',
+    ],
+    'service_ticket' => [
+        'accepted_by_customer' => 'Ticket aceptado por el cliente',
+        'assigned' => 'Ticket asignado',
+        'closed' => 'Ticket cerrado',
+        'created' => 'Ticket creado',
+        'linked' => 'Ticket vinculado',
+        'major_cleared' => 'Incidente mayor levantado',
+        'major_marked' => 'Marcado como incidente mayor',
+        'noted' => 'Nota de ticket registrada',
+        'priority_overridden' => 'Prioridad anulada manualmente',
+        'reopened' => 'Ticket reabierto',
+        'replied' => 'Ticket respondido',
+        'requeued' => 'Ticket reencolado',
+        'resumed' => 'Ticket reanudado',
+        'sla_attached' => 'SLA asignado',
+        'sla_reaction_breached' => 'Tiempo de reacción del SLA incumplido',
+        'sla_resolution_breached' => 'Tiempo de resolución del SLA incumplido',
+        'status_changed' => 'Estado del ticket modificado',
+        'waiting' => 'Ticket en espera',
+    ],
+    'session' => [
+        'revoked' => 'Sesión revocada',
+    ],
+    'settings' => [
+        'exported' => 'Configuración exportada',
+    ],
+    'sharepoint' => [
+        'mirror_manual' => 'SharePoint replicado manualmente',
+        'settings_saved' => 'Configuración de SharePoint guardada',
+        'target_selected' => 'Destino de SharePoint seleccionado',
+    ],
+    'shiftRotation' => [
+        'activated' => 'Rotación de turnos activada',
+        'assigned' => 'Rotación de turnos asignada',
+        'created' => 'Rotación de turnos creada',
+        'entriesUpdated' => 'Entradas de rotación actualizadas',
+        'unassigned' => 'Asignación de rotación de turnos eliminada',
+    ],
+    'shipping' => [
+        'connection_saved' => 'Conexión de envío guardada',
+        'disconnected' => 'Conexión de envío desconectada',
+    ],
+    'sla_violation' => [
+        'acknowledged' => 'Incumplimiento de SLA confirmado',
+        'detected' => 'Incumplimiento de SLA detectado',
+    ],
+    'softwareInstallation' => [
+        'attached' => 'Instalación de software asignada',
+        'detached' => 'Instalación de software desvinculada',
+        'updated' => 'Instalación de software actualizada',
+    ],
+    'sso' => [
+        'break_glass_changed' => 'Acceso Break-Glass modificado',
+        'break_glass_used' => 'Acceso Break-Glass utilizado',
+        'connection_removed' => 'Conexión SSO eliminada',
+        'connection_tested' => 'Conexión SSO probada',
+        'identity_linked' => 'Identidad SSO vinculada',
+        'login' => 'Inicio de sesión SSO',
+        'login_rejected' => 'Inicio de sesión SSO rechazado',
+        'user_provisioned' => 'Usuario SSO aprovisionado',
+    ],
+    'support' => [
+        'access' => [
+            'granted' => 'Acceso de soporte concedido',
+            'revoked' => 'Acceso de soporte revocado',
+        ],
+        'impersonation' => [
+            'start' => 'Suplantación de soporte iniciada',
+            'stop' => 'Suplantación de soporte finalizada',
+        ],
+        'reportDownloaded' => 'Informe de soporte descargado',
+        'reportGenerated' => 'Informe de soporte generado',
+        'session' => [
+            'action' => 'Acción de sesión de soporte',
+        ],
+        'test' => 'Prueba de soporte',
+    ],
+    'sustainability' => [
+        'assessment_drafted' => 'Borrador de evaluación ESG creado',
+        'assessment_finalized' => 'Evaluación ESG finalizada',
+        'assessment_versioned' => 'Versión de evaluación ESG creada',
+    ],
+    'sync' => [
+        'applied' => 'Sincronización offline aplicada',
+    ],
+    'tax_rule' => [
+        'created' => 'Regla fiscal creada',
+        'retired' => 'Regla fiscal retirada',
+    ],
+    'tenant' => [
+        'export' => [
+            'requested' => 'Exportación del inquilino solicitada',
+        ],
+        'statusChanged' => 'Estado de la organización modificado',
+    ],
+    'tender' => [
+        'created' => 'Licitación creada',
+        'decided' => 'Licitación decidida',
+        'go_decided' => 'Go/No-Go decidido',
+        'submitted' => 'Licitación presentada',
+        'transferred' => 'Licitación transferida',
+    ],
+    'terminal' => [
+        'badge_assigned' => 'Badge asignado',
+        'badge_revoked' => 'Badge retirado',
+        'deactivated' => 'Terminal desactivado',
+        'disabled' => 'Terminal bloqueado',
+        'registered' => 'Terminal registrado',
+        'status_display_toggled' => 'Indicador de estado conmutado',
+        'token_rotated' => 'Token de terminal rotado',
+        'unknown_badge' => 'Badge desconocido',
+    ],
+    'timeAccount' => [
+        'activated' => 'Cuenta de tiempo activada',
+        'created' => 'Cuenta de tiempo creada',
+        'manualEntry' => 'Cuenta de tiempo: apunte manual',
+        'reversed' => 'Apunte de cuenta de tiempo anulado',
+        'ruleAdded' => 'Regla de cuenta de tiempo añadida',
+        'ruleRemoved' => 'Regla de cuenta de tiempo eliminada',
+    ],
+    'timeCorrection' => [
+        'stage_approved' => 'Corrección de tiempo: etapa aprobada',
     ],
     'timeDimension' => [
         'type_created' => 'Tipo de dimensión de tiempo creado',
@@ -70,83 +780,50 @@ return [
         'value_created' => 'Valor de dimensión de tiempo creado',
         'value_deleted' => 'Valor de dimensión de tiempo eliminado',
     ],
-    'limit' => [
-        'exceeded' => 'Límite superado',
+    'timeEntry' => [
+        'reassigned' => 'Registro de tiempo reasignado a otro usuario',
     ],
-    'license' => [
-        'installed' => 'Licencia instalada',
+    'time_entries' => [
+        'reopened' => 'Registros de tiempo reabiertos',
     ],
-    'asset' => [
-        'created' => 'Activo creado',
-    ],
-    'protocol' => [
-        'signatureRequested' => 'Firma solicitada',
-        'signatureLinkOpened' => 'Enlace de firma abierto',
-    ],
-    'session' => [
-        'revoked' => 'Sesión revocada',
+    'todoist' => [
+        'collaborator_assigned' => 'Colaborador de Todoist asignado',
+        'collaborator_unassigned' => 'Asignación de colaborador de Todoist eliminada',
+        'link_saved' => 'Vínculo de Todoist guardado',
+        'link_status' => 'Estado del vínculo de Todoist modificado',
+        'sections_saved' => 'Secciones de Todoist guardadas',
+        'sync_manual' => 'Todoist sincronizado manualmente',
     ],
     'token' => [
         'revoked' => 'Token revocado',
     ],
-    // ArbZG-Compliance-Verstöße (Feature 006, Welle D)
-    'compliance' => [
-        'finding' => [
-            'detected' => 'Infracción detectada',
-            'acknowledged' => 'Infracción confirmada',
-            'accepted' => 'Infracción aceptada',
-            'resolved' => 'Infracción resuelta',
-            'reopened' => 'Infracción reaparecida',
+    'updated' => 'Actualizado',
+    'user' => [
+        'permission' => [
+            'granted' => 'Permiso concedido',
+            'revoked' => 'Permiso revocado',
+        ],
+        'role' => [
+            'assigned' => 'Rol asignado',
+            'revoked' => 'Rol revocado',
+        ],
+        'sessions' => [
+            'revoked_all' => 'Todas las sesiones revocadas',
         ],
     ],
-    'privacy' => [
-        'overviewExported' => 'Resumen de privacidad exportado',
-        'report' => [
-            'exported' => 'Informe de protección de datos exportado',
-        ],
+    'user_group' => [
+        'member_added' => 'Grupo de usuarios: miembro añadido',
+        'member_removed' => 'Grupo de usuarios: miembro eliminado',
     ],
-    'integration' => [
-        'changed' => 'Integración activada/desactivada',
+    'webdav' => [
+        'connection_saved' => 'Conexión WebDAV guardada',
+        'disconnected' => 'WebDAV desconectado',
+        'mirror_manual' => 'WebDAV replicado manualmente',
     ],
-    'tenant' => [
-        'export' => [
-            'requested' => 'Exportación del inquilino solicitada',
-        ],
-    ],
-    'branch_profile' => [
-        'installed' => 'Perfil de sucursal instalado',
-    ],
-    'demo' => [
-        'reset' => 'Inquilino de demostración restablecido',
-        'seeded' => 'Datos de demostración generados',
-    ],
-    'dayClose' => [
-        'opened' => 'Cierre diario abierto',
-        'entrySaved' => 'Cierre diario guardado',
-        'closed' => 'Día cerrado',
-        'correctionRequested' => 'Corrección del día solicitada',
-        'correctionApproved' => 'Corrección del día aprobada',
-        'correctionRejected' => 'Corrección del día rechazada',
-        'reopened' => 'Día reabierto',
-    ],
-    // Registros de tiempo (MVP-508)
-    'timeEntry' => [
-        'reassigned' => 'Registro de tiempo reasignado a otro usuario',
-    ],
-    // Accesos al portal de clientes (MVP-510)
-    'portal' => [
-        'query' => [
-            'withdrawn' => 'Consulta del portal retirada',
-        ],
-        'visibility' => [
-            'updated' => 'Visibilidad del portal modificada',
-        ],
-        'access' => [
-            'invited' => 'Acceso al portal invitado',
-            'invite_resent' => 'Invitación al portal reenviada',
-            'invite_accepted' => 'Invitación al portal aceptada',
-            'deactivated' => 'Acceso al portal desactivado',
-            'reactivated' => 'Acceso al portal reactivado',
-        ],
+    'zammad' => [
+        'connection_saved' => 'Conexión Zammad guardada',
+        'disconnected' => 'Zammad desconectado',
+        'sync_manual' => 'Zammad sincronizado manualmente',
+        'ticket_target_switched' => 'Destino de tickets de Zammad cambiado',
     ],
 ];

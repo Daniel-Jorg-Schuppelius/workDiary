@@ -2,184 +2,828 @@
 
 declare(strict_types=1);
 
+/*
+ * Lesbare Bezeichnungen für Audit-Events (audit_logs.event). Punktnotation
+ * wird als verschachteltes Array abgelegt; AuditLog::eventLabel() fällt auf
+ * den rohen Event-String zurück, wenn ein Schlüssel fehlt. Vollständigkeit
+ * erzwingt Tests\Feature\AuditTranslationCoverageTest.
+ */
 return [
-    // generische Modell-Events
-    'created'                       => 'Angelegt',
-    'updated'                       => 'Geändert',
-    'deleted'                       => 'Gelöscht',
-    'archived'                      => 'Archiviert',
-    'restored'                      => 'Wiederhergestellt',
-
-    // Authentifizierung
-    'auth' => [
-        'login'                     => 'Anmeldung',
-        'logout'                    => 'Abmeldung',
-        'failed'                    => 'Fehlgeschlagene Anmeldung',
-        'password_reset'            => 'Passwort zurückgesetzt',
-    ],
-
-    // Onboarding
-    'onboarding' => [
-        'completed'                 => 'Onboarding abgeschlossen',
-        'stepCompleted'             => 'Onboarding-Schritt abgeschlossen',
-        'stepSkipped'               => 'Onboarding-Schritt übersprungen',
-        'widgetDismissed'           => 'Onboarding-Widget ausgeblendet',
-    ],
-
-    // Diagnostics / Backup
-    'backup' => [
-        'completed'                 => 'Backup abgeschlossen',
-    ],
-
-    // Import
-    'import' => [
-        'confirmed'                 => 'Import bestätigt',
-        'started'                   => 'Import gestartet',
-        'finished'                  => 'Import abgeschlossen',
-        'partial'                   => 'Import teilweise abgeschlossen',
-        'preflightFailed'           => 'Import-Vorprüfung fehlgeschlagen',
-    ],
-
-    'diagnostics' => [
-        'viewed'                    => 'Diagnose aufgerufen',
-        'testTriggered'             => 'Diagnose-Test ausgelöst',
-    ],
-
-    // Rollen & Access
-    'role' => [
-        'created'                   => 'Rolle angelegt',
-        'updated'                   => 'Rolle geändert',
-        'deleted'                   => 'Rolle gelöscht',
-    ],
-    'user_group' => [
-        'member_added'              => 'Benutzergruppe: Mitglied hinzugefügt',
-        'member_removed'            => 'Benutzergruppe: Mitglied entfernt',
-    ],
-    // Rollen-/Permission-Vergabe an User/Gruppen (Bauturbo A17, MVP-335)
-    'user' => [
-        'role' => [
-            'assigned'              => 'Rolle zugewiesen',
-            'revoked'               => 'Rolle entzogen',
+    'agile' => [
+        'board' => [
+            'activated' => 'Agile-Board aktiviert',
+            'column_deleted' => 'Board-Spalte gelöscht',
+            'column_saved' => 'Board-Spalte gespeichert',
+            'settings_updated' => 'Board-Einstellungen geändert',
         ],
-        'permission' => [
-            'granted'               => 'Permission vergeben',
-            'revoked'               => 'Permission entzogen',
+        'sprint' => [
+            'planned' => 'Sprint geplant',
         ],
     ],
-
-    // Support / Reports
-    'support' => [
-        'test'                      => 'Support-Test',
-        'reportGenerated'           => 'Support-Report erzeugt',
-        'reportDownloaded'          => 'Support-Report heruntergeladen',
+    'ai' => [
+        'invoked' => 'KI aufgerufen',
+        'suggestion_decided' => 'KI-Vorschlag entschieden',
     ],
-    'report' => [
-        'exported'                  => 'Report exportiert',
-        'presenceEmergencyViewed'   => 'Notfall-Anwesenheitsliste abgerufen',
-    ],
-    'rules' => [
-        'recalculated'              => 'Zeitregel-Ergebnisse neu berechnet',
-    ],
-    'timeDimension' => [
-        'type_created'              => 'Zeit-Dimensionstyp angelegt',
-        'type_toggled'              => 'Zeit-Dimensionstyp umgeschaltet',
-        'value_created'             => 'Zeit-Dimensionswert angelegt',
-        'value_deleted'             => 'Zeit-Dimensionswert gelöscht',
-    ],
-
-    // Lizenz / Limits
-    'limit' => [
-        'exceeded'                  => 'Limit überschritten',
-    ],
-    'license' => [
-        'installed'                 => 'Lizenz installiert',
-    ],
-
-    // Assets
+    'archived' => 'Archiviert',
     'asset' => [
-        'created'                   => 'Asset angelegt',
+        'blockExceptionGranted' => 'Asset-Sperr-Ausnahme erteilt',
+        'blockExceptionRevoked' => 'Asset-Sperr-Ausnahme widerrufen',
+        'blocked' => 'Asset gesperrt',
+        'checkedIn' => 'Asset zurückgegeben',
+        'checkedOut' => 'Asset ausgegeben',
+        'created' => 'Asset angelegt',
+        'decommissioned' => 'Asset stillgelegt',
+        'defectReported' => 'Asset-Mangel gemeldet',
+        'defectUpdated' => 'Asset-Mangel aktualisiert',
+        'moved' => 'Asset verlagert',
+        'ownershipTransferred' => 'Asset-Eigentum übertragen',
+        'ownership_changed' => 'Asset-Eigentum geändert',
+        'statusChanged' => 'Asset-Status geändert',
+        'unblocked' => 'Asset entsperrt',
+        'updated' => 'Asset geändert',
+        'useBlockedByGuard' => 'Asset-Nutzung durch Sperre verhindert',
     ],
-
-    // Protokolle
-    'protocol' => [
-        'signatureRequested'        => 'Signatur angefordert',
-        'signatureLinkOpened'       => 'Signatur-Link geöffnet',
+    'assetAssignment' => [
+        'checkedIn' => 'Asset-Zuweisung: Rückgabe',
+        'checkedOut' => 'Asset-Zuweisung: Ausgabe',
     ],
-
-    // Sicherheit / Sessions
-    'session' => [
-        'revoked'                   => 'Session widerrufen',
+    'assetCompliance' => [
+        'assigned' => 'Compliance-Profil zugewiesen',
+        'claimOpened' => 'Compliance: Reklamation eröffnet',
+        'decommissionRequested' => 'Stilllegung angefordert',
+        'inspected' => 'Asset geprüft',
+        'restrictedUse' => 'Nutzung eingeschränkt',
     ],
-    'token' => [
-        'revoked'                   => 'Token widerrufen',
+    'assetDefect' => [
+        'reported' => 'Mangel gemeldet',
+        'statusChanged' => 'Mangel-Status geändert',
     ],
-
-    // Datenschutzseite (MVP-005/MVP-327)
-    // ArbZG-Compliance-Verstöße (Feature 006, Welle D)
+    'assetFinance' => [
+        'activated' => 'Finanzierung aktiviert',
+        'closed' => 'Finanzierung abgeschlossen',
+        'contractLinked' => 'Finanzierungsvertrag verknüpft',
+        'deadlineMissed' => 'Finanzierungsfrist versäumt',
+        'ended' => 'Finanzierung beendet',
+        'optionExercised' => 'Finanzierungsoption ausgeübt',
+        'rateLinked' => 'Finanzierungsrate verknüpft',
+        'terminated' => 'Finanzierung gekündigt',
+        'usageRecorded' => 'Nutzung erfasst',
+    ],
+    'auth' => [
+        'failed' => 'Fehlgeschlagene Anmeldung',
+        'login' => 'Anmeldung',
+        'logout' => 'Abmeldung',
+        'password_reset' => 'Passwort zurückgesetzt',
+    ],
+    'b2b_catalog' => [
+        'access_issued' => 'B2B-Katalogzugang ausgestellt',
+        'access_revoked' => 'B2B-Katalogzugang widerrufen',
+        'access_rotated' => 'B2B-Katalogzugang rotiert',
+        'item_released' => 'B2B-Katalogartikel freigegeben',
+        'item_removed' => 'B2B-Katalogartikel entfernt',
+    ],
+    'b2b_order' => [
+        'booked' => 'B2B-Bestellung verbucht',
+        'dismissed' => 'B2B-Bestellung verworfen',
+        'received' => 'B2B-Bestellung eingegangen',
+    ],
+    'backup' => [
+        'checkRestore' => 'Backup-Restore geprüft',
+        'completed' => 'Backup abgeschlossen',
+        'generationPurged' => 'Backup-Generation bereinigt',
+        'heartbeatReceived' => 'Backup-Heartbeat empfangen',
+        'holdSet' => 'Backup-Hold gesetzt',
+        'masterKeyGenerated' => 'Backup-Master-Key erzeugt',
+        'recoveryKeyGenerated' => 'Backup-Recovery-Key erzeugt',
+        'restoreTested' => 'Restore-Test durchgeführt',
+        'retentionDeleted' => 'Backup nach Aufbewahrung gelöscht',
+        'tokenRotated' => 'Backup-Token rotiert',
+        'verified' => 'Backup verifiziert',
+    ],
+    'backupTarget' => [
+        'connected' => 'Backup-Ziel verbunden',
+        'disconnected' => 'Backup-Ziel getrennt',
+        'scopeBlocked' => 'Backup-Ziel: Scope blockiert',
+    ],
+    'branch_profile' => [
+        'installed' => 'Branch-Profil installiert',
+    ],
+    'caldav' => [
+        'connection_saved' => 'CalDAV-Verbindung gespeichert',
+        'disconnected' => 'CalDAV getrennt',
+        'publish_manual' => 'CalDAV manuell veröffentlicht',
+    ],
+    'calendly' => [
+        'booking_link_created' => 'Calendly-Buchungslink erstellt',
+        'cancel_synced' => 'Calendly-Absage synchronisiert',
+        'subscribed' => 'Calendly-Webhook abonniert',
+    ],
+    'carddav' => [
+        'addressbook_chosen' => 'CardDAV-Adressbuch gewählt',
+        'connection_saved' => 'CardDAV-Verbindung gespeichert',
+        'disconnected' => 'CardDAV getrennt',
+        'sync_manual' => 'CardDAV manuell synchronisiert',
+    ],
+    'change' => [
+        'asset_attached' => 'Change: Asset verknüpft',
+        'asset_detached' => 'Change: Asset gelöst',
+        'completed' => 'Change abgeschlossen',
+        'decided' => 'Change entschieden',
+        'implementing' => 'Change in Umsetzung',
+        'submitted' => 'Change eingereicht',
+        'tickets_linked' => 'Change: Tickets verknüpft',
+    ],
+    'change_template' => [
+        'approved' => 'Change-Vorlage freigegeben',
+        'created' => 'Change-Vorlage angelegt',
+        'updated' => 'Change-Vorlage geändert',
+    ],
+    'chat' => [
+        'disconnected' => 'Chat-Anbindung getrennt',
+        'webhook_created' => 'Chat-Webhook erstellt',
+    ],
+    'classification' => [
+        'imported' => 'Klassifizierung importiert',
+        'requirementMissing' => 'Klassifizierungs-Anforderung fehlt',
+        'sortChanged' => 'Klassifizierungs-Sortierung geändert',
+    ],
+    'cloudIntake' => [
+        'connected' => 'Cloud-Dokumenteingang verbunden',
+        'disconnected' => 'Cloud-Dokumenteingang getrennt',
+        'folderSelected' => 'Cloud-Eingangsordner gewählt',
+    ],
+    'communication' => [
+        'confidential' => [
+            'set' => 'Kommunikation als vertraulich markiert',
+            'unset' => 'Vertraulichkeit aufgehoben',
+            'viewed' => 'Vertrauliche Kommunikation eingesehen',
+        ],
+        'deleted' => 'Kommunikationsnotiz gelöscht',
+        'followup' => [
+            'completed' => 'Follow-up erledigt',
+        ],
+        'published' => 'Kommunikationsnotiz veröffentlicht',
+    ],
     'compliance' => [
         'finding' => [
-            'detected' => 'Verstoß erkannt',
-            'acknowledged' => 'Verstoß quittiert',
             'accepted' => 'Verstoß akzeptiert',
-            'resolved' => 'Verstoß behoben',
+            'acknowledged' => 'Verstoß quittiert',
+            'detected' => 'Verstoß erkannt',
             'reopened' => 'Verstoß erneut aufgetreten',
+            'resolved' => 'Verstoß behoben',
         ],
     ],
-    'privacy' => [
-        'overviewExported'          => 'Datenschutz-Übersicht exportiert',
-        'report' => [
-            'exported'              => 'Datenschutzbericht exportiert',
+    'contract' => [
+        'activated' => 'Vertrag aktiviert',
+        'approved_step' => 'Vertrags-Freigabestufe erteilt',
+        'cancelled' => 'Vertrag storniert',
+        'concluded' => 'Vertrag geschlossen',
+        'ended' => 'Vertrag beendet',
+        'negotiation_opened' => 'Vertragsverhandlung eröffnet',
+        'obligationAdded' => 'Vertragspflicht hinzugefügt',
+        'obligationCompleted' => 'Vertragspflicht erfüllt',
+        'obligationMissed' => 'Vertragspflicht versäumt',
+        'review_item_added' => 'Vertragsprüfpunkt hinzugefügt',
+        'review_item_resolved' => 'Vertragsprüfpunkt erledigt',
+        'terminated' => 'Vertrag gekündigt',
+        'version_added' => 'Vertragsversion hinzugefügt',
+    ],
+    'correction' => [
+        'applyFailed' => 'Korrektur-Übernahme fehlgeschlagen',
+    ],
+    'created' => 'Angelegt',
+    'crisis' => [
+        'activated' => 'Krisenfall aktiviert',
+        'alert_acknowledged' => 'Krisenalarm quittiert',
+        'alert_escalated' => 'Krisenalarm eskaliert',
+        'alerted' => 'Krisenalarm ausgelöst',
+        'all_clear' => 'Entwarnung gegeben',
+        'closed' => 'Krisenfall geschlossen',
+        'communication_approved' => 'Krisen-Kommunikation freigegeben',
+        'communication_sent' => 'Krisen-Kommunikation versendet',
+        'exercise_documented' => 'Krisen-Übung dokumentiert',
+        'linked' => 'Krisenfall verknüpft',
+        'reported' => 'Krisenfall gemeldet',
+        'reviewed' => 'Krisen-Nachbereitung abgeschlossen',
+        'team_assigned' => 'Krisenstab-Mitglied zugewiesen',
+        'team_removed' => 'Krisenstab-Mitglied entfernt',
+    ],
+    'cti' => [
+        'connection_issued' => 'CTI-Verbindung ausgestellt',
+        'disconnected' => 'CTI getrennt',
+    ],
+    'dayClose' => [
+        'closed' => 'Tag abgeschlossen',
+        'correctionApproved' => 'Tages-Korrektur freigegeben',
+        'correctionRejected' => 'Tages-Korrektur abgelehnt',
+        'correctionRequested' => 'Tages-Korrektur beantragt',
+        'entrySaved' => 'Tagesabschluss gespeichert',
+        'opened' => 'Tagesabschluss geöffnet',
+        'reopened' => 'Tag wieder geöffnet',
+    ],
+    'deleted' => 'Gelöscht',
+    'demo' => [
+        'orgCreated' => 'Demo-Mandant erstellt',
+        'reset' => 'Demo-Mandant zurückgesetzt',
+        'seeded' => 'Demo-Daten erzeugt',
+    ],
+    'device' => [
+        'revoked' => 'Gerät widerrufen',
+    ],
+    'diagnostics' => [
+        'testTriggered' => 'Diagnose-Test ausgelöst',
+        'viewed' => 'Diagnose aufgerufen',
+    ],
+    'document' => [
+        'archived' => 'Dokument archiviert',
+        'confidentialAccessed' => 'Vertrauliches Dokument abgerufen',
+        'deleted' => 'Dokument gelöscht',
+        'einvoice_received' => 'E-Rechnung empfangen',
+        'einvoice_xml_exported' => 'E-Rechnungs-XML exportiert',
+        'released_to_customer' => 'Dokument für Kunden freigegeben',
+        'revoked_from_customer' => 'Kunden-Freigabe zurückgezogen',
+        'version' => [
+            'added' => 'Dokumentversion hinzugefügt',
         ],
+    ],
+    'export' => [
+        'deleted' => 'Export gelöscht',
+    ],
+    'external' => [
+        'participant' => [
+            'invited' => 'Externer Teilnehmer eingeladen',
+            'revoked' => 'Externer Teilnehmer widerrufen',
+        ],
+    ],
+    'finance' => [
+        'datev' => [
+            'debtors_exported' => 'DATEV-Debitoren exportiert',
+            'gl_accounts_exported' => 'DATEV-Sachkonten exportiert',
+        ],
+    ],
+    'form' => [
+        'submitted' => 'Formular eingesendet',
+        'template' => [
+            'activated' => 'Formular-Vorlage aktiviert',
+            'archived' => 'Formular-Vorlage archiviert',
+            'deleted' => 'Formular-Vorlage gelöscht',
+        ],
+    ],
+    'gobd' => [
+        'exported' => 'GoBD-Export erstellt',
+    ],
+    'google_calendar' => [
+        'calendar_selected' => 'Google-Kalender gewählt',
+        'publish_manual' => 'Google-Kalender manuell veröffentlicht',
+    ],
+    'idea_map' => [
+        'archived' => 'Ideenlandkarte archiviert',
+        'exported' => 'Ideenlandkarte exportiert',
+        'ownership_transferred' => 'Ideenlandkarte übertragen',
+        'share_granted' => 'Ideenlandkarte geteilt',
+        'share_revoked' => 'Freigabe der Ideenlandkarte widerrufen',
+        'synced' => 'Ideenlandkarte synchronisiert',
+        'unarchived' => 'Ideenlandkarte reaktiviert',
+    ],
+    'idea_node' => [
+        'converted' => 'Ideen-Knoten umgewandelt',
+        'moved' => 'Ideen-Knoten verschoben',
+    ],
+    'import' => [
+        'confirmed' => 'Import bestätigt',
+        'finished' => 'Import abgeschlossen',
+        'partial' => 'Import teilweise abgeschlossen',
+        'preflightFailed' => 'Import-Vorprüfung fehlgeschlagen',
+        'started' => 'Import gestartet',
+    ],
+    'incoming_einvoice' => [
+        'decided' => 'Eingangsrechnung entschieden',
+        'transferred' => 'Eingangsrechnung übergeben',
     ],
     'integration' => [
-        'changed'                   => 'Integration aktiviert/deaktiviert',
+        'changed' => 'Integration aktiviert/deaktiviert',
+        'data_ownership_changed' => 'Datenhoheit geändert',
+        'inbox_resolved' => 'Inbox-Eintrag aufgelöst',
+        'settings_changed' => 'Integrations-Einstellungen geändert',
     ],
-
-    // Mandant / Export
-    'tenant' => [
-        'export' => [
-            'requested'             => 'Mandanten-Export angefordert',
+    'integrity' => [
+        'check' => 'Integritätsprüfung durchgeführt',
+        'freeze' => 'Integritäts-Baseline eingefroren',
+        'lockdown_engaged' => 'Integritäts-Lockdown aktiviert',
+        'lockdown_released' => 'Integritäts-Lockdown aufgehoben',
+    ],
+    'inventory' => [
+        'mode_changed' => 'Bestandsführungs-Modus geändert',
+        'negativeApproved' => 'Negativbestand genehmigt',
+    ],
+    'investment' => [
+        'budget_approved' => 'Investitionsbudget genehmigt',
+        'budget_rejected' => 'Investitionsbudget abgelehnt',
+        'budget_submitted' => 'Investitionsbudget beantragt',
+        'budget_supplement' => 'Nachtragsbudget beantragt',
+        'created' => 'Investitionsvorhaben angelegt',
+        'deviation_decided' => 'Investitions-Abweichung entschieden',
+        'linked' => 'Investition verknüpft',
+        'option_recommended' => 'Investitions-Option empfohlen',
+        'reviewed' => 'Investition nachbetrachtet',
+    ],
+    'invoice' => [
+        'approved' => 'Rechnung freigegeben',
+        'dunned' => 'Rechnung angemahnt',
+        'einvoice_exported' => 'E-Rechnung exportiert',
+        'objectionDocumented' => 'Rechnungswiderspruch dokumentiert',
+        'proforma_converted' => 'Proforma in Rechnung umgewandelt',
+    ],
+    'isms' => [
+        'audit' => [
+            'deleted' => 'ISMS-Audit gelöscht',
+            'transitioned' => 'ISMS-Audit: Status geändert',
+        ],
+        'audit_package' => [
+            'created' => 'Audit-Paket erstellt',
+            'finalized' => 'Audit-Paket finalisiert',
+            'token_created' => 'Audit-Paket-Token erstellt',
+            'token_revoked' => 'Audit-Paket-Token widerrufen',
+        ],
+        'audit_program' => [
+            'audit_attached' => 'Audit an Programm angehängt',
+            'created' => 'Auditprogramm erstellt',
+            'deleted' => 'Auditprogramm gelöscht',
+            'status_changed' => 'Auditprogramm: Status geändert',
+        ],
+        'certificate' => [
+            'added' => 'Zertifikat hinzugefügt',
+        ],
+        'control' => [
+            'deleted' => 'Control gelöscht',
+        ],
+        'corrective_action' => [
+            'deleted' => 'Korrekturmaßnahme gelöscht',
+            'transitioned' => 'Korrekturmaßnahme: Status geändert',
+        ],
+        'finding' => [
+            'deleted' => 'Feststellung gelöscht',
+            'reverted_to_correction' => 'Feststellung zur Korrektur zurückgestellt',
+            'transitioned' => 'Feststellung: Status geändert',
+        ],
+        'management_review' => [
+            'approved' => 'Managementbewertung freigegeben',
+            'deleted' => 'Managementbewertung gelöscht',
+        ],
+        'norm_status' => [
+            'expired' => 'Normstatus abgelaufen',
+            'transitioned' => 'Normstatus geändert',
+        ],
+        'requirement' => [
+            'deleted' => 'ISMS-Anforderung gelöscht',
+        ],
+        'risk' => [
+            'deleted' => 'ISMS-Risiko gelöscht',
+            'transitioned' => 'ISMS-Risiko: Status geändert',
+        ],
+        'risk_assessment' => [
+            'approved' => 'Risikobewertung freigegeben',
+            'deleted' => 'Risikobewertung gelöscht',
+        ],
+        'scope' => [
+            'deleted' => 'Geltungsbereich gelöscht',
+        ],
+        'security_incident' => [
+            'deleted' => 'Sicherheitsvorfall gelöscht',
+            'transitioned' => 'Sicherheitsvorfall: Status geändert',
+        ],
+        'software_installation' => [
+            'deleted' => 'Software-Installation gelöscht',
+        ],
+        'software_product' => [
+            'deleted' => 'Software-Produkt gelöscht',
+        ],
+        'supplier_assessment' => [
+            'deleted' => 'Lieferantenbewertung gelöscht',
+            'transitioned' => 'Lieferantenbewertung: Status geändert',
+        ],
+        'vulnerability' => [
+            'deleted' => 'Schwachstelle gelöscht',
+            'exploitability_decided' => 'Ausnutzbarkeit entschieden',
+            'transitioned' => 'Schwachstelle: Status geändert',
         ],
     ],
-
-    // Branch-Profile
-    'branch_profile' => [
-        'installed'                 => 'Branch-Profil installiert',
+    'key_handover' => [
+        'recorded' => 'Schlüsselübergabe erfasst',
     ],
-
-    // Demo
-    'demo' => [
-        'reset'                     => 'Demo-Mandant zurückgesetzt',
-        'seeded'                    => 'Demo-Daten erzeugt',
+    'knowledge' => [
+        'archived' => 'Wissensartikel archiviert',
+        'deleted' => 'Wissensartikel gelöscht',
+        'linked' => 'Wissensartikel verknüpft',
+        'published' => 'Wissensartikel veröffentlicht',
+        'unlinked' => 'Wissensartikel-Verknüpfung gelöst',
     ],
-    // Tagesabschluss (MVP-015)
-    'dayClose' => [
-        'opened'                    => 'Tagesabschluss geöffnet',
-        'entrySaved'                => 'Tagesabschluss gespeichert',
-        'closed'                    => 'Tag abgeschlossen',
-        'correctionRequested'       => 'Tages-Korrektur beantragt',
-        'correctionApproved'        => 'Tages-Korrektur freigegeben',
-        'correctionRejected'        => 'Tages-Korrektur abgelehnt',
-        'reopened'                  => 'Tag wieder geöffnet',
+    'license' => [
+        'installed' => 'Lizenz installiert',
+        'keyIssued' => 'Lizenzschlüssel ausgestellt',
+        'orgInstalled' => 'Mandanten-Lizenz installiert',
+        'orgIssued' => 'Mandanten-Lizenz ausgestellt',
+        'orgRemoved' => 'Mandanten-Lizenz entfernt',
+        'scopeConfigured' => 'Lizenz-Scope konfiguriert',
     ],
-    // Zeiteinträge (MVP-508)
-    'timeEntry' => [
-        'reassigned'                => 'Zeiteintrag anderem Benutzer zugeordnet',
+    'limit' => [
+        'exceeded' => 'Limit überschritten',
     ],
-    // Kundenportal-Zugänge (MVP-510)
+    'mail' => [
+        'connection_saved' => 'Mail-Verbindung gespeichert',
+        'disconnected' => 'Mail-Verbindung getrennt',
+    ],
+    'maintenance_plan' => [
+        'completed' => 'Wartung abgeschlossen',
+        'created' => 'Wartungsplan angelegt',
+        'due_detected' => 'Wartung fällig',
+        'paused' => 'Wartungsplan pausiert',
+        'resumed' => 'Wartungsplan fortgesetzt',
+    ],
+    'meter_reading' => [
+        'recorded' => 'Zählerstand erfasst',
+    ],
+    'month_closure' => [
+        'bundle_exported' => 'Monatsabschluss-Paket exportiert',
+    ],
+    'msgraph' => [
+        'admin_consent_granted' => 'Microsoft-365-Admin-Consent erteilt',
+        'calendar_selected' => 'Microsoft-365-Kalender gewählt',
+        'publish_manual' => 'Microsoft-365-Kalender manuell veröffentlicht',
+    ],
+    'msgraph_mail' => [
+        'settings_saved' => 'Microsoft-365-Mail-Einstellungen gespeichert',
+        'test_sent' => 'Microsoft-365-Testmail versendet',
+    ],
+    'msgraph_tasks' => [
+        'link_removed' => 'Aufgabenlisten-Verknüpfung entfernt',
+        'link_saved' => 'Aufgabenlisten-Verknüpfung gespeichert',
+    ],
+    'onboarding' => [
+        'completed' => 'Onboarding abgeschlossen',
+        'stepCompleted' => 'Onboarding-Schritt abgeschlossen',
+        'stepSkipped' => 'Onboarding-Schritt übersprungen',
+        'widgetDismissed' => 'Onboarding-Widget ausgeblendet',
+    ],
+    'orgamax_account_confirmed' => 'orgaMAX-Konto bestätigt',
+    'orgamax_callback_processed' => 'orgaMAX-Callback verarbeitet',
+    'orgamax_capabilities_updated' => 'orgaMAX-Fähigkeiten aktualisiert',
+    'orgamax_disconnected' => 'orgaMAX getrennt',
+    'orgamax_intent_started' => 'orgaMAX-Vorgang gestartet',
+    'orgamax_invoice_convert_requested' => 'orgaMAX: Rechnungsumwandlung angefordert',
+    'orgamax_invoice_locked' => 'orgaMAX-Rechnung festgeschrieben',
+    'orgamax_invoice_pdf_fetched' => 'orgaMAX-Rechnungs-PDF abgerufen',
+    'orgamax_invoice_send_requested' => 'orgaMAX-Rechnungsversand angefordert',
+    'orgamax_payment_requested' => 'orgaMAX-Zahlung angefordert',
+    'orgamax_scopes_missing' => 'orgaMAX-Berechtigungen fehlen',
+    'organization' => [
+        'maintenance_toggled' => 'Wartungsmodus umgeschaltet',
+    ],
+    'overtime' => [
+        'approved' => 'Mehrarbeit genehmigt',
+        'stage_approved' => 'Mehrarbeit: Stufe genehmigt',
+        'withdrawn' => 'Mehrarbeitsantrag zurückgezogen',
+    ],
+    'passenger' => [
+        'concession_created' => 'Konzession angelegt',
+        'concession_updated' => 'Konzession geändert',
+        'ride_accepted' => 'Fahrt angenommen',
+        'ride_anonymized' => 'Fahrt anonymisiert',
+        'ride_assigned' => 'Fahrt zugewiesen',
+        'ride_closed' => 'Fahrt geschlossen',
+        'ride_completed' => 'Fahrt abgeschlossen',
+        'ride_return_recorded' => 'Rückfahrt erfasst',
+        'ride_started' => 'Fahrt gestartet',
+        'ride_transition' => 'Fahrt: Status geändert',
+        'settlement_cash_posted' => 'Schichtabrechnung: Kasse verbucht',
+        'settlement_closed' => 'Schichtabrechnung geschlossen',
+        'settlement_created' => 'Schichtabrechnung angelegt',
+        'settlement_updated' => 'Schichtabrechnung geändert',
+        'tariff_created' => 'Tarif angelegt',
+        'tariff_rule_added' => 'Tarifregel hinzugefügt',
+        'tariff_rule_removed' => 'Tarifregel entfernt',
+        'tariff_updated' => 'Tarif geändert',
+        'vehicle_profile_created' => 'Fahrzeugprofil angelegt',
+        'vehicle_profile_updated' => 'Fahrzeugprofil geändert',
+    ],
+    'payroll' => [
+        'wage' => [
+            'raised_to_minimum' => 'Lohn auf Mindestlohn angehoben',
+        ],
+    ],
     'portal' => [
+        'access' => [
+            'deactivated' => 'Portalzugang deaktiviert',
+            'invite_accepted' => 'Portal-Einladung angenommen',
+            'invite_resent' => 'Portal-Einladung erneut versendet',
+            'invited' => 'Portalzugang eingeladen',
+            'reactivated' => 'Portalzugang reaktiviert',
+        ],
         'query' => [
             'withdrawn' => 'Portal-Rückfrage zurückgezogen',
         ],
         'visibility' => [
             'updated' => 'Portal-Sichtbarkeit geändert',
         ],
-        'access' => [
-            'invited'          => 'Portalzugang eingeladen',
-            'invite_resent'    => 'Portal-Einladung erneut versendet',
-            'invite_accepted'  => 'Portal-Einladung angenommen',
-            'deactivated'      => 'Portalzugang deaktiviert',
-            'reactivated'      => 'Portalzugang reaktiviert',
+    ],
+    'print' => [
+        'claim_opened' => 'Druck: Reklamation eröffnet',
+        'file_bound' => 'Druckdatei verbindlich zugeordnet',
+        'files_purged' => 'Druckdateien bereinigt',
+        'order_approved' => 'Druckauftrag freigegeben',
+        'order_cancelled' => 'Druckauftrag storniert',
+        'order_issued' => 'Druckauftrag ausgegeben',
+        'order_opened' => 'Druckauftrag eröffnet',
+        'preflight_overridden' => 'Preflight übersteuert',
+        'preflight_recorded' => 'Preflight erfasst',
+        'production_resumed' => 'Produktion fortgesetzt',
+        'production_started' => 'Produktion gestartet',
+        'quality_checked' => 'Qualität geprüft',
+    ],
+    'privacy' => [
+        'dsr' => [
+            'exported' => 'Betroffenenanfrage exportiert',
         ],
+        'overviewExported' => 'Datenschutz-Übersicht exportiert',
+        'report' => [
+            'exported' => 'Datenschutzbericht exportiert',
+        ],
+        'ropa' => [
+            'exported' => 'Verarbeitungsverzeichnis exportiert',
+        ],
+    ],
+    'problem' => [
+        'effectiveness_checked' => 'Wirksamkeit geprüft',
+        'known_error_published' => 'Known Error veröffentlicht',
+        'opened' => 'Problem eröffnet',
+        'status_changed' => 'Problem: Status geändert',
+        'updated' => 'Problem geändert',
+    ],
+    'protocol' => [
+        'signatureLinkOpened' => 'Signatur-Link geöffnet',
+        'signatureRequested' => 'Signatur angefordert',
+    ],
+    'quote' => [
+        'accepted' => 'Angebot angenommen',
+        'approved' => 'Angebot freigegeben',
+        'converted' => 'Angebot umgewandelt',
+        'created' => 'Angebot erstellt',
+        'rejected' => 'Angebot abgelehnt',
+        'sent' => 'Angebot versendet',
+        'versioned' => 'Angebotsversion erstellt',
+    ],
+    'recipe' => [
+        'ingredient_allergens' => 'Allergene der Zutat gepflegt',
+        'menu_created' => 'Menü angelegt',
+        'menu_item_added' => 'Menüposition hinzugefügt',
+        'menu_item_removed' => 'Menüposition entfernt',
+        'profile_saved' => 'Rezepturprofil gespeichert',
+    ],
+    'recruiting' => [
+        'application_anonymized' => 'Bewerbung anonymisiert',
+        'application_decided' => 'Bewerbung entschieden',
+        'application_exported' => 'Bewerbung exportiert',
+        'application_received' => 'Bewerbung eingegangen',
+        'document_attached' => 'Bewerbungsunterlage angehängt',
+        'draft_invited' => 'Mitarbeiter-Entwurf eingeladen',
+        'onboarding_draft_created' => 'Onboarding-Entwurf erstellt',
+        'posting_paused' => 'Stellenanzeige pausiert',
+        'posting_published' => 'Stellenanzeige veröffentlicht',
+        'public_application_received' => 'Öffentliche Bewerbung eingegangen',
+        'requisition_created' => 'Stellenanforderung angelegt',
+    ],
+    'render_profile_activated' => 'Render-Profil aktiviert',
+    'rental' => [
+        'active' => 'Mietvorgang aktiv',
+        'assetSwapped' => 'Mietgerät getauscht',
+        'cancelled' => 'Mietvorgang storniert',
+        'chargeAdded' => 'Mietgebühr hinzugefügt',
+        'chargeCancelled' => 'Mietgebühr storniert',
+        'chargesInvoiced' => 'Mietgebühren fakturiert',
+        'chargesTransferred' => 'Mietgebühren übergeben',
+        'claimOpened' => 'Miet-Reklamation eröffnet',
+        'closed' => 'Mietvorgang geschlossen',
+        'completed' => 'Mietvorgang abgeschlossen',
+        'depositRequested' => 'Kaution angefordert',
+        'depositSettled' => 'Kaution abgerechnet',
+        'extended' => 'Miete verlängert',
+        'handedOver' => 'Mietgerät übergeben',
+        'handoverConfirmedByCustomer' => 'Übergabe vom Kunden bestätigt',
+        'overdue' => 'Miete überfällig',
+        'profileSaved' => 'Mietprofil gespeichert',
+        'reserved' => 'Miete reserviert',
+        'returned' => 'Mietgerät zurückgenommen',
+        'termsFrozen' => 'Mietkonditionen eingefroren',
+    ],
+    'report' => [
+        'exported' => 'Report exportiert',
+        'presenceEmergencyViewed' => 'Notfall-Anwesenheitsliste abgerufen',
+    ],
+    'reportView' => [
+        'created' => 'Report-Ansicht gespeichert',
+        'deleted' => 'Report-Ansicht gelöscht',
+        'shared' => 'Report-Ansicht geteilt',
+    ],
+    'restored' => 'Wiederhergestellt',
+    'retention' => [
+        'approved' => 'Löschvorschlag genehmigt',
+        'purged' => 'Daten gemäß Löschkonzept gelöscht',
+        'rejected' => 'Löschvorschlag abgelehnt',
+    ],
+    'role' => [
+        'created' => 'Rolle angelegt',
+        'deleted' => 'Rolle gelöscht',
+        'updated' => 'Rolle geändert',
+    ],
+    'rules' => [
+        'recalculated' => 'Zeitregel-Ergebnisse neu berechnet',
+    ],
+    'scheduler' => [
+        'testRun' => 'Scheduler-Testlauf',
+    ],
+    'scim' => [
+        'group_mapped' => 'SCIM-Gruppe zugeordnet',
+        'token_issued' => 'SCIM-Token ausgestellt',
+        'token_revoked' => 'SCIM-Token widerrufen',
+    ],
+    'service_request' => [
+        'decided' => 'Service-Request entschieden',
+        'fulfilled' => 'Service-Request erfüllt',
+        'submitted' => 'Service-Request eingereicht',
+    ],
+    'service_ticket' => [
+        'accepted_by_customer' => 'Ticket vom Kunden abgenommen',
+        'assigned' => 'Ticket zugewiesen',
+        'closed' => 'Ticket geschlossen',
+        'created' => 'Ticket erstellt',
+        'linked' => 'Ticket verknüpft',
+        'major_cleared' => 'Major-Incident aufgehoben',
+        'major_marked' => 'Als Major-Incident markiert',
+        'noted' => 'Ticket-Notiz erfasst',
+        'priority_overridden' => 'Priorität übersteuert',
+        'reopened' => 'Ticket wiedereröffnet',
+        'replied' => 'Ticket beantwortet',
+        'requeued' => 'Ticket neu eingereiht',
+        'resumed' => 'Ticket fortgesetzt',
+        'sla_attached' => 'SLA zugeordnet',
+        'sla_reaction_breached' => 'SLA-Reaktionszeit verletzt',
+        'sla_resolution_breached' => 'SLA-Lösungszeit verletzt',
+        'status_changed' => 'Ticket-Status geändert',
+        'waiting' => 'Ticket wartend',
+    ],
+    'session' => [
+        'revoked' => 'Session widerrufen',
+    ],
+    'settings' => [
+        'exported' => 'Einstellungen exportiert',
+    ],
+    'sharepoint' => [
+        'mirror_manual' => 'SharePoint manuell gespiegelt',
+        'settings_saved' => 'SharePoint-Einstellungen gespeichert',
+        'target_selected' => 'SharePoint-Ziel gewählt',
+    ],
+    'shiftRotation' => [
+        'activated' => 'Schichtrotation aktiviert',
+        'assigned' => 'Schichtrotation zugewiesen',
+        'created' => 'Schichtrotation angelegt',
+        'entriesUpdated' => 'Rotationseinträge geändert',
+        'unassigned' => 'Schichtrotations-Zuweisung entfernt',
+    ],
+    'shipping' => [
+        'connection_saved' => 'Versand-Verbindung gespeichert',
+        'disconnected' => 'Versand-Verbindung getrennt',
+    ],
+    'sla_violation' => [
+        'acknowledged' => 'SLA-Verletzung quittiert',
+        'detected' => 'SLA-Verletzung erkannt',
+    ],
+    'softwareInstallation' => [
+        'attached' => 'Software-Installation zugeordnet',
+        'detached' => 'Software-Installation gelöst',
+        'updated' => 'Software-Installation geändert',
+    ],
+    'sso' => [
+        'break_glass_changed' => 'Break-Glass-Zugang geändert',
+        'break_glass_used' => 'Break-Glass-Zugang genutzt',
+        'connection_removed' => 'SSO-Verbindung entfernt',
+        'connection_tested' => 'SSO-Verbindung getestet',
+        'identity_linked' => 'SSO-Identität verknüpft',
+        'login' => 'SSO-Anmeldung',
+        'login_rejected' => 'SSO-Anmeldung abgelehnt',
+        'user_provisioned' => 'SSO-Benutzer provisioniert',
+    ],
+    'support' => [
+        'access' => [
+            'granted' => 'Support-Zugriff gewährt',
+            'revoked' => 'Support-Zugriff widerrufen',
+        ],
+        'impersonation' => [
+            'start' => 'Support-Impersonation gestartet',
+            'stop' => 'Support-Impersonation beendet',
+        ],
+        'reportDownloaded' => 'Support-Report heruntergeladen',
+        'reportGenerated' => 'Support-Report erzeugt',
+        'session' => [
+            'action' => 'Support-Session-Aktion',
+        ],
+        'test' => 'Support-Test',
+    ],
+    'sustainability' => [
+        'assessment_drafted' => 'ESG-Bewertung entworfen',
+        'assessment_finalized' => 'ESG-Bewertung finalisiert',
+        'assessment_versioned' => 'ESG-Bewertungsversion erstellt',
+    ],
+    'sync' => [
+        'applied' => 'Offline-Sync angewendet',
+    ],
+    'tax_rule' => [
+        'created' => 'Steuerregel angelegt',
+        'retired' => 'Steuerregel außer Kraft gesetzt',
+    ],
+    'tenant' => [
+        'export' => [
+            'requested' => 'Mandanten-Export angefordert',
+        ],
+        'statusChanged' => 'Mandanten-Status geändert',
+    ],
+    'tender' => [
+        'created' => 'Ausschreibung angelegt',
+        'decided' => 'Ausschreibung entschieden',
+        'go_decided' => 'Go/No-Go entschieden',
+        'submitted' => 'Ausschreibung eingereicht',
+        'transferred' => 'Ausschreibung übergeben',
+    ],
+    'terminal' => [
+        'badge_assigned' => 'Badge zugewiesen',
+        'badge_revoked' => 'Badge entzogen',
+        'deactivated' => 'Terminal deaktiviert',
+        'disabled' => 'Terminal gesperrt',
+        'registered' => 'Terminal registriert',
+        'status_display_toggled' => 'Status-Anzeige umgeschaltet',
+        'token_rotated' => 'Terminal-Token rotiert',
+        'unknown_badge' => 'Unbekannter Badge',
+    ],
+    'timeAccount' => [
+        'activated' => 'Zeitkonto aktiviert',
+        'created' => 'Zeitkonto angelegt',
+        'manualEntry' => 'Zeitkonto: manuelle Buchung',
+        'reversed' => 'Zeitkonto-Buchung storniert',
+        'ruleAdded' => 'Zeitkonto-Regel hinzugefügt',
+        'ruleRemoved' => 'Zeitkonto-Regel entfernt',
+    ],
+    'timeCorrection' => [
+        'stage_approved' => 'Zeitkorrektur: Stufe genehmigt',
+    ],
+    'timeDimension' => [
+        'type_created' => 'Zeit-Dimensionstyp angelegt',
+        'type_toggled' => 'Zeit-Dimensionstyp umgeschaltet',
+        'value_created' => 'Zeit-Dimensionswert angelegt',
+        'value_deleted' => 'Zeit-Dimensionswert gelöscht',
+    ],
+    'timeEntry' => [
+        'reassigned' => 'Zeiteintrag anderem Benutzer zugeordnet',
+    ],
+    'time_entries' => [
+        'reopened' => 'Zeiteinträge wieder geöffnet',
+    ],
+    'todoist' => [
+        'collaborator_assigned' => 'Todoist-Mitarbeiter zugewiesen',
+        'collaborator_unassigned' => 'Todoist-Mitarbeiter-Zuweisung entfernt',
+        'link_saved' => 'Todoist-Verknüpfung gespeichert',
+        'link_status' => 'Todoist-Verknüpfungsstatus geändert',
+        'sections_saved' => 'Todoist-Abschnitte gespeichert',
+        'sync_manual' => 'Todoist manuell synchronisiert',
+    ],
+    'token' => [
+        'revoked' => 'Token widerrufen',
+    ],
+    'updated' => 'Geändert',
+    'user' => [
+        'permission' => [
+            'granted' => 'Permission vergeben',
+            'revoked' => 'Permission entzogen',
+        ],
+        'role' => [
+            'assigned' => 'Rolle zugewiesen',
+            'revoked' => 'Rolle entzogen',
+        ],
+        'sessions' => [
+            'revoked_all' => 'Alle Sessions widerrufen',
+        ],
+    ],
+    'user_group' => [
+        'member_added' => 'Benutzergruppe: Mitglied hinzugefügt',
+        'member_removed' => 'Benutzergruppe: Mitglied entfernt',
+    ],
+    'webdav' => [
+        'connection_saved' => 'WebDAV-Verbindung gespeichert',
+        'disconnected' => 'WebDAV getrennt',
+        'mirror_manual' => 'WebDAV manuell gespiegelt',
+    ],
+    'zammad' => [
+        'connection_saved' => 'Zammad-Verbindung gespeichert',
+        'disconnected' => 'Zammad getrennt',
+        'sync_manual' => 'Zammad manuell synchronisiert',
+        'ticket_target_switched' => 'Zammad-Ticketziel gewechselt',
     ],
 ];
