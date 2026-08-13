@@ -29,10 +29,11 @@ class ProcedureApplicabilityResolverTest extends TestCase {
 
     public function test_suggests_templates_matching_diary_entry_type(): void {
         [$org, $user] = $this->makeOrgAndUser();
-        $serviceType = EntryType::factory()->create([
-            'organization_id' => $org->id,
-            'slug' => EntryType::SLUG_SERVICE,
-        ]);
+        // Der OrganizationObserver bootstrappt den Service-Typ bereits.
+        $serviceType = EntryType::query()->withoutGlobalScopes()
+            ->where('organization_id', $org->id)
+            ->where('slug', EntryType::SLUG_SERVICE)
+            ->firstOrFail();
 
         $matching = $this->publishedTemplate($org, $user, 'IT', ['diary_entry_type' => [EntryType::SLUG_SERVICE]]);
         $this->publishedTemplate($org, $user, 'CARE', ['diary_entry_type' => [EntryType::SLUG_CARE_VISIT]]);

@@ -204,7 +204,13 @@ class StandardReportFiltersTest extends TestCase {
             Project::query()->where('customer_id', $this->customer->id)->pluck('id')->all(),
             $projectIds->all(),
         );
-        $this->assertSame(['Wartung'], $options['filterEntryTypes']->pluck('label')->all());
+        // Bootstrap-Defaults (Allgemein/Service-Auftrag) der eigenen Org plus
+        // der selbst angelegte Typ — die gleichnamigen Typen der Fremd-Org
+        // dürfen nicht durchsickern (sonst 5 Einträge).
+        $this->assertEqualsCanonicalizing(
+            ['Allgemein', 'Service-Auftrag', 'Wartung'],
+            $options['filterEntryTypes']->pluck('label')->all(),
+        );
     }
 
     public function test_audit_array_contains_only_active_filters(): void {

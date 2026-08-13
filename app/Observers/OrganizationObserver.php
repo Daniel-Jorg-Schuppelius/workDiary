@@ -14,7 +14,7 @@ use App\Models\Organization;
 use App\Services\Licensing\PlanModuleService;
 use App\Services\Privacy\DataProtectionPermissions;
 use App\Services\Whistleblowing\WhistleblowingPermissions;
-use Database\Seeders\PermissionsSeeder;
+use Database\Seeders\{EntryTypeSeeder, PermissionsSeeder};
 
 /**
  * Sorgt dafür, dass jede neu angelegte Organisation sofort über die
@@ -28,6 +28,9 @@ class OrganizationObserver {
         WhistleblowingPermissions::seedOrganization($organization);
         // Eigene Datenschutz-Rolle (ebenfalls vom Admin getrennt).
         DataProtectionPermissions::seedOrganization($organization);
+        // Erstausstattung Eintragstypen (profil-gekoppelt) — der Deploy-Seeder
+        // fasst bestehende Orgs bewusst nicht mehr an.
+        EntryTypeSeeder::seedOrganization($organization);
     }
 
     /**

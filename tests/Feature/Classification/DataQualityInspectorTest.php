@@ -31,9 +31,11 @@ class DataQualityInspectorTest extends TestCase {
         parent::setUp();
 
         $this->org = Organization::factory()->create();
-        $this->entryType = EntryType::factory()
-            ->service()
-            ->create(['organization_id' => $this->org->id]);
+        // Der OrganizationObserver bootstrappt den Service-Typ bereits.
+        $this->entryType = EntryType::query()->withoutGlobalScopes()
+            ->where('organization_id', $this->org->id)
+            ->where('slug', EntryType::SLUG_SERVICE)
+            ->firstOrFail();
         $this->actor = User::factory()->geschaeftsfuehrung()->create([
             'organization_id' => $this->org->id,
         ]);

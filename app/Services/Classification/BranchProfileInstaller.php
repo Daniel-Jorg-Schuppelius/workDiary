@@ -10,8 +10,9 @@
 
 namespace App\Services\Classification;
 
-use App\Models\{AuditLog, Classification, ClassificationRequirement, CleaningProfile, MaintenancePlanTemplate, Organization, ProcedureTemplate, RoomRequirementTemplate, SlaContract, Software, Tag, User};
+use App\Models\{AuditLog, Classification, ClassificationRequirement, CleaningProfile, EntryType, MaintenancePlanTemplate, Organization, ProcedureTemplate, RoomRequirementTemplate, SlaContract, Software, Tag, User};
 use App\Services\Procedure\ProcedureTemplateService;
+use Database\Seeders\EntryTypeSeeder;
 use Illuminate\Support\Arr;
 
 /**
@@ -57,6 +58,7 @@ class BranchProfileInstaller {
 
         $counterTemplate = [
             'classifications' => 0,
+            'entry_types' => 0,
             'classification_requirements' => 0,
             'tags' => 0,
             'maintenance_plan_templates' => 0,
@@ -114,6 +116,31 @@ class BranchProfileInstaller {
                 ]);
                 $created['classifications']++;
             }
+        }
+
+        // Profil-gekoppelte Default-Struktur-Typen (entry_type_defaults):
+        // fehlende ergänzen, vorhandene nie anfassen — Nutzeranpassungen und
+        // Löschungen überleben; bewusste (Re-)Installation legt deklarierte
+        // Slugs wieder an.
+        $entryTypeSlugs = array_values(array_filter(
+            (array) Arr::get($profile, 'entry_type_defaults', []),
+            'is_string'
+        ));
+        foreach (EntryTypeSeeder::profilesFor($entryTypeSlugs) as $sort => $attrs) {
+            $slugExists = EntryType::query()->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->where('slug', $attrs['slug'])
+                ->exists();
+            if ($slugExists) {
+                $skipped['entry_types']++;
+
+                continue;
+            }
+
+            EntryType::query()->withoutGlobalScopes()->create(
+                array_merge($attrs, ['organization_id' => $organization->id, 'sort' => $sort])
+            );
+            $created['entry_types']++;
         }
 
         /** @var list<array<string, mixed>> $requirements */

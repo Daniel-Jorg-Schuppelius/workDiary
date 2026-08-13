@@ -24,7 +24,11 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'pflege',
     'label' => 'Ambulante Pflege',
-    'version' => 1,
+    // v2: Default-Eintragstypen (Struktur-Typen) ans Profil gekoppelt.
+    'version' => 2,
+    // Default-Struktur-Typen (EntryTypeSeeder::profiles()) — nicht die
+    // Classification-Domäne entry_type.
+    'entry_type_defaults' => ['general', 'care_visit'],
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.
     'modules_recommended' => [

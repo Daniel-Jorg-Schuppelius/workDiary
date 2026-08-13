@@ -32,9 +32,11 @@ class ClassificationRequirementValidatorTest extends TestCase {
 
         $this->org = Organization::factory()->create();
 
-        $entryType = EntryType::factory()
-            ->service()
-            ->create(['organization_id' => $this->org->id]);
+        // Der OrganizationObserver bootstrappt den Service-Typ bereits.
+        $entryType = EntryType::query()->withoutGlobalScopes()
+            ->where('organization_id', $this->org->id)
+            ->where('slug', EntryType::SLUG_SERVICE)
+            ->firstOrFail();
 
         $this->actor = User::factory()->geschaeftsfuehrung()->create([
             'organization_id' => $this->org->id,

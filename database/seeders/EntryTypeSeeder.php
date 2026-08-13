@@ -14,21 +14,75 @@ use App\Models\{EntryType, Organization};
 use Illuminate\Database\Seeder;
 
 class EntryTypeSeeder extends Seeder {
+    /** Neutraler Grundstock für Orgs ohne (oder mit unbekanntem) Branchenprofil. */
+    public const DEFAULT_SLUGS = [EntryType::SLUG_GENERAL, EntryType::SLUG_SERVICE];
+
     public function run(): void {
-        $orgIds = Organization::query()->pluck('id')->all();
-        if ($orgIds === []) {
-            $orgIds = [null];
+        // deploy.sh seedet bei jedem Deploy — Orgs mit vorhandenen Typen
+        // dürfen nie angefasst werden, sonst erstehen gelöschte/umbenannte
+        // Typen wieder auf. Nur Erstausstattung; neue Orgs laufen über den
+        // OrganizationObserver.
+        Organization::query()->each(
+            fn (Organization $organization) => self::seedOrganization($organization)
+        );
+    }
+
+    /** Erstausstattung passend zum Branchenprofil — no-op, sobald die Org eigene Typen hat. */
+    public static function seedOrganization(Organization $organization): void {
+        $exists = EntryType::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->exists();
+        if ($exists) {
+            return;
         }
 
-        foreach ($orgIds as $orgId) {
-            foreach (self::profiles() as $sort => $profile) {
-                $attrs = ['organization_id' => $orgId, 'slug' => $profile['slug']];
-                EntryType::query()->withoutGlobalScopes()->updateOrCreate(
-                    $attrs,
-                    array_merge($profile, ['sort' => $sort])
-                );
+        $settings = is_array($organization->settings) ? $organization->settings : [];
+        $code = $settings['branch_profile_code'] ?? null;
+
+        foreach (self::profilesFor(self::defaultSlugsFor(is_string($code) ? $code : null)) as $sort => $profile) {
+            EntryType::query()->withoutGlobalScopes()->create(
+                array_merge($profile, ['organization_id' => $organization->id, 'sort' => $sort])
+            );
+        }
+    }
+
+    /**
+     * Default-Slugs fürs Branchenprofil: Profil-Schlüssel `entry_type_defaults`
+     * (Struktur-Typen, nicht die Classification-Domäne `entry_type`), sonst
+     * neutraler Grundstock.
+     *
+     * @return list<string>
+     */
+    public static function defaultSlugsFor(?string $profileCode): array {
+        if ($profileCode !== null && $profileCode !== '') {
+            $path = database_path("data/branchprofiles/{$profileCode}.php");
+            if (is_file($path)) {
+                /** @var array<string, mixed> $profile */
+                $profile = require $path;
+                $slugs = array_values(array_filter(
+                    (array) ($profile['entry_type_defaults'] ?? []),
+                    'is_string'
+                ));
+                if ($slugs !== []) {
+                    return $slugs;
+                }
             }
         }
+
+        return self::DEFAULT_SLUGS;
+    }
+
+    /**
+     * Auf die gegebenen Slugs gefilterte Default-Definitionen (Reihenfolge wie profiles()).
+     *
+     * @param  list<string>  $slugs
+     * @return list<array<string, mixed>>
+     */
+    public static function profilesFor(array $slugs): array {
+        return array_values(array_filter(
+            self::profiles(),
+            fn (array $profile): bool => in_array($profile['slug'], $slugs, true)
+        ));
     }
 
     /**

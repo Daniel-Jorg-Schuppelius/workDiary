@@ -15,7 +15,11 @@ return [
     'label' => 'IT-Service / Managed Services',
     // v2 (Feature 100): Entsorgungs-Modul empfohlen + AVV-Presets für
     // Datenträger/Batterien (Altgeräte-Rücknahme beim Kunden).
-    'version' => 2,
+    // v3: Default-Eintragstypen (Struktur-Typen) ans Profil gekoppelt.
+    'version' => 3,
+    // Default-Struktur-Typen (EntryTypeSeeder::profiles()) — nicht die
+    // Classification-Domäne entry_type weiter unten.
+    'entry_type_defaults' => ['general', 'service', 'it_ticket'],
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.
     'modules_recommended' => [

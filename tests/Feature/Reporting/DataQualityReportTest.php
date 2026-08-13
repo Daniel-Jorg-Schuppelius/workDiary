@@ -34,7 +34,11 @@ class DataQualityReportTest extends TestCase {
         $this->setUpOrganization();
 
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
-        $this->entryType = EntryType::factory()->service()->create(['organization_id' => $this->organization->id]);
+        // Der OrganizationObserver bootstrappt den Service-Typ bereits.
+        $this->entryType = EntryType::query()->withoutGlobalScopes()
+            ->where('organization_id', $this->organization->id)
+            ->where('slug', EntryType::SLUG_SERVICE)
+            ->firstOrFail();
 
         ClassificationRequirement::factory()->create([
             'organization_id' => $this->organization->id,
