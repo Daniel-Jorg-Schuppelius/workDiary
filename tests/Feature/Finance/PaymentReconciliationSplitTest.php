@@ -145,11 +145,11 @@ class PaymentReconciliationSplitTest extends TestCase {
         $this->assertSame('Muster GmbH', $tx->counterparty_name);
         $this->assertSame('DE02120300000000202051', $tx->counterparty_iban);
         $this->assertNotNull($tx->counterparty_iban_hash);
-        // Bestandsverhalten (auch schon unter Toolkit v1.5.5): getPurpose()
-        // liefert nur Purp/Prtry — der Ustrd-Verwendungszweck landet auf
-        // Entry-Ebene NICHT in purpose (die Referenzen kommen aus der
-        // EndToEndId). Byte-identisch heißt: das bleibt so.
-        $this->assertNull($tx->purpose);
+        // Seit dem financial-formats-Update vom 2026-08-13 (Money-Umbau)
+        // liefert getPurpose() auch den Ustrd-Verwendungszweck — bewusst so
+        // übernommen (User-Entscheidung 2026-08-13); die Referenzen kommen
+        // weiterhin zusätzlich aus der EndToEndId.
+        $this->assertSame('Zahlung Rechnung RE-2026-0007 Danke', $tx->purpose);
         $this->assertContains('RE-2026-0007', $tx->extracted_refs);
         $this->assertContains('RE20260007', $tx->extracted_refs);
         $this->assertFalse($tx->is_reversal);
