@@ -35,20 +35,21 @@ final class ComplianceFindingRecorder {
 
     /**
      * @param  array<int, list<AttendanceComplianceFinding>>  $findingsByUser  Befunde je user_id (aus {@see ComplianceScanService})
+     * @param  string  $category  Befund-Kategorie (arbzg | plausibility); Dedup und Auto-„behoben" bleiben je Kategorie getrennt
      * @return array{created:int, updated:int, reopened:int, resolved:int}
      */
-    public function record(Organization $organization, CarbonImmutable $from, CarbonImmutable $to, array $findingsByUser): array {
+    public function record(Organization $organization, CarbonImmutable $from, CarbonImmutable $to, array $findingsByUser, string $category = self::CATEGORY): array {
         $orgId = (int) $organization->getKey();
         $scanAt = Carbon::now();
         $stats = ['created' => 0, 'updated' => 0, 'reopened' => 0, 'resolved' => 0];
 
-        DB::transaction(function () use ($orgId, $from, $findingsByUser, $scanAt, &$stats): void {
+        DB::transaction(function () use ($orgId, $from, $findingsByUser, $scanAt, $category, &$stats): void {
             /** @var list<int> $touchedIds */
             $touchedIds = [];
 
             foreach ($findingsByUser as $userId => $findings) {
                 foreach ($findings as $finding) {
-                    $key = $this->dedupKey($userId, $finding);
+                    $key = $this->dedupKey($userId, $finding, $category);
 
                     /** @var ComplianceFinding|null $model */
                     $model = ComplianceFinding::query()
@@ -59,7 +60,7 @@ final class ComplianceFindingRecorder {
                     if ($model === null) {
                         $model = new ComplianceFinding;
                         $model->organization_id = $orgId;
-                        $model->category = self::CATEGORY;
+                        $model->category = $category;
                         $model->rule_code = $finding->kind;
                         $model->severity = $finding->severity;
                         $model->subject_type = User::class;
@@ -99,9 +100,11 @@ final class ComplianceFindingRecorder {
             }
 
             // Auto-„behoben": Befunde im Scan-Fenster, die dieser Lauf nicht erneut erkannte, abgegrenzt
-            // über die berührten IDs. Ältere ausserhalb des Fensters (scope_date < from) bleiben unberührt.
+            // über die berührten IDs. Ältere ausserhalb des Fensters (scope_date < from) bleiben unberührt;
+            // fremde Kategorien ebenfalls (arbzg- und plausibility-Läufe schließen sich nicht gegenseitig).
             ComplianceFinding::query()
                 ->where('organization_id', $orgId)
+                ->where('category', $category)
                 ->whereIn('status', [
                     ComplianceFindingStatus::Open->value,
                     ComplianceFindingStatus::Acknowledged->value,
@@ -131,8 +134,8 @@ final class ComplianceFindingRecorder {
      * Subjekt-Morph + Zeitbezug. Subjekt ist heute stets ein User; der
      * Klassen-Basisname hält den Schlüssel kurz (< 191 Zeichen).
      */
-    private function dedupKey(int $userId, AttendanceComplianceFinding $finding): string {
-        return sprintf('%s|%s|User#%d|%s', self::CATEGORY, $finding->kind, $userId, $finding->date);
+    private function dedupKey(int $userId, AttendanceComplianceFinding $finding, string $category): string {
+        return sprintf('%s|%s|User#%d|%s', $category, $finding->kind, $userId, $finding->date);
     }
 
     /** @return array{rule:string, severity:string, scope_date:string} */

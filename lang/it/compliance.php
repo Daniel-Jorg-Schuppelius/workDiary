@@ -34,6 +34,10 @@ return [
             'frameTime' => 'Fascia oraria consentita',
             'coreTime' => 'Orario centrale',
             'entryBreakMissing' => 'Pausa obbligatoria (tempo di progetto)',
+            'missingCheckout' => 'Timbratura di uscita mancante',
+            'freeDayStamp' => 'Timbratura in giorno libero',
+            'absenceStamp' => 'Timbratura durante assenza',
+            'attendanceFrameTime' => 'Fascia oraria (timbrature)',
         ],
         'severity' => [
             'error' => 'Violazione',
@@ -66,6 +70,7 @@ return [
         'filter' => [
             'status' => 'Stato',
             'all' => 'Tutti gli stati',
+            'category' => 'Categoria',
         ],
         'col' => [
             'employee' => 'Dipendente',
@@ -76,6 +81,11 @@ return [
         'btn' => [
             'acknowledge' => 'Conferma',
             'accept' => 'Accetta',
+            'correction' => 'Richiesta di correzione',
+        ],
+        'category' => [
+            'arbzg' => 'ArbZG',
+            'plausibility' => 'Casi da chiarire',
         ],
         'acknowledged' => 'Violazione aggiornata.',
         'error' => [

@@ -131,8 +131,14 @@ class OrgMemberController extends Controller {
         $roles = [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value];
         $canManageMembers = $this->canManageMembers($auth);
         $canManagePayroll = $this->canManagePayroll($auth);
+        // Stellvertreter-Auswahl (MVP-523): Mitglieder derselben Organisation.
+        $deputyOptions = User::withoutGlobalScopes()
+            ->where('organization_id', $auth->organization_id)
+            ->whereKeyNot($member->getKey())
+            ->orderBy('name')
+            ->get(['id', 'name']);
 
-        return view('org.members._form_dialog', compact('member', 'roles', 'canManageMembers', 'canManagePayroll') + ['isEdit' => true]);
+        return view('org.members._form_dialog', compact('member', 'roles', 'canManageMembers', 'canManagePayroll', 'deputyOptions') + ['isEdit' => true]);
     }
 
     public function update(Request $request, User $member): RedirectResponse {
@@ -169,12 +175,26 @@ class OrgMemberController extends Controller {
             'role' => ['required', 'in:' . implode(',', [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value])],
             // Admin kann optional ein neues Passwort setzen (Mitarbeiter ändert es beim nächsten Login).
             'new_password' => ['nullable', 'confirmed', Password::defaults()],
+            // Stellvertretung (MVP-523): Sqid eines Org-Mitglieds oder leer.
+            'deputy_user_id' => ['nullable', 'string'],
         ] + $this->payrollDetailRules($auth) + $this->contactDetailRules());
+
+        // Stellvertreter auflösen: Org-Grenze + nicht sich selbst.
+        $deputyId = null;
+        if (filled($data['deputy_user_id'] ?? null)) {
+            $deputyId = \App\Support\Sqid::decodeOrNumeric(User::class, (string) $data['deputy_user_id']);
+            $deputyValid = $deputyId !== $member->getKey() && User::withoutGlobalScopes()
+                ->where('organization_id', $auth->organization_id)
+                ->whereKey($deputyId)
+                ->exists();
+            $deputyId = $deputyValid ? (int) $deputyId : null;
+        }
 
         $member->fill([
             'name' => $data['name'],
             'personnel_number' => $this->blankToNull($data['personnel_number'] ?? null),
             'email' => $data['email'],
+            'deputy_user_id' => $deputyId,
         ]);
         $this->fillUserPayrollFields($member, $data, $auth);
         $this->fillUserContactFields($member, $data);

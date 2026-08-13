@@ -350,6 +350,10 @@ return [
                 'requested' => 'Solicitud de corrección horaria enviada',
                 'decided' => 'Solicitud de corrección horaria decidida',
             ],
+            'overtime' => [
+                'requested' => 'Solicitud de horas extra presentada',
+                'decided' => 'Solicitud de horas extra decidida',
+            ],
             'monthClosure' => [
                 'submitted' => 'Cierre mensual enviado',
                 'decided' => 'Cierre mensual decidido',

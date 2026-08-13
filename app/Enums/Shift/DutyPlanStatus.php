@@ -17,6 +17,8 @@ enum DutyPlanStatus: string implements HasLabel {
     use HasOptions;
 
     case Draft = 'draft';
+    /** Zur Genehmigung beantragt (MVP-525). */
+    case Submitted = 'submitted';
     case Published = 'published';
 
     public function label(): string {
@@ -26,6 +28,7 @@ enum DutyPlanStatus: string implements HasLabel {
     public function tone(): string {
         return match ($this) {
             self::Draft => 'ghost',
+            self::Submitted => 'warning',
             self::Published => 'info',
         };
     }

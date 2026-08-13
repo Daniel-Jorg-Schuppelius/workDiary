@@ -350,6 +350,10 @@ return [
                 'requested' => 'Richiesta di correzione orari inviata',
                 'decided' => 'Richiesta di correzione orari decisa',
             ],
+            'overtime' => [
+                'requested' => 'Richiesta di straordinario presentata',
+                'decided' => 'Richiesta di straordinario decisa',
+            ],
             'monthClosure' => [
                 'submitted' => 'Chiusura mensile inviata',
                 'decided' => 'Chiusura mensile decisa',

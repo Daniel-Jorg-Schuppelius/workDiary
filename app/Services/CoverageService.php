@@ -85,6 +85,7 @@ class CoverageService {
                     $perType[$stid] = [
                         'min' => $req->min_staff,
                         'max' => $req->max_staff,
+                        'ideal' => $req->ideal_staff,
                         'qualification_ids' => $req->required_qualification_ids ?? [],
                         '_priority' => $priority,
                     ];
@@ -172,11 +173,12 @@ class CoverageService {
     }
 
     /**
-     * Cell-Status für Heatmap-Färbung.
+     * Cell-Status für Heatmap-Färbung. „tight" = gerade noch ausreichend
+     * (exakt am Minimum bzw. unter der Ideal-Besetzung, Q1-Gelb-Zone).
      *
-     * @return 'ok'|'under'|'over'|'idle'
+     * @return 'ok'|'tight'|'under'|'over'|'idle'
      */
-    public function cellStatus(int $actual, ?int $min, ?int $max): string {
+    public function cellStatus(int $actual, ?int $min, ?int $max, ?int $ideal = null): string {
         if ($min === null || $min === 0) {
             return $actual > 0 ? 'ok' : 'idle';
         }
@@ -186,8 +188,13 @@ class CoverageService {
         if ($max !== null && $actual > $max) {
             return 'over';
         }
+        if ($ideal !== null && $ideal > $min) {
+            return $actual < $ideal ? 'tight' : 'ok';
+        }
 
-        return 'ok';
+        // Exakt am Minimum = „gerade noch" — außer die Vorgabe ist ein
+        // Fixwert (min == max), dann ist das Minimum zugleich das Soll.
+        return ($actual === $min && ($max === null || $max > $min)) ? 'tight' : 'ok';
     }
 
     /**

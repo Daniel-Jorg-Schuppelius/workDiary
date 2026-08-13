@@ -350,6 +350,10 @@ return [
                 'requested' => 'Time correction requested',
                 'decided' => 'Time correction decided',
             ],
+            'overtime' => [
+                'requested' => 'Overtime request submitted',
+                'decided' => 'Overtime request decided',
+            ],
             'monthClosure' => [
                 'submitted' => 'Month closure submitted',
                 'decided' => 'Month closure decided',

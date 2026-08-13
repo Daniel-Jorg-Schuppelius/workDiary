@@ -21,13 +21,16 @@
             return match ($s) {
                 'under' => 'border-2 border-black bg-white',
                 'over'  => 'border border-dashed border-black bg-white',
+                'tight' => 'border border-black bg-white',
                 'ok'    => 'bg-black text-white',
                 default => 'bg-white text-black/40',
             };
         }
         return match ($s) {
             'under' => 'bg-error/20 text-error',
-            'over'  => 'bg-warning/20 text-warning',
+            // Q1-Kennlinien: Überbesetzung blau, „gerade noch" gelb.
+            'over'  => 'bg-info/20 text-info',
+            'tight' => 'bg-warning/20 text-warning',
             'ok'    => 'bg-success/20 text-success',
             default => 'bg-base-200 text-base-content/40',
         };
@@ -69,7 +72,7 @@
                                 $a       = $actual[$dateStr][$st->id] ?? 0;
                                 $minVal  = $cfg['min'] ?? null;
                                 $maxVal  = $cfg['max'] ?? null;
-                                $status  = $coverageService->cellStatus($a, $minVal, $maxVal);
+                                $status  = $coverageService->cellStatus($a, $minVal, $maxVal, $cfg['ideal'] ?? null);
                                 $tooltip = $minVal === null
                                     ? sprintf('%s: %d (kein Soll)', $st->name, $a)
                                     : sprintf('%s: %d / %s%s', $st->name, $a, $minVal, $maxVal !== null ? '–' . $maxVal : '+');
@@ -89,6 +92,7 @@
     @if (!$compact)
         <div class="mt-2 flex flex-wrap gap-3 text-xs text-base-content/60">
             <span class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded {{ $statusClass('under') }}"></span> {{ __('Unterbesetzt') }}</span>
+            <span class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded {{ $statusClass('tight') }}"></span> {{ __('Gerade noch ausreichend') }}</span>
             <span class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded {{ $statusClass('ok') }}"></span> {{ __('Soll erfüllt') }}</span>
             <span class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded {{ $statusClass('over') }}"></span> {{ __('Überbesetzt') }}</span>
             <span class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded {{ $statusClass('idle') }}"></span> {{ __('Kein Soll') }}</span>

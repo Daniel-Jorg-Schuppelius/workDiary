@@ -280,6 +280,16 @@ return [
             'criticality' => 'core',
             'expected_runtime_minutes' => 5,
         ],
+        // --- Rollplan-Fortschreibung (MVP-522) ---
+        // Erzeugt aus aktiven Rollplan-Zuweisungen Draft-Dienste für das
+        // Planungsfenster; idempotent, manuelle Planung gewinnt.
+        'shifts.roll_forward' => [
+            'command' => 'shifts:roll-forward',
+            'cadence' => ['type' => 'dailyAt', 'time' => '02:10'],
+            'allowed' => ['dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 5,
+        ],
         'events.check_certificates' => [
             'command' => 'events:check-certificates',
             'cadence' => ['type' => 'dailyAt', 'time' => '06:00'],

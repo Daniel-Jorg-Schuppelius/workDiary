@@ -44,6 +44,12 @@ class DutyPlan extends Model {
         'note',
         'created_by',
         'updated_by',
+        // Genehmigungsworkflow + Archiv-Snapshot (MVP-525).
+        'submitted_at',
+        'submitted_by',
+        'approved_at',
+        'approved_by',
+        'archive_snapshot',
     ];
 
     /** @var array<string, string> */
@@ -51,6 +57,9 @@ class DutyPlan extends Model {
         'from_date' => 'date',
         'to_date' => 'date',
         'min_staff' => 'integer',
+        'submitted_at' => 'datetime',
+        'approved_at' => 'datetime',
+        'archive_snapshot' => 'array',
         'status' => DutyPlanStatus::class,
         'period_type' => DutyPlanPeriodType::class,
     ];

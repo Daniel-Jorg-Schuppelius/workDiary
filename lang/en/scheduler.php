@@ -91,6 +91,7 @@ return [
         'claims' => ['escalate' => 'Claims deadline escalation'],
         'cloud-intake' => ['sync' => 'Fetch cloud document intake'],
         'compliance' => ['scan_findings' => 'Scan compliance findings'],
+        'shifts' => ['roll_forward' => 'Roll forward rotation plans'],
         'events' => [
             'check_certificates' => 'Check certificate expiry',
             'dispatch_reminders' => 'Send event reminders',

@@ -221,6 +221,12 @@ enum Permission: string implements HasLabel {
     case CorrectionReject = 'correction.reject';
     case CorrectionApplySystem = 'correction.apply.system';
 
+        // ── Überstunden-Anträge (MVP-519) ──────────────────────────────────
+    case OvertimeRequestOwn = 'overtime.request.own';
+    case OvertimeWithdrawOwn = 'overtime.withdraw.own';
+    case OvertimeViewTeam = 'overtime.view.team';
+    case OvertimeDecide = 'overtime.decide';
+
         // ── Tagesabschluss (MVP-015) ───────────────────────────────────────
     case DayCloseViewOwn = 'dayClose.view.own';
     case DayCloseViewTeam = 'dayClose.view.team';
@@ -738,6 +744,7 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'costCenterRule.'),
             str_starts_with($this->value, 'wageTypeMapping.'),
             str_starts_with($this->value, 'compliance.'),
+            str_starts_with($this->value, 'overtime.'),
             str_starts_with($this->value, 'flex.') => PermissionGroup::WorkingTime,
             str_starts_with($this->value, 'safety.') => PermissionGroup::Safety,
             str_starts_with($this->value, 'openIssue.') => PermissionGroup::OpenIssues,

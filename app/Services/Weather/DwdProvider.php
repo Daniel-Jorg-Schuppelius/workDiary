@@ -16,7 +16,7 @@ use App\Services\Location\GeofenceMatcher;
 use App\Services\Weather\Contracts\WeatherProvider;
 use App\Support\Setting;
 use Carbon\CarbonInterface;
-use CommonToolkit\Enums\SpeedUnit;
+use CommonToolkit\Enums\Units\SpeedUnit;
 use CommonToolkit\Helper\Data\{StringHelper, UnitConversionHelper};
 use CommonToolkit\Helper\FileSystem\{File, Folder};
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;

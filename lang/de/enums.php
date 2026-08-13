@@ -350,6 +350,10 @@ return [
                 'requested' => 'Zeit-Korrekturantrag eingereicht',
                 'decided' => 'Zeit-Korrekturantrag entschieden',
             ],
+            'overtime' => [
+                'requested' => 'Überstunden-Antrag eingereicht',
+                'decided' => 'Überstunden-Antrag entschieden',
+            ],
             'monthClosure' => [
                 'submitted' => 'Monatsabschluss eingereicht',
                 'decided' => 'Monatsabschluss entschieden',

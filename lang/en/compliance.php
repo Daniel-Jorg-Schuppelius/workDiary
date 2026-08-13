@@ -34,6 +34,10 @@ return [
             'frameTime' => 'Working time frame',
             'coreTime' => 'Core working hours',
             'entryBreakMissing' => 'Mandatory break (project time)',
+            'missingCheckout' => 'Missing check-out',
+            'freeDayStamp' => 'Stamp on a day off',
+            'absenceStamp' => 'Stamp during absence',
+            'attendanceFrameTime' => 'Working time frame (clockings)',
         ],
         'severity' => [
             'error' => 'Violation',
@@ -66,6 +70,7 @@ return [
         'filter' => [
             'status' => 'Status',
             'all' => 'All statuses',
+            'category' => 'Category',
         ],
         'col' => [
             'employee' => 'Employee',
@@ -76,6 +81,11 @@ return [
         'btn' => [
             'acknowledge' => 'Acknowledge',
             'accept' => 'Accept',
+            'correction' => 'Correction request',
+        ],
+        'category' => [
+            'arbzg' => 'ArbZG',
+            'plausibility' => 'Unresolved cases',
         ],
         'acknowledged' => 'Violation updated.',
         'error' => [

@@ -343,6 +343,16 @@ class NavigationRegistry {
                 ['route' => 'schedule.index', 'label' => __('Schichtplan'), 'icon' => 'schedule', 'modal' => false, 'matches' => ['schedule.index', 'schedule.api.*', 'schedule.shifts.*', 'schedule.types.*', 'schedule.import.*', 'schedule.suggest', 'schedule.exchanges.*']],
                 ['route' => 'timesheets.index', 'label' => __('Stundenzettel'), 'icon' => 'description', 'modal' => false, 'matches' => ['timesheets.*', 'projects.timesheets.*']],
                 ['route' => 'flex.index', 'label' => __('Arbeitszeitkonto'), 'icon' => 'hourglass_top', 'modal' => false, 'matches' => ['flex.*']],
+                // MVP-524: Anwesenheits-Board — nur bei aktiviertem Org-Opt-in.
+                (bool) data_get(
+                    app()->bound('currentOrganization') && app('currentOrganization') instanceof \App\Models\Organization
+                        ? app('currentOrganization')->settings
+                        : null,
+                    'presence.board_enabled',
+                    false,
+                )
+                    ? ['route' => 'presence.board', 'label' => __('Aktuelle Belegung'), 'icon' => 'meeting_room', 'modal' => false, 'matches' => ['presence.board']]
+                    : null,
                 ['route' => 'tours.index', 'label' => __('Touren'), 'icon' => 'route', 'modal' => false, 'matches' => ['tours.index', 'tours.map', 'tours.create', 'tours.show', 'tours.edit']],
                 // Leitstelle (Feature 029): Dispatch-Board + Karte.
                 Gate::allows(Permission::DispatchViewAny->value)
@@ -768,6 +778,8 @@ class NavigationRegistry {
                             ? ['route' => 'reports.presence-emergency', 'label' => __('reporting.presence_emergency.nav'), 'icon' => 'emergency_home', 'modal' => false, 'matches' => ['reports.presence-emergency']]
                             : null,
                         ['route' => 'reports.absences', 'label' => __('Urlaub & Flex'), 'icon' => 'event_busy', 'modal' => false, 'matches' => ['reports.absences']],
+                        // MVP-520: Ganzjahres-Urlaubsplan + Fehlzeitenkarte.
+                        ['route' => 'reports.absence-calendar', 'label' => __('Urlaubsplan'), 'icon' => 'calendar_month', 'modal' => false, 'matches' => ['reports.absence-calendar']],
                         ['route' => 'reports.sickness', 'label' => __('Krankheiten'), 'icon' => 'sick', 'modal' => false, 'matches' => ['reports.sickness']],
                         ['route' => 'reports.qualifications', 'label' => __('Qualifikationen'), 'icon' => 'verified', 'modal' => false, 'matches' => ['reports.qualifications']],
                         // Feature 002: Kohortenvergleich vor/nach Fortbildung — org-weite Personaldaten → nur report.view/Admin.
@@ -1235,6 +1247,8 @@ class NavigationRegistry {
                 // MVP-514 P2: freie Mandanten-Dimensionen (admin-gebunden wie Terminals).
                 if (\Illuminate\Support\Facades\Auth::user()?->isAdmin() === true) {
                     $adminNavItems[] = ['route' => 'admin.time-dimensions.index', 'label' => __('allocation.dimensions.nav'), 'icon' => 'category', 'modal' => false, 'matches' => ['admin.time-dimensions.*']];
+                    // MVP-522: Rollpläne (rollierende Dienst-Vorplanung).
+                    $adminNavItems[] = ['route' => 'admin.shift-rotations.index', 'label' => __('Rollpläne'), 'icon' => 'event_repeat', 'modal' => false, 'matches' => ['admin.shift-rotations.*']];
                 }
                 if (Gate::allows(Permission::WageTypeMappingViewAny->value)) {
                     $adminNavItems[] = ['route' => 'admin.wage-type-mappings.index', 'label' => __('wage_types.title.index'), 'icon' => 'badge', 'modal' => false];

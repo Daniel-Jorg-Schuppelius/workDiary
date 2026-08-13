@@ -91,6 +91,7 @@ return [
         'claims' => ['escalate' => 'Escalado de plazos de reclamaciones'],
         'cloud-intake' => ['sync' => 'Recuperar la recepción de documentos en la nube'],
         'compliance' => ['scan_findings' => 'Analizar hallazgos de cumplimiento'],
+        'shifts' => ['roll_forward' => 'Prolongar planes rotativos'],
         'events' => [
             'check_certificates' => 'Comprobar la caducidad de certificados',
             'dispatch_reminders' => 'Enviar recordatorios de eventos',

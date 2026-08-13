@@ -125,6 +125,25 @@ class VacationController extends Controller {
         /** @var User $auth */
         $auth = Auth::user();
 
+        // MVP-523: zweistufige Genehmigung (Vier-Augen), org-konfigurierbar.
+        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $stages = (int) data_get($org?->settings, 'vacation.approval_stages', 1);
+        if ($stages >= 2 && $vacation->status === VacationStatus::Pending) {
+            if ($vacation->first_approved_by === null) {
+                $vacation->update([
+                    'first_approved_by' => $auth->id,
+                    'first_approved_at' => now(),
+                ]);
+
+                return redirect()->route('duties.index', ['tab' => 'urlaub'])
+                    ->with('success', __('Erste Freigabe erfasst — die zweite Freigabe muss durch eine andere Person erfolgen.'));
+            }
+            if ((int) $vacation->first_approved_by === (int) $auth->id) {
+                return redirect()->route('duties.index', ['tab' => 'urlaub'])
+                    ->with('error', __('Die zweite Freigabe muss durch eine andere Person erfolgen (Vier-Augen-Prinzip).'));
+            }
+        }
+
         $vacation->update([
             'status' => VacationStatus::Approved,
             'decided_by' => $auth->id,

@@ -11,6 +11,10 @@
         'vacation_conflict'   => __('Urlaubskonflikt'),
         'qualification_match' => __('Qualifikations-Match'),
         'holiday_double_book' => __('Feiertagsbuchung'),
+        'plausibility_missing_checkout' => __('Vergessene Geht-Stempelung'),
+        'plausibility_free_day'         => __('Stempelung an freiem Tag'),
+        'plausibility_absence_conflict' => __('Stempelung trotz Abwesenheit'),
+        'plausibility_frame_time'       => __('Rahmenzeit (Stempelzeiten)'),
     ];
 @endphp
 
@@ -70,6 +74,53 @@
                class="input input-bordered w-full"
                value="{{ old('compliance.max_consecutive_days', $current['max_consecutive_days']) }}">
     </div>
+    <div class="fieldset">
+        <label class="fieldset-label">{{ __('Bagatellgrenze Rahmenzeit (Min.)') }}</label>
+        <input type="number" min="0" max="240" name="compliance[frame_tolerance_minutes]"
+               class="input input-bordered w-full"
+               value="{{ old('compliance.frame_tolerance_minutes', $current['frame_tolerance_minutes'] ?? 15) }}">
+    </div>
+    @php
+        $flexSettings = (array) data_get($organization?->settings, 'flex', []);
+    @endphp
+    <div class="fieldset">
+        <label class="fieldset-label">{{ __('Gleitzeit-Ampel: Gelb ab (Min.)') }}</label>
+        <input type="number" min="0" max="100000" name="settings[flex][warn_minutes]"
+               class="input input-bordered w-full"
+               value="{{ old('settings.flex.warn_minutes', $flexSettings['warn_minutes'] ?? \App\Services\Flextime\FlexTrafficLight::DEFAULT_WARN_MINUTES) }}">
+    </div>
+    <div class="fieldset">
+        <label class="fieldset-label">{{ __('Gleitzeit-Ampel: Rot ab (Min.)') }}</label>
+        <input type="number" min="0" max="100000" name="settings[flex][critical_minutes]"
+               class="input input-bordered w-full"
+               value="{{ old('settings.flex.critical_minutes', $flexSettings['critical_minutes'] ?? \App\Services\Flextime\FlexTrafficLight::DEFAULT_CRITICAL_MINUTES) }}">
+    </div>
+</x-form-group>
+
+<x-form-group :legend="__('Genehmigungen')" icon="how_to_reg" tone="ghost" cols="1"
+              :description="__('Urlaubs-Genehmigung: einstufig oder zweistufig (Vier-Augen-Prinzip).')">
+    @php $stages = (int) old('settings.vacation.approval_stages', data_get($organization?->settings, 'vacation.approval_stages', 1)); @endphp
+    <div class="fieldset">
+        <label class="fieldset-label">{{ __('Urlaubs-Genehmigungsstufen') }}</label>
+        <select name="settings[vacation][approval_stages]" class="select select-bordered w-full">
+            <option value="1" @selected($stages === 1)>{{ __('Einstufig (eine Freigabe)') }}</option>
+            <option value="2" @selected($stages === 2)>{{ __('Zweistufig (Vier-Augen-Prinzip)') }}</option>
+        </select>
+    </div>
+    @php $boardEnabled = (string) old('settings.presence.board_enabled', data_get($organization?->settings, 'presence.board_enabled', '0')); @endphp
+    <label class="label cursor-pointer justify-start gap-3">
+        <input type="hidden" name="settings[presence][board_enabled]" value="0">
+        <input type="checkbox" name="settings[presence][board_enabled]" value="1" class="checkbox checkbox-sm"
+               @checked($boardEnabled === '1' || $boardEnabled === 1)>
+        <span class="label-text">{{ __('Anwesenheits-Board (Aktuelle Belegung) aktivieren') }}</span>
+    </label>
+    @php $oofEnabled = (string) old('settings.msgraph.oof_enabled', data_get($organization?->settings, 'msgraph.oof_enabled', '0')); @endphp
+    <label class="label cursor-pointer justify-start gap-3">
+        <input type="hidden" name="settings[msgraph][oof_enabled]" value="0">
+        <input type="checkbox" name="settings[msgraph][oof_enabled]" value="1" class="checkbox checkbox-sm"
+               @checked($oofEnabled === '1' || $oofEnabled === 1)>
+        <span class="label-text">{{ __('Outlook-Abwesenheitsnotiz bei genehmigtem Urlaub setzen (M365)') }}</span>
+    </label>
 </x-form-group>
 
 <x-form-group :legend="__('Aktive Regeln')" icon="rule" tone="ghost" cols="2">

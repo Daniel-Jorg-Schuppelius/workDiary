@@ -37,6 +37,8 @@ class StoreCoverageRequirementRequest extends FormRequest {
             'specific_date' => ['nullable', 'date'],
             'min_staff' => ['required', 'integer', 'min:0', 'max:99'],
             'max_staff' => ['nullable', 'integer', 'min:0', 'max:99', 'gte:min_staff'],
+            // Ideal-Besetzung zwischen Min und Max (Q1-Kennlinien).
+            'ideal_staff' => ['nullable', 'integer', 'min:0', 'max:99', 'gte:min_staff'],
             'required_qualification_ids' => ['nullable', 'array'],
             'required_qualification_ids.*' => ['integer', new \App\Rules\ExistsInCurrentOrganization('qualifications')],
             'notes' => ['nullable', 'string', 'max:500'],

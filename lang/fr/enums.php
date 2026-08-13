@@ -350,6 +350,10 @@ return [
                 'requested' => 'Demande de correction de temps soumise',
                 'decided' => 'Demande de correction de temps décidée',
             ],
+            'overtime' => [
+                'requested' => 'Demande d\'heures supplémentaires déposée',
+                'decided' => 'Demande d\'heures supplémentaires décidée',
+            ],
             'monthClosure' => [
                 'submitted' => 'Clôture mensuelle soumise',
                 'decided' => 'Clôture mensuelle décidée',

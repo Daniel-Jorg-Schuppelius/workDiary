@@ -17,7 +17,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{ComplianceFinding, Organization, Team, TimeCorrectionRequest, User};
-use App\Services\Compliance\{AttendanceComplianceChecker, ComplianceFindingService, ComplianceScanService};
+use App\Services\Compliance\{AttendanceComplianceChecker, AttendancePlausibilityScanService, ComplianceFindingRecorder, ComplianceFindingService, ComplianceScanService};
 use App\Services\Reporting\ReportFilters;
 use App\Support\{ChartBucket, Sqid};
 use Carbon\{Carbon, CarbonImmutable};
@@ -400,6 +400,12 @@ class ArbZgComplianceReportController extends Controller {
         $filters = $this->standardFilters($request, ['user', 'team', 'status'], $from, $to, $statuses);
         $statusFilter = $filters->status ?? '';
 
+        // MVP-519: ArbZG-Verstöße und Plausibilitäts-Befunde („Ungeklärte
+        // Fälle") teilen sich die Historie; die Kategorie grenzt ein.
+        $categories = [ComplianceFindingRecorder::CATEGORY, AttendancePlausibilityScanService::CATEGORY];
+        $categoryFilter = $request->string('category')->toString();
+        $categoryFilter = in_array($categoryFilter, $categories, true) ? $categoryFilter : '';
+
         $query = ComplianceFinding::query()
             ->with(['subject', 'acknowledgedByUser:id,name'])
             ->orderByDesc('scope_date')
@@ -407,6 +413,9 @@ class ArbZgComplianceReportController extends Controller {
             ->orderByDesc('id');
         if ($statusFilter !== '') {
             $query->where('status', $statusFilter);
+        }
+        if ($categoryFilter !== '') {
+            $query->where('category', $categoryFilter);
         }
         if ($filters->userId !== null || $filters->teamUserIds() !== []) {
             // Betroffene sind User-Morphs; Fremd-Subjekte gleicher ID ausschließen.
@@ -427,6 +436,8 @@ class ArbZgComplianceReportController extends Controller {
             'findings' => $findings,
             'statuses' => $statuses,
             'statusFilter' => $statusFilter,
+            'categories' => $categories,
+            'categoryFilter' => $categoryFilter,
             'counts' => $counts,
             'thresholds' => $this->thresholdLabels(),
             'canManage' => Gate::allows(Permission::ComplianceViewAny->value),

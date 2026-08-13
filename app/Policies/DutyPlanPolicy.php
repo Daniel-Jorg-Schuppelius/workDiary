@@ -45,6 +45,11 @@ class DutyPlanPolicy {
         return $user->isAdmin() && $this->sharesOrganization($user, $dutyPlan);
     }
 
+    /** Genehmigen (MVP-525): Admins via before(); sonst niemand. */
+    public function approve(User $user, DutyPlan $dutyPlan): bool {
+        return $user->isAdmin() && $this->sharesOrganization($user, $dutyPlan);
+    }
+
     public function delete(User $user, DutyPlan $dutyPlan): bool {
         return $user->isAdmin()
             && $this->sharesOrganization($user, $dutyPlan)

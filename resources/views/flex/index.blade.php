@@ -113,12 +113,52 @@
     @endif
 
     @if ($tracksTarget)
-        {{-- Soll/Ist/Saldo-Modelle --}}
+        {{-- Soll/Ist/Saldo-Modelle — Saldo mit Ampelphasen (MVP-521). --}}
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <x-kpi-tile :label="__('Soll')" :value="$fmt($summary['target'])" />
             <x-kpi-tile :label="__('Ist')" :value="$fmt($summary['actual'])" />
-            <x-kpi-tile :label="__('Saldo')" term="flexzeit" :value="$fmt($summary['balance'])" :tone="$summary['balance'] < 0 ? 'error' : 'success'" />
+            <x-kpi-tile :label="__('Saldo')" term="flexzeit" :value="$fmt($summary['balance'])"
+                        :tone="($trafficLight ?? null)?->tone((int) $summary['balance']) ?? ($summary['balance'] < 0 ? 'error' : 'success')" />
         </div>
+
+        @if (($forecast['months'] ?? []) !== [])
+            {{-- Vorausberechnung (MVP-521): projizierter Saldo je Zukunftsmonat. --}}
+            <x-card>
+                <h3 class="font-semibold mb-2">{{ __('Vorausberechnung') }}</h3>
+                <p class="text-sm text-base-content/60 mb-2">
+                    {{ __('Projektion des Gleitzeitsaldos auf Basis geplanter Dienste; Monate ohne Dienstplanung unterstellen Solltreue.') }}
+                    {{ __('Ausgangssaldo') }}: <span class="font-medium tabular-nums">{{ $fmt((int) $forecast['start_balance']) }}</span>
+                </p>
+                <div class="overflow-x-auto">
+                    <table class="table table-xs">
+                        <thead>
+                            <tr>
+                                <th>{{ __('Monat') }}</th>
+                                <th class="text-right">{{ __('Soll') }}</th>
+                                <th class="text-right">{{ __('Geplant') }}</th>
+                                <th class="text-right">{{ __('Δ') }}</th>
+                                <th class="text-right">{{ __('Projizierter Saldo') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($forecast['months'] as $fm)
+                                <tr>
+                                    <td>{{ $fm['label'] }}</td>
+                                    <td class="text-right tabular-nums">{{ $fmtPlain($fm['target']) }}</td>
+                                    <td class="text-right tabular-nums">{{ $fm['has_shifts'] ? $fmtPlain($fm['planned']) : '–' }}</td>
+                                    <td class="text-right tabular-nums">{{ $fmtCell($fm['delta']) }}</td>
+                                    <td class="text-right">
+                                        <x-status-badge :tone="$fm['tone']" size="sm">
+                                            <span class="tabular-nums">{{ $fmt($fm['projected']) }}</span>
+                                        </x-status-badge>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </x-card>
+        @endif
     @else
         {{-- Vertrauensarbeitszeit: kein Soll/Saldo --}}
         <div class="alert alert-warning alert-soft text-sm">

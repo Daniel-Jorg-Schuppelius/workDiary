@@ -125,9 +125,50 @@ class DutyPlanController extends Controller {
     public function publish(DutyPlan $dutyPlan): RedirectResponse {
         Gate::authorize('update', $dutyPlan);
 
+        $this->freezeArchiveSnapshot($dutyPlan);
         $dutyPlan->update(['status' => DutyPlanStatus::Published, 'updated_by' => Auth::id()]);
 
         return back()->with('success', __('Dienstplan wurde veröffentlicht.'));
+    }
+
+    /** Zur Genehmigung beantragen (MVP-525): Entwurf → beantragt. */
+    public function submit(DutyPlan $dutyPlan): RedirectResponse {
+        Gate::authorize('update', $dutyPlan);
+
+        if ($dutyPlan->status !== DutyPlanStatus::Draft) {
+            return back()->with('error', __('Nur Entwürfe können zur Genehmigung beantragt werden.'));
+        }
+
+        $dutyPlan->update([
+            'status' => DutyPlanStatus::Submitted,
+            'submitted_at' => now(),
+            'submitted_by' => Auth::id(),
+            'updated_by' => Auth::id(),
+        ]);
+
+        return back()->with('success', __('Dienstplan zur Genehmigung beantragt.'));
+    }
+
+    /**
+     * Genehmigen (MVP-525): beantragt → veröffentlicht; die genehmigte
+     * Fassung wird als unveränderlicher Archiv-Snapshot eingefroren.
+     */
+    public function approve(DutyPlan $dutyPlan): RedirectResponse {
+        Gate::authorize('approve', $dutyPlan);
+
+        if ($dutyPlan->status !== DutyPlanStatus::Submitted) {
+            return back()->with('error', __('Nur beantragte Dienstpläne können genehmigt werden.'));
+        }
+
+        $this->freezeArchiveSnapshot($dutyPlan);
+        $dutyPlan->update([
+            'status' => DutyPlanStatus::Published,
+            'approved_at' => now(),
+            'approved_by' => Auth::id(),
+            'updated_by' => Auth::id(),
+        ]);
+
+        return back()->with('success', __('Dienstplan genehmigt und veröffentlicht.'));
     }
 
     public function retract(DutyPlan $dutyPlan): RedirectResponse {
@@ -136,6 +177,36 @@ class DutyPlanController extends Controller {
         $dutyPlan->update(['status' => DutyPlanStatus::Draft, 'updated_by' => Auth::id()]);
 
         return back()->with('success', __('Dienstplan wurde zurück auf Entwurf gesetzt.'));
+    }
+
+    /**
+     * Archiv-Snapshot der aktuellen Dienste einfrieren (MVP-525): die
+     * „amtliche" Fassung bleibt auch nach späteren Änderungen rekonstruierbar.
+     */
+    private function freezeArchiveSnapshot(DutyPlan $dutyPlan): void {
+        $shifts = $dutyPlan->shifts()
+            ->with(['user:id,name', 'shiftType:id,name,abbreviation'])
+            ->orderBy('date')
+            ->get()
+            ->map(fn ($shift): array => [
+                'user_id' => (int) $shift->user_id,
+                'user' => (string) ($shift->user->name ?? ''),
+                'date' => $shift->date->toDateString(),
+                'shift_type' => (string) ($shift->shiftType->abbreviation ?? $shift->shiftType->name ?? ''),
+                'start_time' => $shift->start_time,
+                'end_time' => $shift->end_time,
+                'status' => $shift->status->value,
+            ])
+            ->values()
+            ->all();
+
+        $dutyPlan->forceFill([
+            'archive_snapshot' => [
+                'frozen_at' => now()->toIso8601String(),
+                'frozen_by' => (int) Auth::id(),
+                'shifts' => $shifts,
+            ],
+        ])->save();
     }
 
     /** @return array<string, mixed> */

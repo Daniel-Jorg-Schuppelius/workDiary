@@ -13,7 +13,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\User;
 use App\Services\Calendar\WeekViewService;
-use App\Services\Flextime\{FlexCalculator, WorkScheduleResolver};
+use App\Services\Flextime\{FlexCalculator, FlexForecastService, FlexTrafficLight, WorkScheduleResolver};
 use App\Services\UI\DateRangeContext;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
@@ -93,6 +93,12 @@ class FlexController extends Controller {
         $schedActive = $this->resolver->for($user, $activeStart->endOfMonth());
         $scheduleType = $schedActive->schedule_type;
 
+        // MVP-521: Ampelphasen + Vorausberechnung auf Basis geplanter Dienste.
+        $trafficLight = FlexTrafficLight::current();
+        $forecast = $scheduleType->tracksTarget()
+            ? app(FlexForecastService::class)->forecast($user)
+            : null;
+
         return view('flex.index', [
             'user' => $user,
             'authUser' => $authUser,
@@ -107,6 +113,8 @@ class FlexController extends Controller {
             'service' => $this->weekService,
             'schedule' => $schedActive,
             'scheduleType' => $scheduleType,
+            'trafficLight' => $trafficLight,
+            'forecast' => $forecast,
             'tracksTarget' => $scheduleType->tracksTarget(),
             'modelChanged' => $schedFirst->schedule_type !== $scheduleType,
         ]);

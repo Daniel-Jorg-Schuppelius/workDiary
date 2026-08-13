@@ -47,6 +47,9 @@ class ShiftType extends Model {
         'color',
         'default_start_time',
         'default_end_time',
+        // Kombi-Dienst (Feature-103-Delta): anschließende Rufbereitschaft.
+        'on_call_start_time',
+        'on_call_end_time',
         'is_active',
         'created_by',
     ];

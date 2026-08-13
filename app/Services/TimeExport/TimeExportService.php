@@ -512,6 +512,9 @@ class TimeExportService {
             $rows += $this->aggregateAbsenceLines($export, (int) $uid, $start, $end, $costCenter);
             $rows += $this->aggregateOnCallAndTravelLines($export, (int) $uid, $start, $end, $costCenter);
             $rows += $this->aggregateNonIntervalSurchargeLines($export, (int) $uid, $start, $end, $surchargeRules, $costCenter);
+            // Feature-103-Delta: externe vergütungsrelevante Positionen
+            // (Essensgeld, Kilometer, Zulagen) je Lohnart aggregieren.
+            $rows += $this->aggregateExternalWageItems($export, (int) $uid, $start, $end, $costCenter);
 
             $minutes = (int) Attendance::query()
                 ->where('user_id', $uid)
@@ -667,6 +670,46 @@ class TimeExportService {
                 'period_end' => $end->toDateString(),
                 'note' => null,
                 'source_refs' => ['time_entry_ids' => $travel->pluck('id')->all()],
+            ]);
+            $rows++;
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Externe vergütungsrelevante Positionen (Feature-103-Delta, Q1 „Import
+     * von Bewegungsdaten"): Essensgeld, Kilometer, Zulagen — je Lohnart und
+     * Einheit im Zeitraum aggregiert; die Lohnarten-Codes kommen aus dem
+     * Import und werden wie alle Zeilen über WageTypeMapping abgebildet.
+     */
+    private function aggregateExternalWageItems(TimeExport $export, int $uid, CarbonImmutable $start, CarbonImmutable $end, ?string $costCenter): int {
+        $items = \App\Models\ExternalWageItem::query()
+            ->where('user_id', $uid)
+            ->whereDate('item_date', '>=', $start->toDateString())
+            ->whereDate('item_date', '<=', $end->toDateString())
+            ->get(['id', 'wage_type_code', 'quantity', 'unit']);
+        if ($items->isEmpty()) {
+            return 0;
+        }
+
+        $rows = 0;
+        foreach ($items->groupBy(fn ($i): string => $i->wage_type_code . '|' . $i->unit) as $group) {
+            $first = $group->first();
+            if ($first === null) {
+                continue;
+            }
+            TimeExportLine::query()->create([
+                'time_export_id' => $export->id,
+                'user_id' => $uid,
+                'wage_type' => (string) $first->wage_type_code,
+                'cost_center' => $costCenter,
+                'quantity' => round((float) $group->sum('quantity'), 4),
+                'unit' => (string) $first->unit,
+                'period_start' => $start->toDateString(),
+                'period_end' => $end->toDateString(),
+                'note' => null,
+                'source_refs' => ['external_wage_item_ids' => $group->pluck('id')->all()],
             ]);
             $rows++;
         }

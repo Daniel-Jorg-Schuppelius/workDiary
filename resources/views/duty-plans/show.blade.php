@@ -6,8 +6,8 @@
 
     <x-slot:toolbar>
         <x-page-toolbar
-                        :badge="$dutyPlan->isPublished() ? __('duty_plan.status.published') : __('duty_plan.status.draft')"
-                        :badge-tone="$dutyPlan->isPublished() ? 'success' : 'ghost'">
+                        :badge="$dutyPlan->status->label()"
+                        :badge-tone="$dutyPlan->isPublished() ? 'success' : $dutyPlan->status->tone()">
             <x-slot:actions>
                 <x-icon-btn icon="arrow_back" size="sm" :href="route('duty-plans.index')" show-label>{{ __('Übersicht') }}</x-icon-btn>
                 <div class="dropdown dropdown-end">
@@ -32,9 +32,25 @@
                                 :href="route('duty-plans.edit', $dutyPlan)"
                                 show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                     @if ($dutyPlan->isDraft())
+                        {{-- MVP-525: Genehmigungsweg (beantragen) ODER Direkt-Veröffentlichung. --}}
+                        <form method="POST" action="{{ route('duty-plans.submit', $dutyPlan) }}" class="inline">
+                            @csrf @method('PATCH')
+                            <x-icon-btn icon="approval" tone="outline" size="sm" type="submit" show-label>{{ __('Zur Genehmigung beantragen') }}</x-icon-btn>
+                        </form>
                         <form method="POST" action="{{ route('duty-plans.publish', $dutyPlan) }}" class="inline">
                             @csrf @method('PATCH')
                             <x-icon-btn icon="publish" tone="success" size="sm" type="submit" show-label>{{ __('Veröffentlichen') }}</x-icon-btn>
+                        </form>
+                    @elseif ($dutyPlan->status === \App\Enums\Shift\DutyPlanStatus::Submitted)
+                        @can('approve', $dutyPlan)
+                            <form method="POST" action="{{ route('duty-plans.approve', $dutyPlan) }}" class="inline">
+                                @csrf @method('PATCH')
+                                <x-icon-btn icon="verified" tone="success" size="sm" type="submit" show-label>{{ __('Genehmigen') }}</x-icon-btn>
+                            </form>
+                        @endcan
+                        <form method="POST" action="{{ route('duty-plans.retract', $dutyPlan) }}" class="inline">
+                            @csrf @method('PATCH')
+                            <x-icon-btn icon="undo" tone="warning" size="sm" type="submit" show-label>{{ __('Zurück zu Entwurf') }}</x-icon-btn>
                         </form>
                     @else
                         <form method="POST" action="{{ route('duty-plans.retract', $dutyPlan) }}" class="inline">

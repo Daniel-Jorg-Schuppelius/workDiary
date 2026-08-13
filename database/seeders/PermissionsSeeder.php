@@ -328,6 +328,9 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::CorrectionApprove,
             PermissionEnum::CorrectionReject,
             PermissionEnum::CorrectionCreateForOthers,
+            // Überstunden-Anträge (MVP-519): Teamleitung entscheidet.
+            PermissionEnum::OvertimeViewTeam,
+            PermissionEnum::OvertimeDecide,
             // Tagesabschluss (MVP-015): Team-Sicht + Korrektur-Entscheidung;
             // dayClose.reopen bleibt bewusst Admin-exklusiv (§7).
             PermissionEnum::DayCloseViewTeam,
@@ -544,6 +547,11 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::CorrectionViewOrganization,
             PermissionEnum::CorrectionApprove,
             PermissionEnum::CorrectionReject,
+            // Überstunden-Anträge (MVP-519).
+            PermissionEnum::OvertimeRequestOwn,
+            PermissionEnum::OvertimeWithdrawOwn,
+            PermissionEnum::OvertimeViewTeam,
+            PermissionEnum::OvertimeDecide,
             PermissionEnum::FlexBalanceView,
             PermissionEnum::VacationViewAny,
             PermissionEnum::SickLeaveViewAny,
@@ -649,6 +657,7 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::TimesheetExport,
             PermissionEnum::MonthViewOrganization,
             PermissionEnum::CorrectionViewOrganization,
+            PermissionEnum::OvertimeViewTeam,
             PermissionEnum::InvoiceViewAny,
             PermissionEnum::InvoiceView,
             PermissionEnum::InvoiceCreate,
@@ -716,6 +725,9 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::CorrectionCreateOwn,
             PermissionEnum::CorrectionSubmitOwn,
             PermissionEnum::CorrectionWithdrawOwn,
+            // Überstunden-Anträge (MVP-519): eigene stellen/zurückziehen.
+            PermissionEnum::OvertimeRequestOwn,
+            PermissionEnum::OvertimeWithdrawOwn,
             // Tagesabschluss (MVP-015): eigene Tage sehen, abschließen,
             // Korrektur anfordern (§7).
             PermissionEnum::DayCloseViewOwn,

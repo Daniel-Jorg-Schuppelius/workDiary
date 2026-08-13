@@ -34,6 +34,10 @@ return [
             'frameTime' => 'Horario marco',
             'coreTime' => 'Horario central',
             'entryBreakMissing' => 'Pausa obligatoria (tiempo de proyecto)',
+            'missingCheckout' => 'Falta fichaje de salida',
+            'freeDayStamp' => 'Fichaje en día libre',
+            'absenceStamp' => 'Fichaje durante ausencia',
+            'attendanceFrameTime' => 'Marco horario (fichajes)',
         ],
         'severity' => [
             'error' => 'Infracción',
@@ -66,6 +70,7 @@ return [
         'filter' => [
             'status' => 'Estado',
             'all' => 'Todos los estados',
+            'category' => 'Categoría',
         ],
         'col' => [
             'employee' => 'Empleado',
@@ -76,6 +81,11 @@ return [
         'btn' => [
             'acknowledge' => 'Confirmar',
             'accept' => 'Aceptar',
+            'correction' => 'Solicitud de corrección',
+        ],
+        'category' => [
+            'arbzg' => 'ArbZG',
+            'plausibility' => 'Casos sin aclarar',
         ],
         'acknowledged' => 'Infracción actualizada.',
         'error' => [

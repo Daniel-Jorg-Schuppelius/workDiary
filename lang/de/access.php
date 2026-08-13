@@ -351,6 +351,10 @@ return [
         'correction.approve' => 'Zeitkorrekturen genehmigen',
         'correction.reject' => 'Zeitkorrekturen ablehnen',
         'correction.apply.system' => 'Zeitkorrekturen systemseitig anwenden',
+        'overtime.request.own' => 'Eigenen Überstunden-Antrag stellen',
+        'overtime.withdraw.own' => 'Eigenen Überstunden-Antrag zurückziehen',
+        'overtime.view.team' => 'Überstunden-Anträge des Teams einsehen',
+        'overtime.decide' => 'Überstunden-Anträge entscheiden',
 
         'export.time.create' => 'Zeit-Export erstellen',
         'export.time.deliver' => 'Zeit-Export ausliefern',

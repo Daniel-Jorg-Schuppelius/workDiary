@@ -117,6 +117,8 @@ class OrganizationController extends Controller {
             'compliance.min_rest_hours' => ['sometimes', 'integer', 'min:1', 'max:24'],
             'compliance.max_hours_week' => ['sometimes', 'integer', 'min:1', 'max:168'],
             'compliance.max_consecutive_days' => ['sometimes', 'integer', 'min:1', 'max:14'],
+            // Bagatellgrenze der Stempel-Plausibilität (MVP-519).
+            'compliance.frame_tolerance_minutes' => ['sometimes', 'integer', 'min:0', 'max:240'],
             'compliance.rules' => ['sometimes', 'array'],
             'compliance.rules.*' => ['boolean'],
             // Generic per-group overrides. Werte sind immer Strings (Form-Input);
@@ -132,6 +134,14 @@ class OrganizationController extends Controller {
             // (historisches Formularverhalten, z. B. settings.pagination.<neu>).
             'settings.pagination.*' => ['nullable', 'integer', 'min:1', 'max:1000'],
             'settings.uploads.*' => ['nullable', 'integer', 'min:1', 'max:1048576'],
+            // Ampelphasen des Gleitzeitsaldos (MVP-521), Minuten.
+            'settings.flex.*' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            // Zweistufige Urlaubs-Genehmigung (MVP-523): 1 = einstufig, 2 = Vier-Augen.
+            'settings.vacation.approval_stages' => ['nullable', 'integer', 'min:1', 'max:2'],
+            // Anwesenheits-Board (MVP-524): Opt-in je Organisation.
+            'settings.presence.board_enabled' => ['nullable', 'in:0,1'],
+            // Outlook-Abwesenheitsnotiz bei genehmigtem Urlaub (Feature-103-Delta).
+            'settings.msgraph.oof_enabled' => ['nullable', 'in:0,1'],
             'settings.validation' => ['sometimes', 'array'],
             'settings.validation.*' => ['sometimes', 'array'],
             'settings.validation.*.*' => ['nullable', 'integer', 'min:1', 'max:100000'],

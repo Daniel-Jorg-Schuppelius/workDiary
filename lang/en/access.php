@@ -351,6 +351,10 @@ return [
         'correction.approve' => 'Approve time corrections',
         'correction.reject' => 'Reject time corrections',
         'correction.apply.system' => 'Apply time corrections in the system',
+        'overtime.request.own' => 'Submit own overtime request',
+        'overtime.withdraw.own' => 'Withdraw own overtime request',
+        'overtime.view.team' => 'View team overtime requests',
+        'overtime.decide' => 'Decide overtime requests',
 
         'export.time.create' => 'Create time export',
         'export.time.deliver' => 'Deliver time export',

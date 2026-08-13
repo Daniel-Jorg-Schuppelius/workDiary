@@ -62,13 +62,15 @@ class Organization extends Model {
         self::COMPLIANCE_BLOCK,
     ];
 
-    /** Default-Compliance-Settings (ArbZG-Standard). */
+    /** Default-Compliance-Settings (ArbZG-Standard + Stempel-Plausibilität, MVP-519). */
     public const COMPLIANCE_DEFAULTS = [
         'mode' => self::COMPLIANCE_WARN,
         'max_hours_day' => 10,
         'min_rest_hours' => 11,
         'max_hours_week' => 48,
         'max_consecutive_days' => 6,
+        // Bagatellgrenze (Minuten) für Rahmenzeit-Überschreitungen der Stempelzeiten.
+        'frame_tolerance_minutes' => 15,
         'rules' => [
             'overlap' => true,
             'rest_period' => true,
@@ -78,6 +80,10 @@ class Organization extends Model {
             'vacation_conflict' => true,
             'qualification_match' => true,
             'holiday_double_book' => true,
+            'plausibility_missing_checkout' => true,
+            'plausibility_free_day' => true,
+            'plausibility_absence_conflict' => true,
+            'plausibility_frame_time' => true,
         ],
     ];
 
@@ -308,14 +314,14 @@ class Organization extends Model {
     /**
      * Compliance-Settings inkl. Defaults (rekursiv gemerged).
      *
-     * @return array{mode:string, max_hours_day:int, min_rest_hours:int, max_hours_week:int, max_consecutive_days:int, rules:array<string,bool>}
+     * @return array{mode:string, max_hours_day:int, min_rest_hours:int, max_hours_week:int, max_consecutive_days:int, frame_tolerance_minutes:int, rules:array<string,bool>}
      */
     public function complianceSettings(): array {
         $settings = $this->settings ?? [];
         $stored = is_array($settings['compliance'] ?? null) ? $settings['compliance'] : [];
         $merged = array_replace_recursive(self::COMPLIANCE_DEFAULTS, $stored);
 
-        /** @var array{mode:string, max_hours_day:int, min_rest_hours:int, max_hours_week:int, max_consecutive_days:int, rules:array<string,bool>} $merged */
+        /** @var array{mode:string, max_hours_day:int, min_rest_hours:int, max_hours_week:int, max_consecutive_days:int, frame_tolerance_minutes:int, rules:array<string,bool>} $merged */
         return $merged;
     }
 

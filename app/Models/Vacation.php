@@ -48,6 +48,9 @@ class Vacation extends Model {
         'reject_reason',
         'decided_by',
         'decided_at',
+        // Zweistufige Genehmigung (MVP-523): erste Freigabe.
+        'first_approved_by',
+        'first_approved_at',
     ];
 
     /** @var array<string, string> */
@@ -55,6 +58,7 @@ class Vacation extends Model {
         'start_date' => 'date',
         'end_date' => 'date',
         'decided_at' => 'datetime',
+        'first_approved_at' => 'datetime',
         'type' => VacationType::class,
         'status' => VacationStatus::class,
     ];

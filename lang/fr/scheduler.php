@@ -91,6 +91,7 @@ return [
         'claims' => ['escalate' => 'Escalade des délais de réclamation'],
         'cloud-intake' => ['sync' => 'Relever la réception de documents cloud'],
         'compliance' => ['scan_findings' => 'Analyser les constats de conformité'],
+        'shifts' => ['roll_forward' => 'Prolonger les plans de rotation'],
         'events' => [
             'check_certificates' => 'Vérifier l\'expiration des certificats',
             'dispatch_reminders' => 'Envoyer les rappels d\'événements',

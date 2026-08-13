@@ -27,8 +27,10 @@ final class ShiftEnumsTest extends TestCase {
     }
 
     public function test_duty_plan_status(): void {
-        $this->assertSame(['draft', 'published'], DutyPlanStatus::values());
+        // MVP-525: „submitted" (beantragt) zwischen Entwurf und Veröffentlichung.
+        $this->assertSame(['draft', 'submitted', 'published'], DutyPlanStatus::values());
         $this->assertSame('ghost', DutyPlanStatus::Draft->tone());
+        $this->assertSame('warning', DutyPlanStatus::Submitted->tone());
         $this->assertSame('info', DutyPlanStatus::Published->tone());
         $this->assertNotEmpty(DutyPlanStatus::Draft->label());
     }

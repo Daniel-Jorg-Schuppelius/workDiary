@@ -52,6 +52,8 @@ return [
         'admin.etsy.*' => 'admin.etsy',
         // Freie Mandanten-Dimensionen (Feature 103, MVP-514 P2).
         'admin.time-dimensions.*' => 'admin.time-dimensions',
+        // Rollpläne (MVP-522): rollierende Dienst-Vorplanung.
+        'admin.shift-rotations.*' => 'admin.shift-rotations',
         // ── Nachträge 2026-07-10: Phasen 19–24 + Lücken-Sweep ──────────
         // Bewerbungen/Ausschreibungen (Feature 068)
         'tenders.*' => 'applications.overview',
@@ -405,6 +407,13 @@ return [
         'teams.*' => 'org.teams',
         'payroll.*' => 'payroll.overview',
         'corrections.*' => 'corrections.requests',
+        // Überstunden-Anträge (MVP-519): Self-Service + Entscheider-Inbox.
+        'overtime.*' => 'overtime.requests',
+        'admin.overtime.*' => 'overtime.requests',
+        // Urlaubsplan-Jahresübersicht + Fehlzeitenkarte (MVP-520).
+        'reports.absence-calendar' => 'reports.absence-calendar',
+        // Aktuelle Personal-Belegung (MVP-524).
+        'presence.board' => 'presence.board',
         'key-handovers.*' => 'key-handovers',
         'meter-readings.*' => 'meter-readings',
         'foreign-customers.*' => 'foreign-customers',

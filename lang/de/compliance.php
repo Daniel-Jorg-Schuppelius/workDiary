@@ -34,6 +34,10 @@ return [
             'frameTime' => 'Rahmenzeit',
             'coreTime' => 'Kernarbeitszeit',
             'entryBreakMissing' => 'Pflichtpause (Projektzeit)',
+            'missingCheckout' => 'Geht-Stempelung fehlt',
+            'freeDayStamp' => 'Stempelung an freiem Tag',
+            'absenceStamp' => 'Stempelung trotz Abwesenheit',
+            'attendanceFrameTime' => 'Rahmenzeit (Stempelzeiten)',
         ],
         'severity' => [
             'error' => 'Verstoß',
@@ -66,6 +70,7 @@ return [
         'filter' => [
             'status' => 'Status',
             'all' => 'Alle Status',
+            'category' => 'Kategorie',
         ],
         'col' => [
             'employee' => 'Mitarbeiter',
@@ -76,6 +81,11 @@ return [
         'btn' => [
             'acknowledge' => 'Quittieren',
             'accept' => 'Akzeptieren',
+            'correction' => 'Korrekturantrag',
+        ],
+        'category' => [
+            'arbzg' => 'ArbZG',
+            'plausibility' => 'Ungeklärte Fälle',
         ],
         'acknowledged' => 'Verstoß aktualisiert.',
         'error' => [

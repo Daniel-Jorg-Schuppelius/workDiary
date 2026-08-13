@@ -73,6 +73,14 @@
                class="input input-bordered w-full">
         <div class="fieldset-label text-xs text-base-content/60">{{ __('Leer = unbegrenzt') }}</div>
     </label>
+
+    <label class="fieldset w-full">
+        <div class="fieldset-label">{{ __('Ideal-Besetzung') }}</div>
+        <input type="number" name="ideal_staff" min="0" max="99"
+               value="{{ old('ideal_staff', $requirement?->ideal_staff) }}"
+               class="input input-bordered w-full">
+        <div class="fieldset-label text-xs text-base-content/60">{{ __('Unter Ideal = „gerade noch ausreichend" (gelb)') }}</div>
+    </label>
 </x-form-group>
 
 @if ($qualifications->isNotEmpty())

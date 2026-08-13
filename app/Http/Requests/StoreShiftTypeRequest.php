@@ -55,6 +55,9 @@ class StoreShiftTypeRequest extends FormRequest {
             'color' => [...$req, 'string', new \App\Rules\HexColor()],
             'default_start_time' => [...$opt, 'date_format:H:i'],
             'default_end_time' => [...$opt, 'date_format:H:i'],
+            // Kombi-Dienst (Feature-103-Delta): anschließende Rufbereitschaft.
+            'on_call_start_time' => [...$opt, 'date_format:H:i'],
+            'on_call_end_time' => [...$opt, 'date_format:H:i', 'required_with:on_call_start_time'],
             'is_active' => ['sometimes', 'boolean'],
         ];
     }

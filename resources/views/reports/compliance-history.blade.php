@@ -46,6 +46,14 @@
             'statusOptions' => $statusOptions,
             'statusLabel' => __('compliance.history.filter.status'),
         ])
+        <x-filter-field :label="__('compliance.history.filter.category')" for="hist-category">
+            <select id="hist-category" name="category" class="select select-sm select-bordered" data-autosubmit>
+                <option value="">{{ __('compliance.report.filter.all') }}</option>
+                @foreach ($categories as $category)
+                    <option value="{{ $category }}" @selected($categoryFilter === $category)>{{ __('compliance.history.category.' . $category) }}</option>
+                @endforeach
+            </select>
+        </x-filter-field>
     </x-filter-bar>
 
     <x-charts.bar :title="__('Neue vs. quittierte Befunde je Monat')" :unit="__('Befunde')"
@@ -101,19 +109,28 @@
                         @if ($canManage)
                             <td class="text-right">
                                 @if ($f->status->isAcknowledgeable())
-                                    <form method="POST" action="{{ route('reports.compliance.acknowledge', $f) }}"
-                                          class="flex items-center gap-1 justify-end flex-wrap">
-                                        @csrf
-                                        <input type="text" name="note" maxlength="5000"
-                                               class="input input-xs input-bordered w-40"
-                                               placeholder="{{ __('compliance.history.note_placeholder') }}">
-                                        <button class="btn btn-xs" type="submit" name="status" value="{{ $ackStatus }}">
-                                            {{ __('compliance.history.btn.acknowledge') }}
-                                        </button>
-                                        <button class="btn btn-xs btn-warning" type="submit" name="status" value="{{ $accStatus }}">
-                                            {{ __('compliance.history.btn.accept') }}
-                                        </button>
-                                    </form>
+                                    <div class="flex items-center gap-1 justify-end flex-wrap">
+                                        @if ($f->category === \App\Services\Compliance\AttendancePlausibilityScanService::CATEGORY)
+                                            {{-- MVP-519: 1-Klick-Klärung — Korrekturantrag für den Befund-Tag vorbefüllen. --}}
+                                            <x-icon-btn icon="edit_calendar" tone="outline" size="xs"
+                                                        :href="route('corrections.create', ['date' => $f->scope_date->toDateString()])"
+                                                        data-entry-modal-trigger
+                                                        :title="__('compliance.history.btn.correction')" />
+                                        @endif
+                                        <form method="POST" action="{{ route('reports.compliance.acknowledge', $f) }}"
+                                              class="flex items-center gap-1 justify-end flex-wrap">
+                                            @csrf
+                                            <input type="text" name="note" maxlength="5000"
+                                                   class="input input-xs input-bordered w-40"
+                                                   placeholder="{{ __('compliance.history.note_placeholder') }}">
+                                            <button class="btn btn-xs" type="submit" name="status" value="{{ $ackStatus }}">
+                                                {{ __('compliance.history.btn.acknowledge') }}
+                                            </button>
+                                            <button class="btn btn-xs btn-warning" type="submit" name="status" value="{{ $accStatus }}">
+                                                {{ __('compliance.history.btn.accept') }}
+                                            </button>
+                                        </form>
+                                    </div>
                                 @endif
                             </td>
                         @endif

@@ -965,6 +965,9 @@ Route::middleware('auth')->group(function () {
         Route::resource('duty-plans', DutyPlanController::class)->parameters(['duty-plans' => 'dutyPlan']);
         Route::patch('duty-plans/{dutyPlan}/publish', [DutyPlanController::class, 'publish'])->name('duty-plans.publish');
         Route::patch('duty-plans/{dutyPlan}/retract', [DutyPlanController::class, 'retract'])->name('duty-plans.retract');
+        // Genehmigungsworkflow (MVP-525): beantragen + genehmigen.
+        Route::patch('duty-plans/{dutyPlan}/submit', [DutyPlanController::class, 'submit'])->name('duty-plans.submit');
+        Route::patch('duty-plans/{dutyPlan}/approve', [DutyPlanController::class, 'approve'])->name('duty-plans.approve');
 
         // ── Soll-Besetzung pro DutyPlan ──────────────────────────────────────────
         Route::resource('duty-plans.coverage', CoverageRequirementController::class)
@@ -1384,6 +1387,16 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/terminals/badges/revoke', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'revokeBadge'])->name('admin.terminals.badges.revoke');
 
         // ── Freie Mandanten-Dimensionen (Feature 103, MVP-514 P2) ───────────────
+        // ── Rollpläne (MVP-522) ─────────────────────────────────────────────────
+        Route::get('admin/rollplaene', [\App\Http\Controllers\Admin\ShiftRotationController::class, 'index'])->name('admin.shift-rotations.index');
+        Route::get('admin/rollplaene/neu', [\App\Http\Controllers\Admin\ShiftRotationController::class, 'create'])->name('admin.shift-rotations.create');
+        Route::post('admin/rollplaene', [\App\Http\Controllers\Admin\ShiftRotationController::class, 'store'])->name('admin.shift-rotations.store');
+        Route::put('admin/rollplaene/{rotation}/raster', [\App\Http\Controllers\Admin\ShiftRotationController::class, 'updateEntries'])->name('admin.shift-rotations.entries');
+        Route::post('admin/rollplaene/{rotation}/umschalten', [\App\Http\Controllers\Admin\ShiftRotationController::class, 'toggle'])->name('admin.shift-rotations.toggle');
+        Route::post('admin/rollplaene/{rotation}/zuweisungen', [\App\Http\Controllers\Admin\ShiftRotationController::class, 'storeAssignment'])->name('admin.shift-rotations.assignments.store');
+        Route::delete('admin/rollplaene/zuweisungen/{assignment}', [\App\Http\Controllers\Admin\ShiftRotationController::class, 'destroyAssignment'])->name('admin.shift-rotations.assignments.destroy');
+        Route::post('admin/rollplaene/fortschreiben', [\App\Http\Controllers\Admin\ShiftRotationController::class, 'roll'])->name('admin.shift-rotations.roll');
+
         Route::get('admin/time-dimensions', [\App\Http\Controllers\Admin\TimeDimensionAdminController::class, 'index'])->name('admin.time-dimensions.index');
         Route::post('admin/time-dimensions/types', [\App\Http\Controllers\Admin\TimeDimensionAdminController::class, 'storeType'])->name('admin.time-dimensions.types.store');
         Route::post('admin/time-dimensions/types/{type}/toggle', [\App\Http\Controllers\Admin\TimeDimensionAdminController::class, 'toggleType'])->name('admin.time-dimensions.types.toggle');
@@ -2631,6 +2644,9 @@ Route::middleware('auth')->group(function () {
         Route::post('ui/date-range/shift', [DateRangeController::class, 'shift'])->name('ui.date-range.shift');
 
         // ── Gleitzeit ───────────────────────────────────────────────────────────
+        // ── Aktuelle Personal-Belegung (MVP-524, Opt-in je Org) ─────────────────
+        Route::get('belegung', [\App\Http\Controllers\PresenceBoardController::class, 'index'])->name('presence.board');
+
         Route::get('flex', [FlexController::class, 'index'])->name('flex.index');
         Route::get('flex/admin', [FlexController::class, 'admin'])->name('flex.admin');
 
@@ -2674,6 +2690,23 @@ Route::middleware('auth')->group(function () {
             ->name('corrections.submit');
         Route::post('corrections/{correction}/withdraw', [\App\Http\Controllers\TimeCorrectionController::class, 'withdraw'])
             ->name('corrections.withdraw');
+
+        // ── Überstunden-Anträge (MVP-519) ───────────────────────────────────────
+        Route::get('overtime', [\App\Http\Controllers\OvertimeRequestController::class, 'index'])
+            ->name('overtime.index');
+        Route::get('overtime/create', [\App\Http\Controllers\OvertimeRequestController::class, 'create'])
+            ->name('overtime.create');
+        Route::post('overtime', [\App\Http\Controllers\OvertimeRequestController::class, 'store'])
+            ->name('overtime.store');
+        Route::post('overtime/{overtime}/withdraw', [\App\Http\Controllers\OvertimeRequestController::class, 'withdraw'])
+            ->name('overtime.withdraw');
+
+        Route::get('admin/overtime', [\App\Http\Controllers\Admin\OvertimeInboxController::class, 'index'])
+            ->name('admin.overtime.index');
+        Route::post('admin/overtime/{overtime}/approve', [\App\Http\Controllers\Admin\OvertimeInboxController::class, 'approve'])
+            ->name('admin.overtime.approve');
+        Route::post('admin/overtime/{overtime}/reject', [\App\Http\Controllers\Admin\OvertimeInboxController::class, 'reject'])
+            ->name('admin.overtime.reject');
 
         Route::get('admin/corrections', [\App\Http\Controllers\Admin\TimeCorrectionInboxController::class, 'index'])
             ->name('admin.corrections.index');
@@ -2800,6 +2833,8 @@ Route::middleware('auth')->group(function () {
         Route::get('reports/on-call', [OnCallReportController::class, 'index'])->name('reports.on-call');
         Route::get('reports/coverage', [CoverageReportController::class, 'index'])->name('reports.coverage');
         Route::get('reports/absences', [AbsencesReportController::class, 'index'])->name('reports.absences');
+        // Urlaubsplan-Jahresübersicht + Fehlzeitenkarte (MVP-520).
+        Route::get('reports/absence-calendar', [\App\Http\Controllers\Reporting\AbsenceCalendarReportController::class, 'index'])->name('reports.absence-calendar');
         Route::get('reports/sickness', [SicknessReportController::class, 'index'])->name('reports.sickness');
         Route::get('reports/operations', [OperationsReportController::class, 'index'])->name('reports.operations');
         Route::get('reports/materials', [MaterialReportController::class, 'index'])->name('reports.materials');

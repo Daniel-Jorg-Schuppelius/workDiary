@@ -8,6 +8,7 @@ return [
     ],
     'status' => [
         'draft' => 'Bozza',
+        'submitted' => 'Richiesto',
         'published' => 'Pubblicato',
     ],
 ];

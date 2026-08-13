@@ -40,3 +40,18 @@
         formControl
     />
 </x-form-group>
+
+<x-form-group :legend="__('Kombi-Dienst: Rufbereitschaft')" icon="notifications_active" tone="warning"
+              :description="__('Optional: anschließende Rufbereitschaftszeit — die Rollplan-Fortschreibung legt sie automatisch mit an.')">
+    <x-date-range
+        type="time"
+        fromName="on_call_start_time"
+        toName="on_call_end_time"
+        :fromLabel="__('Beginn')"
+        :toLabel="__('Ende')"
+        :label="__('Rufbereitschaft')"
+        :from="old('on_call_start_time', $type?->on_call_start_time)"
+        :to="old('on_call_end_time', $type?->on_call_end_time)"
+        formControl
+    />
+</x-form-group>

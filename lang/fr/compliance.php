@@ -34,6 +34,10 @@ return [
             'frameTime' => 'Plage de travail autorisée',
             'coreTime' => 'Plages fixes',
             'entryBreakMissing' => 'Pause obligatoire (temps projet)',
+            'missingCheckout' => 'Pointage de sortie manquant',
+            'freeDayStamp' => 'Pointage un jour de repos',
+            'absenceStamp' => 'Pointage pendant une absence',
+            'attendanceFrameTime' => 'Plage horaire (pointages)',
         ],
         'severity' => [
             'error' => 'Infraction',
@@ -66,6 +70,7 @@ return [
         'filter' => [
             'status' => 'Statut',
             'all' => 'Tous les statuts',
+            'category' => 'Catégorie',
         ],
         'col' => [
             'employee' => 'Employé',
@@ -76,6 +81,11 @@ return [
         'btn' => [
             'acknowledge' => 'Acquitter',
             'accept' => 'Accepter',
+            'correction' => 'Demande de correction',
+        ],
+        'category' => [
+            'arbzg' => 'ArbZG',
+            'plausibility' => 'Cas non clarifiés',
         ],
         'acknowledged' => 'Infraction mise à jour.',
         'error' => [

@@ -72,6 +72,7 @@ class CoverageRequirement extends Model {
         'specific_date',
         'min_staff',
         'max_staff',
+        'ideal_staff',
         'required_qualification_ids',
         'notes',
         'created_by',
@@ -83,6 +84,7 @@ class CoverageRequirement extends Model {
         'specific_date' => 'date',
         'min_staff' => 'integer',
         'max_staff' => 'integer',
+        'ideal_staff' => 'integer',
         'weekday' => 'integer',
         'required_qualification_ids' => 'array',
     ];

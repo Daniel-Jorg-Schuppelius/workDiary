@@ -30,7 +30,7 @@ use Throwable;
  * - Ändern: PATCH `/me/events/{id}`; Löschen: DELETE (404 = idempotent ok).
  * - Fehlersemantik wie CalDAV-Gateway: Transport-/HTTP-Fehler ⇒ null/false.
  */
-class MsgraphCalendarClient implements RemoteCalendarGateway, GraphSubscriptionClient {
+class MsgraphCalendarClient implements GraphSubscriptionClient, RemoteCalendarGateway {
     use Concerns\ManagesGraphSubscriptions;
 
     private PluginApiClient $api;
@@ -197,6 +197,26 @@ class MsgraphCalendarClient implements RemoteCalendarGateway, GraphSubscriptionC
         $id = $response->json('id');
 
         return is_string($id) && $id !== '' ? $id : null;
+    }
+
+    /**
+     * Automatische Abwesenheitsantwort (OOF) eines Postfachs setzen
+     * (Feature-103-Delta — braucht `MailboxSettings.ReadWrite`).
+     *
+     * @param  array<string, mixed>  $automaticReplies  Graph automaticRepliesSetting-Payload
+     */
+    public function setAutomaticReplies(string $userIdOrUpn, array $automaticReplies): bool {
+        try {
+            $response = $this->api->requestResponse(
+                'patch',
+                $this->base . '/users/' . rawurlencode($userIdOrUpn) . '/mailboxSettings',
+                ['json' => ['automaticRepliesSetting' => $automaticReplies]],
+            );
+        } catch (Throwable) {
+            return false;
+        }
+
+        return $response->successful();
     }
 
     /**

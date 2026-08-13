@@ -41,7 +41,10 @@ class VacationPolicy {
 
     /** Genehmigen / Ablehnen darf nur der Admin (via HasAdminBypass). */
     public function decide(User $user, Vacation $vacation): bool {
-        return false; // wird durch HasAdminBypass::before() für Admins auf true gesetzt
+        // Admins via HasAdminBypass::before(); zusätzlich entscheidet die
+        // benannte Stellvertretung, solange der Vertretene abwesend ist (MVP-523).
+        return $this->sharesOrganization($user, $vacation)
+            && $user->actsAsDeputyForAbsentAdmin();
     }
 
     /** Stornieren darf der Eigentümer, sofern noch nicht entschieden. */
