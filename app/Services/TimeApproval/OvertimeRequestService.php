@@ -16,6 +16,7 @@ use App\Enums\Compliance\ComplianceFindingStatus;
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\TimeApproval\OvertimeRequestStatus;
 use App\Models\{ComplianceFinding, OvertimeRequest, User};
+use App\Services\Approval\ApprovalFlowService;
 use App\Services\Compliance\AttendancePlausibilityScanService;
 use App\Services\Notification\NotificationDispatcher;
 use Carbon\CarbonImmutable;
@@ -92,6 +93,24 @@ class OvertimeRequestService {
             throw ValidationException::withMessages([
                 'status' => __('Dieser Antrag ist bereits entschieden.'),
             ]);
+        }
+
+        // MVP-531: konfigurierbare Stufen — eine Zwischenstufe lässt den
+        // Antrag offen (Vier-Augen erzwingt der ApprovalFlowService).
+        $flow = app(ApprovalFlowService::class);
+        if ($approved) {
+            $progress = $flow->approveStage($request, ApprovalFlowService::TYPE_OVERTIME, $decider, $note);
+            if (! $progress->isFinal()) {
+                $request->audit('overtime.stage_approved', [
+                    'actor_user_id' => (int) $decider->getKey(),
+                    'stage' => $progress->approved,
+                    'required' => $progress->required,
+                ]);
+
+                return $request;
+            }
+        } else {
+            $flow->rejectStage($request, $decider, $note);
         }
 
         return DB::transaction(function () use ($request, $decider, $approved, $note): OvertimeRequest {

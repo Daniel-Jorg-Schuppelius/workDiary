@@ -98,13 +98,30 @@
 </x-form-group>
 
 <x-form-group :legend="__('Genehmigungen')" icon="how_to_reg" tone="ghost" cols="1"
-              :description="__('Urlaubs-Genehmigung: einstufig oder zweistufig (Vier-Augen-Prinzip).')">
+              :description="__('Genehmigungsstufen je Antragstyp: einstufig oder zweistufig (Vier-Augen-Prinzip).')">
     @php $stages = (int) old('settings.vacation.approval_stages', data_get($organization?->settings, 'vacation.approval_stages', 1)); @endphp
     <div class="fieldset">
         <label class="fieldset-label">{{ __('Urlaubs-Genehmigungsstufen') }}</label>
         <select name="settings[vacation][approval_stages]" class="select select-bordered w-full">
             <option value="1" @selected($stages === 1)>{{ __('Einstufig (eine Freigabe)') }}</option>
             <option value="2" @selected($stages === 2)>{{ __('Zweistufig (Vier-Augen-Prinzip)') }}</option>
+        </select>
+    </div>
+    {{-- MVP-531: generisches Antragsverfahren — weitere Antragstypen. --}}
+    @php $otStages = (int) old('settings.approvals.overtime_stages', data_get($organization?->settings, 'approvals.overtime_stages', 1)); @endphp
+    <div class="fieldset">
+        <label class="fieldset-label">{{ __('Überstunden-Genehmigungsstufen') }}</label>
+        <select name="settings[approvals][overtime_stages]" class="select select-bordered w-full">
+            <option value="1" @selected($otStages === 1)>{{ __('Einstufig (eine Freigabe)') }}</option>
+            <option value="2" @selected($otStages === 2)>{{ __('Zweistufig (Vier-Augen-Prinzip)') }}</option>
+        </select>
+    </div>
+    @php $tcStages = (int) old('settings.approvals.time_correction_stages', data_get($organization?->settings, 'approvals.time_correction_stages', 1)); @endphp
+    <div class="fieldset">
+        <label class="fieldset-label">{{ __('Zeitkorrektur-Genehmigungsstufen') }}</label>
+        <select name="settings[approvals][time_correction_stages]" class="select select-bordered w-full">
+            <option value="1" @selected($tcStages === 1)>{{ __('Einstufig (eine Freigabe)') }}</option>
+            <option value="2" @selected($tcStages === 2)>{{ __('Zweistufig (Vier-Augen-Prinzip)') }}</option>
         </select>
     </div>
     @php $boardEnabled = (string) old('settings.presence.board_enabled', data_get($organization?->settings, 'presence.board_enabled', '0')); @endphp

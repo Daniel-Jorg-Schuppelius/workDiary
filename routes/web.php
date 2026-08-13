@@ -1387,6 +1387,15 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/terminals/badges/revoke', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'revokeBadge'])->name('admin.terminals.badges.revoke');
 
         // ── Freie Mandanten-Dimensionen (Feature 103, MVP-514 P2) ───────────────
+        // ── Gespeicherte Report-Ansichten (MVP-529) ─────────────────────────────
+        Route::get('auswertungen/ansichten', [\App\Http\Controllers\SavedReportViewController::class, 'index'])->name('report-views.index');
+        Route::post('auswertungen/ansichten', [\App\Http\Controllers\SavedReportViewController::class, 'store'])->name('report-views.store');
+        Route::post('auswertungen/ansichten/{view}/teilen', [\App\Http\Controllers\SavedReportViewController::class, 'toggleShare'])->name('report-views.toggle-share');
+        Route::delete('auswertungen/ansichten/{view}', [\App\Http\Controllers\SavedReportViewController::class, 'destroy'])->name('report-views.destroy');
+
+        // ── Änderungsverlauf/Versionsvergleich (MVP-528) ────────────────────────
+        Route::get('admin/aenderungsverlauf', [\App\Http\Controllers\Admin\AuditDiffController::class, 'index'])->name('admin.audit-diff.index');
+
         // ── Zeitkonten (MVP-526) ────────────────────────────────────────────────
         Route::get('zeitkonten', [\App\Http\Controllers\TimeAccountController::class, 'index'])->name('time-accounts.index');
         Route::get('admin/zeitkonten', [\App\Http\Controllers\Admin\TimeAccountAdminController::class, 'index'])->name('admin.time-accounts.index');

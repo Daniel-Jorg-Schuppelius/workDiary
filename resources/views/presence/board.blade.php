@@ -42,6 +42,9 @@
                             @if ($row['since'])
                                 {{ __('seit') }} {{ $row['since']->setTimezone(\App\Support\Tz::current())->format('H:i') }}
                             @endif
+                            @if (isset($returns[(int) $row['user']->id]))
+                                · {{ $returns[(int) $row['user']->id] }}
+                            @endif
                             @if ($row['site_name'])
                                 · {{ $row['site_name'] }}
                             @endif
@@ -74,10 +77,16 @@
                 <h3 class="font-semibold mb-2 inline-flex items-center gap-1.5">
                     <span class="inline-block w-2.5 h-2.5 rounded-full bg-base-content/40"></span>{{ __('Abwesend') }}
                 </h3>
-                {{-- Datenschutz: Fehlgründe werden hier bewusst NICHT angezeigt. --}}
+                {{-- Datenschutz: Fehlgründe werden hier bewusst NICHT angezeigt —
+                     die planmäßige Rückkehr (MVP-527) ist nur eine Zeitangabe. --}}
                 <ul class="divide-y divide-base-200">
                     @forelse ($snapshot['absent'] as $row)
-                        <li class="py-1.5">{{ $row['user']->name }}</li>
+                        <li class="py-1.5 flex items-center gap-2">
+                            <span>{{ $row['user']->name }}</span>
+                            @if (isset($returns[(int) $row['user']->id]))
+                                <span class="ml-auto text-sm text-base-content/60 tabular-nums">{{ $returns[(int) $row['user']->id] }}</span>
+                            @endif
+                        </li>
                     @empty
                         <li class="py-1.5 text-base-content/50">{{ __('Keine ganztägigen Abwesenheiten.') }}</li>
                     @endforelse

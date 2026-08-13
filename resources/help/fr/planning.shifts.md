@@ -1,7 +1,7 @@
 ---
 title: "Planification des services et des postes"
 topic: planning.shifts
-version: 1
+version: 2
 audience: []
 related:
     - attendance.manage
@@ -18,3 +18,9 @@ temps de travail, qualification manquante), puis publier le plan. Un
 planning publié est visible et contraignant pour les collaborateurs —
 ne le modifiez qu'avec l'autorisation prévue et informez les personnes
 concernées en cas de changement de dernière minute.
+
+Par type de poste, vous pouvez définir un effectif minimal, idéal et
+maximal — avec, en option, des minima par qualification (p. ex.
+« au moins 2 diplômés dans l'équipe du matin »). La carte thermique du
+planning met en évidence les jours où l'effectif ou les minima par
+qualification ne sont pas atteints.

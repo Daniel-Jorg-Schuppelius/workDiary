@@ -40,6 +40,7 @@
                     0 => __('So'), 1 => __('Mo'), 2 => __('Di'), 3 => __('Mi'),
                     4 => __('Do'), 5 => __('Fr'), 6 => __('Sa'),
                 ];
+                $qualNames = \App\Models\Qualification::query()->pluck('name', 'id');
             @endphp
             @foreach ($requirements as $req)
                     <tr>
@@ -69,7 +70,15 @@
                         <td class="text-sm">
                             @if (!empty($req->required_qualification_ids))
                                 {{ count($req->required_qualification_ids) }} {{ __('Qual.') }}
-                            @else
+                            @endif
+                            {{-- MVP-530: zählbare Minima („≥2 Examiniert") --}}
+                            @foreach ($req->qualificationMinima() as $qid => $needed)
+                                <span class="badge badge-sm badge-ghost whitespace-nowrap"
+                                      title="{{ __('Mindestens :n Personen mit dieser Qualifikation', ['n' => $needed]) }}">
+                                    ≥{{ $needed }} {{ $qualNames[$qid] ?? ('#' . $qid) }}
+                                </span>
+                            @endforeach
+                            @if (empty($req->required_qualification_ids) && $req->qualificationMinima() === [])
                                 <span class="text-base-content/30">–</span>
                             @endif
                         </td>

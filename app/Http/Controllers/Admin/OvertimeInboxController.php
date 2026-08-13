@@ -69,6 +69,17 @@ class OvertimeInboxController extends Controller {
 
         $this->service->decide($overtime, $user, $approved, $data['note'] ?? null);
 
+        // MVP-531: Zwischenstufe — Antrag bleibt offen, Fortschritt melden.
+        if ($approved && $overtime->fresh()?->status === OvertimeRequestStatus::Submitted) {
+            $progress = app(\App\Services\Approval\ApprovalFlowService::class)
+                ->progressFor($overtime, \App\Services\Approval\ApprovalFlowService::TYPE_OVERTIME);
+
+            return back()->with('status', __('Freigabe :done/:required erfasst — die nächste Freigabe muss durch eine andere Person erfolgen.', [
+                'done' => $progress->approved,
+                'required' => $progress->required,
+            ]));
+        }
+
         return back()->with('status', $message);
     }
 }

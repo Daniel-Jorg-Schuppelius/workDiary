@@ -35,6 +35,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $min_staff
  * @property int|null $max_staff
  * @property array<int, int>|null $required_qualification_ids
+ * @property array<int|string, int>|null $qualification_minima qualification_id → Mindestanzahl
  * @property string|null $notes
  * @property int|null $created_by
  * @property int|null $updated_by
@@ -74,6 +75,7 @@ class CoverageRequirement extends Model {
         'max_staff',
         'ideal_staff',
         'required_qualification_ids',
+        'qualification_minima',
         'notes',
         'created_by',
         'updated_by',
@@ -87,6 +89,7 @@ class CoverageRequirement extends Model {
         'ideal_staff' => 'integer',
         'weekday' => 'integer',
         'required_qualification_ids' => 'array',
+        'qualification_minima' => 'array',
     ];
 
     // ── Relations ──────────────────────────────────────────────────────────
@@ -127,6 +130,22 @@ class CoverageRequirement extends Model {
     }
 
     // ── Helpers ────────────────────────────────────────────────────────────
+
+    /**
+     * Normalisierte Qualifikations-Minima (JSON-Keys kommen als Strings zurück).
+     *
+     * @return array<int, int> qualification_id → Mindestanzahl (> 0)
+     */
+    public function qualificationMinima(): array {
+        $out = [];
+        foreach ((array) ($this->qualification_minima ?? []) as $qualId => $count) {
+            if ((int) $count > 0) {
+                $out[(int) $qualId] = (int) $count;
+            }
+        }
+
+        return $out;
+    }
 
     public function appliesToDate(\DateTimeInterface $date): bool {
         if ($this->specific_date !== null) {

@@ -18,6 +18,9 @@
         '6' => __('Samstag'),
     ];
     $selectedQualIds = old('required_qualification_ids', $requirement?->required_qualification_ids ?? []);
+    // MVP-530: Minima — old() trägt Sqid-Keys, gespeichert sind numerische IDs.
+    $storedMinima = $requirement?->qualificationMinima() ?? [];
+    $oldMinima = old('qualification_minima');
 @endphp
 
 <x-validation-errors />
@@ -88,14 +91,31 @@
         <div class="fieldset w-full">
             <div class="grid gap-2 sm:grid-cols-2">
                 @foreach ($qualifications as $q)
-                    <label class="label cursor-pointer justify-start gap-2">
-                        <input type="checkbox" name="required_qualification_ids[]"
-                               value="{{ $q->sqid }}"
-                               class="checkbox checkbox-sm"
-                               @checked(in_array($q->id, (array) $selectedQualIds, false))>
-                        <span class="label-text">{{ $q->name }}</span>
-                    </label>
+                    @php
+                        $minimaVal = $oldMinima !== null
+                            ? ($oldMinima[$q->sqid] ?? '')
+                            : ($storedMinima[$q->id] ?? '');
+                    @endphp
+                    <div class="flex items-center justify-between gap-2">
+                        <label class="label cursor-pointer justify-start gap-2">
+                            <input type="checkbox" name="required_qualification_ids[]"
+                                   value="{{ $q->sqid }}"
+                                   class="checkbox checkbox-sm"
+                                   @checked(in_array($q->id, (array) $selectedQualIds, false))>
+                            <span class="label-text">{{ $q->name }}</span>
+                        </label>
+                        <label class="flex items-center gap-1 text-xs text-base-content/60 whitespace-nowrap">
+                            {{ __('davon mind.') }}
+                            <input type="number" name="qualification_minima[{{ $q->sqid }}]"
+                                   min="1" max="99" value="{{ $minimaVal }}"
+                                   class="input input-bordered input-xs w-14 text-center"
+                                   title="{{ __('Mindestanzahl Personen mit dieser Qualifikation (leer = keine Zählvorgabe)') }}">
+                        </label>
+                    </div>
                 @endforeach
+            </div>
+            <div class="fieldset-label text-xs text-base-content/60">
+                {{ __('Häkchen = jede eingeteilte Person braucht die Qualifikation. Zahl = mindestens so viele Personen mit dieser Qualifikation (Rest darf ohne sein).') }}
             </div>
         </div>
     </x-form-group>

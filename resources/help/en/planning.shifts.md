@@ -1,7 +1,7 @@
 ---
 title: "Duty and shift planning"
 topic: planning.shifts
-version: 1
+version: 2
 audience: []
 related:
     - attendance.manage
@@ -23,3 +23,8 @@ Typical flow:
 A published schedule is visibly binding for employees. Change it only
 with the appropriate permission and inform affected people about
 short-notice adjustments.
+
+Per shift type you can define minimum, ideal and maximum staffing —
+optionally with qualification minimums (e.g. "at least 2 certified
+nurses in the early shift"). The heatmap in the duty plan highlights
+days where headcount or qualification minimums are missed.

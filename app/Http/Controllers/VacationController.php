@@ -13,6 +13,7 @@ namespace App\Http\Controllers;
 use App\Enums\Vacation\{VacationStatus, VacationType};
 use App\Models\{User, Vacation};
 use App\Services\Absence\VacationBalanceService;
+use App\Services\Approval\ApprovalFlowService;
 use App\Support\LookupCache;
 use Carbon\Carbon;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -125,11 +126,20 @@ class VacationController extends Controller {
         /** @var User $auth */
         $auth = Auth::user();
 
-        // MVP-523: zweistufige Genehmigung (Vier-Augen), org-konfigurierbar.
-        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
-        $stages = (int) data_get($org?->settings, 'vacation.approval_stages', 1);
-        if ($stages >= 2 && $vacation->status === VacationStatus::Pending) {
-            if ($vacation->first_approved_by === null) {
+        // MVP-531: Stufen übers Antragsverfahren-Framework (MVP-523-Verhalten
+        // unverändert; Alt-Freigaben ohne Step werden nachgetragen).
+        if ($vacation->status === VacationStatus::Pending) {
+            $flow = app(ApprovalFlowService::class);
+            if ($vacation->first_approved_by !== null) {
+                $flow->backfillStage($vacation, (int) $vacation->first_approved_by, $vacation->first_approved_at);
+            }
+            try {
+                $progress = $flow->approveStage($vacation, ApprovalFlowService::TYPE_VACATION, $auth);
+            } catch (\Illuminate\Validation\ValidationException) {
+                return redirect()->route('duties.index', ['tab' => 'urlaub'])
+                    ->with('error', __('Die zweite Freigabe muss durch eine andere Person erfolgen (Vier-Augen-Prinzip).'));
+            }
+            if (! $progress->isFinal()) {
                 $vacation->update([
                     'first_approved_by' => $auth->id,
                     'first_approved_at' => now(),
@@ -137,10 +147,6 @@ class VacationController extends Controller {
 
                 return redirect()->route('duties.index', ['tab' => 'urlaub'])
                     ->with('success', __('Erste Freigabe erfasst — die zweite Freigabe muss durch eine andere Person erfolgen.'));
-            }
-            if ((int) $vacation->first_approved_by === (int) $auth->id) {
-                return redirect()->route('duties.index', ['tab' => 'urlaub'])
-                    ->with('error', __('Die zweite Freigabe muss durch eine andere Person erfolgen (Vier-Augen-Prinzip).'));
             }
         }
 

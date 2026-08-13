@@ -58,6 +58,9 @@ return [
         'admin.time-accounts.*' => 'admin.time-accounts',
         'time-accounts.*' => 'time-accounts.overview',
         'reports.time-accounts' => 'time-accounts.overview',
+        // Versionsvergleich (MVP-528) + gespeicherte Ansichten (MVP-529).
+        'admin.audit-diff.*' => 'admin.audit-diff',
+        'report-views.*' => 'reports.saved-views',
         // ── Nachträge 2026-07-10: Phasen 19–24 + Lücken-Sweep ──────────
         // Bewerbungen/Ausschreibungen (Feature 068)
         'tenders.*' => 'applications.overview',

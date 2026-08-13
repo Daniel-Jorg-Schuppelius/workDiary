@@ -153,6 +153,21 @@ class TimeCorrectionService {
     public function approve(TimeCorrectionRequest $request, User $actor, ?string $note = null): TimeCorrectionRequest {
         $this->assertStatus($request, [TimeCorrectionStatus::Submitted]);
 
+        // MVP-531: konfigurierbare Stufen — Zwischenstufe lässt den Antrag
+        // eingereicht (Vier-Augen erzwingt der ApprovalFlowService).
+        // Selbstkorrektur (selfApply) bleibt bewusst außerhalb des Stufen-Flows.
+        $flow = app(\App\Services\Approval\ApprovalFlowService::class);
+        $progress = $flow->approveStage($request, \App\Services\Approval\ApprovalFlowService::TYPE_TIME_CORRECTION, $actor, $note);
+        if (! $progress->isFinal()) {
+            $request->audit('timeCorrection.stage_approved', [
+                'actor_user_id' => (int) $actor->getKey(),
+                'stage' => $progress->approved,
+                'required' => $progress->required,
+            ]);
+
+            return $request->refresh();
+        }
+
         $request->fill([
             'status' => TimeCorrectionStatus::Approved,
             'decided_at' => CarbonImmutable::now(),

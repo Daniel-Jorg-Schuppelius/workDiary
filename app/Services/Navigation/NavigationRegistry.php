@@ -784,6 +784,8 @@ class NavigationRegistry {
                         ['route' => 'reports.absence-calendar', 'label' => __('Urlaubsplan'), 'icon' => 'calendar_month', 'modal' => false, 'matches' => ['reports.absence-calendar']],
                         // MVP-526: Zeitkonten-Auswertung (Anfangsstand/Umsatz/Endstand).
                         ['route' => 'reports.time-accounts', 'label' => __('Zeitkonten'), 'icon' => 'account_balance', 'modal' => false, 'matches' => ['reports.time-accounts']],
+                        // MVP-529: benannte, teilbare Report-Ansichten.
+                        ['route' => 'report-views.index', 'label' => __('Gespeicherte Auswertungen'), 'icon' => 'bookmark', 'modal' => false, 'matches' => ['report-views.*']],
                         ['route' => 'reports.sickness', 'label' => __('Krankheiten'), 'icon' => 'sick', 'modal' => false, 'matches' => ['reports.sickness']],
                         ['route' => 'reports.qualifications', 'label' => __('Qualifikationen'), 'icon' => 'verified', 'modal' => false, 'matches' => ['reports.qualifications']],
                         // Feature 002: Kohortenvergleich vor/nach Fortbildung — org-weite Personaldaten → nur report.view/Admin.
@@ -1255,6 +1257,8 @@ class NavigationRegistry {
                     $adminNavItems[] = ['route' => 'admin.shift-rotations.index', 'label' => __('Rollpläne'), 'icon' => 'event_repeat', 'modal' => false, 'matches' => ['admin.shift-rotations.*']];
                     // MVP-526: Zeitkonten-Verwaltung.
                     $adminNavItems[] = ['route' => 'admin.time-accounts.index', 'label' => __('Zeitkonten'), 'icon' => 'account_balance', 'modal' => false, 'matches' => ['admin.time-accounts.*']];
+                    // MVP-528: Änderungsverlauf/Versionsvergleich auf der Audit-Kette.
+                    $adminNavItems[] = ['route' => 'admin.audit-diff.index', 'label' => __('Änderungsverlauf'), 'icon' => 'difference', 'modal' => false, 'matches' => ['admin.audit-diff.*']];
                 }
                 if (Gate::allows(Permission::WageTypeMappingViewAny->value)) {
                     $adminNavItems[] = ['route' => 'admin.wage-type-mappings.index', 'label' => __('wage_types.title.index'), 'icon' => 'badge', 'modal' => false];

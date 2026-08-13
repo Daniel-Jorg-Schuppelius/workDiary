@@ -1,7 +1,7 @@
 ---
 title: "Dienst- und Schichtplanung"
 topic: planning.shifts
-version: 1
+version: 2
 audience: []
 related:
     - attendance.manage
@@ -20,6 +20,12 @@ Typischer Ablauf:
    Qualifikation prüfen.
 4. Den Plan veröffentlichen und spätere Änderungen nachvollziehbar
    dokumentieren.
+
+Über die Soll-Besetzung je Schichttyp lassen sich Mindest-, Ideal- und
+Maximalwerte hinterlegen — auf Wunsch mit Qualifikations-Mindestbesetzung
+(z. B. „mindestens 2 Examinierte in der Frühschicht"). Die Heatmap im
+Dienstplan markiert Tage, an denen Kopfzahl oder Qualifikations-Minima
+verfehlt werden.
 
 Eine veröffentlichte Planung ist für Mitarbeitende verbindlich sichtbar.
 Ändere sie nur mit der vorgesehenen Berechtigung und informiere

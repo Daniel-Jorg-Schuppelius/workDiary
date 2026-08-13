@@ -27,14 +27,16 @@ class UserBookmarkTest extends TestCase {
         $user = User::factory()->user()->create(['organization_id' => $org->id]);
         $other = User::factory()->user()->create(['organization_id' => $org->id]);
 
-        UserBookmark::create(['user_id' => $user->id, 'label' => 'A', 'url' => '/a', 'sort_order' => 1]);
-        UserBookmark::create(['user_id' => $other->id, 'label' => 'Z', 'url' => '/z', 'sort_order' => 1]);
+        // Eindeutige URLs — kurze Substrings wie '/z' kollidieren mit
+        // regulären Nav-Links (z. B. /zeitkonten).
+        UserBookmark::create(['user_id' => $user->id, 'label' => 'A', 'url' => '/eigenes-lesezeichen-a', 'sort_order' => 1]);
+        UserBookmark::create(['user_id' => $other->id, 'label' => 'Z', 'url' => '/fremdes-lesezeichen-z', 'sort_order' => 1]);
 
         $this->actingAs($user)
             ->get(route('bookmarks.index'))
             ->assertOk()
-            ->assertSee('A')
-            ->assertDontSee('/z');
+            ->assertSee('/eigenes-lesezeichen-a')
+            ->assertDontSee('/fremdes-lesezeichen-z');
     }
 
     public function test_store_creates_bookmark_for_authenticated_user(): void {
