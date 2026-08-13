@@ -24,6 +24,10 @@
     Props:
       - size, zebra, pinRows : DaisyUI-Tabellenoptionen
       - scroll               : "x" (horizontal scrollbar, Default) | "flex" (füllt verbleibenden Platz) | "none"
+                               "flex" hat eine Mindesthöhe (--wd-table-min-h, Default 14rem ≈ Kopfzeile +
+                               Leeranzeige) — bei zu niedrigem Viewport scrollt die Page-Shell statt dass
+                               die Tabelle kollabiert. Pro Instanz überschreibbar via Klasse, z. B.
+                               <x-table scroll="flex" class="[--wd-table-min-h:10rem]">.
       - tableSort            : "none" (Default) | "client" (data-sortable + JS) | "server" (Links)
       - route, currentSort, currentDir, sortParams : nur für tableSort="server" relevant; werden via @aware
                                an <x-table.th sort="…"> durchgereicht, das intern <x-sort-th> rendert
@@ -62,7 +66,7 @@
     ])->filter()->implode(' ');
 
     $wrapperBase = match (true) {
-        $bare && $scroll === 'flex'  => 'min-h-0 flex-1 overflow-hidden',
+        $bare && $scroll === 'flex'  => 'wd-table-flex min-h-(--wd-table-min-h) flex-1 overflow-hidden',
         $bare && $scroll === 'none'  => '',
         // Bare-Tabellen (in Cards) KEIN eigener overflow-Wrapper: der sonst
         // entstehende, ungebundene vertikale Scrollcontainer würde den
@@ -70,7 +74,7 @@
         // Seiten-Scrollport (<main> der wd-page-fill-Seite bzw. den Chart-
         // Scrollbereich). Horizontaler Überlauf läuft über <main> (overflow:auto).
         $bare                        => '',
-        $scroll === 'flex'           => 'min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100',
+        $scroll === 'flex'           => 'wd-table-flex min-h-(--wd-table-min-h) flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100',
         $scroll === 'none'           => 'rounded-box border border-base-300 bg-base-100 shadow-xs',
         default                      => 'overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-xs',
     };

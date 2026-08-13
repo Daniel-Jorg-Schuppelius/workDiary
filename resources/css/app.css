@@ -190,6 +190,21 @@
     padding-right: calc(var(--wd-main-pad) - 0.5rem);
 }
 
+/* Mindesthöhe flex-füllender Tabellen (<x-table scroll="flex"> = .wd-table-flex):
+   Der Tabellen-Wrapper trägt seine Mindesthöhe selbst (min-h-(--wd-table-min-h)),
+   aber viele Seiten schachteln ihn in Zwischencontainer (z. B. <x-card
+   class="min-h-0 flex-1 … overflow-hidden">), die bei zu niedrigem Viewport
+   weiterhin auf ~0 schrumpfen und die Tabelle wegclippen würden. Deshalb erbt
+   JEDER Vorfahr innerhalb der Page-Shell, der eine solche Tabelle enthält,
+   dieselbe Mindesthöhe — die Kette kann nirgends kollabieren, stattdessen
+   scrollt die Page-Shell (overflow-y-auto) bzw. <main>. Bewusst ungelayert
+   (überstimmt Tailwinds min-h-0) und auf .wd-page-shell begrenzt, damit
+   Dialoge/Sonderlayouts außerhalb der Shell unberührt bleiben. */
+.wd-page-shell:has(.wd-table-flex),
+.wd-page-shell *:has(.wd-table-flex) {
+    min-height: var(--wd-table-min-h);
+}
+
 /* ------------------------------------------------------------------ */
 /* Handys (< 768 px): CONTENT-Seiten orientieren sich am INHALT statt am  */
 /* Bildschirm — feste Viewport-Höhe + interner Scroll entfallen, die Seite */
