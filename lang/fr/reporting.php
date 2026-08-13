@@ -9,6 +9,20 @@
  */
 
 return [
+    // Prévision des majorations (Feature 103, MVP-533)
+    'surcharge_forecast' => [
+        'nav' => 'Prévision des majorations',
+        'title' => 'Prévision des majorations',
+        'subtitle' => 'Minutes de majoration prévues par mois et type de salaire sur la base des services planifiés.',
+        'months_label' => 'Mois',
+        'user_label' => 'Employé',
+        'all_users' => 'Tous les employés',
+        'col_wage_type' => 'Type de salaire',
+        'col_label' => 'Règle',
+        'col_total' => 'Total',
+        'empty' => 'Aucun service planifié avec effet de majoration sur la période.',
+        'note' => 'Aperçu basé uniquement sur les services planifiés — sans contexte de site. Le décompte se fait exclusivement via l export des temps.',
+    ],
     'target' => [
         'nav' => 'Valeurs cibles',
         'title' => 'Valeurs cibles & références',

@@ -121,6 +121,127 @@ class OrgMemberController extends Controller {
             ->with('success', __('Mitglied wurde angelegt.'));
     }
 
+    /** MVP-537 (Q1 S. 110): Import-Dialog (CSV-Upload) der Benutzerverwaltung. */
+    public function importForm(): View {
+        Gate::authorize('manage-members');
+
+        return view('org.members._import_dialog');
+    }
+
+    /** MVP-537: CSV-Vorlage mit den erwarteten Spalten. */
+    public function importTemplate(): \Symfony\Component\HttpFoundation\Response {
+        Gate::authorize('manage-members');
+
+        return response("name;email;personnel_number;role\nMax Mustermann;max@example.com;1001;user\n", 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="personal-import-vorlage.csv"',
+        ]);
+    }
+
+    /**
+     * MVP-537: Personalstamm-CSV-Import — legt fehlende Benutzer mit den
+     * Vorlagen-Defaults an (Zufallspasswort, Passwortwechsel erzwungen,
+     * `is_new_system`); vorhandene E-Mails und ungültige Zeilen werden mit
+     * Grund übersprungen. Nutzerlimit der Lizenz wird je Zeile durchgesetzt.
+     */
+    public function import(Request $request, LimitGuard $limits): RedirectResponse {
+        Gate::authorize('manage-members');
+
+        /** @var User $auth */
+        $auth = Auth::user();
+        $request->validate([
+            'csv' => ['required', 'file', 'mimes:csv,txt', 'max:5120'],
+        ]);
+
+        $lines = preg_split('/\r\n|\r|\n/', trim((string) file_get_contents((string) $request->file('csv')->getRealPath()))) ?: [];
+        if ($lines === [] || trim($lines[0]) === '') {
+            return back()->withErrors(['csv' => __('Die Datei ist leer.')]);
+        }
+
+        $delimiter = str_contains($lines[0], ';') ? ';' : ',';
+        $header = array_map(static fn (?string $h): string => strtolower(trim((string) $h)), str_getcsv(array_shift($lines), $delimiter));
+        $nameIdx = array_search('name', $header, true);
+        $emailIdx = array_search('email', $header, true);
+        if ($nameIdx === false || $emailIdx === false) {
+            return back()->withErrors(['csv' => __('Kopfzeile muss mindestens die Spalten name und email enthalten.')]);
+        }
+        $pnIdx = array_search('personnel_number', $header, true);
+        $roleIdx = array_search('role', $header, true);
+        $allowedRoles = [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value];
+
+        $created = 0;
+        $skipped = [];
+        foreach ($lines as $i => $line) {
+            $lineNo = $i + 2;
+            if (trim($line) === '') {
+                continue;
+            }
+            $cols = str_getcsv($line, $delimiter);
+            $name = trim((string) ($cols[$nameIdx] ?? ''));
+            $email = strtolower(trim((string) ($cols[$emailIdx] ?? '')));
+            $personnelNumber = $pnIdx !== false ? trim((string) ($cols[$pnIdx] ?? '')) : '';
+            $role = $roleIdx !== false ? strtolower(trim((string) ($cols[$roleIdx] ?? ''))) : '';
+            $role = $role === '' ? UserRole::User->value : $role;
+
+            if ($name === '' || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $skipped[] = __('Zeile :line: Name oder E-Mail ungültig.', ['line' => $lineNo]);
+
+                continue;
+            }
+            if (! in_array($role, $allowedRoles, true)) {
+                $skipped[] = __('Zeile :line: unbekannte Rolle „:role".', ['line' => $lineNo, 'role' => $role]);
+
+                continue;
+            }
+            if (User::withoutGlobalScopes()->where('email', $email)->exists()) {
+                $skipped[] = __('Zeile :line: E-Mail :email existiert bereits.', ['line' => $lineNo, 'email' => $email]);
+
+                continue;
+            }
+            if ($personnelNumber !== '' && User::withoutGlobalScopes()
+                ->where('organization_id', $auth->organization_id)
+                ->where('personnel_number', $personnelNumber)->exists()) {
+                $skipped[] = __('Zeile :line: Personalnummer :pn ist bereits vergeben.', ['line' => $lineNo, 'pn' => $personnelNumber]);
+
+                continue;
+            }
+
+            try {
+                if ($auth->organization !== null) {
+                    $limits->ensureCanCreateUser($auth->organization, $auth);
+                }
+            } catch (\Throwable) {
+                $skipped[] = __('Zeile :line und folgende: Nutzerlimit der Lizenz erreicht.', ['line' => $lineNo]);
+
+                break;
+            }
+
+            $user = User::create([
+                'organization_id' => $auth->organization_id,
+                'name' => $name,
+                'personnel_number' => $personnelNumber !== '' ? $personnelNumber : null,
+                'email' => $email,
+                'password' => Hash::make(\Illuminate\Support\Str::password(40)),
+                'must_change_password' => true,
+                'is_new_system' => true,
+            ]);
+            $roleModel = Role::findOrCreate($role, 'web');
+            $user->assignRole($roleModel);
+            $this->auditAssignedRole($user, $roleModel);
+            $created++;
+        }
+
+        $summary = __(':created Benutzer angelegt, :skipped übersprungen.', ['created' => $created, 'skipped' => count($skipped)]);
+        if ($skipped !== []) {
+            $summary .= ' ' . implode(' ', array_slice($skipped, 0, 10));
+            if (count($skipped) > 10) {
+                $summary .= ' ' . __('(+:n weitere)', ['n' => count($skipped) - 10]);
+            }
+        }
+
+        return redirect()->route('org.members.index')->with($created > 0 ? 'success' : 'error', $summary);
+    }
+
     public function edit(User $member): View {
         /** @var User $auth */
         $auth = Auth::user();

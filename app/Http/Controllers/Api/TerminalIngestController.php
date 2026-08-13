@@ -52,9 +52,10 @@ class TerminalIngestController extends Controller {
             return response()->json(['status' => 'missing_badge'], 422);
         }
 
-        // Ereignistyp work (Default) oder break; unbekannt → work (alte Terminals senden das Feld nicht).
+        // Ereignistyp work (Default), break oder homeoffice/errand (MVP-532);
+        // unbekannt → work (alte Terminals senden das Feld nicht).
         $eventType = strtolower(trim((string) ($request->input('event_type') ?? 'work')));
-        if ($eventType !== 'break') {
+        if (! in_array($eventType, ['break', 'homeoffice', 'errand'], true)) {
             $eventType = 'work';
         }
 
@@ -80,7 +81,7 @@ class TerminalIngestController extends Controller {
         }
 
         $payload = ['status' => $status];
-        if ($terminal->show_status && $result['user'] !== null && in_array($status, ['clocked_in', 'clocked_out', 'break_started', 'break_ended'], true)) {
+        if ($terminal->show_status && $result['user'] !== null && in_array($status, ['clocked_in', 'clocked_out', 'break_started', 'break_ended', 'homeoffice_started', 'homeoffice_ended', 'errand_started', 'errand_ended'], true)) {
             $payload += $this->statusInfo($result['user']);
         }
 

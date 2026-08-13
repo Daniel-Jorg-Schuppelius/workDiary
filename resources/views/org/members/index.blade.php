@@ -7,6 +7,11 @@
 <x-index-page overflow="clip" :subtitle="__('Mitarbeiter des Mandanten verwalten.')">
     <x-slot:actions>
         @if ($canManageMembers ?? true)
+            {{-- Personalstamm-CSV-Import (Feature 103, MVP-537) --}}
+            <x-icon-btn icon="upload_file" tone="outline" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('org.members.import.form')"
+                        show-label>{{ __('Importieren') }}</x-icon-btn>
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger
                         :href="route('org.members.create')"

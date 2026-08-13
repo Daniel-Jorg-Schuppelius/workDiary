@@ -47,6 +47,8 @@ class VacationBalanceService {
             year: $year,
             hasEntitlement: $entitlement !== null,
             entitledDays: (float) ($entitlement->entitled_days ?? 0.0),
+            severelyDisabledDays: (float) ($entitlement->severely_disabled_days ?? 0.0),
+            otherDays: (float) ($entitlement->other_days ?? 0.0),
             carryoverDays: $carryover,
             carryoverExpiresOn: $expiresOn,
             usableCarryoverDays: $usableCarryover,

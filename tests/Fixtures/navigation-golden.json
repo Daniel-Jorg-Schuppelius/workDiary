@@ -150,6 +150,7 @@
             "/reports/sla",
             "/reports/supplier-value",
             "/reports/suppliers",
+            "/reports/surcharge-forecast",
             "/reports/time-accounts",
             "/reports/utilization",
             "/reports/week-by-user",

@@ -9,6 +9,20 @@
  */
 
 return [
+    // Previsione maggiorazioni (Feature 103, MVP-533)
+    'surcharge_forecast' => [
+        'nav' => 'Previsione maggiorazioni',
+        'title' => 'Previsione maggiorazioni',
+        'subtitle' => 'Minuti di maggiorazione previsti per mese e tipo di retribuzione in base ai turni pianificati.',
+        'months_label' => 'Mesi',
+        'user_label' => 'Dipendente',
+        'all_users' => 'Tutti i dipendenti',
+        'col_wage_type' => 'Tipo retribuzione',
+        'col_label' => 'Regola',
+        'col_total' => 'Totale',
+        'empty' => 'Nessun turno pianificato con effetto maggiorazione nel periodo.',
+        'note' => 'Solo anteprima in base ai turni pianificati — senza contesto di sede. Il conteggio avviene esclusivamente tramite l esportazione dei tempi.',
+    ],
     'target' => [
         'nav' => 'Valori obiettivo',
         'title' => 'Valori obiettivo & benchmark',

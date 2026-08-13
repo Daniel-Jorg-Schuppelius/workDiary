@@ -118,6 +118,14 @@ class AttendanceClockService {
                     + max(0, (int) $attendance->break_started_at->diffInMinutes($end));
                 $attendance->break_started_at = null;
             }
+            // Laufende Zwischen-Status (MVP-532) beim Gehen abschließen.
+            foreach (['homeoffice', 'errand'] as $kind) {
+                if ($attendance->{$kind . '_started_at'} !== null) {
+                    $attendance->{$kind . '_minutes'} = (int) $attendance->{$kind . '_minutes'}
+                        + max(0, (int) $attendance->{$kind . '_started_at'}->diffInMinutes($end));
+                    $attendance->{$kind . '_started_at'} = null;
+                }
+            }
             $attendance->status = AttendanceStatus::Closed;
             $attendance->closed_by = $user->id;
             $attendance->updated_by = $user->id;
@@ -172,6 +180,44 @@ class AttendanceClockService {
                 $attendance->break_minutes_manual = (int) $attendance->break_minutes_manual
                     + max(0, (int) $attendance->break_started_at->diffInMinutes($at));
                 $attendance->break_started_at = null;
+            }
+            $attendance->updated_by = $user->id;
+            $attendance->save();
+
+            return $attendance->refresh();
+        });
+    }
+
+    /**
+     * Toggelt einen Zwischen-Status der offenen Anwesenheit (MVP-532):
+     * Homeoffice („arbeitet, aber nicht im Haus") bzw. Dienstgang
+     * („temporär außer Haus"). Analog {@see toggleBreak}, aber die Minuten
+     * KLASSIFIZIEREN nur — sie mindern die Arbeitszeit nicht. Gibt null
+     * zurück, wenn kein offener Stempel existiert.
+     *
+     * @param  'homeoffice'|'errand'  $kind
+     * @param  array<string, mixed>  $context  optional: occurred_at (Offline-Nachlieferung)
+     */
+    public function toggleIntermediate(User $user, string $kind, array $context = []): ?Attendance {
+        $startedField = $kind . '_started_at';
+        $minutesField = $kind . '_minutes';
+
+        return DB::transaction(function () use ($user, $startedField, $minutesField, $context) {
+            $attendance = $this->current($user);
+            if (! $attendance) {
+                return null;
+            }
+
+            $at = isset($context['occurred_at']) && $context['occurred_at'] !== ''
+                ? CarbonImmutable::parse($context['occurred_at'])
+                : CarbonImmutable::now();
+
+            if ($attendance->{$startedField} === null) {
+                $attendance->{$startedField} = Carbon::instance($at);
+            } else {
+                $attendance->{$minutesField} = (int) $attendance->{$minutesField}
+                    + max(0, (int) $attendance->{$startedField}->diffInMinutes($at));
+                $attendance->{$startedField} = null;
             }
             $attendance->updated_by = $user->id;
             $attendance->save();

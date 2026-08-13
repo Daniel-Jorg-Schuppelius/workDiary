@@ -138,6 +138,8 @@ class OrganizationController extends Controller {
             'settings.flex.*' => ['nullable', 'integer', 'min:0', 'max:100000'],
             // Zweistufige Urlaubs-Genehmigung (MVP-523): 1 = einstufig, 2 = Vier-Augen.
             'settings.vacation.approval_stages' => ['nullable', 'integer', 'min:1', 'max:2'],
+            // Vorbehalts-Eintragung beantragter Fehlzeiten (MVP-536, Q1 S. 43).
+            'settings.vacation.provisional_booking' => ['nullable', 'in:0,1'],
             // Antragsverfahren-Framework (MVP-531): Stufen je Antragstyp.
             'settings.approvals.*' => ['nullable', 'integer', 'min:1', 'max:2'],
             // Anwesenheits-Board (MVP-524): Opt-in je Organisation.

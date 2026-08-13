@@ -369,6 +369,7 @@ return [
     'SupplierAnalysisReportController' => 'Esportazione report: analisi fornitori',
     'SupplierValueReportController' => 'Esportazione report: valore fornitore',
     'SupportAccessGrant' => 'Autorizzazione di accesso supporto',
+    'SurchargeForecastReportController' => 'Esportazione report: previsione maggiorazioni',
     'SurchargeRule' => 'Regola di maggiorazione',
     'SustainabilityActivityRecord' => 'Registrazione di attività ESG',
     'SustainabilityAssessment' => 'Valutazione ESG',

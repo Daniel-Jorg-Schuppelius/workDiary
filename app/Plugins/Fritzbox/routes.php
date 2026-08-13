@@ -20,4 +20,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['web', 'auth'])->group(function (): void {
     Route::get('admin/fritzbox', [FritzboxController::class, 'index'])->name('admin.fritzbox.index');
     Route::post('admin/fritzbox/import-csv', [FritzboxController::class, 'uploadCsv'])->name('admin.fritzbox.import-csv');
+    // Telefonstempeln (Feature 103, MVP-534): Rufnummer → Benutzer.
+    Route::post('admin/fritzbox/stamp-numbers', [FritzboxController::class, 'storeStampNumber'])->name('admin.fritzbox.stamp-numbers.store');
+    Route::delete('admin/fritzbox/stamp-numbers', [FritzboxController::class, 'destroyStampNumber'])->name('admin.fritzbox.stamp-numbers.destroy');
 });

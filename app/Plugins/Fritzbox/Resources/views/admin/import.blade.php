@@ -49,5 +49,59 @@
             <x-icon-btn icon="inbox" tone="outline" size="sm" :href="route('admin.integration.inbox')" show-label>{{ __('Zur Inbox') }}</x-icon-btn>
         </div>
     </x-card>
+
+    {{-- Telefonstempeln (Feature 103, MVP-534) --}}
+    <x-card>
+        <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('Telefonstempeln') }}</h2>
+        <p class="mb-3 text-sm text-base-content/60">
+            @if ($stampLinesActive === [])
+                {{ __('Keine Stempel-Rufnummer konfiguriert — in den Plugin-Einstellungen eine eigene Rufnummer für Kommen/Gehen hinterlegen. Der Anruf wird nicht angenommen; die Rufnummer des Anrufenden wirkt als Ausweis.') }}
+            @else
+                {{ __('Aktive Stempel-Rufnummern: :lines. Anrufe darauf werden beim Import zu Kommen-/Gehen-Stempeln; die Rufnummer des Anrufenden wirkt als Ausweis.', ['lines' => implode(', ', $stampLinesActive)]) }}
+            @endif
+        </p>
+
+        @if ($stampNumbers->isNotEmpty())
+            <x-table class="mb-3">
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('Rufnummer') }}</th>
+                        <th>{{ __('Mitarbeiter') }}</th>
+                        <th></th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($stampNumbers as $reference)
+                    <tr>
+                        <td class="font-mono text-xs">{{ $reference->external_id }}</td>
+                        <td>{{ $reference->referenceable?->name ?? '—' }}</td>
+                        <td class="text-right">
+                            <form method="POST" action="{{ route('admin.fritzbox.stamp-numbers.destroy') }}" class="inline">
+                                @csrf @method('DELETE')
+                                <input type="hidden" name="number" value="{{ $reference->external_id }}">
+                                <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('Entfernen') }}</button>
+                            </form>
+                        </td>
+                    </tr>
+                @endforeach
+            </x-table>
+        @endif
+
+        <form method="POST" action="{{ route('admin.fritzbox.stamp-numbers.store') }}" class="flex flex-wrap items-end gap-2">
+            @csrf
+            <label class="form-control">
+                <span class="label-text">{{ __('Mitarbeiter') }}</span>
+                <select name="user" class="select select-bordered select-sm" required>
+                    @foreach ($stampUserOptions as $option)
+                        <option value="{{ $option['sqid'] }}">{{ $option['name'] }}</option>
+                    @endforeach
+                </select>
+            </label>
+            <label class="form-control grow">
+                <span class="label-text">{{ __('Rufnummer') }}</span>
+                <input type="text" name="number" class="input input-bordered input-sm" placeholder="+49 151 2345678" required>
+            </label>
+            <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Zuordnen') }}</x-icon-btn>
+        </form>
+    </x-card>
 </x-page-shell>
 @endsection

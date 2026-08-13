@@ -369,6 +369,7 @@ return [
     'SupplierAnalysisReportController' => 'Report export: supplier analysis',
     'SupplierValueReportController' => 'Report export: supplier value',
     'SupportAccessGrant' => 'Support access grant',
+    'SurchargeForecastReportController' => 'Report export: surcharge forecast',
     'SurchargeRule' => 'Surcharge rule',
     'SustainabilityActivityRecord' => 'ESG activity record',
     'SustainabilityAssessment' => 'ESG assessment',

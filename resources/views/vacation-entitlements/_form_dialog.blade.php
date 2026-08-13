@@ -69,6 +69,25 @@
             @error('entitled_days')<p class="text-error text-sm">{{ $message }}</p>@enderror
         </div>
 
+        {{-- MVP-535: getrennte Anspruchskomponenten (Q1 S. 70/90). --}}
+        <div class="fieldset">
+            <label class="fieldset-label" for="ve-disabled">{{ __('Zusatzurlaub Schwerbehinderung (Tage)') }}</label>
+            <input id="ve-disabled" type="number" name="severely_disabled_days" min="0" max="365" step="0.5"
+                   class="input input-bordered w-full"
+                   value="{{ old('severely_disabled_days', $entitlement?->severely_disabled_days ?? 0) }}">
+            <p class="text-xs text-base-content/60">{{ __('SGB IX § 208 — wird zum Gesamtanspruch addiert, aber getrennt ausgewiesen.') }}</p>
+            @error('severely_disabled_days')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="fieldset">
+            <label class="fieldset-label" for="ve-other">{{ __('Sonstiger Anspruch (Tage)') }}</label>
+            <input id="ve-other" type="number" name="other_days" min="0" max="365" step="0.5"
+                   class="input input-bordered w-full"
+                   value="{{ old('other_days', $entitlement?->other_days ?? 0) }}">
+            <p class="text-xs text-base-content/60">{{ __('z. B. Betriebsvereinbarung oder Jubiläum.') }}</p>
+            @error('other_days')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </div>
+
         <div class="fieldset">
             <label class="fieldset-label" for="ve-carryover">{{ __('Übertrag aus Vorjahr (Tage)') }}</label>
             <input id="ve-carryover" type="number" name="carryover_days" min="0" max="365" step="0.5"

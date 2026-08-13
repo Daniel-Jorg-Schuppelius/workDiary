@@ -42,6 +42,17 @@
             <x-kpi-tile :label="__('Resturlaub')" :value="$balance->remainingAfterPendingDays()" format="decimal"
                         :tone="$balance->remainingAfterPendingDays() < 0 ? 'error' : 'success'" />
         </div>
+        {{-- MVP-535: Anspruchskomponenten getrennt ausweisen (Q1 S. 70/90). --}}
+        @if ($balance->severelyDisabledDays > 0 || $balance->otherDays > 0)
+            <p class="text-xs text-base-content/60">
+                {{ __('Davon: :tarif Tarifurlaub, :sb Zusatzurlaub Schwerbehinderung, :other sonstiger Anspruch, :carry Übertrag.', [
+                    'tarif' => $balance->entitledDays,
+                    'sb' => $balance->severelyDisabledDays,
+                    'other' => $balance->otherDays,
+                    'carry' => $balance->usableCarryoverDays,
+                ]) }}
+            </p>
+        @endif
     @endif
 
     <x-card>

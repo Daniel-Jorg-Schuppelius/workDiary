@@ -124,6 +124,14 @@
             <option value="2" @selected($tcStages === 2)>{{ __('Zweistufig (Vier-Augen-Prinzip)') }}</option>
         </select>
     </div>
+    {{-- MVP-536: Vorbehalts-Eintragung beantragter Fehlzeiten (Q1 S. 43). --}}
+    @php $provisional = (string) old('settings.vacation.provisional_booking', data_get($organization?->settings, 'vacation.provisional_booking', '0')); @endphp
+    <label class="label cursor-pointer justify-start gap-3">
+        <input type="hidden" name="settings[vacation][provisional_booking]" value="0">
+        <input type="checkbox" name="settings[vacation][provisional_booking]" value="1" class="checkbox checkbox-sm"
+               @checked($provisional === '1' || $provisional === 1)>
+        <span class="label-text">{{ __('Beantragte Fehlzeiten sofort unter Vorbehalt eintragen (Ablehnung nimmt sie zurück)') }}</span>
+    </label>
     @php $boardEnabled = (string) old('settings.presence.board_enabled', data_get($organization?->settings, 'presence.board_enabled', '0')); @endphp
     <label class="label cursor-pointer justify-start gap-3">
         <input type="hidden" name="settings[presence][board_enabled]" value="0">

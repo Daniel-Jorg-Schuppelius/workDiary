@@ -105,6 +105,6 @@ class AuditLogTest extends TestCase {
         $this->actingAs($admin)
             ->get(route('audit.index', ['sort' => 'created_at', 'dir' => 'asc']))
             ->assertOk()
-            ->assertSee('HelpdeskReportExportController');
+            ->assertSee(__('entity-types.HelpdeskReportExportController'));
     }
 }

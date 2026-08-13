@@ -21,6 +21,8 @@
         'error' => 'bg-error/70',
         'info' => 'bg-info/70',
         'neutral' => 'bg-base-content/30',
+        // MVP-536: Vorbehalts-Eintragung — bewusst blass (schraffiert wirkend).
+        'ghost' => 'bg-warning/30',
     ];
 @endphp
 

@@ -1,6 +1,15 @@
 <?php
 
 return [
+    // Zwischen-Status (MVP-532): Homeoffice/Dienstgang.
+    'intermediate' => [
+        'homeoffice' => 'Homeoffice',
+        'errand' => 'Dienstgang',
+        'start_homeoffice' => 'Homeoffice beginnen',
+        'end_homeoffice' => 'Homeoffice beenden',
+        'start_errand' => 'Dienstgang beginnen',
+        'end_errand' => 'Dienstgang beenden',
+    ],
     'status' => [
         'open' => 'Offen',
         'closed' => 'Abgeschlossen',
@@ -14,6 +23,7 @@ return [
         'import' => 'Import',
         'auto_close' => 'Auto-Abschluss',
         'terminal' => 'Terminal',
+        'phone' => 'Telefon',
     ],
     'correction' => [
         'action' => [

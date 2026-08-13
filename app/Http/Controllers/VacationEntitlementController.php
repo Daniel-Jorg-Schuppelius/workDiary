@@ -84,6 +84,8 @@ class VacationEntitlementController extends Controller {
             ],
             [
                 'entitled_days' => $data['entitled_days'],
+                'severely_disabled_days' => $data['severely_disabled_days'] ?? 0,
+                'other_days' => $data['other_days'] ?? 0,
                 'carryover_days' => $data['carryover_days'] ?? 0,
                 'carryover_expires_on' => $data['carryover_expires_on'] ?? null,
                 'note' => $data['note'] ?? null,
@@ -113,6 +115,8 @@ class VacationEntitlementController extends Controller {
 
         $vacationEntitlement->update([
             'entitled_days' => $data['entitled_days'],
+            'severely_disabled_days' => $data['severely_disabled_days'] ?? 0,
+            'other_days' => $data['other_days'] ?? 0,
             'carryover_days' => $data['carryover_days'] ?? 0,
             'carryover_expires_on' => $data['carryover_expires_on'] ?? null,
             'note' => $data['note'] ?? null,
@@ -196,6 +200,9 @@ class VacationEntitlementController extends Controller {
                 ? ['required', 'integer', 'between:2000,2100']
                 : ['prohibited'],
             'entitled_days' => ['required', 'numeric', 'between:0,365'],
+            // MVP-535: getrennte Anspruchskomponenten (SGB IX, Sonstige).
+            'severely_disabled_days' => ['nullable', 'numeric', 'between:0,365'],
+            'other_days' => ['nullable', 'numeric', 'between:0,365'],
             'carryover_days' => ['nullable', 'numeric', 'between:0,365'],
             'carryover_expires_on' => ['nullable', 'date'],
             'note' => ['nullable', 'string', 'max:500'],

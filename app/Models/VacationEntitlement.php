@@ -39,6 +39,8 @@ class VacationEntitlement extends Model {
         'user_id',
         'year',
         'entitled_days',
+        'severely_disabled_days',
+        'other_days',
         'carryover_days',
         'carryover_expires_on',
         'note',

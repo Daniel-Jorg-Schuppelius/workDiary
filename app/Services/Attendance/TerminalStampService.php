@@ -39,10 +39,11 @@ class TerminalStampService {
     public function __construct(private readonly AttendanceClockService $clock) {}
 
     /**
-     * @param  string  $eventType  fachlicher Ereignistyp: `work` (Kommen/Gehen, Default)
-     *                             oder `break` (Pausen-Toggle) — orthogonal zu $event.
+     * @param  string  $eventType  fachlicher Ereignistyp: `work` (Kommen/Gehen, Default),
+     *                             `break` (Pausen-Toggle) oder `homeoffice`/`errand`
+     *                             (Zwischen-Status, MVP-532) — orthogonal zu $event.
      * @param  int|null  $queued  vom Terminal gemeldeter Offline-Pufferstand (MVP-516).
-     * @return array{status: 'clocked_in'|'clocked_out'|'break_started'|'break_ended'|'skipped'|'unknown_badge'|'noop'|'rejected', user: ?User}
+     * @return array{status: 'clocked_in'|'clocked_out'|'break_started'|'break_ended'|'homeoffice_started'|'homeoffice_ended'|'errand_started'|'errand_ended'|'skipped'|'unknown_badge'|'noop'|'rejected', user: ?User}
      */
     public function stamp(AttendanceTerminal $terminal, string $badgeUid, string $event = 'toggle', ?string $occurredAt = null, ?string $eventId = null, string $eventType = 'work', ?int $queued = null): array {
         // Gesundheitsstatus (+ optional Pufferstand) fortschreiben — auch bei
@@ -69,11 +70,25 @@ class TerminalStampService {
             return ['status' => 'unknown_badge', 'user' => null];
         }
 
-        $isBreak = strtolower(trim($eventType)) === 'break';
+        $normalizedType = strtolower(trim($eventType));
+        $isBreak = $normalizedType === 'break';
+        // MVP-532: Zwischen-Status Homeoffice/Dienstgang als Toggle analog Pause.
+        $intermediate = in_array($normalizedType, ['homeoffice', 'errand'], true) ? $normalizedType : null;
         $context = ['device' => $terminal->name, 'source' => AttendanceSource::Terminal->value];
 
         try {
-            if ($isBreak) {
+            if ($intermediate !== null) {
+                if ($occurredAt !== null && $occurredAt !== '') {
+                    $context['occurred_at'] = $occurredAt;
+                }
+                $attendance = $this->clock->toggleIntermediate($user, $intermediate, $context);
+                if ($attendance === null) {
+                    return ['status' => 'noop', 'user' => $user]; // Zwischen-Status ohne offenes Kommen
+                }
+                $status = $attendance->{$intermediate . '_started_at'} !== null
+                    ? $intermediate . '_started'
+                    : $intermediate . '_ended';
+            } elseif ($isBreak) {
                 // Pausen-Toggle statt Kommen/Gehen; die Richtung ($event) ist hier
                 // bedeutungslos.
                 if ($occurredAt !== null && $occurredAt !== '') {
@@ -115,7 +130,7 @@ class TerminalStampService {
                 'referenceable_type' => $attendance->getMorphClass(),
                 'referenceable_id' => $attendance->getKey(),
                 'external_id' => $eventId,
-                'payload' => ['event' => $event, 'event_type' => $isBreak ? 'break' : 'work', 'terminal_id' => $terminal->id],
+                'payload' => ['event' => $event, 'event_type' => $intermediate ?? ($isBreak ? 'break' : 'work'), 'terminal_id' => $terminal->id],
                 'synced_at' => Carbon::now(),
             ]);
         }

@@ -9,6 +9,20 @@
  */
 
 return [
+    // Previsión de recargos (Feature 103, MVP-533)
+    'surcharge_forecast' => [
+        'nav' => 'Previsión de recargos',
+        'title' => 'Previsión de recargos',
+        'subtitle' => 'Minutos de recargo previstos por mes y tipo salarial según los turnos planificados.',
+        'months_label' => 'Meses',
+        'user_label' => 'Empleado',
+        'all_users' => 'Todos los empleados',
+        'col_wage_type' => 'Tipo salarial',
+        'col_label' => 'Regla',
+        'col_total' => 'Total',
+        'empty' => 'Sin turnos planificados con efecto de recargo en el período.',
+        'note' => 'Solo vista previa según los turnos planificados — sin contexto de ubicación. La liquidación se realiza exclusivamente mediante la exportación de tiempos.',
+    ],
     'target' => [
         'nav' => 'Valores objetivo',
         'title' => 'Valores objetivo & referencias',

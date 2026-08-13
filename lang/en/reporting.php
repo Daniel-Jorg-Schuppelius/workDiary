@@ -9,6 +9,20 @@
  */
 
 return [
+    // Surcharge forecast (Feature 103, MVP-533)
+    'surcharge_forecast' => [
+        'nav' => 'Surcharge forecast',
+        'title' => 'Surcharge forecast',
+        'subtitle' => 'Expected surcharge minutes per month and wage type based on planned shifts.',
+        'months_label' => 'Months',
+        'user_label' => 'Employee',
+        'all_users' => 'All employees',
+        'col_wage_type' => 'Wage type',
+        'col_label' => 'Rule',
+        'col_total' => 'Total',
+        'empty' => 'No planned shifts with surcharge effect in the period.',
+        'note' => 'Preview based on planned shifts only — without site context (site-based rules apply once stamped). Settlement happens exclusively via the time export.',
+    ],
     'target' => [
         'nav' => 'Targets',
         'title' => 'Targets & benchmarks',

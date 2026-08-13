@@ -9,6 +9,20 @@
  */
 
 return [
+    // Zuschlags-Prognose (Feature 103, MVP-533)
+    'surcharge_forecast' => [
+        'nav' => 'Zuschlags-Prognose',
+        'title' => 'Zuschlags-Prognose',
+        'subtitle' => 'Voraussichtliche Zuschlagsminuten je Monat und Lohnart auf Basis der geplanten Dienste.',
+        'months_label' => 'Monate',
+        'user_label' => 'Mitarbeiter',
+        'all_users' => 'Alle Mitarbeiter',
+        'col_wage_type' => 'Lohnart',
+        'col_label' => 'Regel',
+        'col_total' => 'Summe',
+        'empty' => 'Keine geplanten Dienste mit Zuschlagswirkung im Zeitraum.',
+        'note' => 'Reine Vorschau auf Basis geplanter Dienste — ohne Standortkontext (standortbedingte Regeln greifen erst beim Stempeln). Abgerechnet wird ausschließlich über den Zeitexport.',
+    ],
     'target' => [
         'nav' => 'Zielwerte',
         'title' => 'Zielwerte & Benchmarks',

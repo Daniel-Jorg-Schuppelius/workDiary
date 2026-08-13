@@ -779,6 +779,10 @@ class NavigationRegistry {
                         $user?->can(Permission::ReportPresenceEmergency->value)
                             ? ['route' => 'reports.presence-emergency', 'label' => __('reporting.presence_emergency.nav'), 'icon' => 'emergency_home', 'modal' => false, 'matches' => ['reports.presence-emergency']]
                             : null,
+                        // MVP-533: Zuschlags-Prognose auf geplante Dienste.
+                        ($user?->isAdmin() || $user?->can(Permission::ReportView->value))
+                            ? ['route' => 'reports.surcharge-forecast', 'label' => __('reporting.surcharge_forecast.nav'), 'icon' => 'query_stats', 'modal' => false, 'matches' => ['reports.surcharge-forecast']]
+                            : null,
                         ['route' => 'reports.absences', 'label' => __('Urlaub & Flex'), 'icon' => 'event_busy', 'modal' => false, 'matches' => ['reports.absences']],
                         // MVP-520: Ganzjahres-Urlaubsplan + Fehlzeitenkarte.
                         ['route' => 'reports.absence-calendar', 'label' => __('Urlaubsplan'), 'icon' => 'calendar_month', 'modal' => false, 'matches' => ['reports.absence-calendar']],

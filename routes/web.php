@@ -2107,6 +2107,8 @@ Route::middleware('auth')->group(function () {
         Route::post('attendance/clock-in', [AttendanceController::class, 'clockIn'])->name('attendance.clock-in');
         Route::post('attendance/clock-out', [AttendanceController::class, 'clockOut'])->name('attendance.clock-out');
         Route::post('attendance/break', [AttendanceController::class, 'break'])->name('attendance.break');
+        // Zwischen-Status Homeoffice/Dienstgang (Feature 103, MVP-532).
+        Route::post('attendance/intermediate', [AttendanceController::class, 'intermediate'])->name('attendance.intermediate');
         Route::post('attendance/cancel', [AttendanceController::class, 'cancel'])->name('attendance.cancel');
         Route::put('attendance/{attendance}', [AttendanceController::class, 'update'])->name('attendance.update');
         Route::delete('attendance/{attendance}', [AttendanceController::class, 'destroy'])->name('attendance.destroy');
@@ -2808,6 +2810,9 @@ Route::middleware('auth')->group(function () {
         // Zeitaufteilung nach Dimension (Feature 103, MVP-514 P3).
         Route::get('reports/allocations', [\App\Http\Controllers\Reporting\AllocationReportController::class, 'index'])
             ->name('reports.allocations');
+        // Zuschlags-Prognose auf geplante Dienste (Feature 103, MVP-533).
+        Route::get('reports/surcharge-forecast', [\App\Http\Controllers\Reporting\SurchargeForecastReportController::class, 'index'])
+            ->name('reports.surcharge-forecast');
         Route::get('reports/customer-retention', [\App\Http\Controllers\Reporting\CustomerRetentionReportController::class, 'index'])
             ->name('reports.customer-retention');
         // Kohorten-Drilldown (MVP-470): wer steckt hinter einer Heatmap-Zelle?
@@ -3105,6 +3110,11 @@ Route::middleware('auth')->group(function () {
         Route::delete('admin/automations/{automationRule}', [AutomationRuleController::class, 'destroy'])
             ->name('admin.automations.destroy');
 
+        // Personalstamm-CSV-Import (Feature 103, MVP-537) — vor der Resource,
+        // damit 'members-import' nicht als {member} gebunden wird.
+        Route::get('org/members-import', [OrgMemberController::class, 'importForm'])->name('org.members.import.form');
+        Route::post('org/members-import', [OrgMemberController::class, 'import'])->name('org.members.import');
+        Route::get('org/members-import/template', [OrgMemberController::class, 'importTemplate'])->name('org.members.import.template');
         Route::resource('org/members', OrgMemberController::class)
             ->names('org.members')
             ->parameters(['members' => 'member'])

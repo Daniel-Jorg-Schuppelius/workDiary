@@ -46,6 +46,12 @@ class FritzboxImportService {
 
     public const EXT_TYPE_CALL = 'call';
 
+    /** MVP-534: verarbeitete Stempel-Anrufe (Idempotenz je Anruf-Schlüssel). */
+    public const EXT_TYPE_STAMP = 'stamp';
+
+    /** MVP-534: Rufnummer → Benutzer („die Rufnummer wirkt als Ausweis"). */
+    public const EXT_TYPE_STAMP_NUMBER = 'stamp_number';
+
     public const EXT_TYPE_NUMBER = 'number';
 
     public const EXT_TYPE_SHARED = 'shared_number';
@@ -65,7 +71,7 @@ class FritzboxImportService {
 
     /**
      * @param  array<string, mixed>  $config
-     * @return array{created: int, linked: int, skipped: int, ignored: int, pending: int, locked: int}
+     * @return array{created: int, linked: int, skipped: int, ignored: int, pending: int, locked: int, stamped: int}
      *
      * @throws \RuntimeException wenn der Inhalt keine Anrufliste ist oder kein Benutzer buchbar ist
      */
@@ -82,7 +88,7 @@ class FritzboxImportService {
     /**
      * @param  array<string, mixed>  $config
      * @param  iterable<FritzboxCall>  $calls
-     * @return array{created: int, linked: int, skipped: int, ignored: int, pending: int, locked: int}
+     * @return array{created: int, linked: int, skipped: int, ignored: int, pending: int, locked: int, stamped: int}
      */
     public function importCalls(Organization $organization, array $config, iterable $calls): array {
         $userId = $this->resolveBookingUserId($organization, $config['default_user_id'] ?? null);
@@ -90,12 +96,155 @@ class FritzboxImportService {
             throw new \RuntimeException((string) __('Kein buchbarer Benutzer in der Organisation.'));
         }
 
-        $result = ['created' => 0, 'linked' => 0, 'skipped' => 0, 'ignored' => 0, 'pending' => 0, 'locked' => 0];
+        $result = ['created' => 0, 'linked' => 0, 'skipped' => 0, 'ignored' => 0, 'pending' => 0, 'locked' => 0, 'stamped' => 0];
+        $stampLines = $this->stampLines($config);
         foreach ($calls as $call) {
+            // MVP-534: Anrufe auf eine Stempel-MSN sind Zeitstempel, keine
+            // buchbaren Telefonate — sie durchlaufen NIE bookCall().
+            $action = $stampLines[trim((string) $call->ownLine)] ?? null;
+            if ($action !== null) {
+                $result[$this->handleStampCall($organization, $call, $action)]++;
+
+                continue;
+            }
             $result[$this->bookCall($organization, $config, $call, $userId)]++;
         }
 
         return $result;
+    }
+
+    /**
+     * Stempel-MSNs aus der Plugin-Konfiguration: eigene Rufnummer (wie in der
+     * Anrufliste ausgewiesen) → Aktion. Leer = Telefonstempeln aus.
+     *
+     * @param  array<string, mixed>  $config
+     * @return array<string, 'in'|'out'|'toggle'>
+     */
+    private function stampLines(array $config): array {
+        $lines = [];
+        foreach (['in' => 'stamp_in_line', 'out' => 'stamp_out_line', 'toggle' => 'stamp_toggle_line'] as $action => $key) {
+            $value = trim((string) ($config[$key] ?? ''));
+            if ($value !== '') {
+                $lines[$value] = $action;
+            }
+        }
+
+        return $lines;
+    }
+
+    /**
+     * MVP-534 (Q1 S. 57): Telefonstempeln — der Anruf wird nicht angenommen,
+     * die Rufnummer des Anrufenden wirkt als Ausweis. Unterdrückte oder nicht
+     * zugeordnete Nummern werden ausgefiltert; die Zuordnung Rufnummer→User
+     * pflegt der Admin ({@see rememberStampNumber}). Mindestdauer gilt hier
+     * bewusst NICHT (auch verpasste/abgewiesene Anrufe stempeln).
+     *
+     * @param  'in'|'out'|'toggle'  $action
+     * @return 'stamped'|'skipped'|'ignored'
+     */
+    private function handleStampCall(Organization $organization, FritzboxCall $call, string $action): string {
+        if ($call->type === FritzboxCall::TYPE_OUTGOING) {
+            return 'ignored';
+        }
+        $e164 = $call->e164;
+        if ($e164 === null || $e164 === '') {
+            return 'ignored'; // unterdrückte Nummer kann sich nicht ausweisen
+        }
+        // Aliasse zählen mit (extref_unique: nur eine Primärreferenz je Ziel —
+        // Kommen UND Gehen desselben Tages zeigen auf dieselbe Attendance).
+        $alreadyStamped = ExternalReference::forPlugin($organization->id, $this->pluginId(), self::EXT_TYPE_STAMP)
+            ->forExternalId($call->callKey())->exists()
+            || ExternalReferenceAlias::query()->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->where('plugin_id', $this->pluginId())
+                ->where('external_type', self::EXT_TYPE_STAMP)
+                ->where('external_id', $call->callKey())
+                ->exists();
+        if ($alreadyStamped) {
+            return 'skipped';
+        }
+
+        $reference = ExternalReference::forPlugin($organization->id, $this->pluginId(), self::EXT_TYPE_STAMP_NUMBER)
+            ->forExternalId($e164)
+            ->first();
+        $user = $reference?->referenceable;
+        if (! $user instanceof User || (int) $user->organization_id !== (int) $organization->id) {
+            return 'ignored';
+        }
+
+        $clock = app(\App\Services\Attendance\AttendanceClockService::class);
+        $resolved = $action === 'toggle'
+            ? ($clock->current($user) !== null ? 'out' : 'in')
+            : $action;
+
+        try {
+            if ($resolved === 'in') {
+                $attendance = $clock->clockIn($user, [
+                    'source' => \App\Enums\Attendance\AttendanceSource::Phone->value,
+                    'started_at' => $call->startedAt->toIso8601String(),
+                    'device' => 'phone:' . trim((string) $call->ownLine),
+                ]);
+            } else {
+                $attendance = $clock->clockOut($user, [
+                    'ended_at' => $call->startedAt->toIso8601String(),
+                    'device' => 'phone:' . trim((string) $call->ownLine),
+                ]);
+                if ($attendance === null) {
+                    return 'ignored'; // Gehen ohne offenes Kommen
+                }
+            }
+        } catch (\Throwable) {
+            return 'ignored'; // Doppel-Kommen, ungültige Zeit u. Ä.
+        }
+
+        $hasPrimary = ExternalReference::forPlugin($organization->id, $this->pluginId(), self::EXT_TYPE_STAMP)
+            ->where('referenceable_type', $attendance->getMorphClass())
+            ->where('referenceable_id', $attendance->getKey())
+            ->exists();
+        if ($hasPrimary) {
+            // Zweiter Stempel derselben Anwesenheit (Gehen) → Alias-Zeile.
+            ExternalReferenceAlias::query()->withoutGlobalScopes()->create([
+                'organization_id' => $organization->id,
+                'plugin_id' => $this->pluginId(),
+                'external_type' => self::EXT_TYPE_STAMP,
+                'external_id' => $call->callKey(),
+                'referenceable_type' => $attendance->getMorphClass(),
+                'referenceable_id' => $attendance->getKey(),
+            ]);
+        } else {
+            ExternalReference::query()->withoutGlobalScopes()->create([
+                'organization_id' => $organization->id,
+                'plugin_id' => $this->pluginId(),
+                'external_type' => self::EXT_TYPE_STAMP,
+                'referenceable_type' => $attendance->getMorphClass(),
+                'referenceable_id' => $attendance->getKey(),
+                'external_id' => $call->callKey(),
+                'payload' => ['action' => $resolved, 'own_line' => trim((string) $call->ownLine)],
+                'synced_at' => CarbonImmutable::now(),
+            ]);
+        }
+
+        return 'stamped';
+    }
+
+    /**
+     * MVP-534: Stempel-Rufnummer einem Benutzer zuordnen (ersetzt eine
+     * bestehende Zuordnung derselben Nummer).
+     */
+    public function rememberStampNumber(Organization $organization, string $e164, User $user): void {
+        ExternalReference::forPlugin($organization->id, $this->pluginId(), self::EXT_TYPE_STAMP_NUMBER)
+            ->forExternalId($e164)
+            ->get()->each->delete();
+
+        ExternalReference::query()->withoutGlobalScopes()->create([
+            'organization_id' => $organization->id,
+            'plugin_id' => $this->pluginId(),
+            'external_type' => self::EXT_TYPE_STAMP_NUMBER,
+            'referenceable_type' => $user->getMorphClass(),
+            'referenceable_id' => $user->getKey(),
+            'external_id' => $e164,
+            'synced_at' => CarbonImmutable::now(),
+        ]);
     }
 
     /**

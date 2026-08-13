@@ -16,11 +16,11 @@ use App\Plugins\Support\PluginSettingsResolver;
  * Effektive FritzBox-Konfiguration: plugin_settings der gebundenen Organisation
  * vor `config('plugins.fritzbox.*')` — Lookup/Cast im {@see PluginSettingsResolver}.
  *
- * @phpstan-type FritzboxSettings array{enabled: bool, default_billable: bool, default_user_id: ?int, min_call_minutes: int, call_lead_minutes: int, own_number_allowlist: list<string>, type3_outgoing: bool}
+ * @phpstan-type FritzboxSettings array{enabled: bool, default_billable: bool, default_user_id: ?int, min_call_minutes: int, call_lead_minutes: int, own_number_allowlist: list<string>, type3_outgoing: bool, stamp_in_line: string, stamp_out_line: string, stamp_toggle_line: string}
  */
 class FritzboxConfig {
     /**
-     * @return array{enabled: bool, default_billable: bool, default_user_id: ?int, min_call_minutes: int, call_lead_minutes: int, own_number_allowlist: list<string>, type3_outgoing: bool}
+     * @return array{enabled: bool, default_billable: bool, default_user_id: ?int, min_call_minutes: int, call_lead_minutes: int, own_number_allowlist: list<string>, type3_outgoing: bool, stamp_in_line: string, stamp_out_line: string, stamp_toggle_line: string}
      */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(FritzboxPlugin::ID, $organizationId);
@@ -38,6 +38,9 @@ class FritzboxConfig {
             'call_lead_minutes' => max(0, $r->int('call_lead_minutes', 15)),
             'own_number_allowlist' => $allowlist,
             'type3_outgoing' => $r->bool('type3_outgoing', false),
+            'stamp_in_line' => (string) $r->string('stamp_in_line', ''),
+            'stamp_out_line' => (string) $r->string('stamp_out_line', ''),
+            'stamp_toggle_line' => (string) $r->string('stamp_toggle_line', ''),
         ];
     }
 }

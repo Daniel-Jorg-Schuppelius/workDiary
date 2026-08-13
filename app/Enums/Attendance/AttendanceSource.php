@@ -21,6 +21,8 @@ enum AttendanceSource: string implements HasLabel {
     case Import = 'import';
     case AutoClose = 'auto_close';
     case Terminal = 'terminal';
+    // MVP-534: Telefonstempeln — Anruf auf eine Stempel-MSN, Rufnummer = Ausweis.
+    case Phone = 'phone';
 
     public function label(): string {
         return (string) __('attendance.source.' . $this->value);

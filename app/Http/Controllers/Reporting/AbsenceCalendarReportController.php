@@ -221,19 +221,22 @@ class AbsenceCalendarReportController extends Controller {
 
         Vacation::query()
             ->whereIn('user_id', $userIds)
-            ->where('status', VacationStatus::Approved->value)
+            // MVP-536: bei aktiver Vorbehalts-Eintragung wirken auch
+            // beantragte Fehlzeiten — gekennzeichnet als „(Vorbehalt)".
+            ->effective()
             ->whereDate('start_date', '<=', $yearEnd->toDateString())
             ->whereDate('end_date', '>=', $yearStart->toDateString())
             ->orderBy('start_date')
-            ->get(['user_id', 'start_date', 'end_date', 'type'])
+            ->get(['user_id', 'start_date', 'end_date', 'type', 'status'])
             ->each(function (Vacation $v) use (&$result, $clip): void {
                 [$from, $to] = $clip($v->start_date->toDateString(), $v->end_date->toDateString());
+                $provisional = $v->status === VacationStatus::Pending;
                 $result[(int) $v->user_id][] = [
                     'from' => $from,
                     'to' => $to,
                     'type' => $v->type->value,
-                    'label' => $v->type->label(),
-                    'tone' => match ($v->type) {
+                    'label' => $v->type->label() . ($provisional ? ' ' . __('(Vorbehalt)') : ''),
+                    'tone' => $provisional ? 'ghost' : match ($v->type) {
                         VacationType::Vacation => 'warning',
                         VacationType::Special => 'info',
                         default => 'neutral',

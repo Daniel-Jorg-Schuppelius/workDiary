@@ -45,11 +45,71 @@ class FritzboxController extends Controller {
 
         $config = FritzboxConfig::resolve($admin->organization_id);
 
+        // MVP-534: Stempel-Rufnummern (Rufnummer → Benutzer) + aktive MSNs.
+        $stampNumbers = \App\Models\ExternalReference::forPlugin((int) $admin->organization_id, FritzboxPlugin::ID, FritzboxImportService::EXT_TYPE_STAMP_NUMBER)
+            ->with('referenceable')
+            ->orderBy('external_id')
+            ->get();
+
         return view('fritzbox::admin.import', [
             'inboxOpenCount' => $inboxOpenCount,
             'minCallMinutes' => $config['min_call_minutes'],
             'leadMinutes' => $config['call_lead_minutes'],
+            'stampNumbers' => $stampNumbers,
+            'stampLinesActive' => array_filter([
+                trim($config['stamp_in_line']),
+                trim($config['stamp_out_line']),
+                trim($config['stamp_toggle_line']),
+            ]),
+            'stampUserOptions' => \App\Models\User::query()
+                ->where('organization_id', $admin->organization_id)
+                ->whereNull('deactivated_at')
+                ->orderBy('name')
+                ->get(['id', 'name'])
+                ->map(fn (\App\Models\User $u): array => ['sqid' => \App\Support\Sqid::encode(\App\Models\User::class, (int) $u->id), 'name' => (string) $u->name])
+                ->values()
+                ->all(),
         ]);
+    }
+
+    /** MVP-534: Stempel-Rufnummer einem Benutzer zuordnen. */
+    public function storeStampNumber(Request $request): RedirectResponse {
+        $admin = $this->admin();
+
+        $data = $request->validate([
+            'user' => ['required', 'string'],
+            'number' => ['required', 'string', 'max:40'],
+        ]);
+
+        $userId = \App\Support\Sqid::decodeOrNumeric(\App\Models\User::class, (string) $data['user']);
+        $user = \App\Models\User::query()
+            ->where('organization_id', $admin->organization_id)
+            ->find((int) ($userId ?? 0));
+        if (! $user instanceof \App\Models\User) {
+            return back()->withErrors(['user' => __('Unbekannter Benutzer.')]);
+        }
+
+        $e164 = \CommonToolkit\Helper\Data\PhoneNumberHelper::toE164((string) $data['number'], 'DE');
+        if ($e164 === null || $e164 === '') {
+            return back()->withErrors(['number' => __('Rufnummer konnte nicht normalisiert werden.')]);
+        }
+
+        $this->service->rememberStampNumber($this->organization($admin), $e164, $user);
+
+        return back()->with('status', __('Stempel-Rufnummer :number für :name gespeichert.', ['number' => $e164, 'name' => $user->name]));
+    }
+
+    /** MVP-534: Stempel-Rufnummer entfernen. */
+    public function destroyStampNumber(Request $request): RedirectResponse {
+        $admin = $this->admin();
+
+        $data = $request->validate(['number' => ['required', 'string', 'max:40']]);
+
+        \App\Models\ExternalReference::forPlugin((int) $admin->organization_id, FritzboxPlugin::ID, FritzboxImportService::EXT_TYPE_STAMP_NUMBER)
+            ->forExternalId((string) $data['number'])
+            ->get()->each->delete();
+
+        return back()->with('status', __('Stempel-Rufnummer entfernt.'));
     }
 
     public function uploadCsv(Request $request): RedirectResponse {
@@ -68,9 +128,10 @@ class FritzboxController extends Controller {
             return back()->withErrors(['csv' => $e->getMessage()]);
         }
 
-        return back()->with('status', __('FRITZ!Box-Import: :created gebucht, :linked verschmolzen, :pending offen (Inbox), :skipped übersprungen, :ignored ausgefiltert, :locked gesperrt.', [
+        return back()->with('status', __('FRITZ!Box-Import: :created gebucht, :linked verschmolzen, :stamped gestempelt, :pending offen (Inbox), :skipped übersprungen, :ignored ausgefiltert, :locked gesperrt.', [
             'created' => $result['created'],
             'linked' => $result['linked'],
+            'stamped' => $result['stamped'],
             'pending' => $result['pending'],
             'skipped' => $result['skipped'],
             'ignored' => $result['ignored'],

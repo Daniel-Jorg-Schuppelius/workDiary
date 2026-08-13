@@ -30,10 +30,10 @@ final class AttendanceEnumsTest extends TestCase {
 
     public function test_attendance_source_values(): void {
         $this->assertSame(
-            ['clock', 'manual', 'import', 'auto_close', 'terminal'],
+            ['clock', 'manual', 'import', 'auto_close', 'terminal', 'phone'],
             AttendanceSource::values()
         );
         $this->assertNotEmpty(AttendanceSource::Clock->label());
-        $this->assertCount(5, AttendanceSource::options());
+        $this->assertCount(6, AttendanceSource::options());
     }
 }

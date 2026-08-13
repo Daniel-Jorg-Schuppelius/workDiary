@@ -70,7 +70,9 @@ class EmergencyAttendanceService {
             ->pluck('user_id')->flip();
         $vacationUserIds = Vacation::query()
             ->where('organization_id', $organizationId)
-            ->approved()
+            // MVP-536: bei aktiver Vorbehalts-Eintragung zählen auch beantragte
+            // Fehlzeiten als abwesend (Planungswirkung, keine Abrechnung).
+            ->effective()
             ->overlapping($localDay, $localDay)
             ->pluck('user_id')->flip();
 
@@ -81,6 +83,19 @@ class EmergencyAttendanceService {
 
             if ($attendance instanceof Attendance) {
                 $since = $attendance->started_at !== null ? CarbonImmutable::parse($attendance->started_at) : null;
+
+                // MVP-532: offener Zwischen-Status — Person arbeitet, ist aber
+                // NICHT im Gebäude (evakuierungsrelevant) → „außer Haus".
+                if ($isLive && $attendance->ended_at === null && $attendance->homeoffice_started_at !== null) {
+                    $offSite[] = ['user' => $user, 'since' => $since, 'context' => (string) __('attendance.intermediate.homeoffice')];
+
+                    continue;
+                }
+                if ($isLive && $attendance->ended_at === null && $attendance->errand_started_at !== null) {
+                    $offSite[] = ['user' => $user, 'since' => $since, 'context' => (string) __('attendance.intermediate.errand')];
+
+                    continue;
+                }
 
                 if ($offSiteContext->has($user->id)) {
                     $offSite[] = ['user' => $user, 'since' => $since, 'context' => $offSiteContext->get($user->id)];

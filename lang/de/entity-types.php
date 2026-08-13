@@ -369,6 +369,7 @@ return [
     'SupplierAnalysisReportController' => 'Report-Export: Lieferantenanalyse',
     'SupplierValueReportController' => 'Report-Export: Lieferantenwert',
     'SupportAccessGrant' => 'Support-Zugriffsfreigabe',
+    'SurchargeForecastReportController' => 'Report-Export: Zuschlags-Prognose',
     'SurchargeRule' => 'Zuschlagsregel',
     'SustainabilityActivityRecord' => 'ESG-Aktivitätsdatensatz',
     'SustainabilityAssessment' => 'ESG-Bewertung',

@@ -88,6 +88,33 @@ class Vacation extends Model {
     }
 
     /**
+     * MVP-536 (Q1 S. 43): Vorbehalts-Eintragung — ist die Org-Option
+     * `vacation.provisional_booking` aktiv, wirken auch BEANTRAGTE
+     * Fehlzeiten sofort (mit Kennzeichnung); eine Ablehnung nimmt sie
+     * automatisch zurück (Status-Filter). Abgerechnet wird weiterhin nur
+     * Genehmigtes — der Zeitexport bleibt bewusst bei approved.
+     */
+    public static function provisionalBookingEnabled(): bool {
+        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+
+        return (bool) data_get($org?->settings, 'vacation.provisional_booking', false);
+    }
+
+    /**
+     * Planungswirksame Fehlzeiten: genehmigt — plus beantragt, wenn die
+     * Vorbehalts-Eintragung (MVP-536) aktiv ist.
+     *
+     * @param  Builder<Vacation>  $query
+     */
+    public function scopeEffective(Builder $query): void {
+        $statuses = [VacationStatus::Approved->value];
+        if (self::provisionalBookingEnabled()) {
+            $statuses[] = VacationStatus::Pending->value;
+        }
+        $query->whereIn('status', $statuses);
+    }
+
+    /**
      * Einträge, die sich mit dem Zeitraum überschneiden.
      *
      * @param  Builder<Vacation>  $query

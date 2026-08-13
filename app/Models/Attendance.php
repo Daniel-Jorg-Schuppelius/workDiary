@@ -31,6 +31,10 @@ use Illuminate\Support\Carbon;
  * @property int $break_minutes_auto
  * @property int $break_minutes_manual
  * @property Carbon|null $break_started_at
+ * @property Carbon|null $homeoffice_started_at
+ * @property int $homeoffice_minutes
+ * @property Carbon|null $errand_started_at
+ * @property int $errand_minutes
  * @property int $duration_minutes
  * @property AttendanceSource|null $source
  * @property AttendanceStatus|null $status
@@ -66,6 +70,10 @@ class Attendance extends Model {
         'break_minutes_auto',
         'break_minutes_manual',
         'break_started_at',
+        'homeoffice_started_at',
+        'homeoffice_minutes',
+        'errand_started_at',
+        'errand_minutes',
         'duration_minutes',
         'source',
         'status',
@@ -89,6 +97,10 @@ class Attendance extends Model {
         'break_minutes_auto' => 'integer',
         'break_minutes_manual' => 'integer',
         'break_started_at' => 'datetime',
+        'homeoffice_started_at' => 'datetime',
+        'homeoffice_minutes' => 'integer',
+        'errand_started_at' => 'datetime',
+        'errand_minutes' => 'integer',
         'duration_minutes' => 'integer',
         'started_lat' => 'float',
         'started_lng' => 'float',

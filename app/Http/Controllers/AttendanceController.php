@@ -146,6 +146,32 @@ class AttendanceController extends Controller {
         return back()->with('success', __('Stempelung verworfen.'));
     }
 
+    /**
+     * Zwischen-Status Homeoffice/Dienstgang togglen (MVP-532) — analog zur
+     * Terminal-Pause: erster Klick startet, der nächste beendet die Phase.
+     */
+    public function intermediate(Request $request): RedirectResponse {
+        Gate::authorize('create', Attendance::class);
+
+        $data = $request->validate([
+            'kind' => ['required', 'in:homeoffice,errand'],
+        ]);
+
+        /** @var User $user */
+        $user = Auth::user();
+        $attendance = $this->clock->toggleIntermediate($user, $data['kind']);
+        if ($attendance === null) {
+            return back()->with('error', __('Kein offener Stempel — zuerst einstempeln.'));
+        }
+
+        $running = $attendance->{$data['kind'] . '_started_at'} !== null;
+        $label = __('attendance.intermediate.' . $data['kind']);
+
+        return back()->with('success', $running
+            ? __(':status begonnen.', ['status' => $label])
+            : __(':status beendet.', ['status' => $label]));
+    }
+
     public function update(Request $request, Attendance $attendance): RedirectResponse {
         Gate::authorize('update', $attendance);
 

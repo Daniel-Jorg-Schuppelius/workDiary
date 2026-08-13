@@ -12,10 +12,15 @@ declare(strict_types=1);
 
 namespace App\Enums\Approval;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * MVP-531: Entscheidung einer Genehmigungsstufe.
  */
-enum ApprovalDecision: string {
+enum ApprovalDecision: string implements HasLabel {
+    use HasOptions;
+
     case Approved = 'approved';
     case Rejected = 'rejected';
 

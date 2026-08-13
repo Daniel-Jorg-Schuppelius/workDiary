@@ -13,6 +13,17 @@
                         {{ __(':min Min. Pause', ['min' => $current->break_minutes_total]) }}
                     </x-status-badge>
                 @endif
+                {{-- Zwischen-Status (MVP-532): laufende Phase sichtbar machen. --}}
+                @if ($current->homeoffice_started_at !== null)
+                    <x-status-badge tone="info" size="sm">
+                        {{ __('attendance.intermediate.homeoffice') }} {{ __('seit :time', ['time' => $current->homeoffice_started_at->ftime()]) }}
+                    </x-status-badge>
+                @endif
+                @if ($current->errand_started_at !== null)
+                    <x-status-badge tone="warning" size="sm">
+                        {{ __('attendance.intermediate.errand') }} {{ __('seit :time', ['time' => $current->errand_started_at->ftime()]) }}
+                    </x-status-badge>
+                @endif
             @else
                 <x-status-badge tone="ghost" size="sm">{{ __('Geschlossen') }}</x-status-badge>
                 <x-status-badge size="sm" outline>{{ __('Nicht eingestempelt.') }}</x-status-badge>
@@ -25,6 +36,21 @@
             <div class="font-['Space_Grotesk'] text-lg font-bold tabular-nums text-success" x-text="display">00:00:00</div>
 
             <div class="ml-auto flex flex-wrap items-center justify-end gap-1.5">
+                {{-- Zwischen-Status togglen (MVP-532): klassifiziert, mindert die Arbeitszeit nicht. --}}
+                <form method="POST" action="{{ route('attendance.intermediate') }}" class="leading-none">
+                    @csrf
+                    <input type="hidden" name="kind" value="homeoffice">
+                    <x-button type="submit" tone="info" size="xs" class="h-7 min-h-7 gap-1 px-2" icon="home_work">
+                        {{ $current->homeoffice_started_at !== null ? __('attendance.intermediate.end_homeoffice') : __('attendance.intermediate.start_homeoffice') }}
+                    </x-button>
+                </form>
+                <form method="POST" action="{{ route('attendance.intermediate') }}" class="leading-none">
+                    @csrf
+                    <input type="hidden" name="kind" value="errand">
+                    <x-button type="submit" tone="ghost" size="xs" class="h-7 min-h-7 gap-1 px-2" icon="directions_walk">
+                        {{ $current->errand_started_at !== null ? __('attendance.intermediate.end_errand') : __('attendance.intermediate.start_errand') }}
+                    </x-button>
+                </form>
                 <form method="POST" action="{{ route('attendance.clock-out') }}" class="flex flex-wrap items-center justify-end gap-1.5" data-offline-sync="attendance.clock-out">
                     @csrf
                     <div class="join">

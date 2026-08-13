@@ -24,10 +24,14 @@ final readonly class VacationBalance {
         public float $usableCarryoverDays,
         public float $takenDays,
         public float $pendingDays,
+        /** MVP-535: SGB-IX-Zusatzurlaub (schwerbehinderte Menschen). */
+        public float $severelyDisabledDays = 0.0,
+        /** MVP-535: sonstige Ansprüche (Betriebsvereinbarung o. Ä.). */
+        public float $otherDays = 0.0,
     ) {}
 
     public function totalDays(): float {
-        return $this->entitledDays + $this->usableCarryoverDays;
+        return $this->entitledDays + $this->severelyDisabledDays + $this->otherDays + $this->usableCarryoverDays;
     }
 
     /** Rest nach genehmigten Tagen (ohne offene Anträge). */

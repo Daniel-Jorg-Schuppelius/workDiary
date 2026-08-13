@@ -1,6 +1,15 @@
 <?php
 
 return [
+    // Stati intermedi (MVP-532): smart working/commissione di servizio.
+    'intermediate' => [
+        'homeoffice' => 'Smart working',
+        'errand' => 'Commissione di servizio',
+        'start_homeoffice' => 'Inizia smart working',
+        'end_homeoffice' => 'Termina smart working',
+        'start_errand' => 'Inizia commissione',
+        'end_errand' => 'Termina commissione',
+    ],
     'status' => [
         'open' => 'Aperto',
         'closed' => 'Chiuso',
@@ -14,6 +23,7 @@ return [
         'import' => 'Importazione',
         'auto_close' => 'Chiusura automatica',
         'terminal' => 'Terminal',
+        'phone' => 'Telefono',
     ],
     'correction' => [
         'action' => [
