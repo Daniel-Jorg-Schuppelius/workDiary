@@ -9,6 +9,10 @@
        sichtbar. Darunter darf die Tabelle nie zusammenschrumpfen — bei zu
        niedrigem Viewport scrollt stattdessen die Page-Shell vertikal. */
     --wd-table-min-h: 14rem;
+    /* Mindesthöhe des Navigations-Bereichs der Sidebar (.sidebar-items):
+       ~4–5 Menüzeilen bleiben sichtbar. Greift nur bei niedrigen Viewports
+       (Media-Query bei .sidebar-shell) — dann scrollt die Shell als Ganzes. */
+    --wd-sidebar-items-min-h: 12rem;
 }
 @media (min-width: 1024px) {
     :root {
@@ -843,6 +847,21 @@ body.sidebar-collapsed
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
+}
+/* Niedrige Viewports: Header (Arbeitsbereich + „Neu …") und Footer (sticky
+   Buttons) schrumpfen nie — ohne Gegenmaßnahme quetschen sie die Navigation
+   auf wenige Pixel. Deshalb behält .sidebar-items eine nutzbare Mindesthöhe
+   und die Shell scrollt als Ganzes (Header/Footer scrollen mit). Bewusst per
+   Media-Query begrenzt: bei normalen Höhen bleibt die Shell overflow-visible,
+   damit der „Neu …"-Dropdown nicht von einem Scrollcontainer geclippt wird. */
+@media (max-height: 560px) {
+    #app-sidebar .sidebar-shell {
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    #app-sidebar .sidebar-items {
+        min-height: var(--wd-sidebar-items-min-h);
+    }
 }
 #app-sidebar .sidebar-header {
     flex: 0 0 auto;

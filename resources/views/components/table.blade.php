@@ -66,7 +66,7 @@
     ])->filter()->implode(' ');
 
     $wrapperBase = match (true) {
-        $bare && $scroll === 'flex'  => 'min-h-(--wd-table-min-h) flex-1 overflow-hidden',
+        $bare && $scroll === 'flex'  => 'wd-table-flex min-h-(--wd-table-min-h) flex-1 overflow-hidden',
         $bare && $scroll === 'none'  => '',
         // Bare-Tabellen (in Cards) KEIN eigener overflow-Wrapper: der sonst
         // entstehende, ungebundene vertikale Scrollcontainer würde den
@@ -74,7 +74,7 @@
         // Seiten-Scrollport (<main> der wd-page-fill-Seite bzw. den Chart-
         // Scrollbereich). Horizontaler Überlauf läuft über <main> (overflow:auto).
         $bare                        => '',
-        $scroll === 'flex'           => 'min-h-(--wd-table-min-h) flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100',
+        $scroll === 'flex'           => 'wd-table-flex min-h-(--wd-table-min-h) flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100',
         $scroll === 'none'           => 'rounded-box border border-base-300 bg-base-100 shadow-xs',
         default                      => 'overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-xs',
     };
