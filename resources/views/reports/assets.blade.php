@@ -17,6 +17,9 @@
         <x-icon-btn icon="download" tone="outline" size="sm"
                     :href="route('reports.assets', array_merge($standardFilters->toQueryParams(), array_filter(['category_code' => $categoryCode, 'manufacturer' => $manufacturer, 'group_by' => $groupBy]), ['export' => 'csv']))"
                     show-label>CSV</x-icon-btn>
+        <x-icon-btn icon="table_view" tone="outline" size="sm"
+                    :href="route('reports.assets', array_merge($standardFilters->toQueryParams(), array_filter(['category_code' => $categoryCode, 'manufacturer' => $manufacturer, 'group_by' => $groupBy]), ['export' => 'xlsx']))"
+                    show-label>Excel</x-icon-btn>
         <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
                     :href="route('reports.assets', array_merge($standardFilters->toQueryParams(), array_filter(['category_code' => $categoryCode, 'manufacturer' => $manufacturer, 'group_by' => $groupBy]), ['export' => 'pdf']))"
                     show-label>PDF</x-icon-btn>

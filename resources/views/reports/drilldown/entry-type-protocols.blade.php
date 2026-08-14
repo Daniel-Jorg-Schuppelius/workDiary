@@ -22,6 +22,9 @@
                 <x-icon-btn icon="download" tone="outline" size="sm"
                             :href="route('reports.entry-types.drilldown.protocols', array_filter(['entry_type_id' => $entryTypeId, 'customer_id' => $customerId, 'user_id' => $userId, 'status' => $statusFilter, 'export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
+                <x-icon-btn icon="table_view" tone="outline" size="sm"
+                            :href="route('reports.entry-types.drilldown.protocols', array_filter(['entry_type_id' => $entryTypeId, 'customer_id' => $customerId, 'user_id' => $userId, 'status' => $statusFilter, 'export' => 'xlsx']))"
+                            show-label>Excel</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
                             :href="route('reports.entry-types.drilldown.protocols', array_filter(['entry_type_id' => $entryTypeId, 'customer_id' => $customerId, 'user_id' => $userId, 'status' => $statusFilter, 'export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>

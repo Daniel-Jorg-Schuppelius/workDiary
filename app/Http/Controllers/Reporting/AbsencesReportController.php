@@ -43,8 +43,7 @@ class AbsencesReportController extends Controller {
     public function __construct(
         private readonly HolidayService $holidayService,
         private readonly VacationBalanceService $balanceService,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
@@ -78,7 +77,7 @@ class AbsencesReportController extends Controller {
         $monthlyTypeSeries = $this->monthlyTypeSeries($fromDate, $toDate, $scope, $userId, $filters);
         $typeBands = $this->typeBands();
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($rows, $totals, $from, $to, $balanceYear, $exportFilters, $request);
         }
         if ($request->query('export') === 'pdf') {

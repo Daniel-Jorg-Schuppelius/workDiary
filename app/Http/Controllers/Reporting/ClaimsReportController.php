@@ -38,7 +38,7 @@ class ClaimsReportController extends Controller {
         [$from, $to] = $this->resolveRange($request);
         $data = $this->aggregate($from, $to);
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             $filters = ['from' => $from->toDateString(), 'to' => $to->toDateString()];
 
             return $this->csv($data, $from, $to, $filters, $request);

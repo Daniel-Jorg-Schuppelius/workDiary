@@ -53,7 +53,7 @@ class PresenceEmergencyReportController extends Controller {
             'site' => $siteId,
         ];
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($snapshot, $filters, $request);
         }
         if ($request->query('export') === 'pdf') {

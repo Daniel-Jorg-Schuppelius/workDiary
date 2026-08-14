@@ -1407,6 +1407,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('admin/zeitkonten/{account}/regeln/{rule}', [\App\Http\Controllers\Admin\TimeAccountAdminController::class, 'destroyRule'])->name('admin.time-accounts.rules.destroy');
         Route::post('admin/zeitkonten/{account}/buchung', [\App\Http\Controllers\Admin\TimeAccountAdminController::class, 'manualEntry'])->name('admin.time-accounts.manual');
         Route::get('reports/time-accounts', [\App\Http\Controllers\Reporting\TimeAccountsReportController::class, 'index'])->name('reports.time-accounts');
+        Route::get('reports/zeitkonten-periodenvergleich', [\App\Http\Controllers\Reporting\TimeAccountComparisonReportController::class, 'index'])->name('reports.time-account-comparison');
 
         // ── Rollpläne (MVP-522) ─────────────────────────────────────────────────
         Route::get('admin/rollplaene', [\App\Http\Controllers\Admin\ShiftRotationController::class, 'index'])->name('admin.shift-rotations.index');

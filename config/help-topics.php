@@ -58,6 +58,7 @@ return [
         'admin.time-accounts.*' => 'admin.time-accounts',
         'time-accounts.*' => 'time-accounts.overview',
         'reports.time-accounts' => 'time-accounts.overview',
+        'reports.time-account-comparison' => 'time-accounts.overview',
         // Versionsvergleich (MVP-528) + gespeicherte Ansichten (MVP-529).
         'admin.audit-diff.*' => 'admin.audit-diff',
         'report-views.*' => 'reports.saved-views',

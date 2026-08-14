@@ -107,7 +107,7 @@ class AiUsageReportController extends Controller {
                 ];
             });
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             $csv = [array_merge([(string) __('Monat')], array_map(
                 static fn (AiFamily $f): string => $f->label(),
                 $families,

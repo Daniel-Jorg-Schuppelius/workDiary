@@ -47,6 +47,12 @@ enum NotificationEvent: string implements HasLabel {
     case OvertimeRequested = 'overtime.requested';
     /** Synchron: OvertimeRequestService::approve()/reject() (MVP-519) */
     case OvertimeDecided = 'overtime.decided';
+    /** Synchron: VacationController::store() (MVP-538) */
+    case VacationRequested = 'vacation.requested';
+    /** Synchron: VacationController::approve()/reject() — nur finale Entscheidung (MVP-538) */
+    case VacationDecided = 'vacation.decided';
+    /** Synchron: AttendancePlausibilityScanService — neuer offener Befund an die betroffene Person (MVP-538) */
+    case AttendanceUnclearCase = 'attendance.unclearCase';
     /** Synchron: MonthClosureService::submit() */
     case MonthClosureSubmitted = 'monthClosure.submitted';
     /** Scanner: ISMS-Zertifikat läuft innerhalb des Vorlaufs (30 Tage) ab */
@@ -198,7 +204,7 @@ enum NotificationEvent: string implements HasLabel {
             return false;
         }
 
-        return ! in_array($this, [self::TimeCorrectionRequested, self::OvertimeRequested, self::MonthClosureSubmitted, self::IsmsCertificateExpiring, self::IsmsIncidentCritical, self::SafetyCriticalEvent, self::ShiftExchangeRequested, self::CustomerQueryRaised, self::ShipmentDeliveryProblem, self::SlaQuotaWarning,
+        return ! in_array($this, [self::TimeCorrectionRequested, self::OvertimeRequested, self::VacationRequested, self::MonthClosureSubmitted, self::IsmsCertificateExpiring, self::IsmsIncidentCritical, self::SafetyCriticalEvent, self::ShiftExchangeRequested, self::CustomerQueryRaised, self::ShipmentDeliveryProblem, self::SlaQuotaWarning,
             // Domain-/Finanz-/Fristereignisse betreffen keine Einzelperson (Vollaudit 2026-07, W3.2).
             self::DomainExpiring, self::DomainTransferChanged, self::DomainSyncFailed, self::DomainHighRiskAction,
             self::FinanceTransferFailed, self::FinanceBankImportFailed, self::FinanceReconciliationReview,
@@ -220,6 +226,7 @@ enum NotificationEvent: string implements HasLabel {
         return match ($this) {
             self::TimeCorrectionRequested,
             self::OvertimeRequested,
+            self::VacationRequested,
             self::MonthClosureSubmitted => [UserRole::Teamleitung->value],
             // Zertifikatsablauf betrifft keine einzelne Person — Default an
             // die Leitungs-/Admin-Rollen der Organisation.
@@ -321,6 +328,9 @@ enum NotificationEvent: string implements HasLabel {
             self::TimeCorrectionDecided => 'edit_calendar',
             self::OvertimeRequested,
             self::OvertimeDecided => 'more_time',
+            self::VacationRequested,
+            self::VacationDecided => 'beach_access',
+            self::AttendanceUnclearCase => 'live_help',
             self::MonthClosureSubmitted => 'event_available',
             self::IsmsCertificateExpiring => 'workspace_premium',
             self::IsmsCorrectiveActionOverdue => 'fact_check',

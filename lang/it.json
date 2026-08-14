@@ -9993,5 +9993,13 @@
     "Zeile :line: Name oder E-Mail ungültig.": "Riga :line: nome o e-mail non validi.",
     "Zeile :line: Personalnummer :pn ist bereits vergeben.": "Riga :line: il numero di matricola :pn è già assegnato.",
     "Zeile :line: unbekannte Rolle „:role\".": "Riga :line: ruolo sconosciuto «:role».",
-    "Zeile :line und folgende: Nutzerlimit der Lizenz erreicht.": "Riga :line e seguenti: limite utenti della licenza raggiunto."
+    "Zeile :line und folgende: Nutzerlimit der Lizenz erreicht.": "Riga :line e seguenti: limite utenti della licenza raggiunto.",
+    "Ungeklärte Fälle": "Casi da chiarire",
+    "Bitte klären Sie diese Tage per Antrag.": "Chiarisca questi giorni tramite una richiesta.",
+    "Zeitkorrektur beantragen": "Richiedi una correzione orari",
+    "Zeitkonten-Periodenvergleich": "Confronto periodi dei conti ore",
+    "Periodenvergleich": "Confronto periodi",
+    "Konto-Umsätze je Kalenderwoche oder Monat nebeneinander; Excel exportiert alle Konten als je ein Arbeitsblatt.": "Movimenti del conto affiancati per settimana o mese; Excel esporta ogni conto in un proprio foglio.",
+    "Raster": "Granularità",
+    "KW :week": "Sett. :week"
 }

@@ -354,6 +354,13 @@ return [
                 'requested' => 'Overtime request submitted',
                 'decided' => 'Overtime request decided',
             ],
+            'vacation' => [
+                'requested' => 'Vacation request submitted',
+                'decided' => 'Vacation request decided',
+            ],
+            'attendance' => [
+                'unclearCase' => 'Unclear case (clock times)',
+            ],
             'monthClosure' => [
                 'submitted' => 'Month closure submitted',
                 'decided' => 'Month closure decided',

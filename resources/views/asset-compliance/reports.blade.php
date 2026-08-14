@@ -10,6 +10,9 @@
         <x-icon-btn icon="download" tone="ghost" size="sm"
                     :href="route('asset-compliance.reports.index', ['export' => 'csv', 'from' => $from->toDateString(), 'to' => $to->toDateString()])"
                     show-label>{{ __('CSV') }}</x-icon-btn>
+        <x-icon-btn icon="table_view" tone="ghost" size="sm"
+                    :href="route('asset-compliance.reports.index', ['export' => 'xlsx', 'from' => $from->toDateString(), 'to' => $to->toDateString()])"
+                    show-label>Excel</x-icon-btn>
         <form method="POST" action="{{ route('asset-compliance.reports.snapshot', ['from' => $from->toDateString(), 'to' => $to->toDateString()]) }}">
             @csrf
             <button type="submit" class="btn btn-sm">{{ __('Snapshot einfrieren') }}</button>

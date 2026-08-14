@@ -71,7 +71,7 @@ class SustainabilityController extends Controller {
             ];
         });
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($aggregate, $from, $to, $request);
         }
         // Vollaudit 2026-07 (N21): PDF über die 076-Report-Pipeline.

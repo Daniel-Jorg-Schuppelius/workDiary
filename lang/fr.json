@@ -9993,5 +9993,13 @@
     "Zeile :line: Name oder E-Mail ungültig.": "Ligne :line : nom ou e-mail invalide.",
     "Zeile :line: Personalnummer :pn ist bereits vergeben.": "Ligne :line : le matricule :pn est déjà attribué.",
     "Zeile :line: unbekannte Rolle „:role\".": "Ligne :line : rôle inconnu « :role ».",
-    "Zeile :line und folgende: Nutzerlimit der Lizenz erreicht.": "Ligne :line et suivantes : limite d utilisateurs de la licence atteinte."
+    "Zeile :line und folgende: Nutzerlimit der Lizenz erreicht.": "Ligne :line et suivantes : limite d utilisateurs de la licence atteinte.",
+    "Ungeklärte Fälle": "Cas à clarifier",
+    "Bitte klären Sie diese Tage per Antrag.": "Veuillez clarifier ces journées via une demande.",
+    "Zeitkorrektur beantragen": "Demander une correction de temps",
+    "Zeitkonten-Periodenvergleich": "Comparaison de périodes des comptes de temps",
+    "Periodenvergleich": "Comparaison de périodes",
+    "Konto-Umsätze je Kalenderwoche oder Monat nebeneinander; Excel exportiert alle Konten als je ein Arbeitsblatt.": "Mouvements du compte côte à côte par semaine ou par mois ; Excel exporte chaque compte sur sa propre feuille.",
+    "Raster": "Granularité",
+    "KW :week": "S :week"
 }

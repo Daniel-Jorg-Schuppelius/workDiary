@@ -85,7 +85,7 @@ class CustomerDrilldownReportController extends Controller {
             });
         });
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             /** @var list<OpenIssue> $issues */
             $issues = $issuesQuery->clone()->get()->all();
 
@@ -168,7 +168,7 @@ class CustomerDrilldownReportController extends Controller {
 
         $protocolsQuery = $this->defectProtocolDrilldownQuery($entryIds, $from, $to);
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             /** @var list<Protocol> $protocols */
             $protocols = $protocolsQuery->clone()->get()->all();
 

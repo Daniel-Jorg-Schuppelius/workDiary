@@ -56,7 +56,7 @@ class PaymentBehaviorReportController extends Controller {
 
         $exportFilters = $filters->toAuditArray();
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($result, $from->toDateString(), $to->toDateString(), $exportFilters, $request);
         }
 

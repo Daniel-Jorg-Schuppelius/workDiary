@@ -22,6 +22,9 @@
                 <x-icon-btn icon="download" tone="outline" size="sm"
                             :href="route('reports.customers.drilldown.protocols', array_filter(['customer_id' => \App\Support\Sqid::encode(\App\Models\Customer::class, $customerId), 'project_id' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId), 'user_id' => \App\Support\Sqid::encode(\App\Models\User::class, $userId), 'export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
+                <x-icon-btn icon="table_view" tone="outline" size="sm"
+                            :href="route('reports.customers.drilldown.protocols', array_filter(['customer_id' => \App\Support\Sqid::encode(\App\Models\Customer::class, $customerId), 'project_id' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId), 'user_id' => \App\Support\Sqid::encode(\App\Models\User::class, $userId), 'export' => 'xlsx']))"
+                            show-label>Excel</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
                             :href="route('reports.customers.drilldown.protocols', array_filter(['customer_id' => \App\Support\Sqid::encode(\App\Models\Customer::class, $customerId), 'project_id' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId), 'user_id' => \App\Support\Sqid::encode(\App\Models\User::class, $userId), 'export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>

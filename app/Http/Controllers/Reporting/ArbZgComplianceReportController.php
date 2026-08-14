@@ -74,7 +74,7 @@ class ArbZgComplianceReportController extends Controller {
         $summary = $this->summarize($rows);
         $exportFilters = array_merge(['kind' => $kindFilter], $filters->toAuditArray());
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($rows, $fromStr, $toStr, $exportFilters, $request);
         }
         if ($request->query('export') === 'pdf') {

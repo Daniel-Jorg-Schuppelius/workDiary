@@ -48,7 +48,7 @@ class AssetDrilldownReportController extends Controller {
 
         $rows = $service->pareto((int) $user->organization_id, $from, $to);
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             $exportFilters = ['from' => $from->toDateString(), 'to' => $to->toDateString()];
 
             return $this->exportRecurringDefectsCsv($rows, $exportFilters, $from->toDateString(), $to->toDateString(), $request);
@@ -78,7 +78,7 @@ class AssetDrilldownReportController extends Controller {
                 ->when($assetIds !== [], fn($q) => $q->whereIn('subject_id', $assetIds), fn($q) => $q->whereRaw('1=0'));
         });
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             /** @var list<OpenIssue> $issues */
             $issues = $issuesQuery->clone()->get()->all();
             $exportFilters = $filters + ['escalated' => $escalatedOnly, 'from' => $from->toDateString(), 'to' => $to->toDateString()];
@@ -131,7 +131,7 @@ class AssetDrilldownReportController extends Controller {
 
         $protocolsQuery = $this->defectProtocolDrilldownQuery($entryIds, $from, $to);
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             /** @var list<Protocol> $protocols */
             $protocols = $protocolsQuery->clone()->get()->all();
             $exportFilters = $filters + ['from' => $from->toDateString(), 'to' => $to->toDateString()];

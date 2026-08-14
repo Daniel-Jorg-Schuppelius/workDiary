@@ -16,6 +16,9 @@
         <x-icon-btn icon="download" size="sm"
                     :href="route('admin.ai.usage', ['export' => 'csv'])"
                     show-label>{{ __('CSV') }}</x-icon-btn>
+        <x-icon-btn icon="table_view" size="sm"
+                    :href="route('admin.ai.usage', ['export' => 'xlsx'])"
+                    show-label>Excel</x-icon-btn>
         <x-icon-btn icon="arrow_back" size="sm" :href="route('admin.ai.index')" show-label>{{ __('ai.title.connections') }}</x-icon-btn>
     </x-slot:actions>
 

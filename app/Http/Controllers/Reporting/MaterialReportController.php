@@ -49,7 +49,7 @@ class MaterialReportController extends Controller {
         $paretoSeries = $this->materialValueSeries($aggregation['rows']);
         $exportFilters = array_merge(['scope' => $scope], $filters->toAuditArray());
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($aggregation, $from, $to, $request, $exportFilters);
         }
         if ($request->query('export') === 'pdf') {

@@ -65,7 +65,7 @@ class BillingReportController extends Controller {
 
         $monthly = $this->monthlyBillableSeries($filters);
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($status, $aging, $perCustomer, $unbilled, $einvoicing, $documentChain, $from, $to, $filters, $request);
         }
         if ($request->query('export') === 'pdf') {

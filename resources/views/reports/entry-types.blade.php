@@ -19,6 +19,9 @@
                 <x-icon-btn icon="download" tone="outline" size="sm"
                             :href="route('reports.entry-types', array_merge($standardFilters->toQueryParams(), array_filter(['entry_type_id' => \App\Support\Sqid::encode(\App\Models\EntryType::class, $entryTypeFilter)]), ['export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
+                <x-icon-btn icon="table_view" tone="outline" size="sm"
+                            :href="route('reports.entry-types', array_merge($standardFilters->toQueryParams(), array_filter(['entry_type_id' => \App\Support\Sqid::encode(\App\Models\EntryType::class, $entryTypeFilter)]), ['export' => 'xlsx']))"
+                            show-label>Excel</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
                             :href="route('reports.entry-types', array_merge($standardFilters->toQueryParams(), array_filter(['entry_type_id' => \App\Support\Sqid::encode(\App\Models\EntryType::class, $entryTypeFilter)]), ['export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>

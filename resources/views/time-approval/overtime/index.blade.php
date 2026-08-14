@@ -34,6 +34,40 @@
             </select>
         </x-filter-bar>
 
+        {{-- MVP-538 (Q1 „Ungeklärte Fälle"): eigene offene Plausibilitäts-Befunde
+             mit direktem Absprung in den passenden Antrag. --}}
+        @if (($unclearCases ?? collect())->isNotEmpty())
+            <x-card class="shrink-0">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="material-symbols-outlined text-warning" aria-hidden="true">live_help</span>
+                    <span class="font-medium">{{ __('Ungeklärte Fälle') }}</span>
+                    <span class="text-sm opacity-70">{{ __('Bitte klären Sie diese Tage per Antrag.') }}</span>
+                </div>
+                <ul class="divide-y divide-base-200">
+                    @foreach ($unclearCases as $case)
+                        <li class="py-1.5 flex flex-wrap items-center gap-3">
+                            <span class="font-medium tabular-nums">{{ optional($case->scope_date)->fdate() }}</span>
+                            <span>{{ __('compliance.report.kind.' . $case->rule_code) }}</span>
+                            @if ((int) $case->detected_value > 0)
+                                <span class="text-sm opacity-70 tabular-nums">{{ $case->detected_value }} {{ __('Min.') }}</span>
+                            @endif
+                            <span class="ms-auto flex items-center gap-2">
+                                @if ($case->rule_code === \App\Services\Compliance\AttendancePlausibilityScanService::KIND_FRAME_TIME)
+                                    <x-icon-btn icon="more_time" size="xs" data-entry-modal-trigger
+                                                :href="route('overtime.create', ['date' => $case->scope_date->toDateString()])"
+                                                show-label>{{ __('Überstunden beantragen') }}</x-icon-btn>
+                                @else
+                                    <x-icon-btn icon="edit_calendar" size="xs" data-entry-modal-trigger
+                                                :href="route('corrections.create', ['date' => $case->scope_date->toDateString()])"
+                                                show-label>{{ __('Zeitkorrektur beantragen') }}</x-icon-btn>
+                                @endif
+                            </span>
+                        </li>
+                    @endforeach
+                </ul>
+            </x-card>
+        @endif
+
         @if ($requests->isEmpty())
             <x-empty-state framed
                 icon='<span class="material-symbols-outlined" aria-hidden="true">more_time</span>'

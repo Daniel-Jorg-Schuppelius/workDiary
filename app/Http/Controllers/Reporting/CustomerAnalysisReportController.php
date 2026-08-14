@@ -27,8 +27,7 @@ class CustomerAnalysisReportController extends Controller {
     use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
-    public function __construct(private readonly CustomerAnalysisReportBuilder $builder) {
-    }
+    public function __construct(private readonly CustomerAnalysisReportBuilder $builder) {}
 
     public function index(Request $request): View|Response|SymfonyResponse {
         [$from, $to] = $this->resolveRange($request);
@@ -71,7 +70,7 @@ class CustomerAnalysisReportController extends Controller {
         $exportFilters = array_merge(['min_minutes' => $minMinutes, 'hide_zero' => $hideZero], $filters->toAuditArray());
         $label = CarbonFmt::fdate($from) . ' – ' . CarbonFmt::fdate($to);
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv(array_values($rows->all()), $from->toDateString(), $to->toDateString(), $exportFilters, $request);
         }
 

@@ -10,8 +10,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Compliance\ComplianceFindingStatus;
 use App\Enums\TimeApproval\OvertimeRequestStatus;
-use App\Models\{OvertimeRequest, User};
+use App\Models\{ComplianceFinding, OvertimeRequest, User};
+use App\Services\Compliance\AttendancePlausibilityScanService;
 use App\Services\TimeApproval\OvertimeRequestService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -46,10 +48,22 @@ class OvertimeRequestController extends Controller {
             $query->where('status', $statusFilter);
         }
 
+        // MVP-538 (Q1 „Ungeklärte Fälle"): eigene offene Plausibilitäts-Befunde
+        // als Selbstsicht — Klärung läuft über Überstunden- bzw. Korrekturantrag.
+        $unclearCases = ComplianceFinding::query()
+            ->where('category', AttendancePlausibilityScanService::CATEGORY)
+            ->where('subject_type', User::class)
+            ->where('subject_id', $user->id)
+            ->whereIn('status', [ComplianceFindingStatus::Open->value, ComplianceFindingStatus::Acknowledged->value])
+            ->orderByDesc('scope_date')
+            ->limit(50)
+            ->get();
+
         return view('time-approval.overtime.index', [
             'requests' => $query->paginate(25)->withQueryString(),
             'filters' => ['status' => $statusFilter],
             'statuses' => OvertimeRequestStatus::cases(),
+            'unclearCases' => $unclearCases,
         ]);
     }
 

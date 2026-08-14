@@ -69,7 +69,7 @@ class InvestmentsReportController extends Controller {
         $openApprovals = InvestmentBudgetRequest::query()->where('status', 'in_approval')->count();
         $openDeviations = InvestmentDeviation::query()->where('status', 'open')->count();
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             $csv = [['Akte', 'Status', 'Kostenstelle', 'Genehmigt €', 'Gebunden €', 'Ist €', 'Rest €']];
             foreach ($rows as $row) {
                 $csv[] = [

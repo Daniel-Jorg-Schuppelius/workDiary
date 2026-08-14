@@ -25,6 +25,9 @@
                 <x-icon-btn icon="download" tone="outline" size="sm"
                             :href="route('reports.assets.drilldown.open-issues', array_filter($filters + ['escalated' => $escalatedOnly ? 1 : null, 'export' => 'csv'], fn($v) => $v !== null && $v !== ''))"
                             show-label>CSV</x-icon-btn>
+                <x-icon-btn icon="table_view" tone="outline" size="sm"
+                            :href="route('reports.assets.drilldown.open-issues', array_filter($filters + ['escalated' => $escalatedOnly ? 1 : null, 'export' => 'xlsx'], fn($v) => $v !== null && $v !== ''))"
+                            show-label>Excel</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
                             :href="route('reports.assets.drilldown.open-issues', array_filter($filters + ['escalated' => $escalatedOnly ? 1 : null, 'export' => 'pdf'], fn($v) => $v !== null && $v !== ''))"
                             show-label>PDF</x-icon-btn>

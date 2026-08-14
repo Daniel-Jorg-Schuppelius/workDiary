@@ -37,7 +37,7 @@ class AssetComplianceReportController extends Controller {
         $aggregate = $this->aggregate($from, $to);
 
         // CSV-Export (MVP-292; Vollaudit 2026-07, M33).
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($aggregate, $from, $to, $request);
         }
 

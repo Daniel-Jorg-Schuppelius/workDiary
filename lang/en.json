@@ -9993,5 +9993,13 @@
     "Zeile :line: Name oder E-Mail ungültig.": "Line :line: name or email invalid.",
     "Zeile :line: Personalnummer :pn ist bereits vergeben.": "Line :line: personnel number :pn is already taken.",
     "Zeile :line: unbekannte Rolle „:role\".": "Line :line: unknown role “:role”.",
-    "Zeile :line und folgende: Nutzerlimit der Lizenz erreicht.": "Line :line and following: license user limit reached."
+    "Zeile :line und folgende: Nutzerlimit der Lizenz erreicht.": "Line :line and following: license user limit reached.",
+    "Ungeklärte Fälle": "Unclear cases",
+    "Bitte klären Sie diese Tage per Antrag.": "Please clarify these days by filing a request.",
+    "Zeitkorrektur beantragen": "Request time correction",
+    "Zeitkonten-Periodenvergleich": "Time account period comparison",
+    "Periodenvergleich": "Period comparison",
+    "Konto-Umsätze je Kalenderwoche oder Monat nebeneinander; Excel exportiert alle Konten als je ein Arbeitsblatt.": "Account turnover side by side per calendar week or month; Excel exports every account as its own worksheet.",
+    "Raster": "Granularity",
+    "KW :week": "CW :week"
 }

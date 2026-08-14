@@ -68,7 +68,7 @@ class CohortComparisonReportController extends Controller {
             if ($qualification !== null) {
                 $result = $this->builder->build($qualification, $metric, $window, $filters->teamUserIds());
 
-                if ($request->query('export') === 'csv') {
+                if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
                     return $this->exportCsv($result, (string) $qualification->name, $metricOptions[$metric], $filters->toAuditArray(), $request);
                 }
             }

@@ -53,7 +53,7 @@ class CustomerRetentionReportController extends Controller {
 
         $exportFilters = array_merge(['lost_days' => $lostDays], $filters->toAuditArray());
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($result, $from->toDateString(), $to->toDateString(), $exportFilters, $request);
         }
 
@@ -107,7 +107,7 @@ class CustomerRetentionReportController extends Controller {
 
         $exportFilters = array_merge(['cohort' => $cohort, 'year' => $year, 'lost_days' => $lostDays], $filters->toAuditArray());
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             $out = [['Kunde', 'ErsteLeistung', 'LetzteLeistung', $year !== null ? 'AktivIn' . $year : 'AktivImZieljahr']];
             foreach ($rows as $row) {
                 $out[] = [$row['customerName'], $row['firstActivity'], $row['lastActivity'], $row['activeInYear'] === null ? '' : ($row['activeInYear'] ? 'ja' : 'nein')];

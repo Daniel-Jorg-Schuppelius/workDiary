@@ -45,6 +45,53 @@ final class XlsxExport {
     }
 
     /**
+     * Liefert die XLSX-Datei als String (MVP-539) — für Report-Antworten ohne
+     * StreamedResponse, damit Tests weiter `getContent()` nutzen können.
+     *
+     * @param  list<string>  $headers
+     * @param  iterable<int, list<int|float|string|null>>  $rows
+     */
+    public static function toString(array $headers, iterable $rows): string {
+        $book = self::build($headers, $rows);
+        $writer = new Xlsx($book);
+        ob_start();
+        $writer->save('php://output');
+        $content = (string) ob_get_clean();
+        $book->disconnectWorksheets();
+        unset($book);
+
+        return $content;
+    }
+
+    /**
+     * Mehrblättrige Arbeitsmappe als String (MVP-540, Q1 „Periodenvergleich"):
+     * je Eintrag ein Arbeitsblatt mit eigenem Titel, Kopfzeile und Zeilen.
+     *
+     * @param  list<array{title: string, headers: list<string>, rows: iterable<int, list<int|float|string|null>>}>  $sheets
+     */
+    public static function toStringMultiSheet(array $sheets): string {
+        $book = new Spreadsheet;
+        $first = true;
+        foreach ($sheets as $def) {
+            $sheet = $first ? $book->getActiveSheet() : $book->createSheet();
+            $first = false;
+            // Excel-Blatttitel: max. 31 Zeichen, ohne : \ / ? * [ ]
+            $title = mb_substr(str_replace([':', '\\', '/', '?', '*', '[', ']'], '-', $def['title']), 0, 31);
+            $sheet->setTitle($title !== '' ? $title : 'Blatt');
+            self::fillSheet($sheet, $def['headers'], $def['rows']);
+        }
+
+        $writer = new Xlsx($book);
+        ob_start();
+        $writer->save('php://output');
+        $content = (string) ob_get_clean();
+        $book->disconnectWorksheets();
+        unset($book);
+
+        return $content;
+    }
+
+    /**
      * Schreibt die XLSX-Datei auf einen absoluten Dateipfad (z. B. für die
      * persistente Ablage eines Export-Laufs). Das Zielverzeichnis muss
      * existieren.
@@ -66,8 +113,16 @@ final class XlsxExport {
      */
     private static function build(array $headers, iterable $rows): Spreadsheet {
         $book = new Spreadsheet;
-        $sheet = $book->getActiveSheet();
+        self::fillSheet($book->getActiveSheet(), $headers, $rows);
 
+        return $book;
+    }
+
+    /**
+     * @param  list<string>  $headers
+     * @param  iterable<int, list<int|float|string|null>>  $rows
+     */
+    private static function fillSheet(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet, array $headers, iterable $rows): void {
         $col = 1;
         foreach ($headers as $label) {
             $letter = Coordinate::stringFromColumnIndex($col);
@@ -104,7 +159,5 @@ final class XlsxExport {
             $letter = Coordinate::stringFromColumnIndex($i);
             $sheet->getColumnDimension($letter)->setAutoSize(true);
         }
-
-        return $book;
     }
 }

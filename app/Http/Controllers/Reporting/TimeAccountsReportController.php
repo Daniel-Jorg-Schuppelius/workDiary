@@ -89,7 +89,7 @@ class TimeAccountsReportController extends Controller {
             ];
         }
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($account, $rows, $from->toDateString(), $to->toDateString(), $request);
         }
         if ($request->query('export') === 'pdf') {

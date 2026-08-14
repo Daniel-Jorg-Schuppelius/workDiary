@@ -354,6 +354,13 @@ return [
                 'requested' => 'Richiesta di straordinario presentata',
                 'decided' => 'Richiesta di straordinario decisa',
             ],
+            'vacation' => [
+                'requested' => 'Richiesta di ferie inviata',
+                'decided' => 'Richiesta di ferie decisa',
+            ],
+            'attendance' => [
+                'unclearCase' => 'Caso da chiarire (timbrature)',
+            ],
             'monthClosure' => [
                 'submitted' => 'Chiusura mensile inviata',
                 'decided' => 'Chiusura mensile decisa',

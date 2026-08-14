@@ -39,8 +39,7 @@ class SupplierAnalysisReportController extends Controller {
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
 
-    public function __construct(private readonly SupplierAnalysisReportBuilder $builder) {
-    }
+    public function __construct(private readonly SupplierAnalysisReportBuilder $builder) {}
 
     public function index(Request $request): View|Response|SymfonyResponse {
         $authUser = Auth::user();
@@ -66,7 +65,7 @@ class SupplierAnalysisReportController extends Controller {
 
         $exportFilters = ['min_spend' => $minSpend, 'hide_zero' => $hideZero, 'with_procurement' => $withProcurement];
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv(array_values($rows->all()), $withProcurement, $from->toDateString(), $to->toDateString(), $exportFilters, $request);
         }
 

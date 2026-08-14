@@ -43,7 +43,7 @@ class SurchargeForecastReportController extends Controller {
         $forecast = $service->forecast((int) $viewer->organization_id, CarbonImmutable::now(), $months, $userId);
         $filters = ['months' => $months, 'user' => $userId];
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($forecast, $filters, $request);
         }
 

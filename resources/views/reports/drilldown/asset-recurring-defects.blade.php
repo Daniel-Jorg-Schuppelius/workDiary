@@ -26,6 +26,9 @@
                 <x-icon-btn icon="download" tone="outline" size="sm"
                             :href="route('reports.assets.drilldown.recurring-defects', ['export' => 'csv'])"
                             show-label>CSV</x-icon-btn>
+                <x-icon-btn icon="table_view" tone="outline" size="sm"
+                            :href="route('reports.assets.drilldown.recurring-defects', ['export' => 'xlsx'])"
+                            show-label>Excel</x-icon-btn>
                 <x-icon-btn icon="arrow_back" tone="outline" size="sm"
                             :href="route('reports.assets')" show-label>{{ __('Zur Produktanalyse') }}</x-icon-btn>
             </x-slot:actions>

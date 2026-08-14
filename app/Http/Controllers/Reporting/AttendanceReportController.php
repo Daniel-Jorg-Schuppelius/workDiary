@@ -52,7 +52,7 @@ class AttendanceReportController extends Controller {
         $weekdayLabels = $this->weekdayLabels();
         $heatmapRows = $this->weekdayHeatmapRows($from, $to, $rows);
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($rows, $fromStr, $toStr, $exportFilters, $request);
         }
         if ($request->query('export') === 'pdf') {

@@ -354,6 +354,13 @@ return [
                 'requested' => 'Solicitud de horas extra presentada',
                 'decided' => 'Solicitud de horas extra decidida',
             ],
+            'vacation' => [
+                'requested' => 'Solicitud de vacaciones enviada',
+                'decided' => 'Solicitud de vacaciones decidida',
+            ],
+            'attendance' => [
+                'unclearCase' => 'Caso por aclarar (fichajes)',
+            ],
             'monthClosure' => [
                 'submitted' => 'Cierre mensual enviado',
                 'decided' => 'Cierre mensual decidido',

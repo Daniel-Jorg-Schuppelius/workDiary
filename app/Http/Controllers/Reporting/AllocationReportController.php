@@ -45,7 +45,7 @@ class AllocationReportController extends Controller {
         ));
         $filters = ['from' => $from->toDateString(), 'to' => $to->toDateString()];
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($groups, $filters, $request);
         }
         if ($request->query('export') === 'pdf') {

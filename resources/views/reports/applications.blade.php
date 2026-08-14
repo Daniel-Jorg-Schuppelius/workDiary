@@ -10,6 +10,7 @@
             <div class="text-sm text-base-content/70">{{ __('Zeitraum: :from – :to · nur aggregierte Kennzahlen, keine Bewerberdetails.', ['from' => $from, 'to' => $to]) }}</div>
             <x-slot:actions>
                 <x-icon-btn icon="download" size="sm" :href="route('applications.report', array_merge($standardFilters->toQueryParams(), ['export' => 'csv']))" show-label>{{ __('CSV') }}</x-icon-btn>
+                <x-icon-btn icon="table_view" size="sm" :href="route('applications.report', array_merge($standardFilters->toQueryParams(), ['export' => 'xlsx']))" show-label>Excel</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

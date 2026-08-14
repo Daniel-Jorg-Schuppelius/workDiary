@@ -23,6 +23,9 @@
                 <x-icon-btn icon="download" tone="outline" size="sm"
                             :href="route('reports.presence-emergency', array_merge($queryBase, ['export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
+                <x-icon-btn icon="table_view" tone="outline" size="sm"
+                            :href="route('reports.presence-emergency', array_merge($queryBase, ['export' => 'xlsx']))"
+                            show-label>Excel</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
                             :href="route('reports.presence-emergency', array_merge($queryBase, ['export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>

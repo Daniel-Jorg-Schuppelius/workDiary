@@ -77,7 +77,7 @@ class AssetAnalysisReportController extends Controller {
             'group_by' => $groupBy,
         ], $filters->toAuditArray());
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($rows, $groupBy, $from->toDateString(), $to->toDateString(), $exportContext, $request);
         }
 

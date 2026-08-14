@@ -90,7 +90,7 @@ class AbsenceCalendarReportController extends Controller {
             return $this->card($request, $detailUser, $spans[$detailId] ?? [], $year, $anonymize && $detailId !== (int) $viewer->getKey());
         }
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($users, $spans, $year, $anonymize, (int) $viewer->getKey(), $request);
         }
         if ($request->query('export') === 'pdf') {

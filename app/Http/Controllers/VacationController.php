@@ -10,10 +10,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Notification\NotificationEvent;
 use App\Enums\Vacation\{VacationStatus, VacationType};
 use App\Models\{User, Vacation};
 use App\Services\Absence\VacationBalanceService;
 use App\Services\Approval\ApprovalFlowService;
+use App\Services\Notification\NotificationDispatcher;
 use App\Support\LookupCache;
 use Carbon\Carbon;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -59,7 +61,32 @@ class VacationController extends Controller {
         }
         $data['status'] = VacationStatus::Pending;
 
-        Vacation::create($data);
+        $vacation = Vacation::create($data);
+
+        // MVP-538: Antragseingang an die Entscheider (Org-Regel, Default Teamleitung).
+        $owner = $vacation->user;
+        if ($owner !== null) {
+            app(NotificationDispatcher::class)->notify(
+                NotificationEvent::VacationRequested,
+                $vacation,
+                $owner,
+                [
+                    'title' => (string) __('notification.message.vacation_requested_title', [
+                        'user' => (string) ($owner->name ?? '–'),
+                        'from' => $vacation->start_date->format('d.m.Y'),
+                        'to' => $vacation->end_date->format('d.m.Y'),
+                    ]),
+                    'title_key' => 'notification.message.vacation_requested_title',
+                    'title_params' => [
+                        'user' => (string) ($owner->name ?? '–'),
+                        'from' => $vacation->start_date->toDateString(),
+                        'to' => $vacation->end_date->toDateString(),
+                    ],
+                    'message' => (string) ($vacation->note ?? ''),
+                    'url' => route('duties.index', ['tab' => 'urlaub']),
+                ],
+            );
+        }
 
         return redirect()->route('duties.index', ['tab' => 'urlaub'])->with('success', __('Urlaubsantrag gestellt.'));
     }
@@ -157,6 +184,8 @@ class VacationController extends Controller {
             'reject_reason' => null,
         ]);
 
+        $this->notifyDecided($vacation, approved: true);
+
         // MVP-413: Überbuchung warnen, nie blockieren — die Entscheidung bleibt beim Genehmiger.
         if ($vacation->type->countsAgainstEntitlement()) {
             $balance = $this->balanceService->balanceFor((int) $vacation->user_id, (int) $vacation->start_date->year);
@@ -188,6 +217,8 @@ class VacationController extends Controller {
             'reject_reason' => $data['reject_reason'] ?? null,
         ]);
 
+        $this->notifyDecided($vacation, approved: false);
+
         return redirect()->route('duties.index', ['tab' => 'urlaub'])->with('success', __('Urlaubsantrag abgelehnt.'));
     }
 
@@ -204,6 +235,39 @@ class VacationController extends Controller {
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
+
+    /** MVP-538: finale Entscheidung an die antragstellende Person (nie die Vier-Augen-Zwischenstufe). */
+    private function notifyDecided(Vacation $vacation, bool $approved): void {
+        $owner = $vacation->user;
+        if ($owner === null) {
+            return;
+        }
+
+        $params = [
+            'from' => $vacation->start_date->toDateString(),
+            'to' => $vacation->end_date->toDateString(),
+        ];
+        app(NotificationDispatcher::class)->notify(
+            NotificationEvent::VacationDecided,
+            $vacation,
+            $owner,
+            [
+                'title' => (string) __('notification.message.vacation_decided_title', [
+                    'from' => $vacation->start_date->format('d.m.Y'),
+                    'to' => $vacation->end_date->format('d.m.Y'),
+                ]),
+                'title_key' => 'notification.message.vacation_decided_title',
+                'title_params' => $params,
+                'message' => (string) __(
+                    $approved ? 'notification.message.vacation_approved' : 'notification.message.vacation_rejected',
+                    ['note' => (string) ($vacation->reject_reason ?? '')],
+                ),
+                'message_key' => $approved ? 'notification.message.vacation_approved' : 'notification.message.vacation_rejected',
+                'message_params' => ['note' => (string) ($vacation->reject_reason ?? '')],
+                'url' => route('duties.index', ['tab' => 'urlaub']),
+            ],
+        );
+    }
 
     /** Jahr eines Datums-Strings, Fallback: aktuelles Jahr. */
     private function yearOf(string $date): int {

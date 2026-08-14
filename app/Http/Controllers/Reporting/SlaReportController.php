@@ -44,8 +44,7 @@ class SlaReportController extends Controller {
     public function __construct(
         private readonly ReportTargetEvaluator $targets,
         private readonly SlaQuotaService $quotas,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View|SymfonyResponse {
         Gate::authorize('viewAny', SlaViolation::class);
@@ -74,7 +73,7 @@ class SlaReportController extends Controller {
         $violationCustomerSeries = $this->violationsByCustomerSeries($byCustomer);
         $exportFilters = $filters->toAuditArray();
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($metrics, $from, $to, $request, $exportFilters);
         }
         if ($request->query('export') === 'pdf') {

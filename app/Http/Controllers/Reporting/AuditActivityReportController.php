@@ -111,7 +111,7 @@ class AuditActivityReportController extends Controller {
         $timelineSeries = $this->timelineSeries($dailyBuckets, $granularity);
         [$monthlyEventSeries, $eventBands] = $this->monthlyEventSeries($dailyBuckets, $granularity);
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($byEvent, $byType, $byUser, $recent, $from->toDateString(), $to->toDateString(), $exportFilters, $request);
         }
         if ($request->query('export') === 'pdf') {

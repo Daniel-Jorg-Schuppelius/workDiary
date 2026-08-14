@@ -34,8 +34,7 @@ class SupplierValueReportController extends Controller {
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
 
-    public function __construct(private readonly SupplierValueReportBuilder $builder) {
-    }
+    public function __construct(private readonly SupplierValueReportBuilder $builder) {}
 
     public function index(Request $request): View|Response|SymfonyResponse {
         $authUser = Auth::user();
@@ -63,7 +62,7 @@ class SupplierValueReportController extends Controller {
 
         $exportFilters = ['risk_share' => $riskShare];
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($result['rows'], $from->toDateString(), $to->toDateString(), $exportFilters, $request);
         }
 

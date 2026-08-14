@@ -9,6 +9,7 @@
         <x-page-toolbar :subtitle="__('Zeitraum: :from – :to · erklärbare Kennzahlen, keine Konformitätszusage.', ['from' => $from, 'to' => $to])">
             <x-slot:actions>
                 <x-icon-btn icon="download" size="sm" :href="route('sustainability.index', ['export' => 'csv', 'from' => $from, 'to' => $to])" show-label>{{ __('CSV') }}</x-icon-btn>
+                <x-icon-btn icon="table_view" size="sm" :href="route('sustainability.index', ['export' => 'xlsx', 'from' => $from, 'to' => $to])" show-label>Excel</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" size="sm" tone="ghost" :href="route('sustainability.index', ['export' => 'pdf', 'from' => $from, 'to' => $to])" show-label>{{ __('PDF') }}</x-icon-btn>
                 @if ($canManage)
                     <x-action-form :action="route('sustainability.snapshot.store')">

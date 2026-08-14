@@ -69,7 +69,7 @@ class EntryTypeAnalysisReportController extends Controller {
 
         $exportContext = array_merge(['entry_type_id' => $entryTypeFilter], $filters->toAuditArray());
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($rows, $from->toDateString(), $to->toDateString(), $exportContext, $request);
         }
 

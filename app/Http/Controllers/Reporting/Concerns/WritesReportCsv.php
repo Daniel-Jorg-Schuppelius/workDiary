@@ -43,6 +43,21 @@ trait WritesReportCsv {
         ?Request $request = null,
         ?string $auditReportCode = null,
     ): Response {
+        // MVP-539 (Q1 „Export nach Excel"): dieselben Zeilen als XLSX —
+        // ein Aufrufpfad, das Format entscheidet der export-Parameter.
+        // Voraussetzung wie bei allen Reports: Zeile 1 ist die Kopfzeile.
+        if ($request !== null && $request->query('export') === 'xlsx') {
+            $this->auditExport($request, $auditReportCode ?? $reportCode, 'xlsx', $filters);
+
+            $headers = array_map(static fn ($v): string => (string) ($v ?? ''), $rows[0] ?? []);
+            $xlsxName = preg_replace('/\.csv$/i', '', $filename) . '.xlsx';
+
+            return response(\App\Support\XlsxExport::toString($headers, array_slice($rows, 1)), 200, [
+                'Content-Type' => \App\Support\XlsxExport::MIME,
+                'Content-Disposition' => 'attachment; filename="' . $xlsxName . '"',
+            ]);
+        }
+
         if ($request !== null) {
             $this->auditExport($request, $auditReportCode ?? $reportCode, 'csv', $filters);
         }

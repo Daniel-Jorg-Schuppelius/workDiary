@@ -18,6 +18,9 @@
                 <x-icon-btn icon="download" tone="outline" size="sm"
                             :href="route('reports.surcharge-forecast', array_merge($queryBase, ['export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
+                <x-icon-btn icon="table_view" tone="outline" size="sm"
+                            :href="route('reports.surcharge-forecast', array_merge($queryBase, ['export' => 'xlsx']))"
+                            show-label>Excel</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

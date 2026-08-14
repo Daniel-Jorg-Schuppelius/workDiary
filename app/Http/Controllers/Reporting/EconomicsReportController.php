@@ -40,8 +40,7 @@ class EconomicsReportController extends Controller {
     public function __construct(
         private readonly EconomicsReportBuilder $builder,
         private readonly ReportTargetEvaluator $targets,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View|Response|SymfonyResponse {
         $authUser = Auth::user();
@@ -84,7 +83,7 @@ class EconomicsReportController extends Controller {
 
         $exportContext = $filters->toAuditArray();
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($byCustomer, $byProject, $from->toDateString(), $to->toDateString(), $exportContext, $request, $boqDimension);
         }
 

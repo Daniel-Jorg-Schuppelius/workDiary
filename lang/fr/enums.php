@@ -354,6 +354,13 @@ return [
                 'requested' => 'Demande d\'heures supplémentaires déposée',
                 'decided' => 'Demande d\'heures supplémentaires décidée',
             ],
+            'vacation' => [
+                'requested' => 'Demande de congé déposée',
+                'decided' => 'Demande de congé décidée',
+            ],
+            'attendance' => [
+                'unclearCase' => 'Cas à clarifier (pointages)',
+            ],
             'monthClosure' => [
                 'submitted' => 'Clôture mensuelle soumise',
                 'decided' => 'Clôture mensuelle décidée',

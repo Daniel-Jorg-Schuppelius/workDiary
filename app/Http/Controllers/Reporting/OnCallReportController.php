@@ -50,7 +50,7 @@ class OnCallReportController extends Controller {
         [$heatmapRows, $weekLabels] = $this->standbyHeatmap($rows, $fromDate, $toDate, $scope, $userId, $filters);
         $exportFilters = array_merge(['scope' => $scope], $filters->toAuditArray());
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($rows, $totals, $from, $to, $request, $exportFilters);
         }
         if ($request->query('export') === 'pdf') {

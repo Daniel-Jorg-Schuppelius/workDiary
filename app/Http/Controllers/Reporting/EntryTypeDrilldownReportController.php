@@ -45,7 +45,7 @@ class EntryTypeDrilldownReportController extends Controller {
                 ->when($entryIds !== [], fn($q) => $q->whereIn('subject_id', $entryIds), fn($q) => $q->whereRaw('1=0'));
         });
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             /** @var list<OpenIssue> $issues */
             $issues = $issuesQuery->clone()->get()->all();
 
@@ -118,7 +118,7 @@ class EntryTypeDrilldownReportController extends Controller {
 
         $protocolsQuery = $this->defectProtocolDrilldownQuery($entryIds, $from, $to);
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             /** @var list<Protocol> $protocols */
             $protocols = $protocolsQuery->clone()->get()->all();
 

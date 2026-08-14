@@ -788,6 +788,8 @@ class NavigationRegistry {
                         ['route' => 'reports.absence-calendar', 'label' => __('Urlaubsplan'), 'icon' => 'calendar_month', 'modal' => false, 'matches' => ['reports.absence-calendar']],
                         // MVP-526: Zeitkonten-Auswertung (Anfangsstand/Umsatz/Endstand).
                         ['route' => 'reports.time-accounts', 'label' => __('Zeitkonten'), 'icon' => 'account_balance', 'modal' => false, 'matches' => ['reports.time-accounts']],
+                        // MVP-540: Periodenvergleich (Q1 S. 114) — Umsätze je KW/Monat nebeneinander.
+                        ['route' => 'reports.time-account-comparison', 'label' => __('Periodenvergleich'), 'icon' => 'view_week', 'modal' => false, 'matches' => ['reports.time-account-comparison']],
                         // MVP-529: benannte, teilbare Report-Ansichten.
                         ['route' => 'report-views.index', 'label' => __('Gespeicherte Auswertungen'), 'icon' => 'bookmark', 'modal' => false, 'matches' => ['report-views.*']],
                         ['route' => 'reports.sickness', 'label' => __('Krankheiten'), 'icon' => 'sick', 'modal' => false, 'matches' => ['reports.sickness']],

@@ -18,6 +18,9 @@
                 <x-icon-btn icon="download" tone="outline" size="sm"
                             :href="route('reports.arbzg-compliance', array_merge($standardFilters->toQueryParams(), array_filter(['kind' => $kindFilter ?: null, 'export' => 'csv'])))"
                             show-label>CSV</x-icon-btn>
+                <x-icon-btn icon="table_view" tone="outline" size="sm"
+                            :href="route('reports.arbzg-compliance', array_merge($standardFilters->toQueryParams(), array_filter(['kind' => $kindFilter ?: null, 'export' => 'xlsx'])))"
+                            show-label>Excel</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
                             :href="route('reports.arbzg-compliance', array_merge($standardFilters->toQueryParams(), array_filter(['kind' => $kindFilter ?: null, 'export' => 'pdf'])))"
                             show-label>PDF</x-icon-btn>

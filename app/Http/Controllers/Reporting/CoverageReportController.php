@@ -55,7 +55,7 @@ class CoverageReportController extends Controller {
         [$perShiftType, $underfilledDays, $totals, $weekdayMatrix] = $this->aggregate($fromDate, $toDate, $filters->teamUserIds());
         $exportFilters = $filters->toAuditArray();
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($perShiftType, $totals, $from, $to, $exportFilters, $request);
         }
         if ($request->query('export') === 'pdf') {

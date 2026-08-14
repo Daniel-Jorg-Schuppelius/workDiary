@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Compliance;
 
 use App\Enums\Compliance\ComplianceFindingStatus;
+use App\Enums\Notification\NotificationEvent;
 use App\Models\{ComplianceFinding, Organization, User};
+use App\Services\Notification\NotificationDispatcher;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -74,6 +76,7 @@ final class ComplianceFindingRecorder {
                         $model->last_detected_at = $scanAt;
                         $model->save();
                         $model->audit('compliance.finding.detected', $this->context($finding));
+                        $this->notifyAffected($model, $category);
                         $stats['created']++;
                     } else {
                         $model->severity = $finding->severity;
@@ -127,6 +130,37 @@ final class ComplianceFindingRecorder {
         });
 
         return $stats;
+    }
+
+    /**
+     * MVP-538 (Q1 S. 48): neuer „Ungeklärter Fall" an die betroffene Person —
+     * nur Plausibilitäts-Kategorie, einmal je Befund (Dispatcher-Dedup); die
+     * Org-Regel zum Event kann den Versand abschalten.
+     */
+    private function notifyAffected(ComplianceFinding $model, string $category): void {
+        if ($category !== AttendancePlausibilityScanService::CATEGORY || $model->subject_type !== User::class) {
+            return;
+        }
+        $user = User::query()->find($model->subject_id);
+        if ($user === null) {
+            return;
+        }
+        app(NotificationDispatcher::class)->notify(
+            NotificationEvent::AttendanceUnclearCase,
+            $model,
+            $user,
+            [
+                'title' => (string) __('notification.message.unclear_case_title', [
+                    'date' => $model->scope_date->format('d.m.Y'),
+                ]),
+                'title_key' => 'notification.message.unclear_case_title',
+                'title_params' => ['date' => $model->scope_date->toDateString()],
+                'message' => (string) __('compliance.report.kind.' . $model->rule_code),
+                'message_key' => 'compliance.report.kind.' . $model->rule_code,
+                'url' => route('overtime.index'),
+            ],
+            dedup: true,
+        );
     }
 
     /**

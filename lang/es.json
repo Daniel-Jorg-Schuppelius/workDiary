@@ -9993,5 +9993,13 @@
     "Zeile :line: Name oder E-Mail ungültig.": "Línea :line: nombre o correo no válidos.",
     "Zeile :line: Personalnummer :pn ist bereits vergeben.": "Línea :line: el número de personal :pn ya está asignado.",
     "Zeile :line: unbekannte Rolle „:role\".": "Línea :line: rol desconocido «:role».",
-    "Zeile :line und folgende: Nutzerlimit der Lizenz erreicht.": "Línea :line y siguientes: límite de usuarios de la licencia alcanzado."
+    "Zeile :line und folgende: Nutzerlimit der Lizenz erreicht.": "Línea :line y siguientes: límite de usuarios de la licencia alcanzado.",
+    "Ungeklärte Fälle": "Casos por aclarar",
+    "Bitte klären Sie diese Tage per Antrag.": "Aclare estos días mediante una solicitud.",
+    "Zeitkorrektur beantragen": "Solicitar corrección de tiempos",
+    "Zeitkonten-Periodenvergleich": "Comparación de períodos de cuentas de tiempo",
+    "Periodenvergleich": "Comparación de períodos",
+    "Konto-Umsätze je Kalenderwoche oder Monat nebeneinander; Excel exportiert alle Konten als je ein Arbeitsblatt.": "Movimientos de la cuenta en paralelo por semana o mes; Excel exporta cada cuenta en su propia hoja.",
+    "Raster": "Granularidad",
+    "KW :week": "Sem. :week"
 }

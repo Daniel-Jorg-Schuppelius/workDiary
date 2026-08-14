@@ -354,6 +354,13 @@ return [
                 'requested' => 'Überstunden-Antrag eingereicht',
                 'decided' => 'Überstunden-Antrag entschieden',
             ],
+            'vacation' => [
+                'requested' => 'Urlaubsantrag eingereicht',
+                'decided' => 'Urlaubsantrag entschieden',
+            ],
+            'attendance' => [
+                'unclearCase' => 'Ungeklärter Fall (Stempelzeiten)',
+            ],
             'monthClosure' => [
                 'submitted' => 'Monatsabschluss eingereicht',
                 'decided' => 'Monatsabschluss entschieden',

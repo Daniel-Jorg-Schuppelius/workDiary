@@ -97,7 +97,7 @@ class QualificationReportController extends Controller {
 
         $exportFilters = array_merge(['date' => $today->toDateString()], $filters->toAuditArray());
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($users, $qualifications, $matrix, $exportFilters, $request);
         }
         if ($request->query('export') === 'pdf') {

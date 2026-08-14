@@ -56,7 +56,7 @@ class ApplicationsReportController extends Controller {
         $recruiting = $canRecruiting ? $this->aggregateRecruiting($from, $to, $filters->status) : null;
         $contracts = $this->aggregateContracts(); // Guard oben: mindestens ein Bereich sichtbar
 
-        if ($request->query('export') === 'csv') {
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($tenders, $recruiting, $contracts, $from, $to, $filters->toAuditArray(), $request);
         }
 

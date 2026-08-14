@@ -25,6 +25,9 @@
                 <x-icon-btn icon="download" tone="outline" size="sm"
                             :href="route('reports.customers.drilldown.open-issues', array_filter(['customer_id' => $customerId, 'project_id' => $projectId, 'user_id' => $userId, 'escalated' => $escalatedOnly ? 1 : null, 'export' => 'csv']))"
                             show-label>CSV</x-icon-btn>
+                <x-icon-btn icon="table_view" tone="outline" size="sm"
+                            :href="route('reports.customers.drilldown.open-issues', array_filter(['customer_id' => $customerId, 'project_id' => $projectId, 'user_id' => $userId, 'escalated' => $escalatedOnly ? 1 : null, 'export' => 'xlsx']))"
+                            show-label>Excel</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
                             :href="route('reports.customers.drilldown.open-issues', array_filter(['customer_id' => $customerId, 'project_id' => $projectId, 'user_id' => $userId, 'escalated' => $escalatedOnly ? 1 : null, 'export' => 'pdf']))"
                             show-label>PDF</x-icon-btn>
