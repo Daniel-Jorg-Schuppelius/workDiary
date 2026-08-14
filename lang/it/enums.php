@@ -22,7 +22,7 @@ return [
     ],
     'ai' => [
         'family' => ['llm' => 'Modello linguistico (LLM)', 'translation' => 'Traduzione'],
-        'verb' => ['formulate' => 'Formulare', 'summarize' => 'Riassumere', 'classify' => 'Classificare', 'explain' => 'Spiegare', 'find' => 'Trovare', 'translate' => 'Tradurre'],
+        'verb' => ['formulate' => 'Formulare', 'summarize' => 'Riassumere', 'classify' => 'Classificare', 'explain' => 'Spiegare', 'find' => 'Trovare', 'translate' => 'Tradurre', 'extract' => 'Estrarre'],
         'provider' => ['anthropic' => 'Anthropic Claude', 'openai' => 'OpenAI', 'gemini' => 'Google Gemini', 'azure_openai' => 'Azure OpenAI', 'openai_compatible' => 'Compatibile OpenAI (generico)', 'ollama' => 'Ollama (locale)', 'deepl' => 'DeepL', 'azure_translator' => 'Azure Translator', 'google_translate' => 'Google Cloud Translation', 'libretranslate' => 'LibreTranslate (locale)', 'fake' => 'Provider di test'],
         'connection_status' => ['draft' => 'Bozza', 'active' => 'Attivo', 'blocked' => 'Bloccato'],
         'memory_type' => ['glossary' => 'Glossario', 'style_rule' => 'Regola di stile', 'example' => 'Coppia di esempio'],

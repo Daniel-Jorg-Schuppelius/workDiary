@@ -25,7 +25,7 @@ final class AiInvocationResult {
         public readonly string $capability,
         public readonly int $connectionId,
         public readonly AiProviderType $provider,
-        public readonly AiTextResult|AiClassificationResult|AiFindResult|AiTranslationResult $result,
+        public readonly AiTextResult|AiClassificationResult|AiFindResult|AiTranslationResult|AiExtractionResult $result,
         public readonly bool $fallbackUsed = false,
         public readonly bool $fromCache = false,
     ) {}

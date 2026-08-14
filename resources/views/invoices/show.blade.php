@@ -110,13 +110,34 @@
         </div>
     @endif
 
-    @if (in_array(($invoice->import_metadata['source'] ?? null), ['pdf', 'docx', 'doc', 'xlsx', 'xls'], true))
-        @php $importExtraction = (array) ($invoice->import_metadata['extraction'] ?? []); @endphp
+    @if (in_array(($invoice->import_metadata['source'] ?? null), ['pdf', 'docx', 'doc', 'xlsx', 'xls', 'xml'], true))
+        @php
+            $importExtraction = (array) ($invoice->import_metadata['extraction'] ?? []);
+            $importValidation = is_array($importExtraction['validation'] ?? null) ? $importExtraction['validation'] : null;
+        @endphp
         <div class="alert alert-info">
             <span class="material-symbols-outlined" aria-hidden="true">document_scanner</span>
             <div class="grow">
                 <div class="font-bold">{{ __('invoice-import.imported_notice') }}</div>
-                <div class="text-sm">{{ __('invoice-import.imported_detail', ['confidence' => (int) ($importExtraction['confidence'] ?? 0)]) }}</div>
+                @if (($importExtraction['structured'] ?? false) === true)
+                    <div class="text-sm">{{ __('invoice-import.structured_detail', ['profile' => $importExtraction['profile'] ?? '—', 'lines' => count($importExtraction['lines'] ?? [])]) }}</div>
+                    @if ($importValidation !== null)
+                        <div class="text-sm">
+                            @if (($importValidation['kosit_valid'] ?? null) === true)
+                                <span class="text-success">{{ __('invoice-import.validation.passed') }}</span>
+                            @elseif (($importValidation['kosit_valid'] ?? null) === false)
+                                <span class="text-error">{{ __('invoice-import.validation.failed', ['count' => count($importValidation['kosit_errors'] ?? [])]) }}</span>
+                            @else
+                                <span class="text-base-content/60">{{ __('invoice-import.validation.unavailable') }}</span>
+                            @endif
+                        </div>
+                    @endif
+                @else
+                    <div class="text-sm">{{ __('invoice-import.imported_detail', ['confidence' => (int) ($importExtraction['confidence'] ?? 0)]) }}</div>
+                    @if (count($importExtraction['lines'] ?? []) > 0)
+                        <div class="text-sm">{{ __('invoice-import.table_lines_detail', ['lines' => count($importExtraction['lines'])]) }}</div>
+                    @endif
+                @endif
                 @if (($importExtraction['warnings'] ?? []) !== [])
                     <ul class="mt-1 list-inside list-disc text-xs">
                         @foreach ($importExtraction['warnings'] as $warning)
@@ -125,9 +146,22 @@
                     </ul>
                 @endif
             </div>
-            <x-icon-btn icon="download" tone="ghost" size="sm"
-                        :href="route('invoices.pdf-import.source', $invoice)"
-                        show-label>{{ __('invoice-import.original') }}</x-icon-btn>
+            <div class="flex flex-col items-end gap-2">
+                @can('update', $invoice)
+                    @if (($invoice->import_metadata['reviewed'] ?? false) !== true)
+                        <x-icon-btn icon="fact_check" tone="primary" size="sm"
+                                    :href="route('invoices.import-review', $invoice)"
+                                    show-label>{{ __('invoice-import.review_action') }}</x-icon-btn>
+                    @else
+                        <x-icon-btn icon="task_alt" tone="ghost" size="sm"
+                                    :href="route('invoices.import-review', $invoice)"
+                                    show-label>{{ __('invoice-import.review_badge_done') }}</x-icon-btn>
+                    @endif
+                @endcan
+                <x-icon-btn icon="download" tone="ghost" size="sm"
+                            :href="route('invoices.pdf-import.source', $invoice)"
+                            show-label>{{ __('invoice-import.original') }}</x-icon-btn>
+            </div>
         </div>
     @endif
 

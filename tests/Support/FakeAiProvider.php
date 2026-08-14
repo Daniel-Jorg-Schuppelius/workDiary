@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Services\Ai\Contracts\{LlmProviderInterface, TranslationProviderInterface};
-use App\Services\Ai\Dto\{AiClassificationResult, AiFindResult, AiTextResult, AiTranslationResult, AiUsage, ClassifyRequest, ExplainRequest, FindRequest, FormulateRequest, SummarizeRequest, TranslateRequest};
+use App\Services\Ai\Dto\{AiClassificationResult, AiExtractionResult, AiFindResult, AiTextResult, AiTranslationResult, AiUsage, ClassifyRequest, ExplainRequest, ExtractRequest, FindRequest, FormulateRequest, SummarizeRequest, TranslateRequest};
 
 /**
  * Fake-Adapter beider Familien für Feature-Tests (MVP-399): zeichnet
@@ -32,6 +32,12 @@ class FakeAiProvider implements LlmProviderInterface, TranslationProviderInterfa
 
     /** @var list<string> */
     public array $findResponse = [];
+
+    /** @var array<string, string|null> */
+    public array $extractionResponse = [];
+
+    /** @var array<string, int> */
+    public array $extractionConfidence = [];
 
     public AiUsage $usage;
 
@@ -71,6 +77,17 @@ class FakeAiProvider implements LlmProviderInterface, TranslationProviderInterfa
         $this->calls[] = ['method' => 'find', 'request' => $request];
 
         return new AiFindResult($this->findResponse, $this->usage);
+    }
+
+    public function extract(ExtractRequest $request): AiExtractionResult {
+        $this->calls[] = ['method' => 'extract', 'request' => $request];
+
+        $confidence = $this->extractionConfidence;
+        foreach (array_keys($this->extractionResponse) as $field) {
+            $confidence[$field] ??= 90;
+        }
+
+        return new AiExtractionResult($this->extractionResponse, $confidence, $this->usage);
     }
 
     public function translate(TranslateRequest $request): AiTranslationResult {

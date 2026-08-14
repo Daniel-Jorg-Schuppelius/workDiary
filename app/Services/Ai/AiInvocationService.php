@@ -15,7 +15,7 @@ namespace App\Services\Ai;
 use App\Models\Ai\AiProviderConnection;
 use App\Models\{AuditLog, Organization};
 use App\Services\Ai\Contracts\{AiRequestInterface, LlmProviderInterface, TranslatesTextInterface};
-use App\Services\Ai\Dto\{AiCapability, AiClassificationResult, AiFindResult, AiInvocationResult, AiTextResult, AiTranslationResult, ClassifyRequest, ExplainRequest, FindRequest, FormulateRequest, SummarizeRequest, TranslateRequest};
+use App\Services\Ai\Dto\{AiCapability, AiClassificationResult, AiExtractionResult, AiFindResult, AiInvocationResult, AiTextResult, AiTranslationResult, ClassifyRequest, ExplainRequest, ExtractRequest, FindRequest, FormulateRequest, SummarizeRequest, TranslateRequest};
 use App\Services\Ai\Exceptions\{AiException, AiUnavailableException};
 use Illuminate\Support\Facades\{Auth, Cache};
 use Throwable;
@@ -64,7 +64,8 @@ class AiInvocationService {
             if ($cached instanceof AiTextResult
                 || $cached instanceof AiClassificationResult
                 || $cached instanceof AiFindResult
-                || $cached instanceof AiTranslationResult) {
+                || $cached instanceof AiTranslationResult
+                || $cached instanceof AiExtractionResult) {
                 return $this->wrap($organization, $capability, $connection, $cached, $index > 0, true);
             }
 
@@ -105,7 +106,7 @@ class AiInvocationService {
     private function perform(
         object $provider,
         AiRequestInterface $request,
-    ): AiTextResult|AiClassificationResult|AiFindResult|AiTranslationResult {
+    ): AiTextResult|AiClassificationResult|AiFindResult|AiTranslationResult|AiExtractionResult {
         if ($request instanceof TranslateRequest) {
             if (! $provider instanceof TranslatesTextInterface) {
                 throw new AiException((string) __('ai.error.verb_translate_unsupported'));
@@ -124,6 +125,7 @@ class AiInvocationService {
             $request instanceof ClassifyRequest => $provider->classify($request)->onlyFromCatalog($request->catalog),
             $request instanceof ExplainRequest => $provider->explain($request),
             $request instanceof FindRequest => $provider->find($request),
+            $request instanceof ExtractRequest => $provider->extract($request)->onlyFromSchema($request->schema),
             default => throw new AiException('Unbekannter KI-Request-Typ: ' . $request::class),
         };
     }
@@ -132,7 +134,7 @@ class AiInvocationService {
         Organization $organization,
         AiCapability $capability,
         AiProviderConnection $connection,
-        AiTextResult|AiClassificationResult|AiFindResult|AiTranslationResult $result,
+        AiTextResult|AiClassificationResult|AiFindResult|AiTranslationResult|AiExtractionResult $result,
         bool $fallbackUsed,
         bool $fromCache,
     ): AiInvocationResult {

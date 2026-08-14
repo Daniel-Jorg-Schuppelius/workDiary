@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Ai\Providers;
 
 use App\Services\Ai\Contracts\LlmProviderInterface;
-use App\Services\Ai\Dto\{AiClassificationResult, AiFindResult, AiTextResult, AiTranslationResult, ClassifyRequest, ExamplePair, ExplainRequest, FindRequest, FormulateRequest, GlossaryEntry, SummarizeRequest, TranslateRequest};
+use App\Services\Ai\Dto\{AiClassificationResult, AiExtractionResult, AiFindResult, AiTextResult, AiTranslationResult, ClassifyRequest, ExamplePair, ExplainRequest, ExtractRequest, FindRequest, FormulateRequest, GlossaryEntry, SummarizeRequest, TranslateRequest};
 
 /**
  * Gemeinsame Verb-Implementierung der LLM-Familie (Feature 025, MVP-407):
@@ -123,6 +123,38 @@ abstract class AbstractLlmProvider extends AbstractHttpAiProvider implements Llm
         return new AiFindResult($matches, $completion->usage);
     }
 
+    public function extract(ExtractRequest $request): AiExtractionResult {
+        $schemaLines = [];
+        foreach ($request->schema as $field => $description) {
+            $schemaLines[] = sprintf('- "%s": %s', $field, $description);
+        }
+
+        $system = implode("\n", [
+            'Du extrahierst Feldwerte aus einem Beleg-/Rechnungstext (Sprache: ' . $request->language . ').',
+            'VERBINDLICH: Nur Werte verwenden, die wörtlich oder eindeutig ableitbar im Text stehen. Nichts erfinden, nichts schätzen.',
+            'Zielfelder:',
+            ...$schemaLines,
+            'Antworte NUR mit einem JSON-Objekt: je Zielfeld ein Objekt {"value": <string|null>, "confidence": <0-100>}.',
+            'Nicht gefundene Felder: {"value": null, "confidence": 0}.',
+        ]);
+
+        $completion = $this->complete($system, $request->text, expectJson: true);
+
+        $values = [];
+        $confidence = [];
+        $decoded = $this->parseJsonObject($completion->text);
+        foreach (array_keys($request->schema) as $field) {
+            $entry = $decoded[$field] ?? null;
+            $value = is_array($entry) ? ($entry['value'] ?? null) : (is_scalar($entry) ? $entry : null);
+            $values[$field] = is_scalar($value) && trim((string) $value) !== '' ? trim((string) $value) : null;
+            $confidence[$field] = is_array($entry) && is_numeric($entry['confidence'] ?? null)
+                ? max(0, min(100, (int) $entry['confidence']))
+                : ($values[$field] !== null ? 50 : 0);
+        }
+
+        return new AiExtractionResult($values, $confidence, $completion->usage);
+    }
+
     public function translate(TranslateRequest $request): AiTranslationResult {
         $glossary = array_filter(
             $request->glossary,
@@ -183,6 +215,29 @@ abstract class AbstractLlmProvider extends AbstractHttpAiProvider implements Llm
             static fn (ExamplePair $e): string => sprintf('„%s" → „%s"', $e->source, $e->target),
             $examples
         ));
+    }
+
+    /**
+     * Toleranter JSON-Objekt-Parser (Pendant zu {@see parseJsonStringList}):
+     * akzeptiert auch in Code-Fences oder Text eingebettete Objekte.
+     *
+     * @return array<string, mixed>
+     */
+    protected function parseJsonObject(string $raw): array {
+        $candidate = trim($raw);
+
+        if (! str_starts_with($candidate, '{')) {
+            $start = strpos($candidate, '{');
+            $end = strrpos($candidate, '}');
+            if ($start === false || $end === false || $end <= $start) {
+                return [];
+            }
+            $candidate = substr($candidate, $start, $end - $start + 1);
+        }
+
+        $decoded = json_decode($candidate, true);
+
+        return is_array($decoded) ? $decoded : [];
     }
 
     /**

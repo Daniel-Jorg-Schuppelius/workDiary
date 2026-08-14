@@ -56,9 +56,10 @@
 </x-form-group>
 
 <x-form-group :legend="__('invoice-import.group_einvoice')" icon="data_object" tone="info" cols="2">
-    <x-select-field name="delivery_format" :label="__('invoice-import.delivery_format')" span="2" required>
+    <x-select-field name="delivery_format" :label="__('invoice-import.delivery_format')" span="2">
+        <option value="">{{ __('invoice-import.customer_default_option') }}</option>
         @foreach (\App\Enums\Invoicing\InvoiceDeliveryFormat::cases() as $format)
-            <option value="{{ $format->value }}" @selected(old('delivery_format', \App\Enums\Invoicing\InvoiceDeliveryFormat::Pdf->value) === $format->value)>{{ $format->label() }}</option>
+            <option value="{{ $format->value }}" @selected(old('delivery_format') === $format->value)>{{ $format->label() }}</option>
         @endforeach
     </x-select-field>
     <x-input-field name="buyer_reference" :label="__('invoice-import.buyer_reference')" span="2" maxlength="100"

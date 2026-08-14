@@ -333,6 +333,7 @@ return [
         'document_imported' => 'Fichier de facture importé',
         'einvoice_exported' => 'Facture électronique exportée',
         'einvoice_options_updated' => 'Options de facture électronique modifiées',
+        'import_review_confirmed' => 'Vérification de l\'import confirmée',
         'objectionDocumented' => 'Contestation de facture documentée',
         'proforma_converted' => 'Proforma convertie en facture',
     ],

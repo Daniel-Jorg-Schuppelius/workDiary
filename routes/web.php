@@ -1493,6 +1493,9 @@ Route::middleware('auth')->group(function () {
         Route::get('invoices/{invoice}/e-rechnungsoptionen', [\App\Http\Controllers\InvoicePdfImportController::class, 'edit'])->name('invoices.einvoice-options.edit');
         Route::patch('invoices/{invoice}/e-rechnungsoptionen', [\App\Http\Controllers\InvoicePdfImportController::class, 'update'])->name('invoices.einvoice-options.update');
         Route::get('invoices/{invoice}/originaldatei', [\App\Http\Controllers\InvoicePdfImportController::class, 'source'])->name('invoices.pdf-import.source');
+        Route::get('invoices/{invoice}/originaldatei-vorschau', [\App\Http\Controllers\InvoicePdfImportController::class, 'sourcePreview'])->name('invoices.pdf-import.preview');
+        Route::get('invoices/{invoice}/import-pruefung', [\App\Http\Controllers\InvoicePdfImportController::class, 'review'])->name('invoices.import-review');
+        Route::post('invoices/{invoice}/import-pruefung', [\App\Http\Controllers\InvoicePdfImportController::class, 'confirmReview'])->name('invoices.import-review.confirm');
         Route::get('invoices/{invoice}/expenses', [InvoiceController::class, 'expensesForm'])->name('invoices.expenses.form');
         Route::post('invoices/{invoice}/expenses', [InvoiceController::class, 'attachExpenses'])->name('invoices.expenses.attach');
         // MVP-416: Rabatt-/Skonto-Konditionen am Entwurf

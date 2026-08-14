@@ -56,6 +56,7 @@ class SaveCustomerRequest extends BaseFormRequest {
             'exclude_from_reports' => ['sometimes', 'boolean'],
             // E-Rechnung (Feature 045): Leitweg-ID/Käuferreferenz (BT-10).
             'buyer_reference' => ['nullable', 'string', 'max:64'],
+            'delivery_format' => ['nullable', \Illuminate\Validation\Rule::enum(\App\Enums\Invoicing\InvoiceDeliveryFormat::class)],
             // Fakturierungsweg-Override (Feature 045): nur mit finance.config
             // änderbar — ohne die Permission wird das Feld verworfen (siehe
             // prepareForValidation) und taucht nicht in validated() auf.

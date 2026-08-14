@@ -72,6 +72,17 @@ return [
             'memory_scopes' => ['organization', 'customer', 'capability'],
             'prompt_version' => 1,
         ],
+        // Feature 088: Feld-Extraktion beim Rechnungsdatei-Import — nur
+        // Fallback, wenn die Regel-Heuristik Kernfelder nicht findet; NIE
+        // für strukturierte E-Rechnungen (XML gewinnt), nie Auto-Übernahme
+        // ohne Prüfschritt. Belege können PII enthalten → hoch sensibel.
+        'invoicing.document_extraction' => [
+            'verb' => 'extract',
+            'sensitivity' => 'high',
+            'data_classes' => ['belegtext'],
+            'memory_scopes' => [],
+            'prompt_version' => 1,
+        ],
         // Feature 084 (Phase-36-Rest): Portal-Antwort in Kundensprache
         // übersetzen — Vorschau-Entwurf im Antwortformular, nie Auto-Versand.
         'portal.answer_translate' => [

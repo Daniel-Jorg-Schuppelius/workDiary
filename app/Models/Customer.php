@@ -57,6 +57,7 @@ use Illuminate\Support\Carbon;
  * @property bool $billable
  * @property bool $exclude_from_reports
  * @property string|null $buyer_reference
+ * @property \App\Enums\Invoicing\InvoiceDeliveryFormat|null $delivery_format
  * @property string|null $debtor_no
  * @property Carbon|null $archived_at
  * @property int|null $created_by
@@ -123,6 +124,7 @@ class Customer extends Model {
         'billable',
         'billing_mode',
         'buyer_reference',
+        'delivery_format',
         'debtor_no',
         'exclude_from_reports',
         'archived_at',
@@ -135,6 +137,8 @@ class Customer extends Model {
         'billable' => 'boolean',
         'exclude_from_reports' => 'boolean',
         'billing_mode' => \App\Enums\Finance\BillingMode::class,
+        // Kunden-Default fürs E-Rechnungs-Ausgabeformat (NULL = PDF).
+        'delivery_format' => \App\Enums\Invoicing\InvoiceDeliveryFormat::class,
         'archived_at' => 'datetime',
         'hourly_rate' => MoneyCast::class . ':currency,2',
         'internal_rate' => MoneyCast::class . ':currency,2',

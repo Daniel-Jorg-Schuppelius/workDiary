@@ -16,11 +16,11 @@ use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
 /**
- * Die sechs Capability-Verben des KI-Fundaments (Feature 025, MVP-398).
- * Jede KI-Einsatzstelle registriert sich auf genau ein Verb; der
- * Familien-Vertrag bildet die Verben als getrennte Methoden ab — es gibt
- * bewusst keinen generischen Prompt-Aufruf. Übersetzen darf sowohl auf
- * die Übersetzungs- als auch auf die LLM-Familie geroutet werden
+ * Die Capability-Verben des KI-Fundaments (Feature 025, MVP-398; Extrahieren
+ * ergänzt mit Feature 088). Jede KI-Einsatzstelle registriert sich auf genau
+ * ein Verb; der Familien-Vertrag bildet die Verben als getrennte Methoden
+ * ab — es gibt bewusst keinen generischen Prompt-Aufruf. Übersetzen darf
+ * sowohl auf die Übersetzungs- als auch auf die LLM-Familie geroutet werden
  * (Prompt-Glossar, nicht deterministisch); alle anderen Verben sind
  * LLM-exklusiv.
  */
@@ -33,6 +33,7 @@ enum AiVerb: string implements HasLabel {
     case Explain = 'explain';
     case Find = 'find';
     case Translate = 'translate';
+    case Extract = 'extract';
 
     public function label(): string {
         return (string) __('enums.ai.verb.' . $this->value);

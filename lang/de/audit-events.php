@@ -333,6 +333,7 @@ return [
         'document_imported' => 'Rechnungsdatei importiert',
         'einvoice_exported' => 'E-Rechnung exportiert',
         'einvoice_options_updated' => 'E-Rechnungsoptionen geändert',
+        'import_review_confirmed' => 'Import-Prüfung bestätigt',
         'objectionDocumented' => 'Rechnungswiderspruch dokumentiert',
         'proforma_converted' => 'Proforma in Rechnung umgewandelt',
     ],

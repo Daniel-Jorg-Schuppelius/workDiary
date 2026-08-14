@@ -63,6 +63,12 @@
             {{-- E-Rechnung (Feature 045): Leitweg-ID/Käuferreferenz (BT-10) — Pflicht in der XRechnung. --}}
             <x-input-field name="buyer_reference" :label="__('invoicing.buyer_reference')" maxlength="64"
                            :value="old('buyer_reference', $customer?->buyer_reference)" :hint="__('invoicing.buyer_reference_hint')" />
+            <x-select-field name="delivery_format" :label="__('invoice-import.customer_default_format')" :hint="__('invoice-import.customer_default_format_hint')">
+                <option value="">{{ __('invoice-import.no_default_format') }}</option>
+                @foreach (\App\Enums\Invoicing\InvoiceDeliveryFormat::cases() as $format)
+                    <option value="{{ $format->value }}" @selected(old('delivery_format', $customer?->delivery_format?->value) === $format->value)>{{ $format->label() }}</option>
+                @endforeach
+            </x-select-field>
 
             @can(\App\Enums\User\Permission::FinanceConfig->value)
                 <x-select-field name="billing_mode" :label="__('finance.field.billing_mode')" :hint="__('finance.field.billing_mode_hint')">

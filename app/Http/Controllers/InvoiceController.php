@@ -205,7 +205,7 @@ class InvoiceController extends Controller {
         $invoice->update([
             'delivery_format' => $invoice->isProforma()
                 ? InvoiceDeliveryFormat::Pdf
-                : ($data['delivery_format'] ?? InvoiceDeliveryFormat::Pdf->value),
+                : ($data['delivery_format'] ?? $customer->delivery_format ?? InvoiceDeliveryFormat::Pdf),
             'buyer_reference' => $data['buyer_reference'] ?? null,
         ]);
 

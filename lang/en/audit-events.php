@@ -333,6 +333,7 @@ return [
         'document_imported' => 'Invoice file imported',
         'einvoice_exported' => 'E-invoice exported',
         'einvoice_options_updated' => 'E-invoice options updated',
+        'import_review_confirmed' => 'Import review confirmed',
         'objectionDocumented' => 'Invoice objection documented',
         'proforma_converted' => 'Proforma converted to invoice',
     ],

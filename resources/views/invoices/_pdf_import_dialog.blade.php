@@ -17,7 +17,7 @@
         <x-form-group :legend="__('invoice-import.group_source')" icon="upload_file" tone="primary">
             <label class="form-control">
                 <span class="label-text">{{ __('invoice-import.file') }} <span class="text-error">*</span></span>
-                <input type="file" name="file" accept=".pdf,.docx,.doc,.xlsx,.xls,application/pdf,application/msword,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                <input type="file" name="file" accept=".pdf,.xml,.docx,.doc,.xlsx,.xls,application/pdf,application/xml,text/xml,application/msword,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                        class="file-input file-input-bordered file-input-sm w-full" required>
                 <span class="label-text-alt">{{ __('invoice-import.file_hint') }}</span>
             </label>
@@ -30,9 +30,10 @@
                     <option value="{{ $customer->sqid }}" @selected(old('customer_id') === $customer->sqid)>{{ $customer->name }}</option>
                 @endforeach
             </x-select-field>
-            <x-select-field name="delivery_format" :label="__('invoice-import.delivery_format')" required>
+            <x-select-field name="delivery_format" :label="__('invoice-import.delivery_format')">
+                <option value="">{{ __('invoice-import.customer_default_option') }}</option>
                 @foreach ($formats as $format)
-                    <option value="{{ $format->value }}" @selected(old('delivery_format', \App\Enums\Invoicing\InvoiceDeliveryFormat::Zugferd->value) === $format->value)>{{ $format->label() }}</option>
+                    <option value="{{ $format->value }}" @selected(old('delivery_format') === $format->value)>{{ $format->label() }}</option>
                 @endforeach
             </x-select-field>
         </x-form-group>
