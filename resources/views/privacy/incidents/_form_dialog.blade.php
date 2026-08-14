@@ -1,3 +1,11 @@
+{{--
+  Created on   : Wed Jun 10 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _form_dialog.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- Anlage-Dialog Datenschutzvorfall (in #entry-modal geladen). Variablen: $types, $customers --}}
 <x-modal
     :title="__('Vorfall melden')"

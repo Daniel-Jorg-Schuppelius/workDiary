@@ -1,3 +1,11 @@
+{{--
+  Created on   : Wed Aug 12 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _allocations_dialog.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- Dialog: Zeitaufteilung eines Eintrags (Feature 103, MVP-514) --}}
 @php
     /** @var \App\Models\TimeEntry $entry */

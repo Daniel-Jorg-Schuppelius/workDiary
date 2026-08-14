@@ -1,4 +1,12 @@
 {{--
+  Created on   : Mon Jun 15 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _print_import_dialogs.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+{{--
     Druck- und Import-Dialoge für den Schichtplan (nur Admin). Echte
     <dialog>-Modals (x-modal embedded=false) statt CSS-Dropdown bzw.
     Vollseiten-Navigation — robust gegen den overflow:clip-Container der Seite.

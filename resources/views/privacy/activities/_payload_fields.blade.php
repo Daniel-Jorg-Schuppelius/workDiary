@@ -1,3 +1,11 @@
+{{--
+  Created on   : Tue Jun 09 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _payload_fields.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- Strukturierte Art.-30-Felder (als payload-JSON gespeichert). $payload optional vorbelegen. --}}
 @php $p = $payload ?? []; @endphp
 <x-form-group :legend="__('Verzeichnis-Angaben (Art. 30)')" icon="fact_check" tone="ghost" cols="2">

@@ -1,4 +1,12 @@
 <?php
+/*
+ * Created on   : Wed May 27 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : values.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
 
 /*
  * Flat slug → label map for Blade dropdowns / option lists.

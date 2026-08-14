@@ -1,3 +1,11 @@
+{{--
+  Created on   : Thu Jun 04 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _payroll_fields.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- Personal-/Lohndaten. Erwartet $member (nullable) und $canManagePayroll.
      Wird im Admin-Formular und im HR-/GF-Zweig (Personalverwaltung) genutzt. --}}
 @php

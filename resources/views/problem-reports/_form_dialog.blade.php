@@ -1,3 +1,11 @@
+{{--
+  Created on   : Thu Jul 09 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _form_dialog.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- Dialog: „Problem melden" (Feature 041, MVP-053) — Einstieg aus
      Hilfe-Sidebar und Supportmenü (per data-entry-modal-trigger in den
      Dialog-Host geladen). Die Vollseiten-Variante (aus standalone

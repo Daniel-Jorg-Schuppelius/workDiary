@@ -1,4 +1,12 @@
 {{--
+  Created on   : Fri Jul 03 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : punchout.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+{{--
     Aktiver OCI-Punchout-Absprung (Feature 050, MVP-096): Durchgangsseite, die
     die OCI-Setup-Felder per POST an den Lieferanten-Shop absendet. Die
     HOOK_URL ist eine zeitlich begrenzte signierte Rücksprung-URL.

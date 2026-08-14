@@ -1,3 +1,11 @@
+{{--
+  Created on   : Thu May 14 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _timesheets_tab.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- Tab: Stundenzettel — erwartet: $project, $timesheets (Collection<Timesheet>) --}}
 <div class="flex flex-col gap-3">
     <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">

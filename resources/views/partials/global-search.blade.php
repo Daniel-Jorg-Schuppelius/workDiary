@@ -1,4 +1,12 @@
 {{--
+  Created on   : Fri May 22 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : global-search.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+{{--
     Globale Suche / Command-Palette.
     Wird per Button im Header oder Cmd/Ctrl+K geöffnet. Die Treffer werden per
     fetch() von /api/internal/search geladen und gruppiert dargestellt.

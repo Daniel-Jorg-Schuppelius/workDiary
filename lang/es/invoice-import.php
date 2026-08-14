@@ -1,4 +1,12 @@
 <?php
+/*
+ * Created on   : Fri Aug 14 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : invoice-import.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
 
 return [
     'action' => 'Convertir archivo de factura en factura electrónica', 'title' => 'Importar archivo de factura', 'eyebrow' => 'Asistente de factura electrónica', 'submit' => 'Leer factura',

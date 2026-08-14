@@ -1,4 +1,12 @@
 {{--
+  Created on   : Sat Jul 11 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : currency-options.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+{{--
     Options-Liste für Währungs-Selects (Toolkit-Enum CommonToolkit\Enums\CurrencyCode):
     gängige Währungen zuerst, dann alle aktiven ISO-4217-Codes alphabetisch.
     Verwendung: <select name="currency"><x-currency-options :selected="$model->currency?->value" /></select>

@@ -1,3 +1,11 @@
+{{--
+  Created on   : Mon Jul 20 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _detail.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- MVP-437: geteilte Stellendetail- + Bewerbungsansicht (Detail & Embed).
      Nur öffentliche Inhaltsfelder ($content); nie interne Requisition-Daten. --}}
 <div class="card">

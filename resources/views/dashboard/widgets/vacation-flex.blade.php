@@ -1,3 +1,11 @@
+{{--
+  Created on   : Mon May 25 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : vacation-flex.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 <x-card :title="__('Urlaub & Flex')">
     <div class="grid gap-3 sm:grid-cols-2">
         <div class="rounded-box border border-base-300 p-3">

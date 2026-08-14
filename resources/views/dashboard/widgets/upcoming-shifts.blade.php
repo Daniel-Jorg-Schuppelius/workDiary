@@ -1,3 +1,11 @@
+{{--
+  Created on   : Mon May 25 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : upcoming-shifts.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 <x-card :title="__('Anstehende Schichten')">
     @if ($today->isNotEmpty())
         <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Heute') }}</p>

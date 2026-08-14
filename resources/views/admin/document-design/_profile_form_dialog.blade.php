@@ -1,3 +1,11 @@
+{{--
+  Created on   : Sat Jul 11 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _profile_form_dialog.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- Dialog: Renderprofil anlegen (Feature 076, MVP-300) --}}
 <x-modal
     :title="__('document_design.profile.create')"

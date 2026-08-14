@@ -1,4 +1,12 @@
 {{--
+  Created on   : Mon Jun 15 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _board_card.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+{{--
     Ein Auftrag auf dem Dispatch-Board (Leitstelle, Feature 029).
     Erwartet $item = ['entry' => DiaryEntry, 'dispatch' => DispatchStatus,
                       'sla' => SlaStatus, 'hasHardConflict' => bool].

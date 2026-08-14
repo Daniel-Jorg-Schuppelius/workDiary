@@ -1,4 +1,12 @@
 {{--
+  Created on   : Mon Jul 20 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : guest.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+{{--
     Gemeinsames Guest-Layout (Vollaudit 2026-07, M51) — ersetzt das zuvor
     7-fach kopierte Standalone-Skelett (auth/* + account/password): Head mit
     Anti-Flash-Theme-Partial, Favicons, Vite+Fallback, fixed Brand-Header mit

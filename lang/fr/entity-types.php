@@ -1,4 +1,12 @@
 <?php
+/*
+ * Created on   : Tue May 26 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : entity-types.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
 
 declare(strict_types=1);
 
@@ -386,6 +394,7 @@ return [
     'TextCorrection' => 'Correction de texte',
     'TicketRoutingRule' => 'Règle de routage de tickets',
     'TimeAccount' => 'Compte de temps',
+    'TimeAccountComparisonReportController' => 'Export de rapport : comparaison de périodes des comptes de temps',
     'TimeAccountEntry' => 'Écriture de compte de temps',
     'TimeAccountsReportController' => 'Export de rapport : comptes de temps',
     'TimeAllocation' => 'Répartition du temps',

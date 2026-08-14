@@ -1,4 +1,12 @@
 {{--
+  Created on   : Mon May 25 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _calendar_cell.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+{{--
     Schichtplan-Cell-Renderer für <x-month-calendar cell-view="schedule.partials._calendar_cell" />.
 
     Erhält pro Tag (durch die Komponente):

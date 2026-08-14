@@ -1,4 +1,12 @@
 <?php
+/*
+ * Created on   : Fri Aug 14 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : 2026_12_06_102200_add_delivery_format_to_customers.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
 
 declare(strict_types=1);
 

@@ -1,3 +1,11 @@
+{{--
+  Created on   : Sat May 16 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : database-unavailable.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- errors/_page-Gerüst statt eigener Kopie (Vollaudit 2026-07, N42);
      safe=true: DB ist weg — Request-ID-Lookup und auth()-Checks würden
      erneut auf die Datenbank zugreifen. --}}

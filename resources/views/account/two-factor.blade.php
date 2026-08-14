@@ -1,4 +1,12 @@
 {{--
+  Created on   : Mon Jun 08 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : two-factor.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+{{--
   2FA-Selbstverwaltung (Mehr-Methoden): Authenticator-App (TOTP), E-Mail-Code,
   Recovery-Codes, Faktoren entfernen. Design nach App-Standard (x-index-page).
 --}}

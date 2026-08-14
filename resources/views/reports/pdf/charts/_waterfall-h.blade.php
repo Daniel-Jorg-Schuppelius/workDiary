@@ -1,4 +1,12 @@
 {{--
+  Created on   : Sun Aug 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _waterfall-h.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+{{--
     Print-Waterfall (horizontal) für Report-PDFs: schwebende Balken als
     Offset-Div (margin-left in %), Bestandssäulen in neutralem Grau,
     Δ und kumulierter Stand als Zahlenspalten.

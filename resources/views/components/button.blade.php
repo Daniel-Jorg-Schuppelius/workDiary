@@ -1,3 +1,11 @@
+{{--
+  Created on   : Sun Jun 21 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : button.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 @props([
     'tone'    => 'primary',   // primary | secondary | success | warning | info | error | ghost | outline | neutral
     'size'    => 'sm',        // xs | sm | md | lg

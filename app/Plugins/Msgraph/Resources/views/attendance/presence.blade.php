@@ -1,3 +1,11 @@
+{{--
+  Created on   : Thu Aug 06 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : presence.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- Teams-Presence-Panel der Anwesenheitsseite (Feature 102, F).
      Variablen: $members (Collection<User>), $presence (email → availability). --}}
 <div class="mb-3 rounded-box border border-base-300 bg-base-100 p-3" data-msgraph-presence>

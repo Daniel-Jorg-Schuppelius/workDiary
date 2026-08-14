@@ -1,3 +1,11 @@
+{{--
+  Created on   : Thu Jul 16 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : create.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- „Problem melden" als standalone Vollseite (Feature 041, MVP-053).
      Wird geöffnet, wenn der Einstieg NICHT per Dialog-Host erfolgt — v. a.
      von den standalone Fehlerseiten (errors/_page), die weder App-Layout

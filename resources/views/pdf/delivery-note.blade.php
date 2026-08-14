@@ -1,3 +1,11 @@
+{{--
+  Created on   : Sun Jun 28 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : delivery-note.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 <x-pdf-layout pdf-type="delivery_note" :pdf-title="__('manufacturing.delivery_note.title') . ' ' . $number">
     <h1>{{ __('manufacturing.delivery_note.title') }} {{ $number }}</h1>
     <div class="meta">

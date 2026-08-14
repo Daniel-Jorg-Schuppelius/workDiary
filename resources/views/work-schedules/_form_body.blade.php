@@ -1,3 +1,11 @@
+{{--
+  Created on   : Sun May 17 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _form_body.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- Shared form fields for WorkSchedule. Läuft im x-data="wsForm(...)"-Scope
      des umschließenden <x-modal> (siehe _form_dialog). Der Minuten/Stunden-
      Umschalter sitzt im Dialog-Header; sichtbare Felder zeigen die gewählte

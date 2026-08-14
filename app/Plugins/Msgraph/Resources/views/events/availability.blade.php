@@ -1,3 +1,11 @@
+{{--
+  Created on   : Thu Aug 06 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : availability.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- Free/Busy-Prüfung im Termin-Dialog (Feature 102, C2): liest Zeiten +
      Teilnehmer aus dem umgebenden Formular und fragt die Kalender-Verbindung
      der Organisation ab (nur free/busy/unknown, keine Termindetails). --}}

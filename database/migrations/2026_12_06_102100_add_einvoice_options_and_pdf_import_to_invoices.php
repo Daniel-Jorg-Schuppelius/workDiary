@@ -1,4 +1,12 @@
 <?php
+/*
+ * Created on   : Fri Aug 14 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : 2026_12_06_102100_add_einvoice_options_and_pdf_import_to_invoices.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
 
 declare(strict_types=1);
 

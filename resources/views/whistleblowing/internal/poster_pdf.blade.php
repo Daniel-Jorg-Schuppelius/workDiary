@@ -1,3 +1,11 @@
+{{--
+  Created on   : Sat Jul 18 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : poster_pdf.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 <!doctype html>
 {{-- Druckfertiger Aushang (A4) für das Hinweisgeber-Meldeportal. --}}
 <html lang="de">

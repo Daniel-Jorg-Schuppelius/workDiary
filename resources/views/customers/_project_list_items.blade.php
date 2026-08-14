@@ -1,3 +1,11 @@
+{{--
+  Created on   : Mon Jul 20 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _project_list_items.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- Projektzeilen der Kunden-Detailseite. Erwartet: $items (Collection<Project>).
      Optional: $showForeign (bool) — hängt den Endkunden-Namen an, um gleichnamige
      Projekte (z. B. „Wartungen") in der flachen Liste unterscheidbar zu machen. --}}

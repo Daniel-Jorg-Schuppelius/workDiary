@@ -1,4 +1,12 @@
 {{--
+  Created on   : Thu Jul 30 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _billable_field.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+{{--
   Abrechenbar-Override: Tri-State erben/ja/nein (Spalte projects.billable,
   null = erben von Parent-Kette → Kunde, s. effectiveBillable()).
 

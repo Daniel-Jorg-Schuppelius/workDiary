@@ -1,3 +1,11 @@
+{{--
+  Created on   : Fri Aug 07 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : sso-choose.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- Anbieterauswahl (Feature 057-Ausbau): mehrere aktive SSO-Verbindungen einer
      Organisation. Jede Verbindung startet den Flow präzise per Sqid. --}}
 @extends('layouts.guest')

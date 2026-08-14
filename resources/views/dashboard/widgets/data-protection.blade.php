@@ -1,3 +1,11 @@
+{{--
+  Created on   : Tue Jun 09 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : data-protection.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 <x-card :title="__('Datenschutz')">
     <div class="space-y-2 text-sm">
         <a href="{{ route('dataprotection.requests.index') }}" class="flex items-center justify-between hover:underline">

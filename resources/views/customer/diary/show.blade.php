@@ -1,4 +1,12 @@
 {{--
+  Created on   : Wed Jul 08 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : show.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+{{--
   Portal-Auftragsdetail (Feature 012, Rang 54/55): read-only — kundensichtbare
   Fotos mit Bestätigen/Beanstanden, Materialliste ohne Preise, kundensichtbare
   Protokolle, Fallakte-PDF über signierten 24-h-Link.

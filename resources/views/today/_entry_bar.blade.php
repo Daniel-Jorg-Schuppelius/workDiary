@@ -1,3 +1,11 @@
+{{--
+  Created on   : Thu Jul 30 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _entry_bar.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- Eingabeleiste (Toggl-artig) — erwartet: $runningEntry (TimeEntry|null),
      $entryBarProjects (Collection<Project> mit customer), $day, $isToday.
      Einzeilig: Beschreibung + Projekt + (manuelle Zeitfelder) + Modus + Submit.

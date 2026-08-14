@@ -1,4 +1,12 @@
 {{--
+  Created on   : Fri Jul 31 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _stacked-bar-h.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+{{--
     Print-Stapelbalken (horizontal) für Report-PDFs: Segmente eines Balkens
     nebeneinander als %-breite Divs (table-cell-Layout, dompdf-robust),
     daneben die Segmentwerte als Kompakttabelle.

@@ -1,3 +1,11 @@
+{{--
+  Created on   : Mon Jun 08 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _show_actions.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- Aktions-Buttons der Diary-Detailansicht (Seite: inline im Kopf; Dialog: Modal-Footer). Erwartet: $diary --}}
 @can('archive', $diary)
     @if ($diary->is_archived)

@@ -1,3 +1,11 @@
+{{--
+  Created on   : Fri Jul 03 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : manufacturing-record.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 <x-pdf-layout pdf-type="manufacturing_record" :pdf-title="__('manufacturing.record.title') . ' ' . $number">
     <h1>{{ __('manufacturing.record.title') }} {{ $number }}</h1>
     <div class="meta">

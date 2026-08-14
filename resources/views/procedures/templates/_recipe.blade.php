@@ -1,3 +1,11 @@
+{{--
+  Created on   : Thu Jul 30 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _recipe.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- Rezeptur / Materialbedarf (MVP-455): branchenneutrale Positionen am Draft,
      unveränderlich nach Veröffentlichung; Partyservice-Aufsatz nur im
      Profil-Kontext. Eigenständige Formulare — bewusst AUSSERHALB des

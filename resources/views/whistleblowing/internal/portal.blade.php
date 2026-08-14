@@ -1,3 +1,11 @@
+{{--
+  Created on   : Tue Jun 09 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : portal.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 @extends('layouts.app')
 
 @section('title', __('Meldeportal verwalten'))

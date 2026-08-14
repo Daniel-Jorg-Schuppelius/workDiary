@@ -1,3 +1,11 @@
+{{--
+  Created on   : Sun Aug 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _handover_dialog.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- Dialog: Entsorger-Übergabe erfassen (Feature 100, MVP-475).
      Erwartet: $job, $disposers (ExternalContact id+name). Lokaler ad-hoc-Dialog.
      Datei-Upload: enctype am x-modal (Modal rendert das <form> selbst). --}}

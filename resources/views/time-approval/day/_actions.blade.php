@@ -1,4 +1,12 @@
 {{--
+  Created on   : Mon Jun 15 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _actions.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+{{--
   Tagesabschluss-Aktionen als sticky CTA-Leiste (MVP-015 §2.6/§8) + Dialoge.
   Genutzt von der Tagesabschluss-Seite (Fremdtage/Admin). Die „Heute"-Seite
   platziert die Buttons stattdessen über _action_buttons in der Toolbar und

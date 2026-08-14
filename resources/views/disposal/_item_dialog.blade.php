@@ -1,3 +1,11 @@
+{{--
+  Created on   : Sun Aug 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _item_dialog.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- Dialog: Geräteposition erfassen/bearbeiten (Feature 100, MVP-474).
      Erwartet: $job, $item (DisposalItem|null = Anlegen), $wasteCodes.
      Lokaler ad-hoc-Dialog (:embedded="false"), geöffnet via data-open-dialog. --}}

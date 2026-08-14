@@ -1,4 +1,12 @@
 {{--
+  Created on   : Wed Jul 08 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _timeline_tab.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+{{--
   Projekt-Timeline (MVP-037, Rang 56): modulübergreifende Fallakte je Projekt —
   Aufträge, Meilensteine, Dokumente, Kommunikationsnotizen (visibleTo-gefiltert),
   Service-Tickets. Read-only mit Offset-Pagination.

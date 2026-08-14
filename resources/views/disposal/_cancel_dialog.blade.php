@@ -1,3 +1,11 @@
+{{--
+  Created on   : Sun Aug 02 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _cancel_dialog.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- Dialog: Entsorgungsakte stornieren (Feature 100) — Pflicht-Begründung,
      landet als payload.reason in der Nachweiskette. Erwartet: $job. --}}
 <x-modal

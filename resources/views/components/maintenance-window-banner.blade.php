@@ -1,3 +1,11 @@
+{{--
+  Created on   : Thu Jul 09 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : maintenance-window-banner.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- Geplante Wartungsfenster (MVP-055): Vorlauf-Banner ab announce_from
      für ALLE Nutzer des betroffenen Scopes; aktives Nur-Lesen-Fenster
      zeigt den Einschränkungshinweis (Vollsperre rendert ohnehin 503). --}}

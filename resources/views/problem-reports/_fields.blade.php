@@ -1,3 +1,11 @@
+{{--
+  Created on   : Thu Jul 16 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _fields.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- Formularfelder „Problem melden" (Feature 041, MVP-053) — geteilt vom
      Modal-Dialog (_form_dialog) und der standalone Vollseite (create). Der
      Melder sieht VOR dem Absenden, welcher Kontext übertragen wird (DoD 041). --}}

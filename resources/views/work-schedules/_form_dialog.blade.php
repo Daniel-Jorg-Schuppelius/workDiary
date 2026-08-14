@@ -1,3 +1,11 @@
+{{--
+  Created on   : Sun May 17 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _form_dialog.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- Dialog wrapper for WorkSchedule edit.
      Das Alpine-x-data hängt an <x-modal> (merged auf die .wd-dialog-Wrapper-Div),
      damit Header (Einheiten-Umschalter) und Body (Felder) denselben Scope teilen. --}}

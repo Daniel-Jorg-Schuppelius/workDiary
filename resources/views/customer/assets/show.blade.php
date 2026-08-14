@@ -1,4 +1,12 @@
 {{--
+  Created on   : Wed Jul 08 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : show.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+{{--
   Portal-Objektakte Detail (Feature 027, Rang 50): kundensichtbarer Schnitt —
   Stammdaten, Prüf-/Wartungstermine, abgeschlossene Wartungen, freigegebene
   Protokolle. Interne Defekt-Details bleiben bewusst draußen.

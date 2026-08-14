@@ -1,4 +1,12 @@
 {{--
+  Created on   : Fri Jul 31 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _bullet-h.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+{{--
     Print-Bullet (vereinfacht) für Report-PDFs: Ist und Ziel als zwei schmale
     Balken je Zeile (dompdf kann keine überlagerten Marker zuverlässig),
     Erreichung als Zahlenspalte — Diagramm und Kompakttabelle in einem.

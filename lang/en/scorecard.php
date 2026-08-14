@@ -1,5 +1,13 @@
 <?php
 /*
+ * Created on   : Tue Jul 14 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : scorecard.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+/*
  * Translations (en) — Supplier performance scorecards (Bauturbo wave D).
  * Reference structure: lang/de/scorecard.php
  */

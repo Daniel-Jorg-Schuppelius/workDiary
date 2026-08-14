@@ -1,4 +1,12 @@
 {{--
+  Created on   : Sat Jul 18 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _action_dialogs.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+{{--
     Geteilte Auftrags-Dialoge fürs Kanban-Drag-and-Drop. Ein Dialog je Aktion
     mit Pflichtangaben (complete/cancel/markInvoiced); kanban.js setzt vor dem
     Öffnen die form.action auf die diary.lifecycle-URL der gezogenen Karte.

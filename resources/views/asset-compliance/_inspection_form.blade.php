@@ -1,3 +1,11 @@
+{{--
+  Created on   : Sat Jul 11 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _inspection_form.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 {{-- Prüfprotokoll-Formular (MVP-286/287/289); $assignment Pflicht, $schedule optional --}}
 <form method="POST"
       action="{{ route('asset-compliance.inspections.record', $assignment) }}"

@@ -1,4 +1,12 @@
 {{--
+  Created on   : Fri Jul 31 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : _standard_filters.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
+{{--
     Standard-Filterset der Auswertungen (Feature 002) — gehört in die
     <x-filter-bar> der jeweiligen Report-Seite. Rendert nur die in
     $filterFields aktivierten Felder; Seiten behalten ihre Spezialfelder
