@@ -57,10 +57,13 @@ trait WithOrganization {
     }
 
     /**
-     * Nutzer mit genau EINER per-Org-Rolle (team_id = Org) — bewusst OHNE die
-     * zusätzliche globale Rollen-Zeile der Factory-States. Der Spatie-Team-
-     * Kontext bleibt wie in den bisherigen Test-Kopien auf der Ziel-
-     * Organisation stehen (Aufrufer setzen ihn in setUp()).
+     * Nutzer mit einer Rolle — wie die Admin-UI und die Factory-States werden
+     * BEIDE gleichnamigen Rollen-Zeilen angehängt (MVP-538-Falle behoben):
+     * die PER-ORG-Zeile (team_id = Org) trägt die Permissions für die
+     * Policies, die GLOBALE Zeile (team_id = NULL) matcht team-lose
+     * Namens-Abfragen wie `User::role([...])` (NotificationDispatcher,
+     * PushNotifier). Der Spatie-Team-Kontext bleibt auf der Ziel-Organisation
+     * stehen (Aufrufer setzen ihn in setUp()).
      *
      * @param  array<string, mixed>  $attributes
      */
@@ -73,12 +76,16 @@ trait WithOrganization {
         $registrar = app(PermissionRegistrar::class);
         $registrar->setPermissionsTeamId($organization->id);
 
-        $orgRole = Role::query()
+        $roles = Role::query()
             ->where('name', $role)
-            ->where('team_id', $organization->id)
-            ->firstOrFail();
+            ->where('guard_name', 'web')
+            ->where(static fn ($q) => $q->whereNull('team_id')->orWhere('team_id', $organization->id))
+            ->get();
+        if ($roles->where('team_id', $organization->id)->isEmpty()) {
+            throw new \RuntimeException("Per-Org-Rolle '{$role}' für Organisation {$organization->id} nicht gefunden.");
+        }
 
-        $user->syncRoles([$orgRole]);
+        $user->syncRoles($roles->all());
         $registrar->forgetCachedPermissions();
         $user->unsetRelation('roles');
         $user->unsetRelation('permissions');

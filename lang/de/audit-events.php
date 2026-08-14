@@ -330,7 +330,9 @@ return [
     'invoice' => [
         'approved' => 'Rechnung freigegeben',
         'dunned' => 'Rechnung angemahnt',
+        'document_imported' => 'Rechnungsdatei importiert',
         'einvoice_exported' => 'E-Rechnung exportiert',
+        'einvoice_options_updated' => 'E-Rechnungsoptionen geändert',
         'objectionDocumented' => 'Rechnungswiderspruch dokumentiert',
         'proforma_converted' => 'Proforma in Rechnung umgewandelt',
     ],

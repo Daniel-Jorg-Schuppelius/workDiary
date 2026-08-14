@@ -125,6 +125,43 @@ class XRechnungTest extends TestCase {
         );
     }
 
+    public function test_invoice_specific_buyer_reference_overrides_customer_record(): void {
+        $invoice = $this->makeInvoice();
+        $invoice->update(['buyer_reference' => 'RECHNUNG-SPEZIFISCH-42']);
+
+        $response = $this->actingAs($this->admin)->get(route('invoices.einvoice', $invoice));
+
+        $response->assertOk();
+        $this->assertStringContainsString(
+            '<cbc:BuyerReference>RECHNUNG-SPEZIFISCH-42</cbc:BuyerReference>',
+            $response->getContent(),
+        );
+    }
+
+    public function test_draft_can_be_sent_as_xrechnung_and_records_the_selected_format(): void {
+        $template = \App\Models\InvoiceMailTemplate::query()->create([
+            'organization_id' => null,
+            'name' => 'E-Rechnung Test',
+            'is_default' => true,
+            'subject' => 'Rechnung {{invoice_number}}',
+            'body_html' => '<p>{{invoice_number}}</p>',
+            'body_text' => '{{invoice_number}}',
+        ]);
+        $invoice = $this->makeInvoice(Invoice::STATUS_DRAFT);
+
+        $this->actingAs($this->admin)->post(route('invoices.send', $invoice), [
+            'template_id' => $template->id,
+            'to' => ['buchhaltung@acme.example'],
+            'delivery_format' => \App\Enums\Invoicing\InvoiceDeliveryFormat::XRechnung->value,
+        ])->assertRedirect(route('invoices.show', $invoice));
+
+        $invoice->refresh();
+        $dispatch = \App\Models\InvoiceDispatch::query()->where('invoice_id', $invoice->id)->firstOrFail();
+        $this->assertSame(Invoice::STATUS_ISSUED, $invoice->status);
+        $this->assertSame('xrechnung_ubl', $dispatch->format);
+        $this->assertNotNull($dispatch->sha256);
+    }
+
     public function test_download_is_not_found_for_externally_billed_customer(): void {
         $invoice = $this->makeInvoice();
         $this->customer->update(['billing_mode' => 'lexoffice']);

@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Invoicing\InvoiceDeliveryFormat;
 use App\Http\Requests\SaveInvoiceItemRequest;
 use App\Mail\InvoiceMail;
 use App\Models\{Customer, Expense, ExternalReference, Invoice, InvoiceItem, InvoiceMailTemplate, Project};
@@ -136,6 +137,8 @@ class InvoiceController extends Controller {
             'dp_amount' => ['required_if:content,down_payment', 'nullable', 'numeric', 'min:0.01', 'max:99999999.99'],
             'dp_service_date' => ['nullable', 'date'],
             'payment_terms_days' => ['nullable', 'integer', 'min:0', 'max:365'],
+            'delivery_format' => ['nullable', \Illuminate\Validation\Rule::enum(InvoiceDeliveryFormat::class)],
+            'buyer_reference' => ['nullable', 'string', 'max:100'],
             'excluded_time_entry_ids' => ['nullable', 'array', 'max:500'],
             'excluded_time_entry_ids.*' => ['string'],
         ]);
@@ -199,6 +202,12 @@ class InvoiceController extends Controller {
         if (isset($data['payment_terms_days'])) {
             $invoice->update(['payment_terms_days' => (int) $data['payment_terms_days']]);
         }
+        $invoice->update([
+            'delivery_format' => $invoice->isProforma()
+                ? InvoiceDeliveryFormat::Pdf
+                : ($data['delivery_format'] ?? InvoiceDeliveryFormat::Pdf->value),
+            'buyer_reference' => $data['buyer_reference'] ?? null,
+        ]);
 
         return redirect()->route('invoices.show', $invoice)->with('status', match ($data['content'] ?? 'service') {
             'proforma' => __('Pro-forma-Entwurf erstellt.'),
@@ -452,8 +461,10 @@ class InvoiceController extends Controller {
         $invoice->freezeParties();
         $invoice->update([
             'status' => Invoice::STATUS_ISSUED,
-            'issued_on' => now(),
-            'due_on' => now()->addDays($invoice->payment_terms_days ?? 14),
+            'issued_on' => $invoice->number_source === 'file_import' && $invoice->issued_on !== null ? $invoice->issued_on : now(),
+            'due_on' => $invoice->number_source === 'file_import' && $invoice->due_on !== null
+                ? $invoice->due_on
+                : now()->addDays($invoice->payment_terms_days ?? 14),
             'tax_context' => [
                 'resolved_on' => ($invoice->serviceDateTo() ?? now())->toDateString(),
                 'rate' => $invoice->tax_rate?->getNumericValue() ?? '',
@@ -822,7 +833,37 @@ class InvoiceController extends Controller {
             'bcc.*' => ['email:rfc'],
             'custom_text' => ['nullable', 'string', 'max:5000'],
             'bcc_sender' => ['nullable', 'boolean'],
+            'delivery_format' => ['nullable', \Illuminate\Validation\Rule::enum(InvoiceDeliveryFormat::class)],
         ]);
+
+        $deliveryFormat = InvoiceDeliveryFormat::tryFrom((string) ($data['delivery_format'] ?? ''))
+            ?? $invoice->delivery_format
+            ?? InvoiceDeliveryFormat::Pdf;
+        if ($invoice->isProforma() && $deliveryFormat->isElectronic()) {
+            return back()->withInput()->with('error', __('invoice-import.error.proforma'));
+        }
+        if ($deliveryFormat->isElectronic()) {
+            $invoice->loadMissing(['items', 'customer']);
+            // Der Queue-Job sieht nach markSent() den gestellten Datensatz. Für
+            // den synchronen Preflight spiegeln wir diesen Status nur im RAM.
+            $validationInvoice = clone $invoice;
+            if ($invoice->status === Invoice::STATUS_DRAFT && ! $invoice->isCreditNote()) {
+                $validationInvoice->status = Invoice::STATUS_ISSUED;
+                $validationInvoice->issued_on ??= now();
+                $validationInvoice->due_on ??= now()->addDays($validationInvoice->payment_terms_days ?? 14);
+            }
+            $generator = app(\App\Services\Invoicing\EInvoice\XRechnungGenerator::class);
+            $profile = $deliveryFormat->needsZugferd()
+                ? \ERechnungToolkit\Enums\ERechnungProfile::EN16931
+                : \ERechnungToolkit\Enums\ERechnungProfile::XRECHNUNG;
+            $preflight = $generator->preflight($validationInvoice, $profile);
+            if ($preflight['errors'] !== []) {
+                return back()->withInput()->with('error', __('invoicing.einvoice.error_intro') . ' ' . implode(' ', $preflight['errors']));
+            }
+            if ($deliveryFormat->needsZugferd() && ! $generator->zugferdAvailable()) {
+                return back()->withInput()->with('error', __('invoicing.einvoice.zugferd.unavailable'));
+            }
+        }
 
         /** @var InvoiceMailTemplate $template */
         $template = InvoiceMailTemplate::query()->findOrFail($data['template_id']);
@@ -844,12 +885,12 @@ class InvoiceController extends Controller {
         // Zustellnachweis (MVP-168): jeder Versand ist ein eigener Versuch.
         // Vollaudit 2026-07 (M26): Dispatch VOR dem Queuen — Status/Message-ID/
         // Dateihash schreibt der Versandpfad (Listener + Mailable) nach.
-        $dispatch = $this->recordDispatch($invoice, \App\Models\InvoiceDispatch::CHANNEL_EMAIL, 'pdf', implode(', ', $data['to']), null, [
+        $dispatch = $this->recordDispatch($invoice, \App\Models\InvoiceDispatch::CHANNEL_EMAIL, $deliveryFormat->dispatchFormat(), implode(', ', $data['to']), null, [
             'cc' => $data['cc'] ?? [],
             'template_id' => $template->id,
         ]);
 
-        $mail = new InvoiceMail($invoice, $rendered['subject'], $rendered['html'], $rendered['text'], (int) $dispatch->id);
+        $mail = new InvoiceMail($invoice, $rendered['subject'], $rendered['html'], $rendered['text'], (int) $dispatch->id, $deliveryFormat);
         $pending = Mail::to($data['to']);
         if (! empty($data['cc'])) {
             $pending->cc($data['cc']);

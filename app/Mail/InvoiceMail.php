@@ -10,6 +10,7 @@
 
 namespace App\Mail;
 
+use App\Enums\Invoicing\InvoiceDeliveryFormat;
 use App\Models\Invoice;
 use App\Services\Invoicing\InvoicePdfRenderer;
 use Illuminate\Bus\Queueable;
@@ -38,6 +39,7 @@ class InvoiceMail extends Mailable implements ShouldQueue {
         public string $renderedHtml,
         public string $renderedText,
         public ?int $dispatchId = null,
+        public InvoiceDeliveryFormat $deliveryFormat = InvoiceDeliveryFormat::Pdf,
     ) {}
 
     public function envelope(): Envelope {
@@ -80,25 +82,61 @@ class InvoiceMail extends Mailable implements ShouldQueue {
     public function attachments(): array {
         $this->invoice->loadMissing(['items', 'customer', 'project', 'parent']);
 
-        // Geteilter Renderer: Mail-Anhang = exakt das Dokument des Downloads
-        // (gleiche Vorlage + Rechtsangaben).
-        $bytes = app(InvoicePdfRenderer::class)->output($this->invoice);
+        $number = preg_replace('/[^A-Za-z0-9._-]/', '_', (string) $this->invoice->number);
+        $attachments = [];
+        $payloads = [];
+        $electronicInvoice = $this->invoice;
+        if ($this->deliveryFormat->isElectronic()
+            && $this->invoice->status === Invoice::STATUS_DRAFT
+            && ! $this->invoice->isCreditNote()
+            && ! $this->invoice->isProforma()) {
+            // Bei synchroner Queue entsteht der Anhang, bevor markSent() den
+            // Entwurf persistiert. Die E-Rechnung erhält denselben Zielstatus
+            // und dieselben Datums-Fallbacks, ohne den Datensatz vorab zu ändern.
+            $electronicInvoice = clone $this->invoice;
+            $electronicInvoice->status = Invoice::STATUS_ISSUED;
+            $electronicInvoice->issued_on ??= now();
+            $electronicInvoice->due_on ??= now()->addDays($electronicInvoice->payment_terms_days ?? 14);
+        }
+
+        if (in_array($this->deliveryFormat, [InvoiceDeliveryFormat::Pdf, InvoiceDeliveryFormat::PdfAndXRechnung], true)) {
+            // Geteilter Renderer: Mail-Anhang = exakt das Dokument des Downloads.
+            $bytes = app(InvoicePdfRenderer::class)->output($this->invoice);
+            $prefix = $this->invoice->isCreditNote() ? 'gutschrift' : 'rechnung';
+            $filename = sprintf('%s-%s.pdf', $prefix, $number);
+            $attachments[] = Attachment::fromData(static fn(): string => $bytes, $filename)
+                ->withMime('application/pdf');
+            $payloads[] = $bytes;
+        }
+
+        if ($this->deliveryFormat->needsXRechnung()) {
+            $xml = app(\App\Services\Invoicing\EInvoice\XRechnungGenerator::class)->generate($electronicInvoice);
+            $attachments[] = Attachment::fromData(static fn(): string => $xml, 'XRechnung_' . $number . '.xml')
+                ->withMime('application/xml');
+            $payloads[] = $xml;
+        }
+
+        if ($this->deliveryFormat->needsZugferd()) {
+            $generator = app(\App\Services\Invoicing\EInvoice\XRechnungGenerator::class);
+            $visualHtml = app(InvoicePdfRenderer::class)->composedHtml($electronicInvoice);
+            $pdf = $generator->generateZugferdPdf($electronicInvoice, $visualHtml);
+            if ($pdf === null) {
+                throw new \RuntimeException((string) __('invoicing.einvoice.zugferd.failed'));
+            }
+            $attachments[] = Attachment::fromData(static fn(): string => $pdf, 'ZUGFeRD_' . $number . '.pdf')
+                ->withMime('application/pdf');
+            $payloads[] = $pdf;
+        }
 
         // Vollaudit 2026-07 (M26): Dateihash am Zustellnachweis — wie beim
-        // Download-Kanal, berechnet über exakt die versendeten Bytes.
+        // Download-Kanal, berechnet über exakt die versendeten Payloads.
         if ($this->dispatchId !== null) {
             \App\Models\InvoiceDispatch::query()->withoutGlobalScopes()
                 ->whereKey($this->dispatchId)
                 ->whereNull('sha256')
-                ->update(['sha256' => \CommonToolkit\Helper\Data\CryptoHelper::hash($bytes)]);
+                ->update(['sha256' => \CommonToolkit\Helper\Data\CryptoHelper::hash(implode('', $payloads))]);
         }
 
-        $prefix = $this->invoice->isCreditNote() ? 'gutschrift' : 'rechnung';
-        $filename = sprintf('%s-%s.pdf', $prefix, $this->invoice->number);
-
-        return [
-            Attachment::fromData(static fn(): string => $bytes, $filename)
-                ->withMime('application/pdf'),
-        ];
+        return $attachments;
     }
 }

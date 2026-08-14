@@ -44,9 +44,7 @@ class Q1ViertabgleichTest extends TestCase {
 
     public function test_vacation_request_notifies_lead(): void {
         Notification::fake();
-        // Factory-State statt userWithRole: hängt wie die Admin-UI AUCH die
-        // globale Rollenzeile an, die die Rollen-Abfrage des Dispatchers matcht.
-        $lead = User::factory()->teamleitung()->create(['organization_id' => $this->organization->id]);
+        $lead = $this->userWithRole('teamleitung');
 
         $this->actingAs($this->employee)
             ->post(route('vacations.store'), [

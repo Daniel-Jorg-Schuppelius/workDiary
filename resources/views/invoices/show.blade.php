@@ -110,6 +110,27 @@
         </div>
     @endif
 
+    @if (in_array(($invoice->import_metadata['source'] ?? null), ['pdf', 'docx', 'doc', 'xlsx', 'xls'], true))
+        @php $importExtraction = (array) ($invoice->import_metadata['extraction'] ?? []); @endphp
+        <div class="alert alert-info">
+            <span class="material-symbols-outlined" aria-hidden="true">document_scanner</span>
+            <div class="grow">
+                <div class="font-bold">{{ __('invoice-import.imported_notice') }}</div>
+                <div class="text-sm">{{ __('invoice-import.imported_detail', ['confidence' => (int) ($importExtraction['confidence'] ?? 0)]) }}</div>
+                @if (($importExtraction['warnings'] ?? []) !== [])
+                    <ul class="mt-1 list-inside list-disc text-xs">
+                        @foreach ($importExtraction['warnings'] as $warning)
+                            <li>{{ __("invoice-import.warning.$warning") }}</li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+            <x-icon-btn icon="download" tone="ghost" size="sm"
+                        :href="route('invoices.pdf-import.source', $invoice)"
+                        show-label>{{ __('invoice-import.original') }}</x-icon-btn>
+        </div>
+    @endif
+
     <x-slot:toolbar>
         <x-page-toolbar :title="$invoice->documentLabel() . ' ' . $invoice->number" :badge="__($invoice->status)" badge-tone="outline">
             <div class="text-sm text-base-content/70">{{ $invoice->customer->name }}</div>
@@ -136,6 +157,10 @@
                 @endcan
                 @can('update', $invoice)
                     @if ($invoice->status === \App\Models\Invoice::STATUS_DRAFT)
+                        <x-icon-btn icon="data_object" tone="info" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route('invoices.einvoice-options.edit', $invoice)"
+                                    show-label>{{ __('invoice-import.options_action') }}</x-icon-btn>
                         <x-icon-btn icon="add" tone="primary" size="sm"
                                     data-entry-modal-trigger
                                     :href="route('invoices.items.create', $invoice)"
@@ -235,6 +260,12 @@
     </x-slot:toolbar>
 
     @php $showServiceDates = $invoice->hasServicePeriod(); $footColspan = $showServiceDates ? 5 : 4; @endphp
+
+    <div class="flex flex-wrap items-center gap-2 text-sm">
+        <span class="text-base-content/60">{{ __('invoice-import.preferred_format') }}</span>
+        <x-status-badge :label="$invoice->delivery_format->label()" tone="info" size="xs" />
+        <span class="text-xs text-base-content/50">{{ __('invoice-import.flexibility_hint') }}</span>
+    </div>
 
     {{-- KI-Leistungstexte (Feature 084): Vorschläge nur im Entwurf, nie stille Änderungen. --}}
     @php

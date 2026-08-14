@@ -330,7 +330,9 @@ return [
     'invoice' => [
         'approved' => 'Facture approuvée',
         'dunned' => 'Facture relancée',
+        'document_imported' => 'Fichier de facture importé',
         'einvoice_exported' => 'Facture électronique exportée',
+        'einvoice_options_updated' => 'Options de facture électronique modifiées',
         'objectionDocumented' => 'Contestation de facture documentée',
         'proforma_converted' => 'Proforma convertie en facture',
     ],

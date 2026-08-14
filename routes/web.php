@@ -1465,6 +1465,8 @@ Route::middleware('auth')->group(function () {
         // ── Rechnungen / Invoicing ────────────────────────────────────
         Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices.index');
         Route::get('invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
+        Route::get('invoices/datei-import', [\App\Http\Controllers\InvoicePdfImportController::class, 'create'])->name('invoices.pdf-import.create');
+        Route::post('invoices/datei-import', [\App\Http\Controllers\InvoicePdfImportController::class, 'store'])->name('invoices.pdf-import.store');
         // Vorschau (MVP-462): POST + Literal-Segment VOR invoices/{invoice},
         // damit das Sqid-Binding nicht greift (Muster admin/ai/vorschau).
         Route::post('invoices/vorschau', [InvoiceController::class, 'preview'])->name('invoices.preview');
@@ -1488,6 +1490,9 @@ Route::middleware('auth')->group(function () {
         Route::get('invoices/{invoice}/einvoice', [InvoiceController::class, 'einvoiceDownload'])->name('invoices.einvoice');
         Route::get('invoices/{invoice}/einvoice-validierung', [\App\Http\Controllers\InvoiceController::class, 'einvoiceValidation'])->name('invoices.einvoice-validation');
         Route::get('invoices/{invoice}/zugferd', [InvoiceController::class, 'zugferdDownload'])->name('invoices.zugferd');
+        Route::get('invoices/{invoice}/e-rechnungsoptionen', [\App\Http\Controllers\InvoicePdfImportController::class, 'edit'])->name('invoices.einvoice-options.edit');
+        Route::patch('invoices/{invoice}/e-rechnungsoptionen', [\App\Http\Controllers\InvoicePdfImportController::class, 'update'])->name('invoices.einvoice-options.update');
+        Route::get('invoices/{invoice}/originaldatei', [\App\Http\Controllers\InvoicePdfImportController::class, 'source'])->name('invoices.pdf-import.source');
         Route::get('invoices/{invoice}/expenses', [InvoiceController::class, 'expensesForm'])->name('invoices.expenses.form');
         Route::post('invoices/{invoice}/expenses', [InvoiceController::class, 'attachExpenses'])->name('invoices.expenses.attach');
         // MVP-416: Rabatt-/Skonto-Konditionen am Entwurf

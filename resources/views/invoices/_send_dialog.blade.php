@@ -12,8 +12,14 @@
     <div class="space-y-4">
 
         <div class="text-sm text-base-content/70">
-            {{ __('Die Rechnung wird als PDF angehängt. Drafts werden beim Versand automatisch auf "gestellt" gesetzt.') }}
+            {{ __('invoice-import.mail_hint') }}
         </div>
+
+        <x-select-field name="delivery_format" :label="__('invoice-import.delivery_format')" required>
+            @foreach (\App\Enums\Invoicing\InvoiceDeliveryFormat::cases() as $format)
+                <option value="{{ $format->value }}" @selected(old('delivery_format', $invoice->delivery_format->value) === $format->value)>{{ $format->label() }}</option>
+            @endforeach
+        </x-select-field>
 
         {{-- Template-Auswahl --}}
         <x-select-field name="template_id" :label="__('Vorlage')" required>

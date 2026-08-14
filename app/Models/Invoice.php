@@ -11,12 +11,13 @@
 namespace App\Models;
 
 use App\Casts\{MoneyCast, PercentageCast};
+use App\Enums\Invoicing\InvoiceDeliveryFormat;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\{Collection, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
 use Illuminate\Support\Carbon;
 
 /**
@@ -26,6 +27,11 @@ use Illuminate\Support\Carbon;
  * @property int|null $project_id
  * @property int|null $foreign_customer_id
  * @property string $number
+ * @property string|null $external_number
+ * @property string $number_source
+ * @property InvoiceDeliveryFormat $delivery_format
+ * @property string|null $buyer_reference
+ * @property array<string, mixed>|null $import_metadata
  * @property string $status
  * @property string $type
  * @property string $category
@@ -138,6 +144,11 @@ class Invoice extends Model {
         'project_id',
         'foreign_customer_id',
         'number',
+        'external_number',
+        'number_source',
+        'delivery_format',
+        'buyer_reference',
+        'import_metadata',
         'status',
         'type',
         'category',
@@ -179,6 +190,8 @@ class Invoice extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'currency' => CurrencyCode::class,
+        'delivery_format' => InvoiceDeliveryFormat::class,
+        'import_metadata' => 'array',
         'is_reverse_charge' => 'boolean',
         'party_snapshot' => 'array',
         'tax_breakdown' => 'array',
@@ -215,6 +228,11 @@ class Invoice extends Model {
     /** @return BelongsTo<ForeignCustomer, $this> */
     public function foreignCustomer(): BelongsTo {
         return $this->belongsTo(ForeignCustomer::class);
+    }
+
+    /** @return MorphMany<Document, $this> */
+    public function documents(): MorphMany {
+        return $this->morphMany(Document::class, 'documentable');
     }
 
     /** @return HasMany<InvoiceItem, $this> */

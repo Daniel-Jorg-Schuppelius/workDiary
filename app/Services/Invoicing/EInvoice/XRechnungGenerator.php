@@ -121,7 +121,7 @@ class XRechnungGenerator {
         }
 
         // BT-10: BuyerReference ist nur in der XRechnung Pflicht.
-        if (trim((string) $customer->buyer_reference) === '') {
+        if ($this->buyerReference($invoice) === '') {
             if ($profile->isXRechnung()) {
                 $errors[] = (string) __('invoicing.einvoice.error.missing_buyer_reference');
             } else {
@@ -338,7 +338,7 @@ class XRechnungGenerator {
 
         // BT-10: Käuferreferenz/Leitweg-ID — wird unverändert übernommen
         // (kein Format-Raten; eine Leitweg-ID ist hier schlicht der Wert).
-        $buyerReference = trim((string) $customer->buyer_reference);
+        $buyerReference = $this->buyerReference($invoice);
         if ($buyerReference !== '') {
             $builder->withBuyerReference($buyerReference);
         }
@@ -503,6 +503,15 @@ class XRechnungGenerator {
 
     private function unitCode(string $unit): UnitCode {
         return self::UNIT_CODES[mb_strtolower(trim($unit))] ?? UnitCode::PIECE;
+    }
+
+    /** BT-10 darf pro Rechnung überschrieben werden; Kundenstamm bleibt Fallback. */
+    private function buyerReference(Invoice $invoice): string {
+        $invoiceReference = trim((string) $invoice->buyer_reference);
+
+        return $invoiceReference !== ''
+            ? $invoiceReference
+            : trim((string) $invoice->customer->buyer_reference);
     }
 
     /**

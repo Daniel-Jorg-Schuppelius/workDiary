@@ -18,6 +18,10 @@
         <x-icon-btn icon="event_repeat" size="sm"
                     :href="route('invoice-schedules.index')"
                     show-label>{{ __('Abrechnungspläne') }}</x-icon-btn>
+        <x-icon-btn icon="document_scanner" tone="secondary" size="sm"
+                    data-entry-modal-trigger
+                    :href="route('invoices.pdf-import.create')"
+                    show-label>{{ __('invoice-import.action') }}</x-icon-btn>
         <x-icon-btn icon="add" tone="primary" size="sm"
                     data-entry-modal-trigger
                     :href="route('invoices.create')"

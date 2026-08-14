@@ -330,7 +330,9 @@ return [
     'invoice' => [
         'approved' => 'Invoice approved',
         'dunned' => 'Invoice dunned',
+        'document_imported' => 'Invoice file imported',
         'einvoice_exported' => 'E-invoice exported',
+        'einvoice_options_updated' => 'E-invoice options updated',
         'objectionDocumented' => 'Invoice objection documented',
         'proforma_converted' => 'Proforma converted to invoice',
     ],
