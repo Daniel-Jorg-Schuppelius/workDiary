@@ -109,10 +109,20 @@ class CodeIntegrityService {
      * @param  array<string, mixed>  $manifest
      */
     public function store(array $manifest): void {
-        Storage::disk('local')->put(
+        // Die local-Disk steht auf 'throw' => false — put() meldet Fehlschläge
+        // (Rechte, voller Datenträger) nur per bool. Ohne diese Prüfung meldet
+        // ein Freeze „Erfolg" samt DB-Zeile, obwohl keine Baseline liegt.
+        $written = Storage::disk('local')->put(
             self::STORAGE_PATH,
             \CommonToolkit\Helper\Data\JsonHelper::encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
         );
+
+        if ($written === false) {
+            throw new \RuntimeException(sprintf(
+                'Integritäts-Baseline konnte nicht geschrieben werden: %s — Dateirechte/Speicherplatz prüfen.',
+                Storage::disk('local')->path(self::STORAGE_PATH),
+            ));
+        }
     }
 
     /** @return array<string, mixed>|null */

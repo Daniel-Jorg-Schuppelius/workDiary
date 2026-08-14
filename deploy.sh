@@ -41,6 +41,9 @@ fi
 echo "→ Frontend-Assets bauen (Vite-Manifest für public/build)"
 # Pflicht: ohne gebautes Manifest wirft @vite eine ViteManifestNotFoundException
 # (HTTP 500). npm ci nutzt package-lock.json für reproduzierbare Installs.
+# npm-Cache in die Site legen: das ISPConfig-Home des Web-Users (…/webNNN)
+# ist immutable — dort kann npm sein ~/.npm nicht anlegen.
+export npm_config_cache="$PWD/storage/framework/cache/npm"
 if [ -f package-lock.json ]; then
     npm ci
 else
@@ -100,7 +103,12 @@ echo "→ Integritäts-Baseline neu einfrieren (MVP-439)"
 # meldet der nächtliche integrity:verify dauerhaft Exit 2 (MissingBaseline)
 # bzw. Abweichungen. Der Freeze verankert den soeben deployten Stand.
 # --yes: nicht-interaktiv eine vorhandene Baseline überschreiben.
-php artisan integrity:freeze --yes || true
+# Ein Fehlschlag bricht den Deploy nicht ab, muss aber sichtbar sein —
+# sonst schlägt erst der nächtliche integrity:verify Alarm.
+if ! php artisan integrity:freeze --yes; then
+    echo "  ⚠ integrity:freeze FEHLGESCHLAGEN — Baseline veraltet/fehlt."
+    echo "    Manuell nachholen: php artisan integrity:freeze --yes && php artisan integrity:verify"
+fi
 
 echo "→ Kontrolle"
 php artisan license:show || true
