@@ -33,12 +33,9 @@
 </x-form-group>
 
 <x-form-group :legend="__('Zuordnung')" icon="link" tone="success" cols="2">
-    <x-select-field name="project_id" :label="__('Projekt')" data-depends-on="customer_id">
-        <option value="">—</option>
-        @foreach ($projects as $p)
-            <option value="{{ $p->sqid }}" data-parent="{{ \App\Support\Sqid::encode(\App\Models\Customer::class, $p->customer_id) }}" @selected((string) old('project_id', \App\Support\Sqid::encode(\App\Models\Project::class, $trip?->project_id)) === $p->sqid)>{{ $p->name }}</option>
-        @endforeach
-    </x-select-field>
+    <x-project-select :label="__('Projekt')" :projects="$projects"
+        :selected="(string) old('project_id', \App\Support\Sqid::encode(\App\Models\Project::class, $trip?->project_id))"
+        data-depends-on="customer_id" :data-parent="true" />
     <x-select-field name="customer_id" :label="__('Kunde')">
         <option value="">—</option>
         @foreach ($customers as $c)

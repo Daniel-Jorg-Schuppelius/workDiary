@@ -90,7 +90,7 @@ class TravelLogController extends Controller {
         return view('travel-logs._form_dialog', [
             'log' => null,
             'date' => $request->date('date')?->toDateString() ?? CarbonImmutable::today()->toDateString(),
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
+            'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
             'vehicles' => TravelLogVehicle::cases(),
             'rates' => (array) config('timesheet.travel.rates', []),
@@ -118,7 +118,7 @@ class TravelLogController extends Controller {
         return view('travel-logs._form_dialog', [
             'log' => $travelLog,
             'date' => $travelLog->date?->toDateString(),
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
+            'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
             'vehicles' => TravelLogVehicle::cases(),
             'rates' => (array) config('timesheet.travel.rates', []),

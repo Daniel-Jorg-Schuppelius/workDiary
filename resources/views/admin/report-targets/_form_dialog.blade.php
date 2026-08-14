@@ -64,9 +64,8 @@
                 <template x-if="is('project')">
                     <select name="scope_id" class="select select-bordered select-sm w-full">
                         <option value="">{{ __('reporting.target.none') }}</option>
-                        @foreach($projects as $p)
-                            <option value="{{ $p->sqid }}" @selected($currentScope === 'project' && (int) $currentScopeId === (int) $p->id)>{{ $p->name }}</option>
-                        @endforeach
+                        <x-project-options :projects="$projects"
+                            :selected="$currentScope === 'project' ? \App\Support\Sqid::encode(\App\Models\Project::class, $currentScopeId) : ''" />
                     </select>
                 </template>
                 <template x-if="is('user')">

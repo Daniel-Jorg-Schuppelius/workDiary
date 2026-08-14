@@ -43,12 +43,8 @@
         <x-input-field name="allocated_on" type="date"
                        :label="__('customer-material.date')"
                        :value="old('allocated_on', now()->toDateString())" />
-        <x-select-field name="project_id" :label="__('customer-material.project')"
-                        :hint="__('customer-material.project_hint')">
-            <option value="">{{ __('customer-material.no_project') }}</option>
-            @foreach ($projects as $project)
-                <option value="{{ $project->sqid }}" @selected(old('project_id') === $project->sqid)>{{ $project->name }}</option>
-            @endforeach
-        </x-select-field>
+        <x-project-select :label="__('customer-material.project')" :hint="__('customer-material.project_hint')"
+            :placeholder="__('customer-material.no_project')" :group="false"
+            :projects="$projects" :selected="(string) old('project_id')" />
     </x-form-group>
 </x-modal>

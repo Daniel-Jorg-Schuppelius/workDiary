@@ -88,7 +88,7 @@ class GeofenceController extends Controller {
             'geofence' => $geofence,
             'customers' => Customer::query()->orderBy('name')->get(),
             'sites' => Site::query()->orderBy('name')->get(['id', 'customer_id', 'name']),
-            'projects' => Project::query()->orderBy('name')->get(['id', 'customer_id', 'name']),
+            'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
         ];
     }
 

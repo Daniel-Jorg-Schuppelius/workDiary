@@ -24,12 +24,9 @@
                 <option value="{{ $c->sqid }}" @selected((string) old('customer_id') === $c->sqid)>{{ $c->name }}</option>
             @endforeach
         </x-select-field>
-        <x-select-field name="project_id" :label="__('Projekt (optional)')" span="2" data-depends-on="customer_id">
-            <option value="">{{ __('ohne Projektbezug') }}</option>
-            @foreach ($projects as $p)
-                <option value="{{ $p->sqid }}" data-parent="{{ \App\Support\Sqid::encode(\App\Models\Customer::class, $p->customer_id) }}" @selected((string) old('project_id') === $p->sqid)>{{ $p->name }}</option>
-            @endforeach
-        </x-select-field>
+        <x-project-select :label="__('Projekt (optional)')" :placeholder="__('ohne Projektbezug')" span="2"
+            :projects="$projects" :selected="(string) old('project_id')"
+            data-depends-on="customer_id" :data-parent="true" />
         <x-input-field name="valid_until" type="date" :label="__('Bindefrist (gültig bis)')" :value="old('valid_until')" />
         <x-textarea-field name="terms" :label="__('Bedingungen / Leistungsumfang (optional)')" rows="3" span="2">{{ old('terms') }}</x-textarea-field>
     </x-form-group>

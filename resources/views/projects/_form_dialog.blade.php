@@ -21,12 +21,11 @@
     $parentOptions = \App\Models\Project::query()
         ->when($excludeIds, fn($q) => $q->whereNotIn('id', $excludeIds))
         ->orderBy('name')
-        ->get(['id', 'name', 'customer_id']);
-    $initialParentCustomer = $project?->parent?->customer_id;
-    // Map Parent-Projekt-ID → Kunden-Sqid (das Kunden-Select nutzt Sqid als Wert,
-    // daher muss die Auto-Befüllung ebenfalls den Sqid setzen, nicht die int-ID).
+        ->get(['id', 'name', 'customer_id', 'foreign_customer_id']);
+    // Map Parent-Projekt-Sqid → Kunden-Sqid (die Selects nutzen Sqids als Werte,
+    // daher müssen Schlüssel und Auto-Befüllung ebenfalls Sqids sein, keine int-IDs).
     $parentCustomerSqids = $parentOptions->mapWithKeys(fn($p) => [
-        (string) $p->id => $p->customer_id ? \App\Support\Sqid::encode(\App\Models\Customer::class, $p->customer_id) : '',
+        $p->sqid => $p->customer_id ? \App\Support\Sqid::encode(\App\Models\Customer::class, $p->customer_id) : '',
     ]);
     // Fremdkunden gruppiert nach Kunden-Sqid (für die clientseitige Filterung).
     $foreignCustomersByCustomer = \App\Models\ForeignCustomer::query()
@@ -58,7 +57,7 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="$project ? __('Speichern') : __('Anlegen')">
     <div x-data="projectForm"
-          data-parent-id="{{ (string) old('parent_id', $project?->parent_id ?? '') }}"
+          data-parent-id="{{ (string) old('parent_id', \App\Support\Sqid::encode(\App\Models\Project::class, $project?->parent_id)) }}"
           data-parent-customers="{{ json_encode($parentCustomerSqids) }}"
           data-customer-id="{{ $initialCustomerSqid }}"
           data-foreign-customers="{{ json_encode($foreignCustomersByCustomer) }}"
@@ -82,19 +81,12 @@
         </x-form-group>
 
         <x-form-group :legend="__('Zuordnung')" icon="link" tone="info">
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Übergeordnetes Projekt') }}</label>
-                <select name="parent_id" class="select select-bordered w-full" x-model="parentId">
-                    <option value="">{{ __('— Top-Level (kein Parent) —') }}</option>
-                    @foreach ($parentOptions as $opt)
-                        <option value="{{ $opt->sqid }}" @selected((string) old('parent_id', \App\Support\Sqid::encode(\App\Models\Project::class, $project?->parent_id)) === $opt->sqid)>
-                            {{ $opt->name }}
-                        </option>
-                    @endforeach
-                </select>
-                <p class="text-xs text-base-content/60">{{ __('Sub-Projekte erben Customer und Abrechnung vom Parent.') }}</p>
-                @error('parent_id')<p class="text-error text-sm">{{ $message }}</p>@enderror
-            </div>
+            <x-project-select name="parent_id" :label="__('Übergeordnetes Projekt')"
+                :placeholder="__('— Top-Level (kein Parent) —')"
+                :projects="$parentOptions"
+                :selected="(string) old('parent_id', \App\Support\Sqid::encode(\App\Models\Project::class, $project?->parent_id))"
+                :hint="__('Sub-Projekte erben Customer und Abrechnung vom Parent.')"
+                x-model="parentId" />
 
             <div class="fieldset" x-show="noParent" x-cloak>
                 <label class="fieldset-label">{{ __('Kunde') }}</label>

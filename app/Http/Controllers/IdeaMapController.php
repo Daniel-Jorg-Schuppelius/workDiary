@@ -306,7 +306,7 @@ class IdeaMapController extends Controller {
     private function contextOptions(): array {
         return [
             'customers' => \App\Models\Customer::query()->orderBy('name')->limit(500)->get(['id', 'name']),
-            'projects' => \App\Models\Project::query()->orderBy('name')->limit(500)->get(['id', 'name']),
+            'projects' => \App\Models\Project::query()->orderBy('name')->limit(500)->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
         ];
     }
 

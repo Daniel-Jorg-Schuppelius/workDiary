@@ -29,12 +29,8 @@
                       from-name="starts_at" to-name="ends_at" type="datetime-local"
                       :from-label="__('Beginn')" :to-label="__('Ende')"
                       :from="old('starts_at')" :to="old('ends_at')" />
-        <x-select-field name="project_id" :label="__('Projekt (optional)')">
-            <option value="">{{ __('ohne Projektbezug') }}</option>
-            @foreach ($projects as $p)
-                <option value="{{ $p->sqid }}" @selected((string) old('project_id') === $p->sqid)>{{ $p->name }}</option>
-            @endforeach
-        </x-select-field>
+        <x-project-select :label="__('Projekt (optional)')" :placeholder="__('ohne Projektbezug')"
+            :projects="$projects" :selected="(string) old('project_id')" />
         <x-select-field name="responsible_user_id" :label="__('Verantwortlich')">
             <option value="">{{ __('-- später zuweisen --') }}</option>
             @foreach ($users as $u)

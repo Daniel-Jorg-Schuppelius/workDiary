@@ -42,14 +42,9 @@
             @endforeach
         </select>
     </x-input-field>
-    <x-input-field name="project_id" :label="__('Zielprojekt (optional)')">
-        <select name="project_id" class="select select-bordered w-full @error('project_id') select-error @enderror">
-            <option value="">{{ __('— Standardprojekt des Kunden —') }}</option>
-            @foreach ($projects as $p)
-                <option value="{{ $p->sqid }}" @selected((string) $selectedProject === $p->sqid)>{{ $p->name }}</option>
-            @endforeach
-        </select>
-    </x-input-field>
+    <x-project-select :label="__('Zielprojekt (optional)')" :placeholder="__('— Standardprojekt des Kunden —')"
+        :projects="$projects" :selected="(string) $selectedProject"
+        data-depends-on="customer_id" :data-parent="true" />
 </x-form-group>
 
 <x-form-group :legend="__('Geo-Zone')" icon="my_location" tone="info" cols="2">

@@ -44,7 +44,7 @@ class SlaContractController extends Controller {
             'canManage' => $canManage,
             // Projekt-Auswahl fürs Admin-Formular (W5.4), org-gescopt via Global Scope.
             'projects' => $canManage
-                ? \App\Models\Project::query()->orderBy('name')->get(['id', 'name'])
+                ? \App\Models\Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id'])
                 : collect(),
         ]);
     }
@@ -77,7 +77,12 @@ class SlaContractController extends Controller {
 
     /** @return array<string, mixed> */
     private function validatedContract(Request $request, ?SlaContract $contract = null): array {
-        $data = $request->validate([
+        // Formular sendet Sqids (x-project-select); numerische IDs bleiben für Alt-Aufrufer
+        // gültig. Dekodierte Kopie validieren statt mergen, damit old('project_id')
+        // bei Fehlern der Sqid bleibt (vgl. DecodesSqidInputs).
+        $input = $request->all();
+        $input['project_id'] = \App\Support\Sqid::decodeOrNumeric(\App\Models\Project::class, $request->input('project_id'));
+        $data = \Illuminate\Support\Facades\Validator::make($input, [
             'code' => ['required', 'string', 'min:2', 'max:60'],
             'label' => ['required', 'string', 'min:2', 'max:180'],
             'customer_id' => ['nullable', new \App\Rules\ExistsInCurrentOrganization('customers')],
@@ -90,7 +95,7 @@ class SlaContractController extends Controller {
             'is_default' => ['nullable', 'boolean'],
             'is_ola' => ['nullable', 'boolean'],
             'ola_team_id' => ['nullable', new \App\Rules\ExistsInCurrentOrganization('teams')],
-        ]);
+        ])->validate();
 
         return [
             'code' => $data['code'],

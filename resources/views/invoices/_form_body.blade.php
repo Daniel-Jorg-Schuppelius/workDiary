@@ -20,12 +20,9 @@
             <option value="{{ $c->sqid }}" @selected((string) old('customer_id') === $c->sqid)>{{ $c->name }}</option>
         @endforeach
     </x-select-field>
-    <x-select-field name="project_id" :label="__('Projekt (optional)')" span="2" data-depends-on="customer_id">
-        <option value="">{{ __('alle Projekte des Kunden') }}</option>
-        @foreach ($projects as $p)
-            <option value="{{ $p->sqid }}" data-parent="{{ \App\Support\Sqid::encode(\App\Models\Customer::class, $p->customer_id) }}" @selected((string) old('project_id') === $p->sqid)>{{ $p->name }}</option>
-        @endforeach
-    </x-select-field>
+    <x-project-select :label="__('Projekt (optional)')" :placeholder="__('alle Projekte des Kunden')" span="2"
+        :projects="$projects" :selected="(string) old('project_id')"
+        data-depends-on="customer_id" :data-parent="true" />
     <x-select-field name="foreign_customer_id" :label="__('Fremdkunde / Endkunde (optional)')" span="2" data-depends-on="customer_id" :hint="__('Nur Zeiten dieses Endkunden abrechnen.')">
         <option value="">{{ __('alle Endkunden') }}</option>
         @foreach (($foreignCustomers ?? collect()) as $fc)

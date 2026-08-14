@@ -89,7 +89,7 @@ class ReportTargetController extends Controller {
             'scopeOptions' => ReportTargetScope::cases(),
             'periodOptions' => ReportTargetPeriod::cases(),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
+            'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
         ];
     }

@@ -30,12 +30,8 @@
                 <x-input-field name="code" :label="__('Code')" required maxlength="60" />
                 <x-input-field name="label" :label="__('Bezeichnung')" required maxlength="180" />
                 {{-- Optionale Projektbindung (W5.4): projektgebundener Vertrag gewinnt vor Kunden-/Default-Vertrag. --}}
-                <x-select-field name="project_id" :label="__('Projekt (optional)')" span="2">
-                    <option value="">{{ __('ohne Projektbezug (kunden-/org-weit)') }}</option>
-                    @foreach ($projects as $project)
-                        <option value="{{ $project->id }}" @selected((string) old('project_id') === (string) $project->id)>{{ $project->name }}</option>
-                    @endforeach
-                </x-select-field>
+                <x-project-select :label="__('Projekt (optional)')" :placeholder="__('ohne Projektbezug (kunden-/org-weit)')"
+                    span="2" :projects="$projects" :selected="(string) old('project_id')" />
                 <div class="fieldset md:col-span-2">
                     <label class="fieldset-label">{{ __('Prioritätstabelle (JSON)') }}</label>
                     <textarea name="priority_table" rows="3" required class="textarea textarea-bordered w-full font-mono text-xs">{{ old('priority_table', '{"normal": {"reaction_minutes": 240, "resolution_minutes": 2880} }') }}</textarea>

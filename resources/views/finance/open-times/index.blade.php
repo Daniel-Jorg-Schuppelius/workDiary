@@ -83,9 +83,7 @@
             <x-filter-field :label="__('finance.open_times.filter.project')" for="open-times-project" class="min-w-44">
                 <select id="open-times-project" name="project" class="select select-sm select-bordered w-full">
                     <option value="">{{ __('finance.filter.all') }}</option>
-                    @foreach ($projects as $p)
-                        <option value="{{ $p->sqid }}" @selected($filters['project'] === $p->sqid)>{{ $p->name }}</option>
-                    @endforeach
+                    <x-project-options :projects="$projects" :selected="(string) $filters['project']" />
                 </select>
             </x-filter-field>
 

@@ -100,7 +100,7 @@ class AssetFinanceContractController extends Controller {
 
         return view('asset-finance._form_dialog', [
             'suppliers' => Supplier::query()->orderBy('name')->get(['id', 'name']),
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
+            'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
             'assets' => Asset::query()->orderBy('name')->get(['id', 'name']),
             'costCenters' => CostCenter::query()->where('active', true)->orderBy('code')->get(['id', 'code', 'label']),

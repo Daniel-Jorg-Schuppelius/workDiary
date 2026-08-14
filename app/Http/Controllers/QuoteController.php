@@ -63,7 +63,7 @@ class QuoteController extends Controller {
 
         return view('quotes._form_dialog', [
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'projects' => \App\Models\Project::query()->orderBy('name')->get(['id', 'name', 'customer_id']),
+            'projects' => \App\Models\Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
         ]);
     }
 

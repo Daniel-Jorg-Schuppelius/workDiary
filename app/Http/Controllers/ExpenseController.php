@@ -251,7 +251,7 @@ class ExpenseController extends Controller {
                 ->orderBy('sort')
                 ->orderBy('label')
                 ->get(['id', 'label', 'default_tax_rate', 'default_billable', 'icon', 'color']),
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
+            'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
             'paymentMethods' => PaymentMethod::allowed(),
         ];

@@ -42,11 +42,7 @@
     <p class="text-sm text-base-content/60 -mt-2">{{ __('gaeb.import.name_hint') }}</p>
 
     @if ($projects->isNotEmpty())
-        <x-select-field name="project" :label="__('gaeb.import.project')">
-            <option value="">{{ __('gaeb.import.project_none') }}</option>
-            @foreach ($projects as $project)
-                <option value="{{ $project->sqid }}" @selected(old('project') === $project->sqid)>{{ $project->name }}</option>
-            @endforeach
-        </x-select-field>
+        <x-project-select name="project" :label="__('gaeb.import.project')" :placeholder="__('gaeb.import.project_none')"
+            :projects="$projects" :selected="(string) old('project')" />
     @endif
 </x-modal>

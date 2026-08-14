@@ -106,12 +106,13 @@
                 <x-detail-grid.row :label="__('Mobil')" :value="$customer->mobile" />
                 <x-detail-grid.row :label="__('Homepage')">@if ($customer->homepage)<a class="link" href="{{ $customer->homepage }}" target="_blank" rel="noopener">{{ $customer->homepage }}</a>@endif</x-detail-grid.row>
                 @if ($customer->address_street || $customer->address_zip || $customer->address_city)
-                    <x-detail-grid.row :label="__('Adresse')" class="whitespace-pre-line">{!! e($customer->address_street) !!}@if($customer->address_street)
-@endif{{ trim(($customer->address_zip ?? '').' '.($customer->address_city ?? '')) }}</x-detail-grid.row>
+                    {{-- Newline via echo, nicht als Template-Whitespace: PHP schluckt ein \n direkt nach `?>` --}}
+                    <x-detail-grid.row :label="__('Adresse')" class="whitespace-pre-line">{{ $customer->address_street }}@if($customer->address_street){{ "\n" }}@endif{{ trim(($customer->address_zip ?? '').' '.($customer->address_city ?? '')) }}</x-detail-grid.row>
                 @elseif ($customer->address)
                     <x-detail-grid.row :label="__('Adresse')" class="whitespace-pre-line">{{ $customer->address }}</x-detail-grid.row>
                 @endif
-                <x-detail-grid.row :label="__('Land')" :value="$customer->country" />
+                {{-- intl statt CountryCode::getLabel(): Toolkit-Labels sind nur Deutsch, Anzeige muss der UI-Locale folgen --}}
+                <x-detail-grid.row :label="__('Land')" :value="$customer->country ? \Locale::getDisplayRegion('-' . $customer->country, app()->getLocale()) : null" />
             </x-detail-grid>
             <x-contact-persons :persons="$customer->contact_persons" />
         </x-card>

@@ -683,6 +683,12 @@ document.addEventListener("click", (event) => {
                     opt.disabled = !match;
                     if (match) visible.push(opt);
                 });
+                // Kundengruppen (x-project-options) ohne sichtbare Option mit ausblenden.
+                child.querySelectorAll("optgroup").forEach((group) => {
+                    const any = group.querySelector("option:not([hidden])");
+                    group.hidden = !any;
+                    group.disabled = !any;
+                });
                 const sel = child.selectedOptions[0];
                 if (child.value && sel && sel.hidden) {
                     child.value = "";

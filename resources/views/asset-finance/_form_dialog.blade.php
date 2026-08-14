@@ -69,12 +69,8 @@
                 <option value="{{ $cc->sqid }}" @selected((string) old('cost_center_id') === $cc->sqid)>{{ $cc->code }} — {{ $cc->label }}</option>
             @endforeach
         </x-select-field>
-        <x-select-field name="project_id" :label="__('Projekt (optional)')">
-            <option value="">{{ __('ohne Projektbezug') }}</option>
-            @foreach ($projects as $p)
-                <option value="{{ $p->sqid }}" @selected((string) old('project_id') === $p->sqid)>{{ $p->name }}</option>
-            @endforeach
-        </x-select-field>
+        <x-project-select :label="__('Projekt (optional)')" :placeholder="__('ohne Projektbezug')"
+            :projects="$projects" :selected="(string) old('project_id')" />
         <x-select-field name="investment_case_id" :label="__('Investitionsakte (optional)')" span="2">
             <option value="">{{ __('keine Verknüpfung') }}</option>
             @foreach ($investmentCases as $ic)

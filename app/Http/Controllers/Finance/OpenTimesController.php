@@ -95,7 +95,7 @@ class OpenTimesController extends Controller {
             'invoicedMismatches' => $this->invoicedDiaryMismatches(),
             'canMarkBilled' => $this->canMarkBilled($request),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id']),
+            'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
             'users' => User::query()
                 ->where('organization_id', $request->user()?->organization_id)
                 ->orderBy('name')

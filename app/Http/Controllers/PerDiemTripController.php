@@ -220,7 +220,7 @@ class PerDiemTripController extends Controller {
         $userId = Auth::id();
 
         return [
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
+            'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
             'travelLogs' => TravelLog::query()
                 ->where('user_id', $userId)

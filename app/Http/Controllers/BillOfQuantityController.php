@@ -205,7 +205,7 @@ class BillOfQuantityController extends Controller {
 
         return view('bill-of-quantities.import', [
             'isDialog' => true,
-            'projects' => Project::query()->orderBy('name')->limit(500)->get(['id', 'name']),
+            'projects' => Project::query()->orderBy('name')->limit(500)->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
         ]);
     }
 
