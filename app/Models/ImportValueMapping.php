@@ -15,10 +15,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Persistentes Tag-/Kategorie-Mapping des CSV-/XLSX-Imports (Rang 58, A13):
- * Quellwert → Tag, Klassifikation oder „ignorieren" je Organisation +
- * Import-Entität; Wiederholimporte lösen darüber auf statt blind neu
- * anzulegen (Muster ExternalReferenceAlias).
+ * Persistentes Wert-Mapping des CSV-/XLSX-Imports (Rang 58, A13):
+ * Quellwert → Tag, Klassifikation, Benutzer (Zeitimporte: abweichende
+ * E-Mail-Adressen) oder „ignorieren" je Organisation + Import-Entität;
+ * Wiederholimporte lösen darüber auf statt blind neu anzulegen
+ * (Muster ExternalReferenceAlias).
  */
 class ImportValueMapping extends Model {
     use BelongsToOrganization;
@@ -29,6 +30,8 @@ class ImportValueMapping extends Model {
 
     public const KIND_IGNORE = 'ignore';
 
+    public const KIND_USER = 'user';
+
     protected $fillable = [
         'organization_id',
         'entity',
@@ -36,6 +39,7 @@ class ImportValueMapping extends Model {
         'target_kind',
         'tag_id',
         'classification_id',
+        'user_id',
     ];
 
     /** @return BelongsTo<Tag, $this> */
@@ -46,6 +50,11 @@ class ImportValueMapping extends Model {
     /** @return BelongsTo<Classification, $this> */
     public function classification(): BelongsTo {
         return $this->belongsTo(Classification::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function user(): BelongsTo {
+        return $this->belongsTo(User::class);
     }
 
     /** Normalisierter Lookup-Schlüssel eines Quellwerts. */

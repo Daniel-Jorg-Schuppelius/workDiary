@@ -14,9 +14,9 @@ namespace App\Services\Import\Specs;
 
 use App\Enums\Attendance\AttendanceSource;
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
-use App\Models\{Attendance, Organization, User};
-use App\Services\Import\{ImportOutcome, ValidationIssue};
-use App\Services\Import\Specs\Concerns\{BindsTimeImportReference, ParsesLocalDateTime};
+use App\Models\{Attendance, ImportValueMapping, Organization, User};
+use App\Services\Import\{HasMappableValues, ImportOutcome, ValidationIssue};
+use App\Services\Import\Specs\Concerns\{BindsTimeImportReference, ParsesLocalDateTime, ResolvesImportUsers};
 use App\Services\TimeApproval\DayCloseService;
 use Throwable;
 
@@ -31,9 +31,10 @@ use Throwable;
  * Überschreiben geprüfter Zeiträume). Jede Zeile trägt `source=import`, bleibt
  * also von echter Terminal-Erfassung unterscheidbar.
  */
-class AttendanceSpec extends AbstractEntitySpec {
+class AttendanceSpec extends AbstractEntitySpec implements HasMappableValues {
     use BindsTimeImportReference;
     use ParsesLocalDateTime;
+    use ResolvesImportUsers;
 
     private const EXTERNAL_TYPE = 'attendance';
 
@@ -123,10 +124,12 @@ class AttendanceSpec extends AbstractEntitySpec {
 
     public function upsert(array $row, Organization $organization): array {
         try {
-            $user = User::query()
-                ->where('organization_id', $organization->id)
-                ->where('email', $row['user_email'])
-                ->first();
+            // Konto-Treffer (case-insensitiv) oder Benutzer-Mapping; ignorierte
+            // Adressen überspringen die Zeile statt zu scheitern.
+            $user = $this->resolveImportUser($organization, (string) $row['user_email']);
+            if ($user === ImportValueMapping::KIND_IGNORE) {
+                return [ImportOutcome::Skipped, null];
+            }
 
             if (! $user instanceof User) {
                 return [

@@ -87,10 +87,38 @@
         <div class="alert alert-error text-sm">{{ session('error') }}</div>
     @endif
 
-    {{-- Wert-Mapping (Rang 58, A13): unbekannte Tag-/Kategorie-Quellwerte zuordnen. --}}
-    @php($pendingValues = (array) (($run->unresolved_values ?? [])['tags'] ?? []))
+    {{-- Wert-Mapping (Rang 58, A13): unbekannte Quellwerte zuordnen — Ziel je
+         Spalte (user_email → Benutzer, sonst Tag/Klassifikation). --}}
+    @php($pendingColumn = array_key_first((array) ($run->unresolved_values ?? [])))
+    @php($pendingValues = $pendingColumn === null ? [] : (array) (($run->unresolved_values ?? [])[$pendingColumn] ?? []))
     @php($supportsClassifications = $classificationOptions !== [])
-    @if ($pendingValues !== [])
+    @if ($pendingValues !== [] && $pendingColumn === 'user_email')
+        <x-card :title="__('Unbekannte Benutzer zuordnen')" icon="person" :count="count($pendingValues)">
+            <p class="mb-3 text-sm text-base-content/60">
+                {{ __('Diese E-Mail-Adressen gehören zu keinem Benutzerkonto der Organisation. Ordne sie einem Benutzer zu oder überspringe die Zeilen — Entscheidungen werden je Organisation gemerkt, Wiederholimporte lösen automatisch auf. Der Import startet erst nach vollständiger Zuordnung.') }}
+            </p>
+            <form method="POST" action="{{ route('admin.imports.mapping', $run) }}" class="space-y-2">
+                @csrf
+                @foreach ($pendingValues as $i => $value)
+                    <div class="flex flex-wrap items-center gap-2">
+                        <input type="hidden" name="mappings[{{ $i }}][value]" value="{{ $value }}">
+                        <span class="badge badge-ghost font-mono">{{ $value }}</span>
+                        <select name="mappings[{{ $i }}][action]" class="select select-sm select-bordered">
+                            <option value="user">{{ __('Benutzer zuordnen') }}</option>
+                            <option value="ignore">{{ __('Zeilen überspringen') }}</option>
+                        </select>
+                        <select name="mappings[{{ $i }}][user_id]" class="select select-sm select-bordered">
+                            <option value="">{{ __('– Benutzer wählen –') }}</option>
+                            @foreach ($userOptions as $userOption)
+                                <option value="{{ $userOption->sqid }}">{{ $userOption->name }} ({{ $userOption->email }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endforeach
+                <x-button type="submit" tone="primary" size="sm" icon="save">{{ __('Zuordnung speichern') }}</x-button>
+            </form>
+        </x-card>
+    @elseif ($pendingValues !== [])
         <x-card :title="__('Unbekannte Tags/Kategorien zuordnen')" icon="sell" :count="count($pendingValues)">
             <p class="mb-3 text-sm text-base-content/60">
                 {{ __('Diese Quellwerte sind weder gemappt noch als Tag bekannt. Entscheidungen werden je Organisation gemerkt — Wiederholimporte lösen automatisch auf. Der Import startet erst nach vollständiger Zuordnung.') }}

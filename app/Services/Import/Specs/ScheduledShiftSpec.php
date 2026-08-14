@@ -14,8 +14,9 @@ namespace App\Services\Import\Specs;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Enums\Shift\ScheduledShiftStatus;
-use App\Models\{Organization, ScheduledShift, ShiftType, User};
-use App\Services\Import\{ImportOutcome, ValidationIssue};
+use App\Models\{ImportValueMapping, Organization, ScheduledShift, ShiftType, User};
+use App\Services\Import\{HasMappableValues, ImportOutcome, ValidationIssue};
+use App\Services\Import\Specs\Concerns\ResolvesImportUsers;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Auth;
 use Throwable;
@@ -31,7 +32,9 @@ use Throwable;
  * Fachlicher Schlüssel zur Idempotenz: `user_email` + `date`. Der Mitarbeiter
  * wird per E-Mail aufgelöst, der Schichttyp per Name (mandantenweit, optional).
  */
-class ScheduledShiftSpec extends AbstractEntitySpec {
+class ScheduledShiftSpec extends AbstractEntitySpec implements HasMappableValues {
+    use ResolvesImportUsers;
+
     /** @var list<string> */
     private const DATE_FORMATS = ['Y-m-d', 'd.m.Y', 'd.m.y', 'd/m/Y', 'Y/m/d', 'm/d/Y'];
 
@@ -112,12 +115,14 @@ class ScheduledShiftSpec extends AbstractEntitySpec {
 
     public function upsert(array $row, Organization $organization): array {
         try {
-            $user = User::query()
-                ->where('organization_id', $organization->id)
-                ->where('email', $row['user_email'])
-                ->first();
+            // Konto-Treffer (case-insensitiv) oder Benutzer-Mapping; ignorierte
+            // Adressen überspringen die Zeile statt zu scheitern.
+            $user = $this->resolveImportUser($organization, (string) $row['user_email']);
+            if ($user === ImportValueMapping::KIND_IGNORE) {
+                return [ImportOutcome::Skipped, null];
+            }
 
-            if ($user === null) {
+            if (! $user instanceof User) {
                 return [
                     ImportOutcome::Failed,
                     new ValidationIssue(

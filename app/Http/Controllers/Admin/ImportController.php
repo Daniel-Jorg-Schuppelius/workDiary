@@ -205,16 +205,23 @@ class ImportController extends Controller {
             ->paginate(50, ['*'], 'errors_page')
             ->withQueryString();
 
-        // Rang 58: Tag-Auswahl fürs Wert-Mapping-Formular.
+        // Rang 58: Auswahloptionen fürs Wert-Mapping-Formular — Ziel hängt an
+        // der offenen Spalte (user_email → Benutzer, sonst Tag/Klassifikation).
         $hasPending = $import->unresolved_values !== null && $import->unresolved_values !== [];
-        $tagOptions = $hasPending
+        $pendingColumn = $hasPending ? array_key_first((array) $import->unresolved_values) : null;
+        $isUserMapping = $pendingColumn === 'user_email';
+
+        $tagOptions = $hasPending && ! $isUserMapping
             ? \App\Models\Tag::query()->where('organization_id', $import->organization_id)->orderBy('name')->get(['id', 'name'])
+            : collect();
+        $userOptions = $isUserMapping
+            ? \App\Models\User::query()->where('organization_id', $import->organization_id)->orderBy('name')->get(['id', 'name', 'email'])
             : collect();
 
         // A13: Klassifikations-Auswahl (effektiver Katalog je Domäne) — nur für
         // Entitäten, deren Zielmodell Klassifikationen trägt.
         $classificationOptions = [];
-        if ($hasPending && $import->entity->supportsClassifications()) {
+        if ($hasPending && ! $isUserMapping && $import->entity->supportsClassifications()) {
             $resolver = app(\App\Services\Classification\ClassificationResolver::class);
             foreach (\App\Enums\Classification\ClassificationDomain::cases() as $domain) {
                 $list = $resolver->list($import->organization_id, $domain);
@@ -228,6 +235,7 @@ class ImportController extends Controller {
             'run' => $import,
             'errors' => $errors,
             'tagOptions' => $tagOptions,
+            'userOptions' => $userOptions,
             'classificationOptions' => $classificationOptions,
         ]);
     }
@@ -245,13 +253,17 @@ class ImportController extends Controller {
         $data = $request->validate([
             'mappings' => ['required', 'array'],
             'mappings.*.value' => ['required', 'string', 'max:191'],
-            'mappings.*.action' => ['required', 'in:tag,new,ignore,classification'],
+            'mappings.*.action' => ['required', 'in:tag,new,ignore,classification,user'],
             'mappings.*.tag_id' => ['nullable', 'string', 'max:32'],
             'mappings.*.classification_id' => ['nullable', 'string', 'max:32'],
+            'mappings.*.user_id' => ['nullable', 'string', 'max:32'],
         ]);
 
         $pendingColumn = array_key_first((array) $import->unresolved_values) ?? 'tags';
         $pending = collect((array) (($import->unresolved_values ?? [])[$pendingColumn] ?? []));
+        // Zeitimporte: die user_email-Spalte kennt nur Benutzer-Zuordnung oder
+        // Überspringen — Tag-/Klassifikations-Ziele sind dort sinnlos.
+        $isUserMapping = $pendingColumn === 'user_email';
 
         foreach ($data['mappings'] as $entry) {
             $value = (string) $entry['value'];
@@ -259,11 +271,28 @@ class ImportController extends Controller {
             if (! $pending->contains(fn (string $p): bool => \App\Models\ImportValueMapping::normalize($p) === $normalized)) {
                 continue; // nur offene Werte dieses Laufs
             }
+            if ($isUserMapping && ! in_array($entry['action'], ['user', 'ignore'], true)) {
+                continue;
+            }
 
             $tagId = null;
             $classificationId = null;
+            $userId = null;
             $kind = \App\Models\ImportValueMapping::KIND_IGNORE;
-            if ($entry['action'] === 'new') {
+            if ($entry['action'] === 'user') {
+                if (! $isUserMapping) {
+                    continue;
+                }
+                $user = \App\Models\User::query()
+                    ->where('organization_id', $import->organization_id)
+                    ->whereKey(\App\Support\Sqid::decodeOrNumeric(\App\Models\User::class, $entry['user_id'] ?? null) ?? 0)
+                    ->first();
+                if ($user === null) {
+                    continue;
+                }
+                $userId = $user->id;
+                $kind = \App\Models\ImportValueMapping::KIND_USER;
+            } elseif ($entry['action'] === 'new') {
                 $tagId = \App\Models\Tag::findOrCreateByName($value, is_int(Auth::id()) ? Auth::id() : null)->id;
                 $kind = \App\Models\ImportValueMapping::KIND_TAG;
             } elseif ($entry['action'] === 'tag') {
@@ -300,7 +329,7 @@ class ImportController extends Controller {
                     'entity' => $import->entity->value,
                     'source_value' => $normalized,
                 ],
-                ['target_kind' => $kind, 'tag_id' => $tagId, 'classification_id' => $classificationId],
+                ['target_kind' => $kind, 'tag_id' => $tagId, 'classification_id' => $classificationId, 'user_id' => $userId],
             );
 
             $pending = $pending->reject(fn (string $p): bool => \App\Models\ImportValueMapping::normalize($p) === $normalized)->values();
@@ -317,10 +346,10 @@ class ImportController extends Controller {
         $this->ensureOwned($import);
         $this->authorizeImport($import->entity);
         abort_unless($import->state === ImportRunState::AwaitingApproval, 409);
-        // Rang 58: erst bestätigen, wenn alle Tag-/Kategorie-Werte zugeordnet sind.
+        // Rang 58: erst bestätigen, wenn alle offenen Quellwerte zugeordnet sind.
         if ($import->unresolved_values !== null && $import->unresolved_values !== []) {
             return redirect()->route('admin.imports.show', $import)
-                ->with('error', __('Bitte zuerst die unbekannten Tag-/Kategorie-Werte zuordnen.'));
+                ->with('error', __('Bitte zuerst die unbekannten Quellwerte zuordnen.'));
         }
 
         AuditLog::create([
