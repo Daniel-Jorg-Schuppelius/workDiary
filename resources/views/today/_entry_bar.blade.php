@@ -73,7 +73,7 @@
                        value="{{ old('description') }}">
 
                 {{-- Projekt-Combobox: tippen filtert (zuletzt genutzte zuerst). --}}
-                <div class="relative w-full sm:w-48" @click.outside="closeMenu()">
+                <div class="relative w-full sm:w-78" @click.outside="closeMenu()">
                     <input type="text"
                            x-model="query"
                            @focus="openMenu()"

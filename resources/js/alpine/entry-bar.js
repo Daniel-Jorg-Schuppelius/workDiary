@@ -174,8 +174,13 @@ export function registerEntryBar(Alpine) {
             get primaryFiltered() {
                 if (this.queryActive) {
                     const q = this.query.trim().toLowerCase();
+                    // p.customer ist bei internen Projekten null (kein Kunde).
                     return this.projects
-                        .filter((p) => p.name.toLowerCase().includes(q) || p.customer.toLowerCase().includes(q))
+                        .filter(
+                            (p) =>
+                                p.name.toLowerCase().includes(q) ||
+                                (p.customer || "").toLowerCase().includes(q),
+                        )
                         .slice(0, 10);
                 }
                 return this.projects.filter((p) => p.recent).slice(0, 10);
