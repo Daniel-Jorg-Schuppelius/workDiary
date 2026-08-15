@@ -16,8 +16,10 @@ use App\Plugins\Msgraph\Api\{MsgraphCalendarClient, MsgraphOAuth};
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\{PluginDiscovery, PluginHealth};
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};
+use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response as Psr7Response;
+use Psr\Http\Message\RequestInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\PermissionRegistrar;
@@ -229,6 +231,22 @@ final class MsgraphConnectionTest extends TestCase {
             'https://graph.microsoft.com/v1.0/me/calendars*' => FakePluginHttp::response(['error' => ['code' => 'InvalidAuthenticationToken']], 401),
         ]);
         $this->assertTrue((new MsgraphPlugin())->healthCheck()->isFailing());
+    }
+
+    public function test_health_degrades_on_network_error_instead_of_failing(): void {
+        $this->connection();
+
+        // DNS-/Verbindungsfehler (z. B. cURL 28) sind transient: degraded statt
+        // failing, damit der Blip nicht Richtung Auto-Disable zählt.
+        FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/calendars*' => function (RequestInterface $request): Psr7Response {
+                throw new ConnectException('cURL error 28: Resolving timed out after 5000 milliseconds', $request);
+            },
+        ]);
+
+        $health = (new MsgraphPlugin())->healthCheck();
+        $this->assertSame(PluginHealth::STATUS_DEGRADED, $health->status);
+        $this->assertSame('network', $health->code);
     }
 
     public function test_health_degraded_without_connection(): void {

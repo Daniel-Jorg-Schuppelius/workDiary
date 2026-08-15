@@ -87,7 +87,7 @@ class IntegrationInboxController extends Controller {
             }
         }
 
-        [$assignTargets, $assignTargetsTruncated] = $this->buildAssignTargets($user, $registry, $targetSearch);
+        [$assignTargets, $assignTargetsTruncated, $assignProjects] = $this->buildAssignTargets($user, $registry, $targetSearch);
         // Asset-Optionen für den Fernwartungs-Form-Typ „asset" (Geräte-Bindung).
         if ($groups->contains(fn(array $g): bool => ($g['form'] ?? null) === 'asset')) {
             $assetRows = \App\Models\Asset::query()
@@ -127,7 +127,14 @@ class IntegrationInboxController extends Controller {
         return view('admin.integration.inbox', [
             'items' => $query->paginate(25)->withQueryString(),
             'groups' => $groups,
-            'projects' => $this->projectOptions($user),
+            // Projekt-Auswahl der Gruppen-Buchung: x-project-options gruppiert
+            // selbst nach Kunde (data-customer/data-foreign für den
+            // clientseitigen Filter); kundenlose (interne) Projekte inklusive.
+            'projects' => Project::query()
+                ->withoutGlobalScopes()
+                ->where('organization_id', $user->organization_id)
+                ->orderBy('name')
+                ->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
             'foreignCustomers' => $foreignCustomers,
             'filters' => ['status' => $status, 'case' => $caseType, 'plugin' => $plugin, 'target' => $target, 'target_search' => $targetSearch],
             'assignTargetsTruncated' => $assignTargetsTruncated,
@@ -136,6 +143,7 @@ class IntegrationInboxController extends Controller {
             'pluginOpenCounts' => $pluginOpenCounts,
             'targets' => $registry->options(),
             'assignTargets' => $assignTargets,
+            'assignProjects' => $assignProjects,
             // Benutzer-Zuordnungsfälle (MVP-509): aktive interne Benutzer als
             // Buchungsziel — Portalkonten und deaktivierte sind ausgeschlossen.
             'orgUsers' => User::query()
@@ -189,13 +197,18 @@ class IntegrationInboxController extends Controller {
      * Bestehende lokale Datensätze je Ziel-Typ (für die „Zuordnen"-Auswahl bei
      * unmatched-Einträgen). Pro Typ auf ASSIGN_TARGET_LIMIT begrenzt; `$search`
      * (Filterleiste) grenzt die Auswahl serverseitig ein. Gekürzte Typen werden
-     * im zweiten Rückgabewert gemeldet, damit die Ansicht darauf hinweist.
+     * im zweiten Rückgabewert gemeldet, damit die Ansicht darauf hinweist; der
+     * dritte liefert die Projekt-Zeilen als Collection für x-project-options.
      *
-     * @return array{0: array<string, array<string, string>>, 1: array<string, bool>}  [targetType => [sqid => label], targetType => true]
+     * @return array{0: array<string, array<string, string>>, 1: array<string, bool>, 2: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Project>|null}
      */
     private function buildAssignTargets(User $user, MatchProfileRegistry $registry, string $search = ''): array {
         $out = [];
         $truncated = [];
+        // Projekt-Zeilen zusätzlich als Collection: das Assign-Dropdown rendert
+        // Projekte über x-project-options (Kundengruppierung) statt der flachen
+        // sqid-Label-Map.
+        $projectRows = null;
         foreach (array_keys($registry->options()) as $type) {
             if (! class_exists($type)) {
                 continue;
@@ -222,9 +235,12 @@ class IntegrationInboxController extends Controller {
                 $options[$row->getRouteKey()] = $label !== '' ? $label : ('#' . $row->getKey());
             }
             $out[$type] = $options;
+            if ($type === \App\Models\Project::class) {
+                $projectRows = $rows;
+            }
         }
 
-        return [$out, $truncated];
+        return [$out, $truncated, $projectRows];
     }
 
     /** Erste vorhandene Anzeige-/Sortierspalte des Ziel-Modells (oder null). */
@@ -304,55 +320,6 @@ class IntegrationInboxController extends Controller {
 
         /** @var class-string<Model> $class */
         return (new $class)->resolveRouteBinding($sqid);
-    }
-
-    /**
-     * Bestehende Projekte der Organisation als Auswahloptionen für die
-     * Gruppen-Buchung, gruppiert nach Kunde (Optgroup-Anzeige, per
-     * `customer_sqid` clientseitig auf den gewählten Kunden filterbar) — inkl.
-     * kundenloser (interner) Projekte, damit unter „Intern" ein vorhandenes
-     * Firmenprojekt gewählt werden kann (customer_id = null). Werte sind opake
-     * Sqids (nicht der Slug-Route-Key), damit Auswahl und Vorschlags-Preselect
-     * dieselbe Kennung sprechen.
-     *
-     * @return list<array{customer_sqid: string, label: string, projects: list<array{sqid: string, name: string, foreign_sqid: string, foreign_name: ?string}>}>
-     */
-    private function projectOptions(User $user): array {
-        $projects = Project::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $user->organization_id)
-            ->with('foreignCustomer:id,name')
-            ->orderBy('name')
-            ->get(['id', 'name', 'customer_id', 'foreign_customer_id']);
-
-        $companies = Customer::query()
-            ->withoutGlobalScopes()
-            ->whereIn('id', $projects->pluck('customer_id')->filter()->unique()->all())
-            ->get(['id', 'name', 'company'])
-            ->keyBy('id');
-
-        $out = [];
-        foreach ($projects as $project) {
-            $company = $project->customer_id !== null ? $companies->get($project->customer_id) : null;
-            $key = $company !== null ? (string) $company->sqid : '';
-            $out[$key] ??= [
-                'customer_sqid' => $key,
-                'label' => $company !== null
-                    ? (string) ($company->company ?: $company->name)
-                    : (string) __('Intern (ohne Kunde)'),
-                'projects' => [],
-            ];
-            $out[$key]['projects'][] = [
-                'sqid' => (string) $project->sqid,
-                'name' => (string) $project->name,
-                // Endkunde für Anzeige + clientseitige Fremdkunden-Filterung.
-                'foreign_sqid' => $project->foreignCustomer !== null ? (string) $project->foreignCustomer->sqid : '',
-                'foreign_name' => $project->foreignCustomer?->name,
-            ];
-        }
-        usort($out, fn(array $a, array $b): int => strcasecmp($a['label'], $b['label']));
-
-        return $out;
     }
 
     /**

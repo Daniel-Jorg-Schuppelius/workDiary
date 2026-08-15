@@ -24,11 +24,20 @@
     'span' => null,
     'hint' => null,
     'error' => null,
+    'searchable' => false, {{-- Suchfeld überm Select (filtert Optionen + Kunden-Optgroups live, app.js data-select-search) --}}
+    'recent' => null,      {{-- Collection<Project>: „Zuletzt verwendet"-Optgroup zuerst --}}
 ])
 
 <x-select-field :name="$name" :label="$label" :required="$required" :span="$span" :hint="$hint" :error="$error" {{ $attributes }}>
+    @if ($searchable)
+        <x-slot:beforeSelect>
+            <input type="search" data-select-search="{{ $name }}" autocomplete="off"
+                   class="input input-sm input-bordered mb-1 w-full"
+                   placeholder="{{ __('Projekt suchen…') }}" aria-label="{{ __('Projekt suchen…') }}">
+        </x-slot:beforeSelect>
+    @endif
     @if ($placeholder !== null)
         <option value="">{{ $placeholder }}</option>
     @endif
-    <x-project-options :projects="$projects" :selected="$selected" :group="$group" :data-parent="$dataParent" />
+    <x-project-options :projects="$projects" :selected="$selected" :group="$group" :data-parent="$dataParent" :recent="$recent" />
 </x-select-field>

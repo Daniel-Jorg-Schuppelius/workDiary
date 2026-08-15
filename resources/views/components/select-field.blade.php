@@ -32,6 +32,9 @@
         <label class="fieldset-label" for="{{ $name }}">{{ $label }}@if ($required) *@endif</label>
     @endif
 
+    {{-- Optionaler Einschub zwischen Label und Select (z. B. Suchfeld). --}}
+    @isset($beforeSelect){{ $beforeSelect }}@endisset
+
     <select
         name="{{ $name }}"
         id="{{ $name }}"

@@ -191,6 +191,12 @@ class ImportUserMappingTest extends TestCase {
         $this->assertSame((new Project)->getMorphClass(), $item->target_type);
         $this->assertSame(['name' => 'Neues Bauprojekt'], $item->mapped_snapshot);
 
+        // Inbox rendert das Zuordnen-Dropdown über x-project-options (Smoke).
+        $this->actingAs($this->admin)
+            ->get(route('admin.integration.inbox'))
+            ->assertOk()
+            ->assertSee('Testprojekt');
+
         // „Neu anlegen" aus der Inbox erzeugt das Projekt (MatchProfile-Registrierung).
         $this->actingAs($this->admin)
             ->post(route('admin.integration.inbox.create', $item))

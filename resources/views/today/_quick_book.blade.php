@@ -13,8 +13,7 @@
   (Projekt wählen, „Buchen" → Server-Redirect). Mit JS zusätzlich: Block per
   Drag auf ein Projekt-Ziel ziehen bzw. Ctrl/Cmd+Enter = buchen + weiter
   (resources/js/quick-book.js). Erwartet: $openBlocks, $quickBookProjects,
-  $quickBookTargets (Top 10 als Drag-Ziele), $quickBookRecent,
-  $quickBookByCustomer (Optgroups fürs Dropdown), $fmt.
+  $quickBookTargets (Top 10 als Drag-Ziele), $quickBookRecent, $fmt.
 --}}
 @if (! empty($openBlocks) && $quickBookProjects->isNotEmpty())
     <x-card as="section" data-qb-panel data-qb-url="{{ route('today.quick-book') }}">
@@ -60,26 +59,16 @@
                         <input type="hidden" name="started_at" value="{{ $block['started_at']->toIso8601String() }}">
                         <input type="hidden" name="ended_at" value="{{ $block['ended_at']->toIso8601String() }}">
                         <label class="sr-only" for="qb-project-{{ $loop->index }}">{{ __('Projekt') }}</label>
-                        {{-- Gruppiert statt flach: „Zuletzt verwendet" zuerst,
-                             danach je Kunde eine Optgroup — bei vielen
-                             Projekten sonst nicht mehr scanbar. --}}
+                        {{-- x-project-options: „Zuletzt verwendet" zuerst, danach
+                             Kunden-Optgroups; das Suchfeld filtert die Optionen
+                             live (app.js data-select-search). --}}
+                        <input type="search" data-select-search="qb-project-{{ $loop->index }}" autocomplete="off"
+                               class="input input-sm input-bordered w-28"
+                               placeholder="{{ __('Suchen…') }}" aria-label="{{ __('Projekt suchen…') }}">
                         <select id="qb-project-{{ $loop->index }}" name="project" required
-                                class="select select-sm select-bordered">
+                                class="select select-sm select-bordered w-64 max-w-full">
                             <option value="">{{ __('— Projekt —') }}</option>
-                            @if ($quickBookRecent->isNotEmpty())
-                                <optgroup label="{{ __('Zuletzt verwendet') }}">
-                                    @foreach ($quickBookRecent as $p)
-                                        <option value="{{ $p->sqid }}">{{ $p->name }}@if ($p->customer) · {{ $p->customer->name }}@endif</option>
-                                    @endforeach
-                                </optgroup>
-                            @endif
-                            @foreach ($quickBookByCustomer as $customerName => $group)
-                                <optgroup label="{{ $customerName }}">
-                                    @foreach ($group as $p)
-                                        <option value="{{ $p->sqid }}">{{ $p->name }}</option>
-                                    @endforeach
-                                </optgroup>
-                            @endforeach
+                            <x-project-options :projects="$quickBookProjects" :recent="$quickBookRecent" />
                         </select>
                         <button type="submit" class="btn btn-sm btn-primary">{{ __('Buchen') }}</button>
                     </form>

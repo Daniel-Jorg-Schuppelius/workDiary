@@ -62,6 +62,7 @@ return [
         'side_connections' => 'Microsoft-365-Nebenverbindungen brauchen Aufmerksamkeit (:intake Dokumenteingang, :backup Backup, :mail Mail — erneut anmelden oder Scopes prüfen).',
         'ok' => 'Verbunden — Kalenderliste abrufbar.',
         'failing' => 'Microsoft Graph nicht erreichbar oder Zugriff verweigert.',
+        'unreachable' => 'Microsoft Graph momentan nicht erreichbar (Netzwerk-/Timeout-Fehler).',
         'error' => 'Microsoft-Graph-Fehler (:class).',
     ],
 

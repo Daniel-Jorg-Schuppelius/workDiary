@@ -649,6 +649,36 @@ document.addEventListener("click", (event) => {
         bindRangeLinks(document);
     }
 
+    // Select-Suche (x-project-select searchable / Quick-Buchung): ein
+    // `input[data-select-search="<select-id>"]` filtert die Optionen des
+    // Selects live — Treffer über Options-Text UND Optgroup-Label (Kunde),
+    // Nichttreffer werden versteckt+deaktiviert, leere Optgroups ausgeblendet.
+    // Die Leer-Option und die aktuelle Auswahl bleiben unangetastet.
+    document.addEventListener("input", (e) => {
+        const input = /** @type {HTMLElement} */ (e.target).closest(
+            "input[data-select-search]",
+        );
+        if (!(input instanceof HTMLInputElement)) return;
+        const select = document.getElementById(input.dataset.selectSearch || "");
+        if (!(select instanceof HTMLSelectElement)) return;
+        const term = input.value.trim().toLowerCase();
+        select.querySelectorAll("option").forEach((opt) => {
+            if (opt.value === "") return;
+            const group = opt.closest("optgroup");
+            const hay = (
+                (opt.textContent || "") +
+                " " +
+                (group ? group.label : "")
+            ).toLowerCase();
+            const show = term === "" || hay.includes(term) || opt.selected;
+            opt.hidden = !show;
+            opt.disabled = !show;
+        });
+        select.querySelectorAll("optgroup").forEach((group) => {
+            group.hidden = !group.querySelector("option:not([hidden])");
+        });
+    });
+
     // Abhängige Dropdowns: ein "Kind"-Select (z. B. Projekt) mit
     // `data-depends-on="<name des Eltern-Selects>"` (z. B. "customer_id") wird
     // nach dem Eltern-Wert (Kunde) gefiltert. Jede Kind-<option> trägt

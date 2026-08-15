@@ -214,9 +214,13 @@ class ImportController extends Controller {
         $tagOptions = $hasPending && ! $isUserMapping
             ? \App\Models\Tag::query()->where('organization_id', $import->organization_id)->orderBy('name')->get(['id', 'name'])
             : collect();
+        // Für x-user-select: Sqid als Wert, Name + E-Mail als Label (die
+        // Adresse ist hier das Unterscheidungsmerkmal).
         $userOptions = $isUserMapping
             ? \App\Models\User::query()->where('organization_id', $import->organization_id)->orderBy('name')->get(['id', 'name', 'email'])
-            : collect();
+                ->map(fn (\App\Models\User $u): array => ['sqid' => $u->sqid, 'label' => $u->name . ' (' . $u->email . ')'])
+                ->all()
+            : [];
 
         // A13: Klassifikations-Auswahl (effektiver Katalog je Domäne) — nur für
         // Entitäten, deren Zielmodell Klassifikationen trägt.

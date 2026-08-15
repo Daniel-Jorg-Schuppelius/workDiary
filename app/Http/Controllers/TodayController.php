@@ -104,19 +104,9 @@ class TodayController extends Controller {
         $recentProjectIds = $isFuture ? collect() : $this->recentProjectIds($user);
         $projects = $isFuture ? collect() : $this->quickBookProjects($recentProjectIds);
         // Bei vielen Projekten bleibt die Quick-Buchung nur übersichtlich, wenn
-        // Drag-Ziele auf die relevanten Projekte begrenzt sind (Rest über das
-        // Dropdown) und das Dropdown nach Kunden gruppiert (statt einer flachen
-        // Liste, deren „zuletzt zuerst"-Sortierung dort willkürlich wirkt).
+        // Drag-Ziele auf die relevanten Projekte begrenzt sind; das Dropdown
+        // gruppiert x-project-options („Zuletzt verwendet" + Kunden-Optgroups).
         $recentProjects = $projects->filter(fn(Project $p): bool => $recentProjectIds->contains($p->id))->values();
-        $otherProjects = $projects->reject(fn(Project $p): bool => $recentProjectIds->contains($p->id));
-        $othersByCustomer = $otherProjects
-            ->filter(fn(Project $p): bool => $p->customer !== null)
-            ->groupBy(fn(Project $p): string => (string) $p->customer?->name)
-            ->sortKeys(SORT_NATURAL | SORT_FLAG_CASE);
-        $withoutCustomer = $otherProjects->filter(fn(Project $p): bool => $p->customer === null)->values();
-        if ($withoutCustomer->isNotEmpty()) {
-            $othersByCustomer->put(__('Ohne Kunde'), $withoutCustomer);
-        }
 
         return view('today.show', [
             'day' => $day,
@@ -125,7 +115,6 @@ class TodayController extends Controller {
             'quickBookProjects' => $projects,
             'quickBookTargets' => $projects->take(10),
             'quickBookRecent' => $recentProjects,
-            'quickBookByCustomer' => $othersByCustomer,
             'entryBarProjects' => $projects,
             'entryBarRecentIds' => $recentProjectIds,
             'allTags' => \App\Support\LookupCache::tagOptions(),
@@ -187,7 +176,7 @@ class TodayController extends Controller {
             ->where('status', ProjectStatus::Active)
             ->with('customer:id,name')
             ->orderBy('name')
-            ->get(['id', 'name', 'customer_id'])
+            ->get(['id', 'name', 'customer_id', 'foreign_customer_id'])
             ->sortBy(fn(Project $p): int => $recentIds->search($p->id) === false ? PHP_INT_MAX : (int) $recentIds->search($p->id))
             ->values();
     }

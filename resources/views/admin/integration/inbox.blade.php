@@ -381,13 +381,9 @@
                                 <input type="radio" name="project_mode" value="existing" class="radio radio-sm" @checked($suggestedProject !== null)>
                                 <select name="project" class="select select-sm select-bordered w-full">
                                     <option value="">{{ __('… auswählen') }}</option>
-                                    @foreach ($projects as $pGroup)
-                                        <optgroup label="{{ $pGroup['label'] }}" data-customer="{{ $pGroup['customer_sqid'] }}">
-                                            @foreach ($pGroup['projects'] as $p)
-                                                <option value="{{ $p['sqid'] }}" data-foreign="{{ $p['foreign_sqid'] }}" @selected($suggestedProject === $p['sqid'])>{{ $p['name'] }}@if ($p['foreign_name'] !== null) — {{ $p['foreign_name'] }}@endif</option>
-                                            @endforeach
-                                        </optgroup>
-                                    @endforeach
+                                    {{-- Projekt-Dropdowns immer über die Komponente; data-customer/
+                                         data-foreign speisen den Inbox-Kundenfilter (app.js). --}}
+                                    <x-project-options :projects="$projects" :selected="(string) ($suggestedProject ?? '')" :data-customer="true" :data-foreign="true" />
                                 </select>
                             </label>
                             <label class="label cursor-pointer justify-start gap-2 py-1" data-radio-activate>
@@ -617,9 +613,14 @@
                                         @csrf
                                         <select name="target" required class="join-item select select-sm select-bordered">
                                             <option value="">{{ __('… bestehendem zuordnen') }}</option>
-                                            @foreach ($assignTargets[$item->target_type] as $sqid => $label)
-                                                <option value="{{ $sqid }}">{{ $label }}</option>
-                                            @endforeach
+                                            @if ($item->target_type === \App\Models\Project::class && $assignProjects !== null)
+                                                {{-- Projekt-Dropdowns immer über die Komponente (Kundengruppierung). --}}
+                                                <x-project-options :projects="$assignProjects" />
+                                            @else
+                                                @foreach ($assignTargets[$item->target_type] as $sqid => $label)
+                                                    <option value="{{ $sqid }}">{{ $label }}</option>
+                                                @endforeach
+                                            @endif
                                         </select>
                                         <button class="join-item btn btn-sm">{{ __('Zuordnen') }}</button>
                                     </form>

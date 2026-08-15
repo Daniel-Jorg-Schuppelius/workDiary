@@ -62,6 +62,7 @@ return [
         'side_connections' => 'Las conexiones secundarias de Microsoft 365 requieren atención (:intake recepción de documentos, :backup copia de seguridad, :mail correo — vuelva a autenticarse o revise los permisos).',
         'ok' => 'Conectado: lista de calendarios disponible.',
         'failing' => 'Microsoft Graph inaccesible o acceso denegado.',
+        'unreachable' => 'Microsoft Graph no está accesible temporalmente (error de red o tiempo de espera).',
         'error' => 'Error de Microsoft Graph (:class).',
     ],
 

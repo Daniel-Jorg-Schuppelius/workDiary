@@ -107,12 +107,10 @@
                             <option value="user">{{ __('Benutzer zuordnen') }}</option>
                             <option value="ignore">{{ __('Zeilen überspringen') }}</option>
                         </select>
-                        <select name="mappings[{{ $i }}][user_id]" class="select select-sm select-bordered">
-                            <option value="">{{ __('– Benutzer wählen –') }}</option>
-                            @foreach ($userOptions as $userOption)
-                                <option value="{{ $userOption->sqid }}">{{ $userOption->name }} ({{ $userOption->email }})</option>
-                            @endforeach
-                        </select>
+                        <x-user-select :name="'mappings[' . $i . '][user_id]'" :id="'mapping-user-' . $i"
+                                       :users="$userOptions" value-key="sqid" label-key="label"
+                                       :placeholder="__('– Benutzer wählen –')"
+                                       class="select-sm max-w-xs" />
                     </div>
                 @endforeach
                 <x-button type="submit" tone="primary" size="sm" icon="save">{{ __('Zuordnung speichern') }}</x-button>

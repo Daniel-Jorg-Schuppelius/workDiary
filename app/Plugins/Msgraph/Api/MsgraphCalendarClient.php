@@ -15,6 +15,7 @@ use App\Models\MsgraphConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Support\Calendar\{RemoteCalendarEvent, RemoteCalendarGateway, RemoteCalendarItem};
 use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
+use GuzzleHttp\Exception\ConnectException;
 use RuntimeException;
 use Throwable;
 
@@ -131,6 +132,10 @@ class MsgraphCalendarClient implements GraphSubscriptionClient, RemoteCalendarGa
             $this->listCalendars();
 
             return true;
+        } catch (ConnectException $e) {
+            // Netzwerk-/DNS-Fehler durchreichen: der Healthcheck stuft sie als
+            // transient ein statt wie eine API-Ablehnung (false) zu behandeln.
+            throw $e;
         } catch (Throwable) {
             return false;
         }

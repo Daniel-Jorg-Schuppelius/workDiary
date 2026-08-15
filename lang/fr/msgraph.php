@@ -62,6 +62,7 @@ return [
         'side_connections' => 'Des connexions secondaires Microsoft 365 nécessitent une attention (:intake réception de documents, :backup sauvegarde, :mail courriel — réauthentifiez-vous ou vérifiez les scopes).',
         'ok' => 'Connecté — liste des calendriers disponible.',
         'failing' => 'Microsoft Graph injoignable ou accès refusé.',
+        'unreachable' => 'Microsoft Graph est momentanément injoignable (erreur réseau/délai d\'attente).',
         'error' => 'Erreur Microsoft Graph (:class).',
     ],
 

@@ -21,6 +21,7 @@ use App\Plugins\Support\Calendar\{OrganizationEventSource, RemoteCalendarEvent, 
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
 use App\Plugins\Support\PluginOrgContext;
 use Closure;
+use GuzzleHttp\Exception\ConnectException;
 use Psr\Http\Message\StreamInterface;
 use Throwable;
 
@@ -431,6 +432,10 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Con
             if (! (new MsgraphCalendarClient($connection))->ping()) {
                 return PluginHealth::failing(__('msgraph.health.failing'), 'unreachable');
             }
+        } catch (ConnectException) {
+            // Netzwerk-/DNS-Ausfall ist transient → degraded statt failing,
+            // zählt also nicht Richtung Auto-Disable (analog Lexoffice).
+            return PluginHealth::degraded(__('msgraph.health.unreachable'), 'network');
         } catch (Throwable $e) {
             return PluginHealth::failing(__('msgraph.health.error', ['class' => class_basename($e)]));
         }
