@@ -107,6 +107,7 @@ class TodayController extends Controller {
         // Drag-Ziele auf die relevanten Projekte begrenzt sind; das Dropdown
         // gruppiert x-project-options („Zuletzt verwendet" + Kunden-Optgroups).
         $recentProjects = $projects->filter(fn(Project $p): bool => $recentProjectIds->contains($p->id))->values();
+        $recentEntryTexts = $isFuture ? collect() : $this->recentEntryTexts($user, $projects);
 
         return view('today.show', [
             'day' => $day,
@@ -117,6 +118,7 @@ class TodayController extends Controller {
             'quickBookRecent' => $recentProjects,
             'entryBarProjects' => $projects,
             'entryBarRecentIds' => $recentProjectIds,
+            'entryBarRecentEntries' => $recentEntryTexts,
             'allTags' => \App\Support\LookupCache::tagOptions(),
             'recentTagIds' => $this->recentTimeEntryTagSqids((int) $user->id),
             'runningEntry' => $this->stopwatch->current($user),
@@ -160,6 +162,32 @@ class TodayController extends Controller {
             ->pluck('project_id')
             ->unique()
             ->take(10)
+            ->values();
+    }
+
+    /**
+     * Letzte unterschiedliche Buchungstexte des Nutzers (je mit Projekt) für
+     * den Quick-Pick der Eingabeleiste: Tippen im Beschreibungsfeld schlägt
+     * sie vor, die Übernahme setzt Text UND Projekt. Nur Projekte der aktiven
+     * Auswahlliste — sonst könnte die Übernahme das Projekt nicht wählen.
+     *
+     * @param  \Illuminate\Support\Collection<int, Project>  $projects
+     * @return \Illuminate\Support\Collection<int, TimeEntry>
+     */
+    private function recentEntryTexts(User $user, \Illuminate\Support\Collection $projects): \Illuminate\Support\Collection {
+        $projectIds = $projects->pluck('id')->all();
+
+        return TimeEntry::query()
+            ->where('user_id', $user->id)
+            ->whereNotNull('project_id')
+            ->whereNotNull('description')
+            ->where('description', '!=', '')
+            ->orderByDesc('date')
+            ->limit(200)
+            ->get(['description', 'project_id'])
+            ->unique(fn(TimeEntry $e): string => mb_strtolower(trim((string) $e->description)) . '|' . $e->project_id)
+            ->filter(fn(TimeEntry $e): bool => in_array($e->project_id, $projectIds, true))
+            ->take(20)
             ->values();
     }
 

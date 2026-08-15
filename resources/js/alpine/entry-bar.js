@@ -44,6 +44,10 @@ export function registerEntryBar(Alpine) {
             query: "",
             open: false,
             highlight: 0,
+            description: "",
+            recentEntries: [],
+            descOpen: false,
+            descHighlight: -1,
             selectedId: "",
             selectedName: "",
             taskId: "",
@@ -67,6 +71,11 @@ export function registerEntryBar(Alpine) {
                 this.startUrl = String(cfg.startUrl ?? "");
                 this.storeUrl = String(cfg.storeUrl ?? "");
                 this.isToday = cfg.isToday !== false;
+                this.description = String(cfg.description ?? "");
+                this.recentEntries = (cfg.recentEntries ?? []).map((e) => ({
+                    description: String(e.description ?? ""),
+                    projectId: String(e.projectId ?? ""),
+                }));
 
                 const storedMode = localStorage.getItem("wd.entrybar.mode");
                 if (storedMode === "timer" || storedMode === "manual") {
@@ -273,6 +282,72 @@ export function registerEntryBar(Alpine) {
                 this.open = false;
                 this.highlight = 0;
                 this.fetchOptions(project.id);
+            },
+
+            // ── Beschreibungs-Quick-Pick ────────────────────────────────────
+            // Tippen im „Woran arbeitest du?"-Feld schlägt die letzten
+            // Buchungstexte vor; die Übernahme vervollständigt den Text und
+            // wählt das Projekt (Kunde sichtbar in der zweiten Zeile).
+            get descSuggestions() {
+                const q = this.description.trim().toLowerCase();
+                if (q.length < 2) return [];
+                return this.recentEntries
+                    .filter((e) => {
+                        const d = e.description.toLowerCase();
+                        return d.includes(q) && d !== q;
+                    })
+                    .slice(0, 8)
+                    .map((e) => {
+                        const p = this.projects.find((x) => x.id === e.projectId) || null;
+                        return {
+                            description: e.description,
+                            projectId: e.projectId,
+                            projectLabel: p ? (p.customer ? p.name + " · " + p.customer : p.name) : "",
+                        };
+                    });
+            },
+            get showDescMenu() {
+                return this.descOpen && this.descSuggestions.length > 0;
+            },
+            descFocus() {
+                this.descOpen = true;
+            },
+            descInput() {
+                this.descOpen = true;
+                this.descHighlight = -1;
+            },
+            closeDescMenu() {
+                this.descOpen = false;
+                this.descHighlight = -1;
+            },
+            descOptionClass(idx) {
+                return idx === this.descHighlight ? "menu-active" : "";
+            },
+            setDescHighlight(idx) {
+                this.descHighlight = idx;
+            },
+            descMove(dir) {
+                const len = this.descSuggestions.length;
+                if (!len) return;
+                this.descOpen = true;
+                this.descHighlight = (this.descHighlight + dir + len) % len;
+            },
+            descEnter() {
+                const list = this.descSuggestions;
+                if (this.showDescMenu && this.descHighlight >= 0 && this.descHighlight < list.length) {
+                    this.pickSuggestion(list[this.descHighlight]);
+                    return;
+                }
+                // Enter ist am Input generell preventDefault (CSP-Build ohne
+                // $event) — ohne offene Auswahl den normalen Submit nachholen.
+                this.closeDescMenu();
+                this.$root.requestSubmit();
+            },
+            pickSuggestion(s) {
+                if (!s) return;
+                this.description = s.description;
+                this.choose(this.projects.find((x) => x.id === s.projectId) || null);
+                this.closeDescMenu();
             },
 
             // ── Projektabhängige Optionen (Aufgabe/Auftrag) ─────────────────

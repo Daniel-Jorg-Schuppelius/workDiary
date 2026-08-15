@@ -43,6 +43,13 @@
                     'customer' => $p->customer?->name,
                     'recent' => $entryBarRecentIds->contains($p->id),
                 ])->values()->all(),
+                // Quick-Pick: letzte Buchungstexte (Projekt-Lookup über die
+                // projects-Liste oben — daher nur die Sqid).
+                'recentEntries' => $entryBarRecentEntries->map(fn ($e) => [
+                    'description' => (string) $e->description,
+                    'projectId' => \App\Support\Sqid::encode(\App\Models\Project::class, (int) $e->project_id),
+                ])->values()->all(),
+                'description' => old('description'),
                 'optionsUrl' => route('today.entry-bar.options', ['project' => '__ID__']),
                 'startUrl' => route('stopwatch.start'),
                 'storeUrl' => route('today.entry-bar.store'),
@@ -66,11 +73,37 @@
             {{-- Alles in einer Zeile (bricht nur auf schmalen Screens um). --}}
             <div class="flex flex-wrap items-center gap-2">
                 {{-- basis-40: schmale Plan-Breite, damit die Zeile nicht wegen der
-                     Browser-Default-Breite des Inputs umbricht; flex-1 füllt danach. --}}
-                <input type="text" name="description" maxlength="500"
-                       class="input input-bordered input-sm min-w-40 basis-40 flex-1"
-                       placeholder="{{ __('Woran arbeitest du?') }}"
-                       value="{{ old('description') }}">
+                     Browser-Default-Breite des Inputs umbricht; flex-1 füllt danach.
+                     Quick-Pick (MVP): Tippen schlägt die letzten Buchungstexte vor —
+                     Übernahme vervollständigt den Text und wählt Projekt + Kunde. --}}
+                <div class="relative min-w-40 basis-40 flex-1" @click.outside="closeDescMenu()">
+                    <input type="text" name="description" maxlength="500"
+                           x-model="description"
+                           @focus="descFocus()"
+                           @input="descInput()"
+                           @keydown.enter.prevent="descEnter()"
+                           @keydown.arrow-down.prevent="descMove(1)"
+                           @keydown.arrow-up.prevent="descMove(-1)"
+                           @keydown.escape="closeDescMenu()"
+                           class="input input-bordered input-sm w-full"
+                           placeholder="{{ __('Woran arbeitest du?') }}"
+                           value="{{ old('description') }}">
+                    <ul x-show="showDescMenu" x-cloak x-transition.opacity
+                        class="menu menu-sm absolute z-30 mt-1 w-full max-h-72 flex-nowrap overflow-y-auto rounded-box border border-base-300 bg-base-100 shadow-lg">
+                        <template x-for="(s, idx) in descSuggestions" :key="idx">
+                            <li>
+                                <button type="button"
+                                        class="flex flex-col items-start gap-1 py-2"
+                                        :class="descOptionClass(idx)"
+                                        @mouseenter="setDescHighlight(idx)"
+                                        @click="pickSuggestion(s)">
+                                    <span class="font-medium leading-tight" x-text="s.description"></span>
+                                    <span class="text-xs leading-tight opacity-60" x-show="s.projectLabel" x-text="s.projectLabel"></span>
+                                </button>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
 
                 {{-- Projekt-Combobox: tippen filtert (zuletzt genutzte zuerst). --}}
                 <div class="relative w-full sm:w-78" @click.outside="closeMenu()">

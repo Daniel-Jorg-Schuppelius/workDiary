@@ -229,4 +229,21 @@ class TimeEntryBarTest extends TestCase {
             ->getJson(route('today.entry-bar.options', ['project' => $foreignSqid]))
             ->assertNotFound();
     }
+
+    public function test_entry_bar_config_contains_recent_entry_texts_for_quick_pick(): void {
+        TimeEntry::query()->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'date' => '2026-07-06',
+            'minutes' => 60,
+            'description' => 'Serverwartung Kunde Kalle',
+        ]);
+
+        $this->actingAs($this->user)
+            ->get(route('today.show'))
+            ->assertOk()
+            ->assertSee('recentEntries')
+            ->assertSee('Serverwartung Kunde Kalle');
+    }
 }
