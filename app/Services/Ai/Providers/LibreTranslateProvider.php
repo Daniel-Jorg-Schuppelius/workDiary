@@ -12,87 +12,29 @@ declare(strict_types=1);
 
 namespace App\Services\Ai\Providers;
 
-use App\Services\Ai\Contracts\TranslationProviderInterface;
-use App\Services\Ai\Dto\{AiTranslationResult, AiUsage, GlossaryEntry, TranslateRequest};
+use GuzzleHttp\Client as GuzzleClient;
+use TranslationToolkit\Providers\{AbstractHttpTranslationProvider, LibreTranslateProvider as ToolkitLibre};
 
 /**
- * LibreTranslate, selbst gehostet (Feature 025, MVP-410): On-Premise-
- * Übersetzung ohne natives Glossar. Terminologie wird app-seitig über
- * Platzhalter erzwungen: Glossarbegriffe werden vor der Übersetzung
- * durch stabile Token ersetzt und danach durch die Zielübersetzung —
- * dadurch deterministisch. Qualitätshinweis (unter DeepL-Niveau,
- * Pivot über Englisch) steht in der Verbindungs-Hilfe.
+ * LibreTranslate, selbst gehostet (Feature 025, MVP-410) über das
+ * php-translation-toolkit: On-Premise-Übersetzung ohne natives Glossar.
+ * Terminologie wird über Token-Maskierung erzwungen — Glossarbegriffe gehen
+ * als stabile Token raus und kommen als Zielübersetzung zurück. Der
+ * Qualitätshinweis (unter DeepL-Niveau, Pivot über Englisch) steht in der
+ * Verbindungs-Hilfe. Der API-Schlüssel ist optional.
  */
-class LibreTranslateProvider extends AbstractHttpAiProvider implements TranslationProviderInterface {
+class LibreTranslateProvider extends AbstractTranslationAdapter {
     protected function baseUrl(): string {
         return rtrim($this->connection->base_url ?: 'http://localhost:5000', '/');
     }
 
-    /** @return array<string, string> */
-    protected function headers(): array {
-        return [];
-    }
+    protected function makeProvider(?GuzzleClient $transport): AbstractHttpTranslationProvider {
+        $key = (string) $this->connection->api_key;
 
-    public function preflight(): void {
-        $this->getJson('/languages');
-    }
-
-    public function translate(TranslateRequest $request): AiTranslationResult {
-        $entries = array_values(array_filter(
-            $request->glossary,
-            static fn (GlossaryEntry $e): bool => filled($e->translation)
-        ));
-
-        [$prepared, $tokens] = $this->maskTerms($request->text, $entries);
-
-        $payload = [
-            'q' => $prepared,
-            'source' => strtolower($request->sourceLanguage ?? 'auto'),
-            'target' => strtolower($request->targetLanguage),
-            'format' => $request->format === 'html' ? 'html' : 'text',
-        ];
-        if (filled($this->connection->api_key)) {
-            $payload['api_key'] = (string) $this->connection->api_key;
-        }
-
-        $response = $this->postJson('/translate', $payload);
-
-        $translated = (string) $response->json('translatedText', '');
-        foreach ($tokens as $token => $translation) {
-            $translated = str_replace($token, $translation, $translated);
-        }
-
-        return new AiTranslationResult(
-            text: $translated,
-            deterministicTerminology: $tokens !== [],
-            detectedSourceLanguage: $response->json('detectedLanguage.language'),
-            usage: new AiUsage(characters: mb_strlen($request->text)),
+        return new ToolkitLibre(
+            baseUrl: $this->baseUrl(),
+            apiKey: $key !== '' ? $key : null,
+            httpClient: $transport,
         );
-    }
-
-    /**
-     * Glossarbegriffe durch übersetzungsstabile Token ersetzen.
-     *
-     * @param list<GlossaryEntry> $entries
-     * @return array{0: string, 1: array<string, string>} [präparierter Text, Token → Zielübersetzung]
-     */
-    private function maskTerms(string $text, array $entries): array {
-        $tokens = [];
-        foreach ($entries as $i => $entry) {
-            $token = sprintf('WDTERM%dX', $i);
-            $masked = preg_replace(
-                '/' . preg_quote($entry->term, '/') . '/iu',
-                $token,
-                $text,
-                -1,
-                $count
-            );
-            if ($masked !== null && $count > 0) {
-                $text = $masked;
-                $tokens[$token] = (string) $entry->translation;
-            }
-        }
-
-        return [$text, $tokens];
     }
 }

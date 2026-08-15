@@ -11,7 +11,7 @@ geschrieben wird, gilt:
 
 1. **Erst die Toolkits prüfen.** Nachschlagen in der Capability-Map im
    Schwester-Repo: [toolkit-capability-map.md](../WorkDiary-Architecture/toolkit-capability-map.md)
-   (öffentliche API-Oberfläche aller acht Toolkits). Bei Unsicherheit die
+   (öffentliche API-Oberfläche aller Toolkits). Bei Unsicherheit die
    Zielklasse unter `vendor/<paket>/src/...` gegenlesen.
 2. **Existiert die Funktion → direkt nutzen** (an der Aufrufstelle, **keine
    dünnen Wrapper/Fassaden** um Einzelaufrufe).
@@ -39,6 +39,7 @@ Rückwärtskompatibilität vergleichen. Nach einer Migration: betroffene Tests +
 | orgamax-php-sdk | `Orgamax\` | orgaMAX-Buchhaltung REST-API: Kunden/Lieferanten/Artikel, Aufträge, Rechnungen (Zahlung/Lock/Versand/PDF), Dateien, To-dos — Basis des OrgaMax-Plugins |
 | php-api-toolkit | `APIToolkit\` | HTTP-/API-Client-Fundament (Basis der SDKs): `ClientAbstract` mit Retry/Backoff/Retry-After und injizierbarem Guzzle, Auth inkl. OAuth2 (PKCE/Revocation), `CursorPaginator`, typisierte HTTP-Exceptions — Plugins beziehen ihre Clients über `App\Plugins\Support\PluginHttpFactory` (`client()`/`sdkClient()`/`clientCredentialsGrant()`); die frühere `PluginHttp`-Klasse existiert nicht mehr |
 | php-error-toolkit | `ERRORToolkit\` | Logging-Fundament aller Toolkits: `LoggerRegistry` (+ Laravel-Bridge: auto-discovertes ServiceProvider leitet Toolkit-Logs in den Laravel-Log-Channel, ENV `ERROR_TOOLKIT_LOG_CHANNEL`), `ErrorLog`-Trait, Datei-/Konsolen-Logger, FileSystem-Exceptions |
+| php-translation-toolkit | `TranslationToolkit\` | Maschinelle Übersetzung: `TranslationService` (Cache→Provider→Usage-Listener), Provider DeepL/Azure Translator/LibreTranslate inkl. Glossar-Erzwingung, `TranslationRegistry`. Die Adapter unter `app/Services/Ai/Providers/` (Basis `AbstractTranslationAdapter`) verbinden nur noch `AiProviderConnection`/`TranslateRequest` mit dem Toolkit — **Übersetzungsprotokolle gehören ins Toolkit**, app-seitig bleiben Geschäftsregeln (DeepL-Free-Sperre, Gedächtnis-Glossar, Budget, Fehler-Redaktion) |
 
 ### Bewusst app-lokal (nicht erneut vorschlagen)
 

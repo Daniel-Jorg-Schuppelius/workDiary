@@ -102,6 +102,35 @@ class TranslationProvidersTest extends TestCase {
         $fake->assertNotSent(fn (RequestInterface $r): bool => str_ends_with(rtrim((string) $r->getUri(), '/'), '/v3/glossaries'));
     }
 
+    public function test_deepl_skips_glossary_sync_while_terminology_is_unchanged(): void {
+        $fake = FakePluginHttp::fake([
+            'https://api.deepl.com/v3/glossaries' => ['glossary_id' => 'g-123'],
+            'https://api.deepl.com/v2/translate*' => ['translations' => [['text' => 'ok']]],
+        ]);
+
+        $glossaryCalls = static fn (): int => count(array_filter(
+            $fake->recorded(),
+            static fn (array $entry): bool => str_contains((string) $entry['request']->getUri(), '/v3/glossaries')
+        ));
+
+        $connection = $this->deeplConnection();
+        // Erster Aufruf legt das Glossar an und merkt den Fingerprint …
+        $this->provider($connection)->translate($this->request());
+
+        $this->assertSame(1, $glossaryCalls());
+        $this->assertNotEmpty(
+            data_get($connection->fresh()->options, 'deepl_glossary_fingerprint'),
+            'Der Fingerprint muss an der Verbindung persistiert werden'
+        );
+
+        // … ein zweiter Provider (neue Instanz = neuer Prozess) darf bei
+        // unverändertem Glossar nicht erneut synchronisieren.
+        $result = $this->provider($connection->fresh())->translate($this->request());
+
+        $this->assertTrue($result->deterministicTerminology);
+        $this->assertSame(1, $glossaryCalls(), 'Unverändertes Glossar darf keinen zweiten Sync auslösen');
+    }
+
     public function test_deepl_without_glossary_translations_skips_glossary(): void {
         $fake = FakePluginHttp::fake([
             'https://api.deepl.com/v2/translate*' => ['translations' => [['text' => 'ok']]],
@@ -156,22 +185,26 @@ class TranslationProvidersTest extends TestCase {
             'api_key' => null,
         ]);
 
+        $sent = '';
         FakePluginHttp::fake([
-            'http://libre.intern:5000/translate*' => function (RequestInterface $r): Psr7Response {
-                $body = json_decode((string) $r->getBody(), true);
-                // Begriff muss maskiert ankommen …
-                assert(str_contains((string) $body['q'], 'WDTERM0X'));
+            'http://libre.intern:5000/translate*' => function (RequestInterface $r) use (&$sent): Psr7Response {
+                $sent = (string) $r->getBody();
 
-                // … und der Fake „übersetzt" um den Token herum.
+                // Der Fake „übersetzt" um den Maskierungs-Token herum.
+                // Bei Array-`q` antwortet LibreTranslate ebenfalls mit Arrays.
                 return FakePluginHttp::response([
-                    'translatedText' => 'The WDTERM0X was extended.',
-                    'detectedLanguage' => ['language' => 'de'],
+                    'translatedText' => ['The XLTTERM0X was extended.'],
+                    'detectedLanguage' => [['language' => 'de']],
                 ]);
             },
         ]);
 
         $result = $this->provider($connection)->translate($this->request());
 
+        // Begriff geht maskiert raus …
+        $this->assertStringContainsString('XLTTERM0X', $sent);
+        $this->assertStringNotContainsString('Wartungsvertrag', $sent);
+        // … und kommt als feste Zielübersetzung zurück.
         $this->assertTrue($result->deterministicTerminology);
         $this->assertSame('The maintenance agreement was extended.', $result->text);
     }
