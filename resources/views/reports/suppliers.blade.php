@@ -106,6 +106,7 @@
                             <x-table.th sort type="number" align="right">{{ __('Bestellungen') }}</x-table.th>
                             <x-table.th sort type="number" align="right">{{ __('Offene Bestellungen') }}</x-table.th>
                         @endif
+                        <x-table.th></x-table.th>
                     </tr>
                 </x-slot:head>
                 @foreach ($rows as $row)
@@ -113,10 +114,6 @@
                     <tr>
                         <td class="font-medium">
                             <a href="{{ $supplierUrl($row['supplierId']) }}" class="link link-hover" title="{{ __('Lieferantenakte öffnen') }}">{{ $row['supplierName'] }}</a>
-                            <a href="{{ $voucherUrl }}" class="text-base-content/50 hover:text-base-content"
-                               aria-label="{{ __('Belege im Zeitraum öffnen') }}" title="{{ __('Belege im Zeitraum öffnen') }}">
-                                <span class="material-symbols-outlined text-[14px] align-middle" aria-hidden="true">calendar_month</span>
-                            </a>
                         </td>
                         <td class="text-right tabular-nums">
                             <a href="{{ $voucherUrl }}" class="link link-hover">{{ $eur($row['spend']) }}</a>
@@ -146,6 +143,9 @@
                             <td class="text-right tabular-nums">{{ $row['orderCount'] ?? 0 }}</td>
                             <td class="text-right tabular-nums">{{ $row['openOrderCount'] ?? 0 }}</td>
                         @endif
+                        <td class="text-right">
+                            <x-icon-btn icon="receipt_long" :href="$voucherUrl" :label="__('Belege im Zeitraum öffnen')" />
+                        </td>
                     </tr>
                 @endforeach
             </x-table>

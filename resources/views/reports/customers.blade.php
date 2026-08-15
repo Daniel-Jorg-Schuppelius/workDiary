@@ -133,6 +133,7 @@
                         <x-table.th sort type="number" align="right">{{ __('Eskaliert') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Ø Min./Auftrag') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Trend 30d') }}</x-table.th>
+                        <x-table.th></x-table.th>
                     </tr>
                 </x-slot:head>
                 @foreach($rows as $row)
@@ -148,10 +149,6 @@
                         <td class="font-medium">
                             <a href="{{ $customerUrl($row['customerId']) }}" class="link link-hover" title="{{ __('Kundenakte öffnen') }}">
                                 {{ $row['customerName'] }}
-                            </a>
-                            <a href="{{ $diaryUrl }}" class="text-base-content/50 hover:text-base-content"
-                               aria-label="{{ __('Einträge im Zeitraum öffnen') }}" title="{{ __('Einträge im Zeitraum öffnen') }}">
-                                <span class="material-symbols-outlined text-[14px] align-middle" aria-hidden="true">calendar_month</span>
                             </a>
                         </td>
                         <td class="text-right tabular-nums">
@@ -174,6 +171,9 @@
                         </td>
                         <td class="text-right tabular-nums">{{ $row['avgEntryMinutes'] }}</td>
                         <td class="text-right tabular-nums">{{ $row['trend30d'] }}</td>
+                        <td class="text-right">
+                            <x-icon-btn icon="list_alt" :href="$diaryUrl" :label="__('Einträge im Zeitraum öffnen')" />
+                        </td>
                     </tr>
                 @endforeach
             </x-table>
