@@ -312,7 +312,11 @@ class ProjectTimeSpec extends AbstractEntitySpec implements HasMappableValues, I
             'external_id' => $externalId !== '' ? $externalId : null,
             'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
             'remote_snapshot' => $row,
-            'mapped_snapshot' => $row,
+            // Projektförmig (Ziel ist Project): Matcher-Strategien und das
+            // „Neu anlegen"-Profil arbeiten mit diesen Attributen — die rohe
+            // Zeitzeile bliebe sonst ein Projekt ohne Namen (remote_snapshot
+            // behält die Originalzeile).
+            'mapped_snapshot' => ['name' => $projectName],
             'display_title' => $projectName,
             'display_subtitle' => trim(((string) ($row['user_email'] ?? '')) . ' · ' . ((string) ($row['date'] ?? ''))),
         ])->save();

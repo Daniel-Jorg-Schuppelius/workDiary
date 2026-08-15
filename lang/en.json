@@ -7531,6 +7531,7 @@
     "Toggl-Export als ZIP hochladen": "Upload Toggl export as ZIP",
     "Toggl-Import": "Toggl import",
     "Toggl-Projekt": "Toggl project",
+    "Toggl-Stunden-Quota erschöpft — Übertragung pausiert bis zum Reset.": "Toggl hourly quota exhausted — transfer paused until the reset.",
     "Toggl-Workspace": "Toggl workspace",
     "Toggl-Workspace-Import": "Toggl workspace import",
     "Toggl-Workspace-Import (API)": "Toggl workspace import (API)",

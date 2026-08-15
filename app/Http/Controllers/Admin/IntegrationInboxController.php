@@ -252,7 +252,14 @@ class IntegrationInboxController extends Controller {
 
     public function create(IntegrationInboxItem $item, InboxActionService $service): RedirectResponse {
         $this->guard($item);
-        $model = $service->createFromItem($item);
+
+        try {
+            $model = $service->createFromItem($item);
+        } catch (\RuntimeException $e) {
+            // Ziel-Typ ohne Anlege-Profil (oder fachliche Sperre) — als
+            // Meldung zeigen, nicht als Fehlerseite (Muster acceptRemote).
+            return back()->with('error', $e->getMessage());
+        }
 
         return back()->with('success', __('Neuer Datensatz angelegt und zugeordnet (#:id).', ['id' => $model->getKey()]));
     }

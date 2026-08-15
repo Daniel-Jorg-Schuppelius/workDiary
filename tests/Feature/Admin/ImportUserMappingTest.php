@@ -84,7 +84,7 @@ class ImportUserMappingTest extends TestCase {
     }
 
     public function test_case_insensitive_email_matches_account_directly(): void {
-        User::factory()->create([
+        $account = User::factory()->create([
             'organization_id' => $this->organization->id,
             'email' => 'Daniel.Test@Example.com',
         ]);
@@ -96,7 +96,7 @@ class ImportUserMappingTest extends TestCase {
         $this->actingAs($this->admin)->post(route('admin.imports.confirm', $run))->assertRedirect();
 
         $entry = TimeEntry::query()->firstOrFail();
-        $this->assertSame('Daniel.Test@Example.com', $entry->user->email);
+        $this->assertSame($account->id, $entry->user_id);
         $this->assertSame($this->project->id, $entry->project_id);
     }
 
@@ -171,5 +171,38 @@ class ImportUserMappingTest extends TestCase {
         $run = $this->preflight($csv, 'attendances');
 
         $this->assertSame(['user_email' => ['extern@fremd.de']], $run->unresolved_values);
+    }
+
+    public function test_unmatched_project_stages_and_inbox_create_books_on_reimport(): void {
+        User::factory()->create([
+            'organization_id' => $this->organization->id,
+            'email' => 'worker2@example.com',
+        ]);
+        $csv = "user_email;date;start_time;end_time;project\nworker2@example.com;2026-01-05;09:00;10:00;Neues Bauprojekt\n";
+
+        $run = $this->preflight($csv);
+        $this->actingAs($this->admin)->post(route('admin.imports.confirm', $run))->assertRedirect();
+
+        // Unbekanntes Projekt: nichts gebucht, Zeile projektförmig in der Inbox.
+        $this->assertSame(0, TimeEntry::query()->count());
+        $item = \App\Models\IntegrationInboxItem::query()
+            ->where('plugin_id', \App\Models\IntegrationInboxItem::PLUGIN_CSV)
+            ->firstOrFail();
+        $this->assertSame((new Project)->getMorphClass(), $item->target_type);
+        $this->assertSame(['name' => 'Neues Bauprojekt'], $item->mapped_snapshot);
+
+        // „Neu anlegen" aus der Inbox erzeugt das Projekt (MatchProfile-Registrierung).
+        $this->actingAs($this->admin)
+            ->post(route('admin.integration.inbox.create', $item))
+            ->assertRedirect()
+            ->assertSessionHas('success');
+        $project = Project::query()->whereRaw('LOWER(name) = ?', ['neues bauprojekt'])->firstOrFail();
+        $this->assertNotSame('', (string) $project->slug);
+
+        // Idempotenter Wiederholimport bucht die Zeile jetzt auf das neue Projekt.
+        $rerun = $this->preflight($csv);
+        $this->actingAs($this->admin)->post(route('admin.imports.confirm', $rerun))->assertRedirect();
+        $entry = TimeEntry::query()->firstOrFail();
+        $this->assertSame($project->id, $entry->project_id);
     }
 }

@@ -14,6 +14,7 @@ namespace App\Jobs;
 
 use App\Enums\Import\{ImportErrorCode, ImportRunState};
 use App\Models\{AuditLog, ImportRun, ImportRunError};
+use App\Plugins\Support\TimeWritebackObserver;
 use App\Services\Import\{CsvPreflightAnalyzer, EntitySpecRegistry, ImportOutcome};
 use App\Services\Import\Source\ImportSourceFactory;
 use Carbon\CarbonImmutable;
@@ -219,7 +220,12 @@ class ProcessCsvImportJob implements ShouldQueue {
         $skipped = 0;
         $failed = 0;
 
-        DB::transaction(function () use ($run, $spec, $chunk, $organization, &$created, &$updated, &$skipped, &$failed): void {
+        // Massenimport: kein Create-/Update-Spiegel je Zeile in die Plugin-
+        // Outbox (Muster MatchingTimeImportService) — sonst flutet ein Import
+        // die externen APIs (z. B. Toggl-Stunden-Quota). Volle Closure statt
+        // Arrow-Fn: die Zähler-Referenzen müssen die äußeren Variablen treffen.
+        TimeWritebackObserver::suppressed(function () use ($run, $spec, $chunk, $organization, &$created, &$updated, &$skipped, &$failed): void {
+            DB::transaction(function () use ($run, $spec, $chunk, $organization, &$created, &$updated, &$skipped, &$failed): void {
             foreach ($chunk as $entry) {
                 $issues = $spec->validateRow($entry['norm'], $organization);
                 if ($issues !== []) {
@@ -266,6 +272,7 @@ class ProcessCsvImportJob implements ShouldQueue {
                         break;
                 }
             }
+            });
         });
 
         return [$created, $updated, $skipped, $failed];

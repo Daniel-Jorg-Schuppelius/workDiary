@@ -10,9 +10,12 @@
 
 namespace App\Plugins\Toggl\Services;
 
+use APIToolkit\Exceptions\{PaymentRequiredException, TooManyRequestsException};
 use App\Models\{ExternalReference, IntegrationOutboxEntry, Organization, Project, TimeEntry};
 use App\Plugins\Support\{MatchingTimeImportService, MirrorsCreatedEntries, RemoteTimeWriter, TimeWritebackDispatcher};
+use App\Plugins\Toggl\Exceptions\TogglApiException;
 use App\Plugins\Toggl\Sources\TogglApiClient;
+use App\Plugins\Toggl\Support\TogglQuotaGuard;
 use App\Plugins\Toggl\{TogglConfig, TogglExportService, TogglPlugin};
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Log;
@@ -104,6 +107,12 @@ class TogglOutboxDispatcher extends TimeWritebackDispatcher implements MirrorsCr
             return true; // inzwischen deaktiviert → erledigt
         }
 
+        // Quota-Pause: kein API-Call — der Eintrag hat keine Toggl-Referenz,
+        // der stündliche toggl:push holt ihn nach dem Reset nach.
+        if (TogglQuotaGuard::isPaused($outbox->organization_id)) {
+            return true;
+        }
+
         $payload = $outbox->payload;
         $timeEntry = TimeEntry::query()
             ->withoutGlobalScopes()
@@ -127,9 +136,31 @@ class TogglOutboxDispatcher extends TimeWritebackDispatcher implements MirrorsCr
                 'time_entry_id' => $timeEntry->getKey(),
                 'error' => $e->getMessage(),
             ]);
+        } catch (PaymentRequiredException|TooManyRequestsException $e) {
+            // Stunden-Quota erschöpft: weitere Zustellversuche verbrennen nur
+            // API-Calls für dieselbe Antwort → Zustellung pausieren; der
+            // stündliche toggl:push holt die Einträge nach dem Reset nach.
+            $this->pauseForQuota($outbox, $timeEntry, $e);
+        } catch (TogglApiException $e) {
+            // Der Toggl-Client wrappt POST-Fehler statusbasiert — Quota-Codes
+            // pausieren wie oben, alles andere behält Retry/Kompensation.
+            if ($e->status !== 402 && ! $e->isRateLimited()) {
+                throw $e;
+            }
+            $this->pauseForQuota($outbox, $timeEntry, $e);
         }
 
         // pushSingle=false ist ein bewusster Drop (unmapptes Projekt o. ä.).
         return true;
+    }
+
+    /** Quota-Pause setzen und den ausgelassenen Push nachvollziehbar loggen. */
+    private function pauseForQuota(IntegrationOutboxEntry $outbox, TimeEntry $timeEntry, \Throwable $e): void {
+        $seconds = TogglQuotaGuard::pauseFromException($outbox->organization_id, $e);
+        Log::warning('Toggl-Create-Push: Quota erschöpft, Zustellung pausiert.', [
+            'organization_id' => $outbox->organization_id,
+            'time_entry_id' => $timeEntry->getKey(),
+            'pause_seconds' => $seconds,
+        ]);
     }
 }

@@ -17,8 +17,10 @@ use App\Models\{ExternalReference, Organization, Project, TimeEntry};
 use App\Plugins\Support\{AbstractTimeEntryPushService, MatchingTimeImportService, RemoteTimeFingerprint};
 use App\Plugins\Toggl\Exceptions\TogglApiException;
 use App\Plugins\Toggl\Sources\TogglApiClient;
+use App\Plugins\Toggl\Support\TogglQuotaGuard;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Überträgt in workDiary erfasste Zeiten (z. B. AnyDesk-/RemoteSupport-
@@ -55,6 +57,10 @@ class TogglExportService extends AbstractTimeEntryPushService {
             return (string) __('Toggl-Übertragung ist deaktiviert (Plugin-Einstellung „Zeit-Übertragung aktivieren").');
         }
 
+        if (TogglQuotaGuard::isPaused((int) $organization->id)) {
+            return (string) __('Toggl-Stunden-Quota erschöpft — Übertragung pausiert bis zum Reset.');
+        }
+
         $this->client = new TogglApiClient(
             is_string($config['api_token'] ?? null) ? $config['api_token'] : null,
             is_string($config['base_url'] ?? null) ? $config['base_url'] : 'https://api.track.toggl.com/api/v9',
@@ -69,7 +75,7 @@ class TogglExportService extends AbstractTimeEntryPushService {
             return (string) __('Kein Projekt ist einem Toggl-Projekt zugeordnet (zuerst Sync ausführen bzw. Inbox-Gruppen buchen).');
         }
 
-        $this->resolveWorkspaces($config);
+        $this->resolveWorkspaces((int) $organization->id, $config);
         if ($this->fallbackWorkspaceId === null && $this->workspaceByTogglProject === []) {
             return (string) __('Kein Toggl-Workspace auflösbar (Workspace-ID in den Plugin-Einstellungen hinterlegen).');
         }
@@ -221,7 +227,7 @@ class TogglExportService extends AbstractTimeEntryPushService {
      *
      * @param  array<string, mixed>  $config
      */
-    private function resolveWorkspaces(array $config): void {
+    private function resolveWorkspaces(int $organizationId, array $config): void {
         assert($this->client instanceof TogglApiClient);
 
         if (is_numeric($config['workspace_id'] ?? null)) {
@@ -230,19 +236,30 @@ class TogglExportService extends AbstractTimeEntryPushService {
             return;
         }
 
-        $workspaces = $this->client->workspaces();
-        if (count($workspaces) === 1) {
-            $this->fallbackWorkspaceId = (int) $workspaces[0]['id'];
+        // Die API-Auflösung kostet 1+n Calls — kurz je Org cachen, damit nicht
+        // jeder einzelne Outbox-Push sie erneut bezahlt (Toggl-Stunden-Quota).
+        /** @var array{fallback: int|null, map: array<int, int>} $resolved */
+        $resolved = Cache::remember('toggl:workspaces:' . $organizationId, 600, function (): array {
+            assert($this->client instanceof TogglApiClient);
 
-            return;
-        }
-
-        foreach ($workspaces as $workspace) {
-            $workspaceId = (int) $workspace['id'];
-            foreach ($this->client->workspaceProjects($workspaceId) as $project) {
-                $this->workspaceByTogglProject[(int) $project['id']] = $workspaceId;
+            $workspaces = $this->client->workspaces();
+            if (count($workspaces) === 1) {
+                return ['fallback' => (int) $workspaces[0]['id'], 'map' => []];
             }
-        }
+
+            $map = [];
+            foreach ($workspaces as $workspace) {
+                $workspaceId = (int) $workspace['id'];
+                foreach ($this->client->workspaceProjects($workspaceId) as $project) {
+                    $map[(int) $project['id']] = $workspaceId;
+                }
+            }
+
+            return ['fallback' => null, 'map' => $map];
+        });
+
+        $this->fallbackWorkspaceId = $resolved['fallback'];
+        $this->workspaceByTogglProject = $resolved['map'];
     }
 
     private function workspaceFor(int $projectId): ?int {

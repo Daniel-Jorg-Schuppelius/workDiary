@@ -14,6 +14,7 @@ namespace App\Services\Import;
 
 use App\Enums\Import\ImportEntity;
 use App\Models\Organization;
+use App\Plugins\Support\TimeWritebackObserver;
 use App\Support\Toolkit\CsvFacade;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use CommonToolkit\Parsers\CSVDocumentParser;
@@ -68,7 +69,12 @@ class DirectCsvImportService {
         $skipped = 0;
         $errors = [];
 
-        DB::transaction(function () use ($path, $delimiter, $headerMap, $spec, $organization, &$created, &$updated, &$skipped, &$errors): void {
+        // Massenimport: kein Create-/Update-Spiegel je Zeile in die Plugin-
+        // Outbox (Muster MatchingTimeImportService) — sonst flutet ein Import
+        // die externen APIs (z. B. Toggl-Stunden-Quota). Volle Closure statt
+        // Arrow-Fn: die Zähler-Referenzen müssen die äußeren Variablen treffen.
+        TimeWritebackObserver::suppressed(function () use ($path, $delimiter, $headerMap, $spec, $organization, &$created, &$updated, &$skipped, &$errors): void {
+            DB::transaction(function () use ($path, $delimiter, $headerMap, $spec, $organization, &$created, &$updated, &$skipped, &$errors): void {
             foreach (CsvFacade::streamAssoc($path, $delimiter) as $lineNumber => $rawRow) {
                 $mapped = $this->applyHeaderMap($rawRow, $headerMap);
                 $normalized = $spec->normalize($mapped);
@@ -110,6 +116,7 @@ class DirectCsvImportService {
                         $skipped++;
                 }
             }
+            });
         });
 
         return ['created' => $created, 'updated' => $updated, 'skipped' => $skipped, 'errors' => $errors];

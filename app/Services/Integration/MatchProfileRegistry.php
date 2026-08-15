@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Integration;
 
-use App\Models\{Article, Customer, Supplier};
+use App\Models\{Article, Customer, Project, Supplier};
 use App\Services\Integration\Match\MatchProfile;
-use App\Services\Integration\Profiles\{ArticleMatchProfile, CustomerMatchProfile, EventMatchProfile, SupplierMatchProfile};
+use App\Services\Integration\Profiles\{ArticleMatchProfile, CustomerMatchProfile, EventMatchProfile, ProjectMatchProfile, SupplierMatchProfile};
 
 /**
  * Liefert das {@see MatchProfile} zu einer Ziel-Entität (Morph-Klasse). Neue
@@ -29,6 +29,9 @@ class MatchProfileRegistry {
         Article::class => ArticleMatchProfile::class,
         // Feature 102 (C3-Übernahme): Kalender-Vorschläge → Event anlegen.
         \App\Models\Event::class => EventMatchProfile::class,
+        // CSV-Projektzeiten (Feature 094): unaufgelöste Projektnamen aus der
+        // Inbox heraus anlegen — danach bucht der idempotente Wiederholimport.
+        Project::class => ProjectMatchProfile::class,
     ];
 
     public function for(string $targetType): ?MatchProfile {
