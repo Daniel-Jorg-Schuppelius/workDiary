@@ -18,7 +18,6 @@ use App\Services\Import\Source\{CsvImportSource, ImportSource, ImportSourceFacto
 use CommonToolkit\Helper\Data\CSV\StringHelper;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use CommonToolkit\Parsers\XLSXDocumentParser;
-use DateTimeInterface;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{DB, Storage};
 use RuntimeException;
@@ -308,7 +307,7 @@ class CsvPreflightAnalyzer {
         $lines = [];
         foreach ($sheet->getRows() as $row) {
             $cells = array_map(
-                fn (\CommonToolkit\Entities\XLSX\Cell $cell): string => $this->cellToString($cell),
+                fn (\CommonToolkit\Entities\XLSX\Cell $cell): string => \App\Support\XlsxCellValue::toString($cell),
                 $row->getCells(),
             );
             $lines[] = StringHelper::encodeLine($cells, ';', '"');
@@ -319,27 +318,5 @@ class CsvPreflightAnalyzer {
         Storage::disk(self::DISK)->delete($stored);
 
         return $csvPath;
-    }
-
-    /**
-     * Normalisiert einen XLSX-Zellwert auf die String-Repräsentation des
-     * CSV-Pfads (Specs parsen Strings, z. B. {@see AbstractEntitySpec::decimal()}).
-     */
-    private function cellToString(\CommonToolkit\Entities\XLSX\Cell $cell): string {
-        $value = $cell->getValue();
-
-        if ($value instanceof DateTimeInterface) {
-            return $value->format('H:i:s') === '00:00:00'
-                ? $value->format('Y-m-d')
-                : $value->format('Y-m-d H:i:s');
-        }
-        if (is_float($value)) {
-            // Kein (string)-Cast: vermeidet Exponentialschreibweise.
-            $formatted = number_format($value, 10, '.', '');
-
-            return rtrim(rtrim($formatted, '0'), '.');
-        }
-
-        return $cell->getStringValue();
     }
 }

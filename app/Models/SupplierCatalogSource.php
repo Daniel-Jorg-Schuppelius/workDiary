@@ -30,6 +30,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property string $encoding
  * @property string $delimiter
  * @property bool $has_header
+ * @property string|null $sheet_name
  * @property string $decimal_separator
  * @property bool $active
  * @property \Illuminate\Support\Carbon|null $last_imported_at
@@ -58,6 +59,7 @@ class SupplierCatalogSource extends Model {
         'encoding',
         'delimiter',
         'has_header',
+        'sheet_name',
         'decimal_separator',
         'active',
         'last_imported_at',

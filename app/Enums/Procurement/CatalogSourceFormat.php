@@ -24,6 +24,7 @@ enum CatalogSourceFormat: string implements HasLabel {
     use HasOptions;
 
     case Csv = 'csv';
+    case Xlsx = 'xlsx';
     case ShopInfo = 'shopinfo';
     case Datanorm = 'datanorm';
     case BMEcat = 'bmecat';

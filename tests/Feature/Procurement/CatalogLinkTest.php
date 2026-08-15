@@ -98,6 +98,57 @@ final class CatalogLinkTest extends TestCase {
         $this->assertSame(CatalogItemStatus::New, $item->fresh()->status);
     }
 
+    public function test_propose_matches_variant_by_sku(): void {
+        $item = $this->item(null); // keine GTIN — Dienstleistungsfall
+        $article = $this->article();
+        $variant = $article->variants()->create([
+            'organization_id' => $this->organization->id,
+            'sku' => 'A-1', 'option_signature' => 'laufzeit=12', 'name' => 'Variante 12 Mon.',
+        ]);
+
+        $matched = $this->links->propose($item);
+
+        $this->assertSame($article->id, $matched?->id);
+        $this->assertSame($variant->id, $item->fresh()->article_variant_id);
+        $this->assertSame(CatalogItemStatus::Proposed, $item->fresh()->status);
+    }
+
+    public function test_propose_matches_by_supply_sku(): void {
+        $item = $this->item(null);
+        $article = $this->article();
+        \App\Models\ArticleSupply::query()->create([
+            'organization_id' => $this->organization->id,
+            'article_id' => $article->id, 'supplier_id' => $this->supplier->id,
+            'supplier_sku' => 'A-1', 'purchase_price' => '1.4000', 'currency' => 'EUR',
+        ]);
+
+        $matched = $this->links->propose($item);
+
+        $this->assertSame($article->id, $matched?->id);
+        $this->assertNull($item->fresh()->article_variant_id);
+    }
+
+    public function test_propose_matches_unique_fuzzy_name(): void {
+        $item = $this->item(null);
+        $article = Article::factory()->create([
+            'organization_id' => $this->organization->id, 'purchasable' => true, 'name' => 'Schraube M4',
+        ]);
+
+        $matched = $this->links->propose($item);
+
+        $this->assertSame($article->id, $matched?->id);
+        $this->assertSame(CatalogItemStatus::Proposed, $item->fresh()->status);
+    }
+
+    public function test_propose_skips_ambiguous_fuzzy_matches(): void {
+        $item = $this->item(null);
+        Article::factory()->create(['organization_id' => $this->organization->id, 'purchasable' => true, 'name' => 'Schraube M4']);
+        Article::factory()->create(['organization_id' => $this->organization->id, 'purchasable' => true, 'name' => 'Schraube M4A']);
+
+        $this->assertNull($this->links->propose($item));
+        $this->assertSame(CatalogItemStatus::New, $item->fresh()->status);
+    }
+
     public function test_unlink_clears_link_but_keeps_supply(): void {
         $item = $this->item();
         $article = $this->article();

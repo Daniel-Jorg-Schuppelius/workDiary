@@ -57,8 +57,13 @@ class CatalogItemUpserter {
                 $summary['rows']++;
                 $seen[] = $externalNo;
 
+                // Attribute deterministisch in den Hash (Array-Werte, MVP-541):
+                // ksort macht ihn unabhängig von der Mapping-Reihenfolge.
+                if (is_array($values['extra_attributes'] ?? null)) {
+                    ksort($values['extra_attributes']);
+                }
                 // Staffeln gehen in den Hash ein, damit reine Staffeländerungen erkannt werden.
-                $hash = CryptoHelper::hash(implode('|', array_map(fn ($v) => (string) $v, $values)) . '#' . $this->tierSignature($tiers), HashAlgorithm::SHA1);
+                $hash = CryptoHelper::hash(implode('|', array_map(fn ($v) => is_array($v) ? (string) json_encode($v) : (string) $v, $values)) . '#' . $this->tierSignature($tiers), HashAlgorithm::SHA1);
 
                 $item = SupplierCatalogItem::query()
                     ->where('supplier_catalog_source_id', $source->id)

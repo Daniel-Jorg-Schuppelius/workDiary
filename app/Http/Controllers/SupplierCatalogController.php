@@ -15,7 +15,7 @@ use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Requests\SaveSupplierCatalogSourceRequest;
 use App\Models\{Article, ArticleVariant, PricingChangeAlert, Supplier, SupplierCatalogImport, SupplierCatalogItem, SupplierCatalogSource, Warehouse};
-use App\Services\Procurement\{CatalogFetchService, CatalogImportDispatcher, CatalogLinkService, PriceSuggestionService, ShopinfoParser};
+use App\Services\Procurement\{CatalogArticleAdopter, CatalogFetchService, CatalogImportDispatcher, CatalogLinkService, PriceSuggestionService, ShopinfoParser};
 use App\Services\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -34,7 +34,7 @@ class SupplierCatalogController extends Controller {
 
     /** Pflicht- und optionale Mapping-Zielfelder der Importmaske. */
     private const MAPPING_FIELDS = [
-        'external_no', 'name', 'purchase_price', 'currency', 'gtin',
+        'external_no', 'external_no_fallback', 'name', 'purchase_price', 'list_price', 'currency', 'gtin',
         'manufacturer_no', 'manufacturer', 'category', 'availability', 'lead_time_days',
     ];
 
@@ -102,6 +102,7 @@ class SupplierCatalogController extends Controller {
             'decimal_separator' => $data['decimal_separator'],
             'encoding' => $data['encoding'],
             'has_header' => (bool) ($data['has_header'] ?? true),
+            'sheet_name' => ($data['sheet_name'] ?? '') !== '' ? $data['sheet_name'] : null,
             'remote_url' => $data['remote_url'] ?? null,
             'remote_host' => $data['remote_host'] ?? null,
             'remote_port' => $data['remote_port'] ?? null,
@@ -143,6 +144,7 @@ class SupplierCatalogController extends Controller {
             'decimal_separator' => $data['decimal_separator'],
             'encoding' => $data['encoding'],
             'has_header' => (bool) ($data['has_header'] ?? false),
+            'sheet_name' => ($data['sheet_name'] ?? '') !== '' ? $data['sheet_name'] : null,
             'remote_url' => $data['remote_url'] ?? null,
             'remote_host' => $data['remote_host'] ?? null,
             'remote_port' => $data['remote_port'] ?? null,
@@ -203,6 +205,14 @@ class SupplierCatalogController extends Controller {
             }
         }
 
+        // Gespeicherte attr.*-Mappings als {code, column}-Zeilen für die Maske.
+        $attrMapping = [];
+        foreach ((array) ($supplierCatalog->mapping ?? []) as $target => $column) {
+            if (str_starts_with((string) $target, 'attr.')) {
+                $attrMapping[] = ['code' => substr((string) $target, 5), 'column' => (string) $column];
+            }
+        }
+
         return view('supplier-catalogs.show', [
             'source' => $supplierCatalog->load('supplier'),
             'imports' => $supplierCatalog->imports()->limit(10)->get(),
@@ -211,21 +221,23 @@ class SupplierCatalogController extends Controller {
             'status' => $status,
             'statuses' => CatalogItemStatus::cases(),
             'mappingFields' => self::MAPPING_FIELDS,
+            'attrMapping' => $attrMapping,
             'canManage' => Auth::user()?->can(P::InventoryPost->value) ?? false,
             'approvalMode' => $this->currentOrganization()->pricingApprovalMode(),
             'warehouses' => $supplierCatalog->hasPunchout() ? Warehouse::query()->orderBy('name')->get() : collect(),
         ]);
     }
 
-    /** Importiert eine hochgeladene Katalogdatei (CSV mit Mapping, DATANORM oder BMEcat). */
+    /** Importiert eine hochgeladene Katalogdatei (CSV/XLSX mit Mapping, DATANORM oder BMEcat). */
     public function import(Request $request, SupplierCatalogSource $supplierCatalog): RedirectResponse {
         $this->canManage();
+        $this->assertSourceOrg($supplierCatalog);
 
         $request->validate(['catalog_csv' => ['required', 'file', 'max:16384']]);
         $content = (string) file_get_contents((string) $request->file('catalog_csv')?->getRealPath());
 
         $mapping = $this->mappingFromRequest($request);
-        if ($supplierCatalog->format === CatalogSourceFormat::Csv && $mapping !== []) {
+        if (in_array($supplierCatalog->format, [CatalogSourceFormat::Csv, CatalogSourceFormat::Xlsx], true) && $mapping !== []) {
             // Mapping merken — für späteren automatischen Abruf wiederverwendbar.
             $supplierCatalog->forceFill(['mapping' => $mapping])->save();
         }
@@ -329,6 +341,58 @@ class SupplierCatalogController extends Controller {
         }
 
         return back()->with('success', __('procurement.catalog.flash.proposed', ['article' => $article->name]));
+    }
+
+    /** Modal: Zusammenfassung vor der Massen-Übernahme in den Artikelstamm (MVP-541). */
+    public function adoptForm(SupplierCatalogSource $supplierCatalog, CatalogArticleAdopter $adopter): View {
+        $this->canManage();
+        $this->assertSourceOrg($supplierCatalog);
+
+        return view('supplier-catalogs._adopt_dialog', [
+            'isDialog' => true,
+            'source' => $supplierCatalog,
+            'counts' => $adopter->countAdoptable($supplierCatalog),
+        ]);
+    }
+
+    /** Massen-Übernahme: alle unverknüpften Tarif-Gruppen der Quelle (MVP-541). */
+    public function adopt(SupplierCatalogSource $supplierCatalog, CatalogArticleAdopter $adopter): RedirectResponse {
+        $this->canManage();
+        $this->assertSourceOrg($supplierCatalog);
+
+        return $this->adoptResponse($adopter->adoptSource($supplierCatalog));
+    }
+
+    /** Einzel-Übernahme: die komplette Tarif-Gruppe des Items (MVP-541). */
+    public function adoptItem(SupplierCatalogItem $catalogItem, CatalogArticleAdopter $adopter): RedirectResponse {
+        $this->canManage();
+        $this->assertOrg($catalogItem);
+
+        /** @var SupplierCatalogSource $source */
+        $source = $catalogItem->source()->firstOrFail();
+
+        return $this->adoptResponse($adopter->adoptGroup($source, $catalogItem));
+    }
+
+    /**
+     * @param  array{articles: int, variants: int, linked: int, skipped: int, errors: list<string>}  $summary
+     */
+    private function adoptResponse(array $summary): RedirectResponse {
+        if ($summary['linked'] === 0 && $summary['skipped'] === 0) {
+            return back()->with('error', __('procurement.catalog.adopt.error.nothing'));
+        }
+
+        $message = (string) __('procurement.catalog.adopt.flash.adopted', [
+            'articles' => $summary['articles'],
+            'variants' => $summary['variants'],
+            'linked' => $summary['linked'],
+            'skipped' => $summary['skipped'],
+        ]);
+        if ($summary['errors'] !== []) {
+            $message .= ' ' . implode(' ', array_slice($summary['errors'], 0, 3));
+        }
+
+        return back()->with($summary['linked'] > 0 ? 'success' : 'error', $message);
     }
 
     /** Übernimmt den vorgeschlagenen Verkaufspreis in den verknüpften Artikel (MVP-095, Freigabe). */
@@ -459,6 +523,19 @@ class SupplierCatalogController extends Controller {
             if ($column !== '') {
                 $mapping[$field] = $column;
             }
+        }
+
+        // Freie Zusatzattribute (MVP-541): Code wird geslugt und auf die Länge
+        // der Options-Codes (article_option_definitions.code, 40) gekappt.
+        /** @var array<int, array{code?: string, column?: string}> $attrRows */
+        $attrRows = (array) $request->input('mapping_attr', []);
+        foreach ($attrRows as $rowInput) {
+            $code = \Illuminate\Support\Str::slug((string) ($rowInput['code'] ?? ''), '_');
+            $column = trim((string) ($rowInput['column'] ?? ''));
+            if ($code === '' || $column === '') {
+                continue;
+            }
+            $mapping['attr.' . mb_substr($code, 0, 40)] = $column;
         }
 
         return $mapping;

@@ -15,6 +15,8 @@
     <x-slot:actions>
         <x-icon-btn icon="arrow_back" size="sm" :href="route('supplier-catalogs.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
         @if ($canManage)
+            <x-icon-btn icon="library_add" size="sm" data-entry-modal-trigger
+                        :href="route('supplier-catalogs.adopt-form', $source)" show-label>{{ __('procurement.catalog.action.adopt') }}</x-icon-btn>
             <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger
                         :href="route('supplier-catalogs.edit', $source)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
         @endif
@@ -64,6 +66,7 @@
             $fileLabel = match ($fmt) {
                 'datanorm' => __('procurement.catalog.datanorm_file'),
                 'bmecat' => __('procurement.catalog.bmecat_file'),
+                'xlsx' => __('procurement.catalog.xlsx_file'),
                 default => __('procurement.catalog.csv_file'),
             };
         @endphp
@@ -99,13 +102,29 @@
                     <p class="text-sm opacity-70">{{ $fmt === 'bmecat' ? __('procurement.catalog.bmecat_hint') : __('procurement.catalog.datanorm_hint') }}</p>
                 @else
                     <p class="text-sm opacity-70">{{ __('procurement.catalog.mapping_hint') }}</p>
+                    @if ($fmt === 'xlsx')
+                        <p class="text-xs opacity-60">{{ __('procurement.catalog.xlsx_hint') }}</p>
+                    @endif
                     <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                         @foreach ($mappingFields as $field)
                             <x-input-field name="mapping[{{ $field }}]"
                                            :label="__('procurement.catalog.map.' . $field)"
                                            :required="in_array($field, ['external_no', 'name'], true)"
-                                           :value="old('mapping.' . $field, session('shopinfo_mapping.' . $field))" />
+                                           :value="old('mapping.' . $field, session('shopinfo_mapping.' . $field, $source->mapping[$field] ?? null))" />
                         @endforeach
+                    </div>
+
+                    <p class="text-sm font-medium mt-2">{{ __('procurement.catalog.attr.legend') }}</p>
+                    <p class="text-xs opacity-60">{{ __('procurement.catalog.attr.hint') }}</p>
+                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                        @for ($i = 0; $i < max(3, count($attrMapping) + 1); $i++)
+                            <x-input-field name="mapping_attr[{{ $i }}][code]"
+                                           :label="__('procurement.catalog.attr.code')"
+                                           :value="old('mapping_attr.' . $i . '.code', $attrMapping[$i]['code'] ?? null)" />
+                            <x-input-field name="mapping_attr[{{ $i }}][column]"
+                                           :label="__('procurement.catalog.attr.column')"
+                                           :value="old('mapping_attr.' . $i . '.column', $attrMapping[$i]['column'] ?? null)" />
+                        @endfor
                     </div>
                 @endif
 
@@ -175,6 +194,9 @@
                         <td class="font-mono text-xs">{{ $item->external_no }}</td>
                         <td>
                             {{ $item->name }}
+                            @if ($item->extra_attributes)
+                                <div class="text-xs opacity-50">{{ collect($item->extra_attributes)->map(fn ($v, $k) => $k . ': ' . $v)->implode(' · ') }}</div>
+                            @endif
                             @if ($item->gtin)<div class="font-mono text-xs opacity-50">{{ $item->gtin }}</div>@endif
                             @if ($item->classification_code || $item->image_url || $item->datasheet_url)
                                 <div class="flex items-center gap-2 text-xs mt-0.5">
@@ -186,6 +208,9 @@
                         </td>
                         <td class="text-right tabular-nums">
                             {{ $item->purchase_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->purchase_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) . ' ' . $item->currency->value : '—' }}
+                            @if ($item->list_price !== null)
+                                <div class="text-xs opacity-50">{{ __('procurement.catalog.uvp_short') }} {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($item->list_price->toFloat(), 2, withThousandsSeparator: true) }}</div>
+                            @endif
                             @if (($item->price_tiers_count ?? 0) > 0)
                                 <div class="text-xs opacity-50">+{{ $item->price_tiers_count }} {{ __('procurement.catalog.tiers') }}</div>
                             @endif
@@ -215,6 +240,9 @@
                                             <x-icon-btn icon="link_off" size="xs" type="submit" :title="__('procurement.catalog.action.unlink')" />
                                         </form>
                                     @else
+                                        <form method="POST" action="{{ route('supplier-catalogs.items.adopt', $item) }}">@csrf
+                                            <x-icon-btn icon="library_add" size="xs" type="submit" :title="__('procurement.catalog.action.adopt_item')" />
+                                        </form>
                                         <form method="POST" action="{{ route('supplier-catalogs.items.propose', $item) }}">@csrf
                                             <x-icon-btn icon="lightbulb" size="xs" type="submit" :title="__('procurement.catalog.action.propose')" />
                                         </form>

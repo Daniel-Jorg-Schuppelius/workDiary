@@ -33,9 +33,10 @@ class SaveSupplierCatalogSourceRequest extends BaseFormRequest {
         return [
             'supplier' => ['required', 'integer', new ExistsInCurrentOrganization('suppliers')],
             'name' => ['required', 'string', 'max:191'],
-            'format' => ['required', Rule::in(['csv', 'datanorm', 'bmecat'])],
+            'format' => ['required', Rule::in(['csv', 'xlsx', 'datanorm', 'bmecat'])],
             'source_type' => ['nullable', Rule::in(['upload', 'http', 'ftp', 'sftp'])],
             'delimiter' => ['required', 'string', 'min:1', 'max:4'],
+            'sheet_name' => ['nullable', 'string', 'max:64'],
             'decimal_separator' => ['required', Rule::in([',', '.'])],
             'encoding' => ['required', 'string', 'max:32'],
             'has_header' => ['nullable', 'boolean'],

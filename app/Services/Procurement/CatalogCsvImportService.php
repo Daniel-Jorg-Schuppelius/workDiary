@@ -32,11 +32,11 @@ class CatalogCsvImportService {
     private const FIELDS = [
         'external_no', 'manufacturer_no', 'manufacturer', 'brand', 'gtin', 'category',
         'classification_system', 'classification_code',
-        'name', 'description', 'product_url', 'image_url', 'datasheet_url', 'purchase_price', 'currency',
+        'name', 'description', 'product_url', 'image_url', 'datasheet_url', 'purchase_price', 'list_price', 'currency',
         'pack_size', 'base_qty', 'availability', 'lead_time_days',
     ];
 
-    private const DECIMAL_FIELDS = ['purchase_price', 'pack_size', 'base_qty'];
+    private const DECIMAL_FIELDS = ['purchase_price', 'list_price', 'pack_size', 'base_qty'];
 
     public function __construct(private readonly CatalogItemUpserter $upserter = new CatalogItemUpserter()) {}
 
@@ -47,13 +47,26 @@ class CatalogCsvImportService {
      * @throws RuntimeException Bei fehlendem Pflichtmapping oder nicht passendem Header (Preflight).
      */
     public function import(SupplierCatalogSource $source, string $csv, array $mapping): array {
+        return $this->importRows($source, $this->parse($source, $csv), $mapping, $csv);
+    }
+
+    /**
+     * Gemeinsame Strecke hinter den Datei-Parsern (CSV direkt, XLSX über den
+     * {@see CatalogXlsxImportService}): Preflight, Mapping und Persistenz.
+     *
+     * @param  list<array<string, string>>  $rows     Spaltenname => Wert
+     * @param  array<string, string>  $mapping  Zielfeld => Spaltenname
+     * @return array{rows: int, created: int, updated: int, unchanged: int, price_changed: int, discontinued: int}
+     *
+     * @throws RuntimeException Bei fehlendem Pflichtmapping oder nicht passendem Header (Preflight).
+     */
+    public function importRows(SupplierCatalogSource $source, array $rows, array $mapping, string $rawContent): array {
         foreach (self::REQUIRED as $field) {
             if (empty($mapping[$field])) {
                 throw new RuntimeException((string) __('procurement.catalog.error.mapping_required', ['field' => $field]));
             }
         }
 
-        $rows = $this->parse($source, $csv);
         if ($rows === []) {
             throw new RuntimeException((string) __('procurement.catalog.error.empty_file'));
         }
@@ -67,7 +80,7 @@ class CatalogCsvImportService {
 
         $records = array_map(fn (array $row): array => $this->extract($source, $row, $mapping), $rows);
 
-        return $this->upserter->persist($source, $records, $csv);
+        return $this->upserter->persist($source, $records, $rawContent);
     }
 
     /**
@@ -91,6 +104,35 @@ class CatalogCsvImportService {
             } else {
                 $values[$field] = $raw;
             }
+        }
+
+        // Fallback-Schlüssel (MVP-541): Zeilen ohne primäre Artikelnummer
+        // (z. B. Domain-Tarife ohne Offer-Key) laufen über die Fallback-Spalte.
+        $fallbackColumn = $mapping['external_no_fallback'] ?? null;
+        if (trim((string) ($values['external_no'] ?? '')) === '' && $fallbackColumn !== null && array_key_exists($fallbackColumn, $row)) {
+            $values['external_no'] = trim((string) $row[$fallbackColumn]);
+        }
+
+        // Zusatzattribute (MVP-541): `attr.<code>`-Mappings landen gesammelt im
+        // extra_attributes-JSON. Semantik wie bei den Staffeln: kein
+        // attr-Mapping => Bestand unangetastet; gemappt, aber Zeile leer => null.
+        $attrs = [];
+        $hasAttrMapping = false;
+        foreach ($mapping as $target => $column) {
+            if (! str_starts_with($target, 'attr.')) {
+                continue;
+            }
+            $hasAttrMapping = true;
+            if (! array_key_exists($column, $row)) {
+                continue;
+            }
+            $value = trim((string) $row[$column]);
+            if ($value !== '') {
+                $attrs[substr($target, 5)] = $value;
+            }
+        }
+        if ($hasAttrMapping) {
+            $values['extra_attributes'] = $attrs !== [] ? $attrs : null;
         }
 
         return $values;

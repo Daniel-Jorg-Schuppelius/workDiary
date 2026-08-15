@@ -17,7 +17,7 @@ use App\Models\{SupplierCatalogImport, SupplierCatalogSource};
 use RuntimeException;
 
 /**
- * Wählt den formatabhängigen Import-Service (CSV/DATANORM/BMEcat) und schreibt
+ * Wählt den formatabhängigen Import-Service (CSV/XLSX/DATANORM/BMEcat) und schreibt
  * je Lauf ein Protokoll ({@see SupplierCatalogImport}) — egal ob manuell oder
  * geplant ausgelöst (Feature 050, MVP-091). Genutzt vom Controller und vom
  * Cron-Command.
@@ -34,6 +34,7 @@ class CatalogImportDispatcher {
             $summary = match ($source->format) {
                 CatalogSourceFormat::Datanorm => app(DatanormImportService::class)->import($source, $content),
                 CatalogSourceFormat::BMEcat => app(BMEcatImportService::class)->import($source, $content),
+                CatalogSourceFormat::Xlsx => app(CatalogXlsxImportService::class)->import($source, $content, $mapping),
                 default => app(CatalogCsvImportService::class)->import($source, $content, $mapping),
             };
         } catch (RuntimeException $e) {

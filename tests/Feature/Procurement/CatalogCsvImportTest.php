@@ -108,6 +108,55 @@ final class CatalogCsvImportTest extends TestCase {
         );
     }
 
+    public function test_attr_mapping_stores_extra_attributes(): void {
+        $csv = "ArtNr;Bezeichnung;EK;Laufzeit;Intervall\nA-1;Tarif X;5,24;12;monatlich";
+        $mapping = ['external_no' => 'ArtNr', 'name' => 'Bezeichnung', 'purchase_price' => 'EK',
+            'attr.vertragslaufzeit' => 'Laufzeit', 'attr.zahlungsintervall' => 'Intervall'];
+
+        $this->importer->import($this->source, $csv, $mapping);
+
+        $item = SupplierCatalogItem::query()->where('external_no', 'A-1')->firstOrFail();
+        $this->assertSame(['vertragslaufzeit' => '12', 'zahlungsintervall' => 'monatlich'], $item->extra_attributes);
+    }
+
+    public function test_attribute_change_is_detected_as_update(): void {
+        $mapping = ['external_no' => 'ArtNr', 'name' => 'Bezeichnung', 'attr.laufzeit' => 'Laufzeit'];
+        $this->importer->import($this->source, "ArtNr;Bezeichnung;Laufzeit\nA-1;Tarif X;12", $mapping);
+
+        $unchanged = $this->importer->import($this->source, "ArtNr;Bezeichnung;Laufzeit\nA-1;Tarif X;12", $mapping);
+        $this->assertSame(1, $unchanged['unchanged']);
+
+        $changed = $this->importer->import($this->source, "ArtNr;Bezeichnung;Laufzeit\nA-1;Tarif X;36", $mapping);
+        $this->assertSame(1, $changed['updated']);
+        $this->assertSame(0, $changed['price_changed']);
+        $this->assertSame(['laufzeit' => '36'], SupplierCatalogItem::query()->where('external_no', 'A-1')->firstOrFail()->extra_attributes);
+    }
+
+    public function test_list_price_is_imported_without_price_change_semantics(): void {
+        $mapping = ['external_no' => 'ArtNr', 'name' => 'Bezeichnung', 'purchase_price' => 'EK', 'list_price' => 'UVP'];
+        $this->importer->import($this->source, "ArtNr;Bezeichnung;EK;UVP\nA-1;Tarif X;5,24;6,41", $mapping);
+
+        $item = SupplierCatalogItem::query()->where('external_no', 'A-1')->firstOrFail();
+        $this->assertSame('6.4100', $item->list_price?->getAmount());
+
+        // UVP-Änderung ist ein Update, aber keine EK-Preisänderung (kein Snapshot/Alert).
+        $summary = $this->importer->import($this->source, "ArtNr;Bezeichnung;EK;UVP\nA-1;Tarif X;5,24;6,99", $mapping);
+        $this->assertSame(1, $summary['updated']);
+        $this->assertSame(0, $summary['price_changed']);
+        $this->assertSame(1, $item->prices()->count());
+    }
+
+    public function test_external_no_fallback_applies_only_when_primary_empty(): void {
+        $csv = "OfferKey;Tarif;EK\nCFQ-1;Entra ID;5,24\n;.app Domain;1,20";
+        $mapping = ['external_no' => 'OfferKey', 'external_no_fallback' => 'Tarif', 'name' => 'Tarif', 'purchase_price' => 'EK'];
+
+        $summary = $this->importer->import($this->source, $csv, $mapping);
+
+        $this->assertSame(2, $summary['created']);
+        $this->assertNotNull(SupplierCatalogItem::query()->where('external_no', 'CFQ-1')->first());
+        $this->assertNotNull(SupplierCatalogItem::query()->where('external_no', '.app Domain')->first());
+    }
+
     public function test_missing_required_mapping_throws(): void {
         $this->expectException(RuntimeException::class);
         $this->importer->import($this->source, $this->csv(), ['external_no' => 'ArtNr']); // 'name' fehlt

@@ -83,6 +83,46 @@ final class SupplierCatalogControllerTest extends TestCase {
         $this->assertSame('1.5000', SupplierCatalogItem::query()->where('external_no', 'A-1')->firstOrFail()->purchase_price?->getAmount());
     }
 
+    public function test_store_creates_xlsx_source_with_sheet_name(): void {
+        $this->actingAs($this->admin)->post(route('supplier-catalogs.store'), $this->validPayload([
+            'name' => 'Distributor', 'format' => 'xlsx', 'decimal_separator' => '.', 'sheet_name' => 'Preisdaten',
+        ]))->assertRedirect();
+
+        $this->assertDatabaseHas('supplier_catalog_sources', [
+            'organization_id' => $this->organization->id,
+            'name' => 'Distributor', 'format' => 'xlsx', 'sheet_name' => 'Preisdaten',
+        ]);
+    }
+
+    public function test_import_xlsx_creates_items_and_persists_mapping(): void {
+        $source = SupplierCatalogSource::query()->create([
+            'organization_id' => $this->organization->id,
+            'supplier_id' => $this->supplier->id,
+            'name' => 'Distributor', 'format' => 'xlsx', 'delimiter' => ';',
+            'decimal_separator' => '.', 'encoding' => 'UTF-8', 'has_header' => true,
+            'sheet_name' => 'Preisdaten',
+        ]);
+
+        $builder = (new \CommonToolkit\Builders\XLSXDocumentBuilder)->sheet('Preisdaten')
+            ->setHeader(['Produkttarif', 'Preis', 'Offer-Key'])
+            ->addRow(['Microsoft Entra ID P1', 6.06, 'CFQ7-0002-P1M-1M']);
+        $path = tempnam(sys_get_temp_dir(), 'wd-xlsx-test-') . '.xlsx';
+        \CommonToolkit\Generators\XLSX\XLSXGenerator::toFile($builder->build(), $path);
+        $mapping = ['external_no' => 'Offer-Key', 'name' => 'Produkttarif', 'purchase_price' => 'Preis'];
+
+        $this->actingAs($this->admin)
+            ->post(route('supplier-catalogs.import', $source), [
+                'catalog_csv' => new UploadedFile($path, 'preisliste.xlsx', \App\Support\XlsxExport::MIME, null, true),
+                'mapping' => $mapping,
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $this->assertSame('6.0600', SupplierCatalogItem::query()->where('external_no', 'CFQ7-0002-P1M-1M')->firstOrFail()->purchase_price?->getAmount());
+        // Mapping wird an der Quelle gemerkt (wie beim CSV-Format).
+        $this->assertSame($mapping, $source->fresh()->mapping);
+    }
+
     public function test_import_requires_post_permission(): void {
         $source = $this->source();
         $stranger = User::factory()->user()->create(['organization_id' => $this->organization->id]);

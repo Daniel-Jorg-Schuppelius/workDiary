@@ -1264,6 +1264,10 @@ Route::middleware('auth')->group(function () {
         Route::post('supplier-catalogs/items/{catalogItem}/unlink', [\App\Http\Controllers\SupplierCatalogController::class, 'unlink'])->name('supplier-catalogs.items.unlink');
         Route::post('supplier-catalogs/items/{catalogItem}/propose', [\App\Http\Controllers\SupplierCatalogController::class, 'propose'])->name('supplier-catalogs.items.propose');
         Route::post('supplier-catalogs/items/{catalogItem}/apply-price', [\App\Http\Controllers\SupplierCatalogController::class, 'applyPrice'])->name('supplier-catalogs.items.apply-price'); // MVP-095 Verkaufspreis-Freigabe
+        // Übernahme in den Artikelstamm: Artikel + Varianten aus Tarif-Gruppen (MVP-541)
+        Route::get('supplier-catalogs/{supplierCatalog}/adopt', [\App\Http\Controllers\SupplierCatalogController::class, 'adoptForm'])->name('supplier-catalogs.adopt-form');
+        Route::post('supplier-catalogs/{supplierCatalog}/adopt', [\App\Http\Controllers\SupplierCatalogController::class, 'adopt'])->name('supplier-catalogs.adopt');
+        Route::post('supplier-catalogs/items/{catalogItem}/adopt', [\App\Http\Controllers\SupplierCatalogController::class, 'adoptItem'])->name('supplier-catalogs.items.adopt');
         Route::get('supplier-catalogs/{supplierCatalog}/punchout', [\App\Http\Controllers\SupplierCatalogController::class, 'punchout'])->name('supplier-catalogs.punchout'); // MVP-096 aktiver Punchout-Absprung
 
         // ── Margenregeln (Feature 050, MVP-095) ─ Gate pricing-margin-rules.* → module.lager

@@ -40,7 +40,7 @@
         <x-input-field name="name" :label="__('procurement.catalog.field.name')" required maxlength="191" :value="$val('name')" />
 
         <x-select-field name="format" :label="__('procurement.catalog.col.format')" required>
-            @foreach (['csv', 'datanorm', 'bmecat'] as $f)
+            @foreach (['csv', 'xlsx', 'datanorm', 'bmecat'] as $f)
                 <option value="{{ $f }}" @selected($val('format', 'csv') === $f || ($editing && $source->format->value === $f && old('format') === null))>{{ __('procurement.catalog.format.' . $f) }}</option>
             @endforeach
         </x-select-field>
@@ -57,6 +57,8 @@
         </x-select-field>
 
         <x-checkbox-field name="has_header" :label="__('procurement.catalog.field.has_header')" :checked="(bool) $val('has_header', true)" value="1" />
+        <x-input-field name="sheet_name" :label="__('procurement.catalog.field.sheet_name')" maxlength="64"
+                       :value="$val('sheet_name')" :placeholder="__('procurement.catalog.field.sheet_name_first')" />
     </x-form-group>
 
     <x-form-group :legend="__('procurement.catalog.remote.legend')" icon="cloud_download" tone="primary" cols="2">

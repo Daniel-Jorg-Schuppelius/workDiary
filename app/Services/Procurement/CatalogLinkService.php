@@ -14,6 +14,7 @@ namespace App\Services\Procurement;
 
 use App\Enums\Procurement\CatalogItemStatus;
 use App\Models\{Article, ArticleSupply, ArticleVariant, SupplierCatalogItem};
+use App\Services\Integration\Match\Normalize;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -25,6 +26,9 @@ use RuntimeException;
  * nur die Bezugsquelle gepflegt.
  */
 class CatalogLinkService {
+    /** Schwelle des Namens-Fuzzy (wie {@see \App\Services\Integration\Match\FuzzyField}). */
+    private const FUZZY_THRESHOLD = 0.86;
+
     /**
      * Verknüpft verbindlich und pflegt die Bezugsquelle des Lieferanten.
      *
@@ -67,16 +71,13 @@ class CatalogLinkService {
      * noch nicht verbindlich). Liefert den getroffenen Artikel oder null.
      */
     public function propose(SupplierCatalogItem $item): ?Article {
-        $gtin = (string) ($item->gtin ?? '');
-        if ($gtin === '') {
-            return null;
-        }
-
-        $article = Article::query()
-            ->where('organization_id', $item->organization_id)
-            ->where('gtin', $gtin)
-            ->where('purchasable', true)
-            ->first();
+        // Kaskade (MVP-541): GTIN → Varianten-SKU → Bezugsquellen-SKU →
+        // eindeutiger Namens-Fuzzy. Dienstleistungen haben meist keine GTIN.
+        [$article, $variant] = $this->proposeByGtin($item)
+            ?? $this->proposeByVariantSku($item)
+            ?? $this->proposeBySupplySku($item)
+            ?? $this->proposeByFuzzyName($item)
+            ?? [null, null];
 
         if (! $article instanceof Article) {
             return null;
@@ -84,10 +85,100 @@ class CatalogLinkService {
 
         $item->forceFill([
             'article_id' => $article->id,
+            'article_variant_id' => $variant?->id,
             'status' => CatalogItemStatus::Proposed->value,
         ])->save();
 
         return $article;
+    }
+
+    /** @return array{0: Article, 1: ArticleVariant|null}|null */
+    private function proposeByGtin(SupplierCatalogItem $item): ?array {
+        $gtin = (string) ($item->gtin ?? '');
+        if ($gtin === '') {
+            return null;
+        }
+
+        $article = $this->purchasableArticles($item)->where('gtin', $gtin)->first();
+
+        return $article instanceof Article ? [$article, null] : null;
+    }
+
+    /**
+     * Varianten-SKU == externe Artikelnummer (z. B. übernommener Offer-Key).
+     *
+     * @return array{0: Article, 1: ArticleVariant|null}|null
+     */
+    private function proposeByVariantSku(SupplierCatalogItem $item): ?array {
+        $externalNo = trim((string) $item->external_no);
+        if ($externalNo === '') {
+            return null;
+        }
+
+        $variant = ArticleVariant::query()
+            ->where('organization_id', $item->organization_id)
+            ->where('sku', $externalNo)
+            ->whereHas('article', fn ($q) => $q->where('purchasable', true))
+            ->with('article')
+            ->first();
+
+        return $variant?->article instanceof Article ? [$variant->article, $variant] : null;
+    }
+
+    /**
+     * Bereits gepflegte Bezugsquelle desselben Lieferanten.
+     *
+     * @return array{0: Article, 1: ArticleVariant|null}|null
+     */
+    private function proposeBySupplySku(SupplierCatalogItem $item): ?array {
+        $externalNo = trim((string) $item->external_no);
+        if ($externalNo === '') {
+            return null;
+        }
+
+        $supply = ArticleSupply::query()
+            ->where('organization_id', $item->organization_id)
+            ->where('supplier_id', $item->supplier_id)
+            ->where('supplier_sku', $externalNo)
+            ->with('article')
+            ->first();
+
+        $article = $supply?->article;
+
+        return $article instanceof Article && $article->purchasable ? [$article, null] : null;
+    }
+
+    /**
+     * Namensähnlichkeit — nur bei GENAU einem Treffer (kein Rätselraten).
+     *
+     * @return array{0: Article, 1: ArticleVariant|null}|null
+     */
+    private function proposeByFuzzyName(SupplierCatalogItem $item): ?array {
+        $needle = Normalize::text($item->name);
+        if ($needle === '') {
+            return null;
+        }
+
+        $matches = $this->purchasableArticles($item)
+            ->get(['id', 'name'])
+            ->filter(fn (Article $a): bool => Normalize::similarity($needle, Normalize::text($a->name)) >= self::FUZZY_THRESHOLD);
+
+        $match = $matches->count() === 1 ? $matches->first() : null;
+        if (! $match instanceof Article) {
+            return null;
+        }
+
+        /** @var Article $article */
+        $article = Article::query()->findOrFail($match->id);
+
+        return [$article, null];
+    }
+
+    /** @return \Illuminate\Database\Eloquent\Builder<Article> */
+    private function purchasableArticles(SupplierCatalogItem $item): \Illuminate\Database\Eloquent\Builder {
+        return Article::query()
+            ->where('organization_id', $item->organization_id)
+            ->where('purchasable', true);
     }
 
     /** Legt die Bezugsquelle des Lieferanten an oder aktualisiert ihre Katalogdaten. */
