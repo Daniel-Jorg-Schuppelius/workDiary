@@ -55,6 +55,8 @@ class MonthApprovalController extends Controller {
     }
 
     public function show(int $year, int $month): View {
+        abort_unless($this->service->isValidPeriod($year, $month), 404);
+
         /** @var User $user */
         $user = Auth::user();
         $closure = $this->service->getOrCreate($user, $year, $month);
@@ -72,6 +74,8 @@ class MonthApprovalController extends Controller {
     }
 
     public function submit(Request $request, int $year, int $month): RedirectResponse {
+        abort_unless($this->service->isValidPeriod($year, $month), 404);
+
         /** @var User $user */
         $user = Auth::user();
         $closure = $this->service->getOrCreate($user, $year, $month);
@@ -89,6 +93,8 @@ class MonthApprovalController extends Controller {
     }
 
     public function reopen(Request $request, int $year, int $month): RedirectResponse {
+        abort_unless($this->service->isValidPeriod($year, $month), 404);
+
         /** @var User $user */
         $user = Auth::user();
         $closure = $this->service->getOrCreate($user, $year, $month);

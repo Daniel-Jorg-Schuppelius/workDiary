@@ -95,7 +95,15 @@ class SchedulerAdminControllerTest extends TestCase {
             ->put(route('admin.scheduler.update', ['job' => 'nicht.registriert']), [
                 'cadence_type' => 'hourly',
             ])
-            ->assertServerError();
+            ->assertNotFound();
+    }
+
+    public function test_edit_returns_404_for_unknown_job(): void {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->get(route('admin.scheduler.edit', ['job' => 'nicht.registriert']))
+            ->assertNotFound();
     }
 
     public function test_test_run_queues_command_and_writes_audit(): void {

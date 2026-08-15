@@ -119,4 +119,18 @@ class SettingsAdminUiTest extends TestCase {
             ->assertOk()
             ->assertSee('created');
     }
+
+    public function test_unknown_key_returns_404_instead_of_500(): void {
+        $this->actingAs($this->admin)
+            ->get(route('admin.settings.history', ['key' => 'nicht.registriert']))
+            ->assertNotFound();
+
+        $this->actingAs($this->admin)
+            ->put(route('admin.settings.update', ['key' => 'nicht.registriert']), ['scope' => 'system', 'value' => '1'])
+            ->assertNotFound();
+
+        $this->actingAs($this->admin)
+            ->delete(route('admin.settings.reset', ['key' => 'nicht.registriert']), ['scope' => 'system'])
+            ->assertNotFound();
+    }
 }

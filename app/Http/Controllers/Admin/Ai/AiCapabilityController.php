@@ -33,6 +33,7 @@ class AiCapabilityController extends Controller {
     /** Routing-Dialog je Capability (modal-first). */
     public function edit(string $capability, AiCapabilityRegistry $registry): View {
         Gate::authorize('viewAny', AiProviderConnection::class);
+        abort_unless($registry->has($capability), 404);
 
         $definition = $registry->get($capability);
         $setting = AiCapabilitySetting::query()->where('capability', $capability)->first();
@@ -49,8 +50,9 @@ class AiCapabilityController extends Controller {
 
     public function update(Request $request, string $capability, AiCapabilityRegistry $registry): RedirectResponse {
         Gate::authorize('create', AiProviderConnection::class);
+        abort_unless($registry->has($capability), 404);
 
-        $definition = $registry->get($capability); // wirft bei unbekanntem Key
+        $definition = $registry->get($capability);
 
         // Sqid-Inputs dekodieren (numerischer Fallback für Alt-Clients).
         if ($request->filled('default_connection_id')) {
@@ -111,6 +113,7 @@ class AiCapabilityController extends Controller {
         AiMemoryService $memory,
     ): View {
         Gate::authorize('viewAny', AiProviderConnection::class);
+        abort_unless($registry->has($capability), 404);
 
         $definition = $registry->get($capability);
         /** @var Organization $organization */

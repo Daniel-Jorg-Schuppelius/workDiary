@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, ScheduledJobOverride, ScheduledJobState, User};
-use App\Scheduling\{Cadence, CadenceType, JobRegistry, SchedulerOverrideService, SchedulerRegistrar};
+use App\Scheduling\{Cadence, CadenceType, JobDefinition, JobRegistry, SchedulerOverrideService, SchedulerRegistrar};
 use Carbon\CarbonImmutable;
 use Cron\CronExpression;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -79,7 +79,7 @@ class SchedulerController extends Controller {
 
     public function edit(string $job): View {
         Gate::authorize(Permission::PlatformSchedulerManage->value);
-        $definition = $this->registry->definition($job);
+        $definition = $this->definitionOr404($job);
 
         return view('admin.scheduler._form_dialog', [
             'definition' => $definition,
@@ -89,7 +89,7 @@ class SchedulerController extends Controller {
 
     public function update(Request $request, string $job): RedirectResponse {
         Gate::authorize(Permission::PlatformSchedulerManage->value);
-        $definition = $this->registry->definition($job);
+        $definition = $this->definitionOr404($job);
 
         $allowed = array_map(static fn(CadenceType $t): string => $t->value, $definition->allowedCadences);
         $validated = $request->validate([
@@ -117,7 +117,7 @@ class SchedulerController extends Controller {
 
     public function pause(Request $request, string $job): RedirectResponse {
         Gate::authorize(Permission::PlatformSchedulerManage->value);
-        $definition = $this->registry->definition($job);
+        $definition = $this->definitionOr404($job);
         $this->overrides->pause($job, $request->user()?->id);
 
         return redirect()->route('admin.scheduler.index')
@@ -126,7 +126,7 @@ class SchedulerController extends Controller {
 
     public function resume(Request $request, string $job): RedirectResponse {
         Gate::authorize(Permission::PlatformSchedulerManage->value);
-        $definition = $this->registry->definition($job);
+        $definition = $this->definitionOr404($job);
         $this->overrides->resume($job, $request->user()?->id);
 
         return redirect()->route('admin.scheduler.index')
@@ -135,7 +135,7 @@ class SchedulerController extends Controller {
 
     public function reset(Request $request, string $job): RedirectResponse {
         Gate::authorize(Permission::PlatformSchedulerManage->value);
-        $definition = $this->registry->definition($job);
+        $definition = $this->definitionOr404($job);
         $this->overrides->reset($job);
 
         return redirect()->route('admin.scheduler.index')
@@ -144,7 +144,7 @@ class SchedulerController extends Controller {
 
     public function testRun(Request $request, string $job): RedirectResponse {
         Gate::authorize(Permission::PlatformSchedulerManage->value);
-        $definition = $this->registry->definition($job);
+        $definition = $this->definitionOr404($job);
 
         $cooldownKey = 'scheduler.testrun.' . $definition->key;
         if (Cache::get($cooldownKey) !== null) {
@@ -160,6 +160,17 @@ class SchedulerController extends Controller {
 
         return redirect()->route('admin.scheduler.index')
             ->with('status', __('scheduler.flash.test_run_queued', ['job' => $definition->label()]));
+    }
+
+    /**
+     * Registry-Definition oder 404: nicht registrierte Job-Keys sind keine
+     * erreichbare Ressource, daher NotFound statt ungefangener Registry-
+     * Exception (die sonst als 500 durchschlägt).
+     */
+    private function definitionOr404(string $job): JobDefinition {
+        abort_unless($this->registry->has($job), 404);
+
+        return $this->registry->definition($job);
     }
 
     /**

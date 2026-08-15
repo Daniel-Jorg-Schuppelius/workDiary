@@ -48,6 +48,26 @@ class MonthClosureWorkflowTest extends TestCase {
         $this->assertSame(1, MonthClosureEvent::query()->where('month_closure_id', $a->id)->count());
     }
 
+    public function test_show_returns_404_for_invalid_period_instead_of_500(): void {
+        $this->makeUser();
+
+        // Monat 13 passt die numerische Route-Constraint, ist aber ungültig.
+        $this->get(route('month-approval.show', ['year' => 2026, 'month' => 13]))->assertNotFound();
+        $this->get(route('month-approval.show', ['year' => 1, 'month' => 1]))->assertNotFound();
+
+        // Gegenprobe: gültiger Monat wird nicht pauschal ge-404t.
+        $this->get(route('month-approval.show', ['year' => $this->year, 'month' => $this->month]))->assertOk();
+    }
+
+    public function test_is_valid_period_bounds(): void {
+        $this->assertTrue($this->service->isValidPeriod(2026, 1));
+        $this->assertTrue($this->service->isValidPeriod(2026, 12));
+        $this->assertFalse($this->service->isValidPeriod(2026, 0));
+        $this->assertFalse($this->service->isValidPeriod(2026, 13));
+        $this->assertFalse($this->service->isValidPeriod(1999, 6));
+        $this->assertFalse($this->service->isValidPeriod(3000, 6));
+    }
+
     public function test_submit_blocked_when_open_attendance_exists(): void {
         $user = $this->makeUser();
         $date = CarbonImmutable::create($this->year, $this->month, 15) ?? CarbonImmutable::now();

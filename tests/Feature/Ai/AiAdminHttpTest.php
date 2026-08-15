@@ -189,6 +189,16 @@ class AiAdminHttpTest extends TestCase {
         $this->assertSame(0, $fake->callCount());
     }
 
+    public function test_unknown_capability_returns_404_instead_of_500(): void {
+        $this->actingAs($this->admin)
+            ->get(route('admin.ai.capability.preview', ['capability' => 'nicht.registriert']))
+            ->assertNotFound();
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.ai.capability.update', ['capability' => 'nicht.registriert']), ['enabled' => 1])
+            ->assertNotFound();
+    }
+
     public function test_memory_crud_via_http(): void {
         $this->actingAs($this->admin)->post(route('admin.ai.memory.store'), [
             'entry_type' => 'glossary',

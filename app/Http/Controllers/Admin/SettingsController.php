@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, Organization, SystemSetting};
-use App\Settings\{SettingScope, SettingType, SettingsRegistry};
+use App\Settings\{SettingDefinition, SettingScope, SettingType, SettingsRegistry};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -62,7 +62,7 @@ class SettingsController extends Controller {
 
     public function update(Request $request, string $key): RedirectResponse {
         Gate::authorize(Permission::PlatformSettingsManage->value);
-        $definition = $this->registry->definition($key);
+        $definition = $this->definitionOr404($key);
         $scope = $this->requestedScope($request);
 
         $raw = $request->input('value');
@@ -81,6 +81,7 @@ class SettingsController extends Controller {
 
     public function reset(Request $request, string $key): RedirectResponse {
         Gate::authorize(Permission::PlatformSettingsManage->value);
+        abort_unless($this->registry->has($key), 404);
         $scope = $this->requestedScope($request);
 
         $this->registry->reset($key, $scope, $this->organizationFor($scope));
@@ -138,7 +139,7 @@ class SettingsController extends Controller {
     /** Änderungsverlauf eines System-Keys (Effektivwert-Erklärung, DoD). */
     public function history(string $key): View {
         Gate::authorize(Permission::PlatformSettingsManage->value);
-        $definition = $this->registry->definition($key);
+        $definition = $this->definitionOr404($key);
 
         $settingIds = SystemSetting::query()->where('key', $key)->pluck('id');
         $logs = AuditLog::query()
@@ -152,6 +153,17 @@ class SettingsController extends Controller {
             'definition' => $definition,
             'logs' => $logs,
         ]);
+    }
+
+    /**
+     * Registry-Definition oder 404: nicht registrierte Keys sind keine
+     * erreichbare Ressource, daher NotFound statt ungefangener Registry-
+     * Exception (die sonst als 500 durchschlägt).
+     */
+    private function definitionOr404(string $key): SettingDefinition {
+        abort_unless($this->registry->has($key), 404);
+
+        return $this->registry->definition($key);
     }
 
     private function requestedScope(Request $request): SettingScope {

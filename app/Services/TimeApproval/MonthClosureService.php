@@ -378,8 +378,13 @@ class MonthClosureService {
         }
     }
 
+    /** Liegt die Periode im zulässigen Bereich (Jahr 2000–2999, Monat 1–12)? */
+    public function isValidPeriod(int $year, int $month): bool {
+        return $year >= 2000 && $year <= 2999 && $month >= 1 && $month <= 12;
+    }
+
     private function assertValidPeriod(int $year, int $month): void {
-        if ($year < 2000 || $year > 2999 || $month < 1 || $month > 12) {
+        if (! $this->isValidPeriod($year, $month)) {
             throw new MonthClosureWorkflowException(
                 'invalidPeriod',
                 __('Ungültige Periode :year-:month.', ['year' => $year, 'month' => $month]),
