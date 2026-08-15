@@ -10006,5 +10006,6 @@
     "Periodenvergleich": "Comparaison de périodes",
     "Konto-Umsätze je Kalenderwoche oder Monat nebeneinander; Excel exportiert alle Konten als je ein Arbeitsblatt.": "Mouvements du compte côte à côte par semaine ou par mois ; Excel exporte chaque compte sur sa propre feuille.",
     "Raster": "Granularité",
-    "KW :week": "S :week"
+    "KW :week": "S :week",
+    "Der Fremddatensatz enthält keinen Namen — Anlegen nicht möglich. Bitte einem bestehenden Datensatz zuordnen oder den Eintrag verwerfen.": "L'enregistrement distant ne contient pas de nom — création impossible. Merci de l'affecter à un enregistrement existant ou de rejeter l'entrée."
 }

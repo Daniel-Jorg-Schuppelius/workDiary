@@ -259,6 +259,29 @@ class IntegrationInboxTest extends TestCase {
         $this->assertDatabaseHas('external_references', ['external_id' => 'tg-1', 'referenceable_id' => $created->id]);
     }
 
+    public function test_create_without_name_shows_error_instead_of_crashing(): void {
+        // Regression (Prod 2026-08-15): Projekt-Eintrag ohne Namen lief in
+        // Project::uniqueSlug(null) → TypeError/Fehlerseite. Jetzt fachliche
+        // Flash-Meldung; der Eintrag bleibt offen.
+        $item = $this->item([
+            'target_type' => (new \App\Models\Project)->getMorphClass(),
+            'external_type' => 'project',
+            'external_id' => 'tg-p1',
+            'dedupe_key' => 'project:tg-p1',
+            'remote_snapshot' => [],
+            'mapped_snapshot' => ['name' => null, 'number' => 'P-100'],
+            'display_title' => '(ohne Namen)',
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.integration.inbox.create', $item))
+            ->assertRedirect()
+            ->assertSessionHas('error');
+
+        $this->assertSame(IntegrationInboxItem::STATUS_OPEN, $item->fresh()->status);
+        $this->assertDatabaseMissing('projects', ['number' => 'P-100']);
+    }
+
     public function test_accept_remote_updates_local(): void {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'email' => 'old@x.test']);
         $item = $this->item([

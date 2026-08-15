@@ -56,6 +56,7 @@ class EventMatchProfile extends AbstractMatchProfile {
     }
 
     public function create(Organization $organization, array $mapped): Model {
+        $this->requireName($mapped, 'title');
         $attributes = array_intersect_key($mapped, array_flip((new Event)->getFillable()));
         $attributes['organization_id'] = $organization->id;
 

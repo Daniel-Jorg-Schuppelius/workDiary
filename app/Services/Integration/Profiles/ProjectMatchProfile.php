@@ -54,6 +54,7 @@ class ProjectMatchProfile extends AbstractMatchProfile {
     }
 
     public function create(Organization $organization, array $mapped): Model {
+        $this->requireName($mapped);
         $attributes = array_intersect_key($mapped, array_flip((new Project)->getFillable()));
         $attributes['organization_id'] = $organization->id;
 

@@ -60,6 +60,7 @@ class CustomerMatchProfile extends AbstractMatchProfile {
     }
 
     public function create(Organization $organization, array $mapped): Model {
+        $this->requireName($mapped);
         $attributes = array_intersect_key($mapped, array_flip((new Customer)->getFillable()));
         $attributes['organization_id'] = $organization->id;
         if (! array_key_exists('billable', $attributes)) {

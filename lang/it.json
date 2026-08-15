@@ -10006,5 +10006,6 @@
     "Periodenvergleich": "Confronto periodi",
     "Konto-Umsätze je Kalenderwoche oder Monat nebeneinander; Excel exportiert alle Konten als je ein Arbeitsblatt.": "Movimenti del conto affiancati per settimana o mese; Excel esporta ogni conto in un proprio foglio.",
     "Raster": "Granularità",
-    "KW :week": "Sett. :week"
+    "KW :week": "Sett. :week",
+    "Der Fremddatensatz enthält keinen Namen — Anlegen nicht möglich. Bitte einem bestehenden Datensatz zuordnen oder den Eintrag verwerfen.": "Il record remoto non contiene alcun nome — impossibile crearlo. Assegnarlo a un record esistente oppure scartare la voce."
 }

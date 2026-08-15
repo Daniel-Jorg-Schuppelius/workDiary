@@ -14,6 +14,7 @@ namespace App\Services\Integration\Match;
 
 use App\Models\Organization;
 use Illuminate\Database\Eloquent\{Builder, Model};
+use RuntimeException;
 
 /**
  * Basis für {@see MatchProfile}-Implementierungen: liefert Standard-Kandidaten-
@@ -44,6 +45,22 @@ abstract class AbstractMatchProfile implements MatchProfile {
         }
 
         return $query;
+    }
+
+    /**
+     * Guard für create(): Fremddatensätze ohne gefülltes Namensfeld dürfen
+     * nicht angelegt werden — die Zielspalte ist NOT NULL bzw. der Observer
+     * sluggt den Namen (TypeError → Fehlerseite). Die RuntimeException zeigt
+     * der Inbox-Controller stattdessen als Flash-Meldung.
+     *
+     * @param array<string, mixed> $mapped
+     */
+    protected function requireName(array $mapped, string $field = 'name'): void {
+        if (filled($mapped[$field] ?? null)) {
+            return;
+        }
+
+        throw new RuntimeException((string) __('Der Fremddatensatz enthält keinen Namen — Anlegen nicht möglich. Bitte einem bestehenden Datensatz zuordnen oder den Eintrag verwerfen.'));
     }
 
     public function extract(Model $model): array {

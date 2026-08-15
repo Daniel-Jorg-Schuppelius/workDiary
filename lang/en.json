@@ -10006,5 +10006,6 @@
     "Periodenvergleich": "Period comparison",
     "Konto-Umsätze je Kalenderwoche oder Monat nebeneinander; Excel exportiert alle Konten als je ein Arbeitsblatt.": "Account turnover side by side per calendar week or month; Excel exports every account as its own worksheet.",
     "Raster": "Granularity",
-    "KW :week": "CW :week"
+    "KW :week": "CW :week",
+    "Der Fremddatensatz enthält keinen Namen — Anlegen nicht möglich. Bitte einem bestehenden Datensatz zuordnen oder den Eintrag verwerfen.": "The remote record has no name — it cannot be created. Please assign it to an existing record or discard the entry."
 }

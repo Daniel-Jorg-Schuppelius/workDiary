@@ -59,6 +59,7 @@ class SupplierMatchProfile extends AbstractMatchProfile {
     }
 
     public function create(Organization $organization, array $mapped): Model {
+        $this->requireName($mapped);
         $attributes = array_intersect_key($mapped, array_flip((new Supplier)->getFillable()));
         $attributes['organization_id'] = $organization->id;
 
