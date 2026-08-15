@@ -17,7 +17,7 @@ use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
 use App\Services\Stammdaten\{ContactMasterDataPusher, IdentifierIssueDetector};
-use App\Support\{CsvExport, Setting};
+use App\Support\{CarbonFmt, CsvExport, Setting};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -53,7 +53,7 @@ class SupplierController extends Controller {
         ]);
     }
 
-    public function show(Supplier $supplier, PluginManager $plugins): View {
+    public function show(Request $request, Supplier $supplier, PluginManager $plugins): View {
         Gate::authorize('view', $supplier);
 
         $lexoffice = $plugins->withCapability(PluginCapability::TimeExport)->get(LexofficePlugin::ID);
@@ -64,8 +64,18 @@ class SupplierController extends Controller {
             ->first()
             : null;
 
-        // Lexoffice-Belege auf den globalen Header-Zeitraum eingrenzen (analog Kunde).
+        // Lexoffice-Belege auf den globalen Header-Zeitraum eingrenzen (analog
+        // Kunde); explizite from/to-Parameter (Drilldown aus der
+        // Lieferantenanalyse) haben Vorrang.
         $lexofficeVoucherRange = $this->globalDateRange();
+        if ($request->filled('from') && $request->filled('to')) {
+            [$rangeFrom, $rangeTo] = $this->resolveRange($request);
+            $lexofficeVoucherRange = array_merge($lexofficeVoucherRange, [
+                'from' => $rangeFrom,
+                'to' => $rangeTo,
+                'label' => CarbonFmt::fdate($rangeFrom) . ' – ' . CarbonFmt::fdate($rangeTo),
+            ]);
+        }
 
         // KPI-Kacheln analog zur Kunden-Detailseite — Beschaffungszahlen nur
         // mit aktivem Lager-Modul (purchase-orders.* sind darauf gegated).

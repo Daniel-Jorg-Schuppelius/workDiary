@@ -70,7 +70,7 @@ class SupplierAnalysisReportController extends Controller {
         }
 
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf(array_values($rows->all()), $result['concentration'], $label, $from->toDateString(), $to->toDateString(), $this->spendSeries(array_values($rows->all())), $withProcurement, $exportFilters, $request);
+            return $this->exportPdf(array_values($rows->all()), $result['concentration'], $label, $from->toDateString(), $to->toDateString(), $this->spendSeries(array_values($rows->all()), $from, $to), $withProcurement, $exportFilters, $request);
         }
 
         return view('reports.suppliers', [
@@ -82,50 +82,62 @@ class SupplierAnalysisReportController extends Controller {
             'minSpend' => $minSpend,
             'hideZero' => $hideZero,
             'withProcurement' => $withProcurement,
-            'spendSeries' => $this->spendSeries(array_values($rows->all())),
+            'spendSeries' => $this->spendSeries(array_values($rows->all()), $from, $to),
             'monthlySpendSeries' => $this->builder->monthlySpendSeries($from, $to, $this->globalUnit()),
-            'openSeries' => $this->openSeries(array_values($rows->all())),
+            'openSeries' => $this->openSeries(array_values($rows->all()), $from, $to),
             'periodPhrase' => $this->periodPhrase($this->bucketGranularity($from, $to)),
             'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($from, $to)),
         ]);
     }
 
     /**
+     * Drilldown-Ziel eines Lieferanten: Belege-Abschnitt der Detailseite,
+     * eingegrenzt auf den Report-Zeitraum.
+     */
+    private function supplierVoucherUrl(int $supplierId, \Carbon\CarbonImmutable $from, \Carbon\CarbonImmutable $to): string {
+        return route('suppliers.show', [
+            'supplier' => Sqid::encode(Supplier::class, $supplierId),
+            'from' => $from->toDateString(),
+            'to' => $to->toDateString(),
+        ]) . '#vouchers';
+    }
+
+    /**
      * Ausgaben je Lieferant (Top 20) — Pareto am Screen, bar-h im PDF;
-     * Drilldown öffnet die Lieferanten-Detailseite.
+     * Drilldown öffnet die Belege der Lieferanten-Detailseite im Zeitraum.
      *
      * @param  list<array{supplierId:int, supplierName:string, spend:float, voucherCount:int, avgVoucher:float, openAmount:float, recencyDays:?int, lastVoucher:?string, spendPrev:float, trendPct:?float, orderCount:?int, openOrderCount:?int}>  $rows
      * @return list<array{x: string, y: float, url: string}>
      */
-    private function spendSeries(array $rows): array {
+    private function spendSeries(array $rows, \Carbon\CarbonImmutable $from, \Carbon\CarbonImmutable $to): array {
         return array_values(collect($rows)
             ->filter(static fn(array $row): bool => $row['spend'] > 0)
             ->sortByDesc('spend')
             ->take(20)
-            ->map(static fn(array $row): array => [
+            ->map(fn(array $row): array => [
                 'x' => $row['supplierName'],
                 'y' => round($row['spend'], 2),
-                'url' => route('suppliers.show', Sqid::encode(Supplier::class, $row['supplierId'])),
+                'url' => $this->supplierVoucherUrl($row['supplierId'], $from, $to),
             ])
             ->all());
     }
 
     /**
      * Offener Betrag je Lieferant (Top 15) — offene Verbindlichkeiten aus dem
-     * Beleg-Spiegel; Drilldown auf die Lieferanten-Detailseite.
+     * Beleg-Spiegel; Drilldown öffnet die Belege der Detailseite im Zeitraum.
      *
      * @param  list<array{supplierId:int, supplierName:string, spend:float, voucherCount:int, avgVoucher:float, openAmount:float, recencyDays:?int, lastVoucher:?string, spendPrev:float, trendPct:?float, orderCount:?int, openOrderCount:?int}>  $rows
      * @return list<array{x: string, y: float, url: string}>
      */
-    private function openSeries(array $rows): array {
+    private function openSeries(array $rows, \Carbon\CarbonImmutable $from, \Carbon\CarbonImmutable $to): array {
         return array_values(collect($rows)
             ->filter(static fn(array $row): bool => $row['openAmount'] > 0)
             ->sortByDesc('openAmount')
             ->take(15)
-            ->map(static fn(array $row): array => [
+            ->map(fn(array $row): array => [
                 'x' => $row['supplierName'],
                 'y' => round($row['openAmount'], 2),
-                'url' => route('suppliers.show', Sqid::encode(Supplier::class, $row['supplierId'])),
+                'url' => $this->supplierVoucherUrl($row['supplierId'], $from, $to),
             ])
             ->all());
     }

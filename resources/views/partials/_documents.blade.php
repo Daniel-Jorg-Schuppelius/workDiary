@@ -92,7 +92,7 @@
 @endphp
 
 @if ($lexofficeConnected || $rows->isNotEmpty() || $alwaysShow)
-    <x-card class="space-y-3">
+    <x-card id="vouchers" class="space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-2">
             <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
                 <x-icon name="receipt_long" class="text-base-content/60" /> {{ __('Rechnungen & Belege') }}

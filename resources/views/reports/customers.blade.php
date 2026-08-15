@@ -18,6 +18,14 @@
         ['min_minutes' => $minMinutes > 0 ? $minMinutes : null, 'hide_zero' => $hideZero ? 1 : null],
         $standardFilters->toQueryParams(),
     ));
+    $customerUrl = fn (int $id): string => route('customers.show', \App\Support\Sqid::encode(\App\Models\Customer::class, $id));
+    $diaryRangeUrl = fn (int $id): string => route('diary.index', [
+        'customer' => \App\Support\Sqid::encode(\App\Models\Customer::class, $id),
+        'from' => $from->toDateString(),
+        'to' => $to->toDateString(),
+        'project' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId),
+        'user' => \App\Support\Sqid::encode(\App\Models\User::class, $userId),
+    ]);
 @endphp
 
 <x-page-shell>
@@ -61,7 +69,10 @@
                 <tr><x-table.th sort type="string">{{ __('Top 5 Aufwand') }}</x-table.th><x-table.th sort type="number" align="right">{{ __('Min.') }}</x-table.th></tr>
             </x-slot:head>
             @forelse($topByMinutes as $row)
-                <tr><td>{{ $row['customerName'] }}</td><td class="text-right tabular-nums">{{ $row['totalMinutes'] }}</td></tr>
+                <tr>
+                    <td><a href="{{ $customerUrl($row['customerId']) }}" class="link link-hover">{{ $row['customerName'] }}</a></td>
+                    <td class="text-right tabular-nums"><a href="{{ $diaryRangeUrl($row['customerId']) }}" class="link link-hover">{{ $row['totalMinutes'] }}</a></td>
+                </tr>
             @empty
                 <tr><td colspan="2" class="text-base-content/60">{{ __('Keine Daten') }}</td></tr>
             @endforelse
@@ -72,7 +83,16 @@
                 <tr><x-table.th sort type="string">{{ __('Top 5 Nacharbeit') }}</x-table.th><x-table.th sort type="number" align="right">{{ __('Einträge') }}</x-table.th></tr>
             </x-slot:head>
             @forelse($topByRework as $row)
-                <tr><td>{{ $row['customerName'] }}</td><td class="text-right tabular-nums">{{ $row['reworkEntryCount'] }}</td></tr>
+                <tr>
+                    <td><a href="{{ $customerUrl($row['customerId']) }}" class="link link-hover">{{ $row['customerName'] }}</a></td>
+                    <td class="text-right tabular-nums">
+                        <a href="{{ route('reports.customers.drilldown.protocols', array_filter([
+                            'customer_id' => \App\Support\Sqid::encode(\App\Models\Customer::class, $row['customerId']),
+                            'project_id' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId),
+                            'user_id' => \App\Support\Sqid::encode(\App\Models\User::class, $userId),
+                        ])) }}" class="link link-hover">{{ $row['reworkEntryCount'] }}</a>
+                    </td>
+                </tr>
             @empty
                 <tr><td colspan="2" class="text-base-content/60">{{ __('Keine Daten') }}</td></tr>
             @endforelse
@@ -83,7 +103,10 @@
                 <tr><x-table.th sort type="string">{{ __('Top 5 nicht abrechenbar') }}</x-table.th><x-table.th sort type="number" align="right">{{ __('Min.') }}</x-table.th></tr>
             </x-slot:head>
             @forelse($topByNonBillable as $row)
-                <tr><td>{{ $row['customerName'] }}</td><td class="text-right tabular-nums">{{ $row['nonBillableMinutes'] }}</td></tr>
+                <tr>
+                    <td><a href="{{ $customerUrl($row['customerId']) }}" class="link link-hover">{{ $row['customerName'] }}</a></td>
+                    <td class="text-right tabular-nums"><a href="{{ $diaryRangeUrl($row['customerId']) }}" class="link link-hover">{{ $row['nonBillableMinutes'] }}</a></td>
+                </tr>
             @empty
                 <tr><td colspan="2" class="text-base-content/60">{{ __('Keine Daten') }}</td></tr>
             @endforelse
@@ -114,13 +137,7 @@
                 </x-slot:head>
                 @foreach($rows as $row)
                     @php
-                        $drilldownBase = [
-                            'customer' => \App\Support\Sqid::encode(\App\Models\Customer::class, $row['customerId']),
-                            'from' => $from->toDateString(),
-                            'to' => $to->toDateString(),
-                            'project' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId),
-                            'user' => \App\Support\Sqid::encode(\App\Models\User::class, $userId),
-                        ];
+                        $diaryUrl = $diaryRangeUrl($row['customerId']);
                         $reportDrilldownBase = array_filter([
                             'customer_id' => \App\Support\Sqid::encode(\App\Models\Customer::class, $row['customerId']),
                             'project_id' => \App\Support\Sqid::encode(\App\Models\Project::class, $projectId),
@@ -129,15 +146,19 @@
                     @endphp
                     <tr>
                         <td class="font-medium">
-                            <a href="{{ route('diary.index', $drilldownBase) }}" class="link link-hover">
+                            <a href="{{ $customerUrl($row['customerId']) }}" class="link link-hover" title="{{ __('Kundenakte öffnen') }}">
                                 {{ $row['customerName'] }}
+                            </a>
+                            <a href="{{ $diaryUrl }}" class="text-base-content/50 hover:text-base-content"
+                               aria-label="{{ __('Einträge im Zeitraum öffnen') }}" title="{{ __('Einträge im Zeitraum öffnen') }}">
+                                <span class="material-symbols-outlined text-[14px] align-middle" aria-hidden="true">calendar_month</span>
                             </a>
                         </td>
                         <td class="text-right tabular-nums">
-                            <a href="{{ route('diary.index', $drilldownBase) }}" class="link link-hover">{{ $row['entryCount'] }}</a>
+                            <a href="{{ $diaryUrl }}" class="link link-hover">{{ $row['entryCount'] }}</a>
                         </td>
                         <td class="text-right tabular-nums" title="{{ $fmt($row['totalMinutes']) }}">
-                            <a href="{{ route('diary.index', $drilldownBase) }}" class="link link-hover">{{ $row['totalMinutes'] }}</a>
+                            <a href="{{ $diaryUrl }}" class="link link-hover">{{ $row['totalMinutes'] }}</a>
                         </td>
                         <td class="text-right tabular-nums">{{ $row['billableMinutes'] }}</td>
                         <td class="text-right tabular-nums">{{ $row['nonBillableMinutes'] }}</td>

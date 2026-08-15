@@ -22,6 +22,12 @@
     $hhiTone = $hhi === null ? 'neutral'
         : ($hhi > \App\Services\Reporting\SupplierAnalysisReportBuilder::HHI_HIGH ? 'error'
         : ($hhi >= \App\Services\Reporting\SupplierAnalysisReportBuilder::HHI_MODERATE ? 'warning' : 'success'));
+    $supplierUrl = fn (int $id): string => route('suppliers.show', \App\Support\Sqid::encode(\App\Models\Supplier::class, $id));
+    $voucherRangeUrl = fn (int $id): string => route('suppliers.show', [
+        'supplier' => \App\Support\Sqid::encode(\App\Models\Supplier::class, $id),
+        'from' => $from->toDateString(),
+        'to' => $to->toDateString(),
+    ]) . '#vouchers';
 @endphp
 
 <x-page-shell>
@@ -103,15 +109,29 @@
                     </tr>
                 </x-slot:head>
                 @foreach ($rows as $row)
-                    @php($supplierUrl = route('suppliers.show', \App\Support\Sqid::encode(\App\Models\Supplier::class, $row['supplierId'])))
+                    @php($voucherUrl = $voucherRangeUrl($row['supplierId']))
                     <tr>
                         <td class="font-medium">
-                            <a href="{{ $supplierUrl }}" class="link link-hover">{{ $row['supplierName'] }}</a>
+                            <a href="{{ $supplierUrl($row['supplierId']) }}" class="link link-hover" title="{{ __('Lieferantenakte öffnen') }}">{{ $row['supplierName'] }}</a>
+                            <a href="{{ $voucherUrl }}" class="text-base-content/50 hover:text-base-content"
+                               aria-label="{{ __('Belege im Zeitraum öffnen') }}" title="{{ __('Belege im Zeitraum öffnen') }}">
+                                <span class="material-symbols-outlined text-[14px] align-middle" aria-hidden="true">calendar_month</span>
+                            </a>
                         </td>
-                        <td class="text-right tabular-nums">{{ $eur($row['spend']) }}</td>
-                        <td class="text-right tabular-nums">{{ $row['voucherCount'] }}</td>
+                        <td class="text-right tabular-nums">
+                            <a href="{{ $voucherUrl }}" class="link link-hover">{{ $eur($row['spend']) }}</a>
+                        </td>
+                        <td class="text-right tabular-nums">
+                            <a href="{{ $voucherUrl }}" class="link link-hover">{{ $row['voucherCount'] }}</a>
+                        </td>
                         <td class="text-right tabular-nums">{{ $eur($row['avgVoucher']) }}</td>
-                        <td class="text-right tabular-nums">{{ $row['openAmount'] > 0 ? $eur($row['openAmount']) : '—' }}</td>
+                        <td class="text-right tabular-nums">
+                            @if ($row['openAmount'] > 0)
+                                <a href="{{ $voucherUrl }}" class="link link-hover">{{ $eur($row['openAmount']) }}</a>
+                            @else
+                                —
+                            @endif
+                        </td>
                         <td class="text-right tabular-nums">{{ $row['recencyDays'] ?? '—' }}</td>
                         <td class="text-right tabular-nums">
                             @if ($row['trendPct'] === null)
