@@ -40,6 +40,19 @@ class PriceChangeAlertService {
             return null;
         }
 
+        // Feature 107: Ein DATANORM-Listenpreis ohne aufgelöste Rabattgruppe ist
+        // nur die EK-Obergrenze, kein echter Einkaufspreis — Margenwarnungen
+        // darauf wären Fehlalarme. Sobald die RAB-Lieferung eintrifft, wird der
+        // EK neu berechnet und regulär bewertet.
+        if ($item->price_type === 'list'
+            && $item->discount_group !== null
+            && ! \App\Models\SupplierCatalogDiscountGroup::query()
+                ->where('supplier_catalog_source_id', $item->supplier_catalog_source_id)
+                ->where('code', $item->discount_group)
+                ->exists()) {
+            return null;
+        }
+
         $article = Article::query()->find($item->article_id);
         if (! $article instanceof Article || $article->default_sale_price === null) {
             return null;

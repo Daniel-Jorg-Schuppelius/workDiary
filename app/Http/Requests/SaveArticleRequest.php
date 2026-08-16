@@ -69,6 +69,12 @@ class SaveArticleRequest extends BaseFormRequest {
             'product_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('products')],
             'type' => ['required', Rule::enum(ArticleType::class)],
             'base_unit' => ['required', 'string', 'max:20'],
+            'category' => ['nullable', 'string', 'max:64'],
+            'subcategory' => ['nullable', 'string', 'max:64'],
+            'sales_discount_group_id' => [
+                'nullable', 'integer',
+                Rule::exists('sales_discount_groups', 'id')->where(fn ($q) => $q->where('organization_id', $organizationId)),
+            ],
             'tax_class' => ['nullable', 'string', 'max:40'],
             'status' => ['required', Rule::enum(ArticleStatus::class)],
             'default_purchase_price' => ['nullable', 'numeric', 'min:0'],

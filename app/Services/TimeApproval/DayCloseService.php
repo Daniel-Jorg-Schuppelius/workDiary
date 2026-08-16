@@ -43,8 +43,7 @@ class DayCloseService {
         private readonly FlexCalculator $flex,
         private readonly BreakRuleEvaluator $breakRules,
         private readonly MonthClosureService $monthClosures,
-    ) {
-    }
+    ) {}
 
     /** Validator mit den konfigurierten gesetzlichen Pausenregeln. */
     public function makeValidator(): DayClosureValidator {

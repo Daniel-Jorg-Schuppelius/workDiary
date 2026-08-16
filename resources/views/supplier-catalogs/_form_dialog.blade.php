@@ -45,8 +45,8 @@
             @endforeach
         </x-select-field>
         <x-select-field name="encoding" :label="__('procurement.catalog.field.encoding')" required>
-            @foreach (['UTF-8', 'ISO-8859-1', 'Windows-1252'] as $enc)
-                <option value="{{ $enc }}" @selected($val('encoding', 'UTF-8') === $enc)>{{ $enc }}</option>
+            @foreach (['UTF-8', 'ISO-8859-1', 'Windows-1252', 'CP850'] as $enc)
+                <option value="{{ $enc }}" @selected($val('encoding', 'UTF-8') === $enc)>{{ $enc === 'CP850' ? 'CP850 (DATANORM)' : $enc }}</option>
             @endforeach
         </x-select-field>
 
@@ -59,6 +59,8 @@
         <x-checkbox-field name="has_header" :label="__('procurement.catalog.field.has_header')" :checked="(bool) $val('has_header', true)" value="1" />
         <x-input-field name="sheet_name" :label="__('procurement.catalog.field.sheet_name')" maxlength="64"
                        :value="$val('sheet_name')" :placeholder="__('procurement.catalog.field.sheet_name_first')" />
+        <x-input-field name="expected_customer_no" :label="__('procurement.catalog.field.expected_customer_no')" maxlength="32"
+                       :value="$val('expected_customer_no')" :hint="__('procurement.catalog.field.expected_customer_no_hint')" />
     </x-form-group>
 
     <x-form-group :legend="__('procurement.catalog.remote.legend')" icon="cloud_download" tone="primary" cols="2">

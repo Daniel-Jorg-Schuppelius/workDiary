@@ -364,6 +364,14 @@ return [
             'criticality' => 'core',
             'expected_runtime_minutes' => 10,
         ],
+        // Feature 107 (W3-Rest): fällige, vorgemerkte DATANORM-Preisstände aktivieren.
+        'catalog.apply_pending_prices' => [
+            'command' => 'catalog:apply-pending-prices',
+            'cadence' => ['type' => 'dailyAt', 'time' => '02:20'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 2,
+        ],
 
         // --- Integrationen (Plugins, stündlich) ---
         'plugin.healthcheck' => [

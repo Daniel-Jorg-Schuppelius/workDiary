@@ -1125,6 +1125,11 @@ Route::middleware('auth')->group(function () {
         Route::resource('products', ProductController::class)->except('show');
 
         // ── Artikelstamm (Feature 048, MVP-060) ─ Modul-Gate articles.* → module.lager
+        Route::get('articles/export/datanorm', [\App\Http\Controllers\ArticleExportController::class, 'datanorm'])->name('articles.export.datanorm'); // Feature 107 W5 — vor der Resource (Kollision mit articles/{article})
+        // Feature 107 W9: Verkaufs-Rabattgruppen (ebenfalls vor der Resource).
+        Route::get('articles/sales-discount-groups', [\App\Http\Controllers\SalesDiscountGroupController::class, 'index'])->name('articles.sales-discount-groups.index');
+        Route::post('articles/sales-discount-groups', [\App\Http\Controllers\SalesDiscountGroupController::class, 'store'])->name('articles.sales-discount-groups.store');
+        Route::delete('articles/sales-discount-groups/{salesDiscountGroup}', [\App\Http\Controllers\SalesDiscountGroupController::class, 'destroy'])->name('articles.sales-discount-groups.destroy');
         Route::resource('articles', \App\Http\Controllers\ArticleController::class);
         Route::post('articles/{article}/retire', [\App\Http\Controllers\ArticleController::class, 'retire'])->name('articles.retire');
         Route::post('articles/{article}/supplies/{supply}/prefer', [\App\Http\Controllers\ArticleController::class, 'setPreferredSupply'])->name('articles.supplies.prefer'); // Feature 050 Lieferantenvergleich
@@ -1336,6 +1341,7 @@ Route::middleware('auth')->group(function () {
         Route::get('admin/b2b-katalog/zugaenge/{access}', [\App\Http\Controllers\Admin\B2bCatalogAdminController::class, 'show'])->name('b2b-catalog.show');
         Route::post('admin/b2b-katalog/zugaenge/{access}/rotate', [\App\Http\Controllers\Admin\B2bCatalogAdminController::class, 'rotate'])->name('b2b-catalog.rotate');
         Route::post('admin/b2b-katalog/zugaenge/{access}/revoke', [\App\Http\Controllers\Admin\B2bCatalogAdminController::class, 'revoke'])->name('b2b-catalog.revoke');
+        Route::get('admin/b2b-katalog/zugaenge/{access}/datanorm', [\App\Http\Controllers\Admin\B2bCatalogAdminController::class, 'exportDatanorm'])->name('b2b-catalog.datanorm'); // Feature 107 W6
         Route::post('admin/b2b-katalog/zugaenge/{access}/artikel', [\App\Http\Controllers\Admin\B2bCatalogAdminController::class, 'storeItem'])->name('b2b-catalog.items.store');
         Route::delete('admin/b2b-katalog/zugaenge/{access}/artikel/{item}', [\App\Http\Controllers\Admin\B2bCatalogAdminController::class, 'destroyItem'])->name('b2b-catalog.items.destroy');
         Route::post('admin/b2b-katalog/bestellungen/upload', [\App\Http\Controllers\Admin\B2bCatalogAdminController::class, 'uploadOrder'])->name('b2b-catalog.orders.upload');

@@ -39,6 +39,7 @@ class SaveSupplierCatalogSourceRequest extends BaseFormRequest {
             'sheet_name' => ['nullable', 'string', 'max:64'],
             'decimal_separator' => ['required', Rule::in([',', '.'])],
             'encoding' => ['required', 'string', 'max:32'],
+            'expected_customer_no' => ['nullable', 'string', 'max:32'],
             'has_header' => ['nullable', 'boolean'],
             // SSRF-Konfigurationszeit-Guard: keine internen/privaten Ziele als
             // Katalogquelle (verbindliche DNS-sichere Prüfung erneut zur

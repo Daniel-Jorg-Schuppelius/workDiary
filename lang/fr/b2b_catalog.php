@@ -56,6 +56,7 @@ return [
     ],
 
     'action' => [
+        'datanorm' => 'Exporter DATPREIS',
         'issue' => 'Créer l\'accès',
         'manage' => 'Gérer',
         'revoke' => 'Désactiver',
@@ -75,6 +76,8 @@ return [
     ],
 
     'flash' => [
+        'datanorm_empty' => 'Aucun article autorisé avec prix pour cet accès.',
+        'datanorm_revoked' => 'Cet accès est révoqué — les listes de prix client ne sont plus exportées.',
         'access_issued' => 'Accès créé.',
         'access_rotated' => 'Secret renouvelé.',
         'access_revoked' => 'Accès désactivé.',

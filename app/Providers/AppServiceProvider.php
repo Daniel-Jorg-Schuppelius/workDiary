@@ -581,6 +581,9 @@ class AppServiceProvider extends ServiceProvider {
         EventFacade::subscribe(\App\Listeners\PluginEventSubscriber::class);
 
         Comment::observe(CommentObserver::class);
+        // Feature 107 W10: VK-Preisverlauf für den DATPREIS-Export „seit Datum".
+        \App\Models\Article::observe(\App\Observers\ArticleSalePriceObserver::class);
+        \App\Models\ArticleVariant::observe(\App\Observers\ArticleVariantSalePriceObserver::class);
         Attachment::observe(AttachmentObserver::class);
         Customer::observe(CustomerObserver::class);
         // Supplier/ForeignCustomer: Audit-Logging via Auditable-Trait, kein Observer mehr (A1).

@@ -195,6 +195,60 @@ class B2bCatalogAdminController extends Controller {
             ->first();
     }
 
+    /**
+     * Kundenindividuelle DATPREIS-Datei für diesen Zugang (Feature 107, W6):
+     * K-Kontrollsatz mit der Kundennummer, effektive Nettopreise der
+     * freigegebenen Artikel (Feature 099, `custom_price`).
+     */
+    public function exportDatanorm(Request $request, B2bCatalogAccess $access, \App\Services\Procurement\DatanormExportService $export): \Symfony\Component\HttpFoundation\BinaryFileResponse|RedirectResponse {
+        $admin = $this->admin();
+        $this->guard($admin, $access);
+        $request->validate(['version' => ['nullable', 'in:4,5']]);
+
+        // Widerrufene Zugänge liefern keine Kundenpreislisten mehr aus —
+        // konsistent zur Zugangs-Semantik (Feature 107).
+        if (! $access->isActive()) {
+            return back()->with('error', (string) __('b2b_catalog.flash.datanorm_revoked'));
+        }
+
+        $version = $request->input('version') === '4'
+            ? \ERechnungToolkit\Enums\DatanormVersion::V4
+            : \ERechnungToolkit\Enums\DatanormVersion::V5;
+
+        $result = $export->exportPrices(
+            Organization::query()->findOrFail($access->organization_id),
+            $version,
+            \ERechnungToolkit\Enums\DatanormPriceIndicator::NetPrice,
+            $access
+        );
+        if ($result['articles'] === 0) {
+            return back()->with('error', (string) __('b2b_catalog.flash.datanorm_empty'));
+        }
+
+        // Kundenindividuelle Preislisten sind auditpflichtig.
+        \App\Models\AuditLog::create([
+            'organization_id' => $access->organization_id,
+            'user_id' => $admin->id,
+            'event' => 'datanorm.exported',
+            'auditable_type' => B2bCatalogAccess::class,
+            'auditable_id' => $access->id,
+            'changes' => [
+                'type' => 'customer_prices',
+                'version' => $version->value,
+                'customer_id' => $access->customer_id,
+                'articles' => $result['articles'],
+                'skipped' => count($result['skipped']),
+            ],
+            'ip' => $request->ip(),
+            'user_agent' => substr((string) $request->userAgent(), 0, 255),
+        ]);
+
+        return \App\Http\Controllers\ArticleExportController::buildZipResponse(
+            $result['files'],
+            'datpreis-' . \Illuminate\Support\Str::slug($access->label) . '.zip'
+        );
+    }
+
     /** @param class-string<\Illuminate\Database\Eloquent\Model> $modelClass */
     private function decodeSqid(string $modelClass, string $sqid): ?int {
         return app(\App\Services\SqidEncoder::class)->decode($modelClass, $sqid);

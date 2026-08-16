@@ -16,9 +16,12 @@ use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
 /**
- * Format einer Lieferanten-Katalogquelle (Feature 050, MVP-091/092). Erste
- * Strecke ist CSV; DATANORM/BMEcat/Shopinfo sind vorgesehen, aber noch nicht
- * implementiert.
+ * Format einer Lieferanten-Katalogquelle (Feature 050, MVP-091/092). CSV/XLSX
+ * laufen über das konfigurierbare Spalten-Mapping, DATANORM (4/5, Feature 107)
+ * und BMEcat sind strukturierte Formate mit festem Satzaufbau. ShopInfo ist
+ * kein wählbares Quellformat, sondern befüllt als Discovery-Helfer die
+ * CSV-Einstellungen (daher bewusst nicht in der Format-Whitelist des
+ * SaveSupplierCatalogSourceRequest).
  */
 enum CatalogSourceFormat: string implements HasLabel {
     use HasOptions;

@@ -29,10 +29,10 @@ class CatalogImportDispatcher {
      *
      * @throws RuntimeException Importfehler werden protokolliert und weitergereicht.
      */
-    public function run(SupplierCatalogSource $source, string $content, array $mapping, string $trigger): array {
+    public function run(SupplierCatalogSource $source, string $content, array $mapping, string $trigger, ?string $datanormMode = null): array {
         try {
             $summary = match ($source->format) {
-                CatalogSourceFormat::Datanorm => app(DatanormImportService::class)->import($source, $content),
+                CatalogSourceFormat::Datanorm => app(DatanormImportService::class)->import($source, $content, $datanormMode),
                 CatalogSourceFormat::BMEcat => app(BMEcatImportService::class)->import($source, $content),
                 CatalogSourceFormat::Xlsx => app(CatalogXlsxImportService::class)->import($source, $content, $mapping),
                 default => app(CatalogCsvImportService::class)->import($source, $content, $mapping),

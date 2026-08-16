@@ -55,6 +55,9 @@ class Article extends Model {
         'description',
         'type',
         'base_unit',
+        'category',
+        'subcategory',
+        'sales_discount_group_id',
         'tax_class',
         'stockable',
         'purchasable',
@@ -127,6 +130,13 @@ class Article extends Model {
     /**
      * Typ-Ebene Hersteller-Modell (produktmodell-konzept.md, MVP-369).
      *
+     * @return BelongsTo<SalesDiscountGroup, $this>
+     */
+    public function salesDiscountGroup(): BelongsTo {
+        return $this->belongsTo(SalesDiscountGroup::class);
+    }
+
+    /**
      * @return BelongsTo<Product, $this>
      */
     public function product(): BelongsTo {

@@ -36,12 +36,15 @@ class CatalogItemUpserter {
 
     /**
      * @param  list<array<string, mixed>>  $records  normalisierte Datensätze (Zielfeld => Wert)
+     * @param  bool  $snapshot  true = Datei ist ein Voll-Snapshot (nicht enthaltene
+     *                          Artikel werden abgekündigt); false = Delta/Änderungsdatei
+     *                          (Feature 107: DATANORM-.002/DATPREIS), Bestand bleibt.
      * @return array{rows: int, created: int, updated: int, unchanged: int, price_changed: int, discontinued: int}
      */
-    public function persist(SupplierCatalogSource $source, array $records, string $rawContent): array {
+    public function persist(SupplierCatalogSource $source, array $records, string $rawContent, bool $snapshot = true): array {
         $now = Carbon::now();
 
-        return DB::transaction(function () use ($source, $records, $rawContent, $now): array {
+        return DB::transaction(function () use ($source, $records, $rawContent, $now, $snapshot): array {
             $summary = ['rows' => 0, 'created' => 0, 'updated' => 0, 'unchanged' => 0, 'price_changed' => 0, 'discontinued' => 0];
             $seen = [];
 
@@ -88,7 +91,7 @@ class CatalogItemUpserter {
 
                 $item->last_seen_at = $now;
 
-                if ($item->raw_hash === $hash) {
+                if ($snapshot && $item->raw_hash === $hash) {
                     if ($item->status === CatalogItemStatus::Discontinued) {
                         $item->status = CatalogItemStatus::New;
                     }
@@ -103,7 +106,30 @@ class CatalogItemUpserter {
                 $oldAvailability = $item->availability;
                 $wasLinked = $item->article_id !== null;
                 $item->fill($values);
-                $item->raw_hash = $hash;
+
+                if (! $snapshot) {
+                    // Delta-Läufe (Änderungsdatei/DATPREIS/RAB, Feature 107) tragen nur
+                    // Teilfelder: Idempotenz über den Ist-Vergleich statt Datei-Hash,
+                    // und raw_hash bleibt der des letzten Voll-Snapshots — sonst
+                    // kippte der Hash bei jedem Wechsel der Dateiart hin und her
+                    // (aufgeblähte „updated"-Zähler ohne fachliche Änderung).
+                    if (! $this->deltaChanged($item, $values)) {
+                        if ($item->status === CatalogItemStatus::Discontinued) {
+                            $item->status = CatalogItemStatus::New;
+                        }
+                        $item->save();
+                        $summary['unchanged']++;
+
+                        continue;
+                    }
+                    // Fachliche Änderung per Delta: den Snapshot-Hash invalidieren
+                    // (Spalte ist not-null → Leerstring), damit der nächste
+                    // Vollimport den Artikel neu bewertet und z. B. einen
+                    // zwischenzeitlich geänderten Preis zurücksetzt.
+                    $item->raw_hash = '';
+                } else {
+                    $item->raw_hash = $hash;
+                }
                 if ($item->status === CatalogItemStatus::Discontinued) {
                     $item->status = CatalogItemStatus::New;
                 }
@@ -131,21 +157,23 @@ class CatalogItemUpserter {
                 $summary['updated']++;
             }
 
-            // Verknüpfte, nicht mehr gelistete Artikel werden NICHT still abgekündigt,
-            // sondern als Konflikt markiert (lokale Referenz vorhanden).
-            SupplierCatalogItem::query()
-                ->where('supplier_catalog_source_id', $source->id)
-                ->when($seen !== [], fn ($q) => $q->whereNotIn('external_no', $seen))
-                ->whereNotNull('article_id')
-                ->where('status', '!=', CatalogItemStatus::Conflict->value)
-                ->update(['status' => CatalogItemStatus::Conflict->value]);
+            if ($snapshot) {
+                // Verknüpfte, nicht mehr gelistete Artikel werden NICHT still abgekündigt,
+                // sondern als Konflikt markiert (lokale Referenz vorhanden).
+                SupplierCatalogItem::query()
+                    ->where('supplier_catalog_source_id', $source->id)
+                    ->when($seen !== [], fn ($q) => $q->whereNotIn('external_no', $seen))
+                    ->whereNotNull('article_id')
+                    ->where('status', '!=', CatalogItemStatus::Conflict->value)
+                    ->update(['status' => CatalogItemStatus::Conflict->value]);
 
-            $summary['discontinued'] = SupplierCatalogItem::query()
-                ->where('supplier_catalog_source_id', $source->id)
-                ->when($seen !== [], fn ($q) => $q->whereNotIn('external_no', $seen))
-                ->whereNull('article_id')
-                ->where('status', '!=', CatalogItemStatus::Discontinued->value)
-                ->update(['status' => CatalogItemStatus::Discontinued->value]);
+                $summary['discontinued'] = SupplierCatalogItem::query()
+                    ->where('supplier_catalog_source_id', $source->id)
+                    ->when($seen !== [], fn ($q) => $q->whereNotIn('external_no', $seen))
+                    ->whereNull('article_id')
+                    ->where('status', '!=', CatalogItemStatus::Discontinued->value)
+                    ->update(['status' => CatalogItemStatus::Discontinued->value]);
+            }
 
             $source->forceFill([
                 'last_imported_at' => $now,
@@ -161,6 +189,32 @@ class CatalogItemUpserter {
                 'discontinued' => (int) $summary['discontinued'],
             ];
         });
+    }
+
+    /**
+     * Ob ein Delta-Record den Bestand fachlich ändert. Nur die gelieferten
+     * Felder zählen (last_seen_at ist immer dirty), und numerische Werte
+     * werden wertgleich verglichen — SQLite normalisiert Dezimal-Strings
+     * („2.0950" → „2.095"), was einen rohen String-Vergleich täuschen würde.
+     *
+     * @param  array<string, mixed>  $values
+     */
+    private function deltaChanged(SupplierCatalogItem $item, array $values): bool {
+        foreach ($item->getDirty() as $key => $newValue) {
+            if (! array_key_exists($key, $values)) {
+                continue;
+            }
+            $old = $item->getRawOriginal($key);
+            $oldValue = (string) (is_scalar($old) ? $old : '');
+            $new = (string) (is_scalar($newValue) ? $newValue : '');
+            if (is_numeric($oldValue) && is_numeric($new) && bccomp($oldValue, $new, self::SCALE) === 0) {
+                continue;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     /** Identitätsänderung: beide GTIN gesetzt und unterschiedlich (Neuvergabe ≠ Anreicherung). */

@@ -30,8 +30,7 @@ class StockController extends Controller {
         private readonly ValuationService $valuation,
         private readonly ReservationService $reservations,
         private readonly StockLevelService $levels,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', Warehouse::class);

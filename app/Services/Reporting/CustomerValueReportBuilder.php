@@ -36,8 +36,7 @@ class CustomerValueReportBuilder {
 
     public const HHI_HIGH = 2500;
 
-    public function __construct(private readonly LexofficeRevenueMirror $externalRevenue) {
-    }
+    public function __construct(private readonly LexofficeRevenueMirror $externalRevenue) {}
 
     /**
      * @param  list<int>  $excludedCustomerIds

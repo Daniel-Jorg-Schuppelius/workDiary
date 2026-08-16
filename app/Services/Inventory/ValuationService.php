@@ -32,8 +32,7 @@ use RuntimeException;
 class ValuationService implements InventoryValuationStrategy {
     public const SCALE = 4;
 
-    public function __construct(private readonly InventoryLedger $ledger) {
-    }
+    public function __construct(private readonly InventoryLedger $ledger) {}
 
     public function method(): ValuationMethod {
         return ValuationMethod::MovingAverage;

@@ -45,7 +45,7 @@ final class CatalogScheduledFetchTest extends TestCase {
     }
 
     private function fakeDatanorm(): FakePluginHttp {
-        return FakePluginHttp::fake(['https://feed.example.com/*' => FakePluginHttp::response('A;N;700001;0;Rohr;;0;1;m;1500;01;100;', 200)]);
+        return FakePluginHttp::fake(['https://feed.example.com/*' => FakePluginHttp::response("V;050;A;20260816;EUR;Feed;;TEST;;;;;;;;\r\nA;N;700001;Rohr;;MTR;2;1;1500;;100;;\r\nE;3;;", 200)]);
     }
 
     public function test_command_fetches_due_source_and_logs(): void {

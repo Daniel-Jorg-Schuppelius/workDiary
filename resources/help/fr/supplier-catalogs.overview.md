@@ -22,6 +22,19 @@ réglable ; un fichier shopinfo.xml téléversé prérenseigne le mappage, le
 jeu de caractères et le séparateur. Le mappage est enregistré sur la
 source et réutilisé lors des récupérations ultérieures.
 
+**DATANORM en détail :** Les versions 4 et 5 sont prises en charge —
+outre les fichiers d'articles (DATANORM.nnn), aussi les groupes de
+remise (DATANORM.RAB), les groupes de marchandises (DATANORM.WRG) et les
+fichiers de prix (DATPREIS.nnn). Les prix catalogue (indicateur 1)
+deviennent des prix d'achat nets via le groupe de remise ; les fichiers
+de modifications ne touchent pas l'existant (mode de traitement
+sélectionnable dans le dialogue d'import). Pour les fichiers de prix
+spécifiques au client, l'enregistrement de contrôle K est vérifié contre
+le numéro de client enregistré sur la source. Le jeu de caractères est
+généralement CP850. En sens inverse, la liste d'articles exporte votre
+propre référentiel comme catalogue DATANORM ou fichier de prix DATPREIS
+(aussi par accès catalogue B2B avec prix client).
+
 **Import :** Chaque exécution récapitule combien d'articles de catalogue
 ont été créés, mis à jour, modifiés en prix ou marqués comme abandonnés.
 Outre le prix d'achat, les articles de catalogue gèrent aussi des prix

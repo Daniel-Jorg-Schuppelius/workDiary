@@ -27,8 +27,7 @@ use Illuminate\Support\Carbon;
  * die Projektion übernommen.
  */
 class DomainSyncService {
-    public function __construct(private readonly DomainProviderResolver $resolver) {
-    }
+    public function __construct(private readonly DomainProviderResolver $resolver) {}
 
     /** Voller Abgleich: Reseller, Domains (SELF + Subuser) und Kontakte. */
     public function syncAll(DomainProviderConnection $connection): void {

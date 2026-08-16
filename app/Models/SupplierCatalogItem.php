@@ -36,7 +36,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property string $name
  * @property \CommonToolkit\ValueObjects\Money|null $purchase_price
  * @property \CommonToolkit\ValueObjects\Money|null $list_price
- * @property array<string, string>|null $extra_attributes
+ * @property array<string, mixed>|null $extra_attributes Attribut-Werte plus DATANORM-Metadaten (Nachfolger, vorgemerkte Preisstände — Feature 107)
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property CatalogItemStatus $status
  * @property string $raw_hash
@@ -71,6 +71,10 @@ class SupplierCatalogItem extends Model {
         'currency',
         'pack_size',
         'base_qty',
+        'unit',
+        'discount_group',
+        'price_type',
+        'price_unit_amount',
         'availability',
         'lead_time_days',
         'extra_attributes',
@@ -90,6 +94,7 @@ class SupplierCatalogItem extends Model {
         'extra_attributes' => 'array',
         'pack_size' => 'decimal:4',
         'base_qty' => 'decimal:4',
+        'price_unit_amount' => 'integer',
         'lead_time_days' => 'integer',
         'last_seen_at' => 'datetime',
     ];

@@ -58,6 +58,13 @@ class ArticleController extends Controller {
             'dir' => $dir,
             'types' => ArticleType::cases(),
             'statuses' => ArticleStatus::cases(),
+            // Feature 107: Artikelnummern > 15 Zeichen passen nicht in DATANORM
+            // und fallen beim Export still raus — sichtbar machen.
+            'datanormOversized' => Article::query()
+                ->where('sellable', true)
+                ->where('status', ArticleStatus::Active)
+                ->whereRaw('LENGTH(number) > 15')
+                ->count(),
         ]);
     }
 
@@ -242,6 +249,8 @@ class ArticleController extends Controller {
             'types' => ArticleType::cases(),
             'statuses' => ArticleStatus::cases(),
             'allTags' => \App\Models\Tag::query()->orderBy('name')->get(),
+            // Feature 107 W9: Verkaufs-Rabattgruppe für den DATANORM-Export.
+            'salesDiscountGroups' => \App\Models\SalesDiscountGroup::query()->orderBy('code')->get(),
             // Typ-Picker (produktmodell-konzept.md, MVP-370).
             'products' => \App\Models\Product::query()
                 ->orderBy('manufacturer')

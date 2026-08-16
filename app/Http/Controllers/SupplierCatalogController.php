@@ -103,6 +103,7 @@ class SupplierCatalogController extends Controller {
             'encoding' => $data['encoding'],
             'has_header' => (bool) ($data['has_header'] ?? true),
             'sheet_name' => ($data['sheet_name'] ?? '') !== '' ? $data['sheet_name'] : null,
+            'expected_customer_no' => ($data['expected_customer_no'] ?? '') !== '' ? $data['expected_customer_no'] : null,
             'remote_url' => $data['remote_url'] ?? null,
             'remote_host' => $data['remote_host'] ?? null,
             'remote_port' => $data['remote_port'] ?? null,
@@ -145,6 +146,7 @@ class SupplierCatalogController extends Controller {
             'encoding' => $data['encoding'],
             'has_header' => (bool) ($data['has_header'] ?? false),
             'sheet_name' => ($data['sheet_name'] ?? '') !== '' ? $data['sheet_name'] : null,
+            'expected_customer_no' => ($data['expected_customer_no'] ?? '') !== '' ? $data['expected_customer_no'] : null,
             'remote_url' => $data['remote_url'] ?? null,
             'remote_host' => $data['remote_host'] ?? null,
             'remote_port' => $data['remote_port'] ?? null,
@@ -233,7 +235,10 @@ class SupplierCatalogController extends Controller {
         $this->canManage();
         $this->assertSourceOrg($supplierCatalog);
 
-        $request->validate(['catalog_csv' => ['required', 'file', 'max:16384']]);
+        $request->validate([
+            'catalog_csv' => ['required', 'file', 'max:16384'],
+            'import_mode' => ['nullable', 'in:auto,snapshot,delta'],
+        ]);
         $content = (string) file_get_contents((string) $request->file('catalog_csv')?->getRealPath());
 
         $mapping = $this->mappingFromRequest($request);
@@ -242,7 +247,9 @@ class SupplierCatalogController extends Controller {
             $supplierCatalog->forceFill(['mapping' => $mapping])->save();
         }
 
-        return $this->runImport($supplierCatalog, $content, $mapping);
+        $mode = $request->string('import_mode')->toString();
+
+        return $this->runImport($supplierCatalog, $content, $mapping, in_array($mode, ['snapshot', 'delta'], true) ? $mode : null);
     }
 
     /** Ruft die Katalogdatei einer Remote-Quelle ab und importiert sie (MVP-091, „Später"). */
@@ -267,9 +274,9 @@ class SupplierCatalogController extends Controller {
      *
      * @param  array<string, string>  $mapping
      */
-    private function runImport(SupplierCatalogSource $source, string $content, array $mapping): RedirectResponse {
+    private function runImport(SupplierCatalogSource $source, string $content, array $mapping, ?string $datanormMode = null): RedirectResponse {
         try {
-            $summary = app(CatalogImportDispatcher::class)->run($source, $content, $mapping, SupplierCatalogImport::TRIGGER_MANUAL);
+            $summary = app(CatalogImportDispatcher::class)->run($source, $content, $mapping, SupplierCatalogImport::TRIGGER_MANUAL, $datanormMode);
         } catch (RuntimeException $e) {
             return back()->with('error', $e->getMessage());
         }
