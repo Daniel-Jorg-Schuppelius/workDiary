@@ -337,6 +337,32 @@ final class CatalogDatanormImportTest extends TestCase {
         $this->assertGreaterThan(0, \App\Models\PricingChangeAlert::query()->count());
     }
 
+    public function test_electrical_trade_metadata_is_persisted(): void {
+        // Kabel mit Kupferzuschlägen (deutsche DEL-Methode + internationales
+        // Tagespreisfenster) und Montagezeit — Elektro-Branchenprofil.
+        app(DatanormImportService::class)->import($this->source, implode("\r\n", [
+            'V;050;A;20260816;EUR;Kabelkatalog;;TESTCO;;;;;;;;',
+            'A;N;NYM-315;Kabel NYM-J 3x1,5;;MTR;2;100;18950;;CAB;;',
+            'Z;N;NYM-315;01;2;CU;3;+;1;1;200;15000;20000;10;',
+            'Z;N;NYM-315;02;3;CU;1;1;15000;10;430;10;',
+            'C;N;ARBA;NYM-315;2;2;300;',
+            'E;6;;',
+        ]) . "\r\n");
+
+        $item = SupplierCatalogItem::query()->where('external_no', 'NYM-315')->firstOrFail();
+        $extra = $item->extra_attributes ?? [];
+
+        $this->assertCount(2, $extra['datanorm_raw_surcharges'] ?? []);
+        $this->assertSame('international', $extra['datanorm_raw_surcharges'][0]['method']);
+        $this->assertSame(2.0, (float) $extra['datanorm_raw_surcharges'][0]['percent']);
+        $this->assertSame('german', $extra['datanorm_raw_surcharges'][1]['method']);
+        $this->assertSame('150.00', $extra['datanorm_raw_surcharges'][1]['included_base']);
+        $this->assertSame(4.3, (float) $extra['datanorm_raw_surcharges'][1]['weight']);
+
+        $this->assertSame(2, (int) ($extra['datanorm_worktimes'][0]['purpose'] ?? 0));
+        $this->assertSame(30.0, (float) ($extra['datanorm_worktimes'][0]['minutes'] ?? 0));
+    }
+
     public function test_customer_mismatch_rejects_the_file(): void {
         $this->source->forceFill(['expected_customer_no' => 'KD-1'])->save();
 

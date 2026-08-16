@@ -144,6 +144,12 @@ class DatanormImportService {
 
         $groups = $this->discountGroupMap($source);
         $currency = $catalog->getCurrency()->value;
+        // Delta-Merge-Basis für extra_attributes (Vormerkungen nicht klobbern).
+        $existingExtras = $isDelta
+            ? $source->items()
+                ->whereIn('external_no', array_map(static fn (DatanormArticle $a): string => $a->getArticleNumber(), $catalog->getArticles()))
+                ->pluck('extra_attributes', 'external_no')
+            : collect();
         $records = [];
         foreach ($catalog->getArticles() as $article) {
             $prices = $this->prices($article, $groups);
@@ -165,9 +171,17 @@ class DatanormImportService {
                 'pack_size' => (string) $article->getMinPackagingAmount(),
                 'base_qty' => '1',
                 'tiers' => $this->tiers($article),
+                'extra_attributes' => $this->extraAttributes($article),
             ];
 
             if ($isDelta) {
+                // Elektro-Metadaten mergen statt ersetzen (Vormerkungen/Nachfolger bleiben).
+                if ($record['extra_attributes'] !== null) {
+                    $record['extra_attributes'] = array_merge(
+                        (array) ($existingExtras->get($article->getArticleNumber()) ?? []),
+                        $record['extra_attributes']
+                    );
+                }
                 // Änderungssatz: leere Felder heißen „unverändert lassen" —
                 // nur belegte Werte übergeben, damit der Upsert nichts löscht.
                 // Verpackungsmenge nur anfassen, wenn sie explizit übertragen
@@ -461,6 +475,61 @@ class DatanormImportService {
             ->get()
             ->keyBy('code')
             ->all();
+    }
+
+    /**
+     * Elektro-Metadaten (Feature 107, Branchenlücken-Runde): Rohstoffzuschläge
+     * (Kupfer & Co.), Arbeitszeiten (ARBA) und V4-Kupferdaten des B-Satzes
+     * landen strukturiert in `extra_attributes` — verfügbar für Kalkulation
+     * und Anzeige, hash-wirksam für die Änderungserkennung.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function extraAttributes(DatanormArticle $article): ?array {
+        $extra = [];
+
+        foreach ($article->getRawMaterialSurcharges() as $surcharge) {
+            $entry = [
+                'material' => $surcharge->getRawMaterial(),
+                'method' => $surcharge->getMethod(),
+                'price_unit_amount' => $surcharge->getPriceUnitAmount(),
+            ];
+            if ($surcharge->getMethod() === \ERechnungToolkit\Entities\Datanorm\DatanormRawMaterialSurcharge::METHOD_INTERNATIONAL) {
+                $entry += array_filter([
+                    'discount' => $surcharge->isDiscount() === true ? true : null,
+                    'percent' => $surcharge->getPercent(),
+                    'amount' => $surcharge->getAmount()?->getAmount(),
+                    'from_day_price' => $surcharge->getFromDayPrice()?->getAmount(),
+                    'to_day_price' => $surcharge->getToDayPrice()?->getAmount(),
+                ], static fn ($v) => $v !== null);
+            } else {
+                $entry += array_filter([
+                    'included_base' => $surcharge->getIncludedBasePrice()?->getAmount(),
+                    'base_factor' => $surcharge->getBaseFactor(),
+                    'weight' => $surcharge->getWeight(),
+                    'weight_factor' => $surcharge->getWeightFactor(),
+                ], static fn ($v) => $v !== null);
+            }
+            $extra['datanorm_raw_surcharges'][] = $entry;
+        }
+
+        foreach ($article->getWorkTimes() as $workTime) {
+            $extra['datanorm_worktimes'][] = [
+                'purpose' => $workTime->getPurpose(),
+                'minutes' => $workTime->getMinutes(),
+            ];
+        }
+
+        // V4-B-Satz-Kupferdaten (Kennzahl = €/100 kg im Preis, Gewicht je Merker-Einheit).
+        if ((int) ($article->getCopperRawPrice() ?? '0') > 0 || (float) ($article->getCopperWeight() ?? '0') > 0) {
+            $extra['datanorm_copper'] = array_filter([
+                'weight_indicator' => $article->getCopperWeightIndicator(),
+                'raw_price' => $article->getCopperRawPrice(),
+                'weight' => $article->getCopperWeight(),
+            ], static fn ($v) => $v !== null && $v !== '0');
+        }
+
+        return $extra !== [] ? $extra : null;
     }
 
     /**
