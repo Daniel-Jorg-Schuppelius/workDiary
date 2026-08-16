@@ -9,6 +9,20 @@
  */
 
 return [
+    'receipt' => [
+        'no_vendor' => 'Senza fornitore',
+        'link_title' => 'Documento contabile',
+        'link' => 'Collega',
+        'unlink' => 'Rimuovi collegamento',
+        'unlink_confirm' => 'Rimuovere il collegamento al documento contabile? La nota spese tornerà a contare come costo proprio.',
+        'suggestions_hint' => 'Documenti con lo stesso importo nella finestra temporale. Il collegamento conferma che si tratta della stessa operazione — la nota spese non conta più due volte.',
+        'no_suggestions' => 'Nessun documento corrispondente',
+        'no_suggestions_hint' => 'Senza collegamento la nota spese viene esposta separatamente come costo interno.',
+        'linked' => 'Documento :number collegato.',
+        'unlinked' => 'Collegamento rimosso.',
+        'title' => 'File del giustificativo',
+        'hint' => 'Allega la ricevuta alla nota spese — senza di essa non è verificabile né trasferibile alla contabilità.',
+    ],
     'title' => [
         'index' => 'Spese',
         'create' => 'Registra spesa',

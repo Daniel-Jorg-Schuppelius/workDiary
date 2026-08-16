@@ -17,6 +17,10 @@ declare(strict_types=1);
  * erzwingt Tests\Feature\AuditTranslationCoverageTest.
  */
 return [
+    'expense' => [
+        'voucher_linked' => 'Auslage einem Buchungsbeleg zugeordnet',
+        'voucher_unlinked' => 'Zuordnung zum Buchungsbeleg gelöst',
+    ],
     'agile' => [
         'board' => [
             'activated' => 'Agile-Board aktiviert',

@@ -13,9 +13,10 @@ namespace App\Http\Controllers;
 use App\Enums\Expense\{ExpenseStatus, PaymentMethod};
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\SaveExpenseRequest;
-use App\Models\{Customer, Expense, ExpenseCategory, Project, User};
+use App\Models\{Customer, Expense, ExpenseCategory, LexofficeVoucher, Project, User};
+use App\Services\Billing\DocumentLinks;
 use App\Services\Expense\ExpenseService;
-use App\Support\{CsvExport, SortableQuery};
+use App\Support\{CsvExport, SortableQuery, Sqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -39,6 +40,7 @@ class ExpenseController extends Controller {
 
         $query = Expense::query()
             ->with(['category:id,label,color,icon', 'project:id,name', 'customer:id,name'])
+            ->withCount('attachments')
             ->where('user_id', Auth::id())
             ->whereBetween('date', [$from->toDateString(), $to->toDateString()]);
 
@@ -132,6 +134,56 @@ class ExpenseController extends Controller {
             'expense' => $expense,
             'date' => $expense->date->toDateString(),
         ] + $this->formData());
+    }
+
+    /**
+     * Belegdatei zur Auslage (Feature 105, MVP-550). Erst mit hinterlegtem
+     * Beleg ist die Auslage für sich prüfbar — und erst dann lässt sie sich
+     * später überhaupt in die Buchhaltung übernehmen (Feature 106).
+     */
+    public function receipt(Expense $expense, DocumentLinks $links): View {
+        Gate::authorize('view', $expense);
+
+        $linked = $links->voucherFor($expense);
+
+        return view('expenses._receipt_dialog', [
+            'expense' => $expense,
+            'attachments' => $expense->attachments()->get(),
+            'canUpload' => Gate::allows('update', $expense),
+            'canLink' => Gate::allows('link', $expense),
+            'linkedVoucher' => $linked,
+            // Vorschläge nur, solange nichts zugeordnet ist — sonst lädt der
+            // Dialog Kandidaten, die niemand mehr braucht.
+            'suggestions' => $linked === null ? $links->suggestionsFor($expense) : collect(),
+        ]);
+    }
+
+    /**
+     * Bestätigt die Zuordnung zu einem Buchhaltungsbeleg (Feature 105,
+     * MVP-551). Ab dann führt der Beleg: die Auslage zählt nicht mehr
+     * eigenständig in den Aufwand.
+     */
+    public function linkVoucher(Request $request, Expense $expense, DocumentLinks $links): RedirectResponse {
+        Gate::authorize('link', $expense);
+
+        $voucherId = Sqid::decodeOrNumeric(LexofficeVoucher::class, (string) $request->input('voucher'));
+        $voucher = LexofficeVoucher::query()
+            ->where('organization_id', $expense->organization_id)
+            ->findOrFail($voucherId);
+
+        $links->link($expense, $voucher);
+        $expense->audit('expense.voucher_linked', ['voucher_number' => $voucher->voucher_number]);
+
+        return back()->with('success', __('expenses.receipt.linked', ['number' => $voucher->voucher_number ?? '—']));
+    }
+
+    public function unlinkVoucher(Expense $expense, DocumentLinks $links): RedirectResponse {
+        Gate::authorize('link', $expense);
+
+        $links->unlink($expense);
+        $expense->audit('expense.voucher_unlinked', []);
+
+        return back()->with('success', __('expenses.receipt.unlinked'));
     }
 
     public function update(SaveExpenseRequest $request, Expense $expense): RedirectResponse {

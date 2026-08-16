@@ -50,10 +50,29 @@ class InvoiceTest extends TestCase {
         ]);
     }
 
-    public function test_index_requires_billing_role(): void {
+    /**
+     * Feature 105: die Rechnungsliste ist im Belegfluss aufgegangen. Der Feed
+     * selbst ist erreichbar (jeder sieht dort mindestens seine eigenen
+     * Auslagen) — Rechnungszeilen zeigt er aber nur mit dem Recht dafür.
+     */
+    public function test_index_hides_invoices_without_billing_role(): void {
         $regular = User::factory()->user()->create(['organization_id' => $this->organization->id]);
-        $this->actingAs($regular)->get(route('invoices.index'))->assertForbidden();
-        $this->getAsAdmin('invoices.index')->assertOk();
+        Invoice::create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+            'number' => 'R2030-0999',
+            'status' => Invoice::STATUS_DRAFT,
+            'currency' => 'EUR',
+            'tax_rate' => '19.00',
+            'created_by' => $this->admin->id,
+        ]);
+
+        $this->actingAs($regular)->get(route('billing.feed'))
+            ->assertOk()
+            ->assertDontSee('R2030-0999');
+        $this->actingAs($regular)->get(route('invoices.index'))
+            ->assertRedirect(route('billing.feed', ['tab' => 'outgoing']));
+        $this->getAsAdmin('billing.feed')->assertOk()->assertSee('R2030-0999');
     }
 
     public function test_create_invoice_from_time_entries(): void {
@@ -382,11 +401,16 @@ class InvoiceTest extends TestCase {
             'created_by' => $this->admin->id,
         ]);
 
-        $this->getAsAdmin('invoices.index', ['customer' => (string) $this->customer->id])
+        // Feature 105: gefiltert wird im Belegfluss; numerische Alt-Links
+        // bleiben neben dem Sqid gültig.
+        $this->getAsAdmin('billing.feed', ['customer' => (string) $this->customer->id])
             ->assertOk()
-            ->assertViewHas('invoices', static function ($invoices) use ($invoiceA): bool {
-                $items = $invoices->items();
-                return count($items) === 1 && (int) $items[0]->id === (int) $invoiceA->id;
+            ->assertViewHas('rows', static function ($rows) use ($invoiceA): bool {
+                $items = $rows->items();
+
+                return count($items) === 1
+                    && $items[0]->source_type === 'invoice'
+                    && (int) $items[0]->source_id === (int) $invoiceA->id;
             });
     }
 

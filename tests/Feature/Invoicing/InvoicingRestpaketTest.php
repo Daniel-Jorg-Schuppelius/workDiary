@@ -193,7 +193,10 @@ final class InvoicingRestpaketTest extends TestCase {
     }
 
     public function test_quote_index_and_dialog_render(): void {
-        $this->actingAs($this->user)->get(route('quotes.index'))->assertOk();
+        // Feature 105: die Angebotsliste ist der Angebote-Tab des Belegflusses.
+        $this->actingAs($this->user)->get(route('quotes.index'))
+            ->assertRedirect(route('billing.feed', ['tab' => 'quotes']));
+        $this->actingAs($this->user)->get(route('billing.feed', ['tab' => 'quotes']))->assertOk();
         $this->actingAs($this->user)->get(route('quotes.create'))->assertOk();
     }
 

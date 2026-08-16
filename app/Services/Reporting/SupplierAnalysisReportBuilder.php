@@ -12,6 +12,7 @@ namespace App\Services\Reporting;
 
 use App\Enums\Procurement\PurchaseOrderStatus;
 use App\Models\{LexofficeVoucher, PurchaseOrder, Supplier};
+use App\Support\Billing\VoucherTypes;
 use App\Support\ChartBucket;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -38,10 +39,10 @@ class SupplierAnalysisReportBuilder {
     public const HHI_HIGH = 2500;
 
     /** Einkaufsbeleg-Typen im Lexoffice-Spiegel (supplier_id gesetzt). */
-    private const EXPENSE_TYPES = ['purchaseinvoice', 'purchasecreditnote', 'voucher'];
+    private const EXPENSE_TYPES = VoucherTypes::EXPENSES;
 
     /** Gutschriften mindern die Ausgaben (negatives Vorzeichen). */
-    private const CREDIT_TYPES = ['purchasecreditnote'];
+    private const CREDIT_TYPES = VoucherTypes::EXPENSE_CREDITS;
 
     /** Als „offen" zählende Bestellstatus (aktuell laufend). */
     private const OPEN_ORDER_STATUSES = [

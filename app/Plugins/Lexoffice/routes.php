@@ -47,7 +47,9 @@ Route::middleware(['web', 'auth'])->group(function (): void {
         ->name('lexoffice.articles.details');
 
     // Belege (Lexoffice-Vouchers)
-    Route::get('lexoffice-vouchers', [LexofficeVoucherController::class, 'index'])
+    // MVP-549: Die eigene Belegliste ist im Belegfluss aufgegangen — die
+    // Herkunft ist dort ein Filter, keine eigene Seite.
+    Route::get('lexoffice-vouchers', [\App\Http\Controllers\Billing\DocumentFeedController::class, 'fromVouchers'])
         ->name('lexoffice.vouchers.index');
     Route::post('lexoffice-vouchers/sync', [LexofficeVoucherController::class, 'sync'])
         ->name('lexoffice.vouchers.sync');

@@ -13,6 +13,7 @@ namespace App\Plugins\Lexoffice;
 use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Models\{Customer, ExternalReference, LexofficeVoucher, Organization, Supplier};
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
+use App\Support\Billing\VoucherTypes;
 use Illuminate\Support\Carbon;
 use RuntimeException;
 
@@ -106,7 +107,7 @@ class LexofficeVoucherSync {
             ->where('organization_id', $organizationId)
             ->where('voucher_status', 'paid')
             ->whereNull('paid_date')
-            ->whereIn('voucher_type', ['invoice', 'salesinvoice', 'downpaymentinvoice', 'creditnote', 'salescreditnote'])
+            ->whereIn('voucher_type', VoucherTypes::REVENUE_WITH_CREDITS)
             ->orderByDesc('voucher_date')
             ->limit($limit)
             ->get(['id', 'external_id']);

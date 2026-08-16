@@ -11,13 +11,11 @@
 namespace App\Plugins\Lexoffice\Http\Controllers;
 
 use App\Enums\User\Permission;
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, LexofficeVoucher, Supplier, User};
 use App\Plugins\Lexoffice\Jobs\SyncVouchersJob;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeDunningService, LexofficeVoucherFileService, LexofficeVoucherSync};
 use App\Services\Billing\RetainerVoucherReconciler;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -32,120 +30,6 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Kontakt sind zusätzlich auf der jeweiligen Kunden-/Lieferanten-Detailseite.
  */
 class LexofficeVoucherController extends Controller {
-    use ResolvesGlobalDateRange;
-
-    private const ALLOWED_SORTS = ['voucher_number', 'voucher_date', 'voucher_type', 'voucher_status', 'total_amount'];
-
-    public function index(Request $request): View {
-        $user = $this->user();
-        abort_unless($user->can(Permission::VoucherViewAny->value), 403);
-
-        $search = trim((string) $request->input('q', ''));
-        $type = (string) $request->input('type', '');
-        $party = (string) $request->input('party', '');
-        $status = (string) $request->input('status', 'active');
-
-        $range = $this->globalDateRange();
-        $from = $range['from']->startOfDay();
-        $to = $range['to']->endOfDay();
-
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'voucher_date';
-        $dir = $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc';
-
-        $query = LexofficeVoucher::query()
-            ->where('organization_id', $user->organization_id)
-            ->whereBetween('voucher_date', [$from, $to])
-            ->with(['customer:id,name', 'supplier:id,name'])
-            ->orderBy($sort, $dir)
-            ->orderByDesc('id');
-
-        if ($search !== '') {
-            // Deutsche Betragseingabe (1.167,08) → 1167.08 für den Spaltenvergleich.
-            $amount = str_replace(',', '.', str_replace(['.', ' '], '', $search));
-            $datePatterns = $this->dateLikePatterns($search);
-
-            $query->where(function (Builder $q) use ($search, $amount, $datePatterns): void {
-                $q->whereLikeEscaped('voucher_number', $search)
-                    ->orWhereLikeEscaped('voucher_type', $search)
-                    ->orWhereHas('customer', fn($c) => $c->whereLikeEscaped('name', $search))
-                    ->orWhereHas('supplier', fn($s) => $s->whereLikeEscaped('name', $search));
-
-                if (is_numeric($amount)) {
-                    $q->orWhereLikeEscaped('total_amount', $amount);
-                }
-
-                foreach ($datePatterns as $pattern) {
-                    $q->orWhere('voucher_date', 'like', $pattern);
-                }
-            });
-        }
-
-        if ($type !== '') {
-            $query->where('voucher_type', $type);
-        }
-
-        if ($party === 'customer') {
-            $query->whereNotNull('customer_id');
-        } elseif ($party === 'supplier') {
-            $query->whereNotNull('supplier_id');
-        }
-
-        if ($status === 'archived') {
-            $query->where('archived', true);
-        } elseif ($status !== 'all') {
-            $query->where('archived', false);
-        }
-
-        $types = LexofficeVoucher::query()
-            ->where('organization_id', $user->organization_id)
-            ->whereNotNull('voucher_type')
-            ->distinct()
-            ->orderBy('voucher_type')
-            ->pluck('voucher_type')
-            ->all();
-
-        return view('lexoffice::vouchers.index', [
-            'vouchers' => $query->paginate(30)->withQueryString(),
-            'types' => $types,
-            'filters' => ['q' => $search, 'type' => $type, 'party' => $party, 'status' => $status],
-            'sort' => $sort,
-            'dir' => $dir,
-            'rangeLabel' => $range['label'],
-            'canSync' => $user->can(Permission::VoucherLexofficeSync->value),
-        ]);
-    }
-
-    /**
-     * Übersetzt eine deutsche/ISO/teilweise Datumseingabe in LIKE-Muster gegen
-     * die (als `Y-m-d` gespeicherte) Spalte `voucher_date`. Unterstützt:
-     * `29.06.2026`, `06.2026`, `2026`, `29.06` (jahresunabhängig) sowie ISO.
-     *
-     * @return list<string>
-     */
-    private function dateLikePatterns(string $search): array {
-        $s = trim($search);
-
-        if (preg_match('/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/', $s, $m)) {
-            return [sprintf('%04d-%02d-%02d%%', (int) $m[3], (int) $m[2], (int) $m[1])];
-        }
-        if (preg_match('/^(\d{1,2})\.(\d{4})$/', $s, $m)) {
-            return [sprintf('%04d-%02d%%', (int) $m[2], (int) $m[1])];
-        }
-        if (preg_match('/^(\d{4})$/', $s, $m)) {
-            return [sprintf('%04d%%', (int) $m[1])];
-        }
-        if (preg_match('/^(\d{1,2})\.(\d{1,2})$/', $s, $m)) {
-            return [sprintf('%%-%02d-%02d', (int) $m[2], (int) $m[1])];
-        }
-        if (preg_match('/^\d{4}-\d{2}(-\d{2})?$/', $s)) {
-            return [$s . '%'];
-        }
-
-        return [];
-    }
-
     /**
      * Stößt den Pull-Sync der Lexoffice-Belege für die aktuelle Organisation an
      * ({@see \App\Plugins\Lexoffice\LexofficeVoucherSync}). Manueller Gegenpart

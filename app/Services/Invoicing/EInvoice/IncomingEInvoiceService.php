@@ -217,6 +217,7 @@ class IncomingEInvoiceService {
             'source' => $source,
             'received_at' => now(),
             'summary' => $summary,
+            ...\App\Models\IncomingEInvoice::columnsFromSummary($summary),
         ]);
 
         $document->audit('document.einvoice_received', [

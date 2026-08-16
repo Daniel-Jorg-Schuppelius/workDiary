@@ -14,7 +14,6 @@ namespace App\Http\Controllers;
 
 use App\Models\{Customer, Quote, QuoteItem, User};
 use App\Services\Invoicing\QuoteService;
-use App\Support\SortableQuery;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -28,35 +27,6 @@ use Illuminate\Support\Facades\{Auth, Gate};
  */
 class QuoteController extends Controller {
     public function __construct(private readonly QuoteService $quotes) {}
-
-    public function index(Request $request): View {
-        Gate::authorize('viewAny', Quote::class);
-
-        $rawCustomer = (string) $request->query('customer', '');
-        $customerId = \App\Support\Sqid::decodeOrNumeric(Customer::class, $rawCustomer);
-        $status = $request->string('status')->toString();
-        $statusFilter = in_array($status, Quote::STATUSES, true) ? $status : '';
-
-        $query = Quote::query()->with('customer')
-            ->when($customerId, fn($q) => $q->where('customer_id', $customerId))
-            ->when($statusFilter !== '', fn($q) => $q->where('status', $statusFilter));
-
-        [$sort, $dir] = SortableQuery::apply($query, $request, [
-            'number' => 'number',
-            'status' => 'status',
-            'total' => 'total',
-            'valid_until' => 'valid_until',
-        ], 'number', 'desc');
-
-        return view('quotes.index', [
-            'quotes' => $query->paginate(25)->withQueryString(),
-            'statuses' => Quote::STATUSES,
-            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'filters' => ['customer' => $customerId, 'status' => $statusFilter],
-            'sort' => $sort,
-            'dir' => $dir,
-        ]);
-    }
 
     public function create(): View {
         Gate::authorize('create', Quote::class);

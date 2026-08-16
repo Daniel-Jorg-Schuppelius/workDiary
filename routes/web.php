@@ -1466,8 +1466,14 @@ Route::middleware('auth')->group(function () {
         Route::put('tasks/global/{task}', [\App\Http\Controllers\GlobalTaskController::class, 'update'])->name('tasks.global.update');
         Route::delete('tasks/global/{task}', [\App\Http\Controllers\GlobalTaskController::class, 'destroy'])->name('tasks.global.destroy');
 
+        // ── Belegfluss (Feature 105, MVP-543/546) ─────────────────────
+        // Eine Liste über Angebote, Rechnungen, Belege, Eingangsrechnungen und
+        // Auslagen; die früheren drei Seiten sind Filterzustände davon.
+        Route::get('finanzen/belege', [\App\Http\Controllers\Billing\DocumentFeedController::class, 'index'])->name('billing.feed');
+
         // ── Rechnungen / Invoicing ────────────────────────────────────
-        Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices.index');
+        // MVP-549: Bestandsroute → Feed mit vorgesetztem Tab.
+        Route::get('invoices', [\App\Http\Controllers\Billing\DocumentFeedController::class, 'fromInvoices'])->name('invoices.index');
         Route::get('invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
         Route::get('invoices/datei-import', [\App\Http\Controllers\InvoicePdfImportController::class, 'create'])->name('invoices.pdf-import.create');
         Route::post('invoices/datei-import', [\App\Http\Controllers\InvoicePdfImportController::class, 'store'])->name('invoices.pdf-import.store');
@@ -1927,7 +1933,8 @@ Route::middleware('auth')->group(function () {
 
         // ── Angebote (Feature 066, MVP-170) ───────────────────────────
         Route::prefix('angebote')->name('quotes.')->group(function (): void {
-            Route::get('/', [\App\Http\Controllers\QuoteController::class, 'index'])->name('index');
+            // MVP-549: Bestandsroute → Feed mit vorgesetztem Tab.
+            Route::get('/', [\App\Http\Controllers\Billing\DocumentFeedController::class, 'fromQuotes'])->name('index');
             Route::get('neu', [\App\Http\Controllers\QuoteController::class, 'create'])->name('create');
             Route::post('/', [\App\Http\Controllers\QuoteController::class, 'store'])->name('store');
             Route::get('{quote}', [\App\Http\Controllers\QuoteController::class, 'show'])->name('show');
@@ -2165,6 +2172,11 @@ Route::middleware('auth')->group(function () {
         Route::get('expenses/create', [ExpenseController::class, 'create'])->name('expenses.create');
         Route::post('expenses', [ExpenseController::class, 'store'])->name('expenses.store');
         Route::get('expenses/{expense}/edit', [ExpenseController::class, 'edit'])->name('expenses.edit');
+        // Belegdatei zur Auslage (Feature 105, MVP-550)
+        Route::get('expenses/{expense}/beleg', [ExpenseController::class, 'receipt'])->name('expenses.receipt');
+        // Zuordnung Auslage ↔ Buchhaltungsbeleg (Feature 105, MVP-551)
+        Route::post('expenses/{expense}/buchungsbeleg', [ExpenseController::class, 'linkVoucher'])->name('expenses.link-voucher');
+        Route::delete('expenses/{expense}/buchungsbeleg', [ExpenseController::class, 'unlinkVoucher'])->name('expenses.unlink-voucher');
         Route::put('expenses/{expense}', [ExpenseController::class, 'update'])->name('expenses.update');
         Route::delete('expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
         Route::post('expenses/{expense}/submit', [ExpenseController::class, 'submit'])->name('expenses.submit');

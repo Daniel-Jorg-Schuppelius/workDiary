@@ -26,6 +26,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $document_id
  * @property string $sha256
  * @property string $source
+ * @property string|null $invoice_number
+ * @property string|null $seller_name
+ * @property \Illuminate\Support\Carbon|null $issue_date
+ * @property \Illuminate\Support\Carbon|null $due_date
+ * @property \CommonToolkit\Enums\CurrencyCode|null $currency
+ * @property \CommonToolkit\ValueObjects\Money|null $amount_net
+ * @property \CommonToolkit\ValueObjects\Money|null $amount_tax
+ * @property \CommonToolkit\ValueObjects\Money|null $amount_gross
  * @property \Illuminate\Support\Carbon $received_at
  * @property string $status
  * @property int|null $decided_by
@@ -57,6 +65,10 @@ class IncomingEInvoice extends Model {
         'organization_id', 'document_id', 'sha256', 'source', 'received_at',
         'status', 'decided_by', 'decided_at', 'decision_note', 'summary',
         'transferred_at', 'transferred_by',
+        // MVP-544: aus `summary` denormalisiert, damit der Belegfluss sortieren
+        // und summieren kann. Führend bleibt das geparste Original.
+        'invoice_number', 'seller_name', 'issue_date', 'due_date',
+        'currency', 'amount_net', 'amount_tax', 'amount_gross',
     ];
 
     /** @var array<string, string> */
@@ -65,7 +77,39 @@ class IncomingEInvoice extends Model {
         'decided_at' => 'datetime',
         'summary' => 'array',
         'transferred_at' => 'datetime',
+        'issue_date' => 'date',
+        'due_date' => 'date',
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
+        'amount_net' => \App\Casts\MoneyCast::class . ':currency,2',
+        'amount_tax' => \App\Casts\MoneyCast::class . ':currency,2',
+        'amount_gross' => \App\Casts\MoneyCast::class . ':currency,2',
     ];
+
+    /**
+     * Spaltenwerte aus einem `summary`-Array (MVP-544). Eine Stelle für
+     * Neuanlage und Nachzug, damit Spalten und JSON nicht auseinanderlaufen.
+     *
+     * @param  array<string, mixed>  $summary
+     * @return array<string, string|null>
+     */
+    public static function columnsFromSummary(array $summary): array {
+        $text = static function (mixed $value, int $max): ?string {
+            $value = is_scalar($value) ? trim((string) $value) : '';
+
+            return $value === '' ? null : mb_substr($value, 0, $max);
+        };
+
+        return [
+            'invoice_number' => $text($summary['number'] ?? null, 64),
+            'seller_name' => $text($summary['seller'] ?? null, 191),
+            'issue_date' => $text($summary['issue_date'] ?? null, 10),
+            'due_date' => $text($summary['due_date'] ?? null, 10),
+            'currency' => $text($summary['currency'] ?? null, 3),
+            'amount_net' => is_numeric($summary['net'] ?? null) ? (string) $summary['net'] : null,
+            'amount_tax' => is_numeric($summary['tax'] ?? null) ? (string) $summary['tax'] : null,
+            'amount_gross' => is_numeric($summary['gross'] ?? null) ? (string) $summary['gross'] : null,
+        ];
+    }
 
     /** @return BelongsTo<Document, $this> */
     public function document(): BelongsTo {

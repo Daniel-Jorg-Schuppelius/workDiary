@@ -988,6 +988,28 @@ return [
     ],
     // Kunden-Sonderkonditionen & Abrechnungskonto (Feature 098).
     'billing' => [
+        // Belegfluss (Feature 105, MVP-542)
+        'direction' => [
+            'outgoing' => 'Sortant',
+            'incoming' => 'Entrant',
+            'neutral' => 'Sans effet monétaire',
+        ],
+        'kind' => [
+            'quote' => 'Devis',
+            'order_confirmation' => 'Confirmation de commande',
+            'delivery_note' => 'Bon de livraison',
+            'invoice' => 'Facture',
+            'down_payment' => 'Facture d\'acompte',
+            'down_payment_deduction' => 'Déduction d\'acompte',
+            'credit_note' => 'Avoir',
+            'cancellation' => 'Annulation',
+            'expense' => 'Note de frais',
+            'other' => 'Autre document',
+        ],
+        'origin' => [
+            'local' => 'Local',
+            'lexoffice' => 'Lexoffice',
+        ],
         'agreement-mode' => [
             'account' => 'Compte client (sans facture)',
             'invoice' => 'Facture mensuelle',

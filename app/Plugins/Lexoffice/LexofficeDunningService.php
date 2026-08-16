@@ -13,6 +13,7 @@ namespace App\Plugins\Lexoffice;
 use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Models\{ExternalReference, LexofficeVoucher};
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
+use App\Support\Billing\VoucherTypes;
 use RuntimeException;
 
 /**
@@ -29,7 +30,7 @@ class LexofficeDunningService {
     public const EXT_TYPE_DUNNING = 'dunning';
 
     /** Lexoffice-voucherType-Werte für Verkaufsrechnungen. */
-    private const INVOICE_TYPES = ['invoice', 'salesinvoice'];
+    private const INVOICE_TYPES = VoucherTypes::SALES_INVOICES;
 
     /**
      * Erstellt eine Lexoffice-Mahnung zur überfälligen Rechnung.

@@ -11,6 +11,7 @@
 namespace App\Services\Reporting;
 
 use App\Models\{LexofficeVoucher, Supplier};
+use App\Support\Billing\VoucherTypes;
 use App\Support\ChartBucket;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -35,10 +36,10 @@ class SupplierValueReportBuilder {
     public const HHI_HIGH = 2500;
 
     /** Einkaufsbeleg-Typen im Lexoffice-Spiegel (supplier_id gesetzt). */
-    private const EXPENSE_TYPES = ['purchaseinvoice', 'purchasecreditnote', 'voucher'];
+    private const EXPENSE_TYPES = VoucherTypes::EXPENSES;
 
     /** Gutschriften mindern die Ausgaben (negatives Vorzeichen). */
-    private const CREDIT_TYPES = ['purchasecreditnote'];
+    private const CREDIT_TYPES = VoucherTypes::EXPENSE_CREDITS;
 
     /**
      * @return array{

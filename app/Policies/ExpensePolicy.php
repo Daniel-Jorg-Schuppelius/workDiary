@@ -58,6 +58,15 @@ class ExpensePolicy {
         return $this->owns($user, $expense) && ! $expense->status->isFinal();
     }
 
+    /**
+     * Auslage einem Buchhaltungsbeleg zuordnen (Feature 105, MVP-551).
+     * Anders als update() auch nach der Genehmigung erlaubt: der passende
+     * Beleg trifft typischerweise erst danach ein. Admin über HasAdminBypass.
+     */
+    public function link(User $user, Expense $expense): bool {
+        return $this->owns($user, $expense);
+    }
+
     /** Erstattung verbuchen / als bezahlt markieren: nur Admin. */
     public function reimburse(User $user, Expense $expense): bool {
         return false;

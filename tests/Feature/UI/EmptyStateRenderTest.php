@@ -47,8 +47,9 @@ class EmptyStateRenderTest extends TestCase {
             ->assertSee('wd-empty-state');
     }
 
-    public function test_invoices_index_renders_empty_state_without_data(): void {
-        $this->actingAs($this->admin)->get(route('invoices.index'))
+    /** Feature 105: die Rechnungsliste ist im Belegfluss aufgegangen. */
+    public function test_document_feed_renders_empty_state_without_data(): void {
+        $this->actingAs($this->admin)->get(route('billing.feed'))
             ->assertOk()
             ->assertSee('wd-empty-state');
     }

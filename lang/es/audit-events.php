@@ -17,6 +17,10 @@ declare(strict_types=1);
  * erzwingt Tests\Feature\AuditTranslationCoverageTest.
  */
 return [
+    'expense' => [
+        'voucher_linked' => 'Gasto vinculado a un comprobante contable',
+        'voucher_unlinked' => 'Vínculo con el comprobante contable eliminado',
+    ],
     'agile' => [
         'board' => [
             'activated' => 'Tablero ágil activado',

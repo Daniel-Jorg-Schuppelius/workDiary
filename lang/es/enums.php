@@ -988,6 +988,28 @@ return [
     ],
     // Kunden-Sonderkonditionen & Abrechnungskonto (Feature 098).
     'billing' => [
+        // Belegfluss (Feature 105, MVP-542)
+        'direction' => [
+            'outgoing' => 'Saliente',
+            'incoming' => 'Entrante',
+            'neutral' => 'Sin efecto monetario',
+        ],
+        'kind' => [
+            'quote' => 'Presupuesto',
+            'order_confirmation' => 'Confirmación de pedido',
+            'delivery_note' => 'Albarán',
+            'invoice' => 'Factura',
+            'down_payment' => 'Factura de anticipo',
+            'down_payment_deduction' => 'Deducción de anticipo',
+            'credit_note' => 'Abono',
+            'cancellation' => 'Anulación',
+            'expense' => 'Gasto',
+            'other' => 'Otro documento',
+        ],
+        'origin' => [
+            'local' => 'Local',
+            'lexoffice' => 'Lexoffice',
+        ],
         'agreement-mode' => [
             'account' => 'Cuenta de cliente (sin factura)',
             'invoice' => 'Factura mensual',

@@ -9,6 +9,20 @@
  */
 
 return [
+    'receipt' => [
+        'no_vendor' => 'Ohne Anbieter',
+        'link_title' => 'Buchungsbeleg',
+        'link' => 'Zuordnen',
+        'unlink' => 'Zuordnung lösen',
+        'unlink_confirm' => 'Zuordnung zum Buchungsbeleg wirklich lösen? Die Auslage zählt danach wieder als eigener Aufwand.',
+        'suggestions_hint' => 'Belege mit gleichem Betrag im Zeitfenster. Zuordnen bestätigt, dass es derselbe Vorgang ist — die Auslage zählt dann nicht mehr doppelt.',
+        'no_suggestions' => 'Kein passender Beleg gefunden',
+        'no_suggestions_hint' => 'Ohne Zuordnung wird die Auslage getrennt als interne Auslage ausgewiesen.',
+        'linked' => 'Beleg :number zugeordnet.',
+        'unlinked' => 'Zuordnung gelöst.',
+        'title' => 'Belegdatei',
+        'hint' => 'Hinterlege die Quittung zur Auslage — ohne Beleg ist sie weder für sich prüfbar noch später in die Buchhaltung übernehmbar.',
+    ],
     'title' => [
         'index'        => 'Spesen',
         'create'       => 'Spese erfassen',

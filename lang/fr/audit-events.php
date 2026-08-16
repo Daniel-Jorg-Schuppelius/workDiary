@@ -17,6 +17,10 @@ declare(strict_types=1);
  * erzwingt Tests\Feature\AuditTranslationCoverageTest.
  */
 return [
+    'expense' => [
+        'voucher_linked' => 'Note de frais associée à une pièce comptable',
+        'voucher_unlinked' => 'Association à la pièce comptable supprimée',
+    ],
     'agile' => [
         'board' => [
             'activated' => 'Tableau agile activé',

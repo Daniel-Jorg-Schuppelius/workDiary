@@ -17,7 +17,6 @@ use App\Models\{Customer, Expense, ExternalReference, Invoice, InvoiceItem, Invo
 use App\Services\Expense\ExpenseInvoicingService;
 use App\Services\Invoicing\InvoiceGenerator;
 use App\Services\UI\DateRangeContext;
-use App\Support\SortableQuery;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -25,33 +24,6 @@ use Illuminate\Support\Facades\{Auth, DB, Gate, Mail};
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class InvoiceController extends Controller {
-    public function index(Request $request): View {
-        Gate::authorize('viewAny', Invoice::class);
-
-        $rawCustomer = (string) $request->query('customer', '');
-        $customerId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Customer::class, $rawCustomer);
-        $status = $request->string('status')->toString();
-        $statusFilter = in_array($status, Invoice::STATUSES, true) ? $status : '';
-
-        $query = Invoice::query()->with(['customer'])
-            ->when($customerId, fn($q) => $q->where('customer_id', $customerId))
-            ->when($statusFilter !== '', fn($q) => $q->where('status', $statusFilter));
-
-        [$sort, $dir] = SortableQuery::apply($query, $request, [
-            'number' => 'number',
-            'issued_on' => 'issued_on',
-            'status' => 'status',
-            'total' => 'total',
-        ], 'issued_on', 'desc');
-
-        $invoices = $query->paginate(25)->withQueryString();
-        $statuses = Invoice::STATUSES;
-        $customers = Customer::query()->orderBy('name')->get(['id', 'name']);
-        $filters = ['customer' => $customerId, 'status' => $statusFilter];
-
-        return view('invoices.index', compact('invoices', 'statuses', 'customers', 'filters', 'sort', 'dir'));
-    }
-
     public function create(Request $request): View {
         Gate::authorize('create', Invoice::class);
         $customers = Customer::query()->orderBy('name')->get();

@@ -99,6 +99,12 @@
                             </x-status-badge>
                         </td>
                         <td class="text-right whitespace-nowrap">
+                            {{-- MVP-550: Belegdatei — Zähler zeigt, ob die Auslage belegt ist. --}}
+                            <x-icon-btn icon="attach_file"
+                                        :tone="$expense->attachments_count > 0 ? 'success' : null"
+                                        data-entry-modal-trigger
+                                        :href="route('expenses.receipt', $expense)"
+                                        :label="__('expenses.receipt.title')" />
                             @can('submit', $expense)
                                 <x-action-form :action="route('expenses.submit', $expense)">
                                     <x-icon-btn icon="send" tone="warning" size="sm" type="submit"

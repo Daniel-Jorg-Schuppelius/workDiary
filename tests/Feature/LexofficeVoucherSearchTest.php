@@ -17,8 +17,9 @@ use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
 /**
- * Belegsuche (lexoffice.vouchers.index): zusätzlich zu Nummer/Typ auch nach
- * Firmenname (Kunde/Lieferant), Datumsstrings und Beträgen.
+ * Belegsuche im Belegfluss (Feature 105): zusätzlich zur Nummer auch nach
+ * Firmenname (Kunde/Lieferant), Datumsstrings und Beträgen. Die frühere
+ * eigene Belegliste ist dort als Herkunftsfilter aufgegangen.
  */
 final class LexofficeVoucherSearchTest extends TestCase {
     use RefreshDatabase;
@@ -60,7 +61,7 @@ final class LexofficeVoucherSearchTest extends TestCase {
                 'ui.daterange.from' => '2026-01-01',
                 'ui.daterange.to' => '2026-12-31',
             ])
-            ->get(route('lexoffice.vouchers.index', ['q' => $q]));
+            ->get(route('billing.feed', ['q' => $q, 'origin' => 'lexoffice']));
     }
 
     public function test_search_by_company_name(): void {
@@ -81,5 +82,11 @@ final class LexofficeVoucherSearchTest extends TestCase {
 
     public function test_search_excludes_non_matching(): void {
         $this->search('Sanitär GmbH')->assertOk()->assertDontSee('RE/2026/1076');
+    }
+
+    public function test_legacy_voucher_route_keeps_the_search_term(): void {
+        $this->actingAs($this->admin)
+            ->get(route('lexoffice.vouchers.index', ['q' => 'Haustechnik']))
+            ->assertRedirect(route('billing.feed', ['origin' => 'lexoffice', 'q' => 'Haustechnik']));
     }
 }

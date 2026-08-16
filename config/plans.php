@@ -327,6 +327,7 @@ return [
         'customers.*' => 'module.vertrieb',
         'suppliers.*' => 'module.vertrieb',
         'projects.*' => 'module.vertrieb',
+        'billing.feed' => 'module.vertrieb', // Belegfluss (Feature 105) — gleiche Sicht wie invoices.*
         'invoices.*' => 'module.vertrieb',
         'invoice-schedules.*' => 'module.vertrieb', // MVP-415 wiederkehrende Rechnungen
         'cash-registers.*' => 'module.kasse', // MVP-414 Kassenbuch

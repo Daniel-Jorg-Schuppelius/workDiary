@@ -9,6 +9,20 @@
  */
 
 return [
+    'receipt' => [
+        'no_vendor' => 'No vendor',
+        'link_title' => 'Accounting voucher',
+        'link' => 'Link',
+        'unlink' => 'Remove link',
+        'unlink_confirm' => 'Really remove the link to the accounting voucher? The expense will count as its own cost again.',
+        'suggestions_hint' => 'Vouchers with the same amount within the time window. Linking confirms it is the same transaction — the expense then stops counting twice.',
+        'no_suggestions' => 'No matching voucher found',
+        'no_suggestions_hint' => 'Without a link the expense is reported separately as an internal expense.',
+        'linked' => 'Voucher :number linked.',
+        'unlinked' => 'Link removed.',
+        'title' => 'Receipt file',
+        'hint' => 'Attach the receipt to the expense — without it the expense can neither be verified on its own nor handed to accounting later.',
+    ],
     'title' => [
         'index'           => 'Expenses',
         'create'          => 'Record expense',

@@ -988,6 +988,28 @@ return [
     ],
     // Kunden-Sonderkonditionen & Abrechnungskonto (Feature 098).
     'billing' => [
+        // Belegfluss (Feature 105, MVP-542)
+        'direction' => [
+            'outgoing' => 'Ausgang',
+            'incoming' => 'Eingang',
+            'neutral' => 'Ohne Geldwirkung',
+        ],
+        'kind' => [
+            'quote' => 'Angebot',
+            'order_confirmation' => 'Auftragsbestätigung',
+            'delivery_note' => 'Lieferschein',
+            'invoice' => 'Rechnung',
+            'down_payment' => 'Abschlagsrechnung',
+            'down_payment_deduction' => 'Abschlagsverrechnung',
+            'credit_note' => 'Gutschrift',
+            'cancellation' => 'Storno',
+            'expense' => 'Auslage',
+            'other' => 'Sonstiger Beleg',
+        ],
+        'origin' => [
+            'local' => 'Lokal',
+            'lexoffice' => 'Lexoffice',
+        ],
         'agreement-mode' => [
             'account' => 'Kundenkonto (rechnungslos)',
             'invoice' => 'Monatliche Rechnung',

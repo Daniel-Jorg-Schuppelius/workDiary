@@ -9,6 +9,20 @@
  */
 
 return [
+    'receipt' => [
+        'no_vendor' => 'Sans fournisseur',
+        'link_title' => 'Pièce comptable',
+        'link' => 'Associer',
+        'unlink' => 'Dissocier',
+        'unlink_confirm' => 'Dissocier la pièce comptable ? La note de frais comptera de nouveau comme charge propre.',
+        'suggestions_hint' => 'Pièces du même montant dans la fenêtre de temps. L\'association confirme qu\'il s\'agit de la même opération — la note de frais ne compte alors plus deux fois.',
+        'no_suggestions' => 'Aucune pièce correspondante',
+        'no_suggestions_hint' => 'Sans association, la note de frais est présentée séparément comme charge interne.',
+        'linked' => 'Pièce :number associée.',
+        'unlinked' => 'Association supprimée.',
+        'title' => 'Justificatif',
+        'hint' => 'Joignez le justificatif à la note de frais — sans lui, elle n\'est ni vérifiable ni transmissible à la comptabilité.',
+    ],
     'title' => [
         'index' => 'Frais',
         'create' => 'Enregistrer un frais',

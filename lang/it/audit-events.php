@@ -17,6 +17,10 @@ declare(strict_types=1);
  * erzwingt Tests\Feature\AuditTranslationCoverageTest.
  */
 return [
+    'expense' => [
+        'voucher_linked' => 'Nota spese collegata a un documento contabile',
+        'voucher_unlinked' => 'Collegamento al documento contabile rimosso',
+    ],
     'agile' => [
         'board' => [
             'activated' => 'Board agile attivato',

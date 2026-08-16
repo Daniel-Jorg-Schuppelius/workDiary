@@ -14,6 +14,7 @@ use App\Enums\Billing\BillingAgreementMode;
 use App\Models\Billing\{CustomerBillingAgreement, CustomerBillingStatement};
 use App\Models\{ExternalReference, Invoice, LexofficeVoucher, Organization};
 use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin, LexofficeVoucherNetAmount};
+use App\Support\Billing\VoucherTypes;
 use App\Support\Tz;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Carbon;
@@ -34,7 +35,7 @@ use Illuminate\Support\Carbon;
  */
 class RetainerVoucherReconciler {
     /** Belegarten, die als Kundenrechnung für eine Pauschale in Frage kommen. */
-    private const INVOICE_TYPES = ['salesinvoice', 'invoice'];
+    private const INVOICE_TYPES = VoucherTypes::SALES_INVOICES;
 
     public function __construct(
         private readonly CustomerAccountStatementService $statements,

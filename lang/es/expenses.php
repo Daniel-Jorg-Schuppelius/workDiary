@@ -9,6 +9,20 @@
  */
 
 return [
+    'receipt' => [
+        'no_vendor' => 'Sin proveedor',
+        'link_title' => 'Comprobante contable',
+        'link' => 'Vincular',
+        'unlink' => 'Quitar vínculo',
+        'unlink_confirm' => '¿Quitar el vínculo con el comprobante contable? El gasto volverá a contar como coste propio.',
+        'suggestions_hint' => 'Comprobantes con el mismo importe dentro de la ventana temporal. Vincular confirma que es la misma operación — el gasto deja entonces de contar dos veces.',
+        'no_suggestions' => 'No se encontró un comprobante coincidente',
+        'no_suggestions_hint' => 'Sin vínculo, el gasto se muestra por separado como gasto interno.',
+        'linked' => 'Comprobante :number vinculado.',
+        'unlinked' => 'Vínculo eliminado.',
+        'title' => 'Archivo del recibo',
+        'hint' => 'Adjunta el recibo al gasto — sin él no se puede verificar ni trasladar después a contabilidad.',
+    ],
     'title' => [
         'index' => 'Gastos',
         'create' => 'Registrar gasto',

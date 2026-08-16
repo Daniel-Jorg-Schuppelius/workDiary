@@ -491,7 +491,7 @@ class NavigationRegistry {
                     'label' => __('Abrechnung & Finanzen'),
                     'icon' => 'request_quote',
                     'items' => [
-                        ['route' => 'invoices.index', 'label' => __('Rechnungen & Belege'), 'icon' => 'request_quote', 'modal' => false, 'matches' => ['invoices.*', 'lexoffice.vouchers.*']],
+                        ['route' => 'billing.feed', 'label' => __('billing.feed.title'), 'icon' => 'request_quote', 'modal' => false, 'matches' => ['billing.feed', 'invoices.*', 'quotes.*', 'lexoffice.vouchers.*'], 'badge' => $this->overdueDocumentCount()],
                         ...(Gate::allows('timeEntry.viewAny')
                             ? [['route' => 'finance.open-times.index', 'label' => __('finance.open_times.menu'), 'icon' => 'pending_actions', 'modal' => false, 'matches' => ['finance.open-times.*']]]
                             : []),
@@ -1132,6 +1132,39 @@ class NavigationRegistry {
     }
 
     /**
+     * Anzahl überfälliger Forderungen für das Menü-Badge (Feature 105,
+     * MVP-547). Bewusst UNABHÄNGIG vom Header-Zeitraum: eine Rechnung aus dem
+     * Vormonat ist genau dann interessant, wenn man gerade nicht auf sie
+     * schaut. Gezählt wird nur, was tatsächlich noch offen ist.
+     */
+    private function overdueDocumentCount(): int {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if ($user === null || $user->organization_id === null) {
+            return 0;
+        }
+
+        $today = \Illuminate\Support\Carbon::today()->toDateString();
+
+        $invoices = \App\Models\Invoice::query()
+            ->whereIn('status', [\App\Models\Invoice::STATUS_ISSUED, \App\Models\Invoice::STATUS_PARTIALLY_PAID])
+            ->whereNotNull('due_on')
+            ->where('due_on', '<', $today)
+            ->count();
+
+        $vouchers = \App\Models\LexofficeVoucher::query()
+            ->where('organization_id', $user->organization_id)
+            ->where('archived', false)
+            ->whereIn('voucher_type', \App\Support\Billing\VoucherTypes::REVENUE)
+            ->whereNotIn('voucher_status', ['draft', 'voided', 'paid', 'paidoff'])
+            ->whereNotNull('due_date')
+            ->where('due_date', '<', $today)
+            ->count();
+
+        return $invoices + $vouchers;
+    }
+
+    /**
      * Hauptnavigation (Header): pro Modus eine Liste mit Routenname + Label.
      *
      * @return list<array<string, mixed>>
@@ -1169,7 +1202,7 @@ class NavigationRegistry {
                 ['route' => 'inventory.lots', 'label' => __('inventory.lot.title'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['inventory.lots*']],
                 ['route' => 'inventory.label-templates.index', 'label' => __('inventory.label_template.title'), 'icon' => 'label', 'modal' => false, 'matches' => ['inventory.label-templates.*']],
                 ['route' => 'projects.index', 'label' => __('Projekte'), 'icon' => 'folder_special', 'modal' => false, 'matches' => ['projects.*']],
-                ['route' => 'invoices.index', 'label' => __('Rechnungen & Belege'), 'icon' => 'receipt_long', 'modal' => false, 'matches' => ['invoices.*', 'lexoffice.vouchers.*']],
+                ['route' => 'billing.feed', 'label' => __('billing.feed.title'), 'icon' => 'receipt_long', 'modal' => false, 'matches' => ['billing.feed', 'invoices.*', 'quotes.*', 'lexoffice.vouchers.*'], 'badge' => $this->overdueDocumentCount()],
                 ['route' => 'finance.transfers.index', 'label' => __('finance.title.menu'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['finance.transfers.*']],
                 ['route' => 'finance.reconciliation.index', 'label' => __('bank.title.menu'), 'icon' => 'account_balance', 'modal' => false, 'matches' => ['finance.reconciliation.*', 'finance.bank-accounts.*']],
                 ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
