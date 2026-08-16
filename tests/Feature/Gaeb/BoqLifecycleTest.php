@@ -10,10 +10,12 @@
 
 namespace Tests\Feature\Gaeb;
 
-use App\Enums\Gaeb\{BoqItemStatus, BoqProgressSource, GaebPhase};
+use App\Enums\Gaeb\{BoqChangeOrderStatus, BoqItemStatus, BoqItemType, BoqProgressSource, GaebPhase};
 use App\Models\{BillOfQuantity, BoqItem, User};
-use App\Services\Gaeb\{BoqCostingService, BoqExportService, BoqProgressService, BoqWorkflowException, BoqWorkflowService, GaebDaXmlParser, GaebImportService};
+use App\Services\Gaeb\{BoqCostingService, BoqExportService, BoqProgressService, BoqWorkflowException, BoqWorkflowService, GaebImportService};
+use CommonToolkit\ValueObjects\Money;
 use Database\Seeders\GaebDemoSeeder;
+use ERechnungToolkit\Parsers\GaebDaXmlParser;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -124,8 +126,159 @@ final class BoqLifecycleTest extends TestCase {
 
         // Roundtrip: Export erneut parsen → gleiche Ordnungszahlen.
         $parsed = (new GaebDaXmlParser)->parse($result['xml']);
-        $refs = array_column($parsed->items, 'ref');
+        $refs = [];
+        foreach ($parsed->getItems() as $item) {
+            $refs[] = $item->getReference();
+        }
         $this->assertEqualsCanonicalizing(['01.0001', '01.0010', '01.0020', '02.0010'], $refs);
+    }
+
+    /**
+     * Feature 108, MVP-565: Die Indexstufe muss als Attribut RNoIndex exportiert
+     * werden — in RNoPart wäre sie eine unzulässige Verlängerung der
+     * Positionsstufe und der Roundtrip bräche.
+     */
+    public function test_export_writes_ordinal_index_as_rnoindex_attribute(): void {
+        $xml = (string) file_get_contents(base_path('tests/Fixtures/gaeb/sample_x83_index.xml'));
+        $import = app(GaebImportService::class)->import($xml, 'sample_x83_index.xml', $this->organization->id);
+        $boq = BillOfQuantity::query()->findOrFail($import->bill_of_quantity_id);
+
+        $result = app(BoqExportService::class)->export($boq, GaebPhase::RequestForBid);
+
+        $this->assertStringContainsString('RNoIndex="A"', $result['xml']);
+        $this->assertStringNotContainsString('RNoPart="0010.A"', $result['xml']);
+
+        $refs = [];
+        foreach ((new GaebDaXmlParser)->parse($result['xml'])->getItems() as $item) {
+            $refs[] = $item->getReference();
+        }
+        $this->assertEqualsCanonicalizing(
+            ['001.001.0010', '001.001.0010.1', '001.001.0010.A', '999.999.9999', '999.999.9999.z'],
+            $refs,
+        );
+    }
+
+    /**
+     * Feature 108, MVP-565: Zuschlagsposition, Hinweistext, Bedarfs-/Grund-/
+     * Alternativkennzeichnung und Unterbeschreibungen überstehen Import und
+     * Export unverändert.
+     */
+    public function test_item_traits_survive_import_and_export(): void {
+        $xml = (string) file_get_contents(base_path('tests/Fixtures/gaeb/sample_x83_traits.xml'));
+        $import = app(GaebImportService::class)->import($xml, 'sample_x83_traits.xml', $this->organization->id);
+        $boq = BillOfQuantity::query()->findOrFail($import->bill_of_quantity_id);
+
+        $this->assertSame(11, $boq->items()->count());
+
+        $markup = $boq->items()->where('reference_no', '001.0040')->firstOrFail();
+        $this->assertSame(BoqItemType::Markup, $markup->type);
+        $this->assertSame('AllInCat', $markup->markup_type);
+
+        $base = $boq->items()->where('reference_no', '001.0020')->firstOrFail();
+        $this->assertSame(BoqItemType::Base, $base->type);
+        $this->assertSame('1', $base->alternative_group);
+        $this->assertSame(0, $base->alternative_no);
+
+        $leading = $boq->items()->where('reference_no', '001.0050')->firstOrFail();
+        $this->assertCount(2, (array) $leading->sub_descriptions);
+
+        $exported = app(BoqExportService::class)->export($boq, GaebPhase::RequestForBid)['xml'];
+
+        $this->assertStringContainsString('<MarkupItem', $exported);
+        $this->assertStringContainsString('<MarkupType>AllInCat</MarkupType>', $exported);
+        $this->assertStringContainsString('<Remark', $exported);
+        $this->assertStringContainsString('<Provis>WithTotal</Provis>', $exported);
+        $this->assertStringContainsString('<ALNSerNo>0</ALNSerNo>', $exported);
+        $this->assertStringContainsString('<SumDescr>Yes</SumDescr>', $exported);
+        $this->assertStringContainsString('<ComplTSB>Yes</ComplTSB>', $exported);
+        $this->assertStringContainsString('<TextComplement MarkLbl="60" Kind="Bidder">', $exported);
+        $this->assertStringNotContainsString('[[TC:', $exported);
+
+        $reparsed = (new GaebDaXmlParser)->parse($exported);
+        $this->assertSame(11, $reparsed->countItems());
+        $types = [];
+        foreach ($reparsed->getItems() as $item) {
+            $types[$item->getReference()] = $item->getType()->value;
+        }
+        $this->assertSame(BoqItemType::Markup->value, $types['001.0040']);
+        $this->assertSame(BoqItemType::Note->value, $types['001.0060']);
+        $this->assertSame(BoqItemType::Optional->value, $types['001.0010.1']);
+
+        // Textergänzungen kommen mit unveränderten Nummern zurück.
+        $marks = [];
+        foreach ($reparsed->getItems() as $candidate) {
+            if ($candidate->getReference() === '001.0070') {
+                foreach ($candidate->getTextComplements() as $complement) {
+                    $marks[] = $complement->getMark();
+                }
+            }
+        }
+        $this->assertSame(['60', '61'], $marks);
+    }
+
+    /**
+     * Feature 108, MVP-567: Die vom Auftraggeber vorgegebenen EP-Anteile und die
+     * kalkulierten Beträge gehören in die Angebotsdatei zurück.
+     */
+    public function test_unit_price_breakdown_survives_roundtrip(): void {
+        $xml = (string) file_get_contents(base_path('tests/Fixtures/gaeb/sample_x83_traits.xml'));
+        $import = app(GaebImportService::class)->import($xml, 'sample_x83_traits.xml', $this->organization->id);
+        $boq = BillOfQuantity::query()->findOrFail($import->bill_of_quantity_id);
+
+        $this->assertCount(4, (array) $boq->up_components);
+
+        // Die Vorgabe des Auftraggebers (Anzahl, Bezeichnungen, Aufgliederungs-
+        // kennzeichen) gehört in die Dokumentphasen — hier X86.
+        $award = app(BoqExportService::class)->export($boq, GaebPhase::Award)['xml'];
+
+        $this->assertStringContainsString('<NoUPComps>4</NoUPComps>', $award);
+        $this->assertStringContainsString('<LblUPComp1 Type="Wages">Lohn</LblUPComp1>', $award);
+        $this->assertStringContainsString('<UPBkdn>Yes</UPBkdn>', $award);
+        $this->assertCount(4, (array) (new GaebDaXmlParser)->parse($award)->getUpComponents());
+
+        // Kalkuliert wird in WorkDiary, zurück geht die Angebotsphase X84 — dort
+        // stehen nur noch die Werte, keine Bezeichnungen (X84-Schema).
+        $exported = app(BoqExportService::class)->export($boq, GaebPhase::Bid)['xml'];
+
+        $this->assertStringNotContainsString('<NoUPComps>', $exported);
+        $this->assertStringNotContainsString('<LblUPComp1', $exported);
+        $this->assertStringNotContainsString('<UPBkdn>', $exported);
+        // Der Exporter kürzt Nachkommanullen wie bei UP/IT.
+        $this->assertStringContainsString('<UPComp1>12</UPComp1>', $exported);
+
+        $reparsed = (new GaebDaXmlParser)->parse($exported);
+        foreach ($reparsed->getItems() as $item) {
+            if ($item->getReference() === '001.0010') {
+                $this->assertSame(
+                    ['12.0000', '5.0000', '2.0000', '1.0000'],
+                    array_map(static fn (Money $share): string => $share->getAmount(), $item->getUnitPriceComponents())
+                );
+            }
+        }
+    }
+
+    /**
+     * Feature 108, MVP-574: Nachträge tragen Nummer und Status aus GAEB — der
+     * frühere `STLNo`-Zweig prüfte ein Element, das es im Schema nicht gibt.
+     */
+    public function test_change_order_number_and_status_survive_roundtrip(): void {
+        $xml = (string) file_get_contents(base_path('tests/Fixtures/gaeb/sample_x83_traits.xml'));
+        $import = app(GaebImportService::class)->import($xml, 'sample_x83_traits.xml', $this->organization->id);
+        $boq = BillOfQuantity::query()->findOrFail($import->bill_of_quantity_id);
+
+        $addendum = $boq->items()->where('reference_no', '001.0080')->firstOrFail();
+        $this->assertTrue($addendum->is_addendum);
+        $this->assertSame('N1', $addendum->change_order_no);
+        $this->assertSame(BoqChangeOrderStatus::Offered, $addendum->change_order_status);
+        $this->assertFalse($addendum->change_order_status->isFinal());
+
+        // Normale Positionen sind keine Nachträge mehr, nur weil sie eine
+        // Katalognummer führen.
+        $this->assertFalse($boq->items()->where('reference_no', '001.0010')->firstOrFail()->is_addendum);
+
+        $exported = app(BoqExportService::class)->export($boq, GaebPhase::Bid)['xml'];
+        $this->assertStringContainsString('<CONo>N1</CONo>', $exported);
+        $this->assertStringContainsString('<COStatus>Offered</COStatus>', $exported);
     }
 
     public function test_http_export_and_progress_for_manager(): void {

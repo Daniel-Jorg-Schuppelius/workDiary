@@ -47,6 +47,16 @@ return [
             'imported' => 'Imported',
             'conflict' => 'Conflict',
         ],
+        'change_order_status' => [
+            'Recog' => 'Recognised',
+            'Filed' => 'Filed',
+            'Offered' => 'Offered',
+            'Withdrawn' => 'Withdrawn',
+            'Rejected' => 'Rejected',
+            'ObjToRecj' => 'Objection to rejection',
+            'FormAckn' => 'Formally acknowledged',
+            'Approved' => 'Approved',
+        ],
     ],
 
     'show' => [
@@ -58,17 +68,34 @@ return [
     ],
 
     'phase' => [
+        '31' => 'Quantity survey',
+        '50' => 'Construction cost catalogue',
+        '51' => 'Cost determination',
+        '52' => 'Calculation data',
+        '80' => 'Universal bill of quantity data',
         '81' => 'Bill of quantities',
-        '82' => 'Cost estimate',
+        '82' => 'Cost assumption',
         '83' => 'Request for bid',
         '84' => 'Bid submission',
         '85' => 'Side bid',
         '86' => 'Award',
+        '87' => 'Award confirmation',
+        '89' => 'Invoice',
+        '89B' => 'Invoice supporting document',
+        '83Z' => 'Framework contract: request for bid',
+        '84Z' => 'Framework contract: bid submission',
+        '86ZE' => 'Framework contract: call-off order',
+        '86ZR' => 'Framework contract: master order',
+        '93' => 'Price inquiry',
+        '94' => 'Price offer',
+        '96' => 'Order',
+        '97' => 'Order confirmation (trade)',
     ],
 
     'item' => [
         'type' => [
             'standard' => 'Standard item',
+            'base' => 'Base item',
             'alternative' => 'Alternative item',
             'optional' => 'Provisional item',
             'lump_sum' => 'Lump-sum item',
@@ -98,7 +125,13 @@ return [
         'non_positive_quantity' => 'Item :ref has a quantity ≤ 0.',
         'missing_unit' => 'Item :ref has no unit.',
         'missing_price' => 'Item :ref has no unit price in a price-bearing phase.',
+        'unpriced_item' => 'Item :ref carries neither a price nor a "not offered" mark in the bid.',
+        'priced_but_not_offered' => 'Item :ref is marked as "not offered" but carries a unit price.',
+        'up_components_mismatch' => 'Item :ref: the unit price components (:sum) do not add up to the unit price (:price).',
         'missing_text' => 'Item :ref has no short/long text.',
+        'total_mismatch' => 'The stated total (:stated) differs from the computed total (:computed).',
+        'complement_empty' => 'Item :ref: bidder text complement :mark has not been filled in.',
+        'contractor_missing' => 'This phase requires the bidder address (name, street, postal code and city in the e-invoicing master data).',
     ],
 
     'flash' => [

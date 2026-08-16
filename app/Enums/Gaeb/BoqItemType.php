@@ -20,7 +20,8 @@ use App\Enums\Contracts\HasLabel;
  * GAEB-Itemkennzeichen (Provis/Alternative/Lump-Sum etc.).
  *
  * - Standard:    Normalposition mit Menge
- * - Alternative: Wahl-/Alternativposition (GAEB Alternative)
+ * - Base:        Grundausführung einer Alternativgruppe (GAEB ALNSerNo = 0)
+ * - Alternative: Wahl-/Alternativposition (GAEB ALNSerNo >= 1)
  * - Optional:    Bedarfsposition (Provisional/Eventualposition)
  * - LumpSum:     Pauschalposition ohne mengenabhängige Abrechnung
  * - Markup:      Zuschlagsposition (prozentual auf Bezugspositionen)
@@ -30,6 +31,7 @@ enum BoqItemType: string implements HasLabel {
     use HasOptions;
 
     case Standard = 'standard';
+    case Base = 'base';
     case Alternative = 'alternative';
     case Optional = 'optional';
     case LumpSum = 'lump_sum';
@@ -40,10 +42,14 @@ enum BoqItemType: string implements HasLabel {
         return __('gaeb.item.type.' . $this->value);
     }
 
-    /** Wird diese Positionsart regulär mengen- und preisbasiert abgerechnet? */
+    /**
+     * Wird diese Positionsart regulär mengen- und preisbasiert abgerechnet?
+     * Die Zuschlagsposition nicht: sie trägt einen Prozentsatz auf
+     * Bezugspositionen und führt weder Menge noch Einheit.
+     */
     public function isBillable(): bool {
         return match ($this) {
-            self::Note, self::Optional, self::Alternative => false,
+            self::Note, self::Optional, self::Alternative, self::Markup => false,
             default => true,
         };
     }

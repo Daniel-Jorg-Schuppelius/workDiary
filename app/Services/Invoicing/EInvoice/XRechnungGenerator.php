@@ -10,7 +10,7 @@
 
 namespace App\Services\Invoicing\EInvoice;
 
-use App\Models\{Invoice, InvoiceItem};
+use App\Models\{Invoice, InvoiceItem, Organization};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use ERechnungToolkit\Builders\ERechnungDocumentBuilder;
@@ -437,7 +437,20 @@ class XRechnungGenerator {
      *               payment_terms_days: int, small_business: bool}
      */
     public function sellerData(Invoice $invoice): array {
-        $organization = $invoice->organization;
+        return $this->sellerDataFor($invoice->organization);
+    }
+
+    /**
+     * Verkäuferstammdaten einer Organisation — dieselbe Quelle wie
+     * {@see sellerData()}, damit es keine zweite Leselogik gibt (auch der
+     * GAEB-Export braucht die eigene Anschrift).
+     *
+     * @return array{name: string, street: string, zip: string, city: string, country: string,
+     *               vat_id: string, tax_number: string, contact_name: string, contact_email: string,
+     *               contact_phone: string, iban: string, bic: string, account_holder: string,
+     *               payment_terms_days: int, small_business: bool}
+     */
+    public function sellerDataFor(?Organization $organization): array {
         $settings = $organization !== null && is_array($organization->settings) ? $organization->settings : [];
         $einvoice = is_array($settings['einvoice'] ?? null) ? $settings['einvoice'] : [];
 

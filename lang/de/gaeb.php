@@ -47,6 +47,16 @@ return [
             'imported' => 'Importiert',
             'conflict' => 'Konflikt',
         ],
+        'change_order_status' => [
+            'Recog' => 'erkannt',
+            'Filed' => 'angemeldet',
+            'Offered' => 'angeboten',
+            'Withdrawn' => 'zurückgezogen',
+            'Rejected' => 'abgelehnt',
+            'ObjToRecj' => 'Widerspruch zur Ablehnung',
+            'FormAckn' => 'sachlich anerkannt',
+            'Approved' => 'genehmigt',
+        ],
     ],
 
     'show' => [
@@ -58,17 +68,34 @@ return [
     ],
 
     'phase' => [
+        '31' => 'Mengenermittlung',
+        '50' => 'Baukostenkatalog',
+        '51' => 'Kostenermittlung',
+        '52' => 'Kalkulationsdaten',
+        '80' => 'Universelle LV-Daten',
         '81' => 'Leistungsverzeichnis',
-        '82' => 'Kostenanschlag',
+        '82' => 'Kostenansatz',
         '83' => 'Angebotsaufforderung',
         '84' => 'Angebotsabgabe',
         '85' => 'Nebenangebot',
         '86' => 'Auftragserteilung',
+        '87' => 'Auftragsbestätigung',
+        '89' => 'Rechnung',
+        '89B' => 'Rechnungsbegründende Unterlage',
+        '83Z' => 'Zeitvertrag: Angebotsaufforderung',
+        '84Z' => 'Zeitvertrag: Angebotsabgabe',
+        '86ZE' => 'Zeitvertrag: Einzelauftrag',
+        '86ZR' => 'Zeitvertrag: Rahmenauftrag',
+        '93' => 'Preisanfrage',
+        '94' => 'Preisangebot',
+        '96' => 'Bestellung',
+        '97' => 'Auftragsbestätigung (Handel)',
     ],
 
     'item' => [
         'type' => [
             'standard' => 'Normalposition',
+            'base' => 'Grundposition',
             'alternative' => 'Alternativposition',
             'optional' => 'Bedarfsposition',
             'lump_sum' => 'Pauschalposition',
@@ -98,7 +125,13 @@ return [
         'non_positive_quantity' => 'Position :ref hat eine Menge ≤ 0.',
         'missing_unit' => 'Position :ref ohne Einheit.',
         'missing_price' => 'Position :ref ohne Einheitspreis in einer preisführenden Phase.',
+        'unpriced_item' => 'Position :ref ist im Angebot weder bepreist noch als „nicht angeboten“ gekennzeichnet.',
+        'priced_but_not_offered' => 'Position :ref ist als „nicht angeboten“ gekennzeichnet, trägt aber einen Einheitspreis.',
+        'up_components_mismatch' => 'Position :ref: Summe der Einheitspreisanteile (:sum) weicht vom Einheitspreis (:price) ab.',
         'missing_text' => 'Position :ref ohne Kurz-/Langtext.',
+        'total_mismatch' => 'Die angegebene Summe (:stated) weicht von der nachgerechneten Summe (:computed) ab.',
+        'complement_empty' => 'Position :ref: Bieter-Textergänzung :mark ist nicht ausgefüllt.',
+        'contractor_missing' => 'Für diese Phase fehlt die Anschrift des Bieters (Name, Straße, PLZ und Ort in den E-Rechnungs-Stammdaten).',
     ],
 
     'flash' => [

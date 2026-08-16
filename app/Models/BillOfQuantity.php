@@ -27,6 +27,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property string $name
  * @property string|null $external_id
  * @property string|null $gaeb_version
+ * @property array<int, array{no: int, label: ?string, category: ?string}>|null $up_components
+ * @property array<string, string|null>|null $totals
  * @property GaebPhase|null $phase
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property BoqItemStatus $status
@@ -45,6 +47,8 @@ class BillOfQuantity extends Model {
         'name',
         'external_id',
         'gaeb_version',
+        'up_components',
+        'totals',
         'phase',
         'currency',
         'status',
@@ -55,6 +59,8 @@ class BillOfQuantity extends Model {
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'phase' => GaebPhase::class,
         'status' => BoqItemStatus::class,
+        'up_components' => 'array',
+        'totals' => 'array',
     ];
 
     /** @return BelongsTo<Project, $this> */

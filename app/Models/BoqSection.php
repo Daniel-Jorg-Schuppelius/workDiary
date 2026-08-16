@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property int|null $parent_id
  * @property string $reference_no
  * @property string|null $label
+ * @property string|null $external_id
  * @property int $position
  */
 class BoqSection extends Model {
@@ -38,10 +39,13 @@ class BoqSection extends Model {
         'parent_id',
         'reference_no',
         'label',
+        'external_id',
+        'totals',
         'position',
     ];
 
     protected $casts = [
+        'totals' => 'array',
         'position' => 'integer',
     ];
 

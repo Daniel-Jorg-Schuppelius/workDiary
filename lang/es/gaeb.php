@@ -47,6 +47,16 @@ return [
             'imported' => 'Importado',
             'conflict' => 'Conflicto',
         ],
+        'change_order_status' => [
+            'Recog' => 'Reconocido',
+            'Filed' => 'Notificado',
+            'Offered' => 'Ofertado',
+            'Withdrawn' => 'Retirado',
+            'Rejected' => 'Rechazado',
+            'ObjToRecj' => 'Objeción al rechazo',
+            'FormAckn' => 'Reconocido en cuanto al fondo',
+            'Approved' => 'Aprobado',
+        ],
     ],
 
     'show' => [
@@ -58,17 +68,34 @@ return [
     ],
 
     'phase' => [
-        '81' => 'Medición',
+        '31' => 'Medición de cantidades',
+        '50' => 'Catálogo de costes de construcción',
+        '51' => 'Determinación de costes',
+        '52' => 'Datos de cálculo',
+        '80' => 'Datos universales del presupuesto',
+        '81' => 'Presupuesto descriptivo',
         '82' => 'Estimación de costes',
         '83' => 'Solicitud de oferta',
-        '84' => 'Presentación de oferta',
+        '84' => 'Presentación de la oferta',
         '85' => 'Oferta alternativa',
         '86' => 'Adjudicación',
+        '87' => 'Confirmación del pedido',
+        '89' => 'Factura',
+        '89B' => 'Documento justificativo de la factura',
+        '83Z' => 'Contrato marco: solicitud de oferta',
+        '84Z' => 'Contrato marco: presentación de la oferta',
+        '86ZE' => 'Contrato marco: pedido individual',
+        '86ZR' => 'Contrato marco: pedido marco',
+        '93' => 'Solicitud de precio',
+        '94' => 'Oferta de precio',
+        '96' => 'Pedido',
+        '97' => 'Confirmación del pedido (comercio)',
     ],
 
     'item' => [
         'type' => [
             'standard' => 'Partida normal',
+            'base' => 'Partida base',
             'alternative' => 'Partida alternativa',
             'optional' => 'Partida opcional',
             'lump_sum' => 'Partida a tanto alzado',
@@ -98,7 +125,13 @@ return [
         'non_positive_quantity' => 'La partida :ref tiene una cantidad ≤ 0.',
         'missing_unit' => 'La partida :ref no tiene unidad.',
         'missing_price' => 'La partida :ref no tiene precio unitario en una fase con precios.',
+        'unpriced_item' => 'La partida :ref no tiene precio ni está marcada como «no ofertada» en la oferta.',
+        'priced_but_not_offered' => 'La partida :ref está marcada como «no ofertada» pero lleva un precio unitario.',
+        'up_components_mismatch' => 'Partida :ref: la suma de los componentes del precio unitario (:sum) no coincide con el precio unitario (:price).',
         'missing_text' => 'La partida :ref no tiene texto corto/largo.',
+        'total_mismatch' => 'El total indicado (:stated) difiere del total recalculado (:computed).',
+        'complement_empty' => 'Posición :ref: el complemento de texto del licitador :mark no está cumplimentado.',
+        'contractor_missing' => 'Esta fase requiere la dirección del licitador (nombre, calle, código postal y ciudad en los datos maestros de facturación electrónica).',
     ],
 
     'flash' => [

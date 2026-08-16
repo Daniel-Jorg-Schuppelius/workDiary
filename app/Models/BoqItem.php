@@ -29,15 +29,32 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property string $reference_no
  * @property string|null $item_no
  * @property BoqItemType $type
+ * @property string|null $provision_kind
+ * @property string|null $alternative_group
+ * @property int|null $alternative_no
+ * @property string|null $markup_type
  * @property BoqItemStatus $status
  * @property string|null $short_text
  * @property string|null $long_text
+ * @property array<int, array{no: ?string, quantity: ?string, unit: ?string}>|null $sub_descriptions
+ * @property array<int, array{mark: string, kind: ?string, caption: ?string, body: ?string, tail: ?string}>|null $text_complements
  * @property \CommonToolkit\ValueObjects\Quantity|null $quantity
  * @property string|null $unit
  * @property \CommonToolkit\ValueObjects\Money|null $unit_price
+ * @property array<int, string>|null $unit_price_components
+ * @property bool $not_offered
+ * @property bool $not_applicable
+ * @property bool $free_quantity
+ * @property bool $hourly_item
+ * @property string|null $discount_percent
+ * @property string|null $vat_rate
+ * @property string|null $bidder_comment
+ * @property string|null $alternative_bid_status
  * @property \CommonToolkit\ValueObjects\Money|null $total_price
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property bool $is_addendum
+ * @property string|null $change_order_no
+ * @property \App\Enums\Gaeb\BoqChangeOrderStatus|null $change_order_status
  * @property string|null $external_id
  * @property int $position
  */
@@ -55,15 +72,32 @@ class BoqItem extends Model {
         'reference_no',
         'item_no',
         'type',
+        'provision_kind',
+        'alternative_group',
+        'alternative_no',
+        'markup_type',
         'status',
         'short_text',
         'long_text',
+        'sub_descriptions',
+        'text_complements',
         'quantity',
         'unit',
         'unit_price',
+        'unit_price_components',
+        'not_offered',
+        'not_applicable',
+        'free_quantity',
+        'hourly_item',
+        'discount_percent',
+        'vat_rate',
+        'bidder_comment',
+        'alternative_bid_status',
         'total_price',
         'currency',
         'is_addendum',
+        'change_order_no',
+        'change_order_status',
         'external_id',
         'position',
     ];
@@ -76,7 +110,16 @@ class BoqItem extends Model {
         'unit_price' => MoneyCast::class . ':currency,4',
         'total_price' => MoneyCast::class . ':currency,4',
         'is_addendum' => 'boolean',
+        'change_order_status' => \App\Enums\Gaeb\BoqChangeOrderStatus::class,
         'position' => 'integer',
+        'alternative_no' => 'integer',
+        'sub_descriptions' => 'array',
+        'text_complements' => 'array',
+        'unit_price_components' => 'array',
+        'not_offered' => 'boolean',
+        'not_applicable' => 'boolean',
+        'free_quantity' => 'boolean',
+        'hourly_item' => 'boolean',
     ];
 
     /** @return BelongsTo<BillOfQuantity, $this> */

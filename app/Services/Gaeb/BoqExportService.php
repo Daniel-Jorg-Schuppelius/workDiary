@@ -14,22 +14,49 @@ namespace App\Services\Gaeb;
 
 use App\Enums\Gaeb\GaebPhase;
 use App\Models\{BillOfQuantity, BoqExport};
+use App\Services\Invoicing\EInvoice\XRechnungGenerator;
 use CommonToolkit\Helper\Data\CryptoHelper;
+use ERechnungToolkit\Entities\Gaeb\GaebParty;
+use ERechnungToolkit\Enums\GaebPhase as ToolkitPhase;
+use ERechnungToolkit\Generators\GaebDaXmlGenerator;
 
 /**
- * GAEB-Export inkl. Audit (Feature 049, MVP-085): erzeugt den GAEB-Stand über
- * den {@see GaebDaXmlExporter} und protokolliert ihn mit Inhalts-Hash in
- * `boq_exports`. Der Generator ist deterministisch, daher ist derselbe LV-Stand
- * reproduzierbar (gleicher Hash).
+ * GAEB-Export inkl. Audit (Feature 049, MVP-085; Feature 108): erzeugt den
+ * GAEB-Stand über den Generator des erechnung-toolkits und protokolliert ihn
+ * mit Inhalts-Hash in `boq_exports`. Der Generator ist deterministisch, daher
+ * ist derselbe LV-Stand reproduzierbar (gleicher Hash) — dafür ist das feste
+ * Erzeugungsdatum nötig.
  */
 class BoqExportService {
-    public function __construct(private readonly GaebDaXmlExporter $exporter) {}
+    /** Festes Datum im GAEBInfo, damit derselbe LV-Stand denselben Hash ergibt. */
+    private const EXPORT_DATE = '2026-01-01';
+
+    public function __construct(
+        private readonly BoqDocumentFactory $documents,
+        private readonly GaebDaXmlGenerator $generator,
+        private readonly XRechnungGenerator $einvoice,
+        private readonly GaebPreflight $preflight,
+    ) {}
+
+    /**
+     * Prüfliste vor der Abgabe (MVP-569), ohne zu exportieren: nimmt vorweg, was
+     * ava-sign beim Reimport prüft.
+     *
+     * @return array{ok: bool, errors: list<string>, warnings: list<string>, meta: array<string, mixed>}
+     */
+    public function preflight(BillOfQuantity $boq, GaebPhase $phase): array {
+        return $this->preflight->checkForExport(
+            $this->documents->fromModel($boq, $phase),
+            $phase,
+            $this->contractor($boq) !== null,
+        );
+    }
 
     /**
      * @return array{xml: string, export: BoqExport}
      */
     public function export(BillOfQuantity $boq, GaebPhase $phase, ?int $createdBy = null): array {
-        $xml = $this->exporter->export($boq, $phase);
+        $xml = $this->render($boq, $phase);
 
         $export = BoqExport::query()->create([
             'organization_id' => $boq->organization_id,
@@ -46,8 +73,42 @@ class BoqExportService {
 
     /** Reiner Inhalts-Hash ohne Protokollierung (z. B. für Idempotenzprüfungen). */
     public function contentHash(BillOfQuantity $boq, GaebPhase $phase): string {
-        $hash = CryptoHelper::hash($this->exporter->export($boq, $phase));
+        return CryptoHelper::hash($this->render($boq, $phase));
+    }
 
-        return $hash;
+    private function render(BillOfQuantity $boq, GaebPhase $phase): string {
+        return $this->generator->generate(
+            $this->documents->fromModel($boq, $phase),
+            ToolkitPhase::from($phase->value),
+            $boq->currency->value,
+            self::EXPORT_DATE,
+            'WorkDiary',
+            null,
+            null,
+            $this->contractor($boq),
+        );
+    }
+
+    /**
+     * Eigene Anschrift als GAEB-Auftragnehmer (`CTR`). Das Schema verlangt sie
+     * in X84, X86 und X87 vollständig; Quelle sind die E-Rechnungs-Stammdaten
+     * der Organisation, damit es keine zweite Absenderpflege gibt. Fehlt ein
+     * Pflichtfeld, bleibt `CTR` weg — die Lücke gehört in den Preflight, nicht
+     * in eine erfundene Adresse.
+     */
+    private function contractor(BillOfQuantity $boq): ?GaebParty {
+        $seller = $this->einvoice->sellerDataFor($boq->organization);
+
+        if ($seller['name'] === '' || $seller['street'] === '' || $seller['zip'] === '' || $seller['city'] === '') {
+            return null;
+        }
+
+        return new GaebParty(
+            $seller['name'],
+            $seller['street'],
+            $seller['zip'],
+            $seller['city'],
+            $seller['country'] !== 'CH' && $seller['country'] !== 'GB',
+        );
     }
 }

@@ -52,6 +52,10 @@ final class BillOfQuantityImportTest extends TestCase {
         $this->assertSame(2, $boq->sections()->count());
         $this->assertSame(4, $boq->items()->count());
 
+        // Die Kennung der Gruppe (BoQCtgy/@ID) wird behalten — sie ist ab 3.3
+        // Pflicht und die Klammer zu Fremdsystemen.
+        $this->assertSame('C-01', $boq->sections()->where('reference_no', '01')->value('external_id'));
+
         // Positionen mit Preis erzeugen je einen Snapshot (3 von 4).
         $this->assertDatabaseCount('boq_item_price_snapshots', 3);
 
