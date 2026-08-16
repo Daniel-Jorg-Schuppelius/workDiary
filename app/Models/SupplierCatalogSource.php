@@ -60,6 +60,7 @@ class SupplierCatalogSource extends Model {
         'delimiter',
         'has_header',
         'sheet_name',
+        'expected_customer_no',
         'decimal_separator',
         'active',
         'last_imported_at',

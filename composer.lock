@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fa0830b7b412c444c4721c2d79055079",
+    "content-hash": "305ee4627bda329b6457b90e4b1f534f",
     "packages": [
         {
             "name": "azuyalabs/yasumi",
@@ -661,16 +661,16 @@
         },
         {
             "name": "daniel-jorg-schuppelius/php-erechnung-toolkit",
-            "version": "v0.6",
+            "version": "v0.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit.git",
-                "reference": "ae892346c6a40a9d6fc0b2efc354c0f0603c1c59"
+                "reference": "20415e5fa8be70b1b5290f9e53874fc4ed767f38"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/zipball/ae892346c6a40a9d6fc0b2efc354c0f0603c1c59",
-                "reference": "ae892346c6a40a9d6fc0b2efc354c0f0603c1c59",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/zipball/20415e5fa8be70b1b5290f9e53874fc4ed767f38",
+                "reference": "20415e5fa8be70b1b5290f9e53874fc4ed767f38",
                 "shasum": ""
             },
             "require": {
@@ -723,9 +723,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/issues",
-                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/tree/v0.6"
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/tree/v0.8"
             },
-            "time": "2026-08-14T23:15:02+00:00"
+            "time": "2026-08-16T18:14:42+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/php-pdf-toolkit",
@@ -15880,5 +15880,5 @@
         "php": "^8.4"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }

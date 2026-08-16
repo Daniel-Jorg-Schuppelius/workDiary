@@ -25,8 +25,7 @@ use Illuminate\Support\Facades\DB;
  * Return zum ursprünglichen Stückkostenwert — das append-only Journal bleibt intakt).
  */
 class CustomerStockAllocationService {
-    public function __construct(private readonly ValuationService $valuation) {
-    }
+    public function __construct(private readonly ValuationService $valuation) {}
 
     /**
      * Entnimmt `$qty` der Variante aus dem Lager (zum gleitenden Durchschnitt)

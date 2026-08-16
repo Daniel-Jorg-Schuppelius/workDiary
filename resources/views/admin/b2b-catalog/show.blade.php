@@ -32,6 +32,11 @@
                 <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ $access->label }}</h1>
                 <div class="flex items-center gap-2">
                     @if ($access->isActive())
+                        <a class="btn btn-ghost btn-sm gap-1" href="{{ route('b2b-catalog.datanorm', $access) }}">
+                            {{ __('b2b_catalog.action.datanorm') }}
+                        </a>
+                    @endif
+                    @if ($access->isActive())
                         <span class="badge badge-success badge-sm">{{ __('b2b_catalog.status.active') }}</span>
                     @else
                         <span class="badge badge-ghost badge-sm">{{ __('b2b_catalog.status.revoked') }}</span>

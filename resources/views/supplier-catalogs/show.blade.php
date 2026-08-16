@@ -100,6 +100,16 @@
 
                 @if ($structured)
                     <p class="text-sm opacity-70">{{ $fmt === 'bmecat' ? __('procurement.catalog.bmecat_hint') : __('procurement.catalog.datanorm_hint') }}</p>
+                    @if ($fmt === 'datanorm')
+                        <div class="max-w-md">
+                            <label class="label-text font-medium">{{ __('procurement.catalog.import_mode') }}</label>
+                            <select name="import_mode" class="select select-bordered select-sm w-full">
+                                <option value="auto">{{ __('procurement.catalog.import_mode_auto') }}</option>
+                                <option value="snapshot">{{ __('procurement.catalog.import_mode_snapshot') }}</option>
+                                <option value="delta">{{ __('procurement.catalog.import_mode_delta') }}</option>
+                            </select>
+                        </div>
+                    @endif
                 @else
                     <p class="text-sm opacity-70">{{ __('procurement.catalog.mapping_hint') }}</p>
                     @if ($fmt === 'xlsx')

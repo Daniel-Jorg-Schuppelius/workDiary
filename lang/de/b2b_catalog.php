@@ -56,6 +56,7 @@ return [
     ],
 
     'action' => [
+        'datanorm' => 'DATPREIS exportieren',
         'issue' => 'Zugang ausstellen',
         'manage' => 'Verwalten',
         'revoke' => 'Deaktivieren',
@@ -75,6 +76,8 @@ return [
     ],
 
     'flash' => [
+        'datanorm_empty' => 'Keine freigegebenen Artikel mit Preis für diesen Zugang.',
+        'datanorm_revoked' => 'Dieser Zugang ist widerrufen — es werden keine Kundenpreislisten mehr exportiert.',
         'access_issued' => 'Zugang ausgestellt.',
         'access_rotated' => 'Secret rotiert.',
         'access_revoked' => 'Zugang deaktiviert.',

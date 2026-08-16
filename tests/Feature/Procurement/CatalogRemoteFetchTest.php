@@ -49,7 +49,7 @@ final class CatalogRemoteFetchTest extends TestCase {
     public function test_http_fetch_imports_datanorm(): void {
         $source = $this->source(['source_type' => 'http', 'remote_url' => 'https://feed.example.com/cat.001']);
         $fake = FakePluginHttp::fake([
-            'https://feed.example.com/*' => FakePluginHttp::response("A;N;900001;0;Pumpe;;0;1;Stk;4500;01;200;\nA;N;900002;0;Ventil;;0;1;Stk;1900;01;200;", 200),
+            'https://feed.example.com/*' => FakePluginHttp::response("V;050;A;20260816;EUR;Feed;;TEST;;;;;;;;\r\nA;N;900001;Pumpe;;PCE;2;1;4500;;200;;\r\nA;N;900002;Ventil;;PCE;2;1;1900;;200;;\r\nE;4;;", 200),
         ]);
 
         $this->actingAs($this->admin)

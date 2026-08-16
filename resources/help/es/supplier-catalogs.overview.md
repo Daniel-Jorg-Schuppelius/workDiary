@@ -22,6 +22,19 @@ shopinfo.xml cargada rellena previamente el mapeo, el juego de
 caracteres y el separador. El mapeo se guarda en la fuente y se
 reutiliza en recuperaciones posteriores.
 
+**DATANORM en detalle:** Se admiten las versiones 4 y 5 — además de los
+archivos de artículos (DATANORM.nnn), también grupos de descuento
+(DATANORM.RAB), grupos de mercancías (DATANORM.WRG) y archivos de
+precios (DATPREIS.nnn). Los precios de lista (indicador 1) se convierten
+en precios netos de compra mediante el grupo de descuento; los archivos
+de cambios no tocan las existencias (modo de procesamiento seleccionable
+en el diálogo de importación). En archivos de precios específicos del
+cliente, el registro de control K se comprueba contra el número de
+cliente guardado en la fuente. El juego de caracteres suele ser CP850.
+En sentido inverso, la lista de artículos exporta el propio maestro como
+catálogo DATANORM o archivo de precios DATPREIS (también por acceso de
+catálogo B2B con precios del cliente).
+
 **Importación:** Cada ejecución resume cuántos artículos de catálogo se
 crearon, se actualizaron, cambiaron de precio o se marcaron como
 descatalogados. Los artículos de catálogo llevan, además del precio de

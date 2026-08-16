@@ -20,6 +20,18 @@ Intervall herein; eine hochgeladene shopinfo.xml füllt Mapping,
 Zeichensatz und Trennzeichen vor. Das Mapping wird an der Quelle
 gespeichert und bei späteren Abrufen wiederverwendet.
 
+**DATANORM im Detail:** Unterstützt werden Version 4 und 5 — neben
+Artikeldateien (DATANORM.nnn) auch Rabattgruppen (DATANORM.RAB),
+Warengruppen (DATANORM.WRG) und Preisdateien (DATPREIS.nnn).
+Listenpreise (Preiskennzeichen 1) werden über die Rabattgruppe zum
+Netto-Einkaufspreis gerechnet; Änderungsdateien lassen den Bestand
+unangetastet (Verarbeitungsmodus im Import-Dialog wählbar). Bei
+kundenindividuellen Preisdateien wird der K-Kontrollsatz gegen die an
+der Quelle hinterlegte Kundennummer geprüft. Der Zeichensatz ist
+üblicherweise CP850. Umgekehrt exportiert die Artikelliste den eigenen
+Stamm als DATANORM-Katalog oder DATPREIS-Preisdatei (auch je
+B2B-Katalogzugang mit Kundenpreisen).
+
 **Import:** Jeder Lauf fasst zusammen, wie viele Katalogartikel neu
 angelegt, aktualisiert, im Preis geändert oder als ausgelaufen markiert
 wurden. Katalogartikel führen neben dem Einkaufspreis auch Staffelpreise.

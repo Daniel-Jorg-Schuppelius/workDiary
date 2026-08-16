@@ -67,8 +67,9 @@ class OciCartFormatter {
 
     /**
      * `base_unit` ist Freitext (Default „Stk"); Einkaufssysteme erwarten
-     * UN/ECE-Rec-20-Codes. Auflösung: bereits ISO-Code → durchreichen, sonst
-     * Abgleich gegen die Toolkit-Abkürzungen ({@see UnitCode::abbreviation()}).
+     * UN/ECE-Rec-20-Codes. Auflösung über den zentralen
+     * {@see \App\Support\UnitCodeMapper} (Feature 107, W7); nicht auflösbare
+     * Einheiten werden wie bisher roh durchgereicht.
      */
     private function isoUnit(string $baseUnit): string {
         $unit = trim($baseUnit);
@@ -76,23 +77,6 @@ class OciCartFormatter {
             return UnitCode::PIECE->value;
         }
 
-        $iso = UnitCode::tryFrom(strtoupper($unit));
-        if ($iso !== null) {
-            return $iso->value;
-        }
-
-        $normalized = mb_strtolower(rtrim($unit, '.'));
-        foreach (UnitCode::cases() as $case) {
-            if (mb_strtolower(rtrim($case->abbreviation(), '.')) === $normalized) {
-                return $case->value;
-            }
-        }
-
-        return match ($normalized) {
-            'stk', 'stück', 'stueck', 'st' => UnitCode::PIECE->value,
-            'std', 'stunde', 'stunden' => UnitCode::HOUR->value,
-            'pkg', 'paket' => UnitCode::PACKAGE->value,
-            default => $unit,
-        };
+        return \App\Support\UnitCodeMapper::tryUnitCode($unit)->value ?? $unit;
     }
 }

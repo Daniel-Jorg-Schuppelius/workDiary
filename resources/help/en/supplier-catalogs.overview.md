@@ -19,6 +19,17 @@ arrive via upload or automatic remote fetch at a configurable interval;
 an uploaded shopinfo.xml prefills mapping, character set and delimiter.
 The mapping is stored on the source and reused for later fetches.
 
+**DATANORM in detail:** Versions 4 and 5 are supported — besides article
+files (DATANORM.nnn) also discount groups (DATANORM.RAB), product groups
+(DATANORM.WRG) and price files (DATPREIS.nnn). List prices (price
+indicator 1) are turned into net purchase prices via the discount group;
+change files leave the stock untouched (processing mode selectable in
+the import dialog). For customer-specific price files the K control
+record is checked against the customer number stored on the source. The
+character set is usually CP850. In the other direction the article list
+exports your own master data as a DATANORM catalogue or DATPREIS price
+file (also per B2B catalogue access with customer prices).
+
 **Import:** Every run summarises how many catalogue items were newly
 created, updated, changed in price or marked as discontinued. Catalogue
 items carry tiered prices in addition to the purchase price.

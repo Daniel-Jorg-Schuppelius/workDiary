@@ -49,6 +49,19 @@
         </x-select-field>
         <x-input-field name="base_unit" :label="__('article.field.base_unit')" required maxlength="20"
                        :value="old('base_unit', $article?->base_unit ?? 'Stk')" />
+        <x-input-field name="category" :label="__('article.field.category')" maxlength="64"
+                       :value="old('category', $article?->category)" :hint="__('article.field.category_hint')" />
+        <x-input-field name="subcategory" :label="__('article.field.subcategory')" maxlength="64"
+                       :value="old('subcategory', $article?->subcategory)" />
+        <x-select-field name="sales_discount_group_id" :label="__('article.field.sales_discount_group')"
+                        :hint="__('article.field.sales_discount_group_hint')">
+            <option value="">—</option>
+            @foreach ($salesDiscountGroups ?? [] as $group)
+                <option value="{{ $group->id }}" @selected((int) old('sales_discount_group_id', $article?->sales_discount_group_id) === $group->id)>
+                    {{ $group->code }}{{ $group->label ? ' — ' . $group->label : '' }}
+                </option>
+            @endforeach
+        </x-select-field>
 
         <x-select-field name="status" :label="__('article.field.status')" required>
             @foreach ($statuses as $st)

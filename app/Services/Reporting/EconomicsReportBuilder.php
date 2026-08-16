@@ -49,8 +49,7 @@ use Illuminate\Support\Collection;
  * Plan-Werte gegen Ist-Minuten und Ist-Kosten.
  */
 class EconomicsReportBuilder {
-    public function __construct(private readonly TravelChargeService $travelCharges = new TravelChargeService()) {
-    }
+    public function __construct(private readonly TravelChargeService $travelCharges = new TravelChargeService()) {}
 
     /**
      * Wirtschaftlichkeit je Projekt im Zeitraum.

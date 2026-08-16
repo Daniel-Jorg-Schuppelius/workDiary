@@ -35,31 +35,6 @@ use RuntimeException;
  * (Adressen, USt-ID) liegt beim Aufrufer bzw. den Stammdaten.
  */
 class PurchaseOrderExportService {
-    /**
-     * Einheiten-Mapping auf UN/ECE-Rec-20-Codes (analog XRechnungGenerator):
-     * Stück ⇒ H87, Stunde ⇒ HUR, unbekannt ⇒ C62 (generisch „one").
-     *
-     * @var array<string, UnitCode>
-     */
-    private const UNIT_CODES = [
-        'stk' => UnitCode::UNIT_H87,
-        'stk.' => UnitCode::UNIT_H87,
-        'st' => UnitCode::UNIT_H87,
-        'st.' => UnitCode::UNIT_H87,
-        'stück' => UnitCode::UNIT_H87,
-        'stueck' => UnitCode::UNIT_H87,
-        'pc' => UnitCode::UNIT_H87,
-        'pcs' => UnitCode::UNIT_H87,
-        'pce' => UnitCode::UNIT_H87,
-        'piece' => UnitCode::UNIT_H87,
-        'h' => UnitCode::HOUR,
-        'std' => UnitCode::HOUR,
-        'std.' => UnitCode::HOUR,
-        'stunde' => UnitCode::HOUR,
-        'stunden' => UnitCode::HOUR,
-        'hour' => UnitCode::HOUR,
-    ];
-
     /** GS1 GTIN scheme identifier (ISO/IEC 6523). */
     private const GTIN_SCHEME = '0160';
 
@@ -263,7 +238,12 @@ class PurchaseOrderExportService {
         ];
     }
 
+    /**
+     * Einheiten-Mapping auf UN/ECE-Rec-20-Codes über den zentralen
+     * {@see UnitCodeMapper} (Feature 107, W7): Stück ⇒ H87 (historischer
+     * Bestell-XML-Code), unbekannt ⇒ C62 (generisch „one").
+     */
     private function unitCode(string $unit): UnitCode {
-        return self::UNIT_CODES[mb_strtolower(trim($unit))] ?? UnitCode::PIECE;
+        return \App\Support\UnitCodeMapper::tryUnitCode($unit, UnitCode::UNIT_H87) ?? UnitCode::PIECE;
     }
 }

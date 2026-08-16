@@ -22,6 +22,18 @@ una shopinfo.xml caricata precompila mappatura, set di caratteri e
 separatore. La mappatura viene salvata sulla fonte e riutilizzata nei
 prelievi successivi.
 
+**DATANORM in dettaglio:** sono supportate le versioni 4 e 5 — oltre ai
+file articoli (DATANORM.nnn) anche i gruppi di sconto (DATANORM.RAB), i
+gruppi merceologici (DATANORM.WRG) e i file prezzi (DATPREIS.nnn). I
+prezzi di listino (indicatore 1) diventano prezzi netti d'acquisto
+tramite il gruppo di sconto; i file di modifiche non toccano
+l'esistente (modalità di elaborazione selezionabile nella finestra di
+importazione). Per i file prezzi specifici del cliente, il record di
+controllo K viene verificato con il numero cliente salvato sulla fonte.
+Il set di caratteri è di norma CP850. In senso inverso, l'elenco
+articoli esporta la propria anagrafica come catalogo DATANORM o file
+prezzi DATPREIS (anche per accesso al catalogo B2B con prezzi cliente).
+
 **Import:** ogni esecuzione riepiloga quanti articoli di catalogo sono
 stati creati, aggiornati, modificati nel prezzo o contrassegnati come
 fuori produzione. Gli articoli di catalogo riportano, oltre al prezzo
