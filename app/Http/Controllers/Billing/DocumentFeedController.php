@@ -104,6 +104,7 @@ class DocumentFeedController extends Controller {
             // Mahnung aus der Zeile heraus (MVP-547) — beim Buchhaltungsbeleg
             // legt sie das externe System an, deshalb dessen Sync-Recht.
             'canDun' => $user->can(Permission::VoucherLexofficeSync->value),
+            'canDunLocal' => $user->canManageBilling(),
             'filters' => [
                 'q' => $filters->search,
                 'origin' => $filters->origin->value ?? '',

@@ -310,7 +310,7 @@
                     {{-- Mahnen direkt aus der Zeile: der Umweg über die
                          Detailseite war der Grund, warum Überfälliges liegen blieb. --}}
                     <div class="flex justify-end gap-1">
-                        @if ($isOverdue && $row->source_type === 'invoice')
+                        @if ($isOverdue && $row->source_type === 'invoice' && $canDunLocal && (int) $row->dunning_level < 3)
                             <x-icon-btn icon="campaign" tone="warning" size="sm"
                                         data-entry-modal-trigger
                                         :href="route('invoices.dun.form', Sqid::encode(\App\Models\Invoice::class, (int) $row->source_id))"
