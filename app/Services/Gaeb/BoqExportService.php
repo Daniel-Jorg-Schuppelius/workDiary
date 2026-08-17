@@ -39,7 +39,7 @@ class BoqExportService {
     ) {}
 
     /**
-     * Prüfliste vor der Abgabe (MVP-569), ohne zu exportieren: nimmt vorweg, was
+     * Prüfliste vor der Abgabe (MVP-619), ohne zu exportieren: nimmt vorweg, was
      * ava-sign beim Reimport prüft.
      *
      * @return array{ok: bool, errors: list<string>, warnings: list<string>, meta: array<string, mixed>}

@@ -16,7 +16,7 @@ use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
 /**
- * Nachtragsstatus einer LV-Position (Feature 108, MVP-574). Werte und Reihenfolge
+ * Nachtragsstatus einer LV-Position (Feature 108, MVP-624). Werte und Reihenfolge
  * folgen GAEB `COStatus`; der Status an der Position hat Vorrang vor dem Status
  * des Nachtragsauftrags.
  */

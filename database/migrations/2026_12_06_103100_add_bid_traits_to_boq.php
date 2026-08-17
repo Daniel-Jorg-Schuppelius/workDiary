@@ -15,7 +15,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Feature 108, MVP-567/569: Angebotsmerkmale einer Position. „Nicht angeboten"
+ * Feature 108, MVP-617/569: Angebotsmerkmale einer Position. „Nicht angeboten"
  * ist dabei etwas anderes als der Preis 0,00 — ava-sign prüft beim Reimport
  * genau, ob jede Position entweder bepreist oder abgelehnt ist. Dazu Nachlass,
  * USt, freie Menge, Stundenlohn, Bieterkommentar und das Nebenangebotsmerkmal

@@ -135,7 +135,7 @@ final class BoqLifecycleTest extends TestCase {
     }
 
     /**
-     * Feature 108, MVP-565: Die Indexstufe muss als Attribut RNoIndex exportiert
+     * Feature 108, MVP-615: Die Indexstufe muss als Attribut RNoIndex exportiert
      * werden — in RNoPart wäre sie eine unzulässige Verlängerung der
      * Positionsstufe und der Roundtrip bräche.
      */
@@ -160,7 +160,7 @@ final class BoqLifecycleTest extends TestCase {
     }
 
     /**
-     * Feature 108, MVP-565: Zuschlagsposition, Hinweistext, Bedarfs-/Grund-/
+     * Feature 108, MVP-615: Zuschlagsposition, Hinweistext, Bedarfs-/Grund-/
      * Alternativkennzeichnung und Unterbeschreibungen überstehen Import und
      * Export unverändert.
      */
@@ -218,7 +218,7 @@ final class BoqLifecycleTest extends TestCase {
     }
 
     /**
-     * Feature 108, MVP-567: Die vom Auftraggeber vorgegebenen EP-Anteile und die
+     * Feature 108, MVP-617: Die vom Auftraggeber vorgegebenen EP-Anteile und die
      * kalkulierten Beträge gehören in die Angebotsdatei zurück.
      */
     public function test_unit_price_breakdown_survives_roundtrip(): void {
@@ -259,7 +259,7 @@ final class BoqLifecycleTest extends TestCase {
     }
 
     /**
-     * Feature 108, MVP-574: Nachträge tragen Nummer und Status aus GAEB — der
+     * Feature 108, MVP-624: Nachträge tragen Nummer und Status aus GAEB — der
      * frühere `STLNo`-Zweig prüfte ein Element, das es im Schema nicht gibt.
      */
     public function test_change_order_number_and_status_survive_roundtrip(): void {
@@ -349,7 +349,7 @@ final class BoqLifecycleTest extends TestCase {
     }
 
     /**
-     * Kostengruppen & Co. (Feature 109, MVP-586/588): Katalogzuordnungen und
+     * Kostengruppen & Co. (Feature 109, MVP-636/588): Katalogzuordnungen und
      * Teilmengen überstehen Import und Export. Ohne Persistenz wirft der Import
      * genau die Information weg, wegen der AVA-Anbieter mit „DIN 276" werben.
      */

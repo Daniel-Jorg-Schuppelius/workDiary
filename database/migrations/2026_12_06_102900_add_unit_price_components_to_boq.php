@@ -15,7 +15,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Feature 108, MVP-567: Aufgliederung des Einheitspreises. Der Auftraggeber gibt
+ * Feature 108, MVP-617: Aufgliederung des Einheitspreises. Der Auftraggeber gibt
  * im LV bis zu sechs Anteile mit Bezeichnung und Kategorie vor (fachlich das
  * VHB-Formblatt 223); der Bieter liefert sie je Position zurück. Ihre Summe muss
  * den Einheitspreis ergeben.

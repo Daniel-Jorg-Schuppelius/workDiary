@@ -33,7 +33,7 @@ class GaebPreflight {
     private const SUPPORTED_MAJOR = '3.';
 
     /**
-     * Prüfung vor der Abgabe (MVP-569): nimmt vorweg, was ava-sign beim Reimport
+     * Prüfung vor der Abgabe (MVP-619): nimmt vorweg, was ava-sign beim Reimport
      * der DA84 prüft — bepreist oder ausdrücklich nicht angeboten, gefüllte
      * Textlücken, stimmige Angebotssumme — und ergänzt, was das Schema für die
      * Phase verlangt (Bieteranschrift in X84/X86/X87).

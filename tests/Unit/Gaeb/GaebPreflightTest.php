@@ -70,7 +70,7 @@ final class GaebPreflightTest extends TestCase {
         $this->assertSame('3.3', $report['meta']['version']);
     }
 
-    /** Feature 108, MVP-565: Indexpositionen sind eigenständige OZ, kein Duplikat. */
+    /** Feature 108, MVP-615: Indexpositionen sind eigenständige OZ, kein Duplikat. */
     public function test_index_positions_do_not_collide(): void {
         $xml = (string) file_get_contents(base_path('tests/Fixtures/gaeb/sample_x83_index.xml'));
         $report = (new GaebPreflight)->check((new GaebDaXmlParser)->parse($xml));
@@ -119,7 +119,7 @@ final class GaebPreflightTest extends TestCase {
         $this->assertGreaterThanOrEqual(2, count($report['errors'])); // Menge + Einheit
     }
 
-    /** Feature 108, MVP-567: Die Anteile müssen den Einheitspreis ergeben. */
+    /** Feature 108, MVP-617: Die Anteile müssen den Einheitspreis ergeben. */
     public function test_unit_price_components_must_add_up(): void {
         $ok = (new GaebPreflight)->check(new GaebBoq(version: '3.3', phaseCode: '86', projectName: 'P', items: [
             $this->item(unitPrice: '20.00', components: ['12.00', '5.00', '2.00', '1.00']),
@@ -133,7 +133,7 @@ final class GaebPreflightTest extends TestCase {
     }
 
     /**
-     * Feature 108, MVP-569: In der X84 muss jede Position bepreist oder als
+     * Feature 108, MVP-619: In der X84 muss jede Position bepreist oder als
      * „nicht angeboten" gekennzeichnet sein — genau das prüft ava-sign beim
      * Reimport. Ein Preis an einer abgelehnten Position ist ebenso falsch.
      */
@@ -171,7 +171,7 @@ final class GaebPreflightTest extends TestCase {
     }
 
     /**
-     * Angebots-Preflight (MVP-569): nimmt vorweg, was ava-sign beim Reimport
+     * Angebots-Preflight (MVP-619): nimmt vorweg, was ava-sign beim Reimport
      * prüft — hier die nachgerechnete Summe und die fehlende Bieteranschrift.
      */
     public function test_export_preflight_checks_total_and_contractor(): void {
