@@ -13,6 +13,7 @@
 @section('content')
 <x-index-page :subtitle="__('procurement.catalog.subtitle')">
     <x-slot:actions>
+        <x-icon-btn icon="paid" size="sm" :href="route('supplier-catalogs.metal-quotations.index')" show-label>{{ __('procurement.metal.title') }}</x-icon-btn>
         <x-icon-btn icon="warning" size="sm" :href="route('supplier-catalogs.alerts')" show-label
                     :tone="($openAlerts ?? 0) > 0 ? 'warning' : null">{{ __('procurement.alert.title') }}@if (($openAlerts ?? 0) > 0) ({{ $openAlerts }})@endif</x-icon-btn>
         <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger

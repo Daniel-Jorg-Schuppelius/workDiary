@@ -184,6 +184,15 @@ return [
         ],
     ],
 
+    'metal' => [
+        'title' => 'Metallnotierungen',
+        'hint' => 'Tagespreise je Rohstoff in €/kg (Kupfer = DEL-Notiz). Der jüngste Eintrag je Metall bewertet die DATANORM-Rohstoffzuschläge im effektiven Einkaufspreis.',
+        'empty' => 'Noch keine Notierungen gepflegt.',
+        'col' => ['metal' => 'Metall', 'price' => 'Preis (€/kg)', 'date' => 'Notierungsdatum'],
+        'action' => ['save' => 'Speichern', 'delete' => 'Löschen'],
+        'flash' => ['saved' => 'Notierung gespeichert.', 'deleted' => 'Notierung gelöscht.'],
+    ],
+
     'catalog' => [
         'title' => 'Lieferantenkataloge',
         'format' => [
@@ -222,6 +231,8 @@ return [
         'empty' => 'Keine Katalogquellen vorhanden.',
         'confirm_delete' => 'Diese Katalogquelle und alle ihre Artikel löschen?',
         'no_items' => 'Noch keine Katalogartikel.',
+        'search_placeholder' => 'Nr., Name, Matchcode, GTIN …',
+        'extras' => ['raw_surcharges' => 'Rohstoffzuschläge', 'worktimes' => 'Arbeitszeit', 'graphics' => 'Bilder'],
         'import_title' => 'Preisliste importieren',
         'csv_file' => 'CSV-Datei',
         'xlsx_file' => 'XLSX-Datei',

@@ -100,6 +100,9 @@ return [
     // Standard-Erlös je Stunde (MVP-482): greift erst, wenn weder Eintrag,
     // Kondition, Mitarbeiter, Tätigkeit, Projekt noch Kunde einen Satz setzen.
     'invoicing.default_hourly_rate' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:10000'],
+    // Kalkulationsstundensatz Montage (Feature 107, MVP-602): bewertet die
+    // Artikel-Montagezeit im VK-Vorschlag; Rückfall default_hourly_rate.
+    'invoicing.assembly_hourly_rate' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:10000'],
     // Standardleistung (MVP-486): Artikel des Faktura-Systems, aus dem
     // Bezeichnung, Einheit, Standardtext, MwSt und — als Rückfall — der Preis
     // kommen. Projekt-Abrechnungsregeln überschreiben sie.

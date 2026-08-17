@@ -68,6 +68,8 @@ return [
         'billing_grouping_gap_minutes_hint' => 'Les saisies séparées d’au plus cet écart sont regroupées en un bloc lors de la facturation. Vide = pas de regroupement.',
         'default_hourly_rate' => 'Taux horaire par défaut (produit)',
         'default_hourly_rate_hint' => 'S’applique lorsque ni la saisie, ni la condition client, ni le collaborateur, ni l’activité, ni le projet, ni le client ne définit de taux. Vide = les temps sans taux restent à 0,00 €.',
+        'assembly_hourly_rate' => 'Taux horaire de calcul montage',
+        'assembly_hourly_rate_hint' => 'Valorise le temps de montage de l\'article dans la proposition de PV ; vide = taux standard.',
         'default_service_article' => 'Prestation par défaut (article du système de facturation)',
         'default_service_none' => '— aucune prestation par défaut —',
         'default_service_hint' => 'Fournit le libellé, l’unité, le texte standard et — si aucun taux n’est trouvé — le prix des positions de transfert. Les règles de facturation du projet la remplacent.',

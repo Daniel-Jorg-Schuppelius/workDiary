@@ -150,6 +150,17 @@ class DatanormImportService {
                 ->whereIn('external_no', array_map(static fn (DatanormArticle $a): string => $a->getArticleNumber(), $catalog->getArticles()))
                 ->pluck('extra_attributes', 'external_no')
             : collect();
+        // G-Sätze (Bildverweise) je Anbindnummer — Artikel referenzieren sie
+        // über ihre Grafiknummer (MVP-601).
+        $graphics = [];
+        foreach ($catalog->getGraphicReferences() as $reference) {
+            $graphics[$reference->getGraphicNumber()][] = array_filter([
+                'type' => $reference->getType(),
+                'file' => trim($reference->getFilename() . '.' . $reference->getExtension(), '.'),
+                'description' => $reference->getDescription(),
+            ], static fn ($v) => $v !== null && $v !== '');
+        }
+
         $records = [];
         foreach ($catalog->getArticles() as $article) {
             $prices = $this->prices($article, $groups);
@@ -160,6 +171,7 @@ class DatanormImportService {
                 'description' => $article->getLongText(),
                 'category' => $article->getMainProductGroup(),
                 'gtin' => $article->getEan(),
+                'matchcode' => $article->getMatchcode(),
                 'manufacturer_no' => $article->getManufacturerNumber(),
                 'purchase_price' => $prices['purchase'],
                 'list_price' => $prices['list'],
@@ -171,7 +183,7 @@ class DatanormImportService {
                 'pack_size' => (string) $article->getMinPackagingAmount(),
                 'base_qty' => '1',
                 'tiers' => $this->tiers($article),
-                'extra_attributes' => $this->extraAttributes($article),
+                'extra_attributes' => $this->extraAttributes($article, $graphics),
             ];
 
             if ($isDelta) {
@@ -481,12 +493,31 @@ class DatanormImportService {
      * Elektro-Metadaten (Feature 107, Branchenlücken-Runde): Rohstoffzuschläge
      * (Kupfer & Co.), Arbeitszeiten (ARBA) und V4-Kupferdaten des B-Satzes
      * landen strukturiert in `extra_attributes` — verfügbar für Kalkulation
-     * und Anzeige, hash-wirksam für die Änderungserkennung.
+     * und Anzeige, hash-wirksam für die Änderungserkennung. Dazu die
+     * B-Satz-Restfelder inkl. MwSt-Kennzeichen und die Bildverweise der
+     * G-Sätze (MVP-601).
      *
+     * @param  array<string, list<array<string, string>>>  $graphics  G-Sätze je Anbindnummer
      * @return array<string, mixed>|null
      */
-    private function extraAttributes(DatanormArticle $article): ?array {
-        $extra = [];
+    private function extraAttributes(DatanormArticle $article, array $graphics = []): ?array {
+        $extra = array_filter([
+            'datanorm_vat' => match ($article->getVatIndicator()) {
+                '2' => 'increased',
+                '3' => 'reduced',
+                default => null,
+            },
+            'datanorm_manufacturer_type' => $article->getManufacturerType(),
+            'datanorm_alt_number' => $article->getAltArticleNumber(),
+            'datanorm_alt_number_creator' => $article->getAltArticleNumberCreator(),
+            'datanorm_catalogue_page' => $article->getCataloguePage(),
+            'datanorm_stock' => $article->getStockIndicator(),
+            'datanorm_reference_no' => $article->getReferenceNumber(),
+        ], static fn ($v) => $v !== null && $v !== '');
+
+        if ($article->getGraphicNumber() !== null && isset($graphics[$article->getGraphicNumber()])) {
+            $extra['datanorm_graphics'] = $graphics[$article->getGraphicNumber()];
+        }
 
         foreach ($article->getRawMaterialSurcharges() as $surcharge) {
             $entry = [

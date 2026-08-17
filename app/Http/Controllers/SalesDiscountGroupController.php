@@ -33,7 +33,40 @@ class SalesDiscountGroupController extends Controller {
 
         return view('articles.sales_discount_groups', [
             'groups' => SalesDiscountGroup::query()->withCount('articles')->orderBy('code')->get(),
+            // MVP-567: kundenindividuelle Overrides je Gruppe.
+            'overrides' => \App\Models\SalesDiscountGroupOverride::query()->with(['group', 'customer'])->orderBy('sales_discount_group_id')->get(),
+            'customers' => \App\Models\Customer::query()->orderBy('name')->get(['id', 'name', 'company', 'number']),
         ]);
+    }
+
+    /** MVP-567: Kunden-Override anlegen/aktualisieren. */
+    public function storeOverride(Request $request): RedirectResponse {
+        Gate::authorize('create', Article::class);
+        $organizationId = $this->currentOrganization()->id;
+        $data = $request->validate([
+            'sales_discount_group_id' => ['required', 'integer', Rule::exists('sales_discount_groups', 'id')->where('organization_id', $organizationId)],
+            'customer_id' => ['required', 'integer', Rule::exists('customers', 'id')->where('organization_id', $organizationId)],
+            'kind' => ['required', Rule::in([SalesDiscountGroup::KIND_DISCOUNT, SalesDiscountGroup::KIND_FACTOR, SalesDiscountGroup::KIND_SURCHARGE])],
+            'value' => ['required', 'numeric', 'min:0', 'max:999'],
+        ]);
+
+        \App\Models\SalesDiscountGroupOverride::query()->updateOrCreate(
+            [
+                'sales_discount_group_id' => (int) $data['sales_discount_group_id'],
+                'customer_id' => (int) $data['customer_id'],
+            ],
+            ['organization_id' => $organizationId, 'kind' => $data['kind'], 'value' => $data['value']]
+        );
+
+        return back()->with('success', (string) __('article.discount_group.flash.override_saved'));
+    }
+
+    public function destroyOverride(\App\Models\SalesDiscountGroupOverride $override): RedirectResponse {
+        Gate::authorize('create', Article::class);
+        abort_unless($override->organization_id === $this->currentOrganization()->id, 404);
+        $override->delete();
+
+        return back()->with('success', (string) __('article.discount_group.flash.override_deleted'));
     }
 
     public function store(Request $request): RedirectResponse {

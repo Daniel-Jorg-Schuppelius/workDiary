@@ -96,11 +96,20 @@ class DatanormExportService {
                     city: $customer->address_city
                 ));
             }
-            // Kundenindividuelle Preise sind immer Nettopreise.
-            $access->items()->with('article')->get()->each(function (B2bCatalogItem $item) use ($catalog, $version, &$skipped): void {
+            // Kundenindividuelle Preise sind immer Nettopreise. Rangfolge
+            // (MVP-567): custom_price → Kunden-Override der Verkaufs-
+            // Rabattgruppe → Standardsatz der Gruppe → Standard-VK.
+            $overrides = \App\Models\SalesDiscountGroupOverride::query()
+                ->where('customer_id', (int) $access->customer_id)
+                ->get()
+                ->keyBy('sales_discount_group_id');
+            $access->items()->with('article.salesDiscountGroup')->get()->each(function (B2bCatalogItem $item) use ($catalog, $version, $overrides, &$skipped): void {
                 $article = $item->article;
-                $price = $item->effectivePrice();
-                if ($article === null || $price === null) {
+                if ($article === null) {
+                    return;
+                }
+                $price = $item->custom_price ?? $this->groupNetPrice($article, $overrides) ?? $article->default_sale_price;
+                if ($price === null) {
                     return;
                 }
                 $this->appendPriceChange($catalog, $version, $skipped, (string) $article->number, DatanormPriceIndicator::NetPrice, $price);
@@ -137,6 +146,37 @@ class DatanormExportService {
         ];
 
         return ['files' => $files, 'articles' => count($catalog->getPriceChanges()), 'skipped' => $skipped];
+    }
+
+    /**
+     * Netto-VK aus der Verkaufs-Rabattgruppe des Artikels (MVP-567): der
+     * Kunden-Override ersetzt den Standardsatz; ohne Gruppe null.
+     *
+     * @param  \Illuminate\Support\Collection<int, \App\Models\SalesDiscountGroupOverride>  $overrides  je Gruppen-ID
+     */
+    private function groupNetPrice(Article $article, $overrides): ?Money {
+        $group = $article->salesDiscountGroup;
+        $list = $article->default_sale_price;
+        if ($group === null || $list === null) {
+            return null;
+        }
+
+        $override = $overrides->get($group->id);
+        $kind = $override->kind ?? $group->kind;
+        $value = (float) ($override->value ?? $group->value);
+
+        return \ERechnungToolkit\Helper\DatanormPriceCalculator::netPrice(
+            $list->withScale(4),
+            [new \ERechnungToolkit\Entities\Datanorm\DatanormDiscount(
+                match ($kind) {
+                    \App\Models\SalesDiscountGroup::KIND_FACTOR => \ERechnungToolkit\Enums\DatanormDiscountKind::Factor,
+                    \App\Models\SalesDiscountGroup::KIND_SURCHARGE => \ERechnungToolkit\Enums\DatanormDiscountKind::Surcharge,
+                    default => \ERechnungToolkit\Enums\DatanormDiscountKind::Discount,
+                },
+                $value
+            )],
+            scale: 4
+        );
     }
 
     /**
@@ -215,7 +255,7 @@ class DatanormExportService {
             ->where('organization_id', $organization->id)
             ->where('sellable', true)
             ->where('status', \App\Enums\Article\ArticleStatus::Active)
-            ->with(['variants', 'salesDiscountGroup'])
+            ->with(['variants', 'salesDiscountGroup', 'priceTiers'])
             ->orderBy('number')
             ->get();
 
@@ -259,7 +299,7 @@ class DatanormExportService {
 
             $variants = $article->variants->filter(static fn (ArticleVariant $v): bool => $v->sku !== null && $v->sku !== '');
             if ($variants->isEmpty()) {
-                $this->appendArticle($catalog, $version, $priceIndicator, $textCounter, $skipped, (string) $article->number, $article->name, $article->description, $article->base_unit, $article->default_sale_price, $article->gtin, $mainCode, $subCode, $discountCode);
+                $this->appendArticle($catalog, $version, $priceIndicator, $textCounter, $skipped, (string) $article->number, $article->name, $article->description, $article->base_unit, $article->default_sale_price, $article->gtin, $mainCode, $subCode, $discountCode, $article, withTiers: true);
 
                 continue;
             }
@@ -278,7 +318,11 @@ class DatanormExportService {
                     $variant->gtin ?? $article->gtin,
                     $mainCode,
                     $subCode,
-                    $discountCode
+                    $discountCode,
+                    $article,
+                    // Staffeln beziehen sich auf den Artikelpreis — bei
+                    // Varianten mit eigenem Preis nicht mit exportieren.
+                    withTiers: false
                 );
             }
         }
@@ -352,7 +396,7 @@ class DatanormExportService {
     /**
      * @param  list<string>  $skipped
      */
-    private function appendArticle(DatanormCatalog $catalog, DatanormVersion $version, DatanormPriceIndicator $priceIndicator, int &$textCounter, array &$skipped, string $number, string $name, ?string $description, ?string $unit, ?Money $price, ?string $gtin, ?string $mainGroupCode = null, ?string $subGroupCode = null, ?string $discountGroupCode = null): void {
+    private function appendArticle(DatanormCatalog $catalog, DatanormVersion $version, DatanormPriceIndicator $priceIndicator, int &$textCounter, array &$skipped, string $number, string $name, ?string $description, ?string $unit, ?Money $price, ?string $gtin, ?string $mainGroupCode = null, ?string $subGroupCode = null, ?string $discountGroupCode = null, ?Article $source = null, bool $withTiers = false): void {
         if (mb_strlen($number) > 15) {
             $skipped[] = $number;
 
@@ -387,7 +431,72 @@ class DatanormExportService {
             $article->setTextFlag(4); // Kurztexte + Langtext (additiv)
         }
 
+        if ($source !== null) {
+            $this->appendElectroMetadata($article, $source, $withTiers, $priceIndicator);
+        }
+
         $catalog->addArticle($article);
+    }
+
+    /**
+     * Elektro-Metadaten des eigenen Artikels (MVP-605): Staffelpreise und
+     * Kupferzuschlag werden Z-Sätze, die Montagezeit ein C/ARBA-Satz.
+     */
+    private function appendElectroMetadata(DatanormArticle $target, Article $source, bool $withTiers, DatanormPriceIndicator $priceIndicator): void {
+        $currency = $source->currency ?? CurrencyCode::Euro;
+
+        if ($withTiers) {
+            // Von/Bis-Fenster aneinanderreihen: Bis = nächste Staffel − 1
+            // (bzw. −0,01 bei Bruchmengen), letzte Staffel offen.
+            $tiers = $source->priceTiers->values();
+            foreach ($tiers as $index => $tier) {
+                $next = $tiers->get($index + 1);
+                $to = null;
+                if ($next !== null) {
+                    $nextQty = (float) $next->min_qty;
+                    $to = fmod($nextQty, 1.0) === 0.0
+                        ? (string) (int) ($nextQty - 1)
+                        : number_format($nextQty - 0.01, 2, '.', '');
+                }
+                $target->addScalePrice(new \ERechnungToolkit\Entities\Datanorm\DatanormScalePrice(
+                    articleNumber: $target->getArticleNumber(),
+                    indicator: \ERechnungToolkit\Entities\Datanorm\DatanormScalePrice::INDICATOR_SCALE_PRICE,
+                    amount: Money::of((string) $tier->unit_price, $currency, 4)->withScale(2),
+                    percent: null,
+                    isDiscount: false,
+                    priceIndicator: $priceIndicator,
+                    basis: \ERechnungToolkit\Entities\Datanorm\DatanormScalePrice::BASIS_QUANTITY,
+                    from: rtrim(rtrim((string) $tier->min_qty, '0'), '.'),
+                    to: $to
+                ));
+            }
+        }
+
+        // Kupferzuschlag nach deutscher Methode: DEL-Basis je 100 kg bereits
+        // im Preis enthalten (Faktor 0,01 → je kg), Gewicht in kg je Einheit.
+        if ($source->copper_weight !== null && (float) $source->copper_weight > 0 && $source->copper_base_price !== null) {
+            $target->addRawMaterialSurcharge(new \ERechnungToolkit\Entities\Datanorm\DatanormRawMaterialSurcharge(
+                articleNumber: $target->getArticleNumber(),
+                rawMaterial: 'CU',
+                method: \ERechnungToolkit\Entities\Datanorm\DatanormRawMaterialSurcharge::METHOD_GERMAN,
+                includedBasePrice: Money::of((string) $source->copper_base_price, $currency, 4)->withScale(2),
+                baseFactor: 0.01,
+                // Gewicht ×100 mit Faktor 0,01 (Konvention der offiziellen
+                // Dateien): das N/2-Feld behält so 4 Nachkommastellen kg.
+                weight: round((float) $source->copper_weight * 100, 2),
+                weightFactor: 0.01,
+                priceIndicator: $priceIndicator,
+                priceUnitAmount: 1
+            ));
+        }
+
+        if ($source->assembly_minutes !== null && (float) $source->assembly_minutes > 0) {
+            $target->addWorkTime(new \ERechnungToolkit\Entities\Datanorm\DatanormWorkTime(
+                $target->getArticleNumber(),
+                \ERechnungToolkit\Entities\Datanorm\DatanormWorkTime::PURPOSE_INSTALLATION,
+                (float) $source->assembly_minutes
+            ));
+        }
     }
 
     /**

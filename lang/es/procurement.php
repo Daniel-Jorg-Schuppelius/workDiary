@@ -184,6 +184,15 @@ return [
         ],
     ],
 
+    'metal' => [
+        'title' => 'Cotizaciones de metales',
+        'hint' => 'Precios diarios por materia prima en €/kg (cobre = cotización DEL). La entrada más reciente por metal valora los recargos DATANORM en el precio de compra efectivo.',
+        'empty' => 'Aún no hay cotizaciones.',
+        'col' => ['metal' => 'Metal', 'price' => 'Precio (€/kg)', 'date' => 'Fecha de cotización'],
+        'action' => ['save' => 'Guardar', 'delete' => 'Eliminar'],
+        'flash' => ['saved' => 'Cotización guardada.', 'deleted' => 'Cotización eliminada.'],
+    ],
+
     'catalog' => [
         'title' => 'Catálogos de proveedores',
         'format' => [
@@ -222,6 +231,8 @@ return [
         'empty' => 'No hay fuentes de catálogo.',
         'confirm_delete' => '¿Eliminar esta fuente de catálogo y todos sus artículos?',
         'no_items' => 'Aún no hay artículos de catálogo.',
+        'search_placeholder' => 'N.º, nombre, matchcode, GTIN …',
+        'extras' => ['raw_surcharges' => 'Recargos de materias primas', 'worktimes' => 'Tiempo de trabajo', 'graphics' => 'Imágenes'],
         'import_title' => 'Importar lista de precios',
         'csv_file' => 'Archivo CSV',
         'xlsx_file' => 'Archivo XLSX',

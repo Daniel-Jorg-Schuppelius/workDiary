@@ -35,6 +35,7 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @php($metalService = app(\App\Services\Procurement\MetalSurchargeService::class))
                         @foreach ($items as $item)
                             <tr>
                                 <td>{{ $item->article?->number }}</td>
@@ -45,7 +46,14 @@
                                     @endif
                                 </td>
                                 <td>{{ $item->article?->base_unit }}</td>
-                                <td class="num">{{ $item->effectivePrice()?->format() }}</td>
+                                <td class="num">
+                                    {{ $item->effectivePrice()?->format() }}
+                                    {{-- MVP-603: Tagespreis-Kupferzuschlag separat ausgewiesen --}}
+                                    @php($copper = $item->article !== null ? $metalService->salesSurcharge($item->article) : null)
+                                    @if ($copper !== null)
+                                        <div class="muted">+ {{ $copper->format() }} {{ __('b2b_catalog.copper_surcharge_label') }}</div>
+                                    @endif
+                                </td>
                                 <td class="num">
                                     <input type="number" name="qty[{{ $item->sqid }}]" value="" min="0" step="any"
                                            aria-label="{{ __('b2b_catalog.public.col_quantity') }} {{ $item->article?->number }}">

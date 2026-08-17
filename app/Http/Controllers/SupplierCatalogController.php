@@ -189,10 +189,18 @@ class SupplierCatalogController extends Controller {
         $this->canView();
 
         $status = (string) $request->input('status', 'all');
+        $search = trim((string) $request->input('q', ''));
         $items = $supplierCatalog->items()
             ->with('article:id,name')
             ->withCount('priceTiers')
             ->when($status !== 'all', fn ($q) => $q->where('status', $status))
+            // MVP-601: Suche inkl. Lieferanten-Matchcode.
+            ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w
+                ->where('external_no', 'like', "%{$search}%")
+                ->orWhere('name', 'like', "%{$search}%")
+                ->orWhere('matchcode', 'like', "%{$search}%")
+                ->orWhere('gtin', 'like', "%{$search}%")
+                ->orWhere('manufacturer_no', 'like', "%{$search}%")))
             ->orderBy('external_no')
             ->paginate(50)
             ->withQueryString();

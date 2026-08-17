@@ -184,6 +184,15 @@ return [
         ],
     ],
 
+    'metal' => [
+        'title' => 'Metal quotations',
+        'hint' => 'Daily raw material prices in €/kg (copper = DEL quotation). The latest entry per metal values the DATANORM raw material surcharges in the effective purchase price.',
+        'empty' => 'No quotations maintained yet.',
+        'col' => ['metal' => 'Metal', 'price' => 'Price (€/kg)', 'date' => 'Quotation date'],
+        'action' => ['save' => 'Save', 'delete' => 'Delete'],
+        'flash' => ['saved' => 'Quotation saved.', 'deleted' => 'Quotation deleted.'],
+    ],
+
     'catalog' => [
         'title' => 'Supplier catalogs',
         'format' => [
@@ -222,6 +231,8 @@ return [
         'empty' => 'No catalog sources yet.',
         'confirm_delete' => 'Delete this catalog source and all its items?',
         'no_items' => 'No catalog items yet.',
+        'search_placeholder' => 'No., name, matchcode, GTIN …',
+        'extras' => ['raw_surcharges' => 'Raw material surcharges', 'worktimes' => 'Working time', 'graphics' => 'Images'],
         'import_title' => 'Import price list',
         'csv_file' => 'CSV file',
         'xlsx_file' => 'XLSX file',

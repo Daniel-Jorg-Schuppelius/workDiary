@@ -1130,9 +1130,14 @@ Route::middleware('auth')->group(function () {
         Route::get('articles/sales-discount-groups', [\App\Http\Controllers\SalesDiscountGroupController::class, 'index'])->name('articles.sales-discount-groups.index');
         Route::post('articles/sales-discount-groups', [\App\Http\Controllers\SalesDiscountGroupController::class, 'store'])->name('articles.sales-discount-groups.store');
         Route::delete('articles/sales-discount-groups/{salesDiscountGroup}', [\App\Http\Controllers\SalesDiscountGroupController::class, 'destroy'])->name('articles.sales-discount-groups.destroy');
+        // Feature 107 MVP-567: Kunden-Overrides je Verkaufs-Rabattgruppe.
+        Route::post('articles/sales-discount-groups/overrides', [\App\Http\Controllers\SalesDiscountGroupController::class, 'storeOverride'])->name('articles.sales-discount-groups.overrides.store');
+        Route::delete('articles/sales-discount-groups/overrides/{override}', [\App\Http\Controllers\SalesDiscountGroupController::class, 'destroyOverride'])->name('articles.sales-discount-groups.overrides.destroy');
         Route::resource('articles', \App\Http\Controllers\ArticleController::class);
         Route::post('articles/{article}/retire', [\App\Http\Controllers\ArticleController::class, 'retire'])->name('articles.retire');
         Route::post('articles/{article}/supplies/{supply}/prefer', [\App\Http\Controllers\ArticleController::class, 'setPreferredSupply'])->name('articles.supplies.prefer'); // Feature 050 Lieferantenvergleich
+        Route::post('articles/{article}/tiers', [\App\Http\Controllers\ArticleController::class, 'storeTier'])->name('articles.tiers.store'); // Feature 107, MVP-605
+        Route::delete('articles/{article}/tiers/{tier}', [\App\Http\Controllers\ArticleController::class, 'destroyTier'])->name('articles.tiers.destroy');
         Route::post('articles/{article}/options', [\App\Http\Controllers\ArticleController::class, 'storeOption'])->name('articles.options.store');
         Route::post('articles/{article}/options/{option}/values', [\App\Http\Controllers\ArticleController::class, 'storeOptionValue'])->name('articles.options.values.store');
         Route::post('articles/{article}/units', [\App\Http\Controllers\ArticleController::class, 'storeUnit'])->name('articles.units.store');
@@ -1250,6 +1255,10 @@ Route::middleware('auth')->group(function () {
         Route::get('supplier-scorecards/{supplier}', [\App\Http\Controllers\Reporting\SupplierScorecardController::class, 'show'])->name('supplier-scorecards.show');
 
         // ── Lieferantenkataloge (Feature 050, MVP-091/092) ─ Gate supplier-catalogs.* → module.lager
+        // Feature 107 MVP-564: Metallnotierungen (vor den {supplierCatalog}-Routen).
+        Route::get('supplier-catalogs/metal-quotations', [\App\Http\Controllers\MetalQuotationController::class, 'index'])->name('supplier-catalogs.metal-quotations.index');
+        Route::post('supplier-catalogs/metal-quotations', [\App\Http\Controllers\MetalQuotationController::class, 'store'])->name('supplier-catalogs.metal-quotations.store');
+        Route::delete('supplier-catalogs/metal-quotations/{metalQuotation}', [\App\Http\Controllers\MetalQuotationController::class, 'destroy'])->name('supplier-catalogs.metal-quotations.destroy');
         Route::get('supplier-catalogs', [\App\Http\Controllers\SupplierCatalogController::class, 'index'])->name('supplier-catalogs.index');
         Route::get('supplier-catalogs/create', [\App\Http\Controllers\SupplierCatalogController::class, 'create'])->name('supplier-catalogs.create');
         Route::get('supplier-catalogs/alerts', [\App\Http\Controllers\SupplierCatalogController::class, 'alerts'])->name('supplier-catalogs.alerts'); // MVP-094 (vor show!)

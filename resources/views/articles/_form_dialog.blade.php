@@ -53,6 +53,13 @@
                        :value="old('category', $article?->category)" :hint="__('article.field.category_hint')" />
         <x-input-field name="subcategory" :label="__('article.field.subcategory')" maxlength="64"
                        :value="old('subcategory', $article?->subcategory)" />
+        <x-input-field name="assembly_minutes" type="number" step="0.01" min="0" :label="__('article.field.assembly_minutes')"
+                       :value="old('assembly_minutes', $article?->assembly_minutes)" :hint="__('article.field.assembly_minutes_hint')" />
+        {{-- MVP-605: Kupferdaten (deutsche Methode) für den DATANORM-Export. --}}
+        <x-input-field name="copper_weight" type="number" step="0.0001" min="0" :label="__('article.field.copper_weight')"
+                       :value="old('copper_weight', $article?->copper_weight)" :hint="__('article.field.copper_weight_hint')" />
+        <x-input-field name="copper_base_price" type="number" step="0.0001" min="0" :label="__('article.field.copper_base_price')"
+                       :value="old('copper_base_price', $article?->copper_base_price)" :hint="__('article.field.copper_base_price_hint')" />
         <x-select-field name="sales_discount_group_id" :label="__('article.field.sales_discount_group')"
                         :hint="__('article.field.sales_discount_group_hint')">
             <option value="">—</option>

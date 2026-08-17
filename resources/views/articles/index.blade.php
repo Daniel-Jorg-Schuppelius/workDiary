@@ -41,6 +41,17 @@
                 <li><a href="{{ route('articles.export.datanorm', ['type' => 'prices', 'version' => 5, 'prices' => 'list']) }}">{{ __('article.action.export_datpreis_v5') }}</a></li>
                 <li><a href="{{ route('articles.export.datanorm', ['type' => 'prices', 'version' => 4, 'prices' => 'list']) }}">{{ __('article.action.export_datpreis_v4') }}</a></li>
                 <li><a href="{{ route('articles.export.datanorm', ['type' => 'prices', 'version' => 5, 'prices' => 'list', 'since_days' => 30]) }}">{{ __('article.action.export_datpreis_since') }}</a></li>
+                <li class="pointer-events-auto">
+                    {{-- MVP-566: frei wählbares Änderungsdatum --}}
+                    <form method="GET" action="{{ route('articles.export.datanorm') }}" class="flex items-center gap-1 px-2 py-1">
+                        <input type="hidden" name="type" value="prices">
+                        <input type="hidden" name="version" value="5">
+                        <input type="hidden" name="prices" value="list">
+                        <input type="date" name="since" required max="{{ now()->toDateString() }}"
+                               class="input input-bordered input-xs" aria-label="{{ __('article.action.export_datpreis_custom') }}">
+                        <button type="submit" class="btn btn-ghost btn-xs">{{ __('article.action.export_datpreis_custom') }}</button>
+                    </form>
+                </li>
             </ul>
         </div>
         @can('create', App\Models\Article::class)
@@ -57,6 +68,17 @@
             <input id="art-q" type="text" name="q" value="{{ $search }}" placeholder="{{ __('Suche…') }}"
                    class="input input-sm input-bordered">
         </x-filter-field>
+        {{-- MVP-604: Kategorie-Filter --}}
+        @if (($categories ?? collect())->isNotEmpty())
+            <x-filter-field :label="__('article.field.category')" for="art-category">
+                <select id="art-category" name="category" class="select select-sm select-bordered" onchange="this.form.submit()">
+                    <option value="">{{ __('Alle') }}</option>
+                    @foreach ($categories as $cat)
+                        <option value="{{ $cat }}" @selected(($category ?? '') === $cat)>{{ $cat }}</option>
+                    @endforeach
+                </select>
+            </x-filter-field>
+        @endif
     </x-filter-bar>
 
     {{-- Status-Tabs über die gemeinsame Komponente (D5; Vollaudit 2026-07, N44). --}}

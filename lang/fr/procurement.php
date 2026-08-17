@@ -184,6 +184,15 @@ return [
         ],
     ],
 
+    'metal' => [
+        'title' => 'Cotations des métaux',
+        'hint' => 'Prix journaliers par matière première en €/kg (cuivre = cotation DEL). L\'entrée la plus récente par métal valorise les majorations DATANORM dans le prix d\'achat effectif.',
+        'empty' => 'Aucune cotation pour le moment.',
+        'col' => ['metal' => 'Métal', 'price' => 'Prix (€/kg)', 'date' => 'Date de cotation'],
+        'action' => ['save' => 'Enregistrer', 'delete' => 'Supprimer'],
+        'flash' => ['saved' => 'Cotation enregistrée.', 'deleted' => 'Cotation supprimée.'],
+    ],
+
     'catalog' => [
         'title' => 'Catalogues fournisseurs',
         'format' => [
@@ -222,6 +231,8 @@ return [
         'empty' => 'Aucune source de catalogue.',
         'confirm_delete' => 'Supprimer cette source de catalogue et tous ses articles ?',
         'no_items' => 'Aucun article de catalogue.',
+        'search_placeholder' => 'N°, nom, matchcode, GTIN …',
+        'extras' => ['raw_surcharges' => 'Majorations matières premières', 'worktimes' => 'Temps de travail', 'graphics' => 'Images'],
         'import_title' => 'Importer une liste de prix',
         'csv_file' => 'Fichier CSV',
         'xlsx_file' => 'Fichier XLSX',

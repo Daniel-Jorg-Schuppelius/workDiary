@@ -58,6 +58,9 @@ class Article extends Model {
         'category',
         'subcategory',
         'sales_discount_group_id',
+        'assembly_minutes',
+        'copper_weight',
+        'copper_base_price',
         'tax_class',
         'stockable',
         'purchasable',
@@ -79,6 +82,9 @@ class Article extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
+        'assembly_minutes' => 'decimal:2',
+        'copper_weight' => 'decimal:4',
+        'copper_base_price' => 'decimal:4',
         'type' => ArticleType::class,
         'status' => ArticleStatus::class,
         'stockable' => 'boolean',
@@ -125,6 +131,15 @@ class Article extends Model {
     /** @return BelongsTo<ProcedureTemplateVersion, $this> */
     public function defaultProcedureVersion(): BelongsTo {
         return $this->belongsTo(ProcedureTemplateVersion::class, 'default_procedure_template_version_id');
+    }
+
+    /**
+     * Verkaufs-Staffelpreise (Feature 107, MVP-605), sortiert nach Von-Menge.
+     *
+     * @return HasMany<ArticlePriceTier, $this>
+     */
+    public function priceTiers(): HasMany {
+        return $this->hasMany(ArticlePriceTier::class)->orderBy('min_qty');
     }
 
     /**

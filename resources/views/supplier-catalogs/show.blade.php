@@ -172,12 +172,21 @@
     @endif
 
     {{-- Tab-Strip über die gemeinsame Komponente (D5; Vollaudit 2026-07, N44). --}}
-    <x-tab-nav class="w-fit mb-3" :items="collect([['label' => __('Alle'), 'href' => route('supplier-catalogs.show', $source), 'active' => $status === 'all']])
-        ->concat(collect($statuses)->map(fn($st) => [
-            'label' => $st->label(),
-            'href' => route('supplier-catalogs.show', [$source, 'status' => $st->value]),
-            'active' => $status === $st->value,
-        ]))->all()" />
+    <div class="mb-3 flex flex-wrap items-center gap-3">
+        <x-tab-nav class="w-fit" :items="collect([['label' => __('Alle'), 'href' => route('supplier-catalogs.show', [$source, 'q' => request('q')]), 'active' => $status === 'all']])
+            ->concat(collect($statuses)->map(fn($st) => [
+                'label' => $st->label(),
+                'href' => route('supplier-catalogs.show', [$source, 'status' => $st->value, 'q' => request('q')]),
+                'active' => $status === $st->value,
+            ]))->all()" />
+        {{-- MVP-601: Suche über Artikelnummer/Name/Matchcode/GTIN/Hersteller-Nr. --}}
+        <form method="GET" action="{{ route('supplier-catalogs.show', $source) }}" class="flex items-center gap-2">
+            @if ($status !== 'all')<input type="hidden" name="status" value="{{ $status }}">@endif
+            <input type="search" name="q" value="{{ request('q') }}" class="input input-sm input-bordered w-56"
+                   placeholder="{{ __('procurement.catalog.search_placeholder') }}">
+            <button type="submit" class="btn btn-sm">{{ __('Suchen') }}</button>
+        </form>
+    </div>
 
     @if ($items->total() === 0)
         <x-empty-state framed :title="__('procurement.catalog.no_items')" />
@@ -205,9 +214,22 @@
                         <td>
                             {{ $item->name }}
                             @if ($item->extra_attributes)
-                                <div class="text-xs opacity-50">{{ collect($item->extra_attributes)->map(fn ($v, $k) => $k . ': ' . $v)->implode(' · ') }}</div>
+                                {{-- MVP-601: strukturierte DATANORM-Extras lesbar, interne Vormerkungen ausgeblendet. --}}
+                                @php($extraLine = collect($item->extra_attributes)->map(function ($v, $k) {
+                                    if ($k === 'datanorm_raw_surcharges' && is_array($v)) {
+                                        return __('procurement.catalog.extras.raw_surcharges') . ': ' . collect($v)->map(fn ($s) => is_array($s) ? ($s['material'] ?? '?') : '?')->implode(', ');
+                                    }
+                                    if ($k === 'datanorm_worktimes' && is_array($v)) {
+                                        return __('procurement.catalog.extras.worktimes') . ': ' . collect($v)->map(fn ($w) => is_array($w) ? (($w['minutes'] ?? 0) . ' min') : '')->filter()->implode(', ');
+                                    }
+                                    if ($k === 'datanorm_graphics' && is_array($v)) {
+                                        return __('procurement.catalog.extras.graphics') . ': ' . collect($v)->map(fn ($g) => is_array($g) ? ($g['file'] ?? '') : '')->filter()->implode(', ');
+                                    }
+                                    return is_scalar($v) ? $k . ': ' . $v : null;
+                                })->filter()->implode(' · '))
+                                @if ($extraLine !== '')<div class="text-xs opacity-50">{{ $extraLine }}</div>@endif
                             @endif
-                            @if ($item->gtin)<div class="font-mono text-xs opacity-50">{{ $item->gtin }}</div>@endif
+                            @if ($item->gtin || $item->matchcode)<div class="font-mono text-xs opacity-50">{{ $item->gtin }}{{ $item->gtin && $item->matchcode ? ' · ' : '' }}{{ $item->matchcode }}</div>@endif
                             @if ($item->classification_code || $item->image_url || $item->datasheet_url)
                                 <div class="flex items-center gap-2 text-xs mt-0.5">
                                     @if ($item->classification_code)<span class="opacity-60">{{ $item->classification_system }} {{ $item->classification_code }}</span>@endif

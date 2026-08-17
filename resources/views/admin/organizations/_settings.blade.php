@@ -129,6 +129,16 @@
                 <p class="text-xs text-base-content/60 mt-1">{{ __('settings.invoicing.default_hourly_rate_hint') }}</p>
             </div>
 
+            {{-- Kalkulationsstundensatz Montage (Feature 107, MVP-602). --}}
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.invoicing.assembly_hourly_rate') }}</label>
+                <input type="number" min="0" max="10000" step="0.01" name="settings[invoicing][assembly_hourly_rate]"
+                       value="{{ old('settings.invoicing.assembly_hourly_rate', data_get($stored, 'invoicing.assembly_hourly_rate', '')) }}"
+                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) (config('invoicing.assembly_hourly_rate') ?? '—')]) }}"
+                       class="input input-bordered w-full" inputmode="decimal">
+                <p class="text-xs text-base-content/60 mt-1">{{ __('settings.invoicing.assembly_hourly_rate_hint') }}</p>
+            </div>
+
             {{-- Standardtaktung: greift, wenn weder Projekt noch Kunde eine Taktung setzen. --}}
             <div class="fieldset">
                 <label class="fieldset-label">{{ __('settings.invoicing.billing_increment_minutes') }}</label>

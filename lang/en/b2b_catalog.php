@@ -99,6 +99,8 @@ return [
         'line_unmatched' => 'article not matched',
     ],
 
+    'copper_surcharge_position' => 'Copper surcharge (day price) for article :number',
+    'copper_surcharge_label' => 'copper surcharge per unit',
     'public' => [
         'title' => 'B2B catalog',
         'footer' => 'Punchout catalog — the cart is handed over to your procurement system; the order is placed through your own system.',

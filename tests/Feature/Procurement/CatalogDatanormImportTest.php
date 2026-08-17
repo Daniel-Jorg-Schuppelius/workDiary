@@ -363,6 +363,91 @@ final class CatalogDatanormImportTest extends TestCase {
         $this->assertSame(30.0, (float) ($extra['datanorm_worktimes'][0]['minutes'] ?? 0));
     }
 
+    public function test_metal_quotation_prices_copper_surcharge_into_effective_ek(): void {
+        // Kabel mit deutscher Kupfer-Methode: Basis 150,00 €/100 kg enthalten,
+        // 0,043 kg Kupfer je Meter.
+        app(DatanormImportService::class)->import($this->source, implode("\r\n", [
+            'V;050;A;20260816;EUR;Kabelkatalog;;TESTCO;;;;;;;;',
+            'A;N;NYM-DEL;Kabel NYM-J 3x1,5;;MTR;2;100;18950;;CAB;;',
+            'Z;N;NYM-DEL;01;3;CU;1;1;15000;10;430;10;',
+            'E;4;;',
+        ]) . "\r\n");
+        $item = SupplierCatalogItem::query()->where('external_no', 'NYM-DEL')->firstOrFail();
+
+        $service = app(\App\Services\Procurement\MetalSurchargeService::class);
+        // Ohne Notierung bleibt der Basispreis.
+        $this->assertSame('1.8950', $service->effectivePurchasePrice($item)?->getAmount());
+
+        // DEL-Notiz 2,00 €/kg: (2,00 − 1,50) × 0,043 = 0,0215 €/m Zuschlag.
+        \App\Models\MetalQuotation::query()->create([
+            'organization_id' => $this->organization->id,
+            'metal' => 'CU', 'price_per_kg' => '2', 'quoted_at' => now()->toDateString(),
+        ]);
+        $this->assertSame('1.9165', $service->effectivePurchasePrice($item)?->getAmount());
+
+        // Verknüpfung schreibt den effektiven EK in die Bezugsquelle.
+        $article = \App\Models\Article::factory()->create([
+            'organization_id' => $this->organization->id,
+            'number' => 'INT-NYM', 'name' => 'Kabel intern', 'status' => 'active', 'sellable' => true,
+        ]);
+        app(\App\Services\Procurement\CatalogLinkService::class)->link($item, $article, null);
+        $this->assertSame(
+            '1.9165',
+            \App\Models\ArticleSupply::query()->where('article_id', $article->id)->firstOrFail()->purchase_price?->getAmount()
+        );
+    }
+
+    public function test_adoption_ignores_datanorm_metadata_and_takes_assembly_minutes(): void {
+        app(DatanormImportService::class)->import($this->source, implode("\r\n", [
+            'V;050;A;20260816;EUR;Kabelkatalog;;TESTCO;;;;;;;;',
+            'A;N;NYM-ADOPT;Kabel NYM-J 5x2,5;;MTR;2;1;299;;CAB;;',
+            'C;N;ARBA;NYM-ADOPT;2;2;300;',
+            'E;4;;',
+        ]) . "\r\n");
+
+        $summary = app(\App\Services\Procurement\CatalogArticleAdopter::class)->adoptSource($this->source);
+        $this->assertSame(1, $summary['articles']);
+
+        $article = \App\Models\Article::query()->where('name', 'Kabel NYM-J 5x2,5')->firstOrFail();
+        // Metadaten sind keine Varianten-Optionen …
+        $this->assertSame(0, $article->variants()->count());
+        $this->assertSame(0, $article->optionDefinitions()->count());
+        // … aber die ARBA-Montagezeit landet in der Kalkulationsbasis.
+        $this->assertSame('30.00', (string) $article->assembly_minutes);
+    }
+
+    public function test_b_record_metadata_matchcode_vat_and_graphics_are_persisted(): void {
+        // MVP-601: Matchcode als Spalte, B-Satz-Restfelder + MwSt-Kennzeichen +
+        // G-Satz-Bildverweise in extra_attributes; Übernahme setzt tax_class.
+        app(DatanormImportService::class)->import($this->source, implode("\r\n", [
+            'V;050;A;20260816;EUR;Kabelkatalog;;TESTCO;;;;;;;;',
+            'A;N;NYM-B;Kabel NYM-J 3x1,5;;MTR;2;100;18950;;CAB;;NYMJ15;;ALT-1;;;Typ-X;;G01;;42;;;;1;;;3;',
+            'G;N;G01;1;11;NYMBILD;JPG;Produktbild;',
+            'E;4;;',
+        ]) . "\r\n");
+
+        $item = SupplierCatalogItem::query()->where('external_no', 'NYM-B')->firstOrFail();
+        $this->assertSame('NYMJ15', $item->matchcode);
+        $extra = (array) $item->extra_attributes;
+        $this->assertSame('reduced', $extra['datanorm_vat'] ?? null);
+        $this->assertSame('ALT-1', $extra['datanorm_alt_number'] ?? null);
+        $this->assertSame('Typ-X', $extra['datanorm_manufacturer_type'] ?? null);
+        $this->assertSame('42', $extra['datanorm_catalogue_page'] ?? null);
+        $this->assertSame('1', $extra['datanorm_stock'] ?? null);
+        $this->assertSame([['type' => '11', 'file' => 'NYMBILD.JPG', 'description' => 'Produktbild']], $extra['datanorm_graphics'] ?? null);
+
+        // Suche über den Matchcode findet den Artikel.
+        $this->actingAs($this->admin)
+            ->get(route('supplier-catalogs.show', [$this->source, 'q' => 'NYMJ15']))
+            ->assertOk()
+            ->assertSee('NYM-B');
+
+        // Übernahme: MwSt-Kennzeichen 3 (ermäßigt) landet am Artikel.
+        app(\App\Services\Procurement\CatalogArticleAdopter::class)->adoptSource($this->source);
+        $article = \App\Models\Article::query()->where('name', 'Kabel NYM-J 3x1,5')->firstOrFail();
+        $this->assertSame('ermäßigt', $article->tax_class);
+    }
+
     public function test_customer_mismatch_rejects_the_file(): void {
         $this->source->forceFill(['expected_customer_no' => 'KD-1'])->save();
 
