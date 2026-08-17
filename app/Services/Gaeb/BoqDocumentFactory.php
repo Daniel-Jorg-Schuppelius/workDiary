@@ -17,7 +17,7 @@ use App\Models\{BillOfQuantity, BoqCatalogAssignment, BoqItem, BoqSection};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use ERechnungToolkit\Entities\Gaeb\{GaebBoq, GaebCatalog, GaebCatalogAssignment, GaebItem, GaebQuantitySplit, GaebSection, GaebSubDescription, GaebTextComplement, GaebTotals, GaebUpComponent};
-use ERechnungToolkit\Enums\{GaebAlternativeBidStatus, GaebChangeOrderStatus, GaebItemType};
+use ERechnungToolkit\Enums\{GaebAlternativeBidStatus, GaebChangeOrderStatus, GaebItemType, GaebMarkupType};
 
 /**
  * Übersetzt ein gespeichertes Leistungsverzeichnis in das formatneutrale
@@ -118,7 +118,7 @@ class BoqDocumentFactory {
             provisionKind: $item->provision_kind,
             alternativeGroup: $item->alternative_group,
             alternativeNo: $item->alternative_no,
-            markupType: $item->markup_type,
+            markupType: GaebMarkupType::tryFrom((string) $item->markup_type),
             textComplements: $complements,
             subDescriptions: $subDescriptions,
             unitPriceComponents: $this->shares($item->unit_price_components, $item->currency),

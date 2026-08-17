@@ -10,3 +10,8 @@ Architekturdoku liegt bewusst getrennt im Schwester-Repo
 - [backup-restore.md](backup-restore.md) — Backup-Strategie, Heartbeat,
   verschlüsselte Cloud-Backupziele (`BACKUP_MASTER_KEY`), Restore-Anleitung
   und Restore-Tests.
+- [geoip.md](geoip.md) — lokale GeoIP-Datenbank für Sitzungs-Standortanzeige
+  und Impossible-Travel-Erkennung (`GEOIP_DATABASE`).
+- [gaeb-leistungsverzeichnisse.md](gaeb-leistungsverzeichnisse.md) — GAEB-Bau-
+  Datenaustausch: Ausschreibungen einlesen, Angebote exportieren, Aufmaß nach
+  REB, Kostengruppen nach DIN 276 (Modul `module.bau`).

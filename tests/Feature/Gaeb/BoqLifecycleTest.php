@@ -277,9 +277,15 @@ final class BoqLifecycleTest extends TestCase {
         // Katalognummer führen.
         $this->assertFalse($boq->items()->where('reference_no', '001.0010')->firstOrFail()->is_addendum);
 
-        $exported = app(BoqExportService::class)->export($boq, GaebPhase::Bid)['xml'];
-        $this->assertStringContainsString('<CONo>N1</CONo>', $exported);
-        $this->assertStringContainsString('<COStatus>Offered</COStatus>', $exported);
+        // Die Nachtragsnummer reist nicht im Angebot: Der Bieter antwortet auf
+        // ein Dokument, das die Nummern bereits kennt — das X84-Schema kennt
+        // `CONo` an der Position gar nicht.
+        $bid = app(BoqExportService::class)->export($boq, GaebPhase::Bid)['xml'];
+        $this->assertStringNotContainsString('<CONo>', $bid);
+
+        $award = app(BoqExportService::class)->export($boq, GaebPhase::Award)['xml'];
+        $this->assertStringContainsString('<CONo>N1</CONo>', $award);
+        $this->assertStringContainsString('<COStatus>Offered</COStatus>', $award);
     }
 
     public function test_http_export_and_progress_for_manager(): void {

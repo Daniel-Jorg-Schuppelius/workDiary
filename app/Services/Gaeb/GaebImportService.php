@@ -235,6 +235,10 @@ class GaebImportService {
     private function persistItems(BillOfQuantity $boq, GaebImport $import, int $organizationId, GaebBoq $parsed, array $sectionMap, ?int $createdBy = null): void {
         $phase = GaebPhase::fromCode($parsed->getPhaseCode());
 
+        // Aufmaß-Adressen gelten dokumentweit: Eine Position darf die
+        // Zwischensumme einer anderen übernehmen (REB 23.003 Ausgabe 2009).
+        $takeoffResults = [];
+
         foreach ($parsed->getItems() as $item) {
             $sectionRef = $item->getSectionReference();
             $subDescriptions = [];
@@ -301,7 +305,7 @@ class GaebImportService {
 
             $this->persistAssignments($boq, $organizationId, $created, $item->getCatalogAssignments());
             $this->persistSplits($boq, $organizationId, $created, $item->getQuantitySplits());
-            $this->persistTakeoff($created, $item, $createdBy);
+            $this->persistTakeoff($created, $item, $createdBy, $takeoffResults);
         }
     }
 
@@ -311,13 +315,17 @@ class GaebImportService {
      * selbst errechnete Summe (GAEB-Regel). Zeilen mit einer Formel, die das
      * Rechenwerk nicht kennt, landen als Hinweis in der Notiz — die Menge wäre
      * sonst still zu klein.
+     *
+     * @param array<string, float> $results Zwischenergebnisse der bisherigen
+     *                                      Positionen, fortgeschrieben
      */
-    private function persistTakeoff(BoqItem $created, GaebItem $item, ?int $createdBy): void {
+    private function persistTakeoff(BoqItem $created, GaebItem $item, ?int $createdBy, array &$results): void {
         if ($item->getTakeoffLines() === []) {
             return;
         }
 
-        $result = $this->takeoff->total($item);
+        $result = $this->takeoff->total($item, $results);
+        $results = $result['results'];
         if ($result['lines'] === 0) {
             return;
         }

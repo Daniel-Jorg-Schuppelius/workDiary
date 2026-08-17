@@ -16,6 +16,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Models\{Article, BillOfQuantity, BoqItem, Material, Project};
 use App\Services\Gaeb\{BoqCostingService, BoqExportService, BoqImportConflictException, BoqProgressService, BoqWorkflowException, BoqWorkflowService, GaebImportService};
 use App\Services\SqidEncoder;
+use ERechnungToolkit\Enums\GaebFormat;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -190,12 +191,24 @@ class BillOfQuantityController extends Controller {
         $requested = $request->query('phase');
         $phase = (is_string($requested) ? GaebPhase::tryFrom($requested) : null) ?? GaebPhase::Award;
 
-        $result = $this->exportService->export($billOfQuantity, $phase, Auth::user()?->id);
+        $wanted = $request->query('format');
+        $format = is_string($wanted) ? GaebFormat::tryFrom($wanted) : null;
 
-        $filename = sprintf('LV-%s.x%s', $billOfQuantity->sqid, $phase->value);
+        $result = $this->exportService->export($billOfQuantity, $phase, Auth::user()?->id, $format);
+
+        // Endung und Inhaltstyp folgen dem geschriebenen Format, nicht der
+        // Annahme, es sei XML: Ein GAEB-90-Export als „.x86" wäre schlicht
+        // falsch benannt.
+        $filename = sprintf(
+            'LV-%s.%s',
+            $billOfQuantity->sqid,
+            $result['format'] === GaebFormat::Da11
+                ? 'd11'
+                : $result['format']->extensionPrefix() . $phase->value
+        );
 
         return response($result['xml'], 200, [
-            'Content-Type' => 'application/xml',
+            'Content-Type' => $result['format'] === GaebFormat::DaXml ? 'application/xml' : 'text/plain; charset=utf-8',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }

@@ -53,7 +53,7 @@ class BoqExportService {
     }
 
     /**
-     * @return array{xml: string, export: BoqExport}
+     * @return array{xml: string, losses: list<string>, format: GaebFormat, export: BoqExport}
      */
     public function export(BillOfQuantity $boq, GaebPhase $phase, ?int $createdBy = null, ?GaebFormat $format = null): array {
         $target = $format ?? $this->sourceFormat($boq);
@@ -72,7 +72,7 @@ class BoqExportService {
             'created_by' => $createdBy,
         ]);
 
-        return ['xml' => $written['content'], 'losses' => $written['losses'], 'export' => $export];
+        return ['xml' => $written['content'], 'losses' => $written['losses'], 'format' => $target, 'export' => $export];
     }
 
     /**
@@ -96,6 +96,35 @@ class BoqExportService {
             ToolkitPhase::from($phase->value),
             self::EXPORT_DATE,
             $this->contractor($boq),
+            $this->client($boq),
+        );
+    }
+
+    /**
+     * Auftraggeber (`OWN`). In der Auftragserteilung und -bestätigung ist er
+     * laut Schema Pflicht — Quelle ist der Kunde des Projekts. Ist dessen
+     * Anschrift unvollständig, bleibt das Element weg; die Lücke gehört in den
+     * Preflight statt in eine erfundene Adresse.
+     */
+    private function client(BillOfQuantity $boq): ?GaebParty {
+        $customer = $boq->project?->customer;
+        if ($customer === null) {
+            return null;
+        }
+
+        $street = (string) $customer->address_street;
+        $zip = (string) $customer->address_zip;
+        $city = (string) $customer->address_city;
+        if ((string) $customer->name === '' || $street === '' || $zip === '' || $city === '') {
+            return null;
+        }
+
+        return new GaebParty(
+            (string) $customer->name,
+            $street,
+            $zip,
+            $city,
+            $customer->country !== 'CH' && $customer->country !== 'GB',
         );
     }
 
