@@ -417,4 +417,52 @@ XML;
         $this->assertStringContainsString('<QtySplit>', $exported);
         $this->assertStringContainsString('cost group DIN 276 2018-12', $exported);
     }
+
+    /**
+     * Aufmaß aus der X31 (MVP-571): Die Ansätze werden nachgerechnet und als
+     * Mengenfortschritt gebucht — bei der Mengenermittlung gilt die selbst
+     * errechnete Summe, nicht die gelieferte.
+     */
+    public function test_x31_takeoff_becomes_measured_progress(): void {
+        // Zwei Rechtecke: 2,000 × 3,000 und 1,000 × 1,000 = 7,000 m².
+        // Das Raster ist positionsgebunden (REB-VB 23.003), deshalb gebaut
+        // statt getippt: Kennzeichen Sp. 13, Formel 30-31, Werte à 7 ab Sp. 34.
+        $row = static function (string $kind, string $explanation, string $formula, array $values, string $address): string {
+            $line = str_repeat(' ', 12) . $kind . str_pad(mb_substr($explanation, 0, 9), 9)
+                . str_repeat(' ', 7) . str_pad($formula, 2) . '  ';
+            foreach (array_pad($values, 5, '') as $value) {
+                $line .= str_pad((string) $value, 7, ' ', STR_PAD_LEFT);
+            }
+            $line .= ' ' . $address;
+
+            return $line . str_repeat(' ', max(0, 80 - mb_strlen($line)));
+        };
+        $rows = [
+            $row('*', 'Aufmaß am 11 12 2020', '', [], '0001B0'),
+            $row(' ', 'Wand A', '04', ['2000', '3000'], '0001C0'),
+            $row(' ', 'Wand B', '04', ['1000', '1000'], '0001D0'),
+        ];
+        $items = '';
+        foreach ($rows as $row) {
+            $items .= '<QDetermItem><QTakeoff Row="' . htmlspecialchars($row, ENT_XML1) . '"/></QDetermItem>';
+        }
+
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>'
+            . '<GAEB xmlns="http://www.gaeb.de/GAEB_DA_XML/DA31/3.3">'
+            . '<GAEBInfo><Version>3.3</Version><VersDate>2021-05</VersDate><Date>2026-01-01</Date></GAEBInfo>'
+            . '<QtyDeterm><DP>31</DP><BoQ ID="B1"><BoQBody><Itemlist>'
+            . '<Item ID="I1" RNoPart="0010"><QtyDeterm>' . $items . '</QtyDeterm></Item>'
+            . '</Itemlist></BoQBody></BoQ></QtyDeterm></GAEB>';
+
+        $import = app(GaebImportService::class)->import($xml, 'aufmass.x31', $this->organization->id);
+        $boq = BillOfQuantity::query()->findOrFail($import->bill_of_quantity_id);
+        $item = $boq->items()->firstOrFail();
+
+        $progress = $item->progress()->get();
+        $this->assertCount(1, $progress);
+        $this->assertEqualsWithDelta(7.0, (float) (string) $progress[0]->quantity, 0.0001);
+        $this->assertSame('measurement', $progress[0]->source->value);
+        // Der Kommentar zählt nicht mit - zwei Zeilen tragen die Menge.
+        $this->assertStringContainsString('2', (string) $progress[0]->note);
+    }
 }

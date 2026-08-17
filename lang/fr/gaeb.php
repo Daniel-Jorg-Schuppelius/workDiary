@@ -141,6 +141,8 @@ return [
     ],
 
     'progress' => [
+        'from_takeoff' => 'Quantité recalculée à partir de :lines lignes de métré du X31.',
+        'takeoff_skipped' => ':count lignes avec une formule non prise en charge ont été ignorées.',
         'title' => 'Métré / avancement',
         'record' => 'Saisir un métré',
         'quantity' => 'Quantité',

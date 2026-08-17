@@ -93,7 +93,10 @@ enum GaebPhase: string implements HasLabel {
      */
     public function carriesQuantities(): bool {
         return match ($this) {
-            self::Bid, self::FrameworkBid => false,
+            // Angebotsabgabe: Antwort auf ein bekanntes LV. Mengenermittlung:
+            // trägt Aufmaßansätze statt LV-Mengen. In beiden Phasen eine Menge
+            // zu fordern hieße, die Phase misszuverstehen.
+            self::Bid, self::FrameworkBid, self::QuantitySurvey => false,
             default => true,
         };
     }

@@ -12,11 +12,11 @@ declare(strict_types=1);
 
 namespace App\Services\Gaeb;
 
-use App\Enums\Gaeb\{BoqProgressSource, BoqItemStatus, BoqItemType, GaebImportStatus, GaebPhase};
+use App\Enums\Gaeb\{BoqItemStatus, BoqItemType, BoqProgressSource, GaebImportStatus, GaebPhase};
 use App\Models\{BillOfQuantity, BoqCatalog, BoqCatalogAssignment, BoqItem, BoqItemPriceSnapshot, BoqItemQuantitySplit, BoqSection, GaebImport};
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\ValueObjects\Money;
-use ERechnungToolkit\Entities\Gaeb\{GaebBoq, GaebItem, GaebCatalogAssignment, GaebQuantitySplit, GaebTotals};
+use ERechnungToolkit\Entities\Gaeb\{GaebBoq, GaebCatalogAssignment, GaebItem, GaebQuantitySplit, GaebTotals};
 use ERechnungToolkit\Helper\Gaeb\GaebTakeoffCalculator;
 use ERechnungToolkit\Parsers\GaebReader;
 use Illuminate\Database\Eloquent\Model;
@@ -141,7 +141,7 @@ class GaebImportService {
             ]);
 
             $sectionMap = $this->persistSections($boq, $organizationId, $parsed);
-            $this->persistItems($boq, $import, $organizationId, $parsed, $sectionMap);
+            $this->persistItems($boq, $import, $organizationId, $parsed, $sectionMap, $options['created_by'] ?? null);
 
             return $import;
         });
@@ -232,7 +232,7 @@ class GaebImportService {
     /**
      * @param array<string, int> $sectionMap
      */
-    private function persistItems(BillOfQuantity $boq, GaebImport $import, int $organizationId, GaebBoq $parsed, array $sectionMap): void {
+    private function persistItems(BillOfQuantity $boq, GaebImport $import, int $organizationId, GaebBoq $parsed, array $sectionMap, ?int $createdBy = null): void {
         $phase = GaebPhase::fromCode($parsed->getPhaseCode());
 
         foreach ($parsed->getItems() as $item) {
@@ -301,7 +301,7 @@ class GaebImportService {
 
             $this->persistAssignments($boq, $organizationId, $created, $item->getCatalogAssignments());
             $this->persistSplits($boq, $organizationId, $created, $item->getQuantitySplits());
-            $this->persistTakeoff($created, $item, $options['created_by'] ?? null);
+            $this->persistTakeoff($created, $item, $createdBy);
         }
     }
 

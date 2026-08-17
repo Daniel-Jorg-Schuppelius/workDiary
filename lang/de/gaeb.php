@@ -141,6 +141,8 @@ return [
     ],
 
     'progress' => [
+        'from_takeoff' => 'Menge aus :lines Aufmaßzeilen der X31 nachgerechnet.',
+        'takeoff_skipped' => ':count Zeilen mit nicht unterstützter Formel blieben unberücksichtigt.',
         'title' => 'Aufmaß / Fortschritt',
         'record' => 'Aufmaß erfassen',
         'quantity' => 'Menge',

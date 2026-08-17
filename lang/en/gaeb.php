@@ -141,6 +141,8 @@ return [
     ],
 
     'progress' => [
+        'from_takeoff' => 'Quantity recomputed from :lines survey lines of the X31.',
+        'takeoff_skipped' => ':count lines with an unsupported formula were left out.',
         'title' => 'Measurement / progress',
         'record' => 'Record measurement',
         'quantity' => 'Quantity',
