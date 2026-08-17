@@ -661,16 +661,16 @@
         },
         {
             "name": "daniel-jorg-schuppelius/php-erechnung-toolkit",
-            "version": "v0.10",
+            "version": "v0.10.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit.git",
-                "reference": "ffcda178c37ee842641cf29d5bcd099447010e15"
+                "reference": "bd6bba63a78d51f84a82f26b86b845d988b8f04a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/zipball/ffcda178c37ee842641cf29d5bcd099447010e15",
-                "reference": "ffcda178c37ee842641cf29d5bcd099447010e15",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/zipball/bd6bba63a78d51f84a82f26b86b845d988b8f04a",
+                "reference": "bd6bba63a78d51f84a82f26b86b845d988b8f04a",
                 "shasum": ""
             },
             "require": {
@@ -723,9 +723,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/issues",
-                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/tree/v0.10"
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/tree/v0.10.1"
             },
-            "time": "2026-08-17T08:47:44+00:00"
+            "time": "2026-08-17T10:46:10+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/php-pdf-toolkit",
@@ -15880,5 +15880,5 @@
         "php": "^8.4"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
