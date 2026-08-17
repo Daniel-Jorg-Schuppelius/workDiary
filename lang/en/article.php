@@ -43,7 +43,13 @@ return [
         'kind' => ['discount' => 'Discount (%)', 'factor' => 'Factor', 'surcharge' => 'Surcharge (%)'],
         'col' => ['code' => 'Code', 'kind' => 'Kind', 'value' => 'Value', 'label' => 'Label', 'articles' => 'Articles'],
         'action' => ['add' => 'Add', 'delete' => 'Delete'],
-        'flash' => ['created' => 'Discount group created.', 'deleted' => 'Discount group deleted.'],
+        'flash' => ['created' => 'Discount group created.', 'deleted' => 'Discount group deleted.', 'override_saved' => 'Customer override saved.', 'override_deleted' => 'Customer override deleted.'],
+        'override' => [
+            'title' => 'Customer overrides',
+            'hint' => 'Customer-specific rates per discount group — applied in the customer-specific B2B DATPREIS; an article custom_price stays stronger.',
+            'customer' => 'Customer',
+            'empty' => 'No customer overrides yet.',
+        ],
     ],
 
     'action' => [
@@ -56,6 +62,7 @@ return [
         'export_datpreis_v5' => 'DATPREIS 5 — current sale prices',
         'export_datpreis_v4' => 'DATPREIS 4 — current sale prices',
         'export_datpreis_since' => 'DATPREIS 5 — changes of the last 30 days',
+        'export_datpreis_custom' => 'DATPREIS since date',
         'edit' => 'Edit article',
         'retire' => 'Retire',
         'add_option' => 'Add option',
@@ -74,6 +81,8 @@ return [
         'subcategory' => 'Product subgroup',
         'sales_discount_group' => 'Sales discount group',
         'sales_discount_group_hint' => 'For DATANORM exports with list prices (RAB file).',
+        'assembly_minutes' => 'Assembly time (minutes per unit)',
+        'assembly_minutes_hint' => 'Calculated labour time; filled from ARBA records during DATANORM adoption.',
         'gtin' => 'GTIN',
         'default_purchase_price' => 'Purchase price (default)',
         'default_sale_price' => 'Sale price (default)',

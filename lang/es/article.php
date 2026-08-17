@@ -43,7 +43,13 @@ return [
         'kind' => ['discount' => 'Descuento (%)', 'factor' => 'Factor', 'surcharge' => 'Recargo (%)'],
         'col' => ['code' => 'Código', 'kind' => 'Tipo', 'value' => 'Valor', 'label' => 'Denominación', 'articles' => 'Artículos'],
         'action' => ['add' => 'Crear', 'delete' => 'Eliminar'],
-        'flash' => ['created' => 'Grupo de descuento creado.', 'deleted' => 'Grupo de descuento eliminado.'],
+        'flash' => ['created' => 'Grupo de descuento creado.', 'deleted' => 'Grupo de descuento eliminado.', 'override_saved' => 'Excepción de cliente guardada.', 'override_deleted' => 'Excepción de cliente eliminada.'],
+        'override' => [
+            'title' => 'Excepciones por cliente',
+            'hint' => 'Tasas específicas por cliente y grupo de descuento — se aplican en el DATPREIS B2B del cliente; un custom_price de artículo prevalece.',
+            'customer' => 'Cliente',
+            'empty' => 'Aún no hay excepciones por cliente.',
+        ],
     ],
 
     'action' => [
@@ -56,6 +62,7 @@ return [
         'export_datpreis_v5' => 'DATPREIS 5 — PV actuales',
         'export_datpreis_v4' => 'DATPREIS 4 — PV actuales',
         'export_datpreis_since' => 'DATPREIS 5 — cambios de los últimos 30 días',
+        'export_datpreis_custom' => 'DATPREIS desde fecha',
         'edit' => 'Editar artículo',
         'retire' => 'Retirar',
         'add_option' => 'Añadir opción',
@@ -74,6 +81,8 @@ return [
         'subcategory' => 'Subgrupo de mercancías',
         'sales_discount_group' => 'Grupo de descuento de venta',
         'sales_discount_group_hint' => 'Para exportaciones DATANORM con precios de lista (archivo RAB).',
+        'assembly_minutes' => 'Tiempo de montaje (minutos por unidad)',
+        'assembly_minutes_hint' => 'Tiempo de trabajo calculado; se rellena desde registros ARBA en la adopción DATANORM.',
         'gtin' => 'GTIN',
         'default_purchase_price' => 'Precio de compra (predeterminado)',
         'default_sale_price' => 'Precio de venta (predeterminado)',

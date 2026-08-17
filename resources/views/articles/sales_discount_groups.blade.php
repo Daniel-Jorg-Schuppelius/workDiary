@@ -72,6 +72,67 @@
                 </table>
             </div>
         </div>
+
+        {{-- MVP-567: kundenindividuelle Overrides je Gruppe --}}
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <h2 class="mb-1 font-semibold">{{ __('article.discount_group.override.title') }}</h2>
+            <p class="mb-4 text-sm opacity-70">{{ __('article.discount_group.override.hint') }}</p>
+
+            <form method="POST" action="{{ route('articles.sales-discount-groups.overrides.store') }}" class="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
+                @csrf
+                <x-select-field name="sales_discount_group_id" :label="__('article.discount_group.col.code')" required>
+                    @foreach ($groups as $group)
+                        <option value="{{ $group->id }}">{{ $group->code }}{{ $group->label ? ' — ' . $group->label : '' }}</option>
+                    @endforeach
+                </x-select-field>
+                <x-select-field name="customer_id" :label="__('article.discount_group.override.customer')" required>
+                    @foreach ($customers ?? [] as $customer)
+                        <option value="{{ $customer->id }}">{{ $customer->company ?: $customer->name }} ({{ $customer->number }})</option>
+                    @endforeach
+                </x-select-field>
+                <x-select-field name="kind" :label="__('article.discount_group.col.kind')" required>
+                    <option value="discount">{{ __('article.discount_group.kind.discount') }}</option>
+                    <option value="factor">{{ __('article.discount_group.kind.factor') }}</option>
+                    <option value="surcharge">{{ __('article.discount_group.kind.surcharge') }}</option>
+                </x-select-field>
+                <x-input-field name="value" type="number" step="0.0001" min="0" :label="__('article.discount_group.col.value')" required />
+                <div class="flex items-end">
+                    <button type="submit" class="btn btn-primary btn-sm">{{ __('article.discount_group.action.add') }}</button>
+                </div>
+            </form>
+
+            <div class="overflow-x-auto">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>{{ __('article.discount_group.col.code') }}</th>
+                            <th>{{ __('article.discount_group.override.customer') }}</th>
+                            <th>{{ __('article.discount_group.col.kind') }}</th>
+                            <th class="text-right">{{ __('article.discount_group.col.value') }}</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($overrides ?? [] as $override)
+                            <tr>
+                                <td class="font-mono">{{ $override->group?->code }}</td>
+                                <td>{{ $override->customer?->company ?: $override->customer?->name }} ({{ $override->customer?->number }})</td>
+                                <td>{{ __('article.discount_group.kind.' . $override->kind) }}</td>
+                                <td class="text-right">{{ rtrim(rtrim($override->value, '0'), '.') }}{{ $override->kind === 'factor' ? '' : ' %' }}</td>
+                                <td class="text-right">
+                                    <form method="POST" action="{{ route('articles.sales-discount-groups.overrides.destroy', $override) }}">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('article.discount_group.action.delete') }}</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="5" class="text-center text-sm opacity-60">{{ __('article.discount_group.override.empty') }}</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </x-page-shell>
 @endsection

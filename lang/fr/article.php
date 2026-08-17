@@ -43,7 +43,13 @@ return [
         'kind' => ['discount' => 'Remise (%)', 'factor' => 'Facteur', 'surcharge' => 'Majoration (%)'],
         'col' => ['code' => 'Code', 'kind' => 'Type', 'value' => 'Valeur', 'label' => 'Libellé', 'articles' => 'Articles'],
         'action' => ['add' => 'Créer', 'delete' => 'Supprimer'],
-        'flash' => ['created' => 'Groupe de remise créé.', 'deleted' => 'Groupe de remise supprimé.'],
+        'flash' => ['created' => 'Groupe de remise créé.', 'deleted' => 'Groupe de remise supprimé.', 'override_saved' => 'Dérogation client enregistrée.', 'override_deleted' => 'Dérogation client supprimée.'],
+        'override' => [
+            'title' => 'Dérogations client',
+            'hint' => 'Taux spécifiques par client et groupe de remise — appliqués dans le DATPREIS B2B du client ; un custom_price d\'article reste prioritaire.',
+            'customer' => 'Client',
+            'empty' => 'Aucune dérogation client pour le moment.',
+        ],
     ],
 
     'action' => [
@@ -56,6 +62,7 @@ return [
         'export_datpreis_v5' => 'DATPREIS 5 — PV actuels',
         'export_datpreis_v4' => 'DATPREIS 4 — PV actuels',
         'export_datpreis_since' => 'DATPREIS 5 — modifications des 30 derniers jours',
+        'export_datpreis_custom' => 'DATPREIS depuis une date',
         'edit' => 'Modifier l’article',
         'retire' => 'Désactiver',
         'add_option' => 'Ajouter une option',
@@ -74,6 +81,8 @@ return [
         'subcategory' => 'Sous-groupe de marchandises',
         'sales_discount_group' => 'Groupe de remise de vente',
         'sales_discount_group_hint' => 'Pour les exports DATANORM avec prix catalogue (fichier RAB).',
+        'assembly_minutes' => 'Temps de montage (minutes par unité)',
+        'assembly_minutes_hint' => 'Temps de travail calculé ; rempli depuis les enregistrements ARBA lors de l\'adoption DATANORM.',
         'gtin' => 'GTIN',
         'default_purchase_price' => 'Prix d’achat (par défaut)',
         'default_sale_price' => 'Prix de vente (par défaut)',

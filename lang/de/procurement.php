@@ -184,6 +184,15 @@ return [
         ],
     ],
 
+    'metal' => [
+        'title' => 'Metallnotierungen',
+        'hint' => 'Tagespreise je Rohstoff in €/kg (Kupfer = DEL-Notiz). Der jüngste Eintrag je Metall bewertet die DATANORM-Rohstoffzuschläge im effektiven Einkaufspreis.',
+        'empty' => 'Noch keine Notierungen gepflegt.',
+        'col' => ['metal' => 'Metall', 'price' => 'Preis (€/kg)', 'date' => 'Notierungsdatum'],
+        'action' => ['save' => 'Speichern', 'delete' => 'Löschen'],
+        'flash' => ['saved' => 'Notierung gespeichert.', 'deleted' => 'Notierung gelöscht.'],
+    ],
+
     'catalog' => [
         'title' => 'Lieferantenkataloge',
         'format' => [

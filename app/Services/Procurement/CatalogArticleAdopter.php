@@ -102,6 +102,39 @@ class CatalogArticleAdopter {
             ->get();
     }
 
+    /**
+     * Varianten-relevante Attribute: die reservierten DATANORM-Metadaten
+     * (`datanorm_*` — Rohstoffzuschläge, Arbeitszeiten, Vormerkungen) sind
+     * KEINE Optionsmerkmale und dürfen keine Varianten erzeugen (Feature 107).
+     *
+     * @return array<string, mixed>
+     */
+    private function variantAttributes(SupplierCatalogItem $item): array {
+        return array_filter(
+            (array) $item->extra_attributes,
+            static fn ($value, $key): bool => ! str_starts_with((string) $key, 'datanorm_'),
+            ARRAY_FILTER_USE_BOTH
+        );
+    }
+
+    /** Montagezeit (Zweck 2) aus den DATANORM-Arbeitszeiten, sonst erste Zeit. */
+    private function assemblyMinutes(SupplierCatalogItem $item): ?string {
+        $workTimes = (array) (((array) $item->extra_attributes)['datanorm_worktimes'] ?? []);
+        $fallback = null;
+        foreach ($workTimes as $workTime) {
+            if (! is_array($workTime) || ! isset($workTime['minutes'])) {
+                continue;
+            }
+            $minutes = (float) $workTime['minutes'];
+            if ((int) ($workTime['purpose'] ?? 0) === 2) {
+                return (string) $minutes;
+            }
+            $fallback ??= (string) $minutes;
+        }
+
+        return $fallback;
+    }
+
     /** Tarif-Gruppe: Hersteller-Nr. (CSP-Produkt), sonst Name (Domains u. ä.). */
     private function groupKey(SupplierCatalogItem $item): string {
         $manufacturerNo = trim((string) $item->manufacturer_no);
@@ -141,8 +174,8 @@ class CatalogArticleAdopter {
             DB::transaction(function () use ($source, $items, $article, &$summary): void {
                 /** @var Organization $organization */
                 $organization = Organization::query()->findOrFail($source->organization_id);
-                $withAttrs = array_values(array_filter($items, fn (SupplierCatalogItem $i): bool => (array) $i->extra_attributes !== []));
-                $plainItems = array_values(array_filter($items, fn (SupplierCatalogItem $i): bool => (array) $i->extra_attributes === []));
+                $withAttrs = array_values(array_filter($items, fn (SupplierCatalogItem $i): bool => $this->variantAttributes($i) !== []));
+                $plainItems = array_values(array_filter($items, fn (SupplierCatalogItem $i): bool => $this->variantAttributes($i) === []));
 
                 if ($article === null) {
                     $first = $items[0];
@@ -160,6 +193,8 @@ class CatalogArticleAdopter {
                         'gtin' => $plainSingle ? ($first->gtin ?: null) : null,
                         'default_purchase_price' => $plainSingle ? $first->purchase_price?->getAmount() : null,
                         'default_sale_price' => $plainSingle ? $this->salePrice($first) : null,
+                        // MVP-565: DATANORM-Montagezeit (ARBA) in die Kalkulationsbasis.
+                        'assembly_minutes' => $plainSingle ? $this->assemblyMinutes($first) : null,
                     ]);
                     $summary['articles']++;
                 }
@@ -218,7 +253,7 @@ class CatalogArticleAdopter {
         }
 
         $valueIds = [];
-        foreach ((array) $item->extra_attributes as $code => $value) {
+        foreach ($this->variantAttributes($item) as $code => $value) {
             $definition = $definitions[$code] ?? null;
             if ($definition === null) {
                 continue;
@@ -271,7 +306,7 @@ class CatalogArticleAdopter {
     private function ensureOptionDefinitions(Article $article, array $items): array {
         $codes = [];
         foreach ($items as $item) {
-            foreach (array_keys((array) $item->extra_attributes) as $code) {
+            foreach (array_keys($this->variantAttributes($item)) as $code) {
                 $codes[(string) $code] = true;
             }
         }

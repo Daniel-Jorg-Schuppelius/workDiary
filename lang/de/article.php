@@ -43,7 +43,13 @@ return [
         'kind' => ['discount' => 'Rabatt (%)', 'factor' => 'Faktor', 'surcharge' => 'Zuschlag (%)'],
         'col' => ['code' => 'Code', 'kind' => 'Art', 'value' => 'Wert', 'label' => 'Bezeichnung', 'articles' => 'Artikel'],
         'action' => ['add' => 'Anlegen', 'delete' => 'Löschen'],
-        'flash' => ['created' => 'Rabattgruppe angelegt.', 'deleted' => 'Rabattgruppe gelöscht.'],
+        'flash' => ['created' => 'Rabattgruppe angelegt.', 'deleted' => 'Rabattgruppe gelöscht.', 'override_saved' => 'Kunden-Override gespeichert.', 'override_deleted' => 'Kunden-Override gelöscht.'],
+        'override' => [
+            'title' => 'Kunden-Overrides',
+            'hint' => 'Kundenindividuelle Sätze je Rabattgruppe — wirken im kundenindividuellen B2B-DATPREIS; ein Artikel-custom_price bleibt stärker.',
+            'customer' => 'Kunde',
+            'empty' => 'Keine Kunden-Overrides angelegt.',
+        ],
     ],
 
     'action' => [
@@ -56,6 +62,7 @@ return [
         'export_datpreis_v5' => 'DATPREIS 5 — aktueller VK',
         'export_datpreis_v4' => 'DATPREIS 4 — aktueller VK',
         'export_datpreis_since' => 'DATPREIS 5 — Änderungen der letzten 30 Tage',
+        'export_datpreis_custom' => 'DATPREIS seit Datum',
         'edit' => 'Artikel bearbeiten',
         'retire' => 'Stilllegen',
         'add_option' => 'Option hinzufügen',
@@ -74,6 +81,8 @@ return [
         'subcategory' => 'Unterwarengruppe',
         'sales_discount_group' => 'Verkaufs-Rabattgruppe',
         'sales_discount_group_hint' => 'Für den DATANORM-Export mit Listenpreisen (RAB-Datei).',
+        'assembly_minutes' => 'Montagezeit (Minuten je Einheit)',
+        'assembly_minutes_hint' => 'Kalkulatorische Arbeitszeit; wird bei der DATANORM-Übernahme aus ARBA-Sätzen gefüllt.',
         'gtin' => 'GTIN',
         'default_purchase_price' => 'Einkaufspreis (Standard)',
         'default_sale_price' => 'Verkaufspreis (Standard)',

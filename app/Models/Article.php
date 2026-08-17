@@ -58,6 +58,7 @@ class Article extends Model {
         'category',
         'subcategory',
         'sales_discount_group_id',
+        'assembly_minutes',
         'tax_class',
         'stockable',
         'purchasable',
@@ -79,6 +80,7 @@ class Article extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
+        'assembly_minutes' => 'decimal:2',
         'type' => ArticleType::class,
         'status' => ArticleStatus::class,
         'stockable' => 'boolean',

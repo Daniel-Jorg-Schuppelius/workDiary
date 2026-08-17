@@ -190,7 +190,9 @@ class CatalogLinkService {
         ]);
 
         $supply->supplier_sku = $item->external_no;
-        $supply->purchase_price = $item->purchase_price;
+        // MVP-564: Rohstoffzuschläge (Kupfer & Co.) fließen in den effektiven EK,
+        // sofern eine Metallnotierung gepflegt ist — sonst bleibt der Basispreis.
+        $supply->purchase_price = app(MetalSurchargeService::class)->effectivePurchasePrice($item) ?? $item->purchase_price;
         $supply->currency = $item->currency ?? \CommonToolkit\Enums\CurrencyCode::Euro;
         $supply->pack_size = $item->pack_size ?? '1';
         $supply->lead_time_days = $item->lead_time_days ?? 0;

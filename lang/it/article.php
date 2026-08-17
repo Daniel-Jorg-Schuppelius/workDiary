@@ -43,7 +43,13 @@ return [
         'kind' => ['discount' => 'Sconto (%)', 'factor' => 'Fattore', 'surcharge' => 'Maggiorazione (%)'],
         'col' => ['code' => 'Codice', 'kind' => 'Tipo', 'value' => 'Valore', 'label' => 'Denominazione', 'articles' => 'Articoli'],
         'action' => ['add' => 'Crea', 'delete' => 'Elimina'],
-        'flash' => ['created' => 'Gruppo di sconto creato.', 'deleted' => 'Gruppo di sconto eliminato.'],
+        'flash' => ['created' => 'Gruppo di sconto creato.', 'deleted' => 'Gruppo di sconto eliminato.', 'override_saved' => 'Deroga cliente salvata.', 'override_deleted' => 'Deroga cliente eliminata.'],
+        'override' => [
+            'title' => 'Deroghe cliente',
+            'hint' => 'Tassi specifici per cliente e gruppo di sconto — applicati nel DATPREIS B2B del cliente; un custom_price dell\'articolo prevale.',
+            'customer' => 'Cliente',
+            'empty' => 'Nessuna deroga cliente ancora.',
+        ],
     ],
 
     'action' => [
@@ -56,6 +62,7 @@ return [
         'export_datpreis_v5' => 'DATPREIS 5 — PV attuali',
         'export_datpreis_v4' => 'DATPREIS 4 — PV attuali',
         'export_datpreis_since' => 'DATPREIS 5 — modifiche degli ultimi 30 giorni',
+        'export_datpreis_custom' => 'DATPREIS da data',
         'edit' => 'Modifica articolo',
         'retire' => 'Disattiva',
         'add_option' => 'Aggiungi opzione',
@@ -74,6 +81,8 @@ return [
         'subcategory' => 'Sottogruppo merceologico',
         'sales_discount_group' => 'Gruppo di sconto di vendita',
         'sales_discount_group_hint' => 'Per le esportazioni DATANORM con prezzi di listino (file RAB).',
+        'assembly_minutes' => 'Tempo di montaggio (minuti per unità)',
+        'assembly_minutes_hint' => 'Tempo di lavoro calcolato; compilato dai record ARBA durante l\'adozione DATANORM.',
         'gtin' => 'GTIN',
         'default_purchase_price' => 'Prezzo d’acquisto (predefinito)',
         'default_sale_price' => 'Prezzo di vendita (predefinito)',

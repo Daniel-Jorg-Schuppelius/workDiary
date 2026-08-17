@@ -55,4 +55,9 @@ class SalesDiscountGroup extends Model {
     public function articles(): HasMany {
         return $this->hasMany(Article::class);
     }
+
+    /** @return HasMany<SalesDiscountGroupOverride, $this> */
+    public function overrides(): HasMany {
+        return $this->hasMany(SalesDiscountGroupOverride::class);
+    }
 }

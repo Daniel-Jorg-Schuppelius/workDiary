@@ -38,6 +38,7 @@ class ArticleExportController extends Controller {
             'prices' => ['nullable', 'in:list,net'],
             'type' => ['nullable', 'in:catalog,prices'],
             'since_days' => ['nullable', 'integer', 'min:1', 'max:365'],
+            'since' => ['nullable', 'date', 'before_or_equal:today'],
         ]);
 
         $version = $request->input('version') === '4' ? DatanormVersion::V4 : DatanormVersion::V5;
@@ -45,10 +46,13 @@ class ArticleExportController extends Controller {
             ? DatanormPriceIndicator::NetPrice
             : DatanormPriceIndicator::ListPrice;
         $isPriceFile = $request->input('type') === 'prices';
-        // W10: DATPREIS nur mit VK-Änderungen seit X Tagen (Preisverlauf).
-        $since = $request->filled('since_days')
-            ? now()->subDays((int) $request->input('since_days'))->startOfDay()
-            : null;
+        // W10/MVP-566: DATPREIS nur mit VK-Änderungen seit Datum bzw. X Tagen.
+        $since = null;
+        if ($request->filled('since')) {
+            $since = \Illuminate\Support\Carbon::parse((string) $request->input('since'))->startOfDay();
+        } elseif ($request->filled('since_days')) {
+            $since = now()->subDays((int) $request->input('since_days'))->startOfDay();
+        }
 
         $result = $isPriceFile
             ? $export->exportPrices($this->currentOrganization(), $version, $priceIndicator, null, $since)

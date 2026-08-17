@@ -184,6 +184,15 @@ return [
         ],
     ],
 
+    'metal' => [
+        'title' => 'Cotizaciones de metales',
+        'hint' => 'Precios diarios por materia prima en €/kg (cobre = cotización DEL). La entrada más reciente por metal valora los recargos DATANORM en el precio de compra efectivo.',
+        'empty' => 'Aún no hay cotizaciones.',
+        'col' => ['metal' => 'Metal', 'price' => 'Precio (€/kg)', 'date' => 'Fecha de cotización'],
+        'action' => ['save' => 'Guardar', 'delete' => 'Eliminar'],
+        'flash' => ['saved' => 'Cotización guardada.', 'deleted' => 'Cotización eliminada.'],
+    ],
+
     'catalog' => [
         'title' => 'Catálogos de proveedores',
         'format' => [

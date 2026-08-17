@@ -96,11 +96,20 @@ class DatanormExportService {
                     city: $customer->address_city
                 ));
             }
-            // Kundenindividuelle Preise sind immer Nettopreise.
-            $access->items()->with('article')->get()->each(function (B2bCatalogItem $item) use ($catalog, $version, &$skipped): void {
+            // Kundenindividuelle Preise sind immer Nettopreise. Rangfolge
+            // (MVP-567): custom_price → Kunden-Override der Verkaufs-
+            // Rabattgruppe → Standardsatz der Gruppe → Standard-VK.
+            $overrides = \App\Models\SalesDiscountGroupOverride::query()
+                ->where('customer_id', (int) $access->customer_id)
+                ->get()
+                ->keyBy('sales_discount_group_id');
+            $access->items()->with('article.salesDiscountGroup')->get()->each(function (B2bCatalogItem $item) use ($catalog, $version, $overrides, &$skipped): void {
                 $article = $item->article;
-                $price = $item->effectivePrice();
-                if ($article === null || $price === null) {
+                if ($article === null) {
+                    return;
+                }
+                $price = $item->custom_price ?? $this->groupNetPrice($article, $overrides) ?? $article->default_sale_price;
+                if ($price === null) {
                     return;
                 }
                 $this->appendPriceChange($catalog, $version, $skipped, (string) $article->number, DatanormPriceIndicator::NetPrice, $price);
@@ -137,6 +146,37 @@ class DatanormExportService {
         ];
 
         return ['files' => $files, 'articles' => count($catalog->getPriceChanges()), 'skipped' => $skipped];
+    }
+
+    /**
+     * Netto-VK aus der Verkaufs-Rabattgruppe des Artikels (MVP-567): der
+     * Kunden-Override ersetzt den Standardsatz; ohne Gruppe null.
+     *
+     * @param  \Illuminate\Support\Collection<int, \App\Models\SalesDiscountGroupOverride>  $overrides  je Gruppen-ID
+     */
+    private function groupNetPrice(Article $article, $overrides): ?Money {
+        $group = $article->salesDiscountGroup;
+        $list = $article->default_sale_price;
+        if ($group === null || $list === null) {
+            return null;
+        }
+
+        $override = $overrides->get($group->id);
+        $kind = $override->kind ?? $group->kind;
+        $value = (float) ($override->value ?? $group->value);
+
+        return \ERechnungToolkit\Helper\DatanormPriceCalculator::netPrice(
+            $list->withScale(4),
+            [new \ERechnungToolkit\Entities\Datanorm\DatanormDiscount(
+                match ($kind) {
+                    \App\Models\SalesDiscountGroup::KIND_FACTOR => \ERechnungToolkit\Enums\DatanormDiscountKind::Factor,
+                    \App\Models\SalesDiscountGroup::KIND_SURCHARGE => \ERechnungToolkit\Enums\DatanormDiscountKind::Surcharge,
+                    default => \ERechnungToolkit\Enums\DatanormDiscountKind::Discount,
+                },
+                $value
+            )],
+            scale: 4
+        );
     }
 
     /**

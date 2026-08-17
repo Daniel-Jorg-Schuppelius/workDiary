@@ -134,6 +134,37 @@ final class ArticleDatanormExportTest extends TestCase {
         $this->travelBack();
     }
 
+    public function test_b2b_datpreis_applies_group_and_customer_override(): void {
+        $customer = \App\Models\Customer::factory()->create(['organization_id' => $this->organization->id]);
+        [$access] = \App\Models\B2b\B2bCatalogAccess::issue((int) $this->organization->id, (int) $customer->id, 'Konditionen', 'einkauf-kond');
+        // WD-1001 (VK 89,50, Gruppe R10 = 10 %) OHNE custom_price freigeben.
+        \App\Models\B2b\B2bCatalogItem::query()->create([
+            'organization_id' => $this->organization->id, 'access_id' => $access->id,
+            'article_id' => Article::query()->where('number', 'WD-1001')->firstOrFail()->id,
+        ]);
+
+        // Standardsatz der Gruppe: 89,50 − 10 % = 80,55.
+        $response = $this->actingAs($this->admin)->get(route('b2b-catalog.datanorm', $access));
+        $zip = new ZipArchive;
+        $this->assertTrue($zip->open($response->getFile()->getPathname()));
+        $catalog = (new DatanormParser)->parse((string) $zip->getFromName('DATPREIS.001'));
+        $zip->close();
+        $this->assertSame('80.55', $catalog->getPriceChanges()[0]->getPrice()?->getAmount());
+
+        // Kunden-Override 20 %: 89,50 − 20 % = 71,60.
+        \App\Models\SalesDiscountGroupOverride::query()->create([
+            'organization_id' => $this->organization->id,
+            'sales_discount_group_id' => \App\Models\SalesDiscountGroup::query()->where('code', 'R10')->firstOrFail()->id,
+            'customer_id' => $customer->id, 'kind' => 'discount', 'value' => '20',
+        ]);
+        $response = $this->actingAs($this->admin)->get(route('b2b-catalog.datanorm', $access));
+        $zip = new ZipArchive;
+        $this->assertTrue($zip->open($response->getFile()->getPathname()));
+        $catalog = (new DatanormParser)->parse((string) $zip->getFromName('DATPREIS.001'));
+        $zip->close();
+        $this->assertSame('71.60', $catalog->getPriceChanges()[0]->getPrice()?->getAmount());
+    }
+
     public function test_sales_discount_group_management_page(): void {
         $this->actingAs($this->admin)->get(route('articles.sales-discount-groups.index'))
             ->assertOk()->assertSee('R10');

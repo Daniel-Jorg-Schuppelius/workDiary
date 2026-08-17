@@ -184,6 +184,15 @@ return [
         ],
     ],
 
+    'metal' => [
+        'title' => 'Cotations des métaux',
+        'hint' => 'Prix journaliers par matière première en €/kg (cuivre = cotation DEL). L\'entrée la plus récente par métal valorise les majorations DATANORM dans le prix d\'achat effectif.',
+        'empty' => 'Aucune cotation pour le moment.',
+        'col' => ['metal' => 'Métal', 'price' => 'Prix (€/kg)', 'date' => 'Date de cotation'],
+        'action' => ['save' => 'Enregistrer', 'delete' => 'Supprimer'],
+        'flash' => ['saved' => 'Cotation enregistrée.', 'deleted' => 'Cotation supprimée.'],
+    ],
+
     'catalog' => [
         'title' => 'Catalogues fournisseurs',
         'format' => [

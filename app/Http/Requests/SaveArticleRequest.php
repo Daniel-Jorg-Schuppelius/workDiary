@@ -70,6 +70,7 @@ class SaveArticleRequest extends BaseFormRequest {
             'type' => ['required', Rule::enum(ArticleType::class)],
             'base_unit' => ['required', 'string', 'max:20'],
             'category' => ['nullable', 'string', 'max:64'],
+            'assembly_minutes' => ['nullable', 'numeric', 'min:0', 'max:99999'],
             'subcategory' => ['nullable', 'string', 'max:64'],
             'sales_discount_group_id' => [
                 'nullable', 'integer',

@@ -184,6 +184,15 @@ return [
         ],
     ],
 
+    'metal' => [
+        'title' => 'Quotazioni dei metalli',
+        'hint' => 'Prezzi giornalieri per materia prima in €/kg (rame = quotazione DEL). La voce più recente per metallo valorizza le maggiorazioni DATANORM nel prezzo d\'acquisto effettivo.',
+        'empty' => 'Nessuna quotazione ancora.',
+        'col' => ['metal' => 'Metallo', 'price' => 'Prezzo (€/kg)', 'date' => 'Data quotazione'],
+        'action' => ['save' => 'Salva', 'delete' => 'Elimina'],
+        'flash' => ['saved' => 'Quotazione salvata.', 'deleted' => 'Quotazione eliminata.'],
+    ],
+
     'catalog' => [
         'title' => 'Cataloghi fornitori',
         'format' => [

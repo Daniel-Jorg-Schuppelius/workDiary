@@ -100,7 +100,10 @@ class PriceSuggestionService {
             return null;
         }
 
-        $suggestion = $this->suggest($rule, $item->purchase_price->getAmount());
+        // MVP-564: VK-Vorschlag auf Basis des effektiven EK (inkl. bewerteter
+        // Rohstoffzuschläge, sofern eine Metallnotierung gepflegt ist).
+        $effective = app(MetalSurchargeService::class)->effectivePurchasePrice($item) ?? $item->purchase_price;
+        $suggestion = $this->suggest($rule, $effective->getAmount());
 
         return $suggestion === null ? null : ['rule' => $rule] + $suggestion;
     }
