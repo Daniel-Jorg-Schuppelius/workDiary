@@ -15,7 +15,7 @@ use App\Enums\Gaeb\{BoqItemStatus, BoqItemType};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
 
 /**
  * LV-Position (Feature 049, MVP-082). Trägt Ordnungszahl, Texte, Menge/Einheit
@@ -155,5 +155,20 @@ class BoqItem extends Model {
     /** Restmenge gegenüber der Sollmenge (nie negativ). */
     public function remainingQuantity(): float {
         return max(0.0, ($this->quantity?->getValue()->toFloat() ?? 0.0)- $this->executedQuantity());
+    }
+
+    /**
+     * Katalogzuordnungen der Position (Kostengruppe, Leistungsbereich, Gebäude,
+     * Modellkennung). Bei Teilmengen gelten deren Zuordnungen.
+     *
+     * @return MorphMany<BoqCatalogAssignment, $this>
+     */
+    public function catalogAssignments(): MorphMany {
+        return $this->morphMany(BoqCatalogAssignment::class, 'assignable');
+    }
+
+    /** @return HasMany<BoqItemQuantitySplit, $this> */
+    public function quantitySplits(): HasMany {
+        return $this->hasMany(BoqItemQuantitySplit::class, 'boq_item_id')->orderBy('position');
     }
 }

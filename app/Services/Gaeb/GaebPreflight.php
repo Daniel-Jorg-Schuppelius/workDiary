@@ -14,9 +14,9 @@ namespace App\Services\Gaeb;
 
 use App\Enums\Gaeb\GaebPhase;
 use CommonToolkit\Enums\CurrencyCode;
-use ERechnungToolkit\Helper\Gaeb\GaebCalculator;
 use CommonToolkit\ValueObjects\Money;
 use ERechnungToolkit\Entities\Gaeb\GaebBoq;
+use ERechnungToolkit\Helper\Gaeb\GaebCalculator;
 
 /**
  * GAEB-Import-Preflight (Feature 049, MVP-081; Feature 108). Prüft Version,

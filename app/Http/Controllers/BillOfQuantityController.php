@@ -213,6 +213,8 @@ class BillOfQuantityController extends Controller {
         $this->canImport();
 
         $validated = $request->validate([
+            // Alle drei GAEB-Familien: DA XML ist XML, GAEB 90 und 2000 sind
+            // Textdateien — die Familie erkennt der Reader am Inhalt.
             'file' => ['required', 'file', 'max:20480', 'mimetypes:text/xml,application/xml,text/plain'],
             'project' => ['nullable', 'string'],
             'name' => ['nullable', 'string', 'max:255'],
@@ -229,11 +231,11 @@ class BillOfQuantityController extends Controller {
             }
         }
 
-        $xml = (string) file_get_contents($request->file('file')->getRealPath());
+        $content = (string) file_get_contents($request->file('file')->getRealPath());
         $filename = (string) $request->file('file')->getClientOriginalName();
 
         try {
-            $import = $this->importer->import($xml, $filename, $this->currentOrganization()->id, [
+            $import = $this->importer->import($content, $filename, $this->currentOrganization()->id, [
                 'project_id' => $projectId,
                 'name' => $validated['name'] ?? null,
                 'created_by' => Auth::user()?->id,

@@ -15,6 +15,7 @@ use App\Models\{BillOfQuantity, BoqItem, User};
 use App\Services\Gaeb\{BoqCostingService, BoqExportService, BoqProgressService, BoqWorkflowException, BoqWorkflowService, GaebImportService};
 use CommonToolkit\ValueObjects\Money;
 use Database\Seeders\GaebDemoSeeder;
+use ERechnungToolkit\Enums\GaebFormat;
 use ERechnungToolkit\Parsers\GaebDaXmlParser;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
@@ -306,5 +307,114 @@ final class BoqLifecycleTest extends TestCase {
         $this->assertTrue($boq->items()->where('is_addendum', true)->exists());
         $this->assertTrue(BoqItem::query()->where('bill_of_quantity_id', $boq->id)->whereHas('progress')->exists());
         $this->assertDatabaseHas('boq_exports', ['bill_of_quantity_id' => $boq->id]);
+    }
+
+    /**
+     * Zurück geht das Herkunftsformat (Feature 108, D6): Wer als GAEB 90
+     * importiert, bekommt GAEB 90 — und erfährt, was die Wandlung gekostet hat.
+     */
+    public function test_export_follows_the_source_format_and_logs_losses(): void {
+        $records = [
+            str_pad('00', 10) . '83' . str_pad('Musterprojekt', 50) . '1122PPPPI90',
+            '1111       N',
+            '12Erdarbeiten',
+            '211111  10 NNN         00000051300m2  ',
+            '25Boden loesen',
+            '99' . str_repeat(' ', 66) . '000001',
+        ];
+        $file = '';
+        foreach ($records as $index => $body) {
+            $file .= str_pad(substr($body, 0, 74), 74) . str_pad((string) ($index + 1), 6, '0', STR_PAD_LEFT) . "\r\n";
+        }
+
+        $import = app(GaebImportService::class)->import($file, 'vergabe.d83', $this->organization->id);
+        $boq = BillOfQuantity::query()->findOrFail($import->bill_of_quantity_id);
+
+        $this->assertSame('gaeb90', $boq->source_format);
+        $this->assertSame('gaeb90', $import->source_format);
+
+        $result = app(BoqExportService::class)->export($boq, GaebPhase::Award);
+
+        $this->assertSame('gaeb90', $result['export']->format);
+        // 80-Zeichen-Raster statt XML.
+        $this->assertStringNotContainsString('<?xml', $result['xml']);
+        $this->assertSame(80, strlen(explode("\r\n", $result['xml'])[0]));
+
+        // Ausdrücklich nach DA XML: dann steht XML da und nichts geht verloren.
+        $asXml = app(BoqExportService::class)->export($boq, GaebPhase::Award, null, GaebFormat::DaXml);
+        $this->assertSame('daxml', $asXml['export']->format);
+        $this->assertStringContainsString('<?xml', $asXml['xml']);
+        $this->assertSame([], $asXml['losses']);
+        $this->assertNull($asXml['export']->losses);
+    }
+
+    /**
+     * Kostengruppen & Co. (Feature 109, MVP-586/588): Katalogzuordnungen und
+     * Teilmengen überstehen Import und Export. Ohne Persistenz wirft der Import
+     * genau die Information weg, wegen der AVA-Anbieter mit „DIN 276" werben.
+     */
+    public function test_catalog_assignments_and_splits_survive_import_and_export(): void {
+        $xml = <<<'XML'
+<?xml version="1.0" encoding="UTF-8"?>
+<GAEB xmlns="http://www.gaeb.de/GAEB_DA_XML/DA83/3.3">
+  <GAEBInfo><Version>3.3</Version><VersDate>2021-05</VersDate><Date>2026-01-01</Date></GAEBInfo>
+  <PrjInfo><NamePrj>Kostengruppen</NamePrj><Cur>EUR</Cur></PrjInfo>
+  <Award><DP>83</DP><BoQ ID="B1">
+    <BoQInfo>
+      <Name>1</Name>
+      <Ctlg><CtlgID>KG</CtlgID><CtlgType>cost group DIN 276 2018-12</CtlgType><CtlgName>Kostengruppen</CtlgName></Ctlg>
+      <Ctlg><CtlgID>GEB</CtlgID><CtlgType>locality</CtlgType><CtlgName>Gebaeude</CtlgName></Ctlg>
+    </BoQInfo>
+    <BoQBody><BoQCtgy ID="C1" RNoPart="001">
+      <LblTx><p><span>Erdarbeiten</span></p></LblTx>
+      <CtlgAssign><CtlgID>KG</CtlgID><CtlgCode>300</CtlgCode></CtlgAssign>
+      <BoQBody><Itemlist>
+        <Item ID="I1" RNoPart="0010">
+          <Qty>450.000</Qty>
+          <QtySplit><Qty>300.000</Qty>
+            <CtlgAssign><CtlgID>KG</CtlgID><CtlgCode>310</CtlgCode></CtlgAssign>
+            <CtlgAssign><CtlgID>GEB</CtlgID><CtlgCode>H1</CtlgCode></CtlgAssign>
+          </QtySplit>
+          <QtySplit><Qty>150.000</Qty>
+            <CtlgAssign><CtlgID>KG</CtlgID><CtlgCode>320</CtlgCode></CtlgAssign>
+          </QtySplit>
+          <QU>m3</QU>
+          <CtlgAssign><CtlgID>KG</CtlgID><CtlgCode>310</CtlgCode></CtlgAssign>
+          <Description><OutlineText><OutlTxt><TextOutlTxt><p><span>Boden loesen</span></p></TextOutlTxt></OutlTxt></OutlineText></Description>
+        </Item>
+      </Itemlist></BoQBody>
+    </BoQCtgy></BoQBody>
+  </BoQ></Award>
+</GAEB>
+XML;
+
+        $import = app(GaebImportService::class)->import($xml, 'kostengruppen.x83', $this->organization->id);
+        $boq = BillOfQuantity::query()->findOrFail($import->bill_of_quantity_id);
+
+        // Katalogdefinitionen: der Typ trägt die Ausgabe der Norm.
+        $this->assertSame(2, $boq->catalogs()->count());
+        $kg = $boq->catalogs()->where('catalog_key', 'KG')->firstOrFail();
+        $this->assertSame('cost group DIN 276 2018-12', $kg->type);
+        $this->assertTrue($kg->isCostGroup());
+
+        $item = $boq->items()->where('reference_no', '001.0010')->firstOrFail();
+        $this->assertSame(['310'], $item->catalogAssignments()->pluck('code')->all());
+
+        // Die Teilmengen tragen ihre eigenen Zuordnungen — 300 m³ auf KG 310,
+        // 150 m³ auf KG 320.
+        $splits = $item->quantitySplits()->get();
+        $this->assertCount(2, $splits);
+        $this->assertSame(['310', 'H1'], $splits[0]->catalogAssignments()->pluck('code')->all());
+        $this->assertSame(['320'], $splits[1]->catalogAssignments()->pluck('code')->all());
+
+        $section = $boq->sections()->where('reference_no', '001')->firstOrFail();
+        $this->assertSame(['300'], $section->catalogAssignments()->pluck('code')->all());
+
+        // Und alles kommt beim Export wieder heraus.
+        $exported = app(BoqExportService::class)->export($boq, GaebPhase::RequestForBid)['xml'];
+        $this->assertStringContainsString('<CtlgID>KG</CtlgID>', $exported);
+        $this->assertStringContainsString('<CtlgCode>310</CtlgCode>', $exported);
+        $this->assertStringContainsString('<QtySplit>', $exported);
+        $this->assertStringContainsString('cost group DIN 276 2018-12', $exported);
     }
 }

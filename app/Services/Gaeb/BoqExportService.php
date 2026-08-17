@@ -17,8 +17,8 @@ use App\Models\{BillOfQuantity, BoqExport};
 use App\Services\Invoicing\EInvoice\XRechnungGenerator;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use ERechnungToolkit\Entities\Gaeb\GaebParty;
-use ERechnungToolkit\Enums\GaebPhase as ToolkitPhase;
-use ERechnungToolkit\Generators\GaebDaXmlGenerator;
+use ERechnungToolkit\Enums\{GaebFormat, GaebPhase as ToolkitPhase};
+use ERechnungToolkit\Generators\GaebWriter;
 
 /**
  * GAEB-Export inkl. Audit (Feature 049, MVP-085; Feature 108): erzeugt den
@@ -33,7 +33,7 @@ class BoqExportService {
 
     public function __construct(
         private readonly BoqDocumentFactory $documents,
-        private readonly GaebDaXmlGenerator $generator,
+        private readonly GaebWriter $writer,
         private readonly XRechnungGenerator $einvoice,
         private readonly GaebPreflight $preflight,
     ) {}
@@ -55,36 +55,46 @@ class BoqExportService {
     /**
      * @return array{xml: string, export: BoqExport}
      */
-    public function export(BillOfQuantity $boq, GaebPhase $phase, ?int $createdBy = null): array {
-        $xml = $this->render($boq, $phase);
+    public function export(BillOfQuantity $boq, GaebPhase $phase, ?int $createdBy = null, ?GaebFormat $format = null): array {
+        $target = $format ?? $this->sourceFormat($boq);
+        $written = $this->render($boq, $phase, $target);
 
         $export = BoqExport::query()->create([
             'organization_id' => $boq->organization_id,
             'bill_of_quantity_id' => $boq->id,
             'phase' => $phase,
             'gaeb_version' => '3.3',
-            'file_hash' => CryptoHelper::hash($xml),
+            'format' => $target->value,
+            // Was die Wandlung gekostet hat, gehört ins Protokoll (D6).
+            'losses' => $written['losses'] === [] ? null : $written['losses'],
+            'file_hash' => CryptoHelper::hash($written['content']),
             'item_count' => $boq->items()->count(),
             'created_by' => $createdBy,
         ]);
 
-        return ['xml' => $xml, 'export' => $export];
+        return ['xml' => $written['content'], 'losses' => $written['losses'], 'export' => $export];
+    }
+
+    /**
+     * Herkunftsformat des LV. Die Vergabestelle erwartet zurück, was sie
+     * herausgegeben hat; ohne Vermerk bleibt es bei DA XML.
+     */
+    public function sourceFormat(BillOfQuantity $boq): GaebFormat {
+        return GaebFormat::tryFrom((string) $boq->source_format) ?? GaebFormat::DaXml;
     }
 
     /** Reiner Inhalts-Hash ohne Protokollierung (z. B. für Idempotenzprüfungen). */
-    public function contentHash(BillOfQuantity $boq, GaebPhase $phase): string {
-        return CryptoHelper::hash($this->render($boq, $phase));
+    public function contentHash(BillOfQuantity $boq, GaebPhase $phase, ?GaebFormat $format = null): string {
+        return CryptoHelper::hash($this->render($boq, $phase, $format ?? $this->sourceFormat($boq))['content']);
     }
 
-    private function render(BillOfQuantity $boq, GaebPhase $phase): string {
-        return $this->generator->generate(
+    /** @return array{content: string, losses: list<string>} */
+    private function render(BillOfQuantity $boq, GaebPhase $phase, GaebFormat $format): array {
+        return $this->writer->write(
             $this->documents->fromModel($boq, $phase),
+            $format,
             ToolkitPhase::from($phase->value),
-            $boq->currency->value,
             self::EXPORT_DATE,
-            'WorkDiary',
-            null,
-            null,
             $this->contractor($boq),
         );
     }

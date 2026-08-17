@@ -125,4 +125,37 @@ final class BillOfQuantityImportTest extends TestCase {
             'name' => 'Neubau Lagerhalle Musterstadt',
         ]);
     }
+
+    /**
+     * Vergabestellen geben dieselbe Ausschreibung auch als GAEB 90 heraus. Die
+     * Familie erkennt der Reader am Inhalt, die alte Codepage löst er dabei auf
+     * — die Endung entscheidet nichts.
+     */
+    public function test_imports_a_gaeb_90_file(): void {
+        $records = [
+            str_pad('00', 10) . '83' . str_pad('Musterprojekt', 50) . '1122PPPPI90',
+            '1111       N',
+            '12Erdarbeiten',
+            '211111  10 NNN         00000051300m2  ',
+            '25Boden loesen',
+            '26   Baugelaende abraeumen',
+            '99' . str_repeat(' ', 66) . '000001',
+        ];
+        $file = '';
+        foreach ($records as $index => $body) {
+            $file .= str_pad(substr($body, 0, 74), 74) . str_pad((string) ($index + 1), 6, '0', STR_PAD_LEFT) . "\r\n";
+        }
+
+        $import = $this->importer->import($file, 'vergabe.d83', $this->organization->id);
+
+        $this->assertSame(GaebImportStatus::Imported, $import->status);
+
+        $boq = BillOfQuantity::query()->findOrFail($import->bill_of_quantity_id);
+        $this->assertSame(1, $boq->items()->count());
+
+        $item = $boq->items()->firstOrFail();
+        $this->assertSame('11.11.10', $item->reference_no);
+        $this->assertSame('m2', $item->unit);
+        $this->assertSame('Boden loesen', $item->short_text);
+    }
 }

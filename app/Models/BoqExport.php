@@ -33,6 +33,8 @@ class BoqExport extends Model {
     use HasFactory;
 
     protected $fillable = [
+        'format',
+        'losses',
         'organization_id',
         'bill_of_quantity_id',
         'phase',
@@ -43,6 +45,7 @@ class BoqExport extends Model {
     ];
 
     protected $casts = [
+        'losses' => 'array',
         'phase' => GaebPhase::class,
         'item_count' => 'integer',
     ];

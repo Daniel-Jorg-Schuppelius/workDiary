@@ -39,6 +39,7 @@ class GaebImport extends Model {
     use HasFactory;
 
     protected $fillable = [
+        'source_format',
         'organization_id',
         'bill_of_quantity_id',
         'filename',

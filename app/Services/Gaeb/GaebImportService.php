@@ -12,12 +12,14 @@ declare(strict_types=1);
 
 namespace App\Services\Gaeb;
 
-use App\Enums\Gaeb\{BoqItemStatus, BoqItemType, GaebImportStatus, GaebPhase};
-use App\Models\{BillOfQuantity, BoqItem, BoqItemPriceSnapshot, BoqSection, GaebImport};
+use App\Enums\Gaeb\{BoqProgressSource, BoqItemStatus, BoqItemType, GaebImportStatus, GaebPhase};
+use App\Models\{BillOfQuantity, BoqCatalog, BoqCatalogAssignment, BoqItem, BoqItemPriceSnapshot, BoqItemQuantitySplit, BoqSection, GaebImport};
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\ValueObjects\Money;
-use ERechnungToolkit\Entities\Gaeb\{GaebBoq, GaebTotals};
-use ERechnungToolkit\Parsers\GaebDaXmlParser;
+use ERechnungToolkit\Entities\Gaeb\{GaebBoq, GaebItem, GaebCatalogAssignment, GaebQuantitySplit, GaebTotals};
+use ERechnungToolkit\Helper\Gaeb\GaebTakeoffCalculator;
+use ERechnungToolkit\Parsers\GaebReader;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -33,8 +35,10 @@ use InvalidArgumentException;
  */
 class GaebImportService {
     public function __construct(
-        private readonly GaebDaXmlParser $parser,
+        private readonly GaebReader $reader,
         private readonly GaebPreflight $preflight,
+        private readonly BoqProgressService $progress,
+        private readonly GaebTakeoffCalculator $takeoff,
     ) {}
 
     /**
@@ -46,11 +50,16 @@ class GaebImportService {
      *     name?: string|null
      * } $options
      */
-    public function import(string $xml, string $filename, int $organizationId, array $options = []): GaebImport {
-        $fileHash = CryptoHelper::hash($xml);
+    public function import(string $content, string $filename, int $organizationId, array $options = []): GaebImport {
+        // Der Hash beschreibt die Datei, wie sie hereinkam — vor jeder
+        // Umkodierung, damit derselbe Upload denselben Hash behält.
+        $fileHash = CryptoHelper::hash($content);
 
         try {
-            $parsed = $this->parser->parse($xml);
+            // Alle drei Formatfamilien: die Familie kommt aus dem Inhalt, nicht
+            // aus der Endung, und die alte Codepage wird dabei aufgelöst.
+            $format = $this->reader->detect($content, $filename);
+            $parsed = $this->reader->read($content, $filename);
         } catch (InvalidArgumentException $e) {
             return GaebImport::query()->create([
                 'organization_id' => $organizationId,
@@ -68,6 +77,7 @@ class GaebImportService {
             return GaebImport::query()->create([
                 'organization_id' => $organizationId,
                 'filename' => $filename,
+                'source_format' => $format->value,
                 'file_hash' => $fileHash,
                 'gaeb_version' => $parsed->getVersion(),
                 'phase' => GaebPhase::fromCode($parsed->getPhaseCode()),
@@ -88,7 +98,7 @@ class GaebImportService {
             $this->guardReimport($target, $parsed);
         }
 
-        return DB::transaction(function () use ($parsed, $filename, $organizationId, $options, $fileHash, $report, $target): GaebImport {
+        return DB::transaction(function () use ($parsed, $filename, $organizationId, $options, $fileHash, $report, $target, $format): GaebImport {
             $boq = $target ?? BillOfQuantity::query()->create([
                 'organization_id' => $organizationId,
                 'project_id' => $options['project_id'] ?? null,
@@ -96,6 +106,8 @@ class GaebImportService {
                 'name' => $options['name'] ?? ($parsed->getProjectName() ?? $filename),
                 'external_id' => $parsed->getExternalId(),
                 'gaeb_version' => $parsed->getVersion(),
+                // Die Gegenseite erwartet das Herkunftsformat zurück (D6).
+                'source_format' => $format->value,
                 'up_components' => $this->mapUpComponents($parsed),
                 'totals' => $this->mapTotals($parsed->getTotals()),
                 'phase' => GaebPhase::fromCode($parsed->getPhaseCode()),
@@ -107,12 +119,17 @@ class GaebImportService {
                 // Reimport ohne Ausführungsbezug: alte Struktur ersetzen.
                 $boq->items()->delete();
                 $boq->sections()->delete();
+                $boq->catalogs()->delete();
+                $boq->catalogAssignments()->delete();
             }
+
+            $this->persistCatalogs($boq, $organizationId, $parsed);
 
             $import = GaebImport::query()->create([
                 'organization_id' => $organizationId,
                 'bill_of_quantity_id' => $boq->id,
                 'filename' => $filename,
+                'source_format' => $format->value,
                 'file_hash' => $fileHash,
                 'gaeb_version' => $parsed->getVersion(),
                 'phase' => GaebPhase::fromCode($parsed->getPhaseCode()),
@@ -148,9 +165,68 @@ class GaebImportService {
                 'position' => $section->getPosition(),
             ]);
             $map[$section->getReference()] = $created->id;
+            $this->persistAssignments($boq, $organizationId, $created, $section->getCatalogAssignments());
         }
 
         return $map;
+    }
+
+    /**
+     * Katalogdefinitionen des Kopfes (Feature 109). Ohne sie wäre eine
+     * Zuordnung ein Schlüssel ohne Bedeutung — der Typ trägt die Ausgabe der
+     * DIN 276.
+     */
+    private function persistCatalogs(BillOfQuantity $boq, int $organizationId, GaebBoq $parsed): void {
+        foreach ($parsed->getCatalogs() as $catalog) {
+            BoqCatalog::query()->updateOrCreate(
+                ['bill_of_quantity_id' => $boq->id, 'catalog_key' => $catalog->getId()],
+                [
+                    'organization_id' => $organizationId,
+                    'type' => $catalog->getType(),
+                    'name' => $catalog->getName(),
+                    'assign_type' => $catalog->getAssignType(),
+                ]
+            );
+        }
+    }
+
+    /**
+     * Zuordnungen eines Knotens — Position, Abschnitt oder Teilmenge.
+     *
+     * @param  list<GaebCatalogAssignment>  $assignments
+     */
+    private function persistAssignments(BillOfQuantity $boq, int $organizationId, Model $assignable, array $assignments): void {
+        foreach ($assignments as $assignment) {
+            BoqCatalogAssignment::query()->create([
+                'organization_id' => $organizationId,
+                'bill_of_quantity_id' => $boq->id,
+                'assignable_type' => $assignable->getMorphClass(),
+                'assignable_id' => $assignable->getKey(),
+                'catalog_key' => $assignment->getCatalogId(),
+                'code' => $assignment->getCode(),
+                'quantity' => $assignment->getQuantity(),
+                'source' => 'import',
+            ]);
+        }
+    }
+
+    /**
+     * Teilmengen einer Position samt ihrer eigenen Zuordnungen. Sie sind der
+     * Träger, wenn eine Position auf mehrere Kostengruppen entfällt.
+     *
+     * @param  list<GaebQuantitySplit>  $splits
+     */
+    private function persistSplits(BillOfQuantity $boq, int $organizationId, BoqItem $item, array $splits): void {
+        foreach ($splits as $index => $split) {
+            $created = BoqItemQuantitySplit::query()->create([
+                'organization_id' => $organizationId,
+                'boq_item_id' => $item->id,
+                'quantity' => $split->getQuantity(),
+                'percent' => $split->getPercent(),
+                'position' => $index,
+            ]);
+            $this->persistAssignments($boq, $organizationId, $created, $split->getCatalogAssignments());
+        }
     }
 
     /**
@@ -222,7 +298,40 @@ class GaebImportService {
                     'captured_at' => $created->freshTimestamp(),
                 ]);
             }
+
+            $this->persistAssignments($boq, $organizationId, $created, $item->getCatalogAssignments());
+            $this->persistSplits($boq, $organizationId, $created, $item->getQuantitySplits());
+            $this->persistTakeoff($created, $item, $options['created_by'] ?? null);
         }
+    }
+
+    /**
+     * Aufmaß aus der X31 als Mengenfortschritt (MVP-571). Die Ansätze werden
+     * **nachgerechnet**, nicht übernommen: Bei der Mengenermittlung gilt die
+     * selbst errechnete Summe (GAEB-Regel). Zeilen mit einer Formel, die das
+     * Rechenwerk nicht kennt, landen als Hinweis in der Notiz — die Menge wäre
+     * sonst still zu klein.
+     */
+    private function persistTakeoff(BoqItem $created, GaebItem $item, ?int $createdBy): void {
+        if ($item->getTakeoffLines() === []) {
+            return;
+        }
+
+        $result = $this->takeoff->total($item);
+        if ($result['lines'] === 0) {
+            return;
+        }
+
+        $note = __('gaeb.progress.from_takeoff', ['lines' => $result['lines']]);
+        if ($result['skipped'] !== []) {
+            $note .= ' ' . __('gaeb.progress.takeoff_skipped', ['count' => count($result['skipped'])]);
+        }
+
+        $this->progress->record($created, (string) $result['quantity'], [
+            'source' => BoqProgressSource::Measurement,
+            'note' => $note,
+            'created_by' => $createdBy,
+        ]);
     }
 
     /**

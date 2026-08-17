@@ -41,6 +41,7 @@ class BillOfQuantity extends Model {
     use HasSqid;
 
     protected $fillable = [
+        'source_format',
         'organization_id',
         'project_id',
         'diary_entry_id',
@@ -91,5 +92,15 @@ class BillOfQuantity extends Model {
     /** @return HasMany<BoqExport, $this> */
     public function exports(): HasMany {
         return $this->hasMany(BoqExport::class);
+    }
+
+    /** @return HasMany<BoqCatalog, $this> */
+    public function catalogs(): HasMany {
+        return $this->hasMany(BoqCatalog::class);
+    }
+
+    /** @return HasMany<BoqCatalogAssignment, $this> */
+    public function catalogAssignments(): HasMany {
+        return $this->hasMany(BoqCatalogAssignment::class);
     }
 }

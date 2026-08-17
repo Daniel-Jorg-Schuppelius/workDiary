@@ -13,10 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Gaeb;
 
 use App\Enums\Gaeb\GaebPhase;
-use App\Models\{BillOfQuantity, BoqItem, BoqSection};
+use App\Models\{BillOfQuantity, BoqCatalogAssignment, BoqItem, BoqSection};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
-use ERechnungToolkit\Entities\Gaeb\{GaebBoq, GaebItem, GaebSection, GaebSubDescription, GaebTextComplement, GaebTotals, GaebUpComponent};
+use ERechnungToolkit\Entities\Gaeb\{GaebBoq, GaebCatalog, GaebCatalogAssignment, GaebItem, GaebQuantitySplit, GaebSection, GaebSubDescription, GaebTextComplement, GaebTotals, GaebUpComponent};
 use ERechnungToolkit\Enums\{GaebAlternativeBidStatus, GaebChangeOrderStatus, GaebItemType};
 
 /**
@@ -60,6 +60,7 @@ class BoqDocumentFactory {
             upComponents: $components,
             totals: $this->totals($boq->totals, $boq->currency),
             currency: $boq->currency,
+            catalogs: $this->catalogs($boq),
         );
     }
 
@@ -75,6 +76,7 @@ class BoqDocumentFactory {
             position: $section->position,
             totals: $this->totals($section->totals, $boq->currency),
             externalId: $section->external_id,
+            catalogAssignments: $this->assignments($section->catalogAssignments),
         );
     }
 
@@ -136,7 +138,64 @@ class BoqDocumentFactory {
                 : null,
             externalId: $item->external_id,
             position: $item->position,
+            catalogAssignments: $this->assignments($item->catalogAssignments),
+            quantitySplits: $this->splits($item),
         );
+    }
+
+    /**
+     * Katalogdefinitionen des LV — ohne sie wäre eine Zuordnung ein Schlüssel
+     * ohne Bedeutung.
+     *
+     * @return list<GaebCatalog>
+     */
+    private function catalogs(BillOfQuantity $boq): array {
+        $catalogs = [];
+        foreach ($boq->catalogs as $catalog) {
+            $catalogs[] = new GaebCatalog(
+                id: $catalog->catalog_key,
+                type: $catalog->type,
+                name: $catalog->name,
+                assignType: $catalog->assign_type,
+            );
+        }
+
+        return $catalogs;
+    }
+
+    /**
+     * @param  iterable<BoqCatalogAssignment>  $assignments
+     * @return list<GaebCatalogAssignment>
+     */
+    private function assignments(iterable $assignments): array {
+        $out = [];
+        foreach ($assignments as $assignment) {
+            $out[] = new GaebCatalogAssignment(
+                catalogId: $assignment->catalog_key,
+                code: $assignment->code,
+                quantity: $assignment->quantity,
+            );
+        }
+
+        return $out;
+    }
+
+    /**
+     * Teilmengen mit ihren eigenen Zuordnungen.
+     *
+     * @return list<GaebQuantitySplit>
+     */
+    private function splits(BoqItem $item): array {
+        $splits = [];
+        foreach ($item->quantitySplits as $split) {
+            $splits[] = new GaebQuantitySplit(
+                quantity: $split->quantity,
+                percent: $split->percent,
+                catalogAssignments: $this->assignments($split->catalogAssignments),
+            );
+        }
+
+        return $splits;
     }
 
     /** @param array<string, string|null>|null $totals */

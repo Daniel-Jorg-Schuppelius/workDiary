@@ -13,7 +13,7 @@ namespace App\Models;
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
 
 /**
  * Abschnittsknoten der LV-Hierarchie (Feature 049, MVP-082): trägt eine
@@ -67,5 +67,10 @@ class BoqSection extends Model {
     /** @return HasMany<BoqItem, $this> */
     public function items(): HasMany {
         return $this->hasMany(BoqItem::class);
+    }
+
+    /** @return MorphMany<BoqCatalogAssignment, $this> */
+    public function catalogAssignments(): MorphMany {
+        return $this->morphMany(BoqCatalogAssignment::class, 'assignable');
     }
 }
