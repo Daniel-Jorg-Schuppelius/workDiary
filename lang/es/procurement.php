@@ -231,6 +231,8 @@ return [
         'empty' => 'No hay fuentes de catálogo.',
         'confirm_delete' => '¿Eliminar esta fuente de catálogo y todos sus artículos?',
         'no_items' => 'Aún no hay artículos de catálogo.',
+        'search_placeholder' => 'N.º, nombre, matchcode, GTIN …',
+        'extras' => ['raw_surcharges' => 'Recargos de materias primas', 'worktimes' => 'Tiempo de trabajo', 'graphics' => 'Imágenes'],
         'import_title' => 'Importar lista de precios',
         'csv_file' => 'Archivo CSV',
         'xlsx_file' => 'Archivo XLSX',

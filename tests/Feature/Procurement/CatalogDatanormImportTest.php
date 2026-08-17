@@ -416,6 +416,38 @@ final class CatalogDatanormImportTest extends TestCase {
         $this->assertSame('30.00', (string) $article->assembly_minutes);
     }
 
+    public function test_b_record_metadata_matchcode_vat_and_graphics_are_persisted(): void {
+        // MVP-601: Matchcode als Spalte, B-Satz-Restfelder + MwSt-Kennzeichen +
+        // G-Satz-Bildverweise in extra_attributes; Übernahme setzt tax_class.
+        app(DatanormImportService::class)->import($this->source, implode("\r\n", [
+            'V;050;A;20260816;EUR;Kabelkatalog;;TESTCO;;;;;;;;',
+            'A;N;NYM-B;Kabel NYM-J 3x1,5;;MTR;2;100;18950;;CAB;;NYMJ15;;ALT-1;;;Typ-X;;G01;;42;;;;1;;;3;',
+            'G;N;G01;1;11;NYMBILD;JPG;Produktbild;',
+            'E;4;;',
+        ]) . "\r\n");
+
+        $item = SupplierCatalogItem::query()->where('external_no', 'NYM-B')->firstOrFail();
+        $this->assertSame('NYMJ15', $item->matchcode);
+        $extra = (array) $item->extra_attributes;
+        $this->assertSame('reduced', $extra['datanorm_vat'] ?? null);
+        $this->assertSame('ALT-1', $extra['datanorm_alt_number'] ?? null);
+        $this->assertSame('Typ-X', $extra['datanorm_manufacturer_type'] ?? null);
+        $this->assertSame('42', $extra['datanorm_catalogue_page'] ?? null);
+        $this->assertSame('1', $extra['datanorm_stock'] ?? null);
+        $this->assertSame([['type' => '11', 'file' => 'NYMBILD.JPG', 'description' => 'Produktbild']], $extra['datanorm_graphics'] ?? null);
+
+        // Suche über den Matchcode findet den Artikel.
+        $this->actingAs($this->admin)
+            ->get(route('supplier-catalogs.show', [$this->source, 'q' => 'NYMJ15']))
+            ->assertOk()
+            ->assertSee('NYM-B');
+
+        // Übernahme: MwSt-Kennzeichen 3 (ermäßigt) landet am Artikel.
+        app(\App\Services\Procurement\CatalogArticleAdopter::class)->adoptSource($this->source);
+        $article = \App\Models\Article::query()->where('name', 'Kabel NYM-J 3x1,5')->firstOrFail();
+        $this->assertSame('ermäßigt', $article->tax_class);
+    }
+
     public function test_customer_mismatch_rejects_the_file(): void {
         $this->source->forceFill(['expected_customer_no' => 'KD-1'])->save();
 

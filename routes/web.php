@@ -1136,6 +1136,8 @@ Route::middleware('auth')->group(function () {
         Route::resource('articles', \App\Http\Controllers\ArticleController::class);
         Route::post('articles/{article}/retire', [\App\Http\Controllers\ArticleController::class, 'retire'])->name('articles.retire');
         Route::post('articles/{article}/supplies/{supply}/prefer', [\App\Http\Controllers\ArticleController::class, 'setPreferredSupply'])->name('articles.supplies.prefer'); // Feature 050 Lieferantenvergleich
+        Route::post('articles/{article}/tiers', [\App\Http\Controllers\ArticleController::class, 'storeTier'])->name('articles.tiers.store'); // Feature 107, MVP-605
+        Route::delete('articles/{article}/tiers/{tier}', [\App\Http\Controllers\ArticleController::class, 'destroyTier'])->name('articles.tiers.destroy');
         Route::post('articles/{article}/options', [\App\Http\Controllers\ArticleController::class, 'storeOption'])->name('articles.options.store');
         Route::post('articles/{article}/options/{option}/values', [\App\Http\Controllers\ArticleController::class, 'storeOptionValue'])->name('articles.options.values.store');
         Route::post('articles/{article}/units', [\App\Http\Controllers\ArticleController::class, 'storeUnit'])->name('articles.units.store');

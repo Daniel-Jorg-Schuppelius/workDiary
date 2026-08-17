@@ -58,6 +58,7 @@ class SupplierCatalogItem extends Model {
         'manufacturer',
         'brand',
         'gtin',
+        'matchcode',
         'category',
         'classification_system',
         'classification_code',

@@ -135,6 +135,15 @@ class CatalogArticleAdopter {
         return $fallback;
     }
 
+    /** MwSt-Kennzeichen (MVP-601): ermäßigt/erhöht aus dem DATANORM-Satz. */
+    private function taxClass(SupplierCatalogItem $item): ?string {
+        return match (((array) $item->extra_attributes)['datanorm_vat'] ?? null) {
+            'reduced' => 'ermäßigt',
+            'increased' => 'erhöht',
+            default => null,
+        };
+    }
+
     /** Tarif-Gruppe: Hersteller-Nr. (CSP-Produkt), sonst Name (Domains u. ä.). */
     private function groupKey(SupplierCatalogItem $item): string {
         $manufacturerNo = trim((string) $item->manufacturer_no);
@@ -195,6 +204,9 @@ class CatalogArticleAdopter {
                         'default_sale_price' => $plainSingle ? $this->salePrice($first) : null,
                         // MVP-565: DATANORM-Montagezeit (ARBA) in die Kalkulationsbasis.
                         'assembly_minutes' => $plainSingle ? $this->assemblyMinutes($first) : null,
+                        // MVP-601: MwSt-Kennzeichen aus dem DATANORM-A-/B-Satz —
+                        // der ermäßigte/erhöhte Satz geht nicht mehr verloren.
+                        'tax_class' => $plainSingle ? $this->taxClass($first) : null,
                     ]);
                     $summary['articles']++;
                 }

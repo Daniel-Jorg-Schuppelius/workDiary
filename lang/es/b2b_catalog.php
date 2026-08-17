@@ -99,6 +99,8 @@ return [
         'line_unmatched' => 'artículo sin asignar',
     ],
 
+    'copper_surcharge_position' => 'Recargo de cobre (precio diario) del artículo :number',
+    'copper_surcharge_label' => 'recargo de cobre por unidad',
     'public' => [
         'title' => 'Catálogo B2B',
         'footer' => 'Catálogo punchout — el carrito se entrega a su sistema de compra; el pedido se realiza a través de su propio sistema.',

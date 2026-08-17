@@ -99,6 +99,8 @@ return [
         'line_unmatched' => 'article non attribué',
     ],
 
+    'copper_surcharge_position' => 'Majoration cuivre (prix du jour) pour l\'article :number',
+    'copper_surcharge_label' => 'majoration cuivre par unité',
     'public' => [
         'title' => 'Catalogue B2B',
         'footer' => 'Catalogue punchout — le panier est transmis à votre système d\'achat ; la commande passe par votre propre système.',

@@ -71,6 +71,8 @@ class SaveArticleRequest extends BaseFormRequest {
             'base_unit' => ['required', 'string', 'max:20'],
             'category' => ['nullable', 'string', 'max:64'],
             'assembly_minutes' => ['nullable', 'numeric', 'min:0', 'max:99999'],
+            'copper_weight' => ['nullable', 'numeric', 'min:0', 'max:999999'],
+            'copper_base_price' => ['nullable', 'numeric', 'min:0', 'max:99999999'],
             'subcategory' => ['nullable', 'string', 'max:64'],
             'sales_discount_group_id' => [
                 'nullable', 'integer',

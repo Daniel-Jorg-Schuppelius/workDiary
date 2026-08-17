@@ -165,6 +165,37 @@ class B2bPunchoutTest extends TestCase {
         );
     }
 
+    public function test_cart_adds_copper_surcharge_as_own_position(): void {
+        // MVP-603: Artikel mit Kupferdaten + gepflegte DEL-Notierung →
+        // eigene Warenkorbzeile; (2,00 − 1,50) × 0,043 kg = 0,0215 €/Einheit.
+        $data = $this->issueAccess();
+        $article = Article::factory()->create([
+            'organization_id' => $this->organization->id,
+            'number' => 'NYM-CU',
+            'name' => 'Kabel NYM-J 3x1,5',
+            'default_sale_price' => '1.9000',
+            'copper_weight' => '0.0430',
+            'copper_base_price' => '150.0000',
+        ]);
+        \App\Models\MetalQuotation::query()->create([
+            'organization_id' => $this->organization->id,
+            'metal' => 'CU', 'price_per_kg' => '2', 'quoted_at' => now()->toDateString(),
+        ]);
+        $item = $this->release($data['access'], $article, null);
+
+        $redirect = $this->punchout(['PASSWORD' => $data['secret']]);
+        parse_str((string) parse_url((string) $redirect->headers->get('Location'), PHP_URL_QUERY), $query);
+
+        $this->post('/b2b-katalog/' . $this->organization->slug . '/warenkorb', [
+            't' => (string) $query['t'],
+            'qty' => [$item->sqid => '10'],
+        ])->assertOk()
+            ->assertSee('name="NEW_ITEM-MATNR[1]" value="NYM-CU"', false)
+            ->assertSee('name="NEW_ITEM-MATNR[2]" value="NYM-CU-CU"', false)
+            ->assertSee('name="NEW_ITEM-PRICE[2]" value="0.0215"', false)
+            ->assertSee('name="NEW_ITEM-QUANTITY[2]" value="10"', false);
+    }
+
     public function test_tampered_or_missing_token_yields_410(): void {
         $this->get('/b2b-katalog/' . $this->organization->slug . '/katalog?t=manipuliert')
             ->assertStatus(410);

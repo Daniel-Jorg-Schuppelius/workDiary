@@ -29,6 +29,9 @@ use CommonToolkit\ValueObjects\Money;
  * liegen dann weiterhin transparent in `extra_attributes`.
  */
 class MetalSurchargeService {
+    /** @var array<string, MetalQuotation|null> Notierungs-Memo je Org+Metall (Listen-Seiten). */
+    private array $quotations = [];
+
     /**
      * Effektiver EK je Einheit: Basispreis plus bewertete Rohstoffzuschläge.
      * Null, wenn der Artikel keinen Basispreis hat.
@@ -62,13 +65,40 @@ class MetalSurchargeService {
         return $effective->withScale(4);
     }
 
+    /**
+     * Verkaufsseitiger Kupferzuschlag je Einheit (Feature 107, MVP-603):
+     * deutsche Methode aus den Artikel-Kupferfeldern — (DEL-Notierung −
+     * enthaltene Basis je kg, Basis in €/100 kg) × Gewicht in kg/Einheit.
+     * Null ohne Kupferdaten, ohne Notierung oder wenn die Notierung die
+     * Basis nicht übersteigt (dann entfällt die Position).
+     */
+    public function salesSurcharge(\App\Models\Article $article): ?Money {
+        if ($article->copper_weight === null || (float) $article->copper_weight <= 0 || $article->copper_base_price === null) {
+            return null;
+        }
+        $quotation = $this->currentQuotation((int) $article->organization_id, 'CU');
+        if ($quotation?->price_per_kg === null) {
+            return null;
+        }
+
+        $includedPerKg = Money::of((string) $article->copper_base_price, $quotation->price_per_kg->getCurrency(), 6)->times(0.01);
+        $difference = $quotation->price_per_kg->withScale(6)->minus($includedPerKg);
+        if (! $difference->isPositive()) {
+            return null;
+        }
+
+        return $difference->times((float) $article->copper_weight)->withScale(4);
+    }
+
     /** Jüngste Notierung eines Metalls (CU, AL, …) der Organisation. */
     public function currentQuotation(int $organizationId, string $metal): ?MetalQuotation {
         if (trim($metal) === '') {
             return null;
         }
 
-        return MetalQuotation::query()->withoutGlobalScopes()
+        $key = $organizationId . ':' . strtoupper(trim($metal));
+
+        return $this->quotations[$key] ??= MetalQuotation::query()->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
             ->where('metal', strtoupper(trim($metal)))
             ->orderByDesc('quoted_at')

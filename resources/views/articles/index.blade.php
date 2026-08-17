@@ -68,6 +68,17 @@
             <input id="art-q" type="text" name="q" value="{{ $search }}" placeholder="{{ __('Suche…') }}"
                    class="input input-sm input-bordered">
         </x-filter-field>
+        {{-- MVP-604: Kategorie-Filter --}}
+        @if (($categories ?? collect())->isNotEmpty())
+            <x-filter-field :label="__('article.field.category')" for="art-category">
+                <select id="art-category" name="category" class="select select-sm select-bordered" onchange="this.form.submit()">
+                    <option value="">{{ __('Alle') }}</option>
+                    @foreach ($categories as $cat)
+                        <option value="{{ $cat }}" @selected(($category ?? '') === $cat)>{{ $cat }}</option>
+                    @endforeach
+                </select>
+            </x-filter-field>
+        @endif
     </x-filter-bar>
 
     {{-- Status-Tabs über die gemeinsame Komponente (D5; Vollaudit 2026-07, N44). --}}

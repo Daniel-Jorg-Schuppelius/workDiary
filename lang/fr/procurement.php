@@ -231,6 +231,8 @@ return [
         'empty' => 'Aucune source de catalogue.',
         'confirm_delete' => 'Supprimer cette source de catalogue et tous ses articles ?',
         'no_items' => 'Aucun article de catalogue.',
+        'search_placeholder' => 'N°, nom, matchcode, GTIN …',
+        'extras' => ['raw_surcharges' => 'Majorations matières premières', 'worktimes' => 'Temps de travail', 'graphics' => 'Images'],
         'import_title' => 'Importer une liste de prix',
         'csv_file' => 'Fichier CSV',
         'xlsx_file' => 'Fichier XLSX',

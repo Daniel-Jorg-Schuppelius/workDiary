@@ -99,6 +99,8 @@ return [
         'line_unmatched' => 'articolo non abbinato',
     ],
 
+    'copper_surcharge_position' => 'Maggiorazione rame (prezzo giornaliero) per l\'articolo :number',
+    'copper_surcharge_label' => 'maggiorazione rame per unità',
     'public' => [
         'title' => 'Catalogo B2B',
         'footer' => 'Catalogo punchout — il carrello viene consegnato al vostro sistema d\'acquisto; l\'ordine passa dal vostro sistema.',

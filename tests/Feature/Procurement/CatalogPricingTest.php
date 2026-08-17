@@ -102,6 +102,50 @@ final class CatalogPricingTest extends TestCase {
         $this->assertSame($specific->id, $resolved?->id);
     }
 
+    public function test_rule_matches_linked_article_category(): void {
+        // MVP-604: Regel-Warengruppe matcht auch die Kategorie des
+        // verknüpften Artikels, nicht nur die Katalog-Kategorie.
+        $this->rule(['name' => 'global', 'markup_percent' => '10']);
+        $specific = $this->rule(['name' => 'kabel', 'category' => 'Kabel', 'markup_percent' => '40']);
+
+        $resolved = $this->pricing->resolveRule($this->organization->id, $this->supplier->id, null, 'Kabel');
+        $this->assertSame($specific->id, $resolved?->id);
+
+        // Über den Katalogartikel: Kategorie kommt vom verknüpften Artikel.
+        $article = Article::factory()->create([
+            'organization_id' => $this->organization->id, 'category' => 'Kabel', 'purchasable' => true,
+        ]);
+        $item = $this->item();
+        app(CatalogLinkService::class)->link($item, $article);
+
+        $suggestion = $this->pricing->suggestForItem($item->fresh());
+        $this->assertSame($specific->id, $suggestion['rule']->id ?? null);
+    }
+
+    public function test_assembly_minutes_add_labour_to_suggestion(): void {
+        // MVP-602: Montagezeit × Kalkulationsstundensatz auf den Materialpreis.
+        $this->organization->forceFill([
+            'settings' => array_merge((array) $this->organization->settings, [
+                'invoicing' => ['assembly_hourly_rate' => '60'],
+            ]),
+        ])->save();
+        $this->rule(['markup_percent' => '50']);
+
+        $article = Article::factory()->create([
+            'organization_id' => $this->organization->id, 'purchasable' => true,
+            'assembly_minutes' => '30.00',
+        ]);
+        $item = $this->item('100.0000');
+        app(CatalogLinkService::class)->link($item, $article);
+
+        $suggestion = $this->pricing->suggestForItem($item->fresh());
+        // 100 × 1,5 = 150 Material + 0,5 h × 60 € = 30 € Lohn.
+        $this->assertSame('180.00', $suggestion['price']);
+        $this->assertSame('30.00', $suggestion['labour'] ?? null);
+        // Marge bleibt materialbezogen.
+        $this->assertSame(33.3, $suggestion['margin']);
+    }
+
     public function test_apply_to_article_sets_sale_price(): void {
         $rule = $this->rule(['target_margin' => '30']);
         $item = $this->item('112.0000');

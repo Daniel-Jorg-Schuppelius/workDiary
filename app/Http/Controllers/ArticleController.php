@@ -42,10 +42,14 @@ class ArticleController extends Controller {
         ['status' => $status, 'search' => $search, 'sort' => $sort, 'dir' => $dir]
             = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'name');
 
+        // MVP-604: Kategorie-Filter über die gepflegten Artikel-Kategorien.
+        $category = trim((string) $request->input('category', ''));
+
         $articles = Article::query()
             ->withCount('variants')
             ->when($search !== '', fn($q) => $q->search($search))
             ->when($status !== 'all', fn($q) => $q->where('status', $status))
+            ->when($category !== '', fn($q) => $q->where('category', $category))
             ->orderBy($sort, $dir)
             ->paginate(25)
             ->withQueryString();
@@ -54,6 +58,9 @@ class ArticleController extends Controller {
             'articles' => $articles,
             'status' => $status,
             'search' => $search,
+            'category' => $category,
+            'categories' => Article::query()->whereNotNull('category')->where('category', '!=', '')
+                ->distinct()->orderBy('category')->pluck('category'),
             'sort' => $sort,
             'dir' => $dir,
             'types' => ArticleType::cases(),
@@ -93,7 +100,7 @@ class ArticleController extends Controller {
     public function show(Article $article, \App\Services\Procurement\SupplySourceComparator $comparator): View {
         Gate::authorize('view', $article);
 
-        $article->load(['optionDefinitions.values', 'variants.optionValues', 'units', 'externalMappings']);
+        $article->load(['optionDefinitions.values', 'variants.optionValues', 'units', 'externalMappings', 'priceTiers']);
 
         $supplies = $comparator->forArticle($article);
 
@@ -165,6 +172,31 @@ class ArticleController extends Controller {
     }
 
     // ── Verschachtelte Stammdaten ───────────────────────────────────────
+
+    /** Verkaufs-Staffelpreis anlegen/aktualisieren (Feature 107, MVP-605). */
+    public function storeTier(Request $request, Article $article): RedirectResponse {
+        Gate::authorize('update', $article);
+        $data = $request->validate([
+            'min_qty' => ['required', 'numeric', 'min:0.01', 'max:99999999'],
+            'unit_price' => ['required', 'numeric', 'min:0', 'max:99999999'],
+        ]);
+
+        $article->priceTiers()->updateOrCreate(
+            ['article_id' => $article->id, 'min_qty' => number_format((float) $data['min_qty'], 2, '.', '')],
+            ['organization_id' => $article->organization_id, 'unit_price' => (string) $data['unit_price']]
+        );
+
+        return back()->with('success', __('article.tiers.flash.saved'));
+    }
+
+    public function destroyTier(Article $article, \App\Models\ArticlePriceTier $tier): RedirectResponse {
+        Gate::authorize('update', $article);
+        abort_unless((int) $tier->article_id === (int) $article->id, 404);
+
+        $tier->delete();
+
+        return back()->with('success', __('article.tiers.flash.deleted'));
+    }
 
     public function storeOption(Request $request, Article $article): RedirectResponse {
         Gate::authorize('update', $article);

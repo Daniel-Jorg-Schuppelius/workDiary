@@ -99,6 +99,8 @@ return [
         'line_unmatched' => 'Artikel nicht zugeordnet',
     ],
 
+    'copper_surcharge_position' => 'Kupferzuschlag (Tagespreis) zu Artikel :number',
+    'copper_surcharge_label' => 'Kupferzuschlag je Einheit',
     'public' => [
         'title' => 'B2B-Katalog',
         'footer' => 'Punchout-Katalog — Warenkorb wird an Ihr Einkaufssystem übergeben, die Bestellung läuft über Ihr eigenes System.',

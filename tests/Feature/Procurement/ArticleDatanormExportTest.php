@@ -119,6 +119,52 @@ final class ArticleDatanormExportTest extends TestCase {
         $this->assertSame(1, \App\Models\AuditLog::query()->where('event', 'datanorm.exported')->count());
     }
 
+    public function test_export_includes_z_and_c_records_for_copper_tiers_and_assembly(): void {
+        // MVP-605: Kupferdaten, Staffelpreise und Montagezeit des Artikels
+        // reisen als Z-/C-Sätze im eigenen DATANORM-Export mit.
+        $article = Article::query()->where('number', 'WD-1001')->firstOrFail();
+        $article->forceFill([
+            'copper_weight' => '0.0430',
+            'copper_base_price' => '150.0000',
+            'assembly_minutes' => '30.00',
+        ])->save();
+        $article->priceTiers()->create(['organization_id' => $this->organization->id, 'min_qty' => '100.00', 'unit_price' => '79.5000']);
+        $article->priceTiers()->create(['organization_id' => $this->organization->id, 'min_qty' => '500.00', 'unit_price' => '69.5000']);
+
+        $files = $this->download(['version' => 5, 'prices' => 'list']);
+        $catalog = (new DatanormParser)->parse($files['datanorm']);
+        $this->assertSame([], $catalog->getWarnings());
+
+        $wartung = $catalog->getArticles()[0];
+
+        $scales = $wartung->getScalePrices();
+        $this->assertCount(2, $scales);
+        $this->assertSame('79.50', $scales[0]->getAmount()?->getAmount());
+        $this->assertSame('100', $scales[0]->getFrom());
+        $this->assertSame('499', $scales[0]->getTo());
+        $this->assertSame('500', $scales[1]->getFrom());
+        $this->assertNull($scales[1]->getTo());
+
+        $surcharges = $wartung->getRawMaterialSurcharges();
+        $this->assertCount(1, $surcharges);
+        $this->assertSame('CU', $surcharges[0]->getRawMaterial());
+        // DEL 2,00 €/kg: (2,00 − 1,50) × 0,043 kg = 0,0215 €/Einheit.
+        $this->assertSame('0.0215', $surcharges[0]->germanSurchargePerPriceUnit(
+            \CommonToolkit\ValueObjects\Money::of('2', \CommonToolkit\Enums\CurrencyCode::Euro, 2)
+        )?->getAmount());
+
+        $workTimes = $wartung->getWorkTimes();
+        $this->assertCount(1, $workTimes);
+        $this->assertSame(30.0, $workTimes[0]->getMinutes());
+
+        // V4 transportiert dieselben Daten (verschobene Flags, ganze Tagespreise).
+        $v4 = (new DatanormParser)->parse($this->download(['version' => 4, 'prices' => 'list'])['datanorm']);
+        $v4Article = $v4->getArticles()[0];
+        $this->assertCount(2, $v4Article->getScalePrices());
+        $this->assertCount(1, $v4Article->getRawMaterialSurcharges());
+        $this->assertSame(30.0, $v4Article->getWorkTimes()[0]->getMinutes());
+    }
+
     public function test_datpreis_since_exports_only_changed_prices(): void {
         // Anlage-Historie liegt „jetzt"; 40 Tage später ändert sich nur WD-1002.
         $this->travelTo(now()->addDays(40));

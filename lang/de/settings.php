@@ -71,6 +71,8 @@ return [
         'billing_grouping_gap_minutes_hint' => 'Bis zu dieser Lücke werden Einträge beim Abrechnen zu einem Block zusammengefasst. Leer = keine Zusammenfassung.',
         'default_hourly_rate' => 'Standard-Stundensatz (Erlös)',
         'default_hourly_rate_hint' => 'Greift, wenn weder Eintrag, Kundenkondition, Mitarbeiter, Tätigkeit, Projekt noch Kunde einen Satz setzen. Leer = ohne Satz bleiben Zeiten bei 0,00 €.',
+        'assembly_hourly_rate' => 'Kalkulationsstundensatz Montage',
+        'assembly_hourly_rate_hint' => 'Bewertet die Artikel-Montagezeit im Verkaufspreisvorschlag; leer = Standard-Stundensatz.',
         'default_service_article' => 'Standardleistung (Artikel aus dem Faktura-System)',
         'default_service_none' => '— keine Standardleistung —',
         'default_service_hint' => 'Liefert Bezeichnung, Einheit, Standardtext und — falls kein Satz auffindbar ist — den Preis der Übergabe-Positionen. Abrechnungs-Regeln am Projekt überschreiben sie.',

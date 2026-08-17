@@ -68,6 +68,8 @@ return [
         'billing_grouping_gap_minutes_hint' => 'Entries within this gap are merged into one block when billing. Empty = no grouping.',
         'default_hourly_rate' => 'Default hourly rate (revenue)',
         'default_hourly_rate_hint' => 'Applies when neither entry, customer agreement, employee, activity, project nor customer sets a rate. Empty = entries without a rate stay at 0.00.',
+        'assembly_hourly_rate' => 'Assembly costing rate',
+        'assembly_hourly_rate_hint' => 'Values the article assembly time in the sale price suggestion; empty = default hourly rate.',
         'default_service_article' => 'Default service (article from the invoicing system)',
         'default_service_none' => '— no default service —',
         'default_service_hint' => 'Provides name, unit, standard text and — when no rate can be resolved — the price of the handover positions. Billing rules on the project override it.',

@@ -231,6 +231,8 @@ return [
         'empty' => 'Keine Katalogquellen vorhanden.',
         'confirm_delete' => 'Diese Katalogquelle und alle ihre Artikel löschen?',
         'no_items' => 'Noch keine Katalogartikel.',
+        'search_placeholder' => 'Nr., Name, Matchcode, GTIN …',
+        'extras' => ['raw_surcharges' => 'Rohstoffzuschläge', 'worktimes' => 'Arbeitszeit', 'graphics' => 'Bilder'],
         'import_title' => 'Preisliste importieren',
         'csv_file' => 'CSV-Datei',
         'xlsx_file' => 'XLSX-Datei',

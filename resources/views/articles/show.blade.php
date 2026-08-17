@@ -167,6 +167,45 @@
         @endif
     </x-card>
 
+    {{-- MVP-605: Verkaufs-Staffelpreise (Quelle der Z-Sätze im DATANORM-Export) --}}
+    <x-card>
+        <h2 class="font-semibold mb-3">{{ __('article.tiers.title') }}</h2>
+        <p class="mb-3 text-sm opacity-70">{{ __('article.tiers.hint') }}</p>
+        <x-table bare>
+            <x-slot:head>
+                <tr>
+                    <th class="text-right">{{ __('article.tiers.min_qty') }}</th>
+                    <th class="text-right">{{ __('article.tiers.unit_price') }}</th>
+                    <th></th>
+                </tr>
+            </x-slot:head>
+            @forelse ($article->priceTiers as $tier)
+                <tr>
+                    <td class="text-right tabular-nums">{{ rtrim(rtrim($tier->min_qty, '0'), '.') }}</td>
+                    <td class="text-right tabular-nums">{{ number_format((float) $tier->unit_price, 4, ',', '.') }} {{ $article->currency?->value ?? 'EUR' }}</td>
+                    <td class="text-right">
+                        @if ($canManage)
+                            <form method="POST" action="{{ route('articles.tiers.destroy', [$article, $tier]) }}">
+                                @csrf @method('DELETE')
+                                <x-icon-btn icon="delete" size="xs" tone="error" type="submit" :title="__('Löschen')" />
+                            </form>
+                        @endif
+                    </td>
+                </tr>
+            @empty
+                <tr><td colspan="3" class="text-center text-sm opacity-60">{{ __('article.tiers.empty') }}</td></tr>
+            @endforelse
+        </x-table>
+        @if ($canManage)
+            <form method="POST" action="{{ route('articles.tiers.store', $article) }}" class="flex flex-wrap items-end gap-2 mt-2">
+                @csrf
+                <input name="min_qty" type="number" step="0.01" min="0.01" required placeholder="{{ __('article.tiers.min_qty') }}" class="input input-sm input-bordered w-32">
+                <input name="unit_price" type="number" step="0.0001" min="0" required placeholder="{{ __('article.tiers.unit_price') }}" class="input input-sm input-bordered w-32">
+                <button type="submit" class="btn btn-sm">{{ __('article.tiers.action.add') }}</button>
+            </form>
+        @endif
+    </x-card>
+
     @if ($article->externalMappings->isNotEmpty())
         <x-card>
             <h2 class="font-semibold mb-3">{{ __('article.external_mappings') }}</h2>
