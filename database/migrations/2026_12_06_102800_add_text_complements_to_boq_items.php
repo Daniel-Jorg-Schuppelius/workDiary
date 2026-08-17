@@ -15,7 +15,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Feature 108, MVP-568: Textergänzungen einer Position (GAEB TextComplement).
+ * Feature 108, MVP-618: Textergänzungen einer Position (GAEB TextComplement).
  * Ihre Nummern sind bei der Angebotsabgabe unverändert zurückzugeben, und
  * ava-sign prüft beim Reimport, ob alle Lücken gefüllt sind — sie dürfen daher
  * nicht im Fließtext verschwinden.

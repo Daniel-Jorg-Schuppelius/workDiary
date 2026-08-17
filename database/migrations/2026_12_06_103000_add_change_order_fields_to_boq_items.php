@@ -15,7 +15,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Feature 108, MVP-574: Nachträge tragen in GAEB eine Nachtragsnummer (`CONo`)
+ * Feature 108, MVP-624: Nachträge tragen in GAEB eine Nachtragsnummer (`CONo`)
  * und einen eigenen Status (`COStatus`, acht Zustände). Das bisherige Flag
  * `is_addendum` konnte beides nicht abbilden — und wurde nie gesetzt, weil der
  * Parser auf `STLNo` prüfte, ein Element, das es im Schema nicht gibt.

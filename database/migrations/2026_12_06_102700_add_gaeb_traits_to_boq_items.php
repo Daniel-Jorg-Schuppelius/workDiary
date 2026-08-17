@@ -15,7 +15,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Feature 108, MVP-565: GAEB-Positionsmerkmale, die bisher beim Import verloren
+ * Feature 108, MVP-615: GAEB-Positionsmerkmale, die bisher beim Import verloren
  * gingen — Bedarfsposition mit/ohne Gesamtbetrag, Grund-/Alternativgruppe,
  * Zuschlagsart und die Unterbeschreibungen einer Leitbeschreibung.
  */
