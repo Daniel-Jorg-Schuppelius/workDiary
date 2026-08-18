@@ -696,6 +696,15 @@ return [
     ],
 
     'package' => [
+        'section' => [
+            'soa' => 'Erklärung zur Anwendbarkeit (SoA)',
+            'risks' => 'Risikoregister',
+            'controls' => 'Maßnahmen',
+            'conformity' => 'Feststellungen und Korrekturmaßnahmen',
+            'audits' => 'Audits',
+            'reviews' => 'Managementbewertungen',
+            'software' => 'Software-Inventar',
+        ],
         'as_of_note' => 'Der Stichtag ist der dokumentierte Berichtsstichtag; eingefroren wird der Datenstand zum Zeitpunkt der Finalisierung (Snapshot) — keine rückwirkende Rekonstruktion.',
         'norm_all' => 'Alle Normen',
         'token_active' => 'aktiv',

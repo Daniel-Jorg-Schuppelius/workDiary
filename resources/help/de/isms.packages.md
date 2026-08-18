@@ -21,8 +21,12 @@ Typischer Ablauf:
    hält fest, wer wann finalisiert hat.
 3. **Integrität prüfen**: vergleicht die Datei jederzeit gegen den
    gespeicherten Hash.
-4. **Prüfer-Link erstellen**: zeitlich begrenzter Download-Zugang
-   (1–90 Tage), jederzeit widerrufbar.
+4. **Prüfer-Link erstellen**: zeitlich begrenzter Zugang (1–90 Tage),
+   jederzeit widerrufbar. Der Link öffnet eine **Read-Only-Webansicht** des
+   finalisierten Pakets — navigierbar, mit dem SHA-256-Hash auf dem
+   Deckblatt; die JSON-Paketdatei ist dort zum Download verlinkt. Gezeigt
+   wird immer der **eingefrorene** Stand der Finalisierung, nie die
+   laufenden Register.
 
 Paket-Inhalte: SoA, Risikoregister (letzte freigegebene
 Netto-Bewertungen), Maßnahmenliste mit Verknüpfungen,
@@ -41,5 +45,5 @@ Risiken und unumkehrbare Aktionen:
   Erstellen) – danach ist nur noch Widerruf möglich.
 
 Berechtigungen: Einsicht erfordert ISMS-Leserechte; Erstellung und
-Pflege erfordern ISMS-Pflegerechte. Der Prüfer-Download selbst läuft
+Pflege erfordern ISMS-Pflegerechte. Die Prüfer-Ansicht und der Download laufen
 über einen geschützten Link, ohne WorkDiary-Konto.

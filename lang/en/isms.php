@@ -696,6 +696,15 @@ return [
     ],
 
     'package' => [
+        'section' => [
+            'soa' => 'Statement of Applicability (SoA)',
+            'risks' => 'Risk register',
+            'controls' => 'Controls',
+            'conformity' => 'Findings and corrective actions',
+            'audits' => 'Audits',
+            'reviews' => 'Management reviews',
+            'software' => 'Software inventory',
+        ],
         'as_of_note' => 'The as-of date is the documented reporting date; the content is the data captured at finalisation (snapshot) — no retroactive reconstruction.',
         'norm_all' => 'All standards',
         'token_active' => 'active',

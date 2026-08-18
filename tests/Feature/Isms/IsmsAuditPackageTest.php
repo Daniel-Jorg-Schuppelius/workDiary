@@ -227,8 +227,11 @@ class IsmsAuditPackageTest extends TestCase {
             ->assertSessionHasNoErrors()
             ->assertSessionHas('isms_package_token_url');
 
+        // Der ausgehändigte Link zeigt die Webansicht (Feature 046) - der
+        // Token steht als vorletztes Pfadsegment vor '/ansicht'.
         $url = (string) session('isms_package_token_url');
-        $plainToken = basename(parse_url($url, PHP_URL_PATH) ?: '');
+        $plainToken = basename(dirname(parse_url($url, PHP_URL_PATH) ?: ''));
+        $this->assertStringEndsWith('/ansicht', (string) parse_url($url, PHP_URL_PATH));
         $this->assertSame(64, strlen($plainToken), 'Klartext-Token: 64 Hex-Zeichen');
 
         /** @var IsmsAuditPackageToken $token */
@@ -249,7 +252,13 @@ class IsmsAuditPackageTest extends TestCase {
         $this->app['auth']->forgetGuards();
         app()->forgetInstance('currentOrganization');
 
-        $download = $this->get($url)->assertOk();
+        // Der ausgehändigte Link rendert die Webansicht mit dem eingefrorenen
+        // Stand; die Paketdatei ist von dort verlinkt.
+        $this->get($url)->assertOk()
+            ->assertSee('Auditpaket (finalisiert)')
+            ->assertSee((string) $package->file_hash);
+
+        $download = $this->get(route('audit-packages.public-download', ['token' => $plainToken]))->assertOk();
         $this->assertStringContainsString('attachment', (string) $download->headers->get('content-disposition'));
 
         $expected = (string) Storage::disk(AuditPackageService::DISK)->get((string) $package->file_path);
@@ -284,6 +293,40 @@ class IsmsAuditPackageTest extends TestCase {
         $this->get(route('audit-packages.public-download', ['token' => $expired['token']]))->assertNotFound();
         $this->get(route('audit-packages.public-download', ['token' => $revoked['token']]))->assertNotFound();
         $this->get(route('audit-packages.public-download', ['token' => str_repeat('0', 64)]))->assertNotFound();
+
+        // Die Webansicht folgt exakt derselben Token-Auflösung.
+        $this->get(route('audit-packages.public-view', ['token' => $expired['token']]))->assertNotFound();
+        $this->get(route('audit-packages.public-view', ['token' => $revoked['token']]))->assertNotFound();
+        $this->get(route('audit-packages.public-view', ['token' => str_repeat('0', 64)]))->assertNotFound();
+    }
+
+    /**
+     * Die Webansicht zeigt den EINGEFRORENEN Snapshot - eine spätere Änderung
+     * an den Registern darf sie nicht verändern (dafür gäbe es ein neues
+     * Paket). Geprüft über den SoA-Abschnitt der Ansicht.
+     */
+    public function test_public_view_renders_the_frozen_snapshot(): void {
+        Storage::fake(AuditPackageService::DISK);
+
+        $admin = User::factory()->admin()->create();
+        $package = $this->makeFinalizedPackage($admin);
+        $issued = app(AuditPackageService::class)->createToken($package, $admin, 'Auditor', 14);
+
+        Auth::logout();
+        $this->app['auth']->forgetGuards();
+        app()->forgetInstance('currentOrganization');
+
+        $snapshot = json_decode((string) Storage::disk(AuditPackageService::DISK)->get((string) $package->file_path), true);
+
+        $response = $this->get(route('audit-packages.public-view', ['token' => $issued['token']]))
+            ->assertOk()
+            ->assertSee($package->title)
+            ->assertSee('SHA-256');
+
+        // Jede Sektion des Snapshots erscheint mit ihrer Zeilenzahl.
+        foreach (['soa', 'risks', 'controls'] as $section) {
+            $response->assertSee('(' . count($snapshot[$section] ?? []) . ')');
+        }
     }
 
     public function test_internal_download_is_gate_checked(): void {

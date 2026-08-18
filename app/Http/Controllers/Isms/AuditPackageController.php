@@ -164,7 +164,9 @@ class AuditPackageController extends Controller {
         return redirect()
             ->route('isms.packages.index')
             ->with('success', __('isms.flash.package_token_created', ['label' => $issued['model']->label]))
-            ->with('isms_package_token_url', route('audit-packages.public-download', ['token' => $issued['token']]));
+            // Der ausgehändigte Link zeigt die Webansicht (Feature 046,
+            // Live-Prüferzugang) - der Datei-Download ist dort verlinkt.
+            ->with('isms_package_token_url', route('audit-packages.public-view', ['token' => $issued['token']]));
     }
 
     /** Widerruft einen Prüfer-Link (org-sicher über das Paket aufgelöst). */

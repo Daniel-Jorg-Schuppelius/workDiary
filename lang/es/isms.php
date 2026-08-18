@@ -696,6 +696,15 @@ return [
     ],
 
     'package' => [
+        'section' => [
+            'soa' => 'Declaración de aplicabilidad (SoA)',
+            'risks' => 'Registro de riesgos',
+            'controls' => 'Medidas',
+            'conformity' => 'Hallazgos y acciones correctivas',
+            'audits' => 'Auditorías',
+            'reviews' => 'Revisiones por la dirección',
+            'software' => 'Inventario de software',
+        ],
         'as_of_note' => 'La fecha de referencia es la fecha de informe documentada; el contenido corresponde a los datos congelados en la finalización (instantánea) — sin reconstrucción retroactiva.',
         'norm_all' => 'Todas las normas',
         'token_active' => 'activo',

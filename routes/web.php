@@ -147,6 +147,11 @@ Route::post('sign/protocol/{token}/query', [PublicProtocolSignatureController::c
 Route::get('audit-paket/{token}', [PublicAuditPackageController::class, 'download'])
     ->middleware('throttle:30,1')
     ->name('audit-packages.public-download');
+// Feature 046 „Live-Prüferzugang": derselbe Token als navigierbare
+// Read-Only-Webansicht des finalisierten (eingefrorenen) Pakets.
+Route::get('audit-paket/{token}/ansicht', [PublicAuditPackageController::class, 'view'])
+    ->middleware('throttle:30,1')
+    ->name('audit-packages.public-view');
 
 // Öffentlicher, login-freier Zugriff externer Beteiligter (Feature 033):
 // kontextbezogene Read-Only-Seite eines Auftrags/Protokolls/Dokuments mit nur
@@ -693,6 +698,10 @@ Route::middleware('auth')->group(function () {
 
         // Betriebsmetriken (Feature 036)
         Route::get('admin/metrics', [MetricsController::class, 'index'])->name('admin.metrics.index');
+
+        // Offline-Synchronisierung (Feature 004-Restpunkt): Welche Daten sind
+        // mobil/offline entstanden, und sind sie angekommen?
+        Route::get('admin/offline-sync', [\App\Http\Controllers\Admin\OfflineSyncController::class, 'index'])->name('admin.offline-sync.index');
 
         // Admin-Sicherheitsübersicht (Feature 016) — read-only Aggregation
         // sicherheitsrelevanter Zustände (Sessions, API-Tokens, Integrationen,

@@ -21,8 +21,11 @@ Typical workflow:
    records who finalized it and when.
 3. **Verify integrity**: compares the file against the stored hash at
    any time.
-4. **Create an auditor link**: time-limited download access
-   (1–90 days), revocable at any time.
+4. **Create an auditor link**: time-limited access (1–90 days),
+   revocable at any time. The link opens a **read-only web view** of the
+   finalised package — navigable, with the SHA-256 hash on the cover; the
+   JSON package file is linked there for download. What is shown is always
+   the state **frozen** at finalisation, never the live registers.
 
 Package contents: SoA, risk register (latest approved net
 assessments), control list with mappings, conformity status, audits

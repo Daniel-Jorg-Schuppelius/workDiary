@@ -1360,6 +1360,8 @@ class NavigationRegistry {
                 }
                 if (Gate::allows(Permission::MetricsView->value)) {
                     $adminNavItems[] = ['route' => 'admin.metrics.index', 'label' => __('metrics.title.index'), 'icon' => 'monitoring', 'modal' => false];
+                    // Feature-004-Restpunkt: Offline entstandene Daten sichtbar machen.
+                    $adminNavItems[] = ['route' => 'admin.offline-sync.index', 'label' => __('Offline-Synchronisierung'), 'icon' => 'cloud_sync', 'modal' => false];
                     $adminNavItems[] = ['route' => 'admin.components.index', 'label' => __('isms.components.title'), 'icon' => 'receipt_long', 'modal' => false];
                 }
                 if (Gate::allows(Permission::SecurityView->value)) {

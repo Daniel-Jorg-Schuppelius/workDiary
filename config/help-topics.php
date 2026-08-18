@@ -485,6 +485,7 @@ return [
         'admin.demo.*' => 'admin.demo-data',
         'admin.diagnostics.*' => 'admin.diagnostics',
         'admin.metrics.*' => 'admin.metrics',
+        'admin.offline-sync.*' => 'admin.offline-sync',
         'admin.invoice-mail-templates.*' => 'admin.invoice-mail-templates',
         'admin.plugins.*' => 'admin.plugins',
         'admin.plugin-errors.*' => 'admin.plugins',

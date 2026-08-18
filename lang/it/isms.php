@@ -696,6 +696,15 @@ return [
     ],
 
     'package' => [
+        'section' => [
+            'soa' => 'Dichiarazione di applicabilità (SoA)',
+            'risks' => 'Registro dei rischi',
+            'controls' => 'Misure',
+            'conformity' => 'Rilievi e azioni correttive',
+            'audits' => 'Audit',
+            'reviews' => 'Riesami della direzione',
+            'software' => 'Inventario software',
+        ],
         'as_of_note' => 'La data di riferimento è la data di rendicontazione documentata; il contenuto corrisponde ai dati congelati alla finalizzazione (snapshot) — nessuna ricostruzione retroattiva.',
         'norm_all' => 'Tutte le norme',
         'token_active' => 'attivo',

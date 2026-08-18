@@ -30,7 +30,60 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class PublicAuditPackageController extends Controller {
     public function __construct(private readonly AuditPackageService $packages) {}
 
+    /**
+     * Webansicht des finalisierten Pakets (Feature 046, „Live-Prüferzugang"):
+     * derselbe Token, dieselbe Befristung, derselbe **eingefrorene** Datenstand
+     * wie der Download — nur navigierbar statt als JSON-Datei.
+     *
+     * Bewusst KEIN Blick in die laufenden Register: Was der Prüfer sieht, ist
+     * exakt der Stand, für den die Organisation die Freigabe erteilt hat, und
+     * über den Datei-Hash jederzeit belegbar. Ein Live-Blick zeigte auch
+     * halbfertige Änderungen, und der gesehene Stand wäre nachträglich nicht
+     * mehr reproduzierbar.
+     */
+    public function view(string $token): \Illuminate\Contracts\View\View {
+        [$record, $package, $disk, $path] = $this->resolve($token);
+
+        $snapshot = json_decode((string) $disk->get($path), true);
+        abort_unless(is_array($snapshot), 404);
+
+        $record->forceFill(['last_accessed_at' => Carbon::now()])->save();
+
+        return view('public.audit-package', [
+            'package' => $package,
+            'snapshot' => $snapshot,
+            'token' => $token,
+        ]);
+    }
+
     public function download(string $token): StreamedResponse {
+        [$record, $package, $disk, $path] = $this->resolve($token);
+
+        $record->forceFill(['last_accessed_at' => Carbon::now()])->save();
+
+        $stream = $disk->readStream($path);
+        abort_if($stream === null, 404);
+
+        $fileName = sprintf(
+            'auditpaket-%s-%s.json',
+            $package->displayNo(),
+            $package->as_of_date->format('Y-m-d'),
+        );
+
+        return response()->streamDownload(static function () use ($stream): void {
+            fpassthru($stream);
+            fclose($stream);
+        }, $fileName, ['Content-Type' => 'application/json']);
+    }
+
+    /**
+     * Gemeinsame Auflösung für Ansicht und Download: Token → finalisiertes
+     * Paket → gehärteter Dateipfad. Jeder Fehlweg ist ein 404 — ob der Token
+     * unbekannt, widerrufen oder abgelaufen ist, geht Außenstehende nichts an.
+     *
+     * @return array{0: \App\Models\Isms\IsmsAuditPackageToken, 1: IsmsAuditPackage, 2: \Illuminate\Contracts\Filesystem\Filesystem, 3: string}
+     */
+    private function resolve(string $token): array {
         $record = $this->packages->resolveUsableToken($token);
         abort_if($record === null, 404);
 
@@ -49,20 +102,6 @@ class PublicAuditPackageController extends Controller {
         $disk = Storage::disk(AuditPackageService::DISK);
         abort_unless($disk->exists($path), 404);
 
-        $record->forceFill(['last_accessed_at' => Carbon::now()])->save();
-
-        $stream = $disk->readStream($path);
-        abort_if($stream === null, 404);
-
-        $fileName = sprintf(
-            'auditpaket-%s-%s.json',
-            $package->displayNo(),
-            $package->as_of_date->format('Y-m-d'),
-        );
-
-        return response()->streamDownload(static function () use ($stream): void {
-            fpassthru($stream);
-            fclose($stream);
-        }, $fileName, ['Content-Type' => 'application/json']);
+        return [$record, $package, $disk, $path];
     }
 }

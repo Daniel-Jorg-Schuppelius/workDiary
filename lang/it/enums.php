@@ -243,6 +243,9 @@ return [
             'archived' => 'Archiviato',
         ],
     ],
+    'sync_command' => [
+        'status' => ['applied' => 'Applicato', 'duplicate' => 'Duplicato', 'conflict' => 'Conflitto', 'rejected' => 'Respinto'],
+    ],
     'task' => [
         'status' => [
             'open' => 'Aperto',
