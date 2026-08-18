@@ -15,7 +15,7 @@ use App\Enums\Gaeb\{BoqItemType, BoqProgressSource};
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Enums\Timesheet\TimesheetStatus;
-use App\Models\{BillOfQuantity, BoqItem, BoqItemMapping, BoqItemProgress, Customer, DiaryEntry, Expense, Material, MaterialUsage, Project, TimeEntry, Timesheet, User};
+use App\Models\{BillOfQuantity, BoqCostType, BoqItem, BoqItemCostApproach, BoqItemMapping, BoqItemProgress, Customer, DiaryEntry, Expense, Material, MaterialUsage, Project, TimeEntry, Timesheet, User};
 use App\Services\Reporting\EconomicsReportBuilder;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
@@ -262,6 +262,60 @@ class EconomicsBoqDimensionTest extends TestCase {
         $this->assertEqualsWithDelta(0.0, $addendum['revenue'], 0.01); // kein Aufmaß im Zeitraum
         $this->assertEqualsWithDelta(30.0, $addendum['costMaterial'], 0.01); // Material-Mapping
         $this->assertEqualsWithDelta(-30.0, $addendum['contribution'], 0.01);
+    }
+
+    /**
+     * Plan-Ist je Position (Feature 109 → 014): Die Kalkulation gilt der
+     * **vollen** LV-Menge, die Ist-Kosten fallen für die **ausgeführte** an.
+     * Beide unskaliert zu vergleichen wiese jeden unfertigen Abschnitt als
+     * Ersparnis aus.
+     */
+    public function test_calculation_is_scaled_to_the_measured_quantity(): void {
+        ['item' => $item] = $this->seedBoqFixture();
+        $bill = $item->billOfQuantity;
+
+        BoqCostType::create([
+            'organization_id' => $this->organization->id,
+            'bill_of_quantity_id' => $bill->id,
+            'cost_key' => 'LO',
+            'description' => 'Lohn',
+            'markup_percent' => '25.000000',
+            'position' => 1,
+        ]);
+        // 10 × 80 € = 800 € EKT + 25 % = 1.000 € für 100 m² → 10 €/m².
+        BoqItemCostApproach::create([
+            'organization_id' => $this->organization->id,
+            'boq_item_id' => $item->id,
+            'cost_key' => 'LO',
+            'quantity' => '10.000',
+            'value' => '80.000',
+            'position' => 1,
+        ]);
+
+        $result = $this->builder->byBoqPosition($this->from, $this->to, (int) $this->project->id);
+
+        $this->assertTrue($result['hasCalculation']);
+        // Aufgemessen sind 60 m² → 600 €, nicht die vollen 1.000 €.
+        $row = collect($result['positions'])->firstWhere('referenceNo', '01.0010');
+        $this->assertSame(600.0, $row['calculated']);
+        // Ist 130 € (80 Zeit + 50 Material) gegen 600 € kalkuliert.
+        $this->assertSame(-470.0, $row['calcDelta']);
+
+        // Der Nachtrag trägt keine Ansätze — dort gibt es nichts zu vergleichen.
+        $addendumRow = collect($result['positions'])->firstWhere('referenceNo', 'N1.0010');
+        $this->assertNull($addendumRow['calculated']);
+        $this->assertNull($addendumRow['calcDelta']);
+    }
+
+    /** Ohne Kalkulationsdaten bleibt die Spalte weg statt bei 0 € zu stehen. */
+    public function test_without_calculation_data_the_column_stays_out(): void {
+        $this->seedBoqFixture();
+
+        $result = $this->builder->byBoqPosition($this->from, $this->to, (int) $this->project->id);
+
+        $this->assertFalse($result['hasCalculation']);
+        $this->assertFalse($result['calculationImported']);
+        $this->assertNull($result['positions'][0]['calculated']);
     }
 
     public function test_unassigned_row_carries_unlinked_sources_and_reconciles_with_project_costs(): void {

@@ -48,6 +48,11 @@
                    placeholder="{{ __('Abbruch, Winterdienst') }}"
                    :hint="__('Wiegen schwerer als Stichwörter: Ein Treffer hier verwirft die Bekanntmachung.')" />
 
+    {{-- Zeilenweise, weil ein Auftraggeber „Stadt Musterhausen" heißt — an
+         Leerzeichen zu trennen zerrisse jeden zweiten Namen. --}}
+    <x-textarea-field name="excluded_buyers" :label="__('Ausgeschlossene Auftraggeber')" rows="3"
+                      :hint="__('Eine Zeile je Auftraggeber. Verglichen wird nur das Auftraggeberfeld, nicht der Fließtext — sonst verwürfe der Name auch Bekanntmachungen, die ihn nur erwähnen.')">{{ old('excluded_buyers', implode("\n", $profile->excluded_buyers ?? [])) }}</x-textarea-field>
+
     <x-form-group :cols="2">
         <x-input-field type="number" step="0.01" min="0" name="min_value" :label="__('Mindestwert (EUR)')"
                        :value="old('min_value', $profile->min_value)" />

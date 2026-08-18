@@ -12,6 +12,7 @@ namespace App\Services\Reporting;
 
 use App\Enums\Expense\ExpenseStatus;
 use App\Models\{BillOfQuantity, BoqItem, BoqItemMapping, BoqItemProgress, Customer, Expense, Material, MaterialUsage, Project, TimeEntry, Timesheet, TravelLog};
+use App\Services\Gaeb\BoqCalculationDataService;
 use App\Services\Travel\TravelChargeService;
 use App\Support\ChartBucket;
 use Carbon\CarbonImmutable;
@@ -595,9 +596,11 @@ class EconomicsReportBuilder {
      *     shortText:string|null, isAddendum:bool, unit:string|null,
      *     unitPrice:float|null, measuredQuantity:float, revenue:float,
      *     timeMinutes:int, costTime:float, costMaterial:float, cost:float,
-     *     contribution:float
+     *     contribution:float, calculated:float|null, calcDelta:float|null
      *   }>,
-     *   unassigned: array{timeMinutes:int, costTime:float, costMaterial:float, costExpense:float, cost:float}
+     *   unassigned: array{timeMinutes:int, costTime:float, costMaterial:float, costExpense:float, cost:float},
+     *   hasCalculation: bool,
+     *   calculationImported: bool
      * }
      */
     public function byBoqPosition(CarbonImmutable $from, CarbonImmutable $to, int $projectId): array {
@@ -609,7 +612,7 @@ class EconomicsReportBuilder {
             ->get(['id', 'name']);
 
         if ($bills->isEmpty()) {
-            return ['hasBoq' => false, 'positions' => [], 'unassigned' => $unassigned];
+            return ['hasBoq' => false, 'positions' => [], 'unassigned' => $unassigned, 'hasCalculation' => false, 'calculationImported' => false];
         }
 
         $billNames = $bills->pluck('name', 'id');
@@ -622,6 +625,19 @@ class EconomicsReportBuilder {
             ->get(['id', 'bill_of_quantity_id', 'reference_no', 'short_text', 'type', 'unit', 'unit_price', 'is_addendum', 'position']);
 
         $itemIds = $items->pluck('id')->map(static fn($v): int => (int) $v)->all();
+
+        // Kalkulierte Kosten je Mengeneinheit aus den GAEB-Kalkulationsdaten
+        // (X52, Feature 109) - der Plan-Wert des Plan-Ist-Vergleichs. Die
+        // Herkunft reist mit: Eine importierte Fremdkalkulation ist die
+        // Rechnung eines anderen Betriebs, nicht die eigene Planung.
+        $calculationService = app(BoqCalculationDataService::class);
+        $unitCalcCosts = [];
+        $calculationImported = false;
+        foreach ($bills as $bill) {
+            $billItemIds = array_values($items->where('bill_of_quantity_id', $bill->id)->pluck('id')->map(static fn ($v): int => (int) $v)->all());
+            $unitCalcCosts += $calculationService->unitCostsFor($bill, $billItemIds);
+            $calculationImported = $calculationImported || $calculationService->calculationIsImported($bill);
+        }
 
         // Aufmaß im Zeitraum (Erlös-Basis) je Position.
         $measured = BoqItemProgress::query()
@@ -731,6 +747,11 @@ class EconomicsReportBuilder {
                 continue;
             }
 
+            // Kalkuliert wurde die volle LV-Menge; verglichen wird mit dem,
+            // was bisher ausgeführt ist - sonst sähe jeder unfertige Abschnitt
+            // wie eine Ersparnis aus.
+            $calculated = isset($unitCalcCosts[$id]) ? round($unitCalcCosts[$id] * $quantity, 2) : null;
+
             $positions[] = [
                 'boqItemId' => $id,
                 'billId' => (int) $item->bill_of_quantity_id,
@@ -747,10 +768,19 @@ class EconomicsReportBuilder {
                 'costMaterial' => round($costMaterial[$id], 2),
                 'cost' => $cost,
                 'contribution' => round($revenue - $cost, 2),
+                'calculated' => $calculated,
+                // Ohne Kalkulation gibt es nichts zu vergleichen - null, nicht 0 €.
+                'calcDelta' => $calculated === null ? null : round($cost - $calculated, 2),
             ];
         }
 
-        return ['hasBoq' => true, 'positions' => $positions, 'unassigned' => $unassigned];
+        return [
+            'hasBoq' => true,
+            'positions' => $positions,
+            'unassigned' => $unassigned,
+            'hasCalculation' => $unitCalcCosts !== [],
+            'calculationImported' => $calculationImported,
+        ];
     }
 
     /**

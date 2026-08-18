@@ -101,6 +101,10 @@
                     <th class="num">{{ __('Kosten Zeit') }}</th>
                     <th class="num">{{ __('Kosten Material') }}</th>
                     <th class="num">{{ __('Kosten') }}</th>
+                    @if($byBoq['hasCalculation'])
+                        <th class="num">{{ __('Kalkuliert') }}</th>
+                        <th class="num">{{ __('Ist − Kalkulation') }}</th>
+                    @endif
                     <th class="num">{{ __('Deckungsbeitrag') }}</th>
                 </tr>
             </thead>
@@ -117,10 +121,14 @@
                         <td class="num">{{ $eur($p['costTime']) }}</td>
                         <td class="num">{{ $eur($p['costMaterial']) }}</td>
                         <td class="num">{{ $eur($p['cost']) }}</td>
+                        @if($byBoq['hasCalculation'])
+                            <td class="num">{{ $p['calculated'] === null ? '—' : $eur($p['calculated']) }}</td>
+                            <td class="num">{{ $p['calcDelta'] === null ? '—' : $eur($p['calcDelta']) }}</td>
+                        @endif
                         <td class="num">{{ $eur($p['contribution']) }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="11">{{ __('Keine Daten') }}</td></tr>
+                    <tr><td colspan="{{ $byBoq['hasCalculation'] ? 13 : 11 }}">{{ __('Keine Daten') }}</td></tr>
                 @endforelse
                 @if($byBoq['unassigned']['cost'] > 0 || $byBoq['unassigned']['timeMinutes'] > 0)
                     <tr>
@@ -134,10 +142,23 @@
                         <td class="num">{{ $eur($byBoq['unassigned']['costTime']) }}</td>
                         <td class="num">{{ $eur($byBoq['unassigned']['costMaterial']) }}</td>
                         <td class="num">{{ $eur($byBoq['unassigned']['cost']) }}</td>
+                        @if($byBoq['hasCalculation'])
+                            <td class="num">—</td>
+                            <td class="num">—</td>
+                        @endif
                         <td class="num">—</td>
                     </tr>
                 @endif
             </tbody>
         </table>
+        @if($byBoq['hasCalculation'])
+            {{-- Die Herkunft gehört an jede Auswertung, die die Kalkulation als
+                 Plan-Wert verwendet. --}}
+            <p style="font-size:9px;color:#555;margin:4px 0 0;">
+                {{ $byBoq['calculationImported']
+                    ? __('Die Spalte „Kalkuliert" stammt aus eingelesenen GAEB-Kalkulationsdaten (X52) — der Rechnung eines anderen Betriebs, nicht der eigenen Planung. Sie ist auf die aufgemessene Menge skaliert; ohne LV-Menge bleibt sie leer.')
+                    : __('Die Spalte „Kalkuliert" stammt aus den eigenen GAEB-Kalkulationsdaten (X52), skaliert auf die aufgemessene Menge; ohne LV-Menge bleibt sie leer.') }}
+            </p>
+        @endif
     @endif
 @endsection

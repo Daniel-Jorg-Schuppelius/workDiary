@@ -83,6 +83,18 @@ final class TenderNoticeMatcher {
             $notice->title . ' ' . (string) $notice->summary . ' ' . (string) $notice->buyer_name
         ));
 
+        // Ausgeschlossene Auftraggeber gegen das Auftraggeberfeld, nicht gegen
+        // den Fließtext: „Stadt Bonn" als Ausschlusswort verwürfe auch eine
+        // Bekanntmachung, die die Stadt nur nebenbei erwähnt.
+        $buyer = mb_strtolower(trim((string) $notice->buyer_name));
+        if ($buyer !== '') {
+            foreach ($this->words($profile->excluded_buyers) as $excluded) {
+                if (str_contains($buyer, $excluded)) {
+                    return false;
+                }
+            }
+        }
+
         // Ausschluss zuerst: Er verwirft, egal wie gut der Rest passt.
         foreach ($this->words($profile->excluded_keywords) as $word) {
             if (str_contains($haystack, $word)) {

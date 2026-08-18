@@ -16,6 +16,7 @@ use App\Enums\Applications\TenderProcedureType;
 use App\Models\Applications\ApplicationOpportunity;
 use App\Models\{Organization, User};
 use App\Models\Tenders\{TenderFilterProfile, TenderNotice, TenderNoticeMatch};
+use App\Services\Tenders\TenderNoticeMatcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -98,6 +99,95 @@ final class TenderRadarUiTest extends TestCase {
         $this->actingAs($this->admin)
             ->get(route('tender-radar.index', ['state' => 'muted']))
             ->assertSee('Neubau Kita — Rohbauarbeiten', escape: false);
+    }
+
+    /**
+     * Der Ausschluss wird **vorgeschlagen, nie automatisch gesetzt**: Ein
+     * Radar, der sich selbst enger stellt, verliert Ausschreibungen still.
+     */
+    public function test_muting_alone_does_not_change_the_profile(): void {
+        $profile = TenderFilterProfile::query()->create(['organization_id' => $this->organization->id, 'name' => 'Hochbau']);
+        $match = $this->match();
+        $match->forceFill(['tender_filter_profile_id' => $profile->id])->save();
+
+        $this->actingAs($this->admin)->post(route('tender-radar.mute', $match))->assertRedirect();
+
+        $this->assertNull($profile->fresh()?->excluded_buyers);
+    }
+
+    /** Auf Wunsch wandert der Auftraggeber in die Ausschlussliste des Profils. */
+    public function test_muting_can_exclude_the_buyer_from_the_profile(): void {
+        $profile = TenderFilterProfile::query()->create(['organization_id' => $this->organization->id, 'name' => 'Hochbau']);
+        $match = $this->match();
+        $match->forceFill(['tender_filter_profile_id' => $profile->id])->save();
+
+        $this->actingAs($this->admin)
+            ->post(route('tender-radar.mute', $match), ['exclude_buyer' => '1'])
+            ->assertRedirect();
+
+        $this->assertSame(['Stadt Bonn'], $profile->fresh()?->excluded_buyers);
+    }
+
+    /** Zweimal derselbe Auftraggeber ergibt keinen zweiten Eintrag. */
+    public function test_excluding_the_same_buyer_twice_adds_one_entry(): void {
+        $profile = TenderFilterProfile::query()->create([
+            'organization_id' => $this->organization->id, 'name' => 'Hochbau',
+            'excluded_buyers' => ['stadt bonn'],
+        ]);
+        $match = $this->match();
+        $match->forceFill(['tender_filter_profile_id' => $profile->id])->save();
+
+        $this->actingAs($this->admin)
+            ->post(route('tender-radar.mute', $match), ['exclude_buyer' => '1'])
+            ->assertRedirect();
+
+        $this->assertSame(['stadt bonn'], $profile->fresh()?->excluded_buyers);
+    }
+
+    /**
+     * Der ausgeschlossene Auftraggeber wird gegen das **Auftraggeberfeld**
+     * geprüft, nicht gegen den Fließtext — sonst verwürfe der Name auch
+     * Bekanntmachungen, die ihn nur erwähnen.
+     */
+    public function test_excluded_buyer_matches_the_buyer_field_only(): void {
+        $profile = TenderFilterProfile::query()->create([
+            'organization_id' => $this->organization->id, 'name' => 'Hochbau',
+            'excluded_buyers' => ['Stadt Bonn'],
+        ]);
+        $matcher = app(TenderNoticeMatcher::class);
+
+        $this->assertFalse($matcher->matches($this->notice(), $profile));
+
+        // Derselbe Name im Fließtext einer anderen Vergabestelle verwirft nicht.
+        $this->assertTrue($matcher->matches(
+            $this->notice(['buyer_name' => 'Land NRW', 'summary' => 'Bauvorhaben in Kooperation mit der Stadt Bonn.']),
+            $profile,
+        ));
+    }
+
+    /** Die Verwerfungsquote steht am Profil — als Hinweis, nicht als Eingriff. */
+    public function test_profile_list_shows_the_muted_share(): void {
+        $profile = TenderFilterProfile::query()->create(['organization_id' => $this->organization->id, 'name' => 'Hochbau']);
+        foreach ([TenderNoticeMatch::STATE_NEW, TenderNoticeMatch::STATE_MUTED, TenderNoticeMatch::STATE_MUTED] as $state) {
+            $this->match(null, $state)->forceFill(['tender_filter_profile_id' => $profile->id])->save();
+        }
+
+        $this->actingAs($this->admin)
+            ->get(route('tender-radar.profiles'))
+            ->assertOk()
+            ->assertSee('2 verworfen (67 %)');
+    }
+
+    /** Ausgeschlossene Auftraggeber kommen zeilenweise — Namen tragen Leerzeichen. */
+    public function test_excluded_buyers_are_read_line_by_line(): void {
+        $this->actingAs($this->admin)->post(route('tender-radar.profiles.store'), [
+            'name' => 'Hochbau',
+            'active' => '1',
+            'excluded_buyers' => "Stadt Musterhausen\nLandkreis Beispiel",
+        ])->assertRedirect();
+
+        $profile = TenderFilterProfile::query()->where('name', 'Hochbau')->firstOrFail();
+        $this->assertSame(['Stadt Musterhausen', 'Landkreis Beispiel'], $profile->excluded_buyers);
     }
 
     public function test_muted_match_can_be_restored(): void {

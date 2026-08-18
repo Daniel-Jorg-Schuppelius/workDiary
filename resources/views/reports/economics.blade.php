@@ -275,6 +275,10 @@
                             <x-table.th align="right">{{ __('Kosten Zeit') }}</x-table.th>
                             <x-table.th align="right">{{ __('Kosten Material') }}</x-table.th>
                             <x-table.th align="right">{{ __('Kosten') }}</x-table.th>
+                            @if($boqDimension['hasCalculation'])
+                                <x-table.th align="right">{{ __('Kalkuliert') }}</x-table.th>
+                                <x-table.th align="right">{{ __('Ist − Kalkulation') }}</x-table.th>
+                            @endif
                             <x-table.th align="right">{{ __('Deckungsbeitrag') }}</x-table.th>
                         </tr>
                     </x-slot:head>
@@ -292,12 +296,16 @@
                             <td class="text-right tabular-nums">{{ $eur($p['costTime']) }}</td>
                             <td class="text-right tabular-nums">{{ $eur($p['costMaterial']) }}</td>
                             <td class="text-right tabular-nums">{{ $eur($p['cost']) }}</td>
+                            @if($boqDimension['hasCalculation'])
+                                <td class="text-right tabular-nums">{{ $p['calculated'] === null ? '—' : $eur($p['calculated']) }}</td>
+                                <td class="text-right tabular-nums {{ $p['calcDelta'] === null ? '' : $contribTone(-$p['calcDelta']) }}">{{ $p['calcDelta'] === null ? '—' : $eur($p['calcDelta']) }}</td>
+                            @endif
                             <td class="text-right tabular-nums font-medium {{ $contribTone($p['contribution']) }}">{{ $eur($p['contribution']) }}</td>
                         </tr>
                     @endforeach
                     @if($boqAddenda->isNotEmpty())
                         <tr class="bg-base-200/60">
-                            <td colspan="{{ $multiBill ? 11 : 10 }}" class="text-xs font-semibold uppercase tracking-wide">{{ __('Nachträge') }}</td>
+                            <td colspan="{{ ($multiBill ? 11 : 10) + ($boqDimension['hasCalculation'] ? 2 : 0) }}" class="text-xs font-semibold uppercase tracking-wide">{{ __('Nachträge') }}</td>
                         </tr>
                         @foreach($boqAddenda as $p)
                             <tr>
@@ -313,6 +321,10 @@
                                 <td class="text-right tabular-nums">{{ $eur($p['costTime']) }}</td>
                                 <td class="text-right tabular-nums">{{ $eur($p['costMaterial']) }}</td>
                                 <td class="text-right tabular-nums">{{ $eur($p['cost']) }}</td>
+                                @if($boqDimension['hasCalculation'])
+                                    <td class="text-right tabular-nums">{{ $p['calculated'] === null ? '—' : $eur($p['calculated']) }}</td>
+                                    <td class="text-right tabular-nums {{ $p['calcDelta'] === null ? '' : $contribTone(-$p['calcDelta']) }}">{{ $p['calcDelta'] === null ? '—' : $eur($p['calcDelta']) }}</td>
+                                @endif
                                 <td class="text-right tabular-nums font-medium {{ $contribTone($p['contribution']) }}">{{ $eur($p['contribution']) }}</td>
                             </tr>
                         @endforeach
@@ -331,11 +343,23 @@
                             <td class="text-right tabular-nums">{{ $eur($u['costTime']) }}</td>
                             <td class="text-right tabular-nums">{{ $eur($u['costMaterial']) }}</td>
                             <td class="text-right tabular-nums">{{ $eur($u['cost']) }}</td>
+                            @if($boqDimension['hasCalculation'])
+                                <td class="text-right">—</td>
+                                <td class="text-right">—</td>
+                            @endif
                             <td class="text-right">—</td>
                         </tr>
                     @endif
                 </x-table>
                 <div class="mt-2 text-xs text-base-content/60">{{ __('Erlös je Position = im Zeitraum aufgemessene Menge × Einheitspreis (Projektion der Abrechnung nach Aufmaß). Kostenzuordnung über Bautagebuch-/Material-Verknüpfungen der Aufmaß-Meldungen und Positions-Mappings; mehrdeutige oder fehlende Verknüpfungen sowie Spesen (ohne LV-Anker) erscheinen unter „Ohne LV-Zuordnung". Kosten der Positionen + „Ohne LV-Zuordnung" entsprechen den Projektkosten.') }}</div>
+                @if($boqDimension['hasCalculation'])
+                    {{-- Ohne diese Zeile sähe eine fremde Kalkulation wie die eigene Planung aus. --}}
+                    <div class="mt-1 text-xs text-base-content/60">
+                        {{ $boqDimension['calculationImported']
+                            ? __('Die Spalte „Kalkuliert" stammt aus eingelesenen GAEB-Kalkulationsdaten (X52) — der Rechnung eines anderen Betriebs, nicht der eigenen Planung. Sie ist auf die aufgemessene Menge skaliert; ohne LV-Menge bleibt sie leer.')
+                            : __('Die Spalte „Kalkuliert" stammt aus den eigenen GAEB-Kalkulationsdaten (X52), skaliert auf die aufgemessene Menge; ohne LV-Menge bleibt sie leer.') }}
+                    </div>
+                @endif
             @endif
         </x-card>
     @endif

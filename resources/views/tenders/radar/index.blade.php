@@ -121,6 +121,16 @@
                                     <x-action-form :action="route('tender-radar.mute', $match)">
                                         <x-icon-btn icon="visibility_off" size="sm" type="submit" :title="__('Ausblenden')" />
                                     </x-action-form>
+                                    {{-- Der Ausschluss wird angeboten, nie automatisch gesetzt: Ein Radar,
+                                         der sich selbst enger stellt, verliert Ausschreibungen still. --}}
+                                    @if ($match->profile && filled($match->notice?->buyer_name))
+                                        <x-action-form :action="route('tender-radar.mute', $match)"
+                                                       :confirm="__('Künftig keine Bekanntmachungen von :buyer im Profil „:profile“?', ['buyer' => $match->notice->buyer_name, 'profile' => $match->profile->name])"
+                                                       confirm-icon="block" :confirm-label="__('Ausschließen')">
+                                            <input type="hidden" name="exclude_buyer" value="1">
+                                            <x-icon-btn icon="block" size="sm" type="submit" :title="__('Ausblenden und Auftraggeber ausschließen')" />
+                                        </x-action-form>
+                                    @endif
                                 @endif
                             @endif
                         </div>

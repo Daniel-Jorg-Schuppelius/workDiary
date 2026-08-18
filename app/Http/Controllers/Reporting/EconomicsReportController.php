@@ -249,7 +249,7 @@ class EconomicsReportController extends Controller {
      * @param  list<array<string, mixed>>  $byCustomer
      * @param  list<array<string, mixed>>  $byProject
      * @param  array<string, mixed>        $filters
-     * @param  array{hasBoq: bool, positions: list<array<string, mixed>>, unassigned: array<string, int|float>}|null  $byBoq
+     * @param  array{hasBoq: bool, positions: list<array<string, mixed>>, unassigned: array<string, int|float>, hasCalculation: bool, calculationImported: bool}|null  $byBoq
      */
     private function exportCsv(array $byCustomer, array $byProject, string $from, string $to, array $filters, Request $request, ?array $byBoq = null): Response {
         $filename = sprintf('wirtschaftlichkeit_%s_%s.csv', $from, $to);
@@ -296,6 +296,9 @@ class EconomicsReportController extends Controller {
                 'KostenZeitEUR',
                 'KostenMaterialEUR',
                 'KostenEUR',
+                'KalkuliertEUR',
+                'IstMinusKalkulationEUR',
+                'KalkulationHerkunft',
                 'DeckungsbeitragEUR',
             ];
             foreach ($byBoq['positions'] as $p) {
@@ -310,6 +313,11 @@ class EconomicsReportController extends Controller {
                     $num($p['costTime']),
                     $num($p['costMaterial']),
                     $num($p['cost']),
+                    $num($p['calculated']),
+                    $num($p['calcDelta']),
+                    // Die Herkunft steht in jeder Zeile: Eine fremde Kalkulation
+                    // ist die Rechnung eines anderen Betriebs.
+                    $p['calculated'] === null ? '' : ($byBoq['calculationImported'] ? 'importiert' : 'eigen'),
                     $num($p['contribution']),
                 ];
             }
@@ -325,6 +333,9 @@ class EconomicsReportController extends Controller {
                 $num($u['costTime']),
                 $num($u['costMaterial']),
                 $num($u['cost']),
+                '',
+                '',
+                '',
                 '',
             ];
         }
@@ -365,7 +376,7 @@ class EconomicsReportController extends Controller {
      * @param  list<array<string, mixed>>  $byProject
      * @param  list<array{x: string, y: float, url: string}>  $contributionSeries
      * @param  array<string, mixed>        $filters
-     * @param  array{hasBoq: bool, positions: list<array<string, mixed>>, unassigned: array<string, int|float>}|null  $byBoq
+     * @param  array{hasBoq: bool, positions: list<array<string, mixed>>, unassigned: array<string, int|float>, hasCalculation: bool, calculationImported: bool}|null  $byBoq
      */
     private function exportPdf(array $byCustomer, array $byProject, string $label, string $from, string $to, array $contributionSeries, array $filters, Request $request, ?array $byBoq = null): SymfonyResponse {
         $filename = sprintf('wirtschaftlichkeit_%s_%s.pdf', $from, $to);

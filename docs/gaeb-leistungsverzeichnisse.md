@@ -339,6 +339,36 @@ Schritt 2 verlinkt den GAEB-Export in der Phase **X84** (Angebotsabgabe) am
 hängenden Leistungsverzeichnis. Schritt 3 schreibt einen versionierten Snapshot
 mit SHA-256-Hash — der Nachweis, *was* eingereicht wurde.
 
+### Gegenprobe im Bieterclient
+
+Die Abgabedatei entsteht hier, eingereicht wird sie im **Bieterclient der
+Vergabestelle** (meist ava-sign). Ob er sie annimmt, kann WorkDiary nicht
+prüfen — das entscheidet ein fremdes Programm in einer Fassung, die sich ohne
+Ankündigung ändern kann. Deshalb gehört die Gegenprobe zum Ablauf, **einmal je
+neuer Vergabestelle und nach jedem Versionswechsel des Clients**, nicht vor
+jeder Abgabe.
+
+Der Ablauf, mit Zeitpuffer vor der Frist:
+
+1. Angebotsdatei über den Assistenten erzeugen (Phase **X84**) und den
+   Snapshot-Hash notieren.
+2. Die Datei im Bieterclient **importieren** — im selben Format, in dem die
+   Vergabeunterlagen kamen (D84 zu D83, P84 zu P83, X84 zu X83).
+3. Im Client prüfen: Ist die **Angebotssumme identisch**? Sind alle Positionen
+   bepreist übernommen? Stehen Nachlässe und Bietertextergänzungen da, wo sie
+   hingehören?
+4. Bei Abweichung: **nicht im Client nachbessern.** Die Ursache gehört in
+   WorkDiary korrigiert und die Datei neu erzeugt — sonst weicht der Snapshot
+   von dem ab, was eingereicht wurde, und der Nachweis ist wertlos.
+5. Ergebnis in der Vergabeakte vermerken (Vergabestelle, Client-Version,
+   Datum, Befund).
+
+**Warum der Aufwand:** Die Prüfregeln des Clients sind im Preflight
+vorweggenommen — jede Position bepreist oder ausdrücklich „nicht angeboten",
+Mengen und Einheiten vollständig, Einheitspreisanteile stimmig. Was der
+Preflight *nicht* kennt, ist eine Eigenheit einer bestimmten Client-Fassung.
+Genau dafür ist die Gegenprobe da, und deshalb ersetzt kein Test sie.
+
 ## Submissionsergebnis festhalten
 
 Bei einer Öffentlichen Ausschreibung werden die Angebotsendsummen im

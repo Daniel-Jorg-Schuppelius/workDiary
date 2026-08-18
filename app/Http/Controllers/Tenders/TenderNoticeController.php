@@ -64,8 +64,15 @@ class TenderNoticeController extends Controller {
         ]);
     }
 
-    /** Gesehen und verworfen: Der Treffer bleibt, taucht aber nicht mehr auf. */
-    public function mute(TenderNoticeMatch $match): RedirectResponse {
+    /**
+     * Gesehen und verworfen: Der Treffer bleibt, taucht aber nicht mehr auf.
+     *
+     * Auf Wunsch wird zugleich der **Auftraggeber** als Ausschluss ins Profil
+     * übernommen. **Vorgeschlagen, nie automatisch:** Ein Radar, der sich
+     * selbst enger stellt, verliert Ausschreibungen still — und niemand wüsste,
+     * warum eine erwartete Bekanntmachung nie kam.
+     */
+    public function mute(Request $request, TenderNoticeMatch $match): RedirectResponse {
         Gate::authorize('create', ApplicationOpportunity::class);
         $this->guard($match);
 
@@ -73,7 +80,41 @@ class TenderNoticeController extends Controller {
             $match->forceFill(['state' => TenderNoticeMatch::STATE_MUTED])->save();
         }
 
+        if ($request->boolean('exclude_buyer')) {
+            $excluded = $this->excludeBuyer($match);
+            if ($excluded !== null) {
+                return back()->with('success', __('Bekanntmachung ausgeblendet. :buyer künftig ausgeschlossen.', ['buyer' => $excluded]));
+            }
+        }
+
         return back()->with('success', __('Bekanntmachung ausgeblendet.'));
+    }
+
+    /**
+     * Auftraggeber des Treffers in die Ausschlussliste seines Profils
+     * aufnehmen.
+     *
+     * Ohne Profil gibt es nichts zu pflegen (der Treffer stammt dann aus einem
+     * gelöschten Profil) — und ohne Auftraggebernamen ebenfalls nicht.
+     */
+    private function excludeBuyer(TenderNoticeMatch $match): ?string {
+        $profile = $match->profile;
+        $buyer = trim((string) $match->notice?->buyer_name);
+        if ($profile === null || $buyer === '') {
+            return null;
+        }
+
+        $existing = $profile->excluded_buyers ?? [];
+        foreach ($existing as $entry) {
+            if (mb_strtolower(trim((string) $entry)) === mb_strtolower($buyer)) {
+                return $buyer;
+            }
+        }
+
+        $existing[] = $buyer;
+        $profile->forceFill(['excluded_buyers' => $existing])->save();
+
+        return $buyer;
     }
 
     public function restore(TenderNoticeMatch $match): RedirectResponse {
@@ -108,7 +149,12 @@ class TenderNoticeController extends Controller {
         Gate::authorize('viewAny', ApplicationOpportunity::class);
 
         return view('tenders.radar.profiles', [
-            'profiles' => TenderFilterProfile::query()->withCount('matches')->orderBy('name')->get(),
+            // Die Verwerfungsquote ist der Pflegehinweis: Wer fast alles
+            // ausblendet, hat ein zu weit gefasstes Profil.
+            'profiles' => TenderFilterProfile::query()
+                ->withCount(['matches', 'matches as muted_count' => fn ($q) => $q->where('state', TenderNoticeMatch::STATE_MUTED)])
+                ->orderBy('name')
+                ->get(),
             'canManage' => Gate::allows('create', ApplicationOpportunity::class),
         ]);
     }
@@ -170,6 +216,7 @@ class TenderNoticeController extends Controller {
             'nuts_codes' => ['nullable', 'string', 'max:2000'],
             'keywords' => ['nullable', 'string', 'max:2000'],
             'excluded_keywords' => ['nullable', 'string', 'max:2000'],
+            'excluded_buyers' => ['nullable', 'string', 'max:4000'],
             'min_value' => ['nullable', 'numeric', 'min:0'],
             'max_value' => ['nullable', 'numeric', 'min:0'],
         ]);
@@ -181,9 +228,24 @@ class TenderNoticeController extends Controller {
             'nuts_codes' => $this->list($data['nuts_codes'] ?? null, upper: true),
             'keywords' => $this->list($data['keywords'] ?? null),
             'excluded_keywords' => $this->list($data['excluded_keywords'] ?? null),
+            // Zeilenweise: Ein Auftraggeber heißt „Stadt Musterhausen" - an
+            // Leerzeichen zu trennen zerrisse jeden zweiten Namen.
+            'excluded_buyers' => $this->lines($data['excluded_buyers'] ?? null),
             'min_value' => $data['min_value'] ?? null,
             'max_value' => $data['max_value'] ?? null,
         ];
+    }
+
+    /**
+     * Zeilenweise Liste: je Zeile ein Eintrag, Leerzeichen bleiben erhalten.
+     *
+     * @return list<string>
+     */
+    private function lines(?string $raw): array {
+        $parts = preg_split('/\r?\n/', (string) $raw) ?: [];
+        $parts = array_filter(array_map(trim(...), $parts), static fn (string $p): bool => $p !== '');
+
+        return array_values(array_unique($parts));
     }
 
     /** @return list<string> */

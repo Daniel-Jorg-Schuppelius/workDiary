@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Gaeb;
 
-use App\Enums\Gaeb\BoqItemType;
+use App\Enums\Gaeb\{BoqItemType, GaebPhase};
 use App\Models\{BillOfQuantity, BoqCostType, BoqItem};
 
 /**
@@ -190,6 +190,75 @@ class BoqCalculationDataService {
             'unpriced' => $unpriced,
             'currency' => $boq->currency->value,
         ];
+    }
+
+    /**
+     * Kalkulierte Kosten je LV-Position, **auf die aufgemessene Menge
+     * skaliert** — die Grundlage für den Plan-Ist-Vergleich der
+     * Nachkalkulation (Feature 014).
+     *
+     * Die Kalkulation gilt der vollen LV-Menge; die Ist-Kosten fallen für die
+     * bisher ausgeführte an. Beide unskaliert zu vergleichen hieße, jeden noch
+     * nicht fertigen Bauabschnitt als Ersparnis auszuweisen. Ohne LV-Menge
+     * lässt sich nicht skalieren — dann gibt es **keinen** Wert, nicht null
+     * Euro.
+     *
+     * @param  list<int> $itemIds
+     * @return array<int, float> Positions-ID → kalkulierte Kosten je Mengeneinheit
+     */
+    public function unitCostsFor(BillOfQuantity $boq, array $itemIds): array {
+        if ($itemIds === []) {
+            return [];
+        }
+
+        $markups = [];
+        foreach ($boq->costTypes as $type) {
+            $markups[$type->cost_key] = $type->markup_percent === null ? null : (float) $type->markup_percent;
+        }
+
+        $items = BoqItem::query()
+            ->whereIn('id', $itemIds)
+            ->whereHas('costApproaches')
+            ->with(['costApproaches'])
+            ->get();
+
+        $unitCosts = [];
+        foreach ($items as $item) {
+            $quantity = $item->quantity?->getValue()->toFloat();
+            if ($quantity === null || $quantity == 0.0) {
+                continue;
+            }
+
+            $total = 0.0;
+            foreach ($item->costApproaches as $approach) {
+                $amount = $approach->calculatedAmount();
+                if ($amount === null) {
+                    continue;
+                }
+                $markup = $markups[$approach->cost_key] ?? null;
+                $total += $markup === null ? $amount : $amount * (1 + $markup / 100);
+            }
+
+            if ($total !== 0.0) {
+                $unitCosts[(int) $item->id] = $total / $quantity;
+            }
+        }
+
+        return $unitCosts;
+    }
+
+    /**
+     * Woher die Kalkulation stammt: aus einer eingelesenen X52 oder aus dem
+     * eigenen Haus.
+     *
+     * Die Unterscheidung gehört an jede Auswertung, die sie als Plan-Wert
+     * verwendet — eine fremde Kalkulation ist die Rechnung eines anderen
+     * Betriebs, nicht die eigene Planung.
+     */
+    public function calculationIsImported(BillOfQuantity $boq): bool {
+        return $boq->imports()
+            ->where('phase', GaebPhase::CalculationData->value)
+            ->exists();
     }
 
     /**

@@ -60,6 +60,9 @@
                         @if ($profile->excluded_keywords)
                             <div class="text-xs text-error/80">− {{ $asText($profile->excluded_keywords) }}</div>
                         @endif
+                        @if ($profile->excluded_buyers)
+                            <div class="text-xs text-error/80">− {{ implode(', ', $profile->excluded_buyers) }}</div>
+                        @endif
                     </td>
                     <td class="text-right text-xs tabular-nums text-base-content/70">
                         @if ($profile->min_value !== null || $profile->max_value !== null)
@@ -70,7 +73,17 @@
                             —
                         @endif
                     </td>
-                    <td class="text-right tabular-nums">{{ $profile->matches_count }}</td>
+                    <td class="text-right tabular-nums">
+                        {{ $profile->matches_count }}
+                        @if ($profile->matches_count > 0 && $profile->muted_count > 0)
+                            @php($share = round($profile->muted_count / $profile->matches_count * 100))
+                            {{-- Gezeigt, nicht ausgewertet: Das Profil enger zu
+                                 stellen bleibt eine Entscheidung. --}}
+                            <div class="text-xs @if ($share >= 60) text-warning @else text-base-content/60 @endif">
+                                {{ __(':count verworfen (:share %)', ['count' => $profile->muted_count, 'share' => $share]) }}
+                            </div>
+                        @endif
+                    </td>
                     <td class="text-right">
                         @if ($canManage)
                             <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger
