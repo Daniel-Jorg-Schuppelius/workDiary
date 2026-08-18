@@ -35,3 +35,25 @@ Workflow:
 Without a profile the system default (current output) applies. ZUGFeRD/
 PDF-A-3 invoices remain valid after applying the design — the structured
 invoice stays authoritative.
+
+
+CI base design and inheritance:
+
+- The org-wide default profile is your **CI base design**. Variants for
+  individual document kinds (e.g. quote, invoice, credit note, dunning)
+  or whole document families (sales, purchasing, evidence) **inherit**
+  all sections that are not overridden — each section shows whether it
+  is inherited or overridden; "reset to base design" removes the
+  override. The more specific variant wins: kind before family before
+  base design.
+- The **embedded PDF preview** in the editor renders through the same
+  pipeline as the final output; document kind and sample data (long
+  texts, many items, multiple tax rates) are switchable.
+- **Font family and base size** come from a curated, PDF-capable list;
+  primary/accent colors can **reference the organization branding** —
+  branding changes then apply automatically, without a color copy in
+  the profile.
+- On activation, the base design is checked against the mandatory
+  blocks of ALL brandable document kinds; genuine special formats
+  (e.g. labels) declare their restriction in the central document-kind
+  registry.

@@ -21,6 +21,9 @@
         'tableStyle' => $version->table_style,
         'preflight' => $preflight,
         'editable' => $isDraft && $canManage,
+        'canInherit' => $canInherit,
+        'overrideSections' => $version->override_sections,
+        'previewUrl' => route('admin.document-design.preview-pdf', $profile->sqid),
     ];
     $blockCases = \App\Enums\DocumentDesign\InformationBlock::cases();
     $stateCases = \App\Enums\DocumentDesign\InformationBlockState::cases();
@@ -41,7 +44,14 @@
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
             <div class="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                    <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ $profile->name }}</h1>
+                    <h1 class="flex items-center gap-2 font-['Space_Grotesk'] text-lg font-semibold">
+                        {{ $profile->name }}
+                        @if ($profile->is_default)
+                            <span class="badge badge-primary badge-sm">{{ __('document_design.profile.base_badge') }}</span>
+                        @elseif ($canInherit && $version->override_sections !== null)
+                            <span class="badge badge-info badge-sm">{{ __('document_design.editor.inherits_badge') }}</span>
+                        @endif
+                    </h1>
                     <p class="text-sm text-base-content/60">
                         {{ __('document_design.editor.version_line', ['v' => $version->version, 'status' => $isDraft ? __('Entwurf') : __('Aktiv')]) }}
                     </p>
@@ -167,10 +177,65 @@
                         </div>
                     </template>
                 </div>
+
+                {{-- Eingebettete PDF-Vorschau (#83): dieselbe Render-Pipeline
+                     wie die finale Ausgabe, Art und Beispieldaten umschaltbar. --}}
+                <div class="mt-4 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                    <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+                        <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.pdf_preview_heading') }}</h2>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <select class="select select-bordered select-xs" x-model="previewKind" aria-label="{{ __('Dokumentart') }}">
+                                @foreach ($kinds as $kind)
+                                    @if ($kind->isBrandable())
+                                        <option value="{{ $kind->value }}">{{ $kind->label() }}</option>
+                                    @endif
+                                @endforeach
+                            </select>
+                            <select class="select select-bordered select-xs" x-model="previewScenario" aria-label="{{ __('Beispieldaten') }}">
+                                @foreach ($scenarios as $scenario)
+                                    <option value="{{ $scenario }}">{{ \App\Services\DocumentDesign\SampleDocumentService::scenarioLabel($scenario) }}</option>
+                                @endforeach
+                            </select>
+                            <button type="button" class="btn btn-xs btn-outline" @click="reloadPreview()">{{ __('document_design.editor.pdf_preview_reload') }}</button>
+                        </div>
+                    </div>
+                    <p class="mb-2 text-xs text-base-content/50">{{ __('document_design.editor.pdf_preview_hint') }}</p>
+                    <iframe :src="previewSrc()" title="{{ __('document_design.editor.pdf_preview_heading') }}"
+                            class="h-160 w-full rounded border border-base-300 bg-white"></iframe>
+                </div>
             </div>
 
             {{-- Numerische Millimeterwerte + Optionen --}}
             <div class="space-y-4">
+                {{-- Vererbung vom CI-Basisdesign (#83) --}}
+                @if ($canInherit)
+                    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                        <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.inherit_heading') }}</h2>
+                        <p class="mb-2 text-xs text-base-content/50">{{ __('document_design.editor.inherit_hint', ['base' => $baseName]) }}</p>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" class="checkbox checkbox-sm" x-model="inheritEnabled" @change="markDirty()" :disabled="!editable">
+                            {{ __('document_design.editor.inherit_toggle', ['base' => $baseName]) }}
+                        </label>
+                        <div class="mt-2 space-y-1" x-show="inheritEnabled" x-cloak>
+                            @foreach ([
+                                'layout' => __('document_design.editor.section_layout'),
+                                'assets' => __('document_design.editor.section_assets'),
+                                'block_rules' => __('document_design.editor.section_blocks'),
+                                'table_style' => __('document_design.editor.section_table'),
+                            ] as $section => $label)
+                                <div class="flex items-center justify-between gap-2 text-sm">
+                                    <label class="flex items-center gap-2">
+                                        <input type="checkbox" class="checkbox checkbox-xs" x-model="overrides.{{ $section }}" @change="markDirty()" :disabled="!editable">
+                                        {{ $label }}
+                                    </label>
+                                    <span class="badge badge-xs" :class="overrides.{{ $section }} ? 'badge-warning' : 'badge-ghost'"
+                                          x-text="overrides.{{ $section }} ? '{{ __('document_design.editor.overridden') }}' : '{{ __('document_design.editor.inherited') }}'"></span>
+                                </div>
+                            @endforeach
+                            <p class="text-xs text-base-content/50">{{ __('document_design.editor.inherit_reset_hint') }}</p>
+                        </div>
+                    </div>
+                @endif
                 <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                     <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.margins_heading') }}</h2>
                     @foreach ([['content_first', __('Erste Seite')], ['content_following', __('Folgeseiten')]] as [$key, $label])
@@ -202,6 +267,24 @@
                         <label class="flex items-center gap-2 text-sm">
                             <input type="checkbox" class="checkbox checkbox-xs" x-model="layout.footer.page_numbers" @change="markDirty()" :disabled="!editable">
                             {{ __('document_design.editor.page_numbers') }}
+                        </label>
+                    </div>
+
+                    {{-- Typografie (#83): kuratierte, PDF-fähige Schriften --}}
+                    <div class="mt-3 grid gap-2 sm:grid-cols-2">
+                        <label class="form-control">
+                            <span class="label-text text-sm">{{ __('document_design.editor.font_family') }}</span>
+                            <select class="select select-bordered select-sm" x-model="layout.typography.font_family" @change="markDirty()" :disabled="!editable">
+                                <option value="">{{ __('document_design.editor.font_default') }}</option>
+                                @foreach (\App\Services\DocumentDesign\RenderProfileService::FONT_FAMILIES as $fontKey => $fontName)
+                                    <option value="{{ $fontKey }}">{{ $fontName }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                        <label class="form-control">
+                            <span class="label-text text-sm">{{ __('document_design.editor.base_size') }}</span>
+                            <input type="number" min="8" max="14" step="0.5" class="input input-bordered input-sm"
+                                   x-model.number="layout.typography.base_size_pt" @change="markDirty()" :disabled="!editable">
                         </label>
                     </div>
 
@@ -303,15 +386,19 @@
                                 @endforeach
                             </select>
                         </label>
+                        <label class="flex items-center gap-2 text-sm sm:col-span-2" title="{{ __('document_design.editor.use_brand_colors_hint') }}">
+                            <input type="checkbox" class="checkbox checkbox-sm" x-model="tableStyle.use_brand_colors" @change="markDirty()" :disabled="!editable">
+                            {{ __('document_design.editor.use_brand_colors') }}
+                        </label>
                         <label class="form-control">
                             <span class="label-text text-sm">{{ __('document_design.editor.accent_color') }}</span>
                             <input type="color" class="input input-bordered input-sm w-full"
-                                   x-model="tableStyle.overrides.accent_color" @change="markDirty()" :disabled="!editable">
+                                   x-model="tableStyle.overrides.accent_color" @change="markDirty()" :disabled="!editable || tableStyle.use_brand_colors">
                         </label>
                         <label class="form-control">
                             <span class="label-text text-sm">{{ __('document_design.editor.header_fill') }}</span>
                             <input type="color" class="input input-bordered input-sm w-full"
-                                   x-model="tableStyle.overrides.header_fill" @change="markDirty()" :disabled="!editable">
+                                   x-model="tableStyle.overrides.header_fill" @change="markDirty()" :disabled="!editable || tableStyle.use_brand_colors">
                         </label>
                         <label class="form-control">
                             <span class="label-text text-sm">{{ __('document_design.editor.font_size') }}</span>
@@ -351,6 +438,16 @@
                                 {{ $kind->label() }}
                             </label>
                         @endforeach
+                        <label class="form-control">
+                            <span class="label-text text-sm">{{ __('document_design.profile.family') }}</span>
+                            <select name="document_family" class="select select-bordered select-sm">
+                                <option value="">{{ __('document_design.profile.family_none') }}</option>
+                                @foreach ($families as $family)
+                                    <option value="{{ $family->value }}" @selected($profile->document_family === $family)>{{ $family->label() }}</option>
+                                @endforeach
+                            </select>
+                            <span class="label-text-alt text-xs text-base-content/50">{{ __('document_design.profile.family_hint') }}</span>
+                        </label>
                         <label class="flex items-center gap-2 text-sm">
                             <input type="checkbox" name="is_default" value="1" class="checkbox checkbox-sm" @checked($profile->is_default)>
                             {{ __('document_design.profile.set_default') }}

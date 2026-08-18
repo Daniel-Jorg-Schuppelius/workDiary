@@ -15,7 +15,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\DocumentDesign\{DocumentRenderProfile, DocumentRenderProfileVersion, LetterheadAsset};
 use App\Models\{Organization, User};
-use App\Services\DocumentDesign\{LetterheadAssetService, RenderPreflightService, RenderProfileService, SampleDocumentService};
+use App\Services\DocumentDesign\{LetterheadAssetService, RenderProfileService, SampleDocumentService};
 use App\Services\SqidEncoder;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Auth, Storage};
@@ -36,7 +36,6 @@ class DocumentDesignController extends Controller {
     public function __construct(
         private readonly LetterheadAssetService $assets,
         private readonly RenderProfileService $profiles,
-        private readonly RenderPreflightService $preflight,
         private readonly SampleDocumentService $samples,
     ) {}
 
@@ -74,6 +73,7 @@ class DocumentDesignController extends Controller {
 
         return view('admin.document-design._profile_form_dialog', [
             'kinds' => RenderDocumentKind::cases(),
+            'families' => \App\Enums\DocumentDesign\RenderDocumentFamily::cases(),
         ]);
     }
 
@@ -152,6 +152,7 @@ class DocumentDesignController extends Controller {
             'name' => ['required', 'string', 'max:120'],
             'document_kinds' => ['nullable', 'array'],
             'document_kinds.*' => ['string'],
+            'document_family' => ['nullable', 'string'],
             'is_default' => ['nullable', 'boolean'],
         ]);
 
@@ -161,6 +162,7 @@ class DocumentDesignController extends Controller {
             (array) ($data['document_kinds'] ?? []),
             (bool) ($data['is_default'] ?? false),
             $user,
+            \App\Enums\DocumentDesign\RenderDocumentFamily::tryFrom((string) ($data['document_family'] ?? '')),
         );
 
         return redirect()->route('admin.document-design.editor', $profile->sqid)
@@ -177,6 +179,11 @@ class DocumentDesignController extends Controller {
         $version = $draft ?? $profile->activeVersion;
         abort_if($version === null, 404);
 
+        // Vererbung (#83): Variante kann vom CI-Basisdesign erben, sofern
+        // eines existiert und dieses Profil nicht selbst das Basisdesign ist.
+        $base = $this->profiles->baseProfile($organization);
+        $canInherit = ! $profile->is_default && $base !== null && (int) $base->id !== (int) $profile->id;
+
         return view('admin.document-design.editor', [
             'profile' => $profile,
             'version' => $version,
@@ -184,10 +191,14 @@ class DocumentDesignController extends Controller {
             'assetsFirst' => $this->readyAssets($organization, LetterheadPageRole::First),
             'assetsFollowing' => $this->readyAssets($organization, LetterheadPageRole::Following),
             'kinds' => RenderDocumentKind::cases(),
+            'families' => \App\Enums\DocumentDesign\RenderDocumentFamily::cases(),
             'presets' => TableStylePreset::cases(),
-            'preflight' => $this->preflight->check($version, $profile->document_kinds ?? [])->toArray(),
+            'preflight' => $this->profiles->preflightFor($version)->toArray(),
             'versions' => $profile->versions()->orderByDesc('version')->get(),
             'canManage' => $this->canManage($user),
+            'canInherit' => $canInherit,
+            'baseName' => $canInherit ? $base->name : null,
+            'scenarios' => \App\Services\DocumentDesign\SampleDocumentService::SCENARIOS,
         ]);
     }
 
@@ -205,6 +216,8 @@ class DocumentDesignController extends Controller {
             'layout' => ['nullable', 'array'],
             'block_rules' => ['nullable', 'array'],
             'table_style' => ['nullable', 'array'],
+            'override_sections' => ['nullable', 'array'],
+            'override_sections.*' => ['string'],
             'first_asset' => ['nullable', 'string'],
             'following_asset' => ['nullable', 'string'],
         ]);
@@ -214,6 +227,10 @@ class DocumentDesignController extends Controller {
             'block_rules' => $data['block_rules'] ?? null,
             'table_style' => $data['table_style'] ?? null,
         ], fn($v) => $v !== null);
+        if ($request->exists('override_sections')) {
+            // null = eigenständiges Profil, Array = erbt vom Basisdesign (#83).
+            $payload['override_sections'] = $data['override_sections'] ?? null;
+        }
         foreach ([['first_asset', 'first_asset_id'], ['following_asset', 'following_asset_id']] as [$input, $column]) {
             if ($request->exists($input)) {
                 $sqidValue = $data[$input] ?? null;
@@ -233,7 +250,7 @@ class DocumentDesignController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        $result = $this->preflight->check($version, $profile->document_kinds ?? []);
+        $result = $this->profiles->preflightFor($version);
         if ($request->expectsJson()) {
             return response()->json(['saved' => true, 'preflight' => $result->toArray()]);
         }
@@ -292,10 +309,12 @@ class DocumentDesignController extends Controller {
         $data = $request->validate([
             'document_kinds' => ['nullable', 'array'],
             'document_kinds.*' => ['string'],
+            'document_family' => ['nullable', 'string'],
             'is_default' => ['nullable', 'boolean'],
         ]);
 
         $this->profiles->assignKinds($profile, (array) ($data['document_kinds'] ?? []));
+        $this->profiles->assignFamily($profile, \App\Enums\DocumentDesign\RenderDocumentFamily::tryFrom((string) ($data['document_family'] ?? '')));
         if ((bool) ($data['is_default'] ?? false)) {
             $this->profiles->setDefault($profile);
         }
@@ -315,21 +334,36 @@ class DocumentDesignController extends Controller {
 
     /** Test-PDF je Dokumentart aus dem aktuellen Stand (Entwurf bevorzugt). */
     public function testPdf(Request $request, string $sqid): Response {
+        return $this->samplePdfResponse($request, $sqid, inline: false);
+    }
+
+    /**
+     * Eingebettete PDF-Vorschau des Editors (#83): identische Render-Pipeline
+     * wie die finale Ausgabe, inline ausgeliefert (iframe/object) statt als
+     * Download; Dokumentart und Beispieldaten-Szenario sind umschaltbar.
+     * Rate-Limit über die Route (throttle) — die Erzeugung rendert echtes PDF.
+     */
+    public function previewPdf(Request $request, string $sqid): Response {
+        return $this->samplePdfResponse($request, $sqid, inline: true);
+    }
+
+    private function samplePdfResponse(Request $request, string $sqid, bool $inline): Response {
         $user = $this->assignUser();
         $organization = $this->organization($user);
         $profile = $this->profile($organization, $sqid);
 
         $kind = RenderDocumentKind::tryFrom((string) $request->query('kind')) ?? RenderDocumentKind::Invoice;
+        $scenario = (string) $request->query('scenario', \App\Services\DocumentDesign\SampleDocumentService::SCENARIO_STANDARD);
         $version = $profile->versions()->where('status', DocumentRenderProfileVersion::STATUS_DRAFT)->first()
             ?? $profile->activeVersion;
         abort_if($version === null, 404);
 
         $renderer = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class);
-        $pdf = $this->samples->pdf($organization, $kind, $renderer->payloadFromVersion($version));
+        $pdf = $this->samples->pdf($organization, $kind, $renderer->payloadFromVersion($version), $scenario);
 
         return response($pdf, 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="testdokument-' . $kind->value . '.pdf"',
+            'Content-Disposition' => ($inline ? 'inline' : 'attachment') . '; filename="testdokument-' . $kind->value . '.pdf"',
         ]);
     }
 

@@ -43,13 +43,14 @@ class DiaryCaseFileController extends Controller {
         /** @var User $viewer */
         $viewer = Auth::user();
 
-        // View→PDF über den zentralen Renderer (C15; Vollaudit 2026-07, N27);
-        // organization: null hält die Ausgabe bewusst design-frei (unverändert).
+        // View→PDF über den zentralen Renderer (C15; Vollaudit 2026-07, N27).
+        // #83: Fallakte ist eine registrierte, brandfähige Art und erbt das
+        // CI-Basisdesign der Organisation (Fallback-Art: Bericht).
         $bytes = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->renderPdf(
-            \App\Enums\DocumentDesign\RenderDocumentKind::Report,
+            \App\Enums\DocumentDesign\RenderDocumentKind::CaseFile,
             'diary.case-file-pdf',
             $this->caseFileData($diary, $viewer, $timeline, $featureFlags),
-            null,
+            (int) $diary->organization_id,
         );
 
         $filename = sprintf('fallakte-%s-%s.pdf', $diary->getRouteKey(), now()->format('Y-m-d'));

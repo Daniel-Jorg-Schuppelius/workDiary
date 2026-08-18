@@ -465,7 +465,7 @@ class TogglController extends Controller {
         $validated = $request->validate([
             'path' => ['required', 'string'],
             'action' => ['required', 'in:preview,import'],
-            'user_mode' => ['required', 'in:per_email,single'],
+            'user_mode' => ['required', 'in:per_email,per_email_create,single'],
             'folders' => ['required', 'array', 'min:1'],
             'folders.*' => ['required', 'string'],
             'modes' => ['required', 'array'],
@@ -583,7 +583,7 @@ class TogglController extends Controller {
 
         $validated = $request->validate([
             'action' => ['required', 'in:preview,import'],
-            'user_mode' => ['required', 'in:per_email,single'],
+            'user_mode' => ['required', 'in:per_email,per_email_create,single'],
             'date_from' => ['nullable', 'date'],
             'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
             'workspace_ids' => ['required', 'array', 'min:1'],

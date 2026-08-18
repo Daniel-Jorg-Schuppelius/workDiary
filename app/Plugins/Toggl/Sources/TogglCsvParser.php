@@ -125,18 +125,20 @@ class TogglCsvParser {
         $client = $this->nullIfBlank($get('client'));
         $project = $this->nullIfBlank($get('project'));
         $description = $this->nullIfBlank($get('description'));
+        $email = $this->nullIfBlank($get('email'));
 
         return new TogglEntry(
             source: TogglEntry::SOURCE_CSV,
-            entryKey: TogglEntry::csvKey($startedAt->toIso8601String(), $endedAt->toIso8601String(), $client, $project, $description),
+            entryKey: TogglEntry::csvKey($startedAt->toIso8601String(), $endedAt->toIso8601String(), $client, $project, $description, $email),
             clientName: $client,
             projectName: $project,
             description: $description,
             startedAt: $startedAt,
             endedAt: $endedAt,
             billable: $this->isBillable($get('billable')),
-            userEmail: $this->nullIfBlank($get('email')),
+            userEmail: $email,
             tags: $this->parseTags($get('tags')),
+            legacyEntryKey: TogglEntry::legacyCsvKey($startedAt->toIso8601String(), $endedAt->toIso8601String(), $client, $project, $description),
         );
     }
 

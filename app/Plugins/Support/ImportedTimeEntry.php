@@ -52,6 +52,12 @@ final class ImportedTimeEntry {
         /** Quell-Workspace (nur Toggl-API) — trennt Inbox-Gruppen je Workspace. */
         public readonly ?int $workspaceId = null,
         public readonly ?string $workspaceName = null,
+        /**
+         * Alt-Idempotenz-Schlüssel (z. B. Toggl-CSV-Hash ohne E-Mail vor
+         * MVP-509): Bestandsreferenzen unter diesem Schlüssel werden beim
+         * Import auf {@see $entryKey} migriert statt Duplikate zu erzeugen.
+         */
+        public readonly ?string $legacyEntryKey = null,
     ) {}
 
     /** Verbindungsdauer in Minuten (mind. 1, falls > 0 Sekunden). */

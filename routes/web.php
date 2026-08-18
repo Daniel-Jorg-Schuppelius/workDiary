@@ -1409,6 +1409,8 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/document-design/{profile}/assign', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'assign'])->name('admin.document-design.assign');
         Route::post('admin/document-design/{profile}/archive', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'archiveProfile'])->name('admin.document-design.archive');
         Route::get('admin/document-design/{profile}/test-pdf', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'testPdf'])->name('admin.document-design.test-pdf');
+        // Eingebettete Editor-Vorschau (#83): inline-PDF, rate-limited (echtes Rendering je Aufruf).
+        Route::get('admin/document-design/{profile}/preview-pdf', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'previewPdf'])->middleware('throttle:30,1')->name('admin.document-design.preview-pdf');
 
         // ── E-Mail-Eingang (Admin, Feature 056) ─────────────────────────────────
         Route::get('admin/mail', [\App\Http\Controllers\Admin\MailAdminController::class, 'index'])->name('admin.mail.index');

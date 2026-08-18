@@ -35,3 +35,13 @@ senza segnale utente vengono registrate sull'utente predefinito. Le
 vecchie importazioni assegnate male si riparano con
 `toggl:repair-entry-users` (prima simulazione, scrivere con `--apply`);
 i tempi fatturati o firmati non vengono mai modificati automaticamente.
+
+Per l'importazione una tantum del workspace (cartella/ZIP o API) scegli
+esplicitamente l'assegnazione degli utenti: assegnare solo a utenti
+esistenti (le voci sconosciute restano visibilmente non registrate e
+vengono elencate per e-mail), creare gli utenti mancanti per e-mail,
+oppure modalità utente singolo (tutto sull'utente predefinito
+configurato — chiaramente indicato in anteprima e risultato). I singoli
+indirizzi Toggl possono inoltre essere assegnati esplicitamente;
+l'importazione è idempotente e può semplicemente essere rieseguita una
+volta curate le assegnazioni.

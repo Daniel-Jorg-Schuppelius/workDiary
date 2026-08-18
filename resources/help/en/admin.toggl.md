@@ -57,3 +57,11 @@ User assignment (MVP-509):
 - Previously misassigned imports are repaired by
   `toggl:repair-entry-users` (dry run first, write with `--apply`);
   billed or signed times are never changed automatically.
+- For the one-time **workspace import** (folder/ZIP or API) you choose
+  the user assignment explicitly: assign to existing users only
+  (unknown entries stay visibly unbooked and are listed per email),
+  create missing users per email, or single-user mode (everything onto
+  the configured default user — clearly named in preview and result).
+  Individual Toggl addresses can additionally be mapped explicitly; the
+  import is idempotent and can simply be re-run once mappings are
+  maintained.

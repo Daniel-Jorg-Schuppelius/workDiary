@@ -16,10 +16,15 @@ use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
 /**
- * Dokumentarten des Rendervertrags (MVP-295). Jede Art entspricht einem
- * bestehenden PDF-Generator; das Designprofil wird pro Art zugewiesen.
- * Fachinhalt und Pflichtangaben bleiben im jeweiligen Modul — hier wird nur
- * definiert, welche Informationsblöcke eine Art mindestens benötigt.
+ * Dokumentarten des Rendervertrags (MVP-295; Ausbau Issue #83): die zentrale,
+ * typisierte Registrierung aller serverseitig erzeugten PDF-Arten. Jede Art
+ * deklariert Bezeichnung, Dokumentfamilie, Seitenformat, Pflichtblöcke und
+ * ihre Design-Fähigkeit; {@see \App\Services\DocumentDesign\PdfGeneratorInventory}
+ * bindet die Generator-Aufrufstellen an diese Registrierung (Architekturtest).
+ * Fachinhalt und Pflichtangaben bleiben im jeweiligen Modul.
+ *
+ * Nicht verwechseln mit {@see \App\Enums\Billing\DocumentKind}: das ist der
+ * fachliche Belegfluss (Vorzeichen/Nummernkreis), hier geht es ums Rendering.
  */
 enum RenderDocumentKind: string implements HasLabel {
     use HasOptions;
@@ -33,6 +38,17 @@ enum RenderDocumentKind: string implements HasLabel {
     case Form = 'form';
     case Report = 'report';
 
+    // Ausbau Issue #83: eigenständige Vertriebsbeleg-Arten (gemeinsame
+    // Designverträge über die Familie, eigene Pflichtblöcke) …
+    case Quote = 'quote';
+    case OrderConfirmation = 'order_confirmation';
+    case CreditNote = 'credit_note';
+    case ProformaInvoice = 'proforma_invoice';
+    case Dunning = 'dunning';
+    // … sowie bislang unregistrierte Nachweis- und Spezialarten.
+    case CaseFile = 'case_file';
+    case Label = 'label';
+
     public function label(): string {
         return match ($this) {
             self::Invoice => __('Rechnung'),
@@ -43,7 +59,93 @@ enum RenderDocumentKind: string implements HasLabel {
             self::Timesheet => __('Stundenzettel'),
             self::Form => __('Formular'),
             self::Report => __('Bericht'),
+            self::Quote => __('Angebot'),
+            self::OrderConfirmation => __('Auftragsbestätigung'),
+            self::CreditNote => __('Gutschrift'),
+            self::ProformaInvoice => __('Pro-forma-Rechnung'),
+            self::Dunning => __('Mahnung'),
+            self::CaseFile => __('Fallakte'),
+            self::Label => __('Etikett'),
         };
+    }
+
+    /** Dokumentfamilie — Design-Varianten können je Familie gelten (#83). */
+    public function family(): RenderDocumentFamily {
+        return match ($this) {
+            self::Invoice, self::Quote, self::OrderConfirmation,
+            self::CreditNote, self::ProformaInvoice, self::Dunning => RenderDocumentFamily::Sales,
+            self::PurchaseOrder, self::DeliveryNote => RenderDocumentFamily::Procurement,
+            self::Protocol, self::ManufacturingRecord, self::Timesheet,
+            self::Form, self::Report, self::CaseFile => RenderDocumentFamily::Evidence,
+            self::Label => RenderDocumentFamily::Special,
+        };
+    }
+
+    /**
+     * Seitenformat der Art. Nur `a4_portrait` durchläuft die volle
+     * Design-Pipeline (Firmenbogen/Druckbereiche); `flexible` deklariert ein
+     * Spezialformat (frei wählbares Papier/Querformat).
+     */
+    public function pageFormat(): string {
+        return match ($this) {
+            self::Label => 'flexible',
+            default => 'a4_portrait',
+        };
+    }
+
+    /**
+     * Brandfähig = erbt CI-Basisdesign/Varianten. Spezialformate deklarieren
+     * ihre Einschränkung hier ausdrücklich statt die Pipeline unbemerkt zu
+     * umgehen ({@see capabilityNote()}).
+     */
+    public function isBrandable(): bool {
+        return $this !== self::Label;
+    }
+
+    /** Begründung eingeschränkter Design-Fähigkeit (nur Spezialformate). */
+    public function capabilityNote(): ?string {
+        return match ($this) {
+            self::Label => (string) __('Freies Etikettenformat (A7/Querformat, ohne Organisation) — Firmenbogen und Druckbereiche sind nicht anwendbar.'),
+            default => null,
+        };
+    }
+
+    /**
+     * Auflösungs-Fallback auf die etablierte Art derselben Familie: solange
+     * eine Organisation keine eigene Variante für z. B. Gutschriften pflegt,
+     * gilt weiterhin ihr Rechnungs- bzw. Berichtsprofil (kein sichtbarer
+     * Regressionssprung durch die feineren Arten, #83).
+     */
+    public function fallbackKind(): ?self {
+        return match ($this) {
+            self::Quote, self::OrderConfirmation, self::CreditNote,
+            self::ProformaInvoice, self::Dunning => self::Invoice,
+            self::CaseFile => self::Report,
+            default => null,
+        };
+    }
+
+    /**
+     * Render-Art eines Rechnungsbelegs nach {@see \App\Models\Invoice}-Typ:
+     * Gutschrift und Pro-forma tragen eigene Arten, alle übrigen Typen
+     * (Storno, Abschlag, Teil-/Schlussrechnung, Retainer) bleiben `invoice`.
+     */
+    public static function forInvoiceType(string $type): self {
+        return match ($type) {
+            \App\Models\Invoice::TYPE_CREDIT_NOTE => self::CreditNote,
+            \App\Models\Invoice::TYPE_PROFORMA => self::ProformaInvoice,
+            default => self::Invoice,
+        };
+    }
+
+    /**
+     * Alle brandfähigen Arten — Prüfumfang eines CI-Basisdesigns (dessen
+     * Pflichtblöcke müssen für JEDE erbende Art erfüllbar sein).
+     *
+     * @return array<int, self>
+     */
+    public static function brandable(): array {
+        return array_values(array_filter(self::cases(), static fn (self $kind): bool => $kind->isBrandable()));
     }
 
     /**
@@ -54,7 +156,7 @@ enum RenderDocumentKind: string implements HasLabel {
      */
     public function mandatoryBlocks(): array {
         return match ($this) {
-            self::Invoice => [
+            self::Invoice, self::CreditNote, self::ProformaInvoice => [
                 InformationBlock::RecipientAddress,
                 InformationBlock::DocumentMeta,
                 InformationBlock::CompanyIdentity,
@@ -63,12 +165,19 @@ enum RenderDocumentKind: string implements HasLabel {
                 InformationBlock::Totals,
                 InformationBlock::TaxBreakdown,
             ],
-            self::PurchaseOrder => [
+            self::PurchaseOrder, self::Quote, self::OrderConfirmation => [
                 InformationBlock::RecipientAddress,
                 InformationBlock::DocumentMeta,
                 InformationBlock::CompanyIdentity,
                 InformationBlock::ItemsTable,
                 InformationBlock::Totals,
+            ],
+            self::Dunning => [
+                InformationBlock::RecipientAddress,
+                InformationBlock::DocumentMeta,
+                InformationBlock::CompanyIdentity,
+                InformationBlock::Totals,
+                InformationBlock::BankDetails,
             ],
             self::DeliveryNote => [
                 InformationBlock::RecipientAddress,
@@ -80,9 +189,10 @@ enum RenderDocumentKind: string implements HasLabel {
                 InformationBlock::DocumentMeta,
                 InformationBlock::CompanyIdentity,
             ],
-            self::Timesheet, self::Form, self::Report => [
+            self::Timesheet, self::Form, self::Report, self::CaseFile => [
                 InformationBlock::DocumentMeta,
             ],
+            self::Label => [],
         };
     }
 }

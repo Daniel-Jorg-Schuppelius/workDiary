@@ -31,6 +31,22 @@ export function registerDesignEditor(Alpine) {
         saving: false,
         message: null,
         drag: null,
+        // Vererbung vom CI-Basisdesign (#83): nur wenn canInherit; die
+        // Overrides-Flags markieren, welche Sektionen dieses Profil selbst trägt.
+        canInherit: false,
+        inheritEnabled: false,
+        overrides: {
+            layout: true,
+            assets: true,
+            block_rules: true,
+            table_style: true,
+        },
+        // Eingebettete PDF-Vorschau (#83): Art/Szenario umschaltbar; tick
+        // erzwingt das Neuladen des iframes nach dem Speichern.
+        previewUrl: null,
+        previewKind: "invoice",
+        previewScenario: "standard",
+        previewTick: 0,
 
         init() {
             const cfg = JSON.parse(this.$el.dataset.config || "{}");
@@ -41,6 +57,37 @@ export function registerDesignEditor(Alpine) {
             this.preflight = cfg.preflight ?? { errors: [], warnings: [] };
             this.editable = !!cfg.editable;
             this.layout.blocked_areas = this.layout.blocked_areas || [];
+            // Bestandsversionen ohne Typografie-Sektion (#83) nachrüsten.
+            this.layout.typography = this.layout.typography || {
+                font_family: null,
+                base_size_pt: null,
+            };
+            this.canInherit = !!cfg.canInherit;
+            const sections = cfg.overrideSections;
+            this.inheritEnabled = this.canInherit && Array.isArray(sections);
+            if (this.inheritEnabled) {
+                for (const key of Object.keys(this.overrides)) {
+                    this.overrides[key] = sections.includes(key);
+                }
+            }
+            this.previewUrl = cfg.previewUrl ?? null;
+        },
+
+        // Sektion wirksam aus diesem Profil (nicht geerbt)?
+        sectionOwn(key) {
+            return !this.inheritEnabled || !!this.overrides[key];
+        },
+        overrideList() {
+            return Object.keys(this.overrides).filter(
+                (key) => this.overrides[key],
+            );
+        },
+        previewSrc() {
+            if (!this.previewUrl) return "";
+            return `${this.previewUrl}?kind=${encodeURIComponent(this.previewKind)}&scenario=${encodeURIComponent(this.previewScenario)}&t=${this.previewTick}`;
+        },
+        reloadPreview() {
+            this.previewTick++;
         },
 
         // ── Auswahl & Boxen ───────────────────────────────────────────────
@@ -228,6 +275,13 @@ export function registerDesignEditor(Alpine) {
                         layout: this.layout,
                         block_rules: this.blocks,
                         table_style: this.tableStyle,
+                        ...(this.canInherit
+                            ? {
+                                  override_sections: this.inheritEnabled
+                                      ? this.overrideList()
+                                      : null,
+                              }
+                            : {}),
                     }),
                 });
                 const data = await response.json();
@@ -241,6 +295,7 @@ export function registerDesignEditor(Alpine) {
                 this.preflight = data.preflight;
                 this.dirty = false;
                 this.message = { tone: "success", text: null };
+                this.previewTick++;
             } catch (e) {
                 this.message = { tone: "error", text: String(e) };
             } finally {

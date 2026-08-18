@@ -79,31 +79,39 @@ class InvoicePdfRenderer {
 
     /**
      * Design-Payload der Rechnung: eingefrorener Snapshot (finalisierte
-     * Belege) vor aktivem Profil vor Systemfallback (null).
+     * Belege) vor aktivem Profil vor Systemfallback (null). Die Render-Art
+     * folgt dem Belegtyp (#83: Gutschrift/Pro-forma als eigene Arten);
+     * Bestandsbelege sind noch unter `invoice` eingefroren — der
+     * Alt-Schlüssel wird mitgeprüft.
      *
      * @return array<string, mixed>|null
      */
     private function designPayload(Invoice $invoice): ?array {
-        $snapshot = $this->design->payloadFromSnapshot($invoice, RenderDocumentKind::Invoice);
+        $kind = RenderDocumentKind::forInvoiceType((string) $invoice->type);
+
+        $snapshot = $this->design->payloadFromSnapshot($invoice, $kind)
+            ?? ($kind !== RenderDocumentKind::Invoice
+                ? $this->design->payloadFromSnapshot($invoice, RenderDocumentKind::Invoice)
+                : null);
         if ($snapshot !== null) {
             return $snapshot;
         }
         // Ohne Snapshot (Entwurf/Bestandsbeleg): aktives Profil der Org.
-        if ($invoice->party_snapshot !== null && $this->hasSnapshotRecord($invoice)) {
+        if ($invoice->party_snapshot !== null && $this->hasSnapshotRecord($invoice, $kind)) {
             return null; // Snapshot des Systemfallbacks → heutige Ausgabe
         }
 
         return $invoice->organization === null
             ? null
-            : $this->design->payloadFor($invoice->organization, RenderDocumentKind::Invoice);
+            : $this->design->payloadFor($invoice->organization, $kind);
     }
 
-    private function hasSnapshotRecord(Invoice $invoice): bool {
+    private function hasSnapshotRecord(Invoice $invoice, RenderDocumentKind $kind): bool {
         return \App\Models\DocumentDesign\DocumentRenderSnapshot::query()
             ->withoutGlobalScopes()
             ->where('documentable_type', $invoice->getMorphClass())
             ->where('documentable_id', $invoice->getKey())
-            ->where('document_kind', RenderDocumentKind::Invoice->value)
+            ->whereIn('document_kind', array_unique([$kind->value, RenderDocumentKind::Invoice->value]))
             ->exists();
     }
 }

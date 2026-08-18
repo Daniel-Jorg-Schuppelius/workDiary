@@ -363,10 +363,11 @@ class Invoice extends Model {
 
         // Feature 076: mit der Partei auch den Layoutstand einfrieren — finalisierte Belege rendern über den
         // Snapshot, spätere Profiländerungen verändern alte Dokumente nicht.
+        // Die Render-Art folgt dem Belegtyp (#83: Gutschrift/Pro-forma eigene Arten).
         if ($this->exists && $this->organization !== null) {
             app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->snapshot(
                 $this,
-                \App\Enums\DocumentDesign\RenderDocumentKind::Invoice,
+                \App\Enums\DocumentDesign\RenderDocumentKind::forInvoiceType((string) $this->type),
                 $this->organization,
             );
         }
