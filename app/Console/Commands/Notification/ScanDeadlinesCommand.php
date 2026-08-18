@@ -15,6 +15,7 @@ use App\Enums\Notification\NotificationEvent;
 use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Enums\Shift\ShiftExchangeStatus;
+use App\Models\Applications\ApplicationOpportunity;
 use App\Models\{AssetAssignment, CommunicationNote, Document, MaintenancePlan, OpenIssue, Problem, ServiceTicket, ShiftExchange, SlaContract, SlaContractQuota, User, UserQualification};
 use App\Models\Isms\{IsmsCertificate, IsmsCorrectiveAction, IsmsRisk, IsmsRiskAssessment, IsmsSupplierAssessment, IsmsVulnerability};
 use App\Services\Isms\ConformityService;
@@ -65,6 +66,7 @@ class ScanDeadlinesCommand extends Command {
         $sent += $this->scanProblemEffectiveness($dispatcher);
         $sent += $this->scanSlaQuotas($dispatcher, app(SlaQuotaService::class));
         $sent += $this->scanAssetReturns($dispatcher);
+        $sent += $this->scanTenderDeadlines($dispatcher, $dueDays);
         $sent += $this->scanMaintenance($dispatcher, $expiringDays);
         $sent += $this->scanQualificationExpiry($dispatcher, $expiringDays);
         $sent += $this->scanPendingShiftExchanges($dispatcher);
@@ -773,6 +775,89 @@ class ScanDeadlinesCommand extends Command {
     }
 
     /** @return array{title: string, message: string, url: string|null, due_at: \Illuminate\Support\Carbon|null} */
+    /**
+     * Vergabefristen (MVP-626). Anders als die meisten Fristen sind sie
+     * **Ausschlussfristen**: Wer die Angebotsfrist verstreichen lässt, ist raus
+     * — eine Erinnerung danach hilft nicht mehr, wird aber trotzdem gemeldet,
+     * damit die Akte geschlossen wird.
+     *
+     * Die Bindefrist läuft umgekehrt: Nach ihr ist der **Bieter** frei, das
+     * Angebot also nicht mehr verbindlich.
+     */
+    private function scanTenderDeadlines(NotificationDispatcher $dispatcher, int $dueDays): int {
+        $today = Carbon::today();
+        $horizon = $today->copy()->addDays($dueDays);
+
+        /** @var Closure(): \Illuminate\Database\Eloquent\Builder<ApplicationOpportunity> $open */
+        $open = static fn (): \Illuminate\Database\Eloquent\Builder => ApplicationOpportunity::query()
+            ->whereIn('status', ApplicationOpportunity::OPEN_STATUSES)
+            ->with('responsible');
+
+        $sent = $this->runScan($dispatcher, [
+            'affected' => fn (ApplicationOpportunity $tender): ?User => $tender->responsible,
+            'due' => [
+                'query' => fn () => $open()
+                    ->whereNotNull('submission_deadline')
+                    ->whereBetween('submission_deadline', [$today, $horizon]),
+                'event' => NotificationEvent::TenderSubmissionDueSoon,
+                'payload' => fn (ApplicationOpportunity $tender): array => $this->tenderPayload(
+                    $tender,
+                    'tender_submission_due_soon',
+                    $tender->submission_deadline,
+                ),
+            ],
+            'overdue' => [
+                'query' => fn () => $open()
+                    ->whereNotNull('submission_deadline')
+                    ->where('submission_deadline', '<', $today),
+                'event' => NotificationEvent::TenderSubmissionOverdue,
+                'payload' => fn (ApplicationOpportunity $tender): array => $this->tenderPayload(
+                    $tender,
+                    'tender_submission_overdue',
+                    $tender->submission_deadline,
+                ),
+            ],
+        ]);
+
+        // Die Bindefrist braucht einen eigenen Lauf: runScan kennt nur die
+        // Phasen „fällig" und „überfällig", und eine ablaufende Bindefrist ist
+        // weder das eine noch das andere - sie betrifft ein bereits
+        // abgegebenes Angebot.
+        $sent += $this->runScan($dispatcher, [
+            'affected' => fn (ApplicationOpportunity $tender): ?User => $tender->responsible,
+            'due' => [
+                'query' => fn () => $open()
+                    ->whereNotNull('binding_until')
+                    ->whereBetween('binding_until', [$today, $horizon]),
+                'event' => NotificationEvent::TenderBindingExpiring,
+                'payload' => fn (ApplicationOpportunity $tender): array => $this->tenderPayload(
+                    $tender,
+                    'tender_binding_expiring',
+                    $tender->binding_until,
+                ),
+            ],
+        ]);
+
+        return $sent;
+    }
+
+    /**
+     * @return TNotifyPayload
+     */
+    private function tenderPayload(ApplicationOpportunity $tender, string $key, ?\Carbon\CarbonInterface $date): array {
+        return [
+            'title' => (string) $tender->title,
+            'message' => (string) __('notification.message.' . $key, ['date' => $date?->format('d.m.Y') ?? '–']),
+            'message_key' => 'notification.message.' . $key,
+            'message_params' => ['date' => $date?->toDateString() ?? '–'],
+            'url' => route('tenders.show', $tender),
+            'due_at' => $date,
+        ];
+    }
+
+    /**
+     * @return TNotifyPayload
+     */
     private function assetReturnPayload(AssetAssignment $assignment): array {
         $asset = $assignment->asset;
         $title = $asset !== null ? trim($asset->asset_no . ' — ' . $asset->name, ' —') : '';

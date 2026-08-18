@@ -10,13 +10,13 @@
 
 namespace Tests\Feature\Gaeb;
 
-use App\Enums\Gaeb\{BoqChangeOrderStatus, BoqItemStatus, BoqItemType, BoqProgressSource, GaebPhase};
+use App\Enums\Gaeb\{BoqChangeOrderInitiator, BoqChangeOrderPhase, BoqChangeOrderStatus, BoqItemStatus, BoqItemType, BoqProgressSource, GaebPhase};
 use App\Models\{BillOfQuantity, BoqItem, User};
 use App\Services\Gaeb\{BoqCostingService, BoqExportService, BoqProgressService, BoqWorkflowException, BoqWorkflowService, GaebImportService};
 use CommonToolkit\ValueObjects\Money;
 use Database\Seeders\GaebDemoSeeder;
 use ERechnungToolkit\Enums\GaebFormat;
-use ERechnungToolkit\Parsers\GaebDaXmlParser;
+use ERechnungToolkit\Parsers\{GaebDaXmlParser, GaebReader};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -272,6 +272,10 @@ final class BoqLifecycleTest extends TestCase {
         $this->assertSame('N1', $addendum->change_order_no);
         $this->assertSame(BoqChangeOrderStatus::Offered, $addendum->change_order_status);
         $this->assertFalse($addendum->change_order_status->isFinal());
+        // Das Label muss übersetzt sein, nicht der rohe Schlüssel: Ein Katalog
+        // unter dem falschen Elternknoten fällt sonst erst im Bildschirmtext
+        // auf (der Status lag bis 2026-08-18 unter `gaeb.import`).
+        $this->assertStringNotContainsString('gaeb.', $addendum->change_order_status->label());
 
         // Normale Positionen sind keine Nachträge mehr, nur weil sie eine
         // Katalognummer führen.
@@ -286,6 +290,48 @@ final class BoqLifecycleTest extends TestCase {
         $award = app(BoqExportService::class)->export($boq, GaebPhase::Award)['xml'];
         $this->assertStringContainsString('<CONo>N1</CONo>', $award);
         $this->assertStringContainsString('<COStatus>Offered</COStatus>', $award);
+    }
+
+    /**
+     * Feature 108, MVP-624: Ein LV trägt mehrere Nachtragsköpfe nebeneinander —
+     * N1 kann angemeldet sein, während N2 schon angeboten ist. Jeder hat eigene
+     * Begründung, eigenen Auslöser und eigenes Datum.
+     */
+    public function test_change_order_heads_survive_roundtrip(): void {
+        $xml = (string) file_get_contents(base_path('tests/Fixtures/gaeb/sample_x83_traits.xml'));
+        $import = app(GaebImportService::class)->import($xml, 'sample_x83_traits.xml', $this->organization->id);
+        $boq = BillOfQuantity::query()->findOrFail($import->bill_of_quantity_id);
+
+        $this->assertSame(2, $boq->changeOrders()->count());
+
+        $first = $boq->changeOrders()->where('number', 'N1')->firstOrFail();
+        $this->assertSame(BoqChangeOrderPhase::Call, $first->phase);
+        $this->assertSame(BoqChangeOrderStatus::Filed, $first->status);
+        $this->assertSame(BoqChangeOrderInitiator::Owner, $first->initiator);
+        $this->assertSame('Baugrund weicht vom Gutachten ab', $first->reason);
+        $this->assertSame('2026-03-12', $first->date?->format('Y-m-d'));
+        $this->assertFalse($first->isFinal());
+
+        $second = $boq->changeOrders()->where('number', 'N2')->firstOrFail();
+        $this->assertSame(BoqChangeOrderPhase::SupplementaryBid, $second->phase);
+        $this->assertSame(BoqChangeOrderInitiator::Contractor, $second->initiator);
+
+        // Die Positionen hängen über ihre Nummer am Kopf.
+        $this->assertSame(1, $first->items()->count());
+
+        // Der Kopf gehört in Auftragserteilung und Angebotsaufforderung; die
+        // Angebotsabgabe antwortet nur darauf und wiederholt ihn nicht — die
+        // X84-Schemadatei kennt COInfo überhaupt nicht.
+        $award = app(BoqExportService::class)->export($boq, GaebPhase::Award)['xml'];
+        $this->assertStringContainsString('<COInfo>', $award);
+        $this->assertStringContainsString('<COPhase>CallChangOrder</COPhase>', $award);
+        $this->assertStringContainsString('<COInit>Contractor</COInit>', $award);
+
+        $bid = app(BoqExportService::class)->export($boq, GaebPhase::Bid)['xml'];
+        $this->assertStringNotContainsString('<COInfo>', $bid);
+
+        $reparsed = (new GaebReader)->read($award, 'export.x86');
+        $this->assertCount(2, $reparsed->getChangeOrders());
     }
 
     public function test_http_export_and_progress_for_manager(): void {

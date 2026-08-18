@@ -47,16 +47,6 @@ return [
             'imported' => 'Imported',
             'conflict' => 'Conflict',
         ],
-        'change_order_status' => [
-            'Recog' => 'Recognised',
-            'Filed' => 'Filed',
-            'Offered' => 'Offered',
-            'Withdrawn' => 'Withdrawn',
-            'Rejected' => 'Rejected',
-            'ObjToRecj' => 'Objection to rejection',
-            'FormAckn' => 'Formally acknowledged',
-            'Approved' => 'Approved',
-        ],
     ],
 
     'show' => [
@@ -67,6 +57,17 @@ return [
         'back' => 'Back to overview',
     ],
 
+    'change_order' => [
+        'phase' => [
+            'CallChangOrder' => 'Call for change order',
+            'SupplBid' => 'Supplementary bid',
+            'SupplAgree' => 'Supplementary agreement',
+        ],
+        'initiator' => [
+            'Owner' => 'Client',
+            'Contractor' => 'Contractor',
+        ],
+    ],
     'phase' => [
         '31' => 'Quantity survey',
         '50' => 'Construction cost catalogue',
@@ -112,6 +113,16 @@ return [
             'replaced' => 'Replaced',
             'cancelled' => 'Cancelled',
         ],
+        'change_order_status' => [
+            'Recog' => 'Recognised',
+            'Filed' => 'Filed',
+            'Offered' => 'Offered',
+            'Withdrawn' => 'Withdrawn',
+            'Rejected' => 'Rejected',
+            'ObjToRecj' => 'Objection to rejection',
+            'FormAckn' => 'Formally acknowledged',
+            'Approved' => 'Approved',
+        ],
     ],
 
     'preflight' => [
@@ -119,6 +130,7 @@ return [
         'version_unsupported' => 'GAEB version :version is not supported (target line 3.3).',
         'phase_unknown' => 'Exchange phase ":code" is unknown.',
         'no_items' => 'The file contains no line items.',
+        'vendor_record_type' => 'The file contains :count records of vendor-specific record type :type — their content is not evaluated (some systems keep the cost groups there).',
         'item_missing_ref' => 'Item without reference number: :text',
         'duplicate_ref' => 'Reference number :ref appears more than once.',
         'missing_quantity' => 'Item :ref has no quantity.',
@@ -194,5 +206,30 @@ return [
         'button' => 'Export GAEB',
         'title' => 'GAEB export',
         'phase' => 'Phase',
+    ],
+    'trade' => [
+        'missing_own_address' => 'Your own address is missing from the e-invoicing master data; without it the file does not name the buyer.',
+        'missing_delivery_date' => 'Without a delivery date the order is open-ended; the order date was used instead.',
+        'missing_supplier_sku' => ':count line(s) without the supplier article number — their system finds goods by it.',
+        'missing_supplier_tax_no' => 'The supplier has neither a tax number nor a VAT ID.',
+    ],
+    'invoice' => [
+        'share_net' => 'Net amount',
+        'share_discount' => 'Discount',
+        'share_vat' => 'VAT :rate %',
+        'missing_tax_number' => 'Tax number and VAT ID are missing from the e-invoicing master data — tax law requires one of them.',
+        'missing_recipient' => 'The invoice recipient address is incomplete.',
+        'missing_service_period' => 'No service period could be derived; the invoice date was used instead.',
+    ],
+    'comparison' => [
+        'title' => 'Price comparison',
+        'spread' => 'Spread',
+        'rank' => 'Rank :rank',
+        'gap' => ':percent % below the next bid',
+        'unusually_low_hint' => 'An unusually low bid calls for clarification, not exclusion (§ 16d VOB/A, § 60 VgV).',
+        'incomplete_hint' => 'Not every bidder priced every item — missing prices are gaps, not zeros.',
+        'empty_title' => 'No bids yet',
+        'empty_hint' => 'Import bids (X84) for this tender to compare them.',
+        'button' => 'Price comparison',
     ],
 ];

@@ -75,6 +75,12 @@ enum NotificationEvent: string implements HasLabel {
     case SlaQuotaWarning = 'sla.quotaWarning';
     /** Scanner: Asset-Ausgabe mit überschrittener erwarteter Rückgabe (Feature 009) */
     case AssetReturnOverdue = 'asset.returnOverdue';
+    /** Scanner: Angebotsfrist einer Ausschreibung rückt näher (Feature 108, MVP-626) */
+    case TenderSubmissionDueSoon = 'tender.submissionDueSoon';
+    /** Scanner: Angebotsfrist überschritten — nach ihr ist keine Abgabe mehr möglich */
+    case TenderSubmissionOverdue = 'tender.submissionOverdue';
+    /** Scanner: Bindefrist läuft ab — danach ist der Bieter nicht mehr gebunden */
+    case TenderBindingExpiring = 'tender.bindingExpiring';
     /** Scanner: Wartungs-/Prüfplan fällig innerhalb des Vorlaufs (Feature 009) */
     case MaintenanceDueSoon = 'maintenance.dueSoon';
     /** Scanner: Wartungs-/Prüfplan mit überschrittener Fälligkeit (Feature 009) */
@@ -256,6 +262,12 @@ enum NotificationEvent: string implements HasLabel {
             // Überfällige Asset-Rückgabe: primär die ausleihende Person
             // (notify_affected), Fallback/Eskalationskette die Teamleitung.
             self::AssetReturnOverdue => [UserRole::Teamleitung->value],
+            // Vergabefristen entscheiden über Teilnahme oder Ausschluss - sie
+            // gehen an die Verantwortlichen der Akte, ersatzweise an die
+            // Teamleitung.
+            self::TenderSubmissionDueSoon,
+            self::TenderSubmissionOverdue,
+            self::TenderBindingExpiring => [UserRole::Teamleitung->value],
             // Wartungs-/Prüffälligkeit (MVP-336): primär der Asset-
             // Verantwortliche (notify_affected), Teamleitung als Fallback;
             // Überfälligkeit eskaliert zusätzlich (MVP-331).
@@ -342,6 +354,9 @@ enum NotificationEvent: string implements HasLabel {
             self::SlaBreached => 'timer_off',
             self::SlaQuotaWarning => 'data_usage',
             self::AssetReturnOverdue => 'assignment_return',
+            self::TenderSubmissionDueSoon => 'schedule',
+            self::TenderSubmissionOverdue => 'event_busy',
+            self::TenderBindingExpiring => 'gavel',
             self::MaintenanceDueSoon,
             self::MaintenanceOverdue => 'handyman',
             self::SafetyCriticalEvent => 'e911_emergency',

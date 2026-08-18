@@ -56,6 +56,18 @@ class BillOfQuantity extends Model {
         'created_by',
     ];
 
+    /**
+     * Die Datenbank kennt EUR als Voreinstellung; ohne diesen Default wäre die
+     * Währung an einer frisch erzeugten Instanz `null`, obwohl die Spalte sie
+     * nie leer speichert — und jeder Zugriff vor dem ersten Nachladen liefe
+     * ins Leere.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'currency' => 'EUR',
+    ];
+
     protected $casts = [
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'phase' => GaebPhase::class,
@@ -92,6 +104,21 @@ class BillOfQuantity extends Model {
     /** @return HasMany<BoqExport, $this> */
     public function exports(): HasMany {
         return $this->hasMany(BoqExport::class);
+    }
+
+    /** @return HasMany<BoqChangeOrder, $this> */
+    public function changeOrders(): HasMany {
+        return $this->hasMany(BoqChangeOrder::class);
+    }
+
+    /**
+     * Kostenarten der Kalkulationsdaten (X52, MVP-647) — sie stehen im Kopf,
+     * weil ein Betrieb nach Kostenart zuschlägt, nicht je Position.
+     *
+     * @return HasMany<BoqCostType, $this>
+     */
+    public function costTypes(): HasMany {
+        return $this->hasMany(BoqCostType::class)->orderBy('position');
     }
 
     /** @return HasMany<BoqCatalog, $this> */

@@ -762,6 +762,8 @@ return [
         'statusChanged' => 'Estado de la organización modificado',
     ],
     'tender' => [
+        'awarded' => 'Adjudicación recibida (X86 importada)',
+        'bid_recorded' => 'Oferta registrada en el resultado de apertura',
         'created' => 'Licitación creada',
         'decided' => 'Licitación decidida',
         'go_decided' => 'Go/No-Go decidido',

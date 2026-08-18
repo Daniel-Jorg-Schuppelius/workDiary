@@ -272,4 +272,19 @@ return [
     'extension' => 'Extension',
     'early_termination' => 'Early termination',
     'total' => 'Total term',
+
+    // Vergabearten (MVP-625): unterschwellig VOB/A + UVgO, oberschwellig VgV.
+    'procedure_public_invitation' => 'Public invitation to tender',
+    'procedure_restricted_invitation' => 'Restricted invitation',
+    'procedure_restricted_invitation_call' => 'Restricted invitation with call for participation',
+    'procedure_direct_contract' => 'Direct award (VOB/A)',
+    'procedure_negotiated_award' => 'Negotiated award',
+    'procedure_negotiated_award_call' => 'Negotiated award with call for participation',
+    'procedure_direct_order' => 'Direct order',
+    'procedure_open_procedure' => 'Open procedure',
+    'procedure_restricted_procedure' => 'Restricted procedure',
+    'procedure_negotiated_procedure' => 'Negotiated procedure',
+    'procedure_negotiated_procedure_call' => 'Negotiated procedure with call for participation',
+    'procedure_competitive_dialogue' => 'Competitive dialogue',
+    'procedure_innovation_partnership' => 'Innovation partnership',
 ];

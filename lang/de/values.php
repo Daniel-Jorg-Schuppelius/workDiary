@@ -285,4 +285,19 @@ return [
     'extension' => 'Verlängerung',
     'early_termination' => 'Vorzeitige Kündigung',
     'total' => 'Gesamtlaufzeit',
+
+    // Vergabearten (MVP-625): unterschwellig VOB/A + UVgO, oberschwellig VgV.
+    'procedure_public_invitation' => 'Öffentliche Ausschreibung',
+    'procedure_restricted_invitation' => 'Beschränkte Ausschreibung',
+    'procedure_restricted_invitation_call' => 'Beschränkte Ausschreibung mit Teilnahmewettbewerb',
+    'procedure_direct_contract' => 'Freihändige Vergabe',
+    'procedure_negotiated_award' => 'Verhandlungsvergabe',
+    'procedure_negotiated_award_call' => 'Verhandlungsvergabe mit Teilnahmewettbewerb',
+    'procedure_direct_order' => 'Direktauftrag',
+    'procedure_open_procedure' => 'Offenes Verfahren',
+    'procedure_restricted_procedure' => 'Nichtoffenes Verfahren',
+    'procedure_negotiated_procedure' => 'Verhandlungsverfahren',
+    'procedure_negotiated_procedure_call' => 'Verhandlungsverfahren mit Teilnahmewettbewerb',
+    'procedure_competitive_dialogue' => 'Wettbewerblicher Dialog',
+    'procedure_innovation_partnership' => 'Innovationspartnerschaft',
 ];

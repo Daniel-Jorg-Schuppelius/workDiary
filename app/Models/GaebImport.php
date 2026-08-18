@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Gaeb\{GaebImportStatus, GaebPhase};
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,11 +21,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Datei-Hash, erkannte Version/Phase und den Preflight-Befund. Ein Lauf mit
  * blockierenden Befunden schreibt keine LV-Positionen.
  *
+ * Aus dem Paketeingang (MVP-627) entstehen Läufe im Zustand `pending`: Die
+ * Datei liegt unter `stored_path` bereit, importiert wird erst auf Zuruf.
+ *
  * @property int $id
  * @property int $organization_id
  * @property int|null $bill_of_quantity_id
+ * @property int|null $application_opportunity_id
  * @property string $filename
  * @property string $file_hash
+ * @property string|null $stored_path
+ * @property string|null $package_name
  * @property string|null $gaeb_version
  * @property GaebPhase|null $phase
  * @property GaebImportStatus $status
@@ -37,13 +43,17 @@ class GaebImport extends Model {
     use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+    use HasSqid;
 
     protected $fillable = [
         'source_format',
         'organization_id',
         'bill_of_quantity_id',
+        'application_opportunity_id',
         'filename',
         'file_hash',
+        'stored_path',
+        'package_name',
         'gaeb_version',
         'phase',
         'status',
@@ -60,6 +70,15 @@ class GaebImport extends Model {
         'item_count' => 'integer',
         'preflight' => 'array',
     ];
+
+    /**
+     * Der Vergabevorgang, aus dessen Paket der Lauf stammt (MVP-627).
+     *
+     * @return BelongsTo<\App\Models\Applications\ApplicationOpportunity, $this>
+     */
+    public function opportunity(): BelongsTo {
+        return $this->belongsTo(\App\Models\Applications\ApplicationOpportunity::class, 'application_opportunity_id');
+    }
 
     /** @return BelongsTo<BillOfQuantity, $this> */
     public function billOfQuantity(): BelongsTo {

@@ -38,11 +38,9 @@
                         </x-action-form>
                     @endif
                     @if ($opportunity->go_decision === 'go' && $opportunity->isOpen())
-                        <x-action-form :action="route('tenders.submit', $opportunity)">
-                            <input type="hidden" name="channel" value="portal">
-                            <x-icon-btn icon="outbox" tone="primary" size="sm" type="submit" show-label
-                                        :title="__('Einreichung als versionierten Snapshot mit Hash dokumentieren')">{{ __('Einreichung dokumentieren') }}</x-icon-btn>
-                        </x-action-form>
+                        {{-- Über den Assistenten: geprüft wird vor der Abgabe, nicht danach. --}}
+                        <x-icon-btn icon="outbox" tone="primary" size="sm" :href="route('tenders.submit-wizard', $opportunity)" show-label
+                                    :title="__('Prüfen, ausgeben und Einreichung dokumentieren')">{{ __('Abgabe vorbereiten') }}</x-icon-btn>
                     @endif
                     @if ($opportunity->status === 'won')
                         <x-action-form :action="route('tenders.transfer', $opportunity)"
@@ -63,6 +61,34 @@
     </x-slot:toolbar>
 
     <div class="grid gap-4 lg:grid-cols-2">
+        {{-- Vergabeverfahren (MVP-625): nur zeigen, wenn die Akte eines ist. --}}
+        @if ($opportunity->procedure_type !== null || $opportunity->awarding_body !== null)
+            <x-card :title="__('Vergabeverfahren')">
+                <x-detail-grid>
+                    <x-detail-grid.row :label="__('Vergabestelle')">{{ $opportunity->awarding_body ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Vergabenummer')">{{ $opportunity->procedure_no ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Verfahrensart')">
+                        {{ $opportunity->procedure_type?->label() ?? '—' }}
+                        @if ($opportunity->procedure_type?->hasCallForParticipation())
+                            <span class="wd-badge badge-outline">{{ __('mit Teilnahmewettbewerb') }}</span>
+                        @endif
+                    </x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Schwellenwertlage')">{{ $opportunity->above_threshold ? __('Oberschwellig') : __('Unterschwellig') }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Los')">{{ $opportunity->lot_no ?? '—' }}{{ $opportunity->lot_group ? ' · ' . $opportunity->lot_group : '' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('CPV')">{{ implode(', ', $opportunity->cpv_codes ?? []) ?: '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Region (NUTS)')">{{ $opportunity->nuts_code ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Plattform')">{{ $opportunity->platform ?? '—' }}{{ $opportunity->external_reference ? ' · ' . $opportunity->external_reference : '' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Teilnahmefrist')">{{ optional($opportunity->participation_deadline)->fdate() ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Eröffnungstermin')">{{ optional($opportunity->opening_at)->fdatetime() ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Bindefrist')">{{ optional($opportunity->binding_until)->fdate() ?? '—' }}</x-detail-grid.row>
+                </x-detail-grid>
+                @if ($opportunity->notice_url)
+                    <a href="{{ $opportunity->notice_url }}" rel="noopener noreferrer" target="_blank"
+                       class="mt-3 inline-flex items-center gap-1 text-sm link">{{ __('Bekanntmachung öffnen') }}</a>
+                @endif
+            </x-card>
+        @endif
+
         <x-card :title="__('Akte')">
             <x-detail-grid>
                 <x-detail-grid.row :label="__('Wertpotenzial')">{{ $opportunity->estimated_value !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $opportunity->estimated_value, 2, withThousandsSeparator: true) . ' €' : '—' }}</x-detail-grid.row>
@@ -168,6 +194,98 @@
                     </tr>
                 @endforeach
             </x-table>
+        @endif
+    </x-card>
+
+    {{-- Submissionsergebnis (MVP-628): Was im Eröffnungstermin verlesen wurde,
+         ist die einzige belastbare Quelle für den eigenen Preisabstand. --}}
+    <x-card :title="__('Submissionsergebnis')">
+        @php
+            $bids = $opportunity->competitorBids;
+            $own = $bids->firstWhere('is_own', true);
+            $best = $bids->filter(fn ($bid) => $bid->amount !== null)->sortBy(fn ($bid) => (float) $bid->amount)->first();
+        @endphp
+
+        @can('update', $opportunity)
+            <form method="POST" action="{{ route('tenders.bids.store', $opportunity) }}" class="mb-3 flex flex-wrap items-end gap-2">
+                @csrf
+                <input name="bidder_name" required maxlength="300" class="input input-sm input-bordered flex-1 min-w-48"
+                       placeholder="{{ __('Bieter') }}">
+                <input name="amount" type="number" step="0.01" min="0" class="input input-sm input-bordered w-40"
+                       placeholder="{{ __('Endsumme') }}">
+                <input name="rank" type="number" min="1" max="999" class="input input-sm input-bordered w-20"
+                       placeholder="{{ __('Rang') }}">
+                <select name="source" class="select select-sm select-bordered w-48">
+                    <option value="opening">{{ __('Eröffnungstermin') }}</option>
+                    <option value="information_letter">{{ __('Informationsschreiben') }}</option>
+                    <option value="other">{{ __('values.other') }}</option>
+                </select>
+                <label class="label cursor-pointer gap-1 text-xs">
+                    <input type="checkbox" name="is_own" value="1" class="checkbox checkbox-sm">
+                    <span>{{ __('Eigenes Angebot') }}</span>
+                </label>
+                <label class="label cursor-pointer gap-1 text-xs">
+                    <input type="checkbox" name="is_winner" value="1" class="checkbox checkbox-sm">
+                    <span>{{ __('Zuschlag') }}</span>
+                </label>
+                <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Hinzufügen') }}</x-icon-btn>
+            </form>
+        @endcan
+
+        @if ($bids->isEmpty())
+            <x-empty-state icon="rule" compact
+                           :title="__('Noch kein Submissionsergebnis erfasst.')"
+                           :message="__('Bei Öffentlichen Ausschreibungen werden die Endsummen im Eröffnungstermin verlesen; oberschwellig nennt das Informationsschreiben den vorgesehenen Zuschlagsempfänger.')" />
+        @else
+            <x-table bare>
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('Rang') }}</th>
+                        <th>{{ __('Bieter') }}</th>
+                        <th class="text-right">{{ __('Endsumme') }}</th>
+                        <th class="text-right">{{ __('Abstand') }}</th>
+                        <th>{{ __('Quelle') }}</th>
+                        <th class="text-right"></th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($bids as $bid)
+                    <tr @class(['bg-base-200/60' => $bid->is_own])>
+                        <td class="tabular-nums">{{ $bid->rank ?? '—' }}</td>
+                        <td>
+                            {{ $bid->bidder_name }}
+                            @if ($bid->is_own)<span class="wd-badge badge-outline">{{ __('eigenes Angebot') }}</span>@endif
+                            @if ($bid->is_winner)<span class="wd-badge badge-success">{{ __('Zuschlag') }}</span>@endif
+                            @if ($bid->note)<div class="text-xs text-base-content/60">{{ $bid->note }}</div>@endif
+                        </td>
+                        <td class="text-right tabular-nums">
+                            {{ $bid->amount !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $bid->amount, 2, withThousandsSeparator: true) . ' €' : '—' }}
+                        </td>
+                        <td class="text-right tabular-nums text-base-content/70">
+                            @if ($best && $bid->amount !== null && (float) $best->amount > 0.0 && $bid->id !== $best->id)
+                                +{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(((float) $bid->amount / (float) $best->amount - 1) * 100, 1) }} %
+                            @else
+                                —
+                            @endif
+                        </td>
+                        <td class="text-xs text-base-content/70">{{ __('tender.bid_source.' . $bid->source) }}</td>
+                        <td class="text-right">
+                            @can('update', $opportunity)
+                                <x-action-form :action="route('tenders.bids.destroy', [$opportunity, $bid])" method="DELETE">
+                                    <x-icon-btn icon="delete" size="xs" tone="error" type="submit" :title="__('Entfernen')" />
+                                </x-action-form>
+                            @endcan
+                        </td>
+                    </tr>
+                @endforeach
+            </x-table>
+
+            @if ($own && $best && $own->id !== $best->id && (float) $best->amount > 0.0)
+                <p class="mt-2 text-sm text-base-content/70">
+                    {{ __('Das eigene Angebot lag :percent % über dem günstigsten.', [
+                        'percent' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(((float) $own->amount / (float) $best->amount - 1) * 100, 1),
+                    ]) }}
+                </p>
+            @endif
         @endif
     </x-card>
 

@@ -762,6 +762,8 @@ return [
         'statusChanged' => 'Mandanten-Status geändert',
     ],
     'tender' => [
+        'awarded' => 'Zuschlag erhalten (X86 importiert)',
+        'bid_recorded' => 'Angebot im Submissionsergebnis erfasst',
         'created' => 'Ausschreibung angelegt',
         'decided' => 'Ausschreibung entschieden',
         'go_decided' => 'Go/No-Go entschieden',

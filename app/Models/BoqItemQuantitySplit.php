@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany};
@@ -31,6 +31,7 @@ class BoqItemQuantitySplit extends Model {
     use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

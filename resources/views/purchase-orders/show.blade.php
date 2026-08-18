@@ -47,6 +47,9 @@
                         <a href="{{ route('purchase-orders.order-xml', ['purchaseOrder' => $order, 'format' => 'opentrans']) }}" class="btn btn-sm btn-ghost gap-1">
                             <span class="material-symbols-rounded text-base">download</span>{{ __('procurement.action.export_opentrans') }}
                         </a>
+                        <a href="{{ route('purchase-orders.order-xml', ['purchaseOrder' => $order, 'format' => 'gaeb']) }}" class="btn btn-sm btn-ghost gap-1">
+                            <span class="material-symbols-rounded text-base">download</span>{{ __('procurement.action.export_gaeb') }}
+                        </a>
                         <a href="{{ route('purchase-orders.order-xml', ['purchaseOrder' => $order, 'format' => 'ugl']) }}" class="btn btn-sm btn-ghost gap-1">
                             <span class="material-symbols-rounded text-base">download</span>{{ __('procurement.action.export_ugl') }}
                         </a>

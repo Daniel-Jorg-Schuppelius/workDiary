@@ -15,7 +15,7 @@ use App\Services\Gaeb\GaebPreflight;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use ERechnungToolkit\Entities\Gaeb\{GaebBoq, GaebItem, GaebTotals};
-use ERechnungToolkit\Enums\{GaebItemType};
+use ERechnungToolkit\Enums\GaebItemType;
 use ERechnungToolkit\Parsers\GaebDaXmlParser;
 use Tests\TestCase;
 

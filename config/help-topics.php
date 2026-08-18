@@ -65,6 +65,10 @@ return [
         // ── Nachträge 2026-07-10: Phasen 19–24 + Lücken-Sweep ──────────
         // Bewerbungen/Ausschreibungen (Feature 068)
         'tenders.*' => 'applications.overview',
+        'tender-radar.*' => 'tenders.radar',
+        'tenders.cockpit' => 'tenders.radar',
+        'tenders.submit-wizard' => 'tenders.documents',
+        'bill-of-quantities.packages*' => 'tenders.documents',
         'recruiting.*' => 'applications.overview',
         'applications.report' => 'applications.overview',
         // Reklamation/Gewährleistung (Feature 072)
@@ -125,6 +129,13 @@ return [
         // Agiles PM (Feature 064)
         'agile.*' => 'agile.overview',
         // GAEB-Leistungsverzeichnisse (Feature 049)
+        // Feature 109: Kostengruppen haben ein eigenes Thema — vor der
+        // Sammelregel, sonst greift boq.overview zuerst.
+        'bill-of-quantities.cost-groups' => 'boq.cost-groups',
+        'bill-of-quantities.catalog-assignment*' => 'boq.cost-groups',
+        'bill-of-quantities.catalog-edition' => 'boq.cost-groups',
+        'catalog-rules.*' => 'boq.cost-groups',
+        'cost-catalogs.*' => 'boq.cost-groups',
         'bill-of-quantities.*' => 'boq.overview',
         // Lieferantenkataloge (Feature 050) + Preis-/Margenregeln
         'supplier-catalogs.*' => 'supplier-catalogs.overview',

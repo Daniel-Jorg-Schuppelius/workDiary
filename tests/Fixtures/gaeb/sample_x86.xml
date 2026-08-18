@@ -16,6 +16,10 @@
     <BoQ ID="BOQ-1">
       <BoQInfo>
         <Name>Hauptangebot</Name>
+        <!-- Feature 109: Kostengruppen und Leistungsbereiche reisen mit dem
+             Verzeichnis; der Katalogtyp trägt die Ausgabe der Norm. -->
+        <Ctlg><CtlgID>idDIN276-18</CtlgID><CtlgType>cost group DIN 276 2018-12</CtlgType><CtlgName>DIN 276-18</CtlgName></Ctlg>
+        <Ctlg><CtlgID>LB</CtlgID><CtlgType>work category</CtlgType><CtlgName>Leistungsbereiche</CtlgName></Ctlg>
       </BoQInfo>
       <BoQBody>
         <BoQCtgy RNoPart="01" ID="C-01">
@@ -32,6 +36,8 @@
               <Item RNoPart="0010" ID="I-0010">
                 <Qty>100.000</Qty>
                 <QU>m3</QU>
+                <CtlgAssign><CtlgID>idDIN276-18</CtlgID><CtlgCode>310</CtlgCode></CtlgAssign>
+                <CtlgAssign><CtlgID>LB</CtlgID><CtlgCode>002</CtlgCode></CtlgAssign>
                 <Description>
                   <CompleteText>
                     <OutlineText><OutlTxt><TextOutlTxt><p><span>Boden lösen</span></p></TextOutlTxt></OutlTxt></OutlineText>

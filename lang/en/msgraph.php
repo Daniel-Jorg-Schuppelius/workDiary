@@ -101,6 +101,11 @@ return [
         'redirect_backup' => 'Backup target (instance app only)',
     ],
 
+    // Titel der Inbox-Einträge des Kalenderimports — ein remote
+    // gelöschter Termin wird gemeldet, nicht still nachgezogen.
+    'import' => [
+        'deleted_title' => 'Appointment deleted in Microsoft 365',
+    ],
     'flash' => [
         'not_configured' => 'Microsoft 365 is not configured (MSGRAPH_CLIENT_ID/SECRET missing).',
         'state_invalid' => 'The OAuth flow has expired or is invalid. Please start again.',

@@ -57,7 +57,41 @@ class CloudIntakeRouter {
             CloudIntakeRouteTarget::IncomingInvoice => $this->routeInvoice($item, $quarantinePath, $actor),
             CloudIntakeRouteTarget::Document => $this->routeDocument($connection, $route, $variables, $item, $quarantinePath, $actor),
             CloudIntakeRouteTarget::B2bOrder => $this->routeB2bOrder($connection, $quarantinePath),
+            CloudIntakeRouteTarget::GaebPackage => $this->routeGaebPackage($connection, $item, $quarantinePath, $actor),
         };
+    }
+
+    /**
+     * Vergabeunterlagen (Feature 108, MVP-627): ZIP zerlegen, GAEB-Dateien als
+     * Vorschlag ablegen, Rest ins DMS.
+     *
+     * Der Ordnerweg hat **keinen Vergabevorgang** — er kennt nur den Ordner.
+     * Deshalb entstehen hier ausschließlich GAEB-Vorschläge; die Zuordnung zur
+     * Akte macht, wer den Vorschlag annimmt. Restdokumente ohne Akte blind ins
+     * DMS zu legen, machte sie unauffindbar.
+     *
+     * @return array{status: CloudIntakeItemStatus, imported: Model|null, reason: string|null}
+     */
+    private function routeGaebPackage(CloudDocumentConnection $connection, IntakeItem $item, string $quarantinePath, User $actor): array {
+        $organizationId = (int) $connection->organization_id;
+
+        try {
+            $result = app(\App\Services\Gaeb\GaebPackageIntakeService::class)->intake(
+                (string) file_get_contents($quarantinePath),
+                $item->name,
+                $organizationId,
+                $actor,
+            );
+        } catch (\RuntimeException $e) {
+            return ['status' => CloudIntakeItemStatus::Rejected, 'imported' => null, 'reason' => $e->getMessage()];
+        }
+
+        if ($result['gaeb'] === []) {
+            // Kein GAEB im Paket ist kein Fehler - nur nichts für diesen Weg.
+            return ['status' => CloudIntakeItemStatus::Rejected, 'imported' => null, 'reason' => 'gaeb_package_without_gaeb'];
+        }
+
+        return ['status' => CloudIntakeItemStatus::Inbox, 'imported' => $result['gaeb'][0], 'reason' => null];
     }
 
     /**

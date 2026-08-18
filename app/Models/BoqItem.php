@@ -167,6 +167,16 @@ class BoqItem extends Model {
         return $this->morphMany(BoqCatalogAssignment::class, 'assignable');
     }
 
+    /**
+     * Kostenansätze dieser Position (X52, MVP-647) — was jede Kostenart zum
+     * Einheitspreis beiträgt.
+     *
+     * @return HasMany<BoqItemCostApproach, $this>
+     */
+    public function costApproaches(): HasMany {
+        return $this->hasMany(BoqItemCostApproach::class, 'boq_item_id')->orderBy('position');
+    }
+
     /** @return HasMany<BoqItemQuantitySplit, $this> */
     public function quantitySplits(): HasMany {
         return $this->hasMany(BoqItemQuantitySplit::class, 'boq_item_id')->orderBy('position');

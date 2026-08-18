@@ -255,4 +255,19 @@ return [
     'extension' => 'Proroga',
     'early_termination' => 'Recesso anticipato',
     'total' => 'Durata totale',
+
+    // Vergabearten (MVP-625): unterschwellig VOB/A + UVgO, oberschwellig VgV.
+    'procedure_public_invitation' => 'Gara pubblica (VOB/A)',
+    'procedure_restricted_invitation' => 'Gara ristretta',
+    'procedure_restricted_invitation_call' => 'Gara ristretta con avviso di partecipazione',
+    'procedure_direct_contract' => 'Affidamento diretto (VOB/A)',
+    'procedure_negotiated_award' => 'Affidamento negoziato',
+    'procedure_negotiated_award_call' => 'Affidamento negoziato con avviso di partecipazione',
+    'procedure_direct_order' => 'Ordine diretto',
+    'procedure_open_procedure' => 'Procedura aperta',
+    'procedure_restricted_procedure' => 'Procedura ristretta',
+    'procedure_negotiated_procedure' => 'Procedura negoziata',
+    'procedure_negotiated_procedure_call' => 'Procedura negoziata con avviso di partecipazione',
+    'procedure_competitive_dialogue' => 'Dialogo competitivo',
+    'procedure_innovation_partnership' => 'Partenariato per l’innovazione',
 ];

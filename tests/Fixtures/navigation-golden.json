@@ -30,8 +30,12 @@
             "/assets",
             "/attendance",
             "/ausschreibungen",
+            "/ausschreibungs-radar",
             "/auswertungen/ansichten",
+            "/baukostenkataloge",
+            "/berichte/vergabe",
             "/bill-of-quantities",
+            "/bill-of-quantities/pakete",
             "/buildings",
             "/compliance/isms/anforderungen",
             "/compliance/isms/auditbereitschaft",
@@ -191,7 +195,8 @@
             "/warehouses",
             "/week",
             "/work-centers",
-            "/zeitkonten"
+            "/zeitkonten",
+            "/zuordnungsregeln"
         ],
         "header": [
             "/account/bookmarks",

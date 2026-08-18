@@ -47,16 +47,6 @@ return [
             'imported' => 'Importé',
             'conflict' => 'Conflit',
         ],
-        'change_order_status' => [
-            'Recog' => 'Reconnu',
-            'Filed' => 'Déclaré',
-            'Offered' => 'Proposé',
-            'Withdrawn' => 'Retiré',
-            'Rejected' => 'Rejeté',
-            'ObjToRecj' => 'Opposition au rejet',
-            'FormAckn' => 'Reconnu sur le fond',
-            'Approved' => 'Approuvé',
-        ],
     ],
 
     'show' => [
@@ -67,6 +57,17 @@ return [
         'back' => 'Retour à la liste',
     ],
 
+    'change_order' => [
+        'phase' => [
+            'CallChangOrder' => 'Demande d’avenant',
+            'SupplBid' => 'Offre d’avenant',
+            'SupplAgree' => 'Accord d’avenant',
+        ],
+        'initiator' => [
+            'Owner' => 'Maître d’ouvrage',
+            'Contractor' => 'Entrepreneur',
+        ],
+    ],
     'phase' => [
         '31' => 'Relevé des quantités',
         '50' => 'Catalogue des coûts de construction',
@@ -112,6 +113,16 @@ return [
             'replaced' => 'Remplacé',
             'cancelled' => 'Annulé',
         ],
+        'change_order_status' => [
+            'Recog' => 'Reconnu',
+            'Filed' => 'Déclaré',
+            'Offered' => 'Proposé',
+            'Withdrawn' => 'Retiré',
+            'Rejected' => 'Rejeté',
+            'ObjToRecj' => 'Opposition au rejet',
+            'FormAckn' => 'Reconnu sur le fond',
+            'Approved' => 'Approuvé',
+        ],
     ],
 
     'preflight' => [
@@ -119,6 +130,7 @@ return [
         'version_unsupported' => 'La version GAEB :version n’est pas prise en charge (cible 3.3).',
         'phase_unknown' => 'La phase d’échange « :code » est inconnue.',
         'no_items' => 'Le fichier ne contient aucun poste.',
+        'vendor_record_type' => 'Le fichier contient :count enregistrements du type propriétaire :type — leur contenu n’est pas exploité (certains systèmes y placent les groupes de coûts).',
         'item_missing_ref' => 'Poste sans numéro d’ordre : :text',
         'duplicate_ref' => 'Le numéro d’ordre :ref apparaît plusieurs fois.',
         'missing_quantity' => 'Le poste :ref n’a pas de quantité.',
@@ -194,5 +206,30 @@ return [
         'button' => 'Exporter GAEB',
         'title' => 'Export GAEB',
         'phase' => 'Phase',
+    ],
+    'trade' => [
+        'missing_own_address' => 'Votre propre adresse manque dans les données de facturation électronique ; sans elle, le fichier n’identifie pas l’acheteur.',
+        'missing_delivery_date' => 'Sans date de livraison, la commande reste indéterminée ; la date de commande a été utilisée.',
+        'missing_supplier_sku' => ':count ligne(s) sans référence article du fournisseur — son système ne trouve la marchandise que par elle.',
+        'missing_supplier_tax_no' => 'Le fournisseur n’a ni numéro fiscal ni numéro de TVA.',
+    ],
+    'invoice' => [
+        'share_net' => 'Montant net',
+        'share_discount' => 'Remise',
+        'share_vat' => 'TVA :rate %',
+        'missing_tax_number' => 'Le numéro fiscal et le numéro de TVA manquent dans les données de facturation électronique — la loi fiscale en exige un.',
+        'missing_recipient' => 'L’adresse du destinataire de la facture est incomplète.',
+        'missing_service_period' => 'Aucune période de prestation déductible ; la date de facture a été utilisée.',
+    ],
+    'comparison' => [
+        'title' => 'Comparatif des prix',
+        'spread' => 'Écart',
+        'rank' => 'Rang :rank',
+        'gap' => ':percent % moins cher que l’offre suivante',
+        'unusually_low_hint' => 'Une offre anormalement basse appelle une clarification, pas une exclusion (§ 16d VOB/A, § 60 VgV).',
+        'incomplete_hint' => 'Tous les soumissionnaires n’ont pas chiffré chaque poste — les prix manquants sont des lacunes, pas des zéros.',
+        'empty_title' => 'Aucune offre',
+        'empty_hint' => 'Importez des offres (X84) pour cet appel afin de les comparer.',
+        'button' => 'Comparatif des prix',
     ],
 ];

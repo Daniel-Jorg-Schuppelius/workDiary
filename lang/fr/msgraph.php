@@ -101,6 +101,11 @@ return [
         'redirect_backup' => 'Cible de sauvegarde (application d\'instance uniquement)',
     ],
 
+    // Titel der Inbox-Einträge des Kalenderimports — ein remote
+    // gelöschter Termin wird gemeldet, nicht still nachgezogen.
+    'import' => [
+        'deleted_title' => 'Rendez-vous supprimé dans Microsoft 365',
+    ],
     'flash' => [
         'not_configured' => 'Microsoft 365 n\'est pas configuré (MSGRAPH_CLIENT_ID/SECRET manquants).',
         'state_invalid' => 'Le flux OAuth a expiré ou est invalide. Veuillez recommencer.',

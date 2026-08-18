@@ -47,16 +47,6 @@ return [
             'imported' => 'Importiert',
             'conflict' => 'Konflikt',
         ],
-        'change_order_status' => [
-            'Recog' => 'erkannt',
-            'Filed' => 'angemeldet',
-            'Offered' => 'angeboten',
-            'Withdrawn' => 'zurückgezogen',
-            'Rejected' => 'abgelehnt',
-            'ObjToRecj' => 'Widerspruch zur Ablehnung',
-            'FormAckn' => 'sachlich anerkannt',
-            'Approved' => 'genehmigt',
-        ],
     ],
 
     'show' => [
@@ -67,6 +57,17 @@ return [
         'back' => 'Zurück zur Übersicht',
     ],
 
+    'change_order' => [
+        'phase' => [
+            'CallChangOrder' => 'Nachtragsaufforderung',
+            'SupplBid' => 'Nachtragsangebot',
+            'SupplAgree' => 'Nachtragsvereinbarung',
+        ],
+        'initiator' => [
+            'Owner' => 'Auftraggeber',
+            'Contractor' => 'Auftragnehmer',
+        ],
+    ],
     'phase' => [
         '31' => 'Mengenermittlung',
         '50' => 'Baukostenkatalog',
@@ -112,6 +113,16 @@ return [
             'replaced' => 'Ersetzt',
             'cancelled' => 'Storniert',
         ],
+        'change_order_status' => [
+            'Recog' => 'erkannt',
+            'Filed' => 'angemeldet',
+            'Offered' => 'angeboten',
+            'Withdrawn' => 'zurückgezogen',
+            'Rejected' => 'abgelehnt',
+            'ObjToRecj' => 'Widerspruch zur Ablehnung',
+            'FormAckn' => 'sachlich anerkannt',
+            'Approved' => 'genehmigt',
+        ],
     ],
 
     'preflight' => [
@@ -119,6 +130,7 @@ return [
         'version_unsupported' => 'GAEB-Version :version wird nicht unterstützt (Ziellinie 3.3).',
         'phase_unknown' => 'Austauschphase „:code" ist unbekannt.',
         'no_items' => 'Die Datei enthält keine Positionen.',
+        'vendor_record_type' => 'Die Datei enthält :count Sätze der herstellerfreien Zeilenart :type — ihr Inhalt wird nicht ausgewertet (dort liegen bei manchen Systemen die Kostengruppen).',
         'item_missing_ref' => 'Position ohne Ordnungszahl: :text',
         'duplicate_ref' => 'Ordnungszahl :ref kommt mehrfach vor.',
         'missing_quantity' => 'Position :ref ohne Menge.',
@@ -194,5 +206,30 @@ return [
         'button' => 'GAEB exportieren',
         'title' => 'GAEB-Export',
         'phase' => 'Phase',
+    ],
+    'trade' => [
+        'missing_own_address' => 'Die eigene Anschrift fehlt in den E-Rechnungs-Stammdaten; ohne sie weist die Datei den Besteller nicht aus.',
+        'missing_delivery_date' => 'Ohne Liefertermin ist die Bestellung unbestimmt; das Bestelldatum wurde eingesetzt.',
+        'missing_supplier_sku' => ':count Position(en) ohne Artikelnummer des Lieferanten — die Warenwirtschaft findet sie nur darüber.',
+        'missing_supplier_tax_no' => 'Der Lieferant führt weder Steuernummer noch USt-IdNr.',
+    ],
+    'invoice' => [
+        'share_net' => 'Nettobetrag',
+        'share_discount' => 'Nachlass',
+        'share_vat' => 'Umsatzsteuer :rate %',
+        'missing_tax_number' => 'Steuernummer und USt-IdNr. fehlen in den E-Rechnungs-Stammdaten — beides ist Pflichtangabe des Steuerrechts.',
+        'missing_recipient' => 'Die Anschrift des Rechnungsempfängers ist unvollständig.',
+        'missing_service_period' => 'Kein Leistungszeitraum ableitbar; das Rechnungsdatum wurde eingesetzt.',
+    ],
+    'comparison' => [
+        'title' => 'Preisspiegel',
+        'spread' => 'Spanne',
+        'rank' => 'Rang :rank',
+        'gap' => ':percent % günstiger als das nächste Angebot',
+        'unusually_low_hint' => 'Ein ungewöhnlich niedriges Angebot verlangt Aufklärung, keinen Ausschluss (§ 16d VOB/A, § 60 VgV).',
+        'incomplete_hint' => 'Nicht jeder Bieter hat jede Position angeboten — fehlende Preise sind Lücken, keine Nullpreise.',
+        'empty_title' => 'Noch keine Angebote',
+        'empty_hint' => 'Importieren Sie Angebote (X84) zu dieser Ausschreibung, um sie zu vergleichen.',
+        'button' => 'Preisspiegel',
     ],
 ];

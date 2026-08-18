@@ -101,6 +101,11 @@ return [
         'redirect_backup' => 'Destino de copia de seguridad (solo aplicación de la instancia)',
     ],
 
+    // Titel der Inbox-Einträge des Kalenderimports — ein remote
+    // gelöschter Termin wird gemeldet, nicht still nachgezogen.
+    'import' => [
+        'deleted_title' => 'Cita eliminada en Microsoft 365',
+    ],
     'flash' => [
         'not_configured' => 'Microsoft 365 no está configurado (faltan MSGRAPH_CLIENT_ID/SECRET).',
         'state_invalid' => 'El flujo OAuth ha caducado o no es válido. Inténtelo de nuevo.',

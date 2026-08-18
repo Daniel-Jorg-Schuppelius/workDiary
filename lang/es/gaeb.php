@@ -47,16 +47,6 @@ return [
             'imported' => 'Importado',
             'conflict' => 'Conflicto',
         ],
-        'change_order_status' => [
-            'Recog' => 'Reconocido',
-            'Filed' => 'Notificado',
-            'Offered' => 'Ofertado',
-            'Withdrawn' => 'Retirado',
-            'Rejected' => 'Rechazado',
-            'ObjToRecj' => 'Objeción al rechazo',
-            'FormAckn' => 'Reconocido en cuanto al fondo',
-            'Approved' => 'Aprobado',
-        ],
     ],
 
     'show' => [
@@ -67,6 +57,17 @@ return [
         'back' => 'Volver al listado',
     ],
 
+    'change_order' => [
+        'phase' => [
+            'CallChangOrder' => 'Solicitud de modificado',
+            'SupplBid' => 'Oferta de modificado',
+            'SupplAgree' => 'Acuerdo de modificado',
+        ],
+        'initiator' => [
+            'Owner' => 'Promotor',
+            'Contractor' => 'Contratista',
+        ],
+    ],
     'phase' => [
         '31' => 'Medición de cantidades',
         '50' => 'Catálogo de costes de construcción',
@@ -112,6 +113,16 @@ return [
             'replaced' => 'Sustituido',
             'cancelled' => 'Cancelado',
         ],
+        'change_order_status' => [
+            'Recog' => 'Reconocido',
+            'Filed' => 'Notificado',
+            'Offered' => 'Ofertado',
+            'Withdrawn' => 'Retirado',
+            'Rejected' => 'Rechazado',
+            'ObjToRecj' => 'Objeción al rechazo',
+            'FormAckn' => 'Reconocido en cuanto al fondo',
+            'Approved' => 'Aprobado',
+        ],
     ],
 
     'preflight' => [
@@ -119,6 +130,7 @@ return [
         'version_unsupported' => 'La versión GAEB :version no es compatible (línea objetivo 3.3).',
         'phase_unknown' => 'La fase de intercambio «:code» es desconocida.',
         'no_items' => 'El archivo no contiene partidas.',
+        'vendor_record_type' => 'El archivo contiene :count registros del tipo propietario :type: su contenido no se evalúa (algunos sistemas guardan ahí los grupos de costes).',
         'item_missing_ref' => 'Partida sin número de orden: :text',
         'duplicate_ref' => 'El número de orden :ref aparece varias veces.',
         'missing_quantity' => 'La partida :ref no tiene cantidad.',
@@ -194,5 +206,30 @@ return [
         'button' => 'Exportar GAEB',
         'title' => 'Exportación GAEB',
         'phase' => 'Fase',
+    ],
+    'trade' => [
+        'missing_own_address' => 'Falta la dirección propia en los datos maestros de facturación electrónica; sin ella el archivo no identifica al comprador.',
+        'missing_delivery_date' => 'Sin fecha de entrega el pedido queda indeterminado; se ha usado la fecha del pedido.',
+        'missing_supplier_sku' => ':count línea(s) sin referencia de artículo del proveedor — su sistema solo encuentra la mercancía por ella.',
+        'missing_supplier_tax_no' => 'El proveedor no tiene ni número fiscal ni NIF-IVA.',
+    ],
+    'invoice' => [
+        'share_net' => 'Importe neto',
+        'share_discount' => 'Descuento',
+        'share_vat' => 'IVA :rate %',
+        'missing_tax_number' => 'Faltan el número fiscal y el NIF-IVA en los datos maestros de facturación electrónica — la ley fiscal exige uno.',
+        'missing_recipient' => 'La dirección del destinatario de la factura está incompleta.',
+        'missing_service_period' => 'No se pudo deducir un periodo de prestación; se usó la fecha de la factura.',
+    ],
+    'comparison' => [
+        'title' => 'Comparativa de precios',
+        'spread' => 'Diferencia',
+        'rank' => 'Puesto :rank',
+        'gap' => ':percent % por debajo de la siguiente oferta',
+        'unusually_low_hint' => 'Una oferta anormalmente baja exige aclaración, no exclusión (§ 16d VOB/A, § 60 VgV).',
+        'incomplete_hint' => 'No todos los licitadores ofertaron cada partida — los precios ausentes son huecos, no ceros.',
+        'empty_title' => 'Aún no hay ofertas',
+        'empty_hint' => 'Importe ofertas (X84) de esta licitación para compararlas.',
+        'button' => 'Comparativa de precios',
     ],
 ];

@@ -23,6 +23,7 @@ return [
         'export_xbestellung' => 'Export XBestellung',
         'export_orderx' => 'Export Order-X',
         'export_opentrans' => 'Export openTRANS',
+        'export_gaeb' => 'GAEB (X96)',
         'export_ugl' => 'Export UGL',
         'export_pdf' => 'PDF herunterladen',
         'suggestions' => 'Bestellvorschläge',

@@ -27,7 +27,7 @@ return [
         'preferred' => 'Preferred',
         'recommended' => 'Recommended',
         'set_preferred' => 'Set as preferred',
-        'flash' => ['preferred_set' => 'Preferred supply source set.', 'datanorm_empty' => 'No exportable articles (active and sellable) available.'],
+        'flash' => ['preferred_set' => 'Preferred supply source set.'],
     ],
     'no_options' => 'No options defined.',
     'no_variants' => 'No variants created.',
@@ -43,15 +43,6 @@ return [
         'kind' => ['discount' => 'Discount (%)', 'factor' => 'Factor', 'surcharge' => 'Surcharge (%)'],
         'col' => ['code' => 'Code', 'kind' => 'Kind', 'value' => 'Value', 'label' => 'Label', 'articles' => 'Articles'],
         'action' => ['add' => 'Add', 'delete' => 'Delete'],
-        'tiers' => [
-            'title' => 'Scale prices',
-            'hint' => 'From the given quantity the scale price replaces the standard sale price; travels as Z record in the DATANORM export.',
-            'min_qty' => 'From quantity',
-            'unit_price' => 'Unit price',
-            'empty' => 'No scale prices maintained.',
-            'action' => ['add' => 'Add tier'],
-            'flash' => ['saved' => 'Scale price saved.', 'deleted' => 'Scale price deleted.'],
-        ],
         'flash' => ['created' => 'Discount group created.', 'deleted' => 'Discount group deleted.', 'override_saved' => 'Customer override saved.', 'override_deleted' => 'Customer override deleted.'],
         'override' => [
             'title' => 'Customer overrides',
@@ -153,7 +144,17 @@ return [
         'delete' => 'Permanently delete this article? Only unreferenced drafts can be deleted.',
     ],
 
+    'tiers' => [
+        'title' => 'Scale prices',
+        'hint' => 'From the given quantity the scale price replaces the standard sale price; travels as Z record in the DATANORM export.',
+        'min_qty' => 'From quantity',
+        'unit_price' => 'Unit price',
+        'empty' => 'No scale prices maintained.',
+        'action' => ['add' => 'Add tier'],
+        'flash' => ['saved' => 'Scale price saved.', 'deleted' => 'Scale price deleted.'],
+    ],
     'flash' => [
+        'datanorm_empty' => 'No exportable articles (active and sellable) available.',
         'created' => 'Article created.',
         'updated' => 'Article updated.',
         'deleted' => 'Article deleted.',

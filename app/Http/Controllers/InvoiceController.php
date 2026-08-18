@@ -529,6 +529,52 @@ class InvoiceController extends Controller {
     }
 
     /**
+     * GAEB-Rechnung (X89) bzw. rechnungsbegründende Unterlage (X89B).
+     *
+     * **Keine zweite Rechnungshoheit** (D8): Führt ein externes System, bleibt
+     * es führend — dann gibt es hier auch keine vollständige Rechnung
+     * auszugeben, und der Download entfällt wie bei der XRechnung.
+     *
+     * Anders als dort ist die **Pro-forma-Rechnung zulässig**: GAEB kennt sie
+     * als eigene Art, und die Datei sagt über `InvoiceType` selbst, dass sie
+     * keine Zahlung fordert. Eine XRechnung könnte das nicht.
+     */
+    public function gaebDownload(Invoice $invoice, \App\Services\Gaeb\GaebInvoiceExportService $export, Request $request): SymfonyResponse {
+        Gate::authorize('view', $invoice);
+        $invoice->load(['items', 'customer', 'organization']);
+
+        $billingMode = app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($invoice->customer);
+        abort_if($billingMode->isExternal(), 404);
+
+        // X89B ist die Anlage zu einer Rechnung, keine Rechnung selbst.
+        $phase = $request->string('format')->lower()->toString() === 'x89b'
+            ? \ERechnungToolkit\Enums\GaebPhase::InvoiceAttachment
+            : \ERechnungToolkit\Enums\GaebPhase::Invoice;
+
+        $result = $export->export($invoice, $phase);
+
+        $invoice->audit('invoice.einvoice_exported', [
+            'format' => 'gaeb_' . strtolower($phase->value),
+            'filename' => $result['filename'],
+            'sha256' => CryptoHelper::hash($result['content']),
+            'losses' => $result['losses'],
+        ]);
+        $this->recordDispatch(
+            $invoice,
+            \App\Models\InvoiceDispatch::CHANNEL_DOWNLOAD,
+            'gaeb_' . strtolower($phase->value),
+            null,
+            CryptoHelper::hash($result['content']),
+            ['filename' => $result['filename']],
+        );
+
+        return response($result['content'], 200, [
+            'Content-Type' => 'application/xml; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $result['filename'] . '"',
+        ]);
+    }
+
+    /**
      * ZUGFeRD-Download (Feature 045, Abschnitt 8): PDF/A-3 (EN 16931) mit
      * eingebettetem CII-XML zur lokalen Ausgangsrechnung. Gleiche Gates und
      * Hoheits-Sperre wie {@see einvoiceDownload()}; die visuelle Darstellung

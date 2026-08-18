@@ -1301,8 +1301,42 @@ Route::middleware('auth')->group(function () {
         Route::get('bill-of-quantities', [\App\Http\Controllers\BillOfQuantityController::class, 'index'])->name('bill-of-quantities.index');
         Route::get('bill-of-quantities/import', [\App\Http\Controllers\BillOfQuantityController::class, 'importForm'])->name('bill-of-quantities.import-form'); // vor show!
         Route::post('bill-of-quantities/import', [\App\Http\Controllers\BillOfQuantityController::class, 'import'])->name('bill-of-quantities.import');
+        // Paketeingang (Feature 108, MVP-627): ZIP der Vergabestelle zerlegen,
+        // GAEB-Dateien als Vorschlag ablegen, Restdokumente an die Akte.
+        // Vor `{billOfQuantity}` — sonst frisst die Show-Route den Pfad.
+        Route::get('bill-of-quantities/pakete', [\App\Http\Controllers\Gaeb\GaebPackageController::class, 'index'])->name('bill-of-quantities.packages');
+        Route::post('bill-of-quantities/pakete', [\App\Http\Controllers\Gaeb\GaebPackageController::class, 'store'])->name('bill-of-quantities.packages.store');
+        Route::post('bill-of-quantities/pakete/{import}/importieren', [\App\Http\Controllers\Gaeb\GaebPackageController::class, 'accept'])->name('bill-of-quantities.packages.accept');
+        Route::delete('bill-of-quantities/pakete/{import}', [\App\Http\Controllers\Gaeb\GaebPackageController::class, 'discard'])->name('bill-of-quantities.packages.discard');
         Route::get('bill-of-quantities/{billOfQuantity}', [\App\Http\Controllers\BillOfQuantityController::class, 'show'])->name('bill-of-quantities.show');
         // MVP-084/085: LV-Workflow und GAEB-Export
+        Route::get('bill-of-quantities/{billOfQuantity}/preisspiegel', [\App\Http\Controllers\BillOfQuantityController::class, 'priceComparison'])->name('bill-of-quantities.price-comparison');
+        Route::get('bill-of-quantities/{billOfQuantity}/kostengruppen', [\App\Http\Controllers\BillOfQuantityController::class, 'costGroups'])->name('bill-of-quantities.cost-groups');
+        // Zuordnungs-Oberfläche (Feature 109, MVP-639).
+        Route::get('bill-of-quantities/{billOfQuantity}/zuordnung', [\App\Http\Controllers\BillOfQuantityController::class, 'catalogAssignment'])->name('bill-of-quantities.catalog-assignment');
+        Route::post('bill-of-quantities/{billOfQuantity}/zuordnung', [\App\Http\Controllers\BillOfQuantityController::class, 'assignCatalogBulk'])->name('bill-of-quantities.catalog-assignment.bulk');
+        Route::post('bill-of-quantities/items/{boqItem}/zuordnung', [\App\Http\Controllers\BillOfQuantityController::class, 'assignCatalog'])->name('bill-of-quantities.items.catalog-assignment');
+        Route::post('bill-of-quantities/teilmengen/{split}/zuordnung', [\App\Http\Controllers\BillOfQuantityController::class, 'assignSplitCatalog'])->name('bill-of-quantities.splits.catalog-assignment');
+        Route::post('bill-of-quantities/{billOfQuantity}/zuordnung/regeln', [\App\Http\Controllers\BillOfQuantityController::class, 'applyCatalogRules'])->name('bill-of-quantities.catalog-rules.apply');
+        Route::match(['get', 'post'], 'bill-of-quantities/{billOfQuantity}/zuordnung/ausgabe', [\App\Http\Controllers\BillOfQuantityController::class, 'catalogEdition'])->name('bill-of-quantities.catalog-edition');
+        // Kostenermittlung (Feature 109, MVP-646): X51 rein als Budget, raus
+        // als Kostenanschlag bzw. Kostenfeststellung.
+        Route::post('bill-of-quantities/kostenermittlung', [\App\Http\Controllers\BillOfQuantityController::class, 'costEstimateImport'])->name('bill-of-quantities.cost-estimate.import');
+        Route::get('bill-of-quantities/{billOfQuantity}/kostenermittlung', [\App\Http\Controllers\BillOfQuantityController::class, 'costEstimateExport'])->name('bill-of-quantities.cost-estimate.export');
+        // Baukostenkataloge (Feature 109, MVP-645): Kennwerte als
+        // Nachschlagewerk, X50 rein und raus.
+        Route::get('baukostenkataloge', [\App\Http\Controllers\Gaeb\CostElementCatalogController::class, 'index'])->name('cost-catalogs.index');
+        Route::post('baukostenkataloge', [\App\Http\Controllers\Gaeb\CostElementCatalogController::class, 'store'])->name('cost-catalogs.store');
+        Route::get('baukostenkataloge/{catalog}', [\App\Http\Controllers\Gaeb\CostElementCatalogController::class, 'show'])->name('cost-catalogs.show');
+        Route::get('baukostenkataloge/{catalog}/export', [\App\Http\Controllers\Gaeb\CostElementCatalogController::class, 'export'])->name('cost-catalogs.export');
+        Route::delete('baukostenkataloge/{catalog}', [\App\Http\Controllers\Gaeb\CostElementCatalogController::class, 'destroy'])->name('cost-catalogs.destroy');
+        // Regelwerk je Organisation (Feature 109, MVP-640).
+        Route::get('zuordnungsregeln', [\App\Http\Controllers\Gaeb\CatalogRuleController::class, 'index'])->name('catalog-rules.index');
+        Route::get('zuordnungsregeln/neu', [\App\Http\Controllers\Gaeb\CatalogRuleController::class, 'create'])->name('catalog-rules.create');
+        Route::post('zuordnungsregeln', [\App\Http\Controllers\Gaeb\CatalogRuleController::class, 'store'])->name('catalog-rules.store');
+        Route::get('zuordnungsregeln/{rule}/bearbeiten', [\App\Http\Controllers\Gaeb\CatalogRuleController::class, 'edit'])->name('catalog-rules.edit');
+        Route::put('zuordnungsregeln/{rule}', [\App\Http\Controllers\Gaeb\CatalogRuleController::class, 'update'])->name('catalog-rules.update');
+        Route::delete('zuordnungsregeln/{rule}', [\App\Http\Controllers\Gaeb\CatalogRuleController::class, 'destroy'])->name('catalog-rules.destroy');
         Route::get('bill-of-quantities/{billOfQuantity}/export', [\App\Http\Controllers\BillOfQuantityController::class, 'export'])->name('bill-of-quantities.export');
         Route::post('bill-of-quantities/{billOfQuantity}/transition', [\App\Http\Controllers\BillOfQuantityController::class, 'transition'])->name('bill-of-quantities.transition');
         Route::post('bill-of-quantities/{billOfQuantity}/addenda', [\App\Http\Controllers\BillOfQuantityController::class, 'addAddendum'])->name('bill-of-quantities.addenda.add');
@@ -1513,6 +1547,7 @@ Route::middleware('auth')->group(function () {
         Route::post('invoices/{invoice}/send', [InvoiceController::class, 'send'])->name('invoices.send');
         Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
         Route::get('invoices/{invoice}/einvoice', [InvoiceController::class, 'einvoiceDownload'])->name('invoices.einvoice');
+        Route::get('invoices/{invoice}/gaeb', [InvoiceController::class, 'gaebDownload'])->name('invoices.gaeb');
         Route::get('invoices/{invoice}/einvoice-validierung', [\App\Http\Controllers\InvoiceController::class, 'einvoiceValidation'])->name('invoices.einvoice-validation');
         Route::get('invoices/{invoice}/zugferd', [InvoiceController::class, 'zugferdDownload'])->name('invoices.zugferd');
         Route::get('invoices/{invoice}/e-rechnungsoptionen', [\App\Http\Controllers\InvoicePdfImportController::class, 'edit'])->name('invoices.einvoice-options.edit');
@@ -1557,6 +1592,22 @@ Route::middleware('auth')->group(function () {
             ->except(['show'])
             ->parameters(['invoice-templates' => 'template']);
 
+        // ── Bekanntmachungs-Radar (Feature 108, MVP-629/630) ──
+        // Eigener Pfad, nicht in der tenders-Gruppe: dort fängt `{opportunity}`
+        // jedes erste Segment ab.
+        Route::prefix('ausschreibungs-radar')->name('tender-radar.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Tenders\TenderNoticeController::class, 'index'])->name('index');
+            Route::get('profile', [\App\Http\Controllers\Tenders\TenderNoticeController::class, 'profiles'])->name('profiles');
+            Route::get('profile/neu', [\App\Http\Controllers\Tenders\TenderNoticeController::class, 'createProfile'])->name('profiles.create');
+            Route::post('profile', [\App\Http\Controllers\Tenders\TenderNoticeController::class, 'storeProfile'])->name('profiles.store');
+            Route::get('profile/{profile}/bearbeiten', [\App\Http\Controllers\Tenders\TenderNoticeController::class, 'editProfile'])->name('profiles.edit');
+            Route::put('profile/{profile}', [\App\Http\Controllers\Tenders\TenderNoticeController::class, 'updateProfile'])->name('profiles.update');
+            Route::delete('profile/{profile}', [\App\Http\Controllers\Tenders\TenderNoticeController::class, 'destroyProfile'])->name('profiles.destroy');
+            Route::post('{match}/ausblenden', [\App\Http\Controllers\Tenders\TenderNoticeController::class, 'mute'])->name('mute');
+            Route::post('{match}/einblenden', [\App\Http\Controllers\Tenders\TenderNoticeController::class, 'restore'])->name('restore');
+            Route::post('{match}/uebernehmen', [\App\Http\Controllers\Tenders\TenderNoticeController::class, 'convert'])->name('convert');
+        });
+
         // ── Bewerbungen & Ausschreibungen (Feature 068, module.applications) ──
         Route::prefix('ausschreibungen')->name('tenders.')->group(function (): void {
             Route::get('/', [\App\Http\Controllers\Applications\TenderController::class, 'index'])->name('index');
@@ -1568,7 +1619,11 @@ Route::middleware('auth')->group(function () {
             Route::delete('{opportunity}', [\App\Http\Controllers\Applications\TenderController::class, 'destroy'])->name('destroy');
             Route::post('{opportunity}/status', [\App\Http\Controllers\Applications\TenderController::class, 'updateStatus'])->name('status');
             Route::post('{opportunity}/go', [\App\Http\Controllers\Applications\TenderController::class, 'decideGo'])->name('go');
+            Route::get('{opportunity}/abgabe', [\App\Http\Controllers\Applications\TenderController::class, 'submitWizard'])->name('submit-wizard');
             Route::post('{opportunity}/einreichen', [\App\Http\Controllers\Applications\TenderController::class, 'submit'])->name('submit');
+            // Submissionsergebnis (MVP-628): verlesene Angebote am Eröffnungstermin.
+            Route::post('{opportunity}/submissionsergebnis', [\App\Http\Controllers\Applications\TenderController::class, 'addCompetitorBid'])->name('bids.store');
+            Route::delete('{opportunity}/submissionsergebnis/{bid}', [\App\Http\Controllers\Applications\TenderController::class, 'removeCompetitorBid'])->name('bids.destroy');
             Route::post('{opportunity}/entscheiden', [\App\Http\Controllers\Applications\TenderController::class, 'decide'])->name('decide');
             Route::post('{opportunity}/ueberfuehren', [\App\Http\Controllers\Applications\TenderController::class, 'transfer'])->name('transfer');
             Route::post('{opportunity}/anforderungen', [\App\Http\Controllers\Applications\TenderController::class, 'addRequirement'])->name('requirements.store');
@@ -1615,6 +1670,9 @@ Route::middleware('auth')->group(function () {
             Route::post('{negotiation}/abschliessen', [\App\Http\Controllers\Applications\ContractNegotiationController::class, 'conclude'])->name('conclude');
         });
         Route::get('berichte/bewerbungen', [\App\Http\Controllers\Reporting\ApplicationsReportController::class, 'index'])->name('applications.report');
+        // Vergabe-Cockpit (Feature 108, MVP-631): Fristensicht neben Pipeline
+        // und Trefferquote — im Vergabegeschäft entscheiden Fristen.
+        Route::get('berichte/vergabe', [\App\Http\Controllers\Reporting\TenderCockpitController::class, 'index'])->name('tenders.cockpit');
 
         // ── Reklamation/Gewährleistung/Rückläufer (Feature 072, module.claims) ──
         Route::prefix('reklamationen')->name('claims.')->group(function (): void {

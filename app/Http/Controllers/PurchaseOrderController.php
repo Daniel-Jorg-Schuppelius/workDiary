@@ -144,6 +144,15 @@ class PurchaseOrderController extends Controller {
         } elseif ($format === 'opentrans' || $format === 'opentrans-order') {
             $xml = $export->toOpenTrans($purchaseOrder);
             $prefix = 'openTRANS';
+        } elseif ($format === 'gaeb' || $format === 'x96') {
+            // GAEB-Handelsdatei: eigene Endung, damit die Warenwirtschaft der
+            // Gegenseite sie erkennt.
+            $result = $export->toGaeb($purchaseOrder);
+
+            return response($result['content'], 200, [
+                'Content-Type' => 'application/xml; charset=UTF-8',
+                'Content-Disposition' => 'attachment; filename="' . $result['filename'] . '"',
+            ]);
         } elseif ($format === 'ugl') {
             // UGL ist ASCII-Festsatz (ISO-8859-1), kein XML.
             $content = $export->toUgl($purchaseOrder);

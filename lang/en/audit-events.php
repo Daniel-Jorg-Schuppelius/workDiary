@@ -762,6 +762,8 @@ return [
         'statusChanged' => 'Tenant status changed',
     ],
     'tender' => [
+        'awarded' => 'Contract awarded (X86 imported)',
+        'bid_recorded' => 'Bid recorded in the opening result',
         'created' => 'Tender created',
         'decided' => 'Tender decided',
         'go_decided' => 'Go/no-go decided',

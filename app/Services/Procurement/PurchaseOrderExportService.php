@@ -11,11 +11,13 @@
 namespace App\Services\Procurement;
 
 use App\Models\{PurchaseOrder, PurchaseOrderLine, Supplier};
+use App\Services\Gaeb\GaebOrderExportService;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use DateTimeImmutable;
 use ERechnungToolkit\Builders\OrderBuilder;
 use ERechnungToolkit\Entities\{AllowanceCharge, Order, OrderLine};
+use ERechnungToolkit\Enums\GaebPhase;
 use ERechnungToolkit\Enums\{OrderProfile, OrderXProfile, UnitCode};
 use RuntimeException;
 
@@ -72,6 +74,19 @@ class PurchaseOrderExportService {
      * ASCII-Festsatzformat, Anfrageart BE = Lieferauftrag). Nutzt dieselbe
      * Toolkit-{@see Order}.
      */
+    /**
+     * Bestellung als GAEB-Handelsdatei (X96) bzw. Preisanfrage (X93).
+     *
+     * Der dritte Bestellweg neben OCI-Punchout und openTRANS — und der, den
+     * Baustoffhändler tatsächlich fahren. Anders als die UBL-Formate
+     * identifiziert er über die Artikelnummer des Lieferanten.
+     *
+     * @return array{content: string, filename: string, losses: list<string>}
+     */
+    public function toGaeb(PurchaseOrder $order, GaebPhase $phase = GaebPhase::Order): array {
+        return app(GaebOrderExportService::class)->export($order, $phase);
+    }
+
     public function toUgl(PurchaseOrder $order): string {
         return $this->buildOrder($order, OrderProfile::XBESTELLUNG)->toUgl();
     }

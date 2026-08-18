@@ -20,6 +20,26 @@
   <Award>
     <DP>83</DP>
     <Cur>EUR</Cur>
+    <AwardInfo>
+      <Cur>EUR</Cur>
+      <!-- Nachtragsköpfe: ein LV trägt mehrere nebeneinander (MVP-624). -->
+      <COInfo>
+        <CONo>N1</CONo>
+        <COPhase>CallChangOrder</COPhase>
+        <COStatus>Filed</COStatus>
+        <COInit>Owner</COInit>
+        <COReas>Baugrund weicht vom Gutachten ab</COReas>
+        <CODate>2026-03-12</CODate>
+      </COInfo>
+      <COInfo>
+        <CONo>N2</CONo>
+        <COPhase>SupplBid</COPhase>
+        <COStatus>Offered</COStatus>
+        <COInit>Contractor</COInit>
+        <COReas>Geänderte Fassadenausführung</COReas>
+        <CODate>2026-04-02</CODate>
+      </COInfo>
+    </AwardInfo>
     <BoQ ID="BOQ-TRAITS">
       <BoQInfo>
         <Name>1</Name>

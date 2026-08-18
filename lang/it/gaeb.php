@@ -47,16 +47,6 @@ return [
             'imported' => 'Importato',
             'conflict' => 'Conflitto',
         ],
-        'change_order_status' => [
-            'Recog' => 'Riconosciuto',
-            'Filed' => 'Notificato',
-            'Offered' => 'Offerto',
-            'Withdrawn' => 'Ritirato',
-            'Rejected' => 'Respinto',
-            'ObjToRecj' => 'Opposizione al rifiuto',
-            'FormAckn' => 'Riconosciuto nel merito',
-            'Approved' => 'Approvato',
-        ],
     ],
 
     'show' => [
@@ -67,6 +57,17 @@ return [
         'back' => 'Torna all’elenco',
     ],
 
+    'change_order' => [
+        'phase' => [
+            'CallChangOrder' => 'Richiesta di variante',
+            'SupplBid' => 'Offerta di variante',
+            'SupplAgree' => 'Accordo di variante',
+        ],
+        'initiator' => [
+            'Owner' => 'Committente',
+            'Contractor' => 'Appaltatore',
+        ],
+    ],
     'phase' => [
         '31' => 'Rilievo delle quantità',
         '50' => 'Catalogo dei costi di costruzione',
@@ -112,6 +113,16 @@ return [
             'replaced' => 'Sostituito',
             'cancelled' => 'Annullato',
         ],
+        'change_order_status' => [
+            'Recog' => 'Riconosciuto',
+            'Filed' => 'Notificato',
+            'Offered' => 'Offerto',
+            'Withdrawn' => 'Ritirato',
+            'Rejected' => 'Respinto',
+            'ObjToRecj' => 'Opposizione al rifiuto',
+            'FormAckn' => 'Riconosciuto nel merito',
+            'Approved' => 'Approvato',
+        ],
     ],
 
     'preflight' => [
@@ -119,6 +130,7 @@ return [
         'version_unsupported' => 'La versione GAEB :version non è supportata (linea obiettivo 3.3).',
         'phase_unknown' => 'La fase di scambio «:code» è sconosciuta.',
         'no_items' => 'Il file non contiene voci.',
+        'vendor_record_type' => 'Il file contiene :count record del tipo proprietario :type — il loro contenuto non viene valutato (alcuni sistemi vi collocano i gruppi di costo).',
         'item_missing_ref' => 'Voce senza numero d’ordine: :text',
         'duplicate_ref' => 'Il numero d’ordine :ref compare più volte.',
         'missing_quantity' => 'La voce :ref non ha quantità.',
@@ -194,5 +206,30 @@ return [
         'button' => 'Esporta GAEB',
         'title' => 'Esportazione GAEB',
         'phase' => 'Fase',
+    ],
+    'trade' => [
+        'missing_own_address' => 'Manca il proprio indirizzo nei dati di fatturazione elettronica; senza di esso il file non identifica il committente.',
+        'missing_delivery_date' => 'Senza data di consegna l’ordine resta indeterminato; è stata usata la data d’ordine.',
+        'missing_supplier_sku' => ':count riga/righe senza codice articolo del fornitore — il suo sistema trova la merce solo così.',
+        'missing_supplier_tax_no' => 'Il fornitore non ha né codice fiscale né partita IVA.',
+    ],
+    'invoice' => [
+        'share_net' => 'Importo netto',
+        'share_discount' => 'Sconto',
+        'share_vat' => 'IVA :rate %',
+        'missing_tax_number' => 'Codice fiscale e partita IVA mancano nei dati di fatturazione elettronica — la legge fiscale ne richiede uno.',
+        'missing_recipient' => 'L’indirizzo del destinatario della fattura è incompleto.',
+        'missing_service_period' => 'Nessun periodo di prestazione deducibile; è stata usata la data della fattura.',
+    ],
+    'comparison' => [
+        'title' => 'Confronto prezzi',
+        'spread' => 'Scarto',
+        'rank' => 'Posizione :rank',
+        'gap' => ':percent % più conveniente dell’offerta successiva',
+        'unusually_low_hint' => 'Un’offerta anomalamente bassa richiede chiarimenti, non l’esclusione (§ 16d VOB/A, § 60 VgV).',
+        'incomplete_hint' => 'Non tutti gli offerenti hanno quotato ogni voce — i prezzi mancanti sono lacune, non zeri.',
+        'empty_title' => 'Nessuna offerta',
+        'empty_hint' => 'Importa le offerte (X84) di questa gara per confrontarle.',
+        'button' => 'Confronto prezzi',
     ],
 ];

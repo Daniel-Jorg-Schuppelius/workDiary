@@ -27,7 +27,7 @@ return [
         'preferred' => 'Bevorzugt',
         'recommended' => 'Empfohlen',
         'set_preferred' => 'Als bevorzugt setzen',
-        'flash' => ['preferred_set' => 'Bevorzugte Bezugsquelle gesetzt.', 'datanorm_empty' => 'Keine exportierbaren Artikel (aktiv und verkäuflich) vorhanden.'],
+        'flash' => ['preferred_set' => 'Bevorzugte Bezugsquelle gesetzt.'],
     ],
     'no_options' => 'Keine Optionen definiert.',
     'no_variants' => 'Keine Varianten angelegt.',
@@ -43,15 +43,6 @@ return [
         'kind' => ['discount' => 'Rabatt (%)', 'factor' => 'Faktor', 'surcharge' => 'Zuschlag (%)'],
         'col' => ['code' => 'Code', 'kind' => 'Art', 'value' => 'Wert', 'label' => 'Bezeichnung', 'articles' => 'Artikel'],
         'action' => ['add' => 'Anlegen', 'delete' => 'Löschen'],
-        'tiers' => [
-            'title' => 'Staffelpreise',
-            'hint' => 'Ab der Von-Menge ersetzt der Staffelpreis den Standard-VK; reist als Z-Satz im DATANORM-Export mit.',
-            'min_qty' => 'Ab Menge',
-            'unit_price' => 'Stückpreis',
-            'empty' => 'Keine Staffelpreise gepflegt.',
-            'action' => ['add' => 'Staffel hinzufügen'],
-            'flash' => ['saved' => 'Staffelpreis gespeichert.', 'deleted' => 'Staffelpreis gelöscht.'],
-        ],
         'flash' => ['created' => 'Rabattgruppe angelegt.', 'deleted' => 'Rabattgruppe gelöscht.', 'override_saved' => 'Kunden-Override gespeichert.', 'override_deleted' => 'Kunden-Override gelöscht.'],
         'override' => [
             'title' => 'Kunden-Overrides',
@@ -153,7 +144,17 @@ return [
         'delete' => 'Artikel endgültig löschen? Nur referenzlose Entwürfe sind löschbar.',
     ],
 
+    'tiers' => [
+        'title' => 'Staffelpreise',
+        'hint' => 'Ab der Von-Menge ersetzt der Staffelpreis den Standard-VK; reist als Z-Satz im DATANORM-Export mit.',
+        'min_qty' => 'Ab Menge',
+        'unit_price' => 'Stückpreis',
+        'empty' => 'Keine Staffelpreise gepflegt.',
+        'action' => ['add' => 'Staffel hinzufügen'],
+        'flash' => ['saved' => 'Staffelpreis gespeichert.', 'deleted' => 'Staffelpreis gelöscht.'],
+    ],
     'flash' => [
+        'datanorm_empty' => 'Keine exportierbaren Artikel (aktiv und verkäuflich) vorhanden.',
         'created' => 'Artikel angelegt.',
         'updated' => 'Artikel aktualisiert.',
         'deleted' => 'Artikel gelöscht.',

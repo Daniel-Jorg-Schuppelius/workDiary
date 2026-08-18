@@ -27,7 +27,7 @@ return [
         'preferred' => 'Preferido',
         'recommended' => 'Recomendado',
         'set_preferred' => 'Marcar como preferido',
-        'flash' => ['preferred_set' => 'Fuente de suministro preferida establecida.', 'datanorm_empty' => 'No hay artículos exportables (activos y vendibles).'],
+        'flash' => ['preferred_set' => 'Fuente de suministro preferida establecida.'],
     ],
     'no_options' => 'No hay opciones definidas.',
     'no_variants' => 'No hay variantes creadas.',
@@ -43,15 +43,6 @@ return [
         'kind' => ['discount' => 'Descuento (%)', 'factor' => 'Factor', 'surcharge' => 'Recargo (%)'],
         'col' => ['code' => 'Código', 'kind' => 'Tipo', 'value' => 'Valor', 'label' => 'Denominación', 'articles' => 'Artículos'],
         'action' => ['add' => 'Crear', 'delete' => 'Eliminar'],
-        'tiers' => [
-            'title' => 'Precios escalonados',
-            'hint' => 'A partir de la cantidad indicada, el precio escalonado sustituye al PV estándar; viaja como registro Z en la exportación DATANORM.',
-            'min_qty' => 'Desde cantidad',
-            'unit_price' => 'Precio unitario',
-            'empty' => 'Sin precios escalonados.',
-            'action' => ['add' => 'Añadir escalón'],
-            'flash' => ['saved' => 'Precio escalonado guardado.', 'deleted' => 'Precio escalonado eliminado.'],
-        ],
         'flash' => ['created' => 'Grupo de descuento creado.', 'deleted' => 'Grupo de descuento eliminado.', 'override_saved' => 'Excepción de cliente guardada.', 'override_deleted' => 'Excepción de cliente eliminada.'],
         'override' => [
             'title' => 'Excepciones por cliente',
@@ -153,7 +144,17 @@ return [
         'delete' => '¿Eliminar definitivamente este artículo? Solo se pueden eliminar borradores sin referencias.',
     ],
 
+    'tiers' => [
+        'title' => 'Precios escalonados',
+        'hint' => 'A partir de la cantidad indicada, el precio escalonado sustituye al PV estándar; viaja como registro Z en la exportación DATANORM.',
+        'min_qty' => 'Desde cantidad',
+        'unit_price' => 'Precio unitario',
+        'empty' => 'Sin precios escalonados.',
+        'action' => ['add' => 'Añadir escalón'],
+        'flash' => ['saved' => 'Precio escalonado guardado.', 'deleted' => 'Precio escalonado eliminado.'],
+    ],
     'flash' => [
+        'datanorm_empty' => 'No hay artículos exportables (activos y vendibles).',
         'created' => 'Artículo creado.',
         'updated' => 'Artículo actualizado.',
         'deleted' => 'Artículo eliminado.',

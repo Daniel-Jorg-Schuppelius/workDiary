@@ -762,6 +762,8 @@ return [
         'statusChanged' => 'Statut de l\'organisation modifié',
     ],
     'tender' => [
+        'awarded' => 'Marché attribué (X86 importé)',
+        'bid_recorded' => 'Offre consignée au résultat d’ouverture',
         'created' => 'Appel d\'offres créé',
         'decided' => 'Appel d\'offres tranché',
         'go_decided' => 'Go/No-Go tranché',

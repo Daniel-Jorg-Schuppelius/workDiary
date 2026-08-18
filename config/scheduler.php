@@ -357,6 +357,16 @@ return [
             'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
             'criticality' => 'core',
         ],
+        // Bekanntmachungs-Radar (Feature 108, MVP-629): Der Bund stellt einen
+        // Veröffentlichungstag erst am Folgetag vollständig bereit — der Abruf
+        // holt deshalb nachts den Vortag.
+        'tenders.fetch_notices' => [
+            'command' => 'tenders:fetch-notices',
+            'cadence' => ['type' => 'dailyAt', 'time' => '05:15'],
+            'allowed' => ['dailyAt', 'hourly'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 15,
+        ],
         'catalog.fetch_due' => [
             'command' => 'catalog:fetch-due',
             'cadence' => ['type' => 'everyFifteenMinutes'],

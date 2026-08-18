@@ -16,8 +16,8 @@ use App\Enums\Gaeb\GaebPhase;
 use App\Models\{BillOfQuantity, BoqCatalogAssignment, BoqItem, BoqSection};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
-use ERechnungToolkit\Entities\Gaeb\{GaebBoq, GaebCatalog, GaebCatalogAssignment, GaebItem, GaebQuantitySplit, GaebSection, GaebSubDescription, GaebTextComplement, GaebTotals, GaebUpComponent};
-use ERechnungToolkit\Enums\{GaebAlternativeBidStatus, GaebChangeOrderStatus, GaebItemType, GaebMarkupType};
+use ERechnungToolkit\Entities\Gaeb\{GaebBoq, GaebCatalog, GaebCatalogAssignment, GaebChangeOrder, GaebCostApproach, GaebCostType, GaebItem, GaebQuantitySplit, GaebSection, GaebSubDescription, GaebTextComplement, GaebTotals, GaebUpComponent};
+use ERechnungToolkit\Enums\{GaebAlternativeBidStatus, GaebChangeOrderInitiator, GaebChangeOrderPhase, GaebChangeOrderStatus, GaebItemType, GaebMarkupType};
 
 /**
  * Übersetzt ein gespeichertes Leistungsverzeichnis in das formatneutrale
@@ -29,7 +29,7 @@ class BoqDocumentFactory {
     private const PRICE_SCALE = 4;
 
     public function fromModel(BillOfQuantity $boq, GaebPhase $phase): GaebBoq {
-        $boq->loadMissing(['sections', 'items']);
+        $boq->loadMissing(['sections', 'items', 'changeOrders']);
 
         $sections = [];
         foreach ($boq->sections->sortBy('position') as $section) {
@@ -61,6 +61,8 @@ class BoqDocumentFactory {
             totals: $this->totals($boq->totals, $boq->currency),
             currency: $boq->currency,
             catalogs: $this->catalogs($boq),
+            changeOrders: $this->changeOrders($boq),
+            costTypes: $this->costTypes($boq),
         );
     }
 
@@ -140,7 +142,71 @@ class BoqDocumentFactory {
             position: $item->position,
             catalogAssignments: $this->assignments($item->catalogAssignments),
             quantitySplits: $this->splits($item),
+            costApproaches: $this->costApproaches($item),
         );
+    }
+
+    /**
+     * Kostenarten des LV (X52, MVP-647) — sie stehen im Kopf, weil ein Betrieb
+     * nach Kostenart zuschlägt, nicht je Position.
+     *
+     * @return list<GaebCostType>
+     */
+    private function costTypes(BillOfQuantity $boq): array {
+        $types = [];
+        foreach ($boq->costTypes as $type) {
+            $types[] = new GaebCostType(
+                key: $type->cost_key,
+                description: $type->description,
+                unit: $type->unit,
+                markup: $type->markup_percent === null ? null : (string) $type->markup_percent,
+            );
+        }
+
+        return $types;
+    }
+
+    /**
+     * Kostenansätze einer Position (X52).
+     *
+     * @return list<GaebCostApproach>
+     */
+    private function costApproaches(BoqItem $item): array {
+        $approaches = [];
+        foreach ($item->costApproaches as $approach) {
+            $approaches[] = new GaebCostApproach(
+                costTypeKey: $approach->cost_key,
+                quantity: $approach->quantity === null ? null : (string) $approach->quantity,
+                unit: $approach->unit,
+                performance: $approach->performance === null ? null : (string) $approach->performance,
+                value: $approach->value === null ? null : (string) $approach->value,
+            );
+        }
+
+        return $approaches;
+    }
+
+    /**
+     * Nachtragsköpfe des LV. Ein LV trägt mehrere nebeneinander; die Positionen
+     * verweisen über ihre Nachtragsnummer darauf.
+     *
+     * @return list<GaebChangeOrder>
+     */
+    private function changeOrders(BillOfQuantity $boq): array {
+        $orders = [];
+        foreach ($boq->changeOrders as $order) {
+            $orders[] = new GaebChangeOrder(
+                number: $order->number,
+                phase: $order->phase !== null ? GaebChangeOrderPhase::from($order->phase->value) : null,
+                status: $order->status !== null ? GaebChangeOrderStatus::from($order->status->value) : null,
+                initiator: $order->initiator !== null ? GaebChangeOrderInitiator::from($order->initiator->value) : null,
+                reason: $order->reason,
+                contractReference: $order->contract_reference,
+                date: $order->date?->format('Y-m-d'),
+            );
+        }
+
+        return $orders;
     }
 
     /**

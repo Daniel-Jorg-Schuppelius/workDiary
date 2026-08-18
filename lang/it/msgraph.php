@@ -101,6 +101,11 @@ return [
         'redirect_backup' => 'Destinazione di backup (solo app dell\'istanza)',
     ],
 
+    // Titel der Inbox-Einträge des Kalenderimports — ein remote
+    // gelöschter Termin wird gemeldet, nicht still nachgezogen.
+    'import' => [
+        'deleted_title' => 'Appuntamento eliminato in Microsoft 365',
+    ],
     'flash' => [
         'not_configured' => 'Microsoft 365 non è configurato (MSGRAPH_CLIENT_ID/SECRET mancanti).',
         'state_invalid' => 'Il flusso OAuth è scaduto o non è valido. Riprovare.',

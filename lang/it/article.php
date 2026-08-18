@@ -27,7 +27,7 @@ return [
         'preferred' => 'Preferito',
         'recommended' => 'Consigliato',
         'set_preferred' => 'Imposta come preferito',
-        'flash' => ['preferred_set' => 'Fonte di approvvigionamento preferita impostata.', 'datanorm_empty' => 'Nessun articolo esportabile (attivo e vendibile) disponibile.'],
+        'flash' => ['preferred_set' => 'Fonte di approvvigionamento preferita impostata.'],
     ],
     'no_options' => 'Nessuna opzione definita.',
     'no_variants' => 'Nessuna variante creata.',
@@ -43,15 +43,6 @@ return [
         'kind' => ['discount' => 'Sconto (%)', 'factor' => 'Fattore', 'surcharge' => 'Maggiorazione (%)'],
         'col' => ['code' => 'Codice', 'kind' => 'Tipo', 'value' => 'Valore', 'label' => 'Denominazione', 'articles' => 'Articoli'],
         'action' => ['add' => 'Crea', 'delete' => 'Elimina'],
-        'tiers' => [
-            'title' => 'Prezzi scaglionati',
-            'hint' => 'Dalla quantità indicata il prezzo scaglionato sostituisce il PV standard; viaggia come record Z nell\'export DATANORM.',
-            'min_qty' => 'Da quantità',
-            'unit_price' => 'Prezzo unitario',
-            'empty' => 'Nessun prezzo scaglionato.',
-            'action' => ['add' => 'Aggiungi scaglione'],
-            'flash' => ['saved' => 'Prezzo scaglionato salvato.', 'deleted' => 'Prezzo scaglionato eliminato.'],
-        ],
         'flash' => ['created' => 'Gruppo di sconto creato.', 'deleted' => 'Gruppo di sconto eliminato.', 'override_saved' => 'Deroga cliente salvata.', 'override_deleted' => 'Deroga cliente eliminata.'],
         'override' => [
             'title' => 'Deroghe cliente',
@@ -153,7 +144,17 @@ return [
         'delete' => 'Eliminare definitivamente questo articolo? Solo le bozze senza riferimenti sono eliminabili.',
     ],
 
+    'tiers' => [
+        'title' => 'Prezzi scaglionati',
+        'hint' => 'Dalla quantità indicata il prezzo scaglionato sostituisce il PV standard; viaggia come record Z nell\'export DATANORM.',
+        'min_qty' => 'Da quantità',
+        'unit_price' => 'Prezzo unitario',
+        'empty' => 'Nessun prezzo scaglionato.',
+        'action' => ['add' => 'Aggiungi scaglione'],
+        'flash' => ['saved' => 'Prezzo scaglionato salvato.', 'deleted' => 'Prezzo scaglionato eliminato.'],
+    ],
     'flash' => [
+        'datanorm_empty' => 'Nessun articolo esportabile (attivo e vendibile) disponibile.',
         'created' => 'Articolo creato.',
         'updated' => 'Articolo aggiornato.',
         'deleted' => 'Articolo eliminato.',

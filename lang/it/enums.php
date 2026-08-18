@@ -219,6 +219,7 @@ return [
             'incoming_invoice' => 'Fatture in entrata',
             'document' => 'Documento (DMS)',
             'b2b_order' => 'Ordine B2B (openTRANS)',
+            'gaeb_package' => 'Documenti di gara (pacchetto GAEB)',
         ],
         'item_status' => [
             'imported' => 'Importato',
@@ -388,6 +389,11 @@ return [
             ],
             'asset' => [
                 'returnOverdue' => 'Restituzione asset in ritardo',
+            ],
+            'tender' => [
+                'submissionDueSoon' => 'Scadenza offerta in avvicinamento',
+                'submissionOverdue' => 'Scadenza offerta superata',
+                'bindingExpiring' => 'Termine di vincolo in scadenza',
             ],
             'safety' => [
                 'criticalEvent' => 'Evento di sicurezza critico',

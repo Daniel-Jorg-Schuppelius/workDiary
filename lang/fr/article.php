@@ -27,7 +27,7 @@ return [
         'preferred' => 'Préféré',
         'recommended' => 'Recommandé',
         'set_preferred' => 'Définir comme préféré',
-        'flash' => ['preferred_set' => 'Source d\'approvisionnement préférée définie.', 'datanorm_empty' => 'Aucun article exportable (actif et vendable) disponible.'],
+        'flash' => ['preferred_set' => 'Source d\'approvisionnement préférée définie.'],
     ],
     'no_options' => 'Aucune option définie.',
     'no_variants' => 'Aucune variante créée.',
@@ -43,15 +43,6 @@ return [
         'kind' => ['discount' => 'Remise (%)', 'factor' => 'Facteur', 'surcharge' => 'Majoration (%)'],
         'col' => ['code' => 'Code', 'kind' => 'Type', 'value' => 'Valeur', 'label' => 'Libellé', 'articles' => 'Articles'],
         'action' => ['add' => 'Créer', 'delete' => 'Supprimer'],
-        'tiers' => [
-            'title' => 'Prix dégressifs',
-            'hint' => 'À partir de la quantité indiquée, le prix dégressif remplace le PV standard ; exporté comme enregistrement Z dans DATANORM.',
-            'min_qty' => 'À partir de',
-            'unit_price' => 'Prix unitaire',
-            'empty' => 'Aucun prix dégressif.',
-            'action' => ['add' => 'Ajouter un palier'],
-            'flash' => ['saved' => 'Prix dégressif enregistré.', 'deleted' => 'Prix dégressif supprimé.'],
-        ],
         'flash' => ['created' => 'Groupe de remise créé.', 'deleted' => 'Groupe de remise supprimé.', 'override_saved' => 'Dérogation client enregistrée.', 'override_deleted' => 'Dérogation client supprimée.'],
         'override' => [
             'title' => 'Dérogations client',
@@ -153,7 +144,17 @@ return [
         'delete' => 'Supprimer définitivement cet article ? Seuls les brouillons sans référence peuvent être supprimés.',
     ],
 
+    'tiers' => [
+        'title' => 'Prix dégressifs',
+        'hint' => 'À partir de la quantité indiquée, le prix dégressif remplace le PV standard ; exporté comme enregistrement Z dans DATANORM.',
+        'min_qty' => 'À partir de',
+        'unit_price' => 'Prix unitaire',
+        'empty' => 'Aucun prix dégressif.',
+        'action' => ['add' => 'Ajouter un palier'],
+        'flash' => ['saved' => 'Prix dégressif enregistré.', 'deleted' => 'Prix dégressif supprimé.'],
+    ],
     'flash' => [
+        'datanorm_empty' => 'Aucun article exportable (actif et vendable) disponible.',
         'created' => 'Article créé.',
         'updated' => 'Article mis à jour.',
         'deleted' => 'Article supprimé.',

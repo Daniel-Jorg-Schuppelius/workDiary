@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Applications;
 
+use App\Enums\Applications\TenderProcedureType;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\{Customer, Project, Quote, User};
 use Illuminate\Database\Eloquent\Model;
@@ -65,6 +66,11 @@ class ApplicationOpportunity extends Model {
         'submission_deadline', 'decision_expected_on', 'estimated_value',
         'probability', 'risk_note', 'go_decision', 'go_decided_by', 'go_decided_at',
         'go_note', 'loss_reason', 'responsible_user_id', 'description', 'created_by',
+        // Vergabevorgang (MVP-625): Vergabestelle, Verfahren, Ort, Fristen.
+        'awarding_body', 'procedure_no', 'procedure_type', 'above_threshold',
+        'lot_no', 'lot_group', 'cpv_codes', 'nuts_code',
+        'platform', 'external_reference', 'notice_url',
+        'participation_deadline', 'opening_at', 'binding_until',
     ];
 
     /** @var array<string, string> */
@@ -74,6 +80,12 @@ class ApplicationOpportunity extends Model {
         'decision_expected_on' => 'date',
         'go_decided_at' => 'datetime',
         'probability' => 'integer',
+        'procedure_type' => TenderProcedureType::class,
+        'above_threshold' => 'boolean',
+        'cpv_codes' => 'array',
+        'participation_deadline' => 'date',
+        'opening_at' => 'datetime',
+        'binding_until' => 'date',
     ];
 
     /** @return HasMany<ApplicationRequirement, $this> */
@@ -104,6 +116,23 @@ class ApplicationOpportunity extends Model {
     /** @return BelongsTo<Quote, $this> */
     public function quote(): BelongsTo {
         return $this->belongsTo(Quote::class);
+    }
+
+    /** @return BelongsTo<\App\Models\BillOfQuantity, $this> */
+    public function billOfQuantity(): BelongsTo {
+        return $this->belongsTo(\App\Models\BillOfQuantity::class, 'bill_of_quantity_id');
+    }
+
+    /**
+     * Im Eröffnungstermin verlesene Angebote (MVP-628) — der eigene Preis
+     * steht mit in der Liste, sonst ist kein Abstand ablesbar.
+     *
+     * @return HasMany<TenderCompetitorBid, $this>
+     */
+    public function competitorBids(): HasMany {
+        return $this->hasMany(TenderCompetitorBid::class, 'application_opportunity_id')
+            ->orderByRaw('`rank` is null, `rank` asc')
+            ->orderBy('amount');
     }
 
     /** @return BelongsTo<User, $this> */

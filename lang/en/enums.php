@@ -219,6 +219,7 @@ return [
             'incoming_invoice' => 'Incoming invoices',
             'document' => 'Document (DMS)',
             'b2b_order' => 'B2B order (openTRANS)',
+            'gaeb_package' => 'Tender documents (GAEB package)',
         ],
         'item_status' => [
             'imported' => 'Imported',
@@ -388,6 +389,11 @@ return [
             ],
             'asset' => [
                 'returnOverdue' => 'Asset return overdue',
+            ],
+            'tender' => [
+                'submissionDueSoon' => 'Bid deadline approaching',
+                'submissionOverdue' => 'Bid deadline passed',
+                'bindingExpiring' => 'Binding period expiring',
             ],
             'safety' => [
                 'criticalEvent' => 'Critical safety event',

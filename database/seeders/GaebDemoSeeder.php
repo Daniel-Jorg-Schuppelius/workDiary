@@ -67,10 +67,47 @@ class GaebDemoSeeder extends Seeder {
             ]);
         }
 
+        // Feature 109: Der Kostengruppenkatalog kommt mit der Datei; eine
+        // Vorschlagsregel füllt die Positionen, die keine eigene Zuordnung
+        // tragen — genau der Ablauf, den ein Betrieb geht.
+        $this->seedCatalogRule($organization);
+        app(\App\Services\Gaeb\CatalogSuggestionService::class)->apply($boq->fresh() ?? $boq);
+
         // LV in Ausführung setzen und einen Export protokollieren.
         if ($workflow->canTransition($boq->status, BoqItemStatus::Ordered)) {
             $workflow->transitionBill($boq, BoqItemStatus::Ordered);
         }
         app(BoqExportService::class)->export($boq->fresh() ?? $boq, GaebPhase::Award);
+    }
+
+    /**
+     * Eine Beispielregel: Erdarbeiten schlagen auf die Baugrube (KG 310).
+     *
+     * Der Leistungsbereich ist die verlässlichere Grundlage als ein Stichwort
+     * — er steht in der Datei. Die Regel greift nur, wo die Position keine
+     * eigene Zuordnung mitbringt.
+     */
+    private function seedCatalogRule(Organization $organization): void {
+        $registry = \App\Models\Catalog\CatalogRegistry::query()
+            ->where('key', 'din276-2018')
+            ->first();
+        if ($registry === null) {
+            // Ohne Katalogstamm gäbe es nichts, worauf die Regel zeigen könnte.
+            return;
+        }
+
+        \App\Models\Catalog\CatalogAssignmentRule::query()->firstOrCreate(
+            [
+                'organization_id' => $organization->id,
+                'match_type' => \App\Models\Catalog\CatalogAssignmentRule::MATCH_WORK_CATEGORY,
+                'match_value' => '002',
+            ],
+            [
+                'catalog_registry_id' => $registry->id,
+                'code' => '310',
+                'priority' => 100,
+                'active' => true,
+            ],
+        );
     }
 }

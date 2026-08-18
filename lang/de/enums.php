@@ -219,6 +219,7 @@ return [
             'incoming_invoice' => 'Eingangsrechnungen',
             'document' => 'Dokument (DMS)',
             'b2b_order' => 'B2B-Bestellung (openTRANS)',
+            'gaeb_package' => 'Vergabeunterlagen (GAEB-Paket)',
         ],
         'item_status' => [
             'imported' => 'Übernommen',
@@ -388,6 +389,11 @@ return [
             ],
             'asset' => [
                 'returnOverdue' => 'Asset-Rückgabe überfällig',
+            ],
+            'tender' => [
+                'submissionDueSoon' => 'Angebotsfrist rückt näher',
+                'submissionOverdue' => 'Angebotsfrist überschritten',
+                'bindingExpiring' => 'Bindefrist läuft ab',
             ],
             'safety' => [
                 'criticalEvent' => 'Kritisches Sicherheitsereignis',

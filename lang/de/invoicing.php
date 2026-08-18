@@ -30,6 +30,10 @@ return [
         'button' => 'XRechnung',
         'button_title' => 'XRechnung (UBL 2.1, EN 16931) herunterladen',
         'error_intro' => 'XRechnung kann nicht erzeugt werden:',
+        'gaeb' => [
+            'button' => 'GAEB (X89)',
+            'button_title' => 'Rechnung als GAEB-Datei für Bau-Auftraggeber herunterladen',
+        ],
         'zugferd' => [
             'button' => 'ZUGFeRD (PDF)',
             'button_title' => 'ZUGFeRD-PDF (PDF/A-3, EN 16931) herunterladen',

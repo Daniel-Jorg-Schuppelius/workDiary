@@ -12,14 +12,16 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Applications;
 
+use App\Enums\Applications\TenderProcedureType;
 use App\Http\Controllers\Controller;
-use App\Models\Applications\{ApplicationOpportunity, ApplicationRequirement};
+use App\Models\Applications\{ApplicationOpportunity, ApplicationRequirement, TenderCompetitorBid};
 use App\Models\{Customer, Project, User};
-use App\Services\Applications\TenderService;
+use App\Services\Applications\{TenderService, TenderSubmissionPreflight};
 use App\Support\SortableQuery;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Validation\Rule;
 
 /**
  * Ausschreibungsakten / Auftragsbewerbungen (Feature 068, MVP-184–187):
@@ -83,7 +85,7 @@ class TenderController extends Controller {
 
     public function show(ApplicationOpportunity $opportunity): View {
         Gate::authorize('view', $opportunity);
-        $opportunity->load(['requirements.document', 'submissions', 'customer', 'project', 'responsible', 'negotiations.versions', 'negotiations.reviewItems', 'negotiations.approvals']);
+        $opportunity->load(['requirements.document', 'submissions', 'customer', 'project', 'responsible', 'competitorBids', 'negotiations.versions', 'negotiations.reviewItems', 'negotiations.approvals']);
 
         return view('applications.tenders.show', [
             'opportunity' => $opportunity,
@@ -194,6 +196,26 @@ class TenderController extends Controller {
         return back()->with('success', __('Go-/No-go-Entscheidung dokumentiert.'));
     }
 
+    /**
+     * Geführte Abgabe (MVP-628): Preflight, Ausgabewege und Dokumentation der
+     * Einreichung auf einer Seite.
+     *
+     * Ein Angebot lässt sich nach der Abgabe nicht mehr reparieren — deshalb
+     * steht die Prüfung **vor** dem Absenden, nicht als Fehlermeldung danach.
+     */
+    public function submitWizard(ApplicationOpportunity $opportunity, TenderSubmissionPreflight $preflight): View {
+        Gate::authorize('decide', $opportunity);
+        $opportunity->load(['requirements', 'submissions', 'billOfQuantity']);
+
+        $findings = $preflight->check($opportunity);
+
+        return view('applications.tenders.submit', [
+            'opportunity' => $opportunity,
+            'findings' => $findings,
+            'blocked' => $preflight->isBlocked($findings),
+        ]);
+    }
+
     public function submit(Request $request, ApplicationOpportunity $opportunity): RedirectResponse {
         Gate::authorize('decide', $opportunity);
         $data = $request->validate([
@@ -211,6 +233,54 @@ class TenderController extends Controller {
             'version' => $submission->version,
             'hash' => substr($submission->sha256, 0, 12),
         ]));
+    }
+
+    // ── Submissionsergebnis (MVP-628) ────────────────────────────────────
+
+    /**
+     * Ein im Eröffnungstermin verlesenes Angebot festhalten.
+     *
+     * Der Bieter bleibt Freitext: Wer verlesen wird, ist selten Stammdatensatz,
+     * und eine Verknüpfung machte ihn zum Geschäftspartner, der er nicht ist.
+     */
+    public function addCompetitorBid(Request $request, ApplicationOpportunity $opportunity): RedirectResponse {
+        Gate::authorize('update', $opportunity);
+        $data = $request->validate([
+            'bidder_name' => ['required', 'string', 'max:300'],
+            'amount' => ['nullable', 'numeric', 'min:0'],
+            'rank' => ['nullable', 'integer', 'min:1', 'max:999'],
+            'is_own' => ['nullable', 'boolean'],
+            'is_winner' => ['nullable', 'boolean'],
+            'recorded_on' => ['nullable', 'date'],
+            'source' => ['required', Rule::in(TenderCompetitorBid::SOURCES)],
+            'note' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $opportunity->competitorBids()->create([
+            'organization_id' => $opportunity->organization_id,
+            'bidder_name' => $data['bidder_name'],
+            'amount' => $data['amount'] ?? null,
+            'rank' => $data['rank'] ?? null,
+            'is_own' => $request->boolean('is_own'),
+            'is_winner' => $request->boolean('is_winner'),
+            'recorded_on' => $data['recorded_on'] ?? null,
+            'source' => $data['source'],
+            'note' => $data['note'] ?? null,
+            'created_by' => $this->actor()->id,
+        ]);
+
+        $opportunity->audit('tender.bid_recorded', ['bidder' => $data['bidder_name']]);
+
+        return back()->with('success', __('Angebot festgehalten.'));
+    }
+
+    public function removeCompetitorBid(ApplicationOpportunity $opportunity, TenderCompetitorBid $bid): RedirectResponse {
+        Gate::authorize('update', $opportunity);
+        abort_unless($bid->application_opportunity_id === $opportunity->id, 404);
+
+        $bid->delete();
+
+        return back()->with('success', __('Angebot entfernt.'));
     }
 
     public function decide(Request $request, ApplicationOpportunity $opportunity): RedirectResponse {
@@ -258,6 +328,15 @@ class TenderController extends Controller {
             'responsible_user_id' => \App\Support\Sqid::decodeOrNumeric(User::class, $request->input('responsible_user_id')),
         ]);
 
+        // CPV-Codes kommen als Komma-Liste aus dem Formular; leere Einträge
+        // fallen weg, statt als Fehler zu erscheinen.
+        if (is_string($request->input('cpv_codes'))) {
+            $request->merge(['cpv_codes' => array_values(array_filter(array_map(
+                trim(...),
+                explode(',', (string) $request->input('cpv_codes'))
+            )))]);
+        }
+
         return $request->validate([
             'title' => ['required', 'string', 'max:200'],
             'kind' => ['required', 'in:' . implode(',', ApplicationOpportunity::KINDS)],
@@ -271,6 +350,25 @@ class TenderController extends Controller {
             'probability' => ['nullable', 'integer', 'min:0', 'max:100'],
             'risk_note' => ['nullable', 'string', 'max:5000'],
             'description' => ['nullable', 'string', 'max:10000'],
+
+            // Vergabevorgang (MVP-625). Die Verfahrensart wird gegen die
+            // Schwellenwertlage geprüft: Eine oberschwellige Vergabe im
+            // unterschwelligen Verfahren ist angreifbar.
+            'awarding_body' => ['nullable', 'string', 'max:200'],
+            'procedure_no' => ['nullable', 'string', 'max:60'],
+            'procedure_type' => ['nullable', Rule::enum(TenderProcedureType::class)],
+            'above_threshold' => ['nullable', 'boolean'],
+            'lot_no' => ['nullable', 'string', 'max:40'],
+            'lot_group' => ['nullable', 'string', 'max:60'],
+            'cpv_codes' => ['nullable', 'array', 'max:20'],
+            'cpv_codes.*' => ['string', 'regex:/^\d{8}(-\d)?$/'],
+            'nuts_code' => ['nullable', 'string', 'regex:/^[A-Z]{2}[0-9A-Z]{0,3}$/'],
+            'platform' => ['nullable', 'string', 'max:80'],
+            'external_reference' => ['nullable', 'string', 'max:120'],
+            'notice_url' => ['nullable', 'url', 'max:2000'],
+            'participation_deadline' => ['nullable', 'date'],
+            'opening_at' => ['nullable', 'date'],
+            'binding_until' => ['nullable', 'date'],
         ]);
     }
 

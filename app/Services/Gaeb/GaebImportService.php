@@ -13,12 +13,14 @@ declare(strict_types=1);
 namespace App\Services\Gaeb;
 
 use App\Enums\Gaeb\{BoqItemStatus, BoqItemType, BoqProgressSource, GaebImportStatus, GaebPhase};
-use App\Models\{BillOfQuantity, BoqCatalog, BoqCatalogAssignment, BoqItem, BoqItemPriceSnapshot, BoqItemQuantitySplit, BoqSection, GaebImport};
+use App\Models\Applications\ApplicationOpportunity;
+use App\Models\{BillOfQuantity, BoqCatalog, BoqCatalogAssignment, BoqChangeOrder, BoqItem, BoqItemPriceSnapshot, BoqItemQuantitySplit, BoqSection, GaebImport};
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\ValueObjects\Money;
 use ERechnungToolkit\Entities\Gaeb\{GaebBoq, GaebCatalogAssignment, GaebItem, GaebQuantitySplit, GaebTotals};
+use ERechnungToolkit\Enums\GaebFormat;
 use ERechnungToolkit\Helper\Gaeb\GaebTakeoffCalculator;
-use ERechnungToolkit\Parsers\GaebReader;
+use ERechnungToolkit\Parsers\{Gaeb90Parser, GaebReader};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -72,6 +74,7 @@ class GaebImportService {
         }
 
         $report = $this->preflight->check($parsed);
+        $report['warnings'] = array_merge($report['warnings'], $this->vendorRecordWarnings($content, $format));
 
         if (!$report['ok']) {
             return GaebImport::query()->create([
@@ -124,6 +127,8 @@ class GaebImportService {
             }
 
             $this->persistCatalogs($boq, $organizationId, $parsed);
+            $this->persistCostTypes($boq, $organizationId, $parsed);
+            $this->persistChangeOrders($boq, $organizationId, $parsed);
 
             $import = GaebImport::query()->create([
                 'organization_id' => $organizationId,
@@ -142,6 +147,7 @@ class GaebImportService {
 
             $sectionMap = $this->persistSections($boq, $organizationId, $parsed);
             $this->persistItems($boq, $import, $organizationId, $parsed, $sectionMap, $options['created_by'] ?? null);
+            $this->recordAward($boq, $import, $options['created_by'] ?? null);
 
             return $import;
         });
@@ -176,6 +182,29 @@ class GaebImportService {
      * Zuordnung ein Schlüssel ohne Bedeutung — der Typ trägt die Ausgabe der
      * DIN 276.
      */
+    /**
+     * Nachtragsköpfe (`COInfo`). Ein LV sammelt sie über die Laufzeit: N1 kann
+     * genehmigt sein, während N2 noch angeboten ist. Deshalb wird je Nummer
+     * aktualisiert statt ersetzt — ein späterer Stand überschreibt nur den
+     * betroffenen Nachtrag.
+     */
+    private function persistChangeOrders(BillOfQuantity $boq, int $organizationId, GaebBoq $parsed): void {
+        foreach ($parsed->getChangeOrders() as $order) {
+            BoqChangeOrder::query()->updateOrCreate(
+                ['bill_of_quantity_id' => $boq->id, 'number' => $order->getNumber()],
+                [
+                    'organization_id' => $organizationId,
+                    'phase' => $order->getPhase()?->value,
+                    'status' => $order->getStatus()?->value,
+                    'initiator' => $order->getInitiator()?->value,
+                    'reason' => $order->getReason(),
+                    'contract_reference' => $order->getContractReference(),
+                    'date' => $order->getDate(),
+                ]
+            );
+        }
+    }
+
     private function persistCatalogs(BillOfQuantity $boq, int $organizationId, GaebBoq $parsed): void {
         foreach ($parsed->getCatalogs() as $catalog) {
             BoqCatalog::query()->updateOrCreate(
@@ -187,6 +216,47 @@ class GaebImportService {
                     'assign_type' => $catalog->getAssignType(),
                 ]
             );
+        }
+    }
+
+    /**
+     * Kostenarten der Kalkulationsdaten (X52, MVP-647) — sie stehen im Kopf,
+     * weil ein Betrieb nach Kostenart zuschlägt, nicht je Position.
+     */
+    private function persistCostTypes(BillOfQuantity $boq, int $organizationId, GaebBoq $parsed): void {
+        $position = 0;
+        foreach ($parsed->getCostTypes() as $costType) {
+            \App\Models\BoqCostType::query()->updateOrCreate(
+                ['bill_of_quantity_id' => $boq->id, 'cost_key' => $costType->getKey()],
+                [
+                    'organization_id' => $organizationId,
+                    'description' => $costType->getDescription(),
+                    'unit' => $costType->getUnit(),
+                    'markup_percent' => $costType->getMarkup(),
+                    'position' => $position++,
+                ]
+            );
+        }
+    }
+
+    /**
+     * Kostenansätze einer Position (X52) — was jede Kostenart beiträgt.
+     *
+     * @param list<\ERechnungToolkit\Entities\Gaeb\GaebCostApproach> $approaches
+     */
+    private function persistCostApproaches(int $organizationId, BoqItem $item, array $approaches): void {
+        $position = 0;
+        foreach ($approaches as $approach) {
+            \App\Models\BoqItemCostApproach::query()->create([
+                'organization_id' => $organizationId,
+                'boq_item_id' => $item->id,
+                'cost_key' => $approach->getCostTypeKey(),
+                'quantity' => $approach->getQuantity(),
+                'unit' => $approach->getUnit(),
+                'performance' => $approach->getPerformance(),
+                'value' => $approach->getValue(),
+                'position' => $position++,
+            ]);
         }
     }
 
@@ -304,6 +374,7 @@ class GaebImportService {
             }
 
             $this->persistAssignments($boq, $organizationId, $created, $item->getCatalogAssignments());
+            $this->persistCostApproaches($organizationId, $created, $item->getCostApproaches());
             $this->persistSplits($boq, $organizationId, $created, $item->getQuantitySplits());
             $this->persistTakeoff($created, $item, $createdBy, $takeoffResults);
         }
@@ -343,7 +414,73 @@ class GaebImportService {
     }
 
     /**
+     * Zuschlag (MVP-628): Eine importierte **Auftragserteilung** schließt den
+     * Vergabevorgang, an dem das Leistungsverzeichnis hängt.
+     *
+     * Der Zuschlag kommt als Datei, nicht als Klick — ihn dort zu erkennen, wo
+     * er eintrifft, erspart den Doppelgriff und hält Akte und Verzeichnis
+     * beieinander. Ein bereits entschiedener Vorgang bleibt unangetastet: Eine
+     * erneute X86 (etwa nach einem Nachtrag) darf keine zweite Entscheidung
+     * schreiben.
+     */
+    private function recordAward(BillOfQuantity $boq, GaebImport $import, ?int $createdBy): void {
+        if ($import->phase !== GaebPhase::Award) {
+            return;
+        }
+
+        $tender = ApplicationOpportunity::query()
+            ->where('bill_of_quantity_id', $boq->id)
+            ->whereIn('status', ApplicationOpportunity::OPEN_STATUSES)
+            ->first();
+
+        if ($tender === null) {
+            return;
+        }
+
+        $tender->forceFill(['status' => 'won'])->save();
+        $tender->audit('tender.awarded', [
+            'gaeb_import_id' => $import->id,
+            'filename' => $import->filename,
+            'bill_of_quantity_id' => $boq->id,
+            'created_by' => $createdBy,
+        ]);
+    }
+
+    /**
      * EP-Anteilsvorgaben des Auftraggebers als schlichte Struktur ablegen.
+     *
+     * @return list<array{no: int, label: ?string, category: ?string}>|null
+     */
+    /**
+     * GAEB 90 lässt den Satzarten-Bereich **70–89 herstellerfrei**; manche
+     * Systeme legen dort Kostengruppen ab. Eine feste Bedeutung hat keine
+     * dieser Zeilenarten — geraten wird deshalb nichts, aber wer eine Datei
+     * einliest, soll erfahren, dass sie etwas trägt, das hier niemand deutet.
+     *
+     * @return list<string>
+     */
+    private function vendorRecordWarnings(string $content, GaebFormat $format): array {
+        if ($format !== GaebFormat::Gaeb90) {
+            return [];
+        }
+
+        $parser = new Gaeb90Parser;
+        $decoded = $this->reader->decode($content, $format);
+        $vendor = $parser->vendorRecordTypes($decoded);
+        if ($vendor === []) {
+            return [];
+        }
+
+        $warnings = [];
+        foreach ($vendor as $type => $count) {
+            $warnings[] = (string) __('gaeb.preflight.vendor_record_type', ['type' => $type, 'count' => $count]);
+        }
+
+        return $warnings;
+    }
+
+    /**
+     * Vorgabe der EP-Aufgliederung aus dem LV-Kopf.
      *
      * @return list<array{no: int, label: ?string, category: ?string}>|null
      */

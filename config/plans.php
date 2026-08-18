@@ -302,11 +302,15 @@ return [
         'admin.etsy.*' => 'module.lager', // Feature 101 Etsy-Marktplatz-Plugin (Bestellspiegel + Versand-Rückkanal)
 
         'bill-of-quantities.*' => 'module.bau', // Feature 049 GAEB-Leistungsverzeichnisse
+        'catalog-rules.*' => 'module.bau', // Feature 109 Zuordnungsregeln
+        'cost-catalogs.*' => 'module.bau', // Feature 109 Baukostenkataloge
         'gaeb.*' => 'module.bau',               // Feature 049 GAEB-Import/-Export
 
         'admin.shipments.*' => 'module.versand', // Feature 059 Versand-/Logistik-Anbindung (DHL Paket)
 
         'tenders.*' => 'module.applications', // Feature 068 Auftragsbewerbungen
+        'tender-radar.*' => 'module.applications', // Feature 108 Bekanntmachungs-Radar
+        'tenders.cockpit' => 'module.applications', // Feature 108 Vergabe-Cockpit
         'recruiting.*' => 'module.applications', // Feature 068 Personalbewerbungen
         'applications.*' => 'module.applications', // Feature 068 Vertragsverhandlungen/Berichte
         'careers.*' => 'module.applications', // Feature 068 MVP-437 öffentlicher Karrierebereich

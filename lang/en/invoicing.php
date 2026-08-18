@@ -30,6 +30,10 @@ return [
         'button' => 'XRechnung',
         'button_title' => 'Download XRechnung (UBL 2.1, EN 16931)',
         'error_intro' => 'The XRechnung cannot be generated:',
+        'gaeb' => [
+            'button' => 'GAEB (X89)',
+            'button_title' => 'Download the invoice as a GAEB file for construction clients',
+        ],
         'zugferd' => [
             'button' => 'ZUGFeRD (PDF)',
             'button_title' => 'Download ZUGFeRD PDF (PDF/A-3, EN 16931)',

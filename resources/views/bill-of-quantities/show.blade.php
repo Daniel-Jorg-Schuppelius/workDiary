@@ -14,6 +14,9 @@
 <x-index-page :subtitle="$bill->project?->name ?: __('gaeb.title')">
     <x-slot:actions>
         <x-icon-btn icon="download" size="sm" :href="route('bill-of-quantities.export', $bill)" show-label>{{ __('gaeb.export.button') }}</x-icon-btn>
+        <x-icon-btn icon="table_chart" size="sm" :href="route('bill-of-quantities.price-comparison', $bill)" show-label>{{ __('gaeb.comparison.button') }}</x-icon-btn>
+        <x-icon-btn icon="category" size="sm" :href="route('bill-of-quantities.cost-groups', $bill)" show-label>{{ __('Kostengruppen') }}</x-icon-btn>
+        <x-icon-btn icon="playlist_add_check" size="sm" :href="route('bill-of-quantities.catalog-assignment', $bill)" show-label>{{ __('Zuordnen') }}</x-icon-btn>
         <x-icon-btn icon="arrow_back" size="sm" :href="route('bill-of-quantities.index')" show-label>{{ __('gaeb.show.back') }}</x-icon-btn>
     </x-slot:actions>
 

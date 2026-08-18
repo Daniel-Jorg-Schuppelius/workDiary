@@ -47,5 +47,43 @@
         <x-textarea-field name="description" :label="__('Beschreibung')" rows="3" span="2">{{ old('description', $opportunity->description ?? '') }}</x-textarea-field>
     </x-form-group>
 
+    {{-- Vergabevorgang (MVP-625): nur bei öffentlichen Ausschreibungen relevant. --}}
+    <x-form-group :legend="__('Vergabeverfahren')" icon="gavel" cols="2"
+                  :description="__('Nur bei öffentlichen Ausschreibungen auszufüllen.')">
+        <x-input-field name="awarding_body" :label="__('Vergabestelle')" span="2"
+                       :hint="__('Wer ausschreibt — nicht zwingend der Kunde im CRM.')"
+                       :value="old('awarding_body', $opportunity->awarding_body ?? '')" />
+        <x-input-field name="procedure_no" :label="__('Vergabenummer')" :value="old('procedure_no', $opportunity->procedure_no ?? '')" />
+        <x-select-field name="above_threshold" :label="__('Schwellenwertlage')">
+            <option value="0" @selected(! old('above_threshold', $opportunity->above_threshold ?? false))>{{ __('Unterschwellig (VOB/A, UVgO)') }}</option>
+            <option value="1" @selected((bool) old('above_threshold', $opportunity->above_threshold ?? false))>{{ __('Oberschwellig (VgV, VOB/A-EU)') }}</option>
+        </x-select-field>
+        <x-select-field name="procedure_type" :label="__('Verfahrensart')" span="2">
+            <option value="">{{ __('— offen —') }}</option>
+            @foreach (\App\Enums\Applications\TenderProcedureType::cases() as $type)
+                <option value="{{ $type->value }}"
+                        data-threshold="{{ $type->isAboveThreshold() ? '1' : '0' }}"
+                        @selected(old('procedure_type', $opportunity->procedure_type?->value) === $type->value)>
+                    {{ $type->label() }}{{ $type->toGaeb() === null ? ' · ' . __('nicht in GAEB') : '' }}
+                </option>
+            @endforeach
+        </x-select-field>
+        <x-input-field name="lot_no" :label="__('Los')" :value="old('lot_no', $opportunity->lot_no ?? '')" />
+        <x-input-field name="lot_group" :label="__('Losgruppe')" :value="old('lot_group', $opportunity->lot_group ?? '')" />
+        <x-input-field name="cpv_codes" :label="__('CPV-Codes')" span="2"
+                       :hint="__('Achtstellig, mehrere durch Komma getrennt — danach wird in Bekanntmachungen gesucht.')"
+                       :value="old('cpv_codes', implode(', ', $opportunity->cpv_codes ?? []))" />
+        <x-input-field name="nuts_code" :label="__('NUTS-Region')" :value="old('nuts_code', $opportunity->nuts_code ?? '')" />
+        <x-input-field name="platform" :label="__('Vergabeplattform')" :value="old('platform', $opportunity->platform ?? '')" />
+        <x-input-field name="external_reference" :label="__('Externe Referenz')" :value="old('external_reference', $opportunity->external_reference ?? '')" />
+        <x-input-field name="notice_url" type="url" :label="__('Bekanntmachung (URL)')" span="2" :value="old('notice_url', $opportunity->notice_url ?? '')" />
+        <x-input-field name="participation_deadline" type="date" :label="__('Teilnahmefrist')" :value="old('participation_deadline', optional($opportunity->participation_deadline)->toDateString())" />
+        <x-input-field name="opening_at" type="datetime-local" :label="__('Eröffnungstermin')"
+                       :value="old('opening_at', optional($opportunity->opening_at)->format('Y-m-d\TH:i'))" />
+        <x-input-field name="binding_until" type="date" :label="__('Bindefrist')"
+                       :hint="__('Bis wann das Angebot bindet — danach ist der Bieter frei.')"
+                       :value="old('binding_until', optional($opportunity->binding_until)->toDateString())" />
+    </x-form-group>
+
     <x-validation-errors />
 </x-modal>

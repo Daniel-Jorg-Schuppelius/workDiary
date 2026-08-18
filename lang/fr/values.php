@@ -255,4 +255,19 @@ return [
     'extension' => 'Prolongation',
     'early_termination' => 'Résiliation anticipée',
     'total' => 'Durée totale',
+
+    // Vergabearten (MVP-625): unterschwellig VOB/A + UVgO, oberschwellig VgV.
+    'procedure_public_invitation' => 'Appel d’offres ouvert (VOB/A)',
+    'procedure_restricted_invitation' => 'Appel d’offres restreint',
+    'procedure_restricted_invitation_call' => 'Appel d’offres restreint avec avis de participation',
+    'procedure_direct_contract' => 'Marché de gré à gré',
+    'procedure_negotiated_award' => 'Attribution négociée',
+    'procedure_negotiated_award_call' => 'Attribution négociée avec avis de participation',
+    'procedure_direct_order' => 'Commande directe',
+    'procedure_open_procedure' => 'Procédure ouverte',
+    'procedure_restricted_procedure' => 'Procédure restreinte',
+    'procedure_negotiated_procedure' => 'Procédure négociée',
+    'procedure_negotiated_procedure_call' => 'Procédure négociée avec avis de participation',
+    'procedure_competitive_dialogue' => 'Dialogue compétitif',
+    'procedure_innovation_partnership' => 'Partenariat d’innovation',
 ];

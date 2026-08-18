@@ -219,6 +219,7 @@ return [
             'incoming_invoice' => 'Factures entrantes',
             'document' => 'Document (GED)',
             'b2b_order' => 'Commande B2B (openTRANS)',
+            'gaeb_package' => 'Dossier de consultation (paquet GAEB)',
         ],
         'item_status' => [
             'imported' => 'Importé',
@@ -388,6 +389,11 @@ return [
             ],
             'asset' => [
                 'returnOverdue' => 'Retour de ressource en retard',
+            ],
+            'tender' => [
+                'submissionDueSoon' => 'Date limite de remise proche',
+                'submissionOverdue' => 'Date limite de remise dépassée',
+                'bindingExpiring' => 'Délai d’engagement expirant',
             ],
             'safety' => [
                 'criticalEvent' => 'Événement de sécurité critique',

@@ -198,6 +198,8 @@ class NavigationRegistry {
             'kanban.index' => 'module.kanban',
             'agile.reports.overview' => 'module.agile_projects',
             'tenders.index' => 'module.applications',
+            'tender-radar.index' => 'module.applications',
+            'tenders.cockpit' => 'module.applications',
             'investments.index' => 'module.investments',
             'crisis.index' => 'module.crisis_management',
             'sustainability.index' => 'module.sustainability',
@@ -254,6 +256,9 @@ class NavigationRegistry {
             'inventory.label-templates.index' => 'module.lager',
             'b2b-catalog.index' => 'module.b2b_katalog',
             'bill-of-quantities.index' => 'module.bau',
+            'bill-of-quantities.packages' => 'module.bau',
+            'catalog-rules.index' => 'module.bau',
+            'cost-catalogs.index' => 'module.bau',
         ];
     }
 
@@ -460,6 +465,8 @@ class NavigationRegistry {
                         ['route' => 'projects.index', 'label' => __('Projekte'), 'icon' => 'folder_special', 'modal' => false, 'matches' => ['projects.*']],
                         ['route' => 'events.index', 'label' => __('Veranstaltungen'), 'icon' => 'event', 'modal' => false, 'matches' => ['events.*']],
                         ['route' => 'tenders.index', 'label' => __('Ausschreibungen'), 'icon' => 'gavel', 'modal' => false, 'matches' => ['tenders.*']],
+                        ['route' => 'tender-radar.index', 'label' => __('Bekanntmachungs-Radar'), 'icon' => 'radar', 'modal' => false, 'matches' => ['tender-radar.*']],
+                        ['route' => 'tenders.cockpit', 'label' => __('Vergabe-Cockpit'), 'icon' => 'query_stats', 'modal' => false, 'matches' => ['tenders.cockpit']],
                         // Ein Eintrag für die gesamte Personalgewinnung — Stellen/Bewerbungen
                         // laufen auf der Seite selbst über Tabs (recruiting._tabs).
                         ['route' => 'recruiting.requisitions.index', 'label' => __('Personalgewinnung'), 'icon' => 'person_search', 'modal' => false, 'matches' => ['recruiting.*']],
@@ -480,6 +487,9 @@ class NavigationRegistry {
                         ['route' => 'b2b-catalog.index', 'label' => __('b2b_catalog.title'), 'icon' => 'storefront', 'modal' => false, 'matches' => ['b2b-catalog.*']],
                         ['route' => 'pricing-margin-rules.index', 'label' => __('procurement.margin.title'), 'icon' => 'percent', 'modal' => false, 'matches' => ['pricing-margin-rules.*']],
                         ['route' => 'bill-of-quantities.index', 'label' => __('gaeb.title'), 'icon' => 'request_quote', 'modal' => false, 'matches' => ['bill-of-quantities.*']],
+                        ['route' => 'bill-of-quantities.packages', 'label' => __('Vergabeunterlagen'), 'icon' => 'folder_zip', 'modal' => false, 'matches' => ['bill-of-quantities.packages*']],
+                        ['route' => 'catalog-rules.index', 'label' => __('Zuordnungsregeln'), 'icon' => 'auto_fix_high', 'modal' => false, 'matches' => ['catalog-rules.*']],
+                        ['route' => 'cost-catalogs.index', 'label' => __('Baukostenkataloge'), 'icon' => 'price_change', 'modal' => false, 'matches' => ['cost-catalogs.*']],
                         ['route' => 'inventory.scan', 'label' => __('inventory.scan.title'), 'icon' => 'qr_code_scanner', 'modal' => false, 'matches' => ['inventory.scan*']],
                         ['route' => 'work-centers.index', 'label' => __('manufacturing.capacity.title'), 'icon' => 'event_available', 'modal' => false, 'matches' => ['work-centers.*']],
                         ['route' => 'inventory.lots', 'label' => __('inventory.lot.title'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['inventory.lots*']],
