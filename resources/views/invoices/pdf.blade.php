@@ -12,8 +12,9 @@
 <meta charset="utf-8">
 <title>{{ __('Rechnung') }} {{ $invoice->number }}</title>
 @php
-    $accent = ($template ?? null)?->accent_color ?: '#333';
-    if ($accent && ! str_starts_with($accent, '#')) { $accent = '#' . $accent; }
+    /** @var \App\Services\DocumentDesign\DesignContext $design Feature 076/MVP-651: Blockzustände, Texte, Akzentfarbe. */
+    $design ??= new \App\Services\DocumentDesign\DesignContext(null);
+    $accent = $design->accentColor();
 @endphp
 <style>
     body { font-family: 'DejaVu Sans', sans-serif; font-size: 11px; color: #222; }
@@ -40,8 +41,8 @@
 </head>
 <body>
 
-@if (! empty(($template ?? null)?->header_text))
-    <div class="tpl-header">{{ $template->header_text }}</div>
+@if ($design->headerText() !== null)
+    <div class="tpl-header">{{ $design->headerText() }}</div>
 @endif
 
 @if ($invoice->isCancelled())
@@ -61,8 +62,6 @@
 @endif
 
 @php
-    /** @var \App\Services\DocumentDesign\DesignContext $design Feature 076: Blockzustände + Fensterpositionen. */
-    $design ??= new \App\Services\DocumentDesign\DesignContext(null);
     $addressStyle = $design->addressWindowStyle();
     $senderStyle = $design->senderLineStyle();
 @endphp
@@ -203,8 +202,8 @@
     </div>
 @endif
 
-@if (! empty(($template ?? null)?->footer_text))
-    <div class="tpl-footer">{{ $template->footer_text }}</div>
+@if ($design->footerText() !== null)
+    <div class="tpl-footer">{{ $design->footerText() }}</div>
 @endif
 </body>
 </html>

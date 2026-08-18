@@ -378,7 +378,19 @@ class DisposalJobService {
             ]);
         });
 
-        $this->renderRecord($job->refresh(), $actor);
+        // MVP-650: Designstand VOR dem Nachweis-Rendern einfrieren — der
+        // Kundennachweis entsteht bereits mit dem eingefrorenen Profil.
+        $job->refresh();
+        if ($job->organization !== null) {
+            app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->snapshot(
+                $job,
+                \App\Enums\DocumentDesign\RenderDocumentKind::Protocol,
+                $job->organization,
+                user: $actor,
+            );
+        }
+
+        $this->renderRecord($job, $actor);
 
         return $job->refresh();
     }

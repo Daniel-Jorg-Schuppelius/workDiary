@@ -62,3 +62,9 @@ Design de base CI et héritage :
   obligatoires de TOUTES les sortes de documents personnalisables ; les
   vrais formats spéciaux (p. ex. étiquettes) déclarent leur restriction
   dans le registre central des sortes de documents.
+- Les **textes d'en-tête/pied** des documents de vente (anciennement
+  modèles de facture) forment leur propre section de profil héritable —
+  versionnée et gelée pour les documents finalisés. Les **designs
+  spécifiques aux clients** sont des profils réguliers attribués dans le
+  dossier client (panneau « Design de documents ») ; les profils marqués
+  « spécifique au client » n'agissent que par cette attribution.

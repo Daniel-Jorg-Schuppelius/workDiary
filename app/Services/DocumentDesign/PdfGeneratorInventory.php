@@ -36,6 +36,9 @@ final class PdfGeneratorInventory {
     public const GENERATORS = [
         // Vertrieb/Fakturierung
         'app/Services/Invoicing/InvoicePdfRenderer.php' => ['invoice', 'credit_note', 'proforma_invoice'],
+        'app/Services/Invoicing/QuotePdfRenderer.php' => ['quote'],
+        'app/Services/Invoicing/OrderConfirmationPdfRenderer.php' => ['order_confirmation'],
+        'app/Services/Invoicing/DunningPdfRenderer.php' => ['dunning'],
         // Einkauf/Logistik
         'app/Services/Procurement/PurchaseOrderPdfRenderer.php' => ['purchase_order'],
         'app/Services/Manufacturing/DeliveryNotePdfRenderer.php' => ['delivery_note'],
@@ -56,6 +59,7 @@ final class PdfGeneratorInventory {
         // HOAI-Stufenbericht (Feature 109, MVP-644).
         'app/Http/Controllers/Gaeb/HoaiCostReportController.php' => ['report'],
         'app/Http/Controllers/Whistleblowing/WhistleblowingPortalController.php' => ['report'],
+        'app/Http/Controllers/Gaeb/HoaiCostReportController.php' => ['report'],
         // Spezialformat (deklariert eingeschränkt, siehe RenderDocumentKind::capabilityNote())
         'app/Http/Controllers/LabelController.php' => ['label'],
     ];
@@ -75,14 +79,14 @@ final class PdfGeneratorInventory {
     ];
 
     /**
-     * Registrierte Arten, für die noch kein Generator existiert (Angebot,
-     * Auftragsbestätigung und Mahnung entstehen fachlich erst noch als
-     * eigene PDFs) — sie sind für Design-Varianten und Vorschau bereits
-     * wählbar und erben bis dahin über ihre Fallback-Art.
+     * Registrierte Arten, für die noch kein Generator existiert — sie sind
+     * für Design-Varianten und Vorschau bereits wählbar und erben bis dahin
+     * über ihre Fallback-Art. Seit MVP-650 leer: Angebot,
+     * Auftragsbestätigung und Mahnung haben eigene Generatoren.
      *
      * @var array<int, string>
      */
-    public const PLANNED_KINDS = ['quote', 'order_confirmation', 'dunning'];
+    public const PLANNED_KINDS = [];
 
     /**
      * Alle Arten, die mindestens ein Generator (oder PLANNED_KINDS) trägt —

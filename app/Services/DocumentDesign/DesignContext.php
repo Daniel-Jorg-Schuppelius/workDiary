@@ -61,6 +61,33 @@ class DesignContext {
      * Inhaltsbereich der ersten Seite). Null, wenn kein Fenster definiert ist —
      * die View rendert die Anschrift dann im normalen Fluss.
      */
+    /** Kopftext des Belegs (MVP-651, vormals invoice_templates.header_text). */
+    public function headerText(): ?string {
+        $value = trim((string) (($this->payload['content_texts'] ?? [])['header_text'] ?? ''));
+
+        return $value === '' ? null : $value;
+    }
+
+    /** Fußtext des Belegs (MVP-651, vormals invoice_templates.footer_text). */
+    public function footerText(): ?string {
+        $value = trim((string) (($this->payload['content_texts'] ?? [])['footer_text'] ?? ''));
+
+        return $value === '' ? null : $value;
+    }
+
+    /**
+     * Akzentfarbe des Belegs (MVP-651): aus dem effektiven Tabellenstil
+     * (Preset + Overrides) — die einzige Farbquelle neben dem Branding.
+     */
+    public function accentColor(): string {
+        $tableStyle = (array) ($this->payload['table_style'] ?? []);
+        $preset = \App\Enums\DocumentDesign\TableStylePreset::tryFrom((string) ($tableStyle['preset'] ?? ''))
+            ?? \App\Enums\DocumentDesign\TableStylePreset::Clear;
+        $settings = array_merge($preset->settings(), (array) ($tableStyle['overrides'] ?? []));
+
+        return (string) ($settings['accent_color'] ?? '#333333');
+    }
+
     public function addressWindowStyle(): ?string {
         $box = $this->payload['layout']['address_window'] ?? null;
         if (! is_array($box)) {

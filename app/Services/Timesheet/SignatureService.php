@@ -70,6 +70,17 @@ class SignatureService {
 
         $timesheet->refresh();
 
+        // MVP-650: signierte Stundenzettel rendern dauerhaft mit dem
+        // Designprofil des Signaturzeitpunkts (idempotent).
+        if ($timesheet->organization !== null) {
+            app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->snapshot(
+                $timesheet,
+                \App\Enums\DocumentDesign\RenderDocumentKind::Timesheet,
+                $timesheet->organization,
+                user: $signer,
+            );
+        }
+
         if ($timesheet->customer_email) {
             Mail::to($timesheet->customer_email)->send(new TimesheetSignedMail($timesheet));
         }

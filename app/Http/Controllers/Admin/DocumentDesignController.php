@@ -216,6 +216,7 @@ class DocumentDesignController extends Controller {
             'layout' => ['nullable', 'array'],
             'block_rules' => ['nullable', 'array'],
             'table_style' => ['nullable', 'array'],
+            'content_texts' => ['nullable', 'array'],
             'override_sections' => ['nullable', 'array'],
             'override_sections.*' => ['string'],
             'first_asset' => ['nullable', 'string'],
@@ -227,6 +228,9 @@ class DocumentDesignController extends Controller {
             'block_rules' => $data['block_rules'] ?? null,
             'table_style' => $data['table_style'] ?? null,
         ], fn($v) => $v !== null);
+        if ($request->exists('content_texts')) {
+            $payload['content_texts'] = $data['content_texts'] ?? null;
+        }
         if ($request->exists('override_sections')) {
             // null = eigenständiges Profil, Array = erbt vom Basisdesign (#83).
             $payload['override_sections'] = $data['override_sections'] ?? null;
@@ -311,10 +315,13 @@ class DocumentDesignController extends Controller {
             'document_kinds.*' => ['string'],
             'document_family' => ['nullable', 'string'],
             'is_default' => ['nullable', 'boolean'],
+            'is_customer_specific' => ['nullable', 'boolean'],
         ]);
 
         $this->profiles->assignKinds($profile, (array) ($data['document_kinds'] ?? []));
         $this->profiles->assignFamily($profile, \App\Enums\DocumentDesign\RenderDocumentFamily::tryFrom((string) ($data['document_family'] ?? '')));
+        // MVP-651: Kunden-Sonderprofile wirken nur über den Kundenzeiger.
+        $profile->forceFill(['is_customer_specific' => (bool) ($data['is_customer_specific'] ?? false)])->save();
         if ((bool) ($data['is_default'] ?? false)) {
             $this->profiles->setDefault($profile);
         }

@@ -213,6 +213,17 @@ class FormService {
             return $submission;
         });
 
+        // MVP-650: Einreichungen sind ab Abgabe unveränderlich — der
+        // Designstand wird mit eingefroren (idempotent).
+        if ($submission->organization !== null) {
+            app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->snapshot(
+                $submission,
+                \App\Enums\DocumentDesign\RenderDocumentKind::Form,
+                $submission->organization,
+                user: $user,
+            );
+        }
+
         // Telemetry-Light (Feature 036): aggregierter Org-Tageszähler, fire-and-forget.
         app(\App\Services\Metrics\OperationsMetricsService::class)->increment('forms.submitted', (int) $submission->organization_id);
 

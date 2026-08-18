@@ -40,7 +40,10 @@ export function registerDesignEditor(Alpine) {
             assets: true,
             block_rules: true,
             table_style: true,
+            content_texts: true,
         },
+        // Kopf-/Fußtexte des Belegs (MVP-651, vormals invoice_templates).
+        contentTexts: { header_text: null, footer_text: null },
         // Eingebettete PDF-Vorschau (#83): Art/Szenario umschaltbar; tick
         // erzwingt das Neuladen des iframes nach dem Speichern.
         previewUrl: null,
@@ -71,6 +74,10 @@ export function registerDesignEditor(Alpine) {
                 }
             }
             this.previewUrl = cfg.previewUrl ?? null;
+            this.contentTexts = cfg.contentTexts ?? {
+                header_text: null,
+                footer_text: null,
+            };
         },
 
         // Sektion wirksam aus diesem Profil (nicht geerbt)?
@@ -275,6 +282,7 @@ export function registerDesignEditor(Alpine) {
                         layout: this.layout,
                         block_rules: this.blocks,
                         table_style: this.tableStyle,
+                        content_texts: this.contentTexts,
                         ...(this.canInherit
                             ? {
                                   override_sections: this.inheritEnabled

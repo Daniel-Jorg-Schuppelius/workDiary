@@ -846,4 +846,7 @@ return [
         'sync_manual' => 'Zammad manuell synchronisiert',
         'ticket_target_switched' => 'Zammad-Ticketziel gewechselt',
     ],
+    'customer' => [
+        'design_profile_assigned' => 'Kunden-Sonderdesign zugewiesen/geändert',
+    ],
 ];

@@ -57,3 +57,9 @@ CI base design and inheritance:
   blocks of ALL brandable document kinds; genuine special formats
   (e.g. labels) declare their restriction in the central document-kind
   registry.
+- **Header/footer texts** of sales documents (formerly invoice
+  templates) are their own inheritable profile section — versioned and
+  frozen for finalized documents. **Customer-specific designs** are
+  regular profiles you assign in the customer file ("Document design"
+  panel); profiles marked "customer-specific" apply only through that
+  assignment.

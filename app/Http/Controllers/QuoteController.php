@@ -83,6 +83,34 @@ class QuoteController extends Controller {
         return redirect()->route('quotes.index')->with('status', __('Angebots-Entwurf gelöscht.'));
     }
 
+    /** Angebots-PDF (MVP-650): eigener Vertriebsbeleg über die Design-Pipeline. */
+    public function pdf(Quote $quote): \Symfony\Component\HttpFoundation\Response {
+        Gate::authorize('view', $quote);
+
+        $bytes = app(\App\Services\Invoicing\QuotePdfRenderer::class)->output($quote);
+
+        return response($bytes, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => sprintf('attachment; filename="angebot-%s-v%d.pdf"', $quote->number, $quote->version),
+        ]);
+    }
+
+    /**
+     * Auftragsbestätigung (MVP-650): bestätigt die angenommenen Positionen
+     * eines (teil-)angenommenen Angebots — kein eigener Beleg/Nummernkreis.
+     */
+    public function orderConfirmationPdf(Quote $quote): \Symfony\Component\HttpFoundation\Response {
+        Gate::authorize('view', $quote);
+        abort_unless(in_array($quote->status, ['accepted', 'partially_accepted'], true), 422, (string) __('Nur angenommene Angebote können bestätigt werden.'));
+
+        $bytes = app(\App\Services\Invoicing\OrderConfirmationPdfRenderer::class)->output($quote);
+
+        return response($bytes, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => sprintf('attachment; filename="auftragsbestaetigung-%s.pdf"', $quote->number),
+        ]);
+    }
+
     // ── Positionen (nur Entwurf) ─────────────────────────────────────────
 
     public function itemForm(Quote $quote, ?QuoteItem $item = null): View {

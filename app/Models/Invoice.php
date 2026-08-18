@@ -365,10 +365,14 @@ class Invoice extends Model {
         // Snapshot, spätere Profiländerungen verändern alte Dokumente nicht.
         // Die Render-Art folgt dem Belegtyp (#83: Gutschrift/Pro-forma eigene Arten).
         if ($this->exists && $this->organization !== null) {
-            app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->snapshot(
+            $renderer = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class);
+            $kind = \App\Enums\DocumentDesign\RenderDocumentKind::forInvoiceType((string) $this->type);
+            $renderer->snapshot(
                 $this,
-                \App\Enums\DocumentDesign\RenderDocumentKind::forInvoiceType((string) $this->type),
+                $kind,
                 $this->organization,
+                // MVP-651: das Kunden-Sonderprofil fließt in den eingefrorenen Stand ein.
+                $renderer->payloadFor($this->organization, $kind, (int) $this->customer_id),
             );
         }
     }

@@ -43,3 +43,9 @@ path from quote to final document remains traceable.
 
 Draft quotes that were never sent can be deleted; everything from the
 moment of sending is kept as history.
+
+**PDF & order confirmation:** Every quote can be downloaded as a PDF
+(including option markers and per-rate tax breakdown); sent quotes
+permanently keep the document design of the time of sending. For
+(partially) accepted quotes an order confirmation PDF is also
+available, confirming exactly the accepted items.

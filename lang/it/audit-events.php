@@ -846,4 +846,7 @@ return [
         'sync_manual' => 'Zammad sincronizzato manualmente',
         'ticket_target_switched' => 'Destinazione ticket Zammad cambiata',
     ],
+    'customer' => [
+        'design_profile_assigned' => 'Design specifico del cliente assegnato/modificato',
+    ],
 ];

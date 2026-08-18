@@ -48,3 +48,9 @@ camino desde la oferta hasta el documento es trazable.
 
 Los borradores de oferta sin envío pueden eliminarse; todo lo posterior
 al envío se conserva como historial.
+
+**PDF y confirmación de pedido:** cada oferta puede descargarse como
+PDF (con marcado de opciones y desglose de impuestos); las ofertas
+enviadas conservan permanentemente el diseño del momento del envío.
+Para ofertas (parcialmente) aceptadas existe además una confirmación de
+pedido en PDF que confirma exactamente las posiciones aceptadas.

@@ -27,3 +27,9 @@ dal ciclo tramite casella — restano aperte e riappaiono nel ciclo
 successivo. Sulla fattura, le **registrazioni di tempo di origine** di
 ogni posizione sono espandibili; le quantità in ore appaiono anche nel
 formato orologio (ad es. 1,50 h = 1:30 h).
+
+**Lettera di sollecito:** il sollecito genera un PDF dedicato (livello
+1 = promemoria di pagamento) con riepilogo del credito, spese di
+sollecito facoltative e termine di pagamento; l'e-mail contiene la
+lettera e la fattura originale in allegato. Non viene creato alcun
+nuovo documento contabile.

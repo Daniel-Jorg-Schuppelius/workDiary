@@ -116,7 +116,7 @@ class Customer extends Model {
         'portal_settings',
         'comment',
         'invoice_text',
-        'invoice_template_id',
+        'document_render_profile_id',
         'bank_account_holder',
         'bank_iban',
         'bank_bic',

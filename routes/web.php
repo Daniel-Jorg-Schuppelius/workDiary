@@ -1093,6 +1093,8 @@ Route::middleware('auth')->group(function () {
         Route::put('customers/{customer}/portal-visibility', [\App\Http\Controllers\CustomerPortalVisibilityController::class, 'update'])->name('customers.portal-visibility.update');
 
         // ── Kunden-Sonderkonditionen & Abrechnungskonto (Feature 098) ───────────
+        // Kunden-Sonderdesign (MVP-651, vormals invoice_template-Zuordnung).
+        Route::post('customers/{customer}/design-profile', \App\Http\Controllers\Customers\CustomerDesignProfileController::class)->name('customers.design-profile');
         Route::get('customers/{customer}/billing/agreement/edit', [\App\Http\Controllers\Customers\BillingAgreementController::class, 'edit'])->name('customers.billing.agreement.edit');
         Route::get('customers/{customer}/billing/payments/create', [\App\Http\Controllers\Customers\AccountPaymentController::class, 'create'])->name('customers.billing.payments.create');
         Route::post('customers/{customer}/billing/agreement', [\App\Http\Controllers\Customers\BillingAgreementController::class, 'save'])->name('customers.billing.agreement.save');
@@ -1604,9 +1606,6 @@ Route::middleware('auth')->group(function () {
         Route::get('invoices/{invoice}/items/{item}/edit', [InvoiceController::class, 'itemForm'])->name('invoices.items.edit');
         Route::put('invoices/{invoice}/items/{item}', [InvoiceController::class, 'updateItem'])->name('invoices.items.update');
         Route::delete('invoices/{invoice}/items/{item}', [InvoiceController::class, 'removeItem'])->name('invoices.items.destroy');
-        Route::resource('invoice-templates', \App\Http\Controllers\InvoiceTemplateController::class)
-            ->except(['show'])
-            ->parameters(['invoice-templates' => 'template']);
 
         // ── Bekanntmachungs-Radar (Feature 108, MVP-629/630) ──
         // Eigener Pfad, nicht in der tenders-Gruppe: dort fängt `{opportunity}`
@@ -2028,6 +2027,9 @@ Route::middleware('auth')->group(function () {
             Route::post('/', [\App\Http\Controllers\QuoteController::class, 'store'])->name('store');
             Route::get('{quote}', [\App\Http\Controllers\QuoteController::class, 'show'])->name('show');
             Route::delete('{quote}', [\App\Http\Controllers\QuoteController::class, 'destroy'])->name('destroy');
+            // MVP-650: Angebots-PDF + Auftragsbestätigung (Design-Pipeline).
+            Route::get('{quote}/pdf', [\App\Http\Controllers\QuoteController::class, 'pdf'])->name('pdf');
+            Route::get('{quote}/auftragsbestaetigung', [\App\Http\Controllers\QuoteController::class, 'orderConfirmationPdf'])->name('order-confirmation');
             Route::post('{quote}/freigeben', [\App\Http\Controllers\QuoteController::class, 'approve'])->name('approve');
             Route::post('{quote}/versenden', [\App\Http\Controllers\QuoteController::class, 'send'])->name('send');
             Route::post('{quote}/entscheiden', [\App\Http\Controllers\QuoteController::class, 'decide'])->name('decide');

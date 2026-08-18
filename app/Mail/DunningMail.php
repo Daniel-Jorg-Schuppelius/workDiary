@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Mail;
 
 use App\Models\Invoice;
-use App\Services\Invoicing\InvoicePdfRenderer;
+use App\Services\Invoicing\{DunningPdfRenderer, InvoicePdfRenderer};
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -23,8 +23,10 @@ use Illuminate\Queue\SerializesModels;
 
 /**
  * Zahlungserinnerung/Mahnung zu einer überfälligen Rechnung (Feature 066,
- * MVP-163): Stufe 1 = Zahlungserinnerung, Stufen 2–3 = Mahnung. Die
- * Original-Rechnung hängt als PDF an — es entsteht KEIN neuer Beleg.
+ * MVP-163; Ausbau MVP-650): Stufe 1 = Zahlungserinnerung, Stufen 2–3 =
+ * Mahnung. Angehängt sind das eigentliche Mahnschreiben als PDF
+ * ({@see DunningPdfRenderer}, inkl. optionaler Mahngebühr und Zahlungsziel)
+ * sowie die Original-Rechnung — es entsteht weiterhin KEIN neuer Beleg.
  */
 class DunningMail extends Mailable implements ShouldQueue {
     use Queueable, SerializesModels;
@@ -34,6 +36,8 @@ class DunningMail extends Mailable implements ShouldQueue {
         public int $level,
         public ?string $note = null,
         public ?int $dispatchId = null,
+        public ?float $fee = null,
+        public ?\Carbon\CarbonImmutable $payUntil = null,
     ) {}
 
     public function envelope(): Envelope {
@@ -109,10 +113,17 @@ class DunningMail extends Mailable implements ShouldQueue {
     /** @return array<int, Attachment> */
     public function attachments(): array {
         $this->invoice->loadMissing(['items', 'customer', 'project', 'parent']);
-        $bytes = app(InvoicePdfRenderer::class)->output($this->invoice);
+        // MVP-650: das Mahnschreiben ist der Hauptanhang, die Original-Rechnung
+        // liegt als Nachweis bei.
+        $letter = app(DunningPdfRenderer::class)->output($this->invoice, $this->level, $this->note, $this->fee, $this->payUntil);
+        $invoicePdf = app(InvoicePdfRenderer::class)->output($this->invoice);
+        $letterName = $this->level <= 1
+            ? sprintf('zahlungserinnerung-%s.pdf', $this->invoice->number)
+            : sprintf('mahnung-%s-stufe%d.pdf', $this->invoice->number, $this->level);
 
         return [
-            Attachment::fromData(static fn(): string => $bytes, sprintf('rechnung-%s.pdf', $this->invoice->number))
+            Attachment::fromData(static fn(): string => $letter, $letterName)->withMime('application/pdf'),
+            Attachment::fromData(static fn(): string => $invoicePdf, sprintf('rechnung-%s.pdf', $this->invoice->number))
                 ->withMime('application/pdf'),
         ];
     }

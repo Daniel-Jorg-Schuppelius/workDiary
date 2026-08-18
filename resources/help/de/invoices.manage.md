@@ -32,3 +32,8 @@ Einzelne Zeiteinträge lassen sich dort per Häkchen vom Lauf
 Auf der Rechnung sind je Position die **Quell-Zeiteinträge**
 aufklappbar; Stundenmengen erscheinen zusätzlich im Uhrenformat
 (z. B. 1,50 h = 1:30 h).
+
+**Mahnschreiben:** Beim Mahnen entsteht ein eigenes Mahnschreiben-PDF
+(Stufe 1 = Zahlungserinnerung) mit Forderungsübersicht, optionaler
+Mahngebühr und Zahlungsziel; die E-Mail enthält das Mahnschreiben und
+die Original-Rechnung als Anhang. Ein neuer Beleg entsteht dabei nicht.

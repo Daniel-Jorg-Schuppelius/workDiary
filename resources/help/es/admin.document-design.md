@@ -61,3 +61,9 @@ Diseño base CI y herencia:
   obligatorios de TODOS los tipos de documento personalizables; los
   formatos especiales genuinos (p. ej. etiquetas) declaran su
   restricción en el registro central de tipos de documento.
+- Los **textos de cabecera/pie** de los documentos de venta (antes
+  plantillas de factura) son una sección propia y heredable del perfil —
+  versionada y congelada en los documentos finalizados. Los **diseños
+  específicos de cliente** son perfiles regulares que se asignan en la
+  ficha del cliente (panel «Diseño de documentos»); los perfiles marcados
+  como «específico de cliente» solo actúan a través de esa asignación.

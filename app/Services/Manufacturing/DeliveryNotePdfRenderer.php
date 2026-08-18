@@ -27,7 +27,10 @@ class DeliveryNotePdfRenderer {
         $organization = Organization::query()->withoutGlobalScopes()->find($delivery->organization_id);
 
         // C15: gemeinsamer View→Design→PDF-Dreischritt (Dokumentdesign ohne Profil No-Op).
-        return app(DocumentDesignRenderer::class)->renderPdf(
+        // MVP-650: gebuchte Auslieferungen rendern mit ihrem eingefrorenen Designstand.
+        $design = app(DocumentDesignRenderer::class);
+
+        return $design->renderPdf(
             RenderDocumentKind::DeliveryNote,
             'pdf.delivery-note',
             [
@@ -36,6 +39,7 @@ class DeliveryNotePdfRenderer {
                 'number' => $this->number($delivery),
             ],
             $organization,
+            payload: $design->payloadFromSnapshot($delivery, RenderDocumentKind::DeliveryNote),
         );
     }
 

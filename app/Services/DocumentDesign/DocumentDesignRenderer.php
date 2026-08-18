@@ -42,8 +42,8 @@ class DocumentDesignRenderer {
      *
      * @return array<string, mixed>|null
      */
-    public function payloadFor(Organization $organization, RenderDocumentKind $kind): ?array {
-        $version = $this->profiles->resolveFor($organization, $kind);
+    public function payloadFor(Organization $organization, RenderDocumentKind $kind, ?int $customerId = null): ?array {
+        $version = $this->profiles->resolveFor($organization, $kind, $customerId);
 
         return $version === null ? null : $this->payloadFromVersion($version);
     }
@@ -69,6 +69,7 @@ class DocumentDesignRenderer {
             'layout' => $effective->layout,
             'block_rules' => $effective->block_rules,
             'table_style' => $effective->table_style,
+            'content_texts' => $effective->content_texts,
             'assets' => [
                 'first' => $firstAsset?->normalizedDataUri(),
                 'following' => $followingAsset?->normalizedDataUri(),
@@ -112,11 +113,14 @@ class DocumentDesignRenderer {
      * Instanz oder per ID (Lookup ohne globale Scopes). $writerOptions gehen an
      * den PDF-Writer; Dokumentdesign nur im Hochformat — die Druckbereiche des
      * A4-Hochformat-Profils passen nicht auf Querformat (Feature 076).
+     * $payload überschreibt die Profilauflösung (z. B. eingefrorener
+     * Snapshot-Stand versendeter Angebote, #83).
      *
      * @param array<string, mixed> $data
      * @param array<string, mixed> $writerOptions
+     * @param array<string, mixed>|null $payload
      */
-    public function renderPdf(RenderDocumentKind $kind, string $view, array $data, int|Organization|null $organization, array $writerOptions = []): string {
+    public function renderPdf(RenderDocumentKind $kind, string $view, array $data, int|Organization|null $organization, array $writerOptions = [], ?array $payload = null): string {
         if (is_int($organization)) {
             $organization = Organization::query()->withoutGlobalScopes()->find($organization);
         }
@@ -125,7 +129,9 @@ class DocumentDesignRenderer {
         // #83: Spezialformate (isBrandable() = false) deklarieren ihre
         // Einschränkung in der Registrierung — hier kein stilles Verhalten.
         if (($writerOptions['orientation'] ?? 'portrait') === 'portrait' && $kind->isBrandable()) {
-            $html = $this->composeFor($organization, $kind, $html);
+            $html = $payload !== null
+                ? $this->compose($html, $payload)
+                : $this->composeFor($organization, $kind, $html);
         }
 
         return PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html), $writerOptions)

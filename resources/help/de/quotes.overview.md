@@ -45,3 +45,10 @@ Angebot bis zum Beleg nachvollziehbar ist.
 
 Angebots-Entwürfe ohne Versand können gelöscht werden; alles ab Versand
 bleibt als Historie erhalten.
+
+**PDF & Auftragsbestätigung:** Jedes Angebot lässt sich als PDF
+herunterladen (inklusive Optionen-Ausweis und Steueraufriss); versendete
+Angebote behalten dauerhaft das Dokumentdesign des Versandzeitpunkts.
+Für (teil-)angenommene Angebote steht zusätzlich eine
+Auftragsbestätigung als PDF bereit, die genau die angenommenen
+Positionen bestätigt.

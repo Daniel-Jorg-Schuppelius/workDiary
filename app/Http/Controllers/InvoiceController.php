@@ -322,11 +322,17 @@ class InvoiceController extends Controller {
             'send_mail' => ['nullable', 'boolean'],
             'email' => ['nullable', 'required_if_accepted:send_mail', 'email:rfc'],
             'note' => ['nullable', 'string', 'max:1000'],
+            // MVP-650: optionale Mahngebühr + Zahlungsziel fürs Mahnschreiben.
+            'fee' => ['nullable', 'numeric', 'min:0', 'max:10000'],
+            'pay_until' => ['nullable', 'date'],
         ]);
+
+        $fee = isset($data['fee']) && is_numeric($data['fee']) && (float) $data['fee'] > 0 ? round((float) $data['fee'], 2) : null;
+        $payUntil = ! empty($data['pay_until']) ? \Carbon\CarbonImmutable::parse((string) $data['pay_until']) : null;
 
         $newLevel = (int) $invoice->dunning_level + 1;
         $invoice->update(['dunning_level' => $newLevel, 'dunned_at' => now()]);
-        $invoice->audit('invoice.dunned', ['level' => $newLevel, 'mailed' => ! empty($data['send_mail'])]);
+        $invoice->audit('invoice.dunned', ['level' => $newLevel, 'mailed' => ! empty($data['send_mail']), 'fee' => $fee, 'pay_until' => $payUntil?->toDateString()]);
 
         // Mahn-Mailversand (MVP-163, Restpaket): eigener Zustellversuch —
         // die Rechnung selbst bleibt unverändert (kein neuer Beleg).
@@ -336,8 +342,10 @@ class InvoiceController extends Controller {
             $dispatch = $this->recordDispatch($invoice, \App\Models\InvoiceDispatch::CHANNEL_EMAIL, 'pdf', (string) $data['email'], null, [
                 'kind' => 'dunning',
                 'level' => $newLevel,
+                'fee' => $fee,
+                'pay_until' => $payUntil?->toDateString(),
             ]);
-            $mail = new \App\Mail\DunningMail($invoice, $newLevel, $data['note'] ?? null, (int) $dispatch->id);
+            $mail = new \App\Mail\DunningMail($invoice, $newLevel, $data['note'] ?? null, (int) $dispatch->id, $fee, $payUntil);
             Mail::to((string) $data['email'])->queue($mail);
 
             return redirect()->route('invoices.show', $invoice)

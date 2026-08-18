@@ -383,7 +383,7 @@ class ProtocolService {
             $signedAt->toIso8601String(),
         );
 
-        return ProtocolSignature::query()->create([
+        $signature = ProtocolSignature::query()->create([
             'protocol_id' => $protocol->id,
             'role' => $role->value,
             'signer_name' => $signerName,
@@ -396,6 +396,20 @@ class ProtocolService {
             'user_agent' => $data['user_agent'] ?? null,
             'hash' => $hash,
         ]);
+
+        // MVP-650: mit der (ersten) Signatur den Designstand einfrieren —
+        // signierte Protokolle rendern dauerhaft mit dem damaligen Profil
+        // (idempotent, weitere Signaturen ändern nichts).
+        if ($protocol->organization !== null) {
+            app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->snapshot(
+                $protocol,
+                \App\Enums\DocumentDesign\RenderDocumentKind::Protocol,
+                $protocol->organization,
+                user: $actor,
+            );
+        }
+
+        return $signature;
     }
 
     // ----- Helpers -----

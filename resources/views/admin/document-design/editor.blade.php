@@ -23,6 +23,7 @@
         'editable' => $isDraft && $canManage,
         'canInherit' => $canInherit,
         'overrideSections' => $version->override_sections,
+        'contentTexts' => $version->content_texts,
         'previewUrl' => route('admin.document-design.preview-pdf', $profile->sqid),
     ];
     $blockCases = \App\Enums\DocumentDesign\InformationBlock::cases();
@@ -222,6 +223,7 @@
                                 'assets' => __('document_design.editor.section_assets'),
                                 'block_rules' => __('document_design.editor.section_blocks'),
                                 'table_style' => __('document_design.editor.section_table'),
+                                'content_texts' => __('document_design.editor.section_texts'),
                             ] as $section => $label)
                                 <div class="flex items-center justify-between gap-2 text-sm">
                                     <label class="flex items-center gap-2">
@@ -412,6 +414,22 @@
                     </div>
                 </div>
 
+                {{-- Kopf-/Fußtexte (MVP-651, vormals invoice_templates) --}}
+                <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                    <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.texts_heading') }}</h2>
+                    <p class="mb-2 text-xs text-base-content/50">{{ __('document_design.editor.texts_hint') }}</p>
+                    <label class="form-control">
+                        <span class="label-text text-sm">{{ __('document_design.editor.header_text') }}</span>
+                        <textarea class="textarea textarea-bordered textarea-sm" rows="2" maxlength="2000"
+                                  x-model="contentTexts.header_text" @change="markDirty()" :disabled="!editable"></textarea>
+                    </label>
+                    <label class="form-control mt-2">
+                        <span class="label-text text-sm">{{ __('document_design.editor.footer_text') }}</span>
+                        <textarea class="textarea textarea-bordered textarea-sm" rows="3" maxlength="2000"
+                                  x-model="contentTexts.footer_text" @change="markDirty()" :disabled="!editable"></textarea>
+                    </label>
+                </div>
+
                 {{-- Testdokumente --}}
                 <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                     <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.test_heading') }}</h2>
@@ -451,6 +469,10 @@
                         <label class="flex items-center gap-2 text-sm">
                             <input type="checkbox" name="is_default" value="1" class="checkbox checkbox-sm" @checked($profile->is_default)>
                             {{ __('document_design.profile.set_default') }}
+                        </label>
+                        <label class="flex items-center gap-2 text-sm" title="{{ __('document_design.profile.customer_specific_hint') }}">
+                            <input type="checkbox" name="is_customer_specific" value="1" class="checkbox checkbox-sm" @checked($profile->is_customer_specific)>
+                            {{ __('document_design.profile.customer_specific') }}
                         </label>
                         <button type="submit" class="btn btn-sm btn-outline">{{ __('document_design.editor.assign_save') }}</button>
                     </form>

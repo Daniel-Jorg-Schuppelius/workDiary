@@ -15,7 +15,37 @@
 @php
     $money = fn ($v) => $v === null ? '—' : \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v instanceof \CommonToolkit\ValueObjects\Money ? $v->toFloat() : (float) $v, 2, withThousandsSeparator: true) . ' €';
     $hours = fn (int $m): string => \App\Support\Formats::duration($m);
+    // Kunden-Sonderdesign (MVP-651): zuweisbare Dokumentdesign-Profile der Org.
+    $canAssignDesign = auth()->user()?->isAdmin()
+        || auth()->user()?->can(\App\Enums\User\Permission::DocumentDesignAssign->value)
+        || auth()->user()?->can(\App\Enums\User\Permission::DocumentDesignManage->value);
+    $designProfiles = $canAssignDesign
+        ? \App\Models\DocumentDesign\DocumentRenderProfile::query()
+            ->where('organization_id', $customer->organization_id)
+            ->where('status', '!=', \App\Enums\DocumentDesign\RenderProfileStatus::Archived)
+            ->orderBy('name')
+            ->get(['id', 'name'])
+        : collect();
 @endphp
+
+@if ($canAssignDesign)
+    <x-card :title="__('document_design.customer.panel_title')" icon="design_services" id="customer-design-profile">
+        <p class="mb-2 text-xs text-base-content/60">{{ __('document_design.customer.panel_hint') }}</p>
+        <form method="POST" action="{{ route('customers.design-profile', $customer) }}" class="flex flex-wrap items-end gap-2">
+            @csrf
+            <label class="form-control min-w-64">
+                <span class="label-text text-sm">{{ __('document_design.customer.profile_label') }}</span>
+                <select name="profile" class="select select-bordered select-sm">
+                    <option value="">{{ __('document_design.customer.profile_none') }}</option>
+                    @foreach ($designProfiles as $designProfile)
+                        <option value="{{ $designProfile->sqid }}" @selected($customer->document_render_profile_id === $designProfile->id)>{{ $designProfile->name }}</option>
+                    @endforeach
+                </select>
+            </label>
+            <button type="submit" class="btn btn-sm btn-outline">{{ __('Speichern') }}</button>
+        </form>
+    </x-card>
+@endif
 
 <x-card :title="__('customer-billing.panel_title')" icon="request_quote" id="customer-billing" padding="p-0">
     <x-slot:actions>

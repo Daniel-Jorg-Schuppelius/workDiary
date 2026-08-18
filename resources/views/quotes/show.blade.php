@@ -45,6 +45,15 @@
                 <div class="text-sm text-base-content/70">{{ __('Bindefrist: :date', ['date' => $quote->valid_until->fdate()]) }}</div>
             @endif
             <x-slot:actions>
+                {{-- MVP-650: Angebots-PDF + Auftragsbestätigung (Design-Pipeline). --}}
+                <x-icon-btn icon="picture_as_pdf" tone="ghost" size="sm"
+                            :href="route('quotes.pdf', $quote)"
+                            show-label>{{ __('PDF') }}</x-icon-btn>
+                @if (in_array($quote->status, ['accepted', 'partially_accepted'], true))
+                    <x-icon-btn icon="assignment_turned_in" tone="ghost" size="sm"
+                                :href="route('quotes.order-confirmation', $quote)"
+                                show-label>{{ __('Auftragsbestätigung (PDF)') }}</x-icon-btn>
+                @endif
                 @can('update', $quote)
                     <x-icon-btn icon="add" tone="primary" size="sm"
                                 data-entry-modal-trigger

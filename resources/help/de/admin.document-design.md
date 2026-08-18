@@ -58,3 +58,9 @@ CI-Basisdesign und Vererbung:
   brandfähigen Dokumentarten geprüft; echte Spezialformate (z. B.
   Etiketten) deklarieren ihre Einschränkung in der zentralen
   Dokumentarten-Registrierung.
+- **Kopf-/Fußtexte** der Vertriebsbelege (vormals Rechnungsvorlagen) sind
+  eine eigene, vererbbare Profil-Sektion — versioniert und bei
+  finalisierten Belegen eingefroren. **Kunden-Sonderdesigns** sind
+  reguläre Profile, die du in der Kundenakte (Panel „Dokumentdesign")
+  zuweist; als „Kunden-Sonderprofil" markierte Profile wirken
+  ausschließlich über diese Zuweisung.

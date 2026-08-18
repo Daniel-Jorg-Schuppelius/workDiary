@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Invoicing;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
-use App\Models\{Invoice, InvoiceTemplate};
+use App\Models\Invoice;
 use App\Services\BrandingService;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 use PDFToolkit\Entities\PDFContent;
@@ -52,23 +52,16 @@ class InvoicePdfRenderer {
     }
 
     /**
-     * View-Daten der Druckansicht: gewählte Vorlage (Kunde > Org-Default) +
-     * Rechtsangaben der Organisation + Design-Kontext (Feature 076).
+     * View-Daten der Druckansicht: Rechtsangaben der Organisation +
+     * Design-Kontext (Feature 076; MVP-651: Kopf-/Fußtexte und Akzentfarbe
+     * kommen aus dem Design-Payload statt aus invoice_templates).
      *
      * @param array<string, mixed>|null $payload
-     * @return array{invoice: Invoice, template: InvoiceTemplate|null, orgLegal: mixed, design: \App\Services\DocumentDesign\DesignContext}
+     * @return array{invoice: Invoice, orgLegal: mixed, design: \App\Services\DocumentDesign\DesignContext}
      */
     public function viewData(Invoice $invoice, ?array $payload = null): array {
-        $template = $invoice->customer->invoice_template_id
-            ? InvoiceTemplate::query()->find($invoice->customer->invoice_template_id)
-            : InvoiceTemplate::query()
-                ->where('organization_id', $invoice->organization_id)
-                ->where('is_default', true)
-                ->first();
-
         return [
             'invoice' => $invoice,
-            'template' => $template,
             // Rechtsangaben aus der Org DER RECHNUNG statt aus dem Ambient-
             // Kontext: im Queue-Worker (Mail-Anhang) gibt es keinen Auth-User —
             // sonst fehlten die §14-UStG-Pflichtangaben im PDF-Footer.
@@ -103,7 +96,7 @@ class InvoicePdfRenderer {
 
         return $invoice->organization === null
             ? null
-            : $this->design->payloadFor($invoice->organization, $kind);
+            : $this->design->payloadFor($invoice->organization, $kind, (int) $invoice->customer_id);
     }
 
     private function hasSnapshotRecord(Invoice $invoice, RenderDocumentKind $kind): bool {

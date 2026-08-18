@@ -29,3 +29,8 @@ entries can be **excluded** from the run via checkbox — they stay open
 and reappear in the next run. On the invoice, the **source time
 entries** of each item can be expanded; hour quantities are also shown
 in clock format (e.g. 1.50 h = 1:30 h).
+
+**Dunning letter:** Dunning creates a dedicated dunning-letter PDF
+(level 1 = payment reminder) with a claim overview, optional dunning
+fee and payment deadline; the email carries the letter and the original
+invoice as attachments. No new accounting document is created.

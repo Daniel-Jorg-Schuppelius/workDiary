@@ -28,3 +28,9 @@ période sont choisis. Des saisies individuelles peuvent y être
 réapparaissent au cycle suivant. Sur la facture, les **saisies de
 temps sources** de chaque position sont dépliables ; les quantités
 d'heures apparaissent aussi au format horloge (p. ex. 1,50 h = 1:30 h).
+
+**Lettre de relance :** la relance génère un PDF de lettre de relance
+dédié (niveau 1 = rappel de paiement) avec récapitulatif de la créance,
+frais de relance facultatifs et échéance de paiement ; l'e-mail
+contient la lettre et la facture originale en pièces jointes. Aucune
+nouvelle pièce comptable n'est créée.

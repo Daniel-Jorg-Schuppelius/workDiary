@@ -85,6 +85,9 @@ class RenderProfileService {
         if (array_key_exists('table_style', $data)) {
             $version->table_style = $this->sanitizeTableStyle((array) $data['table_style']);
         }
+        if (array_key_exists('content_texts', $data)) {
+            $version->content_texts = $this->sanitizeContentTexts($data['content_texts']);
+        }
         if (array_key_exists('override_sections', $data)) {
             $version->override_sections = $this->sanitizeOverrideSections($data['override_sections']);
         }
@@ -133,6 +136,7 @@ class RenderProfileService {
             'layout' => $source->layout,
             'block_rules' => $source->block_rules,
             'table_style' => $source->table_style,
+            'content_texts' => $source->content_texts,
             'override_sections' => $source->override_sections,
             'created_by' => $user?->id,
         ]);
@@ -241,16 +245,45 @@ class RenderProfileService {
      * CI-Basisdesign (is_default), sonst null (= Systemfallback,
      * heutige Ausgabe).
      */
-    public function resolveFor(Organization $organization, RenderDocumentKind $kind): ?DocumentRenderProfileVersion {
+    public function resolveFor(Organization $organization, RenderDocumentKind $kind, ?int $customerId = null): ?DocumentRenderProfileVersion {
         $profiles = $this->activeProfiles($organization);
 
+        // Kunden-Sonderdesign (MVP-651): das an der Kundenakte referenzierte
+        // aktive Profil gewinnt vor der org-weiten Kette — sofern es die Art
+        // abdeckt (explizite Arten, Familie oder ohne jede Einschränkung).
+        if ($customerId !== null) {
+            $profileId = \App\Models\Customer::query()
+                ->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->whereKey($customerId)
+                ->value('document_render_profile_id');
+            if ($profileId !== null) {
+                $customerProfile = $profiles->first(fn(DocumentRenderProfile $p) => (int) $p->id === (int) $profileId);
+                if ($customerProfile !== null && $this->coversForCustomer($customerProfile, $kind)) {
+                    return $customerProfile->activeVersion()->withoutGlobalScopes()->first();
+                }
+            }
+        }
+
+        // Org-weite Kette: Kunden-Sonderprofile nehmen hier nicht teil.
+        $orgWide = $profiles->reject(fn(DocumentRenderProfile $p) => $p->is_customer_specific)->values();
+
         $fallbackKind = $kind->fallbackKind();
-        $match = $profiles->first(fn(DocumentRenderProfile $p) => $p->coversKind($kind))
-            ?? $profiles->first(fn(DocumentRenderProfile $p) => $p->coversFamily($kind))
-            ?? ($fallbackKind !== null ? $profiles->first(fn(DocumentRenderProfile $p) => $p->coversKind($fallbackKind)) : null)
-            ?? $profiles->first(fn(DocumentRenderProfile $p) => $p->is_default);
+        $match = $orgWide->first(fn(DocumentRenderProfile $p) => $p->coversKind($kind))
+            ?? $orgWide->first(fn(DocumentRenderProfile $p) => $p->coversFamily($kind))
+            ?? ($fallbackKind !== null ? $orgWide->first(fn(DocumentRenderProfile $p) => $p->coversKind($fallbackKind)) : null)
+            ?? $orgWide->first(fn(DocumentRenderProfile $p) => $p->is_default);
 
         return $match?->activeVersion()->withoutGlobalScopes()->first();
+    }
+
+    /** Deckt ein Kunden-Sonderprofil die Art ab? Ohne Bindung gilt es für alle Arten. */
+    private function coversForCustomer(DocumentRenderProfile $profile, RenderDocumentKind $kind): bool {
+        $hasKinds = ($profile->document_kinds ?? []) !== [];
+
+        return $profile->coversKind($kind)
+            || $profile->coversFamily($kind)
+            || (! $hasKinds && $profile->document_family === null);
     }
 
     /** @return \Illuminate\Database\Eloquent\Collection<int, DocumentRenderProfile> */
@@ -314,6 +347,7 @@ class RenderProfileService {
             'layout' => $pick('layout') ? $version->layout : $base->layout,
             'block_rules' => $pick('block_rules') ? $version->block_rules : $base->block_rules,
             'table_style' => $pick('table_style') ? $version->table_style : $base->table_style,
+            'content_texts' => $pick('content_texts') ? $version->content_texts : $base->content_texts,
             'first_asset_id' => $pick('assets') ? $version->first_asset_id : $base->first_asset_id,
             'following_asset_id' => $pick('assets') ? $version->following_asset_id : $base->following_asset_id,
         ]);
@@ -368,6 +402,7 @@ class RenderProfileService {
             'layout' => $version->layout,
             'block_rules' => $version->block_rules,
             'table_style' => $version->table_style,
+            'content_texts' => $version->content_texts,
             'first_asset_id' => $version->first_asset_id,
             'following_asset_id' => $version->following_asset_id,
         ]);
@@ -382,6 +417,25 @@ class RenderProfileService {
         }
 
         return $copy;
+    }
+
+    /**
+     * Kopf-/Fußtexte (MVP-651): reiner Text, längenbegrenzt — kein HTML.
+     *
+     * @return array{header_text: ?string, footer_text: ?string}|null
+     */
+    private function sanitizeContentTexts(mixed $raw): ?array {
+        if ($raw === null) {
+            return null;
+        }
+        $raw = (array) $raw;
+        $clean = [];
+        foreach (['header_text', 'footer_text'] as $key) {
+            $value = trim(strip_tags((string) ($raw[$key] ?? '')));
+            $clean[$key] = $value === '' ? null : mb_substr($value, 0, 2000);
+        }
+
+        return $clean['header_text'] === null && $clean['footer_text'] === null ? null : $clean;
     }
 
     private function hexOrNull(mixed $value): ?string {
@@ -411,7 +465,7 @@ class RenderProfileService {
     }
 
     /** Sektionen, die eine erbende Variante überschreiben kann. */
-    public const OVERRIDE_SECTIONS = ['layout', 'assets', 'block_rules', 'table_style'];
+    public const OVERRIDE_SECTIONS = ['layout', 'assets', 'block_rules', 'table_style', 'content_texts'];
 
     /** @return array<int, string>|null */
     private function sanitizeOverrideSections(mixed $raw): ?array {

@@ -162,6 +162,16 @@ class ManufacturingOrderService {
         }
         $order->save();
 
+        // MVP-650: der Fertigungsnachweis abgeschlossener Aufträge rendert
+        // dauerhaft mit dem Designprofil des Abschlusszeitpunkts (idempotent).
+        if ($target === ManufacturingOrderStatus::Completed && $order->organization !== null) {
+            app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->snapshot(
+                $order,
+                \App\Enums\DocumentDesign\RenderDocumentKind::ManufacturingRecord,
+                $order->organization,
+            );
+        }
+
         return $order;
     }
 

@@ -47,3 +47,9 @@ traçable.
 
 Les brouillons de devis non envoyés peuvent être supprimés ; tout ce qui
 suit l'envoi est conservé comme historique.
+
+**PDF & confirmation de commande :** chaque devis peut être téléchargé
+en PDF (avec repérage des options et ventilation de la TVA) ; les devis
+envoyés conservent durablement le design du moment de l'envoi. Pour les
+devis (partiellement) acceptés, une confirmation de commande en PDF est
+également disponible et confirme exactement les positions acceptées.

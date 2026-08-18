@@ -47,3 +47,10 @@ cosicché il percorso dall'offerta al documento è tracciabile.
 
 Le bozze di offerta non inviate possono essere eliminate; tutto ciò che
 segue l'invio resta conservato come cronologia.
+
+**PDF e conferma d'ordine:** ogni offerta può essere scaricata come PDF
+(con marcatura delle opzioni e ripartizione delle imposte); le offerte
+inviate mantengono permanentemente il design del momento dell'invio.
+Per le offerte (parzialmente) accettate è disponibile anche una
+conferma d'ordine in PDF che conferma esattamente le posizioni
+accettate.

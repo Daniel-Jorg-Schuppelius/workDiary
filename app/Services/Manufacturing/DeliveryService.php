@@ -96,6 +96,16 @@ class DeliveryService {
                 'created_by' => $createdBy,
             ]);
 
+            // MVP-650: der Lieferschein rendert dauerhaft mit dem
+            // Designprofil des Buchungszeitpunkts (idempotent).
+            if ($organization instanceof Organization) {
+                app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->snapshot(
+                    $delivery,
+                    \App\Enums\DocumentDesign\RenderDocumentKind::DeliveryNote,
+                    $organization,
+                );
+            }
+
             if ($serialIds !== null && $serialIds !== []) {
                 $serialService = $this->serials ?? app(SerialService::class);
                 $serials = StockSerial::query()

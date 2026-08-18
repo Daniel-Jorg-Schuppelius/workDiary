@@ -27,7 +27,10 @@ class FormSubmissionPdfRenderer {
         $submission->loadMissing(['template', 'submitter', 'subject', 'attachments']);
 
         // C15: gemeinsamer View→Design→PDF-Dreischritt (Dokumentdesign ohne Profil No-Op).
-        return app(DocumentDesignRenderer::class)->renderPdf(
+        // MVP-650: Einreichungen rendern mit dem Designstand des Einreichzeitpunkts.
+        $design = app(DocumentDesignRenderer::class);
+
+        return $design->renderPdf(
             RenderDocumentKind::Form,
             'forms.submissions.pdf',
             [
@@ -35,6 +38,7 @@ class FormSubmissionPdfRenderer {
                 'subjectLabel' => $subjectLabel,
             ],
             (int) $submission->organization_id,
+            payload: $design->payloadFromSnapshot($submission, RenderDocumentKind::Form),
         );
     }
 }

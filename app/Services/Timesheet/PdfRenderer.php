@@ -30,7 +30,10 @@ class PdfRenderer {
         }
 
         // C15: gemeinsamer View→Design→PDF-Dreischritt (Dokumentdesign ohne Profil No-Op).
-        return app(DocumentDesignRenderer::class)->renderPdf(
+        // MVP-650: signierte Stundenzettel rendern mit ihrem eingefrorenen Designstand.
+        $design = app(DocumentDesignRenderer::class);
+
+        return $design->renderPdf(
             RenderDocumentKind::Timesheet,
             'pdf.timesheet',
             [
@@ -38,6 +41,7 @@ class PdfRenderer {
                 'signaturePng' => $signaturePng,
             ],
             (int) $timesheet->organization_id,
+            payload: $design->payloadFromSnapshot($timesheet, RenderDocumentKind::Timesheet),
         );
     }
 

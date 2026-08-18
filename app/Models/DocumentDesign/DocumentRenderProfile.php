@@ -45,6 +45,7 @@ class DocumentRenderProfile extends Model {
         'name',
         'status',
         'is_default',
+        'is_customer_specific',
         'document_kinds',
         'document_family',
         'locale',
@@ -56,6 +57,7 @@ class DocumentRenderProfile extends Model {
     protected $casts = [
         'status' => RenderProfileStatus::class,
         'is_default' => 'boolean',
+        'is_customer_specific' => 'boolean',
         'document_kinds' => 'array',
         'document_family' => \App\Enums\DocumentDesign\RenderDocumentFamily::class,
         'priority' => 'integer',

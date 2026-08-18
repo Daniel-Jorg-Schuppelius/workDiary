@@ -62,24 +62,6 @@ class UiConventionAuditTest extends TestCase {
         $this->assertSame([], $offenders, 'x-page-shell verschluckt <x-slot:actions> — Aktionen gehören in die Toolbar (<x-slot:toolbar>) oder die Kopf-Karte: ' . implode(', ', $offenders));
     }
 
-    public function test_invoice_template_create_renders_modal_dialog_not_full_page(): void {
-        $response = $this->actingAs($this->admin)
-            ->get(route('invoice-templates.create'))
-            ->assertOk()
-            // Dialog-Partial (<x-modal> embedded) statt Vollseite:
-            ->assertSee('wd-dialog')
-            ->assertSee('data-entry-form', false);
-
-        $this->assertStringNotContainsString('<html', $response->getContent());
-    }
-
-    public function test_invoice_template_index_opens_form_as_entry_modal(): void {
-        $this->actingAs($this->admin)
-            ->get(route('invoice-templates.index'))
-            ->assertOk()
-            ->assertSee('data-entry-modal-trigger', false);
-    }
-
     public function test_document_design_index_shows_create_actions_for_admin(): void {
         $this->actingAs($this->admin)
             ->get(route('admin.document-design.index'))

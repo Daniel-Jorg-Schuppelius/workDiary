@@ -36,7 +36,10 @@ class ManufacturingRecordPdfRenderer {
             : User::query()->withoutGlobalScopes()->whereIn('id', $reporterIds)->pluck('name', 'id');
 
         // C15: gemeinsamer View→Design→PDF-Dreischritt (Dokumentdesign ohne Profil No-Op).
-        return app(DocumentDesignRenderer::class)->renderPdf(
+        // MVP-650: abgeschlossene Aufträge rendern mit ihrem eingefrorenen Designstand.
+        $design = app(DocumentDesignRenderer::class);
+
+        return $design->renderPdf(
             RenderDocumentKind::ManufacturingRecord,
             'pdf.manufacturing-record',
             [
@@ -48,6 +51,7 @@ class ManufacturingRecordPdfRenderer {
                 'generatedAt' => now(),
             ],
             $organization,
+            payload: $design->payloadFromSnapshot($order, RenderDocumentKind::ManufacturingRecord),
         );
     }
 

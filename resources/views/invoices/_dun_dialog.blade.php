@@ -28,11 +28,19 @@
 
         <label class="label cursor-pointer justify-start gap-2">
             <input type="checkbox" name="send_mail" value="1" @checked($defaultTo !== '') class="checkbox checkbox-sm">
-            <span class="label-text">{{ $nextLevel <= 1 ? __('Zahlungserinnerung per E-Mail senden (Rechnung als PDF-Anhang)') : __('Mahnung per E-Mail senden (Rechnung als PDF-Anhang)') }}</span>
+            <span class="label-text">{{ __('Per E-Mail senden (Mahnschreiben + Original-Rechnung als PDF-Anhang)') }}</span>
         </label>
 
         <x-input-field name="email" type="email" :label="__('Empfänger')" :value="$defaultTo"
                        placeholder="empfaenger@firma.de" />
+
+        {{-- MVP-650: optionale Mahngebühr + Zahlungsziel fürs Mahnschreiben. --}}
+        <div class="grid grid-cols-2 gap-2">
+            <x-input-field name="fee" type="number" step="0.01" min="0" :label="__('Mahngebühr (optional)')"
+                           :value="old('fee')" placeholder="0,00" />
+            <x-input-field name="pay_until" type="date" :label="__('Zahlbar bis (optional)')"
+                           :value="old('pay_until', now()->addDays(14)->toDateString())" />
+        </div>
 
         <x-textarea-field name="note" :label="__('Individueller Zusatztext (optional)')" rows="3"
                           :value="old('note', $aiText ?? '')" />

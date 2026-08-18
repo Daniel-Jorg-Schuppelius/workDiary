@@ -60,3 +60,9 @@ Design base CI ed ereditarietà:
   obbligatori di TUTTI i tipi di documento personalizzabili; i veri
   formati speciali (ad es. etichette) dichiarano la loro restrizione
   nel registro centrale dei tipi di documento.
+- I **testi di intestazione/piè** dei documenti di vendita (in
+  precedenza modelli di fattura) sono una sezione propria ed ereditabile
+  del profilo — versionata e congelata per i documenti finalizzati. I
+  **design specifici del cliente** sono profili regolari assegnati nella
+  scheda cliente (pannello «Design dei documenti»); i profili contrassegnati
+  come «specifico del cliente» agiscono solo tramite tale assegnazione.

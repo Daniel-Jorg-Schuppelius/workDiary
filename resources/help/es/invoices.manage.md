@@ -28,3 +28,9 @@ mediante casilla — permanecen abiertos y reaparecen en el siguiente
 ciclo. En la factura, los **registros de tiempo de origen** de cada
 posición son desplegables; las cantidades de horas aparecen también en
 formato reloj (p. ej. 1,50 h = 1:30 h).
+
+**Carta de reclamación:** al reclamar se genera un PDF de carta de
+reclamación propio (nivel 1 = recordatorio de pago) con resumen de la
+deuda, gastos de reclamación opcionales y plazo de pago; el correo
+lleva la carta y la factura original como adjuntos. No se crea ningún
+documento contable nuevo.

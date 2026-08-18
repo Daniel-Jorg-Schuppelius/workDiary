@@ -111,7 +111,22 @@ class QuoteService {
         ]);
         $quote->audit('quote.sent', ['by' => $actor->id]);
 
+        // MVP-650: mit dem Versand den Layoutstand einfrieren — das versandte
+        // Angebot rendert dauerhaft mit dem damaligen Designprofil.
+        $this->freezeRenderSnapshot($quote, \App\Enums\DocumentDesign\RenderDocumentKind::Quote, $actor);
+
         return ['quote' => $quote->refresh(), 'acceptance_token' => $token];
+    }
+
+    /** Render-Snapshot einfrieren (idempotent; ohne Organisation No-Op). */
+    private function freezeRenderSnapshot(Quote $quote, \App\Enums\DocumentDesign\RenderDocumentKind $kind, ?User $actor = null): void {
+        $organization = $quote->organization;
+        if ($quote->exists && $organization !== null) {
+            $renderer = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class);
+            // MVP-651: das Kunden-Sonderprofil fließt in den eingefrorenen Stand ein.
+            $payload = $renderer->payloadFor($organization, $kind, (int) $quote->customer_id);
+            $renderer->snapshot($quote, $kind, $organization, $payload, $actor);
+        }
     }
 
     /**
@@ -165,6 +180,10 @@ class QuoteService {
             ];
             $quote->save();
             $quote->audit('quote.accepted', ['partial' => $partial]);
+
+            // MVP-650: die Auftragsbestätigung rendert dauerhaft mit dem
+            // Designstand des Annahme-Zeitpunkts.
+            $this->freezeRenderSnapshot($quote, \App\Enums\DocumentDesign\RenderDocumentKind::OrderConfirmation);
 
             return $quote->refresh();
         });

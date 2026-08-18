@@ -42,7 +42,9 @@ class ProtocolPdfRenderer {
         }
 
         // C15: gemeinsamer View→Design→PDF-Dreischritt (Dokumentdesign ohne Profil No-Op).
-        $bytes = app(DocumentDesignRenderer::class)->renderPdf(
+        // MVP-650: signierte Protokolle rendern mit ihrem eingefrorenen Designstand.
+        $design = app(DocumentDesignRenderer::class);
+        $bytes = $design->renderPdf(
             RenderDocumentKind::Protocol,
             'protocols.pdf',
             [
@@ -55,6 +57,7 @@ class ProtocolPdfRenderer {
                 'itemPhotoPreviews' => $this->itemPhotoPreviews($protocol),
             ],
             (int) $protocol->organization_id,
+            payload: $design->payloadFromSnapshot($protocol, RenderDocumentKind::Protocol),
         );
 
         $disk->put($relativePath, $bytes);

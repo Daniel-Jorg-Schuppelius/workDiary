@@ -38,7 +38,10 @@ class DisposalRecordPdfRenderer {
 
         $organization = Organization::query()->withoutGlobalScopes()->find($job->organization_id);
 
-        return app(DocumentDesignRenderer::class)->renderPdf(
+        // MVP-650: abgeschlossene Akten rendern mit ihrem eingefrorenen Designstand.
+        $design = app(DocumentDesignRenderer::class);
+
+        return $design->renderPdf(
             RenderDocumentKind::Protocol,
             'pdf.disposal-record',
             [
@@ -49,6 +52,7 @@ class DisposalRecordPdfRenderer {
                 'generatedAt' => now(),
             ],
             $organization,
+            payload: $design->payloadFromSnapshot($job, RenderDocumentKind::Protocol),
         );
     }
 
