@@ -119,6 +119,26 @@ class TenantTraitCoverageTest extends TestCase {
         // 013): transitiv mandantenfähig über user_id → users.organization_id,
         // analog UserBookmark — kein eigenes organization_id-Feld nötig.
         \App\Models\UserQualification::class,
+        // Katalogstamm (Feature 109, MVP-637): DIN-276-Kostengruppen und
+        // StLB-Leistungsbereiche werden AUSGELIEFERT (organization_id NULL) und
+        // können je Org ergänzt werden. Ein Org-Global-Scope würde genau die
+        // ausgelieferten Kataloge wegfiltern; die Sichtbarkeit läuft deshalb
+        // explizit über CatalogRegistry::scopeVisibleFor(). Einträge und
+        // Ausgaben-Zuordnungen hängen transitiv am Stamm.
+        \App\Models\Catalog\CatalogRegistry::class,
+        \App\Models\Catalog\CatalogEntry::class,
+        \App\Models\Catalog\CatalogCodeMapping::class,
+        // Baukostenkatalog-Element (Feature 109, MVP-645): Kind des mandanten-
+        // gebundenen CostElementCatalog - Mandantengrenze transitiv über
+        // cost_element_catalog_id (cascade).
+        \App\Models\Costing\CostElement::class,
+        // Kostenermittlungs-Position (Feature 109, MVP-646): Kind der mandanten-
+        // gebundenen CostEstimate - transitiv über cost_estimate_id (cascade).
+        \App\Models\Costing\CostEstimateItem::class,
+        // Bekanntmachung des Bundes (Feature 108, MVP-629): eine öffentliche
+        // Ausschreibung interessiert MEHRERE Mandanten und wird deshalb einmal
+        // gehalten; wen sie betrifft, steht in TenderNoticeMatch (org-gebunden).
+        \App\Models\Tenders\TenderNotice::class,
         // System-weiter Backup-Heartbeat (MVP-046 §5): externer Backup-Job postet
         // ohne Tenant-Kontext, gehört bewusst nicht zur Mandantengrenze.
         BackupHeartbeat::class,

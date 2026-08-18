@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Gaeb;
 
-use App\Enums\Gaeb\GaebPhase;
+use App\Enums\Gaeb\{BoqItemType, GaebPhase};
 use App\Models\{BillOfQuantity, BoqCostType, BoqItem, BoqItemCostApproach, User};
-use App\Services\Gaeb\{BoqExportService, GaebImportService};
+use App\Services\Gaeb\{BoqCalculationDataService, BoqExportService, GaebImportService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -154,6 +154,97 @@ final class CalculationDataTest extends TestCase {
         $this->assertStringContainsString('<CostType Key="LO">', $xml);
         $this->assertStringContainsString('<CostApproach Key="MA">', $xml);
         $this->assertStringContainsString('<Value>48</Value>', $xml);
+    }
+
+    /**
+     * EKT/GKT-Aggregation (MVP-647): **Der Zuschlag hängt an der Kostenart.**
+     *
+     * Lohn trägt 12,5 % (120,00 € → 15,00 €), Material keinen Satz. Eine
+     * unterstellte Null wäre dasselbe Ergebnis, aber eine andere Aussage: Sie
+     * behauptete, der Betrieb schlage auf Material nichts zu.
+     */
+    public function test_ekt_and_gkt_are_aggregated_per_cost_type(): void {
+        $bill = $this->import();
+
+        $report = app(BoqCalculationDataService::class)->forBill($bill);
+
+        $this->assertSame(['LO', 'MA'], array_column($report['byCostType'], 'key'));
+        $this->assertSame(120.0, $report['byCostType'][0]['ekt']);
+        $this->assertSame(15.0, $report['byCostType'][0]['gkt']);
+        $this->assertSame(18.0, $report['byCostType'][1]['ekt']);
+        $this->assertSame(0.0, $report['byCostType'][1]['gkt']);
+
+        $this->assertSame(138.0, $report['ekt']);
+        $this->assertSame(15.0, $report['gkt']);
+        $this->assertSame(153.0, $report['calculated']);
+    }
+
+    /**
+     * Eine Position ohne Preis wird gezählt, nicht als 0 € verbucht — sonst
+     * stammte die Gesamtdifferenz aus fehlenden Preisen und sähe wie ein
+     * Kalkulationsfehler aus.
+     */
+    public function test_unpriced_items_are_counted_not_valued(): void {
+        $bill = $this->import();
+
+        $report = app(BoqCalculationDataService::class)->forBill($bill);
+
+        $this->assertSame(1, $report['unpriced']);
+        $this->assertSame(0.0, $report['offered']);
+        $this->assertNull($report['items'][0]['delta']);
+    }
+
+    /** Mit Preis entsteht die Differenz, um die es geht. */
+    public function test_delta_compares_calculation_against_the_offered_price(): void {
+        $bill = $this->import();
+        $item = BoqItem::query()->where('bill_of_quantity_id', $bill->id)->firstOrFail();
+        $item->forceFill(['unit_price' => '1.5000', 'total_price' => '150.0000'])->save();
+
+        $report = app(BoqCalculationDataService::class)->forBill($bill->fresh() ?? $bill);
+
+        $this->assertSame(0, $report['unpriced']);
+        $this->assertSame(150.0, $report['offered']);
+        // 153,00 € kalkuliert gegen 150,00 € angeboten.
+        $this->assertSame(3.0, $report['delta']);
+    }
+
+    /**
+     * X52-Regel: Eine Zuschlagsposition rechnet prozentual auf andere
+     * Positionen — eigene Ansätze zählten dasselbe Geld zweimal.
+     */
+    public function test_markup_items_with_approaches_are_reported(): void {
+        $bill = $this->import();
+        $item = BoqItem::query()->where('bill_of_quantity_id', $bill->id)->firstOrFail();
+
+        $service = app(BoqCalculationDataService::class);
+        $this->assertSame([], $service->markupItemsWithApproaches($bill));
+
+        $item->forceFill(['type' => BoqItemType::Markup->value])->save();
+        $this->assertSame([$item->reference_no], $service->markupItemsWithApproaches($bill->fresh() ?? $bill));
+    }
+
+    public function test_calculation_page_shows_ekt_and_gkt(): void {
+        $bill = $this->import();
+
+        $this->actingAs($this->admin)
+            ->get(route('bill-of-quantities.calculation-data', $bill))
+            ->assertOk()
+            ->assertSee('Lohn')
+            ->assertSee('138,00')   // EKT gesamt
+            ->assertSee('15,00');   // GKT gesamt
+    }
+
+    public function test_calculation_csv_carries_both_blocks(): void {
+        $bill = $this->import();
+
+        $response = $this->actingAs($this->admin)
+            ->get(route('bill-of-quantities.calculation-data', [$bill, 'export' => 'csv']));
+
+        $response->assertOk();
+        $body = $response->getContent();
+        $this->assertStringContainsString('Kostenarten', $body);
+        $this->assertStringContainsString('Positionen', $body);
+        $this->assertStringContainsString('EKT', $body);
     }
 
     /** In den LV-Phasen tauchen die Kalkulationsdaten nicht auf. */

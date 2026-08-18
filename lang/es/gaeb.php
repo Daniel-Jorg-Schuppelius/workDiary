@@ -125,11 +125,15 @@ return [
         ],
     ],
 
+    'calculation' => [
+        'unpriced_hint' => ':count partida no lleva precio y por eso queda fuera de la diferencia total.|:count partidas no llevan precio y por eso quedan fuera de la diferencia total.',
+    ],
     'preflight' => [
         'version_unknown' => 'No se pudo detectar la versión GAEB.',
         'version_unsupported' => 'La versión GAEB :version no es compatible (línea objetivo 3.3).',
         'phase_unknown' => 'La fase de intercambio «:code» es desconocida.',
         'no_items' => 'El archivo no contiene partidas.',
+        'markup_with_cost_approach' => 'La partida :ref es una partida de recargo y aun así lleva enfoques de coste — el recargo se calcula sobre otras partidas, el dinero se contaría dos veces.',
         'vendor_record_type' => 'El archivo contiene :count registros del tipo propietario :type: su contenido no se evalúa (algunos sistemas guardan ahí los grupos de costes).',
         'item_missing_ref' => 'Partida sin número de orden: :text',
         'duplicate_ref' => 'El número de orden :ref aparece varias veces.',

@@ -38,8 +38,8 @@
                 <x-icon-btn icon="fact_check" size="sm" show-label
                             :href="route('bill-of-quantities.cost-estimate.export', [$bill, 'stage' => 'final'])"
                             :title="__('Kostenfeststellung als GAEB X51')">{{ __('Kostenfeststellung') }}</x-icon-btn>
-                <x-icon-btn icon="download" size="sm" :href="route('bill-of-quantities.cost-groups', [$bill, 'level' => $level, 'export' => 'csv'])" show-label>{{ __('CSV') }}</x-icon-btn>
-                <x-icon-btn icon="table_view" size="sm" :href="route('bill-of-quantities.cost-groups', [$bill, 'level' => $level, 'export' => 'xlsx'])" show-label>Excel</x-icon-btn>
+                <x-icon-btn icon="download" size="sm" :href="route('bill-of-quantities.cost-groups', [$bill, 'level' => $pivot !== null ? 'all' : $level, 'export' => 'csv'])" show-label>{{ __('CSV') }}</x-icon-btn>
+                <x-icon-btn icon="table_view" size="sm" :href="route('bill-of-quantities.cost-groups', [$bill, 'level' => $pivot !== null ? 'all' : $level, 'export' => 'xlsx'])" show-label>Excel</x-icon-btn>
                 <x-icon-btn icon="arrow_back" size="sm" :href="route('bill-of-quantities.show', $bill)" show-label>{{ __('Zum Leistungsverzeichnis') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
@@ -51,6 +51,8 @@
                 <option value="1" @selected($level === 1)>{{ __('1. Ebene (300)') }}</option>
                 <option value="2" @selected($level === 2)>{{ __('2. Ebene (310)') }}</option>
                 <option value="3" @selected($level === 3)>{{ __('3. Ebene (311)') }}</option>
+                {{-- Keine vierte Ebene, sondern alle drei ineinander. --}}
+                <option value="all" @selected($pivot !== null)>{{ __('Alle Ebenen (aufklappbar)') }}</option>
             </select>
         </x-filter-field>
     </x-filter-bar>
@@ -71,6 +73,44 @@
         @endif
 
         <x-card>
+            @if ($pivot !== null)
+                {{-- Pivot (MVP-648): alle drei Ebenen ineinander. Die Summe einer
+                     Oberebene entsteht aus ihren Kindern, nicht aus einer
+                     zweiten Rechnung. --}}
+                <div x-data="treeTable(@js(array_column($pivot['rows'], 'code')))">
+                <x-table bare>
+                    <x-slot:head>
+                        <tr>
+                            <th>{{ __('Kostengruppe') }}</th>
+                            <th class="text-right">{{ __('Summe') }}</th>
+                            <th class="text-right">{{ __('Anteil') }}</th>
+                        </tr>
+                    </x-slot:head>
+                    @foreach ($pivot['rows'] as $first)
+                        @include('bill-of-quantities._pivot_row', ['node' => $first, 'ancestors' => [], 'bill' => $bill, 'money' => $money])
+                        @foreach ($first['children'] as $second)
+                            @include('bill-of-quantities._pivot_row', ['node' => $second, 'ancestors' => [$first['code']], 'bill' => $bill, 'money' => $money])
+                            @foreach ($second['children'] as $third)
+                                @include('bill-of-quantities._pivot_row', ['node' => $third, 'ancestors' => [$first['code'], $second['code']], 'bill' => $bill, 'money' => $money])
+                            @endforeach
+                        @endforeach
+                    @endforeach
+
+                    <tr class="border-t-2 border-base-300">
+                        <td class="text-base-content/70">{{ __('Ohne Zuordnung') }}</td>
+                        <td class="text-right tabular-nums @if ($pivot['unassigned'] > 0.0) text-warning font-medium @endif">{{ $money($pivot['unassigned']) }}</td>
+                        <td class="text-right tabular-nums text-base-content/70">
+                            {{ $pivot['total'] > 0.0 ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($pivot['unassigned'] / $pivot['total'] * 100, 1) : '0,0' }} %
+                        </td>
+                    </tr>
+                    <tr class="font-medium">
+                        <td>{{ __('Gesamt') }}</td>
+                        <td class="text-right tabular-nums">{{ $money($pivot['total']) }}</td>
+                        <td class="text-right tabular-nums">100,0 %</td>
+                    </tr>
+                </x-table>
+                </div>
+            @else
             <x-table bare>
                 <x-slot:head>
                     <tr>
@@ -108,6 +148,7 @@
                     <td class="text-right tabular-nums">100,0 %</td>
                 </tr>
             </x-table>
+            @endif
         </x-card>
 
         {{-- Kostenverfolgung (MVP-643): Was war ausgeschrieben, was kam als

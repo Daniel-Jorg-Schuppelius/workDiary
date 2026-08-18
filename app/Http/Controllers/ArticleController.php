@@ -100,7 +100,7 @@ class ArticleController extends Controller {
     public function show(Article $article, \App\Services\Procurement\SupplySourceComparator $comparator): View {
         Gate::authorize('view', $article);
 
-        $article->load(['optionDefinitions.values', 'variants.optionValues', 'units', 'externalMappings', 'priceTiers']);
+        $article->load(['optionDefinitions.values', 'variants.optionValues', 'units', 'externalMappings', 'priceTiers', 'costBenchmarks.catalog']);
 
         $supplies = $comparator->forArticle($article);
 

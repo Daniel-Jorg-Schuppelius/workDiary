@@ -62,6 +62,12 @@ puesto.
 conmutables entre primer, segundo y tercer nivel, con gráfico y salida
 CSV/Excel.
 
+Los tres niveles pueden mostrarse también **uno dentro de otro**: 300 sobre 310
+sobre 311, y cada nivel se despliega y se pliega. El total de un nivel superior
+surge **de sus hijos**; no puede diferir de la suma inferior. La exportación de
+esta vista lleva el nivel en una columna propia — los números sangrados no serían
+filtrables en una hoja de cálculo.
+
 Tres cosas importan:
 
 1. **Las cantidades parciales prevalecen sobre la partida.** Si una partida está
@@ -92,6 +98,52 @@ vacía, porque un presupuesto ausente no es un presupuesto de cero.
 Solo se generan el **presupuesto de costes** (importe del presupuesto más
 adicionales) y la **liquidación de costes** (lo medido). La estimación y el
 cálculo proceden de la fase de proyecto; los ratios necesarios no están aquí.
+
+En **Proyecto → Determinación de costes** las cuatro fases figuran una junto a
+otra, una fila por grupo de costes, con la desviación entre la primera y la
+última fase disponible — también en PDF. **Una fase que falta queda vacía**, y
+con una sola fase no hay desviación.
+
+## Datos de cálculo (X52)
+
+Un **archivo X52** lleva el cálculo detrás de los precios: las **clases de
+coste** en la cabecera (mano de obra, material, maquinaria, subcontratación) y
+los **enfoques de coste** en cada partida. **Presupuesto → Datos de cálculo**
+obtiene de ahí
+
+- los **EKT** — costes directos de la prestación parcial,
+- los **GKT** — el recargo sobre ellos.
+
+**El tipo de recargo pertenece a la clase de coste, no al enfoque.** Una empresa
+recarga la mano de obra de forma distinta al material, pero no partida por
+partida. Sin tipo no hay recargo — un cero supuesto afirmaría que no se recarga
+nada.
+
+**La diferencia frente al precio ofertado es el hallazgo real.** Donde el cálculo
+se aparta del importe de la partida, se transfirió de forma incompleta o se
+corrigió deliberadamente. Las partidas sin precio se cuentan en lugar de entrar
+en la diferencia total — de lo contrario, un precio ausente parecería un error de
+cálculo.
+
+Una **partida de recargo no debe llevar enfoques de coste propios**: se calcula
+como porcentaje de otras partidas, y los enfoques propios contarían el mismo
+dinero una segunda vez. La importación lo señala pero no lo corrige — el archivo
+viene de otro sistema, y lo que allí consta es su afirmación.
+
+## Catálogos de costes de construcción
+
+Un catálogo de costes (**GAEB X50**) es una obra de consulta: indica lo que un
+elemento constructivo cuesta *habitualmente* — «muro exterior de doble hoja:
+320 €/m²». Así alimenta las primeras fases de costes, para las que los datos
+propios no dan cifras.
+
+**El valor de referencia es un intervalo**, no un número: desde, medio y hasta
+figuran uno junto a otro. El valor medio es el de cálculo; el intervalo dice
+cuán fiable es.
+
+Cada elemento de coste puede vincularse a un **artículo** propio; los valores
+aparecen entonces en la ficha del artículo como comparación. **No se adopta
+nada:** el catálogo dice lo habitual, el maestro de artículos lo que vale aquí.
 
 ## Cambiar de edición
 

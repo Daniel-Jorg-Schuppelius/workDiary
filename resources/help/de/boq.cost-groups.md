@@ -63,6 +63,12 @@ welcher Herkunft. Greifen mehrere Regeln, gewinnt die mit dem kleinsten Rang.
 umschaltbar zwischen erster, zweiter und dritter Gliederungsebene, mit Diagramm
 und CSV-/Excel-Ausgabe.
 
+Die drei Ebenen lassen sich auch **ineinander** zeigen: 300 über 310 über 311,
+jede Ebene auf- und zuklappbar. Die Summe einer Oberebene entsteht dabei **aus
+ihren Kindern**; sie kann gar nicht von der Summe darunter abweichen. Der Export
+dieser Sicht trägt die Ebene als eigene Spalte — eingerückte Nummern wären in
+einer Tabellenkalkulation nicht filterbar.
+
 Drei Dinge sind wichtig zu wissen:
 
 1. **Teilmengen schlagen die Position.** Ist eine Position aufgeteilt (300 m³
@@ -94,6 +100,52 @@ null.
 Ausgegeben werden nur **Kostenanschlag** (LV-Ansatz samt Nachträgen) und
 **Kostenfeststellung** (die aufgemessene Leistung). Schätzung und Berechnung
 stammen aus der Planung; die dafür nötigen Kennwerte liegen hier nicht vor.
+
+Unter **Projekt → Kostenermittlung** stehen alle vier Stufen nebeneinander, je
+Kostengruppe eine Zeile, dazu die Abweichung zwischen der ersten und der letzten
+vorhandenen Stufe — auch als PDF. **Eine fehlende Stufe bleibt leer**, und mit
+nur einer Stufe gibt es keine Abweichung.
+
+## Kalkulationsdaten (X52)
+
+Eine **X52-Datei** trägt die Kalkulation hinter den Preisen: **Kostenarten** im
+Kopf (Lohn, Material, Gerät, Fremdleistung) und **Kostenansätze** an jeder
+Position. Unter **Leistungsverzeichnis → Kalkulationsdaten** stehen daraus
+
+- die **EKT** — Einzelkosten der Teilleistung, was die Ansätze unmittelbar
+  kosten,
+- die **GKT** — der Zuschlag darauf.
+
+**Der Zuschlagssatz hängt an der Kostenart, nicht am Ansatz.** Ein Betrieb
+schlägt auf Lohn anders zu als auf Material, aber nicht je Position. Fehlt der
+Satz, gibt es keinen Zuschlag — eine unterstellte Null behauptete, es werde
+nichts zugeschlagen.
+
+**Die Differenz zum angebotenen Preis ist der eigentliche Befund.** Weicht die
+Kalkulation vom Positionsbetrag ab, wurde sie entweder unvollständig übertragen
+oder bewusst korrigiert. Positionen ohne Preis gehen nicht in die
+Gesamtdifferenz ein, sondern werden gezählt — sonst sähe eine fehlende
+Preisangabe wie ein Kalkulationsfehler aus.
+
+Eine **Zuschlagsposition darf keine eigenen Kostenansätze tragen**: Sie rechnet
+prozentual auf andere Positionen, eigene Ansätze zählten dasselbe Geld ein
+zweites Mal. Der Import beanstandet das, bereinigt es aber nicht — die Datei
+kommt aus einem fremden System, und was dort steht, ist dessen Aussage.
+
+## Baukostenkataloge
+
+Ein Baukostenkatalog (**GAEB X50**) ist ein Nachschlagewerk: Er sagt, was ein
+Bauteil *üblicherweise* kostet — „Außenwand, zweischalig — 320 €/m²". Damit
+speist er die frühen Kostenstufen, für die aus dem eigenen Bestand keine Zahlen
+vorliegen.
+
+**Der Kennwert ist eine Spanne**, keine Zahl: von, Mittel und bis stehen
+nebeneinander. Der Mittelwert ist der Rechenwert, die Spanne daneben sagt, wie
+sicher er ist.
+
+Jedes Kostenelement lässt sich mit einem **eigenen Artikel** verknüpfen; auf der
+Artikelseite erscheinen die Kennwerte dann als Vergleich. **Übernommen wird
+nichts:** Der Katalog sagt, was üblich ist, der Artikelstamm, was bei uns gilt.
 
 ## Ausgabe wechseln
 

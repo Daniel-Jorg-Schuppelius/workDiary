@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $code
  * @property string $label
  * @property string|null $unit
+ * @property int|null $article_id
  * @property string|null $unit_price_from
  * @property string|null $unit_price_avg
  * @property string|null $unit_price_to
@@ -39,7 +40,7 @@ class CostElement extends Model {
     protected $table = 'cost_elements';
 
     protected $fillable = [
-        'cost_element_catalog_id', 'code', 'label', 'unit',
+        'cost_element_catalog_id', 'code', 'label', 'unit', 'article_id',
         'unit_price_from', 'unit_price_avg', 'unit_price_to',
         'remark', 'level', 'parent_code', 'position',
     ];
@@ -56,6 +57,18 @@ class CostElement extends Model {
     /** @return BelongsTo<CostElementCatalog, $this> */
     public function catalog(): BelongsTo {
         return $this->belongsTo(CostElementCatalog::class, 'cost_element_catalog_id');
+    }
+
+    /**
+     * Der eigene Artikel, dem dieser Kennwert entspricht (MVP-645).
+     *
+     * Die Verknüpfung **ersetzt keinen Preis**: Der Kennwert bleibt ein
+     * Anhaltspunkt aus fremder Quelle, der eigene Preis bleibt der eigene.
+     *
+     * @return BelongsTo<\App\Models\Article, $this>
+     */
+    public function article(): BelongsTo {
+        return $this->belongsTo(\App\Models\Article::class, 'article_id');
     }
 
     /**

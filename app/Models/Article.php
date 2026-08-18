@@ -138,6 +138,21 @@ class Article extends Model {
      *
      * @return HasMany<ArticlePriceTier, $this>
      */
+    /**
+     * Kennwerte aus Baukostenkatalogen, die auf diesen Artikel zeigen
+     * (Feature 109, MVP-645).
+     *
+     * Sie sagen, was das Bauteil **üblicherweise** kostet — der eigene Preis
+     * bleibt davon unberührt. Der Vergleich ist der Zweck, nicht die
+     * Übernahme.
+     *
+     * @return HasMany<\App\Models\Costing\CostElement, $this>
+     */
+    public function costBenchmarks(): HasMany {
+        return $this->hasMany(\App\Models\Costing\CostElement::class, 'article_id');
+    }
+
+    /** @return HasMany<ArticlePriceTier, $this> */
     public function priceTiers(): HasMany {
         return $this->hasMany(ArticlePriceTier::class)->orderBy('min_qty');
     }

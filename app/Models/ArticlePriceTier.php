@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -27,6 +28,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $unit_price
  */
 class ArticlePriceTier extends Model {
+    use BelongsToOrganization;
+
     protected $fillable = [
         'organization_id',
         'article_id',

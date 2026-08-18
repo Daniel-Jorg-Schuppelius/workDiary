@@ -49,7 +49,8 @@ class CostElementCatalogController extends Controller {
 
         return view('gaeb.cost-catalogs.show', [
             'catalog' => $catalog,
-            'elements' => $catalog->elements()->paginate(100),
+            'elements' => $catalog->elements()->with('article')->paginate(100),
+            'articles' => \App\Models\Article::query()->orderBy('name')->limit(500)->get(['id', 'name', 'number']),
             'canManage' => Gate::allows(P::ProjectImport->value),
         ]);
     }
@@ -78,6 +79,35 @@ class CostElementCatalogController extends Controller {
                 'name' => $catalog->name,
                 'count' => $catalog->elements()->count(),
             ]));
+    }
+
+    /**
+     * Ein Kostenelement mit einem eigenen Artikel verknüpfen (MVP-645).
+     *
+     * Damit sieht man beim Artikel, wo sein Preis im Marktvergleich liegt —
+     * **übernommen wird nichts**: Der Kennwert ist ein Anhaltspunkt aus
+     * fremder Quelle, der eigene Preis bleibt der eigene.
+     */
+    public function linkArticle(Request $request, CostElementCatalog $catalog, \App\Models\Costing\CostElement $element): RedirectResponse {
+        Gate::authorize(P::ProjectImport->value);
+        $this->guard($catalog);
+        abort_unless($element->cost_element_catalog_id === $catalog->id, 404);
+
+        $raw = $request->input('article');
+        $articleId = is_string($raw) && $raw !== ''
+            ? app(\App\Services\SqidEncoder::class)->decode(\App\Models\Article::class, $raw)
+            : null;
+
+        // Der Org-Scope liegt am Modell; ein fremder Sqid findet nichts.
+        if ($articleId !== null && ! \App\Models\Article::query()->whereKey($articleId)->exists()) {
+            return back()->with('error', __('Artikel nicht gefunden.'));
+        }
+
+        $element->update(['article_id' => $articleId]);
+
+        return back()->with('success', $articleId === null
+            ? __('Verknüpfung entfernt.')
+            : __('Kennwert mit Artikel verknüpft.'));
     }
 
     /** Ausgabe in der Bauform, in der der Katalog hereinkam. */

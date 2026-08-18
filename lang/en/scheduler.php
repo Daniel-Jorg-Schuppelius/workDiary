@@ -83,7 +83,8 @@ return [
         'billbee' => ['sync' => 'Billbee sync'],
         'caldav' => ['publish' => 'CalDAV calendar publish reconciliation'],
         'carddav' => ['sync' => 'CardDAV sync'],
-        'catalog' => ['fetch_due' => 'Fetch catalog sources'],
+        'catalog' => ['fetch_due' => 'Fetch catalog sources', 'apply_pending_prices' => 'Activate scheduled price levels'],
+        'tenders' => ['fetch_notices' => 'Fetch tender notices'],
         'chat' => [
             'send_reminders' => 'Send chat reminders',
             'send_scheduled' => 'Send scheduled chat messages',

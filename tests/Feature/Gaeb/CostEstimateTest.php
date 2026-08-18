@@ -242,6 +242,62 @@ final class CostEstimateTest extends TestCase {
             ->assertStatus(422);
     }
 
+    // ── HOAI-Stufenbericht (MVP-644) ─────────────────────────────────────
+
+    /**
+     * Der Bericht stellt die Stufen **nebeneinander** — und lässt eine
+     * fehlende Stufe leer, statt sie aus der Nachbarstufe zu füllen.
+     */
+    public function test_hoai_report_puts_the_stages_side_by_side(): void {
+        // Berechnung aus fremder X51 …
+        app(CostEstimateService::class)->import($this->x51(), $this->organization->id, $this->admin, $this->project);
+
+        // … und Anschlag aus dem eigenen LV.
+        $this->catalog();
+        $this->item('01.0010', '100.000', '1000.00', '310');
+        app(CostEstimateService::class)->deriveFromBill($this->bill, CostEstimate::STAGE_QUOTE, $this->admin);
+
+        $report = app(\App\Services\Gaeb\HoaiCostReportService::class)->forProject($this->project);
+
+        $row = collect($report['rows'])->firstWhere('code', '300');
+        $this->assertNotNull($row);
+        // Der Bericht fasst auf die erste Ebene zusammen: KG 310 (120.000) und
+        // 320 (80.000) der Berechnung liegen beide unter „300".
+        $this->assertSame(200000.0, $row['amounts'][CostEstimate::STAGE_CALCULATION]);
+        $this->assertSame(100000.0, $row['amounts'][CostEstimate::STAGE_QUOTE]);
+        // Nicht ermittelte Stufen bleiben leer, nicht null-als-Betrag.
+        $this->assertNull($row['amounts'][CostEstimate::STAGE_ESTIMATE]);
+        $this->assertNull($row['amounts'][CostEstimate::STAGE_FINAL]);
+        // Abweichung zwischen erster und letzter vorhandener Stufe.
+        $this->assertSame(-100000.0, $row['delta']);
+    }
+
+    /** Mit nur einer Stufe gibt es keine Abweichung — `null`, nicht 0. */
+    public function test_single_stage_has_no_variance(): void {
+        app(CostEstimateService::class)->import($this->x51(), $this->organization->id, $this->admin, $this->project);
+
+        $report = app(\App\Services\Gaeb\HoaiCostReportService::class)->forProject($this->project);
+
+        $this->assertNull($report['delta']);
+        $this->assertNull($report['rows'][0]['delta']);
+    }
+
+    public function test_hoai_report_renders_and_exports_pdf(): void {
+        app(CostEstimateService::class)->import($this->x51(), $this->organization->id, $this->admin, $this->project);
+
+        $this->actingAs($this->admin)
+            ->get(route('projects.hoai-report', $this->project))
+            ->assertOk()
+            ->assertSee('Kostenberechnung');
+
+        $pdf = $this->actingAs($this->admin)
+            ->get(route('projects.hoai-report', [$this->project, 'export' => 'pdf']));
+
+        $pdf->assertOk();
+        $this->assertSame('application/pdf', $pdf->headers->get('Content-Type'));
+        $this->assertStringStartsWith('%PDF', $pdf->getContent());
+    }
+
     public function test_import_route_stores_the_estimate(): void {
         $this->actingAs($this->admin)->post(route('bill-of-quantities.cost-estimate.import'), [
             'file' => \Illuminate\Http\UploadedFile::fake()->createWithContent('kb.x51', $this->x51()),

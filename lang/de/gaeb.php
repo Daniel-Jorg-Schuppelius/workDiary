@@ -125,11 +125,15 @@ return [
         ],
     ],
 
+    'calculation' => [
+        'unpriced_hint' => ':count Position trägt keinen Preis und geht deshalb nicht in die Gesamtdifferenz ein.|:count Positionen tragen keinen Preis und gehen deshalb nicht in die Gesamtdifferenz ein.',
+    ],
     'preflight' => [
         'version_unknown' => 'GAEB-Version konnte nicht erkannt werden.',
         'version_unsupported' => 'GAEB-Version :version wird nicht unterstützt (Ziellinie 3.3).',
         'phase_unknown' => 'Austauschphase „:code" ist unbekannt.',
         'no_items' => 'Die Datei enthält keine Positionen.',
+        'markup_with_cost_approach' => 'Position :ref ist eine Zuschlagsposition und trägt trotzdem Kostenansätze — der Zuschlag rechnet auf andere Positionen, das Geld zählte sonst zweimal.',
         'vendor_record_type' => 'Die Datei enthält :count Sätze der herstellerfreien Zeilenart :type — ihr Inhalt wird nicht ausgewertet (dort liegen bei manchen Systemen die Kostengruppen).',
         'item_missing_ref' => 'Position ohne Ordnungszahl: :text',
         'duplicate_ref' => 'Ordnungszahl :ref kommt mehrfach vor.',

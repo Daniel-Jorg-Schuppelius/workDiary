@@ -164,6 +164,52 @@ final class CostElementCatalogTest extends TestCase {
             ->assertSee('Aussenwaende');
     }
 
+    /**
+     * Kennwert und Artikelstamm (MVP-645): Die Verknüpfung stellt beides
+     * nebeneinander — **übernommen wird nichts**.
+     */
+    public function test_benchmark_can_be_linked_to_an_article(): void {
+        $catalog = app(CostElementCatalogService::class)
+            ->import($this->x50(), $this->organization->id, $this->admin);
+        $element = $catalog->elements()->where('code', '330')->firstOrFail();
+
+        $article = \App\Models\Article::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Außenwand zweischalig',
+        ]);
+
+        $this->actingAs($this->admin)->post(
+            route('cost-catalogs.link-article', [$catalog, $element]),
+            ['article' => $article->sqid],
+        )->assertRedirect();
+
+        $this->assertSame($article->id, $element->refresh()->article_id);
+        // Der Artikelpreis bleibt unangetastet — der Kennwert ist ein
+        // Anhaltspunkt, keine Kalkulation.
+        $this->assertSame(1, $article->costBenchmarks()->count());
+
+        // Und die Artikelseite zeigt ihn.
+        $this->actingAs($this->admin)
+            ->get(route('articles.show', $article))
+            ->assertOk()
+            ->assertSee('Kennwerte aus Baukostenkatalogen');
+    }
+
+    /** Ein leerer Wert löst die Verknüpfung wieder. */
+    public function test_link_can_be_cleared(): void {
+        $catalog = app(CostElementCatalogService::class)
+            ->import($this->x50(), $this->organization->id, $this->admin);
+        $element = $catalog->elements()->where('code', '330')->firstOrFail();
+        $article = \App\Models\Article::factory()->create(['organization_id' => $this->organization->id]);
+        $element->update(['article_id' => $article->id]);
+
+        $this->actingAs($this->admin)
+            ->post(route('cost-catalogs.link-article', [$catalog, $element]), ['article' => ''])
+            ->assertRedirect();
+
+        $this->assertNull($element->refresh()->article_id);
+    }
+
     /** Fremde Kataloge sind nicht erreichbar. */
     public function test_foreign_catalog_is_not_reachable(): void {
         $other = \App\Models\Organization::factory()->create();

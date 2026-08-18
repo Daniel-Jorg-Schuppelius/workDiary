@@ -61,6 +61,12 @@ origin. If several rules match, the lowest rank wins.
 switchable between the first, second and third level of detail, with a chart and
 CSV/Excel output.
 
+The three levels can also be shown **inside one another**: 300 above 310 above
+311, with every level expanding and collapsing. A parent's total is built **from
+its children**; it cannot differ from the sum below it. The export of this view
+carries the level as its own column — indented numbers would not be filterable in
+a spreadsheet.
+
 Three things matter:
 
 1. **Partial quantities beat the item.** If an item is split (300 m³ to CG 310,
@@ -91,6 +97,50 @@ that column stays empty, because a missing budget is not a budget of zero.
 Only **cost quotation** (tender scope plus addenda) and **final cost
 statement** (the recorded work) are produced. Estimate and calculation come
 from the design stage; the benchmarks they require are not held here.
+
+Under **Project → Cost determination** all four stages stand side by side, one
+row per cost group, together with the variance between the first and the last
+available stage — as PDF too. **A missing stage stays empty**, and with only one
+stage there is no variance.
+
+## Calculation data (X52)
+
+An **X52 file** carries the calculation behind the prices: **cost types** in the
+header (labour, material, plant, subcontracting) and **cost approaches** on each
+item. **Bill of quantities → Calculation data** derives from them
+
+- the **EKT** — direct costs of the part-service, what the approaches cost
+  outright,
+- the **GKT** — the markup on top.
+
+**The markup rate belongs to the cost type, not to the approach.** A firm marks
+up labour differently from material, but not per item. Without a rate there is
+no markup — an assumed zero would claim that nothing is marked up.
+
+**The difference against the offered price is the actual finding.** Where the
+calculation deviates from the item total, it was either transferred incompletely
+or corrected deliberately. Items without a price are counted rather than folded
+into the overall difference — otherwise a missing price would look like a
+calculation error.
+
+A **markup item must not carry its own cost approaches**: it is calculated as a
+percentage of other items, so own approaches would count the same money a second
+time. The import reports this but does not clean it up — the file comes from
+another system, and what stands there is that system's statement.
+
+## Building cost catalogues
+
+A building cost catalogue (**GAEB X50**) is a reference work: it states what a
+building element *usually* costs — “external wall, cavity — €320/m²”. It thereby
+feeds the early cost stages for which own data provides no figures.
+
+**The benchmark is a range**, not a number: from, average and to stand side by
+side. The average is the figure to calculate with; the range beside it says how
+certain it is.
+
+Every cost element can be linked to one of your own **articles**; the benchmarks
+then appear on the article page for comparison. **Nothing is adopted:** the
+catalogue says what is usual, the article master says what applies here.
 
 ## Changing the edition
 

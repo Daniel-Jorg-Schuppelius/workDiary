@@ -136,6 +136,8 @@ return [
         'bill-of-quantities.catalog-edition' => 'boq.cost-groups',
         'catalog-rules.*' => 'boq.cost-groups',
         'cost-catalogs.*' => 'boq.cost-groups',
+        'projects.hoai-report' => 'boq.cost-groups',
+        'bill-of-quantities.calculation-data' => 'boq.cost-groups',
         'bill-of-quantities.*' => 'boq.overview',
         // Lieferantenkataloge (Feature 050) + Preis-/Margenregeln
         'supplier-catalogs.*' => 'supplier-catalogs.overview',

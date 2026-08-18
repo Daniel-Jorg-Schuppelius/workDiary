@@ -565,6 +565,77 @@ final class CostGroupReportTest extends TestCase {
         $this->assertLessThan(5.0, $seconds, sprintf('Auswertung dauerte %.1f s.', $seconds));
     }
 
+    /**
+     * Pivot (MVP-648): Die Summe einer Oberebene entsteht **aus ihren Kindern**.
+     * Liefe sie über eine zweite Rechnung, könnten Ebene und Summe auseinander
+     * laufen, ohne dass es jemandem auffiele.
+     */
+    public function test_pivot_folds_children_into_their_parents(): void {
+        $this->catalog();
+        $this->assign($this->item('01.0010', '100.000', '10.00'), '311');
+        $this->assign($this->item('01.0020', '100.000', '20.00'), '312');
+        $this->assign($this->item('01.0030', '100.000', '30.00'), '320');
+
+        $pivot = app(CostGroupReportService::class)->pivot($this->bill);
+
+        $this->assertCount(1, $pivot['rows']);
+        $this->assertSame('300', $pivot['rows'][0]['code']);
+        $this->assertSame(6000.0, $pivot['rows'][0]['amount']);
+
+        $second = $pivot['rows'][0]['children'];
+        $this->assertSame(['310', '320'], array_column($second, 'code'));
+        $this->assertSame(3000.0, $second[0]['amount']);
+        $this->assertSame(3000.0, $second[1]['amount']);
+
+        // Die dritte Ebene steht nur da, wo sie sich von der zweiten
+        // unterscheidet - 320 hat keine Unterzeile mit derselben Zahl.
+        $this->assertSame(['311', '312'], array_column($second[0]['children'], 'code'));
+        $this->assertSame([], $second[1]['children']);
+    }
+
+    /** Auch im Pivot gehört der Rest ohne Zuordnung in die Tabelle. */
+    public function test_pivot_keeps_the_unassigned_remainder(): void {
+        $this->catalog();
+        $this->assign($this->item('01.0010', '10.000', '10.00'), '310');
+        $this->item('01.0020', '5.000', '10.00');
+
+        $pivot = app(CostGroupReportService::class)->pivot($this->bill);
+
+        $this->assertSame(50.0, $pivot['unassigned']);
+        $this->assertSame(150.0, $pivot['total']);
+    }
+
+    public function test_pivot_page_renders_all_levels(): void {
+        (new CatalogRegistrySeeder)->run();
+        $this->catalog();
+        $this->assign($this->item('01.0010', '10.000', '10.00'), '311');
+
+        $this->actingAs($this->admin)
+            ->get(route('bill-of-quantities.cost-groups', [$this->bill, 'level' => 'all']))
+            ->assertOk()
+            ->assertSee('treeTable')
+            ->assertSee('Bauwerk')     // Ebene 1
+            ->assertSee('Baugrube');   // Ebene 2
+    }
+
+    /** Der Pivot-Export trägt die Ebene als Spalte - eingerückte Nummern wären nicht filterbar. */
+    public function test_pivot_export_carries_the_level_column(): void {
+        (new CatalogRegistrySeeder)->run();
+        $this->catalog();
+        $this->assign($this->item('01.0010', '10.000', '10.00'), '311');
+
+        $response = $this->actingAs($this->admin)
+            ->get(route('bill-of-quantities.cost-groups', [$this->bill, 'level' => 'all', 'export' => 'csv']));
+
+        $response->assertOk();
+        $csv = $response->getContent();
+
+        $this->assertStringContainsString('Ebene', $csv);
+        $this->assertStringContainsString('300', $csv);
+        $this->assertStringContainsString('311', $csv);
+        $this->assertStringContainsString('Ohne Zuordnung', $csv);
+    }
+
     public function test_page_renders_with_unassigned_row(): void {
         (new CatalogRegistrySeeder)->run();
         $this->catalog();

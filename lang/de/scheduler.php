@@ -83,7 +83,8 @@ return [
         'billbee' => ['sync' => 'Billbee-Abgleich'],
         'caldav' => ['publish' => 'CalDAV-Kalender-Publish-Abgleich'],
         'carddav' => ['sync' => 'CardDAV-Abgleich'],
-        'catalog' => ['fetch_due' => 'Katalogquellen abrufen'],
+        'catalog' => ['fetch_due' => 'Katalogquellen abrufen', 'apply_pending_prices' => 'Vorgemerkte Preisstände aktivieren'],
+        'tenders' => ['fetch_notices' => 'Bekanntmachungen abrufen'],
         'chat' => [
             'send_reminders' => 'Chat-Erinnerungen versenden',
             'send_scheduled' => 'Geplante Chat-Nachrichten senden',

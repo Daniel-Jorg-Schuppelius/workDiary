@@ -125,11 +125,15 @@ return [
         ],
     ],
 
+    'calculation' => [
+        'unpriced_hint' => ':count item carries no price and is therefore left out of the overall difference.|:count items carry no price and are therefore left out of the overall difference.',
+    ],
     'preflight' => [
         'version_unknown' => 'GAEB version could not be detected.',
         'version_unsupported' => 'GAEB version :version is not supported (target line 3.3).',
         'phase_unknown' => 'Exchange phase ":code" is unknown.',
         'no_items' => 'The file contains no line items.',
+        'markup_with_cost_approach' => 'Item :ref is a markup item yet carries cost approaches — the markup is calculated on other items, so the money would be counted twice.',
         'vendor_record_type' => 'The file contains :count records of vendor-specific record type :type — their content is not evaluated (some systems keep the cost groups there).',
         'item_missing_ref' => 'Item without reference number: :text',
         'duplicate_ref' => 'Reference number :ref appears more than once.',

@@ -213,24 +213,95 @@ class BillOfQuantityController extends Controller {
         $this->canView();
         abort_unless($billOfQuantity->organization_id === $this->currentOrganization()->id, 404);
 
+        // „alle" ist keine vierte Ebene, sondern die Sicht auf alle drei
+        // ineinander (MVP-648).
+        $pivot = $request->query('level') === 'all';
         $level = (int) $request->integer('level', 2);
         $level = in_array($level, [1, 2, 3], true) ? $level : 2;
 
         // Export derselben Zahlen (MVP-644): Wer die Auswertung weiterreicht,
         // soll nicht abtippen müssen.
         if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
-            return $this->exportCostGroups($billOfQuantity, $report, $level, $request);
+            return $this->exportCostGroups($billOfQuantity, $report, $level, $request, $pivot);
         }
 
         return view('bill-of-quantities.cost-groups', [
             'bill' => $billOfQuantity,
             'report' => $report->forBill($billOfQuantity, null, $level),
+            'pivot' => $pivot ? $report->pivot($billOfQuantity) : null,
             // Kostenverfolgung (MVP-643) steht auf derselben Seite: Wer die
             // Summe je Gruppe liest, will als Nächstes wissen, was davon
             // ausgeführt ist.
             'lifecycle' => $report->lifecycle($billOfQuantity, null, $level),
             'level' => $level,
         ]);
+    }
+
+    /**
+     * Kalkulationsdaten (Feature 109, MVP-647): **EKT und GKT** je Kostenart
+     * und je Position, dazu der Abgleich mit dem angebotenen Preis.
+     *
+     * Die Differenz ist der eigentliche Zweck: Eine Kalkulation, die vom
+     * Positionsbetrag abweicht, ist entweder unvollständig übertragen oder
+     * bewusst korrigiert worden — beides muss sichtbar sein.
+     */
+    public function calculationData(Request $request, BillOfQuantity $billOfQuantity, \App\Services\Gaeb\BoqCalculationDataService $service): View|Response {
+        $this->canView();
+        abort_unless($billOfQuantity->organization_id === $this->currentOrganization()->id, 404);
+
+        $report = $service->forBill($billOfQuantity);
+
+        if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
+            return $this->exportCalculationData($billOfQuantity, $report, $request);
+        }
+
+        return view('bill-of-quantities.calculation-data', [
+            'bill' => $billOfQuantity,
+            'report' => $report,
+            // Zuschlagspositionen mit eigenen Ansätzen sind ein Formatverstoß
+            // (X52) - er wird benannt, nicht bereinigt.
+            'markupWithApproaches' => $service->markupItemsWithApproaches($billOfQuantity),
+        ]);
+    }
+
+    /**
+     * @param  array{items: list<array{item: BoqItem, ekt: float, gkt: float, calculated: float, offered: float|null, delta: float|null}>, byCostType: list<array{key: string, description: string|null, ekt: float, gkt: float, total: float}>, ekt: float, gkt: float, calculated: float, offered: float, delta: float, unpriced: int, currency: string}  $report
+     */
+    private function exportCalculationData(BillOfQuantity $bill, array $report, Request $request): Response {
+        /** @var list<list<string|int|float|null>> $rows */
+        $rows = [[
+            (string) __('Block'), (string) __('Schlüssel'), (string) __('Bezeichnung'),
+            (string) __('EKT'), (string) __('GKT'), (string) __('Kalkuliert'),
+            (string) __('Angeboten'), (string) __('Differenz'),
+        ]];
+
+        foreach ($report['byCostType'] as $row) {
+            $rows[] = [
+                (string) __('Kostenarten'), $row['key'], $row['description'],
+                NumberHelper::toGermanFormat($row['ekt'], 2),
+                NumberHelper::toGermanFormat($row['gkt'], 2),
+                NumberHelper::toGermanFormat($row['total'], 2), '', '',
+            ];
+        }
+
+        foreach ($report['items'] as $row) {
+            $rows[] = [
+                (string) __('Positionen'), $row['item']->reference_no, $row['item']->short_text,
+                NumberHelper::toGermanFormat($row['ekt'], 2),
+                NumberHelper::toGermanFormat($row['gkt'], 2),
+                NumberHelper::toGermanFormat($row['calculated'], 2),
+                $row['offered'] === null ? '' : NumberHelper::toGermanFormat($row['offered'], 2),
+                $row['delta'] === null ? '' : NumberHelper::toGermanFormat($row['delta'], 2),
+            ];
+        }
+
+        return $this->csvWithMetadata(
+            $rows,
+            'kalkulationsdaten_' . $bill->sqid . '.csv',
+            'boq.calculation_data',
+            ['bill' => $bill->sqid],
+            $request,
+        );
     }
 
     /**
@@ -403,7 +474,11 @@ class BillOfQuantityController extends Controller {
      * Beide Blöcke in einer Datei: die Summen und die Verfolgung. Getrennte
      * Dateien zwängen dazu, sie außerhalb wieder zusammenzufügen.
      */
-    private function exportCostGroups(BillOfQuantity $bill, \App\Services\Gaeb\CostGroupReportService $report, int $level, Request $request): Response {
+    private function exportCostGroups(BillOfQuantity $bill, \App\Services\Gaeb\CostGroupReportService $report, int $level, Request $request, bool $pivot = false): Response {
+        if ($pivot) {
+            return $this->exportCostGroupPivot($bill, $report, $request);
+        }
+
         $summary = $report->forBill($bill, null, $level);
         $lifecycle = $report->lifecycle($bill, null, $level);
 
@@ -441,6 +516,47 @@ class BillOfQuantityController extends Controller {
             'kostengruppen_' . $bill->sqid . '.csv',
             'boq.cost_groups',
             ['bill' => $bill->sqid, 'level' => $level],
+            $request,
+        );
+    }
+
+    /**
+     * Pivot-Ausgabe (MVP-648): der Baum flach, jede Zeile mit ihrer Ebene.
+     *
+     * Eingerückte Nummern wären in einer Tabellenkalkulation nicht filterbar —
+     * die Ebenenspalte ist es.
+     */
+    private function exportCostGroupPivot(BillOfQuantity $bill, \App\Services\Gaeb\CostGroupReportService $report, Request $request): Response {
+        $tree = $report->pivot($bill);
+
+        /** @var list<list<string|int|float|null>> $rows */
+        $rows = [[
+            (string) __('Ebene'), (string) __('Kostengruppe'), (string) __('Bezeichnung'),
+            (string) __('Summe'), (string) __('Anteil'),
+        ]];
+
+        $walk = function (array $nodes) use (&$walk, &$rows): void {
+            foreach ($nodes as $node) {
+                $rows[] = [
+                    $node['level'], $node['code'], $node['label'],
+                    NumberHelper::toGermanFormat($node['amount'], 2),
+                    NumberHelper::toGermanFormat($node['share'], 1),
+                ];
+                $walk($node['children']);
+            }
+        };
+        $walk($tree['rows']);
+
+        $rows[] = [
+            1, '', (string) __('Ohne Zuordnung'),
+            NumberHelper::toGermanFormat($tree['unassigned'], 2), '',
+        ];
+
+        return $this->csvWithMetadata(
+            $rows,
+            'kostengruppen_pivot_' . $bill->sqid . '.csv',
+            'boq.cost_groups',
+            ['bill' => $bill->sqid, 'level' => 'all'],
             $request,
         );
     }

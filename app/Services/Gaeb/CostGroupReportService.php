@@ -214,6 +214,121 @@ final class CostGroupReportService {
     }
 
     /**
+     * Kostengruppen-Pivot mit aufklappbaren Ebenen (Feature 109, MVP-644).
+     *
+     * Statt einer flachen Liste je gewählter Ebene liefert der Pivot **alle
+     * drei Ebenen ineinander**: 300 → 310 → 311. Wer eine Summe prüft, will
+     * sehen, woraus sie besteht, ohne die Ansicht umzuschalten und dabei den
+     * Zusammenhang zu verlieren.
+     *
+     * Die Summen der Oberebenen entstehen dabei **aus ihren Kindern**, nicht
+     * aus einer zweiten Rechnung — sonst könnten Ebene und Summe auseinander
+     * laufen.
+     *
+     * @return array{rows: list<array{code: string, label: string, level: int, amount: float, share: float, children: list<mixed>}>, unassigned: float, total: float}
+     */
+    public function pivot(BillOfQuantity $boq, ?string $catalogKey = null): array {
+        // Die feinste Ebene ist die Wahrheit; alles darüber wird gefaltet.
+        $leaves = $this->forBill($boq, $catalogKey, 3);
+        $catalog = $this->costGroupCatalog($boq, $catalogKey);
+        $registry = $catalog === null ? null : $this->registryFor($catalog);
+
+        $tree = [];
+        foreach ($leaves['rows'] as $row) {
+            $code = $row['code'];
+            $digits = preg_replace('/\D/', '', $code) ?? '';
+            if ($digits === '') {
+                // Eine Nummer ohne Ziffern lässt sich nicht falten; sie bleibt
+                // als eigene Wurzel stehen, statt aus der Summe zu fallen.
+                $tree[$code]['amount'] = ($tree[$code]['amount'] ?? 0.0) + $row['amount'];
+                $tree[$code]['children'] ??= [];
+
+                continue;
+            }
+
+            // Gefaltet wird mit derselben Regel wie in forBill() - zwei
+            // Faltregeln könnten auseinanderlaufen, und niemand sähe es.
+            $first = $this->truncate($code, 1);
+            $second = $this->truncate($code, 2);
+
+            $tree[$first]['amount'] = ($tree[$first]['amount'] ?? 0.0) + $row['amount'];
+            $tree[$first]['children'][$second]['amount'] = ($tree[$first]['children'][$second]['amount'] ?? 0.0) + $row['amount'];
+
+            // Die dritte Ebene nur, wo sie sich von der zweiten unterscheidet —
+            // sonst stünde dieselbe Zahl zweimal untereinander.
+            if ($code !== $second) {
+                $tree[$first]['children'][$second]['children'][$code] = $row['amount'];
+            }
+        }
+
+        ksort($tree);
+        $labels = $registry === null ? [] : $this->labels($registry, $this->allCodes($tree));
+        $total = $leaves['total'];
+
+        $out = [];
+        foreach ($tree as $firstCode => $firstNode) {
+            $secondOut = [];
+            ksort($firstNode['children']);
+            foreach ($firstNode['children'] as $secondCode => $secondNode) {
+                $thirdOut = [];
+                $third = $secondNode['children'] ?? [];
+                ksort($third);
+                foreach ($third as $thirdCode => $amount) {
+                    $thirdOut[] = $this->pivotRow((string) $thirdCode, 3, $amount, $total, $labels);
+                }
+                $secondOut[] = $this->pivotRow((string) $secondCode, 2, $secondNode['amount'], $total, $labels, $thirdOut);
+            }
+            $out[] = $this->pivotRow((string) $firstCode, 1, $firstNode['amount'], $total, $labels, $secondOut);
+        }
+
+        return [
+            'rows' => $out,
+            // „Ohne Zuordnung" gehört auch hier in die Tabelle - sonst summierte
+            // sich der Pivot auf weniger als das Verzeichnis.
+            'unassigned' => $leaves['unassigned'],
+            'total' => $total,
+        ];
+    }
+
+    /**
+     * @param  array<string, string>       $labels
+     * @param  list<mixed>                 $children
+     * @return array{code: string, label: string, level: int, amount: float, share: float, children: list<mixed>}
+     */
+    private function pivotRow(string $code, int $level, float $amount, float $total, array $labels, array $children = []): array {
+        return [
+            'code' => $code,
+            'label' => $labels[$code] ?? (string) __('Unbekannte Kostengruppe'),
+            'level' => $level,
+            'amount' => round($amount, 2),
+            'share' => $total > 0.0 ? round($amount / $total * 100, 1) : 0.0,
+            'children' => $children,
+        ];
+    }
+
+    /**
+     * Alle Nummern des Baums — für einen einzigen Label-Zugriff statt einem je
+     * Ebene.
+     *
+     * @param  array<string, mixed> $tree
+     * @return list<string>
+     */
+    private function allCodes(array $tree): array {
+        $codes = [];
+        foreach ($tree as $first => $firstNode) {
+            $codes[] = (string) $first;
+            foreach ($firstNode['children'] ?? [] as $second => $secondNode) {
+                $codes[] = (string) $second;
+                foreach (array_keys($secondNode['children'] ?? []) as $third) {
+                    $codes[] = (string) $third;
+                }
+            }
+        }
+
+        return array_values(array_unique($codes));
+    }
+
+    /**
      * Die Kostenermittlung, gegen die verglichen wird: die **jüngste** des
      * Projekts, an dem das Verzeichnis hängt.
      *

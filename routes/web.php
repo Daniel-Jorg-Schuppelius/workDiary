@@ -1312,6 +1312,8 @@ Route::middleware('auth')->group(function () {
         // MVP-084/085: LV-Workflow und GAEB-Export
         Route::get('bill-of-quantities/{billOfQuantity}/preisspiegel', [\App\Http\Controllers\BillOfQuantityController::class, 'priceComparison'])->name('bill-of-quantities.price-comparison');
         Route::get('bill-of-quantities/{billOfQuantity}/kostengruppen', [\App\Http\Controllers\BillOfQuantityController::class, 'costGroups'])->name('bill-of-quantities.cost-groups');
+        // Kalkulationsdaten (Feature 109, MVP-647): EKT/GKT je Kostenart.
+        Route::get('bill-of-quantities/{billOfQuantity}/kalkulation', [\App\Http\Controllers\BillOfQuantityController::class, 'calculationData'])->name('bill-of-quantities.calculation-data');
         // Zuordnungs-Oberfläche (Feature 109, MVP-639).
         Route::get('bill-of-quantities/{billOfQuantity}/zuordnung', [\App\Http\Controllers\BillOfQuantityController::class, 'catalogAssignment'])->name('bill-of-quantities.catalog-assignment');
         Route::post('bill-of-quantities/{billOfQuantity}/zuordnung', [\App\Http\Controllers\BillOfQuantityController::class, 'assignCatalogBulk'])->name('bill-of-quantities.catalog-assignment.bulk');
@@ -1325,10 +1327,13 @@ Route::middleware('auth')->group(function () {
         Route::get('bill-of-quantities/{billOfQuantity}/kostenermittlung', [\App\Http\Controllers\BillOfQuantityController::class, 'costEstimateExport'])->name('bill-of-quantities.cost-estimate.export');
         // Baukostenkataloge (Feature 109, MVP-645): Kennwerte als
         // Nachschlagewerk, X50 rein und raus.
+        // Kostenermittlung nach HOAI-Stufen (Feature 109, MVP-644).
+        Route::get('projekte/{project}/kostenermittlung', [\App\Http\Controllers\Gaeb\HoaiCostReportController::class, 'show'])->name('projects.hoai-report');
         Route::get('baukostenkataloge', [\App\Http\Controllers\Gaeb\CostElementCatalogController::class, 'index'])->name('cost-catalogs.index');
         Route::post('baukostenkataloge', [\App\Http\Controllers\Gaeb\CostElementCatalogController::class, 'store'])->name('cost-catalogs.store');
         Route::get('baukostenkataloge/{catalog}', [\App\Http\Controllers\Gaeb\CostElementCatalogController::class, 'show'])->name('cost-catalogs.show');
         Route::get('baukostenkataloge/{catalog}/export', [\App\Http\Controllers\Gaeb\CostElementCatalogController::class, 'export'])->name('cost-catalogs.export');
+        Route::post('baukostenkataloge/{catalog}/elemente/{element}/artikel', [\App\Http\Controllers\Gaeb\CostElementCatalogController::class, 'linkArticle'])->name('cost-catalogs.link-article');
         Route::delete('baukostenkataloge/{catalog}', [\App\Http\Controllers\Gaeb\CostElementCatalogController::class, 'destroy'])->name('cost-catalogs.destroy');
         // Regelwerk je Organisation (Feature 109, MVP-640).
         Route::get('zuordnungsregeln', [\App\Http\Controllers\Gaeb\CatalogRuleController::class, 'index'])->name('catalog-rules.index');

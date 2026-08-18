@@ -137,6 +137,33 @@ export function registerAlpineComponents(Alpine) {
         },
     }));
 
+    // Aufklappbarer Baum in einer Tabelle (Kostengruppen-Pivot, MVP-648).
+    // Der Zustand hängt an den Nummern, nicht an Zeilenindizes - sonst ginge
+    // er beim Ebenenwechsel verloren.
+    Alpine.data("treeTable", (openInitially) => ({
+        open: {},
+        init() {
+            // Die erste Ebene steht offen: Wer die Seite aufschlägt, will die
+            // Gliederung sehen, nicht erst klicken.
+            (openInitially || []).forEach((code) => {
+                this.open[code] = true;
+            });
+        },
+        toggle(code) {
+            this.open[code] = !this.open[code];
+        },
+        isOpen(code) {
+            return this.open[code] === true;
+        },
+        // Sichtbar ist eine Zeile nur, wenn jeder Vorfahr offen steht.
+        visible(...parents) {
+            return parents.every((code) => this.open[code] === true);
+        },
+        caret(code) {
+            return this.open[code] === true ? "expand_more" : "chevron_right";
+        },
+    }));
+
     // Mitarbeiter-Auswahlliste mit Sofort-Suche + Auswahlzähler.
     Alpine.data("userChecklist", (initialCount) => ({
         q: "",

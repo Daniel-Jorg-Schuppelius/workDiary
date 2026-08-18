@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Enums\Applications;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
 use ERechnungToolkit\Enums\GaebAwardCategory;
 
 /**
@@ -29,7 +31,9 @@ use ERechnungToolkit\Enums\GaebAwardCategory;
  * für sie `null` zurück, statt sie auf einen ähnlich klingenden Wert zu
  * verbiegen.
  */
-enum TenderProcedureType: string {
+enum TenderProcedureType: string implements HasLabel {
+    use HasOptions;
+
     // ── Unterschwellig: VOB/A Abschnitt 1 ────────────────────────────────
     case PublicInvitation = 'public_invitation';                 // Öffentliche Ausschreibung
     case RestrictedInvitation = 'restricted_invitation';         // Beschränkte Ausschreibung ohne Teilnahmewettbewerb

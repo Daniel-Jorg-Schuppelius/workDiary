@@ -125,11 +125,15 @@ return [
         ],
     ],
 
+    'calculation' => [
+        'unpriced_hint' => ':count voce non porta alcun prezzo e resta quindi fuori dalla differenza complessiva.|:count voci non portano alcun prezzo e restano quindi fuori dalla differenza complessiva.',
+    ],
     'preflight' => [
         'version_unknown' => 'Impossibile rilevare la versione GAEB.',
         'version_unsupported' => 'La versione GAEB :version non è supportata (linea obiettivo 3.3).',
         'phase_unknown' => 'La fase di scambio «:code» è sconosciuta.',
         'no_items' => 'Il file non contiene voci.',
+        'markup_with_cost_approach' => 'La voce :ref è una voce di maggiorazione e porta comunque approcci di costo — la maggiorazione si calcola su altre voci, il denaro verrebbe contato due volte.',
         'vendor_record_type' => 'Il file contiene :count record del tipo proprietario :type — il loro contenuto non viene valutato (alcuni sistemi vi collocano i gruppi di costo).',
         'item_missing_ref' => 'Voce senza numero d’ordine: :text',
         'duplicate_ref' => 'Il numero d’ordine :ref compare più volte.',

@@ -62,6 +62,12 @@ la posizione più bassa.
 **Costruzioni → computo metrico → Gruppi di costo** mostra i totali per gruppo,
 commutabili tra primo, secondo e terzo livello, con grafico e uscita CSV/Excel.
 
+I tre livelli si possono mostrare anche **uno dentro l’altro**: 300 sopra 310
+sopra 311, e ogni livello si apre e si chiude. Il totale di un livello superiore
+nasce **dai suoi figli**; non può discostarsi dalla somma sottostante.
+L’esportazione di questa vista porta il livello in una colonna propria — numeri
+rientrati non sarebbero filtrabili in un foglio di calcolo.
+
 Tre aspetti contano:
 
 1. **Le quantità parziali prevalgono sulla voce.** Se una voce è suddivisa
@@ -92,6 +98,52 @@ budget mancante non è un budget pari a zero.
 Vengono prodotti solo il **preventivo** (importo del computo più varianti) e il
 **consuntivo** (il misurato). Stima e calcolo appartengono alla progettazione; i
 parametri necessari qui non sono disponibili.
+
+In **Progetto → Determinazione dei costi** le quattro fasi stanno una accanto
+all’altra, una riga per gruppo di costo, con lo scostamento tra la prima e
+l’ultima fase disponibile — anche in PDF. **Una fase mancante resta vuota**, e
+con una sola fase non c’è scostamento.
+
+## Dati di calcolo (X52)
+
+Un **file X52** porta il calcolo dietro i prezzi: i **tipi di costo**
+nell’intestazione (manodopera, materiale, mezzi, subappalto) e gli **approcci di
+costo** su ogni voce. **Computo metrico → Dati di calcolo** ne ricava
+
+- gli **EKT** — costi diretti della prestazione parziale,
+- i **GKT** — la maggiorazione su di essi.
+
+**L’aliquota di maggiorazione appartiene al tipo di costo, non all’approccio.**
+Un’impresa maggiora la manodopera diversamente dal materiale, ma non voce per
+voce. Senza aliquota non c’è maggiorazione — uno zero presunto affermerebbe che
+non si maggiora nulla.
+
+**La differenza rispetto al prezzo offerto è il vero riscontro.** Dove il calcolo
+si discosta dall’importo della voce, è stato trasferito in modo incompleto oppure
+corretto deliberatamente. Le voci senza prezzo vengono contate anziché confluire
+nella differenza complessiva — altrimenti un prezzo mancante sembrerebbe un
+errore di calcolo.
+
+Una **voce di maggiorazione non deve portare propri approcci di costo**: si
+calcola in percentuale su altre voci, approcci propri conterebbero lo stesso
+denaro una seconda volta. L’importazione lo segnala senza correggerlo — il file
+proviene da un altro sistema, e ciò che vi sta scritto è la sua affermazione.
+
+## Cataloghi dei costi di costruzione
+
+Un catalogo dei costi (**GAEB X50**) è un’opera di consultazione: indica quanto
+costa *di norma* un elemento costruttivo — «parete esterna a doppio strato —
+320 €/m²». Alimenta così le prime fasi di costo, per le quali i dati propri non
+offrono cifre.
+
+**Il parametro è un intervallo**, non un numero: da, medio e a stanno uno
+accanto all’altro. Il valore medio è quello con cui si calcola; l’intervallo
+accanto dice quanto è affidabile.
+
+Ogni elemento di costo può essere collegato a un proprio **articolo**; i
+parametri compaiono allora nella scheda articolo a titolo di confronto. **Non
+viene ripreso nulla:** il catalogo dice cosa è usuale, l’anagrafica articoli
+cosa vale da noi.
 
 ## Cambiare edizione
 

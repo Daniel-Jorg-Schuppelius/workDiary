@@ -304,6 +304,7 @@ return [
         'bill-of-quantities.*' => 'module.bau', // Feature 049 GAEB-Leistungsverzeichnisse
         'catalog-rules.*' => 'module.bau', // Feature 109 Zuordnungsregeln
         'cost-catalogs.*' => 'module.bau', // Feature 109 Baukostenkataloge
+        'projects.hoai-report' => 'module.bau', // Feature 109 HOAI-Kostenermittlung
         'gaeb.*' => 'module.bau',               // Feature 049 GAEB-Import/-Export
 
         'admin.shipments.*' => 'module.versand', // Feature 059 Versand-/Logistik-Anbindung (DHL Paket)

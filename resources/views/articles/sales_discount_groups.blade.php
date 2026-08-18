@@ -59,7 +59,10 @@
                                 <td class="text-right">{{ $group->articles_count }}</td>
                                 <td class="text-right">
                                     <form method="POST" action="{{ route('articles.sales-discount-groups.destroy', $group) }}"
-                                          onsubmit="return confirm(@js(__('article.discount_group.confirm_delete')));">
+                                          data-confirm-dialog
+                                          data-confirm-title="{{ __('article.discount_group.action.delete') }}"
+                                          data-confirm-message="{{ __('article.discount_group.confirm_delete') }}"
+                                          data-confirm-tone="error">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('article.discount_group.action.delete') }}</button>
                                     </form>

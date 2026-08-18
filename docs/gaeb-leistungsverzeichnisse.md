@@ -173,12 +173,35 @@ Präfixvergleich: „013" trifft auch „013.2") oder über ein **Stichwort** im
 Der Regellauf **füllt nur Lücken**; greifen mehrere Regeln, gewinnt die mit dem
 kleinsten Rang.
 
+### Kalkulationsdaten
+
+Eine **GAEB-X52-Datei** trägt die Kalkulation hinter den Preisen. Unter
+**Leistungsverzeichnis → Kalkulationsdaten** stehen daraus die **EKT**
+(Einzelkosten der Teilleistung) und die **GKT** (der Zuschlag darauf), je
+Kostenart und je Position, dazu der Abgleich mit dem angebotenen Preis. Export
+als CSV oder Excel.
+
+Der Zuschlagssatz hängt an der Kostenart, nicht am einzelnen Ansatz — ein
+Betrieb schlägt auf Lohn anders zu als auf Material. Fehlt der Satz, gibt es
+keinen Zuschlag.
+
+Zwei Dinge bleiben bewusst sichtbar statt geglättet: Positionen **ohne Preis**
+gehen nicht in die Gesamtdifferenz ein, sondern werden gezählt, und
+**Zuschlagspositionen mit eigenen Kostenansätzen** werden beanstandet — der
+Zuschlag rechnet auf andere Positionen, das Geld zählte sonst zweimal.
+
 ### Auswerten
 
 **Leistungsverzeichnis → Kostengruppen** zeigt die Summen je Gruppe (erste bis
 dritte Gliederungsebene umschaltbar), darunter die **Kostenverfolgung** mit
 LV-Ansatz, Nachträgen, aufgemessener Leistung und Rest. Export als CSV oder
 Excel.
+
+Die vierte Einstellung des Umschalters, **„Alle Ebenen"**, zeigt sie
+ineinander: 300 über 310 über 311, jede Ebene auf- und zuklappbar. Die Summe
+einer Oberebene entsteht dabei aus ihren Kindern — sie kann von der Summe
+darunter nicht abweichen. Der Export dieser Sicht trägt die Ebene als eigene
+Spalte, damit sich in der Tabellenkalkulation danach filtern lässt.
 
 Jede Summenzeile ist **anklickbar** und führt zu den Positionen dahinter —
 gefiltert auf ihre Kostengruppe. Auf der zweiten Ebene sind das auch die
@@ -224,6 +247,17 @@ Kostenschätzung und Kostenberechnung erzeugt WorkDiary **nicht**: Sie stammen a
 der Planung, und die dafür nötigen Kennwerte liegen hier nicht vor. Gelesen
 werden alle vier Stufen.
 
+**Der Stufenbericht** unter **Projekt → Kostenermittlung** stellt alle vier
+nebeneinander, je Kostengruppe eine Zeile, dazu die Abweichung zwischen der
+ersten und der letzten vorhandenen Stufe. Als PDF ausgebbar.
+
+Zwei Dinge dazu:
+
+- **Eine fehlende Stufe bleibt leer** — sie aus der Nachbarstufe zu füllen
+  erweckte den Eindruck einer Ermittlung, die niemand angestellt hat.
+- **Mit nur einer Stufe gibt es keine Abweichung.** Dort steht „—", nicht
+  0,00 €.
+
 ### Baukostenkataloge
 
 **Bau → Baukostenkataloge** hält Kennwerte als Nachschlagewerk: was ein Bauteil
@@ -238,6 +272,12 @@ alles, bleibt das Feld leer statt auf null gesetzt.
 Die **Nummernform reist mit**: X50.2 nummeriert vollständig, X50.1 in Teilen.
 Der Export wählt dieselbe Form, in der der Katalog hereinkam — sonst liest die
 Gegenseite andere Nummern.
+
+Jedes Kostenelement lässt sich mit einem **eigenen Artikel** verknüpfen; auf der
+Artikelseite erscheinen die Kennwerte dann als Vergleich. **Übernommen wird
+nichts:** Der Katalog sagt, was ein Bauteil üblicherweise kostet, der
+Artikelstamm, was es bei uns kostet. Den Kennwert in den Artikelpreis zu
+schreiben hieße, eine Marktspanne als eigene Kalkulation auszugeben.
 
 ### Ausgabe wechseln
 

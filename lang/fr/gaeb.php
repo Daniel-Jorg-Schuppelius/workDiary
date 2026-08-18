@@ -125,11 +125,15 @@ return [
         ],
     ],
 
+    'calculation' => [
+        'unpriced_hint' => ':count poste ne porte aucun prix et n’entre donc pas dans l’écart global.|:count postes ne portent aucun prix et n’entrent donc pas dans l’écart global.',
+    ],
     'preflight' => [
         'version_unknown' => 'La version GAEB n’a pas pu être détectée.',
         'version_unsupported' => 'La version GAEB :version n’est pas prise en charge (cible 3.3).',
         'phase_unknown' => 'La phase d’échange « :code » est inconnue.',
         'no_items' => 'Le fichier ne contient aucun poste.',
+        'markup_with_cost_approach' => 'Le poste :ref est un poste de majoration et porte pourtant des approches de coûts — la majoration se calcule sur d’autres postes, l’argent serait compté deux fois.',
         'vendor_record_type' => 'Le fichier contient :count enregistrements du type propriétaire :type — leur contenu n’est pas exploité (certains systèmes y placent les groupes de coûts).',
         'item_missing_ref' => 'Poste sans numéro d’ordre : :text',
         'duplicate_ref' => 'Le numéro d’ordre :ref apparaît plusieurs fois.',

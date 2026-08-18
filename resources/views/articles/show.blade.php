@@ -167,6 +167,44 @@
         @endif
     </x-card>
 
+    {{-- Feature 109 (MVP-645): Kennwerte aus Baukostenkatalogen. Sie sagen, was
+         das Bauteil üblicherweise kostet — der eigene Preis bleibt davon
+         unberührt; der Vergleich ist der Zweck, nicht die Übernahme. --}}
+    @if ($article->costBenchmarks->isNotEmpty())
+        <x-card>
+            <h2 class="mb-3 font-semibold">{{ __('Kennwerte aus Baukostenkatalogen') }}</h2>
+            <x-table bare>
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('Katalog') }}</th>
+                        <th>{{ __('Kostenelement') }}</th>
+                        <th>{{ __('Einheit') }}</th>
+                        <th class="text-right">{{ __('von') }}</th>
+                        <th class="text-right">{{ __('Mittel') }}</th>
+                        <th class="text-right">{{ __('bis') }}</th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($article->costBenchmarks as $benchmark)
+                    <tr>
+                        <td class="text-base-content/70">{{ $benchmark->catalog?->name ?? '—' }}</td>
+                        <td>{{ $benchmark->code ? $benchmark->code . ' ' : '' }}{{ $benchmark->label }}</td>
+                        <td class="text-base-content/70">{{ $benchmark->unit ?? '—' }}</td>
+                        @foreach (['unit_price_from', 'unit_price_avg', 'unit_price_to'] as $field)
+                            <td class="text-right tabular-nums @if ($field === 'unit_price_avg') font-medium @else text-base-content/70 @endif">
+                                {{ $benchmark->{$field} !== null
+                                    ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $benchmark->{$field}, 2, withThousandsSeparator: true) . ' €'
+                                    : '—' }}
+                            </td>
+                        @endforeach
+                    </tr>
+                @endforeach
+            </x-table>
+            <p class="mt-2 text-xs text-base-content/60">
+                {{ __('Kennwerte stammen aus fremden Katalogen und werden nicht in den Artikelpreis übernommen.') }}
+            </p>
+        </x-card>
+    @endif
+
     {{-- MVP-605: Verkaufs-Staffelpreise (Quelle der Z-Sätze im DATANORM-Export) --}}
     <x-card>
         <h2 class="font-semibold mb-3">{{ __('article.tiers.title') }}</h2>

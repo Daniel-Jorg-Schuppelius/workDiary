@@ -224,6 +224,9 @@ return [
         'connection_issued' => 'CTI-Verbindung ausgestellt',
         'disconnected' => 'CTI getrennt',
     ],
+    'datanorm' => [
+        'exported' => 'DATANORM-Datei exportiert',
+    ],
     'dayClose' => [
         'closed' => 'Tag abgeschlossen',
         'correctionApproved' => 'Tages-Korrektur freigegeben',

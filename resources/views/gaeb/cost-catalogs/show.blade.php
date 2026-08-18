@@ -39,6 +39,7 @@
                     <th class="text-right">{{ __('von') }}</th>
                     <th class="text-right">{{ __('Mittel') }}</th>
                     <th class="text-right">{{ __('bis') }}</th>
+                    <th>{{ __('Artikel') }}</th>
                 </tr>
             </x-slot:head>
             @foreach ($elements as $element)
@@ -51,11 +52,36 @@
                          wie sicher er ist. --}}
                     <td class="text-right tabular-nums font-medium">{{ $money($element->unit_price_avg) }}</td>
                     <td class="text-right tabular-nums text-base-content/70">{{ $money($element->unit_price_to) }}</td>
+                    <td>
+                        {{-- Die Verknüpfung ersetzt keinen Preis: Der Kennwert bleibt
+                             ein Anhaltspunkt aus fremder Quelle. --}}
+                        @if ($canManage)
+                            <select form="link-{{ $element->id }}" name="article" class="select select-xs select-bordered w-56" data-autosubmit>
+                                <option value="">{{ __('— ohne —') }}</option>
+                                @foreach ($articles as $article)
+                                    <option value="{{ $article->sqid }}" @selected($element->article_id === $article->id)>
+                                        {{ $article->number ? $article->number . ' · ' : '' }}{{ $article->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        @else
+                            {{ $element->article?->name ?? '—' }}
+                        @endif
+                    </td>
                 </tr>
             @endforeach
         </x-table>
 
         <x-pagination :paginator="$elements" standing />
+
+        {{-- Zeilenformulare außerhalb der Tabelle: verschachtelte <form> sind
+             ungültiges HTML. --}}
+        @if ($canManage)
+            @foreach ($elements as $element)
+                <form id="link-{{ $element->id }}" method="POST"
+                      action="{{ route('cost-catalogs.link-article', [$catalog, $element]) }}" class="hidden">@csrf</form>
+            @endforeach
+        @endif
     @endif
 </x-index-page>
 @endsection

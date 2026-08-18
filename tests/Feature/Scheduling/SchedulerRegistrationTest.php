@@ -111,6 +111,10 @@ class SchedulerRegistrationTest extends TestCase {
         // Neu mit MVP-459 (Druck/Kopiershop): Löschfristen der Produktionsdateien.
         'print:purge-files' => ['45 3 * * *', true, true],
         'payroll:import-minimum-wages' => ['0 4 15 1,7 *', true, true],
+        // Neu mit Feature 108 (MVP-629): Bekanntmachungs-Radar. Der Bund stellt
+        // einen Veröffentlichungstag erst am Folgetag vollständig bereit — der
+        // Abruf holt deshalb nachts den Vortag.
+        'tenders:fetch-notices' => ['15 5 * * *', true, true],
         'catalog:fetch-due' => ['*/15 * * * *', true, true],
         // Neu mit Feature 107 (W3-Rest): vorgemerkte DATANORM-Preisstände.
         'catalog:apply-pending-prices' => ['20 2 * * *', true, true],

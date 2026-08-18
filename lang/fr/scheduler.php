@@ -83,7 +83,8 @@ return [
         'billbee' => ['sync' => 'Synchronisation Billbee'],
         'caldav' => ['publish' => 'Rapprochement de publication du calendrier CalDAV'],
         'carddav' => ['sync' => 'Synchronisation CardDAV'],
-        'catalog' => ['fetch_due' => 'Récupérer les sources de catalogue'],
+        'catalog' => ['fetch_due' => 'Récupérer les sources de catalogue', 'apply_pending_prices' => 'Activer les niveaux de prix programmés'],
+        'tenders' => ['fetch_notices' => 'Récupérer les avis de marché'],
         'chat' => [
             'send_reminders' => 'Envoyer les rappels de chat',
             'send_scheduled' => 'Envoyer les messages de chat planifiés',

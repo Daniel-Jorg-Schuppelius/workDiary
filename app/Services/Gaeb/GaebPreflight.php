@@ -16,6 +16,7 @@ use App\Enums\Gaeb\GaebPhase;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use ERechnungToolkit\Entities\Gaeb\GaebBoq;
+use ERechnungToolkit\Enums\GaebItemType;
 use ERechnungToolkit\Helper\Gaeb\GaebCalculator;
 
 /**
@@ -160,6 +161,14 @@ class GaebPreflight {
             // Umgekehrt: eine abgelehnte Position darf keinen Preis tragen.
             if ($item->isNotOffered() && $item->getUnitPrice() !== null) {
                 $errors[] = __('gaeb.preflight.priced_but_not_offered', ['ref' => $ref]);
+            }
+
+            // X52-Regel: Eine Zuschlagsposition rechnet prozentual auf andere
+            // Positionen - trüge sie eigene Kostenansätze, zählte dasselbe Geld
+            // zweimal. Beanstandet, nicht bereinigt: Die Datei kommt aus einem
+            // fremden System, und was dort steht, ist dessen Aussage.
+            if ($item->getType() === GaebItemType::Markup && $item->getCostApproaches() !== []) {
+                $warnings[] = __('gaeb.preflight.markup_with_cost_approach', ['ref' => $ref]);
             }
 
             if ($item->getShortText() === null && $item->getLongText() === null) {
