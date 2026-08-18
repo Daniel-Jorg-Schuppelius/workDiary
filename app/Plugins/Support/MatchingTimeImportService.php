@@ -109,6 +109,13 @@ abstract class MatchingTimeImportService {
         }
 
         foreach ($entries as $entry) {
+            // Schlüsselwechsel (MVP-509: E-Mail floss in den CSV-Hash ein):
+            // Bestandsreferenzen/-fälle unter dem Alt-Schlüssel auf den neuen
+            // migrieren, bevor die Dedupe greift — sonst Duplikate beim Re-Import.
+            if ($entry->legacyEntryKey !== null && $entry->legacyEntryKey !== $entry->entryKey) {
+                $this->migrateLegacyEntryKey($organization, $entry->legacyEntryKey, $entry->entryKey);
+            }
+
             if ($this->alreadyImported($organization, $entry->entryKey)) {
                 // Bekannter Eintrag: nicht blind überspringen, sondern gegen den
                 // beim Import hinterlegten Fingerabdruck prüfen — sonst bleiben
@@ -522,6 +529,58 @@ abstract class MatchingTimeImportService {
         return $timeEntry;
     }
 
+    /**
+     * Migriert die Artefakte eines Eintrags vom Alt- auf den neuen
+     * Idempotenz-Schlüssel (Referenz, Alias, offene Inbox-Fälle) — nur wenn der
+     * neue Schlüssel noch nicht belegt ist. Der Snapshot offener Fälle wird
+     * mitgezogen, damit eine spätere Inbox-Buchung die Referenz unter dem
+     * neuen Schlüssel anlegt.
+     */
+    protected function migrateLegacyEntryKey(Organization $organization, string $legacyKey, string $newKey): void {
+        if (! $this->alreadyImported($organization, $newKey) && $this->alreadyImported($organization, $legacyKey)) {
+            ExternalReference::query()
+                ->forPlugin($organization, $this->pluginId(), $this->entryExternalType())
+                ->forExternalId($legacyKey)
+                ->update(['external_id' => $newKey]);
+            ExternalReferenceAlias::query()
+                ->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->where('plugin_id', $this->pluginId())
+                ->where('external_type', $this->entryExternalType())
+                ->where('external_id', $legacyKey)
+                ->update(['external_id' => $newKey]);
+        }
+
+        $legacyDedupe = $this->entryExternalType() . ':' . $legacyKey;
+        $newDedupe = $this->entryExternalType() . ':' . $newKey;
+        $hasNewItem = IntegrationInboxItem::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('plugin_id', $this->pluginId())
+            ->where('dedupe_key', $newDedupe)
+            ->exists();
+        if ($hasNewItem) {
+            return;
+        }
+
+        $items = IntegrationInboxItem::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('plugin_id', $this->pluginId())
+            ->where('dedupe_key', $legacyDedupe)
+            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->get();
+        foreach ($items as $item) {
+            $snapshot = (array) ($item->remote_snapshot ?? []);
+            $snapshot['entry_key'] = $newKey;
+            $item->update([
+                'dedupe_key' => $newDedupe,
+                'external_id' => $newKey,
+                'remote_snapshot' => $snapshot,
+            ]);
+        }
+    }
+
     /** Gruppen-Präfix offener Benutzer-Zuordnungsfälle (MVP-509). */
     public const PENDING_USER_GROUP_PREFIX = 'user|';
 
@@ -695,6 +754,7 @@ abstract class MatchingTimeImportService {
             ? User::query()->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
                 ->whereNull('customer_id')
+                ->whereNull('deactivated_at')
                 ->whereKey($userId)
                 ->first()
             : null;
@@ -894,7 +954,10 @@ abstract class MatchingTimeImportService {
     /**
      * Benutzer zu einer Quell-E-Mail: gemerkte Zuordnung (user_email-Referenz,
      * für abweichende Toggl-Adressen — UI „Zuordnungen verwalten" bzw.
-     * Workspace-Import) vor direkter E-Mail-Gleichheit. Null, wenn nichts passt.
+     * Workspace-Import) vor direkter E-Mail-Gleichheit. Nur aktive interne
+     * Benutzer sind Buchungsziel — Portalkonten und deaktivierte Konten lösen
+     * nie auf (MVP-509: dann offener Zuordnungsfall statt stiller Buchung).
+     * Null, wenn nichts passt.
      */
     public function resolveImportUser(Organization $organization, ?string $email): ?int {
         $email = trim((string) $email);
@@ -909,12 +972,18 @@ abstract class MatchingTimeImportService {
 
         $byRef = $this->resolveByReference($organization, self::EXT_TYPE_USER_EMAIL, $key);
         if ($byRef instanceof User) {
-            return $this->userIdByEmail[$key] = (int) $byRef->id;
+            // Explizite Zuordnung auf ein inzwischen deaktiviertes/Portal-Konto:
+            // nicht still auf E-Mail-Gleichheit umleiten — offen lassen.
+            return $this->userIdByEmail[$key] = ($byRef->customer_id === null && ! $byRef->isDeactivated())
+                ? (int) $byRef->id
+                : null;
         }
 
         $user = User::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
+            ->whereNull('customer_id')
+            ->whereNull('deactivated_at')
             ->whereRaw('LOWER(email) = ?', [$key])
             ->first();
 

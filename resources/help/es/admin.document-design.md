@@ -37,3 +37,27 @@ Flujo de trabajo:
 Sin perfil se aplica el estándar del sistema (salida actual). Las facturas
 ZUGFeRD/PDF-A-3 siguen siendo válidas tras aplicar el diseño — la factura
 estructurada sigue siendo determinante.
+
+
+Diseño base CI y herencia:
+
+- El perfil estándar de la organización es tu **diseño base CI**. Las
+  variantes para tipos de documento individuales (p. ej. oferta,
+  factura, abono, reclamación) o familias enteras (ventas, compras,
+  justificantes) **heredan** todas las secciones no sobrescritas — cada
+  sección muestra si está heredada o sobrescrita; «restablecer al
+  diseño base» elimina la sobrescritura. La variante más específica
+  prevalece: tipo antes que familia antes que diseño base.
+- La **vista previa PDF integrada** del editor renderiza mediante la
+  misma canalización que la salida final; el tipo de documento y los
+  datos de ejemplo (textos largos, muchas posiciones, varios tipos
+  impositivos) son conmutables.
+- **La familia tipográfica y el tamaño base** provienen de una lista
+  curada compatible con PDF; los colores primario/de acento pueden
+  **referenciar el branding de la organización** — los cambios del
+  branding se aplican entonces automáticamente, sin copia de color en
+  el perfil.
+- Al activar, el diseño base se comprueba contra los bloques
+  obligatorios de TODOS los tipos de documento personalizables; los
+  formatos especiales genuinos (p. ej. etiquetas) declaran su
+  restricción en el registro central de tipos de documento.

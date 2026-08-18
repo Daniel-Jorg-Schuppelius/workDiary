@@ -37,3 +37,28 @@ Déroulement :
 Sans profil, la valeur système par défaut (sortie actuelle) s'applique.
 Les factures ZUGFeRD/PDF-A-3 restent valides après application du design —
 la facture structurée reste déterminante.
+
+
+Design de base CI et héritage :
+
+- Le profil standard de l'organisation est votre **design de base CI**.
+  Les variantes pour des sortes de documents individuelles (p. ex.
+  devis, facture, avoir, relance) ou des familles entières (ventes,
+  achats, justificatifs) **héritent** de toutes les sections non
+  remplacées — chaque section indique si elle est héritée ou
+  remplacée ; « réinitialiser sur le design de base » supprime le
+  remplacement. La variante la plus spécifique l'emporte : sorte avant
+  famille avant design de base.
+- L'**aperçu PDF intégré** de l'éditeur utilise la même pipeline que la
+  sortie finale ; la sorte de document et les données d'exemple (textes
+  longs, nombreuses positions, plusieurs taux de TVA) sont
+  commutables.
+- **La famille de polices et la taille de base** proviennent d'une liste
+  sélectionnée compatible PDF ; les couleurs primaire/d'accent peuvent
+  **référencer le branding de l'organisation** — les modifications du
+  branding s'appliquent alors automatiquement, sans copie de couleur
+  dans le profil.
+- À l'activation, le design de base est vérifié contre les blocs
+  obligatoires de TOUTES les sortes de documents personnalisables ; les
+  vrais formats spéciaux (p. ex. étiquettes) déclarent leur restriction
+  dans le registre central des sortes de documents.

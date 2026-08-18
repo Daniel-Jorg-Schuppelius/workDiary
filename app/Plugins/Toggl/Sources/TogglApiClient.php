@@ -156,6 +156,11 @@ class TogglApiClient implements RemoteTimeWriter {
             ->getResponse($this->baseUrl . '/me', ['with_related_data' => 'true'], ['timeout' => 20]);
 
         if (! $response->successful()) {
+            // Ohne /me-Stammdaten fehlen den /me-Einträgen E-Mail und
+            // Projekt-/Client-Namen — der Lauf ist unvollständig (MVP-509):
+            // keine Löschungserkennung, keine scheinbar korrekten Buchungen.
+            $this->fetchComplete = false;
+
             return [[], [], null];
         }
 
@@ -552,8 +557,11 @@ class TogglApiClient implements RemoteTimeWriter {
 
         $description = isset($row['description']) ? trim((string) $row['description']) : null;
         $billable = (bool) ($row['billable'] ?? false);
-        $userEmail = $this->reportUserEmail($row)
-            ?? (isset($row['user_id']) ? ($emailsByUserId[(int) $row['user_id']] ?? null) : null);
+        // Verbindliche Reihenfolge (MVP-509): die Toggl-user_id über die
+        // Workspace-Benutzerliste auflösen — sie trägt die workspacebezogene
+        // Benutzeridentität. Ein E-Mail-Feld der Zeile ist nur Fallback.
+        $userEmail = (isset($row['user_id']) ? ($emailsByUserId[(int) $row['user_id']] ?? null) : null)
+            ?? $this->reportUserEmail($row);
 
         // Unbekannte tag_ids (z. B. inzwischen gelöschte Tags) still überspringen.
         $tags = [];

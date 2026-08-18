@@ -64,8 +64,10 @@ class LabelController extends Controller {
 
         // View→PDF über den zentralen Renderer (C15; Vollaudit 2026-07, N27) —
         // Writer-Options (Papierformat der Etikettenvorlage) werden durchgereicht.
+        // #83: registriertes Spezialformat mit deklarierter Einschränkung
+        // (kein Firmenbogen/Basisdesign — siehe RenderDocumentKind::capabilityNote()).
         $bytes = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->renderPdf(
-            \App\Enums\DocumentDesign\RenderDocumentKind::Report,
+            \App\Enums\DocumentDesign\RenderDocumentKind::Label,
             'inventory.labels.label',
             [
                 'label' => $data,

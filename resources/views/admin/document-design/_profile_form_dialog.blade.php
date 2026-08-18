@@ -33,6 +33,17 @@
             @endforeach
         </fieldset>
 
+        <label class="form-control w-full">
+            <span class="label-text">{{ __('document_design.profile.family') }}</span>
+            <select name="document_family" class="select select-bordered select-sm w-full">
+                <option value="">{{ __('document_design.profile.family_none') }}</option>
+                @foreach ($families as $family)
+                    <option value="{{ $family->value }}">{{ $family->label() }}</option>
+                @endforeach
+            </select>
+            <span class="label-text-alt text-xs text-base-content/50">{{ __('document_design.profile.family_hint') }}</span>
+        </label>
+
         <label class="flex items-center gap-2 text-sm">
             <input type="checkbox" name="is_default" value="1" class="checkbox checkbox-sm">
             {{ __('document_design.profile.set_default') }}

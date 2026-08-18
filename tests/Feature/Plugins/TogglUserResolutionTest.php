@@ -418,6 +418,155 @@ class TogglUserResolutionTest extends TestCase {
         $this->assertSame(0, TimeEntry::query()->where('user_id', $chef->id)->count());
     }
 
+    public function test_resolver_ignores_portal_and_deactivated_accounts(): void {
+        $config = $this->enableToggl();
+        $this->customerWithProject('Acme', 'Website');
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        // Portal-Konto und deaktiviertes Konto tragen exakt die Quell-E-Mails.
+        User::factory()->user()->create([
+            'organization_id' => $this->organization->id,
+            'email' => 'portal@example.com',
+            'customer_id' => $customer->id,
+        ]);
+        User::factory()->user()->create([
+            'organization_id' => $this->organization->id,
+            'email' => 'weg@example.com',
+            'deactivated_at' => now(),
+        ]);
+
+        FakePluginHttp::fake($this->reportStubs([
+            ['id' => 41, 'email' => 'portal@example.com', 'fullname' => 'Portal'],
+            ['id' => 42, 'email' => 'weg@example.com', 'fullname' => 'Weg'],
+        ]));
+
+        $result = $this->runImport($config);
+
+        $this->assertSame(0, $result['created'], 'Portal-/deaktivierte Konten sind kein Buchungsziel.');
+        $this->assertSame(2, $result['unresolved_users']);
+        $this->assertSame(0, TimeEntry::query()->count());
+        $this->assertSame(2, IntegrationInboxItem::query()
+            ->where('plugin_id', TogglPlugin::ID)
+            ->where('group_key', 'like', MatchingTimeImportService::PENDING_USER_GROUP_PREFIX . '%')
+            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->count());
+    }
+
+    public function test_workspace_user_list_wins_over_report_row_email(): void {
+        $config = $this->enableToggl();
+        $this->customerWithProject('Acme', 'Website');
+        $anna = User::factory()->user()->create(['organization_id' => $this->organization->id, 'email' => 'anna@example.com']);
+        $fremd = User::factory()->user()->create(['organization_id' => $this->organization->id, 'email' => 'zeile@example.com']);
+
+        // Die Report-Zeile trägt ein eigenes E-Mail-Feld — die Auflösung der
+        // user_id über die Workspace-Benutzerliste hat trotzdem Vorrang.
+        $stubs = $this->reportStubs([['id' => 41, 'email' => 'anna@example.com', 'fullname' => 'Anna']]);
+        $stubs['https://api.track.toggl.com/reports/api/v3/workspace/7/search/time_entries*'] = FakePluginHttp::response([[
+            'project_id' => 9,
+            'description' => 'Arbeit A',
+            'billable' => true,
+            'user_id' => 41,
+            'user_email' => 'zeile@example.com',
+            'time_entries' => [['id' => 501, 'start' => '2026-05-26T08:00:00+00:00', 'stop' => '2026-05-26T09:00:00+00:00']],
+        ]], 200);
+        FakePluginHttp::fake($stubs);
+
+        $result = $this->runImport($config);
+
+        $this->assertSame(1, $result['created']);
+        $this->assertSame($anna->id, TimeEntry::query()->firstOrFail()->user_id, 'user_id → Workspace-Benutzerliste schlägt das Zeilen-E-Mail-Feld.');
+        $this->assertSame(0, TimeEntry::query()->where('user_id', $fremd->id)->count());
+    }
+
+    public function test_failed_me_related_data_marks_run_incomplete(): void {
+        $config = $this->enableToggl();
+        $this->customerWithProject('Acme', 'Website');
+
+        $stubs = $this->reportStubs([['id' => 41, 'email' => 'anna@example.com', 'fullname' => 'Anna']]);
+        // /me?with_related_data bricht — /me-Einträge hätten weder E-Mail noch Projektnamen.
+        $stubs['https://api.track.toggl.com/api/v9/me*'] = FakePluginHttp::response(['error' => 'boom'], 500);
+        FakePluginHttp::fake($stubs);
+
+        $result = $this->runImport($config);
+
+        $this->assertTrue($result['incomplete'], 'Fehlende /me-Stammdaten machen den Lauf unvollständig.');
+        $this->assertSame(0, $result['removed'], 'Löschungserkennung bleibt bei unvollständigem Lauf aus.');
+    }
+
+    public function test_csv_rows_same_time_different_users_create_two_entries(): void {
+        $config = $this->enableToggl();
+        $this->customerWithProject('Acme', 'Website');
+        $anna = User::factory()->user()->create(['organization_id' => $this->organization->id, 'email' => 'anna@example.com']);
+        $ben = User::factory()->user()->create(['organization_id' => $this->organization->id, 'email' => 'ben@example.com']);
+
+        // Identische Zeit/Projekt/Beschreibung, nur die Person unterscheidet sich —
+        // die E-Mail fließt in den Idempotenz-Schlüssel ein (MVP-509).
+        $csv = "Email,Client,Project,Description,Start date,Start time,End date,End time,Duration\n"
+            . "anna@example.com,Acme,Website,Standup,2026-05-26,08:00:00,2026-05-26,09:00:00,01:00:00\n"
+            . "ben@example.com,Acme,Website,Standup,2026-05-26,08:00:00,2026-05-26,09:00:00,01:00:00\n";
+
+        $result = $this->service()->importFromCsv($this->organization, $csv, $config);
+
+        $this->assertSame(2, $result['created'], 'Zwei Mitarbeiter mit identischer Zeile kollabieren nicht zu einem Eintrag.');
+        $this->assertSame(1, TimeEntry::query()->where('user_id', $anna->id)->count());
+        $this->assertSame(1, TimeEntry::query()->where('user_id', $ben->id)->count());
+    }
+
+    public function test_csv_reimport_migrates_legacy_key_without_duplicates(): void {
+        $config = $this->enableToggl();
+        $project = $this->customerWithProject('Acme', 'Website');
+        $anna = User::factory()->user()->create(['organization_id' => $this->organization->id, 'email' => 'anna@example.com']);
+
+        $csv = "Email,Client,Project,Description,Start date,Start time,End date,End time,Duration\n"
+            . "anna@example.com,Acme,Website,Standup,2026-05-26,08:00:00,2026-05-26,09:00:00,01:00:00\n";
+
+        // Bestandsimport vor MVP-509: Referenz unter dem Alt-Schlüssel OHNE E-Mail.
+        $existing = TimeEntry::query()->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $project->id,
+            'user_id' => $anna->id,
+            'date' => '2026-05-26',
+            'started_at' => '2026-05-26 08:00:00',
+            'ended_at' => '2026-05-26 09:00:00',
+            'minutes' => 60,
+        ]);
+        $legacyKey = \App\Plugins\Toggl\Sources\TogglEntry::legacyCsvKey(
+            CarbonImmutable::parse('2026-05-26 08:00:00')->toIso8601String(),
+            CarbonImmutable::parse('2026-05-26 09:00:00')->toIso8601String(),
+            'Acme',
+            'Website',
+            'Standup',
+        );
+        ExternalReference::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => MatchingTimeImportService::EXT_TYPE_ENTRY,
+            'referenceable_type' => $existing->getMorphClass(),
+            'referenceable_id' => $existing->getKey(),
+            'external_id' => $legacyKey,
+        ]);
+
+        $result = $this->service()->importFromCsv($this->organization, $csv, $config);
+
+        $this->assertSame(0, $result['created'], 'Der Alt-Import wird erkannt — kein Duplikat.');
+        $this->assertSame(1, TimeEntry::query()->count());
+
+        $newKey = \App\Plugins\Toggl\Sources\TogglEntry::csvKey(
+            CarbonImmutable::parse('2026-05-26 08:00:00')->toIso8601String(),
+            CarbonImmutable::parse('2026-05-26 09:00:00')->toIso8601String(),
+            'Acme',
+            'Website',
+            'Standup',
+            'anna@example.com',
+        );
+        $this->assertDatabaseHas('external_references', [
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => MatchingTimeImportService::EXT_TYPE_ENTRY,
+            'external_id' => $newKey,
+            'referenceable_id' => $existing->getKey(),
+        ]);
+        $this->assertDatabaseMissing('external_references', ['external_id' => $legacyKey]);
+    }
+
     public function test_repair_command_reports_locked_entries_instead_of_changing_them(): void {
         $this->enableToggl();
         $project = $this->customerWithProject('Acme', 'Website');

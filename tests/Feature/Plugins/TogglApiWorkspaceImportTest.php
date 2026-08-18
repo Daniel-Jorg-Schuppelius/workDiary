@@ -75,7 +75,7 @@ class TogglApiWorkspaceImportTest extends TestCase {
             $this->organization,
             $this->sources(),
             $this->modes(),
-            TogglExportImporter::USER_PER_EMAIL,
+            TogglExportImporter::USER_PER_EMAIL_CREATE,
             dryRun: true,
         );
 
@@ -94,7 +94,7 @@ class TogglApiWorkspaceImportTest extends TestCase {
             $this->organization,
             $this->sources(),
             $this->modes(),
-            TogglExportImporter::USER_PER_EMAIL,
+            TogglExportImporter::USER_PER_EMAIL_CREATE,
             dryRun: false,
         );
 
@@ -130,8 +130,8 @@ class TogglApiWorkspaceImportTest extends TestCase {
 
     public function test_import_is_idempotent(): void {
         $importer = new TogglExportImporter;
-        $importer->importFromApi($this->organization, $this->sources(), $this->modes(), TogglExportImporter::USER_PER_EMAIL, dryRun: false);
-        $second = $importer->importFromApi($this->organization, $this->sources(), $this->modes(), TogglExportImporter::USER_PER_EMAIL, dryRun: false);
+        $importer->importFromApi($this->organization, $this->sources(), $this->modes(), TogglExportImporter::USER_PER_EMAIL_CREATE, dryRun: false);
+        $second = $importer->importFromApi($this->organization, $this->sources(), $this->modes(), TogglExportImporter::USER_PER_EMAIL_CREATE, dryRun: false);
 
         $this->assertSame(2, TimeEntry::query()->count());
         $this->assertSame(2, $second['totals']['entries_skipped']);

@@ -119,11 +119,15 @@
                     <div class="flex flex-col gap-1">
                         <label class="flex items-center gap-2 text-sm">
                             <input type="radio" name="user_mode" value="per_email" class="radio radio-sm" checked>
-                            {{ __('Pro E-Mail einen Benutzer anlegen/zuordnen (erhält „wer hat was gemacht")') }}
+                            {{ __('Bestehenden Benutzern per E-Mail zuordnen — unbekannte Benutzer bleiben sichtbar offen (empfohlen)') }}
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="radio" name="user_mode" value="per_email_create" class="radio radio-sm">
+                            {{ __('Pro E-Mail zuordnen und fehlende Benutzer neu anlegen (erhält „wer hat was gemacht")') }}
                         </label>
                         <label class="flex items-center gap-2 text-sm">
                             <input type="radio" name="user_mode" value="single" class="radio radio-sm">
-                            {{ __('Alles auf einen Standard-Benutzer (Org-Owner) buchen') }}
+                            {{ __('Einbenutzer-Modus: alles auf den konfigurierten Standard-Benutzer buchen') }}
                         </label>
                     </div>
 
@@ -174,44 +178,7 @@
                         <button type="submit" class="btn btn-ghost btn-sm">{{ __('Vorschau zurücksetzen') }}</button>
                     </form>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>{{ __('Workspace') }}</th>
-                                <th>{{ __('Modus') }}</th>
-                                <th class="text-right">{{ __('Kunden (neu/wiederv.)') }}</th>
-                                <th class="text-right">{{ __('Fremdkunden (neu/wiederv.)') }}</th>
-                                <th class="text-right">{{ __('Projekte (neu/wiederv.)') }}</th>
-                                <th class="text-right">{{ __('Benutzer neu') }}</th>
-                                <th class="text-right">{{ __('Zeiten (gebucht/übersprungen)') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($summary['workspaces'] as $w)
-                                <tr>
-                                    <td>{{ $w['workspace'] }}@isset($w['customer'])<span class="text-base-content/50"> → {{ $w['customer'] }}</span>@endisset</td>
-                                    <td>{{ $w['mode'] }}</td>
-                                    <td class="text-right">{{ $w['customers_created'] }} / {{ $w['customers_reused'] }}</td>
-                                    <td class="text-right">{{ $w['foreign_customers_created'] }} / {{ $w['foreign_customers_reused'] }}</td>
-                                    <td class="text-right">{{ $w['projects_created'] }} / {{ $w['projects_reused'] }}</td>
-                                    <td class="text-right">{{ $w['users_created'] }}</td>
-                                    <td class="text-right">{{ $w['entries_created'] }} / {{ $w['entries_skipped'] }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                        <tfoot>
-                            <tr class="font-semibold">
-                                <td colspan="2">{{ __('Summe') }}</td>
-                                <td class="text-right">{{ $summary['totals']['customers_created'] }} / {{ $summary['totals']['customers_reused'] }}</td>
-                                <td class="text-right">{{ $summary['totals']['foreign_customers_created'] }} / {{ $summary['totals']['foreign_customers_reused'] }}</td>
-                                <td class="text-right">{{ $summary['totals']['projects_created'] }} / {{ $summary['totals']['projects_reused'] }}</td>
-                                <td class="text-right">{{ $summary['totals']['users_created'] }}</td>
-                                <td class="text-right">{{ $summary['totals']['entries_created'] }} / {{ $summary['totals']['entries_skipped'] }}</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
+                @include('toggl::admin._import-summary', ['summary' => $summary])
             </div>
         @endif
     </div>

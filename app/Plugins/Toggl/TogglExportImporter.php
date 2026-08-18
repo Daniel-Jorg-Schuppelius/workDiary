@@ -50,6 +50,9 @@ class TogglExportImporter {
 
     public const USER_PER_EMAIL = 'per_email';
 
+    /** Wie {@see USER_PER_EMAIL}, aber unbekannte E-Mails legen ausdrücklich neue Benutzer an. */
+    public const USER_PER_EMAIL_CREATE = 'per_email_create';
+
     public const USER_SINGLE = 'single';
 
     /** ExternalReference-Typ für gemerkte Endkunden-Zuordnungen (Toggl-Client → ForeignCustomer). */
@@ -64,6 +67,9 @@ class TogglExportImporter {
     /** @var array<string, User> lower(email) → User (Lauf-Cache) */
     private array $userCache = [];
 
+    /** @var array<string, true> lower(email) → nicht auflösbar (Lauf-Cache, spart Wiederholungs-Queries) */
+    private array $unresolvedCache = [];
+
     /** @var array<string, int> lower(email) → vorgegebene User-ID (explizite Zuordnung aus der UI) */
     private array $userMap = [];
 
@@ -76,7 +82,7 @@ class TogglExportImporter {
      *
      * @param  array<string, array{mode: string, customer_id?: int|string|null, customer_name?: ?string}>  $workspaceModes  Ordnername → Konfiguration
      * @param  array<string, int>  $userMap  lower(email) → User-ID (explizite Benutzer-Zuordnung; Vorrang vor $userMode)
-     * @return array{dry_run: bool, workspaces: array<int, array<string, mixed>>, totals: array<string, int>}
+     * @return array{dry_run: bool, workspaces: array<int, array<string, mixed>>, totals: array<string, mixed>, user_mode: string, single_user_name: ?string}
      */
     public function import(string $basePath, Organization $organization, array $workspaceModes, string $userMode, bool $dryRun, array $userMap = []): array {
         $basePath = rtrim($basePath, '/');
@@ -101,7 +107,7 @@ class TogglExportImporter {
      * @param  array<string, WorkspaceSourceInterface>  $sources  Label → Quelle
      * @param  array<string, array{mode: string, customer_id?: int|string|null, customer_name?: ?string}>  $workspaceModes  Label → Konfiguration
      * @param  array<string, int>  $userMap  lower(email) → User-ID (explizite Benutzer-Zuordnung; Vorrang vor $userMode)
-     * @return array{dry_run: bool, workspaces: array<int, array<string, mixed>>, totals: array<string, int>}
+     * @return array{dry_run: bool, workspaces: array<int, array<string, mixed>>, totals: array<string, mixed>, user_mode: string, single_user_name: ?string}
      */
     public function importFromApi(Organization $organization, array $sources, array $workspaceModes, string $userMode, bool $dryRun, array $userMap = []): array {
         return $this->run($organization, $sources, $workspaceModes, $userMode, $dryRun, $userMap);
@@ -114,12 +120,13 @@ class TogglExportImporter {
      * @param  array<string, WorkspaceSourceInterface>  $sources  Label → Quelle
      * @param  array<string, array{mode: string, customer_id?: int|string|null, customer_name?: ?string}>  $workspaceModes  Label → Konfiguration
      * @param  array<string, int>  $userMap  lower(email) → User-ID (explizite Benutzer-Zuordnung; Vorrang vor $userMode)
-     * @return array{dry_run: bool, workspaces: array<int, array<string, mixed>>, totals: array<string, int>}
+     * @return array{dry_run: bool, workspaces: array<int, array<string, mixed>>, totals: array<string, mixed>, user_mode: string, single_user_name: ?string}
      */
     private function run(Organization $organization, array $sources, array $workspaceModes, string $userMode, bool $dryRun, array $userMap = []): array {
         $this->customerCache = [];
         $this->foreignCustomerCache = [];
         $this->userCache = [];
+        $this->unresolvedCache = [];
         $this->userMap = $userMap;
         $this->defaultUser = null;
 
@@ -164,6 +171,10 @@ class TogglExportImporter {
             'dry_run' => $dryRun,
             'workspaces' => $workspaces,
             'totals' => $this->sumTotals($workspaces),
+            // Einbenutzer-Modus muss in Vorschau UND Ergebnis deutlich sichtbar
+            // sein (MVP-509) — inkl. des tatsächlichen Buchungsziels.
+            'user_mode' => $userMode,
+            'single_user_name' => $userMode === self::USER_SINGLE ? $this->defaultUser($organization)->name : null,
         ];
     }
 
@@ -411,8 +422,17 @@ class TogglExportImporter {
         return $project;
     }
 
-    /** @param array<string, mixed> $stats */
-    private function resolveUser(Organization $organization, ?string $email, ?string $name, string $userMode, array &$stats): User {
+    /**
+     * Verbindliche Auflösungsreihenfolge (MVP-509): explizite UI-Zuordnung →
+     * Einbenutzer-Modus (ausdrücklich gewählt, konfigurierter Standard-Benutzer)
+     * → gespeicherte user_email-Zuordnung (inkl. Alias) → aktiver interner
+     * Benutzer mit gleicher E-Mail → nur im Modus {@see USER_PER_EMAIL_CREATE}
+     * Neuanlage. Sonst null — der Eintrag wird sichtbar zur Zuordnung gestellt,
+     * NIE still auf den Organisationsinhaber gebucht.
+     *
+     * @param  array<string, mixed>  $stats
+     */
+    private function resolveUser(Organization $organization, ?string $email, ?string $name, string $userMode, array &$stats): ?User {
         $email = trim((string) $email);
         $cacheKey = mb_strtolower($email);
 
@@ -433,18 +453,41 @@ class TogglExportImporter {
             }
         }
 
-        if ($userMode === self::USER_SINGLE || $email === '') {
+        // Nur der ausdrücklich gewählte Einbenutzer-Modus darf auf den
+        // konfigurierten Standard-Benutzer buchen.
+        if ($userMode === self::USER_SINGLE) {
             return $this->defaultUser($organization);
+        }
+
+        // Ohne E-Mail-Signal gibt es außerhalb des Einbenutzer-Modus kein
+        // Buchungsziel; bekannte Fehlschläge nicht erneut abfragen.
+        if ($cacheKey === '' || isset($this->unresolvedCache[$cacheKey])) {
+            return null;
+        }
+
+        // Gespeicherte Zuordnung (user_email-Referenz inkl. Merge-Alias) — wie
+        // der laufende CSV-/API-Import.
+        $byRef = $this->resolveReference($organization, TogglImportService::EXT_TYPE_USER_EMAIL, $cacheKey);
+        if ($byRef instanceof User && $byRef->customer_id === null && ! $byRef->isDeactivated()) {
+            return $this->userCache[$cacheKey] = $byRef;
         }
 
         $existing = User::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
+            ->whereNull('customer_id')
+            ->whereNull('deactivated_at')
             ->whereRaw('LOWER(email) = ?', [$cacheKey])
             ->first();
 
         if ($existing instanceof User) {
             return $this->userCache[$cacheKey] = $existing;
+        }
+
+        if ($userMode !== self::USER_PER_EMAIL_CREATE) {
+            $this->unresolvedCache[$cacheKey] = true;
+
+            return null;
         }
 
         // Vollaudit 2026-07 (H8): Lizenz-Nutzerlimit gilt auch für den Import
@@ -464,11 +507,16 @@ class TogglExportImporter {
         return $this->userCache[$cacheKey] = $user;
     }
 
-    /** Lädt einen Benutzer der Zielorganisation (oder null), für explizite Zuordnungen. */
+    /**
+     * Lädt einen aktiven internen Benutzer der Zielorganisation (oder null),
+     * für explizite Zuordnungen — Portalkonten und deaktivierte ausgeschlossen.
+     */
     private function loadOrgUser(Organization $organization, int $userId): ?User {
         return User::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
+            ->whereNull('customer_id')
+            ->whereNull('deactivated_at')
             ->whereKey($userId)
             ->first();
     }
@@ -481,7 +529,27 @@ class TogglExportImporter {
             return;
         }
 
+        // Bestandsimporte vor MVP-509 tragen den CSV-Schlüssel ohne E-Mail —
+        // unter dem Alt-Schlüssel bekannte Einträge sind keine Duplikate.
+        if ($entry->legacyEntryKey !== null
+            && $entry->legacyEntryKey !== $entry->entryKey
+            && $this->alreadyImported($organization, $entry->legacyEntryKey)) {
+            $stats['entries_skipped']++;
+
+            return;
+        }
+
         $user = $this->resolveUser($organization, $entry->userEmail, null, $userMode, $stats);
+        if ($user === null) {
+            // MVP-509: sichtbar zur Zuordnung stellen statt still auf den
+            // Organisationsinhaber zu buchen — Zuordnung oben pflegen und
+            // den (idempotenten) Import erneut ausführen.
+            $emailKey = mb_strtolower(trim((string) $entry->userEmail));
+            $stats['entries_unresolved_user']++;
+            $stats['unresolved_emails'][$emailKey] = (int) ($stats['unresolved_emails'][$emailKey] ?? 0) + 1;
+
+            return;
+        }
 
         $description = trim(implode(' — ', array_filter([
             $entry->projectName,
@@ -614,13 +682,26 @@ class TogglExportImporter {
         return ExternalReferenceAlias::resolveModel($organization->id, TogglPlugin::ID, $type, $externalId);
     }
 
+    /**
+     * Buchungsziel des Einbenutzer-Modus: der in den Toggl-Einstellungen
+     * konfigurierte Standard-Benutzer (MVP-509), erst danach Org-Owner bzw.
+     * erster Org-Benutzer als Fallback.
+     */
     private function defaultUser(Organization $organization): User {
         if ($this->defaultUser instanceof User) {
             return $this->defaultUser;
         }
 
+        $config = TogglConfig::resolve((int) $organization->id);
         $user = null;
-        if ($organization->owner_id !== null) {
+        if ($config['default_user_id'] !== null) {
+            $user = User::query()
+                ->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->whereKey((int) $config['default_user_id'])
+                ->first();
+        }
+        if ($user === null && $organization->owner_id !== null) {
             $user = User::query()->withoutGlobalScopes()->whereKey($organization->owner_id)->first();
         }
         $user ??= User::query()
@@ -653,17 +734,27 @@ class TogglExportImporter {
             'users_created' => 0,
             'entries_created' => 0,
             'entries_skipped' => 0,
+            'entries_unresolved_user' => 0,
+            // lower(E-Mail) → Anzahl nicht gebuchter Einträge ('' = ohne Signal).
+            'unresolved_emails' => [],
         ];
     }
 
     /**
      * @param  array<int, array<string, mixed>>  $workspaces
-     * @return array<string, int>
+     * @return array<string, mixed>
      */
     private function sumTotals(array $workspaces): array {
         $totals = $this->newStats();
         foreach ($workspaces as $w) {
             foreach (array_keys($totals) as $k) {
+                if ($k === 'unresolved_emails') {
+                    foreach ((array) ($w[$k] ?? []) as $email => $count) {
+                        $totals[$k][$email] = (int) ($totals[$k][$email] ?? 0) + (int) $count;
+                    }
+
+                    continue;
+                }
                 $totals[$k] += (int) ($w[$k] ?? 0);
             }
         }

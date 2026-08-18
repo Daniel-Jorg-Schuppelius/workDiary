@@ -48,20 +48,40 @@ class DocumentDesignRenderer {
         return $version === null ? null : $this->payloadFromVersion($version);
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * Payload einer Profilversion. Erbende Varianten (#83) werden zuerst zu
+     * ihrem effektiven Stand aufgelöst (Basisdesign + Overrides); die
+     * Sektions-Herkunft wandert als `inheritance` mit ins Payload — Editor
+     * und Vorschau zeigen damit, was geerbt und was überschrieben ist.
+     *
+     * @return array<string, mixed>
+     */
     public function payloadFromVersion(DocumentRenderProfileVersion $version): array {
+        $effective = $this->profiles->effectiveVersion($version);
+
+        $firstAsset = $effective->firstAsset()->withoutGlobalScopes()->first();
+        $followingAsset = $effective->followingAsset()->withoutGlobalScopes()->first();
+
         return [
             'profile_id' => $version->document_render_profile_id,
             'profile_version_id' => $version->id,
             'profile_version' => $version->version,
-            'layout' => $version->layout,
-            'block_rules' => $version->block_rules,
-            'table_style' => $version->table_style,
+            'layout' => $effective->layout,
+            'block_rules' => $effective->block_rules,
+            'table_style' => $effective->table_style,
             'assets' => [
-                'first' => $version->firstAsset()->withoutGlobalScopes()->first()?->normalizedDataUri(),
-                'following' => $version->followingAsset()->withoutGlobalScopes()->first()?->normalizedDataUri(),
-                'first_sha256' => $version->firstAsset()->withoutGlobalScopes()->first()?->normalized_sha256,
-                'following_sha256' => $version->followingAsset()->withoutGlobalScopes()->first()?->normalized_sha256,
+                'first' => $firstAsset?->normalizedDataUri(),
+                'following' => $followingAsset?->normalizedDataUri(),
+                'first_sha256' => $firstAsset?->normalized_sha256,
+                'following_sha256' => $followingAsset?->normalized_sha256,
+                // Effektive Asset-IDs: Snapshots geerbter Firmenbögen bleiben
+                // dadurch rehydrierbar, auch wenn die Varianten-Version selbst
+                // keine eigenen Assets trägt.
+                'first_asset_id' => $effective->first_asset_id,
+                'following_asset_id' => $effective->following_asset_id,
+            ],
+            'inheritance' => $version->override_sections === null ? null : [
+                'override_sections' => $version->override_sections,
             ],
             'generator_version' => self::GENERATOR_VERSION,
         ];
@@ -102,7 +122,9 @@ class DocumentDesignRenderer {
         }
 
         $html = View::make($view, $data)->render();
-        if (($writerOptions['orientation'] ?? 'portrait') === 'portrait') {
+        // #83: Spezialformate (isBrandable() = false) deklarieren ihre
+        // Einschränkung in der Registrierung — hier kein stilles Verhalten.
+        if (($writerOptions['orientation'] ?? 'portrait') === 'portrait' && $kind->isBrandable()) {
             $html = $this->composeFor($organization, $kind, $html);
         }
 
@@ -137,6 +159,17 @@ class DocumentDesignRenderer {
             $bottom,
             $following['left'],
         );
+        // Typografie (#83): kuratierte Schriftfamilie und Grundgröße des
+        // Profils übersteuern den View-Standard (Injektion am </head>-Ende
+        // gewinnt bei gleicher Spezifität).
+        $typography = (array) ($layout['typography'] ?? []);
+        $fontKey = (string) ($typography['font_family'] ?? '');
+        if (isset(RenderProfileService::FONT_FAMILIES[$fontKey])) {
+            $css .= sprintf("body { font-family: '%s', sans-serif; }\n", RenderProfileService::FONT_FAMILIES[$fontKey]);
+        }
+        if (is_numeric($typography['base_size_pt'] ?? null)) {
+            $css .= sprintf("body { font-size: %.1fpt; }\n", (float) $typography['base_size_pt']);
+        }
         $css .= $this->tableCss((array) ($payload['table_style'] ?? []));
 
         $body = '';
@@ -243,9 +276,24 @@ class DocumentDesignRenderer {
             return null; // Snapshot des Systemfallbacks → heutige Ausgabe.
         }
 
-        // Assets über die eingefrorene Profilversion nachladen; die Hashes im
-        // Snapshot belegen, dass derselbe Stand gerendert wird.
-        if ($snapshot->profile_version_id !== null) {
+        // Assets nachladen: bevorzugt über die im Payload eingefrorenen
+        // effektiven Asset-IDs (#83 — geerbte Firmenbögen hängen nicht an der
+        // Varianten-Version), sonst über die eingefrorene Profilversion. Die
+        // Hashes im Snapshot belegen, dass derselbe Stand gerendert wird.
+        $assetIds = [
+            'first' => $payload['assets']['first_asset_id'] ?? null,
+            'following' => $payload['assets']['following_asset_id'] ?? null,
+        ];
+        if ($assetIds['first'] !== null || $assetIds['following'] !== null) {
+            foreach ($assetIds as $page => $assetId) {
+                $payload['assets'][$page] = ! is_numeric($assetId) ? null
+                    : \App\Models\DocumentDesign\LetterheadAsset::query()
+                        ->withoutGlobalScopes()
+                        ->where('organization_id', $snapshot->organization_id)
+                        ->whereKey((int) $assetId)
+                        ->first()?->normalizedDataUri();
+            }
+        } elseif ($snapshot->profile_version_id !== null) {
             $version = DocumentRenderProfileVersion::query()->withoutGlobalScopes()->find($snapshot->profile_version_id);
             if ($version !== null) {
                 $payload['assets']['first'] = $version->firstAsset()->withoutGlobalScopes()->first()?->normalizedDataUri();

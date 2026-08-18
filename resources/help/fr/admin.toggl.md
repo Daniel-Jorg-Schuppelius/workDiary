@@ -37,3 +37,13 @@ anciens imports mal attribués se réparent avec
 `toggl:repair-entry-users` (d'abord simulation, écrire avec
 `--apply`) ; les temps facturés ou signés ne sont jamais modifiés
 automatiquement.
+
+Pour l'import unique de workspace (dossier/ZIP ou API), vous choisissez
+explicitement l'attribution des utilisateurs : attribuer uniquement aux
+utilisateurs existants (les entrées inconnues restent visiblement non
+comptabilisées et sont listées par e-mail), créer les utilisateurs
+manquants par e-mail, ou mode mono-utilisateur (tout sur l'utilisateur
+par défaut configuré — clairement indiqué dans l'aperçu et le
+résultat). Les adresses Toggl individuelles peuvent en outre être
+attribuées explicitement ; l'import est idempotent et peut simplement
+être relancé une fois les attributions maintenues.

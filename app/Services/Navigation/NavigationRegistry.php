@@ -213,6 +213,7 @@ class NavigationRegistry {
             'domain-reseller.index' => 'module.domain',
             'domains.reports' => 'module.domain',
             'admin.domain-provider.index' => 'module.domain',
+            'admin.document-design.index' => 'module.dokumentdesign',
             'admin.ai.index' => 'module.ai',
             'rental.index' => 'module.rental',
             'rental.calendar' => 'module.rental',
@@ -1260,6 +1261,8 @@ class NavigationRegistry {
                     $adminNavItems[] = ['route' => 'admin.organizations.edit', 'route_params' => [$user->organization_id], 'label' => __('Organisation'), 'icon' => 'corporate_fare', 'modal' => false];
                 }
                 $adminNavItems[] = ['route' => 'admin.branding.edit', 'label' => __('Branding'), 'icon' => 'palette', 'modal' => false];
+                // PDF-Dokumentdesign/CI-Basisdesign (Feature 076, Ausbau #83): war bislang nur per Direkt-URL erreichbar.
+                $adminNavItems[] = ['route' => 'admin.document-design.index', 'label' => __('document_design.title'), 'icon' => 'design_services', 'modal' => false, 'matches' => ['admin.document-design.*']];
                 $adminNavItems[] = ['route' => 'admin.themes.index', 'label' => __('Themes'), 'icon' => 'format_paint', 'modal' => false, 'matches' => ['admin.themes.*']];
                 if (Gate::allows(Permission::OrganizationScopeManage->value)) {
                     $adminNavItems[] = ['route' => 'admin.scope.index', 'label' => __('scope.title.index'), 'icon' => 'tune', 'modal' => false, 'matches' => ['admin.scope.*']];

@@ -103,6 +103,14 @@ class TogglRepairEntryUsersCommand extends Command {
                     ->forPlugin($org->id, TogglPlugin::ID, TogglImportService::EXT_TYPE_ENTRY)
                     ->forExternalId($entry->entryKey)
                     ->first();
+                // Bestandsimporte vor MVP-509 tragen den CSV-Schlüssel ohne
+                // E-Mail — über den Alt-Schlüssel weiterhin auffindbar.
+                if ($ref === null && $entry->legacyEntryKey !== null) {
+                    $ref = ExternalReference::query()
+                        ->forPlugin($org->id, TogglPlugin::ID, TogglImportService::EXT_TYPE_ENTRY)
+                        ->forExternalId($entry->legacyEntryKey)
+                        ->first();
+                }
                 $timeEntry = $ref?->referenceable;
                 if (! $timeEntry instanceof TimeEntry) {
                     $notImported++;

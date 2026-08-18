@@ -37,3 +37,24 @@ Ablauf:
 Ohne Profil gilt der Systemstandard (heutige Ausgabe). ZUGFeRD-/
 PDF-A-3-Rechnungen bleiben nach Anwendung des Designs valide — die
 strukturierte Rechnung bleibt fachlich führend.
+
+CI-Basisdesign und Vererbung:
+
+- Das org-weite Standardprofil ist dein **CI-Basisdesign**. Varianten für
+  einzelne Dokumentarten (z. B. Angebot, Rechnung, Gutschrift, Mahnung)
+  oder ganze Dokumentfamilien (Vertrieb, Einkauf, Nachweis) **erben** alle
+  nicht überschriebenen Sektionen — je Sektion ist sichtbar, ob sie
+  geerbt oder überschrieben ist; „Auf Basisdesign zurücksetzen" entfernt
+  das Override. Die spezifischere Variante gewinnt: Dokumentart vor
+  Familie vor Basisdesign.
+- Die **eingebettete PDF-Vorschau** im Editor rendert über dieselbe
+  Pipeline wie die finale Ausgabe; Dokumentart und Beispieldaten (lange
+  Texte, viele Positionen, mehrere Steuersätze) sind umschaltbar.
+- **Schriftfamilie und Grundgröße** stammen aus einer kuratierten,
+  PDF-fähigen Liste; Primär-/Akzentfarbe können das
+  **Organisationsbranding referenzieren** — Branding-Änderungen wirken
+  dann automatisch, ohne Farbkopie im Profil.
+- Das Basisdesign wird beim Aktivieren gegen die Pflichtblöcke ALLER
+  brandfähigen Dokumentarten geprüft; echte Spezialformate (z. B.
+  Etiketten) deklarieren ihre Einschränkung in der zentralen
+  Dokumentarten-Registrierung.

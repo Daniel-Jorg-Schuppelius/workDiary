@@ -53,7 +53,7 @@ class TogglExportImportTest extends TestCase {
             $this->base,
             $this->organization,
             $this->modes(),
-            TogglExportImporter::USER_PER_EMAIL,
+            TogglExportImporter::USER_PER_EMAIL_CREATE,
             dryRun: true,
         );
 
@@ -74,7 +74,7 @@ class TogglExportImportTest extends TestCase {
             $this->base,
             $this->organization,
             $this->modes(),
-            TogglExportImporter::USER_PER_EMAIL,
+            TogglExportImporter::USER_PER_EMAIL_CREATE,
             dryRun: false,
         );
 
@@ -117,7 +117,7 @@ class TogglExportImportTest extends TestCase {
             $this->base,
             $this->organization,
             ['OwnWs' => ['mode' => TogglExportImporter::MODE_OWN]],
-            TogglExportImporter::USER_PER_EMAIL,
+            TogglExportImporter::USER_PER_EMAIL_CREATE,
             dryRun: false,
         );
 
@@ -160,8 +160,8 @@ class TogglExportImportTest extends TestCase {
 
     public function test_import_is_idempotent(): void {
         $importer = new TogglExportImporter;
-        $importer->import($this->base, $this->organization, $this->modes(), TogglExportImporter::USER_PER_EMAIL, dryRun: false);
-        $second = $importer->import($this->base, $this->organization, $this->modes(), TogglExportImporter::USER_PER_EMAIL, dryRun: false);
+        $importer->import($this->base, $this->organization, $this->modes(), TogglExportImporter::USER_PER_EMAIL_CREATE, dryRun: false);
+        $second = $importer->import($this->base, $this->organization, $this->modes(), TogglExportImporter::USER_PER_EMAIL_CREATE, dryRun: false);
 
         $this->assertSame(2, TimeEntry::query()->count());
         $this->assertSame(2, $second['totals']['entries_skipped']);
@@ -171,7 +171,7 @@ class TogglExportImportTest extends TestCase {
     public function test_reimport_after_project_merge_reuses_merge_target(): void {
         $importer = new TogglExportImporter;
         $modes = ['OwnWs' => ['mode' => TogglExportImporter::MODE_OWN]];
-        $importer->import($this->base, $this->organization, $modes, TogglExportImporter::USER_PER_EMAIL, dryRun: false);
+        $importer->import($this->base, $this->organization, $modes, TogglExportImporter::USER_PER_EMAIL_CREATE, dryRun: false);
 
         // "Website" wird in ein anders benanntes Ziel gemerged (Quelle gelöscht,
         // Toggl-Schlüssel zeigt aufs Ziel) — der erneute Abruf darf "Website"
@@ -184,7 +184,7 @@ class TogglExportImportTest extends TestCase {
         ]);
         app(ProjectMergeService::class)->merge($website, $relaunch);
 
-        $second = $importer->import($this->base, $this->organization, $modes, TogglExportImporter::USER_PER_EMAIL, dryRun: false);
+        $second = $importer->import($this->base, $this->organization, $modes, TogglExportImporter::USER_PER_EMAIL_CREATE, dryRun: false);
 
         $this->assertNull(Project::query()->where('name', 'Website')->first());
         $this->assertSame(0, $second['totals']['projects_created']);
@@ -247,13 +247,13 @@ class TogglExportImportTest extends TestCase {
     public function test_reimport_after_customer_merge_reuses_merge_target(): void {
         $importer = new TogglExportImporter;
         $modes = ['OwnWs' => ['mode' => TogglExportImporter::MODE_OWN]];
-        $importer->import($this->base, $this->organization, $modes, TogglExportImporter::USER_PER_EMAIL, dryRun: false);
+        $importer->import($this->base, $this->organization, $modes, TogglExportImporter::USER_PER_EMAIL_CREATE, dryRun: false);
 
         $acme = Customer::query()->where('name', 'Acme')->firstOrFail();
         $acmeGmbh = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Acme GmbH']);
         app(CustomerMergeService::class)->merge($acme, $acmeGmbh);
 
-        $second = $importer->import($this->base, $this->organization, $modes, TogglExportImporter::USER_PER_EMAIL, dryRun: false);
+        $second = $importer->import($this->base, $this->organization, $modes, TogglExportImporter::USER_PER_EMAIL_CREATE, dryRun: false);
 
         // Kein neuer "Acme"-Kunde — der Toggl-Client-Schlüssel zeigt aufs Merge-Ziel.
         $this->assertNull(Customer::query()->where('name', 'Acme')->first());
@@ -328,7 +328,7 @@ class TogglExportImportTest extends TestCase {
             $dir,
             $this->organization,
             ['LongWs' => ['mode' => TogglExportImporter::MODE_OWN]],
-            TogglExportImporter::USER_PER_EMAIL,
+            TogglExportImporter::USER_PER_EMAIL_CREATE,
             dryRun: false,
         );
 
@@ -432,6 +432,115 @@ class TogglExportImportTest extends TestCase {
         $this->assertNull($aliasFalse->fresh()->billable);
         $this->assertTrue((bool) $togglTrue->fresh()->billable);
         $this->assertFalse((bool) $manualFalse->fresh()->billable);
+    }
+
+    // --- MVP-509: Benutzer-Auflösung des Workspace-Imports ------------------
+
+    public function test_per_email_leaves_unknown_users_visibly_unbooked(): void {
+        // Standardmodus: dev@example.com existiert nicht — kein Auto-Anlegen,
+        // KEINE stille Buchung auf den Org-Owner, sichtbarer Ungelöst-Ausweis.
+        $result = (new TogglExportImporter)->import(
+            $this->base,
+            $this->organization,
+            ['OwnWs' => ['mode' => TogglExportImporter::MODE_OWN]],
+            TogglExportImporter::USER_PER_EMAIL,
+            dryRun: false,
+        );
+
+        $this->assertSame(0, $result['totals']['users_created']);
+        $this->assertSame(0, $result['totals']['entries_created']);
+        $this->assertSame(1, $result['totals']['entries_unresolved_user']);
+        $this->assertSame(['dev@example.com' => 1], $result['totals']['unresolved_emails']);
+        $this->assertNull(User::query()->where('email', 'dev@example.com')->first());
+        $this->assertSame(0, TimeEntry::query()->count(), 'Kein stiller Owner-Fallback.');
+    }
+
+    public function test_per_email_books_existing_user_and_stored_mapping(): void {
+        $anna = User::factory()->create(['organization_id' => $this->organization->id, 'email' => 'dev@example.com']);
+        // Zweiter Workspace-Eintrag über eine gespeicherte Zuordnung (abweichende Toggl-Adresse).
+        $mapped = User::factory()->create(['organization_id' => $this->organization->id, 'email' => 'intern@example.com']);
+        (new \App\Plugins\Toggl\TogglImportService)->rememberUserEmail($this->organization, 'extern@example.com', $mapped);
+        $this->writeCsv($this->base . '/OwnWs/Toggl_time_entries_2025-01-01_to_2025-12-31.csv', [
+            ['Dev', 'dev@example.com', 'Acme', 'Website', '', 'Arbeit', 'No', '2025-01-02', '09:00:00', '2025-01-02', '10:00:00', '01:00:00', ''],
+            ['Ext', 'extern@example.com', 'Acme', 'Website', '', 'Extern', 'No', '2025-01-03', '09:00:00', '2025-01-03', '10:00:00', '01:00:00', ''],
+        ]);
+
+        $result = (new TogglExportImporter)->import(
+            $this->base,
+            $this->organization,
+            ['OwnWs' => ['mode' => TogglExportImporter::MODE_OWN]],
+            TogglExportImporter::USER_PER_EMAIL,
+            dryRun: false,
+        );
+
+        $this->assertSame(2, $result['totals']['entries_created']);
+        $this->assertSame(0, $result['totals']['entries_unresolved_user']);
+        $this->assertSame(1, TimeEntry::query()->where('user_id', $anna->id)->count());
+        $this->assertSame(1, TimeEntry::query()->where('user_id', $mapped->id)->count(), 'Gespeicherte user_email-Zuordnung greift auch im Workspace-Import.');
+    }
+
+    public function test_single_mode_books_configured_default_user_not_owner(): void {
+        $default = User::factory()->create(['organization_id' => $this->organization->id, 'email' => 'standard@example.com']);
+        \App\Models\PluginSetting::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => \App\Plugins\Toggl\TogglPlugin::ID,
+            'enabled' => true,
+            'settings' => ['default_user_id' => $default->id],
+        ]);
+
+        $result = (new TogglExportImporter)->import(
+            $this->base,
+            $this->organization,
+            ['OwnWs' => ['mode' => TogglExportImporter::MODE_OWN]],
+            TogglExportImporter::USER_SINGLE,
+            dryRun: false,
+        );
+
+        $this->assertSame(TogglExportImporter::USER_SINGLE, $result['user_mode']);
+        $this->assertSame($default->name, $result['single_user_name'], 'Der Einbenutzer-Modus ist im Ergebnis sichtbar benannt.');
+        $this->assertSame(1, TimeEntry::query()->where('user_id', $default->id)->count(), 'Konfigurierter Standard-Benutzer statt Org-Owner.');
+        $this->assertSame(0, TimeEntry::query()->where('user_id', $this->organization->owner_id)->count());
+    }
+
+    public function test_empty_email_is_not_booked_to_owner_in_per_email_mode(): void {
+        User::factory()->create(['organization_id' => $this->organization->id, 'email' => 'dev@example.com']);
+        $this->writeCsv($this->base . '/OwnWs/Toggl_time_entries_2025-01-01_to_2025-12-31.csv', [
+            ['Dev', 'dev@example.com', 'Acme', 'Website', '', 'Mit Mail', 'No', '2025-01-02', '09:00:00', '2025-01-02', '10:00:00', '01:00:00', ''],
+            ['Wer', '', 'Acme', 'Website', '', 'Ohne Mail', 'No', '2025-01-03', '09:00:00', '2025-01-03', '10:00:00', '01:00:00', ''],
+        ]);
+
+        $result = (new TogglExportImporter)->import(
+            $this->base,
+            $this->organization,
+            ['OwnWs' => ['mode' => TogglExportImporter::MODE_OWN]],
+            TogglExportImporter::USER_PER_EMAIL,
+            dryRun: false,
+        );
+
+        $this->assertSame(1, $result['totals']['entries_created']);
+        $this->assertSame(1, $result['totals']['entries_unresolved_user']);
+        $this->assertArrayHasKey('', $result['totals']['unresolved_emails'], 'Ohne E-Mail-Signal wird sichtbar ausgewiesen.');
+        $this->assertSame(0, TimeEntry::query()->where('user_id', $this->organization->owner_id)->count(), 'Leere E-Mail bucht nie den Owner.');
+    }
+
+    public function test_per_email_create_ignores_portal_and_deactivated_for_equality(): void {
+        // Konten mit passender E-Mail, die kein Buchungsziel sein dürfen —
+        // im Create-Modus entsteht stattdessen KEIN Duplikat-User (E-Mail ist
+        // belegt), der Eintrag bleibt ungelöst statt falsch gebucht.
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        User::factory()->create(['organization_id' => $this->organization->id, 'email' => 'dev@example.com', 'customer_id' => $customer->id]);
+
+        $result = (new TogglExportImporter)->import(
+            $this->base,
+            $this->organization,
+            ['OwnWs' => ['mode' => TogglExportImporter::MODE_OWN]],
+            TogglExportImporter::USER_PER_EMAIL,
+            dryRun: false,
+        );
+
+        $this->assertSame(0, $result['totals']['entries_created'], 'Portalkonto ist kein Buchungsziel.');
+        $this->assertSame(1, $result['totals']['entries_unresolved_user']);
+        $this->assertSame(1, User::query()->where('email', 'dev@example.com')->count());
     }
 
     // --- Fixtures -----------------------------------------------------------

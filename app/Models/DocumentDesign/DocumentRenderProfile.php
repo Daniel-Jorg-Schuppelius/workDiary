@@ -46,6 +46,7 @@ class DocumentRenderProfile extends Model {
         'status',
         'is_default',
         'document_kinds',
+        'document_family',
         'locale',
         'priority',
         'active_version_id',
@@ -56,6 +57,7 @@ class DocumentRenderProfile extends Model {
         'status' => RenderProfileStatus::class,
         'is_default' => 'boolean',
         'document_kinds' => 'array',
+        'document_family' => \App\Enums\DocumentDesign\RenderDocumentFamily::class,
         'priority' => 'integer',
     ];
 
@@ -71,5 +73,10 @@ class DocumentRenderProfile extends Model {
 
     public function coversKind(RenderDocumentKind $kind): bool {
         return in_array($kind->value, $this->document_kinds ?? [], true);
+    }
+
+    /** Familien-Variante (#83): deckt das Profil die Familie der Art ab? */
+    public function coversFamily(RenderDocumentKind $kind): bool {
+        return $this->document_family === $kind->family();
     }
 }

@@ -36,3 +36,13 @@ predeterminado. Las importaciones antiguas mal asignadas se reparan con
 `toggl:repair-entry-users` (primero simulación, escribir con
 `--apply`); los tiempos facturados o firmados nunca se modifican
 automáticamente.
+
+Para la importación única de workspace (carpeta/ZIP o API) eliges
+explícitamente la asignación de usuarios: asignar solo a usuarios
+existentes (las entradas desconocidas quedan visiblemente sin
+contabilizar y se listan por correo), crear los usuarios que falten por
+correo, o modo de usuario único (todo al usuario predeterminado
+configurado — indicado claramente en la vista previa y el resultado).
+Las direcciones Toggl individuales pueden además asignarse
+explícitamente; la importación es idempotente y puede simplemente
+repetirse una vez mantenidas las asignaciones.

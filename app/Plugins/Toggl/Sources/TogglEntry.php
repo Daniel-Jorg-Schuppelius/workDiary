@@ -53,6 +53,13 @@ final class TogglEntry {
         public readonly ?int $projectId = null,
         /** Toggl-Workspace-ID (nur API) — trennt Inbox-Gruppen je Workspace. */
         public readonly ?int $workspaceId = null,
+        /**
+         * Alt-Schlüssel (CSV-Hash OHNE E-Mail, vor MVP-509): Bestandsimporte
+         * tragen ihre Referenz noch unter diesem Schlüssel — die Dedupe prüft
+         * ihn mit und migriert auf {@see $entryKey}, sonst entstünden beim
+         * Re-Import Duplikate.
+         */
+        public readonly ?string $legacyEntryKey = null,
     ) {}
 
     /** Verbindungsdauer in Minuten (mind. 1, falls > 0 Sekunden). */
@@ -62,8 +69,18 @@ final class TogglEntry {
         return $seconds <= 0 ? 0 : max(1, (int) round($seconds / 60));
     }
 
-    /** Baut den Idempotenz-Schlüssel für einen CSV-Eintrag (keine Toggl-ID vorhanden). */
-    public static function csvKey(string $start, string $end, ?string $client, ?string $project, ?string $description): string {
+    /**
+     * Baut den Idempotenz-Schlüssel für einen CSV-Eintrag (keine Toggl-ID
+     * vorhanden). Die E-Mail fließt mit ein (MVP-509), damit zwei Mitarbeiter
+     * mit identischer Zeit/Projekt/Beschreibung nicht zu EINEM Eintrag
+     * kollabieren.
+     */
+    public static function csvKey(string $start, string $end, ?string $client, ?string $project, ?string $description, ?string $email): string {
+        return 'csv:' . CryptoHelper::hash(implode('|', [$start, $end, (string) $client, (string) $project, (string) $description, (string) $email]), HashAlgorithm::SHA1);
+    }
+
+    /** Alt-Schlüssel ohne E-Mail (Importe vor MVP-509) — nur für die Dedupe-Migration. */
+    public static function legacyCsvKey(string $start, string $end, ?string $client, ?string $project, ?string $description): string {
         return 'csv:' . CryptoHelper::hash(implode('|', [$start, $end, (string) $client, (string) $project, (string) $description]), HashAlgorithm::SHA1);
     }
 }

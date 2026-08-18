@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\DocumentDesign;
 
-use App\Enums\DocumentDesign\{InformationBlock, InformationBlockState, LetterheadPageRole, RenderDocumentKind, RenderProfileStatus, TableStylePreset};
+use App\Enums\DocumentDesign\{InformationBlock, InformationBlockState, LetterheadPageRole, RenderDocumentFamily, RenderDocumentKind, RenderProfileStatus, TableStylePreset};
 use App\Models\DocumentDesign\{DocumentRenderProfile, DocumentRenderProfileVersion, LetterheadAsset};
 use App\Models\{Organization, User};
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
@@ -30,15 +30,21 @@ class RenderProfileService {
     public function __construct(private readonly RenderPreflightService $preflight) {}
 
     /** @param array<int, string> $kinds */
-    public function createProfile(Organization $organization, string $name, array $kinds, bool $isDefault, ?User $user = null): DocumentRenderProfile {
-        return DB::transaction(function () use ($organization, $name, $kinds, $isDefault, $user): DocumentRenderProfile {
+    public function createProfile(Organization $organization, string $name, array $kinds, bool $isDefault, ?User $user = null, ?RenderDocumentFamily $family = null): DocumentRenderProfile {
+        return DB::transaction(function () use ($organization, $name, $kinds, $isDefault, $user, $family): DocumentRenderProfile {
             $profile = DocumentRenderProfile::create([
                 'organization_id' => $organization->id,
                 'name' => $name,
                 'status' => RenderProfileStatus::Draft,
                 'is_default' => false,
                 'document_kinds' => $this->normalizeKinds($kinds),
+                'document_family' => $family?->value,
             ]);
+
+            // Varianten (#83) erben standardmäßig vollständig vom Basisdesign
+            // ([] = keine Overrides); das Basisdesign selbst und Organisationen
+            // ohne Basisdesign starten eigenständig (null = Bestandsverhalten).
+            $inherits = ! $isDefault && $this->baseProfile($organization) !== null;
 
             $profile->versions()->create([
                 'organization_id' => $organization->id,
@@ -47,6 +53,7 @@ class RenderProfileService {
                 'layout' => self::defaultLayout(),
                 'block_rules' => self::defaultBlockRules(),
                 'table_style' => ['preset' => TableStylePreset::Clear->value, 'overrides' => []],
+                'override_sections' => $inherits ? [] : null,
                 'created_by' => $user?->id,
             ]);
 
@@ -77,6 +84,9 @@ class RenderProfileService {
         }
         if (array_key_exists('table_style', $data)) {
             $version->table_style = $this->sanitizeTableStyle((array) $data['table_style']);
+        }
+        if (array_key_exists('override_sections', $data)) {
+            $version->override_sections = $this->sanitizeOverrideSections($data['override_sections']);
         }
         foreach ([['first_asset_id', LetterheadPageRole::First], ['following_asset_id', LetterheadPageRole::Following]] as [$key, $role]) {
             if (! array_key_exists($key, $data)) {
@@ -123,6 +133,7 @@ class RenderProfileService {
             'layout' => $source->layout,
             'block_rules' => $source->block_rules,
             'table_style' => $source->table_style,
+            'override_sections' => $source->override_sections,
             'created_by' => $user?->id,
         ]);
     }
@@ -137,7 +148,10 @@ class RenderProfileService {
             throw new RuntimeException(__('Nur Entwürfe können aktiviert werden.'));
         }
 
-        $result = $this->preflight->check($version, $profile->document_kinds ?? []);
+        // Erbende Varianten werden gegen ihren EFFEKTIVEN Stand geprüft
+        // (Basisdesign + Overrides) — die spärlich gespeicherte Version allein
+        // wäre kein sinnvoller Prüfgegenstand (#83).
+        $result = $this->preflight->check($this->effectiveVersion($version), $this->preflightKinds($profile));
         if (! $result->ok()) {
             return $result;
         }
@@ -168,6 +182,34 @@ class RenderProfileService {
         return $result;
     }
 
+    /**
+     * Prüfumfang der Aktivierung (#83, schließt die Lücke aus MVP-298):
+     * dokumentartgebundene Profile prüfen ihre Arten; ein Standard-/
+     * CI-Basisprofil ohne (oder ohne vollständige) Art-Bindung dient als
+     * Fallback für ALLE brandfähigen Arten und wird deshalb gegen deren
+     * gesamte Pflichtblock-Vereinigung geprüft — vorher wurde ein
+     * Default-Profil ohne `document_kinds` gegen nichts geprüft.
+     *
+     * @return array<int, string>
+     */
+    private function preflightKinds(DocumentRenderProfile $profile): array {
+        $kinds = $profile->document_kinds ?? [];
+        if ($profile->document_family !== null) {
+            foreach (RenderDocumentKind::brandable() as $kind) {
+                if ($kind->family() === $profile->document_family) {
+                    $kinds[] = $kind->value;
+                }
+            }
+        }
+        if ($profile->is_default) {
+            foreach (RenderDocumentKind::brandable() as $kind) {
+                $kinds[] = $kind->value;
+            }
+        }
+
+        return array_values(array_unique($kinds));
+    }
+
     /** @param array<int, string> $kinds */
     public function assignKinds(DocumentRenderProfile $profile, array $kinds): void {
         $profile->document_kinds = $this->normalizeKinds($kinds);
@@ -191,12 +233,29 @@ class RenderProfileService {
     }
 
     /**
-     * Profilauflösung (MVP-300): dokumentartspezifisches aktives Profil mit
-     * höchster Priorität, sonst org-weites Standardprofil, sonst null
-     * (= Systemfallback, heutige Ausgabe).
+     * Profilauflösung (MVP-300; Ausbau #83) — die spezifischere Variante
+     * gewinnt: dokumentartspezifisches aktives Profil mit höchster Priorität,
+     * sonst Familien-Variante, sonst das Profil der etablierten Fallback-Art
+     * ({@see RenderDocumentKind::fallbackKind()} — z. B. Gutschrift →
+     * Rechnungsprofil, Bestandskompatibilität), sonst org-weites
+     * CI-Basisdesign (is_default), sonst null (= Systemfallback,
+     * heutige Ausgabe).
      */
     public function resolveFor(Organization $organization, RenderDocumentKind $kind): ?DocumentRenderProfileVersion {
-        $profiles = DocumentRenderProfile::query()
+        $profiles = $this->activeProfiles($organization);
+
+        $fallbackKind = $kind->fallbackKind();
+        $match = $profiles->first(fn(DocumentRenderProfile $p) => $p->coversKind($kind))
+            ?? $profiles->first(fn(DocumentRenderProfile $p) => $p->coversFamily($kind))
+            ?? ($fallbackKind !== null ? $profiles->first(fn(DocumentRenderProfile $p) => $p->coversKind($fallbackKind)) : null)
+            ?? $profiles->first(fn(DocumentRenderProfile $p) => $p->is_default);
+
+        return $match?->activeVersion()->withoutGlobalScopes()->first();
+    }
+
+    /** @return \Illuminate\Database\Eloquent\Collection<int, DocumentRenderProfile> */
+    private function activeProfiles(Organization $organization): \Illuminate\Database\Eloquent\Collection {
+        return DocumentRenderProfile::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->where('status', RenderProfileStatus::Active)
@@ -204,12 +263,176 @@ class RenderProfileService {
             ->orderByDesc('priority')
             ->orderBy('id')
             ->get();
-
-        $match = $profiles->first(fn(DocumentRenderProfile $p) => $p->coversKind($kind))
-            ?? $profiles->first(fn(DocumentRenderProfile $p) => $p->is_default);
-
-        return $match?->activeVersion()->withoutGlobalScopes()->first();
     }
+
+    /** Das CI-Basisdesign der Organisation (is_default-Profil), unabhängig vom Status. */
+    public function baseProfile(Organization $organization): ?DocumentRenderProfile {
+        return DocumentRenderProfile::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('is_default', true)
+            ->where('status', '!=', RenderProfileStatus::Archived)
+            ->orderBy('id')
+            ->first();
+    }
+
+    /** Aktive Version des CI-Basisdesigns (oder null, wenn keines aktiv ist). */
+    public function baseVersionFor(Organization $organization): ?DocumentRenderProfileVersion {
+        $base = $this->activeProfiles($organization)->first(fn(DocumentRenderProfile $p) => $p->is_default);
+
+        return $base?->activeVersion()->withoutGlobalScopes()->first();
+    }
+
+    /**
+     * Effektiver Stand einer Version (#83): erbt die Version vom Basisdesign
+     * (`override_sections` gesetzt, Profil ist nicht selbst das Basisdesign),
+     * werden alle nicht überschriebenen Sektionen (layout, assets,
+     * block_rules, table_style) aus der aktiven Basisdesign-Version gelesen.
+     * Rückgabe ist dann eine NICHT persistierte Instanz mit den gemergten
+     * Werten; eigenständige Versionen kommen unverändert zurück.
+     */
+    public function effectiveVersion(DocumentRenderProfileVersion $version): DocumentRenderProfileVersion {
+        return $this->withResolvedBrandColors($this->mergedWithBase($version));
+    }
+
+    private function mergedWithBase(DocumentRenderProfileVersion $version): DocumentRenderProfileVersion {
+        $overrides = $version->override_sections;
+        $profile = $version->profile;
+        if ($overrides === null || $profile === null || $profile->is_default) {
+            return $version;
+        }
+
+        $organization = Organization::query()->withoutGlobalScopes()->find($version->organization_id);
+        $base = $organization !== null ? $this->baseVersionFor($organization) : null;
+        if ($base === null || (int) $base->document_render_profile_id === (int) $profile->id) {
+            return $version;
+        }
+
+        $pick = fn (string $section) => in_array($section, $overrides, true);
+
+        return $this->detachedCopy($version, [
+            'layout' => $pick('layout') ? $version->layout : $base->layout,
+            'block_rules' => $pick('block_rules') ? $version->block_rules : $base->block_rules,
+            'table_style' => $pick('table_style') ? $version->table_style : $base->table_style,
+            'first_asset_id' => $pick('assets') ? $version->first_asset_id : $base->first_asset_id,
+            'following_asset_id' => $pick('assets') ? $version->following_asset_id : $base->following_asset_id,
+        ]);
+    }
+
+    /**
+     * Branding-Referenz (#83): trägt eine Version `use_brand_colors`, werden
+     * Akzent- und Kopfzeilenfarbe beim Rendern/Preflight aus dem
+     * Organisationsbranding aufgelöst — Single Source of Truth bleibt der
+     * {@see \App\Services\BrandingService}-Datenstand, es entsteht keine
+     * Farbkopie im Profil.
+     */
+    private function withResolvedBrandColors(DocumentRenderProfileVersion $version): DocumentRenderProfileVersion {
+        $tableStyle = (array) $version->table_style;
+        if (empty($tableStyle['use_brand_colors'])) {
+            return $version;
+        }
+
+        $organization = Organization::query()->withoutGlobalScopes()->find($version->organization_id);
+        $colors = (array) (($organization?->brandingSettings() ?? [])['colors'] ?? []);
+        $primary = $this->hexOrNull($colors['primary'] ?? null);
+        $accent = $this->hexOrNull($colors['accent'] ?? null);
+        if ($primary === null && $accent === null) {
+            return $version;
+        }
+
+        $overrides = (array) ($tableStyle['overrides'] ?? []);
+        $overrides['accent_color'] = $accent ?? $primary;
+        if ($primary !== null) {
+            $overrides['header_fill'] = $primary;
+        }
+        $tableStyle['overrides'] = $overrides;
+
+        $copy = $version->exists ? $this->detachedCopy($version, []) : $version;
+        $copy->table_style = $tableStyle;
+
+        return $copy;
+    }
+
+    /**
+     * Nicht persistierte Arbeitskopie einer Version (effektiver Stand) —
+     * niemals speichern; nur Eingabe für Preflight und Payload-Aufbau.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    private function detachedCopy(DocumentRenderProfileVersion $version, array $attributes): DocumentRenderProfileVersion {
+        $copy = $version->newInstance([
+            'organization_id' => $version->organization_id,
+            'document_render_profile_id' => $version->document_render_profile_id,
+            'version' => $version->version,
+            'status' => $version->status,
+            'layout' => $version->layout,
+            'block_rules' => $version->block_rules,
+            'table_style' => $version->table_style,
+            'first_asset_id' => $version->first_asset_id,
+            'following_asset_id' => $version->following_asset_id,
+        ]);
+        // $attributes gewinnen über die kopierten Grundwerte.
+        foreach ($attributes as $key => $value) {
+            $copy->{$key} = $value;
+        }
+        $copy->id = $version->id;
+        $copy->exists = false;
+        if ($version->relationLoaded('profile') || $version->profile !== null) {
+            $copy->setRelation('profile', $version->profile);
+        }
+
+        return $copy;
+    }
+
+    private function hexOrNull(mixed $value): ?string {
+        $value = trim((string) $value);
+
+        return preg_match('/^#[0-9a-fA-F]{6}$/', $value) === 1 ? strtolower($value) : null;
+    }
+
+    /**
+     * Preflight des aktuellen Standes einer Version — gegen den effektiven
+     * Stand (Basisdesign + Overrides) und den vollen Prüfumfang des Profils
+     * (Arten, Familie, Basisdesign = alle brandfähigen Arten).
+     */
+    public function preflightFor(DocumentRenderProfileVersion $version): PreflightResult {
+        $profile = $version->profile;
+        if ($profile === null) {
+            throw new RuntimeException('Profilversion ohne Profil.');
+        }
+
+        return $this->preflight->check($this->effectiveVersion($version), $this->preflightKinds($profile));
+    }
+
+    /** Familien-Bindung einer Variante setzen/entfernen (#83). */
+    public function assignFamily(DocumentRenderProfile $profile, ?RenderDocumentFamily $family): void {
+        $profile->document_family = $family;
+        $profile->save();
+    }
+
+    /** Sektionen, die eine erbende Variante überschreiben kann. */
+    public const OVERRIDE_SECTIONS = ['layout', 'assets', 'block_rules', 'table_style'];
+
+    /** @return array<int, string>|null */
+    private function sanitizeOverrideSections(mixed $raw): ?array {
+        if ($raw === null) {
+            return null;
+        }
+
+        return array_values(array_intersect(self::OVERRIDE_SECTIONS, array_map('strval', (array) $raw)));
+    }
+
+    /**
+     * Freigegebene, PDF-fähige Schriftfamilien (#83): dompdf bündelt DejaVu —
+     * kuratierte Liste statt freier Font-Eingabe. Schlüssel → CSS-Name.
+     *
+     * @var array<string, string>
+     */
+    public const FONT_FAMILIES = [
+        'dejavu-sans' => 'DejaVu Sans',
+        'dejavu-serif' => 'DejaVu Serif',
+        'dejavu-mono' => 'DejaVu Sans Mono',
+    ];
 
     /** @return array<string, mixed> Standardlayout = heutige Ausgabe (20 mm Ränder, kein Firmenbogen). */
     public static function defaultLayout(): array {
@@ -221,6 +444,8 @@ class RenderProfileService {
             'sender_line' => null,
             'footer' => ['page_numbers' => false, 'carryover_note' => false],
             'blocked_areas' => [],
+            // null = Systemstandard der jeweiligen Dokument-View (#83).
+            'typography' => ['font_family' => null, 'base_size_pt' => null],
         ];
     }
 
@@ -270,6 +495,13 @@ class RenderProfileService {
         $clean['footer'] = [
             'page_numbers' => (bool) ($layout['footer']['page_numbers'] ?? false),
             'carryover_note' => (bool) ($layout['footer']['carryover_note'] ?? false),
+        ];
+        // Typografie (#83): nur kuratierte Schriften und sichere Grundgrößen.
+        $font = (string) ($layout['typography']['font_family'] ?? '');
+        $size = $layout['typography']['base_size_pt'] ?? null;
+        $clean['typography'] = [
+            'font_family' => array_key_exists($font, self::FONT_FAMILIES) ? $font : null,
+            'base_size_pt' => is_numeric($size) ? max(8.0, min(14.0, round((float) $size, 1))) : null,
         ];
         $clean['blocked_areas'] = [];
         foreach ((array) ($layout['blocked_areas'] ?? []) as $area) {
@@ -344,7 +576,13 @@ class RenderProfileService {
             }
         }
 
-        return ['preset' => $preset->value, 'overrides' => $overrides];
+        return [
+            'preset' => $preset->value,
+            'overrides' => $overrides,
+            // #83: Farben aus dem Organisationsbranding REFERENZIEREN statt
+            // kopieren — die Auflösung passiert beim Rendern/Preflight.
+            'use_brand_colors' => (bool) ($style['use_brand_colors'] ?? false),
+        ];
     }
 
     private function mm(mixed $value): float {

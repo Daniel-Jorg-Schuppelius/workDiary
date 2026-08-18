@@ -135,6 +135,7 @@ class TogglImportService extends MatchingTimeImportService {
             projectId: $entry->projectId,
             workspaceId: $entry->workspaceId,
             workspaceName: $entry->workspaceId !== null ? ($workspaceNames[$entry->workspaceId] ?? null) : null,
+            legacyEntryKey: $entry->legacyEntryKey,
         );
     }
 

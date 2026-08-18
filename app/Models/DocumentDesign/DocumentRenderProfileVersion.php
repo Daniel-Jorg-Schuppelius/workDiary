@@ -59,6 +59,7 @@ class DocumentRenderProfileVersion extends Model {
         'layout',
         'block_rules',
         'table_style',
+        'override_sections',
         'checksum',
         'created_by',
         'activated_at',
@@ -71,6 +72,7 @@ class DocumentRenderProfileVersion extends Model {
         'layout' => 'array',
         'block_rules' => 'array',
         'table_style' => 'array',
+        'override_sections' => 'array',
         'activated_at' => 'datetime',
     ];
 

@@ -60,3 +60,12 @@ Benutzerzuordnung (MVP-509):
 - Bereits falsch zugeordnete Alt-Importe repariert der Befehl
   `toggl:repair-entry-users` (erst Dry-Run, mit `--apply` schreiben);
   abgerechnete oder signierte Zeiten werden nie automatisch verändert.
+- Beim einmaligen **Workspace-Import** (Ordner/ZIP oder API) wählst du
+  die Benutzer-Zuordnung ausdrücklich: nur bestehenden Benutzern
+  zuordnen (unbekannte Einträge bleiben sichtbar ungebucht und werden
+  je E-Mail ausgewiesen), fehlende Benutzer pro E-Mail neu anlegen,
+  oder Einbenutzer-Modus (alles auf den konfigurierten
+  Standard-Benutzer — deutlich in Vorschau und Ergebnis benannt).
+  Einzelne Toggl-Adressen lassen sich zusätzlich fest zuordnen; der
+  Import ist idempotent und kann nach gepflegter Zuordnung einfach
+  erneut ausgeführt werden.
