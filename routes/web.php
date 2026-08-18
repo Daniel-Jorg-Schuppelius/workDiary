@@ -2268,6 +2268,8 @@ Route::middleware('auth')->group(function () {
         // Zuordnung Auslage ↔ Buchhaltungsbeleg (Feature 105, MVP-551)
         Route::post('expenses/{expense}/buchungsbeleg', [ExpenseController::class, 'linkVoucher'])->name('expenses.link-voucher');
         Route::delete('expenses/{expense}/buchungsbeleg', [ExpenseController::class, 'unlinkVoucher'])->name('expenses.unlink-voucher');
+        // Aktiver Belegpush (Feature 106): Auslage → Einkaufsbeleg im führenden System.
+        Route::post('expenses/{expense}/buchungsbeleg/push', [ExpenseController::class, 'pushVoucher'])->name('expenses.push-voucher');
         Route::put('expenses/{expense}', [ExpenseController::class, 'update'])->name('expenses.update');
         Route::delete('expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
         Route::post('expenses/{expense}/submit', [ExpenseController::class, 'submit'])->name('expenses.submit');

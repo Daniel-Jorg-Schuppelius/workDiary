@@ -18,6 +18,7 @@ declare(strict_types=1);
  */
 return [
     'expense' => [
+        'voucher_pushed' => 'Frais transmis à la comptabilité comme justificatif',
         'voucher_linked' => 'Note de frais associée à une pièce comptable',
         'voucher_unlinked' => 'Association à la pièce comptable supprimée',
     ],

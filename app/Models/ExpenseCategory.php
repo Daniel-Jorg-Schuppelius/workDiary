@@ -31,6 +31,7 @@ use Illuminate\Support\Carbon;
  * @property bool $requires_receipt
  * @property int $sort
  * @property bool $is_active
+ * @property string|null $accounting_category_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -70,6 +71,7 @@ class ExpenseCategory extends Model {
         'requires_receipt',
         'sort',
         'is_active',
+        'accounting_category_id',
     ];
 
     /** @var array<string, string> */

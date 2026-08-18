@@ -284,4 +284,44 @@ class LexofficeMapper {
             'currency' => $currency,
         ];
     }
+
+    /**
+     * Auslage → Einkaufsbeleg-Payload (Feature 106): derselbe Endpunkt wie die
+     * Faktura-Übergabe, nur `voucherType: purchaseinvoice`.
+     *
+     * Der Händler ist in aller Regel KEIN Lexoffice-Kontakt — deshalb
+     * `useCollectiveContact` (Sammelkontakt) und der Händlername im Belegtext,
+     * statt für jede Tankstelle einen Kontakt anzulegen.
+     *
+     * @param  list<string> $fileIds  zuvor hochgeladene Belegdateien
+     * @return array<string, mixed>
+     */
+    public function expenseToVoucherPayload(\App\Models\Expense $expense, string $categoryId, array $fileIds = []): array {
+        $gross = $expense->amount_gross?->toFloat() ?? 0.0;
+        $tax = $expense->tax_amount?->toFloat() ?? 0.0;
+        $taxRate = $expense->tax_rate?->getValue()->toFloat() ?? 0.0;
+
+        $payload = [
+            'voucherType' => 'purchaseinvoice',
+            'voucherNumber' => null,
+            'voucherDate' => $expense->date->format('Y-m-d') . 'T00:00:00.000+01:00',
+            'totalGrossAmount' => round($gross, 2),
+            'totalTaxAmount' => round($tax, 2),
+            'taxType' => 'gross',
+            'useCollectiveContact' => true,
+            'remark' => trim(($expense->vendor !== null ? $expense->vendor . ' - ' : '') . $expense->description),
+            'voucherItems' => [[
+                'amount' => round($gross, 2),
+                'taxAmount' => round($tax, 2),
+                'taxRatePercent' => $taxRate,
+                'categoryId' => $categoryId,
+            ]],
+        ];
+
+        if ($fileIds !== []) {
+            $payload['files'] = $fileIds;
+        }
+
+        return $payload;
+    }
 }

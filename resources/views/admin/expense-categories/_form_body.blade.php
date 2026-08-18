@@ -73,6 +73,20 @@
         </x-filter-field>
     </div>
 
+    <div class="md:col-span-2">
+        {{-- Feature 106: Ohne diese Zuordnung kein Belegpush — eine geratene
+             Buchungskategorie wäre schlimmer als eine Fehlermeldung. --}}
+        <x-filter-field show-label :label="__('Buchungskategorie (Buchhaltung)')" for="expcat-accounting">
+            <input type="text" id="expcat-accounting" name="accounting_category_id" maxlength="64"
+                   value="{{ old('accounting_category_id', $category->accounting_category_id) }}"
+                   class="input input-bordered input-sm w-full font-mono"
+                   placeholder="{{ __('Kategorie-ID des Buchhaltungssystems (Lexoffice: UUID)') }}">
+        </x-filter-field>
+        <p class="mt-1 text-[0.7rem] text-base-content/60">
+            {{ __('Nur mit dieser Zuordnung lässt sich eine genehmigte Auslage als Beleg an die Buchhaltung übergeben.') }}
+        </p>
+    </div>
+
     <x-filter-field show-label :label="__('Sortierung')" for="expcat-sort">
         <input type="number" id="expcat-sort" name="sort" min="0" max="9999"
                value="{{ old('sort', $category->sort ?? 100) }}"

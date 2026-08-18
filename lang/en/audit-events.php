@@ -18,6 +18,7 @@ declare(strict_types=1);
  */
 return [
     'expense' => [
+        'voucher_pushed' => 'Expense pushed to accounting as a voucher',
         'voucher_linked' => 'Expense linked to accounting voucher',
         'voucher_unlinked' => 'Link to accounting voucher removed',
     ],

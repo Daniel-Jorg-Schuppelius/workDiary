@@ -51,14 +51,35 @@ class DocumentLinks {
         );
     }
 
-    /** Hebt die Zuordnung wieder auf — die Auslage zählt danach wieder selbst. */
+    /**
+     * Hebt die Zuordnung wieder auf — die Auslage zählt danach wieder selbst.
+     *
+     * Eine **gepushte** Verknüpfung (Feature 106) ist davon ausgenommen: Der
+     * Beleg wurde von hier aus angelegt und existiert unwiderruflich — die
+     * Verknüpfung zu lösen würde die Dublettenbremse entfernen, den Beleg
+     * aber nicht.
+     */
     public function unlink(Expense $expense): void {
-        ExternalReference::query()
+        $reference = $this->referenceFor($expense);
+        if ($reference === null) {
+            return;
+        }
+
+        if ((bool) ($reference->payload['pushed'] ?? false)) {
+            throw new \RuntimeException((string) __('Diese Auslage wurde aktiv als Beleg übergeben — der Beleg existiert unwiderruflich, die Verknüpfung bleibt.'));
+        }
+
+        $reference->delete();
+    }
+
+    /** Die Verknüpfungszeile selbst, falls vorhanden. */
+    public function referenceFor(Expense $expense): ?ExternalReference {
+        return ExternalReference::query()
             ->where('plugin_id', LexofficePlugin::ID)
             ->where('external_type', LexofficePlugin::EXT_TYPE_VOUCHER)
             ->where('referenceable_type', $expense->getMorphClass())
             ->where('referenceable_id', $expense->getKey())
-            ->delete();
+            ->first();
     }
 
     /** Zugeordneter Beleg, falls vorhanden. */

@@ -23,3 +23,24 @@ Typical flow:
 Receipts, odometer values and travel times must be plausible. Approved
 or settled records must not be changed silently; corrections need a
 traceable workflow.
+
+## Pushing an expense to accounting as a voucher
+
+An **approved** expense can be pushed directly from the receipt dialog to the
+leading accounting system as a purchase voucher — instead of entering it there
+a second time. The external voucher ID comes back on creation; the duplicate
+cannot arise in the first place.
+
+Three rules:
+
+- **Approved expenses only.** The push is irrevocable — the target system
+  knows neither update nor delete for vouchers. Corrections run there as a
+  counter-voucher.
+- **No push without a posting category.** The mapping is maintained per
+  expense category (Administration → Expense categories); a guessed category
+  would be worse than the error message.
+- **From the push on, the voucher leads.** The link can no longer be removed —
+  the voucher exists, linked or not.
+
+The expense's receipt files are uploaded along — without a file the voucher is
+worthless to accounting.

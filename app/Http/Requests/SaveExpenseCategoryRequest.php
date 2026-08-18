@@ -46,6 +46,8 @@ class SaveExpenseCategoryRequest extends BaseFormRequest {
             'label' => ['required', 'string', 'max:120'],
             'icon' => ['nullable', 'string', 'max:64'],
             'color' => ['required', 'string', 'max:16'],
+            // Feature 106: Buchungskategorie des führenden Buchhaltungssystems.
+            'accounting_category_id' => ['nullable', 'string', 'max:64'],
             'description' => ['nullable', 'string', 'max:500'],
             'default_tax_rate' => ['required', 'numeric', 'min:0', 'max:99.99'],
             'default_billable' => ['boolean'],

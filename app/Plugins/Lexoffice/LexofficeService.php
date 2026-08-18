@@ -18,8 +18,9 @@ use CommonToolkit\Helper\Data\JsonHelper;
 use GuzzleHttp\Exception\ConnectException;
 use Illuminate\Support\Collection;
 use Lexoffice\API\Client;
-use Lexoffice\API\Endpoints\{ContactsEndpoint, VouchersEndpoint};
+use Lexoffice\API\Endpoints\{ContactsEndpoint, FilesEndpoint, VouchersEndpoint};
 use Lexoffice\Entities\Contacts\Contact;
+use Lexoffice\Entities\Files\File as LexofficeFile;
 use Lexoffice\Entities\Vouchers\Voucher;
 use RuntimeException;
 
@@ -235,6 +236,43 @@ class LexofficeService {
     ): array {
         $defaults = $this->defaults + ['external_contact_id' => $externalContactId];
         $payload = $this->mapper->timeEntriesToVoucherPayload($customer, $entries, $from, $to, $defaults);
+
+        $endpoint = new VouchersEndpoint($this->client());
+        $voucher = Voucher::fromJson(JsonHelper::encode($payload));
+
+        $resource = $endpoint->create($voucher);
+        $id = $resource->getId()->toString();
+        if ($id === '') {
+            throw new RuntimeException('Lexoffice voucher create returned no id.');
+        }
+
+        return ['external_id' => $id, 'payload' => $payload];
+    }
+
+    /**
+     * Auslage als Einkaufsbeleg anlegen (Feature 106): erst die Belegdatei
+     * hochladen, dann den Beleg mit Datei-Verweis erzeugen — ohne Datei ist
+     * der Beleg für die Buchhaltung wertlos.
+     *
+     * Der Push ist **terminal**: `VouchersEndpoint::delete()` wirft
+     * NotAllowedException; Korrekturen laufen als Gegenbeleg im führenden
+     * System, nie als Update von hier.
+     *
+     * @param  list<string> $filePaths  lokale Pfade der Belegdateien
+     * @return array{external_id: string, payload: array<string, mixed>}
+     */
+    public function createExpenseVoucher(\App\Models\Expense $expense, string $categoryId, array $filePaths = []): array {
+        $fileIds = [];
+        foreach ($filePaths as $filePath) {
+            $file = new LexofficeFile(['filePath' => $filePath]);
+            $resource = (new FilesEndpoint($this->client()))->upload($file);
+            $fileId = $resource->getId()->toString();
+            if ($fileId !== '') {
+                $fileIds[] = $fileId;
+            }
+        }
+
+        $payload = $this->mapper->expenseToVoucherPayload($expense, $categoryId, $fileIds);
 
         $endpoint = new VouchersEndpoint($this->client());
         $voucher = Voucher::fromJson(JsonHelper::encode($payload));

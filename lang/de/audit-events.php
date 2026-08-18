@@ -18,6 +18,7 @@ declare(strict_types=1);
  */
 return [
     'expense' => [
+        'voucher_pushed' => 'Auslage als Beleg an die Buchhaltung übergeben',
         'voucher_linked' => 'Auslage einem Buchungsbeleg zugeordnet',
         'voucher_unlinked' => 'Zuordnung zum Buchungsbeleg gelöst',
     ],

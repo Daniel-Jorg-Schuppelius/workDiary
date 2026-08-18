@@ -18,6 +18,7 @@ declare(strict_types=1);
  */
 return [
     'expense' => [
+        'voucher_pushed' => 'Gasto transferido a la contabilidad como comprobante',
         'voucher_linked' => 'Gasto vinculado a un comprobante contable',
         'voucher_unlinked' => 'Vínculo con el comprobante contable eliminado',
     ],

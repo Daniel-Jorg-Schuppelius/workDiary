@@ -146,12 +146,17 @@ class ExpenseController extends Controller {
 
         $linked = $links->voucherFor($expense);
 
+        $push = app(\App\Services\Billing\ExpenseVoucherPush::class);
+
         return view('expenses._receipt_dialog', [
             'expense' => $expense,
             'attachments' => $expense->attachments()->get(),
             'canUpload' => Gate::allows('update', $expense),
             'canLink' => Gate::allows('link', $expense),
             'linkedVoucher' => $linked,
+            // Feature 106: aktiver Belegpush - nur anbieten, wo er möglich ist.
+            'canPush' => Gate::allows('link', $expense) && $push->available($expense),
+            'wasPushed' => $linked !== null && $push->wasPushed($expense),
             // Vorschläge nur, solange nichts zugeordnet ist — sonst lädt der
             // Dialog Kandidaten, die niemand mehr braucht.
             'suggestions' => $linked === null ? $links->suggestionsFor($expense) : collect(),
@@ -180,10 +185,42 @@ class ExpenseController extends Controller {
     public function unlinkVoucher(Expense $expense, DocumentLinks $links): RedirectResponse {
         Gate::authorize('link', $expense);
 
-        $links->unlink($expense);
+        try {
+            $links->unlink($expense);
+        } catch (\RuntimeException $e) {
+            // Gepushte Verknüpfung (Feature 106): der Beleg existiert
+            // unwiderruflich - die Verknüpfung bleibt.
+            return back()->with('error', $e->getMessage());
+        }
         $expense->audit('expense.voucher_unlinked', []);
 
         return back()->with('success', __('expenses.receipt.unlinked'));
+    }
+
+    /**
+     * Aktiver Belegpush in die Buchhaltung (Feature 106): legt die genehmigte
+     * Auslage als Einkaufsbeleg im führenden System an — die Dublette kann
+     * gar nicht erst entstehen, die externe ID kommt beim Anlegen zurück.
+     *
+     * Der Push ist terminal (kein Update/Delete im Zielsystem); Korrekturen
+     * laufen als Gegenbeleg dort, die Auslage bleibt verknüpft und gesperrt.
+     */
+    public function pushVoucher(Expense $expense, \App\Services\Billing\ExpenseVoucherPush $push): RedirectResponse {
+        Gate::authorize('link', $expense);
+
+        try {
+            $voucher = $push->push($expense);
+        } catch (\RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', __('Die Übergabe an die Buchhaltung ist fehlgeschlagen — es wurde kein Beleg angelegt.'));
+        }
+
+        $expense->audit('expense.voucher_pushed', ['external_id' => $voucher->external_id]);
+
+        return back()->with('success', __('Auslage als Beleg übergeben (ID :id). Ab jetzt führt der Beleg.', ['id' => $voucher->external_id]));
     }
 
     public function update(SaveExpenseRequest $request, Expense $expense): RedirectResponse {

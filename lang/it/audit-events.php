@@ -18,6 +18,7 @@ declare(strict_types=1);
  */
 return [
     'expense' => [
+        'voucher_pushed' => 'Spesa trasmessa alla contabilità come documento',
         'voucher_linked' => 'Nota spese collegata a un documento contabile',
         'voucher_unlinked' => 'Collegamento al documento contabile rimosso',
     ],

@@ -57,7 +57,11 @@
                             {{ $linkedVoucher->currency->value }}
                         </span>
                     </div>
-                    @if ($canLink)
+                    @if ($wasPushed ?? false)
+                        {{-- Feature 106: aktiv übergebener Beleg — er existiert
+                             unwiderruflich, die Verknüpfung bleibt. --}}
+                        <span class="badge badge-success badge-sm shrink-0">{{ __('Als Beleg übergeben') }}</span>
+                    @elseif ($canLink)
                         <x-action-form :action="route('expenses.unlink-voucher', $expense)" method="DELETE"
                                        :confirm="__('expenses.receipt.unlink_confirm')"
                                        :confirm-label="__('expenses.receipt.unlink')">
@@ -66,36 +70,28 @@
                         </x-action-form>
                     @endif
                 </div>
+            @elseif (($canPush ?? false))
+                {{-- Feature 106: Die Dublette gar nicht erst entstehen lassen —
+                     die Auslage wird selbst zum Beleg, die externe ID kommt
+                     beim Anlegen zurück. Terminal: danach führt der Beleg. --}}
+                <div class="flex items-center justify-between gap-3 text-sm">
+                    <p class="text-base-content/70">{{ __('Diese genehmigte Auslage kann direkt als Einkaufsbeleg an die Buchhaltung übergeben werden — statt sie dort ein zweites Mal zu erfassen.') }}</p>
+                    <x-action-form :action="route('expenses.push-voucher', $expense)"
+                                   :confirm="__('Auslage unwiderruflich als Beleg an die Buchhaltung übergeben? Der Beleg lässt sich dort nicht löschen; Korrekturen laufen als Gegenbeleg.')"
+                                   :confirm-label="__('Übergeben')" confirm-icon="outbox">
+                        <x-icon-btn icon="outbox" tone="primary" size="sm" type="submit" show-label>{{ __('In die Buchhaltung übernehmen') }}</x-icon-btn>
+                    </x-action-form>
+                </div>
+                @if ($suggestions->isNotEmpty())
+                    <div class="divider my-2 text-xs">{{ __('oder vorhandenen Beleg zuordnen') }}</div>
+                @endif
+                @include('expenses._receipt_suggestions', ['suggestions' => $suggestions, 'expense' => $expense, 'canLink' => $canLink])
             @elseif ($suggestions->isEmpty())
                 <x-empty-state compact icon='<span class="material-symbols-outlined">link_off</span>'
                                :title="__('expenses.receipt.no_suggestions')"
                                :message="__('expenses.receipt.no_suggestions_hint')" />
             @else
-                <p class="text-sm text-base-content/70">{{ __('expenses.receipt.suggestions_hint') }}</p>
-                <ul class="mt-2 divide-y divide-base-300 text-sm">
-                    @foreach ($suggestions as $candidate)
-                        <li class="flex items-center justify-between gap-2 py-2">
-                            <div class="min-w-0">
-                                <span class="font-medium">{{ $candidate->voucher_number ?: '—' }}</span>
-                                <span class="text-base-content/60">
-                                    · {{ optional($candidate->voucher_date)->format('d.m.Y') }}
-                                    · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($candidate->total_amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}
-                                    {{ $candidate->currency->value }}
-                                    @if ($candidate->supplier)
-                                        · {{ $candidate->supplier->name }}
-                                    @endif
-                                </span>
-                            </div>
-                            @if ($canLink)
-                                <x-action-form :action="route('expenses.link-voucher', $expense)">
-                                    <input type="hidden" name="voucher" value="{{ $candidate->sqid }}">
-                                    <x-icon-btn icon="link" tone="primary" size="sm" type="submit"
-                                                :label="__('expenses.receipt.link')" />
-                                </x-action-form>
-                            @endif
-                        </li>
-                    @endforeach
-                </ul>
+                @include('expenses._receipt_suggestions', ['suggestions' => $suggestions, 'expense' => $expense, 'canLink' => $canLink])
             @endif
         </x-card>
     </div>
