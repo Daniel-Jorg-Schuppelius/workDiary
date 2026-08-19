@@ -148,7 +148,7 @@ class TogglController extends Controller {
             return back()->withErrors(['item' => __('Keine Toggl-Eintrags-ID am Konflikt gefunden.')]);
         }
 
-        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id']);
+        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id'], $config['request_interval']);
         $result = $client->fetchEntry($togglId);
         if ($result['status'] === 'error') {
             return back()->withErrors(['item' => __('Fremdstand konnte nicht geladen werden (Toggl nicht erreichbar?).')]);
@@ -282,7 +282,7 @@ class TogglController extends Controller {
         $config = TogglConfig::resolve($organization->id);
         if ($config['enabled'] && $config['api_token'] !== null) {
             try {
-                $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id']);
+                $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id'], $config['request_interval']);
                 foreach ($client->workspaces() as $workspace) {
                     $this->options->collectTogglUsers($bucket, $client->workspaceUsers((int) $workspace['id']));
                 }
@@ -551,7 +551,7 @@ class TogglController extends Controller {
         $togglUsers = [];
 
         if ($tokenSet) {
-            $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id']);
+            $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id'], $config['request_interval']);
             foreach ($client->workspaces() as $ws) {
                 $source = new ApiWorkspaceSource($client, $ws['id']);
                 $users = $source->users();
@@ -608,7 +608,7 @@ class TogglController extends Controller {
         $from = ! empty($validated['date_from']) ? CarbonImmutable::parse($validated['date_from'])->startOfDay() : null;
         $to = ! empty($validated['date_to']) ? CarbonImmutable::parse($validated['date_to'])->endOfDay() : null;
 
-        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id']);
+        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id'], $config['request_interval']);
 
         $sources = [];
         $workspaceModes = [];

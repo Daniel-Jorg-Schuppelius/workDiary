@@ -48,6 +48,8 @@ class TogglApiClient implements RemoteTimeWriter {
         private readonly string $baseUrl = 'https://api.track.toggl.com/api/v9',
         /** Optionaler Workspace-Filter; null = alle Workspaces des Tokens. */
         private readonly ?int $workspaceId = null,
+        /** Mindestabstand (Sekunden) zwischen API-Aufrufen; 0 = ungedrosselt (Tests). Produktiv aus {@see TogglConfig} (Tarif/Override). */
+        private readonly float $requestInterval = 0.0,
     ) {}
 
     /** Waren alle Eintrags-Abrufe dieser Instanz vollständig? */
@@ -789,7 +791,7 @@ class TogglApiClient implements RemoteTimeWriter {
 
     private function api(): PluginApiClient {
         if ($this->api === null) {
-            $this->api = app(PluginHttpFactory::class)->client('toggl', $this->baseUrl);
+            $this->api = app(PluginHttpFactory::class)->client('toggl', $this->baseUrl, $this->requestInterval);
             $this->api->setAuthentication(new BasicAuthentication((string) $this->apiToken, 'api_token'));
         }
 

@@ -48,7 +48,7 @@ class TogglImportService extends MatchingTimeImportService {
      * @return array{created: int, skipped: int, unmatched: int, unresolved_users: int, updated: int, conflicts: int, removed: int, incomplete: bool}
      */
     public function importFromApi(Organization $organization, array $config, CarbonImmutable $from, CarbonImmutable $to): array {
-        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id']);
+        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id'], $config['request_interval']);
         if (! $client->isConfigured()) {
             return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'unresolved_users' => 0, 'updated' => 0, 'conflicts' => 0, 'removed' => 0, 'incomplete' => false];
         }
@@ -232,7 +232,7 @@ class TogglImportService extends MatchingTimeImportService {
      */
     public function backfillIdReferences(Organization $organization): array {
         $config = TogglConfig::resolve($organization->id);
-        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id']);
+        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id'], $config['request_interval']);
         if (! $client->isConfigured()) {
             return ['projects' => 0, 'clients' => 0];
         }

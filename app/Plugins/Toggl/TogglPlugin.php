@@ -72,6 +72,14 @@ class TogglPlugin extends AbstractPlugin implements TimeImporter {
             ['key' => 'api_token', 'label' => __('Toggl API-Token'), 'type' => 'password', 'required' => true, 'help' => __('Profil → Einstellungen → API-Token in Toggl Track.')],
             ['key' => 'base_url', 'label' => __('API-Basis-URL'), 'type' => 'text', 'default' => TogglConfig::DEFAULT_BASE_URL],
             ['key' => 'workspace_id', 'label' => __('Workspace-ID'), 'type' => 'text', 'help' => __('Optional. Leer = alle Workspaces des Tokens.')],
+            ['key' => 'api_plan', 'label' => __('Toggl-Tarif'), 'type' => 'select', 'default' => '', 'options' => [
+                '' => __('Unbekannt — nur Burst-Schutz (1 Request/s)'),
+                'free' => __('Free (30 Requests/Stunde)'),
+                'starter' => __('Starter (240 Requests/Stunde)'),
+                'premium' => __('Premium (600 Requests/Stunde)'),
+                'enterprise' => __('Enterprise (individuelles Kontingent)'),
+            ], 'help' => __('Drosselt API-Aufrufe passend zum Stundenkontingent des Toggl-Tarifs (gleitendes 60-Minuten-Fenster pro Benutzer und Organisation): Free alle 2 Minuten, Starter alle 15 s, Premium alle 6 s, Enterprise 1 Request/s.')],
+            ['key' => 'request_interval', 'label' => __('Request-Abstand (Sekunden)'), 'type' => 'text', 'help' => __('Optional. Überschreibt den Tarif-Wert: Mindestabstand zwischen zwei Toggl-API-Aufrufen, mindestens 0,2 s. Leer = automatisch nach Tarif.')],
             ['key' => 'sync_window_days', 'label' => __('Sync-Zeitfenster (Tage)'), 'type' => 'text', 'default' => '30', 'help' => __('Wie viele Tage rückwirkend pro API-Lauf abgefragt werden.')],
             ['key' => 'default_billable', 'label' => __('Abrechenbar übernehmen'), 'type' => 'boolean', 'default' => true, 'help' => __('Wenn aus, werden importierte Zeiten nie als abrechenbar markiert.')],
             ['key' => 'default_user_id', 'label' => __('Zeiten buchen für Benutzer-ID'), 'type' => 'text', 'help' => __('Optional. Leer = Organisations-Owner bzw. erster Benutzer. Greift nur im Einbenutzer-Modus oder bei ausdrücklicher Auswahl beim Buchen.')],
@@ -84,7 +92,7 @@ class TogglPlugin extends AbstractPlugin implements TimeImporter {
     /** Health-Check: pingt /me mit dem konfigurierten Token (ohne Token: degraded, Fehler: failing). */
     public function healthCheck(): PluginHealth {
         $config = TogglConfig::resolve();
-        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id']);
+        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id'], $config['request_interval']);
 
         return PluginHealth::pingHealth(
             ping: fn (): bool => $client->ping(),

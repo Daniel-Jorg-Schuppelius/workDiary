@@ -91,7 +91,7 @@ class TogglOutboxDispatcher extends TimeWritebackDispatcher implements MirrorsCr
             return null;
         }
 
-        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id']);
+        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id'], $config['request_interval']);
 
         return $client->isConfigured() ? $client : null;
     }

@@ -172,7 +172,7 @@ class TogglRepairEntryUsersCommand extends Command {
             return [];
         }
 
-        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id']);
+        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id'], $config['request_interval']);
         $to = CarbonImmutable::now();
         $from = $to->subDays(max(1, (int) $this->option('days')));
 

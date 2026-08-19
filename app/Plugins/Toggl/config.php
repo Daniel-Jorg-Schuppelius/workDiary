@@ -20,6 +20,11 @@ return [
     'base_url' => env('TOGGL_BASE_URL', 'https://api.track.toggl.com/api/v9'),
     // Optionaler Workspace-Filter; leer = alle Workspaces des Tokens.
     'workspace_id' => env('TOGGL_WORKSPACE_ID'),
+    // Toggl-Tarif (free|starter|premium|enterprise) → Drosselung passend zur
+    // Stunden-Quota; leer = nur Burst-Schutz (1 Request/s).
+    'api_plan' => env('TOGGL_API_PLAN'),
+    // Mindestabstand (Sekunden) zwischen API-Aufrufen; überschreibt den Tarif-Wert.
+    'request_interval' => env('TOGGL_REQUEST_INTERVAL'),
     // Wie viele Tage rückwirkend pro API-Lauf abgefragt werden.
     'sync_window_days' => (int) env('TOGGL_SYNC_WINDOW_DAYS', 30),
     // Wenn false, werden importierte Zeiten nie als abrechenbar markiert.

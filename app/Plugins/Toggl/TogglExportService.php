@@ -65,6 +65,7 @@ class TogglExportService extends AbstractTimeEntryPushService {
             is_string($config['api_token'] ?? null) ? $config['api_token'] : null,
             is_string($config['base_url'] ?? null) ? $config['base_url'] : 'https://api.track.toggl.com/api/v9',
             is_numeric($config['workspace_id'] ?? null) ? (int) $config['workspace_id'] : null,
+            is_numeric($config['request_interval'] ?? null) ? (float) $config['request_interval'] : 0.0,
         );
         if (! $this->client->isConfigured()) {
             return (string) __('Toggl-API ist nicht konfiguriert (API-Token in den Plugin-Einstellungen hinterlegen).');
