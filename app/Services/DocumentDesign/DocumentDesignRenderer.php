@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\DocumentDesign;
 
-use App\Enums\DocumentDesign\{RenderDocumentKind, TableStylePreset};
+use App\Enums\DocumentDesign\{PageFormat, RenderDocumentKind, TableStylePreset};
 use App\Models\DocumentDesign\{DocumentRenderProfileVersion, DocumentRenderSnapshot};
 use App\Models\{Organization, User};
 use Illuminate\Database\Eloquent\Model;
@@ -42,8 +42,8 @@ class DocumentDesignRenderer {
      *
      * @return array<string, mixed>|null
      */
-    public function payloadFor(Organization $organization, RenderDocumentKind $kind, ?int $customerId = null): ?array {
-        $version = $this->profiles->resolveFor($organization, $kind, $customerId);
+    public function payloadFor(Organization $organization, RenderDocumentKind $kind, ?int $customerId = null, PageFormat $format = PageFormat::A4Portrait): ?array {
+        $version = $this->profiles->resolveFor($organization, $kind, $customerId, $format);
 
         return $version === null ? null : $this->payloadFromVersion($version);
     }
@@ -98,12 +98,12 @@ class DocumentDesignRenderer {
      * komponiert das Dokument-HTML mit dem aktiven Profil der Organisation —
      * ohne Profil unverändert (kontrolliertes Standardprofil).
      */
-    public function composeFor(?Organization $organization, RenderDocumentKind $kind, string $html): string {
+    public function composeFor(?Organization $organization, RenderDocumentKind $kind, string $html, PageFormat $format = PageFormat::A4Portrait): string {
         if ($organization === null) {
             return $html;
         }
 
-        return $this->compose($html, $this->payloadFor($organization, $kind));
+        return $this->compose($html, $this->payloadFor($organization, $kind, null, $format), $format);
     }
 
     /**
@@ -126,12 +126,15 @@ class DocumentDesignRenderer {
         }
 
         $html = View::make($view, $data)->render();
-        // #83: Spezialformate (isBrandable() = false) deklarieren ihre
-        // Einschränkung in der Registrierung — hier kein stilles Verhalten.
-        if (($writerOptions['orientation'] ?? 'portrait') === 'portrait' && $kind->isBrandable()) {
+        // MVP-652: Querformat wird nicht mehr übersprungen, sondern gegen ein
+        // Querformat-Profil komponiert (A4 quer). #83: Spezialformate
+        // (isBrandable() = false) bleiben ausdrücklich design-frei.
+        $format = PageFormat::fromOrientation($writerOptions['orientation'] ?? null);
+        $isA4 = ! isset($writerOptions['paper_size']) || strtolower((string) $writerOptions['paper_size']) === 'a4';
+        if ($kind->isBrandable() && $isA4) {
             $html = $payload !== null
-                ? $this->compose($html, $payload)
-                : $this->composeFor($organization, $kind, $html);
+                ? $this->compose($html, $payload, $format)
+                : $this->composeFor($organization, $kind, $html, $format);
         }
 
         return PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html), $writerOptions)
@@ -146,7 +149,7 @@ class DocumentDesignRenderer {
      *
      * @param array<string, mixed>|null $payload
      */
-    public function compose(string $html, ?array $payload): string {
+    public function compose(string $html, ?array $payload, PageFormat $format = PageFormat::A4Portrait): string {
         if ($payload === null) {
             return $html;
         }
@@ -159,7 +162,10 @@ class DocumentDesignRenderer {
         $bottom = max($first['bottom'], $following['bottom']);
 
         $css = sprintf(
-            "@page { margin: %.1fmm %.1fmm %.1fmm %.1fmm; }\n",
+            "@page { %smargin: %.1fmm %.1fmm %.1fmm %.1fmm; }\n",
+            // MVP-652: Querformat braucht die explizite Seitengröße; im
+            // Hochformat bleibt die Regel unverändert (Bestandsausgabe).
+            $format->isLandscape() ? sprintf('size: %.0fmm %.0fmm; ', $format->widthMm(), $format->heightMm()) : '',
             $following['top'],
             $following['right'],
             $bottom,
@@ -184,17 +190,21 @@ class DocumentDesignRenderer {
         // negative Offsets in Randbreite lassen den Bogen die volle Seite decken.
         if (! empty($assets['following'])) {
             $css .= sprintf(
-                ".dd-lh-following { position: fixed; top: %.1fmm; left: %.1fmm; width: 210mm; height: 297mm; z-index: -1000; }\n",
+                ".dd-lh-following { position: fixed; top: %.1fmm; left: %.1fmm; width: %.0fmm; height: %.0fmm; z-index: -1000; }\n",
                 -$following['top'],
                 -$following['left'],
+                $format->widthMm(),
+                $format->heightMm(),
             );
             $body .= '<img class="dd-lh-following" src="' . $assets['following'] . '" alt="">';
         }
         if (! empty($assets['first'])) {
             $css .= sprintf(
-                ".dd-lh-first { position: absolute; top: %.1fmm; left: %.1fmm; width: 210mm; height: 297mm; z-index: -999; }\n",
+                ".dd-lh-first { position: absolute; top: %.1fmm; left: %.1fmm; width: %.0fmm; height: %.0fmm; z-index: -999; }\n",
                 -$following['top'],
                 -$following['left'],
+                $format->widthMm(),
+                $format->heightMm(),
             );
             $body .= '<img class="dd-lh-first" src="' . $assets['first'] . '" alt="">';
         }

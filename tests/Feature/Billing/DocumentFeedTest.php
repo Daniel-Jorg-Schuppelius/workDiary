@@ -10,9 +10,9 @@
 
 namespace Tests\Feature\Billing;
 
-use App\Enums\Billing\{DocumentDirection, DocumentKind};
+use App\Enums\Billing\{DocumentDirection, DocumentKind, DocumentOrigin};
 use App\Enums\Expense\{ExpenseStatus, PaymentMethod};
-use App\Models\{Customer, Expense, Invoice, LexofficeVoucher, PluginSetting, Supplier, User};
+use App\Models\{Customer, Expense, Invoice, LexofficeVoucher, OrgaMaxInvoice, PluginSetting, Supplier, User};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Services\Billing\{DocumentFeedFilters, DocumentFeedQuery, DocumentLinks};
 use App\Support\Billing\VoucherTypes;
@@ -22,7 +22,7 @@ use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
 /**
- * Belegfluss (Feature 105): eine Liste über fünf Quellen mit richtungs- und
+ * Belegfluss (Feature 105): eine Liste über sechs Quellen mit richtungs- und
  * vorzeichenrichtigen Kennzahlen.
  *
  * Kern der Prüfung ist, was die alte Belegliste falsch machte: sie addierte
@@ -68,6 +68,16 @@ final class DocumentFeedTest extends TestCase {
             'voucher_date' => '2026-08-10',
             'currency' => 'EUR',
             'archived' => false,
+        ]);
+    }
+
+    /** @param array<string, mixed> $attributes */
+    private function orgamaxInvoice(array $attributes): OrgaMaxInvoice {
+        return OrgaMaxInvoice::query()->create($attributes + [
+            'organization_id' => $this->organization->id,
+            'invoice_date' => '2026-08-10',
+            'invoice_type' => 'invoice',
+            'currency' => 'EUR',
         ]);
     }
 
@@ -292,6 +302,88 @@ final class DocumentFeedTest extends TestCase {
             ->assertOk()
             ->assertSee('ER-IN')
             ->assertDontSee('RE-OUT');
+    }
+
+    public function test_orgamax_invoices_appear_with_origin_and_sign(): void {
+        $this->orgamaxInvoice(['external_id' => 'om-1', 'customer_id' => $this->customer->id,
+            'invoice_number' => 'OM-100', 'invoice_status' => 'locked',
+            'total_gross' => '119.00', 'outstanding_amount' => '119.00']);
+        // Entwurf und Storno sind nicht geldwirksam.
+        $this->orgamaxInvoice(['external_id' => 'om-2', 'invoice_number' => 'OM-101',
+            'invoice_status' => 'draft', 'total_gross' => '500.00']);
+        $this->orgamaxInvoice(['external_id' => 'om-3', 'invoice_number' => 'OM-102',
+            'invoice_status' => 'cancelled', 'total_gross' => '700.00']);
+        // Eine Wiederholungs-Vorlage ist kein Beleg.
+        $this->orgamaxInvoice(['external_id' => 'om-4', 'invoice_number' => 'OM-VORLAGE',
+            'invoice_type' => 'recurringInvoiceTemplate', 'invoice_status' => 'locked',
+            'total_gross' => '900.00']);
+
+        $rows = collect((new DocumentFeedQuery($this->filters()))->paginate(30, 'date', 'desc')->items());
+
+        $this->assertNull($rows->firstWhere('number', 'OM-VORLAGE'), 'Vorlagen gehören nicht in die Belegliste.');
+        $row = $rows->firstWhere('number', 'OM-100');
+        $this->assertNotNull($row);
+        $this->assertSame(DocumentOrigin::OrgaMax->value, $row->origin);
+        $this->assertSame(DocumentDirection::Outgoing->value, $row->direction);
+        $this->assertSame(DocumentKind::Invoice->value, $row->kind);
+        $this->assertSame('open', $row->state);
+        $this->assertSame('Marina Vulkan Werft', $row->contact_name, 'Verknüpfter Kunde gewinnt gegen den Fremdnamen.');
+
+        $totals = (new DocumentFeedQuery($this->filters()))->totals();
+        $this->assertEqualsWithDelta(119.0, $totals[0]['revenue'], 0.001, 'Nur der gültige Beleg zählt.');
+    }
+
+    public function test_orgamax_deposit_invoice_is_a_down_payment_and_filterable_by_origin(): void {
+        $this->orgamaxInvoice(['external_id' => 'om-5', 'customer_name' => 'Externer Kunde',
+            'invoice_number' => 'OM-ABSCHLAG', 'invoice_type' => 'depositInvoice',
+            'invoice_status' => 'partiallyPaid', 'total_gross' => '238.00',
+            'outstanding_amount' => '100.00']);
+        $this->voucher(['external_id' => 'v9', 'customer_id' => $this->customer->id,
+            'voucher_type' => 'salesinvoice', 'voucher_status' => 'open',
+            'voucher_number' => 'LX-1', 'total_amount' => '50.00']);
+
+        $filters = new DocumentFeedFilters(
+            organizationId: (int) $this->organization->id,
+            userId: (int) $this->admin->id,
+            from: CarbonImmutable::parse('2026-01-01')->startOfDay(),
+            to: CarbonImmutable::parse('2026-12-31')->endOfDay(),
+            origin: DocumentOrigin::OrgaMax,
+            sources: [
+                'invoice' => true, 'quote' => true, 'voucher' => true,
+                'incoming_einvoice' => true, 'expense' => true,
+            ],
+        );
+
+        $rows = collect((new DocumentFeedQuery($filters))->paginate(30, 'date', 'desc')->items());
+
+        $this->assertCount(1, $rows, 'Der Herkunftsfilter blendet Lexoffice aus.');
+        $this->assertSame(DocumentKind::DownPayment->value, $rows->first()->kind);
+        $this->assertSame('Externer Kunde', $rows->first()->contact_name, 'Ohne Zuordnung bleibt der Fremdname.');
+        $this->assertEqualsWithDelta(100.0, (float) $rows->first()->open_amount, 0.001, 'Teilzahlung lässt den Rest offen.');
+    }
+
+    public function test_invoice_transferred_to_orgamax_appears_only_once(): void {
+        Invoice::query()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+            'number' => 'RE/2026/2220',
+            'status' => Invoice::STATUS_ISSUED,
+            'type' => Invoice::TYPE_INVOICE,
+            'category' => Invoice::CATEGORY_SERVICE,
+            'issued_on' => '2026-08-10',
+            'currency' => 'EUR',
+            'total' => '300.00',
+        ]);
+        $this->orgamaxInvoice(['external_id' => 'om-6', 'customer_id' => $this->customer->id,
+            'invoice_number' => 'RE/2026/2220', 'invoice_status' => 'locked',
+            'total_gross' => '300.00', 'outstanding_amount' => '300.00']);
+
+        $rows = collect((new DocumentFeedQuery($this->filters()))->paginate(30, 'date', 'desc')->items())
+            ->filter(fn (object $row): bool => $row->number === 'RE/2026/2220');
+
+        $this->assertCount(1, $rows, 'Übergebene Rechnung darf nur einmal erscheinen.');
+        $this->assertSame('orgamax_invoice', $rows->first()->source_type, 'Extern führt.');
+        $this->assertEqualsWithDelta(300.0, (new DocumentFeedQuery($this->filters()))->totals()[0]['revenue'], 0.001);
     }
 
     public function test_legacy_routes_redirect_into_the_feed(): void {

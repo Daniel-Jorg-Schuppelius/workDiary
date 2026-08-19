@@ -48,6 +48,7 @@ class DocumentRenderProfile extends Model {
         'is_customer_specific',
         'document_kinds',
         'document_family',
+        'page_format',
         'locale',
         'priority',
         'active_version_id',
@@ -60,6 +61,7 @@ class DocumentRenderProfile extends Model {
         'is_customer_specific' => 'boolean',
         'document_kinds' => 'array',
         'document_family' => \App\Enums\DocumentDesign\RenderDocumentFamily::class,
+        'page_format' => \App\Enums\DocumentDesign\PageFormat::class,
         'priority' => 'integer',
     ];
 

@@ -134,4 +134,7 @@ return [
     'editor.repeat_header' => 'Repeat table header on following pages',
     'editor.highlight_totals' => 'Emphasize total rows',
     'editor.letterhead_blocks_note' => 'Covered by the letterhead (not printed):',
+    'asset.page_format' => 'Page format',
+    'profile.page_format' => 'Page format',
+    'profile.page_format_hint' => 'A profile applies to exactly one format — landscape reports need their own profile. Cannot be changed after activation.',
 ];

@@ -438,4 +438,5 @@ return [
     'WorkBalanceReportController' => 'Report export: work balance',
     'WorkSchedule' => 'Work schedule',
     'ZammadConnection' => 'Zammad connection',
+    'AccountingMigrationRun' => 'Accounting migration',
 ];

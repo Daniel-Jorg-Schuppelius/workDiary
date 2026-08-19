@@ -123,6 +123,8 @@ class Customer extends Model {
         'bank_name',
         'billable',
         'billing_mode',
+        'billing_cutover_on',
+        'billing_cutover_from',
         'buyer_reference',
         'delivery_format',
         'debtor_no',
@@ -133,6 +135,7 @@ class Customer extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'billing_cutover_on' => 'date',
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'billable' => 'boolean',
         'exclude_from_reports' => 'boolean',

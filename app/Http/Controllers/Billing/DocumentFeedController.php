@@ -18,7 +18,7 @@ use App\Models\{Customer, Document, Expense, Invoice, Quote, User};
 use App\Services\Billing\{DocumentFeedFilters, DocumentFeedQuery};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\{Auth, Gate, Route};
 use Illuminate\View\View;
 
 /**
@@ -105,6 +105,10 @@ class DocumentFeedController extends Controller {
             // legt sie das externe System an, deshalb dessen Sync-Recht.
             'canDun' => $user->can(Permission::VoucherLexofficeSync->value),
             'canDunLocal' => $user->canManageBilling(),
+            // orgaMAX-Belege haben keine eigene Detailseite; das PDF liegt
+            // hinter der Admin-Route des Plugins (MVP-654). Ohne aktives
+            // Plugin existiert die Route nicht.
+            'canOpenOrgaMax' => $user->isAdmin() && Route::has('admin.orgamax.invoices.pdf'),
             'filters' => [
                 'q' => $filters->search,
                 'origin' => $filters->origin->value ?? '',

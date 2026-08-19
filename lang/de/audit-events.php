@@ -880,4 +880,15 @@ return [
     'customer' => [
         'design_profile_assigned' => 'Kunden-Sonderdesign zugewiesen/geändert',
     ],
+    'accounting_migration' => [
+        'planned' => 'Buchhaltungswechsel geplant',
+        'analyzed' => 'Analyse (Dry-Run) ausgeführt',
+        'status_changed' => 'Status des Wechsels geändert',
+        'item_decided' => 'Zuordnung entschieden',
+        'parallel_run_started' => 'Doppelbetrieb gestartet',
+        'cutover_executed' => 'Auf das Zielsystem umgeschaltet',
+        'blocked' => 'Wechsel blockiert',
+        'completed' => 'Buchhaltungswechsel abgeschlossen',
+        'cancelled' => 'Buchhaltungswechsel abgebrochen',
+    ],
 ];

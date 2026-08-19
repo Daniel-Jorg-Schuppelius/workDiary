@@ -880,4 +880,15 @@ return [
     'customer' => [
         'design_profile_assigned' => 'Customer design profile assigned/changed',
     ],
+    'accounting_migration' => [
+        'planned' => 'Accounting migration planned',
+        'analyzed' => 'Analysis (dry run) executed',
+        'status_changed' => 'Migration status changed',
+        'item_decided' => 'Mapping decided',
+        'parallel_run_started' => 'Parallel operation started',
+        'cutover_executed' => 'Switched over to the target system',
+        'blocked' => 'Migration blocked',
+        'completed' => 'Accounting migration completed',
+        'cancelled' => 'Accounting migration cancelled',
+    ],
 ];

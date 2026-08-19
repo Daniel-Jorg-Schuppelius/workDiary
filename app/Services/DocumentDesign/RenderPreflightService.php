@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\DocumentDesign;
 
-use App\Enums\DocumentDesign\{InformationBlock, InformationBlockState, RenderDocumentKind, TableStylePreset};
+use App\Enums\DocumentDesign\{InformationBlock, InformationBlockState, PageFormat, RenderDocumentKind, TableStylePreset};
 use App\Models\DocumentDesign\DocumentRenderProfileVersion;
 use CommonToolkit\Helper\Data\ColorHelper;
 
@@ -22,13 +22,19 @@ use CommonToolkit\Helper\Data\ColorHelper;
  * Aktivierung — es entsteht kein still unvollständiges Dokument.
  */
 class RenderPreflightService {
-    private const PAGE_W = 210.0;
+    /** Seitenmaße des geprüften Profils (MVP-652: formatabhängig). */
+    private float $pageW = 210.0;
 
-    private const PAGE_H = 297.0;
+    private float $pageH = 297.0;
 
     /** @param array<int, string>|null $kinds */
     public function check(DocumentRenderProfileVersion $version, ?array $kinds = null): PreflightResult {
         $result = new PreflightResult();
+
+        // MVP-652: Geometrie gegen das Seitenformat des Profils prüfen.
+        $format = $version->profile->page_format ?? PageFormat::A4Portrait;
+        $this->pageW = $format->widthMm();
+        $this->pageH = $format->heightMm();
 
         $this->checkLayout($version->layout, $result);
         $this->checkAssets($version, $result);
@@ -52,8 +58,8 @@ class RenderPreflightService {
             if (min($m['top'], $m['right'], $m['bottom'], $m['left']) < $minEdge) {
                 $result->error('min_edge', __(':page: Der Mindestabstand zum Papierrand (:mm mm) ist unterschritten.', ['page' => $label, 'mm' => $minEdge]), $page);
             }
-            $w = self::PAGE_W - $m['left'] - $m['right'];
-            $h = self::PAGE_H - $m['top'] - $m['bottom'];
+            $w = $this->pageW - $m['left'] - $m['right'];
+            $h = $this->pageH - $m['top'] - $m['bottom'];
             if ($w < $minW || $h < $minH) {
                 $result->error('content_too_small', __(':page: Der Inhaltsbereich ist zu klein (mindestens :w × :h mm).', ['page' => $label, 'w' => $minW, 'h' => $minH]), $page);
             }
@@ -81,7 +87,7 @@ class RenderPreflightService {
             $y = (float) ($box['y'] ?? 0);
             $w = (float) ($box['width'] ?? 0);
             $h = (float) ($box['height'] ?? 8.0);
-            if ($x < 0 || $y < 0 || $x + $w > self::PAGE_W || $y + $h > self::PAGE_H || $w <= 0) {
+            if ($x < 0 || $y < 0 || $x + $w > $this->pageW || $y + $h > $this->pageH || $w <= 0) {
                 $result->error('box_off_page', __(':box liegt außerhalb der Seite.', ['box' => $label]), 'first');
             }
         }
@@ -95,7 +101,7 @@ class RenderPreflightService {
             $pages = ($area['page'] ?? 'all') === 'all' ? ['first', 'following'] : [(string) $area['page']];
             foreach ($pages as $page) {
                 $m = $page === 'first' ? $first : $following;
-                $content = ['x' => $m['left'], 'y' => $m['top'], 'width' => self::PAGE_W - $m['left'] - $m['right'], 'height' => self::PAGE_H - $m['top'] - $m['bottom']];
+                $content = ['x' => $m['left'], 'y' => $m['top'], 'width' => $this->pageW - $m['left'] - $m['right'], 'height' => $this->pageH - $m['top'] - $m['bottom']];
                 if ($this->intersects($area, $content)) {
                     $result->error('blocked_overlap', __('Sperrfläche :n überschneidet den Inhaltsbereich (:page). Inhaltsbereich verkleinern oder Sperrfläche verschieben.', [
                         'n' => $i + 1,
@@ -107,11 +113,22 @@ class RenderPreflightService {
     }
 
     private function checkAssets(DocumentRenderProfileVersion $version, PreflightResult $result): void {
+        $format = $version->profile->page_format ?? PageFormat::A4Portrait;
+
         foreach ([['firstAsset', 'first'], ['followingAsset', 'following']] as [$relation, $page]) {
             $asset = $version->{$relation};
-            if ($asset !== null && ! $asset->isReady()) {
-                $result->error('asset_not_ready', __('Der zugewiesene Firmenbogen (:page) ist nicht einsatzbereit.', [
-                    'page' => $page === 'first' ? __('Erste Seite') : __('Folgeseiten'),
+            if ($asset === null) {
+                continue;
+            }
+            $label = $page === 'first' ? __('Erste Seite') : __('Folgeseiten');
+            if (! $asset->isReady()) {
+                $result->error('asset_not_ready', __('Der zugewiesene Firmenbogen (:page) ist nicht einsatzbereit.', ['page' => $label]), $page);
+            }
+            // MVP-652: ein Hochformat-Bogen passt nicht auf eine Querformat-Seite.
+            if (($asset->page_format ?? PageFormat::A4Portrait) !== $format) {
+                $result->error('asset_format_mismatch', __('Der Firmenbogen (:page) hat ein anderes Seitenformat als das Profil (:format).', [
+                    'page' => $label,
+                    'format' => $format->label(),
                 ]), $page);
             }
         }

@@ -438,4 +438,5 @@ return [
     'WorkBalanceReportController' => 'Report-Export: Arbeitszeitsaldo',
     'WorkSchedule' => 'Arbeitszeitplan',
     'ZammadConnection' => 'Zammad-Verbindung',
+    'AccountingMigrationRun' => 'Buchhaltungswechsel',
 ];

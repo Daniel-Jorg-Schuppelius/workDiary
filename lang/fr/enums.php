@@ -1027,6 +1027,7 @@ return [
         'origin' => [
             'local' => 'Local',
             'lexoffice' => 'Lexoffice',
+            'orgamax' => 'orgaMAX',
         ],
         'agreement-mode' => [
             'account' => 'Compte client (sans facture)',

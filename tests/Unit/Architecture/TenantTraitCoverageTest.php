@@ -253,6 +253,12 @@ class TenantTraitCoverageTest extends TestCase {
         // Zeilen verifizierbar sein muss und Einträge die Löschung von
         // Umsatz/Org überdauern; payload bewusst ohne PII.
         \App\Models\Finance\PaymentReconciliationEvent::class,
+        // Append-only Event-Hash-Kette des Buchhaltungswechsels (MVP-653) —
+        // analog BillingTransferEvent: nullable organization_id BEWUSST ohne
+        // FK und ohne Global-Scope, da die Kette (config('audit.chains')) via
+        // `audit:verify` scope-frei verifizierbar sein muss und der Nachweis
+        // des Wechsels die Löschung von Lauf/Organisation überdauert.
+        \App\Models\Migration\AccountingMigrationEvent::class,
         // Quellnachweis je Buchungssatz eines DATEV-Buchungsstapels (Feature 045,
         // Priorität 2): Kind-Tabelle des tenant-gebundenen DatevBookingBatch —
         // Mandantengrenze transitiv über datev_booking_batches.organization_id

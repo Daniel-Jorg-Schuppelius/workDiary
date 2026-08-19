@@ -344,6 +344,7 @@ return [
 
         'finance.viewAny' => 'Consulter les justificatifs de transfert',
         'finance.config' => 'Gérer la configuration financière',
+        'accountingMigration.manage' => 'Gérer le changement de logiciel comptable',
         'finance.transfer.time' => 'Préparer et transférer les temps facturables',
         'finance.transfer.material' => 'Préparer et transférer le matériel facturable',
         'finance.payment.import' => 'Importer un fichier bancaire pour le rapprochement des paiements',

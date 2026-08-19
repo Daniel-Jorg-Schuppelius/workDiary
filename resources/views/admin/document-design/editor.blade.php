@@ -27,6 +27,8 @@
         'blockLabels' => collect(\App\Enums\DocumentDesign\InformationBlock::cases())
             ->mapWithKeys(fn ($block) => [$block->value => $block->label()])->all(),
         'previewUrl' => route('admin.document-design.preview-pdf', $profile->sqid),
+        'pageW' => $pageFormat->widthMm(),
+        'pageH' => $pageFormat->heightMm(),
     ];
     $blockCases = \App\Enums\DocumentDesign\InformationBlock::cases();
     $stateCases = \App\Enums\DocumentDesign\InformationBlockState::cases();
@@ -49,6 +51,7 @@
                 <div>
                     <h1 class="flex items-center gap-2 font-['Space_Grotesk'] text-lg font-semibold">
                         {{ $profile->name }}
+                        <span class="badge badge-ghost badge-sm">{{ $pageFormat->label() }}</span>
                         @if ($profile->is_default)
                             <span class="badge badge-primary badge-sm">{{ __('document_design.profile.base_badge') }}</span>
                         @elseif ($canInherit && $version->override_sections !== null)
@@ -119,7 +122,7 @@
 
                 <div data-page-canvas
                      class="relative mx-auto w-full max-w-105 border border-base-300 bg-white shadow-sm select-none"
-                     style="aspect-ratio: 210 / 297;"
+                     style="aspect-ratio: {{ $pageFormat->widthMm() }} / {{ $pageFormat->heightMm() }};"
                      role="application" aria-label="{{ __('document_design.editor.preview_heading') }}">
                     {{-- Firmenbogen-Hintergrund --}}
                     @if ($version->firstAsset?->normalized_path)

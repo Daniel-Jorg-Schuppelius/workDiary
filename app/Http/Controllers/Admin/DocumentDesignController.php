@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\DocumentDesign\{LetterheadAssetStatus, LetterheadPageRole, RenderDocumentKind, TableStylePreset};
+use App\Enums\DocumentDesign\{LetterheadAssetStatus, LetterheadPageRole, PageFormat, RenderDocumentKind, TableStylePreset};
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\DocumentDesign\{DocumentRenderProfile, DocumentRenderProfileVersion, LetterheadAsset};
@@ -64,7 +64,9 @@ class DocumentDesignController extends Controller {
     public function createAsset(): View {
         $this->manageUser();
 
-        return view('admin.document-design._asset_form_dialog');
+        return view('admin.document-design._asset_form_dialog', [
+            'formats' => PageFormat::cases(),
+        ]);
     }
 
     /** Profil-Dialog (modal-first). */
@@ -74,6 +76,7 @@ class DocumentDesignController extends Controller {
         return view('admin.document-design._profile_form_dialog', [
             'kinds' => RenderDocumentKind::cases(),
             'families' => \App\Enums\DocumentDesign\RenderDocumentFamily::cases(),
+            'formats' => PageFormat::cases(),
         ]);
     }
 
@@ -85,6 +88,7 @@ class DocumentDesignController extends Controller {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'page_role' => ['required', 'in:first,following'],
+            'page_format' => ['nullable', 'in:a4_portrait,a4_landscape'],
             'file' => ['required', 'file', 'max:' . (int) config('document_design.limits.max_kb'), 'mimes:pdf,jpg,jpeg,png'],
         ]);
 
@@ -95,6 +99,7 @@ class DocumentDesignController extends Controller {
                 LetterheadPageRole::from($data['page_role']),
                 (string) $data['name'],
                 $user,
+                PageFormat::tryFrom((string) ($data['page_format'] ?? '')) ?? PageFormat::A4Portrait,
             );
         } catch (InvalidArgumentException $e) {
             throw ValidationException::withMessages(['file' => $e->getMessage()]);
@@ -153,6 +158,7 @@ class DocumentDesignController extends Controller {
             'document_kinds' => ['nullable', 'array'],
             'document_kinds.*' => ['string'],
             'document_family' => ['nullable', 'string'],
+            'page_format' => ['nullable', 'in:a4_portrait,a4_landscape'],
             'is_default' => ['nullable', 'boolean'],
         ]);
 
@@ -163,6 +169,7 @@ class DocumentDesignController extends Controller {
             (bool) ($data['is_default'] ?? false),
             $user,
             \App\Enums\DocumentDesign\RenderDocumentFamily::tryFrom((string) ($data['document_family'] ?? '')),
+            PageFormat::tryFrom((string) ($data['page_format'] ?? '')) ?? PageFormat::A4Portrait,
         );
 
         return redirect()->route('admin.document-design.editor', $profile->sqid)
@@ -181,21 +188,25 @@ class DocumentDesignController extends Controller {
 
         // Vererbung (#83): Variante kann vom CI-Basisdesign erben, sofern
         // eines existiert und dieses Profil nicht selbst das Basisdesign ist.
-        $base = $this->profiles->baseProfile($organization);
+        $base = $this->profiles->baseProfile($organization, $profile->page_format ?? PageFormat::A4Portrait);
         $canInherit = ! $profile->is_default && $base !== null && (int) $base->id !== (int) $profile->id;
 
         return view('admin.document-design.editor', [
             'profile' => $profile,
             'version' => $version,
             'isDraft' => $version->isDraft(),
-            'assetsFirst' => $this->readyAssets($organization, LetterheadPageRole::First),
-            'assetsFollowing' => $this->readyAssets($organization, LetterheadPageRole::Following),
+            // MVP-652: nur Firmenbögen im Seitenformat des Profils.
+            'assetsFirst' => $this->readyAssets($organization, LetterheadPageRole::First)
+                ->filter(fn ($asset): bool => ($asset->page_format ?? PageFormat::A4Portrait) === ($profile->page_format ?? PageFormat::A4Portrait))->values(),
+            'assetsFollowing' => $this->readyAssets($organization, LetterheadPageRole::Following)
+                ->filter(fn ($asset): bool => ($asset->page_format ?? PageFormat::A4Portrait) === ($profile->page_format ?? PageFormat::A4Portrait))->values(),
             'kinds' => RenderDocumentKind::cases(),
             'families' => \App\Enums\DocumentDesign\RenderDocumentFamily::cases(),
             'presets' => TableStylePreset::cases(),
             'preflight' => $this->profiles->preflightFor($version)->toArray(),
             'versions' => $profile->versions()->orderByDesc('version')->get(),
             'canManage' => $this->canManage($user),
+            'pageFormat' => $profile->page_format ?? PageFormat::A4Portrait,
             'canInherit' => $canInherit,
             'baseName' => $canInherit ? $base->name : null,
             'scenarios' => \App\Services\DocumentDesign\SampleDocumentService::SCENARIOS,
@@ -370,7 +381,13 @@ class DocumentDesignController extends Controller {
         abort_if($version === null, 404);
 
         $renderer = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class);
-        $pdf = $this->samples->pdf($organization, $kind, $renderer->payloadFromVersion($version), $scenario);
+        $pdf = $this->samples->pdf(
+            $organization,
+            $kind,
+            $renderer->payloadFromVersion($version),
+            $scenario,
+            $profile->page_format ?? PageFormat::A4Portrait,
+        );
 
         return response($pdf, 200, [
             'Content-Type' => 'application/pdf',

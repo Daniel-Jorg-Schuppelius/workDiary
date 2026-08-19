@@ -82,15 +82,25 @@ enum RenderDocumentKind: string implements HasLabel {
     }
 
     /**
-     * Seitenformat der Art. Nur `a4_portrait` durchläuft die volle
-     * Design-Pipeline (Firmenbogen/Druckbereiche); `flexible` deklariert ein
-     * Spezialformat (frei wählbares Papier/Querformat).
+     * Seitenformat der Art: A4 hoch oder quer (MVP-652 — die Ausrichtung
+     * entscheidet der Aufrufer über die Writer-Optionen, Berichte rendern
+     * beides). `null` deklariert ein echtes Spezialformat, das die
+     * Design-Pipeline ausdrücklich nicht durchläuft.
      */
-    public function pageFormat(): string {
+    public function pageFormat(): ?PageFormat {
         return match ($this) {
-            self::Label => 'flexible',
-            default => 'a4_portrait',
+            self::Label => null,
+            default => PageFormat::A4Portrait,
         };
+    }
+
+    /**
+     * Rendert die Art auch im Querformat? Berichte laufen je nach
+     * Aufrufstelle hoch oder quer und brauchen dann ein Querformat-Profil
+     * (MVP-652); alle übrigen Arten bleiben Hochformat.
+     */
+    public function supportsLandscape(): bool {
+        return $this === self::Report;
     }
 
     /**

@@ -263,6 +263,9 @@ enum Permission: string implements HasLabel {
         // ── Finanzschnittstelle (Feature 045) ──────────────────────────────
     case FinanceViewAny = 'finance.viewAny';
     case FinanceConfig = 'finance.config';
+
+    /** Buchhaltungswechsel planen, umschalten und abschließen (MVP-653). */
+    case AccountingMigrationManage = 'accountingMigration.manage';
     case FinanceTransferTime = 'finance.transfer.time';
     case FinanceTransferMaterial = 'finance.transfer.material';
     case FinancePaymentImport = 'finance.payment.import';
@@ -715,7 +718,7 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'timeEntry.'), str_starts_with($this->value, 'project-time.') => PermissionGroup::TimeEntries,
             str_starts_with($this->value, 'timesheet.') => PermissionGroup::Timesheets,
             str_starts_with($this->value, 'invoice.') => PermissionGroup::Invoicing,
-            str_starts_with($this->value, 'finance.') => PermissionGroup::Finance,
+            str_starts_with($this->value, 'finance.'), str_starts_with($this->value, 'accountingMigration.') => PermissionGroup::Finance,
             str_starts_with($this->value, 'investment.') => PermissionGroup::Finance,
             str_starts_with($this->value, 'article.') => PermissionGroup::Invoicing,
             str_starts_with($this->value, 'inventory.') => PermissionGroup::MasterData,

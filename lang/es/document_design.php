@@ -134,4 +134,7 @@ return [
     'editor.repeat_header' => 'Repetir la cabecera de la tabla en páginas siguientes',
     'editor.highlight_totals' => 'Destacar las filas de totales',
     'editor.letterhead_blocks_note' => 'Cubierto por el membrete (no se imprime):',
+    'asset.page_format' => 'Formato de página',
+    'profile.page_format' => 'Formato de página',
+    'profile.page_format_hint' => 'Un perfil se aplica a un único formato — los informes horizontales necesitan su propio perfil. No se puede cambiar tras la activación.',
 ];

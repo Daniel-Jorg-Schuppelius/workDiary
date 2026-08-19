@@ -134,4 +134,7 @@ return [
     'editor.repeat_header' => 'Répéter l’en-tête du tableau sur les pages suivantes',
     'editor.highlight_totals' => 'Mettre en valeur les lignes de totaux',
     'editor.letterhead_blocks_note' => 'Couvert par le papier à en-tête (non imprimé) :',
+    'asset.page_format' => 'Format de page',
+    'profile.page_format' => 'Format de page',
+    'profile.page_format_hint' => 'Un profil vaut pour un seul format — les rapports en paysage nécessitent leur propre profil. Non modifiable après activation.',
 ];

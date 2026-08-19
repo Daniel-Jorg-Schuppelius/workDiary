@@ -880,4 +880,15 @@ return [
     'customer' => [
         'design_profile_assigned' => 'Diseño específico del cliente asignado/cambiado',
     ],
+    'accounting_migration' => [
+        'planned' => 'Cambio contable planificado',
+        'analyzed' => 'Análisis (simulación) ejecutado',
+        'status_changed' => 'Estado del cambio modificado',
+        'item_decided' => 'Asignación decidida',
+        'parallel_run_started' => 'Operación paralela iniciada',
+        'cutover_executed' => 'Conmutado al sistema destino',
+        'blocked' => 'Cambio bloqueado',
+        'completed' => 'Cambio contable finalizado',
+        'cancelled' => 'Cambio contable cancelado',
+    ],
 ];

@@ -438,4 +438,5 @@ return [
     'WorkBalanceReportController' => 'Esportazione report: saldo orario',
     'WorkSchedule' => 'Orario di lavoro',
     'ZammadConnection' => 'Connessione Zammad',
+    'AccountingMigrationRun' => 'Cambio contabile',
 ];

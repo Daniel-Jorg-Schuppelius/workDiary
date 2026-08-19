@@ -438,4 +438,5 @@ return [
     'WorkBalanceReportController' => 'Export de rapport : solde de temps de travail',
     'WorkSchedule' => 'Horaire de travail',
     'ZammadConnection' => 'Connexion Zammad',
+    'AccountingMigrationRun' => 'Changement comptable',
 ];

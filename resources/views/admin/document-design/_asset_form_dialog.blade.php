@@ -35,7 +35,16 @@
         </label>
 
         <label class="form-control w-full">
-            <span class="label-text">{{ __('document_design.asset.file') }} * ({{ __('PDF, JPG oder PNG — A4 Hochformat') }})</span>
+            <span class="label-text">{{ __('document_design.asset.page_format') }} *</span>
+            <select name="page_format" required class="select select-bordered select-sm w-full">
+                @foreach ($formats as $format)
+                    <option value="{{ $format->value }}">{{ $format->label() }}</option>
+                @endforeach
+            </select>
+        </label>
+
+        <label class="form-control w-full">
+            <span class="label-text">{{ __('document_design.asset.file') }} * ({{ __('PDF, JPG oder PNG — A4') }})</span>
             <input type="file" name="file" required accept=".pdf,.jpg,.jpeg,.png"
                    class="file-input file-input-bordered file-input-sm w-full">
         </label>

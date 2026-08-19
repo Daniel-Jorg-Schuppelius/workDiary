@@ -34,6 +34,16 @@
         </fieldset>
 
         <label class="form-control w-full">
+            <span class="label-text">{{ __('document_design.profile.page_format') }} *</span>
+            <select name="page_format" required class="select select-bordered select-sm w-full">
+                @foreach ($formats as $format)
+                    <option value="{{ $format->value }}">{{ $format->label() }}</option>
+                @endforeach
+            </select>
+            <span class="label-text-alt text-xs text-base-content/50">{{ __('document_design.profile.page_format_hint') }}</span>
+        </label>
+
+        <label class="form-control w-full">
             <span class="label-text">{{ __('document_design.profile.family') }}</span>
             <select name="document_family" class="select select-bordered select-sm w-full">
                 <option value="">{{ __('document_design.profile.family_none') }}</option>

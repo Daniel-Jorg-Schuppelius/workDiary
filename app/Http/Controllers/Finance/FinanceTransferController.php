@@ -111,7 +111,7 @@ class FinanceTransferController extends Controller {
             'selectedCustomer' => $selected,
             'selectedMode' => $mode,
             'allowedChannels' => $allowedChannels,
-            'allowedTargets' => $mode !== null ? self::allowedTargetsFor($mode) : [TransferTarget::Lexoffice, TransferTarget::File],
+            'allowedTargets' => $this->availableTargets($selected, $mode),
             'defaultTarget' => $mode !== null ? self::defaultTargetFor($mode) : TransferTarget::File,
             'showDatevHint' => $mode === BillingMode::Datev,
         ]);
@@ -142,6 +142,13 @@ class FinanceTransferController extends Controller {
             return back()->withErrors([
                 'target' => (string) __('finance.error.target_not_allowed', ['mode' => $mode->label()]),
             ])->withInput();
+        }
+
+        // MVP-653: nach dem Umschaltstichtag ist das Quellsystem gesperrt —
+        // dieselbe Quelle darf nie an beide Fakturaziele gehen.
+        $guard = app(\App\Services\AccountingMigration\CutoverGuard::class);
+        if (! $guard->allowsTarget($customer, $target)) {
+            return back()->withErrors(['target' => (string) $guard->blockReason($customer, $target)])->withInput();
         }
 
         /** @var User $actor */
@@ -412,6 +419,24 @@ class FinanceTransferController extends Controller {
             BillingMode::Easybill => [TransferTarget::Easybill, TransferTarget::File],
             BillingMode::Datev, BillingMode::Workdiary => [TransferTarget::File],
         };
+    }
+
+    /**
+     * Auswählbare Ziele: Hoheit des Fakturierungswegs minus die nach dem
+     * Umschaltstichtag gesperrten Ziele (MVP-653).
+     *
+     * @return list<TransferTarget>
+     */
+    private function availableTargets(?Customer $customer, ?BillingMode $mode): array {
+        $targets = $mode !== null
+            ? self::allowedTargetsFor($mode)
+            : [TransferTarget::Lexoffice, TransferTarget::File];
+
+        if ($customer === null) {
+            return $targets;
+        }
+
+        return array_values(app(\App\Services\AccountingMigration\CutoverGuard::class)->filterTargets($customer, $targets));
     }
 
     public static function defaultTargetFor(BillingMode $mode): TransferTarget {

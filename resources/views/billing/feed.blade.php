@@ -73,7 +73,15 @@
     }
 
     // Zielseite je Quelle — die Zeile führt dorthin, wo der Vorgang lebt.
-    $rowLink = static function (object $row): ?array {
+    // orgaMAX-Belege haben keine lokale Detailseite: dort führt das
+    // Fremdsystem, das PDF kommt über die Admin-Route des Plugins (MVP-654).
+    $rowLink = static function (object $row) use ($canOpenOrgaMax): ?array {
+        if ($row->source_type === 'orgamax_invoice') {
+            return $canOpenOrgaMax
+                ? [route('admin.orgamax.invoices.mirror-pdf', Sqid::encode(\App\Models\OrgaMaxInvoice::class, (int) $row->link_id)), true]
+                : null;
+        }
+
         return match ($row->source_type) {
             'invoice' => [route('invoices.show', Sqid::encode(\App\Models\Invoice::class, (int) $row->link_id)), false],
             'quote' => [route('quotes.show', Sqid::encode(\App\Models\Quote::class, (int) $row->link_id)), false],

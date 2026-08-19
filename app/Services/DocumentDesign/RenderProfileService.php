@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\DocumentDesign;
 
-use App\Enums\DocumentDesign\{InformationBlock, InformationBlockState, LetterheadPageRole, RenderDocumentFamily, RenderDocumentKind, RenderProfileStatus, TableStylePreset};
+use App\Enums\DocumentDesign\{InformationBlock, InformationBlockState, LetterheadPageRole, PageFormat, RenderDocumentFamily, RenderDocumentKind, RenderProfileStatus, TableStylePreset};
 use App\Models\DocumentDesign\{DocumentRenderProfile, DocumentRenderProfileVersion, LetterheadAsset};
 use App\Models\{Organization, User};
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
@@ -30,8 +30,8 @@ class RenderProfileService {
     public function __construct(private readonly RenderPreflightService $preflight) {}
 
     /** @param array<int, string> $kinds */
-    public function createProfile(Organization $organization, string $name, array $kinds, bool $isDefault, ?User $user = null, ?RenderDocumentFamily $family = null): DocumentRenderProfile {
-        return DB::transaction(function () use ($organization, $name, $kinds, $isDefault, $user, $family): DocumentRenderProfile {
+    public function createProfile(Organization $organization, string $name, array $kinds, bool $isDefault, ?User $user = null, ?RenderDocumentFamily $family = null, PageFormat $format = PageFormat::A4Portrait): DocumentRenderProfile {
+        return DB::transaction(function () use ($organization, $name, $kinds, $isDefault, $user, $family, $format): DocumentRenderProfile {
             $profile = DocumentRenderProfile::create([
                 'organization_id' => $organization->id,
                 'name' => $name,
@@ -39,12 +39,13 @@ class RenderProfileService {
                 'is_default' => false,
                 'document_kinds' => $this->normalizeKinds($kinds),
                 'document_family' => $family?->value,
+                'page_format' => $format->value,
             ]);
 
             // Varianten (#83) erben standardmäßig vollständig vom Basisdesign
             // ([] = keine Overrides); das Basisdesign selbst und Organisationen
             // ohne Basisdesign starten eigenständig (null = Bestandsverhalten).
-            $inherits = ! $isDefault && $this->baseProfile($organization) !== null;
+            $inherits = ! $isDefault && $this->baseProfile($organization, $format) !== null;
 
             $profile->versions()->create([
                 'organization_id' => $organization->id,
@@ -254,8 +255,12 @@ class RenderProfileService {
      * CI-Basisdesign (is_default), sonst null (= Systemfallback,
      * heutige Ausgabe).
      */
-    public function resolveFor(Organization $organization, RenderDocumentKind $kind, ?int $customerId = null): ?DocumentRenderProfileVersion {
-        $profiles = $this->activeProfiles($organization);
+    public function resolveFor(Organization $organization, RenderDocumentKind $kind, ?int $customerId = null, PageFormat $format = PageFormat::A4Portrait): ?DocumentRenderProfileVersion {
+        // MVP-652: nur Profile des passenden Seitenformats — Hochformat-
+        // Druckbereiche gelten nicht für Querformat und umgekehrt.
+        $profiles = $this->activeProfiles($organization)
+            ->filter(fn (DocumentRenderProfile $p): bool => ($p->page_format ?? PageFormat::A4Portrait) === $format)
+            ->values();
 
         // Kunden-Sonderdesign (MVP-651): das an der Kundenakte referenzierte
         // aktive Profil gewinnt vor der org-weiten Kette — sofern es die Art
@@ -307,20 +312,25 @@ class RenderProfileService {
             ->get();
     }
 
-    /** Das CI-Basisdesign der Organisation (is_default-Profil), unabhängig vom Status. */
-    public function baseProfile(Organization $organization): ?DocumentRenderProfile {
+    /**
+     * Das CI-Basisdesign der Organisation (is_default-Profil) im gewünschten
+     * Seitenformat, unabhängig vom Status.
+     */
+    public function baseProfile(Organization $organization, PageFormat $format = PageFormat::A4Portrait): ?DocumentRenderProfile {
         return DocumentRenderProfile::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->where('is_default', true)
+            ->where('page_format', $format->value)
             ->where('status', '!=', RenderProfileStatus::Archived)
             ->orderBy('id')
             ->first();
     }
 
     /** Aktive Version des CI-Basisdesigns (oder null, wenn keines aktiv ist). */
-    public function baseVersionFor(Organization $organization): ?DocumentRenderProfileVersion {
-        $base = $this->activeProfiles($organization)->first(fn(DocumentRenderProfile $p) => $p->is_default);
+    public function baseVersionFor(Organization $organization, PageFormat $format = PageFormat::A4Portrait): ?DocumentRenderProfileVersion {
+        $base = $this->activeProfiles($organization)
+            ->first(fn(DocumentRenderProfile $p) => $p->is_default && ($p->page_format ?? PageFormat::A4Portrait) === $format);
 
         return $base?->activeVersion()->withoutGlobalScopes()->first();
     }
@@ -345,7 +355,8 @@ class RenderProfileService {
         }
 
         $organization = Organization::query()->withoutGlobalScopes()->find($version->organization_id);
-        $base = $organization !== null ? $this->baseVersionFor($organization) : null;
+        $format = $profile->page_format ?? PageFormat::A4Portrait;
+        $base = $organization !== null ? $this->baseVersionFor($organization, $format) : null;
         if ($base === null || (int) $base->document_render_profile_id === (int) $profile->id) {
             return $version;
         }
@@ -488,6 +499,15 @@ class RenderProfileService {
     /** Familien-Bindung einer Variante setzen/entfernen (#83). */
     public function assignFamily(DocumentRenderProfile $profile, ?RenderDocumentFamily $family): void {
         $profile->document_family = $family;
+        $profile->save();
+    }
+
+    /** Seitenformat eines Profils setzen (MVP-652) — nur solange keine Version aktiv ist. */
+    public function assignPageFormat(DocumentRenderProfile $profile, PageFormat $format): void {
+        if ($profile->active_version_id !== null && ($profile->page_format ?? PageFormat::A4Portrait) !== $format) {
+            throw new RuntimeException((string) __('Das Seitenformat kann nach der Aktivierung nicht mehr gewechselt werden — bitte ein neues Profil anlegen.'));
+        }
+        $profile->page_format = $format;
         $profile->save();
     }
 

@@ -18,7 +18,9 @@ use App\Enums\Contracts\HasLabel;
  * Tab „Belege" durch einen Filter: wo der Beleg herkommt, ist eine
  * Eigenschaft, keine eigene Seite.
  *
- * Weitere Buchhaltungs-/Faktura-Plugins (SevDesk, easybill, orgaMAX,
+ * Ein System erscheint hier, sobald es einen lokalen Belegspiegel führt —
+ * Lexoffice über `lexoffice_vouchers`, orgaMAX seit MVP-654 über
+ * `orgamax_invoices`. Weitere Faktura-Plugins (SevDesk, easybill,
  * InvoicePlane, JTL) kommen mit ihrer jeweiligen Spiegelung hinzu.
  */
 enum DocumentOrigin: string implements HasLabel {
@@ -26,6 +28,7 @@ enum DocumentOrigin: string implements HasLabel {
 
     case Local = 'local';
     case Lexoffice = 'lexoffice';
+    case OrgaMax = 'orgamax';
 
     public function label(): string {
         return (string) __('enums.billing.origin.' . $this->value);

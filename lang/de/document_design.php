@@ -134,4 +134,7 @@ return [
     'editor.repeat_header' => 'Tabellenüberschrift auf Folgeseiten wiederholen',
     'editor.highlight_totals' => 'Summenzeilen betonen',
     'editor.letterhead_blocks_note' => 'Vom Firmenbogen abgedeckt (wird nicht gedruckt):',
+    'asset.page_format' => 'Seitenformat',
+    'profile.page_format' => 'Seitenformat',
+    'profile.page_format_hint' => 'Ein Profil gilt für genau ein Format — Querformat-Berichte brauchen ein eigenes Profil. Nach der Aktivierung nicht mehr änderbar.',
 ];

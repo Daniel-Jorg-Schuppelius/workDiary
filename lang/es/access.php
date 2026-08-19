@@ -344,6 +344,7 @@ return [
 
         'finance.viewAny' => 'Consultar los justificantes de traspaso',
         'finance.config' => 'Gestionar la configuración financiera',
+        'accountingMigration.manage' => 'Gestionar el cambio de software contable',
         'finance.transfer.time' => 'Preparar y traspasar los tiempos facturables',
         'finance.transfer.material' => 'Preparar y traspasar el material facturable',
         'finance.payment.import' => 'Importar archivo bancario para la conciliación de pagos',

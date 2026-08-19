@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\DocumentDesign;
 
-use App\Enums\DocumentDesign\{LetterheadAssetStatus, LetterheadPageRole};
+use App\Enums\DocumentDesign\{LetterheadAssetStatus, LetterheadPageRole, PageFormat};
 use App\Models\DocumentDesign\LetterheadAsset;
 use App\Models\{Organization, User};
 use CommonToolkit\Helper\Data\CryptoHelper;
@@ -33,18 +33,13 @@ use PDFToolkit\Helper\PDFHelper;
  * wird aber nie in Ausgabedokumente übernommen.
  */
 class LetterheadAssetService {
-    /** A4 Hochformat in Millimetern (MVP-Umfang). */
-    private const A4_WIDTH_MM = 210.0;
-
-    private const A4_HEIGHT_MM = 297.0;
-
     private const SIGNATURES = [
         'pdf' => "%PDF-",
         'png' => "\x89PNG\x0D\x0A\x1A\x0A",
         'jpg' => "\xFF\xD8\xFF",
     ];
 
-    public function store(Organization $organization, UploadedFile $file, LetterheadPageRole $role, string $name, ?User $uploader = null): LetterheadAsset {
+    public function store(Organization $organization, UploadedFile $file, LetterheadPageRole $role, string $name, ?User $uploader = null, PageFormat $format = PageFormat::A4Portrait): LetterheadAsset {
         $sourceType = $this->sourceType($file);
         $raw = (string) file_get_contents($file->getRealPath());
 
@@ -65,6 +60,7 @@ class LetterheadAssetService {
             'organization_id' => $organization->id,
             'name' => $name,
             'page_role' => $role,
+            'page_format' => $format,
             'source_type' => $sourceType,
             'disk' => $disk,
             'original_path' => $originalPath,
@@ -78,16 +74,16 @@ class LetterheadAssetService {
 
         $notes = [];
         $png = $sourceType === 'pdf'
-            ? $this->normalizePdf($raw, $notes)
-            : $this->normalizeImage($raw, $notes);
+            ? $this->normalizePdf($raw, $notes, $format)
+            : $this->normalizeImage($raw, $notes, $format);
 
         if ($png !== null) {
             $normalizedPath = sprintf('%s/normalized/%s.png', $base, $token);
             Storage::disk($disk)->put($normalizedPath, $png);
             $asset->normalized_path = $normalizedPath;
             $asset->normalized_sha256 = CryptoHelper::hash($png);
-            $asset->width_mm = sprintf('%.2f', self::A4_WIDTH_MM);
-            $asset->height_mm = sprintf('%.2f', self::A4_HEIGHT_MM);
+            $asset->width_mm = sprintf('%.2f', $format->widthMm());
+            $asset->height_mm = sprintf('%.2f', $format->heightMm());
         }
 
         $asset->status = ($png !== null && $notes === [])
@@ -128,7 +124,7 @@ class LetterheadAssetService {
      *
      * @param array<int, string> $notes
      */
-    private function normalizePdf(string $raw, array &$notes): ?string {
+    private function normalizePdf(string $raw, array &$notes, PageFormat $format = PageFormat::A4Portrait): ?string {
         $base = tempnam(sys_get_temp_dir(), 'lh_');
         if ($base === false) {
             $notes[] = (string) __('Temporäre Datei konnte nicht angelegt werden.');
@@ -153,9 +149,11 @@ class LetterheadAssetService {
             }
 
             $size = PDFHelper::getPageSize($tmp);
-            $format = PDFHelper::detectFormat($tmp);
-            if ($format !== PaperFormat::A4 || ($size !== null && $size->isLandscape())) {
-                $notes[] = (string) __('Nur A4 Hochformat wird im MVP unterstützt.');
+            $detected = PDFHelper::detectFormat($tmp);
+            // MVP-652: A4 in der Ausrichtung des gewählten Seitenformats.
+            $orientationMismatch = $size !== null && $size->isLandscape() !== $format->isLandscape();
+            if ($detected !== PaperFormat::A4 || $orientationMismatch) {
+                $notes[] = (string) __('Es wird A4 im Format :format erwartet.', ['format' => $format->label()]);
 
                 return null;
             }
@@ -175,7 +173,7 @@ class LetterheadAssetService {
 
             // Auch die Rasterung re-encodieren: deckt Transparenz ab und
             // garantiert ein einheitliches, metadatenfreies PNG.
-            return $this->normalizeImage($png, $notes);
+            return $this->normalizeImage($png, $notes, $format);
         } finally {
             @unlink($tmp);
             @unlink($base);
@@ -187,7 +185,7 @@ class LetterheadAssetService {
      *
      * @param array<int, string> $notes
      */
-    private function normalizeImage(string $raw, array &$notes): ?string {
+    private function normalizeImage(string $raw, array &$notes, PageFormat $format = PageFormat::A4Portrait): ?string {
         $info = @getimagesizefromstring($raw);
         if ($info === false) {
             $notes[] = (string) __('Das Bild konnte nicht gelesen werden.');
@@ -208,9 +206,9 @@ class LetterheadAssetService {
         }
 
         $ratio = $height / max(1, $width);
-        $target = self::A4_HEIGHT_MM / self::A4_WIDTH_MM;
+        $target = $format->aspectRatio();
         if (abs($ratio - $target) / $target > (float) config('document_design.aspect_tolerance')) {
-            $notes[] = (string) __('Das Seitenverhältnis entspricht nicht A4 Hochformat.');
+            $notes[] = (string) __('Das Seitenverhältnis entspricht nicht :format.', ['format' => $format->label()]);
 
             return null;
         }
@@ -224,7 +222,7 @@ class LetterheadAssetService {
 
         // Ziel: A4 bei konfigurierter DPI, Transparenz auf Weiß abgedeckt.
         $dpi = (int) config('document_design.render_dpi');
-        $outWidth = min($width, (int) round(self::A4_WIDTH_MM / 25.4 * $dpi));
+        $outWidth = min($width, (int) round($format->widthMm() / 25.4 * $dpi));
         $outHeight = (int) round($outWidth * $target);
 
         $out = imagecreatetruecolor(max(1, $outWidth), max(1, $outHeight));

@@ -54,6 +54,7 @@ class LetterheadAsset extends Model {
         'organization_id',
         'name',
         'page_role',
+        'page_format',
         'source_type',
         'disk',
         'original_path',
@@ -73,6 +74,7 @@ class LetterheadAsset extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'page_role' => LetterheadPageRole::class,
+        'page_format' => \App\Enums\DocumentDesign\PageFormat::class,
         'status' => LetterheadAssetStatus::class,
         'review_notes' => 'array',
         'size' => 'integer',

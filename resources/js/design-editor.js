@@ -3,8 +3,9 @@
 // sind gleichwertig; Pfeiltasten verschieben die ausgewählte Box (Shift = 5 mm).
 // Speichert Entwürfe per fetch (PUT, JSON) und zeigt das Preflight-Ergebnis an.
 
-const PAGE_W = 210;
-const PAGE_H = 297;
+// Seitenmaße kommen ab MVP-652 aus der Editor-Config (A4 hoch ODER quer).
+const DEFAULT_PAGE_W = 210;
+const DEFAULT_PAGE_H = 297;
 
 function clamp(v, min, max) {
     return Math.min(max, Math.max(min, v));
@@ -51,6 +52,8 @@ export function registerDesignEditor(Alpine) {
         contentTexts: { header_text: null, footer_text: null },
         // Eingebettete PDF-Vorschau (#83): Art/Szenario umschaltbar; tick
         // erzwingt das Neuladen des iframes nach dem Speichern.
+        pageW: DEFAULT_PAGE_W,
+        pageH: DEFAULT_PAGE_H,
         previewUrl: null,
         previewKind: "invoice",
         previewScenario: "standard",
@@ -97,6 +100,8 @@ export function registerDesignEditor(Alpine) {
                 }
             }
             this.previewUrl = cfg.previewUrl ?? null;
+            this.pageW = cfg.pageW ?? DEFAULT_PAGE_W;
+            this.pageH = cfg.pageH ?? DEFAULT_PAGE_H;
             this.contentTexts = cfg.contentTexts ?? {
                 header_text: null,
                 footer_text: null,
@@ -146,17 +151,17 @@ export function registerDesignEditor(Alpine) {
             return {
                 x: m.left,
                 y: m.top,
-                width: PAGE_W - m.left - m.right,
-                height: PAGE_H - m.top - m.bottom,
+                width: this.pageW - m.left - m.right,
+                height: this.pageH - m.top - m.bottom,
             };
         },
         setContentBox(box) {
             const m = this.layout[this.contentKey()];
-            m.left = round1(clamp(box.x, 0, PAGE_W - 10));
-            m.top = round1(clamp(box.y, 0, PAGE_H - 10));
-            m.right = round1(clamp(PAGE_W - box.x - box.width, 0, PAGE_W - 10));
+            m.left = round1(clamp(box.x, 0, this.pageW - 10));
+            m.top = round1(clamp(box.y, 0, this.pageH - 10));
+            m.right = round1(clamp(this.pageW - box.x - box.width, 0, this.pageW - 10));
             m.bottom = round1(
-                clamp(PAGE_H - box.y - box.height, 0, PAGE_H - 10),
+                clamp(this.pageH - box.y - box.height, 0, this.pageH - 10),
             );
             this.dirty = true;
         },
@@ -175,13 +180,13 @@ export function registerDesignEditor(Alpine) {
                     ? this.layout.blocked_areas[index]
                     : this.layout[key];
             if (!target) return;
-            target.x = round1(clamp(box.x, 0, PAGE_W - 1));
-            target.y = round1(clamp(box.y, 0, PAGE_H - 1));
+            target.x = round1(clamp(box.x, 0, this.pageW - 1));
+            target.y = round1(clamp(box.y, 0, this.pageH - 1));
             if ("width" in target || "width" in box)
-                target.width = round1(clamp(box.width, 5, PAGE_W));
+                target.width = round1(clamp(box.width, 5, this.pageW));
             if ("height" in target)
                 target.height = round1(
-                    clamp(box.height ?? target.height, 3, PAGE_H),
+                    clamp(box.height ?? target.height, 3, this.pageH),
                 );
             this.dirty = true;
         },
@@ -201,7 +206,7 @@ export function registerDesignEditor(Alpine) {
             const b = this.boxFor(key, index);
             if (!b) return "display:none";
             const h = b.height ?? 8;
-            return `left:${(b.x / PAGE_W) * 100}%;top:${(b.y / PAGE_H) * 100}%;width:${(b.width / PAGE_W) * 100}%;height:${(h / PAGE_H) * 100}%;`;
+            return `left:${(b.x / this.pageW) * 100}%;top:${(b.y / this.pageH) * 100}%;width:${(b.width / this.pageW) * 100}%;height:${(h / this.pageH) * 100}%;`;
         },
 
         // ── Zeigerinteraktion (Ziehen/Skalieren) ──────────────────────────
@@ -228,9 +233,9 @@ export function registerDesignEditor(Alpine) {
             if (!this.drag) return;
             const { rect, box, mode, key, index } = this.drag;
             const dx =
-                ((event.clientX - this.drag.startX) / rect.width) * PAGE_W;
+                ((event.clientX - this.drag.startX) / rect.width) * this.pageW;
             const dy =
-                ((event.clientY - this.drag.startY) / rect.height) * PAGE_H;
+                ((event.clientY - this.drag.startY) / rect.height) * this.pageH;
             const next = { ...box };
             if (mode === "move") {
                 next.x = box.x + dx;

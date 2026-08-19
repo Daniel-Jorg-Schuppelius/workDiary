@@ -1277,6 +1277,10 @@ class NavigationRegistry {
                 $adminNavItems[] = ['route' => 'admin.branding.edit', 'label' => __('Branding'), 'icon' => 'palette', 'modal' => false];
                 // PDF-Dokumentdesign/CI-Basisdesign (Feature 076, Ausbau #83): war bislang nur per Direkt-URL erreichbar.
                 $adminNavItems[] = ['route' => 'admin.document-design.index', 'label' => __('document_design.title'), 'icon' => 'design_services', 'modal' => false, 'matches' => ['admin.document-design.*']];
+                // Buchhaltungswechsel (MVP-653): nur mit ausdrücklicher Berechtigung.
+                if (Gate::allows(Permission::AccountingMigrationManage->value)) {
+                    $adminNavItems[] = ['route' => 'admin.accounting-migration.index', 'label' => __('accounting_migration.title'), 'icon' => 'swap_horiz', 'modal' => false, 'matches' => ['admin.accounting-migration.*']];
+                }
                 $adminNavItems[] = ['route' => 'admin.themes.index', 'label' => __('Themes'), 'icon' => 'format_paint', 'modal' => false, 'matches' => ['admin.themes.*']];
                 if (Gate::allows(Permission::OrganizationScopeManage->value)) {
                     $adminNavItems[] = ['route' => 'admin.scope.index', 'label' => __('scope.title.index'), 'icon' => 'tune', 'modal' => false, 'matches' => ['admin.scope.*']];

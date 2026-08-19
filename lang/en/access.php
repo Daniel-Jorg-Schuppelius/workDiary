@@ -371,6 +371,7 @@ return [
 
         'finance.viewAny' => 'View transfer receipts',
         'finance.config' => 'Manage finance configuration',
+        'accountingMigration.manage' => 'Manage accounting software migration',
         'finance.transfer.time' => 'Prepare and transfer billable time',
         'finance.transfer.material' => 'Prepare and transfer billable material',
         'finance.payment.import' => 'Import bank file for payment reconciliation',

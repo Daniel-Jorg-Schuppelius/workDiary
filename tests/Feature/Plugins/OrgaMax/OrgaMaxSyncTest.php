@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Plugins\OrgaMax;
 
-use App\Models\{Customer, ExternalReference, IntegrationInboxItem, OrgaMaxConnection, User};
+use App\Models\{Customer, ExternalReference, IntegrationInboxItem, OrgaMaxConnection, OrgaMaxInvoice, User};
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Plugins\OrgaMax\Services\{OrgaMaxInvoiceProjector, OrgaMaxSyncService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -121,6 +121,52 @@ class OrgaMaxSyncTest extends TestCase {
         $this->assertSame('ACME', $projection->payload['customer'] ?? null);
         $this->assertEqualsWithDelta(119.0, (float) ($projection->payload['outstanding_amount'] ?? 0), 0.001);
         $this->assertNotNull($projection->synced_at);
+    }
+
+    public function test_multiple_invoices_are_projected_into_the_local_mirror(): void {
+        // Regression (Bestandsfehler Feature 077): alle Rechnungen hingen an
+        // derselben Verbindung, wodurch `extref_unique` ab dem zweiten Beleg
+        // zuschlug. Jede Rechnung hat jetzt ein eigenes lokales Objekt.
+        $customer = Customer::create([
+            'organization_id' => $this->organization->id,
+            'name' => 'ACME GmbH',
+            'currency' => 'EUR',
+            'created_by' => $this->admin->id,
+        ]);
+        ExternalReference::link($this->organization->id, OrgaMaxPlugin::ID, 'customer', $customer, '7');
+
+        FakePluginHttp::fake([
+            'https://api.orgamax.de/openapi/customer*' => self::listResponse([]),
+            'https://api.orgamax.de/openapi/invoice*' => self::listResponse([
+                ['id' => 501, 'number' => 'RE-2026-001', 'state' => 'locked', 'totalGross' => 119.0, 'outstandingAmount' => 119.0, 'customerId' => 7],
+                ['id' => 502, 'number' => 'RE-2026-002', 'state' => 'paid', 'totalGross' => 238.0, 'outstandingAmount' => 0.0, 'customerId' => 7],
+            ]),
+        ]);
+
+        app(OrgaMaxSyncService::class)->run($this->connection);
+
+        $this->assertSame(2, OrgaMaxInvoice::query()->count());
+        $this->assertSame(2, ExternalReference::query()
+            ->where('external_type', OrgaMaxInvoiceProjector::EXT_TYPE_INVOICE)
+            ->count());
+
+        $mirror = OrgaMaxInvoice::query()->where('external_id', '502')->firstOrFail();
+        $this->assertSame('RE-2026-002', $mirror->invoice_number);
+        $this->assertSame('paid', $mirror->invoice_status);
+        $this->assertSame($customer->id, $mirror->customer_id, 'Der bestätigte Kunde wird verknüpft.');
+        $this->assertSame(1, OrgaMaxInvoice::query()->open()->count(), 'Nur der offene Beleg zählt als offen.');
+
+        // Referenz zeigt auf den Spiegel, nicht mehr auf die Verbindung.
+        $reference = ExternalReference::query()
+            ->where('external_type', OrgaMaxInvoiceProjector::EXT_TYPE_INVOICE)
+            ->where('external_id', '502')
+            ->firstOrFail();
+        $this->assertSame($mirror->getMorphClass(), $reference->referenceable_type);
+        $this->assertSame($mirror->id, $reference->referenceable_id);
+
+        // Zweiter Lauf aktualisiert, statt zu duplizieren.
+        app(OrgaMaxSyncService::class)->run($this->connection->refresh());
+        $this->assertSame(2, OrgaMaxInvoice::query()->count());
     }
 
     public function test_budgeted_sweep_advances_offset_checkpoint_and_resets_after_full_pass(): void {

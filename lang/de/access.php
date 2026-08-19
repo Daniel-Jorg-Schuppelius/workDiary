@@ -371,6 +371,7 @@ return [
 
         'finance.viewAny' => 'Übergabenachweise einsehen',
         'finance.config' => 'Finanzkonfiguration verwalten',
+        'accountingMigration.manage' => 'Buchhaltungswechsel verwalten',
         'finance.transfer.time' => 'Faktura-Zeiten vorbereiten und übertragen',
         'finance.transfer.material' => 'Faktura-Material vorbereiten und übertragen',
         'finance.payment.import' => 'Bankdatei für den Zahlungsabgleich importieren',

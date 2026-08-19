@@ -33,5 +33,7 @@ return [
 
         'payment_reconciliation_events' => App\Models\Finance\PaymentReconciliationEvent::class,
         'datev_booking_events' => App\Models\Finance\DatevBookingEvent::class,
+        // MVP-653: Auditspur des Buchhaltungswechsels.
+        'accounting_migration_events' => App\Models\Migration\AccountingMigrationEvent::class,
     ],
 ];

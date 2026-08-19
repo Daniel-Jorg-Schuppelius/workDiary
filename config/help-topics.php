@@ -45,6 +45,7 @@ return [
         'me.functions' => 'navigation.customize',
         // PDF-Dokumentdesign / Firmenbogen (Feature 076, Phase 28)
         'admin.document-design.*' => 'admin.document-design',
+        'admin.accounting-migration.*' => 'admin.accounting-migration',
         // Schreibfehler-Wörterbuch für Positionstexte
         'admin.text-corrections.*' => 'admin.text-corrections',
         // orgaMAX-Buchhaltung-Plugin (Feature 077, Phase 29)

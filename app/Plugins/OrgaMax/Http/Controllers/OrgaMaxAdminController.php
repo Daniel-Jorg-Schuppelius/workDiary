@@ -16,7 +16,7 @@ use APIToolkit\Entities\ID;
 use APIToolkit\Exceptions\ApiException;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\{ExternalReference, IntegrationInboxItem, OrgaMaxConnection, Organization, User};
+use App\Models\{ExternalReference, IntegrationInboxItem, OrgaMaxConnection, OrgaMaxInvoice, Organization, User};
 use App\Plugins\OrgaMax\Api\OrgaMaxClientFactory;
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Plugins\OrgaMax\Services\{OrgaMaxConnectionService, OrgaMaxScopePreflight, OrgaMaxSyncService};
@@ -313,6 +313,15 @@ class OrgaMaxAdminController extends Controller {
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="orgamax-rechnung-' . preg_replace('/[^A-Za-z0-9._-]/', '_', $externalId) . '.pdf"',
         ]);
+    }
+
+    /**
+     * PDF über den lokalen Belegspiegel (MVP-654). Die Belegliste führt die
+     * Spiegel-ID; die orgaMAX-ID steckt im Datensatz. Der Spiegel ist
+     * organisationsgescopt, ein fremder Datensatz endet in 404.
+     */
+    public function mirrorPdf(OrgaMaxInvoice $invoice): Response {
+        return $this->invoicePdf($invoice->external_id);
     }
 
     // ── Guards ──────────────────────────────────────────────────────────

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\DocumentDesign;
 
-use App\Enums\DocumentDesign\{InformationBlock, RenderDocumentFamily, RenderDocumentKind};
+use App\Enums\DocumentDesign\{InformationBlock, PageFormat, RenderDocumentFamily, RenderDocumentKind};
 use App\Models\Organization;
 use CommonToolkit\Helper\Data\NumberHelper;
 use PDFToolkit\Entities\PDFContent;
@@ -42,11 +42,14 @@ class SampleDocumentService {
     public function __construct(private readonly DocumentDesignRenderer $renderer) {}
 
     /** @param array<string, mixed>|null $payload Explizites Payload (z. B. Entwurf) statt aktives Profil. */
-    public function pdf(Organization $organization, RenderDocumentKind $kind, ?array $payload = null, string $scenario = self::SCENARIO_STANDARD): string {
-        $payload ??= $this->renderer->payloadFor($organization, $kind);
-        $html = $this->renderer->compose($this->sampleHtml($organization, $kind, $payload, $scenario), $payload);
+    public function pdf(Organization $organization, RenderDocumentKind $kind, ?array $payload = null, string $scenario = self::SCENARIO_STANDARD, PageFormat $format = PageFormat::A4Portrait): string {
+        $payload ??= $this->renderer->payloadFor($organization, $kind, null, $format);
+        $html = $this->renderer->compose($this->sampleHtml($organization, $kind, $payload, $scenario), $payload, $format);
 
-        return PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
+        // MVP-652: Vorschau im Seitenformat des Profils erzeugen.
+        $options = $format->isLandscape() ? ['paper_size' => 'a4', 'orientation' => 'landscape'] : [];
+
+        return PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html), $options)
             ?? throw new RuntimeException('Test-PDF-Erzeugung fehlgeschlagen.');
     }
 

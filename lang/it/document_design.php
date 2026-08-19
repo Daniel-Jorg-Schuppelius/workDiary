@@ -134,4 +134,7 @@ return [
     'editor.repeat_header' => 'Ripeti l’intestazione della tabella nelle pagine successive',
     'editor.highlight_totals' => 'Evidenzia le righe dei totali',
     'editor.letterhead_blocks_note' => 'Coperto dalla carta intestata (non stampato):',
+    'asset.page_format' => 'Formato pagina',
+    'profile.page_format' => 'Formato pagina',
+    'profile.page_format_hint' => 'Un profilo vale per un solo formato — i report orizzontali richiedono un profilo proprio. Non modificabile dopo l’attivazione.',
 ];

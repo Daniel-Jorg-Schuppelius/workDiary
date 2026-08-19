@@ -1455,6 +1455,17 @@ Route::middleware('auth')->group(function () {
         Route::delete('admin/b2b-katalog/zugaenge/{access}/artikel/{item}', [\App\Http\Controllers\Admin\B2bCatalogAdminController::class, 'destroyItem'])->name('b2b-catalog.items.destroy');
         Route::post('admin/b2b-katalog/bestellungen/upload', [\App\Http\Controllers\Admin\B2bCatalogAdminController::class, 'uploadOrder'])->name('b2b-catalog.orders.upload');
 
+        // ── Buchhaltungswechsel (Admin, Feature 008/045/077, MVP-653) ──
+        Route::get('admin/buchhaltungswechsel', [\App\Http\Controllers\Admin\AccountingMigrationController::class, 'index'])->name('admin.accounting-migration.index');
+        Route::post('admin/buchhaltungswechsel', [\App\Http\Controllers\Admin\AccountingMigrationController::class, 'store'])->name('admin.accounting-migration.store');
+        Route::post('admin/buchhaltungswechsel/{run}/analyse', [\App\Http\Controllers\Admin\AccountingMigrationController::class, 'analyze'])->name('admin.accounting-migration.analyze');
+        Route::post('admin/buchhaltungswechsel/{run}/positionen/{item}', [\App\Http\Controllers\Admin\AccountingMigrationController::class, 'decide'])->name('admin.accounting-migration.decide');
+        Route::post('admin/buchhaltungswechsel/{run}/doppelbetrieb', [\App\Http\Controllers\Admin\AccountingMigrationController::class, 'startParallel'])->name('admin.accounting-migration.parallel');
+        Route::post('admin/buchhaltungswechsel/{run}/umschalten', [\App\Http\Controllers\Admin\AccountingMigrationController::class, 'cutover'])->name('admin.accounting-migration.cutover');
+        Route::post('admin/buchhaltungswechsel/{run}/abschliessen', [\App\Http\Controllers\Admin\AccountingMigrationController::class, 'complete'])->name('admin.accounting-migration.complete');
+        Route::post('admin/buchhaltungswechsel/{run}/abbrechen', [\App\Http\Controllers\Admin\AccountingMigrationController::class, 'cancel'])->name('admin.accounting-migration.cancel');
+        Route::get('admin/buchhaltungswechsel/{run}/protokoll', [\App\Http\Controllers\Admin\AccountingMigrationController::class, 'report'])->name('admin.accounting-migration.report');
+
         // ── PDF-Dokumentdesign / Firmenbogen (Admin, Feature 076, module.dokumentdesign) ──
         Route::get('admin/document-design', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'index'])->name('admin.document-design.index');
         Route::get('admin/document-design/assets/create', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'createAsset'])->name('admin.document-design.assets.create');
