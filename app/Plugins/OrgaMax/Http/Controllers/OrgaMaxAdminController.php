@@ -316,7 +316,7 @@ class OrgaMaxAdminController extends Controller {
     }
 
     /**
-     * PDF über den lokalen Belegspiegel (MVP-654). Die Belegliste führt die
+     * PDF über den lokalen Belegspiegel (MVP-670). Die Belegliste führt die
      * Spiegel-ID; die orgaMAX-ID steckt im Datensatz. Der Spiegel ist
      * organisationsgescopt, ein fremder Datensatz endet in 404.
      */

@@ -38,7 +38,7 @@ Route::middleware(['web', 'auth', \App\Http\Middleware\EnforcePlanModules::class
         Route::post('invoices/{externalId}/send', [OrgaMaxAdminController::class, 'sendInvoice'])->name('invoices.send');
         Route::post('invoices/{externalId}/payment', [OrgaMaxAdminController::class, 'recordPayment'])->name('invoices.payment');
         Route::get('invoices/{externalId}/pdf', [OrgaMaxAdminController::class, 'invoicePdf'])->name('invoices.pdf');
-        // Einstieg aus der vereinheitlichten Belegliste (MVP-654): dort ist
+        // Einstieg aus der vereinheitlichten Belegliste (MVP-670): dort ist
         // nur der lokale Spiegel-Datensatz bekannt, nicht die orgaMAX-ID.
         Route::get('invoices/mirror/{invoice}/pdf', [OrgaMaxAdminController::class, 'mirrorPdf'])->name('invoices.mirror-pdf');
     });

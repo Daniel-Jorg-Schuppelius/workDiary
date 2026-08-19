@@ -19,7 +19,7 @@ use App\Enums\Contracts\HasLabel;
  * Eigenschaft, keine eigene Seite.
  *
  * Ein System erscheint hier, sobald es einen lokalen Belegspiegel führt —
- * Lexoffice über `lexoffice_vouchers`, orgaMAX seit MVP-654 über
+ * Lexoffice über `lexoffice_vouchers`, orgaMAX seit MVP-670 über
  * `orgamax_invoices`. Weitere Faktura-Plugins (SevDesk, easybill,
  * InvoicePlane, JTL) kommen mit ihrer jeweiligen Spiegelung hinzu.
  */

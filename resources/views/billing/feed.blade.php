@@ -74,7 +74,7 @@
 
     // Zielseite je Quelle — die Zeile führt dorthin, wo der Vorgang lebt.
     // orgaMAX-Belege haben keine lokale Detailseite: dort führt das
-    // Fremdsystem, das PDF kommt über die Admin-Route des Plugins (MVP-654).
+    // Fremdsystem, das PDF kommt über die Admin-Route des Plugins (MVP-670).
     $rowLink = static function (object $row) use ($canOpenOrgaMax): ?array {
         if ($row->source_type === 'orgamax_invoice') {
             return $canOpenOrgaMax

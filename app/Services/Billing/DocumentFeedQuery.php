@@ -323,7 +323,7 @@ class DocumentFeedQuery {
                             ->orWhereColumn('lexoffice_vouchers.voucher_number', 'invoices.external_number');
                     });
             })
-            // Dieselbe Regel gegenüber dem orgaMAX-Spiegel (MVP-654).
+            // Dieselbe Regel gegenüber dem orgaMAX-Spiegel (MVP-670).
             ->whereNotExists(function (Builder $sub): void {
                 $sub->select(DB::raw(1))
                     ->from('orgamax_invoices')
@@ -454,7 +454,7 @@ class DocumentFeedQuery {
     }
 
     /**
-     * Gespiegelte orgaMAX-Rechnungen (MVP-654). Gleiche Rolle wie
+     * Gespiegelte orgaMAX-Rechnungen (MVP-670). Gleiche Rolle wie
      * {@see self::vouchers()}, nur mit der Belegsemantik des anderen Systems:
      * orgaMAX führt ausschließlich Ausgangsbelege, Wiederholungs-*Vorlagen*
      * sind kein Beleg und bleiben draußen.

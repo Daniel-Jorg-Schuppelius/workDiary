@@ -106,7 +106,7 @@ class DocumentFeedController extends Controller {
             'canDun' => $user->can(Permission::VoucherLexofficeSync->value),
             'canDunLocal' => $user->canManageBilling(),
             // orgaMAX-Belege haben keine eigene Detailseite; das PDF liegt
-            // hinter der Admin-Route des Plugins (MVP-654). Ohne aktives
+            // hinter der Admin-Route des Plugins (MVP-670). Ohne aktives
             // Plugin existiert die Route nicht.
             'canOpenOrgaMax' => $user->isAdmin() && Route::has('admin.orgamax.invoices.pdf'),
             'filters' => [
