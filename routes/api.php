@@ -18,6 +18,12 @@ Route::pattern('project', '[A-Za-z0-9]+|[a-z0-9-]+/[a-z0-9-]+');
 
 // Standort-Ingest von Geräte-Apps (OwnTracks/Traccar). Auth über Pro-Gerät-Token
 // im Pfad statt Sanctum – die Apps können sich nicht interaktiv anmelden.
+// Geräte-Scan der Wächterrundgänge (Feature 089): NFC-/Scanner-Gerät meldet
+// den Checkpoint-Token, authentifiziert über das Standort-Geräte-Token.
+Route::post('patrol/scan/{token}', [\App\Http\Controllers\Api\PatrolScanController::class, 'scan'])
+    ->middleware('throttle:60,1')
+    ->name('api.patrol.scan');
+
 Route::match(['get', 'post'], 'location/ingest/{token}', [LocationController::class, 'ingest'])
     ->where('token', '[A-Za-z0-9]+')
     ->middleware('throttle:webhook-ingest')

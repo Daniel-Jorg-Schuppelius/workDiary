@@ -19,6 +19,19 @@
             <x-icon-btn icon="download" tone="ghost" size="sm"
                         :href="route('expenses.export', ['status' => $statusFilter])"
                         show-label>{{ __('CSV-Export') }}</x-icon-btn>
+            {{-- Feature 088 P3: Beleg-Scan (PDF oder Foto) → Entwurfs-Auslage mit
+                 Vorschlagswerten; der Mensch prüft im Formular. --}}
+            <form method="POST" action="{{ route('expenses.scan') }}" enctype="multipart/form-data"
+                  class="inline-flex items-center gap-1">
+                @csrf
+                <input type="file" name="receipt" required accept="application/pdf,image/jpeg,image/png,image/tiff"
+                       class="file-input file-input-bordered file-input-sm w-52"
+                       aria-label="{{ __('Beleg scannen (PDF oder Foto)') }}">
+                <button type="submit" class="btn btn-ghost btn-sm gap-1">
+                    <span class="material-symbols-outlined text-base" aria-hidden="true">document_scanner</span>
+                    {{ __('Scannen') }}
+                </button>
+            </form>
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger
                         :href="route('expenses.create')"

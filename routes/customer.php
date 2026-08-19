@@ -72,6 +72,14 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
                 ->whereNumber('year')->whereNumber('month')->name('billing.show');
         });
 
+        // Online-Terminbuchung (Feature 087): Slots anfragen, nie direkt buchen.
+        Route::middleware('portal.capability:appointments')->group(function (): void {
+            Route::get('/appointments', [\App\Http\Controllers\CustomerPortal\AppointmentController::class, 'index'])->name('appointments.index');
+            Route::post('/appointments', [\App\Http\Controllers\CustomerPortal\AppointmentController::class, 'store'])
+                ->middleware('throttle:12,1')->name('appointments.store');
+            Route::post('/appointments/{appointmentRequest}/cancel', [\App\Http\Controllers\CustomerPortal\AppointmentController::class, 'cancel'])->name('appointments.cancel');
+        });
+
         Route::middleware('portal.capability:open_issues')->group(function (): void {
             Route::get('/open-issues', [OpenIssueController::class, 'index'])->name('open-issues.index');
             // Bekannte Fehler (Feature 065, MVP-156): read-only Known Errors

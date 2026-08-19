@@ -96,10 +96,18 @@ class PermissionsSeeder extends Seeder {
                 'guard_name' => 'web',
             ]);
 
-            $role->syncPermissions(
+            // Direkter Pivot-Sync statt Spatie-syncPermissions: identische
+            // Ergebnismenge, aber ohne die O(n)-Namensauflösung und ohne
+            // Cache-Invalidierung je Rolle (Messung 2026-08-19: ~2 s → ~50 ms
+            // je Organisation; Details in App\Support\FastPermissionSync).
+            \App\Support\FastPermissionSync::syncRole(
+                $role,
                 array_map(static fn(PermissionEnum $p): string => $p->value, $permissions)
             );
         }
+
+        // EIN Cache-Reset für alle Rollen dieser Organisation.
+        $registrar->forgetCachedPermissions();
     }
 
     /**

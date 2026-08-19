@@ -243,6 +243,14 @@ return [
             'archived' => 'Archived',
         ],
     ],
+    'access' => [
+        'medium_status' => ['in_stock' => 'In stock', 'issued' => 'Issued', 'lost' => 'Lost', 'blocked' => 'Blocked', 'retired' => 'Retired'],
+        'medium_type' => ['transponder' => 'Transponder', 'card' => 'Card', 'code' => 'Code'],
+    ],
+    'sales' => [
+        'lead_status' => ['new' => 'New', 'contacted' => 'Contacted', 'qualified' => 'Qualified', 'converted' => 'Converted', 'discarded' => 'Discarded'],
+        'lead_source' => ['referral' => 'Referral', 'web' => 'Web', 'trade_fair' => 'Trade fair', 'phone' => 'Phone', 'other' => 'Other'],
+    ],
     'sync_command' => [
         'status' => ['applied' => 'Applied', 'duplicate' => 'Duplicate', 'conflict' => 'Conflict', 'rejected' => 'Rejected'],
     ],
@@ -563,6 +571,7 @@ return [
             'communicationFollowup' => 'From communication',
             'procedureDeviation' => 'From procedure deviation',
             'customerRejection' => 'Customer rejection',
+            'patrolDeviation' => 'From patrol deviation',
         ],
         'visibility' => [
             'internal' => 'Internal',

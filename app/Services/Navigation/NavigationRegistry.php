@@ -366,6 +366,14 @@ class NavigationRegistry {
                 Gate::allows(Permission::DispatchViewAny->value)
                     ? ['route' => 'dispatch.board', 'label' => __('Leitstelle'), 'icon' => 'dashboard', 'modal' => false, 'matches' => ['dispatch.board', 'dispatch.map']]
                     : null,
+                // Feature 089: Rundgänge mit Kontrollpunkt-Nachweis.
+                Gate::allows(Permission::DispatchViewAny->value)
+                    ? ['route' => 'patrols.index', 'label' => __('Rundgänge'), 'icon' => 'route', 'modal' => false, 'matches' => ['patrols.*']]
+                    : null,
+                // Feature 087: Portal-Terminanfragen entscheiden.
+                Gate::allows(Permission::DispatchViewAny->value)
+                    ? ['route' => 'appointments.index', 'label' => __('Terminanfragen'), 'icon' => 'event_available', 'modal' => false, 'matches' => ['appointments.*']]
+                    : null,
             ]),
         ];
         $sidebarSections[] = [
@@ -388,6 +396,8 @@ class NavigationRegistry {
             'items' => [
                 ...(Gate::allows('viewAny', \App\Models\Asset::class) ? [
                     ['route' => 'assets.index', 'label' => __('Objekte & Assets'), 'icon' => 'precision_manufacturing', 'modal' => false, 'matches' => ['assets.*']],
+                    // Feature 092: Transponder/Karten/Codes als verwalteter Bestand.
+                    ['route' => 'access-media.index', 'label' => __('Zutrittsmedien'), 'icon' => 'key', 'modal' => false, 'matches' => ['access-media.*']],
                 ] : []),
                 ['route' => 'vehicles.index', 'label' => __('Fahrzeuge'), 'icon' => 'directions_car', 'modal' => false, 'matches' => ['vehicles.*']],
                 ['route' => 'energy-logs.index', 'label' => __('Tank & Ladelog'), 'icon' => 'local_gas_station', 'modal' => false, 'matches' => ['energy-logs.*']],
@@ -462,6 +472,10 @@ class NavigationRegistry {
                     'icon' => 'badge',
                     'items' => [
                         ['route' => 'customers.index', 'label' => __('Kunden'), 'icon' => 'badge', 'modal' => false, 'matches' => ['customers.*']],
+                        // Feature 091: Interessenten vor dem Kundenstatus.
+                        ['route' => 'leads.index', 'label' => __('Leads'), 'icon' => 'person_search', 'modal' => false, 'matches' => ['leads.*']],
+                        // Feature 090: NPS und freie Umfragen.
+                        ['route' => 'surveys.index', 'label' => __('Umfragen'), 'icon' => 'reviews', 'modal' => false, 'matches' => ['surveys.*']],
                         ['route' => 'suppliers.index', 'label' => __('Lieferanten'), 'icon' => 'local_shipping', 'modal' => false, 'matches' => ['suppliers.*']],
                         ['route' => 'projects.index', 'label' => __('Projekte'), 'icon' => 'folder_special', 'modal' => false, 'matches' => ['projects.*']],
                         ['route' => 'events.index', 'label' => __('Veranstaltungen'), 'icon' => 'event', 'modal' => false, 'matches' => ['events.*']],

@@ -270,6 +270,8 @@ return [
         'flex.*' => 'module.planung',
         'tours.*' => 'module.planung',
         'dispatch.*' => 'module.planung',
+        'patrols.*' => 'module.planung', // Wächterrundgänge (Feature 089): Leitstellen-Werkzeug
+        'appointments.*' => 'module.planung', // Terminanfragen (Feature 087): Dispositions-Inbox
 
         'travel-logs.*' => 'module.spesen',
         'expenses.*' => 'module.spesen',
@@ -330,6 +332,8 @@ return [
         'domains.*' => 'module.domain',
         'domain-reseller.*' => 'module.domain',
         'customers.*' => 'module.vertrieb',
+        'leads.*' => 'module.vertrieb', // Lead-Pipeline (Feature 091) hängt am Vertrieb, kein eigenes Modul
+        'surveys.*' => 'module.vertrieb', // Umfragen (Feature 090): Kundenfeedback ist Kundenpflege
         'suppliers.*' => 'module.vertrieb',
         'projects.*' => 'module.vertrieb',
         'billing.feed' => 'module.vertrieb', // Belegfluss (Feature 105) — gleiche Sicht wie invoices.*
@@ -344,6 +348,7 @@ return [
         'materials.*' => 'module.vertrieb', // Abrechnungskatalog (Preis/Steuer/lexoffice/Billing)
 
         'assets.*' => 'module.fuhrpark',
+        'access-media.*' => 'module.fuhrpark', // Zutrittsmedien (Feature 092) sind Dienstmittel wie Schlüssel
         'vehicles.*' => 'module.fuhrpark',
         'driver-license-checks.*' => 'module.fuhrpark', // MVP-417 Führerscheinkontrolle
         'vehicle-reservations.*' => 'module.fuhrpark',

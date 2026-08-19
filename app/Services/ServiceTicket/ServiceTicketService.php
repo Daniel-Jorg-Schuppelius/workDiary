@@ -148,6 +148,14 @@ class ServiceTicketService {
             $this->slaViolations->recordResolutionBreach($ticket);
         }
 
+        // Umfrage-Trigger (Feature 090): Fragebögen mit trigger_on_ticket_close
+        // laden nach der ERSTEN Lösung ein. Der Ermüdungsschutz überspringt
+        // still - ein gescheiterter Einladungsversuch darf nie den
+        // Statuswechsel des Tickets verhindern.
+        if (! $wasResolved && $ticket->resolved_at !== null) {
+            app(\App\Services\Survey\SurveyTicketTrigger::class)->onTicketResolved($ticket);
+        }
+
         return $ticket->refresh();
     }
 

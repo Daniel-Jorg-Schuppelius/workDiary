@@ -54,6 +54,9 @@ enum PortalCapability: string implements HasLabel {
     /** Rückfragen/Kommentare (MVP-512) — erweitert nur freigegebene Bereiche. */
     case Queries = 'queries';
 
+    /** Online-Terminbuchung (Feature 087): Slots anfragen, nie direkt buchen. */
+    case Appointments = 'appointments';
+
     public function label(): string {
         return (string) match ($this) {
             self::Diary => __('Aufträge & Fallakte'),
@@ -66,6 +69,7 @@ enum PortalCapability: string implements HasLabel {
             self::Claims => __('Reklamationen'),
             self::Rentals => __('Verleihvorgänge'),
             self::Queries => __('Rückfragen & Kommentare'),
+            self::Appointments => __('Online-Terminbuchung'),
         };
     }
 
@@ -79,6 +83,7 @@ enum PortalCapability: string implements HasLabel {
             self::Claims => 'module.claims',
             self::Rentals => 'module.rental',
             self::Documents => 'module.documents',
+            self::Appointments => 'module.planung',
             default => null,
         };
     }

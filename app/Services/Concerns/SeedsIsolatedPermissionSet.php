@@ -22,11 +22,34 @@ use Spatie\Permission\PermissionRegistrar;
  * Admins). Nutzende Klassen definieren `ALL` (list<string>) und `ROLE`.
  */
 trait SeedsIsolatedPermissionSet {
-    /** Legt die Permissions global (team-unabhaengig, guard web) an. Idempotent. */
+    /**
+     * Legt die Permissions global (team-unabhaengig, guard web) an. Idempotent.
+     * Fast-Path wie im PermissionsSeeder: EINE whereIn-Query, nur Fehlendes
+     * anlegen — findOrCreate je Name lud sonst je Aufruf den Spatie-Cache.
+     */
     public static function ensurePermissionsExist(): void {
-        foreach (static::ALL as $name) {
-            Permission::findOrCreate($name, 'web');
+        $existing = Permission::query()
+            ->where('guard_name', 'web')
+            ->whereIn('name', static::ALL)
+            ->pluck('name')
+            ->all();
+
+        $missing = array_diff(static::ALL, $existing);
+        if ($missing === []) {
+            return;
         }
+
+        // Bulk-Insert statt findOrCreate-Schleife: findOrCreate baut je
+        // Aufruf den kompletten Spatie-Cache neu auf (Messung 2026-08-19:
+        // ~90 ms je Permission). Ein Cache-Reset am Ende genügt.
+        $now = now();
+        Permission::query()->insert(array_map(static fn (string $name): array => [
+            'name' => $name,
+            'guard_name' => 'web',
+            'created_at' => $now,
+            'updated_at' => $now,
+        ], array_values($missing)));
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 
     /**
@@ -46,6 +69,8 @@ trait SeedsIsolatedPermissionSet {
             'name' => static::ROLE,
             'guard_name' => 'web',
         ]);
-        $role->syncPermissions(static::ALL);
+        // Direkter Pivot-Sync + EIN Cache-Reset (s. FastPermissionSync).
+        \App\Support\FastPermissionSync::syncRole($role, static::ALL);
+        $registrar->forgetCachedPermissions();
     }
 }

@@ -14,6 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{IntegrationInboxItem, Organization};
 use App\Plugins\Fritzbox\{FritzboxConfig, FritzboxImportService, FritzboxPlugin};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
+use App\Services\Contacts\ExternalPhoneContactDirectory;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
@@ -69,6 +70,9 @@ class FritzboxController extends Controller {
                 ->map(fn (\App\Models\User $u): array => ['sqid' => \App\Support\Sqid::encode(\App\Models\User::class, (int) $u->id), 'name' => (string) $u->name])
                 ->values()
                 ->all(),
+            'contactDirectorySources' => (bool) $config['external_contact_matching']
+                ? app(ExternalPhoneContactDirectory::class)->availableSourceLabels($this->organization($admin))
+                : [],
         ]);
     }
 

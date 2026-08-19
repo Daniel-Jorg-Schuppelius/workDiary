@@ -30,4 +30,6 @@ return [
     'own_number_allowlist' => env('FRITZBOX_OWN_NUMBER_ALLOWLIST', ''),
     // Ältere FRITZ!OS-Firmware exportiert ausgehende Anrufe als Typ 3 (neuere: Typ 4).
     'type3_outgoing' => (bool) env('FRITZBOX_TYPE3_OUTGOING', false),
+    // Aktiv verbundene externe Kontaktverzeichnisse bei unbekannten Nummern abfragen.
+    'external_contact_matching' => (bool) env('FRITZBOX_EXTERNAL_CONTACT_MATCHING', true),
 ];

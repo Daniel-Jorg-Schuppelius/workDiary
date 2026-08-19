@@ -96,6 +96,31 @@ class ExpenseController extends Controller {
         ]);
     }
 
+    /**
+     * Scan-Beleg → Auslagen-Vorschlag (Feature 088 P3, MVP-669): erzeugt aus
+     * einem PDF-Scan eine Entwurfs-Auslage mit extrahierten Werten und dem
+     * Beleg als Anhang — der Mensch bestätigt im Formular, nie Auto-Buchung.
+     */
+    public function scan(Request $request, \App\Services\Expense\ExpenseScanService $scanner): RedirectResponse {
+        Gate::authorize('create', Expense::class);
+
+        $request->validate([
+            'receipt' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png,tif,tiff', 'max:20480'],
+        ]);
+
+        /** @var \Illuminate\Http\UploadedFile $file */
+        $file = $request->file('receipt');
+        /** @var \App\Models\User $actor */
+        $actor = Auth::user();
+        /** @var \App\Models\Organization $organization */
+        $organization = app('currentOrganization');
+
+        $result = $scanner->createDraftFromScan($file, $actor, $organization);
+
+        return redirect()->route('expenses.edit', $result['expense'])
+            ->with('success', __('Beleg gelesen — bitte Werte prüfen und speichern. Kategorie und Händler ergänzt der Mensch, nicht die Maschine.'));
+    }
+
     public function create(Request $request): View {
         Gate::authorize('create', Expense::class);
 

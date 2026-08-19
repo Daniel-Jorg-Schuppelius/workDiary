@@ -182,6 +182,24 @@ class AppServiceProvider extends ServiceProvider {
                 },
             ));
 
+            // Leads (Feature 091, MVP-656): personenbezogene Daten ohne
+            // Vertrag - nicht konvertierte Leads werden 6 Monate nach dem
+            // letzten Kontakt anonymisiert (PII weg, Pipeline-Kennzahl bleibt).
+            $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
+                area: 'leads',
+                modelClass: \App\Models\Lead::class,
+                overdueQuery: fn($organization, $cutoff) => \App\Models\Lead::query()
+                    ->withoutGlobalScopes()
+                    ->where('organization_id', $organization->id)
+                    ->whereNull('anonymized_at')
+                    ->where('status', '!=', \App\Enums\Sales\LeadStatus::Converted->value)
+                    ->whereNotNull('last_contact_at')
+                    ->where('last_contact_at', '<=', now()->subMonths((int) config('sales.lead_retention_months', 6))),
+                purge: function (\App\Models\Lead $subject): void {
+                    app(\App\Services\Sales\LeadService::class)->anonymize($subject);
+                },
+            ));
+
             // Reklamationsakten (Feature 072, MVP-256): abgeschlossene Fälle
             // nach Ablauf anonymisieren (Melder-PII), Kennzahlen bleiben.
             $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(

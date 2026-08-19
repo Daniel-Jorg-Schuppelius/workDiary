@@ -21,6 +21,8 @@ enum OpenIssueSource: string implements HasLabel {
     case CommunicationFollowup = 'communicationFollowup';
     case ProcedureDeviation = 'procedureDeviation';
     case CustomerRejection = 'customerRejection';
+    // Feature 089: verpasste/verspätete Kontrollpunkte eines Rundgangs.
+    case PatrolDeviation = 'patrolDeviation';
 
     public function label(): string {
         return (string) __('enums.open-issue.source.' . $this->value);

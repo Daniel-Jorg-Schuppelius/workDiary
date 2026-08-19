@@ -243,6 +243,14 @@ return [
             'archived' => 'Archiviato',
         ],
     ],
+    'access' => [
+        'medium_status' => ['in_stock' => 'A magazzino', 'issued' => 'Consegnato', 'lost' => 'Smarrito', 'blocked' => 'Bloccato', 'retired' => 'Dismesso'],
+        'medium_type' => ['transponder' => 'Transponder', 'card' => 'Tessera', 'code' => 'Codice'],
+    ],
+    'sales' => [
+        'lead_status' => ['new' => 'Nuovo', 'contacted' => 'Contattato', 'qualified' => 'Qualificato', 'converted' => 'Convertito', 'discarded' => 'Scartato'],
+        'lead_source' => ['referral' => 'Passaparola', 'web' => 'Web', 'trade_fair' => 'Fiera', 'phone' => 'Telefono', 'other' => 'Altro'],
+    ],
     'sync_command' => [
         'status' => ['applied' => 'Applicato', 'duplicate' => 'Duplicato', 'conflict' => 'Conflitto', 'rejected' => 'Respinto'],
     ],
@@ -563,6 +571,7 @@ return [
             'communicationFollowup' => 'Dalla comunicazione',
             'procedureDeviation' => 'Da deviazione di procedura',
             'customerRejection' => 'Rifiuto del cliente',
+            'patrolDeviation' => 'Da scostamento di ronda',
         ],
         'visibility' => [
             'internal' => 'Interno',

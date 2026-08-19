@@ -355,6 +355,11 @@ return [
         // Stammdaten und operative Fachmodule
         // Sonderkonditionen & Abrechnungskonto (Feature 098) — VOR customers.*.
         'customers.billing.*' => 'customers.billing',
+        'leads.*' => 'sales.leads',
+        'access-media.*' => 'access.media',
+        'surveys.*' => 'sales.surveys',
+        'patrols.*' => 'patrols.overview',
+        'appointments.*' => 'appointments.inbox',
         'customers.*' => 'contacts.manage',
         'suppliers.*' => 'contacts.manage',
         'projects.*' => 'projects.manage',
@@ -520,6 +525,7 @@ return [
         'customer.invoices.*' => 'customer-portal.invoices',
         'customer.billing.*' => 'customer-portal.billing',
         'customer.open-issues.*' => 'customer-portal.issues',
+        'customer.appointments.*' => 'customer-portal.appointments',
         'customer.time-entries.*' => 'customer-portal.time',
         'customer.login' => 'customer-portal.access',
         'customer.2fa.*' => 'customer-portal.access',

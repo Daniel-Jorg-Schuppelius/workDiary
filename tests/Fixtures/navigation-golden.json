@@ -94,6 +94,7 @@
             "/knowledge",
             "/krisen",
             "/krisen/uebungen",
+            "/leads",
             "/leasing",
             "/leasing/bericht",
             "/leasing/fristen",
@@ -161,6 +162,7 @@
             "/reports/work-balance",
             "/reports/zeitkonten-periodenvergleich",
             "/rooms",
+            "/rundgaenge",
             "/safety-events",
             "/schedule",
             "/serials",
@@ -174,6 +176,7 @@
             "/sla-contracts",
             "/supplier-catalogs",
             "/suppliers",
+            "/terminanfragen",
             "/time-entries/admin/create",
             "/time-entries/create",
             "/timesheets",
@@ -183,6 +186,7 @@
             "/tours/create",
             "/travel-logs",
             "/travel-logs/create",
+            "/umfragen",
             "/vacations/create",
             "/vehicles",
             "/vehicles/create",
@@ -196,7 +200,8 @@
             "/week",
             "/work-centers",
             "/zeitkonten",
-            "/zuordnungsregeln"
+            "/zuordnungsregeln",
+            "/zutrittsmedien"
         ],
         "header": [
             "/account/bookmarks",

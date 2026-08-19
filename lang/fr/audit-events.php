@@ -17,7 +17,23 @@ declare(strict_types=1);
  * erzwingt Tests\Feature\AuditTranslationCoverageTest.
  */
 return [
+    'access_medium' => [
+        'created' => 'Support d’accès créé',
+        'issued' => 'Support d’accès remis',
+        'returned' => 'Support d’accès repris',
+        'lost' => 'Support d’accès déclaré perdu',
+        'blocked' => 'Support d’accès bloqué dans l’installation',
+        'retired' => 'Support d’accès réformé',
+    ],
+    'appointment' => [
+        'requested' => 'Rendez-vous demandé',
+        'confirmed' => 'Rendez-vous confirmé',
+        'declined' => 'Demande de rendez-vous refusée',
+        'canceled' => 'Demande de rendez-vous annulée',
+        'service_created' => 'Prestation réservable créée',
+    ],
     'expense' => [
+        'scanned' => 'Frais créé depuis un justificatif scanné',
         'voucher_pushed' => 'Frais transmis à la comptabilité comme justificatif',
         'voucher_linked' => 'Note de frais associée à une pièce comptable',
         'voucher_unlinked' => 'Association à la pièce comptable supprimée',
@@ -437,6 +453,11 @@ return [
         'published' => 'Article de connaissances publié',
         'unlinked' => 'Lien de l\'article de connaissances retiré',
     ],
+    'lead' => [
+        'created' => 'Lead créé',
+        'status_changed' => 'Statut du lead modifié',
+        'converted' => 'Lead converti',
+    ],
     'license' => [
         'installed' => 'Licence installée',
         'keyIssued' => 'Clé de licence émise',
@@ -524,6 +545,11 @@ return [
         'tariff_updated' => 'Tarif modifié',
         'vehicle_profile_created' => 'Profil de véhicule créé',
         'vehicle_profile_updated' => 'Profil de véhicule modifié',
+    ],
+    'patrol' => [
+        'route_created' => 'Parcours de ronde créé',
+        'started' => 'Ronde démarrée',
+        'completed' => 'Ronde terminée',
     ],
     'payroll' => [
         'wage' => [
@@ -751,6 +777,10 @@ return [
         'assessment_drafted' => 'Brouillon d\'évaluation ESG créé',
         'assessment_finalized' => 'Évaluation ESG finalisée',
         'assessment_versioned' => 'Version d\'évaluation ESG créée',
+    ],
+    'survey' => [
+        'created' => 'Questionnaire créé',
+        'invited' => 'Invitation à l’enquête envoyée',
     ],
     'sync' => [
         'applied' => 'Synchronisation hors ligne appliquée',

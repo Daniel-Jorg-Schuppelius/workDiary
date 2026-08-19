@@ -58,6 +58,8 @@ final class PdfGeneratorInventory {
         'app/Http/Controllers/Admin/PrivacyController.php' => ['report'],
         // HOAI-Stufenbericht (Feature 109, MVP-644).
         'app/Http/Controllers/Gaeb/HoaiCostReportController.php' => ['report'],
+        // Rundgangsbericht (Feature 089, MVP-665-Folgepunkt).
+        'app/Http/Controllers/PatrolController.php' => ['report'],
         'app/Http/Controllers/Whistleblowing/WhistleblowingPortalController.php' => ['report'],
         // Spezialformat (deklariert eingeschränkt, siehe RenderDocumentKind::capabilityNote())
         'app/Http/Controllers/LabelController.php' => ['label'],

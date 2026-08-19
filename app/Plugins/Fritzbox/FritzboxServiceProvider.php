@@ -10,7 +10,10 @@
 
 namespace App\Plugins\Fritzbox;
 
+use App\Plugins\Lexoffice\LexofficePhoneContactSource;
+use App\Plugins\Msgraph\MsgraphPhoneContactSource;
 use App\Plugins\Support\PluginServiceProviderBase;
+use App\Services\Contacts\ExternalPhoneContactDirectory;
 
 /**
  * Plugin-eigener ServiceProvider (geladen vom Core-PluginServiceProvider).
@@ -23,6 +26,20 @@ class FritzboxServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function registerPlugin(): void {
-        $this->app->singleton(FritzboxImportService::class, fn (): FritzboxImportService => new FritzboxImportService);
+        $this->app->scoped(LexofficePhoneContactSource::class);
+        $this->app->scoped(MsgraphPhoneContactSource::class);
+        $this->app->tag([
+            LexofficePhoneContactSource::class,
+            MsgraphPhoneContactSource::class,
+        ], 'external-phone-contact-sources');
+
+        $this->app->scoped(
+            ExternalPhoneContactDirectory::class,
+            fn ($app): ExternalPhoneContactDirectory => new ExternalPhoneContactDirectory($app->tagged('external-phone-contact-sources')),
+        );
+        $this->app->scoped(
+            FritzboxImportService::class,
+            fn ($app): FritzboxImportService => new FritzboxImportService($app->make(ExternalPhoneContactDirectory::class)),
+        );
     }
 }

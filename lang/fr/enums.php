@@ -243,6 +243,14 @@ return [
             'archived' => 'Archivé',
         ],
     ],
+    'access' => [
+        'medium_status' => ['in_stock' => 'En stock', 'issued' => 'Remis', 'lost' => 'Perdu', 'blocked' => 'Bloqué', 'retired' => 'Réformé'],
+        'medium_type' => ['transponder' => 'Transpondeur', 'card' => 'Carte', 'code' => 'Code'],
+    ],
+    'sales' => [
+        'lead_status' => ['new' => 'Nouveau', 'contacted' => 'Contacté', 'qualified' => 'Qualifié', 'converted' => 'Converti', 'discarded' => 'Écarté'],
+        'lead_source' => ['referral' => 'Recommandation', 'web' => 'Web', 'trade_fair' => 'Salon', 'phone' => 'Téléphone', 'other' => 'Autre'],
+    ],
     'sync_command' => [
         'status' => ['applied' => 'Appliqué', 'duplicate' => 'Doublon', 'conflict' => 'Conflit', 'rejected' => 'Rejeté'],
     ],
@@ -563,6 +571,7 @@ return [
             'communicationFollowup' => 'Depuis la communication',
             'procedureDeviation' => 'Depuis un écart de procédure',
             'customerRejection' => 'Refus du client',
+            'patrolDeviation' => 'D’un écart de ronde',
         ],
         'visibility' => [
             'internal' => 'Interne',

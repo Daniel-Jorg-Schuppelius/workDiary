@@ -29,9 +29,24 @@ class TestingSeeder extends Seeder {
         $registrar = app(PermissionRegistrar::class);
         $registrar->forgetCachedPermissions();
 
-        foreach (PermissionEnum::cases() as $permission) {
-            Permission::findOrCreate($permission->value, 'web');
+        // Bulk statt findOrCreate je Permission (je Aufruf ein kompletter
+        // Spatie-Cache-Neuaufbau — bei 465 Permissions Minutenkosten).
+        $enumValues = array_map(static fn(PermissionEnum $p): string => $p->value, PermissionEnum::cases());
+        $existing = Permission::query()->where('guard_name', 'web')->whereIn('name', $enumValues)->pluck('name')->all();
+        $now = now();
+        $missing = array_diff($enumValues, $existing);
+        if ($missing !== []) {
+            Permission::query()->insert(array_map(static fn(string $name): array => [
+                'name' => $name, 'guard_name' => 'web', 'created_at' => $now, 'updated_at' => $now,
+            ], array_values($missing)));
         }
+
+        // Die bewusst getrennten Permission-Kataloge (Meldestelle/Datenschutz)
+        // ebenfalls EINMAL pro Prozess anlegen - sonst legte jede Org-Anlage
+        // sie in der Test-Transaktion neu an (und das Rollback warf sie weg):
+        // ~2,2 s je Testmethode (Messung 2026-08-19).
+        \App\Services\Whistleblowing\WhistleblowingPermissions::ensurePermissionsExist();
+        \App\Services\Privacy\DataProtectionPermissions::ensurePermissionsExist();
 
         $registrar->setPermissionsTeamId(null);
         foreach (UserRole::values() as $role) {

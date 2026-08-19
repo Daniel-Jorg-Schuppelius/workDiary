@@ -29,9 +29,13 @@ use Illuminate\Support\Carbon;
  * @property string $source_uri
  * @property string $status
  * @property int|null $customer_id
+ * @property int|null $portal_user_id
  * @property int|null $lead_id
  * @property int|null $bookable_service_id
  * @property int|null $assigned_user_id
+ * @property int|null $decided_by
+ * @property Carbon|null $decided_at
+ * @property string|null $decline_reason
  * @property int|null $diary_entry_id
  * @property Carbon|null $start_at
  * @property Carbon|null $end_at
@@ -81,9 +85,13 @@ class AppointmentRequest extends Model {
         'source_uri',
         'status',
         'customer_id',
+        'portal_user_id',
         'lead_id',
         'bookable_service_id',
         'assigned_user_id',
+        'decided_by',
+        'decided_at',
+        'decline_reason',
         'diary_entry_id',
         'start_at',
         'end_at',
@@ -117,6 +125,11 @@ class AppointmentRequest extends Model {
         'tracking' => 'array',
         'cancellation' => 'array',
     ];
+
+    /** @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\BookableService, $this> */
+    public function bookableService(): \Illuminate\Database\Eloquent\Relations\BelongsTo {
+        return $this->belongsTo(BookableService::class);
+    }
 
     public function isPending(): bool {
         return $this->status === self::STATUS_REQUESTED;

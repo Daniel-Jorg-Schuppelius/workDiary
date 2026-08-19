@@ -17,7 +17,23 @@ declare(strict_types=1);
  * erzwingt Tests\Feature\AuditTranslationCoverageTest.
  */
 return [
+    'access_medium' => [
+        'created' => 'Access medium created',
+        'issued' => 'Access medium issued',
+        'returned' => 'Access medium returned',
+        'lost' => 'Access medium reported lost',
+        'blocked' => 'Access medium blocked in the system',
+        'retired' => 'Access medium retired',
+    ],
+    'appointment' => [
+        'requested' => 'Appointment requested',
+        'confirmed' => 'Appointment confirmed',
+        'declined' => 'Appointment request declined',
+        'canceled' => 'Appointment request cancelled',
+        'service_created' => 'Bookable service created',
+    ],
     'expense' => [
+        'scanned' => 'Expense created from scanned receipt',
         'voucher_pushed' => 'Expense pushed to accounting as a voucher',
         'voucher_linked' => 'Expense linked to accounting voucher',
         'voucher_unlinked' => 'Link to accounting voucher removed',
@@ -437,6 +453,11 @@ return [
         'published' => 'Knowledge article published',
         'unlinked' => 'Knowledge article unlinked',
     ],
+    'lead' => [
+        'created' => 'Lead created',
+        'status_changed' => 'Lead status changed',
+        'converted' => 'Lead converted',
+    ],
     'license' => [
         'installed' => 'License installed',
         'keyIssued' => 'License key issued',
@@ -524,6 +545,11 @@ return [
         'tariff_updated' => 'Tariff updated',
         'vehicle_profile_created' => 'Vehicle profile created',
         'vehicle_profile_updated' => 'Vehicle profile updated',
+    ],
+    'patrol' => [
+        'route_created' => 'Patrol route created',
+        'started' => 'Patrol started',
+        'completed' => 'Patrol completed',
     ],
     'payroll' => [
         'wage' => [
@@ -751,6 +777,10 @@ return [
         'assessment_drafted' => 'ESG assessment drafted',
         'assessment_finalized' => 'ESG assessment finalized',
         'assessment_versioned' => 'ESG assessment version created',
+    ],
+    'survey' => [
+        'created' => 'Questionnaire created',
+        'invited' => 'Survey invitation sent',
     ],
     'sync' => [
         'applied' => 'Offline sync applied',

@@ -34,6 +34,8 @@ class CommunicationNoteController extends Controller {
         // Abnahmeprotokoll und am Objekt/Asset.
         'protocol' => \App\Models\Protocol::class,
         'asset' => \App\Models\Asset::class,
+        // Feature 091: Qualifizierungs-Notizen an der Lead-Akte.
+        'lead' => \App\Models\Lead::class,
     ];
 
     public function __construct(

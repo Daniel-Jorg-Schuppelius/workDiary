@@ -153,6 +153,14 @@ Route::get('audit-paket/{token}/ansicht', [PublicAuditPackageController::class, 
     ->middleware('throttle:30,1')
     ->name('audit-packages.public-view');
 
+// Öffentliche Umfrage-Teilnahme (Feature 090): token-basiert ohne Login.
+Route::get('umfrage/{token}', [\App\Http\Controllers\PublicSurveyController::class, 'show'])
+    ->middleware('throttle:30,1')
+    ->name('surveys.public-show');
+Route::post('umfrage/{token}', [\App\Http\Controllers\PublicSurveyController::class, 'store'])
+    ->middleware('throttle:15,1')
+    ->name('surveys.public-store');
+
 // Öffentlicher, login-freier Zugriff externer Beteiligter (Feature 033):
 // kontextbezogene Read-Only-Seite eines Auftrags/Protokolls/Dokuments mit nur
 // den per abilities erlaubten Aktionen. Token-basiert ohne Login/Org-Session
@@ -872,6 +880,27 @@ Route::middleware('auth')->group(function () {
         Route::get('diary/{diary}/case-file.pdf', [DiaryCaseFileController::class, 'pdf'])->name('diary.case-file.pdf');
 
         // Disposition / Einsatzplanung (Feature 028): Konfliktvorschau + Status.
+        // Terminanfragen-Inbox + buchbare Leistungsarten (Feature 087,
+        // MVP-666–668): zweiphasig — der Kunde fragt an, hier wird entschieden.
+        Route::get('terminanfragen', [\App\Http\Controllers\AppointmentInboxController::class, 'index'])->name('appointments.index');
+        Route::post('terminanfragen/{appointmentRequest}/bestaetigen', [\App\Http\Controllers\AppointmentInboxController::class, 'confirm'])->name('appointments.confirm');
+        Route::post('terminanfragen/{appointmentRequest}/ablehnen', [\App\Http\Controllers\AppointmentInboxController::class, 'decline'])->name('appointments.decline');
+        Route::post('terminanfragen/leistungsarten', [\App\Http\Controllers\AppointmentInboxController::class, 'storeService'])->name('appointments.services.store');
+        Route::post('terminanfragen/leistungsarten/{bookableService}/aktiv', [\App\Http\Controllers\AppointmentInboxController::class, 'toggleService'])->name('appointments.services.toggle');
+
+        // Wächterrundgänge (Feature 089, MVP-663–665): Kontrollpunkte mit
+        // Soll-Fenstern, Scan-Nachweis und Abweichungs-Eskalation.
+        Route::get('rundgaenge', [\App\Http\Controllers\PatrolController::class, 'index'])->name('patrols.index');
+        Route::get('rundgaenge/neu', [\App\Http\Controllers\PatrolController::class, 'create'])->name('patrols.create');
+        Route::post('rundgaenge', [\App\Http\Controllers\PatrolController::class, 'store'])->name('patrols.store');
+        Route::get('rundgaenge/lauf/{patrolRun}', [\App\Http\Controllers\PatrolController::class, 'showRun'])->name('patrols.runs.show');
+        Route::post('rundgaenge/lauf/{patrolRun}/scan', [\App\Http\Controllers\PatrolController::class, 'scan'])->name('patrols.runs.scan');
+        Route::post('rundgaenge/lauf/{patrolRun}/abschluss', [\App\Http\Controllers\PatrolController::class, 'complete'])->name('patrols.runs.complete');
+        Route::get('rundgaenge/{patrolRoute}', [\App\Http\Controllers\PatrolController::class, 'show'])->name('patrols.show');
+        Route::post('rundgaenge/{patrolRoute}/start', [\App\Http\Controllers\PatrolController::class, 'start'])->name('patrols.start');
+        Route::post('rundgaenge/{patrolRoute}/kontrollpunkte', [\App\Http\Controllers\PatrolController::class, 'addCheckpoint'])->name('patrols.checkpoints.add');
+        Route::post('rundgaenge/{patrolRoute}/kontrollpunkte/{checkpoint}/neu', [\App\Http\Controllers\PatrolController::class, 'reissueToken'])->name('patrols.checkpoints.reissue');
+
         Route::get('dispatch/{diary}/conflicts', [DispatchController::class, 'conflicts'])->name('dispatch.conflicts');
         Route::post('dispatch/{diary}/transition', [DispatchController::class, 'transition'])->name('dispatch.transition');
 
@@ -1070,6 +1099,27 @@ Route::middleware('auth')->group(function () {
         Route::get('calendar/events.ics', [IcsFeedController::class, 'personal'])->name('events.ics.personal');
 
         // ── Kunden (Kimai-style customers) ──────────────────────────────────────
+        // Lead-Pipeline (Feature 091, MVP-654–656): Interessenten vor dem
+        // Kundenstatus; Rechte über customer.*, Modul module.vertrieb.
+        Route::get('leads', [\App\Http\Controllers\LeadController::class, 'index'])->name('leads.index');
+        Route::get('leads/neu', [\App\Http\Controllers\LeadController::class, 'create'])->name('leads.create');
+        Route::post('leads', [\App\Http\Controllers\LeadController::class, 'store'])->name('leads.store');
+        Route::get('leads/{lead}', [\App\Http\Controllers\LeadController::class, 'show'])->name('leads.show');
+        Route::get('leads/{lead}/bearbeiten', [\App\Http\Controllers\LeadController::class, 'edit'])->name('leads.edit');
+        Route::put('leads/{lead}', [\App\Http\Controllers\LeadController::class, 'update'])->name('leads.update');
+        Route::post('leads/{lead}/status', [\App\Http\Controllers\LeadController::class, 'transition'])->name('leads.transition');
+        Route::post('leads/{lead}/konvertieren', [\App\Http\Controllers\LeadController::class, 'convert'])->name('leads.convert');
+
+        // Umfragen (Feature 090, MVP-660–662): Fragebögen, Einladungen, NPS.
+        Route::get('umfragen', [\App\Http\Controllers\SurveyController::class, 'index'])->name('surveys.index');
+        Route::get('umfragen/neu', [\App\Http\Controllers\SurveyController::class, 'create'])->name('surveys.create');
+        Route::post('umfragen', [\App\Http\Controllers\SurveyController::class, 'store'])->name('surveys.store');
+        Route::get('umfragen/{survey}', [\App\Http\Controllers\SurveyController::class, 'show'])->name('surveys.show');
+        Route::post('umfragen/{survey}/fragen', [\App\Http\Controllers\SurveyController::class, 'addQuestion'])->name('surveys.questions.add');
+        Route::delete('umfragen/{survey}/fragen/{question}', [\App\Http\Controllers\SurveyController::class, 'removeQuestion'])->name('surveys.questions.remove');
+        Route::post('umfragen/{survey}/einladen', [\App\Http\Controllers\SurveyController::class, 'invite'])->name('surveys.invite');
+        Route::post('umfragen/{survey}/aktiv', [\App\Http\Controllers\SurveyController::class, 'toggleActive'])->name('surveys.toggle-active');
+
         Route::get('customers/export', [CustomerController::class, 'export'])->name('customers.export');
         Route::get('customers/import', [CustomerController::class, 'importForm'])->name('customers.import.form');
         Route::post('customers/import', [CustomerController::class, 'import'])->name('customers.import');
@@ -2264,6 +2314,8 @@ Route::middleware('auth')->group(function () {
         Route::post('expenses', [ExpenseController::class, 'store'])->name('expenses.store');
         Route::get('expenses/{expense}/edit', [ExpenseController::class, 'edit'])->name('expenses.edit');
         // Belegdatei zur Auslage (Feature 105, MVP-550)
+        // Scan-Beleg → Entwurfs-Auslage (Feature 088 P3, MVP-669).
+        Route::post('expenses/scan', [ExpenseController::class, 'scan'])->name('expenses.scan');
         Route::get('expenses/{expense}/beleg', [ExpenseController::class, 'receipt'])->name('expenses.receipt');
         // Zuordnung Auslage ↔ Buchhaltungsbeleg (Feature 105, MVP-551)
         Route::post('expenses/{expense}/buchungsbeleg', [ExpenseController::class, 'linkVoucher'])->name('expenses.link-voucher');
@@ -2548,6 +2600,18 @@ Route::middleware('auth')->group(function () {
         Route::post('tours/{tour}/materialize', [TourController::class, 'materialize'])->name('tours.materialize');
 
         // ── Fuhrpark ───────────────────────────────────────────────────────
+        // Zutritts- und Transpondermedien (Feature 092, Stufe 1, MVP-657–659):
+        // verwalteter Bestand mit Verbleib - keine Live-Anlagensteuerung.
+        Route::get('zutrittsmedien', [\App\Http\Controllers\AccessMediumController::class, 'index'])->name('access-media.index');
+        Route::get('zutrittsmedien/neu', [\App\Http\Controllers\AccessMediumController::class, 'create'])->name('access-media.create');
+        Route::post('zutrittsmedien', [\App\Http\Controllers\AccessMediumController::class, 'store'])->name('access-media.store');
+        Route::get('zutrittsmedien/{accessMedium}', [\App\Http\Controllers\AccessMediumController::class, 'show'])->name('access-media.show');
+        Route::post('zutrittsmedien/{accessMedium}/ausgabe', [\App\Http\Controllers\AccessMediumController::class, 'issue'])->name('access-media.issue');
+        Route::post('zutrittsmedien/{accessMedium}/rueckgabe', [\App\Http\Controllers\AccessMediumController::class, 'takeBack'])->name('access-media.take-back');
+        Route::post('zutrittsmedien/{accessMedium}/verlust', [\App\Http\Controllers\AccessMediumController::class, 'reportLost'])->name('access-media.report-lost');
+        Route::post('zutrittsmedien/{accessMedium}/gesperrt', [\App\Http\Controllers\AccessMediumController::class, 'confirmBlocked'])->name('access-media.confirm-blocked');
+        Route::post('zutrittsmedien/{accessMedium}/ausmustern', [\App\Http\Controllers\AccessMediumController::class, 'retire'])->name('access-media.retire');
+
         Route::get('assets', [AssetController::class, 'index'])->name('assets.index');
         Route::get('assets/create', [AssetController::class, 'create'])->name('assets.create');
         Route::get('assets/merge/compare', [\App\Http\Controllers\AssetMergeController::class, 'compare'])->name('assets.merge.compare');

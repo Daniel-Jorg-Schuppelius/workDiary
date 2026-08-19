@@ -51,6 +51,9 @@ class InvoicePdfImportService {
             'xlsx' => $this->xlsxContent($path),
             'doc' => [$this->legacyWordText($path), 'catdoc', false, [], null],
             'xls' => $this->legacyExcelContent($path),
+            // Handy-Fotos/Bild-Scans (Feature 088 P3): Bild-Direkt-OCR über das
+            // pdf-toolkit — gleiche Kaskade wie gescannte PDFs, ohne PDF-Umweg.
+            'jpg', 'jpeg', 'png', 'tif', 'tiff' => $this->imageContent($path),
             default => ['', null, false, [], null],
         };
 
@@ -414,6 +417,21 @@ class InvoicePdfImportService {
             UnitCode::MONTH => 'Monat(e)',
             default => $code->value,
         };
+    }
+
+    /**
+     * Bild-Direkt-OCR (JPG/PNG/TIFF): kein spaltentreuer Zweittext — die
+     * bbox-Aufbereitung ist PDF-gebunden, das Foto liefert nur Fließtext.
+     *
+     * @return array{0: string, 1: string|null, 2: bool, 3: list<list<mixed>>, 4: string|null}
+     */
+    private function imageContent(string $path): array {
+        $text = (new \PDFToolkit\Readers\TesseractReader)->extractTextFromImage($path, [
+            'language' => 'deu+eng',
+            'qualityCheck' => true,
+        ]);
+
+        return [$text ?? '', $text !== null ? 'tesseract' : null, $text !== null, [], null];
     }
 
     /** @return array{0: string, 1: ?string, 2: bool, 3: list<list<mixed>>, 4: ?string} */

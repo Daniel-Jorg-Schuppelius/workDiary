@@ -33,6 +33,17 @@
         <p class="mb-3 text-sm text-base-content/60">
             {{ __('FRITZ!Box → Telefonie → Anrufe → Sichern (CSV). Nummern bekannter Kunden buchen automatisch; Anrufe, die eine gebuchte Fernwartungszeit desselben Kunden überlappen oder ihr bis zu :lead Minuten vorausgehen, verschmelzen mit dem bestehenden Eintrag. Gespräche unter :min Minuten und verpasste Anrufe werden ausgefiltert; unbekannte Nummern landen in der Zuordnungs-Inbox.', ['lead' => $leadMinutes, 'min' => $minCallMinutes]) }}
         </p>
+        <div class="mb-3 flex items-start gap-2 rounded-box bg-base-200 p-3 text-sm">
+            <x-icon name="contact_phone" class="mt-0.5 shrink-0 text-info" />
+            <div>
+                <span class="font-medium">{{ __('Kontaktabgleich') }}</span>
+                @if ($contactDirectorySources !== [])
+                    <span class="text-base-content/70">{{ __('Aktive Kontaktquellen: :sources.', ['sources' => implode(', ', $contactDirectorySources)]) }}</span>
+                @else
+                    <span class="text-base-content/70">{{ __('Keine externe Kontaktquelle verbunden. Lokale Kunden und Endkunden werden weiterhin abgeglichen.') }}</span>
+                @endif
+            </div>
+        </div>
         <form method="POST" action="{{ route('admin.fritzbox.import-csv') }}" enctype="multipart/form-data" class="flex flex-wrap items-end gap-2">
             @csrf
             <input type="file" name="csv" accept=".csv,.txt" class="file-input file-input-bordered file-input-sm" required>

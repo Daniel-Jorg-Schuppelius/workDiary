@@ -16,6 +16,7 @@ use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, IntegrationInboxItem, Organization, Project, TimeEntry, User};
 use App\Plugins\Fritzbox\Sources\{FritzboxCall, FritzboxCsvParser};
 use App\Plugins\Support\PersistsTimeImportInbox;
+use App\Services\Contacts\{ExternalPhoneContactDirectory, ExternalPhoneContactMatch};
 use App\Services\TimeApproval\MonthClosureService;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
@@ -43,6 +44,8 @@ use Illuminate\Support\Collection;
  */
 class FritzboxImportService {
     use PersistsTimeImportInbox;
+
+    public function __construct(private ?ExternalPhoneContactDirectory $contactDirectory = null) {}
 
     public const EXT_TYPE_CALL = 'call';
 
@@ -289,8 +292,13 @@ class FritzboxImportService {
         }
 
         $target = $this->matchTarget($organization, $call->e164);
+        $externalMatch = null;
+        if ($target === null && (bool) ($config['external_contact_matching'] ?? true)) {
+            $externalMatch = $this->contactDirectory()->find($organization, $call->e164);
+            $target = $externalMatch?->target;
+        }
         if ($target === null) {
-            $this->recordPendingCall($organization, $call);
+            $this->recordPendingCall($organization, $call, contactMatch: $externalMatch);
 
             return 'pending';
         }
@@ -448,6 +456,7 @@ class FritzboxImportService {
                 $first = (array) $snapshots->first();
                 $e164 = (string) ($first['e164'] ?? (str_contains($groupKey, '|') ? explode('|', $groupKey)[0] : $groupKey));
                 $name = $snapshots->pluck('name')->filter()->countBy()->sortDesc()->keys()->first();
+                $contactSources = $snapshots->pluck('contact_sources')->flatten()->filter()->unique()->values()->all();
 
                 $starts = $snapshots->map(fn (array $snap): CarbonImmutable => CarbonImmutable::parse((string) $snap['started_at']));
 
@@ -458,6 +467,7 @@ class FritzboxImportService {
                     'e164' => $e164,
                     'number' => PhoneNumberHelper::format($e164, 'international', 'DE'),
                     'name' => $name !== null ? (string) $name : null,
+                    'contact_sources' => $contactSources,
                     'shared' => str_contains($groupKey, '|'),
                     'count' => $items->count(),
                     'minutes' => (int) $snapshots->sum(fn (array $snap): int => (int) ($snap['duration_minutes'] ?? 0)),
@@ -713,8 +723,9 @@ class FritzboxImportService {
                 ->exists();
     }
 
-    private function recordPendingCall(Organization $organization, FritzboxCall $call, bool $sharedSingle = false): void {
+    private function recordPendingCall(Organization $organization, FritzboxCall $call, bool $sharedSingle = false, ?ExternalPhoneContactMatch $contactMatch = null): void {
         $e164 = (string) $call->e164;
+        $displayName = $call->name ?? $contactMatch?->displayName;
 
         $this->recordPendingItem($organization, $call->callKey(), [
             'source' => 'csv',
@@ -727,10 +738,12 @@ class FritzboxImportService {
                 'duration_minutes' => $call->durationMinutes,
                 'number_raw' => $call->numberRaw,
                 'e164' => $e164,
-                'name' => $call->name,
+                'name' => $displayName,
+                'contact_sources' => $contactMatch instanceof ExternalPhoneContactMatch ? $contactMatch->sourceLabels : [],
+                'contact_match_ambiguous' => $contactMatch instanceof ExternalPhoneContactMatch && $contactMatch->ambiguous,
                 'own_line' => $call->ownLine,
             ],
-            'display_title' => trim(PhoneNumberHelper::format($e164, 'international', 'DE') . ($call->name !== null ? ' — ' . $call->name : '')),
+            'display_title' => trim(PhoneNumberHelper::format($e164, 'international', 'DE') . ($displayName !== null ? ' — ' . $displayName : '')),
             'display_subtitle' => $this->callLabel([
                 'direction' => $call->direction,
                 'name' => null,
@@ -739,6 +752,10 @@ class FritzboxImportService {
             ]) . ', ' . $call->durationMinutes . ' min',
             'occurred_at' => $call->startedAt,
         ]);
+    }
+
+    private function contactDirectory(): ExternalPhoneContactDirectory {
+        return $this->contactDirectory ??= app(ExternalPhoneContactDirectory::class);
     }
 
     /** @param array<string, mixed> $snap */

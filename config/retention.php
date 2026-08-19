@@ -59,6 +59,14 @@ return [
             'basis' => ['DE' => '§ 257 HGB (Geschäftsbriefe, 6 J.)', 'AT' => '§ 212 UGB (7 J.)', 'CH' => 'OR 958f (10 J.)'],
         ],
 
+        // Leads (Feature 091): Interessenten ohne Vertrag — kurze Frist,
+        // Anker ist der letzte Kontakt (Monate via sales.lead_retention_months).
+        'leads' => [
+            'label' => 'Leads (nicht konvertiert)',
+            'years' => ['DE' => 1, 'AT' => 1, 'CH' => 1],
+            'basis' => ['DE' => 'Art. 6 Abs. 1 lit. f DSGVO (Praxis 6 Monate)', 'AT' => 'Art. 6 Abs. 1 lit. f DSGVO', 'CH' => 'DSG (Zweckbindung)'],
+        ],
+
         'applications' => [
             'label' => 'Bewerbungen (abgelehnt/zurückgezogen)',
             'years' => ['DE' => 1, 'AT' => 1, 'CH' => 1],

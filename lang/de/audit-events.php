@@ -17,7 +17,23 @@ declare(strict_types=1);
  * erzwingt Tests\Feature\AuditTranslationCoverageTest.
  */
 return [
+    'access_medium' => [
+        'created' => 'Zutrittsmedium angelegt',
+        'issued' => 'Zutrittsmedium ausgegeben',
+        'returned' => 'Zutrittsmedium zurückgenommen',
+        'lost' => 'Zutrittsmedium verloren gemeldet',
+        'blocked' => 'Zutrittsmedium in Anlage gesperrt',
+        'retired' => 'Zutrittsmedium ausgemustert',
+    ],
+    'appointment' => [
+        'requested' => 'Termin angefragt',
+        'confirmed' => 'Termin bestätigt',
+        'declined' => 'Terminanfrage abgelehnt',
+        'canceled' => 'Terminanfrage storniert',
+        'service_created' => 'Buchbare Leistungsart angelegt',
+    ],
     'expense' => [
+        'scanned' => 'Auslage aus Scan-Beleg erzeugt',
         'voucher_pushed' => 'Auslage als Beleg an die Buchhaltung übergeben',
         'voucher_linked' => 'Auslage einem Buchungsbeleg zugeordnet',
         'voucher_unlinked' => 'Zuordnung zum Buchungsbeleg gelöst',
@@ -437,6 +453,11 @@ return [
         'published' => 'Wissensartikel veröffentlicht',
         'unlinked' => 'Wissensartikel-Verknüpfung gelöst',
     ],
+    'lead' => [
+        'created' => 'Lead angelegt',
+        'status_changed' => 'Lead-Status geändert',
+        'converted' => 'Lead konvertiert',
+    ],
     'license' => [
         'installed' => 'Lizenz installiert',
         'keyIssued' => 'Lizenzschlüssel ausgestellt',
@@ -524,6 +545,11 @@ return [
         'tariff_updated' => 'Tarif geändert',
         'vehicle_profile_created' => 'Fahrzeugprofil angelegt',
         'vehicle_profile_updated' => 'Fahrzeugprofil geändert',
+    ],
+    'patrol' => [
+        'route_created' => 'Rundgangs-Route angelegt',
+        'started' => 'Rundgang gestartet',
+        'completed' => 'Rundgang abgeschlossen',
     ],
     'payroll' => [
         'wage' => [
@@ -751,6 +777,10 @@ return [
         'assessment_drafted' => 'ESG-Bewertung entworfen',
         'assessment_finalized' => 'ESG-Bewertung finalisiert',
         'assessment_versioned' => 'ESG-Bewertungsversion erstellt',
+    ],
+    'survey' => [
+        'created' => 'Fragebogen angelegt',
+        'invited' => 'Umfrage-Einladung versendet',
     ],
     'sync' => [
         'applied' => 'Offline-Sync angewendet',

@@ -28,6 +28,8 @@ use Throwable;
  *   der Aufrufer legt neu an (idempotenter Push, keine Dubletten).
  */
 class MsgraphContactsClient {
+    private const MAX_CONTACT_PAGES = 100;
+
     private PluginApiClient $api;
 
     private string $base;
@@ -81,6 +83,46 @@ class MsgraphContactsClient {
         }
 
         return true;
+    }
+
+    /**
+     * Alle Kontakte des verbundenen Kontos für provider-neutrale Verzeichnis-
+     * Abgleiche. Die Auswahl ist bewusst auf Identität und Rufnummern begrenzt.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function contacts(): array {
+        $contacts = [];
+        $url = $this->base . '/me/contacts';
+        $query = [
+            '$top' => '100',
+            '$select' => 'id,displayName,companyName,businessPhones,homePhones,mobilePhone',
+        ];
+        $page = 0;
+
+        do {
+            if (++$page > self::MAX_CONTACT_PAGES) {
+                throw new RuntimeException('Graph-Kontaktabruf überschreitet das Seitenlimit.');
+            }
+            $response = $this->api->getResponse($url, $query);
+            if (! $response->successful()) {
+                throw new RuntimeException('Graph /me/contacts fehlgeschlagen (HTTP ' . $response->status() . ').');
+            }
+            /** @var array{value?: list<mixed>, '@odata.nextLink'?: string} $data */
+            $data = (array) $response->json();
+            foreach ((array) ($data['value'] ?? []) as $row) {
+                if (is_array($row)) {
+                    $contacts[] = $row;
+                }
+            }
+            $url = $data['@odata.nextLink'] ?? null;
+            if (is_string($url) && $url !== '' && ! str_starts_with($url, $this->base . '/')) {
+                throw new RuntimeException('Graph-Kontaktabruf lieferte eine ungültige Folgeseite.');
+            }
+            $query = [];
+        } while (is_string($url) && $url !== '');
+
+        return $contacts;
     }
 
     /**

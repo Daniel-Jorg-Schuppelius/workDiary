@@ -135,6 +135,9 @@
                         @elseif ($form === 'phone_number')
                             <span class="font-semibold">{{ $g['number'] }}</span>
                             @if ($g['name'] ?? null)<span class="text-sm text-base-content/60">· {{ $g['name'] }}</span>@endif
+                            @foreach (($g['contact_sources'] ?? []) as $contactSource)
+                                <span class="badge badge-sm badge-info" title="{{ __('Treffer aus einem externen Kontaktverzeichnis') }}">{{ $contactSource }}</span>
+                            @endforeach
                             @if ($g['shared'])<span class="badge badge-sm badge-outline" title="{{ __('Geteilte Nummer — Zuordnung gilt nur für diesen Anruf') }}">{{ __('geteilt') }}</span>@endif
                         @elseif ($form === 'user')
                             <span class="font-semibold">{{ ($g['user_email'] ?? null) ? __('Unbekannter Benutzer: :email', ['email' => $g['user_email']]) : __('Einträge ohne Benutzersignal') }}</span>

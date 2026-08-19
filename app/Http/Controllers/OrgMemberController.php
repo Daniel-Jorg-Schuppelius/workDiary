@@ -353,6 +353,19 @@ class OrgMemberController extends Controller {
             return back()->with('error', __('Sie können sich nicht selbst entfernen.'));
         }
 
+        // Offboarding-Check (Feature 092): Wer geht, gibt erst ab. Offene
+        // Zutrittsmedien blockieren das Entfernen - ein gelöschtes Mitglied
+        // mit Transponder in der Tasche ist genau das Loch, das die
+        // Medienverwaltung schließen soll.
+        $openMedia = app(\App\Services\Access\AccessMediumService::class)->openMediaFor($member);
+        if ($openMedia->isNotEmpty()) {
+            return back()->with('error', __(':name hält noch :count Zutrittsmedien (:list) — erst zurücknehmen, dann entfernen.', [
+                'name' => $member->name,
+                'count' => $openMedia->count(),
+                'list' => $openMedia->map(fn ($m) => ($m->label ?: __('Medium')) . ' …' . $m->number_suffix)->implode(', '),
+            ]));
+        }
+
         $member->delete();
 
         return redirect()->route('org.members.index')
