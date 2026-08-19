@@ -63,3 +63,9 @@ CI base design and inheritance:
   regular profiles you assign in the customer file ("Document design"
   panel); profiles marked "customer-specific" apply only through that
   assignment.
+- **Refinements:** Inheritance applies per settings group (margins,
+  address window, blocked areas, header/footer lines, typography,
+  letterhead, blocks, table style, texts). Preflight **warnings** block
+  activation until you knowingly confirm them in the dialog. Also new:
+  per-page **header/footer lines** and the complete set of table-style
+  switches (grid, spacing, colors, header repetition, totals emphasis).

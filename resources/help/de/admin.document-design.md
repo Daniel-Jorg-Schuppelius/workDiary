@@ -64,3 +64,9 @@ CI-Basisdesign und Vererbung:
   reguläre Profile, die du in der Kundenakte (Panel „Dokumentdesign")
   zuweist; als „Kunden-Sonderprofil" markierte Profile wirken
   ausschließlich über diese Zuweisung.
+- **Feinschliff:** Vererbung gilt je Einstellungsgruppe (Ränder,
+  Adressfenster, Sperrflächen, Kopf-/Fußzeilen, Typografie, Firmenbogen,
+  Blöcke, Tabellenstil, Texte). Preflight-**Warnungen** blockieren die
+  Aktivierung, bis du sie im Dialog bewusst bestätigst. Neu sind außerdem
+  per-Seite-**Kopf-/Fußzeilen** und die vollständigen Tabellenstil-Schalter
+  (Raster, Abstände, Farben, Kopfzeilen-Wiederholung, Summenbetonung).

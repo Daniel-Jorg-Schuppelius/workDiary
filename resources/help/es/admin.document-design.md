@@ -67,3 +67,10 @@ Diseño base CI y herencia:
   específicos de cliente** son perfiles regulares que se asignan en la
   ficha del cliente (panel «Diseño de documentos»); los perfiles marcados
   como «específico de cliente» solo actúan a través de esa asignación.
+- **Retoques:** la herencia se aplica por grupo de ajustes (márgenes,
+  ventana de dirección, zonas bloqueadas, líneas de cabecera/pie,
+  tipografía, membrete, bloques, estilo de tabla, textos). Las
+  **advertencias** del preflight bloquean la activación hasta confirmarlas
+  conscientemente en el diálogo. También nuevo: **líneas de cabecera/pie**
+  por página y todos los ajustes del estilo de tabla (rejilla, espaciados,
+  colores, repetición de cabecera, énfasis de totales).

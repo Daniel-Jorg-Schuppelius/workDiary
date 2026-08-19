@@ -66,3 +66,10 @@ Design base CI ed ereditarietà:
   **design specifici del cliente** sono profili regolari assegnati nella
   scheda cliente (pannello «Design dei documenti»); i profili contrassegnati
   come «specifico del cliente» agiscono solo tramite tale assegnazione.
+- **Rifiniture:** l'ereditarietà vale per gruppo di impostazioni
+  (margini, finestra indirizzo, aree bloccate, righe di intestazione/piè,
+  tipografia, carta intestata, blocchi, stile tabella, testi). Gli
+  **avvisi** del preflight bloccano l'attivazione finché non vengono
+  confermati consapevolmente nel dialogo. Nuove anche le **righe di
+  intestazione/piè** per pagina e tutte le opzioni dello stile tabella
+  (griglia, spaziature, colori, ripetizione intestazione, enfasi totali).

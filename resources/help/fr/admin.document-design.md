@@ -68,3 +68,10 @@ Design de base CI et héritage :
   spécifiques aux clients** sont des profils réguliers attribués dans le
   dossier client (panneau « Design de documents ») ; les profils marqués
   « spécifique au client » n'agissent que par cette attribution.
+- **Finitions :** l'héritage s'applique par groupe de réglages (marges,
+  fenêtre d'adresse, zones bloquées, lignes d'en-tête/pied, typographie,
+  papier à en-tête, blocs, style de tableau, textes). Les **avertissements**
+  du preflight bloquent l'activation jusqu'à confirmation consciente dans le
+  dialogue. Nouveau également : **lignes d'en-tête/pied** par page et tous
+  les réglages du style de tableau (quadrillage, espacements, couleurs,
+  répétition d'en-tête, mise en valeur des totaux).

@@ -62,7 +62,18 @@ class InvoiceTemplateConsolidationTest extends TestCase {
         return [$profile->refresh(), (int) $profile->active_version_id];
     }
 
+    /**
+     * Stellt den Vor-Drop-Zustand her: die Aufräum-Migration
+     * (2027_01_13_100000) hat `invoice_templates` bereits entfernt — für den
+     * Datenpfad-Test der Überführung wird die Struktur temporär rekonstruiert.
+     */
+    private function restoreLegacyTemplateSchema(): void {
+        $drop = require database_path('migrations/2027_01_13_100000_drop_invoice_templates_table.php');
+        $drop->down();
+    }
+
     public function test_migration_converts_templates_into_profiles_and_repoints_customers(): void {
+        $this->restoreLegacyTemplateSchema();
         // Basisdesign vorhanden → migrierte Profile erben (nur Text-/Farb-Override).
         $this->activeProfile('CI-Basisdesign', [], default: true);
 
@@ -147,6 +158,54 @@ class InvoiceTemplateConsolidationTest extends TestCase {
         $frozenHtml = view('invoices.pdf', app(InvoicePdfRenderer::class)->viewData($invoice->refresh()))->render();
         $this->assertStringContainsString('Kopfzeile V1', $frozenHtml, 'Finalisierte Belege behalten ihre Texte.');
         $this->assertStringNotContainsString('Kopfzeile V2', $frozenHtml);
+    }
+
+    public function test_legacy_template_table_and_column_are_gone(): void {
+        $this->assertFalse(\Illuminate\Support\Facades\Schema::hasTable('invoice_templates'), 'Die Alt-Tabelle ist entfernt.');
+        $this->assertFalse(\Illuminate\Support\Facades\Schema::hasColumn('customers', 'invoice_template_id'), 'Der Alt-Zeiger ist entfernt.');
+        $this->assertTrue(\Illuminate\Support\Facades\Schema::hasColumn('customers', 'document_render_profile_id'));
+    }
+
+    public function test_drop_migration_aborts_when_consolidation_never_ran(): void {
+        // Vorlagen vorhanden, aber KEIN Renderprofil → der Vorlauf fehlt.
+        $this->restoreLegacyTemplateSchema();
+        DB::table('invoice_templates')->insert([
+            'organization_id' => $this->org->id,
+            'name' => 'Nicht überführt',
+            'slug' => 'nicht-ueberfuehrt',
+            'is_default' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $drop = require database_path('migrations/2027_01_13_100000_drop_invoice_templates_table.php');
+        try {
+            $drop->up();
+            $this->fail('Die Aufräum-Migration hätte abbrechen müssen.');
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString('nicht gelaufen', $e->getMessage());
+        }
+        $this->assertTrue(\Illuminate\Support\Facades\Schema::hasTable('invoice_templates'), 'Ohne Vorlauf wird nichts gelöscht.');
+    }
+
+    public function test_drop_migration_removes_legacy_schema_after_consolidation(): void {
+        $this->restoreLegacyTemplateSchema();
+        DB::table('invoice_templates')->insert([
+            'organization_id' => $this->org->id,
+            'name' => 'Überführt',
+            'slug' => 'ueberfuehrt',
+            'is_default' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        // Vorlauf: die Überführung hat ein Profil erzeugt.
+        $this->activeProfile('CI-Basisdesign', [], default: true);
+
+        $drop = require database_path('migrations/2027_01_13_100000_drop_invoice_templates_table.php');
+        $drop->up();
+
+        $this->assertFalse(\Illuminate\Support\Facades\Schema::hasTable('invoice_templates'));
+        $this->assertFalse(\Illuminate\Support\Facades\Schema::hasColumn('customers', 'invoice_template_id'));
     }
 
     public function test_customer_design_profile_endpoint_assigns_and_clears(): void {
