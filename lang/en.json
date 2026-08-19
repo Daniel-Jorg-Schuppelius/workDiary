@@ -8212,6 +8212,7 @@
     "Stundenzettel signiert: :date": "Timesheet signed: :date",
     "Stundenzettel verwalten und signieren lassen.": "Manage timesheets and obtain signatures.",
     "Stundenzettel wirklich löschen?": "Really delete timesheet?",
+    "Stundenzettel wirklich löschen? Erfasste Zeiten bleiben erhalten und lassen sich einem anderen Zettel zuordnen.": "Really delete timesheet? Recorded times are kept and can be assigned to another timesheet.",
     "Stundenzettel zur Gegenzeichnung": "Timesheet for countersignature",
     "Stundenzettel öffnen": "Open timesheet",
     "Stundenzettel, Belege und Rechnungen sauber auswerten und abrechnen.": "Cleanly evaluate and bill timesheets, receipts and invoices.",

@@ -53,6 +53,19 @@
                         <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Einreichen') }}</x-icon-btn>
                     </x-action-form>
                 @endif
+                {{-- Löschen bleibt möglich, solange nicht signiert/gesperrt ist
+                     (Policy prüft genau das). Angehängte Zeiten überleben: der
+                     FK ist nullOnDelete, sie stehen danach wieder zur Übernahme
+                     bereit. Nur die Materialzeilen des Zettels gehen mit. --}}
+                @can('delete', $timesheet)
+                    <x-action-form :action="route('projects.timesheets.destroy', [$project, $timesheet])" method="DELETE"
+                          :confirm="__('Stundenzettel wirklich löschen? Erfasste Zeiten bleiben erhalten und lassen sich einem anderen Zettel zuordnen.')"
+                          confirm-icon="delete"
+                          confirm-tone="error"
+                          :confirm-label="__('Löschen')">
+                        <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
+                    </x-action-form>
+                @endcan
                 @can('lock', $timesheet)
                     @if(! $timesheet->isLocked())
                         <x-action-form :action="route('projects.timesheets.lock', [$project, $timesheet])">

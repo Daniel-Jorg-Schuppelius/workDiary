@@ -283,6 +283,100 @@ class TimesheetTest extends TestCase {
             ->assertViewHas('selectedProjectSqid', Sqid::encode(Project::class, $this->project->id));
     }
 
+    public function test_unsigned_timesheet_can_be_deleted_and_frees_its_times(): void {
+        // Solange nichts signiert/gesperrt ist, muss der Zettel weg dürfen.
+        // Die erfassten Zeiten sind eigenständig (FK nullOnDelete) und stehen
+        // danach wieder zur Übernahme bereit.
+        $ts = $this->makeTimesheet();
+        $entry = TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'timesheet_id' => $ts->id,
+            'date' => $ts->work_date,
+            'minutes' => 60,
+            'kind' => TimeEntryKind::Work->value,
+        ]);
+
+        $this->actingAs($this->user)
+            ->delete(route('projects.timesheets.destroy', [$this->project, $ts]))
+            ->assertRedirect(route('projects.show', $this->project));
+
+        $this->assertDatabaseMissing('timesheets', ['id' => $ts->id]);
+        $this->assertNotNull($entry->fresh(), 'Die erfasste Zeit darf nicht mitgelöscht werden.');
+        $this->assertNull($entry->fresh()?->timesheet_id);
+    }
+
+    public function test_signed_timesheet_cannot_be_deleted(): void {
+        $ts = $this->makeTimesheet(['status' => TimesheetStatus::Signed->value]);
+
+        $this->actingAs($this->user)
+            ->delete(route('projects.timesheets.destroy', [$this->project, $ts]))
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('timesheets', ['id' => $ts->id]);
+    }
+
+    public function test_delete_button_appears_only_while_unsigned(): void {
+        $draft = $this->makeTimesheet();
+        $signed = $this->makeTimesheet([
+            'work_date' => '2030-02-16',
+            'status' => TimesheetStatus::Signed->value,
+        ]);
+
+        // Auf die Rückfrage prüfen, nicht auf die URL: die Destroy-Route ist
+        // wortgleich mit der Show-Route und unterscheidet sich nur im Verb.
+        $confirm = 'Erfasste Zeiten bleiben erhalten';
+
+        $this->actingAs($this->user)
+            ->get(route('projects.timesheets.show', [$this->project, $draft]))
+            ->assertOk()
+            ->assertSee($confirm);
+
+        $this->actingAs($this->user)
+            ->get(route('projects.timesheets.show', [$this->project, $signed]))
+            ->assertOk()
+            ->assertDontSee($confirm);
+    }
+
+    public function test_entry_can_be_recorded_as_duration_with_tags(): void {
+        // Der Zeilendialog bietet jetzt Dauer statt nur Von/Bis und einen
+        // Tag-Picker — beides muss serverseitig ankommen.
+        $ts = $this->makeTimesheet();
+
+        $this->actingAs($this->user)
+            ->post(route('projects.timesheets.entries.store', [$this->project, $ts]), [
+                'minutes' => 90,
+                'description' => 'Nacherfasst',
+                'new_tags' => 'Notdienst',
+            ])
+            ->assertRedirect();
+
+        $entry = TimeEntry::query()->where('timesheet_id', $ts->id)->sole();
+        $this->assertSame(90, (int) $entry->minutes);
+        $this->assertSame(['Notdienst'], $entry->tags->pluck('name')->all());
+        $this->assertSame(90, (int) $ts->fresh()->totals_minutes);
+    }
+
+    public function test_entry_dialog_offers_duration_mode_and_recent_texts(): void {
+        $ts = $this->makeTimesheet();
+        TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'date' => '2030-02-10',
+            'minutes' => 60,
+            'kind' => TimeEntryKind::Work->value,
+            'description' => 'Wartung Klimaanlage',
+        ]);
+
+        $this->actingAs($this->user)
+            ->get(route('projects.timesheets.entries.create', [$this->project, $ts]))
+            ->assertOk()
+            ->assertSee('data-time-mode-toggle', false)
+            ->assertSee('Wartung Klimaanlage');
+    }
+
     public function test_second_create_for_same_day_opens_the_existing_sheet(): void {
         // Der Stoppuhr-Start legte den Zettel per firstOrCreate an, die
         // Sidebar-Anlage blind neu — für denselben Einsatz entstanden zwei
