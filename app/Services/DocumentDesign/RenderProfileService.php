@@ -142,8 +142,12 @@ class RenderProfileService {
         ]);
     }
 
-    /** Aktivierung nur mit fehlerfreiem Preflight (MVP-298: kein stilles Loch). */
-    public function activate(DocumentRenderProfileVersion $version, ?User $user = null): PreflightResult {
+    /**
+     * Aktivierung nur mit fehlerfreiem Preflight (MVP-298: kein stilles Loch).
+     * Warnungen blockieren ebenfalls, bis sie ausdrücklich bestätigt wurden
+     * (MVP-650-Feinschliff: „Warnungen müssen bewusst bestätigt werden").
+     */
+    public function activate(DocumentRenderProfileVersion $version, ?User $user = null, bool $warningsConfirmed = false): PreflightResult {
         $profile = $version->profile;
         if ($profile === null) {
             throw new RuntimeException('Profilversion ohne Profil.');
@@ -157,6 +161,11 @@ class RenderProfileService {
         // wäre kein sinnvoller Prüfgegenstand (#83).
         $result = $this->preflight->check($this->effectiveVersion($version), $this->preflightKinds($profile));
         if (! $result->ok()) {
+            return $result;
+        }
+        if ($result->warnings !== [] && ! $warningsConfirmed) {
+            // Nicht aktivieren: der Aufrufer zeigt die Warnungen und verlangt
+            // die ausdrückliche Bestätigung.
             return $result;
         }
 
@@ -341,10 +350,28 @@ class RenderProfileService {
             return $version;
         }
 
+        $overrides = $this->expandLegacySections($overrides);
         $pick = fn (string $section) => in_array($section, $overrides, true);
 
+        // Layout je Einstellungsgruppe aus Basisdesign bzw. Variante (#Feinschliff).
+        $variantLayout = (array) $version->layout;
+        $baseLayout = (array) $base->layout;
+        $src = fn (string $section): array => $pick($section) ? $variantLayout : $baseLayout;
+        $defaults = self::defaultLayout();
+        $layout = [
+            'page' => (array) ($src('margins')['page'] ?? $defaults['page']),
+            'content_first' => (array) ($src('margins')['content_first'] ?? $defaults['content_first']),
+            'content_following' => (array) ($src('margins')['content_following'] ?? $defaults['content_following']),
+            'address_window' => $src('address')['address_window'] ?? null,
+            'sender_line' => $src('address')['sender_line'] ?? null,
+            'blocked_areas' => (array) ($src('blocked_areas')['blocked_areas'] ?? []),
+            'header' => (array) ($src('footer')['header'] ?? $defaults['header']),
+            'footer' => (array) ($src('footer')['footer'] ?? $defaults['footer']),
+            'typography' => (array) ($src('typography')['typography'] ?? $defaults['typography']),
+        ];
+
         return $this->detachedCopy($version, [
-            'layout' => $pick('layout') ? $version->layout : $base->layout,
+            'layout' => $layout,
             'block_rules' => $pick('block_rules') ? $version->block_rules : $base->block_rules,
             'table_style' => $pick('table_style') ? $version->table_style : $base->table_style,
             'content_texts' => $pick('content_texts') ? $version->content_texts : $base->content_texts,
@@ -464,8 +491,15 @@ class RenderProfileService {
         $profile->save();
     }
 
-    /** Sektionen, die eine erbende Variante überschreiben kann. */
-    public const OVERRIDE_SECTIONS = ['layout', 'assets', 'block_rules', 'table_style', 'content_texts'];
+    /**
+     * Sektionen, die eine erbende Variante überschreiben kann
+     * (MVP-650-Feinschliff: Layout in fachlich benannte Einstellungsgruppen
+     * aufgefächert — Herkunft/Reset gelten je Einstellung statt en bloc).
+     */
+    public const OVERRIDE_SECTIONS = ['margins', 'address', 'blocked_areas', 'footer', 'typography', 'assets', 'block_rules', 'table_style', 'content_texts'];
+
+    /** Layout-Untergruppen, die der frühere Sammel-Override 'layout' abdeckte. */
+    public const LAYOUT_SECTIONS = ['margins', 'address', 'blocked_areas', 'footer', 'typography'];
 
     /** @return array<int, string>|null */
     private function sanitizeOverrideSections(mixed $raw): ?array {
@@ -473,7 +507,29 @@ class RenderProfileService {
             return null;
         }
 
-        return array_values(array_intersect(self::OVERRIDE_SECTIONS, array_map('strval', (array) $raw)));
+        return array_values(array_intersect(self::OVERRIDE_SECTIONS, $this->expandLegacySections(array_map('strval', (array) $raw))));
+    }
+
+    /**
+     * Bestandsdaten: der Sammel-Override 'layout' expandiert zu seinen
+     * Untergruppen — gespeicherte Varianten behalten ihre Semantik.
+     *
+     * @param  array<int, string>  $sections
+     * @return array<int, string>
+     */
+    private function expandLegacySections(array $sections): array {
+        if (in_array('layout', $sections, true)) {
+            $sections = array_merge(array_diff($sections, ['layout']), self::LAYOUT_SECTIONS);
+        }
+
+        return array_values(array_unique($sections));
+    }
+
+    /** Kopf-/Fußzeilen-Notiz: reiner Text, kurz (per-Seite gerendert). */
+    private function noteOrNull(mixed $value): ?string {
+        $value = trim(strip_tags((string) $value));
+
+        return $value === '' ? null : mb_substr($value, 0, 200);
     }
 
     /**
@@ -496,7 +552,10 @@ class RenderProfileService {
             'content_following' => ['top' => 20, 'right' => 20, 'bottom' => 20, 'left' => 20],
             'address_window' => null,
             'sender_line' => null,
-            'footer' => ['page_numbers' => false, 'carryover_note' => false],
+            // MVP-650-Feinschliff: per-Seite-Zeilen im Kopf-/Fußbereich; der
+            // tote carryover_note-Schalter (nie gerendert) ist entfernt.
+            'header' => ['note' => null],
+            'footer' => ['page_numbers' => false, 'note' => null],
             'blocked_areas' => [],
             // null = Systemstandard der jeweiligen Dokument-View (#83).
             'typography' => ['font_family' => null, 'base_size_pt' => null],
@@ -548,7 +607,10 @@ class RenderProfileService {
         }
         $clean['footer'] = [
             'page_numbers' => (bool) ($layout['footer']['page_numbers'] ?? false),
-            'carryover_note' => (bool) ($layout['footer']['carryover_note'] ?? false),
+            'note' => $this->noteOrNull($layout['footer']['note'] ?? null),
+        ];
+        $clean['header'] = [
+            'note' => $this->noteOrNull($layout['header']['note'] ?? null),
         ];
         // Typografie (#83): nur kuratierte Schriften und sichere Grundgrößen.
         $font = (string) ($layout['typography']['font_family'] ?? '');

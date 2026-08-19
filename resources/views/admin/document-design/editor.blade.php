@@ -24,6 +24,8 @@
         'canInherit' => $canInherit,
         'overrideSections' => $version->override_sections,
         'contentTexts' => $version->content_texts,
+        'blockLabels' => collect(\App\Enums\DocumentDesign\InformationBlock::cases())
+            ->mapWithKeys(fn ($block) => [$block->value => $block->label()])->all(),
         'previewUrl' => route('admin.document-design.preview-pdf', $profile->sqid),
     ];
     $blockCases = \App\Enums\DocumentDesign\InformationBlock::cases();
@@ -70,8 +72,14 @@
                             {{ __('document_design.editor.save_draft') }}
                         </button>
                         <x-action-form :action="route('admin.document-design.activate', $profile->sqid)" method="POST"
-                              :confirm="__('document_design.editor.activate_confirm')"
+                              :confirm="($preflight['warnings'] ?? []) !== []
+                                  ? __('document_design.editor.activate_confirm_warnings', ['n' => count($preflight['warnings'])])
+                                  : __('document_design.editor.activate_confirm')"
                               :confirm-label="__('document_design.editor.activate')">
+                            @if (($preflight['warnings'] ?? []) !== [])
+                                {{-- Feinschliff: Warnungen werden mit der Dialog-Bestätigung bewusst quittiert. --}}
+                                <input type="hidden" name="confirm_warnings" value="1">
+                            @endif
                             <button type="submit" class="btn btn-sm btn-success">{{ __('document_design.editor.activate') }}</button>
                         </x-action-form>
                     @elseif ($canManage)
@@ -201,6 +209,17 @@
                         </div>
                     </div>
                     <p class="mb-2 text-xs text-base-content/50">{{ __('document_design.editor.pdf_preview_hint') }}</p>
+                    {{-- Feinschliff: effektive Vererbungsquelle + Briefbogen-Blöcke direkt an der Vorschau. --}}
+                    @if ($canInherit)
+                        <p class="mb-1 text-xs" x-show="inheritEnabled" x-cloak>
+                            <span class="badge badge-info badge-xs align-middle">{{ __('document_design.editor.inherits_badge') }}</span>
+                            <span x-text="inheritanceSummary('{{ $baseName }}')"></span>
+                        </p>
+                    @endif
+                    <p class="mb-2 text-xs text-warning" x-show="letterheadBlockLabels().length" x-cloak>
+                        {{ __('document_design.editor.letterhead_blocks_note') }}
+                        <span x-text="letterheadBlockLabels().join(', ')"></span>
+                    </p>
                     <iframe :src="previewSrc()" title="{{ __('document_design.editor.pdf_preview_heading') }}"
                             class="h-160 w-full rounded border border-base-300 bg-white"></iframe>
                 </div>
@@ -219,7 +238,11 @@
                         </label>
                         <div class="mt-2 space-y-1" x-show="inheritEnabled" x-cloak>
                             @foreach ([
-                                'layout' => __('document_design.editor.section_layout'),
+                                'margins' => __('document_design.editor.section_margins'),
+                                'address' => __('document_design.editor.section_address'),
+                                'blocked_areas' => __('document_design.editor.section_blocked'),
+                                'footer' => __('document_design.editor.section_footer'),
+                                'typography' => __('document_design.editor.section_typography'),
                                 'assets' => __('document_design.editor.section_assets'),
                                 'block_rules' => __('document_design.editor.section_blocks'),
                                 'table_style' => __('document_design.editor.section_table'),
@@ -269,6 +292,20 @@
                         <label class="flex items-center gap-2 text-sm">
                             <input type="checkbox" class="checkbox checkbox-xs" x-model="layout.footer.page_numbers" @change="markDirty()" :disabled="!editable">
                             {{ __('document_design.editor.page_numbers') }}
+                        </label>
+                    </div>
+
+                    {{-- Kopf-/Fußzeilen (Feinschliff): kurze per-Seite-Zeilen im Randbereich. --}}
+                    <div class="mt-3 grid gap-2 sm:grid-cols-2">
+                        <label class="form-control">
+                            <span class="label-text text-xs">{{ __('document_design.editor.header_note') }}</span>
+                            <input type="text" maxlength="200" class="input input-bordered input-xs"
+                                   x-model="layout.header.note" @change="markDirty()" :disabled="!editable">
+                        </label>
+                        <label class="form-control">
+                            <span class="label-text text-xs">{{ __('document_design.editor.footer_note') }}</span>
+                            <input type="text" maxlength="200" class="input input-bordered input-xs"
+                                   x-model="layout.footer.note" @change="markDirty()" :disabled="!editable">
                         </label>
                     </div>
 
@@ -407,9 +444,57 @@
                             <input type="number" min="8" max="14" class="input input-bordered input-sm w-full"
                                    x-model.number="tableStyle.overrides.font_size" @change="markDirty()" :disabled="!editable">
                         </label>
-                        <label class="flex items-center gap-2 text-sm sm:col-span-2">
+                        <label class="form-control">
+                            <span class="label-text text-sm">{{ __('document_design.editor.grid') }}</span>
+                            <select class="select select-bordered select-sm" x-model="tableStyle.overrides.grid" @change="markDirty()" :disabled="!editable">
+                                <option value="horizontal">{{ __('document_design.editor.grid_horizontal') }}</option>
+                                <option value="full">{{ __('document_design.editor.grid_full') }}</option>
+                                <option value="minimal">{{ __('document_design.editor.grid_minimal') }}</option>
+                            </select>
+                        </label>
+                        <label class="form-control">
+                            <span class="label-text text-sm">{{ __('document_design.editor.line_height') }}</span>
+                            <input type="number" min="1" max="1.8" step="0.05" class="input input-bordered input-sm w-full"
+                                   x-model.number="tableStyle.overrides.line_height" @change="markDirty()" :disabled="!editable">
+                        </label>
+                        <label class="form-control">
+                            <span class="label-text text-sm">{{ __('document_design.editor.text_color') }}</span>
+                            <input type="color" class="input input-bordered input-sm w-full"
+                                   x-model="tableStyle.overrides.text_color" @change="markDirty()" :disabled="!editable">
+                        </label>
+                        <label class="form-control">
+                            <span class="label-text text-sm">{{ __('document_design.editor.header_text_color') }}</span>
+                            <input type="color" class="input input-bordered input-sm w-full"
+                                   x-model="tableStyle.overrides.header_text_color" @change="markDirty()" :disabled="!editable">
+                        </label>
+                        <label class="form-control">
+                            <span class="label-text text-sm">{{ __('document_design.editor.zebra_fill') }}</span>
+                            <input type="color" class="input input-bordered input-sm w-full"
+                                   x-model="tableStyle.overrides.zebra_fill" @change="markDirty()" :disabled="!editable">
+                        </label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="form-control">
+                                <span class="label-text text-sm">{{ __('document_design.editor.cell_padding_v') }}</span>
+                                <input type="number" min="1" max="10" class="input input-bordered input-sm w-full"
+                                       x-model.number="tableStyle.overrides.cell_padding_v" @change="markDirty()" :disabled="!editable">
+                            </label>
+                            <label class="form-control">
+                                <span class="label-text text-sm">{{ __('document_design.editor.cell_padding_h') }}</span>
+                                <input type="number" min="2" max="12" class="input input-bordered input-sm w-full"
+                                       x-model.number="tableStyle.overrides.cell_padding_h" @change="markDirty()" :disabled="!editable">
+                            </label>
+                        </div>
+                        <label class="flex items-center gap-2 text-sm">
                             <input type="checkbox" class="checkbox checkbox-sm" x-model="tableStyle.overrides.zebra" @change="markDirty()" :disabled="!editable">
                             {{ __('document_design.editor.zebra') }}
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" class="checkbox checkbox-sm" x-model="tableStyle.overrides.repeat_header" @change="markDirty()" :disabled="!editable">
+                            {{ __('document_design.editor.repeat_header') }}
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" class="checkbox checkbox-sm" x-model="tableStyle.overrides.highlight_totals" @change="markDirty()" :disabled="!editable">
+                            {{ __('document_design.editor.highlight_totals') }}
                         </label>
                     </div>
                 </div>

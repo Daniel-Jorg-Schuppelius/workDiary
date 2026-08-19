@@ -472,6 +472,7 @@
     "Aktiviert": "Attivato",
     "Aktiviert, aber nicht funktionsfähig — Konfiguration prüfen (z. B. API-Key).": "Attivato ma non funzionante — verificare la configurazione (ad es. chiave API).",
     "Aktivierung": "Attivazione",
+    "Aktivierung blockiert — :n Warnungen müssen bewusst bestätigt werden (Häkchen im Aktivieren-Dialog setzen).": "Attivazione bloccata — :n avvisi devono essere confermati consapevolmente (spuntare la casella nel dialogo di attivazione).",
     "Aktivierung blockiert — der Preflight meldet :n Fehler.": "Attivazione bloccata — il preflight segnala :n errori.",
     "Aktivität": "Attività",
     "Aktivität erfassen": "Registra attività",

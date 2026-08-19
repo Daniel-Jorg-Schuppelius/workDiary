@@ -472,6 +472,7 @@
     "Aktiviert": "Activado",
     "Aktiviert, aber nicht funktionsfähig — Konfiguration prüfen (z. B. API-Key).": "Activado pero no funcional — compruebe la configuración (p. ej., clave API).",
     "Aktivierung": "Activación",
+    "Aktivierung blockiert — :n Warnungen müssen bewusst bestätigt werden (Häkchen im Aktivieren-Dialog setzen).": "Activación bloqueada — :n advertencias deben confirmarse conscientemente (marca la casilla en el diálogo de activación).",
     "Aktivierung blockiert — der Preflight meldet :n Fehler.": "Activación bloqueada — el preflight informa de :n errores.",
     "Aktivität": "Actividad",
     "Aktivität erfassen": "Registrar actividad",

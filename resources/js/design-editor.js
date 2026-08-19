@@ -36,12 +36,17 @@ export function registerDesignEditor(Alpine) {
         canInherit: false,
         inheritEnabled: false,
         overrides: {
-            layout: true,
+            margins: true,
+            address: true,
+            blocked_areas: true,
+            footer: true,
+            typography: true,
             assets: true,
             block_rules: true,
             table_style: true,
             content_texts: true,
         },
+        blockLabels: {},
         // Kopf-/Fußtexte des Belegs (MVP-651, vormals invoice_templates).
         contentTexts: { header_text: null, footer_text: null },
         // Eingebettete PDF-Vorschau (#83): Art/Szenario umschaltbar; tick
@@ -65,10 +70,28 @@ export function registerDesignEditor(Alpine) {
                 font_family: null,
                 base_size_pt: null,
             };
+            this.layout.header = this.layout.header || { note: null };
+            this.layout.footer = this.layout.footer || {
+                page_numbers: false,
+                note: null,
+            };
+            this.blockLabels = cfg.blockLabels ?? {};
             this.canInherit = !!cfg.canInherit;
-            const sections = cfg.overrideSections;
+            let sections = cfg.overrideSections;
             this.inheritEnabled = this.canInherit && Array.isArray(sections);
             if (this.inheritEnabled) {
+                // Bestandsdaten: Sammel-Override 'layout' → feine Layout-Gruppen.
+                if (sections.includes("layout")) {
+                    sections = sections
+                        .filter((key) => key !== "layout")
+                        .concat([
+                            "margins",
+                            "address",
+                            "blocked_areas",
+                            "footer",
+                            "typography",
+                        ]);
+                }
                 for (const key of Object.keys(this.overrides)) {
                     this.overrides[key] = sections.includes(key);
                 }
@@ -95,6 +118,21 @@ export function registerDesignEditor(Alpine) {
         },
         reloadPreview() {
             this.previewTick++;
+        },
+        // Effektive Vererbungsquelle als Kurzfassung an der Vorschau.
+        inheritanceSummary(baseName) {
+            const total = Object.keys(this.overrides).length;
+            const own = this.overrideList().length;
+            return `„${baseName}“ · ${total - own}/${total} geerbt, ${own} überschrieben`;
+        },
+        // Als „bereits auf dem Firmenbogen" deklarierte Blöcke (nicht gedruckt).
+        letterheadBlockLabels() {
+            return Object.entries(this.blocks || {})
+                .filter(
+                    ([, rule]) =>
+                        rule && rule.state === "provided_by_letterhead",
+                )
+                .map(([key]) => this.blockLabels[key] ?? key);
         },
 
         // ── Auswahl & Boxen ───────────────────────────────────────────────

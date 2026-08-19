@@ -472,6 +472,7 @@
     "Aktiviert": "Activé",
     "Aktiviert, aber nicht funktionsfähig — Konfiguration prüfen (z. B. API-Key).": "Activé mais non fonctionnel — vérifiez la configuration (p. ex. clé API).",
     "Aktivierung": "Activation",
+    "Aktivierung blockiert — :n Warnungen müssen bewusst bestätigt werden (Häkchen im Aktivieren-Dialog setzen).": "Activation bloquée — :n avertissements doivent être confirmés sciemment (cocher la case dans le dialogue d’activation).",
     "Aktivierung blockiert — der Preflight meldet :n Fehler.": "Activation bloquée — le préflight signale :n erreurs.",
     "Aktivität": "Activité",
     "Aktivität erfassen": "Enregistrer une activité",

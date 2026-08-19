@@ -286,8 +286,8 @@ class DocumentDesignController extends Controller {
             ->with('success', __('Neuer Entwurf auf Basis von Version :v angelegt.', ['v' => $source->version]));
     }
 
-    /** Aktivierung nur mit fehlerfreiem Preflight (MVP-300). */
-    public function activate(string $sqid): RedirectResponse {
+    /** Aktivierung nur mit fehlerfreiem Preflight (MVP-300); Warnungen erfordern Bestätigung. */
+    public function activate(Request $request, string $sqid): RedirectResponse {
         $user = $this->manageUser();
         $organization = $this->organization($user);
         $profile = $this->profile($organization, $sqid);
@@ -296,9 +296,13 @@ class DocumentDesignController extends Controller {
             ->where('status', DocumentRenderProfileVersion::STATUS_DRAFT)
             ->firstOrFail();
 
-        $result = $this->profiles->activate($version, $user);
+        $confirmed = $request->boolean('confirm_warnings');
+        $result = $this->profiles->activate($version, $user, $confirmed);
         if (! $result->ok()) {
             return back()->with('error', __('Aktivierung blockiert — der Preflight meldet :n Fehler.', ['n' => count($result->errors)]));
+        }
+        if ($result->warnings !== [] && ! $confirmed) {
+            return back()->with('error', __('Aktivierung blockiert — :n Warnungen müssen bewusst bestätigt werden (Häkchen im Aktivieren-Dialog setzen).', ['n' => count($result->warnings)]));
         }
 
         return back()->with('success', __('Version :v aktiviert.', ['v' => $version->version]));

@@ -205,6 +205,25 @@ class DocumentDesignRenderer {
             $body .= sprintf('<div class="dd-first-offset" style="height: %.1fmm"></div>', $delta);
         }
 
+        // Kopf-/Fußzeilen-Notizen (MVP-650-Feinschliff): kurze per-Seite-Zeilen
+        // im Randbereich — wie die Seitenzahl über fixe Elemente.
+        $headerNote = trim((string) (($layout['header'] ?? [])['note'] ?? ''));
+        if ($headerNote !== '') {
+            $css .= sprintf(
+                ".dd-headnote { position: fixed; top: %.1fmm; left: 0; font-size: 8px; color: #555; }\n",
+                -($following['top'] - 6),
+            );
+            $body .= '<div class="dd-headnote">' . e($headerNote) . '</div>';
+        }
+        $footerNote = trim((string) (($layout['footer'] ?? [])['note'] ?? ''));
+        if ($footerNote !== '') {
+            $css .= sprintf(
+                ".dd-footnote { position: fixed; bottom: %.1fmm; left: 0; font-size: 8px; color: #555; }\n",
+                -($bottom - 6),
+            );
+            $body .= '<div class="dd-footnote">' . e($footerNote) . '</div>';
+        }
+
         if (! empty($layout['footer']['page_numbers'])) {
             $css .= sprintf(
                 ".dd-pagenum { position: fixed; bottom: %.1fmm; right: 0; font-size: 8px; color: #555; }\n"
