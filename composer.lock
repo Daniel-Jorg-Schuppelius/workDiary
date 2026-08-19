@@ -729,16 +729,16 @@
         },
         {
             "name": "daniel-jorg-schuppelius/php-pdf-toolkit",
-            "version": "v0.15.6",
+            "version": "v0.15.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/php-pdf-toolkit.git",
-                "reference": "a63ee9a1d3d8c672289a1fcab590fd0bac2a1197"
+                "reference": "589a1592f52e5b26c08b30858d6212e829fa1e3a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-pdf-toolkit/zipball/a63ee9a1d3d8c672289a1fcab590fd0bac2a1197",
-                "reference": "a63ee9a1d3d8c672289a1fcab590fd0bac2a1197",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-pdf-toolkit/zipball/589a1592f52e5b26c08b30858d6212e829fa1e3a",
+                "reference": "589a1592f52e5b26c08b30858d6212e829fa1e3a",
                 "shasum": ""
             },
             "require": {
@@ -776,9 +776,9 @@
             "description": "PHP 8.2+ library for PDF text extraction with automatic reader selection. Supports embedded text and scanned documents via OCR.",
             "support": {
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/php-pdf-toolkit/issues",
-                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-pdf-toolkit/tree/v0.15.6"
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-pdf-toolkit/tree/v0.15.7"
             },
-            "time": "2026-08-19T12:33:14+00:00"
+            "time": "2026-08-19T14:07:43+00:00"
         },
         {
             "name": "darkaonline/l5-swagger",
@@ -1558,16 +1558,16 @@
         },
         {
             "name": "dschuppelius/php-config-toolkit",
-            "version": "v0.5.7",
+            "version": "v0.5.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DSchuppelius/php-config-toolkit.git",
-                "reference": "5ffab1453737fb90898a57ca2e5a7db7fe122f2a"
+                "reference": "73cf2d91ff9e83770f19d688c314bdd5a3960dea"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DSchuppelius/php-config-toolkit/zipball/5ffab1453737fb90898a57ca2e5a7db7fe122f2a",
-                "reference": "5ffab1453737fb90898a57ca2e5a7db7fe122f2a",
+                "url": "https://api.github.com/repos/DSchuppelius/php-config-toolkit/zipball/73cf2d91ff9e83770f19d688c314bdd5a3960dea",
+                "reference": "73cf2d91ff9e83770f19d688c314bdd5a3960dea",
                 "shasum": ""
             },
             "require": {
@@ -1598,9 +1598,9 @@
             "description": "Ein Toolkit für JSON-basierte Konfigurationsverwaltung",
             "support": {
                 "issues": "https://github.com/DSchuppelius/php-config-toolkit/issues",
-                "source": "https://github.com/DSchuppelius/php-config-toolkit/tree/v0.5.7"
+                "source": "https://github.com/DSchuppelius/php-config-toolkit/tree/v0.5.8"
             },
-            "time": "2026-08-19T13:55:35+00:00"
+            "time": "2026-08-19T14:07:05+00:00"
         },
         {
             "name": "dschuppelius/php-error-toolkit",
