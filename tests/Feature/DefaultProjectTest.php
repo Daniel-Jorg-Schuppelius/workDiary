@@ -105,7 +105,7 @@ class DefaultProjectTest extends TestCase {
         $this->assertNotNull($default);
         $timesheet = Timesheet::query()->where('project_id', $default->id)->first();
         $this->assertNotNull($timesheet);
-        $response->assertRedirect(route('projects.timesheets.show', [$default, $timesheet]));
+        $response->assertRedirect(route('projects.timesheets.show', [$default, $timesheet, 'add' => 'entry']));
     }
 
     public function test_quick_store_with_explicit_project_overrides_default(): void {
@@ -128,7 +128,7 @@ class DefaultProjectTest extends TestCase {
         $timesheet = Timesheet::query()->where('project_id', $explicit->id)->first();
         $this->assertNotNull($timesheet);
         $this->assertSame('2026-05-10', $timesheet->work_date->toDateString());
-        $response->assertRedirect(route('projects.timesheets.show', [$explicit, $timesheet]));
+        $response->assertRedirect(route('projects.timesheets.show', [$explicit, $timesheet, 'add' => 'entry']));
     }
 
     public function test_customer_destroy_cleans_up_default_project_only(): void {

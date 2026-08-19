@@ -12,16 +12,22 @@ namespace App\Http\Controllers;
 
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Http\Requests\SaveTimesheetRequest;
-use App\Models\{Customer, Project, Timesheet, User};
+use App\Models\{Customer, Project, TimeEntry, Timesheet, User};
 use App\Services\Material\MaterialProviderRegistry;
+use App\Services\Timesheet\{Stopwatch, TimesheetResolver};
 use App\Services\UI\DateRangeContext;
 use App\Support\{Setting, SortableQuery};
 use Carbon\CarbonImmutable;
-use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class TimesheetController extends Controller {
+    public function __construct(
+        private readonly TimesheetResolver $resolver,
+        private readonly Stopwatch $stopwatch,
+    ) {}
+
     public function index(Request $request): View {
         Gate::authorize('viewAny', Timesheet::class);
 
@@ -93,17 +99,41 @@ class TimesheetController extends Controller {
         ]);
     }
 
-    public function store(Project $project, SaveTimesheetRequest $request): RedirectResponse {
+    public function store(Project $project, SaveTimesheetRequest $request): RedirectResponse|JsonResponse {
         Gate::authorize('create', Timesheet::class);
 
-        $timesheet = $project->timesheets()->create($request->validated() + [
-            'user_id' => Auth::id(),
-            'organization_id' => $project->organization_id,
-            'status' => TimesheetStatus::Draft->value,
-        ]);
+        $data = $request->validated();
+        [$timesheet, $created] = $this->resolver->openOrCreate(
+            $project,
+            (int) Auth::id(),
+            CarbonImmutable::parse((string) $data['work_date']),
+            $data,
+        );
 
-        return redirect()->route('projects.timesheets.show', [$project, $timesheet])
-            ->with('success', __('Stundenzettel angelegt.'));
+        return $this->afterCreate($request, $project, $timesheet, $created);
+    }
+
+    /**
+     * Weiterleitung nach dem Anlegen: direkt in den neuen Stundenzettel, mit
+     * geöffnetem Zeilendialog (`add=entry`) — sonst endet die Anlage auf der
+     * Ausgangsseite und der frische Zettel muss erst wieder gesucht werden.
+     */
+    private function afterCreate(Request $request, Project $project, Timesheet $timesheet, bool $created): RedirectResponse|JsonResponse {
+        $target = route('projects.timesheets.show', [$project, $timesheet, 'add' => 'entry']);
+        $message = $created
+            ? __('Stundenzettel angelegt.')
+            : __('Für diesen Tag gibt es bereits einen Stundenzettel — er ist jetzt geöffnet.');
+
+        // Dialog-Submits laufen per fetch: einer 302 folgt nur der fetch selbst,
+        // die JS-Schicht lädt danach die *Ausgangs*seite neu. Deshalb bekommt
+        // sie das Ziel explizit als JSON (Muster wie ProjectController::update).
+        if ($request->hasHeader('X-Entry-Dialog')) {
+            $request->session()->flash('success', $message);
+
+            return response()->json(['redirect' => $target]);
+        }
+
+        return redirect()->to($target)->with('success', $message);
     }
 
     /**
@@ -111,7 +141,7 @@ class TimesheetController extends Controller {
      * fällt automatisch auf das Standardprojekt des Kunden zurück, wenn
      * kein Projekt angegeben ist (z. B. ad-hoc / Notfall-Einsätze).
      */
-    public function storeQuick(Request $request): RedirectResponse {
+    public function storeQuick(Request $request): RedirectResponse|JsonResponse {
         Gate::authorize('create', Timesheet::class);
 
         $rawCustomerId = $request->input('customer_id');
@@ -142,19 +172,12 @@ class TimesheetController extends Controller {
         }
 
         $workDate = isset($data['work_date'])
-            ? CarbonImmutable::parse($data['work_date'])->toDateString()
-            : CarbonImmutable::today()->toDateString();
+            ? CarbonImmutable::parse($data['work_date'])
+            : CarbonImmutable::today();
 
-        /** @var Timesheet $timesheet */
-        $timesheet = $project->timesheets()->create([
-            'work_date' => $workDate,
-            'user_id' => Auth::id(),
-            'organization_id' => $project->organization_id,
-            'status' => TimesheetStatus::Draft->value,
-        ]);
+        [$timesheet, $created] = $this->resolver->openOrCreate($project, (int) Auth::id(), $workDate);
 
-        return redirect()->route('projects.timesheets.show', [$project, $timesheet])
-            ->with('success', __('Stundenzettel angelegt.'));
+        return $this->afterCreate($request, $project, $timesheet, $created);
     }
 
     public function show(Project $project, Timesheet $timesheet, MaterialProviderRegistry $registry): View {
@@ -164,11 +187,18 @@ class TimesheetController extends Controller {
         $tasks = $project->tasks()->orderBy('title')->get(['id', 'title']);
         $materials = $registry->get('local')?->search('', 50) ?? collect();
 
+        /** @var User $authUser */
+        $authUser = Auth::user();
+
         return view('timesheets.show', [
             'project' => $project,
             'timesheet' => $timesheet,
             'tasks' => $tasks,
             'materials' => $materials,
+            'runningEntry' => $this->stopwatch->current($authUser),
+            // Zeiten desselben Tages, die an keinem Zettel hängen — der Knopf
+            // „Zeiten übernehmen" erscheint nur, wenn es welche gibt.
+            'adoptableCount' => TimeEntry::query()->adoptableFor($timesheet)->count(),
         ]);
     }
 

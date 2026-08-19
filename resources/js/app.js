@@ -1213,6 +1213,34 @@ document.addEventListener("click", (event) => {
         true,
     );
 
+    // Folgedialog nach einer Weiterleitung ohne Extraklick öffnen: die Zielseite
+    // hinterlegt dafür nur einen Marker (z. B. der frisch angelegte Stundenzettel,
+    // damit direkt eingetragen werden kann, was gemacht wurde). Der auslösende
+    // Query-Parameter fliegt danach aus der Adresszeile — sonst springt der Dialog
+    // bei jedem Reload (auch nach `back()` aus dem Dialog heraus) erneut auf.
+    const autoOpenEntryDialog = () => {
+        const trigger = document.querySelector(
+            "a[data-entry-modal-autoopen][href]",
+        );
+        if (!trigger) return;
+
+        const param = trigger.getAttribute("data-entry-modal-autoopen");
+        if (param) {
+            const url = new URL(window.location.href);
+            if (url.searchParams.has(param)) {
+                url.searchParams.delete(param);
+                window.history.replaceState({}, "", url.toString());
+            }
+        }
+
+        openEntryDialog(trigger.getAttribute("href"));
+    };
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", autoOpenEntryDialog);
+    } else {
+        autoOpenEntryDialog();
+    }
+
     // Delegated geocoding handler for travel-log inputs.
     // Works both in static pages and within AJAX-injected dialog content.
     const geocodeAddressInput = async (input) => {

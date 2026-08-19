@@ -68,6 +68,84 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
+    {{-- Stoppuhr direkt am Zettel: laufende Zeit landet über den Stopwatch-Service
+         sofort als Zeile in genau diesem Stundenzettel. Vorher gab es Start/Stopp
+         nur auf der Tagesansicht, obwohl der Service dafür gebaut ist. --}}
+    @if ($editable)
+        <x-card as="section">
+            @php $runsHere = $runningEntry && (int) $runningEntry->timesheet_id === (int) $timesheet->id; @endphp
+
+            @if ($runsHere)
+                <div class="flex flex-wrap items-center gap-3"
+                     x-data="stopwatch('{{ $runningEntry->started_at?->toIso8601String() }}')">
+                    <span class="relative flex size-2.5">
+                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
+                        <span class="relative inline-flex size-2.5 rounded-full bg-primary"></span>
+                    </span>
+                    <div class="min-w-0 flex-1">
+                        <p class="truncate font-['Space_Grotesk'] text-sm font-semibold">{{ __('Läuft…') }}</p>
+                        @if ($runningEntry->description)
+                            <p class="truncate text-xs text-base-content/60">{{ $runningEntry->description }}</p>
+                        @endif
+                    </div>
+                    <span class="font-['Space_Grotesk'] text-2xl font-semibold tabular-nums text-primary"
+                          x-text="display">00:00:00</span>
+                    <form method="POST" action="{{ route('stopwatch.stop') }}" class="leading-none">
+                        @csrf
+                        <x-button type="submit" tone="error" size="sm" icon="stop_circle">{{ __('Stoppen') }}</x-button>
+                    </form>
+                </div>
+            @elseif ($runningEntry)
+                {{-- Auf einem anderen Zettel/Projekt läuft schon etwas — Stopwatch::start
+                     würde hier ohnehin abbrechen, also gleich den Ausweg anbieten. --}}
+                <div class="flex flex-wrap items-center gap-3">
+                    <x-icon name="timer" class="text-warning" />
+                    <p class="min-w-0 flex-1 text-sm text-base-content/70">
+                        {{ __('Es läuft bereits eine Zeiterfassung:') }}
+                        <span class="font-medium">{{ $runningEntry->project?->name ?: $runningEntry->description }}</span>
+                    </p>
+                    <form method="POST" action="{{ route('stopwatch.stop') }}" class="leading-none">
+                        @csrf
+                        <x-button type="submit" tone="error" size="sm" icon="stop_circle">{{ __('Stoppen') }}</x-button>
+                    </form>
+                </div>
+            @else
+                <form method="POST" action="{{ route('stopwatch.start') }}"
+                      class="flex flex-wrap items-center gap-2">
+                    @csrf
+                    <input type="hidden" name="project_id" value="{{ $project->sqid }}">
+                    <input type="hidden" name="timesheet_id" value="{{ $timesheet->sqid }}">
+                    <input type="text" name="description" maxlength="500"
+                           class="input input-bordered input-sm min-w-40 flex-1"
+                           placeholder="{{ __('Woran arbeitest du?') }}">
+                    @if ($tasks->isNotEmpty())
+                        <select name="task_id" class="select select-bordered select-sm w-full sm:w-56">
+                            <option value="">{{ __('Keine Aufgabe') }}</option>
+                            @foreach ($tasks as $t)
+                                <option value="{{ $t->sqid }}">{{ $t->title }}</option>
+                            @endforeach
+                        </select>
+                    @endif
+                    <x-button type="submit" tone="primary" size="sm" icon="play_circle">{{ __('Starten') }}</x-button>
+                </form>
+            @endif
+        </x-card>
+    @endif
+
+    {{-- Direkt nach dem Anlegen (`?add=entry`): Zeilendialog ohne Extraklick
+         öffnen, damit der Flow „Stundenzettel anlegen → eintragen, was gemacht
+         wurde" nicht abreißt. Das JS entfernt den Parameter danach aus der
+         Adresszeile. --}}
+    @if ($editable && request()->query('add') === 'entry')
+        {{-- Liegen für den Tag schon erfasste Zeiten herum, ist deren Übernahme
+             der nächste Schritt — nicht ein leeres Formular. --}}
+        <a class="hidden" aria-hidden="true" tabindex="-1"
+           data-entry-modal-autoopen="add"
+           href="{{ $adoptableCount > 0
+                ? route('projects.timesheets.entries.adopt.form', [$project, $timesheet])
+                : route('projects.timesheets.entries.create', [$project, $timesheet]) }}"></a>
+    @endif
+
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <x-kpi-tile :label="__('Arbeit')"         :value="$fmtMin((int)$timesheet->total_work_minutes) . ' h'" />
         <x-kpi-tile :label="__('Pause')"          :value="$fmtMin((int)$timesheet->total_break_minutes) . ' h'" />
@@ -78,10 +156,19 @@
         <header class="flex items-center justify-between border-b border-base-300 px-4 py-3">
             <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Zeiteinträge') }}</span>
             @if($editable)
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('projects.timesheets.entries.create', [$project, $timesheet])"
-                            show-label>{{ __('Zeile hinzufügen') }}</x-icon-btn>
+                <span class="flex flex-wrap items-center gap-2">
+                    {{-- Erfasste Zeiten dieses Tages anhängen statt abtippen. --}}
+                    @if ($adoptableCount > 0)
+                        <x-icon-btn icon="playlist_add_check" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route('projects.timesheets.entries.adopt.form', [$project, $timesheet])"
+                                    show-label>{{ __('Zeiten übernehmen') }} ({{ $adoptableCount }})</x-icon-btn>
+                    @endif
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('projects.timesheets.entries.create', [$project, $timesheet])"
+                                show-label>{{ __('Zeile hinzufügen') }}</x-icon-btn>
+                </span>
             @endif
         </header>
 

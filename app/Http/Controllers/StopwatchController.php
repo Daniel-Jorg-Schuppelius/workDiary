@@ -10,17 +10,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Timesheet\TimesheetStatus;
 use App\Http\Requests\StartStopwatchRequest;
 use App\Models\{Project, Timesheet};
-use App\Services\Timesheet\Stopwatch;
+use App\Services\Timesheet\{Stopwatch, TimesheetResolver};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\{Auth, DB, Gate};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class StopwatchController extends Controller {
-    public function __construct(protected Stopwatch $stopwatch) {}
+    public function __construct(
+        protected Stopwatch $stopwatch,
+        protected TimesheetResolver $resolver,
+    ) {}
 
     public function current(): View {
         return view('stopwatch._panel', [
@@ -33,25 +35,12 @@ class StopwatchController extends Controller {
 
         $project = Project::findOrFail((int) $data['project_id']);
 
-        // Existierenden Heute-Stundenzettel verwenden oder neu anlegen
-        $today = CarbonImmutable::today();
+        // Offenen Heute-Stundenzettel verwenden oder anlegen — derselbe Weg wie
+        // die Anlage über die Sidebar, sonst entstehen zwei Zettel für denselben
+        // Tag und die gestoppten Zeiten landen im falschen.
         $timesheet = isset($data['timesheet_id'])
             ? Timesheet::findOrFail((int) $data['timesheet_id'])
-            : DB::transaction(function () use ($project, $today) {
-                // Per-User serialisieren: firstOrCreate hat keinen Unique-Index
-                // auf (project,user,work_date) als Backstop; zwei parallele
-                // Starts würden sonst zwei Stundenzettel für denselben Tag anlegen.
-                \App\Models\User::query()->whereKey(Auth::id())->lockForUpdate()->first();
-
-                return Timesheet::firstOrCreate([
-                    'project_id' => $project->id,
-                    'user_id' => Auth::id(),
-                    'work_date' => $today,
-                ], [
-                    'organization_id' => $project->organization_id,
-                    'status' => TimesheetStatus::Draft->value,
-                ]);
-            });
+            : $this->resolver->openOrCreate($project, (int) Auth::id(), CarbonImmutable::today())[0];
 
         Gate::authorize('update', $timesheet);
 

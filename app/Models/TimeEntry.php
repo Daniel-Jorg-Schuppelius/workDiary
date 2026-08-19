@@ -299,6 +299,27 @@ class TimeEntry extends Model {
     }
 
     /**
+     * Zeiten, die fachlich zu einem Stundenzettel gehören, aber an keinem
+     * hängen: gleiches Projekt, gleicher Nutzer, gleicher Tag, `timesheet_id`
+     * leer. So entstehen sie über Stoppuhr, Heute-Leiste, Toggl-/Kimai-Import
+     * oder den Auftrag — bisher mussten sie in den Zettel abgetippt werden.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     * @return \Illuminate\Database\Eloquent\Builder<self>
+     */
+    public function scopeAdoptableFor(\Illuminate\Database\Eloquent\Builder $query, Timesheet $timesheet): \Illuminate\Database\Eloquent\Builder {
+        return $query
+            ->whereNull('timesheet_id')
+            ->where('project_id', $timesheet->project_id)
+            ->where('user_id', $timesheet->user_id)
+            // Carbon-Instanz statt 'Y-m-d'-String: der date-Cast persistiert
+            // 'Y-m-d 00:00:00', ein blanker Datums-String trifft auf SQLite nicht.
+            ->where('date', $timesheet->work_date)
+            ->orderBy('started_at')
+            ->orderBy('id');
+    }
+
+    /**
      * Grenzt auf Zeiten ein, die über die Fakturierung laufen: Kunden mit
      * laufendem Leistungssaldo (Feature 098, Konto- und Pauschal-Modus) fallen
      * heraus. Deren Zeiten werden über den Monatsblock der Kundenakte

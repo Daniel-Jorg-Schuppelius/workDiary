@@ -2252,6 +2252,10 @@ Route::middleware('auth')->group(function () {
             ->name('projects.timesheets.submit');
 
         Route::get('projects/{project}/timesheets/{timesheet}/entries/create', [TimesheetEntryController::class, 'create'])->name('projects.timesheets.entries.create');
+        // Bereits erfasste Zeiten des Tages (Stoppuhr, Heute-Leiste, Importe)
+        // an den Zettel hängen, statt sie abzutippen.
+        Route::get('projects/{project}/timesheets/{timesheet}/entries/adopt', [TimesheetEntryController::class, 'adoptForm'])->name('projects.timesheets.entries.adopt.form');
+        Route::post('projects/{project}/timesheets/{timesheet}/entries/adopt', [TimesheetEntryController::class, 'adopt'])->name('projects.timesheets.entries.adopt');
         Route::post('projects/{project}/timesheets/{timesheet}/entries', [TimesheetEntryController::class, 'store'])->name('projects.timesheets.entries.store');
         Route::put('projects/{project}/timesheets/{timesheet}/entries/{entry}', [TimesheetEntryController::class, 'update'])->name('projects.timesheets.entries.update');
         Route::delete('projects/{project}/timesheets/{timesheet}/entries/{entry}', [TimesheetEntryController::class, 'destroy'])->name('projects.timesheets.entries.destroy');

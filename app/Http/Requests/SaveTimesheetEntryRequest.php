@@ -23,6 +23,7 @@ class SaveTimesheetEntryRequest extends BaseFormRequest {
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'task_id' => \App\Models\Task::class,
+        'tag_ids' => \App\Models\Tag::class,
     ];
 
     /**
@@ -94,6 +95,9 @@ class SaveTimesheetEntryRequest extends BaseFormRequest {
             'kind' => ['nullable', Rule::enum(TimeEntryKind::class)],
             'task_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('tasks')],
             'description' => ['nullable', 'string', 'max:500'],
+            'tag_ids' => ['nullable', 'array'],
+            'tag_ids.*' => ['integer', new \App\Rules\ExistsInCurrentOrganization('tags')],
+            'new_tags' => ['nullable', 'string', 'max:500'],
         ];
     }
 

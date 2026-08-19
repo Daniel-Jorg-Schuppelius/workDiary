@@ -14,7 +14,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Mail\TimesheetSignedMail;
-use App\Models\{Material, Project, Timesheet, User};
+use App\Models\{Material, Project, TimeEntry, Timesheet, User};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -62,6 +62,42 @@ class TimesheetTest extends TestCase {
             'work_date' => '2030-02-01 00:00:00',
             'status' => TimesheetStatus::Draft->value,
             'customer_name' => 'Kunde GmbH',
+        ]);
+    }
+
+    public function test_create_lands_on_new_timesheet_with_open_entry_dialog(): void {
+        // Flow-Regression: Nach dem Anlegen muss der Nutzer im frisch erzeugten
+        // Stundenzettel stehen — und zwar mit geöffnetem Zeilendialog, sonst
+        // bricht die Kette „anlegen → eintragen, was gemacht wurde" ab.
+        $response = $this->actingAs($this->user)
+            ->post(route('projects.timesheets.store', $this->project), [
+                'work_date' => '2030-02-01',
+            ]);
+
+        /** @var Timesheet $ts */
+        $ts = Timesheet::query()->latest('id')->firstOrFail();
+        $response->assertRedirect(route('projects.timesheets.show', [$this->project, $ts, 'add' => 'entry']));
+
+        $this->actingAs($this->user)
+            ->get(route('projects.timesheets.show', [$this->project, $ts, 'add' => 'entry']))
+            ->assertOk()
+            ->assertSee('data-entry-modal-autoopen', false);
+    }
+
+    public function test_create_from_dialog_returns_redirect_target_as_json(): void {
+        // Dialog-Submits laufen per fetch; einer 302 folgt nur der fetch selbst
+        // und die JS-Schicht lädt danach die Ausgangsseite neu — der Zettel
+        // bliebe unsichtbar. Deshalb muss das Ziel als JSON zurückkommen.
+        $response = $this->actingAs($this->user)
+            ->withHeader('X-Entry-Dialog', '1')
+            ->post(route('projects.timesheets.store', $this->project), [
+                'work_date' => '2030-02-02',
+            ]);
+
+        /** @var Timesheet $ts */
+        $ts = Timesheet::query()->latest('id')->firstOrFail();
+        $response->assertOk()->assertExactJson([
+            'redirect' => route('projects.timesheets.show', [$this->project, $ts, 'add' => 'entry']),
         ]);
     }
 
@@ -245,6 +281,126 @@ class TimesheetTest extends TestCase {
                 return count($items) === 1 && (int) $items[0]->id === (int) $tsA->id;
             })
             ->assertViewHas('selectedProjectSqid', Sqid::encode(Project::class, $this->project->id));
+    }
+
+    public function test_second_create_for_same_day_opens_the_existing_sheet(): void {
+        // Der Stoppuhr-Start legte den Zettel per firstOrCreate an, die
+        // Sidebar-Anlage blind neu — für denselben Einsatz entstanden zwei
+        // Zettel, und die Zeiten verteilten sich auf beide.
+        $this->actingAs($this->user)
+            ->post(route('projects.timesheets.store', $this->project), ['work_date' => '2030-04-01']);
+        $this->actingAs($this->user)
+            ->post(route('projects.timesheets.store', $this->project), ['work_date' => '2030-04-01']);
+
+        $this->assertSame(1, Timesheet::query()
+            ->where('project_id', $this->project->id)
+            ->where('user_id', $this->user->id)
+            ->count());
+    }
+
+    public function test_reopened_sheet_keeps_its_header_data(): void {
+        // Kopfdaten des zweiten Anlaufs dürfen abgestimmte Angaben nicht
+        // überschreiben — leere Felder darf er aber füllen.
+        $this->actingAs($this->user)
+            ->post(route('projects.timesheets.store', $this->project), [
+                'work_date' => '2030-04-02',
+                'customer_name' => 'Kunde GmbH',
+            ]);
+
+        $this->actingAs($this->user)
+            ->post(route('projects.timesheets.store', $this->project), [
+                'work_date' => '2030-04-02',
+                'customer_name' => 'Falscher Kunde',
+                'notes' => 'Nachtrag',
+            ]);
+
+        $ts = Timesheet::query()->where('work_date', '2030-04-02 00:00:00')->sole();
+        $this->assertSame('Kunde GmbH', $ts->customer_name);
+        $this->assertSame('Nachtrag', $ts->notes);
+    }
+
+    public function test_signed_sheet_does_not_block_a_second_visit_same_day(): void {
+        // Nach der Kundenfreigabe muss ein zweiter Einsatz am selben Tag
+        // erfassbar bleiben — der freigegebene Zettel ist tabu.
+        $signed = $this->makeTimesheet([
+            'work_date' => '2030-04-03',
+            'status' => TimesheetStatus::Signed->value,
+        ]);
+
+        $this->actingAs($this->user)
+            ->post(route('projects.timesheets.store', $this->project), ['work_date' => '2030-04-03']);
+
+        $sheets = Timesheet::query()->where('work_date', '2030-04-03 00:00:00')->get();
+        $this->assertCount(2, $sheets);
+        $this->assertSame(TimesheetStatus::Signed, $signed->fresh()->status);
+    }
+
+    public function test_stopwatch_start_reuses_the_open_sheet_of_the_day(): void {
+        $existing = $this->makeTimesheet(['work_date' => CarbonImmutable::today()->toDateString()]);
+
+        $this->actingAs($this->user)
+            ->post(route('stopwatch.start'), [
+                'project_id' => $this->project->sqid,
+                'description' => 'Anfahrt',
+            ])
+            ->assertRedirect();
+
+        $this->assertSame(1, Timesheet::query()->where('project_id', $this->project->id)->count());
+        $this->assertSame($existing->id, (int) TimeEntry::query()->latest('id')->firstOrFail()->timesheet_id);
+    }
+
+    public function test_existing_times_of_the_day_can_be_adopted(): void {
+        // Zeiten aus Stoppuhr/Heute/Import hängen an keinem Zettel — sie sollen
+        // sich anhängen lassen, statt in den Zettel abgetippt zu werden.
+        $ts = $this->makeTimesheet();
+        $loose = TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'date' => $ts->work_date,
+            'minutes' => 45,
+            'kind' => TimeEntryKind::Work->value,
+            'description' => 'Schon erfasst',
+        ]);
+        // Fremder Tag: darf nicht mitgenommen werden.
+        $otherDay = TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'date' => '2030-02-14',
+            'minutes' => 30,
+            'kind' => TimeEntryKind::Work->value,
+        ]);
+
+        $this->actingAs($this->user)
+            ->post(route('projects.timesheets.entries.adopt', [$this->project, $ts]), [
+                'entry_ids' => [$loose->sqid, $otherDay->sqid],
+            ])
+            ->assertRedirect();
+
+        $this->assertSame($ts->id, (int) $loose->fresh()->timesheet_id);
+        $this->assertNull($otherDay->fresh()->timesheet_id);
+        $this->assertSame(45, (int) $ts->fresh()->totals_minutes);
+    }
+
+    public function test_adopt_dialog_lists_only_unassigned_times(): void {
+        $ts = $this->makeTimesheet();
+        TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'timesheet_id' => $ts->id,
+            'date' => $ts->work_date,
+            'minutes' => 60,
+            'kind' => TimeEntryKind::Work->value,
+            'description' => 'Hängt schon dran',
+        ]);
+
+        $this->actingAs($this->user)
+            ->get(route('projects.timesheets.entries.adopt.form', [$this->project, $ts]))
+            ->assertOk()
+            ->assertDontSee('Hängt schon dran')
+            ->assertSee(__('Keine offenen Zeiten'));
     }
 
     private function makeTimesheet(array $attrs = []): Timesheet {
