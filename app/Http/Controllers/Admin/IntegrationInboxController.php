@@ -350,7 +350,7 @@ class IntegrationInboxController extends Controller {
             $key = $company !== null ? (string) $company->sqid : '';
             $out[$key] ??= [
                 'customer_sqid' => $key,
-                'label' => (string) ($company?->company ?: $company?->name ?: '—'),
+                'label' => (string) ($company?->displayLabel() ?: '—'),
                 'foreigns' => [],
             ];
             $out[$key]['foreigns'][] = ['sqid' => (string) $foreign->getRouteKey(), 'name' => (string) $foreign->name];

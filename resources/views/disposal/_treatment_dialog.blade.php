@@ -63,7 +63,7 @@
                        :value="now()->format('Y-m-d\TH:i')" />
         <x-select-field name="performed_by_user_id" :label="__('disposal.treatment.performed_by')">
             @foreach ($users as $u)
-                <option value="{{ $u->id }}" @selected($u->id === auth()->id())>{{ $u->name }}</option>
+                <option value="{{ $u->sqid }}" @selected($u->id === auth()->id())>{{ $u->name }}</option>
             @endforeach
         </x-select-field>
         <x-input-field name="evidence_reference" :label="__('disposal.treatment.evidence_reference')" maxlength="180" span="2" />

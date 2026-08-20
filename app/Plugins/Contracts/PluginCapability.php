@@ -31,7 +31,12 @@ enum PluginCapability: string implements HasLabel, PluginCapabilityContract {
     /** Kann Zeiten aus einem externen System importieren (z. B. Toggl, Fernwartung). */
     case TimeImport = 'time_import';
 
-    /** Kann Zahlungs-/Abgleichdaten zurücklesen. */
+    /**
+     * Kann Zahlungs-/Abgleichdaten zurücklesen (Zahldatum/Status aus dem
+     * Fremdsystem). Deklariert von Lexoffice; SevDesk/Easybill/orgaMAX lesen
+     * bewusst KEINEN Zahlungsstatus zurück (dort ist die Marker-Reconciliation
+     * reine Übergabe-Idempotenz).
+     */
     case PaymentSync = 'payment_sync';
 
     /** Kann Aufgaben mit einem externen Aufgabensystem abgleichen (Feature 055). */
@@ -55,13 +60,17 @@ enum PluginCapability: string implements HasLabel, PluginCapabilityContract {
     /** Kann extern gebuchte Termine empfangen und Buchungslinks erzeugen (Feature 095, z. B. Calendly). */
     case AppointmentSync = 'appointment_sync';
 
-    /** Personenbeförderung (MVP-456): Taxameter-/Wegstreckenzähler-Import. */
+    /**
+     * Personenbeförderung (MVP-456): Taxameter-/Wegstreckenzähler-Import.
+     * RESERVIERT — noch kein Plugin deklariert sie (Audit 2026-08, Welle 1.5:
+     * geprüft und bewusst so belassen, bis ein Anbieter angebunden wird).
+     */
     case FareMeter = 'fare_meter';
 
-    /** Personenbeförderung (MVP-456): externe Fahrtvermittlung. */
+    /** Personenbeförderung (MVP-456): externe Fahrtvermittlung. RESERVIERT (siehe {@see self::FareMeter}). */
     case PassengerDispatch = 'passenger_dispatch';
 
-    /** Personenbeförderung (MVP-456): Mobilitätsdaten nach § 3a PBefG/MDV. */
+    /** Personenbeförderung (MVP-456): Mobilitätsdaten nach § 3a PBefG/MDV. RESERVIERT (siehe {@see self::FareMeter}). */
     case MobilityData = 'mobility_data';
 
     /** Stabiler Maschinen-Identifier ({@see PluginCapabilityContract}). */

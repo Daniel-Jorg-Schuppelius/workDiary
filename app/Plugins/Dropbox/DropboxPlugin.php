@@ -137,8 +137,21 @@ class DropboxPlugin extends AbstractPlugin implements BackupTarget, DocumentInta
                 })
                 ->exists();
 
-            return $failing
-                ? PluginHealth::degraded(__('cloud_intake.dropbox.health.attention'))
+            if ($failing) {
+                return PluginHealth::degraded(__('cloud_intake.dropbox.health.attention'));
+            }
+
+            // Backupziele sind PLATTFORMWEIT (bewusst ohne organization_id) —
+            // ein blockiertes Ziel betrifft alle Organisationen (Muster Msgraph).
+            $backupAttention = BackupTargetConnection::query()
+                ->where('provider', \App\Enums\Backup\BackupProvider::Dropbox)
+                ->whereIn('status', [
+                    \App\Enums\Backup\BackupTargetStatus::ReauthRequired,
+                    \App\Enums\Backup\BackupTargetStatus::Blocked,
+                ])->exists();
+
+            return $backupAttention
+                ? PluginHealth::degraded(__('cloud_intake.dropbox.health.backup_attention'), 'backup_grant')
                 : PluginHealth::ok(__('cloud_intake.dropbox.health.ok'));
         } catch (Throwable $e) {
             return PluginHealth::failing(__('cloud_intake.dropbox.health.error', ['class' => class_basename($e)]));

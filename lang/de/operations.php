@@ -31,6 +31,8 @@ return [
         'config_missing' => 'Konfiguration fehlt',
         'support_grant_open' => 'Offene Supportfreigabe',
         'problem_report_open' => 'Offene Fehlermeldung',
+        'cloud_intake_reauth' => 'Cloud-Eingang: neue Anmeldung nötig',
+        'cloud_intake_quarantined' => 'Cloud-Eingang: Importe abgewiesen',
     ],
     'severity' => [
         'info' => 'Hinweis',
@@ -85,6 +87,8 @@ return [
         'support_grant_open' => 'Supportfreigabe für :grantee aktiv bis :until.',
         'problem_report_open' => 'Fehlermeldung :reference von :name wartet auf Bearbeitung.',
         'problem_report_summary' => ':count offene Fehlermeldung(en) warten auf Bearbeitung.',
+        'cloud_intake_reauth' => 'Cloud-Dokumenteingang :provider („:folder") braucht eine neue Anmeldung (:status).',
+        'cloud_intake_quarantined' => ':count Datei(en) aus dem Cloud-Dokumenteingang wurden abgewiesen (zuletzt: :reason).',
         'support_grant_summary' => ':count aktive Supportfreigabe(n) — prüfen und bei Bedarf widerrufen.',
     ],
     'filter' => [

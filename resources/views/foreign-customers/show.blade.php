@@ -13,23 +13,17 @@
 @section('content')
 <x-page-shell>
     <div class="space-y-4">
-        {{-- Kopf --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                    <div class="flex items-center gap-2">
-                        <span class="inline-block h-3 w-3 rounded-full" style="background:{{ $foreignCustomer->color ?: '#94a3b8' }}"></span>
-                        <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ $foreignCustomer->name }}</h1>
-                        @if ($foreignCustomer->isArchived())
-                            <x-status-badge tone="ghost" size="sm">{{ __('archiviert') }}</x-status-badge>
-                        @endif
-                    </div>
-                    <p class="mt-1 text-sm text-base-content/60">
-                        {{ __('Endkunde von') }}
-                        <a class="link" href="{{ route('customers.show', $foreignCustomer->customer) }}">{{ $foreignCustomer->customer->company ?: $foreignCustomer->customer->name }}</a>
-                    </p>
-                </div>
-                <div class="flex flex-wrap items-center gap-2">
+        {{-- Kopf: Standard-Toolbar; Farbpunkt und Kunden-Link bleiben als
+             Slot-Inhalt (die Farbe spiegelt die Zuordnung im Tagebuch). --}}
+        <x-page-toolbar :title="$foreignCustomer->name"
+                        :badge="$foreignCustomer->isArchived() ? __('archiviert') : null"
+                        badge-tone="ghost">
+            <span class="inline-flex items-center gap-2">
+                <span class="inline-block h-3 w-3 shrink-0 rounded-full" style="background:{{ $foreignCustomer->color ?: '#94a3b8' }}"></span>
+                {{ __('Endkunde von') }}
+                <a class="link" href="{{ route('customers.show', $foreignCustomer->customer) }}">{{ $foreignCustomer->customer->displayLabel() }}</a>
+            </span>
+            <x-slot:actions>
                     @can('update', $foreignCustomer)
                         <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger
                                     :href="route('foreign-customers.edit', $foreignCustomer)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
@@ -54,10 +48,11 @@
                             </form>
                         @endif
                     @endcan
-                </div>
-            </div>
+            </x-slot:actions>
+        </x-page-toolbar>
 
-            <div class="mt-4 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <div class="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
                 @if ($foreignCustomer->company)<div><span class="text-base-content/50">{{ __('Firma') }}:</span> {{ $foreignCustomer->company }}</div>@endif
                 @if ($foreignCustomer->contact_name)<div><span class="text-base-content/50">{{ __('Ansprechpartner') }}:</span> {{ $foreignCustomer->contact_name }}</div>@endif
                 @if ($foreignCustomer->email)<div><span class="text-base-content/50">{{ __('E-Mail') }}:</span> {{ $foreignCustomer->email }}</div>@endif

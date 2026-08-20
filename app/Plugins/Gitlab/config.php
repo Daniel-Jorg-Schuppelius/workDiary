@@ -31,4 +31,6 @@ return [
     'allow_private_network' => env('GITLAB_ALLOW_PRIVATE_NETWORK', false),
     // Seiten-Obergrenze je Polling-Lauf (à 100 Issues); Rest holt der nächste Lauf.
     'max_pages' => env('GITLAB_SYNC_MAX_PAGES', 10),
+    // Status-Rückrichtung (Welle 1.4): erledigte Aufgabe schließt das Issue.
+    'writeback' => (bool) env('GITLAB_WRITEBACK', false),
 ];

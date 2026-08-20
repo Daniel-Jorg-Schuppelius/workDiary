@@ -27,4 +27,9 @@ return [
     'match_policy' => env('LEXOFFICE_MATCH_POLICY', 'manual_review'),
     // Soll der Pull-Sync remote Kontakte ohne lokales Pendant lokal neu anlegen?
     'create_missing_local' => (bool) env('LEXOFFICE_CREATE_MISSING_LOCAL', false),
+    // Webhook-Empfang (Welle 1.3): URL-Token je Org (produktiv aus plugin_settings,
+    // von `lexoffice:webhooks` generiert) + optionaler Lexoffice-Public-Key (PEM)
+    // zur zusätzlichen RSA-Signaturprüfung des X-Lxo-Signature-Headers.
+    'webhook_secret' => env('LEXOFFICE_WEBHOOK_SECRET'),
+    'webhook_public_key' => env('LEXOFFICE_WEBHOOK_PUBLIC_KEY'),
 ];

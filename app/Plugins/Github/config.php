@@ -30,4 +30,6 @@ return [
     'repo_name' => env('GITHUB_REPO_NAME'),
     // Seiten-Obergrenze je Polling-Lauf (à 100 Issues); Rest holt der nächste Lauf.
     'max_pages' => env('GITHUB_SYNC_MAX_PAGES', 10),
+    // Status-Rückrichtung (Welle 1.4): erledigte Aufgabe schließt das Issue.
+    'writeback' => (bool) env('GITHUB_WRITEBACK', false),
 ];

@@ -99,35 +99,33 @@
             @endif
 
             {{-- Bestandstabelle --}}
-            <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-                <x-table bare scroll="flex" :pinRows="true">
-                    <x-slot:head>
-                        <tr>
-                            <th>{{ __('inventory.field.variant') }}</th>
-                            <th>{{ __('article.field.sku') }}</th>
-                            <th class="text-right">{{ __('inventory.field.available') }}</th>
-                            <th class="text-right">{{ __('inventory.field.physical') }}</th>
-                            <th class="text-right">{{ __('inventory.field.reserved') }}</th>
-                            <th class="text-right">{{ __('inventory.overview.avg') }}</th>
-                            <th class="text-right">{{ __('inventory.overview.value') }}</th>
-                        </tr>
-                    </x-slot:head>
-                    @forelse ($rows as $row)
-                        @php $short = $row['reorder'] !== null && bccomp($row['available'], (string) $row['reorder'], 4) < 0; @endphp
-                        <tr>
-                            <td>{{ $row['variant']->article?->name }} — {{ $row['variant']->name ?? $row['variant']->option_signature }}</td>
-                            <td class="font-mono text-sm">{{ $row['variant']->sku ?? '—' }}</td>
-                            <td class="text-right tabular-nums font-medium {{ $short ? 'text-warning' : '' }}">{{ $row['available'] }}</td>
-                            <td class="text-right tabular-nums">{{ $row['physical'] }}</td>
-                            <td class="text-right tabular-nums">{{ $row['reserved'] }}</td>
-                            <td class="text-right tabular-nums">{{ $row['avg'] }}</td>
-                            <td class="text-right tabular-nums">{{ $row['value'] }}</td>
-                        </tr>
-                    @empty
-                        <x-table.empty :colspan="7" :title="__('inventory.empty.stock')" />
-                    @endforelse
-                </x-table>
-            </x-card>
+            <x-table :zebra="true" scroll="flex" :pinRows="true">
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('inventory.field.variant') }}</th>
+                        <th>{{ __('article.field.sku') }}</th>
+                        <th class="text-right">{{ __('inventory.field.available') }}</th>
+                        <th class="text-right">{{ __('inventory.field.physical') }}</th>
+                        <th class="text-right">{{ __('inventory.field.reserved') }}</th>
+                        <th class="text-right">{{ __('inventory.overview.avg') }}</th>
+                        <th class="text-right">{{ __('inventory.overview.value') }}</th>
+                    </tr>
+                </x-slot:head>
+                @forelse ($rows as $row)
+                    @php $short = $row['reorder'] !== null && bccomp($row['available'], (string) $row['reorder'], 4) < 0; @endphp
+                    <tr>
+                        <td>{{ $row['variant']->article?->name }} — {{ $row['variant']->name ?? $row['variant']->option_signature }}</td>
+                        <td class="font-mono text-sm">{{ $row['variant']->sku ?? '—' }}</td>
+                        <td class="text-right tabular-nums font-medium {{ $short ? 'text-warning' : '' }}">{{ $row['available'] }}</td>
+                        <td class="text-right tabular-nums">{{ $row['physical'] }}</td>
+                        <td class="text-right tabular-nums">{{ $row['reserved'] }}</td>
+                        <td class="text-right tabular-nums">{{ $row['avg'] }}</td>
+                        <td class="text-right tabular-nums">{{ $row['value'] }}</td>
+                    </tr>
+                @empty
+                    <x-table.empty :colspan="7" :title="__('inventory.empty.stock')" />
+                @endforelse
+            </x-table>
 
             {{-- Aktive Reservierungen --}}
             <x-card>

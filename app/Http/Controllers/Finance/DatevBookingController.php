@@ -148,11 +148,16 @@ class DatevBookingController extends Controller {
 
         $data = $request->validate([
             'sources' => ['required', 'array', 'min:1'],
-            'sources.*' => ['required', 'integer'],
+            'sources.*' => ['required', 'string'],
         ]);
 
         try {
-            $this->service->removeSources($batch, array_values(array_map(intval(...), $data['sources'])), $this->actor());
+            // Sqids aus dem Formular (W3.3); der Service prueft die Bindung an den Stapel.
+            $sourceIds = array_values(array_filter(array_map(
+                static fn (string $v): ?int => \App\Support\Sqid::decodeOrNumeric(\App\Models\Finance\DatevBookingSource::class, $v),
+                $data['sources'],
+            )));
+            $this->service->removeSources($batch, $sourceIds, $this->actor());
         } catch (DatevBookingException $e) {
             return back()->withErrors(['status' => $e->getMessage()]);
         }

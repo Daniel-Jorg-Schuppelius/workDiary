@@ -106,7 +106,7 @@ class IdeaMapController extends Controller {
         return redirect()->route('ideas.show', $map)->with('success', __('ideas.import.done'));
     }
 
-    /** Editor-Seite (P3); bis dahin Gliederungs-Rohliste als Platzhalter. */
+    /** Editor-Seite (MVP-106/108): Gliederung + Canvas über denselben Baum-State. */
     public function show(IdeaMap $map): View {
         Gate::authorize('view', $map);
 

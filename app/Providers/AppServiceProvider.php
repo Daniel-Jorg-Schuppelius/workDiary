@@ -292,6 +292,10 @@ class AppServiceProvider extends ServiceProvider {
 
         // Hinweisgeber-Anhang-Scanner: Treiber per Konfiguration (Default: kein
         // Scanner → fail-safe Quarantaene). Tests koennen einen Fake binden.
+        // Click-to-Dial (W4.5): HTTP-Adapter als Standard; Tests binden einen
+        // Fake, ohne den Service anfassen zu muessen.
+        $this->app->bind(\App\Services\Cti\Dial\CtiDialer::class, \App\Services\Cti\Dial\HttpCtiDialer::class);
+
         $this->app->bind(\App\Services\Whistleblowing\Scanning\ScanDriver::class, function (): \App\Services\Whistleblowing\Scanning\ScanDriver {
             return match ((string) config('whistleblowing.scanner', 'none')) {
                 'clamav' => new \App\Services\Whistleblowing\Scanning\ClamAvScanDriver,
@@ -613,6 +617,9 @@ class AppServiceProvider extends ServiceProvider {
         // Rückrichtung der Zeit-Plugins: ein Observer für alle Quellen, statt je
         // Plugin einer — jeder würde sonst dieselbe Referenz-Abfrage fahren.
         TimeEntry::observe(\App\Plugins\Support\TimeWritebackObserver::class);
+        // Git-Issue-Status-Rückrichtung (Audit 2026-08, Welle 1.4): Statuswechsel
+        // an Issue-verknüpften Aufgaben → Outbox (GitHub/GitLab, opt-in).
+        \App\Models\Task::observe(\App\Plugins\Support\GitIssueImport\GitIssueWritebackObserver::class);
         Timesheet::observe(TimesheetObserver::class);
         MaterialUsage::observe(MaterialUsageObserver::class);
         Organization::observe(OrganizationObserver::class);
@@ -880,6 +887,11 @@ class AppServiceProvider extends ServiceProvider {
         // Bursts, aber gegen Flooding gedeckelt; Verluste heilt der stündliche
         // Polling-Abgleich (todoist:sync).
         RateLimiter::for('todoist-webhook', fn(Request $request) => Limit::perMinute(120)->by('twh:' . $request->ip()));
+
+        // Sessionloser Lexoffice-Webhook (Audit 2026-08, Welle 1.3): gleiche
+        // Abwägung — Bursts erlauben, Flooding deckeln; Verluste heilt der
+        // geplante Pull-Sync.
+        RateLimiter::for('lexoffice-webhook', fn(Request $request) => Limit::perMinute(120)->by('lwh:' . $request->ip()));
 
         // Sessionlose Token-Ingest-Endpunkte (CTI-Webhook, Stempelterminal,
         // Standort-Push; Bauturbo Welle D): pro-IP großzügig (240/min ≈ 4/s) für

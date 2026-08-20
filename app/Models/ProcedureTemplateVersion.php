@@ -11,6 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Procedure\ProcedureRiskLevel;
+use App\Models\Concerns\HasSqid;
 use Database\Factories\ProcedureTemplateVersionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -34,6 +35,10 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 class ProcedureTemplateVersion extends Model {
     /** @use HasFactory<ProcedureTemplateVersionFactory> */
     use HasFactory;
+
+    // Audit 2026-08 (W3.5): URLs tragen Sqids statt roher IDs — die
+    // Versions-ID stand als Klartext in der Veröffentlichungs-URL.
+    use HasSqid;
 
     protected $fillable = [
         'procedure_template_id',

@@ -111,10 +111,16 @@ class JointControllerAgreementController extends Controller {
 
     public function syncActivities(Request $request, JointControllerAgreement $gvv): RedirectResponse {
         Gate::authorize('update', $gvv);
-        $data = $request->validate(['activity_ids' => ['array'], 'activity_ids.*' => ['integer']]);
+        // Sqids aus dem Formular (Audit 2026-08, W3.3); die org-gescopte
+        // Whitelist darunter bleibt die eigentliche Schutzlinie.
+        $data = $request->validate(['activity_ids' => ['array'], 'activity_ids.*' => ['string']]);
+        $requested = array_filter(array_map(
+            static fn (string $v): ?int => \App\Support\Sqid::decodeOrNumeric(ProcessingActivity::class, $v),
+            $data['activity_ids'] ?? [],
+        ));
         $valid = ProcessingActivity::query()
             ->where('organization_id', $gvv->organization_id)
-            ->whereIn('id', $data['activity_ids'] ?? [])
+            ->whereIn('id', $requested)
             ->pluck('id')->all();
         $gvv->activities()->sync($valid);
 

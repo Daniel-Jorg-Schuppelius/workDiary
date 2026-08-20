@@ -93,8 +93,10 @@ class TechnicalMeasureController extends Controller {
         Gate::authorize('update', $measure);
         $user = $request->user();
         abort_unless($user !== null, 403);
-        $data = $request->validate(['version_id' => ['required', 'integer']]);
-        $version = TechnicalMeasureVersion::query()->where('measure_id', $measure->id)->findOrFail((int) $data['version_id']);
+        $data = $request->validate(['version_id' => ['required', 'string']]);
+        // Sqid aus dem Formular (W3.3); die Bindung an die Massnahme bleibt.
+        $version = TechnicalMeasureVersion::query()->where('measure_id', $measure->id)
+            ->findOrFail(\App\Support\Sqid::decodeOrAbort(TechnicalMeasureVersion::class, (string) $data['version_id']));
         $this->service->approve($measure, $version, $user);
 
         return back()->with('status', __('Version freigegeben.'));

@@ -35,26 +35,24 @@
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">precision_manufacturing</span>'
                        :title="__('manufacturing.order.empty')" />
     @else
-        <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-            <x-table bare scroll="flex" :pinRows="true">
-                <x-slot:head>
-                    <tr>
-                        <th>{{ __('Nr.') }}</th>
-                        <th>{{ __('Artikel') }}</th>
-                        <th class="text-right">{{ __('manufacturing.order.field.target_qty') }}</th>
-                        <th>{{ __('Status') }}</th>
-                    </tr>
-                </x-slot:head>
-                @foreach ($orders as $order)
-                    <tr>
-                        <td><a href="{{ route('manufacturing-orders.show', $order) }}" class="link link-hover font-mono">{{ $order->number ?? '—' }}</a></td>
-                        <td>{{ $order->article?->name }}{{ $order->variant ? ' — ' . ($order->variant->name ?? $order->variant->option_signature) : '' }}</td>
-                        <td class="text-right tabular-nums">{{ $order->target_qty }} {{ $order->unit }}</td>
-                        <td><span class="badge badge-sm">{{ $order->status->label() }}</span></td>
-                    </tr>
-                @endforeach
-            </x-table>
-        </x-card>
+        <x-table :zebra="true" scroll="flex" :pinRows="true">
+            <x-slot:head>
+                <tr>
+                    <th>{{ __('Nr.') }}</th>
+                    <th>{{ __('Artikel') }}</th>
+                    <th class="text-right">{{ __('manufacturing.order.field.target_qty') }}</th>
+                    <th>{{ __('Status') }}</th>
+                </tr>
+            </x-slot:head>
+            @foreach ($orders as $order)
+                <tr>
+                    <td><a href="{{ route('manufacturing-orders.show', $order) }}" class="link link-hover font-mono">{{ $order->number ?? '—' }}</a></td>
+                    <td>{{ $order->article?->name }}{{ $order->variant ? ' — ' . ($order->variant->name ?? $order->variant->option_signature) : '' }}</td>
+                    <td class="text-right tabular-nums">{{ $order->target_qty }} {{ $order->unit }}</td>
+                    <td><span class="badge badge-sm">{{ $order->status->label() }}</span></td>
+                </tr>
+            @endforeach
+        </x-table>
         <x-pagination :paginator="$orders" standing />
     @endif
 </x-index-page>

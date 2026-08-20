@@ -82,6 +82,22 @@ class GitlabClient {
             ->requestResponse($method, $this->baseUrl . $path, $options);
     }
 
+    /**
+     * PUT /api/v4/projects/{id}/issues/{iid} — Issue schließen/öffnen
+     * (Rückrichtung, Audit 2026-08 Welle 1.4) über `state_event`. GitLab
+     * beantwortet ein No-op-Event mit dem unveränderten Issue (idempotent).
+     */
+    public function setIssueState(string $projectId, int $iid, bool $closed): void {
+        $endpoint = sprintf('/api/v4/projects/%s/issues/%d', rawurlencode($projectId), $iid);
+        $this->guard($this->authed('put', $endpoint, ['json' => ['state_event' => $closed ? 'close' : 'reopen']]), $endpoint);
+    }
+
+    /** POST /api/v4/projects/{id}/issues/{iid}/notes — Erledigungs-Notiz. */
+    public function commentIssue(string $projectId, int $iid, string $body): void {
+        $endpoint = sprintf('/api/v4/projects/%s/issues/%d/notes', rawurlencode($projectId), $iid);
+        $this->guard($this->authed('post', $endpoint, ['json' => ['body' => $body]]), $endpoint);
+    }
+
     /** @return class-string<\App\Plugins\Support\PluginApiException> */
     protected function apiExceptionClass(): string {
         return GitlabApiException::class;

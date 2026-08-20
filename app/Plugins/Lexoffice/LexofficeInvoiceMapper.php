@@ -61,7 +61,7 @@ class LexofficeInvoiceMapper {
         }
 
         return array_filter([
-            'name' => $customer->company ?: $customer->name,
+            'name' => $customer->displayLabel(),
             'street' => $customer->address_street,
             'zip' => $customer->address_zip,
             'city' => $customer->address_city,

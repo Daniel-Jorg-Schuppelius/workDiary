@@ -26,7 +26,7 @@
     <x-select-field name="foreign_customer_id" :label="__('Fremdkunde / Endkunde (optional)')" span="2" data-depends-on="customer_id" :hint="__('Nur Zeiten dieses Endkunden abrechnen.')">
         <option value="">{{ __('alle Endkunden') }}</option>
         @foreach (($foreignCustomers ?? collect()) as $fc)
-            <option value="{{ $fc->sqid }}" data-parent="{{ \App\Support\Sqid::encode(\App\Models\Customer::class, $fc->customer_id) }}" @selected((string) old('foreign_customer_id') === $fc->sqid)>{{ $fc->company ?: $fc->name }}</option>
+            <option value="{{ $fc->sqid }}" data-parent="{{ \App\Support\Sqid::encode(\App\Models\Customer::class, $fc->customer_id) }}" @selected((string) old('foreign_customer_id') === $fc->sqid)>{{ $fc->displayLabel() }}</option>
         @endforeach
     </x-select-field>
     <x-select-field name="content" :label="__('Inhalt')" span="2" :hint="__('Material wird getrennt als eigene Rechnung mit Lieferdatum/-zeitraum erstellt.')">

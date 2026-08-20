@@ -69,6 +69,47 @@ trait ResolvesGlobalDateRange {
     }
 
     /**
+     * Wie {@see resolveRange()}, aber mit fachlichem Default statt des global
+     * gewählten Zeitraums (Audit 2026-08, Welle 2.1).
+     *
+     * Hintergrund: Mehrere Reports haben bewusst eigene Vorgabe-Zeiträume
+     * (Notdienst: Monat, Helpdesk: 8 Wochen, Asset-Compliance: 3 Monate …).
+     * Sie brauchten trotzdem die Schutzlinien des Concerns — bis dahin warf
+     * hand-editiertes `?from=` dort eine ungefangene InvalidFormatException
+     * (HTTP 500), und verdrehte Grenzen blieben verdreht. Der fachliche
+     * Default bleibt unangetastet; nur die Parameter-Auswertung wird
+     * einheitlich.
+     *
+     * @param  callable(): array{0: CarbonImmutable, 1: CarbonImmutable}  $default
+     * @return array{0: CarbonImmutable, 1: CarbonImmutable}
+     */
+    protected function resolveRangeWithDefault(Request $request, callable $default): array {
+        if (! $request->filled('from') && ! $request->filled('to')) {
+            return $default();
+        }
+
+        [$defaultFrom, $defaultTo] = $default();
+
+        try {
+            $from = $request->filled('from')
+                ? CarbonImmutable::parse((string) $request->input('from'))->startOfDay()
+                : $defaultFrom;
+            $to = $request->filled('to')
+                ? CarbonImmutable::parse((string) $request->input('to'))->endOfDay()
+                : $defaultTo;
+        } catch (\Carbon\Exceptions\InvalidFormatException) {
+            // Müll-Input (hand-editierte Bookmarks) → fachlicher Default statt 500.
+            return $default();
+        }
+
+        if ($to->lessThan($from)) {
+            [$from, $to] = [$to->startOfDay(), $from->endOfDay()];
+        }
+
+        return [$from, $to];
+    }
+
+    /**
      * Splits a date range into a list of months (Y-m keys) for tab navigation.
      *
      * @return list<array{key:string,year:int,month:int,label:string,shortLabel:string}>

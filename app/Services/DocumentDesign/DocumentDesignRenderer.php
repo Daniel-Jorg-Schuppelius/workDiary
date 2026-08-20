@@ -13,12 +13,13 @@ declare(strict_types=1);
 namespace App\Services\DocumentDesign;
 
 use App\Enums\DocumentDesign\{PageFormat, RenderDocumentKind, TableStylePreset};
-use App\Models\DocumentDesign\{DocumentRenderProfileVersion, DocumentRenderSnapshot};
+use App\Models\DocumentDesign\{DocumentRenderProfileVersion, DocumentRenderSnapshot, LetterheadAsset};
 use App\Models\{Organization, User};
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\{Log, View};
 use PDFToolkit\Entities\PDFContent;
 use PDFToolkit\Registries\PDFWriterRegistry;
+use PDFToolkit\Writers\StationeryOverlayWriter;
 use RuntimeException;
 
 /**
@@ -131,14 +132,84 @@ class DocumentDesignRenderer {
         // (isBrandable() = false) bleiben ausdrücklich design-frei.
         $format = PageFormat::fromOrientation($writerOptions['orientation'] ?? null);
         $isA4 = ! isset($writerOptions['paper_size']) || strtolower((string) $writerOptions['paper_size']) === 'a4';
+        $overlay = null;
         if ($kind->isBrandable() && $isA4) {
+            if ($payload === null && $organization instanceof Organization) {
+                $payload = $this->payloadFor($organization, $kind, null, $format);
+            }
+            $overlay = $this->vectorStationery($payload);
             $html = $payload !== null
-                ? $this->compose($html, $payload, $format)
+                ? $this->compose($html, $payload, $format, $overlay !== null)
                 : $this->composeFor($organization, $kind, $html, $format);
         }
 
-        return PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html), $writerOptions)
+        $pdf = PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html), $writerOptions)
             ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (' . $view . ').');
+
+        if ($overlay !== null) {
+            $composed = (new StationeryOverlayWriter())->overlayBytes($pdf, $overlay['first'], $overlay['following']);
+            // Scheitert der Overlay (kaputtes Bogen-PDF, FPDI fehlt), geht das
+            // Dokument OHNE Bogen raus statt gar nicht: eine Rechnung ohne
+            // Briefpapier ist ärgerlich, eine fehlende Rechnung ist ein Ausfall.
+            if ($composed !== null) {
+                return $composed;
+            }
+            Log::warning('document_design.overlay_failed', ['view' => $view, 'kind' => $kind->value]);
+        }
+
+        return $pdf;
+    }
+
+    /**
+     * Vektor-Bögen zum Payload (Audit 2026-08, W5.5) — oder null, wenn kein
+     * PDF-Original vorliegt (Raster-Upload) und der bisherige Bild-Weg
+     * greifen muss.
+     *
+     * `following` unterscheidet bewusst zwischen null (keine eigene Angabe →
+     * Folgeseiten erben den Bogen der ersten Seite) und '' (ausdrücklich kein
+     * Bogen ab Seite 2) — genau die Semantik des
+     * {@see StationeryOverlayWriter}.
+     *
+     * @param array<string, mixed>|null $payload
+     * @return array{first: string|null, following: string|null}|null
+     */
+    private function vectorStationery(?array $payload): ?array {
+        $assets = (array) (($payload['assets'] ?? []));
+        $firstId = $assets['first_asset_id'] ?? null;
+        $followingId = $assets['following_asset_id'] ?? null;
+        if (! is_numeric($firstId) && ! is_numeric($followingId)) {
+            return null;
+        }
+
+        $first = is_numeric($firstId) ? $this->letterheadAsset((int) $firstId) : null;
+        $following = is_numeric($followingId) ? $this->letterheadAsset((int) $followingId) : null;
+
+        // Gemischt (ein PDF, ein Rasterbild) wäre ein halber Overlay: die eine
+        // Seite scharf, die andere ohne Bogen. Dann lieber komplett der alte
+        // Weg — er zeigt wenigstens beide.
+        foreach ([$firstId => $first, $followingId => $following] as $id => $asset) {
+            if (is_numeric($id) && ! ($asset?->hasVectorSource() ?? false)) {
+                return null;
+            }
+        }
+
+        $firstBytes = $first?->vectorSourceBytes();
+        $followingBytes = $following?->vectorSourceBytes();
+        if ($firstBytes === null && $followingBytes === null) {
+            return null;
+        }
+
+        return [
+            'first' => $firstBytes,
+            // Kein zweites Asset hinterlegt ⇒ '' (nur Seite 1 auf Bogen); das
+            // entspricht dem Bild-Weg, der ohne `assets.following` ebenfalls
+            // nur die erste Seite hinterlegt.
+            'following' => $followingBytes ?? '',
+        ];
+    }
+
+    private function letterheadAsset(int $id): ?LetterheadAsset {
+        return LetterheadAsset::query()->withoutGlobalScopes()->whereKey($id)->first();
     }
 
     /**
@@ -149,7 +220,7 @@ class DocumentDesignRenderer {
      *
      * @param array<string, mixed>|null $payload
      */
-    public function compose(string $html, ?array $payload, PageFormat $format = PageFormat::A4Portrait): string {
+    public function compose(string $html, ?array $payload, PageFormat $format = PageFormat::A4Portrait, bool $vectorOverlay = false): string {
         if ($payload === null) {
             return $html;
         }
@@ -185,7 +256,10 @@ class DocumentDesignRenderer {
         $css .= $this->tableCss((array) ($payload['table_style'] ?? []));
 
         $body = '';
-        $assets = (array) ($payload['assets'] ?? []);
+        // Beim Vektor-Overlay (W5.5) bleibt der Bogen aus dem HTML: er kommt
+        // nach dem Rendern als PDF-Ebene unter die Seiten. Die Ränder oben
+        // gelten unverändert — das Layout des Inhalts ändert sich nicht.
+        $assets = $vectorOverlay ? [] : (array) ($payload['assets'] ?? []);
         // dompdf positioniert fixe/absolute Elemente relativ zum Randkasten —
         // negative Offsets in Randbreite lassen den Bogen die volle Seite decken.
         if (! empty($assets['following'])) {

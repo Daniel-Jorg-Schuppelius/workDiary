@@ -165,7 +165,7 @@ class ManufacturingOrderController extends Controller {
         ]);
 
         $recipient = new ShipmentRecipient(
-            name: (string) ($customer->company ?: $customer->name),
+            name: (string) ($customer->displayLabel()),
             street: (string) $customer->address_street,
             zip: (string) $customer->address_zip,
             city: (string) $customer->address_city,
@@ -228,15 +228,16 @@ class ManufacturingOrderController extends Controller {
         Gate::authorize('update', $order);
 
         $data = $request->validate([
-            'material' => ['required', 'integer'],
+            'material' => ['required', 'string'],
             'substitute_article' => ['required', 'string'],
             'quantity' => ['required', 'numeric', 'gt:0'],
             'reason' => ['required', 'string', 'min:5', 'max:500'],
         ]);
 
+        // Sqid aus dem Dialog (W3.3); die Bindung an den Auftrag bleibt.
         $material = ManufacturingOrderMaterial::query()
             ->where('manufacturing_order_id', $order->id)
-            ->find((int) $data['material']);
+            ->find(\App\Support\Sqid::decodeOrNumeric(ManufacturingOrderMaterial::class, (string) $data['material']));
         if ($material === null) {
             return back()->with('error', __('Unbekannte Materialposition.'));
         }

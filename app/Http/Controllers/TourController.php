@@ -203,7 +203,11 @@ class TourController extends Controller {
 
         $orderIds = $request->input('order_ids', []);
         if (is_array($orderIds)) {
-            $ids = array_values(array_map(static fn($id) => (int) $id, $orderIds));
+            // Sqids aus dem Formular (W3.3); Alt-Aufrufe mit roher ID bleiben lesbar.
+            $ids = array_values(array_filter(array_map(
+                static fn ($id): ?int => \App\Support\Sqid::decodeOrNumeric(\App\Models\DiaryEntry::class, (string) $id),
+                $orderIds,
+            )));
             $this->tours->assignOrders($tour, $ids);
         }
 

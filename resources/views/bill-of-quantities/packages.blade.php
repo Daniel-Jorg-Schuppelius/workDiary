@@ -93,9 +93,7 @@
                                         <select name="project" class="select select-xs select-bordered w-40"
                                                 aria-label="{{ __('Projekt') }}">
                                             <option value="">{{ __('— ohne Projekt —') }}</option>
-                                            @foreach ($projects as $project)
-                                                <option value="{{ $project->sqid }}">{{ $project->name }}</option>
-                                            @endforeach
+                                            <x-project-options :projects="$projects" />
                                         </select>
                                         <x-icon-btn icon="download_done" tone="primary" size="xs" type="submit" show-label>{{ __('Importieren') }}</x-icon-btn>
                                     </form>

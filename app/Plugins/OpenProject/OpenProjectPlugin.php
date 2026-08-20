@@ -81,6 +81,7 @@ class OpenProjectPlugin extends AbstractPlugin implements TimeImporter {
             ['key' => 'default_activity_id', 'label' => __('OpenProject-Activity-ID (Rückbuchung)'), 'type' => 'text', 'help' => __('TimeEntriesActivity-ID, unter der zurückgebuchte Zeiten angelegt werden (Pflicht für den Export).')],
             ['key' => 'create_missing_projects', 'label' => __('Fehlende Projekte/Aufgaben anlegen'), 'type' => 'boolean', 'default' => false, 'help' => __('Beim Struktur-Sync fehlende workDiary-Projekte/Aufgaben automatisch anlegen statt nur zuzuordnen.')],
             ['key' => 'writeback', 'label' => __('Korrekturen zurückschreiben'), 'type' => 'boolean', 'default' => false, 'help' => __('Schreibt Korrekturen an bereits importierten Zeiten zurück nach OpenProject (Änderung und Löschung). Wurde der Eintrag dort zwischenzeitlich geändert, wird nichts überschrieben — der Fall landet in der Integrations-Inbox. Abgerechnete Zeiten werden nie zurückgeschrieben.')],
+            ['key' => 'push_on_create', 'label' => __('Sofort-Rückbuchung neuer Zeiten'), 'type' => 'boolean', 'default' => false, 'help' => __('Bucht neu erfasste Zeiten gemappter Projekte sofort zurück statt erst mit dem nächsten Lauf. Achtung: Der Eintrag gilt damit unmittelbar als exportiert und verschwindet aus der lokalen Abrechnung — ohne Korrekturfenster.')],
         ];
     }
 

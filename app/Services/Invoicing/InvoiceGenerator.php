@@ -87,7 +87,7 @@ class InvoiceGenerator {
 
             $notes = null;
             if ($foreignCustomer !== null) {
-                $notes = (string) __('Endkunde: :name', ['name' => $foreignCustomer->company ?: $foreignCustomer->name]);
+                $notes = (string) __('Endkunde: :name', ['name' => $foreignCustomer->displayLabel()]);
             }
 
             // Länderspezifische Steuerlogik (Restpunkt 68): Katalog + Org-
@@ -378,7 +378,7 @@ class InvoiceGenerator {
 
             $notes = null;
             if ($foreignCustomer !== null) {
-                $notes = (string) __('Endkunde: :name', ['name' => $foreignCustomer->company ?: $foreignCustomer->name]);
+                $notes = (string) __('Endkunde: :name', ['name' => $foreignCustomer->displayLabel()]);
             }
 
             $invoice = Invoice::create([
@@ -504,7 +504,7 @@ class InvoiceGenerator {
         if ($foreignCustomer === null) {
             return $description;
         }
-        $name = trim((string) ($foreignCustomer->company ?: $foreignCustomer->name));
+        $name = trim((string) ($foreignCustomer->displayLabel()));
         if ($name === '') {
             return $description;
         }

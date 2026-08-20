@@ -101,7 +101,13 @@ return [
         ],
     ],
 
+    // Offline erfasste Anhänge (Audit 2026-08, W4.1).
+
+    'attachment' => ['pending' => 'Wird nachgeladen'],
+
     'validation' => [
+
+        'no_upload_field' => 'Für diesen Feld-Schlüssel gibt es kein Datei-/Fotofeld im Formular.',
         'invalid_row' => 'Felddefinition in Zeile :row ist ungültig.',
         'label_required' => 'Feld :row braucht eine Bezeichnung (max. 160 Zeichen).',
         'unknown_type' => 'Feld :row hat einen unbekannten Feldtyp.',

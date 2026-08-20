@@ -64,7 +64,7 @@
                         :hint="__('article.field.sales_discount_group_hint')">
             <option value="">—</option>
             @foreach ($salesDiscountGroups ?? [] as $group)
-                <option value="{{ $group->id }}" @selected((int) old('sales_discount_group_id', $article?->sales_discount_group_id) === $group->id)>
+                <option value="{{ $group->sqid }}" @selected((int) old('sales_discount_group_id', $article?->sales_discount_group_id) === $group->id)>
                     {{ $group->code }}{{ $group->label ? ' — ' . $group->label : '' }}
                 </option>
             @endforeach

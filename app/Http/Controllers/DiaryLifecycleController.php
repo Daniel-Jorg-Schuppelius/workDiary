@@ -76,10 +76,11 @@ class DiaryLifecycleController extends Controller {
     }
 
     private function protocol(Request $request, DiaryEntry $diary): Protocol {
-        $data = $request->validate(['protocol_id' => ['required', 'integer']]);
+        $data = $request->validate(['protocol_id' => ['required', 'string']]);
 
+        // Sqid aus dem Formular (W3.3); die org-gescopte Query bleibt die Schutzlinie.
         return Protocol::query()
             ->where('organization_id', $diary->organization_id)
-            ->findOrFail((int) $data['protocol_id']);
+            ->findOrFail(\App\Support\Sqid::decodeOrAbort(Protocol::class, (string) $data['protocol_id']));
     }
 }

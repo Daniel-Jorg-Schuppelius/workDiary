@@ -166,7 +166,9 @@ abstract class AbstractGitIssueImporter {
             return false;
         }
 
-        $task->forceFill(['status' => $target->value])->save();
+        // Kein Export-Echo (Welle 1.4): Remote-Statuswechsel dürfen nicht als
+        // Rückrichtungs-Outbox zurück zum Quellsystem laufen.
+        GitIssueWritebackObserver::suppressed(fn () => $task->forceFill(['status' => $target->value])->save());
         $reference->forceFill(['payload' => $issue, 'synced_at' => Carbon::now()])->save();
 
         return true;

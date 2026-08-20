@@ -10,10 +10,9 @@
 
 namespace App\Plugins\Webdav;
 
-use App\Models\{Organization, WebdavConnection};
+use App\Models\WebdavConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\Plugin;
-use App\Plugins\Support\PluginOrgContext;
 use App\Plugins\Webdav\Contracts\WebdavGatewayFactory;
 use Throwable;
 
@@ -51,6 +50,12 @@ class WebdavPlugin extends AbstractPlugin {
     }
 
     /** Ereignisgetriebenes Sink-Plugin ohne providerneutrale Sync-Capability. */
+    /**
+     * Bewusst leer: Der Dokumentspiegel ist ein
+     * {@see \App\Plugins\Support\Mirror\MirrorTarget} und wird über den
+     * {@see \App\Plugins\Support\Mirror\DocumentMirrorService} geführt
+     * (Audit 2026-08, W1.6).
+     */
     public function capabilities(): array {
         return [];
     }
@@ -70,9 +75,9 @@ class WebdavPlugin extends AbstractPlugin {
 
     /** Health-Check je Organisation: aktive Ablage suchen und die Collection anpingen. */
     public function healthCheck(): PluginHealth {
-        $org = PluginOrgContext::currentOrNull();
-        if (! $org instanceof Organization) {
-            return PluginHealth::ok(__('Keine Organisation im Kontext.'));
+        $org = $this->healthOrgContext();
+        if ($org instanceof PluginHealth) {
+            return $org;
         }
 
         $connection = WebdavConnection::query()->where('organization_id', $org->id)->first();

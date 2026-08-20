@@ -69,6 +69,7 @@ return [
             'not_configured' => 'Chiavi app Dropbox non configurate.',
             'no_org_context' => 'Nessun contesto organizzazione (esecuzione di sistema).',
             'attention' => 'Almeno una connessione Dropbox richiede attenzione (riautenticazione/bloccata).',
+            'backup_attention' => 'La destinazione di backup Dropbox richiede attenzione (riautenticazione/bloccata) — riguarda tutte le organizzazioni.',
             'ok' => 'Connessioni Dropbox in ordine.',
             'error' => 'Controllo stato non riuscito (:class).',
         ],
@@ -79,6 +80,7 @@ return [
             'not_configured' => 'Chiavi client Google Drive non configurate.',
             'no_org_context' => 'Nessun contesto organizzazione (esecuzione di sistema).',
             'attention' => 'Almeno una connessione Google Drive richiede attenzione (riautenticazione/bloccata).',
+            'backup_attention' => 'La destinazione di backup Google Drive richiede attenzione (riautenticazione/bloccata) — riguarda tutte le organizzazioni.',
             'ok' => 'Connessioni Google Drive in ordine.',
             'error' => 'Controllo stato non riuscito (:class).',
         ],
@@ -88,6 +90,7 @@ return [
         'health' => [
             'no_org_context' => 'Nessun contesto organizzazione (esecuzione di sistema).',
             'attention' => 'Almeno una connessione Nextcloud richiede attenzione (ri-autenticazione/bloccata).',
+            'backup_attention' => 'La destinazione di backup Nextcloud richiede attenzione (riautenticazione/bloccata) — riguarda tutte le organizzazioni.',
             'ok' => 'Connessioni Nextcloud in ordine.',
             'error' => 'Controllo di integrità non riuscito (:class).',
         ],
@@ -135,5 +138,44 @@ return [
         'revision' => 'Revisione',
         'reason' => 'Motivo',
         'when' => 'Quando',
+    ],
+    // Rapporto di importazione (funzione 080 P9; audit 2026-08, W4.4).
+    'report' => [
+        'title' => 'Rapporto ingresso documenti cloud',
+        'nav' => 'Ingresso documenti cloud',
+        'subtitle' => 'Documenti importati e rifiutati nel periodo',
+        'kpi' => [
+            'total' => 'Operazioni totali',
+            'imported' => 'Importati',
+            'inbox' => 'Nella posta di assegnazione',
+            'rejected' => 'Rifiutati',
+        ],
+        'chart' => [
+            'per_period' => 'Operazioni :per',
+            'by_provider' => 'Operazioni per fornitore',
+        ],
+        'unit' => ['documents' => 'Documenti'],
+        'section' => [
+            'connections' => 'Connessioni',
+            'reasons' => 'Motivi di rifiuto',
+            'items' => 'Operazioni',
+        ],
+        'column' => [
+            'folder' => 'Cartella',
+            'provider' => 'Fornitore',
+            'status' => 'Stato',
+            'imported' => 'Importati',
+            'rejected' => 'Rifiutati',
+            'last_run' => 'Ultima esecuzione',
+            'reason' => 'Motivo',
+            'count' => 'Numero',
+            'date' => 'Data e ora',
+            'path' => 'Percorso di origine',
+        ],
+        'empty' => [
+            'connections' => 'Nessuna connessione cloud collegata finora.',
+            'reasons' => 'Nessun rifiuto nel periodo selezionato.',
+            'items' => 'Nessun dato nel periodo selezionato.',
+        ],
     ],
 ];

@@ -48,10 +48,9 @@
             <option value="acknowledged" @selected(($filters['status'] ?? '') === 'acknowledged')>{{ __('Bestätigt') }}</option>
             <option value="all" @selected(($filters['status'] ?? '') === 'all')>{{ __('Alle') }}</option>
         </select>
-        <input type="date" name="from" value="{{ $filters['from'] ?? '' }}"
-               class="input input-sm input-bordered w-36 shrink-0" aria-label="{{ __('Von') }}" />
-        <input type="date" name="to" value="{{ $filters['to'] ?? '' }}"
-               class="input input-sm input-bordered w-36 shrink-0" aria-label="{{ __('Bis') }}" />
+        <x-date-range grid-class="flex flex-wrap items-end gap-2"
+                      :from="$filters['from'] ?? ''" :to="$filters['to'] ?? ''"
+                      :from-label="__('Von')" :to-label="__('Bis')" />
     </x-filter-bar>
 
     @php($hasFilter = collect($filters)->filter(fn($v) => $v !== '' && $v !== 'open')->isNotEmpty())
@@ -101,7 +100,7 @@
                 <tr class="{{ $err->isAcknowledged() ? 'opacity-60' : '' }}">
                     <td>
                         @unless ($err->isAcknowledged())
-                            <input type="checkbox" class="checkbox checkbox-sm" name="ids[]" value="{{ $err->id }}" form="bulk-ack-form" aria-label="{{ __('Fehler auswählen') }}">
+                            <input type="checkbox" class="checkbox checkbox-sm" name="ids[]" value="{{ $err->sqid }}" form="bulk-ack-form" aria-label="{{ __('Fehler auswählen') }}">
                         @endunless
                     </td>
                     <td class="text-xs text-base-content/70 whitespace-nowrap" title="{{ $err->occurred_at->toDayDateTimeString() }}">

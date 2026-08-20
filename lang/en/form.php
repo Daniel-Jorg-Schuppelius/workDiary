@@ -101,7 +101,13 @@ return [
         ],
     ],
 
+    // Offline erfasste Anhänge (Audit 2026-08, W4.1).
+
+    'attachment' => ['pending' => 'Upload pending'],
+
     'validation' => [
+
+        'no_upload_field' => 'There is no file/photo field with this key in the form.',
         'invalid_row' => 'Field definition in row :row is invalid.',
         'label_required' => 'Field :row needs a label (max. 160 characters).',
         'unknown_type' => 'Field :row has an unknown field type.',

@@ -80,7 +80,7 @@ class LexofficeMapper {
         if ($isCompany) {
             $contactPersons = $this->buildContactPersons($contact);
             $payload['company'] = array_filter([
-                'name' => $contact->company ?: $contact->name,
+                'name' => $contact->displayLabel(),
                 'taxNumber' => $contact->tax_number ?: null,
                 'vatRegistrationId' => $contact->vat_id ?: null,
                 'contactPersons' => $contactPersons !== [] ? $contactPersons : null,
@@ -244,7 +244,7 @@ class LexofficeMapper {
                 // Endkunde (Fremdkunde) mit in die Buchungszeile übernehmen.
                 $endkunde = $project?->foreignCustomer;
                 $prefix = $endkunde !== null
-                    ? (string) __('Endkunde :name', ['name' => trim((string) ($endkunde->company ?: $endkunde->name))]) . ' · '
+                    ? (string) __('Endkunde :name', ['name' => trim((string) ($endkunde->displayLabel()))]) . ' · '
                     : '';
                 $name = sprintf('%s%s%s (%s – %s)', $prefix, $projectName, $kindSuffix, $from->format('d.m.Y'), $to->format('d.m.Y'));
 

@@ -119,7 +119,7 @@ class PurchaseOrderExportService {
             ->withBuyerAddress($buyer['street'], $buyer['zip'], $buyer['city'], $buyer['country'])
             // Verkäufer = Lieferant
             ->withSeller(
-                (string) ($supplier->company ?: $supplier->name),
+                (string) ($supplier->displayLabel()),
                 trim((string) $supplier->vat_id) !== '' ? trim((string) $supplier->vat_id) : null,
                 trim((string) $supplier->tax_number) !== '' ? trim((string) $supplier->tax_number) : null,
             )
@@ -254,11 +254,12 @@ class PurchaseOrderExportService {
     }
 
     /**
-     * Einheiten-Mapping auf UN/ECE-Rec-20-Codes über den zentralen
-     * {@see UnitCodeMapper} (Feature 107, W7): Stück ⇒ H87 (historischer
-     * Bestell-XML-Code), unbekannt ⇒ C62 (generisch „one").
+     * Einheiten-Mapping auf UN/ECE-Rec-20-Codes (Feature 107, W7):
+     * Stück ⇒ H87 (historischer Bestell-XML-Code), unbekannt ⇒ C62
+     * (generisch „one"). Die Auflösung liefert das erechnung-toolkit; die
+     * Zielcode-Entscheidung bleibt hier, sie ist formatspezifisch.
      */
     private function unitCode(string $unit): UnitCode {
-        return \App\Support\UnitCodeMapper::tryUnitCode($unit, UnitCode::UNIT_H87) ?? UnitCode::PIECE;
+        return UnitCode::fromText($unit, UnitCode::UNIT_H87) ?? UnitCode::PIECE;
     }
 }

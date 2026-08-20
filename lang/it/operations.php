@@ -31,6 +31,8 @@ return [
         'config_missing' => 'Configurazione mancante',
         'support_grant_open' => 'Autorizzazione di supporto aperta',
         'problem_report_open' => 'Segnalazione di problema aperta',
+        'cloud_intake_reauth' => 'Ingresso cloud: nuovo accesso necessario',
+        'cloud_intake_quarantined' => 'Ingresso cloud: importazioni rifiutate',
     ],
     'severity' => [
         'info' => 'Avviso',
@@ -85,6 +87,8 @@ return [
         'support_grant_open' => 'Autorizzazione di supporto per :grantee attiva fino al :until.',
         'problem_report_open' => 'La segnalazione :reference di :name è in attesa di elaborazione.',
         'problem_report_summary' => ':count segnalazione/i aperta/e in attesa di elaborazione.',
+        'cloud_intake_reauth' => 'L’ingresso documenti cloud :provider (“:folder”) deve essere ricollegato (:status).',
+        'cloud_intake_quarantined' => ':count file dall’ingresso documenti cloud sono stati rifiutati (ultimo motivo: :reason).',
         'support_grant_summary' => ':count autorizzazione/i di supporto attiva/e — verificare ed eventualmente revocare.',
     ],
     'filter' => [

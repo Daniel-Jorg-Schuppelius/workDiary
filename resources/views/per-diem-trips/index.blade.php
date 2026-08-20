@@ -43,72 +43,70 @@
                         :tone="$totals['open'] > 0 ? 'warning' : 'ghost'" />
         </div>
 
-        <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-            <x-table table-sort="server"
-                     :route="route('per-diem-trips.index')"
-                     :current-sort="$sort ?? null"
-                     :current-dir="$dir ?? 'desc'"
-                     :sort-params="['status' => $statusFilter]"
-                     bare scroll="flex" :pinRows="true">
-                <x-slot:head>
-                    <tr>
-                        <x-table.th sort="started_at" default>{{ __('Beginn') }}</x-table.th>
-                        <x-table.th>{{ __('Ende') }}</x-table.th>
-                        <x-table.th sort="location">{{ __('Ort') }}</x-table.th>
-                        <x-table.th>{{ __('Zweck') }}</x-table.th>
-                        <x-table.th align="right">{{ __('Pauschale') }}</x-table.th>
-                        <x-table.th sort="status">{{ __('Status') }}</x-table.th>
-                        <th></th>
-                    </tr>
-                </x-slot:head>
-                @forelse ($trips as $trip)
-                    <tr>
-                        <td class="whitespace-nowrap">{{ $trip->started_at->fdatetime() }}</td>
-                        <td class="whitespace-nowrap">{{ $trip->ended_at->fdatetime() }}</td>
-                        <td>
-                            <span class="inline-flex items-center gap-1">
-                                <x-icon name="place" class="text-info" />
-                                {{ $trip->location }}
-                                <span class="text-xs text-base-content/60">({{ $trip->country }})</span>
-                            </span>
-                        </td>
-                        <td class="max-w-xs truncate">{{ $trip->purpose }}</td>
-                        <td class="text-right whitespace-nowrap">
-                            {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $trip->totalAmount(), 2, withThousandsSeparator: true) }} €
-                            <span class="text-xs text-base-content/60 ml-1">({{ $trip->days->count() }} {{ __('Tage') }})</span>
-                        </td>
-                        <td>
-                            <x-status-badge :tone="$trip->status->tone()" size="sm">
-                                {{ $trip->status->label() }}
-                            </x-status-badge>
-                        </td>
-                        <td class="text-right whitespace-nowrap">
-                            <x-icon-btn icon="visibility"
-                                        :href="route('per-diem-trips.show', $trip)"
-                                        :label="__('Anzeigen')" />
-                            @can('update', $trip)
-                                <x-icon-btn icon="edit"
-                                            data-entry-modal-trigger
-                                            :href="route('per-diem-trips.edit', $trip)"
-                                            :label="__('Bearbeiten')" />
-                            @endcan
-                            @can('delete', $trip)
-                                <x-action-form :action="route('per-diem-trips.destroy', $trip)" method="DELETE"
-                                      :confirm="__('Reise wirklich löschen?')"
-                                      :confirm-label="__('Löschen')">
-                                    <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                                </x-action-form>
-                            @endcan
-                        </td>
-                    </tr>
-                @empty
-                    <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">restaurant_menu</span>'
-                                   :colspan="7"
-                                   :title="__('Keine Reisen im gewählten Zeitraum')"
-                                   compact />
-                @endforelse
-            </x-table>
-        </x-card>
+        <x-table :zebra="true" table-sort="server"
+                 :route="route('per-diem-trips.index')"
+                 :current-sort="$sort ?? null"
+                 :current-dir="$dir ?? 'desc'"
+                 :sort-params="['status' => $statusFilter]"
+                 scroll="flex" :pinRows="true">
+            <x-slot:head>
+                <tr>
+                    <x-table.th sort="started_at" default>{{ __('Beginn') }}</x-table.th>
+                    <x-table.th>{{ __('Ende') }}</x-table.th>
+                    <x-table.th sort="location">{{ __('Ort') }}</x-table.th>
+                    <x-table.th>{{ __('Zweck') }}</x-table.th>
+                    <x-table.th align="right">{{ __('Pauschale') }}</x-table.th>
+                    <x-table.th sort="status">{{ __('Status') }}</x-table.th>
+                    <th></th>
+                </tr>
+            </x-slot:head>
+            @forelse ($trips as $trip)
+                <tr>
+                    <td class="whitespace-nowrap">{{ $trip->started_at->fdatetime() }}</td>
+                    <td class="whitespace-nowrap">{{ $trip->ended_at->fdatetime() }}</td>
+                    <td>
+                        <span class="inline-flex items-center gap-1">
+                            <x-icon name="place" class="text-info" />
+                            {{ $trip->location }}
+                            <span class="text-xs text-base-content/60">({{ $trip->country }})</span>
+                        </span>
+                    </td>
+                    <td class="max-w-xs truncate">{{ $trip->purpose }}</td>
+                    <td class="text-right whitespace-nowrap">
+                        {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $trip->totalAmount(), 2, withThousandsSeparator: true) }} €
+                        <span class="text-xs text-base-content/60 ml-1">({{ $trip->days->count() }} {{ __('Tage') }})</span>
+                    </td>
+                    <td>
+                        <x-status-badge :tone="$trip->status->tone()" size="sm">
+                            {{ $trip->status->label() }}
+                        </x-status-badge>
+                    </td>
+                    <td class="text-right whitespace-nowrap">
+                        <x-icon-btn icon="visibility"
+                                    :href="route('per-diem-trips.show', $trip)"
+                                    :label="__('Anzeigen')" />
+                        @can('update', $trip)
+                            <x-icon-btn icon="edit"
+                                        data-entry-modal-trigger
+                                        :href="route('per-diem-trips.edit', $trip)"
+                                        :label="__('Bearbeiten')" />
+                        @endcan
+                        @can('delete', $trip)
+                            <x-action-form :action="route('per-diem-trips.destroy', $trip)" method="DELETE"
+                                  :confirm="__('Reise wirklich löschen?')"
+                                  :confirm-label="__('Löschen')">
+                                <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
+                            </x-action-form>
+                        @endcan
+                    </td>
+                </tr>
+            @empty
+                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">restaurant_menu</span>'
+                               :colspan="7"
+                               :title="__('Keine Reisen im gewählten Zeitraum')"
+                               compact />
+            @endforelse
+        </x-table>
 
         <x-pagination :paginator="$trips" standing />
     </x-index-page>

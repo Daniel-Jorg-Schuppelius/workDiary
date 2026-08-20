@@ -88,6 +88,44 @@ class OpenProjectExportTest extends TestCase {
         ]);
     }
 
+    public function test_outbox_create_pushes_single_entry_when_opted_in(): void {
+        // Sofort-Rückbuchung (Audit 2026-08, Welle 1.2): eigenes Opt-in
+        // push_on_create, weil der Eintrag unmittelbar exported wird.
+        \Illuminate\Support\Facades\Queue::fake();
+        $this->config(['push_on_create' => true]);
+        $project = $this->mappedProject('9');
+        $entry = $this->timeEntry($project);
+
+        $outbox = \App\Models\IntegrationOutboxEntry::query()
+            ->where('operation', \App\Plugins\OpenProject\Services\OpenProjectOutboxDispatcher::OP_ENTRY_CREATE)
+            ->where('idempotency_key', OpenProjectPlugin::ID . '-entry-create:' . $entry->getKey())
+            ->firstOrFail();
+
+        $fake = FakePluginHttp::fake([self::BASE . '/time_entries' => FakePluginHttp::response(['id' => 9001], 201)]);
+
+        $this->assertTrue(app(\App\Plugins\OpenProject\Services\OpenProjectOutboxDispatcher::class)->dispatch($outbox));
+
+        $fake->assertSentCount(1);
+        // Rückbuchung: der Eintrag ist sofort exportiert.
+        $this->assertTrue((bool) $entry->fresh()->exported);
+        $this->assertDatabaseHas('external_references', [
+            'plugin_id' => OpenProjectPlugin::ID,
+            'external_type' => OpenProjectExportService::EXT_TYPE_PUSHED,
+            'referenceable_id' => $entry->getKey(),
+            'external_id' => '9001',
+        ]);
+    }
+
+    public function test_outbox_create_is_not_enqueued_without_opt_in(): void {
+        \Illuminate\Support\Facades\Queue::fake();
+        $this->config();
+        $this->timeEntry($this->mappedProject('9'));
+
+        $this->assertDatabaseMissing('integration_outbox', [
+            'operation' => \App\Plugins\OpenProject\Services\OpenProjectOutboxDispatcher::OP_ENTRY_CREATE,
+        ]);
+    }
+
     public function test_push_creates_remote_entry_and_marks_exported(): void {
         $config = $this->config();
         $project = $this->mappedProject('9');

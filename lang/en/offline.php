@@ -11,21 +11,27 @@
 // Offline-Sync (Feature 035): Offline-Änderungs-Seite + Statusanzeige.
 return [
     'title' => 'Offline changes',
-    'subtitle' => 'Actions captured offline on this device — pending or rejected.',
-    'notice' => 'This list is stored on this device only. Pending entries sync automatically once a connection is available; rejected entries can be re-applied or discarded.',
+    'subtitle' => 'Actions captured offline on this device — pending, conflicting or rejected.',
+    'notice' => 'This list lives only on this device. Pending entries are transferred automatically once a connection exists; rejected entries can be retried or discarded. Conflicts need a decision: somebody else changed the same record.',
     'empty' => 'No offline changes on this device.',
     'section' => [
         'pending' => 'Pending',
         'rejected' => 'Rejected',
+        'conflict' => 'Conflicts',
     ],
     'type' => [
         'clock_in' => 'Clock in',
         'clock_out' => 'Clock out',
         'comment' => 'Order comment',
         'form' => 'Form',
+        'attendance_correct' => 'Attendance time correction',
     ],
     'action' => [
         'retry' => 'Apply again',
         'discard' => 'Discard',
+        'take_server' => 'Keep the other version',
+        'force_local' => 'Send my version',
     ],
+    'conflict_hint' => 'Server state: :server',
+    'photos_queued' => 'Photos queued: :count',
 ];

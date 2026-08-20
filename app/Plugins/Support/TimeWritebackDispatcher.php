@@ -56,6 +56,45 @@ abstract class TimeWritebackDispatcher implements IntegrationOutboxDispatcher {
     /** Ist die Rückrichtung für diese Organisation freigeschaltet? */
     abstract public function writebackEnabled(int $organizationId): bool;
 
+    /**
+     * Gemeinsamer Create-Pfad für {@see MirrorsCreatedEntries}-Dispatcher
+     * (Audit 2026-08, Welle 1.2): lädt Eintrag + Organisation und pusht über
+     * {@see AbstractTimeEntryPushService::pushSingle()} mit denselben
+     * Schutzlinien wie der Batch. Transport-Timeouts werden bewusst NICHT
+     * wiederholt (kein Request-Id-Dedup bei Toggl/Clockify/Kimai/OpenProject —
+     * Duplikat-Risiko, falls der POST doch ankam): loggen + acknowledgen, der
+     * Batch-Push holt echte Fehlschläge nach (keine Referenz → wieder
+     * Kandidat). API-Fehler laufen als Exception in den Outbox-Retry, sofern
+     * der Aufrufer sie nicht selbst abfängt (Toggl: Quota-Pause).
+     *
+     * @param  array<string, mixed>  $config
+     */
+    protected function dispatchCreateVia(IntegrationOutboxEntry $outbox, AbstractTimeEntryPushService $service, array $config): bool {
+        $payload = $outbox->payload;
+        $timeEntry = TimeEntry::query()
+            ->withoutGlobalScopes()
+            ->whereKey((int) ($payload['time_entry_id'] ?? 0))
+            ->where('organization_id', $outbox->organization_id)
+            ->first();
+        $organization = \App\Models\Organization::query()->find($outbox->organization_id);
+        if ($timeEntry === null || $organization === null) {
+            return true; // inzwischen gelöscht — die Löschung braucht keinen Spiegel
+        }
+
+        try {
+            $service->pushSingle($organization, $config, $timeEntry);
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            \Illuminate\Support\Facades\Log::warning($this->pluginId() . '-Create-Push: Transportfehler, kein Retry (Backfill räumt auf).', [
+                'organization_id' => $outbox->organization_id,
+                'time_entry_id' => $timeEntry->getKey(),
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // pushSingle=false ist ein bewusster Drop (unmapptes Projekt o. ä.).
+        return true;
+    }
+
     public function dispatch(IntegrationOutboxEntry $entry): bool {
         return match ($entry->operation) {
             self::updateOperation($this->pluginId()) => $this->dispatchUpdate($entry),

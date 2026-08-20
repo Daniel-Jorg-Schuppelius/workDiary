@@ -10,11 +10,10 @@
 
 namespace App\Plugins\CardDav;
 
-use App\Models\{CardDavConnection, Organization};
+use App\Models\CardDavConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\CardDav\Contracts\CardDavGatewayFactory;
 use App\Plugins\Contracts\Plugin;
-use App\Plugins\Support\PluginOrgContext;
 use Throwable;
 
 /**
@@ -67,9 +66,9 @@ class CardDavPlugin extends AbstractPlugin {
 
     /** Health-Check je Organisation: Anbindung suchen und den Server anpingen. */
     public function healthCheck(): PluginHealth {
-        $org = PluginOrgContext::currentOrNull();
-        if (! $org instanceof Organization) {
-            return PluginHealth::ok(__('Keine Organisation im Kontext.'));
+        $org = $this->healthOrgContext();
+        if ($org instanceof PluginHealth) {
+            return $org;
         }
 
         $connection = CardDavConnection::query()->where('organization_id', $org->id)->first();

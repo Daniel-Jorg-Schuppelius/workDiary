@@ -18,10 +18,7 @@
         @endif
         <x-validation-errors first />
 
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <h1 class="mb-1 font-['Space_Grotesk'] text-lg font-semibold">{{ __('allocation.dimensions.title') }}</h1>
-            <p class="text-sm text-base-content/60">{{ __('allocation.dimensions.intro') }}</p>
-        </div>
+        <x-page-toolbar :subtitle="__('allocation.dimensions.intro')" />
 
         {{-- Neuer Dimensionstyp --}}
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
@@ -104,14 +101,10 @@
                         <span class="label-text">{{ __('allocation.dimensions.external_id') }}</span>
                         <input type="text" name="external_id" maxlength="120" class="input input-bordered input-sm">
                     </label>
-                    <label class="form-control">
-                        <span class="label-text">{{ __('allocation.dimensions.valid_from') }}</span>
-                        <input type="date" name="valid_from" class="input input-bordered input-sm">
-                    </label>
-                    <label class="form-control">
-                        <span class="label-text">{{ __('allocation.dimensions.valid_until') }}</span>
-                        <input type="date" name="valid_until" class="input input-bordered input-sm">
-                    </label>
+                    <x-date-range layout="split" form-control grid-class="contents"
+                                  from-name="valid_from" to-name="valid_until" type="date"
+                                  :from-label="__('allocation.dimensions.valid_from')"
+                                  :to-label="__('allocation.dimensions.valid_until')" />
                     <button type="submit" class="btn btn-sm btn-primary">{{ __('allocation.dimensions.create_value') }}</button>
                 </form>
             </div>

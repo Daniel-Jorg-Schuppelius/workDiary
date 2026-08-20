@@ -425,6 +425,14 @@ return [
             'criticality' => 'integration',
             'expected_runtime_minutes' => 10,
         ],
+        'clockify.push' => [
+            'command' => 'clockify:push',
+            'plugin' => 'clockify',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 10,
+        ],
         'openproject.import' => [
             'command' => 'openproject:import',
             'plugin' => 'openproject',
@@ -529,6 +537,18 @@ return [
             'plugin' => 'msgraph',
             'cadence' => ['type' => 'dailyAt', 'time' => '04:20'],
             'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 5,
+        ],
+        // Google-Drive-Push-Kanäle des Dokumenteingangs (Feature 080; Audit
+        // 2026-08, W4.4): Kanäle laufen ~24 h und lassen sich NICHT
+        // verlängern — deshalb dreimal täglich neu anlegen statt einmal wie
+        // bei Graph.
+        'google-drive.subscriptions' => [
+            'command' => 'google-drive:subscriptions',
+            'plugin' => 'google-drive',
+            'cadence' => ['type' => 'cron', 'expression' => '35 */8 * * *'],
+            'allowed' => ['cron', 'hourly', 'dailyAt'],
             'criticality' => 'integration',
             'expected_runtime_minutes' => 5,
         ],

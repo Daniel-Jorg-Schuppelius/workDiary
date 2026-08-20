@@ -47,7 +47,7 @@
                      icon="handshake" tone="primary"
                      :action="route('dataprotection.agreements.store')" method="POST"
                      enctype="multipart/form-data" :submit-label="__('AVV anlegen')">
-                <input type="hidden" name="processor_id" value="{{ $processor->id }}">
+                <input type="hidden" name="processor_id" value="{{ $processor->sqid }}">
                 <x-form-group :legend="__('Auftragsverarbeitungsvertrag')" icon="handshake" tone="primary" cols="2">
                     <x-input-field name="title" :label="__('Titel')" required />
                     <x-input-field name="version" :label="__('Version')" value="1.0" />

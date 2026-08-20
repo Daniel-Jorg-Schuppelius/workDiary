@@ -17,7 +17,7 @@ use App\Plugins\Support\PluginSettingsResolver;
  * Organisation vor `config('plugins.clockify.*')` — Lookup/Cast im
  * {@see PluginSettingsResolver} (C10). Analog {@see \App\Plugins\Kimai\KimaiConfig}.
  *
- * @phpstan-type ClockifySettings array{enabled: bool, default_billable: bool, default_user_id: ?int, single_user_mode: bool, api_key: ?string, workspace_id: ?string, base_url: string, reports_base_url: string, sync_window_days: int, writeback: bool}
+ * @phpstan-type ClockifySettings array{enabled: bool, default_billable: bool, default_user_id: ?int, single_user_mode: bool, api_key: ?string, workspace_id: ?string, base_url: string, reports_base_url: string, sync_window_days: int, writeback: bool, export_enabled: bool}
  */
 class ClockifyConfig {
     public const DEFAULT_BASE_URL = 'https://api.clockify.me/api';
@@ -25,7 +25,7 @@ class ClockifyConfig {
     public const DEFAULT_REPORTS_BASE_URL = 'https://reports.api.clockify.me/v1';
 
     /**
-     * @return array{enabled: bool, default_billable: bool, default_user_id: ?int, single_user_mode: bool, api_key: ?string, workspace_id: ?string, base_url: string, reports_base_url: string, sync_window_days: int, writeback: bool}
+     * @return array{enabled: bool, default_billable: bool, default_user_id: ?int, single_user_mode: bool, api_key: ?string, workspace_id: ?string, base_url: string, reports_base_url: string, sync_window_days: int, writeback: bool, export_enabled: bool}
      */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(ClockifyPlugin::ID, $organizationId);
@@ -42,6 +42,7 @@ class ClockifyConfig {
             'reports_base_url' => $r->string('reports_base_url', trim: true) ?? self::DEFAULT_REPORTS_BASE_URL,
             'sync_window_days' => max(1, $r->int('sync_window_days', 30)),
             'writeback' => $r->bool('writeback', false),
+            'export_enabled' => $r->bool('export_enabled', false),
         ];
     }
 }

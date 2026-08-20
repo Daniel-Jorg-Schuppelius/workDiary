@@ -63,7 +63,26 @@ return [
     ],
 
     'flash' => [
+        'dial_saved' => 'Click-to-dial salvato.',
         'issued' => 'Connessione CTI emessa.',
         'disconnected' => 'Connessione CTI disattivata.',
+    ],
+
+    'dial' => [
+        'action' => 'Chiama',
+        'confirm' => 'Avviare una chiamata verso :number? Il centralino chiama prima il tuo interno.',
+        'started' => 'La chiamata verso :number è in corso — solleva il tuo interno.',
+        'no_connection' => 'Nessun collegamento telefonico abilitato alla chiamata (attiva il click-to-dial nelle impostazioni CTI).',
+        'not_configured' => 'A questo collegamento mancano accesso API o interno.',
+        'no_base_url' => 'Per questo centralino non è indicato alcun indirizzo API.',
+        'invalid_number' => 'Il numero non è componibile.',
+        'rejected' => 'Il centralino ha rifiutato la chiamata (HTTP :status).',
+        'settings' => 'Click-to-dial',
+        'enabled' => 'Avviare chiamate da workDiary',
+        'api_token' => 'Token API',
+        'api_token_help' => 'Lascia vuoto per mantenere il token salvato.',
+        'api_base_url' => 'Indirizzo API',
+        'extension' => 'Interno proprio',
+        'extension_help' => 'Le chiamate partono da questo interno; il centralino lo chiama per primo.',
     ],
 ];

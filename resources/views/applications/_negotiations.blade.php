@@ -54,7 +54,7 @@
                                     <span class="text-xs text-base-content/60">{{ __("values.{$item->status}") }}</span>
                                     @if ($item->status === 'open' && ! $negotiation->isDecided())
                                         @can('update', $negotiation)
-                                            <form method="POST" action="{{ route('applications.negotiations.reviews.resolve', [$negotiation, $item->id]) }}" class="ml-auto flex items-center gap-1">
+                                            <form method="POST" action="{{ route('applications.negotiations.reviews.resolve', [$negotiation, $item->sqid]) }}" class="ml-auto flex items-center gap-1">
                                                 @csrf
                                                 <select name="resolution" class="select select-xs select-bordered">
                                                     <option value="resolved">{{ __('gelöst') }}</option>

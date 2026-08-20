@@ -185,25 +185,24 @@ class AccountingMigrationController extends Controller {
         $user = $this->manageUser();
         $run = $this->run($this->organization($user), $sqid);
 
-        $lines = [implode(';', ['Bereich', 'Status', 'Quelle', 'Ziel', 'Bezeichnung', 'Hinweis'])];
-        foreach ($run->items()->orderBy('data_area')->orderBy('id')->cursor() as $item) {
-            $lines[] = implode(';', array_map(
-                static fn (?string $value): string => '"' . str_replace('"', '""', (string) $value) . '"',
-                [
+        $rows = (static function () use ($run): \Generator {
+            foreach ($run->items()->orderBy('data_area')->orderBy('id')->cursor() as $item) {
+                yield [
                     $item->data_area->label(),
                     $item->status,
                     $item->source_external_id,
                     $item->target_external_id,
                     $item->display_title,
                     $item->note,
-                ],
-            ));
-        }
+                ];
+            }
+        })();
 
-        return response(implode("\n", $lines) . "\n", 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => sprintf('attachment; filename="buchhaltungswechsel-%s.csv"', $run->sqid),
-        ]);
+        return \App\Support\CsvExport::streamFromRows(
+            sprintf('buchhaltungswechsel-%s.csv', $run->sqid),
+            ['Bereich', 'Status', 'Quelle', 'Ziel', 'Bezeichnung', 'Hinweis'],
+            $rows,
+        );
     }
 
     private function run(Organization $organization, string $sqid): AccountingMigrationRun {

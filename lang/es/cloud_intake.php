@@ -69,6 +69,7 @@ return [
             'not_configured' => 'Claves de la aplicación de Dropbox sin configurar.',
             'no_org_context' => 'Sin contexto de organización (ejecución del sistema).',
             'attention' => 'Al menos una conexión de Dropbox necesita atención (reautenticación/bloqueada).',
+            'backup_attention' => 'El destino de copia de seguridad de Dropbox necesita atención (reautenticación/bloqueado) — afecta a todas las organizaciones.',
             'ok' => 'Conexiones de Dropbox correctas.',
             'error' => 'La comprobación de estado falló (:class).',
         ],
@@ -79,6 +80,7 @@ return [
             'not_configured' => 'Claves de cliente de Google Drive sin configurar.',
             'no_org_context' => 'Sin contexto de organización (ejecución del sistema).',
             'attention' => 'Al menos una conexión de Google Drive necesita atención (reautenticación/bloqueada).',
+            'backup_attention' => 'El destino de copia de seguridad de Google Drive necesita atención (reautenticación/bloqueado) — afecta a todas las organizaciones.',
             'ok' => 'Conexiones de Google Drive correctas.',
             'error' => 'La comprobación de estado falló (:class).',
         ],
@@ -88,6 +90,7 @@ return [
         'health' => [
             'no_org_context' => 'Sin contexto de organización (ejecución del sistema).',
             'attention' => 'Al menos una conexión de Nextcloud requiere atención (reautenticación/bloqueada).',
+            'backup_attention' => 'El destino de copia de seguridad de Nextcloud necesita atención (reautenticación/bloqueado) — afecta a todas las organizaciones.',
             'ok' => 'Conexiones de Nextcloud en orden.',
             'error' => 'La comprobación de estado falló (:class).',
         ],
@@ -135,5 +138,44 @@ return [
         'revision' => 'Revisión',
         'reason' => 'Motivo',
         'when' => 'Fecha',
+    ],
+    // Informe de importación (función 080 P9; auditoría 2026-08, W4.4).
+    'report' => [
+        'title' => 'Informe de entrada de documentos en la nube',
+        'nav' => 'Entrada de documentos en la nube',
+        'subtitle' => 'Documentos importados y rechazados en el periodo',
+        'kpi' => [
+            'total' => 'Operaciones totales',
+            'imported' => 'Importados',
+            'inbox' => 'En la bandeja de asignación',
+            'rejected' => 'Rechazados',
+        ],
+        'chart' => [
+            'per_period' => 'Operaciones :per',
+            'by_provider' => 'Operaciones por proveedor',
+        ],
+        'unit' => ['documents' => 'Documentos'],
+        'section' => [
+            'connections' => 'Conexiones',
+            'reasons' => 'Motivos de rechazo',
+            'items' => 'Operaciones',
+        ],
+        'column' => [
+            'folder' => 'Carpeta',
+            'provider' => 'Proveedor',
+            'status' => 'Estado',
+            'imported' => 'Importados',
+            'rejected' => 'Rechazados',
+            'last_run' => 'Última ejecución',
+            'reason' => 'Motivo',
+            'count' => 'Cantidad',
+            'date' => 'Fecha y hora',
+            'path' => 'Ruta de origen',
+        ],
+        'empty' => [
+            'connections' => 'Aún no hay ninguna conexión en la nube vinculada.',
+            'reasons' => 'Sin rechazos en el periodo seleccionado.',
+            'items' => 'Sin datos en el periodo seleccionado.',
+        ],
     ],
 ];

@@ -101,7 +101,13 @@ return [
         ],
     ],
 
+    // Offline erfasste Anhänge (Audit 2026-08, W4.1).
+
+    'attachment' => ['pending' => 'Carga pendiente'],
+
     'validation' => [
+
+        'no_upload_field' => 'No hay ningún campo de archivo/foto con esta clave en el formulario.',
         'invalid_row' => 'La definición del campo en la fila :row no es válida.',
         'label_required' => 'El campo :row necesita una etiqueta (máx. 160 caracteres).',
         'unknown_type' => 'El campo :row tiene un tipo desconocido.',

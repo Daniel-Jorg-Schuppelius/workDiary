@@ -18,10 +18,10 @@
         @endif
         <x-validation-errors first />
 
-        {{-- Einführung + Punchout-Endpunkt --}}
+        <x-page-toolbar :subtitle="__('b2b_catalog.intro')" />
+
+        {{-- Punchout-Endpunkt für die Beschaffungsseite --}}
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <h1 class="mb-1 font-['Space_Grotesk'] text-lg font-semibold">{{ __('b2b_catalog.title') }}</h1>
-            <p class="mb-3 text-sm text-base-content/60">{{ __('b2b_catalog.intro') }}</p>
             <div class="text-sm">
                 <span class="text-base-content/60">{{ __('b2b_catalog.punchout_url') }}:</span>
                 <code class="rounded bg-base-200 px-2 py-0.5">{{ $punchoutUrl }}</code>

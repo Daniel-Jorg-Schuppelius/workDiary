@@ -11,21 +11,27 @@
 // Offline-Sync (Feature 035): Offline-Änderungs-Seite + Statusanzeige.
 return [
     'title' => 'Offline-Änderungen',
-    'subtitle' => 'Auf diesem Gerät offline erfasste Aktionen — ausstehend oder abgelehnt.',
-    'notice' => 'Diese Liste liegt nur auf diesem Gerät. Ausstehende Einträge werden automatisch übertragen, sobald eine Verbindung besteht; abgelehnte Einträge kannst du erneut anwenden oder verwerfen.',
+    'subtitle' => 'Auf diesem Gerät offline erfasste Aktionen — ausstehend, im Konflikt oder abgelehnt.',
+    'notice' => 'Diese Liste liegt nur auf diesem Gerät. Ausstehende Einträge werden automatisch übertragen, sobald eine Verbindung besteht; abgelehnte Einträge kannst du erneut anwenden oder verwerfen. Konflikte brauchen eine Entscheidung: Jemand anderes hat denselben Datensatz geändert.',
     'empty' => 'Keine offline erfassten Änderungen vorhanden.',
     'section' => [
         'pending' => 'Ausstehend',
         'rejected' => 'Abgelehnt',
+        'conflict' => 'Konflikte',
     ],
     'type' => [
         'clock_in' => 'Einstempeln',
         'clock_out' => 'Ausstempeln',
         'comment' => 'Auftrags-Kommentar',
         'form' => 'Formular',
+        'attendance_correct' => 'Stempelzeit-Korrektur',
     ],
     'action' => [
         'retry' => 'Erneut anwenden',
         'discard' => 'Verwerfen',
+        'take_server' => 'Fremden Stand übernehmen',
+        'force_local' => 'Meine Fassung senden',
     ],
+    'conflict_hint' => 'Serverstand: :server',
+    'photos_queued' => 'Fotos in der Warteschlange: :count',
 ];

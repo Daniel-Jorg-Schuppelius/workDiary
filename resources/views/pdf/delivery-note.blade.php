@@ -21,7 +21,7 @@
             <td>
                 <strong>{{ __('manufacturing.delivery_note.recipient') }}</strong><br>
                 @if ($delivery->customer)
-                    {{ $delivery->customer->company ?: $delivery->customer->name }}<br>
+                    {{ $delivery->customer->displayLabel() }}<br>
                     @if ($delivery->customer->address_street){{ $delivery->customer->address_street }}<br>@endif
                     {{ $delivery->customer->address_zip }} {{ $delivery->customer->address_city }}<br>
                     {{ $delivery->customer->country }}

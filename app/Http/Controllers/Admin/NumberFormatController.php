@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\Numbering\NumberScope;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveNumberFormatRequest;
 use App\Models\{NumberFormat, Organization};
@@ -20,6 +21,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class NumberFormatController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(
         private readonly NumberSequenceService $numberSequence,
     ) {}
@@ -27,7 +30,7 @@ class NumberFormatController extends Controller {
     public function index(): View|RedirectResponse {
         Gate::authorize('manage', NumberFormat::class);
 
-        $organization = $this->currentOrganization();
+        $organization = $this->currentOrganizationOrUserOrganization();
         if (! $organization instanceof Organization) {
             return redirect()->route('admin.organizations.index')
                 ->with('warning', __('Bitte zuerst eine Organisation anlegen bzw. dem aktuellen Benutzer zuweisen.'));
@@ -53,7 +56,7 @@ class NumberFormatController extends Controller {
     public function update(SaveNumberFormatRequest $request): RedirectResponse {
         Gate::authorize('manage', NumberFormat::class);
 
-        $organization = $this->currentOrganization();
+        $organization = $this->currentOrganizationOrUserOrganization();
         if (! $organization instanceof Organization) {
             return redirect()->route('admin.organizations.index')
                 ->with('warning', __('Bitte zuerst eine Organisation anlegen bzw. dem aktuellen Benutzer zuweisen.'));
@@ -72,19 +75,5 @@ class NumberFormatController extends Controller {
 
         return redirect()->route('admin.number-formats.index')
             ->with('success', __('Nummernkreis-Format aktualisiert.'));
-    }
-
-    private function currentOrganization(): ?Organization {
-        if (app()->bound('currentOrganization')) {
-            $bound = app('currentOrganization');
-            if ($bound instanceof Organization) {
-                return $bound;
-            }
-        }
-
-        /** @var \App\Models\User|null $user */
-        $user = \Illuminate\Support\Facades\Auth::user();
-
-        return $user?->organization;
     }
 }

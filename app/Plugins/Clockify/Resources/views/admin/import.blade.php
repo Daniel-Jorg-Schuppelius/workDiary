@@ -62,6 +62,29 @@
         @endif
     </x-card>
 
+    @if ($apiConfigured && ($exportEnabled ?? false))
+        <x-card>
+            <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('Zeiten nach Clockify übertragen') }}</h2>
+            <p class="mb-3 text-sm text-base-content/60">
+                {{ __('Überträgt in workDiary erfasste Zeiten gemappter Projekte nach Clockify (z. B. Fernwartungssitzungen). Angelegt wird für den Inhaber des API-Keys; bereits übertragene oder aus Clockify importierte Einträge werden übersprungen, die Einträge bleiben lokal abrechenbar.') }}
+            </p>
+            <form method="POST" action="{{ route('admin.clockify.export-api') }}" class="flex flex-wrap items-end gap-2">
+                @csrf
+                <label class="form-control">
+                    <span class="label-text text-xs">{{ __('Von') }}</span>
+                    <input type="date" name="from" value="{{ old('from') }}" class="input input-sm input-bordered">
+                </label>
+                <label class="form-control">
+                    <span class="label-text text-xs">{{ __('Bis') }}</span>
+                    <input type="date" name="to" value="{{ old('to') }}" class="input input-sm input-bordered">
+                </label>
+                <x-icon-btn icon="cloud_upload" tone="primary" size="sm" type="submit" show-label
+                            data-confirm-dialog
+                            data-confirm-message="{{ __('Übertragung jetzt ausführen? Es werden Zeiteinträge in Clockify angelegt.') }}">{{ __('Nach Clockify übertragen') }}</x-icon-btn>
+            </form>
+        </x-card>
+    @endif
+
     <x-card>
         <div class="flex items-center justify-between">
             <div>

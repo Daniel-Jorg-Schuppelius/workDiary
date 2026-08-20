@@ -45,6 +45,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $checkpoint
  * @property Carbon|null $last_run_at
  * @property string|null $subscription_id
+ * @property string|null $subscription_resource_id
  * @property Carbon|null $subscription_expires_at
  * @property string|null $webhook_secret
  * @property-read \Illuminate\Database\Eloquent\Collection<int, CloudDocumentRoute> $routes
@@ -80,6 +81,8 @@ class CloudDocumentConnection extends Model {
         'checkpoint',
         'last_run_at',
         'subscription_id',
+        // Google verlangt die resourceId zum Beenden eines Push-Kanals (W4.4).
+        'subscription_resource_id',
         'subscription_expires_at',
         'webhook_secret',
         'created_by_user_id',

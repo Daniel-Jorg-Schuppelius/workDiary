@@ -111,6 +111,18 @@ class AiAdminHttpTest extends TestCase {
         $this->assertDatabaseMissing('ai_provider_connections', ['name' => 'OpenAI ohne Modell']);
     }
 
+    public function test_store_rejects_unimplemented_provider(): void {
+        // google_translate ist deklariert, hat aber keinen Adapter — die
+        // Verbindung crashte sonst erst beim ersten Prüflauf.
+        $this->actingAs($this->admin)->post(route('admin.ai.store'), [
+            'name' => 'Google Translate',
+            'family' => 'translation',
+            'provider' => 'google_translate',
+        ])->assertSessionHasErrors('provider');
+
+        $this->assertDatabaseMissing('ai_provider_connections', ['name' => 'Google Translate']);
+    }
+
     public function test_edit_and_update_repair_a_disabled_connection(): void {
         $connection = AiProviderConnection::factory()->create([
             'organization_id' => $this->organization->id,

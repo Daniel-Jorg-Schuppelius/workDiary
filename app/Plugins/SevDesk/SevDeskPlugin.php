@@ -12,11 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\SevDesk;
 
-use App\Models\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\Plugin;
 use App\Plugins\SevDesk\Api\{SevDeskApiException, SevDeskClient, SevDeskClientFactory};
-use App\Plugins\Support\PluginOrgContext;
 use Illuminate\Support\Facades\Cache;
 use Throwable;
 
@@ -54,6 +52,13 @@ class SevDeskPlugin extends AbstractPlugin {
     }
 
     /** @return array<int, \App\Plugins\Contracts\PluginCapability> Fähigkeiten hängen am FacturationTarget-Vertrag. */
+    /**
+     * Bewusst leer: Die Fähigkeit dieses Plugins (Beleg-/Rechnungsübergabe) ist
+     * ein {@see \App\Services\Finance\Targets\FacturationTarget} und wird über
+     * die {@see \App\Services\Finance\Targets\FacturationTargetRegistry} geführt.
+     * Ein Capability-Case dafür brächte nur eine zweite Registry bzw. eine dünne
+     * Delegation der Plugin-Klasse auf den Target-Service (Audit 2026-08, W1.6).
+     */
     public function capabilities(): array {
         return [];
     }
@@ -77,9 +82,9 @@ class SevDeskPlugin extends AbstractPlugin {
     }
 
     public function healthCheck(): PluginHealth {
-        $organization = PluginOrgContext::currentOrNull();
-        if (! $organization instanceof Organization) {
-            return PluginHealth::ok(__('Keine Organisation im Kontext.'));
+        $organization = $this->healthOrgContext();
+        if ($organization instanceof PluginHealth) {
+            return $organization;
         }
 
         $config = SevDeskConfig::resolve((int) $organization->id);

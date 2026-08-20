@@ -55,6 +55,12 @@ class SharepointPlugin extends AbstractPlugin {
     }
 
     /** Ereignisgetriebenes Sink-Plugin ohne providerneutrale Sync-Capability. */
+    /**
+     * Bewusst leer: Der Dokumentspiegel ist ein
+     * {@see \App\Plugins\Support\Mirror\MirrorTarget} und wird über den
+     * {@see \App\Plugins\Support\Mirror\DocumentMirrorService} geführt
+     * (Audit 2026-08, W1.6).
+     */
     public function capabilities(): array {
         return [];
     }

@@ -63,7 +63,26 @@ return [
     ],
 
     'flash' => [
+        'dial_saved' => 'Clic-pour-appeler enregistré.',
         'issued' => 'Connexion CTI émise.',
         'disconnected' => 'Connexion CTI désactivée.',
+    ],
+
+    'dial' => [
+        'action' => 'Appeler',
+        'confirm' => 'Lancer un appel vers :number ? Le système téléphonique appelle d’abord votre poste.',
+        'started' => 'L’appel vers :number est en cours d’établissement — décrochez votre poste.',
+        'no_connection' => 'Aucune connexion téléphonique apte à appeler n’est configurée (activez le clic-pour-appeler dans les réglages CTI).',
+        'not_configured' => 'Cette connexion n’a pas d’accès API ou de poste.',
+        'no_base_url' => 'Aucune adresse API n’est enregistrée pour ce système.',
+        'invalid_number' => 'Ce numéro n’est pas composable.',
+        'rejected' => 'Le système téléphonique a refusé l’appel (HTTP :status).',
+        'settings' => 'Clic-pour-appeler',
+        'enabled' => 'Lancer les appels depuis workDiary',
+        'api_token' => 'Jeton API',
+        'api_token_help' => 'Laisser vide pour conserver le jeton enregistré.',
+        'api_base_url' => 'Adresse API',
+        'extension' => 'Poste utilisé',
+        'extension_help' => 'Les appels partent de ce poste ; le système l’appelle en premier.',
     ],
 ];

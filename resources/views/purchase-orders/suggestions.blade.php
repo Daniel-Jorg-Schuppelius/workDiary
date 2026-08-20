@@ -32,26 +32,24 @@
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">local_shipping</span>'
                        :title="__('procurement.ui.none')" />
     @else
-        <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-            <x-table bare scroll="flex" :pinRows="true">
-                <x-slot:head>
-                    <tr>
-                        <th>{{ __('procurement.field.article') }}</th>
-                        <th>{{ __('procurement.field.supplier') }}</th>
-                        <th class="text-right">{{ __('procurement.ui.needed') }}</th>
-                        <th class="text-right">{{ __('procurement.ui.suggested') }}</th>
-                    </tr>
-                </x-slot:head>
-                @foreach ($suggestions as $s)
-                    <tr>
-                        <td>{{ $s['article']->name }}</td>
-                        <td>{{ $s['supply']?->supplier?->name ?? '—' }}</td>
-                        <td class="text-right tabular-nums">{{ $s['needed'] }}</td>
-                        <td class="text-right tabular-nums">{{ $s['suggested'] }}</td>
-                    </tr>
-                @endforeach
-            </x-table>
-        </x-card>
+        <x-table :zebra="true" scroll="flex" :pinRows="true">
+            <x-slot:head>
+                <tr>
+                    <th>{{ __('procurement.field.article') }}</th>
+                    <th>{{ __('procurement.field.supplier') }}</th>
+                    <th class="text-right">{{ __('procurement.ui.needed') }}</th>
+                    <th class="text-right">{{ __('procurement.ui.suggested') }}</th>
+                </tr>
+            </x-slot:head>
+            @foreach ($suggestions as $s)
+                <tr>
+                    <td>{{ $s['article']->name }}</td>
+                    <td>{{ $s['supply']?->supplier?->name ?? '—' }}</td>
+                    <td class="text-right tabular-nums">{{ $s['needed'] }}</td>
+                    <td class="text-right tabular-nums">{{ $s['suggested'] }}</td>
+                </tr>
+            @endforeach
+        </x-table>
 
         @if ($warehouse)
             <form method="POST" action="{{ route('purchase-orders.suggestions.apply') }}" class="mt-3 self-end">

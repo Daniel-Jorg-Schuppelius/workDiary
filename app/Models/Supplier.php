@@ -11,10 +11,10 @@
 namespace App\Models;
 
 use App\Enums\Numbering\NumberScope;
-use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasContactAndBankDetails, HasSequentialNumber, HasSqid, HasTags, Searchable};
+use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasContactAndBankDetails, HasPartyDisplayLabel, HasSequentialNumber, HasSqid, HasTags, Searchable};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
 use Illuminate\Support\Carbon;
 
 /**
@@ -64,9 +64,10 @@ class Supplier extends Model {
     use HasAttachments;
 
     use HasContactAndBankDetails;
-
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
+    use HasPartyDisplayLabel;
     use HasSequentialNumber;
     use HasSqid;
     use HasTags;
@@ -170,6 +171,17 @@ class Supplier extends Model {
     /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Bestellungen bei diesem Lieferanten — Grundlage der Ziel-Heuristik des
+     * {@see \App\Services\SupplierDuplicateFinder} (der Datensatz mit der
+     * Einkaufs-Historie gewinnt beim Zusammenführen).
+     *
+     * @return HasMany<PurchaseOrder, $this>
+     */
+    public function purchaseOrders(): HasMany {
+        return $this->hasMany(PurchaseOrder::class);
     }
 
     /** @return MorphMany<ExternalReference, $this> */

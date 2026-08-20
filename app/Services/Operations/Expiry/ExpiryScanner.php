@@ -39,6 +39,10 @@ class ExpiryScanner {
         'credential_expiring',
         'connection_failing',
         'component_eol',
+        // Cloud-Dokumenteingang (Audit 2026-08, W4.4): beide Alarme heilen von
+        // selbst — neu verbunden bzw. keine Abweisungen mehr im Fenster.
+        'cloud_intake_reauth',
+        'cloud_intake_quarantined',
     ];
 
     /** @var list<ExpiryProbe> */
@@ -94,6 +98,7 @@ class ExpiryScanner {
             fn(): array => $this->terminalSignals(),
             fn(): array => $this->phpEolSignals(),
             fn(): array => $this->connectionHealthSignals(),
+            fn(): array => $this->cloudIntakeSignals(),
         ];
     }
 
@@ -270,6 +275,76 @@ class ExpiryScanner {
                     organizationId: $orgId,
                 );
             }
+        }
+
+        return $signals;
+    }
+
+    /**
+     * Cloud-Dokumenteingang (Feature 080 P9; Audit 2026-08, W4.4). Der Health
+     * wurde bislang nur erfasst, aber nie gemeldet — zwei Alarme:
+     *
+     *  - Verbindung braucht erneute Anmeldung bzw. ist blockiert: der Eingang
+     *    steht still, ohne dass jemand es merkt (OAuth-Refresh abgelaufen).
+     *  - Abgewiesene Importe (`rejected`) seit dem letzten Lauf: Blocklisten
+     *    oder Byte-Budget haben Dateien zurückgewiesen — die kommen NICHT von
+     *    selbst wieder, jemand muss die Route oder die Quelle korrigieren.
+     *
+     * @return list<OperationsSignal>
+     */
+    private function cloudIntakeSignals(): array {
+        $signals = [];
+
+        $connections = \App\Models\CloudIntake\CloudDocumentConnection::query()
+            ->withoutGlobalScopes()
+            ->whereIn('status', [
+                \App\Enums\CloudIntake\CloudIntakeConnectionStatus::ReauthRequired->value,
+                \App\Enums\CloudIntake\CloudIntakeConnectionStatus::Blocked->value,
+            ])
+            ->get();
+
+        foreach ($connections as $connection) {
+            $signals[] = new OperationsSignal(
+                type: OperationsTaskType::CloudIntakeReauth,
+                dedupeKey: 'cloud_intake_reauth:' . $connection->getKey(),
+                severity: $connection->status === \App\Enums\CloudIntake\CloudIntakeConnectionStatus::Blocked
+                    ? OperationsTaskSeverity::Critical
+                    : OperationsTaskSeverity::Warning,
+                titleKey: 'operations.task.cloud_intake_reauth',
+                params: [
+                    'provider' => $connection->provider->label(),
+                    'folder' => (string) ($connection->root_folder_path ?? $connection->container_label ?? '/'),
+                    'status' => $connection->status->label(),
+                ],
+                organizationId: (int) $connection->organization_id,
+                linkRoute: 'admin.cloud-intake.index',
+            );
+        }
+
+        // Abgewiesene Importe je Verbindung zusammenfassen — ein Alarm pro
+        // Verbindung, nicht pro Datei (sonst flutet eine falsche Route das
+        // Aufgabencenter).
+        $rejected = \App\Models\CloudIntake\CloudDocumentItem::query()
+            ->withoutGlobalScopes()
+            ->where('status', \App\Enums\CloudIntake\CloudIntakeItemStatus::Rejected->value)
+            ->where('created_at', '>=', now()->subDays(7))
+            ->selectRaw('organization_id, connection_id, COUNT(*) as total, MAX(status_reason) as reason')
+            ->groupBy('organization_id', 'connection_id')
+            ->get();
+
+        foreach ($rejected as $row) {
+            $signals[] = new OperationsSignal(
+                type: OperationsTaskType::CloudIntakeQuarantined,
+                dedupeKey: 'cloud_intake_quarantined:' . (int) $row->getAttribute('connection_id'),
+                severity: OperationsTaskSeverity::Warning,
+                titleKey: 'operations.task.cloud_intake_quarantined',
+                params: [
+                    'count' => (int) $row->getAttribute('total'),
+                    'reason' => (string) ($row->getAttribute('reason') ?? '—'),
+                ],
+                organizationId: (int) $row->getAttribute('organization_id'),
+                linkRoute: 'admin.cloud-intake.index',
+            );
         }
 
         return $signals;

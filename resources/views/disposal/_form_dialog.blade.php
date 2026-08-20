@@ -29,7 +29,7 @@
             <x-select-field name="customer_id" :label="__('Kunde')" required x-model="customerId">
                 <option value="">{{ __('-- Kunde wählen --') }}</option>
                 @foreach ($customers as $c)
-                    <option value="{{ $c->id }}" @selected((string) old('customer_id', $job?->customer_id) === (string) $c->id)>{{ $c->name }}</option>
+                    <option value="{{ $c->sqid }}" @selected((string) old('customer_id', $job?->customer_id) === (string) $c->id)>{{ $c->name }}</option>
                 @endforeach
             </x-select-field>
             <x-select-field name="site_id" :label="__('disposal.form.site')">
@@ -41,13 +41,13 @@
             <x-select-field name="diary_entry_id" :label="__('disposal.form.diary_entry')">
                 <option value="">{{ __('disposal.form.diary_entry_none') }}</option>
                 @foreach ($diaryEntries as $entry)
-                    <option value="{{ $entry->id }}" @selected((string) old('diary_entry_id', $job?->diary_entry_id) === (string) $entry->id)>#{{ $entry->id }} {{ $entry->title }}</option>
+                    <option value="{{ $entry->sqid }}" @selected((string) old('diary_entry_id', $job?->diary_entry_id) === (string) $entry->id)>#{{ $entry->id }} {{ $entry->title }}</option>
                 @endforeach
             </x-select-field>
             <x-select-field name="responsible_user_id" :label="__('Verantwortlich')">
                 <option value="">{{ __('-- später zuweisen --') }}</option>
                 @foreach ($users as $u)
-                    <option value="{{ $u->id }}" @selected((string) old('responsible_user_id', $job?->responsible_user_id) === (string) $u->id)>{{ $u->name }}</option>
+                    <option value="{{ $u->sqid }}" @selected((string) old('responsible_user_id', $job?->responsible_user_id) === (string) $u->id)>{{ $u->name }}</option>
                 @endforeach
             </x-select-field>
         </x-form-group>

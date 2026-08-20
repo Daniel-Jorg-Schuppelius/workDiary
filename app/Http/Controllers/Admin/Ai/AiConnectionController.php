@@ -60,7 +60,9 @@ class AiConnectionController extends Controller {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'family' => ['required', 'string', 'in:' . implode(',', array_column(AiFamily::cases(), 'value'))],
-            'provider' => ['required', 'string', 'in:' . implode(',', array_column(AiProviderType::cases(), 'value'))],
+            // Nur anlegbare Typen (Audit 2026-08: google_translate hat keinen
+            // Adapter und crashte sonst erst beim ersten Prüflauf).
+            'provider' => ['required', 'string', 'in:' . implode(',', array_column(AiProviderType::selectable(), 'value'))],
             'base_url' => ['nullable', 'string', 'max:500', 'url'],
             'api_key' => ['nullable', 'string', 'max:2000'],
             'model' => ['nullable', 'string', 'max:120'],

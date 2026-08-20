@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Reporting;
 
 use App\Enums\Asset\AssetBlockReason;
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\AssetBlock;
 use App\Models\AssetCompliance\{AssetComplianceAssignment, AssetComplianceProfile, AssetComplianceReportSnapshot, AssetInspectionEvent};
@@ -29,6 +30,8 @@ use Illuminate\Support\Facades\Gate;
  */
 class AssetComplianceReportController extends Controller {
     use \App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
+
+    use ResolvesGlobalDateRange;
 
     public function index(Request $request): View|\Illuminate\Http\Response {
         Gate::authorize('viewAny', AssetComplianceProfile::class);
@@ -103,8 +106,13 @@ class AssetComplianceReportController extends Controller {
 
     /** @return array{0: Carbon, 1: Carbon} */
     private function period(Request $request): array {
-        $from = $request->filled('from') ? Carbon::parse($request->string('from')->toString()) : now()->subMonths(3);
-        $to = $request->filled('to') ? Carbon::parse($request->string('to')->toString()) : now();
+        // W2.1: einheitlicher Parameter-Guard, fachlicher 3-Monats-Default bleibt.
+        [$rangeFrom, $rangeTo] = $this->resolveRangeWithDefault($request, static fn (): array => [
+            \Carbon\CarbonImmutable::now()->subMonths(3),
+            \Carbon\CarbonImmutable::now(),
+        ]);
+        $from = Carbon::instance($rangeFrom->toDateTime());
+        $to = Carbon::instance($rangeTo->toDateTime());
 
         return [$from->startOfDay(), $to->endOfDay()];
     }

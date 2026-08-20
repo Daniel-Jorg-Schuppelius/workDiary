@@ -51,6 +51,8 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                 @forelse ($roles as $role)
                     <label class="label cursor-pointer justify-start gap-3 hover:bg-base-100 rounded px-2">
+                        {{-- Rollen-IDs bleiben numerisch: Role ist ein Spatie-Vendor-Modell ohne HasSqid;
+                             die Schutzlinie ist die org-/global-gescopte Whitelist im Controller (Audit W3.3). --}}
                         <input type="checkbox" name="roles[]" value="{{ $role->id }}"
                                class="checkbox checkbox-sm"
                                @checked(in_array($role->id, $assignedRoles, true)) />

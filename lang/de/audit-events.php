@@ -239,6 +239,7 @@ return [
     ],
     'cti' => [
         'connection_issued' => 'CTI-Verbindung ausgestellt',
+        'dial_configured' => 'Klick-zum-Wählen konfiguriert',
         'disconnected' => 'CTI getrennt',
     ],
     'datanorm' => [

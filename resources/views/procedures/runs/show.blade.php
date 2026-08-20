@@ -28,20 +28,17 @@
 
 @section('content')
     <x-page-shell>
-        <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="flex items-center gap-2">
-                <x-icon name="rule" class="text-base-content/50" />
-                <h1 class="text-lg font-semibold"><x-term glossary="prozedur">{{ $tpl?->name ?? '—' }}</x-term></h1>
-                <span class="text-xs text-base-content/50">v{{ $version?->version }}</span>
-                <x-status-badge :tone="$statusTone">{{ $run->status->label() }}</x-status-badge>
-            </div>
-            <div class="flex items-center gap-2">
+        <x-page-toolbar :title="$tpl?->name ?? '—'"
+                        :badge="$run->status->label()"
+                        :badge-tone="$statusTone"
+                        :subtitle="__('Version :v', ['v' => $version?->version])">
+            <x-slot:actions>
                 <x-help-button topic="procedures.run" :label="__('Hilfe zu Prozedur')" />
                 <x-icon-btn icon="print" tone="outline" size="sm" :href="route('procedure-runs.print', $run)"
                             target="_blank" :label="__('procedure.action.print')" />
                 <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="$backUrl" :label="__('procedure.action.back')" />
-            </div>
-        </div>
+            </x-slot:actions>
+        </x-page-toolbar>
 
         <div class="min-h-0 flex-1 overflow-auto rounded-box border border-base-300 bg-base-100 p-4 shadow-xs md:p-6">
             <div class="mx-auto max-w-2xl space-y-4">

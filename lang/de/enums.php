@@ -464,6 +464,8 @@ return [
                 'schedulerOverdue' => 'Geplante Aufgabe überfällig',
                 'maintenanceScheduled' => 'Wartungsfenster angekündigt',
                 'problemReportReceived' => 'Neue Fehlermeldung eingegangen',
+                'cloudIntakeReauth' => 'Cloud-Eingang: neue Anmeldung nötig',
+                'cloudIntakeQuarantined' => 'Cloud-Eingang: Importe abgewiesen',
             ],
             'security' => [
                 'integrity' => 'Quelltext-Integrität',

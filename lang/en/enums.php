@@ -464,6 +464,8 @@ return [
                 'schedulerOverdue' => 'Scheduled task overdue',
                 'maintenanceScheduled' => 'Maintenance window announced',
                 'problemReportReceived' => 'New problem report received',
+                'cloudIntakeReauth' => 'Cloud intake: sign-in required',
+                'cloudIntakeQuarantined' => 'Cloud intake: imports rejected',
             ],
             'security' => [
                 'integrity' => 'Source code integrity',

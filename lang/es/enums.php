@@ -464,6 +464,8 @@ return [
                 'schedulerOverdue' => 'Tarea programada atrasada',
                 'maintenanceScheduled' => 'Ventana de mantenimiento anunciada',
                 'problemReportReceived' => 'Nuevo informe de problema recibido',
+                'cloudIntakeReauth' => 'Entrada en la nube: se requiere iniciar sesión',
+                'cloudIntakeQuarantined' => 'Entrada en la nube: importaciones rechazadas',
             ],
             'security' => [
                 'integrity' => 'Integridad del código fuente',

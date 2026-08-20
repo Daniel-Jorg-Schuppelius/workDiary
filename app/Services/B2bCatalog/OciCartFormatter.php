@@ -87,9 +87,9 @@ class OciCartFormatter {
 
     /**
      * `base_unit` ist Freitext (Default „Stk"); Einkaufssysteme erwarten
-     * UN/ECE-Rec-20-Codes. Auflösung über den zentralen
-     * {@see \App\Support\UnitCodeMapper} (Feature 107, W7); nicht auflösbare
-     * Einheiten werden wie bisher roh durchgereicht.
+     * UN/ECE-Rec-20-Codes. Auflösung über {@see UnitCode::fromText()}
+     * (Feature 107, W7); nicht auflösbare Einheiten werden wie bisher roh
+     * durchgereicht — OCI-Gegenstellen kennen teils eigene Kürzel.
      */
     private function isoUnit(string $baseUnit): string {
         $unit = trim($baseUnit);
@@ -97,6 +97,6 @@ class OciCartFormatter {
             return UnitCode::PIECE->value;
         }
 
-        return \App\Support\UnitCodeMapper::tryUnitCode($unit)->value ?? $unit;
+        return UnitCode::fromText($unit)->value ?? $unit;
     }
 }

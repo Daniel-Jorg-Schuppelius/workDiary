@@ -24,13 +24,22 @@
     <div data-offline-changes
          data-label-pending="{{ __('offline.section.pending') }}"
          data-label-rejected="{{ __('offline.section.rejected') }}"
+         data-label-conflict="{{ __('offline.section.conflict') }}"
+         data-label-conflict-hint="{{ __('offline.conflict_hint') }}"
+         data-label-take-server="{{ __('offline.action.take_server') }}"
          data-label-type-attendance-clock-in="{{ __('offline.type.clock_in') }}"
          data-label-type-attendance-clock-out="{{ __('offline.type.clock_out') }}"
          data-label-type-comment-diary="{{ __('offline.type.comment') }}"
          data-label-type-form-submission="{{ __('offline.type.form') }}"
+         data-label-type-attendance-correct="{{ __('offline.type.attendance_correct') }}"
          class="space-y-6">
         <p data-offline-empty class="text-sm text-base-content/60" hidden>{{ __('offline.empty') }}</p>
         <section data-offline-section="outbox" class="space-y-2" hidden>
+            <h2 class="text-base font-semibold" data-section-heading></h2>
+            <ul class="space-y-2" data-section-list></ul>
+        </section>
+        {{-- Konflikte zuerst: nur sie brauchen eine Entscheidung. --}}
+        <section data-offline-section="conflicts" class="space-y-2" hidden>
             <h2 class="text-base font-semibold" data-section-heading></h2>
             <ul class="space-y-2" data-section-list></ul>
         </section>
@@ -46,9 +55,11 @@
                 <p class="font-medium" data-item-type></p>
                 <p class="text-xs text-base-content/60 tabular-nums" data-item-time></p>
                 <p class="text-sm text-error" data-item-errors hidden></p>
+                <p class="text-sm text-warning" data-item-server hidden></p>
             </div>
             <div class="flex items-center gap-1.5">
                 <button type="button" class="btn btn-xs btn-primary" data-item-retry hidden>{{ __('offline.action.retry') }}</button>
+                <button type="button" class="btn btn-xs btn-warning" data-item-force hidden>{{ __('offline.action.force_local') }}</button>
                 <button type="button" class="btn btn-xs btn-ghost text-error" data-item-discard>{{ __('offline.action.discard') }}</button>
             </div>
         </li>

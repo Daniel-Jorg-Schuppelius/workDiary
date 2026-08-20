@@ -170,9 +170,9 @@ class RemoteSupportSuggestionService {
 
             $suggestions[(int) $session->id] = (object) [
                 'customerSqid' => (string) $customer->sqid,
-                'customerName' => (string) ($customer->company ?: $customer->name),
+                'customerName' => (string) ($customer->displayLabel()),
                 'foreignSqid' => $foreign !== null ? (string) $foreign->sqid : null,
-                'foreignName' => $foreign !== null ? (string) ($foreign->company ?: $foreign->name) : null,
+                'foreignName' => $foreign !== null ? (string) ($foreign->displayLabel()) : null,
                 'minutes' => max(1, (int) round($seconds / 60)),
             ];
         }
@@ -233,7 +233,7 @@ class RemoteSupportSuggestionService {
             foreach ($sharedCandidates as $customerId => $s) {
                 $customer = $customers->get($customerId);
                 if ($customer !== null) {
-                    $names[] = ($customer->company ?: $customer->name) . ' (' . $s['sessions'] . ')';
+                    $names[] = ($customer->displayLabel()) . ' (' . $s['sessions'] . ')';
                 }
             }
 
@@ -275,7 +275,7 @@ class RemoteSupportSuggestionService {
                 $reasons[] = __(':matched von :total Sitzungen überlappen mit erfassten Zeiten für :name', [
                     'matched' => $stats[$customerId]['sessions'],
                     'total' => $sessions->count(),
-                    'name' => $customer !== null ? ($customer->company ?: $customer->name) : (string) $customerId,
+                    'name' => $customer !== null ? ($customer->displayLabel()) : (string) $customerId,
                 ]);
             }
         }
@@ -300,7 +300,7 @@ class RemoteSupportSuggestionService {
             } else {
                 $other = $customers->get($textHit->customerId);
                 if ($other !== null) {
-                    $reasons[] = __('Hinweis: Der Alias deutet auf :name.', ['name' => $other->company ?: $other->name]);
+                    $reasons[] = __('Hinweis: Der Alias deutet auf :name.', ['name' => $other->displayLabel()]);
                 }
             }
         }
@@ -316,7 +316,7 @@ class RemoteSupportSuggestionService {
             if ($topFc !== 0 && $perFc[$topFc] / $totalFcSeconds >= self::DOMINANT_SHARE) {
                 $foreign = $foreignCustomers->get($topFc);
                 if ($foreign !== null) {
-                    $reasons[] = __('Die überlappenden Zeiten liegen beim Endkunden :name.', ['name' => $foreign->company ?: $foreign->name]);
+                    $reasons[] = __('Die überlappenden Zeiten liegen beim Endkunden :name.', ['name' => $foreign->displayLabel()]);
                 }
             }
         }
@@ -349,9 +349,9 @@ class RemoteSupportSuggestionService {
         return (object) [
             'kind' => 'customer',
             'customerSqid' => (string) $customer->sqid,
-            'customerName' => (string) ($customer->company ?: $customer->name),
+            'customerName' => (string) ($customer->displayLabel()),
             'foreignSqid' => $foreign !== null ? (string) $foreign->sqid : null,
-            'foreignName' => $foreign !== null ? (string) ($foreign->company ?: $foreign->name) : null,
+            'foreignName' => $foreign !== null ? (string) ($foreign->displayLabel()) : null,
             'assetSqid' => $assetSqid,
             'assetLabel' => $assetLabel,
             'matchcode' => $matchcode,
@@ -384,7 +384,7 @@ class RemoteSupportSuggestionService {
                     return (object) [
                         'customerId' => (int) $customer->id,
                         'foreignId' => null,
-                        'reason' => __('Kürzel „:token" ist als Matchcode von :name hinterlegt.', ['token' => $token, 'name' => $customer->company ?: $customer->name]),
+                        'reason' => __('Kürzel „:token" ist als Matchcode von :name hinterlegt.', ['token' => $token, 'name' => $customer->displayLabel()]),
                         'token' => null,
                     ];
                 }
@@ -394,7 +394,7 @@ class RemoteSupportSuggestionService {
                     return (object) [
                         'customerId' => (int) $fc->customer_id,
                         'foreignId' => (int) $fc->id,
-                        'reason' => __('Kürzel „:token" ist als Matchcode des Endkunden :name hinterlegt.', ['token' => $token, 'name' => $fc->company ?: $fc->name]),
+                        'reason' => __('Kürzel „:token" ist als Matchcode des Endkunden :name hinterlegt.', ['token' => $token, 'name' => $fc->displayLabel()]),
                         'token' => null,
                     ];
                 }
@@ -410,9 +410,9 @@ class RemoteSupportSuggestionService {
                 if ($fc !== null && (int) $fc->customer_id !== (int) $customer->id) {
                     $fc = null;
                 }
-                $display = (string) ($customer->company ?: $customer->name);
+                $display = (string) ($customer->displayLabel());
                 if ($fc !== null) {
-                    $display .= ' → ' . ($fc->company ?: $fc->name);
+                    $display .= ' → ' . ($fc->displayLabel());
                 }
 
                 return (object) [
@@ -427,11 +427,11 @@ class RemoteSupportSuggestionService {
         // Namens-Kandidaten beider Ebenen: 'c<id>' = Kunde, 'f<id>' = Endkunde.
         $names = [];
         foreach ($customers as $customer) {
-            $names['c' . $customer->id] = (string) ($customer->company ?: $customer->name);
+            $names['c' . $customer->id] = (string) ($customer->displayLabel());
         }
         foreach ($foreignCustomers as $fc) {
             if ($customers->has((int) $fc->customer_id)) {
-                $names['f' . $fc->id] = (string) ($fc->company ?: $fc->name);
+                $names['f' . $fc->id] = (string) ($fc->displayLabel());
             }
         }
 
@@ -534,13 +534,13 @@ class RemoteSupportSuggestionService {
                 return null;
             }
 
-            return [(int) $fc->customer_id, (int) $fc->id, (string) ($fc->company ?: $fc->name)];
+            return [(int) $fc->customer_id, (int) $fc->id, (string) ($fc->displayLabel())];
         }
 
         $customer = $customers->get((int) mb_substr($key, 1));
 
         return $customer !== null
-            ? [(int) $customer->id, null, (string) ($customer->company ?: $customer->name)]
+            ? [(int) $customer->id, null, (string) ($customer->displayLabel())]
             : null;
     }
 

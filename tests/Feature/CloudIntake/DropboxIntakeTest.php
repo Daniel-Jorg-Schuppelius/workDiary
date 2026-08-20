@@ -49,6 +49,23 @@ class DropboxIntakeTest extends TestCase {
         $this->assertInstanceOf(\App\Plugins\Contracts\DocumentIntakeSource::class, $plugin);
     }
 
+    public function test_health_check_reports_platform_backup_target_attention(): void {
+        // Backupziele sind plattformweit — ein Re-Auth-Ziel muss den Health
+        // auf degraded ziehen, auch wenn der Org-Dokumentimport gesund ist.
+        $plugin = new DropboxPlugin();
+
+        $target = \App\Models\Backup\BackupTargetConnection::factory()->create([
+            'status' => \App\Enums\Backup\BackupTargetStatus::ReauthRequired,
+        ]);
+
+        $health = $plugin->healthCheck();
+        $this->assertSame(\App\Plugins\PluginHealth::STATUS_DEGRADED, $health->status);
+        $this->assertSame('backup_grant', $health->code);
+
+        $target->forceFill(['status' => \App\Enums\Backup\BackupTargetStatus::Active])->save();
+        $this->assertSame(\App\Plugins\PluginHealth::STATUS_OK, $plugin->healthCheck()->status);
+    }
+
     public function test_changes_maps_files_tombstones_and_cursor(): void {
         FakePluginHttp::fake([
             'https://api.dropboxapi.com/2/files/list_folder' => FakePluginHttp::response([

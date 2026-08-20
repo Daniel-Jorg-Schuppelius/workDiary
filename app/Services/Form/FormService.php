@@ -162,10 +162,11 @@ class FormService {
      * @param  array<string, mixed>  $values  Eingaben, keyed by Feld-Key
      * @param  array<string, UploadedFile>  $files  Datei-/Foto-Uploads je Feld-Key (Rang 32)
      * @param  array<string, string>  $signatures  Base64-PNG je Unterschriftsfeld (Rang 32)
+     * @param  list<string>  $deferredKeys  Offline erfasste Upload-Felder, deren Inhalt nachgereicht wird (Audit 2026-08, W4.1)
      *
      * @throws ValidationException bei inaktiver Vorlage oder ungültigen Werten
      */
-    public function submit(FormTemplate $template, ?Model $subject, array $values, User $user, array $files = [], array $signatures = []): FormSubmission {
+    public function submit(FormTemplate $template, ?Model $subject, array $values, User $user, array $files = [], array $signatures = [], array $deferredKeys = []): FormSubmission {
         if ($template->status !== FormTemplateStatus::Active) {
             throw ValidationException::withMessages([
                 'form_template_id' => (string) __('form.validation.template_not_active'),
@@ -187,9 +188,9 @@ class FormService {
         )->validate();
 
         // Pflicht-Prüfung für Attachment-Felder (Rang 32): required + kein Inhalt.
-        $this->assertRequiredAttachments($visibleFields, $files, $signatures);
+        $this->assertRequiredAttachments($visibleFields, $files, $signatures, $deferredKeys);
 
-        $submission = DB::transaction(function () use ($template, $subject, $fields, $visibleFields, $validated, $user, $files, $signatures): FormSubmission {
+        $submission = DB::transaction(function () use ($template, $subject, $fields, $visibleFields, $validated, $user, $files, $signatures, $deferredKeys): FormSubmission {
             $submission = FormSubmission::query()->create([
                 'organization_id' => $user->organization_id,
                 'form_template_id' => $template->id,
@@ -201,7 +202,7 @@ class FormService {
                 'submitted_at' => now(),
             ]);
 
-            $this->storeFieldAttachments($submission, $visibleFields, $files, $signatures, $user);
+            $this->storeFieldAttachments($submission, $visibleFields, $files, $signatures, $user, $deferredKeys);
 
             $template->audit('form.submitted', [
                 'actor_user_id' => $user->id,
@@ -242,10 +243,11 @@ class FormService {
      * @param  list<array<string, mixed>>  $fields
      * @param  array<string, UploadedFile>  $files
      * @param  array<string, string>  $signatures
+     * @param  list<string>  $deferredKeys
      *
      * @throws ValidationException
      */
-    private function assertRequiredAttachments(array $fields, array $files, array $signatures): void {
+    private function assertRequiredAttachments(array $fields, array $files, array $signatures, array $deferredKeys = []): void {
         $errors = [];
         foreach ($fields as $field) {
             $type = FormFieldType::from((string) $field['type']);
@@ -255,7 +257,7 @@ class FormService {
             $key = (string) $field['key'];
             $present = $type->isSignature()
                 ? (isset($signatures[$key]) && trim($signatures[$key]) !== '')
-                : (($files[$key] ?? null) instanceof UploadedFile);
+                : (($files[$key] ?? null) instanceof UploadedFile || in_array($key, $deferredKeys, true));
             if (! $present) {
                 $errors['values.' . $key] = (string) __('validation.required', ['attribute' => (string) $field['label']]);
             }
@@ -273,8 +275,9 @@ class FormService {
      * @param  list<array<string, mixed>>  $fields
      * @param  array<string, UploadedFile>  $files
      * @param  array<string, string>  $signatures
+     * @param  list<string>  $deferredKeys
      */
-    private function storeFieldAttachments(FormSubmission $submission, array $fields, array $files, array $signatures, User $user): void {
+    private function storeFieldAttachments(FormSubmission $submission, array $fields, array $files, array $signatures, User $user, array $deferredKeys = []): void {
         $markers = [];
         foreach ($fields as $field) {
             $key = (string) $field['key'];
@@ -288,12 +291,49 @@ class FormService {
                 if ($this->storeSignature($submission, $key, $signatures[$key], $user)) {
                     $markers[$key] = 'signed';
                 }
+            } elseif ($type->isUpload() && in_array($key, $deferredKeys, true)) {
+                // Offline erfasst, Inhalt kommt nach (Audit 2026-08, W4.1):
+                // sichtbarer Marker statt Leere — sonst sähe das Formular
+                // aus, als hätte niemand ein Foto gemacht.
+                $markers[$key] = (string) __('form.attachment.pending');
             }
         }
 
         if ($markers !== []) {
             $submission->update(['values' => array_merge((array) $submission->values, $markers)]);
         }
+    }
+
+    /**
+     * Nachgereichten Offline-Anhang ablegen (Feature 035 Phase 3; Audit
+     * 2026-08, W4.1). Der Weg ist derselbe wie online — `FileAttacher` plus
+     * `meta_type = field:<key>`; nur der Zeitpunkt unterscheidet sich.
+     *
+     * Wirft, wenn der Feld-Key kein Upload-Feld des Formulars ist: sonst
+     * könnte ein Client beliebige Dateien unter erfundenen Feldnamen an eine
+     * fremde Abgabe hängen.
+     */
+    public function attachDeferred(FormSubmission $submission, string $fieldKey, UploadedFile $file, User $user): void {
+        $field = null;
+        foreach ((array) $submission->fields_snapshot as $candidate) {
+            if ((string) $candidate['key'] === $fieldKey) {
+                $field = $candidate;
+                break;
+            }
+        }
+
+        if ($field === null || ! FormFieldType::from((string) $field['type'])->isUpload()) {
+            throw ValidationException::withMessages([
+                'field' => (string) __('form.validation.no_upload_field'),
+            ]);
+        }
+
+        $attachment = app(FileAttacher::class)->store($submission, $file, (int) $user->id);
+        $attachment->forceFill(['meta_type' => 'field:' . $fieldKey])->save();
+
+        $submission->update([
+            'values' => array_merge((array) $submission->values, [$fieldKey => $file->getClientOriginalName()]),
+        ]);
     }
 
     /** Base64-PNG einer Unterschrift → Storage + Attachment (meta_type field:<key>). */

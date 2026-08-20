@@ -33,4 +33,11 @@ class GitlabServiceProvider extends PluginServiceProviderBase {
             ]);
         }
     }
+
+    protected function bootPlugin(): void {
+        // Status-Rückrichtung (Audit 2026-08, Welle 1.4): erledigte Aufgabe
+        // schließt das GitLab-Issue über die Integrations-Outbox.
+        $this->app->make(\App\Services\Integration\IntegrationOutboxDispatcherResolver::class)
+            ->register(new Services\GitlabIssueWritebackDispatcher);
+    }
 }

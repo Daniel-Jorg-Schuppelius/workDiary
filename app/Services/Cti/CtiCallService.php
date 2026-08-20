@@ -17,6 +17,7 @@ use App\Enums\Notification\NotificationEvent;
 use App\Models\{CtiConnection, Customer, ExternalReference, Organization, User};
 use App\Notifications\GenericEventNotification;
 use App\Services\Communication\CommunicationNoteService;
+use App\Services\Contacts\PhoneNumberMatcher;
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\{CryptoHelper, PhoneNumberHelper};
 use Illuminate\Support\Carbon;
@@ -100,34 +101,20 @@ class CtiCallService {
         return (string) __($key, ['number' => $number !== '' ? $number : '—']);
     }
 
+    /**
+     * Stammdaten-Treffer zur Anrufernummer. Der Abgleich läuft seit W2.4 über
+     * den gemeinsamen {@see PhoneNumberMatcher} (vorher Kopie des
+     * Fritzbox-Algorithmus, inkl. rohem LIKE statt whereLikeEscaped).
+     */
     private function matchCustomer(int $organizationId, string $number): ?Customer {
         $e164 = $number !== '' ? PhoneNumberHelper::toE164($number, 'DE') : null;
         if ($e164 === null) {
             return null;
         }
-        $tail = substr((string) preg_replace('/\D/', '', $e164), -7);
-        if ($tail === '') {
-            return null;
-        }
 
-        $candidates = Customer::query()
-            ->where('organization_id', $organizationId)
-            ->where(function ($query) use ($tail): void {
-                $query->where('phone', 'like', '%' . $tail . '%')
-                    ->orWhere('mobile', 'like', '%' . $tail . '%');
-            })
-            ->limit(50)
-            ->get();
+        $match = app(PhoneNumberMatcher::class)->match($organizationId, $e164, [Customer::class]);
 
-        foreach ($candidates as $candidate) {
-            foreach ([(string) $candidate->phone, (string) $candidate->mobile] as $stored) {
-                if ($stored !== '' && PhoneNumberHelper::toE164($stored, 'DE') === $e164) {
-                    return $candidate;
-                }
-            }
-        }
-
-        return null;
+        return $match instanceof Customer ? $match : null;
     }
 
     /**

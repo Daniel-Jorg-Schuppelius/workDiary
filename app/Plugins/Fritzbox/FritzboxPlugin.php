@@ -10,8 +10,9 @@
 
 namespace App\Plugins\Fritzbox;
 
-use App\Plugins\AbstractPlugin;
+use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\Plugin;
+use App\Plugins\Support\PluginOrgContext;
 
 /**
  * FritzBox-Anruflisten-Plugin: importiert die FRITZ!Box-Anrufliste (CSV-Export
@@ -73,4 +74,36 @@ class FritzboxPlugin extends AbstractPlugin {
         ];
     }
 
+    /**
+     * DB-basierter Check (kein API-Pull vorhanden, Muster Dropbox/Nextcloud):
+     * Konfiguration auflösbar + optionaler Standard-Benutzer existent; als
+     * Statusinfo, ob der Telefonbericht-Mail-Intake verbunden ist.
+     */
+    public function healthCheck(): PluginHealth {
+        $org = PluginOrgContext::currentOrNull();
+        if ($org === null) {
+            return PluginHealth::ok(__('Kein Organisationskontext.'));
+        }
+
+        $config = FritzboxConfig::resolve((int) $org->id);
+
+        if ($config['default_user_id'] !== null) {
+            $userExists = \App\Models\User::query()
+                ->whereKey($config['default_user_id'])
+                ->where('organization_id', $org->id)
+                ->exists();
+            if (! $userExists) {
+                return PluginHealth::degraded(__('Konfigurierter Standard-Benutzer existiert nicht (mehr) in dieser Organisation.'), 'invalid_config');
+            }
+        }
+
+        $mailIntake = \App\Models\EmailConnection::query()
+            ->where('organization_id', $org->id)
+            ->where('callreport_intake', true)
+            ->exists();
+
+        return $mailIntake
+            ? PluginHealth::ok(__('Bereit — Telefonbericht-Mail-Intake verbunden.'))
+            : PluginHealth::ok(__('Bereit — CSV-Upload-Betrieb (kein Telefonbericht-Mail-Intake verbunden).'));
+    }
 }

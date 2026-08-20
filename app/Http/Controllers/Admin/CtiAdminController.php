@@ -59,6 +59,49 @@ class CtiAdminController extends Controller {
             ->with('success', __('cti.flash.issued'));
     }
 
+    /**
+     * Click-to-Dial je Anbindung konfigurieren (Audit 2026-08, W4.5):
+     * API-Zugang, eigene Durchwahl und der bewusste Schalter. Ein leeres
+     * Token-Feld laesst das gespeicherte Token unangetastet — so kann die
+     * Durchwahl geaendert werden, ohne den Zugang neu einzutippen.
+     */
+    public function dialSettings(Request $request): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        $data = $request->validate([
+            'connection' => ['required', 'string'],
+            'dial_enabled' => ['nullable', 'boolean'],
+            'api_token' => ['nullable', 'string', 'max:500'],
+            'api_base_url' => ['nullable', 'string', 'max:255', 'url'],
+            'dial_extension' => ['nullable', 'string', 'max:64'],
+        ]);
+
+        $decoded = app(SqidEncoder::class)->decode(CtiConnection::class, (string) $data['connection']);
+        $connection = $decoded !== null
+            ? CtiConnection::query()->whereKey($decoded)->where('organization_id', $organization->id)->first()
+            : null;
+        abort_unless($connection instanceof CtiConnection, 404);
+
+        $attributes = [
+            'dial_enabled' => (bool) ($data['dial_enabled'] ?? false),
+            'api_base_url' => $data['api_base_url'] ?? null,
+            'dial_extension' => $data['dial_extension'] ?? null,
+        ];
+        if (trim((string) ($data['api_token'] ?? '')) !== '') {
+            $attributes['api_token'] = (string) $data['api_token'];
+        }
+
+        $connection->forceFill($attributes)->save();
+        // Bewusst ohne Tokenwert im Audit-Log.
+        $connection->audit('cti.dial_configured', [
+            'by_user_id' => (int) $admin->id,
+            'dial_enabled' => $attributes['dial_enabled'],
+        ]);
+
+        return back()->with('success', __('cti.flash.dial_saved'));
+    }
+
     /** Deaktiviert eine Anbindung (Webhook wird nicht mehr angenommen). */
     public function disconnect(Request $request): RedirectResponse {
         $admin = $this->admin();

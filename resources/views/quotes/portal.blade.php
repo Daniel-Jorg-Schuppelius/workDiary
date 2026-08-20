@@ -85,7 +85,7 @@
             <div class="space-y-1">
                 @foreach ($quote->items as $item)
                     <label class="label cursor-pointer justify-start gap-2">
-                        <input type="checkbox" name="item_ids[]" value="{{ $item->id }}" class="checkbox checkbox-sm" @checked(! $item->optional)>
+                        <input type="checkbox" name="item_ids[]" value="{{ $item->sqid }}" class="checkbox checkbox-sm" @checked(! $item->optional)>
                         <span class="label-text">{{ $item->position }}. {{ $item->description }} @if ($item->optional)<span class="text-xs text-base-content/60">({{ __('Option') }})</span>@endif</span>
                     </label>
                 @endforeach

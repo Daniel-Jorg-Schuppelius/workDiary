@@ -88,7 +88,7 @@
                                  (SharePoint-Muster) — bei Microsoft findet die Suche zusätzlich
                                  SharePoint-Bibliotheken passender Sites. --}}
                             <form method="GET" action="{{ route('admin.cloud-intake.index') }}" class="flex flex-wrap items-end gap-2">
-                                <input type="hidden" name="containers" value="{{ $connection->id }}">
+                                <input type="hidden" name="containers" value="{{ $connection->sqid }}">
                                 <div class="fieldset flex-1 min-w-60">
                                     <label class="fieldset-label" for="ci-search-{{ $connection->id }}">{{ __('cloud_intake.picker.search_label') }}</label>
                                     <input id="ci-search-{{ $connection->id }}" type="text" name="container_search" maxlength="190"

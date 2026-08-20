@@ -76,7 +76,7 @@
                     <div class="grid md:grid-cols-2 gap-1">
                         @foreach ($allActivities as $act)
                             <label class="flex items-center gap-2 text-sm">
-                                <input type="checkbox" name="activity_ids[]" value="{{ $act->id }}" class="checkbox checkbox-sm" @checked(in_array($act->id, $linkedIds, true))> {{ $act->name }}
+                                <input type="checkbox" name="activity_ids[]" value="{{ $act->sqid }}" class="checkbox checkbox-sm" @checked(in_array($act->id, $linkedIds, true))> {{ $act->name }}
                             </label>
                         @endforeach
                     </div>

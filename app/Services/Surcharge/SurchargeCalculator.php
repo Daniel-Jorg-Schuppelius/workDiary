@@ -13,6 +13,7 @@ namespace App\Services\Surcharge;
 use App\Enums\Surcharge\SurchargeKind;
 use App\Models\Surcharge\SurchargeRule;
 use App\Services\HolidayService;
+use App\Support\Setting;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use Illuminate\Support\Collection;
 
@@ -34,12 +35,15 @@ use Illuminate\Support\Collection;
  *    org-eigene Holiday-Einträge — dieselbe Quelle wie die Compliance-Regeln).
  *  - valid_from/valid_until (inklusiv) und active werden pro Kalendertag geprüft.
  *
- * Stacking-Entscheidung (MVP): Überlappen mehrere Regeln (z. B. Nacht +
- * Sonntag), werden die Prozentsätze NICHT addiert — es gewinnt der höchste
- * Prozentsatz; bei Gleichstand die höhere priority, danach die ältere Regel
- * (kleinere id). Die steuerliche Praxis variiert hier (additives Stacking ist
- * z. B. bei Nacht+Sonntag nach §3b EStG zulässig); eine Org-Option
- * „Stacking-Modus" ist vorgesehen, aber bewusst noch nicht gebaut.
+ * Stacking-Modus (Audit 2026-08, W4.3) — Org-Setting `surcharge.stacking`:
+ *  - `highest` (Default, Bestandsverhalten): Überlappen mehrere Regeln
+ *    (z. B. Nacht + Sonntag), gewinnt der höchste Prozentsatz; bei
+ *    Gleichstand die höhere priority, danach die ältere Regel (kleinere id).
+ *  - `add`: Die Minuten zählen für JEDE zutreffende Regel — die Zuschläge
+ *    addieren sich also. Nach § 3b EStG ist das für Nacht + Sonntag/Feiertag
+ *    zulässig; ob es gewollt ist, entscheidet die steuerliche Praxis der
+ *    Organisation. Der Default bleibt bewusst `highest`, damit sich für
+ *    Bestandsmandanten nichts still ändert.
  *
  * Reine, seiteneffektfreie Logik — einzig der HolidayService wird für
  * Feiertags-Lookups befragt.
@@ -47,6 +51,9 @@ use Illuminate\Support\Collection;
 class SurchargeCalculator {
     /** Feiertags-Rechtsraum des aktuellen calculate()-Laufs (MVP-513). */
     private ?string $holidayProvider = null;
+
+    /** Stacking-Modus des aktuellen Laufs: 'highest' | 'add' (W4.3). */
+    private string $stacking = 'highest';
 
     public function __construct(
         private readonly HolidayService $holidays,
@@ -63,6 +70,10 @@ class SurchargeCalculator {
      */
     public function calculate(CarbonInterface $start, CarbonInterface $end, Collection $rules, ?string $holidayProvider = null): array {
         $this->holidayProvider = $holidayProvider;
+        // Mandantenbewusst wie der Feiertags-Rechtsraum; unbekannte Werte
+        // fallen auf das Bestandsverhalten zurueck.
+        $mode = (string) Setting::get('surcharge.stacking', (string) config('surcharge.stacking', 'highest'));
+        $this->stacking = $mode === 'add' ? 'add' : 'highest';
         $start = CarbonImmutable::instance($start);
         $end = CarbonImmutable::instance($end);
 
@@ -144,6 +155,19 @@ class SurchargeCalculator {
                 continue;
             }
 
+            // Additives Stacking: die Minuten zaehlen fuer JEDE zutreffende
+            // Regel; ohne Stacking kuert eine Regel das Segment.
+            if ($this->stacking === 'add') {
+                foreach ($applicable as $entry) {
+                    if (! $this->covers($entry['intervals'], $a, $b)) {
+                        continue;
+                    }
+                    $this->addMinutes($acc, $date, $entry['rule'], $b - $a);
+                }
+
+                continue;
+            }
+
             $winner = null;
             foreach ($applicable as $entry) {
                 if (! $this->covers($entry['intervals'], $a, $b)) {
@@ -158,12 +182,21 @@ class SurchargeCalculator {
                 continue;
             }
 
-            $key = $date . '|' . str_pad((string) $winner->id, 10, '0', STR_PAD_LEFT);
-            if (! isset($acc[$key])) {
-                $acc[$key] = ['rule' => $winner, 'date' => $date, 'minutes' => 0];
-            }
-            $acc[$key]['minutes'] += $b - $a;
+            $this->addMinutes($acc, $date, $winner, $b - $a);
         }
+    }
+
+    /**
+     * Minuten einer Regel an einem Tag akkumulieren (Schluessel: Tag + Regel).
+     *
+     * @param  array<string, array{rule: SurchargeRule, date: string, minutes: int}>  $acc
+     */
+    private function addMinutes(array &$acc, string $date, SurchargeRule $rule, int $minutes): void {
+        $key = $date . '|' . str_pad((string) $rule->id, 10, '0', STR_PAD_LEFT);
+        if (! isset($acc[$key])) {
+            $acc[$key] = ['rule' => $rule, 'date' => $date, 'minutes' => 0];
+        }
+        $acc[$key]['minutes'] += $minutes;
     }
 
     /**

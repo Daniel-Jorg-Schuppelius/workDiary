@@ -12,11 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Billbee;
 
-use App\Models\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Billbee\Api\{BillbeeApiException, BillbeeClientFactory};
 use App\Plugins\Contracts\Plugin;
-use App\Plugins\Support\PluginOrgContext;
 use Throwable;
 
 /**
@@ -49,6 +47,12 @@ class BillbeePlugin extends AbstractPlugin {
     }
 
     /** @return array<int, \App\Plugins\Contracts\PluginCapability> Bestand läuft über die Provider-Registry, Orders über den Spiegel. */
+    /**
+     * Bewusst leer: Bestandsabgleich läuft über den
+     * {@see \App\Contracts\Inventory\ExternalInventoryDispatcher} bzw. den
+     * InventoryProvider — im ServiceProvider registriert, nicht über
+     * Plugin-Interfaces (Audit 2026-08, W1.6).
+     */
     public function capabilities(): array {
         return [];
     }
@@ -71,9 +75,9 @@ class BillbeePlugin extends AbstractPlugin {
     }
 
     public function healthCheck(): PluginHealth {
-        $organization = PluginOrgContext::currentOrNull();
-        if (! $organization instanceof Organization) {
-            return PluginHealth::ok(__('Keine Organisation im Kontext.'));
+        $organization = $this->healthOrgContext();
+        if ($organization instanceof PluginHealth) {
+            return $organization;
         }
 
         $config = BillbeeConfig::resolve((int) $organization->id);

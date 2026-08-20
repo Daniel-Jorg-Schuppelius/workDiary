@@ -16,7 +16,6 @@ use App\Plugins\CalDav\Contracts\{CalDavGatewayFactory, CalendarSource};
 use App\Plugins\CalDav\Services\{CalDavRemoteCalendarGateway, CalendarPublishItem, EventCalendarSource, ScheduleCalendarSource};
 use App\Plugins\Contracts\{CalendarPublisher, PluginCapability};
 use App\Plugins\Support\Calendar\{RemoteCalendarEvent, RemoteCalendarPublishService};
-use App\Plugins\Support\PluginOrgContext;
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Spatie\IcalendarGenerator\Components\{Calendar as IcsCalendar, Event as IcsEvent};
@@ -196,9 +195,9 @@ class CalDavPlugin extends AbstractPlugin implements CalendarPublisher {
 
     /** Health-Check je Organisation: aktive Anbindung suchen und die Collection anpingen. */
     public function healthCheck(): PluginHealth {
-        $org = PluginOrgContext::currentOrNull();
-        if (! $org instanceof Organization) {
-            return PluginHealth::ok(__('Keine Organisation im Kontext.'));
+        $org = $this->healthOrgContext();
+        if ($org instanceof PluginHealth) {
+            return $org;
         }
 
         $connection = CalDavConnection::query()->where('organization_id', $org->id)->first();

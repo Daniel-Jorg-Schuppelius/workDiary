@@ -20,10 +20,7 @@
             <div class="alert alert-error text-sm">{{ session('error') }}</div>
         @endif
 
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('accounting_migration.title') }}</h1>
-            <p class="mt-1 text-sm text-base-content/60">{{ __('accounting_migration.intro') }}</p>
-        </div>
+        <x-page-toolbar :subtitle="__('accounting_migration.intro')" />
 
         @if ($run === null)
             {{-- Planung: Datenbereiche + Stichtag --}}

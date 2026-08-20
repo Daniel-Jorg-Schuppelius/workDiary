@@ -46,7 +46,7 @@
                 <option value="">{{ __('Kein Kunde verknüpft') }}</option>
                 @foreach ($customers as $customer)
                     <option value="{{ $customer->sqid }}" @selected((string) old('controller_customer_id') === $customer->sqid)>
-                        {{ $customer->company ?: $customer->name }}
+                        {{ $customer->displayLabel() }}
                     </option>
                 @endforeach
             </select>

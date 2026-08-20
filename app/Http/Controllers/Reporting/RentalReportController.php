@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Reporting;
 
 use App\Enums\Rental\{RentalCaseStatus, RentalChargeStatus, RentalReturnFollowUp};
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\Rental\{RentalCase, RentalCharge, RentalProfile, RentalReportSnapshot, RentalReturnReport};
 use Illuminate\Contracts\View\View;
@@ -26,6 +27,8 @@ use Illuminate\Support\Facades\Gate;
  * (P2 — spätere Datenänderungen bewerten alte Berichte nicht um).
  */
 class RentalReportController extends Controller {
+    use ResolvesGlobalDateRange;
+
     public function index(Request $request): View {
         Gate::authorize('viewAny', RentalCase::class);
 
@@ -57,8 +60,13 @@ class RentalReportController extends Controller {
 
     /** @return array{0: Carbon, 1: Carbon} */
     private function period(Request $request): array {
-        $from = $request->filled('from') ? Carbon::parse($request->string('from')->toString()) : now()->startOfMonth();
-        $to = $request->filled('to') ? Carbon::parse($request->string('to')->toString()) : now()->endOfMonth();
+        // W2.1: einheitlicher Parameter-Guard, fachlicher Monats-Default bleibt.
+        [$rangeFrom, $rangeTo] = $this->resolveRangeWithDefault($request, static fn (): array => [
+            \Carbon\CarbonImmutable::now()->startOfMonth(),
+            \Carbon\CarbonImmutable::now()->endOfMonth(),
+        ]);
+        $from = Carbon::instance($rangeFrom->toDateTime());
+        $to = Carbon::instance($rangeTo->toDateTime());
 
         return [$from->startOfDay(), $to->endOfDay()];
     }

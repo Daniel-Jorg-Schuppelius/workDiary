@@ -115,6 +115,7 @@ return [
     'CleaningProfile' => 'Perfil de limpieza',
     'CloudDocumentConnection' => 'Conexión de documentos en la nube',
     'CloudDocumentRoute' => 'Ruta de documentos en la nube',
+    'CloudIntakeReportController' => 'Exportación de informe: entrada de documentos en la nube',
     'CohortComparisonReportController' => 'Exportación de informe: comparación de cohortes',
     'Comment' => 'Comentario',
     'CommunicationNote' => 'Nota de comunicación',

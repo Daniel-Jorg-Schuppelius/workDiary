@@ -66,6 +66,7 @@ final class WebhookTenantTest extends TestCase {
         'api/webhooks/zammad/{connection}',
         'api/webhooks/todoist',
         'api/webhooks/calendly/{token}',
+        'api/webhooks/lexoffice/{organization}/{token}',
         'api/cti/webhook/{token}',
         'api/terminal/ingest/{token}',
         'api/location/ingest/{token}',
@@ -174,6 +175,38 @@ final class WebhookTenantTest extends TestCase {
         ], $body)->assertForbidden();
 
         $this->assertSame(0, Task::query()->withoutGlobalScopes()->count());
+    }
+
+    // ────────────────────────────────────────────────────────────────────
+    // Lexoffice — URL-Token je Organisation (Lexoffice erlaubt keine eigenen
+    // Header). Der Mandant steckt im Pfad, das Token MUSS zu ihm gehören.
+    // ────────────────────────────────────────────────────────────────────
+
+    public function test_lexoffice_token_of_one_org_cannot_trigger_another_org(): void {
+        Queue::fake();
+
+        foreach ([[$this->organization->id, 'token-A'], [$this->orgB->id, 'token-B']] as [$orgId, $secret]) {
+            PluginSetting::query()->create([
+                'organization_id' => $orgId,
+                'plugin_id' => \App\Plugins\Lexoffice\LexofficePlugin::ID,
+                'enabled' => true,
+                'settings' => ['api_key' => 'key', 'webhook_secret' => $secret],
+            ]);
+        }
+
+        $payload = ['eventType' => 'voucher.changed', 'resourceId' => 'r-1', 'eventDate' => now()->toIso8601String()];
+
+        // Token von A gegen die Organisation von B: 404, nichts angestoßen.
+        $this->postJson("/api/webhooks/lexoffice/{$this->orgB->id}/token-A", $payload)->assertNotFound();
+        Queue::assertNothingPushed();
+        $this->assertSame(0, \App\Models\LexofficeWebhookDelivery::query()->count());
+
+        // Eigenes Token: angenommen und der eigenen Organisation zugeschrieben.
+        $this->postJson("/api/webhooks/lexoffice/{$this->orgB->id}/token-B", $payload)->assertOk();
+        $this->assertSame(
+            (int) $this->orgB->id,
+            (int) \App\Models\LexofficeWebhookDelivery::query()->firstOrFail()->organization_id,
+        );
     }
 
     // ────────────────────────────────────────────────────────────────────

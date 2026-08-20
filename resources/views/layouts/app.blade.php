@@ -13,6 +13,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="sync-endpoint" content="{{ route('api.internal.sync.commands') }}">
+        {{-- Foto-Queue der Offline-Erfassung (Audit 2026-08, W4.1). --}}
+        <meta name="sync-attachment-endpoint" content="{{ route('api.internal.sync.attachments') }}">
         <meta name="geocode-url" content="{{ route('api.internal.geocode') }}">
 
         {{-- Font-Preloads: starten den Download von IBM Plex Sans (400/600),

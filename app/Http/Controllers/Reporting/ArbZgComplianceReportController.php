@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\Compliance\ComplianceFindingStatus;
 use App\Enums\TimeApproval\TimeCorrectionStatus;
 use App\Enums\User\Permission;
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{ComplianceFinding, Organization, Team, TimeCorrectionRequest, User};
@@ -36,6 +36,8 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 class ArbZgComplianceReportController extends Controller {
     use RendersReportPdf;
+
+    use ResolvesCurrentOrganization;
     use ResolvesGlobalDateRange;
     use ResolvesStandardReportFilters;
     use WritesReportCsv;
@@ -326,7 +328,7 @@ class ArbZgComplianceReportController extends Controller {
      * @return array{rows: array<int, array{user: User, findings: list<array<string, mixed>>, counts: array<string,int>}>}
      */
     private function build(CarbonImmutable $from, CarbonImmutable $to): array {
-        $org = $this->currentOrganization();
+        $org = $this->currentOrganizationOrNull();
         if (! $org instanceof Organization) {
             return ['rows' => []];
         }
@@ -522,12 +524,6 @@ class ArbZgComplianceReportController extends Controller {
             ->with('success', __('compliance.history.acknowledged'));
     }
 
-    private function currentOrganization(): ?Organization {
-        return app()->bound('currentOrganization') && app('currentOrganization') instanceof Organization
-            ? app('currentOrganization')
-            : null;
-    }
-
     /**
      * @param  array<int, array{user: User, findings: list<array<string, mixed>>, counts: array<string,int>}>  $rows
      * @return array{total:int, by_kind: array<string,int>, employees:int}
@@ -561,7 +557,7 @@ class ArbZgComplianceReportController extends Controller {
 
     /** @return array<string, string> Schwellwert-Beschriftungen (aus dem Bestand abgeleitet). */
     private function thresholdLabels(): array {
-        $org = $this->currentOrganization();
+        $org = $this->currentOrganizationOrNull();
         $s = $org ? $org->complianceSettings() : Organization::COMPLIANCE_DEFAULTS;
 
         return [

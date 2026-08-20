@@ -21,13 +21,11 @@
         @endif
         <x-validation-errors first />
 
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
-                <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('chat.title') }}</h1>
-                <a href="{{ route('admin.notification-rules.index') }}" class="btn btn-sm btn-ghost">{{ __('chat.to_matrix') }}</a>
-            </div>
-            <p class="text-sm text-base-content/60">{{ __('chat.intro') }}</p>
-        </div>
+        <x-page-toolbar :subtitle="__('chat.intro')">
+            <x-slot:actions>
+                <x-icon-btn icon="rule" tone="ghost" size="sm" :href="route('admin.notification-rules.index')" show-label>{{ __('chat.to_matrix') }}</x-icon-btn>
+            </x-slot:actions>
+        </x-page-toolbar>
 
         {{-- Vorhandene Kanäle --}}
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">

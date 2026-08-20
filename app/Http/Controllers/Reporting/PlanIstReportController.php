@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Reporting;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{Team, User};
 use App\Services\Reporting\PlanIstReportBuilder;
@@ -32,6 +33,8 @@ use Illuminate\View\View;
  * Org-Sicht über `report.presence.organization` (bzw. Admin) geschützt.
  */
 class PlanIstReportController extends Controller {
+    use ResolvesGlobalDateRange;
+
     public function __construct(private readonly PlanIstReportBuilder $builder) {}
 
     public function presence(Request $request): View {
@@ -237,18 +240,21 @@ class PlanIstReportController extends Controller {
         return $target->teams()->whereIn('teams.id', $viewerTeamIds)->exists();
     }
 
-    /** @return array{0: CarbonImmutable, 1: CarbonImmutable} */
+    /**
+     * Zeitraum des Requests; Default ist der laufende Monat.
+     *
+     * Auswertung über {@see ResolvesGlobalDateRange::resolveRangeWithDefault()}
+     * (Audit 2026-08, W2.1): einheitlicher Guard gegen hand-editierte
+     * Bookmarks (vorher HTTP 500) und verdrehte Grenzen — der fachliche
+     * Monats-Default bleibt.
+     *
+     * @return array{0: CarbonImmutable, 1: CarbonImmutable}
+     */
     private function range(Request $request): array {
         // Whitebox-Konvention: "heute" lokal über Tz::current bestimmen, nicht
         // in Server-/UTC-Zeit (Monatsgrenzen kippen sonst je nach Zeitzone).
         $now = CarbonImmutable::now(Tz::current());
-        $from = $request->filled('from')
-            ? CarbonImmutable::parse((string) $request->input('from'))
-            : $now->startOfMonth();
-        $to = $request->filled('to')
-            ? CarbonImmutable::parse((string) $request->input('to'))
-            : $now->endOfMonth();
 
-        return [$from, $to];
+        return $this->resolveRangeWithDefault($request, static fn (): array => [$now->startOfMonth(), $now->endOfMonth()]);
     }
 }

@@ -85,7 +85,9 @@ class MemberController extends Controller {
             'roles' => ['array'],
             'roles.*' => ['integer'],
             'groups' => ['array'],
-            'groups.*' => ['integer'],
+            // Sqids aus dem Formular (W3.3); Rollen bleiben numerisch, weil das
+            // Spatie-Role-Modell aus dem Vendor-Paket kein HasSqid tragen kann.
+            'groups.*' => ['string'],
         ]);
 
         $teamForeign = config('permission.column_names.team_foreign_key', 'team_id');
@@ -120,8 +122,12 @@ class MemberController extends Controller {
         // (supportzugriff-grundsaetze.md §4.1); No-Op-Sync erzeugt keine Events.
         $this->syncRolesAudited($member, $validRoles);
 
+        $requestedGroupIds = array_filter(array_map(
+            static fn (string $v): ?int => \App\Support\Sqid::decodeOrNumeric(UserGroup::class, $v),
+            $data['groups'] ?? [],
+        ));
         $validGroupIds = UserGroup::query()
-            ->whereIn('id', $data['groups'] ?? [])
+            ->whereIn('id', $requestedGroupIds)
             ->where('organization_id', $member->organization_id)
             ->pluck('id')
             ->all();

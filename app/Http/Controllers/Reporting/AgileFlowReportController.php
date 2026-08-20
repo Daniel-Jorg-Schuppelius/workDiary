@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Reporting;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\Agile\{AgileBoard, AgileEvent};
 use App\Models\Project;
@@ -29,6 +30,8 @@ use Illuminate\View\View;
  * sonst Datenqualitäts-Hinweis). Berechnung NUR über AgileMetricsService.
  */
 class AgileFlowReportController extends Controller {
+    use ResolvesGlobalDateRange;
+
     public function __construct(private readonly AgileMetricsService $metrics) {}
 
     public function index(Request $request, Project $project): View {
@@ -39,10 +42,15 @@ class AgileFlowReportController extends Controller {
 
         // Zeitraum: ?from/?to, Default letzte 6 Wochen bzw. ab erstem Event.
         $firstEventAt = AgileEvent::query()->where('board_id', $board->id)->min('created_at');
-        $from = $request->query('from') !== null
-            ? Carbon::parse((string) $request->query('from'))
-            : ($firstEventAt !== null ? Carbon::parse((string) $firstEventAt) : now()->subWeeks(6))->copy()->max(now()->subWeeks(6));
-        $to = $request->query('to') !== null ? Carbon::parse((string) $request->query('to')) : now();
+        [$rangeFrom, $rangeTo] = $this->resolveRangeWithDefault($request, static fn (): array => [
+            \Carbon\CarbonImmutable::parse((string) ($firstEventAt !== null
+                ? Carbon::parse((string) $firstEventAt)->max(now()->subWeeks(6))
+                : now()->subWeeks(6))),
+            \Carbon\CarbonImmutable::parse((string) now()),
+        ]);
+        // AgileMetricsService erwartet mutable Carbon-Instanzen.
+        $from = Carbon::instance($rangeFrom->toDateTime());
+        $to = Carbon::instance($rangeTo->toDateTime());
 
         // Drilldown-Links (P11): signiert + kurzlebig, expected = Punktwert.
         $throughput = $this->metrics->throughput($board);

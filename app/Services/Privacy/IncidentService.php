@@ -50,7 +50,7 @@ class IncidentService {
             $incident->type = $type;
             $incident->status = IncidentStatus::Detected;
             $incident->controller_role = $controllerRole;
-            $incident->setAttribute('controller_name', $controllerCustomer?->company ?: $controllerCustomer?->name ?: $controllerName);
+            $incident->setAttribute('controller_name', $controllerCustomer?->displayLabel() ?: $controllerName);
             $incident->setAttribute('controller_customer_id', $controllerCustomer?->id);
             $incident->setAttribute('own_infrastructure_affected', $ownInfrastructureAffected);
             $incident->occurred_at = $occurredAt;

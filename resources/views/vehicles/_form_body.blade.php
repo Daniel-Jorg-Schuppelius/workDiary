@@ -55,8 +55,11 @@
     <x-form-group :legend="__('Mietvertrag')" icon="key" tone="warning" cols="2">
         <x-input-field name="rental_provider" :label="__('Anbieter')" maxlength="120" :value="old('rental_provider', $vehicle?->rental_provider)" />
         <x-input-field name="rental_cost_per_day" type="number" :label="__('Tagessatz (€)')" step="0.01" min="0" :value="old('rental_cost_per_day', $vehicle?->rental_cost_per_day)" />
-        <x-input-field name="rental_start" type="date" :label="__('Mietbeginn')" :value="old('rental_start', $vehicle?->rental_start?->toDateString())" />
-        <x-input-field name="rental_end" type="date" :label="__('Mietende')" :value="old('rental_end', $vehicle?->rental_end?->toDateString())" />
+        <x-date-range layout="split" grid-class="contents"
+                      from-name="rental_start" to-name="rental_end" type="date"
+                      :from="old('rental_start', $vehicle?->rental_start?->toDateString())"
+                      :to="old('rental_end', $vehicle?->rental_end?->toDateString())"
+                      :from-label="__('Mietbeginn')" :to-label="__('Mietende')" />
         <x-input-field name="rental_included_km" type="number" :label="__('Inklusiv-km (gesamt)')" min="0" :value="old('rental_included_km', $vehicle?->rental_included_km)" />
         <x-input-field name="rental_extra_cost_per_km" type="number" :label="__('Extrakosten €/km')" step="0.0001" min="0" :value="old('rental_extra_cost_per_km', $vehicle?->rental_extra_cost_per_km)" />
     </x-form-group>

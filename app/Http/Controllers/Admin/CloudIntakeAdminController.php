@@ -49,7 +49,8 @@ class CloudIntakeAdminController extends Controller {
         // Container GENAU EINER Verbindung laden — nie beim reinen Seitenaufruf
         // für alle Verbindungen (je Aufruf externe API-Requests). Fehler → leer;
         // die Freitext-Eingabe bleibt als Fallback.
-        $containerConnectionId = (int) $request->query('containers', 0);
+        // Sqid aus dem Picker (W3.3); Alt-Bookmarks mit roher ID bleiben lesbar.
+        $containerConnectionId = (int) (\App\Support\Sqid::decodeOrNumeric(CloudDocumentConnection::class, (string) $request->query('containers', '')) ?? 0);
         $containerSearch = trim((string) $request->query('container_search', ''));
         $containerOptions = [];
         $containerLoadFailed = false;

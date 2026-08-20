@@ -30,8 +30,11 @@
         <x-input-field name="business_seat" :label="__('passenger.field.business_seat')" :value="old('business_seat', $concession?->business_seat)" />
         <x-input-field name="service_area" :label="__('passenger.field.service_area')" :value="old('service_area', $concession?->service_area)" />
         <x-input-field name="tariff_area" :label="__('passenger.field.tariff_area')" :value="old('tariff_area', $concession?->tariff_area)" span="2" />
-        <x-input-field name="valid_from" type="date" :label="__('passenger.field.valid_from')" :value="old('valid_from', $concession?->valid_from?->toDateString())" />
-        <x-input-field name="valid_until" type="date" :label="__('passenger.field.valid_until')" :value="old('valid_until', $concession?->valid_until?->toDateString())" />
+        <x-date-range layout="split" grid-class="contents"
+                      from-name="valid_from" to-name="valid_until" type="date"
+                      :from="old('valid_from', $concession?->valid_from?->toDateString())"
+                      :to="old('valid_until', $concession?->valid_until?->toDateString())"
+                      :from-label="__('passenger.field.valid_from')" :to-label="__('passenger.field.valid_until')" />
         <x-textarea-field name="conditions" :label="__('passenger.field.conditions')" rows="2" span="2">{{ old('conditions', $concession?->conditions) }}</x-textarea-field>
         <div class="flex items-center gap-2">
             <input type="hidden" name="active" value="0">

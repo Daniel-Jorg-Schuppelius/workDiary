@@ -13,6 +13,7 @@ namespace App\Models;
 use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Services\Timekeeping\BreakRuleEvaluator;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Database\Factories\AttendanceFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -210,6 +211,24 @@ class Attendance extends Model {
     public function getBreakMinutesTotalAttribute(): int {
         return (int) ($this->break_minutes_auto ?? 0)
             + (int) ($this->break_minutes_manual ?? 0);
+    }
+
+    /**
+     * Fingerabdruck der korrigierbaren Felder (Feature 035 Phase 3; Audit
+     * 2026-08, W4.1). Grundlage des `base_version`-Vergleichs beim
+     * Offline-Nachtrag: Ein Gerät korrigiert immer den Stand, den es zuletzt
+     * gesehen hat — hat inzwischen jemand ANDERES an genau diesen Feldern
+     * gedreht, ist die Korrektur ein Konflikt und darf nicht still gewinnen.
+     *
+     * Bewusst NICHT `updated_at`: eine unbeteiligte Änderung (Notiz, Geo,
+     * Abschluss-Flag) würde sonst einen Scheinkonflikt auslösen.
+     */
+    public function correctionVersion(): string {
+        return substr((string) CryptoHelper::hash(implode('|', [
+            $this->started_at?->toIso8601String() ?? '',
+            $this->ended_at?->toIso8601String() ?? '',
+            (string) (int) ($this->break_minutes_manual ?? 0),
+        ])), 0, 16);
     }
 
     /**

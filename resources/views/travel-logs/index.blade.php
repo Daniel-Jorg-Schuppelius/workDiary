@@ -42,66 +42,64 @@
             <x-kpi-tile :label="__('Erstattung')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totals['reimbursement'], 2, withThousandsSeparator: true) . ' €'" />
         </div>
 
-        <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-            <x-table table-sort="server"
-                     :route="route('travel-logs.index')"
-                     :current-sort="$sort ?? null"
-                     :current-dir="$dir ?? 'desc'"
-                     :sort-params="['from' => $from->toDateString(), 'to' => $to->toDateString()]"
-                     bare scroll="flex" :pinRows="true">
-                <x-slot:head>
-                    <tr>
-                        <x-table.th sort="date" default>{{ __('Datum') }}</x-table.th>
-                        <x-table.th sort="from">{{ __('Von') }}</x-table.th>
-                        <x-table.th sort="to">{{ __('Nach') }}</x-table.th>
-                        <x-table.th sort="distance" align="right">{{ __('km') }}</x-table.th>
-                        <x-table.th sort="vehicle">{{ __('Fahrzeug') }}</x-table.th>
-                        <x-table.th sort="reimbursement" align="right">{{ __('Erstattung') }}</x-table.th>
-                        <x-table.th sort="purpose">{{ __('Zweck') }}</x-table.th>
-                        <th></th>
-                    </tr>
-                </x-slot:head>
-                @forelse ($logs as $log)
-                    <tr>
-                        <td>{{ $log->date?->fdate() }}</td>
-                        <td>{{ $log->from_address }}</td>
-                        <td>{{ $log->to_address }}</td>
-                        <td class="text-right">
-                            {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $log->distance_km, 2, withThousandsSeparator: true) }}
-                            @if ($log->round_trip)
-                                <x-status-badge tone="ghost" size="xs" class="ml-1">{{ __('hin/rück') }}</x-status-badge>
-                            @endif
-                        </td>
-                        <td>
-                            <x-status-badge tone="ghost" size="sm">{{ $log->vehicle->label() }}</x-status-badge>
-                        </td>
-                        <td class="text-right">
-                            {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $log->reimbursement_total, 2, withThousandsSeparator: true) }} €
-                        </td>
-                        <td class="max-w-xs truncate">{{ $log->purpose }}</td>
-                        <td class="text-right">
-                            <x-icon-btn icon="edit"
-                                        data-entry-modal-trigger
-                                        :href="route('travel-logs.edit', $log)"
-                                        :label="__('Bearbeiten')" />
-                            <x-action-form :action="route('travel-logs.per-diem.generate', $log)"
-                                  :confirm="__('Verpflegungspauschale aus dieser Fahrt erzeugen?')"
-                                  :confirm-label="__('Erzeugen')">
-                                <x-icon-btn icon="restaurant_menu" tone="primary" type="submit"
-                                            :label="__('Verpflegungspauschale erzeugen')" />
-                            </x-action-form>
-                            <x-action-form :action="route('travel-logs.destroy', $log)" method="DELETE"
-                                  :confirm="__('Fahrt wirklich löschen?')"
-                                  :confirm-label="__('Löschen')">
-                                <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                            </x-action-form>
-                        </td>
-                    </tr>
-                @empty
-                    <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">directions_car</span>' :colspan="8" :title="__('Keine Fahrten im gewählten Zeitraum')" compact />
-                @endforelse
-            </x-table>
-        </x-card>
+        <x-table :zebra="true" table-sort="server"
+                 :route="route('travel-logs.index')"
+                 :current-sort="$sort ?? null"
+                 :current-dir="$dir ?? 'desc'"
+                 :sort-params="['from' => $from->toDateString(), 'to' => $to->toDateString()]"
+                 scroll="flex" :pinRows="true">
+            <x-slot:head>
+                <tr>
+                    <x-table.th sort="date" default>{{ __('Datum') }}</x-table.th>
+                    <x-table.th sort="from">{{ __('Von') }}</x-table.th>
+                    <x-table.th sort="to">{{ __('Nach') }}</x-table.th>
+                    <x-table.th sort="distance" align="right">{{ __('km') }}</x-table.th>
+                    <x-table.th sort="vehicle">{{ __('Fahrzeug') }}</x-table.th>
+                    <x-table.th sort="reimbursement" align="right">{{ __('Erstattung') }}</x-table.th>
+                    <x-table.th sort="purpose">{{ __('Zweck') }}</x-table.th>
+                    <th></th>
+                </tr>
+            </x-slot:head>
+            @forelse ($logs as $log)
+                <tr>
+                    <td>{{ $log->date?->fdate() }}</td>
+                    <td>{{ $log->from_address }}</td>
+                    <td>{{ $log->to_address }}</td>
+                    <td class="text-right">
+                        {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $log->distance_km, 2, withThousandsSeparator: true) }}
+                        @if ($log->round_trip)
+                            <x-status-badge tone="ghost" size="xs" class="ml-1">{{ __('hin/rück') }}</x-status-badge>
+                        @endif
+                    </td>
+                    <td>
+                        <x-status-badge tone="ghost" size="sm">{{ $log->vehicle->label() }}</x-status-badge>
+                    </td>
+                    <td class="text-right">
+                        {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $log->reimbursement_total, 2, withThousandsSeparator: true) }} €
+                    </td>
+                    <td class="max-w-xs truncate">{{ $log->purpose }}</td>
+                    <td class="text-right">
+                        <x-icon-btn icon="edit"
+                                    data-entry-modal-trigger
+                                    :href="route('travel-logs.edit', $log)"
+                                    :label="__('Bearbeiten')" />
+                        <x-action-form :action="route('travel-logs.per-diem.generate', $log)"
+                              :confirm="__('Verpflegungspauschale aus dieser Fahrt erzeugen?')"
+                              :confirm-label="__('Erzeugen')">
+                            <x-icon-btn icon="restaurant_menu" tone="primary" type="submit"
+                                        :label="__('Verpflegungspauschale erzeugen')" />
+                        </x-action-form>
+                        <x-action-form :action="route('travel-logs.destroy', $log)" method="DELETE"
+                              :confirm="__('Fahrt wirklich löschen?')"
+                              :confirm-label="__('Löschen')">
+                            <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
+                        </x-action-form>
+                    </td>
+                </tr>
+            @empty
+                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">directions_car</span>' :colspan="8" :title="__('Keine Fahrten im gewählten Zeitraum')" compact />
+            @endforelse
+        </x-table>
 
         <x-pagination :paginator="$logs" standing />
     </x-index-page>

@@ -77,4 +77,26 @@ enum AiProviderType: string implements HasLabel {
     public function allowsLocalOverride(): bool {
         return $this === self::OpenAiCompatible || $this === self::Fake;
     }
+
+    /**
+     * Hat der Typ einen produktiven Adapter? GoogleTranslate ist spätere
+     * Ausbaustufe, Fake nur Test/Demo — die Factory wirft für beide.
+     */
+    public function isImplemented(): bool {
+        return $this !== self::GoogleTranslate && $this !== self::Fake;
+    }
+
+    /**
+     * Im Verbindungs-Dialog anbietbare Typen: nur implementierte; Fake
+     * zusätzlich in testing/local (dort ersetzt der Test die Factory).
+     *
+     * @return list<self>
+     */
+    public static function selectable(): array {
+        return array_values(array_filter(
+            self::cases(),
+            static fn (self $type): bool => $type->isImplemented()
+                || ($type === self::Fake && app()->environment('testing', 'local')),
+        ));
+    }
 }

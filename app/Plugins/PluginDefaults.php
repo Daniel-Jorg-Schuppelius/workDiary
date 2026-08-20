@@ -10,6 +10,9 @@
 
 namespace App\Plugins;
 
+use App\Models\Organization;
+use App\Plugins\Support\PluginOrgContext;
+
 /**
  * Default-Implementierungen für die optionalen Plugin-Lifecycle-Methoden.
  * Plugins können das Trait einbinden, um nur das zu überschreiben, was sie
@@ -40,6 +43,29 @@ trait PluginDefaults {
      */
     public function healthCheck(): PluginHealth {
         return PluginHealth::degraded(__('Kein Healthcheck implementiert — Zustand unbestimmt.'), code: 'not_implemented');
+    }
+
+    /**
+     * Org-Kontext des laufenden Healthchecks oder das Ergebnis fuer den
+     * kontextlosen Systemlauf (Audit 2026-08, W2.7).
+     *
+     * Der Guard stand in acht Plugins wortgleich am Anfang von healthCheck().
+     * Bewusst NUR dieser Teil ist geteilt: Config-Pruefung, Probe und
+     * Status-Mapping tragen ueberall fachlich eigene Meldungstexte
+     * (Rate-Limit-Grenzen, Token-Fristen, Sonderzustaende) - ein Skelett mit
+     * Text-Parametern waere schwerer zu lesen als der Bestand und haette
+     * beim Vereinheitlichen die Texte veraendert.
+     *
+     * Aufrufmuster:
+     *   $org = $this->healthOrgContext();
+     *   if ($org instanceof PluginHealth) { return $org; }
+     */
+    protected function healthOrgContext(): Organization|PluginHealth {
+        $organization = PluginOrgContext::currentOrNull();
+
+        return $organization instanceof Organization
+            ? $organization
+            : PluginHealth::ok(__('Keine Organisation im Kontext.'));
     }
 
     /**

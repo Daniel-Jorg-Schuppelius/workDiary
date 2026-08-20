@@ -181,7 +181,7 @@ final class InvoicingRestpaketTest extends TestCase {
         $this->post(route('quotes.portal.decide', $quote), [
             'token' => (string) $query['token'],
             'decision' => 'accept',
-            'item_ids' => $quote->items()->pluck('id')->all(),
+            'item_ids' => $quote->items()->get()->map(fn ($item): string => $item->sqid)->all(),
         ])->assertRedirect();
         $this->assertSame('accepted', $quote->fresh()->status);
 

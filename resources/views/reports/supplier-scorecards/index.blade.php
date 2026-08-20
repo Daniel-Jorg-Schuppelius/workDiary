@@ -65,76 +65,74 @@
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">local_shipping</span>'
                        :title="__('scorecard.empty_ranking')" />
     @else
-        <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-            <x-table bare scroll="flex" :pinRows="true">
-                <x-slot:head>
-                    <tr>
-                        <th class="w-10 text-right">#</th>
-                        <th>{{ __('scorecard.col_supplier') }}</th>
-                        <th class="text-right">{{ __('scorecard.col_overall') }}</th>
-                        <th class="text-center">{{ __('scorecard.metric_ontime') }}</th>
-                        <th class="text-center">{{ __('scorecard.metric_complaints') }}</th>
-                        <th class="text-center">{{ __('scorecard.metric_price') }}</th>
-                        <th class="text-center">{{ __('scorecard.metric_quality') }}</th>
-                        <th></th>
-                    </tr>
-                </x-slot:head>
-                @foreach ($rows as $i => $row)
-                    <tr class="hover">
-                        <td class="text-right tabular-nums text-base-content/60">{{ $rows->firstItem() + $i }}</td>
-                        <td>
-                            <a class="link link-hover font-medium" href="{{ route('supplier-scorecards.show', $row['supplier']) }}">{{ $row['supplier_name'] }}</a>
-                        </td>
-                        <td class="text-right">
-                            @if ($row['overall'] === null)
-                                <span class="text-base-content/40">{{ __('scorecard.no_data') }}</span>
-                            @else
-                                <span class="font-semibold tabular-nums">{{ $row['overall'] }}</span>
-                            @endif
-                        </td>
-                        {{-- Termintreue --}}
-                        <td class="text-center">
-                            @if (! $row['ontime_available'])
-                                <span class="text-base-content/40 text-xs">{{ __('scorecard.no_data') }}</span>
-                            @else
-                                <x-status-badge :tone="$rateTone($row['ontime_rate'], false)" size="sm">{{ round($row['ontime_rate'] * 100) }} %</x-status-badge>
-                            @endif
-                        </td>
-                        {{-- Reklamationsquote --}}
-                        <td class="text-center">
-                            @if (! $row['complaint_available'])
-                                <span class="text-base-content/40 text-xs">{{ __('scorecard.no_data') }}</span>
-                            @else
-                                <x-status-badge :tone="$rateTone($row['complaint_rate'], true)" size="sm">{{ round($row['complaint_rate'] * 100) }} %</x-status-badge>
-                            @endif
-                        </td>
-                        {{-- Preisentwicklung --}}
-                        <td class="text-center">
-                            @if (! $row['price_available'])
-                                <span class="text-base-content/40 text-xs">{{ __('scorecard.no_data') }}</span>
-                            @else
-                                @php $dir = $row['price_direction']; @endphp
-                                <span class="inline-flex items-center gap-1 tabular-nums {{ $dir === 'up' ? 'text-error' : ($dir === 'down' ? 'text-success' : 'text-base-content/70') }}">
-                                    <x-icon :name="$dir === 'up' ? 'trending_up' : ($dir === 'down' ? 'trending_down' : 'trending_flat')" class="text-sm" />
-                                    {{ ($row['price_trend_pct'] > 0 ? '+' : '') . $row['price_trend_pct'] }} %
-                                </span>
-                            @endif
-                        </td>
-                        {{-- ISMS-Qualität --}}
-                        <td class="text-center">
-                            @if (! $row['quality_available'])
-                                <span class="text-base-content/40 text-xs">{{ __('scorecard.no_data') }}</span>
-                            @else
-                                <x-status-badge :tone="$row['quality_rating']->tone()" size="sm">{{ $row['quality_rating']->label() }}</x-status-badge>
-                            @endif
-                        </td>
-                        <td class="text-right">
-                            <x-icon-btn icon="chevron_right" :href="route('supplier-scorecards.show', $row['supplier'])" :label="__('scorecard.open_detail')" />
-                        </td>
-                    </tr>
-                @endforeach
-            </x-table>
-        </x-card>
+        <x-table :zebra="true" scroll="flex" :pinRows="true">
+            <x-slot:head>
+                <tr>
+                    <th class="w-10 text-right">#</th>
+                    <th>{{ __('scorecard.col_supplier') }}</th>
+                    <th class="text-right">{{ __('scorecard.col_overall') }}</th>
+                    <th class="text-center">{{ __('scorecard.metric_ontime') }}</th>
+                    <th class="text-center">{{ __('scorecard.metric_complaints') }}</th>
+                    <th class="text-center">{{ __('scorecard.metric_price') }}</th>
+                    <th class="text-center">{{ __('scorecard.metric_quality') }}</th>
+                    <th></th>
+                </tr>
+            </x-slot:head>
+            @foreach ($rows as $i => $row)
+                <tr class="hover">
+                    <td class="text-right tabular-nums text-base-content/60">{{ $rows->firstItem() + $i }}</td>
+                    <td>
+                        <a class="link link-hover font-medium" href="{{ route('supplier-scorecards.show', $row['supplier']) }}">{{ $row['supplier_name'] }}</a>
+                    </td>
+                    <td class="text-right">
+                        @if ($row['overall'] === null)
+                            <span class="text-base-content/40">{{ __('scorecard.no_data') }}</span>
+                        @else
+                            <span class="font-semibold tabular-nums">{{ $row['overall'] }}</span>
+                        @endif
+                    </td>
+                    {{-- Termintreue --}}
+                    <td class="text-center">
+                        @if (! $row['ontime_available'])
+                            <span class="text-base-content/40 text-xs">{{ __('scorecard.no_data') }}</span>
+                        @else
+                            <x-status-badge :tone="$rateTone($row['ontime_rate'], false)" size="sm">{{ round($row['ontime_rate'] * 100) }} %</x-status-badge>
+                        @endif
+                    </td>
+                    {{-- Reklamationsquote --}}
+                    <td class="text-center">
+                        @if (! $row['complaint_available'])
+                            <span class="text-base-content/40 text-xs">{{ __('scorecard.no_data') }}</span>
+                        @else
+                            <x-status-badge :tone="$rateTone($row['complaint_rate'], true)" size="sm">{{ round($row['complaint_rate'] * 100) }} %</x-status-badge>
+                        @endif
+                    </td>
+                    {{-- Preisentwicklung --}}
+                    <td class="text-center">
+                        @if (! $row['price_available'])
+                            <span class="text-base-content/40 text-xs">{{ __('scorecard.no_data') }}</span>
+                        @else
+                            @php $dir = $row['price_direction']; @endphp
+                            <span class="inline-flex items-center gap-1 tabular-nums {{ $dir === 'up' ? 'text-error' : ($dir === 'down' ? 'text-success' : 'text-base-content/70') }}">
+                                <x-icon :name="$dir === 'up' ? 'trending_up' : ($dir === 'down' ? 'trending_down' : 'trending_flat')" class="text-sm" />
+                                {{ ($row['price_trend_pct'] > 0 ? '+' : '') . $row['price_trend_pct'] }} %
+                            </span>
+                        @endif
+                    </td>
+                    {{-- ISMS-Qualität --}}
+                    <td class="text-center">
+                        @if (! $row['quality_available'])
+                            <span class="text-base-content/40 text-xs">{{ __('scorecard.no_data') }}</span>
+                        @else
+                            <x-status-badge :tone="$row['quality_rating']->tone()" size="sm">{{ $row['quality_rating']->label() }}</x-status-badge>
+                        @endif
+                    </td>
+                    <td class="text-right">
+                        <x-icon-btn icon="chevron_right" :href="route('supplier-scorecards.show', $row['supplier'])" :label="__('scorecard.open_detail')" />
+                    </td>
+                </tr>
+            @endforeach
+        </x-table>
 
         <x-pagination :paginator="$rows" standing />
     @endif

@@ -61,6 +61,63 @@ class ExpiryScannerTest extends TestCase {
         ]);
     }
 
+    /**
+     * Cloud-Dokumenteingang (Feature 080 P9; Audit 2026-08, W4.4): eine
+     * Verbindung, die neu angemeldet werden muss, stand bislang still, ohne
+     * dass jemand es erfuhr.
+     */
+    public function test_cloud_intake_reauth_creates_task_and_recovery_resolves(): void {
+        $connection = \App\Models\CloudIntake\CloudDocumentConnection::factory()->create([
+            'organization_id' => $this->admin->organization_id,
+            'provider' => \App\Enums\CloudIntake\CloudIntakeProvider::Google,
+            'status' => \App\Enums\CloudIntake\CloudIntakeConnectionStatus::ReauthRequired,
+            'root_folder_path' => '/Rechnungen',
+        ]);
+
+        $this->scan();
+
+        $this->assertDatabaseHas('operations_tasks', [
+            'dedupe_key' => 'cloud_intake_reauth:' . $connection->id,
+            'type' => 'cloud_intake_reauth',
+            'status' => 'open',
+        ]);
+
+        $connection->forceFill(['status' => \App\Enums\CloudIntake\CloudIntakeConnectionStatus::Active])->save();
+        $this->scan();
+
+        $this->assertDatabaseHas('operations_tasks', [
+            'dedupe_key' => 'cloud_intake_reauth:' . $connection->id,
+            'status' => 'resolved',
+        ]);
+    }
+
+    /** Abgewiesene Importe werden je Verbindung gebündelt gemeldet, nicht je Datei. */
+    public function test_rejected_cloud_intake_items_create_one_task_per_connection(): void {
+        $connection = \App\Models\CloudIntake\CloudDocumentConnection::factory()->create([
+            'organization_id' => $this->admin->organization_id,
+            'provider' => \App\Enums\CloudIntake\CloudIntakeProvider::Dropbox,
+        ]);
+        foreach (['a.exe', 'b.exe'] as $index => $name) {
+            \App\Models\CloudIntake\CloudDocumentItem::query()->create([
+                'organization_id' => $this->admin->organization_id,
+                'connection_id' => $connection->id,
+                'provider' => \App\Enums\CloudIntake\CloudIntakeProvider::Dropbox,
+                'external_item_id' => 'ext-' . $index,
+                'revision' => 'rev-' . $index,
+                'source_path' => '/' . $name,
+                'status' => \App\Enums\CloudIntake\CloudIntakeItemStatus::Rejected,
+                'status_reason' => 'blocked_extension',
+            ]);
+        }
+
+        $this->scan();
+
+        $this->assertSame(1, OperationsTask::query()
+            ->where('dedupe_key', 'cloud_intake_quarantined:' . $connection->id)
+            ->where('type', 'cloud_intake_quarantined')
+            ->count());
+    }
+
     public function test_todoist_connection_error_creates_connection_task(): void {
         $connection = TodoistConnection::query()->create([
             'organization_id' => $this->admin->organization_id,

@@ -307,7 +307,7 @@ class CsvPreflightAnalyzer {
         $lines = [];
         foreach ($sheet->getRows() as $row) {
             $cells = array_map(
-                fn (\CommonToolkit\Entities\XLSX\Cell $cell): string => \App\Support\XlsxCellValue::toString($cell),
+                fn (\CommonToolkit\Entities\XLSX\Cell $cell): string => $cell->toCanonicalString(),
                 $row->getCells(),
             );
             $lines[] = StringHelper::encodeLine($cells, ';', '"');

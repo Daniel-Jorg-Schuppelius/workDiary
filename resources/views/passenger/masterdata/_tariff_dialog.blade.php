@@ -26,8 +26,12 @@
                 <option value="{{ $mode->value }}" @selected(old('operation_mode', $tariff?->operation_mode->value) === $mode->value)>{{ $mode->label() }}</option>
             @endforeach
         </x-select-field>
-        <x-input-field name="valid_from" type="date" :label="__('passenger.field.valid_from')" :value="old('valid_from', $tariff?->valid_from?->toDateString())" required />
-        <x-input-field name="valid_until" type="date" :label="__('passenger.field.valid_until')" :value="old('valid_until', $tariff?->valid_until?->toDateString())" />
+        <x-date-range layout="split" grid-class="contents"
+                      from-name="valid_from" to-name="valid_until" type="date"
+                      :from="old('valid_from', $tariff?->valid_from?->toDateString())"
+                      :to="old('valid_until', $tariff?->valid_until?->toDateString())"
+                      :from-label="__('passenger.field.valid_from')" :to-label="__('passenger.field.valid_until')"
+                      :from-required="true" />
     </x-form-group>
 
     <x-form-group :legend="__('passenger.section.tariff_prices')" icon="payments" tone="primary" cols="3">

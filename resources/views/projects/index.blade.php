@@ -47,96 +47,94 @@
     @if ($rows->isEmpty())
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">folder_open</span>' :title="__('Noch keine Projekte angelegt')" />
     @else
-        <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-            <x-table bare scroll="flex" :pinRows="true" table-sort="client">
-                <x-slot:head>
-                    <tr>
-                        <x-table.th sort type="string" default="asc">{{ __('Projekt') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Kunde') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
-                        <x-table.th sort type="number" align="right">{{ __('Offen') }}</x-table.th>
-                        <x-table.th sort type="number" align="right">{{ __('Problem') }}</x-table.th>
-                        <x-table.th sort type="number" align="right">{{ __('Bestätigt') }}</x-table.th>
-                        <x-table.th sort type="number" align="right">{{ __('Erledigt') }}</x-table.th>
-                        <x-table.th sort type="number" align="right">{{ __('Mitarb.') }}</x-table.th>
-                        <x-table.th sort type="date">{{ __('Letzte Aktivität') }}</x-table.th>
-                        <th class="text-right"></th>
-                    </tr>
-                </x-slot:head>
-                @foreach ($rows as $row)
-                            @php
-                                $project = $row['project'];
-                                $depth = $row['depth'];
-                                $isOrphan = $depth === 0 && $project->parent_id !== null;
-                                $rowsForProject = $stats->get($project->id, collect());
-                                $byStatus = $rowsForProject->keyBy('status');
-                                $cOpen = (int) ($byStatus->get(2)->cnt ?? 0);
-                                $cAlert = (int) ($byStatus->get(3)->cnt ?? 0);
-                                $cProgress = (int) ($byStatus->get(1)->cnt ?? 0);
-                                $cDone = (int) ($byStatus->get(-1)->cnt ?? 0);
-                                $last = $lastEntries->get($project->id);
-                                $users = (int) ($userCounts->get($project->id) ?? 0);
-                                $indentClass = ['', 'pl-6', 'pl-12'][$depth] ?? 'pl-12';
-                            @endphp
-                            <tr class="hover">
-                                <td>
-                                    <div class="flex items-center gap-2 {{ $indentClass }}">
-                                        @if ($depth > 0)
-                                            <x-icon name="subdirectory_arrow_right" class="text-base-content/40" />
-                                        @endif
-                                        <span class="inline-block h-3 w-3 shrink-0 rounded-full"
-                                              style="background:{{ $project->color ?: '#94a3b8' }}"></span>
-                                        <a href="{{ route('projects.show', $project) }}"
-                                           class="font-['Space_Grotesk'] font-semibold hover:text-primary">{{ $project->name }}</a>
-                                        @if ($isOrphan && $project->parent)
-                                            <span class="badge badge-xs badge-ghost"
-                                                  title="{{ __('Sub-Projekt von :name', ['name' => $project->parent->name]) }}">
-                                                ↳ {{ $project->parent->name }}
-                                            </span>
-                                        @endif
-                                    </div>
-                                    @if ($project->description)
-                                        <div class="line-clamp-1 text-xs text-base-content/60 {{ $indentClass }} mt-0.5">
-                                            {{ $project->description }}
-                                        </div>
+        <x-table :zebra="true" scroll="flex" :pinRows="true" table-sort="client">
+            <x-slot:head>
+                <tr>
+                    <x-table.th sort type="string" default="asc">{{ __('Projekt') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Kunde') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
+                    <x-table.th sort type="number" align="right">{{ __('Offen') }}</x-table.th>
+                    <x-table.th sort type="number" align="right">{{ __('Problem') }}</x-table.th>
+                    <x-table.th sort type="number" align="right">{{ __('Bestätigt') }}</x-table.th>
+                    <x-table.th sort type="number" align="right">{{ __('Erledigt') }}</x-table.th>
+                    <x-table.th sort type="number" align="right">{{ __('Mitarb.') }}</x-table.th>
+                    <x-table.th sort type="date">{{ __('Letzte Aktivität') }}</x-table.th>
+                    <th class="text-right"></th>
+                </tr>
+            </x-slot:head>
+            @foreach ($rows as $row)
+                        @php
+                            $project = $row['project'];
+                            $depth = $row['depth'];
+                            $isOrphan = $depth === 0 && $project->parent_id !== null;
+                            $rowsForProject = $stats->get($project->id, collect());
+                            $byStatus = $rowsForProject->keyBy('status');
+                            $cOpen = (int) ($byStatus->get(2)->cnt ?? 0);
+                            $cAlert = (int) ($byStatus->get(3)->cnt ?? 0);
+                            $cProgress = (int) ($byStatus->get(1)->cnt ?? 0);
+                            $cDone = (int) ($byStatus->get(-1)->cnt ?? 0);
+                            $last = $lastEntries->get($project->id);
+                            $users = (int) ($userCounts->get($project->id) ?? 0);
+                            $indentClass = ['', 'pl-6', 'pl-12'][$depth] ?? 'pl-12';
+                        @endphp
+                        <tr class="hover">
+                            <td>
+                                <div class="flex items-center gap-2 {{ $indentClass }}">
+                                    @if ($depth > 0)
+                                        <x-icon name="subdirectory_arrow_right" class="text-base-content/40" />
                                     @endif
-                                </td>
-                                <td class="text-sm text-base-content/80">
-                                    <div class="flex items-center gap-2">
-                                        <span>{{ $project->customer?->name ?? '—' }}</span>
-                                        @if ($project->foreignCustomer)
-                                            <span class="badge badge-sm badge-outline gap-1"
-                                                  title="{{ __('Fremdkunde') }}">
-                                                <span class="material-symbols-outlined text-[14px]" aria-hidden="true">handshake</span>
-                                                {{ $project->foreignCustomer->name }}
-                                            </span>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <x-status-badge size="sm" :tone="$project->statusTone()">{{ $project->statusLabel() }}</x-status-badge>
-                                </td>
-                                <td class="text-right tabular-nums">{{ $cOpen }}</td>
-                                <td class="text-right tabular-nums {{ $cAlert > 0 ? 'text-error font-semibold' : '' }}">{{ $cAlert }}</td>
-                                <td class="text-right tabular-nums">{{ $cProgress }}</td>
-                                <td class="text-right tabular-nums text-base-content/60">{{ $cDone }}</td>
-                                <td class="text-right tabular-nums">{{ $users }}</td>
-                                <td class="text-xs text-base-content/60" data-sort-value="{{ $last ? \Carbon\CarbonImmutable::parse($last)->format('Y-m-d H:i:s') : '' }}">
-                                    @if ($last)
-                                        {{ \Carbon\CarbonImmutable::parse($last)->diffForHumans() }}
-                                    @else
-                                        {{ __('keine Aktivität') }}
+                                    <span class="inline-block h-3 w-3 shrink-0 rounded-full"
+                                          style="background:{{ $project->color ?: '#94a3b8' }}"></span>
+                                    <a href="{{ route('projects.show', $project) }}"
+                                       class="font-['Space_Grotesk'] font-semibold hover:text-primary">{{ $project->name }}</a>
+                                    @if ($isOrphan && $project->parent)
+                                        <span class="badge badge-xs badge-ghost"
+                                              title="{{ __('Sub-Projekt von :name', ['name' => $project->parent->name]) }}">
+                                            ↳ {{ $project->parent->name }}
+                                        </span>
                                     @endif
-                                </td>
-                                <td class="text-right">
-                                    <x-icon-btn icon="open_in_new"
-                                                :href="route('projects.show', $project)"
-                                                :label="__('Öffnen')" />
-                                </td>
-                            </tr>
-                        @endforeach
-            </x-table>
-        </x-card>
+                                </div>
+                                @if ($project->description)
+                                    <div class="line-clamp-1 text-xs text-base-content/60 {{ $indentClass }} mt-0.5">
+                                        {{ $project->description }}
+                                    </div>
+                                @endif
+                            </td>
+                            <td class="text-sm text-base-content/80">
+                                <div class="flex items-center gap-2">
+                                    <span>{{ $project->customer?->name ?? '—' }}</span>
+                                    @if ($project->foreignCustomer)
+                                        <span class="badge badge-sm badge-outline gap-1"
+                                              title="{{ __('Fremdkunde') }}">
+                                            <span class="material-symbols-outlined text-[14px]" aria-hidden="true">handshake</span>
+                                            {{ $project->foreignCustomer->name }}
+                                        </span>
+                                    @endif
+                                </div>
+                            </td>
+                            <td>
+                                <x-status-badge size="sm" :tone="$project->statusTone()">{{ $project->statusLabel() }}</x-status-badge>
+                            </td>
+                            <td class="text-right tabular-nums">{{ $cOpen }}</td>
+                            <td class="text-right tabular-nums {{ $cAlert > 0 ? 'text-error font-semibold' : '' }}">{{ $cAlert }}</td>
+                            <td class="text-right tabular-nums">{{ $cProgress }}</td>
+                            <td class="text-right tabular-nums text-base-content/60">{{ $cDone }}</td>
+                            <td class="text-right tabular-nums">{{ $users }}</td>
+                            <td class="text-xs text-base-content/60" data-sort-value="{{ $last ? \Carbon\CarbonImmutable::parse($last)->format('Y-m-d H:i:s') : '' }}">
+                                @if ($last)
+                                    {{ \Carbon\CarbonImmutable::parse($last)->diffForHumans() }}
+                                @else
+                                    {{ __('keine Aktivität') }}
+                                @endif
+                            </td>
+                            <td class="text-right">
+                                <x-icon-btn icon="open_in_new"
+                                            :href="route('projects.show', $project)"
+                                            :label="__('Öffnen')" />
+                            </td>
+                        </tr>
+                    @endforeach
+        </x-table>
 
         <x-pagination :paginator="$projects" standing />
     @endif

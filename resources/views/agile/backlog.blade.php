@@ -86,7 +86,7 @@
         @if ($items->isEmpty())
             <x-empty-state icon="low_priority" :title="__('Das Produkt-Backlog ist leer.')" compact />
         @else
-            <x-table bare>
+            <x-table bare data-backlog-rows>
                 <x-slot:head>
                     <tr>
                         <th class="w-20">{{ __('Rang') }}</th>
@@ -99,7 +99,15 @@
                     </tr>
                 </x-slot:head>
                 @foreach ($items as $index => $item)
-                    <tr @if ($item->isBlocked()) class="bg-error/5" @endif>
+                    {{-- Drag-&-Drop (W4.2) haengt am selben rerank-Endpunkt wie die
+                         Hoch/Runter-Buttons; die bleiben als Tastatur-/A11y-Pfad. --}}
+                    <tr data-backlog-row
+                        data-sqid="{{ $item->sqid }}"
+                        data-lock-version="{{ $item->lock_version }}"
+                        data-rerank-url="{{ route('agile.items.rerank', [$project, $item]) }}"
+                        data-can-prioritize="{{ $canPrioritize ? '1' : '0' }}"
+                        @if ($canPrioritize) draggable="true" @endif
+                        @if ($item->isBlocked()) class="bg-error/5" @endif>
                         <td class="tabular-nums text-sm text-base-content/60">{{ $index + 1 }}</td>
                         <td>
                             {{ $item->task?->title ?? '—' }}

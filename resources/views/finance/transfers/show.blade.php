@@ -280,7 +280,7 @@
                     @if ($canEditPositions && $canEditPositionPrices && $positions->count() > 1)
                         <td class="align-top">
                             @if ($position->exists)
-                                <input type="checkbox" form="merge-positions" name="positions[]" value="{{ $position->id }}"
+                                <input type="checkbox" form="merge-positions" name="positions[]" value="{{ $position->sqid }}"
                                        class="checkbox checkbox-sm" aria-label="{{ __('finance.action.merge_positions') }}">
                             @endif
                         </td>

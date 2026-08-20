@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Services\Procurement;
 
 use App\Models\SupplierCatalogSource;
-use App\Support\XlsxCellValue;
 use CommonToolkit\Entities\XLSX\Cell;
 use CommonToolkit\Parsers\XLSXDocumentParser;
 use RuntimeException;
@@ -75,7 +74,7 @@ class CatalogXlsxImportService {
             $records = [];
             foreach ($sheet->getRows() as $row) {
                 $values = array_map(
-                    static fn (Cell $cell): string => XlsxCellValue::toString($cell),
+                    static fn (Cell $cell): string => $cell->toCanonicalString(),
                     array_values($row->getCells()),
                 );
                 $names = $columns ?? array_map(static fn (int $i): string => 'col' . $i, array_keys($values));

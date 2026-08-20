@@ -11,6 +11,7 @@
 namespace App\Models;
 
 use App\Casts\MoneyCast;
+use App\Models\Concerns\HasSqid;
 use CommonToolkit\Enums\RoundingMode;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -35,6 +36,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ManufacturingOrderMaterial extends Model {
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
+    // Audit 2026-08 (W3.3): Formulare/URLs tragen Sqids, nie rohe IDs.
+    use HasSqid;
 
     protected $fillable = [
         'manufacturing_order_id',

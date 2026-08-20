@@ -239,6 +239,7 @@ return [
     ],
     'cti' => [
         'connection_issued' => 'Conexión CTI emitida',
+        'dial_configured' => 'Marcación con un clic configurada',
         'disconnected' => 'CTI desconectado',
     ],
     'datanorm' => [

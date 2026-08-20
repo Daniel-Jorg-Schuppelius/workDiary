@@ -39,7 +39,7 @@
                     <option value="{{ $c->sqid }}"
                         @if ($oldCustomerSqid !== null) @selected($oldCustomerSqid === $c->sqid)
                         @else @selected($selectedCustomerId === $c->id) @endif>
-                        {{ $c->company ?: $c->name }}
+                        {{ $c->displayLabel() }}
                     </option>
                 @endforeach
             </select>

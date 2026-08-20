@@ -141,10 +141,17 @@ class TransferPositionController extends Controller {
 
         $data = $request->validate([
             'positions' => ['required', 'array', 'min:2'],
-            'positions.*' => ['integer'],
+            'positions.*' => ['string'],
         ]);
 
-        $positions = $transfer->positions()->whereIn('id', $data['positions'])->orderBy('position')->get();
+        // Sqids aus dem Formular (W3.3); die Bindung an den Transfer
+        // (positions()-Relation) bleibt die eigentliche Schutzlinie.
+        $requested = array_filter(array_map(
+            static fn (string $v): ?int => \App\Support\Sqid::decodeOrNumeric(\App\Models\Finance\BillingTransferPosition::class, $v),
+            $data['positions'],
+        ));
+
+        $positions = $transfer->positions()->whereIn('id', $requested)->orderBy('position')->get();
         if ($positions->count() < 2) {
             return back()->withErrors(['positions' => __('finance.error.merge_needs_two')]);
         }

@@ -34,7 +34,7 @@
 
     @if ($customerFilter)
         <div class="alert alert-info text-sm">
-            {{ __('Gefiltert auf Kunde: :name', ['name' => $customerFilter->company ?: $customerFilter->name]) }}
+            {{ __('Gefiltert auf Kunde: :name', ['name' => $customerFilter->displayLabel()]) }}
             <a class="link" href="{{ route('foreign-customers.index') }}">{{ __('Filter entfernen') }}</a>
         </div>
     @endif
@@ -57,56 +57,54 @@
     @if ($foreignCustomers->total() === 0)
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">groups</span>' :title="$search !== '' ? __('Keine Fremdkunden für „:q“ gefunden.', ['q' => $search]) : __('Noch keine Fremdkunden in dieser Ansicht')" />
     @else
-        <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-            <x-table table-sort="server"
-                     :route="route('foreign-customers.index')"
-                     :current-sort="$sort"
-                     :current-dir="$dir"
-                     :sort-params="array_filter(['status' => $status, 'q' => $search, 'customer' => $customerParam])"
-                     bare scroll="flex" :pinRows="true">
-                <x-slot:head>
-                    <tr>
-                        <th></th>
-                        <x-table.th sort="name" default>{{ __('Name') }}</x-table.th>
-                        <x-table.th sort="company">{{ __('Firma') }}</x-table.th>
-                        <th>{{ __('Kunde') }}</th>
-                        <th>{{ __('E-Mail') }}</th>
-                        <th class="text-right">{{ __('Projekte') }}</th>
-                        <th></th>
-                    </tr>
-                </x-slot:head>
-                @foreach ($foreignCustomers as $fc)
-                    <tr class="hover">
-                        <td>
-                            <span class="inline-block h-3 w-3 rounded-full"
-                                  style="background:{{ $fc->color ?: '#94a3b8' }}"></span>
-                        </td>
-                        <td>
-                            <a class="link link-hover font-medium" href="{{ route('foreign-customers.show', $fc) }}">{{ $fc->name }}</a>
-                            @if ($fc->isArchived())
-                                <x-status-badge tone="ghost" size="xs" class="ml-1">{{ __('archiviert') }}</x-status-badge>
-                            @endif
-                        </td>
-                        <td class="text-base-content/70">{{ $fc->company }}</td>
-                        <td class="text-base-content/70">
-                            @if ($fc->customer)
-                                <a class="link link-hover" href="{{ route('customers.show', $fc->customer) }}">{{ $fc->customer->company ?: $fc->customer->name }}</a>
-                            @endif
-                        </td>
-                        <td class="text-base-content/70">{{ $fc->email }}</td>
-                        <td class="text-right tabular-nums">{{ $fc->projects_count }}</td>
-                        <td class="text-right">
-                            @can('update', $fc)
-                                <x-icon-btn icon="edit"
-                                            data-entry-modal-trigger
-                                            :href="route('foreign-customers.edit', $fc)"
-                                            :label="__('Bearbeiten')" />
-                            @endcan
-                        </td>
-                    </tr>
-                @endforeach
-            </x-table>
-        </x-card>
+        <x-table :zebra="true" table-sort="server"
+                 :route="route('foreign-customers.index')"
+                 :current-sort="$sort"
+                 :current-dir="$dir"
+                 :sort-params="array_filter(['status' => $status, 'q' => $search, 'customer' => $customerParam])"
+                 scroll="flex" :pinRows="true">
+            <x-slot:head>
+                <tr>
+                    <th></th>
+                    <x-table.th sort="name" default>{{ __('Name') }}</x-table.th>
+                    <x-table.th sort="company">{{ __('Firma') }}</x-table.th>
+                    <th>{{ __('Kunde') }}</th>
+                    <th>{{ __('E-Mail') }}</th>
+                    <th class="text-right">{{ __('Projekte') }}</th>
+                    <th></th>
+                </tr>
+            </x-slot:head>
+            @foreach ($foreignCustomers as $fc)
+                <tr class="hover">
+                    <td>
+                        <span class="inline-block h-3 w-3 rounded-full"
+                              style="background:{{ $fc->color ?: '#94a3b8' }}"></span>
+                    </td>
+                    <td>
+                        <a class="link link-hover font-medium" href="{{ route('foreign-customers.show', $fc) }}">{{ $fc->name }}</a>
+                        @if ($fc->isArchived())
+                            <x-status-badge tone="ghost" size="xs" class="ml-1">{{ __('archiviert') }}</x-status-badge>
+                        @endif
+                    </td>
+                    <td class="text-base-content/70">{{ $fc->company }}</td>
+                    <td class="text-base-content/70">
+                        @if ($fc->customer)
+                            <a class="link link-hover" href="{{ route('customers.show', $fc->customer) }}">{{ $fc->customer->displayLabel() }}</a>
+                        @endif
+                    </td>
+                    <td class="text-base-content/70">{{ $fc->email }}</td>
+                    <td class="text-right tabular-nums">{{ $fc->projects_count }}</td>
+                    <td class="text-right">
+                        @can('update', $fc)
+                            <x-icon-btn icon="edit"
+                                        data-entry-modal-trigger
+                                        :href="route('foreign-customers.edit', $fc)"
+                                        :label="__('Bearbeiten')" />
+                        @endcan
+                    </td>
+                </tr>
+            @endforeach
+        </x-table>
 
         <x-pagination :paginator="$foreignCustomers" standing />
     @endif

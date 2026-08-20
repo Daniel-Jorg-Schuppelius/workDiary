@@ -15,7 +15,7 @@ use App\Models\Backup\BackupTargetConnection;
 use App\Models\CloudIntake\CloudDocumentConnection;
 use App\Models\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\{BackupTarget, DocumentIntakeSource, Plugin, PluginCapability};
+use App\Plugins\Contracts\{BackupTarget, DocumentIntakeSource, DocumentIntakeSubscriptions, Plugin, PluginCapability};
 use App\Plugins\GoogleDrive\Api\{GoogleDriveBackupClient, GoogleDriveClient};
 use App\Plugins\Support\Backup\BackupAccount;
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
@@ -30,7 +30,7 @@ use Throwable;
  * Produktiver öffentlicher Rollout bleibt bis zur Google-OAuth-Verifikation
  * blockiert (P10/Welle C).
  */
-class GoogleDrivePlugin extends AbstractPlugin implements BackupTarget, DocumentIntakeSource {
+class GoogleDrivePlugin extends AbstractPlugin implements BackupTarget, DocumentIntakeSource, DocumentIntakeSubscriptions {
     public const ID = 'google-drive';
 
     /** Von der Plugin-Discovery VOR der Instanziierung registriert. */
@@ -71,6 +71,21 @@ class GoogleDrivePlugin extends AbstractPlugin implements BackupTarget, Document
 
     public function intakeDownload(CloudDocumentConnection $connection, IntakeItem $item): StreamInterface {
         return (new GoogleDriveClient($connection))->download($item);
+    }
+
+    // ── DocumentIntakeSubscriptions (Audit 2026-08, W4.4) ───────────────
+
+    /**
+     * Google-Kanäle laufen ~24 h und lassen sich nicht verlängern; das
+     * Neuanlegen übernimmt `google-drive:subscriptions` mehrmals täglich.
+     * Hier wird nur der Kanal beim Verbinden sofort scharf geschaltet.
+     */
+    public function intakeSubscribe(CloudDocumentConnection $connection): void {
+        app(\App\Plugins\GoogleDrive\Services\GoogleDriveSubscriptionService::class)->ensure($connection);
+    }
+
+    public function intakeUnsubscribe(CloudDocumentConnection $connection): void {
+        app(\App\Plugins\GoogleDrive\Services\GoogleDriveSubscriptionService::class)->unsubscribe($connection);
     }
 
     // ── BackupTarget (Feature 017 Phase 32, MVP-363) ────────────────────
@@ -136,8 +151,21 @@ class GoogleDrivePlugin extends AbstractPlugin implements BackupTarget, Document
                 })
                 ->exists();
 
-            return $failing
-                ? PluginHealth::degraded(__('cloud_intake.google.health.attention'))
+            if ($failing) {
+                return PluginHealth::degraded(__('cloud_intake.google.health.attention'));
+            }
+
+            // Backupziele sind PLATTFORMWEIT (bewusst ohne organization_id) —
+            // ein blockiertes Ziel betrifft alle Organisationen (Muster Msgraph).
+            $backupAttention = BackupTargetConnection::query()
+                ->where('provider', \App\Enums\Backup\BackupProvider::Google)
+                ->whereIn('status', [
+                    \App\Enums\Backup\BackupTargetStatus::ReauthRequired,
+                    \App\Enums\Backup\BackupTargetStatus::Blocked,
+                ])->exists();
+
+            return $backupAttention
+                ? PluginHealth::degraded(__('cloud_intake.google.health.backup_attention'), 'backup_grant')
                 : PluginHealth::ok(__('cloud_intake.google.health.ok'));
         } catch (Throwable $e) {
             return PluginHealth::failing(__('cloud_intake.google.health.error', ['class' => class_basename($e)]));

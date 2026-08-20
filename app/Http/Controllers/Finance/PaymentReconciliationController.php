@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Enums\Finance\{AllocationKind, MatchStatus};
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{Expense, Invoice};
 use App\Models\Finance\{BankAccount, BankStatement, BankTransaction, PaymentAllocation};
@@ -18,7 +19,7 @@ use App\Services\Finance\{BankImportException, BankImportService, FinancialForma
 use App\Support\Sqid;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate, Storage};
+use Illuminate\Support\Facades\{Gate, Storage};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -28,6 +29,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * Belegstatus ändert sich erst nach Bestätigung ({@see ReconciliationService}).
  */
 class PaymentReconciliationController extends Controller {
+    use ResolvesCurrentOrganization;
+
     private const STORAGE_DISK = 'local';
 
     public function __construct(
@@ -294,19 +297,6 @@ class PaymentReconciliationController extends Controller {
         $this->reconciliationService->unmatch($allocation);
 
         return back()->with('success', __('bank.reconcile.flash.unmatched'));
-    }
-
-    private function currentOrganizationId(): int {
-        if (app()->bound('currentOrganization')) {
-            /** @var \App\Models\Organization|null $org */
-            $org = app('currentOrganization');
-            if ($org !== null) {
-                return (int) $org->id;
-            }
-        }
-        $user = Auth::user();
-
-        return (int) ($user->organization_id ?? 0);
     }
 
     public function download(BankStatement $statement): StreamedResponse {

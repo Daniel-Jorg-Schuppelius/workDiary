@@ -21,7 +21,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('Abrechnungsplan') . ' · ' . ($schedule->customer?->company ?: $schedule->customer?->name ?? '—')">
+        <x-page-toolbar :subtitle="__('Abrechnungsplan') . ' · ' . ($schedule->customer?->displayLabel() ?? '—')">
             <x-slot:actions>
                 <x-icon-btn icon="arrow_back" size="sm" :href="route('invoice-schedules.index')" show-label>{{ __('Alle Pläne') }}</x-icon-btn>
                 @can(\App\Enums\User\Permission::InvoiceUpdate->value)

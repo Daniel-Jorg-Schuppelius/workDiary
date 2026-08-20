@@ -177,6 +177,13 @@ enum NotificationEvent: string implements HasLabel {
     case OperationsMaintenanceScheduled = 'operations.maintenanceScheduled';
     case OperationsProblemReportReceived = 'operations.problemReportReceived';
 
+    // Cloud-Dokumenteingang (Feature 080, P9; Audit 2026-08, W4.4). Bewusst
+    // unter dem `operations.`-Präfix: damit greifen Default-Kanäle,
+    // Admin-Empfänger und Aufgaben-Spiegelung ohne Sonderweg — der Alarm ist
+    // ein Betriebsereignis, kein Vorgang einer betroffenen Person.
+    case OperationsCloudIntakeReauth = 'operations.cloudIntakeReauth';
+    case OperationsCloudIntakeQuarantined = 'operations.cloudIntakeQuarantined';
+
     // Sicherheitsereignisse (Feature 095/096): Plattform-Ebene, Versand
     // direkt an Plattform-Admins bzw. den betroffenen Nutzer — nie über
     // Org-Benachrichtigungsregeln.
@@ -395,6 +402,8 @@ enum NotificationEvent: string implements HasLabel {
             self::OperationsSchedulerOverdue => 'schedule',
             self::OperationsMaintenanceScheduled => 'engineering',
             self::OperationsProblemReportReceived => 'flag',
+            self::OperationsCloudIntakeReauth => 'cloud_off',
+            self::OperationsCloudIntakeQuarantined => 'block',
             self::MonthClosureDecided => 'event_available',
             self::DomainExpiring => 'timer',
             self::DomainTransferChanged => 'swap_horiz',

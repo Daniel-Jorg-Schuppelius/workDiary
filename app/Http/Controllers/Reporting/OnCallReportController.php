@@ -290,12 +290,7 @@ class OnCallReportController extends Controller {
      */
     private function exportCsv(array $rows, array $totals, string $from, string $to, Request $request, array $exportFilters): Response {
         $filename = sprintf('notdienst_%s_%s.csv', $from, $to);
-        $fmt = static function (int $minutes): string {
-            $h = intdiv($minutes, 60);
-            $m = $minutes % 60;
-
-            return sprintf('%d:%02d', $h, $m);
-        };
+        $fmt = static fn (int $minutes): string => \CommonToolkit\ValueObjects\Duration::ofMinutes($minutes)->toClock();
 
         $out = [['Mitarbeiter', 'Schichten', 'Bereitschaft (h)', 'Einsätze', 'Einsatzzeit (h)', 'Aktiv-Anteil %']];
         foreach ($rows as $r) {
@@ -342,7 +337,7 @@ class OnCallReportController extends Controller {
                 'xLabel' => __('Mitarbeiter'),
                 'rows' => $heatmapRows,
                 'colLabels' => $weekLabels,
-                'format' => fn(float $minutes): string => intdiv((int) $minutes, 60) . ':' . str_pad((string) ((int) $minutes % 60), 2, '0', STR_PAD_LEFT),
+                'format' => fn(float $minutes): string => \CommonToolkit\ValueObjects\Duration::ofMinutes((int) $minutes)->toClock(),
             ],
         ], $filename, 'landscape', $request, 'on-call', $exportFilters);
     }

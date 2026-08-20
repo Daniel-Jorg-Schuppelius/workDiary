@@ -17,6 +17,7 @@ use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, ForeignCust
 use App\Plugins\Fritzbox\Sources\{FritzboxCall, FritzboxCsvParser};
 use App\Plugins\Support\PersistsTimeImportInbox;
 use App\Services\Contacts\{ExternalPhoneContactDirectory, ExternalPhoneContactMatch};
+use App\Services\Contacts\PhoneNumberMatcher;
 use App\Services\TimeApproval\MonthClosureService;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
@@ -356,32 +357,15 @@ class FritzboxImportService {
             return $model;
         }
 
-        $tail = substr((string) preg_replace('/\D/', '', $e164), -7);
-        if ($tail === '') {
-            return null;
-        }
+        // Stammdaten-Abgleich über den gemeinsamen Matcher (W2.4);
+        // Endkunden-Treffer gewinnen — das präzisere Buchungsziel.
+        $match = app(PhoneNumberMatcher::class)->match(
+            (int) $organization->id,
+            $e164,
+            [ForeignCustomer::class, Customer::class],
+        );
 
-        foreach ([ForeignCustomer::class, Customer::class] as $class) {
-            $candidates = $class::query()
-                ->withoutGlobalScopes()
-                ->where('organization_id', $organization->id)
-                ->where(function ($query) use ($tail): void {
-                    $query->whereLikeEscaped('phone', $tail)
-                        ->orWhereLikeEscaped('mobile', $tail);
-                })
-                ->limit(50)
-                ->get();
-
-            foreach ($candidates as $candidate) {
-                foreach ([(string) $candidate->phone, (string) $candidate->mobile] as $stored) {
-                    if ($stored !== '' && PhoneNumberHelper::toE164($stored, 'DE') === $e164) {
-                        return $candidate;
-                    }
-                }
-            }
-        }
-
-        return null;
+        return $match instanceof Customer || $match instanceof ForeignCustomer ? $match : null;
     }
 
     // ── Nummern-Gedächtnis ───────────────────────────────────────────────────

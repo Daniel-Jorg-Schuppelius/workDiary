@@ -70,3 +70,10 @@ Route::middleware(['web', 'auth'])->group(function (): void {
     Route::post('admin/lexoffice/conflicts/{conflict}/dismiss', [LexofficeConflictInboxController::class, 'dismiss'])
         ->name('admin.lexoffice.conflicts.dismiss');
 });
+
+// Sessionloser Webhook-Empfang (Audit 2026-08, Welle 1.3): Autorisierung über
+// das URL-Token je Organisation (+ optionale RSA-Signaturprüfung im Controller).
+Route::middleware(['api', 'throttle:lexoffice-webhook'])
+    ->post('api/webhooks/lexoffice/{organization}/{token}', \App\Plugins\Lexoffice\Http\Controllers\LexofficeWebhookController::class)
+    ->whereNumber('organization')
+    ->name('api.webhooks.lexoffice');

@@ -239,7 +239,7 @@ class BillingPositionBuilder {
             return null;
         }
 
-        $name = trim((string) ($foreign->company ?: $foreign->name));
+        $name = trim((string) ($foreign->displayLabel()));
 
         return $name !== '' ? $name : null;
     }

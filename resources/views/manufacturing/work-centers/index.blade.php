@@ -29,28 +29,26 @@
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">precision_manufacturing</span>'
                        :title="__('manufacturing.capacity.empty')" />
     @else
-        <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-            <x-table bare scroll="flex" :pinRows="true">
-                <x-slot:head>
-                    <tr>
-                        <th>{{ __('manufacturing.capacity.work_center') }}</th>
-                        <th class="text-right">{{ __('manufacturing.capacity.capacity') }}</th>
-                        <th class="text-right">{{ __('manufacturing.capacity.planned') }}</th>
-                        <th class="text-right">{{ __('manufacturing.capacity.free') }}</th>
-                        <th class="text-right">{{ __('manufacturing.capacity.utilization') }}</th>
-                    </tr>
-                </x-slot:head>
-                @foreach ($board as $row)
-                    <tr class="{{ $row['load']['overloaded'] ? 'bg-error/10' : '' }}">
-                        <td>{{ $row['center']->name }}</td>
-                        <td class="text-right tabular-nums">{{ $row['load']['capacity'] }}</td>
-                        <td class="text-right tabular-nums">{{ $row['load']['planned'] }}</td>
-                        <td class="text-right tabular-nums {{ $row['load']['free'] < 0 ? 'text-error font-semibold' : '' }}">{{ $row['load']['free'] }}</td>
-                        <td class="text-right tabular-nums">{{ round($row['load']['utilization'] * 100) }}%</td>
-                    </tr>
-                @endforeach
-            </x-table>
-        </x-card>
+        <x-table :zebra="true" scroll="flex" :pinRows="true">
+            <x-slot:head>
+                <tr>
+                    <th>{{ __('manufacturing.capacity.work_center') }}</th>
+                    <th class="text-right">{{ __('manufacturing.capacity.capacity') }}</th>
+                    <th class="text-right">{{ __('manufacturing.capacity.planned') }}</th>
+                    <th class="text-right">{{ __('manufacturing.capacity.free') }}</th>
+                    <th class="text-right">{{ __('manufacturing.capacity.utilization') }}</th>
+                </tr>
+            </x-slot:head>
+            @foreach ($board as $row)
+                <tr class="{{ $row['load']['overloaded'] ? 'bg-error/10' : '' }}">
+                    <td>{{ $row['center']->name }}</td>
+                    <td class="text-right tabular-nums">{{ $row['load']['capacity'] }}</td>
+                    <td class="text-right tabular-nums">{{ $row['load']['planned'] }}</td>
+                    <td class="text-right tabular-nums {{ $row['load']['free'] < 0 ? 'text-error font-semibold' : '' }}">{{ $row['load']['free'] }}</td>
+                    <td class="text-right tabular-nums">{{ round($row['load']['utilization'] * 100) }}%</td>
+                </tr>
+            @endforeach
+        </x-table>
     @endif
 </x-index-page>
 @endsection

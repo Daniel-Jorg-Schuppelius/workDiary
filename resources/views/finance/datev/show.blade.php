@@ -131,7 +131,7 @@
             @forelse ($batch->sources as $source)
                 <tr>
                     @if ($canReshape)
-                        <td><input type="checkbox" name="sources[]" value="{{ $source->id }}" class="checkbox checkbox-xs" aria-label="{{ __('finance.datev.action.select_source') }}"></td>
+                        <td><input type="checkbox" name="sources[]" value="{{ $source->sqid }}" class="checkbox checkbox-xs" aria-label="{{ __('finance.datev.action.select_source') }}"></td>
                     @endif
                     <td class="font-mono text-xs">{{ $source->document_ref }}</td>
                     <td>{{ $source->soll_haben }}</td>

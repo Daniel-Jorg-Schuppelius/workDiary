@@ -21,10 +21,7 @@
         @endif
         <x-validation-errors first />
 
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <h1 class="mb-1 font-['Space_Grotesk'] text-lg font-semibold">{{ __('shipping.title') }}</h1>
-            <p class="text-sm text-base-content/60">{{ __('shipping.intro') }}</p>
-        </div>
+        <x-page-toolbar :subtitle="__('shipping.intro')" />
 
         {{-- Anbindung anlegen/bearbeiten (je Carrier eine Anbindung, Upsert) --}}
         <form method="POST" action="{{ route('admin.shipments.connections.store') }}"

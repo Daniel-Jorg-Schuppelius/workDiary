@@ -33,30 +33,28 @@
         </x-filter-field>
     </x-filter-bar>
 
-    <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-        <x-table bare scroll="flex" :pinRows="true">
-            <x-slot:head>
-                <tr>
-                    <th>{{ __('inventory.serial.field.serial_no') }}</th>
-                    <th>{{ __('inventory.serial.field.article') }}</th>
-                    <th>{{ __('inventory.serial.field.status') }}</th>
-                    <th>{{ __('inventory.serial.field.customer') }}</th>
-                </tr>
-            </x-slot:head>
-            @forelse ($serials as $serial)
-                <tr>
-                    <td><a href="{{ route('serials.show', $serial) }}" class="link link-hover font-mono">{{ $serial->serial_no }}</a></td>
-                    <td>{{ $serial->article?->name }}</td>
-                    <td><span class="badge badge-sm badge-ghost">{{ $serial->status->label() }}</span></td>
-                    <td>{{ $serial->customer?->name ?? '—' }}</td>
-                </tr>
-            @empty
-                <x-table.empty :colspan="4"
-                               icon='<span class="material-symbols-outlined" aria-hidden="true">qr_code_2</span>'
-                               :title="__('inventory.serial.empty')" />
-            @endforelse
-        </x-table>
-    </x-card>
+    <x-table :zebra="true" scroll="flex" :pinRows="true">
+        <x-slot:head>
+            <tr>
+                <th>{{ __('inventory.serial.field.serial_no') }}</th>
+                <th>{{ __('inventory.serial.field.article') }}</th>
+                <th>{{ __('inventory.serial.field.status') }}</th>
+                <th>{{ __('inventory.serial.field.customer') }}</th>
+            </tr>
+        </x-slot:head>
+        @forelse ($serials as $serial)
+            <tr>
+                <td><a href="{{ route('serials.show', $serial) }}" class="link link-hover font-mono">{{ $serial->serial_no }}</a></td>
+                <td>{{ $serial->article?->name }}</td>
+                <td><span class="badge badge-sm badge-ghost">{{ $serial->status->label() }}</span></td>
+                <td>{{ $serial->customer?->name ?? '—' }}</td>
+            </tr>
+        @empty
+            <x-table.empty :colspan="4"
+                           icon='<span class="material-symbols-outlined" aria-hidden="true">qr_code_2</span>'
+                           :title="__('inventory.serial.empty')" />
+        @endforelse
+    </x-table>
     <x-pagination :paginator="$serials" standing />
 </x-index-page>
 @endsection

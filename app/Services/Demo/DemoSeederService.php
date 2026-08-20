@@ -265,6 +265,9 @@ class DemoSeederService {
 
             // Prüfmittel-Demo (Feature 075, MVP-292).
             $counts['asset_compliance'] = $showcase->seedAssetCompliance($organization, $users->first());
+
+            // Cloud-Dokumenteingang (Feature 080 P9; Audit 2026-08, W4.4).
+            $counts['cloud_intake'] = $showcase->seedCloudIntake($organization, $users->first());
         });
 
         return $counts;

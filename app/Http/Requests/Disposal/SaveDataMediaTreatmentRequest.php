@@ -14,6 +14,7 @@ namespace App\Http\Requests\Disposal;
 
 use App\Enums\Disposal\{DataMediumType, DinCategory, MediaTreatmentMethod};
 use App\Http\Requests\BaseFormRequest;
+use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;
 
@@ -23,6 +24,17 @@ use Illuminate\Validation\Rule;
  * Beleg-Referenz.
  */
 class SaveDataMediaTreatmentRequest extends BaseFormRequest {
+    use DecodesSqidInputs;
+
+    /**
+     * Sqid-Eingaben (Audit 2026-08, W3.3).
+     *
+     * @var array<string, class-string>
+     */
+    protected array $sqidFields = [
+        'performed_by_user_id' => \App\Models\User::class,
+    ];
+
     /** @return array<string, mixed> */
     public function rules(): array {
         return [

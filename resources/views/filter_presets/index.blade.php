@@ -23,36 +23,34 @@
                 icon='<span class="material-symbols-outlined" aria-hidden="true">filter_alt</span>'
                 :title="__('Noch keine Filter-Presets gespeichert.')" />
         @else
-            <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-                <x-table zebra bare scroll="flex" :pinRows="true" table-sort="client">
-                    <x-slot:head>
+            <x-table :zebra="true" zebra scroll="flex" :pinRows="true" table-sort="client">
+                <x-slot:head>
+                    <tr>
+                        <x-table.th sort type="string">{{ __('Bereich') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Name') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Standard') }}</x-table.th>
+                        <th class="text-right">{{ __('Aktionen') }}</th>
+                    </tr>
+                </x-slot:head>
+                    @foreach ($presets as $preset)
                         <tr>
-                            <x-table.th sort type="string">{{ __('Bereich') }}</x-table.th>
-                            <x-table.th sort type="string">{{ __('Name') }}</x-table.th>
-                            <x-table.th sort type="string">{{ __('Standard') }}</x-table.th>
-                            <th class="text-right">{{ __('Aktionen') }}</th>
+                            <td><x-status-badge size="md" outline>{{ $preset->scope }}</x-status-badge></td>
+                            <td>{{ $preset->name }}</td>
+                            <td>
+                                @if ($preset->is_default)
+                                    <x-icon name="check_circle" class="text-success" />
+                                @endif
+                            </td>
+                            <td class="text-right">
+                                <form method="POST" action="{{ route('filter-presets.destroy', $preset) }}" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <x-button type="submit" tone="ghost" size="xs" data-confirm-dialog data-confirm-message="{{ __('Wirklich löschen?') }}" icon="delete">{{ __('Löschen') }}</x-button>
+                                </form>
+                            </td>
                         </tr>
-                    </x-slot:head>
-                        @foreach ($presets as $preset)
-                            <tr>
-                                <td><x-status-badge size="md" outline>{{ $preset->scope }}</x-status-badge></td>
-                                <td>{{ $preset->name }}</td>
-                                <td>
-                                    @if ($preset->is_default)
-                                        <x-icon name="check_circle" class="text-success" />
-                                    @endif
-                                </td>
-                                <td class="text-right">
-                                    <form method="POST" action="{{ route('filter-presets.destroy', $preset) }}" class="inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <x-button type="submit" tone="ghost" size="xs" data-confirm-dialog data-confirm-message="{{ __('Wirklich löschen?') }}" icon="delete">{{ __('Löschen') }}</x-button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @endforeach
-                </x-table>
-            </x-card>
+                    @endforeach
+            </x-table>
         @endif
     </x-index-page>
 @endsection

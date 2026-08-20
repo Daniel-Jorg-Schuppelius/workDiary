@@ -31,6 +31,8 @@ return [
         'config_missing' => 'Missing configuration',
         'support_grant_open' => 'Open support grant',
         'problem_report_open' => 'Open problem report',
+        'cloud_intake_reauth' => 'Cloud intake: sign-in required',
+        'cloud_intake_quarantined' => 'Cloud intake: imports rejected',
     ],
     'severity' => [
         'info' => 'Notice',
@@ -85,6 +87,8 @@ return [
         'support_grant_open' => 'Support grant for :grantee active until :until.',
         'problem_report_open' => 'Problem report :reference from :name awaits processing.',
         'problem_report_summary' => ':count open problem report(s) await processing.',
+        'cloud_intake_reauth' => 'Cloud document intake :provider (":folder") needs to be reconnected (:status).',
+        'cloud_intake_quarantined' => ':count file(s) from the cloud document intake were rejected (last reason: :reason).',
         'support_grant_summary' => ':count active support grant(s) — review and revoke if needed.',
     ],
     'filter' => [

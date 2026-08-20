@@ -316,6 +316,59 @@ class GoogleDriveClient {
 
     // ── Checkpoint-Handling ─────────────────────────────────────────────
 
+    /**
+     * Push-Kanal auf `changes` anlegen (Audit 2026-08, W4.4).
+     *
+     * Google benachrichtigt nur — der Kanal transportiert keine Nutzdaten;
+     * geweckt wird der reguläre `changes`-Lauf über den persistierten
+     * pageToken. Der Kanal hat eine Lebensdauer (`expiration`) und muss vor
+     * Ablauf erneuert werden; die Kanal-ID wird als `subscription_id`
+     * persistiert, damit der Empfänger die Verbindung findet.
+     *
+     * @return array{id: string, resourceId: string|null, expiration: \Carbon\CarbonImmutable|null}
+     */
+    public function watchChanges(string $channelId, string $callbackUrl, string $token, int $ttlSeconds): array {
+        $pageToken = $this->fetchStartPageToken();
+
+        $query = ['supportsAllDrives' => 'true', 'includeItemsFromAllDrives' => 'true', 'pageToken' => $pageToken];
+        if ($this->isSharedDrive()) {
+            $query['driveId'] = (string) $this->connection->container_id;
+            $query['corpora'] = 'drive';
+        }
+
+        $response = $this->api->postJson($this->base . '/changes/watch?' . http_build_query($query), [
+            'id' => $channelId,
+            'type' => 'web_hook',
+            'address' => $callbackUrl,
+            'token' => $token,
+            // Google erwartet Millisekunden seit Epoch.
+            'expiration' => (string) ((time() + $ttlSeconds) * 1000),
+        ]);
+        if (! $response->successful()) {
+            throw new RuntimeException('Drive changes.watch fehlgeschlagen (HTTP ' . $response->status() . ').');
+        }
+
+        /** @var array{id?: string, resourceId?: string, expiration?: string|int} $data */
+        $data = (array) $response->json();
+        $expiration = isset($data['expiration']) && (string) $data['expiration'] !== ''
+            ? \Carbon\CarbonImmutable::createFromTimestampMs((int) $data['expiration'])
+            : null;
+
+        return [
+            'id' => (string) ($data['id'] ?? $channelId),
+            'resourceId' => isset($data['resourceId']) ? (string) $data['resourceId'] : null,
+            'expiration' => $expiration,
+        ];
+    }
+
+    /** Push-Kanal wieder abbestellen (best effort beim Trennen/Erneuern). */
+    public function stopChannel(string $channelId, string $resourceId): void {
+        $this->api->postJson($this->base . '/channels/stop', [
+            'id' => $channelId,
+            'resourceId' => $resourceId,
+        ]);
+    }
+
     private function fetchStartPageToken(): string {
         $query = ['supportsAllDrives' => 'true'];
         if ($this->isSharedDrive()) {

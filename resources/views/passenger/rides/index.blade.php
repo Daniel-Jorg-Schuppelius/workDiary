@@ -50,48 +50,46 @@
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif
 
-    <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-        <x-table bare scroll="flex" :pinRows="true">
-            <x-slot:head>
-                <tr>
-                    <th>{{ __('passenger.field.requested_at') }}</th>
-                    <th>{{ __('passenger.field.operation_mode') }}</th>
-                    <th>{{ __('Status') }}</th>
-                    <th>{{ __('passenger.field.pickup_address') }}</th>
-                    <th>{{ __('passenger.field.driver') }}</th>
-                    <th>{{ __('passenger.field.vehicle') }}</th>
-                    <th class="text-right">{{ __('passenger.field.planned_net') }}</th>
-                    <th class="text-right">{{ __('passenger.field.meter_net') }}</th>
-                    <th></th>
-                </tr>
-            </x-slot:head>
-            @forelse ($rides as $ride)
-                <tr>
-                    <td class="whitespace-nowrap">{{ optional($ride->requested_at)->fdatetime() ?? '—' }}</td>
-                    <td>{{ $ride->operation_mode->label() }}</td>
-                    <td>
-                        <x-status-badge size="md" outline :tone="$ride->status->tone()">{{ $ride->status->label() }}</x-status-badge>
-                        @if ($ride->awaitsReturnProof())
-                            <x-status-badge size="md" outline tone="warning">{{ __('passenger.badge.return_open') }}</x-status-badge>
-                        @endif
-                    </td>
-                    <td class="max-w-64 truncate">{{ $ride->pickup_address ?? '—' }}</td>
-                    <td>{{ $ride->driver->name ?? '—' }}</td>
-                    <td>{{ $ride->vehicle->license_plate ?? '—' }}</td>
-                    <td class="text-right tabular-nums">{{ $ride->planned_net !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $ride->planned_net, 2, withThousandsSeparator: true) : '—' }}</td>
-                    <td class="text-right tabular-nums">
-                        {{ $ride->meter_net !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $ride->meter_net, 2, withThousandsSeparator: true) : '—' }}
-                        @if ($ride->hasFareDeviation())
-                            <span class="text-warning" title="{{ __('passenger.badge.fare_deviation') }}">Δ {{ $ride->fareDeviation() }}</span>
-                        @endif
-                    </td>
-                    <td class="text-right"><x-icon-btn icon="visibility" :href="route('passenger-rides.show', $ride)" :label="__('Anzeigen')" /></td>
-                </tr>
-            @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">local_taxi</span>' :colspan="9" :title="__('passenger.rides.empty')" compact />
-            @endforelse
-        </x-table>
-    </x-card>
+    <x-table :zebra="true" scroll="flex" :pinRows="true">
+        <x-slot:head>
+            <tr>
+                <th>{{ __('passenger.field.requested_at') }}</th>
+                <th>{{ __('passenger.field.operation_mode') }}</th>
+                <th>{{ __('Status') }}</th>
+                <th>{{ __('passenger.field.pickup_address') }}</th>
+                <th>{{ __('passenger.field.driver') }}</th>
+                <th>{{ __('passenger.field.vehicle') }}</th>
+                <th class="text-right">{{ __('passenger.field.planned_net') }}</th>
+                <th class="text-right">{{ __('passenger.field.meter_net') }}</th>
+                <th></th>
+            </tr>
+        </x-slot:head>
+        @forelse ($rides as $ride)
+            <tr>
+                <td class="whitespace-nowrap">{{ optional($ride->requested_at)->fdatetime() ?? '—' }}</td>
+                <td>{{ $ride->operation_mode->label() }}</td>
+                <td>
+                    <x-status-badge size="md" outline :tone="$ride->status->tone()">{{ $ride->status->label() }}</x-status-badge>
+                    @if ($ride->awaitsReturnProof())
+                        <x-status-badge size="md" outline tone="warning">{{ __('passenger.badge.return_open') }}</x-status-badge>
+                    @endif
+                </td>
+                <td class="max-w-64 truncate">{{ $ride->pickup_address ?? '—' }}</td>
+                <td>{{ $ride->driver->name ?? '—' }}</td>
+                <td>{{ $ride->vehicle->license_plate ?? '—' }}</td>
+                <td class="text-right tabular-nums">{{ $ride->planned_net !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $ride->planned_net, 2, withThousandsSeparator: true) : '—' }}</td>
+                <td class="text-right tabular-nums">
+                    {{ $ride->meter_net !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $ride->meter_net, 2, withThousandsSeparator: true) : '—' }}
+                    @if ($ride->hasFareDeviation())
+                        <span class="text-warning" title="{{ __('passenger.badge.fare_deviation') }}">Δ {{ $ride->fareDeviation() }}</span>
+                    @endif
+                </td>
+                <td class="text-right"><x-icon-btn icon="visibility" :href="route('passenger-rides.show', $ride)" :label="__('Anzeigen')" /></td>
+            </tr>
+        @empty
+            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">local_taxi</span>' :colspan="9" :title="__('passenger.rides.empty')" compact />
+        @endforelse
+    </x-table>
 
     <x-pagination :paginator="$rides" standing />
 </x-index-page>

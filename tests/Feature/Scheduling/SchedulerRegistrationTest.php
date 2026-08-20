@@ -68,6 +68,7 @@ class SchedulerRegistrationTest extends TestCase {
         'remote:sync-sessions' => ['0 * * * *', true, true],
         'toggl:import' => ['0 * * * *', true, true],
         'toggl:push' => ['0 * * * *', true, true],
+        'clockify:push' => ['0 * * * *', true, true],
         'openproject:import' => ['0 * * * *', true, true],
         'todoist:sync' => ['0 * * * *', true, true],
         // Neu mit Feature 095: Calendly-Termin-Backfill (Polling/Reconciliation).
@@ -86,6 +87,9 @@ class SchedulerRegistrationTest extends TestCase {
         'google-calendar:publish' => ['55 4 * * *', true, true],
         // MS365-Plan §8: Graph-Subscription-Anlage/-Renewal (Sender-Seite).
         'msgraph:subscriptions' => ['20 4 * * *', true, true],
+        // Audit 2026-08 (W4.4): Google-Drive-Push-Kanäle. Google-Kanäle laufen
+        // ~24 h und lassen sich nicht verlängern → dreimal täglich neu anlegen.
+        'google-drive:subscriptions' => ['35 */8 * * *', true, true],
         // Feature 102 Schnitt E: Microsoft-To-Do-Abgleich (Todoist-Muster).
         'msgraph:todo-sync' => ['0 * * * *', true, true],
         // Feature 102 C3: Zwei-Wege-Kalender-Rückimport (Opt-in two_way).

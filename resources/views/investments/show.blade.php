@@ -83,7 +83,7 @@
                         <select name="supplier_id" class="select select-sm select-bordered">
                             <option value="">{{ __('— Lieferant —') }}</option>
                             @foreach ($suppliers as $supplier)
-                                <option value="{{ $supplier->sqid }}">{{ $supplier->company ?: $supplier->name }}</option>
+                                <option value="{{ $supplier->sqid }}">{{ $supplier->displayLabel() }}</option>
                             @endforeach
                         </select>
                         <input name="one_time_cost" type="number" step="0.01" min="0" required class="input input-sm input-bordered" placeholder="{{ __('Einmalkosten €') }}">
@@ -118,7 +118,7 @@
                                     <td>
                                         {{ $option->title }}
                                         @if ($option->recommended)<span class="badge badge-success badge-xs">{{ __('Empfehlung') }}</span>@endif
-                                        @if ($option->supplier)<div class="text-xs text-base-content/60">{{ $option->supplier->company ?: $option->supplier->name }}</div>@endif
+                                        @if ($option->supplier)<div class="text-xs text-base-content/60">{{ $option->supplier->displayLabel() }}</div>@endif
                                     </td>
                                     <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $option->one_time_cost, 2, withThousandsSeparator: true) }} €</td>
                                     <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $option->recurring_cost_yearly, 2, withThousandsSeparator: true) }} €</td>

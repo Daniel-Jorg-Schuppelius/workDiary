@@ -179,48 +179,46 @@
         </div>
     @endif
 
-    <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-        <x-table table-sort="client" bare scroll="flex" :pinRows="true" size="xs">
-            <x-slot:head>
-                <tr>
-                    <x-table.th sort type="date">{{ __('Tag') }}</x-table.th>
-                    @if ($tracksTarget)
-                        <x-table.th sort type="duration" align="right">{{ __('Soll') }}</x-table.th>
+    <x-table :zebra="true" table-sort="client" scroll="flex" :pinRows="true" size="xs">
+        <x-slot:head>
+            <tr>
+                <x-table.th sort type="date">{{ __('Tag') }}</x-table.th>
+                @if ($tracksTarget)
+                    <x-table.th sort type="duration" align="right">{{ __('Soll') }}</x-table.th>
+                @endif
+                <x-table.th sort type="duration" align="right">{{ __('Ist') }}</x-table.th>
+                @if ($tracksTarget)
+                    <x-table.th sort type="duration" align="right"><x-term glossary="zeitkonto">{{ __('Saldo') }}</x-term></x-table.th>
+                @endif
+            </tr>
+        </x-slot:head>
+        @foreach($summary['days'] as $date => $b)
+            @php
+                $isEmpty = $b['target'] === 0 && $b['actual'] === 0;
+                $carbonDate = \Carbon\Carbon::parse($date);
+                $isSunday = $carbonDate->isSunday();
+                $isHoliday = (bool) ($b['is_holiday'] ?? false);
+                $isVacation = (bool) ($b['is_vacation'] ?? false);
+                $holidayName = $b['holiday_name'] ?? null;
+            @endphp
+            <tr class="{{ $isEmpty && ! $isHoliday && ! $isVacation ? 'opacity-40' : '' }} {{ $isSunday || $isHoliday ? 'text-error' : '' }}">
+                <td data-sort-value="{{ $carbonDate->format('Y-m-d') }}">
+                    <span>{{ $carbonDate->translatedFormat('D, d.m.') }}</span>
+                    @if ($isHoliday)
+                        <span class="badge badge-xs badge-error badge-soft ml-1" title="{{ $holidayName }}">{{ __('Feiertag') }}@if ($holidayName): {{ $holidayName }}@endif</span>
+                    @elseif ($isVacation)
+                        <span class="badge badge-xs badge-info badge-soft ml-1">{{ __('Urlaub') }}</span>
                     @endif
-                    <x-table.th sort type="duration" align="right">{{ __('Ist') }}</x-table.th>
-                    @if ($tracksTarget)
-                        <x-table.th sort type="duration" align="right"><x-term glossary="zeitkonto">{{ __('Saldo') }}</x-term></x-table.th>
-                    @endif
-                </tr>
-            </x-slot:head>
-            @foreach($summary['days'] as $date => $b)
-                @php
-                    $isEmpty = $b['target'] === 0 && $b['actual'] === 0;
-                    $carbonDate = \Carbon\Carbon::parse($date);
-                    $isSunday = $carbonDate->isSunday();
-                    $isHoliday = (bool) ($b['is_holiday'] ?? false);
-                    $isVacation = (bool) ($b['is_vacation'] ?? false);
-                    $holidayName = $b['holiday_name'] ?? null;
-                @endphp
-                <tr class="{{ $isEmpty && ! $isHoliday && ! $isVacation ? 'opacity-40' : '' }} {{ $isSunday || $isHoliday ? 'text-error' : '' }}">
-                    <td data-sort-value="{{ $carbonDate->format('Y-m-d') }}">
-                        <span>{{ $carbonDate->translatedFormat('D, d.m.') }}</span>
-                        @if ($isHoliday)
-                            <span class="badge badge-xs badge-error badge-soft ml-1" title="{{ $holidayName }}">{{ __('Feiertag') }}@if ($holidayName): {{ $holidayName }}@endif</span>
-                        @elseif ($isVacation)
-                            <span class="badge badge-xs badge-info badge-soft ml-1">{{ __('Urlaub') }}</span>
-                        @endif
-                    </td>
-                    @if ($tracksTarget)
-                        <td class="text-right tabular-nums @if ($b['target'] === 0) opacity-50 @endif" data-sort-value="{{ (int) $b['target'] }}">{{ $fmtCell($b['target']) }}</td>
-                    @endif
-                    <td class="text-right tabular-nums @if ($b['actual'] === 0) opacity-50 @endif" data-sort-value="{{ (int) $b['actual'] }}">{{ $fmtCell($b['actual']) }}</td>
-                    @if ($tracksTarget)
-                        <td class="text-right tabular-nums @if ($b['balance'] === 0) opacity-50 @endif {{ $b['balance'] < 0 ? 'text-error' : '' }}" data-sort-value="{{ (int) $b['balance'] }}">{{ $fmtCell($b['balance']) }}</td>
-                    @endif
-                </tr>
-            @endforeach
-        </x-table>
-    </x-card>
+                </td>
+                @if ($tracksTarget)
+                    <td class="text-right tabular-nums @if ($b['target'] === 0) opacity-50 @endif" data-sort-value="{{ (int) $b['target'] }}">{{ $fmtCell($b['target']) }}</td>
+                @endif
+                <td class="text-right tabular-nums @if ($b['actual'] === 0) opacity-50 @endif" data-sort-value="{{ (int) $b['actual'] }}">{{ $fmtCell($b['actual']) }}</td>
+                @if ($tracksTarget)
+                    <td class="text-right tabular-nums @if ($b['balance'] === 0) opacity-50 @endif {{ $b['balance'] < 0 ? 'text-error' : '' }}" data-sort-value="{{ (int) $b['balance'] }}">{{ $fmtCell($b['balance']) }}</td>
+                @endif
+            </tr>
+        @endforeach
+    </x-table>
 </x-index-page>
 @endsection

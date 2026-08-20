@@ -11,21 +11,27 @@
 // Offline-Sync (Feature 035): Offline-Änderungs-Seite + Statusanzeige.
 return [
     'title' => 'Modifications hors ligne',
-    'subtitle' => 'Actions saisies hors ligne sur cet appareil — en attente ou rejetées.',
-    'notice' => 'Cette liste est stockée uniquement sur cet appareil. Les entrées en attente se synchronisent automatiquement dès que la connexion est rétablie ; les entrées rejetées peuvent être réappliquées ou supprimées.',
+    'subtitle' => 'Actions saisies hors ligne sur cet appareil — en attente, en conflit ou refusées.',
+    'notice' => 'Cette liste n’existe que sur cet appareil. Les entrées en attente sont transmises automatiquement dès qu’une connexion est disponible ; les entrées refusées peuvent être renvoyées ou supprimées. Les conflits exigent une décision : quelqu’un d’autre a modifié le même enregistrement.',
     'empty' => 'Aucune modification hors ligne sur cet appareil.',
     'section' => [
         'pending' => 'En attente',
         'rejected' => 'Rejetées',
+        'conflict' => 'Conflits',
     ],
     'type' => [
         'clock_in' => 'Pointage d’arrivée',
         'clock_out' => 'Pointage de départ',
         'comment' => 'Commentaire de commande',
         'form' => 'Formulaire',
+        'attendance_correct' => 'Correction de pointage',
     ],
     'action' => [
         'retry' => 'Réappliquer',
         'discard' => 'Supprimer',
+        'take_server' => 'Conserver l’autre version',
+        'force_local' => 'Envoyer ma version',
     ],
+    'conflict_hint' => 'État du serveur : :server',
+    'photos_queued' => 'Photos en file d’attente : :count',
 ];

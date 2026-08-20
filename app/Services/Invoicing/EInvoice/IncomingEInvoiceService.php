@@ -245,7 +245,7 @@ class IncomingEInvoiceService {
 
         if ($sellerVat !== '') {
             foreach (\App\Models\Supplier::query()->withoutGlobalScopes()->where('organization_id', $organizationId)->where('vat_id', $sellerVat)->limit(3)->get() as $supplier) {
-                $suppliers[$supplier->id] = ['id' => (int) $supplier->id, 'label' => (string) ($supplier->company ?: $supplier->name), 'reasons' => [(string) __('USt-IdNr. stimmt überein')]];
+                $suppliers[$supplier->id] = ['id' => (int) $supplier->id, 'label' => (string) ($supplier->displayLabel()), 'reasons' => [(string) __('USt-IdNr. stimmt überein')]];
             }
         }
         if ($sellerName !== '') {
@@ -257,7 +257,7 @@ class IncomingEInvoiceService {
                 if (isset($suppliers[$supplier->id])) {
                     $suppliers[$supplier->id]['reasons'][] = (string) __('Name ähnlich');
                 } else {
-                    $suppliers[$supplier->id] = ['id' => (int) $supplier->id, 'label' => (string) ($supplier->company ?: $supplier->name), 'reasons' => [(string) __('Name ähnlich')]];
+                    $suppliers[$supplier->id] = ['id' => (int) $supplier->id, 'label' => (string) ($supplier->displayLabel()), 'reasons' => [(string) __('Name ähnlich')]];
                 }
             }
         }

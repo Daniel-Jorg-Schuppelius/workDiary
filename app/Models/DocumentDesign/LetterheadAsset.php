@@ -90,6 +90,36 @@ class LetterheadAsset extends Model {
     }
 
     /**
+     * Trägt dieser Bogen eine Vektorquelle (PDF-Original)?
+     */
+    public function hasVectorSource(): bool {
+        return $this->isReady() && $this->source_type === 'pdf';
+    }
+
+    /**
+     * Original-PDF für den Vektor-Overlay (Audit 2026-08, W5.5).
+     *
+     * **Zur früheren Regel „das Original wandert nie in Ausgabedokumente":**
+     * Sie zielte auf das EINBETTEN der Datei — mit Formularen, JavaScript,
+     * externen Verweisen und Anhängen. Der Overlay bettet nichts ein: FPDIs
+     * `importPage()` übernimmt ausschließlich den Zeichenstrom der Seite samt
+     * der von ihm referenzierten Ressourcen (Schriften, Bilder). `/Annots`,
+     * AcroForm, `/Names /JavaScript`, `/OpenAction` und eingebettete Dateien
+     * hängen am Seiten- bzw. Katalogobjekt und werden dabei nicht mitgenommen.
+     * Der Import ist damit selbst die Reduktion — nur eben ohne den
+     * Qualitätsverlust der Rasterung.
+     */
+    public function vectorSourceBytes(): ?string {
+        if (! $this->hasVectorSource()) {
+            return null;
+        }
+
+        $disk = Storage::disk($this->disk);
+
+        return $disk->exists($this->original_path) ? $disk->get($this->original_path) : null;
+    }
+
+    /**
      * Normalisierte Rasterdatei als Data-URI — dompdf kann keine signierten
      * URLs auflösen, daher wird der Firmenbogen (wie das Branding-Logo)
      * direkt ins HTML eingebettet.

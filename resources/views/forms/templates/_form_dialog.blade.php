@@ -52,8 +52,11 @@
         <x-input-field name="name" :label="__('form.field.name')" required minlength="3" maxlength="160" span="2" :value="old('name', $template?->name)" />
         <x-textarea-field name="description" :label="__('form.field.description')" rows="2" maxlength="2000" span="2" :value="old('description', $template?->description)" />
         {{-- Gültigkeit + Zuordnung (Feature 032 MVP; Vollaudit 2026-07, M11). --}}
-        <x-input-field name="valid_from" type="date" :label="__('form.field.valid_from')" :value="old('valid_from', $template?->valid_from?->toDateString())" />
-        <x-input-field name="valid_until" type="date" :label="__('form.field.valid_until')" :value="old('valid_until', $template?->valid_until?->toDateString())" />
+        <x-date-range layout="split" grid-class="contents"
+                      from-name="valid_from" to-name="valid_until" type="date"
+                      :from="old('valid_from', $template?->valid_from?->toDateString())"
+                      :to="old('valid_until', $template?->valid_until?->toDateString())"
+                      :from-label="__('form.field.valid_from')" :to-label="__('form.field.valid_until')" />
         @php
             $targetEntryTypeId = old('target_entry_type') !== null ? null : ($template?->target['entry_type_id'] ?? null);
             $targetCustomerId = old('target_customer') !== null ? null : ($template?->target['customer_id'] ?? null);

@@ -83,7 +83,7 @@
                         @else
                             <x-status-badge tone="warning">{{ __('procedure.status.draft') }}</x-status-badge>
                             @if ($canPublish)
-                                <x-action-form :action="route('procedures.versions.publish', [$template, $v->id])"
+                                <x-action-form :action="route('procedures.versions.publish', [$template, $v])"
                                       data-confirm-title="{{ __('procedure.action.publish') }}"
                                       :confirm="__('procedure.confirm.publish')"
                                       confirm-icon="publish"

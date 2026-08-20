@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasSqid;
 use Illuminate\Database\Eloquent\{Builder, MassPrunable, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -36,6 +37,9 @@ use Illuminate\Support\Carbon;
 class PluginError extends Model {
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
+    // Audit 2026-08 (W3.3): Formulare/URLs tragen Sqids, nie rohe IDs.
+    use HasSqid;
     use MassPrunable;
 
     public const PHASE_BOOT = 'boot';

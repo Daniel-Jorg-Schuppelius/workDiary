@@ -33,6 +33,8 @@
                 <h3 class="card-title text-base">{{ __('access.title.assigned_roles') }}</h3>
                 @forelse ($roles as $role)
                     <label class="label cursor-pointer justify-start gap-3 hover:bg-base-100 rounded px-2">
+                        {{-- Rollen-IDs bleiben numerisch: Role ist ein Spatie-Vendor-Modell ohne HasSqid;
+                             die Schutzlinie ist die org-/global-gescopte Whitelist im Controller (Audit W3.3). --}}
                         <input type="checkbox" name="roles[]" value="{{ $role->id }}"
                                class="checkbox checkbox-sm"
                                @checked(in_array($role->id, $assignedRoles, true)) />
@@ -52,7 +54,7 @@
                 <h3 class="card-title text-base">{{ __('access.title.assigned_groups') }}</h3>
                 @forelse ($groups as $group)
                     <label class="label cursor-pointer justify-start gap-3 hover:bg-base-100 rounded px-2">
-                        <input type="checkbox" name="groups[]" value="{{ $group->id }}"
+                        <input type="checkbox" name="groups[]" value="{{ $group->sqid }}"
                                class="checkbox checkbox-sm"
                                @checked(in_array($group->id, $assignedGroups, true)) />
                         <span class="text-sm">

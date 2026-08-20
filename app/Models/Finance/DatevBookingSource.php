@@ -10,6 +10,7 @@
 
 namespace App\Models\Finance;
 
+use App\Models\Concerns\HasSqid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 use Illuminate\Support\Carbon;
@@ -42,6 +43,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 class DatevBookingSource extends Model {
+    // Audit 2026-08 (W3.3): Formulare tragen Sqids, nie rohe IDs.
+    use HasSqid;
+
     protected $fillable = [
         'datev_booking_batch_id',
         'source_type',

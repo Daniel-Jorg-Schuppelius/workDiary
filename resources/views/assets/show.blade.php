@@ -36,7 +36,7 @@
                     @if ($asset->customer)
                         <div class="text-sm text-base-content/70">
                             {{ __('Kunde') }}:
-                            <a class="link link-hover" href="{{ route('customers.show', $asset->customer) }}">{{ $asset->customer->company ?: $asset->customer->name }}</a>
+                            <a class="link link-hover" href="{{ route('customers.show', $asset->customer) }}">{{ $asset->customer->displayLabel() }}</a>
                             @if ($asset->foreignCustomer)
                                 · {{ __('Fremdkunde (Endkunde)') }}: {{ $asset->foreignCustomer->name }}
                             @endif

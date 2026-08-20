@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, Organization, SystemSetting};
 use App\Settings\{SettingDefinition, SettingScope, SettingType, SettingsRegistry};
@@ -29,6 +30,8 @@ use Illuminate\View\View;
  * Registry-Schreibweg; sensible Werte werden maskiert.
  */
 class SettingsController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(private readonly SettingsRegistry $registry) {}
 
     public function index(Request $request): View {
@@ -37,7 +40,7 @@ class SettingsController extends Controller {
         $scope = $request->query('scope') === SettingScope::Organization->value
             ? SettingScope::Organization
             : SettingScope::System;
-        $organization = $this->currentOrganization();
+        $organization = $this->currentOrganizationOrNull();
         $search = trim((string) $request->query('q', ''));
 
         $rows = [];
@@ -99,7 +102,7 @@ class SettingsController extends Controller {
         Gate::authorize(Permission::PlatformSettingsManage->value);
 
         $scope = $this->requestedScope($request);
-        $organization = $scope === SettingScope::Organization ? $this->currentOrganization() : null;
+        $organization = $scope === SettingScope::Organization ? $this->currentOrganizationOrNull() : null;
 
         $entries = [];
         foreach ($this->registry->forScope($scope) as $key => $definition) {
@@ -173,13 +176,7 @@ class SettingsController extends Controller {
     }
 
     private function organizationFor(SettingScope $scope): ?Organization {
-        return $scope === SettingScope::Organization ? $this->currentOrganization() : null;
-    }
-
-    private function currentOrganization(): ?Organization {
-        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
-
-        return $org instanceof Organization ? $org : null;
+        return $scope === SettingScope::Organization ? $this->currentOrganizationOrNull() : null;
     }
 
     private function castValue(SettingType $type, mixed $raw): mixed {

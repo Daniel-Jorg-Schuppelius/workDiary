@@ -24,7 +24,7 @@ use App\Plugins\Support\PluginSettingsResolver;
  */
 class GitlabConfig {
     /**
-     * @return array{api_token: ?string, project_id: ?string, webhook_token: ?string, default_project: ?string, base_url: string, allow_private_network: bool, enabled: bool}
+     * @return array{api_token: ?string, project_id: ?string, webhook_token: ?string, default_project: ?string, base_url: string, allow_private_network: bool, writeback: bool, enabled: bool}
      */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(GitlabPlugin::ID, $organizationId);
@@ -36,6 +36,7 @@ class GitlabConfig {
             'default_project' => $r->settingString('default_project', trim: true),
             'base_url' => rtrim($r->string('base_url', trim: true) ?? 'https://gitlab.com', '/'),
             'allow_private_network' => $r->bool('allow_private_network', false),
+            'writeback' => $r->bool('writeback', false),
             'enabled' => $r->enabled(),
         ];
     }

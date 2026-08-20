@@ -97,7 +97,7 @@ class ProcedureDesignerHttpTest extends TestCase {
         $version = $template->versions()->firstOrFail();
 
         $this->actingAs($lead)
-            ->post(route('procedures.versions.publish', [$template, $version->id]))
+            ->post(route('procedures.versions.publish', [$template, $version]))
             ->assertRedirect(route('procedures.edit', $template));
 
         $this->assertNotNull($version->fresh()->published_at);

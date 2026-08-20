@@ -18,9 +18,9 @@
         @endif
         <x-validation-errors first />
 
+        <x-page-toolbar :subtitle="__('article.discount_group.hint')" />
+
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <h1 class="mb-1 font-['Space_Grotesk'] text-lg font-semibold">{{ __('article.discount_group.title') }}</h1>
-            <p class="mb-4 text-sm opacity-70">{{ __('article.discount_group.hint') }}</p>
 
             <form method="POST" action="{{ route('articles.sales-discount-groups.store') }}" class="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
                 @csrf
@@ -90,7 +90,7 @@
                 </x-select-field>
                 <x-select-field name="customer_id" :label="__('article.discount_group.override.customer')" required>
                     @foreach ($customers ?? [] as $customer)
-                        <option value="{{ $customer->id }}">{{ $customer->company ?: $customer->name }} ({{ $customer->number }})</option>
+                        <option value="{{ $customer->id }}">{{ $customer->displayLabel() }} ({{ $customer->number }})</option>
                     @endforeach
                 </x-select-field>
                 <x-select-field name="kind" :label="__('article.discount_group.col.kind')" required>
@@ -119,7 +119,7 @@
                         @forelse ($overrides ?? [] as $override)
                             <tr>
                                 <td class="font-mono">{{ $override->group?->code }}</td>
-                                <td>{{ $override->customer?->company ?: $override->customer?->name }} ({{ $override->customer?->number }})</td>
+                                <td>{{ $override->customer?->displayLabel() }} ({{ $override->customer?->number }})</td>
                                 <td>{{ __('article.discount_group.kind.' . $override->kind) }}</td>
                                 <td class="text-right">{{ rtrim(rtrim($override->value, '0'), '.') }}{{ $override->kind === 'factor' ? '' : ' %' }}</td>
                                 <td class="text-right">

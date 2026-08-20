@@ -21,10 +21,7 @@
         @endif
         <x-validation-errors first />
 
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <h1 class="mb-1 font-['Space_Grotesk'] text-lg font-semibold">{{ __('terminal.title') }}</h1>
-            <p class="text-sm text-base-content/60">{{ __('terminal.intro') }}</p>
-        </div>
+        <x-page-toolbar :subtitle="__('terminal.intro')" />
 
         {{-- Einmalige Ingest-URL --}}
         @if ($issuedUrl)
@@ -190,14 +187,11 @@
                     <span class="label-text">{{ __('terminal.badge.label') }}</span>
                     <input type="text" name="label" value="{{ old('label') }}" class="input input-bordered input-sm">
                 </label>
-                <label class="form-control">
-                    <span class="label-text">{{ __('terminal.badge.valid_from') }}</span>
-                    <input type="date" name="valid_from" value="{{ old('valid_from') }}" class="input input-bordered input-sm">
-                </label>
-                <label class="form-control">
-                    <span class="label-text">{{ __('terminal.badge.valid_until') }}</span>
-                    <input type="date" name="valid_until" value="{{ old('valid_until') }}" class="input input-bordered input-sm">
-                </label>
+                <x-date-range layout="split" form-control grid-class="contents"
+                              from-name="valid_from" to-name="valid_until" type="date"
+                              :from="old('valid_from')" :to="old('valid_until')"
+                              :from-label="__('terminal.badge.valid_from')"
+                              :to-label="__('terminal.badge.valid_until')" />
                 <button type="submit" class="btn btn-sm btn-primary">{{ __('terminal.action.assign') }}</button>
             </form>
         </div>

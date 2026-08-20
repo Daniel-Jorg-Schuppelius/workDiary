@@ -35,4 +35,6 @@ return [
     'sync_window_days' => (int) env('CLOCKIFY_SYNC_WINDOW_DAYS', 30),
     // Korrekturen an importierten Zeiten nach Clockify zurückschreiben (Änderung/Löschung).
     'writeback' => (bool) env('CLOCKIFY_WRITEBACK', false),
+    // Überträgt in workDiary erfasste Zeiten gemappter Projekte nach Clockify (Spiegelung).
+    'export_enabled' => (bool) env('CLOCKIFY_EXPORT_ENABLED', false),
 ];

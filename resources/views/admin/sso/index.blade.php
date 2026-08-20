@@ -18,10 +18,10 @@
         @endif
         <x-validation-errors first />
 
-        {{-- Einführung + Endpunkt --}}
+        <x-page-toolbar :subtitle="__('sso.intro')" />
+
+        {{-- Endpunkt für die IdP-Konfiguration --}}
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <h1 class="mb-1 font-['Space_Grotesk'] text-lg font-semibold">{{ __('sso.title') }}</h1>
-            <p class="mb-3 text-sm text-base-content/60">{{ __('sso.intro') }}</p>
             <div class="text-sm">
                 <span class="text-base-content/60">{{ __('sso.base_url') }}:</span>
                 <code class="rounded bg-base-200 px-2 py-0.5">{{ $scimBaseUrl }}</code>

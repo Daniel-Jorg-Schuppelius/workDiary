@@ -464,6 +464,8 @@ return [
                 'schedulerOverdue' => 'Tâche planifiée en retard',
                 'maintenanceScheduled' => 'Fenêtre de maintenance annoncée',
                 'problemReportReceived' => 'Nouveau signalement de problème reçu',
+                'cloudIntakeReauth' => 'Réception cloud : nouvelle connexion requise',
+                'cloudIntakeQuarantined' => 'Réception cloud : importations refusées',
             ],
             'security' => [
                 'integrity' => 'Intégrité du code source',

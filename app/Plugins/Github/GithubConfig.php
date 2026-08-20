@@ -24,7 +24,7 @@ use App\Plugins\Support\PluginSettingsResolver;
  */
 class GithubConfig {
     /**
-     * @return array{api_token: ?string, repo_owner: ?string, repo_name: ?string, webhook_secret: ?string, default_project: ?string, base_url: string, enabled: bool}
+     * @return array{api_token: ?string, repo_owner: ?string, repo_name: ?string, webhook_secret: ?string, default_project: ?string, base_url: string, writeback: bool, enabled: bool}
      */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(GithubPlugin::ID, $organizationId);
@@ -36,6 +36,7 @@ class GithubConfig {
             'webhook_secret' => $r->settingString('webhook_secret', trim: true),
             'default_project' => $r->settingString('default_project', trim: true),
             'base_url' => rtrim((string) config('plugins.github.base_url', 'https://api.github.com'), '/'),
+            'writeback' => $r->bool('writeback', false),
             'enabled' => $r->enabled(),
         ];
     }

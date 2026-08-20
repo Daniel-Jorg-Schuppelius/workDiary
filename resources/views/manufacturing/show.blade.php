@@ -124,7 +124,7 @@
                 <div class="fieldset"><label class="fieldset-label">{{ __('Materialposition') }}</label>
                     <select name="material" class="select select-sm select-bordered" required>
                         @foreach ($order->materials->where('is_tool', false) as $material)
-                            <option value="{{ $material->id }}">{{ $material->name_snapshot }}</option>
+                            <option value="{{ $material->sqid }}">{{ $material->name_snapshot }}</option>
                         @endforeach
                     </select></div>
                 <div class="fieldset grow"><label class="fieldset-label">{{ __('Ersatzartikel') }}</label>

@@ -29,6 +29,8 @@ class SaveArticleRequest extends BaseFormRequest {
         'default_procedure_template_version_id' => \App\Models\ProcedureTemplateVersion::class,
         'tag_ids' => \App\Models\Tag::class,
         'product_id' => \App\Models\Product::class,
+        // W3.3: Rabattgruppe kam bisher als rohe ID aus dem Dialog.
+        'sales_discount_group_id' => \App\Models\SalesDiscountGroup::class,
     ];
 
     /** @var list<string> */

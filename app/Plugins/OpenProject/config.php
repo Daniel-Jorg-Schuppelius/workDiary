@@ -33,4 +33,6 @@ return [
     'create_missing_projects' => (bool) env('OPENPROJECT_CREATE_MISSING_PROJECTS', false),
     // Korrekturen an importierten Zeiten nach OpenProject zurückschreiben (Änderung/Löschung).
     'writeback' => (bool) env('OPENPROJECT_WRITEBACK', false),
+    // Neue lokale Zeiten sofort rückbuchen (zusätzlich zum stündlichen openproject:push).
+    'push_on_create' => (bool) env('OPENPROJECT_PUSH_ON_CREATE', false),
 ];

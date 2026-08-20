@@ -11,6 +11,8 @@
 namespace App\Services\TimeExport\Profiles;
 
 use App\Models\{TimeExport, TimeExportLine};
+use CommonToolkit\Enums\Common\CSV\QuotingStyle;
+use CommonToolkit\Helper\Data\CSV\StringHelper as CsvStringHelper;
 
 /**
  * Generisches CSV-Profil (MVP-019).
@@ -78,17 +80,25 @@ class GenericCsvProfile implements ExportProfile {
         return $this->opts['bom'] ? \CommonToolkit\Helper\Data\StringHelper::prependBom($body) : $body;
     }
 
-    /** @param  array<int,string>  $fields */
+    /**
+     * Eine CSV-Zeile im Always-Quote-Stil (Audit 2026-08, W2.8).
+     *
+     * Seit dem Toolkit-Release mit `QuotingStyle::ALWAYS` deckt
+     * {@see CsvStringHelper::encodeLine()} das Verhalten des frueheren
+     * app-lokalen Serializers ab. Vor der Umstellung wurde Byte-Paritaet
+     * belegt (leere Felder, Quotes im Wert, Trennzeichen im Wert,
+     * Zeilenumbruch im Wert) - der `payload_hash` bleibt damit stabil, was
+     * hier revisionsrelevant ist: er weist den ausgelieferten Export nach.
+     * Der Regressionstest haelt die Hashes fest.
+     *
+     * @param  array<int,string>  $fields
+     */
     private function csvLine(array $fields): string {
-        $q = $this->opts['enclosure'];
-        $d = $this->opts['delimiter'];
-
-        $escaped = array_map(function (string $v) use ($q): string {
-            $v = str_replace($q, $q . $q, $v);
-
-            return $q . $v . $q;
-        }, $fields);
-
-        return implode($d, $escaped);
+        return CsvStringHelper::encodeLine(
+            $fields,
+            $this->opts['delimiter'],
+            $this->opts['enclosure'],
+            QuotingStyle::ALWAYS,
+        );
     }
 }

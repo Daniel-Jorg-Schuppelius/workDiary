@@ -11483,6 +11483,7 @@ CREATE TABLE IF NOT EXISTS "letterhead_assets"(
   "uploaded_by" integer,
   "created_at" datetime,
   "updated_at" datetime,
+  "page_format" varchar not null default 'a4_portrait',
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("uploaded_by") references "users"("id") on delete set null
 );
@@ -11534,6 +11535,7 @@ CREATE TABLE IF NOT EXISTS "document_render_profiles"(
   "updated_at" datetime,
   "document_family" varchar,
   "is_customer_specific" tinyint(1) not null default '0',
+  "page_format" varchar not null default 'a4_portrait',
   foreign key("organization_id") references organizations("id") on delete cascade on update no action,
   foreign key("active_version_id") references "document_render_profile_versions"("id") on delete set null
 );
@@ -15622,6 +15624,8 @@ CREATE TABLE IF NOT EXISTS "customers"(
   "delivery_format" varchar,
   "document_render_profile_id" integer,
   "survey_opt_out" tinyint(1) not null default '0',
+  "billing_cutover_on" date,
+  "billing_cutover_from" varchar,
   foreign key("document_render_profile_id") references document_render_profiles("id") on delete set null on update no action,
   foreign key("created_by") references users("id") on delete set null on update no action,
   foreign key("organization_id") references organizations("id") on delete set null on update no action
@@ -15686,6 +15690,7 @@ CREATE TABLE IF NOT EXISTS "access_medium_handovers"(
   "performed_by" integer,
   "created_at" datetime,
   "updated_at" datetime,
+  "signature_token" varchar,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("access_medium_id") references "access_media"("id") on delete cascade,
   foreign key("holder_user_id") references "users"("id") on delete set null,
@@ -15905,6 +15910,170 @@ CREATE TABLE IF NOT EXISTS "appointment_requests"(
   foreign key("organization_id") references organizations("id") on delete cascade on update no action,
   foreign key("portal_user_id") references "users"("id") on delete set null
 );
+CREATE TABLE IF NOT EXISTS "accounting_migration_runs"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_plugin" varchar not null,
+  "target_plugin" varchar not null,
+  "status" varchar not null default 'draft',
+  "data_areas" text not null,
+  "cutover_on" date,
+  "cutover_at" datetime,
+  "dry_run_only" tinyint(1) not null default '1',
+  "counters" text,
+  "checkpoints" text,
+  "preflight" text,
+  "blocked_reason" text,
+  "responsible_user_id" integer,
+  "completed_by" integer,
+  "completed_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("responsible_user_id") references "users"("id") on delete set null,
+  foreign key("completed_by") references "users"("id") on delete set null
+);
+CREATE INDEX "amr_org_status_idx" on "accounting_migration_runs"(
+  "organization_id",
+  "status"
+);
+CREATE TABLE IF NOT EXISTS "accounting_migration_items"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "accounting_migration_run_id" integer not null,
+  "data_area" varchar not null,
+  "status" varchar not null default 'pending',
+  "source_external_id" varchar,
+  "target_external_id" varchar,
+  "referenceable_type" varchar,
+  "referenceable_id" integer,
+  "dedupe_key" varchar not null,
+  "display_title" varchar,
+  "source_snapshot" text,
+  "diff" text,
+  "note" text,
+  "decided_by" integer,
+  "decided_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("accounting_migration_run_id") references "accounting_migration_runs"("id") on delete cascade,
+  foreign key("decided_by") references "users"("id") on delete set null
+);
+CREATE INDEX "ami_ref" on "accounting_migration_items"(
+  "referenceable_type",
+  "referenceable_id"
+);
+CREATE UNIQUE INDEX "ami_run_dedupe_unique" on "accounting_migration_items"(
+  "accounting_migration_run_id",
+  "dedupe_key"
+);
+CREATE INDEX "ami_run_area_status_idx" on "accounting_migration_items"(
+  "accounting_migration_run_id",
+  "data_area",
+  "status"
+);
+CREATE TABLE IF NOT EXISTS "accounting_migration_events"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "accounting_migration_run_id" integer,
+  "event" varchar not null,
+  "actor_user_id" integer,
+  "payload" text,
+  "prev_hash" varchar,
+  "hash" varchar,
+  "created_at" datetime
+);
+CREATE INDEX "ame_run_idx" on "accounting_migration_events"(
+  "accounting_migration_run_id",
+  "id"
+);
+CREATE TABLE IF NOT EXISTS "orgamax_invoices"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "external_id" varchar not null,
+  "customer_id" integer,
+  "customer_external_id" varchar,
+  "customer_name" varchar,
+  "invoice_type" varchar,
+  "invoice_status" varchar,
+  "invoice_number" varchar,
+  "invoice_date" date,
+  "due_on" date,
+  "total_net" numeric,
+  "total_gross" numeric,
+  "outstanding_amount" numeric,
+  "currency" varchar not null default 'EUR',
+  "payload" text,
+  "synced_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("customer_id") references "customers"("id") on delete set null
+);
+CREATE UNIQUE INDEX "omi_org_external_unique" on "orgamax_invoices"(
+  "organization_id",
+  "external_id"
+);
+CREATE INDEX "omi_org_status_idx" on "orgamax_invoices"(
+  "organization_id",
+  "invoice_status"
+);
+CREATE UNIQUE INDEX timesheets_open_day_unique ON timesheets(
+  project_id,
+  user_id,
+  work_date
+) WHERE status IN(
+  'draft',
+  'submitted'
+);
+CREATE TABLE IF NOT EXISTS "lexoffice_webhook_deliveries"(
+  "id" integer primary key autoincrement not null,
+  "delivery_hash" varchar not null,
+  "event_type" varchar,
+  "resource_id" varchar,
+  "organization_id" integer,
+  "received_at" datetime not null,
+  "processed_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete set null
+);
+CREATE UNIQUE INDEX "lwdel_hash_unique" on "lexoffice_webhook_deliveries"(
+  "delivery_hash"
+);
+CREATE TABLE IF NOT EXISTS "supplier_merge_dismissals"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "supplier_low_id" integer not null,
+  "supplier_high_id" integer not null,
+  "dismissed_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete set null,
+  foreign key("dismissed_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "smd_pair_unique" on "supplier_merge_dismissals"(
+  "supplier_low_id",
+  "supplier_high_id"
+);
+CREATE INDEX "smd_org_idx" on "supplier_merge_dismissals"("organization_id");
+CREATE TABLE IF NOT EXISTS "article_merge_dismissals"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "article_low_id" integer not null,
+  "article_high_id" integer not null,
+  "dismissed_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete set null,
+  foreign key("dismissed_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "amd_pair_unique" on "article_merge_dismissals"(
+  "article_low_id",
+  "article_high_id"
+);
+CREATE INDEX "amd_org_idx" on "article_merge_dismissals"("organization_id");
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -16578,3 +16747,11 @@ INSERT INTO migrations VALUES(675,'2027_01_12_120000_create_access_media_tables'
 INSERT INTO migrations VALUES(676,'2027_01_12_130000_create_survey_tables',120);
 INSERT INTO migrations VALUES(677,'2027_01_12_140000_create_patrol_tables',121);
 INSERT INTO migrations VALUES(678,'2027_01_12_150000_create_bookable_services_and_extend_appointment_requests',122);
+INSERT INTO migrations VALUES(679,'2027_01_12_160000_add_signature_to_access_medium_handovers',123);
+INSERT INTO migrations VALUES(680,'2027_01_14_100000_add_landscape_support_to_document_design',124);
+INSERT INTO migrations VALUES(681,'2027_01_15_100000_create_accounting_migration_tables',124);
+INSERT INTO migrations VALUES(682,'2027_01_16_100000_create_orgamax_invoices_table',124);
+INSERT INTO migrations VALUES(683,'2027_01_17_100000_add_timesheets_open_day_unique',124);
+INSERT INTO migrations VALUES(684,'2027_01_18_100000_create_lexoffice_webhook_deliveries_table',124);
+INSERT INTO migrations VALUES(685,'2027_01_19_100000_create_supplier_merge_dismissals_table',124);
+INSERT INTO migrations VALUES(686,'2027_01_20_100000_create_article_merge_dismissals_table',125);

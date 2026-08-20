@@ -865,11 +865,16 @@ class NavigationRegistry {
                     'key' => 'reports-resources',
                     'label' => __('Ressourcen'),
                     'icon' => 'inventory_2',
-                    'items' => [
+                    'items' => $this->compactItems([
                         ['route' => 'reports.fleet', 'label' => __('Fuhrpark'), 'icon' => 'directions_car', 'modal' => false, 'matches' => ['reports.fleet']],
                         ['route' => 'reports.materials', 'label' => __('Materialien'), 'icon' => 'inventory', 'modal' => false, 'matches' => ['reports.materials']],
                         ['route' => 'reports.on-call', 'label' => __('Notdienst'), 'icon' => 'notifications_active', 'modal' => false, 'matches' => ['reports.on-call']],
-                    ],
+                        // Importbericht Cloud-Dokumenteingang (Feature 080 P9): org-weite
+                        // Beleg-/Pfaddaten → nur report.view/Admin.
+                        ($user?->isAdmin() || $user?->can(Permission::ReportView->value))
+                            ? ['route' => 'reports.cloud-intake', 'label' => __('cloud_intake.report.nav'), 'icon' => 'cloud_sync', 'modal' => false, 'matches' => ['reports.cloud-intake']]
+                            : null,
+                    ]),
                 ],
                 [
                     'key' => 'reports-finance',

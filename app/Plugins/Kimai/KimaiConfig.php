@@ -17,11 +17,11 @@ use App\Plugins\Support\PluginSettingsResolver;
  * Organisation vor `config('plugins.kimai.*')` — Lookup/Cast im
  * {@see PluginSettingsResolver} (C10). Analog {@see \App\Plugins\Toggl\TogglConfig}.
  *
- * @phpstan-type KimaiSettings array{enabled: bool, default_billable: bool, default_user_id: ?int, single_user_mode: bool, base_url: ?string, api_token: ?string, api_all_users: bool, sync_window_days: int, default_activity_id: ?int, export_enabled: bool, writeback: bool}
+ * @phpstan-type KimaiSettings array{enabled: bool, default_billable: bool, default_user_id: ?int, single_user_mode: bool, base_url: ?string, api_token: ?string, api_all_users: bool, sync_window_days: int, default_activity_id: ?int, export_enabled: bool, push_on_create: bool, writeback: bool}
  */
 class KimaiConfig {
     /**
-     * @return array{enabled: bool, default_billable: bool, default_user_id: ?int, single_user_mode: bool, base_url: ?string, api_token: ?string, api_all_users: bool, sync_window_days: int, default_activity_id: ?int, export_enabled: bool, writeback: bool}
+     * @return array{enabled: bool, default_billable: bool, default_user_id: ?int, single_user_mode: bool, base_url: ?string, api_token: ?string, api_all_users: bool, sync_window_days: int, default_activity_id: ?int, export_enabled: bool, push_on_create: bool, writeback: bool}
      */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(KimaiPlugin::ID, $organizationId);
@@ -38,6 +38,7 @@ class KimaiConfig {
             'sync_window_days' => max(1, $r->int('sync_window_days', 30)),
             'default_activity_id' => $r->intOrNull('default_activity_id'),
             'export_enabled' => $r->bool('export_enabled', false),
+            'push_on_create' => $r->bool('push_on_create', false),
             'writeback' => $r->bool('writeback', false),
         ];
     }

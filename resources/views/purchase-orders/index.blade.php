@@ -34,24 +34,22 @@
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">shopping_cart</span>'
                        :title="__('procurement.empty')" />
     @else
-        <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-            <x-table bare scroll="flex" :pinRows="true">
-                <x-slot:head>
-                    <tr>
-                        <th>{{ __('procurement.field.number') }}</th>
-                        <th>{{ __('procurement.field.supplier') }}</th>
-                        <th>{{ __('Status') }}</th>
-                    </tr>
-                </x-slot:head>
-                @foreach ($orders as $order)
-                    <tr>
-                        <td><a href="{{ route('purchase-orders.show', $order) }}" class="link link-hover font-mono">{{ $order->number }}</a></td>
-                        <td>{{ $order->supplier?->name }}</td>
-                        <td><span class="badge badge-sm badge-ghost">{{ $order->status->label() }}</span></td>
-                    </tr>
-                @endforeach
-            </x-table>
-        </x-card>
+        <x-table :zebra="true" scroll="flex" :pinRows="true">
+            <x-slot:head>
+                <tr>
+                    <th>{{ __('procurement.field.number') }}</th>
+                    <th>{{ __('procurement.field.supplier') }}</th>
+                    <th>{{ __('Status') }}</th>
+                </tr>
+            </x-slot:head>
+            @foreach ($orders as $order)
+                <tr>
+                    <td><a href="{{ route('purchase-orders.show', $order) }}" class="link link-hover font-mono">{{ $order->number }}</a></td>
+                    <td>{{ $order->supplier?->name }}</td>
+                    <td><span class="badge badge-sm badge-ghost">{{ $order->status->label() }}</span></td>
+                </tr>
+            @endforeach
+        </x-table>
         <x-pagination :paginator="$orders" standing />
     @endif
 </x-index-page>

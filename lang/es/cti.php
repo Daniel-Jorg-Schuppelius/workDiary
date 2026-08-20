@@ -63,7 +63,26 @@ return [
     ],
 
     'flash' => [
+        'dial_saved' => 'Click-to-dial guardado.',
         'issued' => 'Conexión CTI emitida.',
         'disconnected' => 'Conexión CTI desactivada.',
+    ],
+
+    'dial' => [
+        'action' => 'Llamar',
+        'confirm' => '¿Iniciar una llamada a :number? La centralita llama primero a tu extensión.',
+        'started' => 'La llamada a :number se está estableciendo — descuelga tu extensión.',
+        'no_connection' => 'No hay ninguna conexión telefónica con marcación configurada (activa click-to-dial en los ajustes CTI).',
+        'not_configured' => 'A esta conexión le faltan el acceso API o la extensión.',
+        'no_base_url' => 'No hay dirección API guardada para esta centralita.',
+        'invalid_number' => 'Ese número no se puede marcar.',
+        'rejected' => 'La centralita rechazó la llamada (HTTP :status).',
+        'settings' => 'Click-to-dial',
+        'enabled' => 'Iniciar llamadas desde workDiary',
+        'api_token' => 'Token de API',
+        'api_token_help' => 'Déjalo vacío para conservar el token guardado.',
+        'api_base_url' => 'Dirección API',
+        'extension' => 'Extensión propia',
+        'extension_help' => 'Las llamadas salen de esta extensión; la centralita la llama primero.',
     ],
 ];

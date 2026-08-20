@@ -179,6 +179,11 @@ return [
     // Yasumi-Provider-Pfad (Feature 034); leer → config('holidays.provider').
     'holidays.provider' => ['type' => 'enum', 'scopes' => ['organization'], 'options_from' => [App\Support\HolidayRegions::class, 'providers']],
     'attendance.self_correction' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['request', 'self']],
+    // Zuschlags-Stacking (Feature 005; Audit 2026-08, W4.3): 'highest' = es
+    // gewinnt der hoechste Prozentsatz (Bestandsverhalten, Default),
+    // 'add' = ueberlappende Zuschlaege werden addiert (nach §3b EStG bei
+    // Nacht+Sonntag zulaessig; steuerliche Praxis vorher pruefen).
+    'surcharge.stacking' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['highest', 'add']],
 
     // --- Fahrtkosten (config/travel.php) ---
     'travel.enabled' => ['type' => 'boolean', 'scopes' => ['organization']],

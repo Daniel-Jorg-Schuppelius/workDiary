@@ -18,9 +18,9 @@
         @endif
         <x-validation-errors first />
 
+        <x-page-toolbar :subtitle="__('procurement.metal.hint')" />
+
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <h1 class="mb-1 font-['Space_Grotesk'] text-lg font-semibold">{{ __('procurement.metal.title') }}</h1>
-            <p class="mb-4 text-sm opacity-70">{{ __('procurement.metal.hint') }}</p>
 
             <form method="POST" action="{{ route('supplier-catalogs.metal-quotations.store') }}" class="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 @csrf

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Casts\{MoneyCast, PercentageCast};
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -32,6 +32,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class QuoteItem extends Model {
     use BelongsToOrganization;
+    use HasSqid;
 
     protected $fillable = [
         'organization_id', 'quote_id', 'position', 'description',

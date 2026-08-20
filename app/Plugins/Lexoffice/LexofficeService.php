@@ -175,7 +175,7 @@ class LexofficeService {
         }
         $vat = (string) $customer->vat_id;
         if ($vat !== '') {
-            $id = $this->searchByQuery(['name' => (string) ($customer->company ?: $customer->name)]);
+            $id = $this->searchByQuery(['name' => (string) ($customer->displayLabel())]);
             if ($id !== null) {
                 // Falls Name-Treffer existiert UND vat_id übereinstimmt, ist es ein sicherer Match.
                 return $id;

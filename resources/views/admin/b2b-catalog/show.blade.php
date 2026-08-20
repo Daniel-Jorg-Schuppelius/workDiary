@@ -27,22 +27,18 @@
             </div>
         @endif
 
+        <x-page-toolbar :title="$access->label"
+                        :badge="$access->isActive() ? __('b2b_catalog.status.active') : __('b2b_catalog.status.revoked')"
+                        :badge-tone="$access->isActive() ? 'success' : 'ghost'">
+            @if ($access->isActive())
+                <x-slot:actions>
+                    <x-icon-btn icon="download" tone="ghost" size="sm"
+                                :href="route('b2b-catalog.datanorm', $access)" show-label>{{ __('b2b_catalog.action.datanorm') }}</x-icon-btn>
+                </x-slot:actions>
+            @endif
+        </x-page-toolbar>
+
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
-                <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ $access->label }}</h1>
-                <div class="flex items-center gap-2">
-                    @if ($access->isActive())
-                        <a class="btn btn-ghost btn-sm gap-1" href="{{ route('b2b-catalog.datanorm', $access) }}">
-                            {{ __('b2b_catalog.action.datanorm') }}
-                        </a>
-                    @endif
-                    @if ($access->isActive())
-                        <span class="badge badge-success badge-sm">{{ __('b2b_catalog.status.active') }}</span>
-                    @else
-                        <span class="badge badge-ghost badge-sm">{{ __('b2b_catalog.status.revoked') }}</span>
-                    @endif
-                </div>
-            </div>
             <div class="mb-3 space-y-1 text-sm">
                 <div><span class="text-base-content/60">{{ __('b2b_catalog.field.customer') }}:</span> {{ $access->customer?->name }}</div>
                 <div><span class="text-base-content/60">{{ __('b2b_catalog.field.username') }}:</span> <code class="rounded bg-base-200 px-1.5 py-0.5 text-xs">{{ $access->username }}</code></div>

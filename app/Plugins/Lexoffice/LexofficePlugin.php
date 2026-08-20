@@ -12,7 +12,7 @@ namespace App\Plugins\Lexoffice;
 
 use App\Models\{Customer, ExternalReference, Organization, PluginSetting, Supplier, TimeEntry};
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\{ContactSyncer, Plugin, PluginCapability, SlotRenderer, TimeExporter};
+use App\Plugins\Contracts\{ContactSyncer, PaymentSyncer, Plugin, PluginCapability, SlotRenderer, TimeExporter};
 use Carbon\CarbonImmutable;
 use GuzzleHttp\Exception\ConnectException;
 use Throwable;
@@ -27,7 +27,7 @@ use Throwable;
  * Mappings between local entities and Lexoffice ids are persisted in the
  * external_references table. The plugin id is "lexoffice".
  */
-class LexofficePlugin extends AbstractPlugin implements ContactSyncer, SlotRenderer, TimeExporter {
+class LexofficePlugin extends AbstractPlugin implements ContactSyncer, PaymentSyncer, SlotRenderer, TimeExporter {
     public const ID = 'lexoffice';
 
     public const SERVICE_PROVIDER = LexofficeServiceProvider::class;
@@ -58,15 +58,41 @@ class LexofficePlugin extends AbstractPlugin implements ContactSyncer, SlotRende
         // (nicht env/Singleton). Ohne Key (kein Kontext/env leer) greift der injizierte Service (DI/Tests/Single-Tenant).
         $config = LexofficeConfig::resolve();
         if (! empty($config['api_key'])) {
-            return $this->checkService(new LexofficeService(
+            $health = $this->checkService(new LexofficeService(
                 apiKey: $config['api_key'],
                 mapper: new LexofficeMapper,
                 defaults: $config['defaults'],
                 baseUrl: $config['base_url'],
             ));
+
+            return $this->withWebhookState($health, $config);
         }
 
         return $this->checkService($this->service);
+    }
+
+    /**
+     * Webhook-Zustand (Welle 1.3): Ist ein URL-Token hinterlegt, müssen
+     * drüben auch Subscriptions existieren — sonst laufen die Events ins
+     * Leere und der geplante Sync ist die einzige Quelle.
+     *
+     * @param  array{api_key: ?string, base_url: string, webhook_secret: ?string}  $config
+     */
+    private function withWebhookState(PluginHealth $health, array $config): PluginHealth {
+        if (! $health->isOk() || ! is_string($config['webhook_secret']) || $config['webhook_secret'] === '') {
+            return $health;
+        }
+
+        try {
+            $subscriptions = (new LexofficeWebhookService($config['api_key'], $config['base_url']))->subscriptions();
+        } catch (Throwable) {
+            // Zustand nicht ermittelbar (transient) — Ping war ok, kein Downgrade.
+            return $health;
+        }
+
+        return $subscriptions === []
+            ? PluginHealth::degraded(__('Lexoffice-Webhooks eingerichtet, aber keine aktiven Event-Subscriptions — lexoffice:webhooks ausführen.'), 'webhooks_missing')
+            : $health;
     }
 
     /** Klassifiziert einen einzelnen /profile-Ping eines konkreten Service. */
@@ -121,7 +147,31 @@ class LexofficePlugin extends AbstractPlugin implements ContactSyncer, SlotRende
     public function capabilities(): array {
         return [
             PluginCapability::ContactSync,
+            PluginCapability::PaymentSync,
             PluginCapability::TimeExport,
+        ];
+    }
+
+    /**
+     * Zahlungsabgleich (Audit 2026-08, Welle 1.5): holt für als bezahlt
+     * gemeldete Belege das Zahldatum nach (`GET /payments/{id}`) — Grundlage
+     * für Zahldauer/DSO auch bei externer Rechnungshoheit. Die Capability
+     * bildet damit ab, was der VoucherSync ohnehin tut; SevDesk/Easybill/
+     * orgaMAX lesen KEINEN Zahlungsstatus zurück (dort ist
+     * `ReconcilesByMarker` reine Übergabe-Idempotenz) und deklarieren die
+     * Fähigkeit deshalb bewusst nicht.
+     *
+     * @return array<string, int|string>
+     */
+    public function syncPayments(Organization $organization): array {
+        $config = LexofficeConfig::resolve((int) $organization->id);
+        if (! is_string($config['api_key']) || $config['api_key'] === '') {
+            return ['paid_dates' => 0, 'error' => (string) __('Lexoffice ist nicht konfiguriert.')];
+        }
+
+        return [
+            'paid_dates' => (new LexofficeVoucherSync($config['api_key'], $config['base_url']))
+                ->enrichPaidDates((int) $organization->id),
         ];
     }
 

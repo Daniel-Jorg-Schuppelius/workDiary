@@ -79,7 +79,18 @@ $statusOf = static function (string $path): string {
     return trim((string) preg_replace('/\s+/', ' ', $m[1]));
 };
 
+/** Ganzer „## Status"-Block (für die Klammer-Heuristik). */
+$statusBlockOf = static function (string $path): string {
+    $text = (string) file_get_contents($path);
+    if (! preg_match('/^## Status\s*\n(.*?)(?=^## |\z)/ms', $text, $m)) {
+        return '';
+    }
+
+    return mb_strtolower($m[1]);
+};
+
 $mismatch = [];
+$staleParens = [];
 $checked = 0;
 
 foreach (file($readme, FILE_IGNORE_NEW_LINES) ?: [] as $line) {
@@ -104,6 +115,26 @@ foreach (file($readme, FILE_IGNORE_NEW_LINES) ?: [] as $line) {
     if ($isDone($fileStatus) !== $isDone($registerStatus)) {
         $mismatch[] = [$file, $registerStatus, mb_substr($fileStatus, 0, 110), $name];
     }
+
+    // Klammer-Heuristik (Audit 2026-08): Der Grobstufen-Vergleich oben sieht
+    // „Done (X offen)" und „Done" als gleich — die Klammertexte driften daher
+    // unbemerkt. Meldet, wenn das Register noch Offenes in der Klammer führt,
+    // der Statusblock der Datei aber nichts Offenes mehr kennt. Nur Warnung:
+    // der Wortlaut ist bewusst frei.
+    if (preg_match('/done\s*\([^)]*offen[^)]*\)/iu', $registerStatus)) {
+        $block = $statusBlockOf($path);
+        if ($block !== '' && ! str_contains($block, 'offen')) {
+            $staleParens[] = [$file, $registerStatus, $name];
+        }
+    }
+}
+
+if ($staleParens !== []) {
+    echo "Warnung — Register-Klammern vermutlich veraltet (Datei kennt nichts Offenes mehr):\n";
+    foreach ($staleParens as [$file, $register, $name]) {
+        echo "- {$name} ({$file}): Register „{$register}\"\n";
+    }
+    echo "\n";
 }
 
 if ($mismatch === []) {

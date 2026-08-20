@@ -32,6 +32,9 @@ class ClockifyApiClient implements RemoteTimeWriter {
 
     public const PAGE_SIZE = 1000;
 
+    /** Projekte-Endpunkt erlaubt maximal 200 je Seite. */
+    public const PROJECT_PAGE_SIZE = 200;
+
     private ?PluginApiClient $api = null;
 
     public function __construct(
@@ -104,6 +107,57 @@ class ClockifyApiClient implements RemoteTimeWriter {
         } while (count($batch) === self::PAGE_SIZE);
 
         return $rows;
+    }
+
+    /**
+     * Aktive (nicht archivierte) Projekte des Workspace, seitenweise
+     * vollständig — Grundlage des Export-Mappings (Name → String-ID).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function workspaceProjects(): array {
+        $workspaceId = $this->resolveWorkspaceId();
+
+        $rows = [];
+        $page = 1;
+
+        do {
+            $response = $this->api()->getResponse($this->url(
+                $this->baseUrl,
+                '/v1/workspaces/' . $workspaceId . '/projects?archived=false&page-size=' . self::PROJECT_PAGE_SIZE . '&page=' . $page,
+            ));
+            $this->assertOk($response, '/projects');
+
+            /** @var list<array<string, mixed>> $batch */
+            $batch = array_values((array) $response->json());
+            $rows = array_merge($rows, $batch);
+            $page++;
+        } while (count($batch) === self::PROJECT_PAGE_SIZE);
+
+        return $rows;
+    }
+
+    /**
+     * Legt einen Zeiteintrag an — immer für den Inhaber des API-Keys
+     * (Clockify-Limitierung, analog Toggl v9).
+     *
+     * @return array<string, mixed>
+     */
+    public function createTimeEntry(CarbonImmutable $start, CarbonImmutable $end, string $description, string $projectId, bool $billable): array {
+        $response = $this->api()->postJson(
+            $this->url($this->baseUrl, '/v1/workspaces/' . $this->resolveWorkspaceId() . '/time-entries'),
+            [
+                'start' => $start->utc()->format('Y-m-d\TH:i:s\Z'),
+                'end' => $end->utc()->format('Y-m-d\TH:i:s\Z'),
+                'description' => $description,
+                'projectId' => $projectId,
+                'billable' => $billable,
+            ],
+        );
+        $this->assertOk($response, '/time-entries');
+
+        /** @var array<string, mixed> */
+        return (array) $response->json();
     }
 
     /**

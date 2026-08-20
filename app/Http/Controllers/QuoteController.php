@@ -191,7 +191,7 @@ class QuoteController extends Controller {
         $data = $request->validate([
             'decision' => ['required', 'in:accept,reject'],
             'item_ids' => ['nullable', 'array'],
-            'item_ids.*' => ['integer'],
+            'item_ids.*' => ['string'],
             'reason' => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -200,7 +200,11 @@ class QuoteController extends Controller {
                 $itemIds = null;
                 if (! empty($data['item_ids'])) {
                     // Nur eigene Positionen dieses Angebots zulassen.
-                    $itemIds = $quote->items()->whereIn('id', array_map('intval', $data['item_ids']))->pluck('id')->map(fn($id): int => (int) $id)->all();
+                    $requested = array_filter(array_map(
+                        static fn (string $v): ?int => \App\Support\Sqid::decodeOrNumeric(QuoteItem::class, $v),
+                        $data['item_ids'],
+                    ));
+                    $itemIds = $quote->items()->whereIn('id', $requested)->pluck('id')->map(fn($id): int => (int) $id)->all();
                 }
                 $this->quotes->accept($quote, $itemIds);
             } else {
@@ -258,14 +262,19 @@ class QuoteController extends Controller {
         $data = $request->validate([
             'decision' => ['required', 'in:accept,reject'],
             'item_ids' => ['nullable', 'array'],
-            'item_ids.*' => ['integer'],
+            'item_ids.*' => ['string'],
         ]);
 
         try {
             if ($data['decision'] === 'accept') {
                 $itemIds = null;
                 if (! empty($data['item_ids'])) {
-                    $itemIds = $quote->items()->whereIn('id', array_map('intval', $data['item_ids']))->pluck('id')->map(fn($id): int => (int) $id)->all();
+                    // Öffentlicher Endpunkt: nur Sqids, kein numerischer Fallback.
+                    $requested = array_filter(array_map(
+                        static fn (string $v): ?int => \App\Support\Sqid::decode(QuoteItem::class, $v),
+                        $data['item_ids'],
+                    ));
+                    $itemIds = $quote->items()->whereIn('id', $requested)->pluck('id')->map(fn($id): int => (int) $id)->all();
                 }
                 $this->quotes->accept($quote, $itemIds, $token);
             } else {

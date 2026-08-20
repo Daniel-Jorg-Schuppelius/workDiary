@@ -21,7 +21,7 @@ use App\Plugins\Support\PluginSettingsResolver;
  */
 class LexofficeConfig {
     /**
-     * @return array{api_key: ?string, base_url: string, defaults: array<string, mixed>, match_policy: string, create_missing_local: bool, number_authority: bool, enabled: bool}
+     * @return array{api_key: ?string, base_url: string, defaults: array<string, mixed>, match_policy: string, create_missing_local: bool, number_authority: bool, webhook_secret: ?string, webhook_public_key: ?string, enabled: bool}
      */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(LexofficePlugin::ID, $organizationId);
@@ -37,6 +37,8 @@ class LexofficeConfig {
             'match_policy' => $r->string('match_policy') ?? 'manual_review',
             'create_missing_local' => $r->bool('create_missing_local', false),
             'number_authority' => $r->bool('number_authority', false),
+            'webhook_secret' => $r->string('webhook_secret'),
+            'webhook_public_key' => $r->string('webhook_public_key'),
             'enabled' => $r->enabled(),
         ];
     }

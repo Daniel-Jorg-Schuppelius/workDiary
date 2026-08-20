@@ -31,6 +31,8 @@ return [
         'config_missing' => 'Configuración faltante',
         'support_grant_open' => 'Autorización de soporte abierta',
         'problem_report_open' => 'Informe de problema abierto',
+        'cloud_intake_reauth' => 'Entrada en la nube: se requiere iniciar sesión',
+        'cloud_intake_quarantined' => 'Entrada en la nube: importaciones rechazadas',
     ],
     'severity' => [
         'info' => 'Aviso',
@@ -85,6 +87,8 @@ return [
         'support_grant_open' => 'Autorización de soporte para :grantee activa hasta :until.',
         'problem_report_open' => 'El informe :reference de :name espera su tramitación.',
         'problem_report_summary' => ':count informe(s) de problemas abiertos esperan tramitación.',
+        'cloud_intake_reauth' => 'La entrada de documentos en la nube :provider (“:folder”) necesita volver a conectarse (:status).',
+        'cloud_intake_quarantined' => ':count archivo(s) de la entrada de documentos en la nube fueron rechazados (último motivo: :reason).',
         'support_grant_summary' => ':count autorización(es) de soporte activa(s): revisar y revocar si es necesario.',
     ],
     'filter' => [

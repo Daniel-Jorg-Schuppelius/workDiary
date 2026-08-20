@@ -69,6 +69,7 @@ return [
             'not_configured' => 'Dropbox app keys not configured.',
             'no_org_context' => 'No organisation context (system run).',
             'attention' => 'At least one Dropbox connection needs attention (re-auth/blocked).',
+            'backup_attention' => 'The Dropbox backup target needs attention (re-auth/blocked) — affects all organizations.',
             'ok' => 'Dropbox connections healthy.',
             'error' => 'Health check failed (:class).',
         ],
@@ -79,6 +80,7 @@ return [
             'not_configured' => 'Google Drive client keys not configured.',
             'no_org_context' => 'No organisation context (system run).',
             'attention' => 'At least one Google Drive connection needs attention (re-auth/blocked).',
+            'backup_attention' => 'The Google Drive backup target needs attention (re-auth/blocked) — affects all organizations.',
             'ok' => 'Google Drive connections healthy.',
             'error' => 'Health check failed (:class).',
         ],
@@ -88,6 +90,7 @@ return [
         'health' => [
             'no_org_context' => 'No organization context (system run).',
             'attention' => 'At least one Nextcloud connection needs attention (re-auth/blocked).',
+            'backup_attention' => 'The Nextcloud backup target needs attention (re-auth/blocked) — affects all organizations.',
             'ok' => 'Nextcloud connections are healthy.',
             'error' => 'Health check failed (:class).',
         ],
@@ -135,5 +138,44 @@ return [
         'revision' => 'Revision',
         'reason' => 'Reason',
         'when' => 'When',
+    ],
+    // Import report (feature 080 P9; audit 2026-08, W4.4).
+    'report' => [
+        'title' => 'Cloud document intake report',
+        'nav' => 'Cloud document intake',
+        'subtitle' => 'Imported and rejected documents in the period',
+        'kpi' => [
+            'total' => 'Items total',
+            'imported' => 'Imported',
+            'inbox' => 'In the matching inbox',
+            'rejected' => 'Rejected',
+        ],
+        'chart' => [
+            'per_period' => 'Items :per',
+            'by_provider' => 'Items per provider',
+        ],
+        'unit' => ['documents' => 'Documents'],
+        'section' => [
+            'connections' => 'Connections',
+            'reasons' => 'Rejection reasons',
+            'items' => 'Items',
+        ],
+        'column' => [
+            'folder' => 'Folder',
+            'provider' => 'Provider',
+            'status' => 'Status',
+            'imported' => 'Imported',
+            'rejected' => 'Rejected',
+            'last_run' => 'Last run',
+            'reason' => 'Reason',
+            'count' => 'Count',
+            'date' => 'Time',
+            'path' => 'Source path',
+        ],
+        'empty' => [
+            'connections' => 'No cloud connection linked yet.',
+            'reasons' => 'No rejections in the selected period.',
+            'items' => 'No data yet in the selected period.',
+        ],
     ],
 ];

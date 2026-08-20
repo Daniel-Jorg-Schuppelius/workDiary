@@ -12,11 +12,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\{Organization, Project, ProjectMergeDismissal, User};
+use App\Http\Controllers\Concerns\MergesDuplicates;
+use App\Models\{Organization, Project, ProjectMergeDismissal};
 use App\Services\{ProjectDuplicateFinder, ProjectMergeService};
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
@@ -25,15 +25,17 @@ use Illuminate\View\View;
  * Toggl-Import). Analog zum {@see CustomerMergeController}.
  */
 class ProjectMergeController extends Controller {
-    public function index(Request $request, ProjectDuplicateFinder $finder): View {
-        $user = $this->authorizeBilling();
+    /** @use MergesDuplicates<Project> */
+    use MergesDuplicates;
 
-        $confidence = (string) $request->input('confidence', 'all');
-        $only = in_array($confidence, [
+    public function index(Request $request, ProjectDuplicateFinder $finder): View {
+        $user = $this->authorizeMerging();
+
+        $only = $this->resolveConfidenceFilter($request, [
             ProjectDuplicateFinder::CONF_EXACT,
             ProjectDuplicateFinder::CONF_LIKELY,
             ProjectDuplicateFinder::CONF_FUZZY,
-        ], true) ? $confidence : null;
+        ]);
 
         $organization = $user->organization;
         abort_unless($organization instanceof Organization, 403);
@@ -53,10 +55,9 @@ class ProjectMergeController extends Controller {
      * „Felder wählen…"-Pfad der Auto-Vorschläge.
      */
     public function compare(Request $request): View {
-        $this->authorizeBilling();
+        $this->authorizeMerging();
 
-        [$source, $target] = $this->resolvePair($request);
-        abort_if($source->getKey() === $target->getKey(), 422);
+        [$source, $target] = $this->resolveDistinctMergePair($request);
 
         return view('projects.merge-compare', [
             'source' => $source,
@@ -65,29 +66,12 @@ class ProjectMergeController extends Controller {
     }
 
     public function merge(Request $request, ProjectMergeService $merger): RedirectResponse {
-        $this->authorizeBilling();
-
-        [$source, $target] = $this->resolvePair($request);
-        abort_if($source->getKey() === $target->getKey(), 422);
-
-        // Optionale Feldauswahl: angehakte Felder werden aus der Quelle übernommen.
-        $overrides = [];
-        foreach ((array) $request->input('prefer_source', []) as $field) {
-            $overrides[(string) $field] = $source->getAttribute((string) $field);
-        }
-
-        try {
-            $merger->merge($source, $target, $overrides);
-        } catch (\InvalidArgumentException $e) {
-            throw ValidationException::withMessages(['source' => $e->getMessage()]);
-        }
-
-        return redirect()
-            ->route('projects.duplicates.index')
-            ->with('success', __('Projekt „:source" wurde in „:target" zusammengeführt.', [
-                'source' => $source->name,
-                'target' => $target->name,
-            ]));
+        return $this->performMerge(
+            $request,
+            static function (Project $source, Project $target, array $overrides) use ($merger): void {
+                $merger->merge($source, $target, $overrides);
+            },
+        );
     }
 
     /**
@@ -97,52 +81,18 @@ class ProjectMergeController extends Controller {
      * (überlappende Vorschläge) oder die der Service ablehnt, werden übersprungen.
      */
     public function bulkMerge(Request $request, ProjectMergeService $merger): RedirectResponse {
-        $this->authorizeBilling();
-
-        $data = $request->validate([
-            'pairs' => ['required', 'array', 'min:1'],
-            'pairs.*' => ['string'],
-        ]);
-
-        $binder = new Project;
-        $merged = 0;
-        $skipped = 0;
-
-        foreach ($data['pairs'] as $raw) {
-            [$sourceSqid, $targetSqid] = array_pad(explode(':', (string) $raw, 2), 2, null);
-            if ((string) $sourceSqid === '' || (string) $targetSqid === '') {
-                $skipped++;
-                continue;
-            }
-
-            $source = $binder->resolveRouteBinding((string) $sourceSqid);
-            $target = $binder->resolveRouteBinding((string) $targetSqid);
-            if (! $source instanceof Project || ! $target instanceof Project || $source->getKey() === $target->getKey()) {
-                $skipped++;
-                continue;
-            }
-
-            try {
+        return $this->performBulkMerge(
+            $request,
+            static function (Project $source, Project $target) use ($merger): void {
                 $merger->merge($source, $target);
-                $merged++;
-            } catch (\InvalidArgumentException) {
-                $skipped++;
-            }
-        }
-
-        return redirect()
-            ->route('projects.duplicates.index')
-            ->with('success', __(':merged Paar(e) zusammengeführt, :skipped übersprungen.', [
-                'merged' => $merged,
-                'skipped' => $skipped,
-            ]));
+            },
+        );
     }
 
     public function dismiss(Request $request): RedirectResponse {
-        $user = $this->authorizeBilling();
+        $user = $this->authorizeMerging();
 
-        [$source, $target] = $this->resolvePair($request);
-        abort_if($source->getKey() === $target->getKey(), 422);
+        [$source, $target] = $this->resolveDistinctMergePair($request);
 
         ProjectMergeDismissal::query()->updateOrCreate(
             ProjectMergeDismissal::pairKey((int) $source->getKey(), (int) $target->getKey()),
@@ -157,25 +107,19 @@ class ProjectMergeController extends Controller {
             ->with('success', __('Paar als „kein Duplikat" gemerkt.'));
     }
 
-    /**
-     * Löst die beiden Projekte aus den Sqid-Eingaben auf (mandanten-gescopt über
-     * den Global Scope des Route-Bindings).
-     *
-     * @return array{0: Project, 1: Project}  [Quelle, Ziel]
-     */
-    private function resolvePair(Request $request): array {
-        $request->validate([
-            'source' => ['required', 'string'],
-            'target' => ['required', 'string'],
+    protected function mergeModelClass(): string {
+        return Project::class;
+    }
+
+    protected function mergeIndexRoute(): string {
+        return 'projects.duplicates.index';
+    }
+
+    protected function mergedMessage(Model $source, Model $target): string {
+        return (string) __('Projekt „:source" wurde in „:target" zusammengeführt.', [
+            'source' => $source->name,
+            'target' => $target->name,
         ]);
-
-        $binder = new Project;
-        $source = $binder->resolveRouteBinding((string) $request->input('source'));
-        $target = $binder->resolveRouteBinding((string) $request->input('target'));
-
-        abort_unless($source instanceof Project && $target instanceof Project, 404);
-
-        return [$source, $target];
     }
 
     /**
@@ -193,11 +137,4 @@ class ProjectMergeController extends Controller {
             ->get(['id', 'name', 'number', 'customer_id', 'foreign_customer_id']);
     }
 
-    private function authorizeBilling(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->canManageBilling(), 403);
-
-        return $user;
-    }
 }

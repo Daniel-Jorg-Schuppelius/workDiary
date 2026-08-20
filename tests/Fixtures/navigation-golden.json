@@ -127,6 +127,7 @@
             "/reports/attendance",
             "/reports/audit-activity",
             "/reports/billing",
+            "/reports/cloud-intake",
             "/reports/cohort-comparison",
             "/reports/coverage",
             "/reports/customer-project",

@@ -29,7 +29,7 @@
         @if ($isEdit)
             <div class="fieldset" span="2">
                 <span class="fieldset-label">{{ __('Kunde') }}</span>
-                <p class="text-sm">{{ $schedule->customer?->company ?: $schedule->customer?->name ?? '—' }}</p>
+                <p class="text-sm">{{ $schedule->customer?->displayLabel() ?? '—' }}</p>
             </div>
         @else
             <div class="fieldset">
@@ -38,7 +38,7 @@
                     <option value="">{{ __('Bitte wählen') }}</option>
                     @foreach ($customers as $customer)
                         @php($csqid = \App\Support\Sqid::encode(\App\Models\Customer::class, (int) $customer->id))
-                        <option value="{{ $csqid }}" @selected($selectedCustomer === $csqid)>{{ $customer->company ?: $customer->name }}</option>
+                        <option value="{{ $csqid }}" @selected($selectedCustomer === $csqid)>{{ $customer->displayLabel() }}</option>
                     @endforeach
                 </select>
                 @error('customer_id')<p class="text-error text-sm">{{ $message }}</p>@enderror

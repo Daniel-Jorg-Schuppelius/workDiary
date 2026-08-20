@@ -12,11 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\BuchhaltungsButler;
 
-use App\Models\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\BuchhaltungsButler\Api\{BhbApiException, BhbClientFactory};
 use App\Plugins\Contracts\Plugin;
-use App\Plugins\Support\PluginOrgContext;
 use Throwable;
 
 /**
@@ -52,6 +50,11 @@ class BuchhaltungsButlerPlugin extends AbstractPlugin {
     }
 
     /** @return array<int, \App\Plugins\Contracts\PluginCapability> Push läuft über Observer + integration_outbox. */
+    /**
+     * Bewusst leer: Belegübergabe läuft über die
+     * {@see \App\Services\Finance\Targets\FacturationTargetRegistry}
+     * (Audit 2026-08, W1.6).
+     */
     public function capabilities(): array {
         return [];
     }
@@ -67,9 +70,9 @@ class BuchhaltungsButlerPlugin extends AbstractPlugin {
     }
 
     public function healthCheck(): PluginHealth {
-        $organization = PluginOrgContext::currentOrNull();
-        if (! $organization instanceof Organization) {
-            return PluginHealth::ok(__('Keine Organisation im Kontext.'));
+        $organization = $this->healthOrgContext();
+        if ($organization instanceof PluginHealth) {
+            return $organization;
         }
 
         $config = BhbConfig::resolve((int) $organization->id);

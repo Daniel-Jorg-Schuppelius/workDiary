@@ -12,10 +12,12 @@ namespace App\Services\Sync;
 
 use App\Enums\Sync\SyncCommandStatus;
 use App\Http\Controllers\FormSubmissionController;
-use App\Models\{Attendance, AuditLog, Comment, DiaryEntry, FormSubmission, FormTemplate, SyncCommand, User};
+use App\Models\{Attendance, AuditLog, Comment, DiaryEntry, FormSubmission, FormTemplate, SyncCommand, TimeCorrectionRequest, User};
 use App\Services\Attendance\AttendanceClockService;
 use App\Services\Form\FormService;
+use App\Services\TimeApproval\TimeCorrectionService;
 use App\Support\{Setting, Sqid};
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\{DB, Gate, Validator};
@@ -44,11 +46,17 @@ class SyncCommandService {
         'attendance.clock-out',
         'comment.diary',
         'form.submission',
+        // Erster ÄNDERNDER Befehl (Feature 035 Phase 3; Audit 2026-08, W4.1):
+        // vergessene/falsche Stempelzeit offline nachtragen. Läuft NICHT am
+        // Genehmigungsweg vorbei — er erzeugt einen TimeCorrectionRequest und
+        // wendet ihn nur an, wenn die Organisation Selbstkorrektur erlaubt.
+        'attendance.correct',
     ];
 
     public function __construct(
         private readonly AttendanceClockService $clock,
         private readonly FormService $forms,
+        private readonly TimeCorrectionService $corrections,
     ) {}
 
     /**
@@ -103,6 +111,10 @@ class SyncCommandService {
             throw $e;
         } catch (ValidationException $e) {
             return $this->reject($user, $command, $e->errors());
+        } catch (SyncConflictException $e) {
+            // VOR dem RuntimeException-Zweig: der Konflikt ist eine Unterklasse
+            // und darf nicht als Ablehnung durchrutschen.
+            return $this->conflict($user, $command, $e);
         } catch (RuntimeException $e) {
             return $this->reject($user, $command, ['command' => [$e->getMessage()]]);
         }
@@ -121,6 +133,7 @@ class SyncCommandService {
             'attendance.clock-out' => $this->clockOut($user, $payload),
             'comment.diary' => $this->commentDiary($user, $payload),
             'form.submission' => $this->formSubmission($user, $payload),
+            'attendance.correct' => $this->attendanceCorrect($user, $payload),
             default => throw new RuntimeException('Unbekannter Sync-Befehlstyp: ' . $type),
         };
     }
@@ -213,9 +226,14 @@ class SyncCommandService {
     }
 
     /**
-     * Formular offline ausfüllen (Phase 3, MVP-367): nur Werte — Datei-/
-     * Unterschriftsfelder bleiben dem Online-Weg vorbehalten (Konzept §5);
-     * Pflicht-Anhänge lehnt FormService::submit als ValidationException ab.
+     * Formular offline ausfüllen (Phase 3, MVP-367): Werte plus — seit dem
+     * Audit 2026-08 (W4.1) — angekündigte Foto-/Datei-Felder (`pending_files`).
+     * Die Abgabe entsteht sofort und trägt einen Nachreich-Marker; die Inhalte
+     * lädt der Client danach über `api.internal.sync.attachments` hoch. Ohne
+     * diese Ankündigung würde ein Pflicht-Fotofeld die ganze Abgabe abweisen —
+     * genau der Fall, der die Foto-Queue nötig machte.
+     *
+     * Unterschriften bleiben dem Online-Weg vorbehalten (Konzept §5).
      *
      * @param  array<string, mixed>  $payload
      */
@@ -229,6 +247,10 @@ class SyncCommandService {
             'subject_kind' => ['nullable', 'string', Rule::in(array_keys(FormSubmissionController::SUBJECT_MAP))],
             'subject_id' => ['nullable', 'string', 'required_with:subject_kind'],
             'values' => ['nullable', 'array'],
+            // Offline erfasste Foto-/Datei-Felder: der Inhalt kommt separat
+            // über `api.internal.sync.attachments` nach (Audit 2026-08, W4.1).
+            'pending_files' => ['nullable', 'array'],
+            'pending_files.*' => ['string', 'max:64'],
         ]);
 
         $templateId = Sqid::decodeOrNumeric(FormTemplate::class, $data['template']);
@@ -246,9 +268,112 @@ class SyncCommandService {
             $subject = $this->resolveFormSubject((string) $data['subject_kind'], (string) ($data['subject_id'] ?? ''));
         }
 
-        $submission = $this->forms->submit($template, $subject, (array) ($data['values'] ?? []), $user);
+        $submission = $this->forms->submit(
+            $template,
+            $subject,
+            (array) ($data['values'] ?? []),
+            $user,
+            deferredKeys: array_values(array_filter((array) ($data['pending_files'] ?? []), 'is_string')),
+        );
 
         return 'form_submissions:' . $submission->id;
+    }
+
+    /**
+     * Stempelzeit offline korrigieren (Feature 035 Phase 3; Audit 2026-08,
+     * W4.1) — der erste ÄNDERNDE Befehl.
+     *
+     * Zwei Leitplanken, die ihn vom bloßen „Update" unterscheiden:
+     *
+     *  1. **Optimistische Sperre über `base_version`.** Das Gerät nennt den
+     *     Stand, den es gesehen hat. Weicht der aktuelle ab, ist das ein
+     *     Konflikt und KEINE Ablehnung — der Nutzer entscheidet.
+     *  2. **Kein Vorbeigehen am Genehmigungsweg.** Die Korrektur läuft als
+     *     {@see \App\Models\TimeCorrectionRequest} durch denselben Workflow
+     *     wie online; direkt angewendet wird sie nur, wenn die Organisation
+     *     Selbstkorrektur erlaubt — sonst bleibt sie eingereicht und wartet.
+     *     Nur EIGENE Stempel: „im Namen von" braucht eine Rechteprüfung im
+     *     Dialog und ist offline nicht sinnvoll abbildbar.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    private function attendanceCorrect(User $user, array $payload): string {
+        if (! Gate::forUser($user)->allows('create', TimeCorrectionRequest::class)) {
+            throw new RuntimeException((string) __('Keine Berechtigung für Zeitkorrekturen.'));
+        }
+
+        $data = $this->validatePayload($payload, [
+            'attendance' => ['required', 'string'],
+            'base_version' => ['required', 'string', 'max:64'],
+            'started_at' => ['nullable', 'date'],
+            'ended_at' => ['nullable', 'date', 'after:started_at'],
+            'break_minutes' => ['nullable', 'integer', 'min:0', 'max:600'],
+            'reason' => ['required', 'string', 'min:20', 'max:4000'],
+        ]);
+
+        /** @var Attendance|null $attendance */
+        $attendance = Attendance::query()
+            ->whereKey(Sqid::decodeOrNumeric(Attendance::class, (string) $data['attendance']))
+            ->where('user_id', $user->id)
+            ->first();
+
+        if ($attendance === null) {
+            throw new RuntimeException((string) __('Stempelung nicht gefunden.'));
+        }
+
+        $current = $attendance->correctionVersion();
+        if ($current !== (string) $data['base_version']) {
+            throw new SyncConflictException(
+                (string) __('Die Stempelung wurde zwischenzeitlich geändert.'),
+                [
+                    'started_at' => $attendance->started_at?->toIso8601String(),
+                    'ended_at' => $attendance->ended_at?->toIso8601String(),
+                    'break_minutes' => (int) ($attendance->break_minutes_manual ?? 0),
+                ],
+                $current,
+            );
+        }
+
+        $before = [
+            'started_at' => $attendance->started_at?->toDateTimeString(),
+            'ended_at' => $attendance->ended_at?->toDateTimeString(),
+            'break_minutes_manual' => (int) ($attendance->break_minutes_manual ?? 0),
+        ];
+        $after = $before;
+        if (array_key_exists('started_at', $data) && $data['started_at'] !== null) {
+            $after['started_at'] = CarbonImmutable::parse((string) $data['started_at'])->toDateTimeString();
+        }
+        if (array_key_exists('ended_at', $data) && $data['ended_at'] !== null) {
+            $after['ended_at'] = CarbonImmutable::parse((string) $data['ended_at'])->toDateTimeString();
+        }
+        if (array_key_exists('break_minutes', $data) && $data['break_minutes'] !== null) {
+            $after['break_minutes_manual'] = (int) $data['break_minutes'];
+        }
+
+        if ($after === $before) {
+            throw new RuntimeException((string) __('Die Korrektur enthält keine Änderung.'));
+        }
+
+        $request = $this->corrections->createDraft(
+            $user,
+            CarbonImmutable::parse($attendance->date?->toDateString() ?? $attendance->started_at?->toDateString() ?? 'today'),
+            (string) $data['reason'],
+            [[
+                'target_type' => Attendance::class,
+                'target_id' => (int) $attendance->id,
+                'action' => 'update',
+                'before' => $before,
+                'after' => $after,
+            ]],
+            $user,
+        );
+
+        $request = $this->corrections->submit($request, $user);
+        if ($this->corrections->selfApplicable($request)) {
+            $this->corrections->selfApply($request);
+        }
+
+        return 'time_correction_requests:' . $request->id;
     }
 
     /** Subjekt-Auflösung über die Whitelist des Online-Wegs (org-gescopt). */
@@ -298,6 +423,34 @@ class SyncCommandService {
     }
 
     /**
+     * Konflikt registrieren und den Server-Stand mitgeben — der Client zeigt
+     * beide Fassungen nebeneinander (§3.3).
+     *
+     * @param  array{client_uuid: string, type: string, payload?: array<string, mixed>, captured_at?: string|null}  $command
+     * @return array{client_uuid: string, status: string, ref: string|null, errors: array<string, mixed>|null, conflict?: array<string, mixed>}
+     */
+    private function conflict(User $user, array $command, SyncConflictException $e): array {
+        $errors = ['command' => [$e->getMessage()]];
+
+        try {
+            DB::transaction(function () use ($user, $command, $errors): void {
+                $this->record($user, $command, SyncCommandStatus::Conflict, null, $errors);
+            });
+        } catch (QueryException $qe) {
+            if (! $this->isDuplicateKey($qe)) {
+                throw $qe;
+            }
+        }
+
+        return $this->response($command['client_uuid'], SyncCommandStatus::Conflict, null, $errors) + [
+            'conflict' => [
+                'server' => $e->serverState,
+                'current_version' => $e->currentVersion,
+            ],
+        ];
+    }
+
+    /**
      * @param  array{client_uuid: string, type: string, payload?: array<string, mixed>, captured_at?: string|null}  $command
      * @param  array<string, mixed>|null  $errors
      */
@@ -324,7 +477,7 @@ class SyncCommandService {
      */
     private function sanitizedPayload(array $command): array {
         $payload = $command['payload'] ?? [];
-        unset($payload['body'], $payload['note'], $payload['values']);
+        unset($payload['body'], $payload['note'], $payload['values'], $payload['reason']);
 
         return $payload;
     }

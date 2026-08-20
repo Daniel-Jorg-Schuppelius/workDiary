@@ -54,68 +54,66 @@
             <x-kpi-tile :label="__('Strecke (Δ)')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($totals['distance'], 0, withThousandsSeparator: true) . ' km'" />
         </div>
 
-        <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-            <x-table table-sort="server"
-                     :route="route('energy-logs.index')"
-                     :current-sort="$sort ?? null"
-                     :current-dir="$dir ?? 'desc'"
-                     :sort-params="array_filter([
-                         'from' => $from->toDateString(),
-                         'to' => $to->toDateString(),
-                         'user' => request('user') === 'all'
-                             ? 'all'
-                             : (request()->filled('user') ? $targetUser?->sqid : null),
-                         'vehicle' => $selectedVehicleSqid ?? null,
-                     ], fn ($v) => $v !== null && $v !== '')"
-                     bare scroll="flex" :pinRows="true">
-                <x-slot:head>
-                    <tr>
-                        <x-table.th sort="started_at" default>{{ __('Zeitpunkt') }}</x-table.th>
-                        <th>{{ __('Fahrzeug') }}</th>
-                        <th>{{ __('Nutzer') }}</th>
-                        <x-table.th sort="type">{{ __('Typ') }}</x-table.th>
-                        <x-table.th sort="quantity" align="right">{{ __('Menge') }}</x-table.th>
-                        <x-table.th sort="cost" align="right">{{ __('Kosten') }}</x-table.th>
-                        <x-table.th sort="odometer" align="right">{{ __('Tacho') }}</x-table.th>
-                        <x-table.th sort="distance" align="right">{{ __('Δ km') }}</x-table.th>
-                        <th></th>
-                    </tr>
-                </x-slot:head>
-                @forelse ($logs as $log)
-                    <tr>
-                        <td>{{ $log->started_at?->fdatetime() }}</td>
-                        <td>{{ $log->vehicle?->displayName() }}</td>
-                        <td>{{ $log->user?->name }}</td>
-                        <td>
-                            <span class="badge badge-sm">{{ __($log->energy_type) }}</span>
-                            @if ($log->fuel_kind)
-                                <x-status-badge tone="ghost" size="sm">{{ __($log->fuel_kind) }}</x-status-badge>
-                            @endif
-                            @if ($log->charger_type)
-                                <x-status-badge tone="ghost" size="sm">{{ __($log->charger_type) }}</x-status-badge>
-                            @endif
-                        </td>
-                        <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $log->quantity, 2, withThousandsSeparator: true) }} {{ $log->unit === 'kwh' ? 'kWh' : 'l' }}</td>
-                        <td class="text-right">{{ $log->cost_total !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $log->cost_total, 2, withThousandsSeparator: true) . ' €' : '—' }}</td>
-                        <td class="text-right">{{ $log->odometer_km !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($log->odometer_km, 0, withThousandsSeparator: true) : '—' }}</td>
-                        <td class="text-right">{{ $log->distance_since_last !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($log->distance_since_last, 0, withThousandsSeparator: true) : '—' }}</td>
-                        <td class="text-right">
-                            <x-icon-btn icon="edit"
-                                        data-entry-modal-trigger
-                                        :href="route('energy-logs.edit', $log)"
-                                        :label="__('Bearbeiten')" />
-                            <x-action-form :action="route('energy-logs.destroy', $log)" method="DELETE"
-                                  :confirm="__('Eintrag wirklich löschen?')"
-                                  :confirm-label="__('Löschen')">
-                                <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                            </x-action-form>
-                        </td>
-                    </tr>
-                @empty
-                    <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">bolt</span>' :colspan="9" :title="__('Keine Einträge im gewählten Zeitraum')" compact />
-                @endforelse
-            </x-table>
-        </x-card>
+        <x-table :zebra="true" table-sort="server"
+                 :route="route('energy-logs.index')"
+                 :current-sort="$sort ?? null"
+                 :current-dir="$dir ?? 'desc'"
+                 :sort-params="array_filter([
+                     'from' => $from->toDateString(),
+                     'to' => $to->toDateString(),
+                     'user' => request('user') === 'all'
+                         ? 'all'
+                         : (request()->filled('user') ? $targetUser?->sqid : null),
+                     'vehicle' => $selectedVehicleSqid ?? null,
+                 ], fn ($v) => $v !== null && $v !== '')"
+                 scroll="flex" :pinRows="true">
+            <x-slot:head>
+                <tr>
+                    <x-table.th sort="started_at" default>{{ __('Zeitpunkt') }}</x-table.th>
+                    <th>{{ __('Fahrzeug') }}</th>
+                    <th>{{ __('Nutzer') }}</th>
+                    <x-table.th sort="type">{{ __('Typ') }}</x-table.th>
+                    <x-table.th sort="quantity" align="right">{{ __('Menge') }}</x-table.th>
+                    <x-table.th sort="cost" align="right">{{ __('Kosten') }}</x-table.th>
+                    <x-table.th sort="odometer" align="right">{{ __('Tacho') }}</x-table.th>
+                    <x-table.th sort="distance" align="right">{{ __('Δ km') }}</x-table.th>
+                    <th></th>
+                </tr>
+            </x-slot:head>
+            @forelse ($logs as $log)
+                <tr>
+                    <td>{{ $log->started_at?->fdatetime() }}</td>
+                    <td>{{ $log->vehicle?->displayName() }}</td>
+                    <td>{{ $log->user?->name }}</td>
+                    <td>
+                        <span class="badge badge-sm">{{ __($log->energy_type) }}</span>
+                        @if ($log->fuel_kind)
+                            <x-status-badge tone="ghost" size="sm">{{ __($log->fuel_kind) }}</x-status-badge>
+                        @endif
+                        @if ($log->charger_type)
+                            <x-status-badge tone="ghost" size="sm">{{ __($log->charger_type) }}</x-status-badge>
+                        @endif
+                    </td>
+                    <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $log->quantity, 2, withThousandsSeparator: true) }} {{ $log->unit === 'kwh' ? 'kWh' : 'l' }}</td>
+                    <td class="text-right">{{ $log->cost_total !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $log->cost_total, 2, withThousandsSeparator: true) . ' €' : '—' }}</td>
+                    <td class="text-right">{{ $log->odometer_km !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($log->odometer_km, 0, withThousandsSeparator: true) : '—' }}</td>
+                    <td class="text-right">{{ $log->distance_since_last !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($log->distance_since_last, 0, withThousandsSeparator: true) : '—' }}</td>
+                    <td class="text-right">
+                        <x-icon-btn icon="edit"
+                                    data-entry-modal-trigger
+                                    :href="route('energy-logs.edit', $log)"
+                                    :label="__('Bearbeiten')" />
+                        <x-action-form :action="route('energy-logs.destroy', $log)" method="DELETE"
+                              :confirm="__('Eintrag wirklich löschen?')"
+                              :confirm-label="__('Löschen')">
+                            <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
+                        </x-action-form>
+                    </td>
+                </tr>
+            @empty
+                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">bolt</span>' :colspan="9" :title="__('Keine Einträge im gewählten Zeitraum')" compact />
+            @endforelse
+        </x-table>
 
         <x-pagination :paginator="$logs" standing />
     </x-index-page>

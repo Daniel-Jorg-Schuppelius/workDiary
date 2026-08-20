@@ -17,7 +17,6 @@ use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
 use App\Plugins\Github\Api\{GithubApiException, GithubClientFactory};
 use App\Plugins\Github\Services\GithubIssueImporter;
-use App\Plugins\Support\PluginOrgContext;
 use Throwable;
 
 /**
@@ -102,6 +101,7 @@ class GithubPlugin extends AbstractPlugin implements TaskSyncer {
             ['key' => 'api_token', 'label' => __('API-Token'), 'type' => 'password', 'required' => true, 'help' => __('Fine-grained Personal Access Token mit Lesezugriff auf die Issues des Repositories.')],
             ['key' => 'webhook_secret', 'label' => __('Webhook-Secret'), 'type' => 'password', 'help' => __('Optional: Shared-Secret des GitHub-Webhooks (issues-Events, X-Hub-Signature-256). Ohne Secret bleibt der Webhook-Endpunkt deaktiviert; das Polling holt alles nach.')],
             ['key' => 'default_project', 'label' => __('Standard-Projekt (Sqid)'), 'type' => 'text', 'help' => __('Optional: Projekt-Kennung aus der Projekt-URL; importierte Aufgaben landen dort, sonst als globale Aufgabe.')],
+            ['key' => 'writeback', 'label' => __('Erledigung zurückschreiben'), 'type' => 'boolean', 'default' => false, 'help' => __('Schließt das verknüpfte Issue (mit Notiz), wenn die Aufgabe in workDiary erledigt wird, und öffnet es beim Wiedereröffnen. Titel und Beschreibung bleiben quellsystem-geführt. Der Token braucht Schreibzugriff auf Issues.')],
         ];
     }
 
@@ -110,9 +110,9 @@ class GithubPlugin extends AbstractPlugin implements TaskSyncer {
      * hinterlegten Token (Token gültig + API erreichbar).
      */
     public function healthCheck(): PluginHealth {
-        $organization = PluginOrgContext::currentOrNull();
-        if (! $organization instanceof Organization) {
-            return PluginHealth::ok(__('Keine Organisation im Kontext.'));
+        $organization = $this->healthOrgContext();
+        if ($organization instanceof PluginHealth) {
+            return $organization;
         }
 
         if (! GithubConfig::isConfigured((int) $organization->id)) {

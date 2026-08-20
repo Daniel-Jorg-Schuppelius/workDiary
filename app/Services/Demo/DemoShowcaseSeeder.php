@@ -917,4 +917,78 @@ class DemoShowcaseSeeder {
 
         return $count;
     }
+    /**
+     * Demo Feature 080 (P9): Cloud-Dokumenteingang mit Ordnerregel und einem
+     * Importprotokoll, das den REALEN Mischfall zeigt — übernommen, in der
+     * Zuordnungs-Inbox, Dublette und abgewiesen. Erst dieser Mischfall macht
+     * den Importbericht in einer Demo lesbar; eine Liste aus lauter Erfolgen
+     * beantwortet keine Frage.
+     *
+     * Bewusst OHNE echte Verbindung: `status = draft`, kein Token, keine
+     * external_account_id — nichts läuft an, der Runner überspringt sie.
+     */
+    public function seedCloudIntake(Organization $organization, ?User $actor): int {
+        if ($actor === null) {
+            return 0;
+        }
+
+        try {
+            $connection = \App\Models\CloudIntake\CloudDocumentConnection::query()->firstOrCreate([
+                'organization_id' => $organization->id,
+                'provider' => \App\Enums\CloudIntake\CloudIntakeProvider::Google,
+                'root_folder_path' => '/Belege',
+            ], [
+                'container_id' => 'my-drive',
+                // Der Drive-Adapter benennt „Meine Ablage" ebenfalls unübersetzt (Google-Begriff).
+                'container_label' => 'Meine Ablage',
+                'status' => \App\Enums\CloudIntake\CloudIntakeConnectionStatus::Draft,
+                'created_by_user_id' => $actor->id,
+                'last_run_at' => \Illuminate\Support\Carbon::now()->subHours(3),
+            ]);
+
+            \App\Models\CloudIntake\CloudDocumentRoute::query()->firstOrCreate([
+                'organization_id' => $organization->id,
+                'connection_id' => $connection->id,
+                'path_pattern' => 'Eingangsrechnungen/**',
+            ], [
+                'priority' => 10,
+                'allowed_extensions' => ['pdf', 'xml'],
+                'target' => \App\Enums\CloudIntake\CloudIntakeRouteTarget::IncomingInvoice,
+                'auto_version' => false,
+                'active' => true,
+            ]);
+
+            $items = [
+                ['re-2026-0912.pdf', \App\Enums\CloudIntake\CloudIntakeItemStatus::Imported, null, 2],
+                ['re-2026-0913.pdf', \App\Enums\CloudIntake\CloudIntakeItemStatus::Imported, null, 2],
+                ['unbekannter-lieferant.pdf', \App\Enums\CloudIntake\CloudIntakeItemStatus::Inbox, 'supplier_unmatched', 1],
+                ['re-2026-0912.pdf', \App\Enums\CloudIntake\CloudIntakeItemStatus::Duplicate, 'sha256_match', 1],
+                ['angebot.zip', \App\Enums\CloudIntake\CloudIntakeItemStatus::Rejected, 'blocked_extension', 0],
+            ];
+
+            $count = 0;
+            foreach ($items as $index => [$name, $status, $reason, $daysAgo]) {
+                $item = \App\Models\CloudIntake\CloudDocumentItem::query()->firstOrCreate([
+                    'organization_id' => $organization->id,
+                    'connection_id' => $connection->id,
+                    'external_item_id' => 'demo-' . $index,
+                    'revision' => 'rev-1',
+                ], [
+                    'provider' => \App\Enums\CloudIntake\CloudIntakeProvider::Google,
+                    'source_path' => 'Eingangsrechnungen/' . $name,
+                    'status' => $status,
+                    'status_reason' => $reason,
+                    'target' => \App\Enums\CloudIntake\CloudIntakeRouteTarget::IncomingInvoice,
+                ]);
+                $item->forceFill(['created_at' => \Illuminate\Support\Carbon::now()->subDays($daysAgo)])->save();
+                $count++;
+            }
+
+            return $count;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::info('Demo-Seeder: Cloud-Dokumenteingang übersprungen: ' . $e->getMessage());
+
+            return 0;
+        }
+    }
 }

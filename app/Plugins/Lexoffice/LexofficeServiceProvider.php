@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Lexoffice;
 
-use App\Plugins\Lexoffice\Console\{LexofficeSyncArticlesCommand, LexofficeSyncContactsCommand, LexofficeSyncVouchersCommand};
+use App\Plugins\Lexoffice\Console\{LexofficeSyncArticlesCommand, LexofficeSyncContactsCommand, LexofficeSyncVouchersCommand, LexofficeWebhooksCommand};
 use App\Plugins\Support\PluginServiceProviderBase;
 
 /**
@@ -63,6 +63,7 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
                 LexofficeSyncArticlesCommand::class,
                 LexofficeSyncContactsCommand::class,
                 LexofficeSyncVouchersCommand::class,
+                LexofficeWebhooksCommand::class,
             ]);
         }
     }

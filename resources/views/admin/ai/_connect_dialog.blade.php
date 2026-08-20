@@ -38,9 +38,15 @@
 
         <div class="fieldset">
             <label class="fieldset-label" for="ai-provider">{{ __('ai.field.provider') }}</label>
+            @php
+                // Beim Bearbeiten (Select fix/disabled) muss der Provider auch dann sichtbar bleiben, wenn er nicht mehr anlegbar ist.
+                $providerChoices = \App\Enums\Ai\AiProviderType::selectable();
+                if ($connection !== null && ! in_array($connection->provider, $providerChoices, true)) {
+                    $providerChoices[] = $connection->provider;
+                }
+            @endphp
             <select id="ai-provider" name="provider" class="select select-bordered w-full" @disabled($connection !== null)>
-                @foreach (\App\Enums\Ai\AiProviderType::cases() as $provider)
-                    @continue($provider === \App\Enums\Ai\AiProviderType::Fake && ! app()->environment('testing', 'local'))
+                @foreach ($providerChoices as $provider)
                     <option value="{{ $provider->value }}" @selected(old('provider', $connection?->provider->value) === $provider->value)>{{ $provider->label() }}</option>
                 @endforeach
             </select>

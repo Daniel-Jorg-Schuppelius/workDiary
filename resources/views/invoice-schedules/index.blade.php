@@ -55,7 +55,7 @@
                 <td class="font-medium">
                     <a href="{{ route('invoice-schedules.show', $schedule) }}" class="link link-hover">{{ $schedule->title }}</a>
                 </td>
-                <td>{{ $schedule->customer?->company ?: $schedule->customer?->name ?? '—' }}</td>
+                <td>{{ $schedule->customer?->displayLabel() ?? '—' }}</td>
                 <td class="text-base-content/60">{{ $schedule->contract?->title ?? '—' }}</td>
                 <td>{{ __('alle :count :unit', ['count' => $schedule->interval_count, 'unit' => $schedule->unitLabel()]) }}</td>
                 <td class="whitespace-nowrap" data-sort-value="{{ $schedule->next_run_on->format('Y-m-d') }}">{{ $schedule->next_run_on->fdate() }}</td>

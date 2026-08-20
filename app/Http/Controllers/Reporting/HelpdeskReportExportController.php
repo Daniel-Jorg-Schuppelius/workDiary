@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Reporting;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\{AuditLog, KnowledgeArticle, KnowledgeArticleLink, Problem, ServiceQueue, ServiceTicket, SlaClockSegment, TicketSatisfaction};
@@ -42,6 +43,8 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 class HelpdeskReportExportController extends Controller {
     use RendersReportPdf;
+
+    use ResolvesGlobalDateRange;
     use WritesReportCsv;
 
     private const CSV_METRICS = ['volume', 'times', 'compliance', 'waiting', 'aging', 'fcr', 'satisfaction', 'changes', 'problems', 'catalog', 'knowledge'];
@@ -138,14 +141,14 @@ class HelpdeskReportExportController extends Controller {
      * @return array{0: Carbon, 1: Carbon}
      */
     private function period(Request $request): array {
-        $from = $request->query('from') !== null
-            ? Carbon::parse((string) $request->query('from'))
-            : now()->subWeeks(8)->startOfWeek();
-        $to = $request->query('to') !== null
-            ? Carbon::parse((string) $request->query('to'))->endOfDay()
-            : now();
+        // W2.1: einheitlicher Parameter-Guard, fachlicher 8-Wochen-Default bleibt
+        // (identisch zur Berichtsseite, damit Export und Ansicht deckungsgleich sind).
+        [$from, $to] = $this->resolveRangeWithDefault($request, static fn (): array => [
+            \Carbon\CarbonImmutable::now()->subWeeks(8)->startOfWeek(),
+            \Carbon\CarbonImmutable::now(),
+        ]);
 
-        return [$from, $to];
+        return [Carbon::instance($from->toDateTime()), Carbon::instance($to->toDateTime())];
     }
 
     /** @return array{0: string, 1: LengthAwarePaginator<int, array<string, mixed>>} */

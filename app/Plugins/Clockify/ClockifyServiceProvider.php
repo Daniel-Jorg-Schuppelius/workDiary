@@ -10,6 +10,7 @@
 
 namespace App\Plugins\Clockify;
 
+use App\Plugins\Clockify\Console\ClockifyPushCommand;
 use App\Plugins\Clockify\Services\ClockifyOutboxDispatcher;
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Integration\IntegrationOutboxDispatcherResolver;
@@ -30,5 +31,9 @@ class ClockifyServiceProvider extends PluginServiceProviderBase {
 
     protected function bootPlugin(): void {
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new ClockifyOutboxDispatcher);
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([ClockifyPushCommand::class]);
+        }
     }
 }

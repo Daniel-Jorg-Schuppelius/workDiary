@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, AvailabilityController, BrandingController, CalendarFeedController, CashRegisterController, CommentController, CommunicationNoteController, CoverageRequirementController, CustomerController, CustomerMergeController, CustomerQueryController, DashboardController, DiaryCaseFileController, DiaryController, DiaryExportController, DiaryLifecycleController, DispatchBoardController, DispatchController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, ExternalParticipantController, FlexController, FlexEligibilityController, ForeignCustomerController, GeocodeController, GlobalSearchController, HelpController, HolidayController, HomeController, IcsFeedController, InvoiceController, InvoiceScheduleController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, OnCallShiftController, OnboardingController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PayrollController, PerDiemTripController, PrintController, ProductController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectMergeController, ProjectRecurrenceRuleController, ProtocolController, PublicAuditPackageController, PublicExternalParticipantController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, QuickBookController, RoomController, SafetyEventController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftExchangeController, ShiftTypeController, SickLeaveController, SoftwareController, SoftwareInstallationController, StopwatchController, SupplierController, SyncCommandController, TagController, TaskController, TeamController, TimeEntryBarController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, UserBookmarkController, VacationController, VacationEntitlementController, VehicleController, VehicleReservationController, WeekController, WorkScheduleController};
+use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, AvailabilityController, BrandingController, CalendarFeedController, CashRegisterController, CommentController, CommunicationNoteController, CoverageRequirementController, CustomerController, CustomerMergeController, CustomerQueryController, DashboardController, DiaryCaseFileController, DiaryController, DiaryExportController, DiaryLifecycleController, DispatchBoardController, DispatchController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, ExternalParticipantController, FlexController, FlexEligibilityController, ForeignCustomerController, GeocodeController, GlobalSearchController, HelpController, HolidayController, HomeController, IcsFeedController, InvoiceController, InvoiceScheduleController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, OnCallShiftController, OnboardingController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PayrollController, PerDiemTripController, PrintController, ProductController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectMergeController, ProjectRecurrenceRuleController, ProtocolController, PublicAuditPackageController, PublicExternalParticipantController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, QuickBookController, RoomController, SafetyEventController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftExchangeController, ShiftTypeController, SickLeaveController, SoftwareController, SoftwareInstallationController, StopwatchController, SupplierController, SupplierMergeController, SyncCommandController, TagController, TaskController, TeamController, TimeEntryBarController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, UserBookmarkController, VacationController, VacationEntitlementController, VehicleController, VehicleReservationController, WeekController, WorkScheduleController};
 use App\Http\Controllers\Admin\Access\{AccessHubController, MemberController as AccessMemberController, PermissionController as AccessPermissionController, RoleController as AccessRoleController, UserGroupController as AccessUserGroupController};
 use App\Http\Controllers\Admin\{AutomationRuleController, BackupHeartbeatController, BackupStatusController, BranchProfileController, ClassificationController, ClassificationRequirementController, ComponentsController, DemoTenantController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, ImportController, InvoiceMailTemplateController, LicenseAdminController, MaintenanceWindowController, MetricsController, OperationsTaskController, PerDiemRateController, PluginController as AdminPluginController, PluginErrorController as AdminPluginErrorController, PrivacyController, ProblemReportInboxController, SchedulerController, SecurityController, SessionController, SettingsController, SupportAccessAuditController, SupportAccessGrantController, SupportImpersonationController, SupportReportController};
 use App\Http\Controllers\Asset\{AssetCheckoutController, AssetDefectController, MaintenancePlanController};
@@ -1177,6 +1177,13 @@ Route::middleware('auth')->group(function () {
 
         // ── Lieferanten (Suppliers) ─────────────────────────────────────────────
         Route::get('suppliers/export', [SupplierController::class, 'export'])->name('suppliers.export');
+        // Dubletten-Abgleich VOR der Resource, damit "suppliers/duplicates"
+        // nicht als suppliers/{supplier} interpretiert wird (Audit W2.3).
+        Route::get('suppliers/duplicates', [SupplierMergeController::class, 'index'])->name('suppliers.duplicates.index');
+        Route::get('suppliers/duplicates/compare', [SupplierMergeController::class, 'compare'])->name('suppliers.duplicates.compare');
+        Route::post('suppliers/duplicates/merge', [SupplierMergeController::class, 'merge'])->name('suppliers.duplicates.merge');
+        Route::post('suppliers/duplicates/bulk-merge', [SupplierMergeController::class, 'bulkMerge'])->name('suppliers.duplicates.bulk-merge');
+        Route::post('suppliers/duplicates/dismiss', [SupplierMergeController::class, 'dismiss'])->name('suppliers.duplicates.dismiss');
         Route::resource('suppliers', SupplierController::class);
         Route::post('suppliers/{supplier}/archive', [SupplierController::class, 'archive'])->name('suppliers.archive');
         Route::post('suppliers/{supplier}/restore', [SupplierController::class, 'restore'])->name('suppliers.restore');
@@ -1194,6 +1201,12 @@ Route::middleware('auth')->group(function () {
         // Feature 107 MVP-567: Kunden-Overrides je Verkaufs-Rabattgruppe.
         Route::post('articles/sales-discount-groups/overrides', [\App\Http\Controllers\SalesDiscountGroupController::class, 'storeOverride'])->name('articles.sales-discount-groups.overrides.store');
         Route::delete('articles/sales-discount-groups/overrides/{override}', [\App\Http\Controllers\SalesDiscountGroupController::class, 'destroyOverride'])->name('articles.sales-discount-groups.overrides.destroy');
+        // Dubletten-Abgleich VOR der Resource (Kollision mit articles/{article}); Audit W2.9.
+        Route::get('articles/duplicates', [\App\Http\Controllers\ArticleMergeController::class, 'index'])->name('articles.duplicates.index');
+        Route::get('articles/duplicates/compare', [\App\Http\Controllers\ArticleMergeController::class, 'compare'])->name('articles.duplicates.compare');
+        Route::post('articles/duplicates/merge', [\App\Http\Controllers\ArticleMergeController::class, 'merge'])->name('articles.duplicates.merge');
+        Route::post('articles/duplicates/bulk-merge', [\App\Http\Controllers\ArticleMergeController::class, 'bulkMerge'])->name('articles.duplicates.bulk-merge');
+        Route::post('articles/duplicates/dismiss', [\App\Http\Controllers\ArticleMergeController::class, 'dismiss'])->name('articles.duplicates.dismiss');
         Route::resource('articles', \App\Http\Controllers\ArticleController::class);
         Route::post('articles/{article}/retire', [\App\Http\Controllers\ArticleController::class, 'retire'])->name('articles.retire');
         Route::post('articles/{article}/supplies/{supply}/prefer', [\App\Http\Controllers\ArticleController::class, 'setPreferredSupply'])->name('articles.supplies.prefer'); // Feature 050 Lieferantenvergleich
@@ -1495,7 +1508,10 @@ Route::middleware('auth')->group(function () {
 
         // ── Telefonie / CTI (Admin, Feature 056) ────────────────────────────────
         Route::get('admin/cti', [\App\Http\Controllers\Admin\CtiAdminController::class, 'index'])->name('admin.cti.index');
+        Route::post('admin/cti/dial-settings', [\App\Http\Controllers\Admin\CtiAdminController::class, 'dialSettings'])->name('admin.cti.dial-settings');
         Route::post('admin/cti/connection', [\App\Http\Controllers\Admin\CtiAdminController::class, 'store'])->name('admin.cti.connection.store');
+        // Click-to-Dial (W4.5): startet den Anruf ueber die Anlage der Organisation.
+        Route::post('telefonie/waehlen', \App\Http\Controllers\CtiDialController::class)->name('cti.dial');
         Route::post('admin/cti/disconnect', [\App\Http\Controllers\Admin\CtiAdminController::class, 'disconnect'])->name('admin.cti.disconnect');
 
         // ── Versand-/Carrier-Anbindungen (Admin, Feature 059, module.versand) ────
@@ -2850,6 +2866,11 @@ Route::middleware('auth')->group(function () {
         Route::post('api/internal/sync/commands', SyncCommandController::class)
             ->middleware('throttle:60,1')
             ->name('api.internal.sync.commands');
+        // Foto-Queue (Audit 2026-08, W4.1): Bild-/Dateiinhalte kommen einzeln
+        // als Multipart nach, zugeordnet über die client_uuid des Befehls.
+        Route::post('api/internal/sync/attachments', \App\Http\Controllers\SyncAttachmentController::class)
+            ->middleware('throttle:60,1')
+            ->name('api.internal.sync.attachments');
         // Phase 3 (MVP-367): Geräte-lokale Liste der Outbox-/abgelehnten
         // Befehle; Inhalte rendert resources/js/offline-sync.js aus IndexedDB.
         Route::view('offline/changes', 'offline.changes')->name('offline.changes');
@@ -3046,6 +3067,8 @@ Route::middleware('auth')->group(function () {
         Route::get('reports/customer-project', [CustomerProjectReportController::class, 'index'])->name('reports.customer-project');
         // Datenqualitäts-Report: Aufträge mit fehlenden Pflichtklassifikationen (Feature 024 → Rang 57).
         Route::get('reports/data-quality', [\App\Http\Controllers\Reporting\DataQualityReportController::class, 'index'])->name('reports.data-quality');
+        // Importbericht Cloud-Dokumenteingang (Feature 080 P9; Audit 2026-08, W4.4).
+        Route::get('reports/cloud-intake', [\App\Http\Controllers\Reporting\CloudIntakeReportController::class, 'index'])->name('reports.cloud-intake');
         Route::get('reports/week-by-user', [WeekByUserReportController::class, 'index'])->name('reports.week-by-user');
         Route::get('reports/month-by-user-team', [MonthByUserTeamReportController::class, 'index'])->name('reports.month-by-user-team');
         Route::get('reports/project-inactive', [ProjectInactiveReportController::class, 'index'])->name('reports.project-inactive');

@@ -10,10 +10,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Organization, User};
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Models\Organization;
 use App\Services\BrandingService;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
@@ -22,8 +23,10 @@ use Illuminate\View\View;
  * Logo-Uploads laufen über den {@see AttachmentController}.
  */
 class BrandingController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function edit(): View|RedirectResponse {
-        $organization = $this->currentOrganization();
+        $organization = $this->currentOrganizationOrUserOrganization();
         if (! $organization instanceof Organization) {
             return redirect()->route('admin.organizations.index')
                 ->with('warning', __('Bitte zuerst eine Organisation anlegen bzw. dem aktuellen Benutzer zuweisen.'));
@@ -37,7 +40,7 @@ class BrandingController extends Controller {
     }
 
     public function update(Request $request): RedirectResponse {
-        $organization = $this->currentOrganization();
+        $organization = $this->currentOrganizationOrUserOrganization();
         if (! $organization instanceof Organization) {
             return redirect()->route('admin.organizations.index')
                 ->with('warning', __('Bitte zuerst eine Organisation anlegen bzw. dem aktuellen Benutzer zuweisen.'));
@@ -103,24 +106,6 @@ class BrandingController extends Controller {
         return redirect()
             ->route('admin.branding.edit')
             ->with('success', __('Branding aktualisiert.'));
-    }
-
-    /**
-     * Ermittelt die Organisation des eingeloggten Admins.
-     */
-    private function currentOrganization(): ?Organization {
-        // Bevorzugt das vom SetOrganizationContext-Middleware gebundene Modell (Single-Source-of-Truth des Requests).
-        if (app()->bound('currentOrganization')) {
-            $bound = app('currentOrganization');
-            if ($bound instanceof Organization) {
-                return $bound;
-            }
-        }
-
-        /** @var User|null $user */
-        $user = Auth::user();
-
-        return $user?->organization;
     }
 
     /**

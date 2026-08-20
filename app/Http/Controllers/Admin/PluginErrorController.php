@@ -156,7 +156,11 @@ class PluginErrorController extends Controller {
                 });
             }
         } else {
-            $ids = array_values(array_filter(array_map('intval', (array) $request->input('ids', []))));
+            // Sqids aus der Liste (W3.3); Alt-Aufrufe mit roher ID bleiben lesbar.
+            $ids = array_values(array_filter(array_map(
+                static fn ($v): ?int => \App\Support\Sqid::decodeOrNumeric(\App\Models\PluginError::class, (string) $v),
+                (array) $request->input('ids', []),
+            )));
             if ($ids === []) {
                 return back()->with('error', __('Keine Fehler ausgewählt.'));
             }

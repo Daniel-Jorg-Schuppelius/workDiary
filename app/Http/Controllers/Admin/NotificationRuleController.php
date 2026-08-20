@@ -12,9 +12,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Enums\User\UserRole;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Notification\NotificationRule;
-use App\Models\{Organization, User};
+use App\Models\User;
 use App\Support\Sqid;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -27,6 +28,8 @@ use Illuminate\Validation\Rule;
  * Zeile gilt der Code-Default des Events (siehe NotificationRule::resolveFor).
  */
 class NotificationRuleController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(): View {
         Gate::authorize('viewAny', NotificationRule::class);
         $organizationId = $this->currentOrganizationId();
@@ -122,20 +125,6 @@ class NotificationRuleController extends Controller {
 
     private function resolveEvent(string $event): NotificationEvent {
         return NotificationEvent::tryFrom($event) ?? abort(404);
-    }
-
-    private function currentOrganizationId(): int {
-        if (app()->bound('currentOrganization')) {
-            $org = app('currentOrganization');
-            if ($org instanceof Organization) {
-                return (int) $org->id;
-            }
-        }
-
-        $orgId = $this->authUser()->organization_id;
-        abort_if($orgId === null, 404);
-
-        return (int) $orgId;
     }
 
     /** @return array<string, string> Rollen-Optionen (interne Rollen, ohne Kunde). */

@@ -45,42 +45,40 @@
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif
 
-    <x-card padding="p-0">
-        <x-table bare>
-            <x-slot:head>
-                <tr>
-                    <th>{{ __('Nummer') }}</th>
-                    <th>{{ __('Titel') }}</th>
-                    <th>{{ __('Kunde') }}</th>
-                    <th>{{ __('Status') }}</th>
-                    <th>{{ __('Priorität') }}</th>
-                    <th>{{ __('Frist') }}</th>
-                    <th>{{ __('Verantwortlich') }}</th>
-                    <th></th>
-                </tr>
-            </x-slot:head>
-            @forelse ($cases as $case)
-                <tr>
-                    <td><a href="{{ route('claims.show', $case) }}" class="link font-mono">{{ $case->number }}</a></td>
-                    <td>{{ $case->title }}</td>
-                    <td>{{ $case->customer->name ?? '—' }}</td>
-                    <td><x-status-badge size="md" outline>{{ $case->status->label() }}</x-status-badge></td>
-                    <td>{{ __("values.{$case->priority}") }}</td>
-                    <td>
-                        @if ($case->due_at !== null && $case->status->isOpen() && $case->due_at->isPast())
-                            <span class="text-error font-medium">{{ $case->due_at->fdatetime() }}</span>
-                        @else
-                            {{ optional($case->due_at)->fdatetime() ?? '—' }}
-                        @endif
-                    </td>
-                    <td>{{ $case->responsible->name ?? '—' }}</td>
-                    <td class="text-right"><x-icon-btn icon="visibility" :href="route('claims.show', $case)" :label="__('Anzeigen')" /></td>
-                </tr>
-            @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">assignment_return</span>' :colspan="8" :title="__('Keine Reklamationen — neue Fälle entstehen über den Dialog oder das Kundenportal.')" compact />
-            @endforelse
-        </x-table>
-    </x-card>
+    <x-table scroll="flex" :zebra="true" :pinRows="true">
+        <x-slot:head>
+            <tr>
+                <th>{{ __('Nummer') }}</th>
+                <th>{{ __('Titel') }}</th>
+                <th>{{ __('Kunde') }}</th>
+                <th>{{ __('Status') }}</th>
+                <th>{{ __('Priorität') }}</th>
+                <th>{{ __('Frist') }}</th>
+                <th>{{ __('Verantwortlich') }}</th>
+                <th></th>
+            </tr>
+        </x-slot:head>
+        @forelse ($cases as $case)
+            <tr>
+                <td><a href="{{ route('claims.show', $case) }}" class="link font-mono">{{ $case->number }}</a></td>
+                <td>{{ $case->title }}</td>
+                <td>{{ $case->customer->name ?? '—' }}</td>
+                <td><x-status-badge size="md" outline>{{ $case->status->label() }}</x-status-badge></td>
+                <td>{{ __("values.{$case->priority}") }}</td>
+                <td>
+                    @if ($case->due_at !== null && $case->status->isOpen() && $case->due_at->isPast())
+                        <span class="text-error font-medium">{{ $case->due_at->fdatetime() }}</span>
+                    @else
+                        {{ optional($case->due_at)->fdatetime() ?? '—' }}
+                    @endif
+                </td>
+                <td>{{ $case->responsible->name ?? '—' }}</td>
+                <td class="text-right"><x-icon-btn icon="visibility" :href="route('claims.show', $case)" :label="__('Anzeigen')" /></td>
+            </tr>
+        @empty
+            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">assignment_return</span>' :colspan="8" :title="__('Keine Reklamationen — neue Fälle entstehen über den Dialog oder das Kundenportal.')" compact />
+        @endforelse
+    </x-table>
 
     <x-pagination :paginator="$cases" standing />
 </x-index-page>

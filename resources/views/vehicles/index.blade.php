@@ -34,63 +34,61 @@
             </x-filter-field>
         </x-filter-bar>
 
-        <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-            <x-table table-sort="server"
-                     :route="route('vehicles.index')"
-                     :current-sort="$sort ?? null"
-                     :current-dir="$dir ?? 'asc'"
-                     :sort-params="array_filter(['archived' => $showArchived ? 1 : null], fn ($v) => $v !== null)"
-                     bare scroll="flex" :pinRows="true">
-                <x-slot:head>
-                    <tr>
-                        <x-table.th sort="license_plate">{{ __('Kennzeichen') }}</x-table.th>
-                        <x-table.th sort="label" default>{{ __('Bezeichnung') }}</x-table.th>
-                        <x-table.th sort="type">{{ __('Typ') }}</x-table.th>
-                        <x-table.th sort="propulsion">{{ __('Antrieb') }}</x-table.th>
-                        <th>{{ __('Standardfahrer') }}</th>
-                        <x-table.th sort="rate" align="right">{{ __('Satz €/km') }}</x-table.th>
-                        <x-table.th sort="odometer" align="right">{{ __('Tachostand') }}</x-table.th>
-                        <th></th>
-                    </tr>
-                </x-slot:head>
-                @forelse ($vehicles as $vehicle)
-                    <tr class="{{ $vehicle->archived_at ? 'opacity-60' : '' }}">
-                        <td class="font-mono">{{ $vehicle->license_plate }}</td>
-                        <td>{{ $vehicle->label }}</td>
-                        <td><x-status-badge tone="ghost" size="sm">{{ $vehicle->vehicle_type->label() }}</x-status-badge></td>
-                        <td><x-status-badge tone="ghost" size="sm">{{ $vehicle->propulsion->label() }}</x-status-badge></td>
-                        <td>{{ $vehicle->defaultUser?->name ?? __('—') }}</td>
-                        <td class="text-right">
-                            @if ($vehicle->default_rate_per_km !== null)
-                                {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $vehicle->default_rate_per_km, 4) }}
-                            @else
-                                —
-                            @endif
-                        </td>
-                        <td class="text-right">{{ $vehicle->odometer_km !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($vehicle->odometer_km, 0, withThousandsSeparator: true) . ' km' : '—' }}</td>
-                        <td class="text-right">
-                            <x-icon-btn icon="edit"
-                                        data-entry-modal-trigger
-                                        :href="route('vehicles.edit', $vehicle)"
-                                        :label="__('Bearbeiten')" />
-                            @if ($vehicle->archived_at)
-                                <x-action-form :action="route('vehicles.restore', $vehicle)">
-                                    <x-icon-btn icon="restore" type="submit" :label="__('Reaktivieren')" />
-                                </x-action-form>
-                            @else
-                                <x-action-form :action="route('vehicles.destroy', $vehicle)" method="DELETE"
-                                      :confirm="__('Fahrzeug wirklich archivieren?')"
-                                      :confirm-label="__('Archivieren')">
-                                    <x-icon-btn icon="archive" tone="error" type="submit" :label="__('Archivieren')" />
-                                </x-action-form>
-                            @endif
-                        </td>
-                    </tr>
-                @empty
-                    <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">directions_car</span>' :colspan="8" :title="__('Keine Fahrzeuge erfasst')" compact />
-                @endforelse
-            </x-table>
-        </x-card>
+        <x-table :zebra="true" table-sort="server"
+                 :route="route('vehicles.index')"
+                 :current-sort="$sort ?? null"
+                 :current-dir="$dir ?? 'asc'"
+                 :sort-params="array_filter(['archived' => $showArchived ? 1 : null], fn ($v) => $v !== null)"
+                 scroll="flex" :pinRows="true">
+            <x-slot:head>
+                <tr>
+                    <x-table.th sort="license_plate">{{ __('Kennzeichen') }}</x-table.th>
+                    <x-table.th sort="label" default>{{ __('Bezeichnung') }}</x-table.th>
+                    <x-table.th sort="type">{{ __('Typ') }}</x-table.th>
+                    <x-table.th sort="propulsion">{{ __('Antrieb') }}</x-table.th>
+                    <th>{{ __('Standardfahrer') }}</th>
+                    <x-table.th sort="rate" align="right">{{ __('Satz €/km') }}</x-table.th>
+                    <x-table.th sort="odometer" align="right">{{ __('Tachostand') }}</x-table.th>
+                    <th></th>
+                </tr>
+            </x-slot:head>
+            @forelse ($vehicles as $vehicle)
+                <tr class="{{ $vehicle->archived_at ? 'opacity-60' : '' }}">
+                    <td class="font-mono">{{ $vehicle->license_plate }}</td>
+                    <td>{{ $vehicle->label }}</td>
+                    <td><x-status-badge tone="ghost" size="sm">{{ $vehicle->vehicle_type->label() }}</x-status-badge></td>
+                    <td><x-status-badge tone="ghost" size="sm">{{ $vehicle->propulsion->label() }}</x-status-badge></td>
+                    <td>{{ $vehicle->defaultUser?->name ?? __('—') }}</td>
+                    <td class="text-right">
+                        @if ($vehicle->default_rate_per_km !== null)
+                            {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $vehicle->default_rate_per_km, 4) }}
+                        @else
+                            —
+                        @endif
+                    </td>
+                    <td class="text-right">{{ $vehicle->odometer_km !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($vehicle->odometer_km, 0, withThousandsSeparator: true) . ' km' : '—' }}</td>
+                    <td class="text-right">
+                        <x-icon-btn icon="edit"
+                                    data-entry-modal-trigger
+                                    :href="route('vehicles.edit', $vehicle)"
+                                    :label="__('Bearbeiten')" />
+                        @if ($vehicle->archived_at)
+                            <x-action-form :action="route('vehicles.restore', $vehicle)">
+                                <x-icon-btn icon="restore" type="submit" :label="__('Reaktivieren')" />
+                            </x-action-form>
+                        @else
+                            <x-action-form :action="route('vehicles.destroy', $vehicle)" method="DELETE"
+                                  :confirm="__('Fahrzeug wirklich archivieren?')"
+                                  :confirm-label="__('Archivieren')">
+                                <x-icon-btn icon="archive" tone="error" type="submit" :label="__('Archivieren')" />
+                            </x-action-form>
+                        @endif
+                    </td>
+                </tr>
+            @empty
+                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">directions_car</span>' :colspan="8" :title="__('Keine Fahrzeuge erfasst')" compact />
+            @endforelse
+        </x-table>
 
         <x-pagination :paginator="$vehicles" standing />
     </x-index-page>

@@ -29,7 +29,7 @@ class TogglOptionBuilder {
         return $customers->map(fn(Customer $c): array => [
             'sqid' => $c->sqid,
             'id' => (int) $c->id,
-            'label' => (string) ($c->company ?: $c->name),
+            'label' => (string) ($c->displayLabel()),
         ])->all();
     }
 

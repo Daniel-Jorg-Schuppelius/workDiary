@@ -43,7 +43,7 @@ class ProcessingAgreementController extends Controller {
         abort_unless($org !== null, 403);
 
         $data = $request->validate([
-            'processor_id' => ['required', 'integer'],
+            'processor_id' => ['required', 'string'],
             'title' => ['required', 'string', 'max:255'],
             'version' => ['nullable', 'string', 'max:32'],
             'valid_from' => ['nullable', 'date'],
@@ -55,7 +55,9 @@ class ProcessingAgreementController extends Controller {
         ]);
 
         // Dienstleister muss zur Org gehoeren.
-        $processor = Processor::query()->where('organization_id', $org->id)->findOrFail((int) $data['processor_id']);
+        // Sqid aus dem Formular (W3.3); die org-gescopte Query bleibt die Schutzlinie.
+        $processor = Processor::query()->where('organization_id', $org->id)
+            ->findOrFail(\App\Support\Sqid::decodeOrAbort(Processor::class, (string) $data['processor_id']));
 
         $agreement = new ProcessingAgreement($data);
         $agreement->setAttribute('organization_id', $org->id);
@@ -114,12 +116,17 @@ class ProcessingAgreementController extends Controller {
 
     public function syncActivities(Request $request, ProcessingAgreement $agreement): RedirectResponse {
         Gate::authorize('update', $agreement);
-        $data = $request->validate(['activity_ids' => ['array'], 'activity_ids.*' => ['integer']]);
+        // Sqids aus dem Formular (Audit 2026-08, W3.3).
+        $data = $request->validate(['activity_ids' => ['array'], 'activity_ids.*' => ['string']]);
+        $requested = array_filter(array_map(
+            static fn (string $v): ?int => \App\Support\Sqid::decodeOrNumeric(ProcessingActivity::class, $v),
+            $data['activity_ids'] ?? [],
+        ));
 
         // Nur Taetigkeiten der eigenen Org verknuepfen.
         $valid = ProcessingActivity::query()
             ->where('organization_id', $agreement->organization_id)
-            ->whereIn('id', $data['activity_ids'] ?? [])
+            ->whereIn('id', $requested)
             ->pluck('id')->all();
         $agreement->activities()->sync($valid);
 

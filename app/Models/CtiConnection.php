@@ -46,6 +46,9 @@ class CtiConnection extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'active' => 'boolean',
+        'dial_enabled' => 'boolean',
+        // Zugangstoken nie im Klartext in DB/Logs.
+        'api_token' => 'encrypted',
         'last_event_at' => 'datetime',
     ];
 
@@ -55,6 +58,11 @@ class CtiConnection extends Model {
         'provider',
         'webhook_token_hash',
         'active',
+        // Click-to-Dial (W4.5): ausgehender API-Zugang, bewusst per Schalter.
+        'dial_enabled',
+        'api_token',
+        'api_base_url',
+        'dial_extension',
         'last_event_at',
         'created_by',
     ];

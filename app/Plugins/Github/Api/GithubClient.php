@@ -87,6 +87,22 @@ class GithubClient {
             ->requestResponse($method, $this->baseUrl . $path, $options);
     }
 
+    /**
+     * PATCH /repos/{owner}/{repo}/issues/{number} — Issue schließen/öffnen
+     * (Rückrichtung, Audit 2026-08 Welle 1.4). Idempotent: GitHub akzeptiert
+     * das Setzen des bereits aktiven Zustands.
+     */
+    public function setIssueState(string $owner, string $repo, int $number, bool $closed): void {
+        $endpoint = sprintf('/repos/%s/%s/issues/%d', rawurlencode($owner), rawurlencode($repo), $number);
+        $this->guard($this->authed('patch', $endpoint, ['json' => ['state' => $closed ? 'closed' : 'open']]), $endpoint);
+    }
+
+    /** POST /repos/{owner}/{repo}/issues/{number}/comments — Erledigungs-Notiz. */
+    public function commentIssue(string $owner, string $repo, int $number, string $body): void {
+        $endpoint = sprintf('/repos/%s/%s/issues/%d/comments', rawurlencode($owner), rawurlencode($repo), $number);
+        $this->guard($this->authed('post', $endpoint, ['json' => ['body' => $body]]), $endpoint);
+    }
+
     /** @return class-string<\App\Plugins\Support\PluginApiException> */
     protected function apiExceptionClass(): string {
         return GithubApiException::class;

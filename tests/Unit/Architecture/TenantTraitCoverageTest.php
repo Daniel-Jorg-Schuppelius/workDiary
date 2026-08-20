@@ -155,6 +155,14 @@ class TenantTraitCoverageTest extends TestCase {
         // signierte, aber unzuordenbare Zustellungen ausblenden. Siehe
         // Allow-List im Audit-Doc.
         \App\Models\TodoistWebhookDelivery::class,
+        // Lexoffice-Webhook-Dedup (Audit 2026-08, W1.3): Betriebsprotokoll im
+        // sessionlosen Webhook-Kontext, angelegt VOR der Verarbeitung
+        // (persist-before-process). Die Organisation steckt im URL-Token und
+        // wird beim Anlegen mitgeschrieben; ein Global-Scope brächte hier
+        // nichts, würde aber die Dedup-Abfrage vom Request-Kontext abhängig
+        // machen. Mandantentrennung ist über den Token-Vergleich abgesichert
+        // (WebhookTenantTest).
+        \App\Models\LexofficeWebhookDelivery::class,
         // Calendly-Webhook-Dedup (Feature 095): analog TodoistWebhookDelivery ein
         // Betriebsprotokoll, das VOR der Org-Zuordnung entsteht (Token→Org+
         // signing_key, dann Signaturprüfung); nullable organization_id, kein

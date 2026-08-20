@@ -12,10 +12,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\{Customer, CustomerMergeDismissal, Organization, User};
+use App\Http\Controllers\Concerns\MergesDuplicates;
+use App\Models\{Customer, CustomerMergeDismissal, Organization};
 use App\Services\{CustomerDuplicateFinder, CustomerMergeService};
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
@@ -24,15 +25,17 @@ use Illuminate\View\View;
  * Doppel-Datensätze, z. B. nach dem Toggl-Import).
  */
 class CustomerMergeController extends Controller {
-    public function index(Request $request, CustomerDuplicateFinder $finder): View {
-        $user = $this->authorizeBilling();
+    /** @use MergesDuplicates<Customer> */
+    use MergesDuplicates;
 
-        $confidence = (string) $request->input('confidence', 'all');
-        $only = in_array($confidence, [
+    public function index(Request $request, CustomerDuplicateFinder $finder): View {
+        $user = $this->authorizeMerging();
+
+        $only = $this->resolveConfidenceFilter($request, [
             CustomerDuplicateFinder::CONF_EXACT,
             CustomerDuplicateFinder::CONF_LIKELY,
             CustomerDuplicateFinder::CONF_FUZZY,
-        ], true) ? $confidence : null;
+        ]);
 
         $organization = $user->organization;
         abort_unless($organization instanceof Organization, 403);
@@ -53,10 +56,9 @@ class CustomerMergeController extends Controller {
      * auch den „Felder wählen…"-Pfad der Auto-Vorschläge.
      */
     public function compare(Request $request): View {
-        $this->authorizeBilling();
+        $this->authorizeMerging();
 
-        [$source, $target] = $this->resolvePair($request);
-        abort_if($source->getKey() === $target->getKey(), 422);
+        [$source, $target] = $this->resolveDistinctMergePair($request);
 
         return view('customers.merge-compare', [
             'source' => $source,
@@ -65,25 +67,12 @@ class CustomerMergeController extends Controller {
     }
 
     public function merge(Request $request, CustomerMergeService $merger): RedirectResponse {
-        $this->authorizeBilling();
-
-        [$source, $target] = $this->resolvePair($request);
-        abort_if($source->getKey() === $target->getKey(), 422);
-
-        // Optionale Feldauswahl: angehakte Felder werden aus der Quelle übernommen.
-        $overrides = [];
-        foreach ((array) $request->input('prefer_source', []) as $field) {
-            $overrides[(string) $field] = $source->getAttribute((string) $field);
-        }
-
-        $merger->merge($source, $target, $overrides);
-
-        return redirect()
-            ->route('customers.duplicates.index')
-            ->with('success', __('Kunde „:source" wurde in „:target" zusammengeführt.', [
-                'source' => $source->name,
-                'target' => $target->name,
-            ]));
+        return $this->performMerge(
+            $request,
+            static function (Customer $source, Customer $target, array $overrides) use ($merger): void {
+                $merger->merge($source, $target, $overrides);
+            },
+        );
     }
 
     /**
@@ -93,52 +82,18 @@ class CustomerMergeController extends Controller {
      * (überlappende Vorschläge) oder die der Service ablehnt, werden übersprungen.
      */
     public function bulkMerge(Request $request, CustomerMergeService $merger): RedirectResponse {
-        $this->authorizeBilling();
-
-        $data = $request->validate([
-            'pairs' => ['required', 'array', 'min:1'],
-            'pairs.*' => ['string'],
-        ]);
-
-        $binder = new Customer;
-        $merged = 0;
-        $skipped = 0;
-
-        foreach ($data['pairs'] as $raw) {
-            [$sourceSqid, $targetSqid] = array_pad(explode(':', (string) $raw, 2), 2, null);
-            if ((string) $sourceSqid === '' || (string) $targetSqid === '') {
-                $skipped++;
-                continue;
-            }
-
-            $source = $binder->resolveRouteBinding((string) $sourceSqid);
-            $target = $binder->resolveRouteBinding((string) $targetSqid);
-            if (! $source instanceof Customer || ! $target instanceof Customer || $source->getKey() === $target->getKey()) {
-                $skipped++;
-                continue;
-            }
-
-            try {
+        return $this->performBulkMerge(
+            $request,
+            static function (Customer $source, Customer $target) use ($merger): void {
                 $merger->merge($source, $target);
-                $merged++;
-            } catch (\InvalidArgumentException) {
-                $skipped++;
-            }
-        }
-
-        return redirect()
-            ->route('customers.duplicates.index')
-            ->with('success', __(':merged Paar(e) zusammengeführt, :skipped übersprungen.', [
-                'merged' => $merged,
-                'skipped' => $skipped,
-            ]));
+            },
+        );
     }
 
     public function dismiss(Request $request): RedirectResponse {
-        $user = $this->authorizeBilling();
+        $user = $this->authorizeMerging();
 
-        [$source, $target] = $this->resolvePair($request);
-        abort_if($source->getKey() === $target->getKey(), 422);
+        [$source, $target] = $this->resolveDistinctMergePair($request);
 
         CustomerMergeDismissal::query()->updateOrCreate(
             CustomerMergeDismissal::pairKey((int) $source->getKey(), (int) $target->getKey()),
@@ -153,33 +108,19 @@ class CustomerMergeController extends Controller {
             ->with('success', __('Paar als „kein Duplikat" gemerkt.'));
     }
 
-    /**
-     * Löst die beiden Kunden aus den Sqid-Eingaben auf (mandanten-gescopt über
-     * den Global Scope des Route-Bindings).
-     *
-     * @return array{0: Customer, 1: Customer}  [Quelle, Ziel]
-     */
-    private function resolvePair(Request $request): array {
-        $request->validate([
-            'source' => ['required', 'string'],
-            'target' => ['required', 'string'],
-        ]);
-
-        $binder = new Customer;
-        $source = $binder->resolveRouteBinding((string) $request->input('source'));
-        $target = $binder->resolveRouteBinding((string) $request->input('target'));
-
-        abort_unless($source instanceof Customer && $target instanceof Customer, 404);
-
-        return [$source, $target];
+    protected function mergeModelClass(): string {
+        return Customer::class;
     }
 
-    private function authorizeBilling(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->canManageBilling(), 403);
+    protected function mergeIndexRoute(): string {
+        return 'customers.duplicates.index';
+    }
 
-        return $user;
+    protected function mergedMessage(Model $source, Model $target): string {
+        return (string) __('Kunde „:source" wurde in „:target" zusammengeführt.', [
+            'source' => $source->name,
+            'target' => $target->name,
+        ]);
     }
 
     /**

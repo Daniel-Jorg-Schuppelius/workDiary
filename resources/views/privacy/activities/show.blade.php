@@ -57,7 +57,7 @@
                                     @can('approve', $activity)
                                         @unless ($v->approved_at)
                                             <form method="post" action="{{ route('dataprotection.activities.approve', $activity) }}">
-                                                @csrf <input type="hidden" name="version_id" value="{{ $v->id }}">
+                                                @csrf <input type="hidden" name="version_id" value="{{ $v->sqid }}">
                                                 <x-icon-btn icon="check" tone="primary" size="sm" type="submit" show-label>{{ __('Freigeben') }}</x-icon-btn>
                                             </form>
                                         @endunless

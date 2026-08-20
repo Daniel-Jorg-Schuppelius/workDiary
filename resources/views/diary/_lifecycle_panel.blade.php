@@ -83,7 +83,7 @@
                     @if ($signedProtocol)
                         <form method="POST" action="{{ route('diary.lifecycle', [$diary, 'action' => 'handover']) }}">
                             @csrf
-                            <input type="hidden" name="protocol_id" value="{{ $signedProtocol->id }}">
+                            <input type="hidden" name="protocol_id" value="{{ $signedProtocol->sqid }}">
                             <x-icon-btn type="submit" icon="handshake" tone="primary" size="sm" show-label>{{ __('Abnahme starten') }}</x-icon-btn>
                         </form>
                     @else

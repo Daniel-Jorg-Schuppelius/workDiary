@@ -44,42 +44,40 @@
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">category</span>'
                        :title="$search !== '' ? __('products.title.empty_search', ['q' => $search]) : __('products.title.empty')" />
     @else
-        <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-            <x-table bare scroll="flex" :pinRows="true">
-                <x-slot:head>
-                    <tr>
-                        <th>{{ __('products.field.manufacturer') }}</th>
-                        <th>{{ __('products.field.model') }}</th>
-                        <th>{{ __('products.field.name') }}</th>
-                        <th>{{ __('products.field.product_group') }}</th>
-                        <th class="text-right">{{ __('products.field.articles') }}</th>
-                        <th class="text-right">{{ __('products.field.assets') }}</th>
-                        <th>{{ __('products.field.status') }}</th>
-                        <th></th>
-                    </tr>
-                </x-slot:head>
-                @foreach ($products as $product)
-                    @php /** @var \App\Models\Product $product */ @endphp
-                    <tr>
-                        <td>{{ $product->manufacturer }}</td>
-                        <td class="font-mono text-sm">{{ $product->model }}</td>
-                        <td>{{ $product->name }}</td>
-                        <td>{{ $product->productGroupClassification?->label ?? '—' }}</td>
-                        <td class="text-right tabular-nums">{{ $product->articles_count }}</td>
-                        <td class="text-right tabular-nums">{{ $product->assets_count }}</td>
-                        <td><x-status-badge size="xs" :tone="$product->status->tone()">{{ $product->status->label() }}</x-status-badge></td>
-                        <td class="text-right">
-                            @if ($canManage ?? false)
-                                <x-icon-btn icon="edit" tone="ghost" size="xs"
-                                            data-entry-modal-trigger
-                                            :href="route('products.edit', $product)"
-                                            :label="__('products.action.edit')" />
-                            @endif
-                        </td>
-                    </tr>
-                @endforeach
-            </x-table>
-        </x-card>
+        <x-table :zebra="true" scroll="flex" :pinRows="true">
+            <x-slot:head>
+                <tr>
+                    <th>{{ __('products.field.manufacturer') }}</th>
+                    <th>{{ __('products.field.model') }}</th>
+                    <th>{{ __('products.field.name') }}</th>
+                    <th>{{ __('products.field.product_group') }}</th>
+                    <th class="text-right">{{ __('products.field.articles') }}</th>
+                    <th class="text-right">{{ __('products.field.assets') }}</th>
+                    <th>{{ __('products.field.status') }}</th>
+                    <th></th>
+                </tr>
+            </x-slot:head>
+            @foreach ($products as $product)
+                @php /** @var \App\Models\Product $product */ @endphp
+                <tr>
+                    <td>{{ $product->manufacturer }}</td>
+                    <td class="font-mono text-sm">{{ $product->model }}</td>
+                    <td>{{ $product->name }}</td>
+                    <td>{{ $product->productGroupClassification?->label ?? '—' }}</td>
+                    <td class="text-right tabular-nums">{{ $product->articles_count }}</td>
+                    <td class="text-right tabular-nums">{{ $product->assets_count }}</td>
+                    <td><x-status-badge size="xs" :tone="$product->status->tone()">{{ $product->status->label() }}</x-status-badge></td>
+                    <td class="text-right">
+                        @if ($canManage ?? false)
+                            <x-icon-btn icon="edit" tone="ghost" size="xs"
+                                        data-entry-modal-trigger
+                                        :href="route('products.edit', $product)"
+                                        :label="__('products.action.edit')" />
+                        @endif
+                    </td>
+                </tr>
+            @endforeach
+        </x-table>
         <x-pagination :paginator="$products" standing />
     @endif
 </x-index-page>

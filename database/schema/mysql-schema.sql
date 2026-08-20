@@ -1,3 +1,4 @@
+/*M!999999\- enable the sandbox mode */ 
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -54,6 +55,7 @@ CREATE TABLE `access_medium_handovers` (
   `occurred_at` timestamp NOT NULL,
   `expected_return_at` timestamp NULL DEFAULT NULL,
   `condition` varchar(500) DEFAULT NULL,
+  `signature_token` varchar(64) DEFAULT NULL,
   `performed_by` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -66,6 +68,87 @@ CREATE TABLE `access_medium_handovers` (
   CONSTRAINT `access_medium_handovers_holder_user_id_foreign` FOREIGN KEY (`holder_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `access_medium_handovers_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `access_medium_handovers_performed_by_foreign` FOREIGN KEY (`performed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `accounting_migration_events`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `accounting_migration_events` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned DEFAULT NULL,
+  `accounting_migration_run_id` bigint(20) unsigned DEFAULT NULL,
+  `event` varchar(64) NOT NULL,
+  `actor_user_id` bigint(20) unsigned DEFAULT NULL,
+  `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`payload`)),
+  `prev_hash` char(64) DEFAULT NULL,
+  `hash` char(64) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ame_run_idx` (`accounting_migration_run_id`,`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `accounting_migration_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `accounting_migration_items` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `accounting_migration_run_id` bigint(20) unsigned NOT NULL,
+  `data_area` varchar(24) NOT NULL,
+  `status` varchar(24) NOT NULL DEFAULT 'pending',
+  `source_external_id` varchar(191) DEFAULT NULL,
+  `target_external_id` varchar(191) DEFAULT NULL,
+  `referenceable_type` varchar(255) DEFAULT NULL,
+  `referenceable_id` bigint(20) unsigned DEFAULT NULL,
+  `dedupe_key` varchar(191) NOT NULL,
+  `display_title` varchar(191) DEFAULT NULL,
+  `source_snapshot` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`source_snapshot`)),
+  `diff` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`diff`)),
+  `note` text DEFAULT NULL,
+  `decided_by` bigint(20) unsigned DEFAULT NULL,
+  `decided_at` datetime DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ami_run_dedupe_unique` (`accounting_migration_run_id`,`dedupe_key`),
+  KEY `accounting_migration_items_organization_id_foreign` (`organization_id`),
+  KEY `ami_ref` (`referenceable_type`,`referenceable_id`),
+  KEY `accounting_migration_items_decided_by_foreign` (`decided_by`),
+  KEY `ami_run_area_status_idx` (`accounting_migration_run_id`,`data_area`,`status`),
+  CONSTRAINT `accounting_migration_items_accounting_migration_run_id_foreign` FOREIGN KEY (`accounting_migration_run_id`) REFERENCES `accounting_migration_runs` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `accounting_migration_items_decided_by_foreign` FOREIGN KEY (`decided_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `accounting_migration_items_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `accounting_migration_runs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `accounting_migration_runs` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_plugin` varchar(64) NOT NULL,
+  `target_plugin` varchar(64) NOT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'draft',
+  `data_areas` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`data_areas`)),
+  `cutover_on` date DEFAULT NULL,
+  `cutover_at` datetime DEFAULT NULL,
+  `dry_run_only` tinyint(1) NOT NULL DEFAULT 1,
+  `counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`counters`)),
+  `checkpoints` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`checkpoints`)),
+  `preflight` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`preflight`)),
+  `blocked_reason` text DEFAULT NULL,
+  `responsible_user_id` bigint(20) unsigned DEFAULT NULL,
+  `completed_by` bigint(20) unsigned DEFAULT NULL,
+  `completed_at` datetime DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `accounting_migration_runs_responsible_user_id_foreign` (`responsible_user_id`),
+  KEY `accounting_migration_runs_completed_by_foreign` (`completed_by`),
+  KEY `amr_org_status_idx` (`organization_id`,`status`),
+  CONSTRAINT `accounting_migration_runs_completed_by_foreign` FOREIGN KEY (`completed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `accounting_migration_runs_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `accounting_migration_runs_responsible_user_id_foreign` FOREIGN KEY (`responsible_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `activity_categories`;
@@ -693,6 +776,25 @@ CREATE TABLE `approvals` (
   KEY `apv_decided_by_fk` (`decided_by`),
   CONSTRAINT `apv_decided_by_fk` FOREIGN KEY (`decided_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `apv_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `article_merge_dismissals`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `article_merge_dismissals` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned DEFAULT NULL,
+  `article_low_id` bigint(20) unsigned NOT NULL,
+  `article_high_id` bigint(20) unsigned NOT NULL,
+  `dismissed_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `amd_pair_unique` (`article_low_id`,`article_high_id`),
+  KEY `amd_user_fk` (`dismissed_by`),
+  KEY `amd_org_idx` (`organization_id`),
+  CONSTRAINT `amd_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `amd_user_fk` FOREIGN KEY (`dismissed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `article_option_definitions`;
@@ -5015,6 +5117,8 @@ CREATE TABLE `customers` (
   `exclude_from_reports` tinyint(1) NOT NULL DEFAULT 0,
   `survey_opt_out` tinyint(1) NOT NULL DEFAULT 0,
   `billing_mode` varchar(16) DEFAULT NULL,
+  `billing_cutover_on` date DEFAULT NULL,
+  `billing_cutover_from` varchar(32) DEFAULT NULL,
   `buyer_reference` varchar(64) DEFAULT NULL,
   `delivery_format` varchar(24) DEFAULT NULL,
   `debtor_no` varchar(12) DEFAULT NULL,
@@ -5551,6 +5655,7 @@ CREATE TABLE `document_render_profiles` (
   `is_customer_specific` tinyint(1) NOT NULL DEFAULT 0,
   `document_kinds` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`document_kinds`)),
   `document_family` varchar(20) DEFAULT NULL,
+  `page_format` varchar(20) NOT NULL DEFAULT 'a4_portrait',
   `locale` varchar(10) DEFAULT NULL,
   `priority` smallint(6) NOT NULL DEFAULT 0,
   `active_version_id` bigint(20) unsigned DEFAULT NULL,
@@ -9099,6 +9204,7 @@ CREATE TABLE `letterhead_assets` (
   `organization_id` bigint(20) unsigned NOT NULL,
   `name` varchar(255) NOT NULL,
   `page_role` varchar(12) NOT NULL,
+  `page_format` varchar(20) NOT NULL DEFAULT 'a4_portrait',
   `source_type` varchar(8) NOT NULL,
   `disk` varchar(32) NOT NULL,
   `original_path` varchar(255) NOT NULL,
@@ -9190,6 +9296,25 @@ CREATE TABLE `lexoffice_vouchers` (
   CONSTRAINT `lexoffice_vouchers_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
   CONSTRAINT `lexoffice_vouchers_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `lexoffice_vouchers_supplier_id_foreign` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `lexoffice_webhook_deliveries`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `lexoffice_webhook_deliveries` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `delivery_hash` varchar(191) NOT NULL,
+  `event_type` varchar(100) DEFAULT NULL,
+  `resource_id` varchar(191) DEFAULT NULL,
+  `organization_id` bigint(20) unsigned DEFAULT NULL,
+  `received_at` timestamp NOT NULL,
+  `processed_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lwdel_hash_unique` (`delivery_hash`),
+  KEY `lwdel_org_fk` (`organization_id`),
+  CONSTRAINT `lwdel_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `license_flag_overrides`;
@@ -10295,6 +10420,37 @@ CREATE TABLE `orgamax_connections` (
   KEY `orgamax_connections_connected_by_foreign` (`connected_by`),
   CONSTRAINT `orgamax_connections_connected_by_foreign` FOREIGN KEY (`connected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `orgamax_connections_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `orgamax_invoices`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `orgamax_invoices` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `external_id` varchar(64) NOT NULL,
+  `customer_id` bigint(20) unsigned DEFAULT NULL,
+  `customer_external_id` varchar(64) DEFAULT NULL,
+  `customer_name` varchar(191) DEFAULT NULL,
+  `invoice_type` varchar(32) DEFAULT NULL,
+  `invoice_status` varchar(32) DEFAULT NULL,
+  `invoice_number` varchar(64) DEFAULT NULL,
+  `invoice_date` date DEFAULT NULL,
+  `due_on` date DEFAULT NULL,
+  `total_net` decimal(14,2) DEFAULT NULL,
+  `total_gross` decimal(14,2) DEFAULT NULL,
+  `outstanding_amount` decimal(14,2) DEFAULT NULL,
+  `currency` varchar(3) NOT NULL DEFAULT 'EUR',
+  `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`payload`)),
+  `synced_at` datetime DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `omi_org_external_unique` (`organization_id`,`external_id`),
+  KEY `orgamax_invoices_customer_id_foreign` (`customer_id`),
+  KEY `omi_org_status_idx` (`organization_id`,`invoice_status`),
+  CONSTRAINT `orgamax_invoices_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `orgamax_invoices_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `organization_audit_logs`;
@@ -14921,6 +15077,25 @@ CREATE TABLE `supplier_catalog_sources` (
   CONSTRAINT `scs_sup_fk` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `supplier_merge_dismissals`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `supplier_merge_dismissals` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned DEFAULT NULL,
+  `supplier_low_id` bigint(20) unsigned NOT NULL,
+  `supplier_high_id` bigint(20) unsigned NOT NULL,
+  `dismissed_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `smd_pair_unique` (`supplier_low_id`,`supplier_high_id`),
+  KEY `smd_user_fk` (`dismissed_by`),
+  KEY `smd_org_idx` (`organization_id`),
+  CONSTRAINT `smd_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `smd_user_fk` FOREIGN KEY (`dismissed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `suppliers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -16205,8 +16380,10 @@ CREATE TABLE `timesheets` (
   `magic_expires_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
+  `open_work_date` date GENERATED ALWAYS AS (case when `status` in ('draft','submitted') then `work_date` end) VIRTUAL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `timesheets_magic_token_unique` (`magic_token`),
+  UNIQUE KEY `timesheets_open_day_unique` (`project_id`,`user_id`,`open_work_date`),
   KEY `timesheets_signature_attachment_id_foreign` (`signature_attachment_id`),
   KEY `timesheets_locked_by_foreign` (`locked_by`),
   KEY `timesheets_project_id_work_date_index` (`project_id`,`work_date`),
@@ -17934,3 +18111,11 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (668,'2027_01_12_13
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (669,'2027_01_12_140000_create_patrol_tables',2);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (670,'2027_01_12_150000_create_bookable_services_and_extend_appointment_requests',2);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (671,'2027_01_13_100000_drop_invoice_templates_table',2);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (672,'2027_01_12_160000_add_signature_to_access_medium_handovers',3);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (673,'2027_01_14_100000_add_landscape_support_to_document_design',3);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (674,'2027_01_15_100000_create_accounting_migration_tables',3);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (675,'2027_01_16_100000_create_orgamax_invoices_table',3);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (676,'2027_01_17_100000_add_timesheets_open_day_unique',3);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (677,'2027_01_18_100000_create_lexoffice_webhook_deliveries_table',3);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (678,'2027_01_19_100000_create_supplier_merge_dismissals_table',3);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (679,'2027_01_20_100000_create_article_merge_dismissals_table',4);

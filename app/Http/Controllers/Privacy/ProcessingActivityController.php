@@ -117,11 +117,12 @@ class ProcessingActivityController extends Controller {
         Gate::authorize('approve', $activity);
         $user = $request->user();
         abort_unless($user !== null, 403);
-        $data = $request->validate(['version_id' => ['required', 'integer']]);
+        $data = $request->validate(['version_id' => ['required', 'string']]);
 
+        // Sqid aus dem Formular (W3.3); die Bindung an die Taetigkeit bleibt.
         $version = ProcessingActivityVersion::query()
             ->where('activity_id', $activity->id)
-            ->findOrFail((int) $data['version_id']);
+            ->findOrFail(\App\Support\Sqid::decodeOrAbort(ProcessingActivityVersion::class, (string) $data['version_id']));
         $this->service->approve($activity, $version, $user);
 
         return back()->with('status', __('Version freigegeben.'));

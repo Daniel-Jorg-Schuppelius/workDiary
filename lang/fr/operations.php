@@ -31,6 +31,8 @@ return [
         'config_missing' => 'Configuration manquante',
         'support_grant_open' => 'Autorisation de support ouverte',
         'problem_report_open' => 'Signalement de problème ouvert',
+        'cloud_intake_reauth' => 'Réception cloud : nouvelle connexion requise',
+        'cloud_intake_quarantined' => 'Réception cloud : importations refusées',
     ],
     'severity' => [
         'info' => 'Information',
@@ -85,6 +87,8 @@ return [
         'support_grant_open' => 'Autorisation de support pour :grantee active jusqu\'au :until.',
         'problem_report_open' => 'Le signalement :reference de :name attend un traitement.',
         'problem_report_summary' => ':count signalement(s) ouvert(s) en attente de traitement.',
+        'cloud_intake_reauth' => 'La réception de documents cloud :provider (« :folder ») doit être reconnectée (:status).',
+        'cloud_intake_quarantined' => ':count fichier(s) de la réception de documents cloud ont été refusés (dernier motif : :reason).',
         'support_grant_summary' => ':count autorisation(s) de support active(s) — vérifier et révoquer si nécessaire.',
     ],
     'filter' => [

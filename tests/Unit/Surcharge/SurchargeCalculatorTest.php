@@ -105,6 +105,37 @@ class SurchargeCalculatorTest extends TestCase {
         $this->assertSame(480, $shares[0]->minutes);
     }
 
+    /**
+     * Additives Stacking (Audit 2026-08, W4.3): Mit `surcharge.stacking = add`
+     * zaehlen ueberlappende Minuten fuer JEDE zutreffende Regel — nach
+     * § 3b EStG fuer Nacht + Sonntag/Feiertag zulaessig. Der Default bleibt
+     * `highest`, damit sich fuer Bestandsmandanten nichts still aendert.
+     */
+    public function test_stacking_add_counts_minutes_for_every_matching_rule(): void {
+        \App\Support\Setting::set('surcharge.stacking', 'add', \App\Settings\SettingScope::Organization, $this->organization);
+
+        $night = $this->makeRule(SurchargeRule::factory()->night('23:00:00', '06:00:00', '25.00'));
+        $sunday = $this->makeRule(SurchargeRule::factory()->sunday('50.00'));
+
+        // So 04.01. 00:00-08:00: 00:00-06:00 ueberlappt Nacht + Sonntag.
+        $shares = $this->calc('2026-01-04 00:00:00', '2026-01-04 08:00:00', [$night, $sunday]);
+
+        $byRule = collect($shares)->keyBy(fn ($s) => $s->rule->id);
+        $this->assertSame(360, $byRule[$night->id]->minutes, 'Nachtminuten zaehlen zusaetzlich.');
+        $this->assertSame(480, $byRule[$sunday->id]->minutes, 'Sonntag behaelt den ganzen Tag.');
+    }
+
+    /** Ohne gesetztes Setting bleibt es beim Bestandsverhalten. */
+    public function test_stacking_defaults_to_highest(): void {
+        $night = $this->makeRule(SurchargeRule::factory()->night('23:00:00', '06:00:00', '25.00'));
+        $sunday = $this->makeRule(SurchargeRule::factory()->sunday('50.00'));
+
+        $shares = $this->calc('2026-01-04 00:00:00', '2026-01-04 08:00:00', [$night, $sunday]);
+
+        $this->assertCount(1, $shares);
+        $this->assertSame($sunday->id, $shares[0]->rule->id);
+    }
+
     public function test_overlap_higher_night_percentage_wins_inside_window(): void {
         $night = $this->makeRule(SurchargeRule::factory()->night('23:00:00', '06:00:00', '60.00'));
         $sunday = $this->makeRule(SurchargeRule::factory()->sunday('50.00'));

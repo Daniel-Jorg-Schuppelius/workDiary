@@ -14,8 +14,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskStatus, OperationsTaskType};
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\{OperationsTask, Organization, User};
+use App\Models\{OperationsTask, User};
 use App\Rules\ExistsInCurrentOrganization;
 use App\Support\Setting;
 use Carbon\CarbonImmutable;
@@ -31,6 +32,8 @@ use Illuminate\View\View;
  * (Auditable am Model).
  */
 class OperationsTaskController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(Request $request): View {
         Gate::authorize(Permission::PlatformOperationsView->value);
 
@@ -134,11 +137,5 @@ class OperationsTaskController extends Controller {
     private function authorizeManage(OperationsTask $task): void {
         Gate::authorize(Permission::PlatformOperationsManage->value);
         abort_unless((int) $task->organization_id === $this->currentOrganizationId(), 404);
-    }
-
-    private function currentOrganizationId(): int {
-        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
-
-        return $org instanceof Organization ? (int) $org->id : 0;
     }
 }

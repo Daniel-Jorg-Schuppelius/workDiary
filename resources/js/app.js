@@ -29,6 +29,7 @@ import "./global-search.js";
 import "./header-autohide.js";
 import "./help-drawer.js";
 import "./quick-book.js";
+import "./agile-backlog.js";
 import "./kanban.js";
 import "./layout.js";
 import "./oauth-popup.js";

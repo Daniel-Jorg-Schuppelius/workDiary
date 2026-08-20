@@ -69,6 +69,7 @@ return [
             'not_configured' => 'Dropbox-App-Schlüssel nicht konfiguriert.',
             'no_org_context' => 'Kein Organisationskontext (Systemlauf).',
             'attention' => 'Mindestens eine Dropbox-Verbindung braucht Aufmerksamkeit (Re-Auth/blockiert).',
+            'backup_attention' => 'Das Dropbox-Backupziel braucht Aufmerksamkeit (Re-Auth/blockiert) — betrifft alle Organisationen.',
             'ok' => 'Dropbox-Verbindungen in Ordnung.',
             'error' => 'Health-Prüfung fehlgeschlagen (:class).',
         ],
@@ -79,6 +80,7 @@ return [
             'not_configured' => 'Google-Drive-Client-Schlüssel nicht konfiguriert.',
             'no_org_context' => 'Kein Organisationskontext (Systemlauf).',
             'attention' => 'Mindestens eine Google-Drive-Verbindung braucht Aufmerksamkeit (Re-Auth/blockiert).',
+            'backup_attention' => 'Das Google-Drive-Backupziel braucht Aufmerksamkeit (Re-Auth/blockiert) — betrifft alle Organisationen.',
             'ok' => 'Google-Drive-Verbindungen in Ordnung.',
             'error' => 'Health-Prüfung fehlgeschlagen (:class).',
         ],
@@ -88,6 +90,7 @@ return [
         'health' => [
             'no_org_context' => 'Kein Organisationskontext (Systemlauf).',
             'attention' => 'Mindestens eine Nextcloud-Verbindung braucht Aufmerksamkeit (Re-Auth/blockiert).',
+            'backup_attention' => 'Das Nextcloud-Backupziel braucht Aufmerksamkeit (Re-Auth/blockiert) — betrifft alle Organisationen.',
             'ok' => 'Nextcloud-Verbindungen in Ordnung.',
             'error' => 'Health-Prüfung fehlgeschlagen (:class).',
         ],
@@ -135,5 +138,44 @@ return [
         'revision' => 'Revision',
         'reason' => 'Grund',
         'when' => 'Zeitpunkt',
+    ],
+    // Importbericht (Feature 080 P9; Audit 2026-08, W4.4).
+    'report' => [
+        'title' => 'Importbericht Cloud-Dokumenteingang',
+        'nav' => 'Cloud-Dokumenteingang',
+        'subtitle' => 'Übernommene und abgewiesene Dokumente im Zeitraum',
+        'kpi' => [
+            'total' => 'Vorgänge gesamt',
+            'imported' => 'Übernommen',
+            'inbox' => 'In der Zuordnungs-Inbox',
+            'rejected' => 'Abgewiesen',
+        ],
+        'chart' => [
+            'per_period' => 'Vorgänge :per',
+            'by_provider' => 'Vorgänge je Anbieter',
+        ],
+        'unit' => ['documents' => 'Dokumente'],
+        'section' => [
+            'connections' => 'Verbindungen',
+            'reasons' => 'Abweisungsgründe',
+            'items' => 'Vorgänge',
+        ],
+        'column' => [
+            'folder' => 'Ordner',
+            'provider' => 'Anbieter',
+            'status' => 'Status',
+            'imported' => 'Übernommen',
+            'rejected' => 'Abgewiesen',
+            'last_run' => 'Letzter Lauf',
+            'reason' => 'Grund',
+            'count' => 'Anzahl',
+            'date' => 'Zeitpunkt',
+            'path' => 'Quellpfad',
+        ],
+        'empty' => [
+            'connections' => 'Noch keine Cloud-Verbindung angebunden.',
+            'reasons' => 'Keine Abweisungen im gewählten Zeitraum.',
+            'items' => 'Noch keine Daten im gewählten Zeitraum.',
+        ],
     ],
 ];

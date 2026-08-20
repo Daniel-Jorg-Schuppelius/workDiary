@@ -170,7 +170,8 @@ class RoleAssignmentAuditTest extends TestCase {
         $this->actingAs($this->admin)
             ->put(route('admin.access.members.update', $member), [
                 'roles' => [],
-                'groups' => [$group->id],
+                // Formular-/URL-Kennungen sind Sqids (Audit-Welle 3.3).
+                'groups' => [$group->sqid],
             ])
             ->assertRedirect(route('admin.access.members.index'));
 

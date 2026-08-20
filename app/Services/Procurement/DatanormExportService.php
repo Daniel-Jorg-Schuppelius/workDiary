@@ -90,7 +90,7 @@ class DatanormExportService {
             if ($customer !== null) {
                 $catalog->setCustomer(new DatanormCustomer(
                     customerNumber: trim((string) $customer->number),
-                    name: trim((string) ($customer->company ?: $customer->name)) ?: null,
+                    name: trim((string) ($customer->displayLabel())) ?: null,
                     street: $customer->address_street,
                     zip: $customer->address_zip,
                     city: $customer->address_city

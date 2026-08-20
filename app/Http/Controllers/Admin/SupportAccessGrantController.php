@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\{Organization, SupportAccessGrant, User};
+use App\Models\{SupportAccessGrant, User};
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -28,10 +29,12 @@ use Illuminate\View\View;
  * (MVP-004) und der Datenschutz-Selbstauskunft.
  */
 class SupportAccessGrantController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(): View {
         Gate::authorize(Permission::SupportGrantManage->value);
 
-        $organization = $this->currentOrganization();
+        $organization = $this->currentOrganizationOrAbort(404);
 
         $grants = SupportAccessGrant::query()
             ->where('organization_id', $organization->id)
@@ -59,7 +62,7 @@ class SupportAccessGrantController extends Controller {
     public function create(): View {
         Gate::authorize(Permission::SupportGrantManage->value);
 
-        $organization = $this->currentOrganization();
+        $organization = $this->currentOrganizationOrAbort(404);
 
         $supportUsers = User::query()
             ->where('organization_id', $organization->id)
@@ -76,7 +79,7 @@ class SupportAccessGrantController extends Controller {
     public function store(Request $request): RedirectResponse {
         Gate::authorize(Permission::SupportGrantManage->value);
 
-        $organization = $this->currentOrganization();
+        $organization = $this->currentOrganizationOrAbort(404);
 
         // Sqid-Input dekodieren (numerischer Fallback für Alt-Clients).
         if ($request->filled('granted_to_user_id')) {
@@ -119,7 +122,7 @@ class SupportAccessGrantController extends Controller {
     public function revoke(Request $request, SupportAccessGrant $grant): RedirectResponse {
         Gate::authorize(Permission::SupportGrantManage->value);
 
-        $organization = $this->currentOrganization();
+        $organization = $this->currentOrganizationOrAbort(404);
         abort_unless($grant->organization_id === $organization->id, 404);
 
         if (! $grant->isActive()) {
@@ -141,10 +144,4 @@ class SupportAccessGrantController extends Controller {
             ->with('success', __('Supportfreigabe wurde widerrufen. Laufende Support-Sitzungen werden beim nächsten Aufruf beendet.'));
     }
 
-    private function currentOrganization(): Organization {
-        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
-        abort_unless($org instanceof Organization, 404);
-
-        return $org;
-    }
 }

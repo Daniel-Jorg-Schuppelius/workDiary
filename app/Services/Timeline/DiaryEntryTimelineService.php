@@ -468,7 +468,7 @@ class DiaryEntryTimelineService {
             ->get();
 
         foreach ($timeEntries as $timeEntry) {
-            $duration = sprintf('%d:%02d h', intdiv((int) $timeEntry->minutes, 60), ((int) $timeEntry->minutes) % 60);
+            $duration = \App\Support\Formats::duration((int) $timeEntry->minutes, 'clock');
             $items[] = new TimelineItem(
                 id: 'time:' . $timeEntry->id,
                 type: 'time',

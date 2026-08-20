@@ -169,7 +169,7 @@
                                             <span class="text-base-content/50">({{ $customerLabel[$target->customer_id] ?? '—' }})</span>
                                             <x-status-badge tone="accent" size="sm">{{ __('Endkunde') }}</x-status-badge>
                                         @else
-                                            {{ $target->company ?: $target->name }}
+                                            {{ $target->displayLabel() }}
                                         @endif
                                     </td>
                                     <td>

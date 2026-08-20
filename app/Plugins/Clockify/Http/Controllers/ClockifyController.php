@@ -12,7 +12,7 @@ namespace App\Plugins\Clockify\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\{IntegrationInboxItem, Organization};
-use App\Plugins\Clockify\{ClockifyConfig, ClockifyImportService, ClockifyPlugin};
+use App\Plugins\Clockify\{ClockifyConfig, ClockifyExportService, ClockifyImportService, ClockifyPlugin};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
@@ -50,6 +50,7 @@ class ClockifyController extends Controller {
             'inboxOpenCount' => $inboxOpenCount,
             'apiConfigured' => $config['api_key'] !== null,
             'syncWindowDays' => $config['sync_window_days'],
+            'exportEnabled' => $config['export_enabled'],
         ]);
     }
 
@@ -99,6 +100,40 @@ class ClockifyController extends Controller {
             'skipped' => $result['skipped'],
             'unmatched' => $result['unmatched'],
         ]) . $this->unresolvedUsersSuffix($result));
+    }
+
+    /** Übertragung lokaler Zeiten nach Clockify (Spiegelung, Toggl-Muster). */
+    public function exportApi(Request $request, ClockifyExportService $export): RedirectResponse {
+        $admin = $this->admin();
+
+        $data = $request->validate([
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date', 'after_or_equal:from'],
+        ]);
+
+        $config = ClockifyConfig::resolve($admin->organization_id);
+
+        $result = $export->exportPending(
+            $this->organization($admin),
+            $config,
+            isset($data['from']) ? CarbonImmutable::parse((string) $data['from'])->startOfDay() : null,
+            isset($data['to']) ? CarbonImmutable::parse((string) $data['to'])->endOfDay() : null,
+        );
+
+        if ($result['pushed'] === 0 && $result['errors'] !== []) {
+            return back()->withErrors(['api' => $result['errors'][0]]);
+        }
+
+        $status = __('Clockify-Übertragung: :pushed übertragen, :skipped übersprungen, :failed fehlgeschlagen.', [
+            'pushed' => $result['pushed'],
+            'skipped' => $result['skipped'],
+            'failed' => $result['failed'],
+        ]);
+        if ($result['errors'] !== []) {
+            $status .= ' ' . $result['errors'][0];
+        }
+
+        return back()->with('status', $status);
     }
 
     /**

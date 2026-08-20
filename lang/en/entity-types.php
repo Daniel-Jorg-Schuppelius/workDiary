@@ -115,6 +115,7 @@ return [
     'CleaningProfile' => 'Cleaning profile',
     'CloudDocumentConnection' => 'Cloud document connection',
     'CloudDocumentRoute' => 'Cloud document route',
+    'CloudIntakeReportController' => 'Report export: cloud document intake',
     'CohortComparisonReportController' => 'Report export: cohort comparison',
     'Comment' => 'Comment',
     'CommunicationNote' => 'Communication note',

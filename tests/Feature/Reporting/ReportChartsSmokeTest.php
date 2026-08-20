@@ -66,6 +66,8 @@ class ReportChartsSmokeTest extends TestCase {
             'compliance-history' => ['reports.compliance.history', []],
             'audit-activity' => ['reports.audit-activity', []],
             'data-quality' => ['reports.data-quality', []],
+            // Importbericht Cloud-Dokumenteingang (Feature 080 P9; Audit 2026-08, W4.4).
+            'cloud-intake' => ['reports.cloud-intake', []],
             'safety' => ['reports.safety', []],
             // Bewerbungsbericht hängt unter applications.* (module.applications,
             // in der Enterprise-Factory-Org enthalten).

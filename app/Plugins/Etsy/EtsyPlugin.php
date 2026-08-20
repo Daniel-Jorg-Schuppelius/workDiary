@@ -12,10 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Etsy;
 
-use App\Models\{EtsyConnection, Organization};
+use App\Models\EtsyConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Etsy\Api\{EtsyApiException, EtsyClientFactory};
-use App\Plugins\Support\PluginOrgContext;
 use Carbon\CarbonImmutable;
 use Throwable;
 
@@ -54,6 +53,11 @@ class EtsyPlugin extends AbstractPlugin {
     }
 
     /** @return array<int, \App\Plugins\Contracts\PluginCapability> Orders laufen über den Spiegel (Billbee-Muster). */
+    /**
+     * Bewusst leer: Bestellungs-/Zahlungsimport und Versand laufen über die
+     * plugin-eigenen Services und den Webhook-Empfänger, nicht über
+     * Capability-Interfaces (Audit 2026-08, W1.6).
+     */
     public function capabilities(): array {
         return [];
     }
@@ -78,9 +82,9 @@ class EtsyPlugin extends AbstractPlugin {
     }
 
     public function healthCheck(): PluginHealth {
-        $organization = PluginOrgContext::currentOrNull();
-        if (! $organization instanceof Organization) {
-            return PluginHealth::ok(__('Keine Organisation im Kontext.'));
+        $organization = $this->healthOrgContext();
+        if ($organization instanceof PluginHealth) {
+            return $organization;
         }
 
         if (! EtsyConfig::isConfigured((int) $organization->id)) {

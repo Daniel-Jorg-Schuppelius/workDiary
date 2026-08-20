@@ -93,6 +93,8 @@ return [
         'contracts.*' => 'contracts.overview',
         // Cloud-Dokumenteingang (Feature 080).
         'admin.cloud-intake.*' => 'cloud-intake.overview',
+        // Importbericht teilt sich das Topic mit der Admin-Seite (Feature 080 P9).
+        'reports.cloud-intake' => 'cloud-intake.overview',
         // Cloud-Backupziele (Feature 017 Phase 32).
         'admin.backup-targets.*' => 'backup-targets.overview',
         // Produktstamm (Typ-Ebene, MVP-354).

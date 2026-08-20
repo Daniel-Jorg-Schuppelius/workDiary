@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Reporting;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\SlaClockSegment;
 use App\Services\ServiceTicket\HelpdeskMetricsService;
@@ -37,11 +38,18 @@ use Illuminate\View\View;
  * in diesem Bericht bereits (sla.viewAny).
  */
 class HelpdeskReportController extends Controller {
+    use ResolvesGlobalDateRange;
+
     public function index(Request $request, HelpdeskMetricsService $metrics): View {
         Gate::authorize(Permission::SlaViewAny->value);
 
-        $from = $request->query('from') !== null ? Carbon::parse((string) $request->query('from')) : now()->subWeeks(8)->startOfWeek();
-        $to = $request->query('to') !== null ? Carbon::parse((string) $request->query('to'))->endOfDay() : now();
+        // W2.1: einheitlicher Parameter-Guard, fachlicher 8-Wochen-Default bleibt.
+        [$rangeFrom, $rangeTo] = $this->resolveRangeWithDefault($request, static fn (): array => [
+            \Carbon\CarbonImmutable::now()->subWeeks(8)->startOfWeek(),
+            \Carbon\CarbonImmutable::now(),
+        ]);
+        $from = Carbon::instance($rangeFrom->toDateTime());
+        $to = Carbon::instance($rangeTo->toDateTime());
 
         // Signierte, kurzlebige Drilldown-Links (P11-Muster);
         // expected = Kennzahlwert des Punktes für die Konsistenzprüfung.

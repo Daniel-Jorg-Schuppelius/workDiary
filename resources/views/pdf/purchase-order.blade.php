@@ -21,7 +21,7 @@
             <td>
                 <strong>{{ __('procurement.pdf.supplier') }}</strong><br>
                 @if ($order->supplier)
-                    {{ $order->supplier->company ?: $order->supplier->name }}<br>
+                    {{ $order->supplier->displayLabel() }}<br>
                     @if ($order->supplier->address_street){{ $order->supplier->address_street }}<br>@endif
                     {{ $order->supplier->address_zip }} {{ $order->supplier->address_city }}<br>
                     {{ $order->supplier->country }}

@@ -222,4 +222,20 @@ final class HelpdeskReportTest extends TestCase {
             ->assertSee(__('Wartezeiten nach Verursacher'))
             ->assertSee(__('Katalog-Nachfrage'));
     }
+
+    /**
+     * Audit 2026-08 (W2.1): hand-editierte Bookmark-Parameter warfen eine
+     * ungefangene InvalidFormatException (HTTP 500); verdrehte Grenzen blieben
+     * verdreht. Beides fängt jetzt der gemeinsame Guard des Concerns ab —
+     * der fachliche 8-Wochen-Default bleibt unverändert.
+     */
+    public function test_report_survives_broken_and_reversed_range_parameters(): void {
+        $this->actingAs($this->agent)
+            ->get(route('helpdesk.reports.index', ['from' => 'kaputt', 'to' => 'auch-kaputt']))
+            ->assertOk();
+
+        $this->actingAs($this->agent)
+            ->get(route('helpdesk.reports.index', ['from' => '2026-07-31', 'to' => '2026-07-01']))
+            ->assertOk();
+    }
 }

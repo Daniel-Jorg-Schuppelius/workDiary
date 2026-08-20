@@ -98,7 +98,9 @@ class PrivacyAvvTest extends TestCase {
         ]);
 
         $this->actingAs($officer)->post(route('dataprotection.agreements.activities', $agreement), [
-            'activity_ids' => [$activity->id, $foreignActivity->id],
+            // Sqids wie aus dem Formular (W3.3); die org-gescopte Whitelist
+            // im Controller bleibt die eigentliche Schutzlinie.
+            'activity_ids' => [$activity->sqid, $foreignActivity->sqid],
         ])->assertRedirect();
 
         $linked = $agreement->activities()->pluck('privacy_processing_activities.id')->all();

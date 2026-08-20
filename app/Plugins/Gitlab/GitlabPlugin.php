@@ -17,7 +17,6 @@ use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
 use App\Plugins\Gitlab\Api\{GitlabApiException, GitlabClientFactory};
 use App\Plugins\Gitlab\Services\GitlabIssueImporter;
-use App\Plugins\Support\PluginOrgContext;
 use Throwable;
 
 /**
@@ -105,6 +104,7 @@ class GitlabPlugin extends AbstractPlugin implements TaskSyncer {
             ['key' => 'webhook_token', 'label' => __('Webhook-Token'), 'type' => 'password', 'help' => __('Optional: Secret Token des GitLab-Webhooks (Issue-Events, X-Gitlab-Token). Ohne Token bleibt der Webhook-Endpunkt deaktiviert; das Polling holt alles nach.')],
             ['key' => 'allow_private_network', 'label' => __('Private Adressen erlauben'), 'type' => 'boolean', 'default' => false, 'help' => __('Nur für On-Premise-Instanzen im eigenen Netz: erlaubt eine Instanz-URL mit privater/interner Adresse.')],
             ['key' => 'default_project', 'label' => __('Standard-Projekt (Sqid)'), 'type' => 'text', 'help' => __('Optional: Projekt-Kennung aus der Projekt-URL; importierte Aufgaben landen dort, sonst als globale Aufgabe.')],
+            ['key' => 'writeback', 'label' => __('Erledigung zurückschreiben'), 'type' => 'boolean', 'default' => false, 'help' => __('Schließt das verknüpfte Issue (mit Notiz), wenn die Aufgabe in workDiary erledigt wird, und öffnet es beim Wiedereröffnen. Titel und Beschreibung bleiben quellsystem-geführt. Der Token braucht Schreibzugriff auf Issues (api-Scope).')],
         ];
     }
 
@@ -113,9 +113,9 @@ class GitlabPlugin extends AbstractPlugin implements TaskSyncer {
      * hinterlegten Token (Token gültig + API erreichbar).
      */
     public function healthCheck(): PluginHealth {
-        $organization = PluginOrgContext::currentOrNull();
-        if (! $organization instanceof Organization) {
-            return PluginHealth::ok(__('Keine Organisation im Kontext.'));
+        $organization = $this->healthOrgContext();
+        if ($organization instanceof PluginHealth) {
+            return $organization;
         }
 
         if (! GitlabConfig::isConfigured((int) $organization->id)) {

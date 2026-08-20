@@ -324,7 +324,8 @@ class TransferPositionReviewTest extends TestCase {
         // Zusammenfassen addiert Menge und Betrag.
         $expectedQuantity = round($first->quantityFloat() + $second->quantityFloat(), 3);
         $this->post(route('finance.transfers.positions.merge', $transfer), [
-            'positions' => [$first->id, $second->id],
+            // Sqids wie aus dem Formular (W3.3).
+            'positions' => [$first->sqid, $second->sqid],
         ])->assertSessionHasNoErrors();
 
         $merged = $transfer->fresh()->positions;

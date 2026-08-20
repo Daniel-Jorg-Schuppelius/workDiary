@@ -292,7 +292,7 @@ class XRechnungGenerator {
             ->withDueDate(new \DateTimeImmutable($dueOn->toDateString()))
             ->withSeller($seller['name'], $seller['vat_id'], $seller['tax_number'] !== '' ? $seller['tax_number'] : null)
             ->withSellerAddress($seller['street'], $seller['zip'], $seller['city'], $seller['country'])
-            ->withBuyer((string) ($customer->company ?: $customer->name), trim((string) $customer->vat_id) !== '' ? trim((string) $customer->vat_id) : null)
+            ->withBuyer((string) ($customer->displayLabel()), trim((string) $customer->vat_id) !== '' ? trim((string) $customer->vat_id) : null)
             ->withBuyerAddress(
                 trim((string) $customer->address_street),
                 trim((string) $customer->address_zip),

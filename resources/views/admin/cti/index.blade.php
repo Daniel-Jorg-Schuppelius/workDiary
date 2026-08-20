@@ -21,10 +21,7 @@
         @endif
         <x-validation-errors first />
 
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <h1 class="mb-1 font-['Space_Grotesk'] text-lg font-semibold">{{ __('cti.title') }}</h1>
-            <p class="text-sm text-base-content/60">{{ __('cti.intro') }}</p>
-        </div>
+        <x-page-toolbar :subtitle="__('cti.intro')" />
 
         {{-- Einmalige Webhook-URL nach Ausstellung --}}
         @if ($issuedUrl)
@@ -100,6 +97,55 @@
                             @endforeach
                         </tbody>
                     </table>
+                </div>
+
+                {{-- Click-to-Dial je Anbindung (Audit 2026-08, W4.5): ausgehender
+                     Anruf-Start. Ohne Schalter bleibt der Anruf-Knopf in den
+                     Stammdaten aus. --}}
+                <div class="mt-6 space-y-4">
+                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('cti.dial.settings') }}</h2>
+                    @foreach ($connections as $connection)
+                        @if ($connection->isActive())
+                            <form method="POST" action="{{ route('admin.cti.dial-settings') }}"
+                                  class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                                @csrf
+                                <input type="hidden" name="connection" value="{{ $connection->sqid }}">
+                                <p class="mb-3 text-sm font-medium">{{ $connection->name }} <span class="text-base-content/50">({{ $connection->provider }})</span></p>
+
+                                <label class="label cursor-pointer justify-start gap-3">
+                                    <input type="checkbox" name="dial_enabled" value="1" class="checkbox checkbox-sm"
+                                           @checked($connection->dial_enabled)>
+                                    <span class="label-text">{{ __('cti.dial.enabled') }}</span>
+                                </label>
+
+                                <div class="mt-3 grid gap-3 sm:grid-cols-3">
+                                    <label class="form-control">
+                                        <span class="label-text text-xs">{{ __('cti.dial.extension') }}</span>
+                                        <input type="text" name="dial_extension" maxlength="64"
+                                               value="{{ old('dial_extension', $connection->dial_extension) }}"
+                                               class="input input-sm input-bordered">
+                                        <span class="mt-1 text-xs text-base-content/60">{{ __('cti.dial.extension_help') }}</span>
+                                    </label>
+                                    <label class="form-control">
+                                        <span class="label-text text-xs">{{ __('cti.dial.api_base_url') }}</span>
+                                        <input type="url" name="api_base_url" maxlength="255"
+                                               value="{{ old('api_base_url', $connection->api_base_url) }}"
+                                               class="input input-sm input-bordered font-mono" placeholder="https://…">
+                                    </label>
+                                    <label class="form-control">
+                                        <span class="label-text text-xs">{{ __('cti.dial.api_token') }}</span>
+                                        <input type="password" name="api_token" maxlength="500" autocomplete="new-password"
+                                               class="input input-sm input-bordered font-mono" placeholder="••••••••">
+                                        <span class="mt-1 text-xs text-base-content/60">{{ __('cti.dial.api_token_help') }}</span>
+                                    </label>
+                                </div>
+
+                                <div class="mt-3">
+                                    <x-icon-btn icon="save" tone="primary" size="sm" type="submit" show-label>{{ __('Speichern') }}</x-icon-btn>
+                                </div>
+                            </form>
+                        @endif
+                    @endforeach
                 </div>
             @endif
         </div>

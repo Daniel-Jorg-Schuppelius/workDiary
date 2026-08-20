@@ -75,7 +75,7 @@
                         }
                         $c = $customerNamesById[$cid] ?? null;
 
-                        return mb_strtolower((string) ($c?->company ?: $c?->name ?: '~'));
+                        return mb_strtolower((string) ($c?->displayLabel() ?: '~'));
                     });
             @endphp
             <div class="space-y-3">
@@ -180,7 +180,7 @@
                                             <option value="">{{ __('— Gerät wählen —') }}</option>
                                             @foreach ($assetOptionGroups as $cid => $customerAssets)
                                                 @php $c = $cid !== 0 ? ($customerNamesById[$cid] ?? null) : null; @endphp
-                                                <optgroup label="{{ $c ? ($c->company ?: $c->name) : __('Eigene Geräte / ohne festen Kunden') }}">
+                                                <optgroup label="{{ $c ? ($c->displayLabel()) : __('Eigene Geräte / ohne festen Kunden') }}">
                                                     @foreach ($customerAssets as $asset)
                                                         <option value="{{ $asset->sqid }}">{{ $asset->name ?: $asset->asset_no }} ({{ $asset->asset_no }})</option>
                                                     @endforeach
@@ -229,7 +229,7 @@
                                             <select name="customer_id" x-model="customer" @change="resetForeign" class="select select-sm select-bordered w-full">
                                                 <option value="">{{ __('— kein fester Kunde (Firmenrechner) —') }}</option>
                                                 @foreach ($customers as $customer)
-                                                    <option value="{{ $customer->sqid }}">{{ $customer->company ?: $customer->name }}</option>
+                                                    <option value="{{ $customer->sqid }}">{{ $customer->displayLabel() }}</option>
                                                 @endforeach
                                             </select>
                                         </label>
@@ -367,7 +367,7 @@
                                 <select name="customer_id" required x-model="customer" @change="resetForeign" class="select select-sm select-bordered w-full">
                                     <option value="">{{ __('— Kunde —') }}</option>
                                     @foreach ($customers as $customer)
-                                        <option value="{{ $customer->sqid }}">{{ $customer->company ?: $customer->name }}</option>
+                                        <option value="{{ $customer->sqid }}">{{ $customer->displayLabel() }}</option>
                                     @endforeach
                                 </select>
                             </label>

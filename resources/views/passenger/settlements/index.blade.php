@@ -43,72 +43,70 @@
     @endif
     <x-validation-errors />
 
-    <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-        <x-table bare scroll="flex" :pinRows="true">
-            <x-slot:head>
-                <tr>
-                    <th>{{ __('passenger.field.shift_date') }}</th>
-                    <th>{{ __('passenger.field.driver') }}</th>
-                    <th>{{ __('passenger.field.vehicle') }}</th>
-                    <th class="text-right">{{ __('passenger.field.meter_total') }}</th>
-                    <th class="text-right">{{ __('passenger.field.payment_total') }}</th>
-                    <th class="text-right">{{ __('passenger.field.tip_total') }}</th>
-                    <th class="text-right">{{ __('passenger.field.difference') }}</th>
-                    <th>{{ __('Status') }}</th>
-                    <th></th>
-                </tr>
-            </x-slot:head>
-            @forelse ($settlements as $settlement)
-                @php $difference = $settlement->computeDifference(); @endphp
-                <tr>
-                    <td class="whitespace-nowrap">{{ $settlement->shift_date->fdate() }}</td>
-                    <td>{{ $settlement->driver->name ?? '—' }}</td>
-                    <td>{{ $settlement->vehicle->license_plate ?? '—' }}</td>
-                    <td class="text-right tabular-nums">{{ $settlement->meter_total }}</td>
-                    <td class="text-right tabular-nums">{{ $settlement->paymentTotal() }}</td>
-                    <td class="text-right tabular-nums">{{ $settlement->tip_total }}</td>
-                    <td class="text-right tabular-nums {{ bccomp($difference, '0', 2) !== 0 ? 'text-warning font-medium' : '' }}">{{ $difference }}</td>
-                    <td>
-                        <x-status-badge size="md" outline :tone="match ($settlement->status) {
-                            \App\Models\Passenger\PassengerShiftSettlement::STATUS_BALANCED => 'success',
-                            \App\Models\Passenger\PassengerShiftSettlement::STATUS_DISPUTED => 'warning',
-                            default => 'neutral',
-                        }">{{ __('passenger.settlement_status.' . $settlement->status) }}</x-status-badge>
-                    </td>
-                    <td class="text-right">
-                        @can('settle', $settlement)
-                            @if ($settlement->status === \App\Models\Passenger\PassengerShiftSettlement::STATUS_OPEN)
-                                <div class="flex items-center justify-end gap-1">
-                                    <x-icon-btn icon="edit" data-entry-modal-trigger :href="route('passenger-settlements.edit', $settlement)" :label="__('passenger.masterdata.action.edit')" />
-                                    <form method="POST" action="{{ route('passenger-settlements.close', $settlement) }}" class="flex items-center gap-1">
-                                        @csrf
-                                        @if (! $settlement->isBalanced())
-                                            <input type="text" name="difference_reason" placeholder="{{ __('passenger.field.difference_reason') }} *" class="input input-xs input-bordered w-44" aria-label="{{ __('passenger.field.difference_reason') }}">
-                                        @endif
-                                        <x-icon-btn icon="task_alt" type="submit" :label="__('passenger.settlements.action.close')" />
-                                    </form>
-                                </div>
-                            @elseif ($settlement->cash_entry_id !== null)
-                                <x-status-badge size="md" outline tone="success">{{ __('passenger.cash.posted') }}</x-status-badge>
-                            @elseif ($canPostCash && $cashRegisters->isNotEmpty() && bccomp((string) $settlement->cash_total, '0', 2) > 0)
-                                <form method="POST" action="{{ route('passenger-settlements.cash-entry', $settlement) }}" class="flex items-center justify-end gap-1">
+    <x-table :zebra="true" scroll="flex" :pinRows="true">
+        <x-slot:head>
+            <tr>
+                <th>{{ __('passenger.field.shift_date') }}</th>
+                <th>{{ __('passenger.field.driver') }}</th>
+                <th>{{ __('passenger.field.vehicle') }}</th>
+                <th class="text-right">{{ __('passenger.field.meter_total') }}</th>
+                <th class="text-right">{{ __('passenger.field.payment_total') }}</th>
+                <th class="text-right">{{ __('passenger.field.tip_total') }}</th>
+                <th class="text-right">{{ __('passenger.field.difference') }}</th>
+                <th>{{ __('Status') }}</th>
+                <th></th>
+            </tr>
+        </x-slot:head>
+        @forelse ($settlements as $settlement)
+            @php $difference = $settlement->computeDifference(); @endphp
+            <tr>
+                <td class="whitespace-nowrap">{{ $settlement->shift_date->fdate() }}</td>
+                <td>{{ $settlement->driver->name ?? '—' }}</td>
+                <td>{{ $settlement->vehicle->license_plate ?? '—' }}</td>
+                <td class="text-right tabular-nums">{{ $settlement->meter_total }}</td>
+                <td class="text-right tabular-nums">{{ $settlement->paymentTotal() }}</td>
+                <td class="text-right tabular-nums">{{ $settlement->tip_total }}</td>
+                <td class="text-right tabular-nums {{ bccomp($difference, '0', 2) !== 0 ? 'text-warning font-medium' : '' }}">{{ $difference }}</td>
+                <td>
+                    <x-status-badge size="md" outline :tone="match ($settlement->status) {
+                        \App\Models\Passenger\PassengerShiftSettlement::STATUS_BALANCED => 'success',
+                        \App\Models\Passenger\PassengerShiftSettlement::STATUS_DISPUTED => 'warning',
+                        default => 'neutral',
+                    }">{{ __('passenger.settlement_status.' . $settlement->status) }}</x-status-badge>
+                </td>
+                <td class="text-right">
+                    @can('settle', $settlement)
+                        @if ($settlement->status === \App\Models\Passenger\PassengerShiftSettlement::STATUS_OPEN)
+                            <div class="flex items-center justify-end gap-1">
+                                <x-icon-btn icon="edit" data-entry-modal-trigger :href="route('passenger-settlements.edit', $settlement)" :label="__('passenger.masterdata.action.edit')" />
+                                <form method="POST" action="{{ route('passenger-settlements.close', $settlement) }}" class="flex items-center gap-1">
                                     @csrf
-                                    <select name="cash_register_id" class="select select-xs select-bordered w-36" required aria-label="{{ __('passenger.cash.register') }}">
-                                        @foreach ($cashRegisters as $register)
-                                            <option value="{{ $register->sqid }}">{{ $register->name }}</option>
-                                        @endforeach
-                                    </select>
-                                    <x-icon-btn icon="point_of_sale" type="submit" :label="__('passenger.cash.post_action')" />
+                                    @if (! $settlement->isBalanced())
+                                        <input type="text" name="difference_reason" placeholder="{{ __('passenger.field.difference_reason') }} *" class="input input-xs input-bordered w-44" aria-label="{{ __('passenger.field.difference_reason') }}">
+                                    @endif
+                                    <x-icon-btn icon="task_alt" type="submit" :label="__('passenger.settlements.action.close')" />
                                 </form>
-                            @endif
-                        @endcan
-                    </td>
-                </tr>
-            @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">payments</span>' :colspan="9" :title="__('passenger.settlements.empty')" compact />
-            @endforelse
-        </x-table>
-    </x-card>
+                            </div>
+                        @elseif ($settlement->cash_entry_id !== null)
+                            <x-status-badge size="md" outline tone="success">{{ __('passenger.cash.posted') }}</x-status-badge>
+                        @elseif ($canPostCash && $cashRegisters->isNotEmpty() && bccomp((string) $settlement->cash_total, '0', 2) > 0)
+                            <form method="POST" action="{{ route('passenger-settlements.cash-entry', $settlement) }}" class="flex items-center justify-end gap-1">
+                                @csrf
+                                <select name="cash_register_id" class="select select-xs select-bordered w-36" required aria-label="{{ __('passenger.cash.register') }}">
+                                    @foreach ($cashRegisters as $register)
+                                        <option value="{{ $register->sqid }}">{{ $register->name }}</option>
+                                    @endforeach
+                                </select>
+                                <x-icon-btn icon="point_of_sale" type="submit" :label="__('passenger.cash.post_action')" />
+                            </form>
+                        @endif
+                    @endcan
+                </td>
+            </tr>
+        @empty
+            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">payments</span>' :colspan="9" :title="__('passenger.settlements.empty')" compact />
+        @endforelse
+    </x-table>
 
     <x-pagination :paginator="$settlements" standing />
 </x-index-page>

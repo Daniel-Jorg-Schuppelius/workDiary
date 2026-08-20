@@ -23,37 +23,35 @@
     @if ($templates->isEmpty())
         <x-empty-state framed :title="__('inventory.label_template.empty')" />
     @else
-        <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-            <x-table bare scroll="flex" :pinRows="true">
-                <x-slot:head>
-                    <tr>
-                        <th>{{ __('inventory.label_template.name') }}</th>
-                        <th>{{ __('inventory.label_template.paper_size') }}</th>
-                        <th>{{ __('inventory.label_template.fields') }}</th>
-                        @if ($canManage)<th></th>@endif
-                    </tr>
-                </x-slot:head>
-                @forelse ($templates as $tpl)
-                    <tr>
-                        <td>{{ $tpl->name }} @if ($tpl->is_default)<span class="badge badge-sm badge-primary">{{ __('inventory.label_template.default') }}</span>@endif</td>
-                        <td class="uppercase">{{ $tpl->paper_size }} · {{ __('inventory.label_template.orientation_' . $tpl->orientation) }}{{ $tpl->with_qr ? ' · QR' : '' }}</td>
-                        <td class="text-xs">{{ collect($tpl->fields)->map(fn ($f) => __('inventory.label_template.field.' . $f))->implode(', ') }}</td>
-                        @if ($canManage)
-                            <td class="text-right whitespace-nowrap">
-                                <x-icon-btn icon="edit" size="xs" data-entry-modal-trigger :href="route('inventory.label-templates.edit', $tpl)" :title="__('Bearbeiten')" />
-                                <x-action-form :action="route('inventory.label-templates.destroy', $tpl)" method="DELETE" :confirm="__('inventory.label_template.delete').'?'">
-                                    <x-icon-btn icon="delete" tone="error" size="xs" type="submit" :title="__('inventory.label_template.delete')" />
-                                </x-action-form>
-                            </td>
-                        @endif
-                    </tr>
-                @empty
-                    <x-table.empty :colspan="$canManage ? 4 : 3"
-                                   icon='<span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>'
-                                   :title="__('inventory.label_template.empty')" compact />
-                @endforelse
-            </x-table>
-        </x-card>
+        <x-table :zebra="true" scroll="flex" :pinRows="true">
+            <x-slot:head>
+                <tr>
+                    <th>{{ __('inventory.label_template.name') }}</th>
+                    <th>{{ __('inventory.label_template.paper_size') }}</th>
+                    <th>{{ __('inventory.label_template.fields') }}</th>
+                    @if ($canManage)<th></th>@endif
+                </tr>
+            </x-slot:head>
+            @forelse ($templates as $tpl)
+                <tr>
+                    <td>{{ $tpl->name }} @if ($tpl->is_default)<span class="badge badge-sm badge-primary">{{ __('inventory.label_template.default') }}</span>@endif</td>
+                    <td class="uppercase">{{ $tpl->paper_size }} · {{ __('inventory.label_template.orientation_' . $tpl->orientation) }}{{ $tpl->with_qr ? ' · QR' : '' }}</td>
+                    <td class="text-xs">{{ collect($tpl->fields)->map(fn ($f) => __('inventory.label_template.field.' . $f))->implode(', ') }}</td>
+                    @if ($canManage)
+                        <td class="text-right whitespace-nowrap">
+                            <x-icon-btn icon="edit" size="xs" data-entry-modal-trigger :href="route('inventory.label-templates.edit', $tpl)" :title="__('Bearbeiten')" />
+                            <x-action-form :action="route('inventory.label-templates.destroy', $tpl)" method="DELETE" :confirm="__('inventory.label_template.delete').'?'">
+                                <x-icon-btn icon="delete" tone="error" size="xs" type="submit" :title="__('inventory.label_template.delete')" />
+                            </x-action-form>
+                        </td>
+                    @endif
+                </tr>
+            @empty
+                <x-table.empty :colspan="$canManage ? 4 : 3"
+                               icon='<span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>'
+                               :title="__('inventory.label_template.empty')" compact />
+            @endforelse
+        </x-table>
     @endif
 </x-index-page>
 @endsection

@@ -101,7 +101,13 @@ return [
         ],
     ],
 
+    // Offline erfasste Anhänge (Audit 2026-08, W4.1).
+
+    'attachment' => ['pending' => 'Téléversement en attente'],
+
     'validation' => [
+
+        'no_upload_field' => 'Aucun champ fichier/photo ne porte cette clé dans le formulaire.',
         'invalid_row' => 'La définition du champ à la ligne :row est invalide.',
         'label_required' => 'Le champ :row nécessite un libellé (max. 160 caractères).',
         'unknown_type' => 'Le champ :row a un type inconnu.',

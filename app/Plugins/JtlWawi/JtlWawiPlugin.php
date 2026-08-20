@@ -12,11 +12,10 @@ declare(strict_types=1);
 
 namespace App\Plugins\JtlWawi;
 
-use App\Models\{JtlConnection, Organization};
+use App\Models\JtlConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\Plugin;
 use App\Plugins\JtlWawi\Api\{JtlApiException, JtlGatewayFactory};
-use App\Plugins\Support\PluginOrgContext;
 use Throwable;
 
 /**
@@ -50,6 +49,11 @@ class JtlWawiPlugin extends AbstractPlugin {
     }
 
     /** @return array<int, \App\Plugins\Contracts\PluginCapability> */
+    /**
+     * Bewusst leer: Bestandsabgleich läuft über den
+     * {@see \App\Contracts\Inventory\ExternalInventoryDispatcher} — im
+     * ServiceProvider registriert (Audit 2026-08, W1.6).
+     */
     public function capabilities(): array {
         return [];
     }
@@ -69,9 +73,9 @@ class JtlWawiPlugin extends AbstractPlugin {
     }
 
     public function healthCheck(): PluginHealth {
-        $organization = PluginOrgContext::currentOrNull();
-        if (! $organization instanceof Organization) {
-            return PluginHealth::ok(__('Keine Organisation im Kontext.'));
+        $organization = $this->healthOrgContext();
+        if ($organization instanceof PluginHealth) {
+            return $organization;
         }
 
         $connection = JtlConnection::query()->where('organization_id', $organization->id)->first();

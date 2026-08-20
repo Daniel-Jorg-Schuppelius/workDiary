@@ -72,28 +72,26 @@
                 </x-card>
             @endif
 
-            <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-                <x-table bare scroll="flex" :pinRows="true">
-                    <x-slot:head>
-                        <tr>
-                            <th>{{ __('inventory.count_ui.counted_at') }}</th>
-                            <th>{{ __('Status') }}</th>
-                            <th></th>
-                        </tr>
-                    </x-slot:head>
-                    @forelse ($counts as $count)
-                        <tr>
-                            <td>{{ $count->counted_at?->format('d.m.Y H:i') }}</td>
-                            <td><span class="badge badge-sm">{{ $count->status->label() }}</span></td>
-                            <td class="text-right"><a href="{{ route('inventory.counts.show', $count) }}" class="link">{{ __('Öffnen') }}</a></td>
-                        </tr>
-                    @empty
-                        <x-table.empty :colspan="3"
-                                       icon='<span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>'
-                                       :title="__('inventory.count_ui.no_counts')" compact />
-                    @endforelse
-                </x-table>
-            </x-card>
+            <x-table :zebra="true" scroll="flex" :pinRows="true">
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('inventory.count_ui.counted_at') }}</th>
+                        <th>{{ __('Status') }}</th>
+                        <th></th>
+                    </tr>
+                </x-slot:head>
+                @forelse ($counts as $count)
+                    <tr>
+                        <td>{{ $count->counted_at?->format('d.m.Y H:i') }}</td>
+                        <td><span class="badge badge-sm">{{ $count->status->label() }}</span></td>
+                        <td class="text-right"><a href="{{ route('inventory.counts.show', $count) }}" class="link">{{ __('Öffnen') }}</a></td>
+                    </tr>
+                @empty
+                    <x-table.empty :colspan="3"
+                                   icon='<span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>'
+                                   :title="__('inventory.count_ui.no_counts')" compact />
+                @endforelse
+            </x-table>
         @endif
     @endif
 </x-index-page>

@@ -89,7 +89,7 @@ class ImportBillingExcelCommand extends Command {
                     $row['sheet'],
                     $row['entries_created'],
                     $row['entries_skipped'],
-                    sprintf('%d:%02d', intdiv($row['minutes'], 60), $row['minutes'] % 60),
+                    \CommonToolkit\ValueObjects\Duration::ofMinutes((int) $row['minutes'])->toClock(),
                     $row['payment'] === null ? '—' : number_format($row['payment'], 2, ',', '.') . ($row['payment_created'] ? '' : ' (vorh.)'),
                     $row['computed_gross'] === null ? '—' : number_format($row['computed_gross'], 2, ',', '.'),
                     $row['excel_gross'] === null ? '—' : number_format($row['excel_gross'], 2, ',', '.'),

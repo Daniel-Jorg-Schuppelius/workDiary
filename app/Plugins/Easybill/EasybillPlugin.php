@@ -12,11 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Easybill;
 
-use App\Models\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\Plugin;
 use App\Plugins\Easybill\Api\{EasybillApiException, EasybillClientFactory};
-use App\Plugins\Support\PluginOrgContext;
 use Throwable;
 
 /**
@@ -50,6 +48,12 @@ class EasybillPlugin extends AbstractPlugin {
     }
 
     /** @return array<int, \App\Plugins\Contracts\PluginCapability> Fähigkeiten hängen am FacturationTarget-Vertrag. */
+    /**
+     * Bewusst leer: Übergabe läuft über die
+     * {@see \App\Services\Finance\Targets\FacturationTargetRegistry}, der
+     * Beleg-Pull über {@see \App\Plugins\Easybill\Services\EasybillDocumentPullService}
+     * — beides eigene Registries/Services statt Plugin-Interfaces (Audit 2026-08, W1.6).
+     */
     public function capabilities(): array {
         return [];
     }
@@ -71,9 +75,9 @@ class EasybillPlugin extends AbstractPlugin {
     }
 
     public function healthCheck(): PluginHealth {
-        $organization = PluginOrgContext::currentOrNull();
-        if (! $organization instanceof Organization) {
-            return PluginHealth::ok(__('Keine Organisation im Kontext.'));
+        $organization = $this->healthOrgContext();
+        if ($organization instanceof PluginHealth) {
+            return $organization;
         }
 
         $config = EasybillConfig::resolve((int) $organization->id);

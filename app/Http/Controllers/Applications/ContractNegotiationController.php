@@ -80,15 +80,22 @@ class ContractNegotiationController extends Controller {
         return back()->with('success', __('Review-Punkt erfasst.'));
     }
 
-    public function resolveReviewItem(Request $request, ApplicationContractNegotiation $negotiation, int $item): RedirectResponse {
+    /**
+     * Review-Punkt entscheiden. Der Punkt kommt als Sqid in der URL (Audit
+     * 2026-08, W3.5 — vorher die rohe ID); die Zugehoerigkeit zur Verhandlung
+     * prueft weiterhin der Service ueber die Relation.
+     */
+    public function resolveReviewItem(Request $request, ApplicationContractNegotiation $negotiation, string $item): RedirectResponse {
         Gate::authorize('update', $negotiation);
         $data = $request->validate([
             'resolution' => ['required', 'in:resolved,accepted'],
             'note' => ['nullable', 'string', 'max:1000'],
         ]);
 
+        $itemId = \App\Support\Sqid::decodeOrAbort(\App\Models\Applications\ApplicationContractReview::class, $item);
+
         try {
-            $this->negotiations->resolveReviewItem($negotiation, $item, $data['resolution'], $data['note'] ?? null, $this->actor());
+            $this->negotiations->resolveReviewItem($negotiation, $itemId, $data['resolution'], $data['note'] ?? null, $this->actor());
         } catch (\RuntimeException $e) {
             return back()->with('error', $e->getMessage());
         }

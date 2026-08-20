@@ -248,6 +248,74 @@ class KimaiApiTest extends TestCase {
         $this->assertSame(0, $second['pushed']);
     }
 
+    public function test_outbox_create_pushes_single_entry_when_opted_in(): void {
+        // Sofort-Rückbuchung (Audit 2026-08, Welle 1.2): eigenes Opt-in
+        // push_on_create, weil der Eintrag unmittelbar exported wird.
+        \Illuminate\Support\Facades\Queue::fake();
+        $this->enableKimaiApi(['export_enabled' => true, 'push_on_create' => true, 'default_activity_id' => '5']);
+        $project = $this->customerWithProject('Acme', 'Website');
+        ExternalReference::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => KimaiPlugin::ID,
+            'external_type' => KimaiImportService::EXT_TYPE_PROJECT_ID,
+            'referenceable_type' => $project->getMorphClass(),
+            'referenceable_id' => $project->id,
+            'external_id' => '7',
+            'synced_at' => now(),
+        ]);
+
+        $entry = TimeEntry::query()->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $project->id,
+            'user_id' => $this->owner->id,
+            'date' => '2026-06-02',
+            'started_at' => '2026-06-02 09:00:00',
+            'ended_at' => '2026-06-02 10:00:00',
+            'description' => 'Vor Ort',
+            'billable' => true,
+        ]);
+
+        $outbox = \App\Models\IntegrationOutboxEntry::query()
+            ->where('operation', \App\Plugins\Kimai\Services\KimaiOutboxDispatcher::OP_ENTRY_CREATE)
+            ->where('idempotency_key', KimaiPlugin::ID . '-entry-create:' . $entry->getKey())
+            ->firstOrFail();
+
+        $fake = FakePluginHttp::fake([
+            self::BASE . '/api/timesheets*' => FakePluginHttp::response(['id' => 999]),
+        ]);
+
+        $this->assertTrue(app(\App\Plugins\Kimai\Services\KimaiOutboxDispatcher::class)->dispatch($outbox));
+
+        $fake->assertSentCount(1);
+        // Rückbuchung: der Eintrag ist sofort exportiert.
+        $this->assertTrue((bool) $entry->fresh()->exported);
+        $this->assertDatabaseHas('external_references', [
+            'plugin_id' => KimaiPlugin::ID,
+            'external_type' => KimaiExportService::EXT_TYPE_PUSHED,
+            'referenceable_id' => $entry->getKey(),
+            'external_id' => '999',
+        ]);
+    }
+
+    public function test_outbox_create_is_not_enqueued_without_opt_in(): void {
+        \Illuminate\Support\Facades\Queue::fake();
+        $this->enableKimaiApi(['export_enabled' => true, 'default_activity_id' => '5']);
+        $project = $this->customerWithProject('Acme', 'Website');
+
+        TimeEntry::query()->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $project->id,
+            'user_id' => $this->owner->id,
+            'date' => '2026-06-02',
+            'started_at' => '2026-06-02 09:00:00',
+            'ended_at' => '2026-06-02 10:00:00',
+        ]);
+
+        $this->assertDatabaseMissing('integration_outbox', [
+            'operation' => \App\Plugins\Kimai\Services\KimaiOutboxDispatcher::OP_ENTRY_CREATE,
+        ]);
+    }
+
     public function test_export_never_echoes_imported_entries(): void {
         $config = $this->enableKimaiApi(['export_enabled' => true, 'default_activity_id' => '5']);
         $this->customerWithProject('Acme', 'Website');

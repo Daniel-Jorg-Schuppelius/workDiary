@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -31,8 +31,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class SalesDiscountGroup extends Model {
     use BelongsToOrganization;
+
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+    // Audit 2026-08 (W3.3): Formulare/URLs tragen Sqids, nie rohe IDs.
+    use HasSqid;
 
     public const KIND_DISCOUNT = 'discount';
     public const KIND_FACTOR = 'factor';

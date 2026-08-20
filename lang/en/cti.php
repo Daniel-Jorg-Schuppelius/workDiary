@@ -63,7 +63,26 @@ return [
     ],
 
     'flash' => [
+        'dial_saved' => 'Click-to-dial saved.',
         'issued' => 'CTI connection issued.',
         'disconnected' => 'CTI connection deactivated.',
+    ],
+
+    'dial' => [
+        'action' => 'Call',
+        'confirm' => 'Start a call to :number? The phone system rings your extension first.',
+        'started' => 'Call to :number is being set up — please pick up your extension.',
+        'no_connection' => 'No dial-capable phone connection configured (enable click-to-dial in the CTI settings).',
+        'not_configured' => 'This connection is missing its API access or extension.',
+        'no_base_url' => 'No API address is stored for this phone system.',
+        'invalid_number' => 'That phone number cannot be dialled.',
+        'rejected' => 'The phone system rejected the call (HTTP :status).',
+        'settings' => 'Click-to-dial',
+        'enabled' => 'Start calls from workDiary',
+        'api_token' => 'API token',
+        'api_token_help' => 'Leave empty to keep the stored token.',
+        'api_base_url' => 'API address',
+        'extension' => 'Own extension',
+        'extension_help' => 'Calls are placed from this extension; the system rings it first.',
     ],
 ];

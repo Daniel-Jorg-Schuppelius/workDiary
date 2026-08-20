@@ -63,7 +63,26 @@ return [
     ],
 
     'flash' => [
+        'dial_saved' => 'Click-to-Dial gespeichert.',
         'issued' => 'CTI-Anbindung ausgestellt.',
         'disconnected' => 'CTI-Anbindung deaktiviert.',
+    ],
+
+    'dial' => [
+        'action' => 'Anrufen',
+        'confirm' => 'Anruf an :number starten? Die Telefonanlage ruft zuerst Ihre Durchwahl an.',
+        'started' => 'Anruf an :number wird aufgebaut — bitte Durchwahl abheben.',
+        'no_connection' => 'Keine wählfähige Telefonanbindung eingerichtet (Click-to-Dial in den CTI-Einstellungen aktivieren).',
+        'not_configured' => 'Für diese Anbindung fehlen API-Zugang oder eigene Durchwahl.',
+        'no_base_url' => 'Für diese Anlage ist keine API-Adresse hinterlegt.',
+        'invalid_number' => 'Die Rufnummer ist nicht wählbar.',
+        'rejected' => 'Die Telefonanlage hat den Anruf abgelehnt (HTTP :status).',
+        'settings' => 'Click-to-Dial',
+        'enabled' => 'Anrufe aus workDiary starten',
+        'api_token' => 'API-Token',
+        'api_token_help' => 'Leer lassen, um das gespeicherte Token zu behalten.',
+        'api_base_url' => 'API-Adresse',
+        'extension' => 'Eigene Durchwahl',
+        'extension_help' => 'Von dieser Durchwahl aus wird gewählt; die Anlage ruft sie zuerst an.',
     ],
 ];

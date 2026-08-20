@@ -57,8 +57,7 @@ final class Formats {
         $duration = Duration::ofMinutes($minutes);
         $unit = $withUnit ? ' h' : '';
         $clock = $duration->toClock() . $unit;
-        // getTotalSeconds()/3600 ≙ toDecimalHours(); Umstieg nach Toolkit-Release v1.23.
-        $decimal = NumberHelper::toGermanFormat($duration->getTotalSeconds() / 3600, 2) . $unit;
+        $decimal = NumberHelper::toGermanFormat($duration->toDecimalHours(), 2) . $unit;
 
         return match ($mode) {
             'clock' => $clock,

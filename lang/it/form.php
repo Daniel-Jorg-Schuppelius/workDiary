@@ -101,7 +101,13 @@ return [
         ],
     ],
 
+    // Offline erfasste Anhänge (Audit 2026-08, W4.1).
+
+    'attachment' => ['pending' => 'Caricamento in sospeso'],
+
     'validation' => [
+
+        'no_upload_field' => 'Nel modulo non esiste un campo file/foto con questa chiave.',
         'invalid_row' => 'La definizione del campo nella riga :row non è valida.',
         'label_required' => 'Il campo :row necessita di un’etichetta (max. 160 caratteri).',
         'unknown_type' => 'Il campo :row ha un tipo sconosciuto.',

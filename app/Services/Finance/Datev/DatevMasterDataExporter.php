@@ -146,7 +146,7 @@ final class DatevMasterDataExporter {
             $values[$fieldHeader->getFieldIndex($field)] = $value;
         };
 
-        $companyName = trim((string) ($customer->company ?: $customer->name));
+        $companyName = trim((string) ($customer->displayLabel()));
         $set(Field::Konto, $config->debtorAccountFor($customer));
         $set(Field::NameUnternehmen, mb_substr($companyName, 0, 50));
         $set(Field::Adressattyp, '2'); // Unternehmen (natürliche Personen pflegt DATEV-seitig der Berater)

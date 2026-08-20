@@ -154,14 +154,9 @@
                         <label class="fieldset-label">{{ __('Anker-Woche (Montag)') }}</label>
                         <input type="date" name="anchor_date" class="input input-sm input-bordered" required>
                     </div>
-                    <div class="fieldset">
-                        <label class="fieldset-label">{{ __('Gültig ab') }}</label>
-                        <input type="date" name="valid_from" class="input input-sm input-bordered">
-                    </div>
-                    <div class="fieldset">
-                        <label class="fieldset-label">{{ __('Gültig bis') }}</label>
-                        <input type="date" name="valid_until" class="input input-sm input-bordered">
-                    </div>
+                    <x-date-range layout="split" form-control grid-class="contents"
+                                  from-name="valid_from" to-name="valid_until" type="date"
+                                  :from-label="__('Gültig ab')" :to-label="__('Gültig bis')" />
                     <button type="submit" class="btn btn-sm btn-outline">{{ __('Zuweisen') }}</button>
                 </form>
             </x-card>

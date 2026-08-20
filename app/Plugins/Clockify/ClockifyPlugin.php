@@ -99,6 +99,7 @@ class ClockifyPlugin extends AbstractPlugin implements TimeImporter {
             ['key' => 'reports_base_url', 'label' => __('Reports-API-Basis-URL'), 'type' => 'text', 'default' => ClockifyConfig::DEFAULT_REPORTS_BASE_URL],
             ['key' => 'sync_window_days', 'label' => __('Sync-Zeitfenster (Tage)'), 'type' => 'text', 'default' => '30', 'help' => __('Wie viele Tage rückwirkend pro API-Lauf abgefragt werden.')],
             ['key' => 'writeback', 'label' => __('Korrekturen zurückschreiben'), 'type' => 'boolean', 'default' => false, 'help' => __('Schreibt Korrekturen an bereits importierten Zeiten zurück nach Clockify (Änderung und Löschung). Wurde der Eintrag dort zwischenzeitlich geändert, wird nichts überschrieben — der Fall landet in der Integrations-Inbox. Abgerechnete Zeiten werden nie zurückgeschrieben.')],
+            ['key' => 'export_enabled', 'label' => __('Zeit-Übertragung aktivieren'), 'type' => 'boolean', 'default' => false, 'help' => __('Überträgt in workDiary erfasste Zeiten gemappter Projekte nach Clockify (z. B. Fernwartungssitzungen). Angelegt wird immer für den Inhaber des API-Keys; übertragene Einträge verhalten sich danach wie importierte — inklusive Abgleich in beide Richtungen und Löschungserkennung.')],
         ];
     }
 

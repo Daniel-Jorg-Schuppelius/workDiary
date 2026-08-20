@@ -19,13 +19,27 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * und eingebauter Formel-Injektions-Guard auf allen String-Datenzellen.
  *
  * Guard-Semantik (aus DiaryExport übernommen): führendes `=`, `+`, `-`, `@`
- * (nach ltrim) erhält ein Apostroph-Präfix. OWASP nennt zusätzlich Tab/CR
- * als Präfixe — bewusst bei der bestehenden App-Semantik geblieben.
+ * (nach ltrim) erhält ein Apostroph-Präfix. Das Entschärfen selbst macht das
+ * common-toolkit ({@see CsvStringHelper::neutralizeFormulaInjection()});
+ * app-seitig bleiben die beiden Geschäftsregeln, die dort NICHT hingehören:
+ * die engere Präfixliste (ohne Tab/CR, Bestandsverhalten) und der
+ * Typ-Filter — echte Zahlen und Bools werden nie entschärft.
  * Die Header-Zeile bleibt ungeguarded (entwicklerkontrolliert).
  */
 final class CsvExport {
     public const DELIMITER = ';';
     public const EOL = "\r\n";
+
+    /**
+     * Präfixe des Formel-Guards. Bewusst OHNE Tab/CR, die die
+     * OWASP-Liste des Toolkits ({@see CsvStringHelper::FORMULA_PREFIXES})
+     * zusätzlich führt: Die App-Semantik stammt aus dem DiaryExport und ist
+     * seit jeher auf diese vier Zeichen festgelegt; eine stille Erweiterung
+     * würde bestehende Exporte verändern.
+     *
+     * @var list<string>
+     */
+    public const FORMULA_PREFIXES = ['=', '+', '-', '@'];
 
     /**
      * @param  list<string>  $header
@@ -95,15 +109,12 @@ final class CsvExport {
      * (echte Zahlen/Bools/null) passieren unverändert.
      */
     public static function guard(int|float|bool|string|null $value): int|float|bool|string|null {
+        // Nicht-Strings passieren: eine echte Zahl -12,5 ist kein Formelrisiko,
+        // ein Apostroph davor macht sie in Excel aber zu Text.
         if (! is_string($value)) {
             return $value;
         }
 
-        $trimmed = ltrim($value);
-        if ($trimmed !== '' && in_array($trimmed[0], ['=', '+', '-', '@'], true)) {
-            return "'" . $value;
-        }
-
-        return $value;
+        return CsvStringHelper::neutralizeFormulaInjection($value, self::FORMULA_PREFIXES, ignoreLeadingWhitespace: true);
     }
 }

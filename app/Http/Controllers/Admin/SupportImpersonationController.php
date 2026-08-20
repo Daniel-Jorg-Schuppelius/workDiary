@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\{Organization, SupportAccessGrant, User};
+use App\Models\{SupportAccessGrant, User};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 
@@ -27,6 +28,8 @@ use Illuminate\Support\Facades\{Auth, Gate};
  * Sperrliste, Ablauf/Widerruf beendet die Sitzung sofort).
  */
 class SupportImpersonationController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public const SESSION_KEY = 'support_impersonation';
 
     public function store(Request $request, User $user): RedirectResponse {
@@ -39,7 +42,7 @@ class SupportImpersonationController extends Controller {
         abort_if($request->session()->has(self::SESSION_KEY), 403, __('Es läuft bereits eine Support-Sitzung.'));
 
         // Ziel immer org-gebunden prüfen (User hat keinen globalen OrgScope).
-        $organization = $this->currentOrganization();
+        $organization = $this->currentOrganizationOrAbort(404);
         abort_unless($user->organization_id === $organization->id, 404);
         abort_if($user->is($support), 403, __('Impersonation des eigenen Kontos ist nicht möglich.'));
         abort_if($user->isDeactivated(), 403, __('Dieses Konto ist deaktiviert.'));
@@ -106,10 +109,4 @@ class SupportImpersonationController extends Controller {
             ->with('success', __('Support-Sitzung beendet.'));
     }
 
-    private function currentOrganization(): Organization {
-        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
-        abort_unless($org instanceof Organization, 404);
-
-        return $org;
-    }
 }

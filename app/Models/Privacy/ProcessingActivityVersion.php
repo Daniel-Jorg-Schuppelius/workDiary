@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Privacy;
 
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,6 +27,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ProcessingActivityVersion extends Model {
     use BelongsToOrganization;
+
+    // Audit 2026-08 (W3.3): Formulare/URLs tragen Sqids, nie rohe IDs.
+    use HasSqid;
 
     protected $table = 'privacy_processing_activity_versions';
 

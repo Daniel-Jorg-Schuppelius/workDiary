@@ -13,11 +13,10 @@ declare(strict_types=1);
 namespace App\Plugins\OrgaMax;
 
 use APIToolkit\Exceptions\ApiException;
-use App\Models\{OrgaMaxConnection, Organization};
+use App\Models\OrgaMaxConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\Plugin;
 use App\Plugins\OrgaMax\Api\OrgaMaxClientFactory;
-use App\Plugins\Support\PluginOrgContext;
 use Orgamax\API\Endpoints\Settings\AccountSettingEndpoint;
 use Throwable;
 
@@ -52,6 +51,11 @@ class OrgaMaxPlugin extends AbstractPlugin {
     }
 
     /** @return array<int, \App\Plugins\Contracts\PluginCapability> */
+    /**
+     * Bewusst leer: Belegübergabe läuft über die
+     * {@see \App\Services\Finance\Targets\FacturationTargetRegistry}
+     * (Audit 2026-08, W1.6).
+     */
     public function capabilities(): array {
         return [];
     }
@@ -71,9 +75,9 @@ class OrgaMaxPlugin extends AbstractPlugin {
     }
 
     public function healthCheck(): PluginHealth {
-        $organization = PluginOrgContext::currentOrNull();
-        if (! $organization instanceof Organization) {
-            return PluginHealth::ok(__('Keine Organisation im Kontext.'));
+        $organization = $this->healthOrgContext();
+        if ($organization instanceof PluginHealth) {
+            return $organization;
         }
 
         $connection = OrgaMaxConnection::query()->where('organization_id', $organization->id)->first();

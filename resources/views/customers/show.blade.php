@@ -102,8 +102,9 @@
             <x-detail-grid>
                 <x-detail-grid.row :label="__('Ansprechpartner')" :value="$customer->contact_name" />
                 <x-detail-grid.row :label="__('E-Mail')">@if ($customer->email)<a class="link" href="mailto:{{ $customer->email }}">{{ $customer->email }}</a>@endif</x-detail-grid.row>
-                <x-detail-grid.row :label="__('Telefon')" :value="$customer->phone" />
-                <x-detail-grid.row :label="__('Mobil')" :value="$customer->mobile" />
+                {{-- Click-to-Dial (W4.5): Knopf erscheint nur bei eingerichteter Anlage. --}}
+                <x-detail-grid.row :label="__('Telefon')"><x-phone-value :number="$customer->phone" /></x-detail-grid.row>
+                <x-detail-grid.row :label="__('Mobil')"><x-phone-value :number="$customer->mobile" /></x-detail-grid.row>
                 <x-detail-grid.row :label="__('Homepage')">@if ($customer->homepage)<a class="link" href="{{ $customer->homepage }}" target="_blank" rel="noopener">{{ $customer->homepage }}</a>@endif</x-detail-grid.row>
                 @if ($customer->address_street || $customer->address_zip || $customer->address_city)
                     {{-- Newline via echo, nicht als Template-Whitespace: PHP schluckt ein \n direkt nach `?>` --}}

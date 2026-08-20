@@ -21,4 +21,5 @@ Route::middleware(['web', 'auth'])->group(function (): void {
     Route::get('admin/clockify', [ClockifyController::class, 'index'])->name('admin.clockify.index');
     Route::post('admin/clockify/import-csv', [ClockifyController::class, 'uploadCsv'])->name('admin.clockify.import-csv');
     Route::post('admin/clockify/import-api', [ClockifyController::class, 'importApi'])->name('admin.clockify.import-api');
+    Route::post('admin/clockify/export-api', [ClockifyController::class, 'exportApi'])->name('admin.clockify.export-api');
 });
