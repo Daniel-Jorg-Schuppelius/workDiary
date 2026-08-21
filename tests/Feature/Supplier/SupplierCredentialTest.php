@@ -12,8 +12,8 @@ namespace Tests\Feature\Supplier;
 
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Enums\Supplier\CredentialStatus;
+use App\Models\{Document, IncomingEInvoice, Organization, PurchaseOrder, Supplier, User};
 use App\Models\Notification\NotificationRule;
-use App\Models\{Organization, PurchaseOrder, Supplier, User};
 use App\Models\Supplier\{SupplierCredential, SupplierCredentialType};
 use App\Services\Supplier\SupplierCredentialService;
 use App\Settings\SettingScope;
@@ -199,5 +199,63 @@ class SupplierCredentialTest extends TestCase {
         $this->actingAs($this->admin)->post(route('suppliers.credentials.store', $this->supplier), [
             'supplier_credential_type_id' => $foreignType->sqid,
         ])->assertStatus(422);
+    }
+
+    public function test_missing_reasons_are_reported_even_without_the_blocking_switch(): void {
+        // Die Sperre greift an der Bestellung; bei der Rechnungsfreigabe wäre
+        // sie zu spät. Gemeldet werden muss der fehlende Nachweis trotzdem.
+        $service = app(SupplierCredentialService::class);
+
+        $this->assertSame([], $service->blockingReasons($this->supplier));
+        $this->assertNotSame([], $service->missingReasons($this->supplier));
+    }
+
+    public function test_payment_release_warns_about_missing_credentials(): void {
+        $supplier = $this->supplier;
+        $document = Document::factory()->create(['organization_id' => $this->org->id]);
+        $incoming = IncomingEInvoice::query()->create([
+            'organization_id' => $this->org->id,
+            'document_id' => $document->id,
+            'sha256' => hash('sha256', 'beleg'),
+            'source' => 'upload',
+            'received_at' => now(),
+            'status' => IncomingEInvoice::STATUS_APPROVED,
+            'seller_name' => $supplier->name,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('finance.incoming-invoices.decide', $incoming), ['decision' => 'payment_released'])
+            ->assertRedirect()
+            ->assertSessionHas('warning');
+
+        $this->assertSame(IncomingEInvoice::STATUS_PAYMENT_RELEASED, $incoming->fresh()?->status);
+    }
+
+    public function test_complete_credentials_release_without_a_warning(): void {
+        $supplier = $this->supplier;
+        foreach (SupplierCredentialType::query()->get() as $type) {
+            SupplierCredential::query()->create([
+                'organization_id' => $this->org->id,
+                'supplier_id' => $supplier->id,
+                'supplier_credential_type_id' => $type->id,
+                'valid_until' => now()->addYear()->toDateString(),
+            ]);
+        }
+
+        $document = Document::factory()->create(['organization_id' => $this->org->id]);
+        $incoming = IncomingEInvoice::query()->create([
+            'organization_id' => $this->org->id,
+            'document_id' => $document->id,
+            'sha256' => hash('sha256', 'beleg-2'),
+            'source' => 'upload',
+            'received_at' => now(),
+            'status' => IncomingEInvoice::STATUS_APPROVED,
+            'seller_name' => $supplier->name,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('finance.incoming-invoices.decide', $incoming), ['decision' => 'payment_released'])
+            ->assertRedirect()
+            ->assertSessionMissing('warning');
     }
 }

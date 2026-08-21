@@ -58,6 +58,9 @@ return [
     // Anlagen-Stückliste (Feature 118, MVP-607).
     'components' => [
         'title' => 'Bill of components',
+        'stock_serial_none' => 'none (third-party part)',
+        'stock_serial_hint' => 'Only parts from your own stock have one.',
+        'serial_no_hint' => 'Free text; overwritten when a stock serial number is linked.',
         'empty' => 'No component recorded yet.',
         'saved' => 'Component recorded.',
         'replaced' => 'Component replaced — the old one stays in the history.',
@@ -82,6 +85,7 @@ return [
             'quantity' => 'Quantity',
             'unit' => 'Unit',
             'serial_no' => 'Serial number',
+            'stock_serial' => 'Stock serial number',
             'installed_on' => 'Installed on',
             'removed_on' => 'Removed on',
             'due_on' => 'Replacement due',

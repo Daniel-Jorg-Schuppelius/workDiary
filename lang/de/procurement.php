@@ -479,6 +479,7 @@ return [
     ],
     // Pflichtnachweise Subunternehmer (Feature 117, MVP-606).
     'credentials' => [
+        'release_warning' => 'Achtung: Bei :supplier fehlen Pflichtnachweise (:list). Die Zahlung ist freigegeben — den Nachweis nachfordern.',
         'title' => 'Pflichtnachweise',
         'subtitle' => 'Nachweise der Subunternehmer mit Gültigkeit und Ampel je Lieferant',
         'empty' => 'Noch kein Lieferant mit Pflichtnachweisen.',

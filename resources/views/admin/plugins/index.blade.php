@@ -184,9 +184,14 @@
                         @endif
                     </td>
                     <td>
+                        {{-- Anzeige-Fähigkeiten: erklärte Capabilities plus die,
+                             die über eigene Registries laufen (Belegübergabe,
+                             Dateispiegelung, Bestands-Rückschrieb). Ohne sie
+                             stünden sevDesk, easybill und orgaMAX hier ohne
+                             jede Fähigkeit, obwohl sie fakturieren. --}}
                         <div class="flex flex-wrap gap-1">
-                            @foreach ($plugin->capabilities() as $cap)
-                                <x-status-badge size="sm" outline>{{ $cap->label() }}</x-status-badge>
+                            @foreach (app(\App\Plugins\Support\PluginCapabilityOverview::class)->labelsFor($plugin) as $capLabel)
+                                <x-status-badge size="sm" outline>{{ $capLabel }}</x-status-badge>
                             @endforeach
                         </div>
                     </td>

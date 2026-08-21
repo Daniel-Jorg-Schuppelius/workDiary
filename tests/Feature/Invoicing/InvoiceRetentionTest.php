@@ -45,6 +45,32 @@ class InvoiceRetentionTest extends TestCase {
         $this->customer = Customer::factory()->create(['organization_id' => $this->org->id]);
     }
 
+    /** Belegt mit USt, damit Netto und Brutto auseinanderfallen (19 %). */
+    private function taxedInvoice(): Invoice {
+        $invoice = Invoice::create([
+            'organization_id' => $this->org->id,
+            'customer_id' => $this->customer->id,
+            'number' => 'R-' . uniqid(),
+            'status' => Invoice::STATUS_DRAFT,
+            'currency' => 'EUR',
+            'tax_rate' => '19.00',
+            'created_by' => $this->admin->id,
+        ]);
+        $invoice->items()->create([
+            'organization_id' => $this->org->id,
+            'description' => 'Rohbau',
+            'quantity' => '1.000',
+            'unit_price' => '1000.0000',
+            'tax_rate' => '19.00',
+            'position' => 1,
+        ]);
+        $invoice->load('items');
+        $invoice->recalculate();
+        $invoice->save();
+
+        return $invoice->refresh();
+    }
+
     private function invoice(string $status = Invoice::STATUS_DRAFT): Invoice {
         $invoice = Invoice::create([
             'organization_id' => $this->org->id,
@@ -68,6 +94,42 @@ class InvoiceRetentionTest extends TestCase {
         $invoice->save();
 
         return $invoice->refresh();
+    }
+
+    public function test_percentage_uses_the_net_amount_by_default(): void {
+        // Der häufigere Vertragstext lautet „5 % der Nettosumme"; brutto zu
+        // rechnen ergäbe bei 19 % USt einen um ein Fünftel zu hohen Einbehalt.
+        $invoice = $this->taxedInvoice();
+
+        $retention = app(RetentionService::class)->add(
+            $invoice,
+            RetentionKind::Warranty,
+            percent: 5.0,
+            fixedAmount: null,
+            dueOn: null,
+            actor: $this->admin,
+        );
+
+        // 1.000,00 netto → 50,00 (nicht 59,50 aus 1.190,00 brutto).
+        $this->assertSame('50.00', (string) $retention->amount->getAmount());
+        $this->assertSame(\App\Enums\Invoicing\RetentionBase::Net, $retention->base_kind);
+    }
+
+    public function test_gross_basis_is_available_where_the_contract_says_so(): void {
+        $invoice = $this->taxedInvoice();
+
+        $retention = app(RetentionService::class)->add(
+            $invoice,
+            RetentionKind::Warranty,
+            percent: 5.0,
+            fixedAmount: null,
+            dueOn: null,
+            actor: $this->admin,
+            note: null,
+            baseKind: \App\Enums\Invoicing\RetentionBase::Gross,
+        );
+
+        $this->assertSame('59.50', (string) $retention->amount->getAmount());
     }
 
     public function test_percentage_retention_is_calculated_from_the_total(): void {

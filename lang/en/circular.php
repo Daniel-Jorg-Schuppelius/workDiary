@@ -31,7 +31,17 @@ return [
         'heading' => 'Recipients (:count)',
     ],
 
+    'approved' => 'Circular approved.',
+    'approved_by' => 'Approved by :name',
+    'approval_pending' => 'Approval pending',
+
+    'error' => [
+        'approval_missing' => 'Sending requires approval by a second person.',
+        'approval_self' => 'Whoever created the circular cannot approve it themselves.',
+    ],
+
     'action' => [
+        'approve' => 'Approve',
         'create' => 'Create circular',
         'save_draft' => 'Save as draft',
         'send' => 'Send',

@@ -31,7 +31,17 @@ return [
         'heading' => 'Destinataires (:count)',
     ],
 
+    'approved' => 'Circulaire validée.',
+    'approved_by' => 'Validée par :name',
+    'approval_pending' => 'Validation en attente',
+
+    'error' => [
+        'approval_missing' => 'L’envoi exige la validation d’une deuxième personne.',
+        'approval_self' => 'La personne qui a créé la circulaire ne peut pas la valider elle-même.',
+    ],
+
     'action' => [
+        'approve' => 'Valider',
         'create' => 'Créer une circulaire',
         'save_draft' => 'Enregistrer comme brouillon',
         'send' => 'Envoyer',

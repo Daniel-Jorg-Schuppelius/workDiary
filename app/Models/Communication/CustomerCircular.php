@@ -22,6 +22,9 @@ use Illuminate\Support\Carbon;
  * Rundschreiben an einen gefilterten Kundenkreis (Feature 119, MVP-608).
  *
  * @property Carbon|null $sent_at
+ * @property Carbon|null $approved_at
+ * @property int|null $created_by
+ * @property int|null $approved_by
  * @property array<string, mixed>|null $filters
  */
 class CustomerCircular extends Model {
@@ -45,6 +48,8 @@ class CustomerCircular extends Model {
         'status',
         'sent_at',
         'created_by',
+        'approved_by',
+        'approved_at',
         'sent_by',
     ];
 
@@ -54,6 +59,7 @@ class CustomerCircular extends Model {
         'portal_notice' => 'boolean',
         'filters' => 'array',
         'sent_at' => 'datetime',
+        'approved_at' => 'datetime',
     ];
 
     /** @var array<string, mixed> */
@@ -71,5 +77,14 @@ class CustomerCircular extends Model {
 
     public function isDraft(): bool {
         return $this->status === self::STATUS_DRAFT;
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function approvedBy(): BelongsTo {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function isApproved(): bool {
+        return $this->approved_at !== null;
     }
 }

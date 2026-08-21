@@ -86,23 +86,34 @@ class SupplierCredentialService {
 
     /**
      * Blockiert ein Nachweis die Beauftragung? Nur wenn die Organisation das
-     * Sperren eingeschaltet hat UND der Typ selbst auf `block` steht.
+     * Sperren eingeschaltet hat — sonst bleiben dieselben Befunde eine reine
+     * Warnung, siehe {@see self::missingReasons()}.
      *
      * @return list<string> Namen der blockierenden Nachweise (leer = frei)
      */
     public function blockingReasons(Supplier $supplier): array {
-        if (! $this->blockingEnabled($supplier)) {
-            return [];
-        }
+        return $this->blockingEnabled($supplier) ? $this->missingReasons($supplier) : [];
+    }
 
-        $blocking = [];
+    /**
+     * Fehlende oder abgelaufene Pflichtnachweise — UNABHÄNGIG vom Sperrschalter.
+     *
+     * Die Sperre greift an der Bestellung; bei der Rechnungsfreigabe wäre sie
+     * zu spät (die Leistung ist erbracht). Dort soll aber trotzdem jemand
+     * sehen, dass der Nachweis fehlt — gerade bei Altfällen, deren Bestellung
+     * vor der Einführung der Sperre entstand.
+     *
+     * @return list<string> Namen der betroffenen Nachweise (leer = vollständig)
+     */
+    public function missingReasons(Supplier $supplier): array {
+        $reasons = [];
         foreach ($this->statusFor($supplier) as $row) {
             if ($row['status']->isBlocking() && $row['type']->blocks()) {
-                $blocking[] = (string) $row['type']->name;
+                $reasons[] = (string) $row['type']->name;
             }
         }
 
-        return $blocking;
+        return $reasons;
     }
 
     public function blockingEnabled(Supplier $supplier): bool {

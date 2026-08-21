@@ -310,6 +310,10 @@ return [
         'revoked' => 'Révoqué',
         'expired' => 'Expiré',
     ],
+    'retention_base' => [
+        'net' => 'Montant net',
+        'gross' => 'Montant brut',
+    ],
     'retention_kind' => [
         'warranty' => 'Retenue de garantie',
         'performance' => 'Retenue d’exécution',

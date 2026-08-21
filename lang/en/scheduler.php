@@ -91,7 +91,7 @@ return [
             'send_scheduled' => 'Send scheduled chat messages',
         ],
         'claims' => ['escalate' => 'Claims deadline escalation'],
-        'cloud-intake' => ['sync' => 'Fetch cloud document intake'],
+        'cloud-intake' => ['sync' => 'Fetch cloud document intake', 'wake' => 'Fetch woken cloud connections'],
         'compliance' => ['scan_findings' => 'Scan compliance findings'],
         'shifts' => ['roll_forward' => 'Roll forward rotation plans'],
         'accounts' => ['post' => 'Post time accounts'],

@@ -91,7 +91,7 @@ return [
             'send_scheduled' => 'Envoyer les messages de chat planifiés',
         ],
         'claims' => ['escalate' => 'Escalade des délais de réclamation'],
-        'cloud-intake' => ['sync' => 'Relever la réception de documents cloud'],
+        'cloud-intake' => ['sync' => 'Relever la réception de documents cloud', 'wake' => 'Récupérer les connexions cloud réveillées'],
         'compliance' => ['scan_findings' => 'Analyser les constats de conformité'],
         'shifts' => ['roll_forward' => 'Prolonger les plans de rotation'],
         'accounts' => ['post' => 'Comptabiliser les comptes de temps'],

@@ -16,6 +16,7 @@ use App\Enums\Communication\CommunicationVisibility;
 use App\Mail\CustomerCircularMail;
 use App\Models\Communication\{CustomerCircular, CustomerCircularRecipient};
 use App\Models\{Customer, User};
+use App\Support\Setting;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{DB, Mail};
@@ -31,6 +32,9 @@ use Throwable;
  * sucht, statt in einem Versand-Log daneben.
  */
 class CustomerCircularService {
+    /** Org-Einstellung „Versand braucht eine zweite Freigabe" (Feature 119). */
+    public const APPROVAL_SETTING = 'communication.circular_approval';
+
     public function __construct(private readonly CommunicationNoteService $notes) {}
 
     /**
@@ -77,6 +81,9 @@ class CustomerCircularService {
         if (! $circular->isDraft()) {
             throw new RuntimeException((string) __('circular.already_sent'));
         }
+        if ($this->approvalRequired() && ! $circular->isApproved()) {
+            throw new RuntimeException((string) __('circular.error.approval_missing'));
+        }
 
         $recipients = $this->audience((array) ($circular->filters ?? []), (bool) $circular->is_mandatory);
         if ($recipients->isEmpty()) {
@@ -99,6 +106,37 @@ class CustomerCircularService {
             'recipients' => $recipients->count(),
             'mandatory' => (bool) $circular->is_mandatory,
         ]);
+
+        return $circular->refresh();
+    }
+
+    /**
+     * Vier-Augen-Freigabe: Eine Mail an alle Kunden ist der Fall, in dem ein
+     * zweites Paar Augen am meisten wert ist. Bewusst als Org-Einstellung mit
+     * Default AUS — wer allein arbeitet, hätte sonst eine Sperre ohne Ausweg.
+     */
+    public function approvalRequired(): bool {
+        return (bool) Setting::get(self::APPROVAL_SETTING, false);
+    }
+
+    /**
+     * Freigabe erteilen. Die freigebende Person muss eine andere sein als die
+     * anlegende — sonst wäre es keine Kontrolle, sondern ein zweiter Klick.
+     */
+    public function approve(CustomerCircular $circular, User $actor): CustomerCircular {
+        if (! $circular->isDraft()) {
+            throw new RuntimeException((string) __('circular.already_sent'));
+        }
+        if ((int) $circular->created_by === (int) $actor->id) {
+            throw new RuntimeException((string) __('circular.error.approval_self'));
+        }
+
+        $circular->forceFill([
+            'approved_by' => $actor->id,
+            'approved_at' => CarbonImmutable::now(),
+        ])->save();
+
+        $circular->audit('circular.approved', ['by_user_id' => (int) $actor->id]);
 
         return $circular->refresh();
     }

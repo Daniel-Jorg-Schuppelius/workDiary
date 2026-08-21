@@ -16,6 +16,8 @@ use App\Models\Communication\{CustomerCircular, CustomerCircularRecipient};
 use App\Models\CommunicationNote;
 use App\Models\{Customer, Organization, Project, User};
 use App\Services\Communication\CustomerCircularService;
+use App\Settings\SettingScope;
+use App\Support\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use RuntimeException;
@@ -239,6 +241,59 @@ class CustomerCircularTest extends TestCase {
 
         Mail::assertSent(CustomerCircularMail::class, 1);
         $this->assertSame(CustomerCircular::STATUS_SENT, $circular->fresh()?->status);
+    }
+
+    public function test_approval_is_off_by_default(): void {
+        Mail::fake();
+        $this->customer(['name' => 'Alpha', 'email' => 'a@example.test']);
+
+        // Ohne Einstellung geht der Versand wie bisher durch — wer allein
+        // arbeitet, hätte sonst eine Sperre ohne Ausweg.
+        $this->service()->send($this->circular(), $this->admin);
+
+        Mail::assertSent(CustomerCircularMail::class, 1);
+    }
+
+    public function test_approval_required_blocks_the_send(): void {
+        Mail::fake();
+        Setting::set(CustomerCircularService::APPROVAL_SETTING, true, SettingScope::Organization, $this->org);
+        $this->customer(['name' => 'Alpha', 'email' => 'a@example.test']);
+
+        $this->expectException(RuntimeException::class);
+        $this->service()->send($this->circular(), $this->admin);
+    }
+
+    public function test_the_author_cannot_approve_their_own_circular(): void {
+        Setting::set(CustomerCircularService::APPROVAL_SETTING, true, SettingScope::Organization, $this->org);
+        $circular = $this->circular();
+
+        $this->expectException(RuntimeException::class);
+        $this->service()->approve($circular, $this->admin);
+    }
+
+    public function test_a_second_person_approves_and_the_send_goes_through(): void {
+        Mail::fake();
+        Setting::set(CustomerCircularService::APPROVAL_SETTING, true, SettingScope::Organization, $this->org);
+        $this->customer(['name' => 'Alpha', 'email' => 'a@example.test']);
+        $second = User::factory()->admin()->create(['organization_id' => $this->org->id]);
+        $circular = $this->circular();
+
+        $this->service()->approve($circular, $second);
+        $this->assertTrue($circular->fresh()?->isApproved());
+        $this->assertSame($second->id, $circular->fresh()?->approved_by);
+
+        $this->service()->send($circular->fresh(), $this->admin);
+        Mail::assertSent(CustomerCircularMail::class, 1);
+    }
+
+    public function test_approval_via_http(): void {
+        Setting::set(CustomerCircularService::APPROVAL_SETTING, true, SettingScope::Organization, $this->org);
+        $second = User::factory()->admin()->create(['organization_id' => $this->org->id]);
+        $circular = $this->circular();
+
+        $this->actingAs($second)->post(route('circulars.approve', $circular))->assertRedirect();
+
+        $this->assertNotNull($circular->fresh()?->approved_at);
     }
 
     public function test_customer_form_persists_bulk_mail_optout(): void {

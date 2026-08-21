@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\{Article, Asset, AssetComponent};
+use App\Models\{Article, Asset, AssetComponent, StockSerial};
 use App\Services\Asset\AssetComponentService;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -47,12 +47,19 @@ class AssetComponentController extends Controller {
             // View-Variable überschreiben.
             'part' => $component,
             'articles' => Article::query()->orderBy('name')->limit(500)->get(['id', 'name', 'number', 'base_unit']),
+            // Feature 118: Seriennummern der eigenen Bestandsführung als
+            // optionale Verknüpfung; Fremdteile bleiben beim Freitext.
+            'serials' => StockSerial::query()
+                ->with('article:id,name')
+                ->orderByDesc('id')
+                ->limit(500)
+                ->get(['id', 'article_id', 'serial_no', 'status']),
         ]);
     }
 
     public function store(Request $request, Asset $asset): RedirectResponse {
         Gate::authorize('update', $asset);
-        $data = $this->validated($request);
+        $data = $this->withSerialNumber($this->validated($request));
 
         AssetComponent::query()->create($data + [
             'organization_id' => $asset->organization_id,
@@ -69,7 +76,7 @@ class AssetComponentController extends Controller {
         abort_unless((int) $component->asset_id === (int) $asset->id, 404);
 
         try {
-            $this->components->replace($component, $this->validated($request), $request->user());
+            $this->components->replace($component, $this->withSerialNumber($this->validated($request)), $request->user());
         } catch (RuntimeException $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -95,6 +102,9 @@ class AssetComponentController extends Controller {
             'article_id' => $request->filled('article_id')
                 ? Sqid::decodeOrNumeric(Article::class, (string) $request->input('article_id'))
                 : null,
+            'stock_serial_id' => $request->filled('stock_serial_id')
+                ? Sqid::decodeOrNumeric(StockSerial::class, (string) $request->input('stock_serial_id'))
+                : null,
         ]);
 
         return $request->validate([
@@ -104,9 +114,32 @@ class AssetComponentController extends Controller {
             'unit' => ['nullable', 'string', 'max:32'],
             'position' => ['nullable', 'string', 'max:120'],
             'serial_no' => ['nullable', 'string', 'max:120'],
+            'stock_serial_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('stock_serials')],
             'installed_on' => ['nullable', 'date'],
             'replace_interval_months' => ['nullable', 'integer', 'min:1', 'max:600'],
             'note' => ['nullable', 'string', 'max:500'],
         ]);
+    }
+
+    /**
+     * Ist eine Lager-Seriennummer verknüpft, gewinnt ihre Nummer über den
+     * Freitext (Feature 118) — zwei verschiedene Nummern an einem Teil wären
+     * schlimmer als eine fehlende.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function withSerialNumber(array $data): array {
+        $serialId = $data['stock_serial_id'] ?? null;
+        if ($serialId === null) {
+            return $data;
+        }
+
+        $serial = StockSerial::query()->whereKey($serialId)->first();
+        if ($serial instanceof StockSerial) {
+            $data['serial_no'] = $serial->serial_no;
+        }
+
+        return $data;
     }
 }

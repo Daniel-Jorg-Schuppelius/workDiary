@@ -479,6 +479,7 @@ return [
     ],
     // Pflichtnachweise Subunternehmer (Feature 117, MVP-606).
     'credentials' => [
+        'release_warning' => 'Attention : il manque des justificatifs obligatoires pour :supplier (:list). Le paiement est validé — réclamer la preuve.',
         'title' => 'Justificatifs obligatoires',
         'subtitle' => 'Justificatifs des sous-traitants avec validité et feu tricolore par fournisseur',
         'empty' => 'Aucun fournisseur avec justificatifs obligatoires.',

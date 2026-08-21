@@ -479,6 +479,7 @@ return [
     ],
     // Pflichtnachweise Subunternehmer (Feature 117, MVP-606).
     'credentials' => [
+        'release_warning' => 'Attenzione: per :supplier mancano attestazioni obbligatorie (:list). Il pagamento è approvato — sollecitare il documento.',
         'title' => 'Documenti obbligatori',
         'subtitle' => 'Documenti dei subappaltatori con validità e semaforo per fornitore',
         'empty' => 'Nessun fornitore con documenti obbligatori.',

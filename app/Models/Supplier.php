@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Numbering\NumberScope;
-use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasContactAndBankDetails, HasPartyDisplayLabel, HasSequentialNumber, HasSqid, HasTags, Searchable};
+use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasContactAndBankDetails, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSequentialNumber, HasSqid, HasTags, Searchable};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
@@ -68,6 +68,7 @@ class Supplier extends Model {
     use HasFactory;
 
     use HasPartyDisplayLabel;
+    use HasPhoneSearchKeys;
     use HasSequentialNumber;
     use HasSqid;
     use HasTags;

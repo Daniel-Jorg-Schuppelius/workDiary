@@ -94,6 +94,7 @@ return [
         'basis' => 'Base',
         'basis_percent' => 'Pourcentage du total de la facture',
         'basis_amount' => 'Montant fixe',
+        'base_kind' => 'Base de calcul',
         'percent' => 'Pourcentage',
         'amount' => 'Montant fixe',
         'due_on' => 'Payable à partir du',

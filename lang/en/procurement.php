@@ -479,6 +479,7 @@ return [
     ],
     // Pflichtnachweise Subunternehmer (Feature 117, MVP-606).
     'credentials' => [
+        'release_warning' => 'Attention: :supplier is missing mandatory credentials (:list). The payment is released — request the evidence.',
         'title' => 'Mandatory records',
         'subtitle' => 'Subcontractor records with validity and a traffic light per supplier',
         'empty' => 'No supplier with mandatory records yet.',

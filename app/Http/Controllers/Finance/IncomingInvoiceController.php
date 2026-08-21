@@ -174,8 +174,18 @@ class IncomingInvoiceController extends Controller {
         ]);
         $incoming->audit('incoming_einvoice.decided', ['to' => $target]);
 
-        return redirect()->route('finance.incoming-invoices.show', $incoming->document_id)
+        $redirect = redirect()->route('finance.incoming-invoices.show', $incoming->document_id)
             ->with('success', __('Entscheidung gespeichert.'));
+
+        // Feature 117: Bei der Zahlungsfreigabe warnen, wenn dem Lieferanten
+        // Pflichtnachweise fehlen. Sperren wäre hier zu spät — die Leistung
+        // ist erbracht —, aber schweigen wäre falsch: Genau die Altfälle,
+        // deren Bestellung vor der Sperre entstand, laufen hier durch.
+        $warning = $target === \App\Models\IncomingEInvoice::STATUS_PAYMENT_RELEASED
+            ? $this->credentialWarning($incoming)
+            : null;
+
+        return $warning === null ? $redirect : $redirect->with('warning', $warning);
     }
 
     public function show(Document $document): View {
@@ -198,6 +208,34 @@ class IncomingInvoiceController extends Controller {
             'document' => $document->load('currentVersion'),
             'parsed' => $parsed,
             'summary' => $parsed !== null ? $this->eInvoices->summary($parsed) : null,
+        ]);
+    }
+
+    /**
+     * Warnung zu fehlenden Pflichtnachweisen des Lieferanten (Feature 117).
+     * Der Lieferant wird über den Verkäufernamen des Belegs gefunden; ohne
+     * Treffer gibt es nichts zu warnen — eine erfundene Zuordnung wäre
+     * schlimmer als keine.
+     */
+    private function credentialWarning(\App\Models\IncomingEInvoice $incoming): ?string {
+        $name = trim((string) ($incoming->seller_name ?? ''));
+        if ($name === '') {
+            return null;
+        }
+
+        $supplier = \App\Models\Supplier::query()
+            ->where('organization_id', $incoming->organization_id)
+            ->where('name', $name)
+            ->first();
+        if (! $supplier instanceof \App\Models\Supplier) {
+            return null;
+        }
+
+        $missing = app(\App\Services\Supplier\SupplierCredentialService::class)->missingReasons($supplier);
+
+        return $missing === [] ? null : (string) __('procurement.credentials.release_warning', [
+            'supplier' => $supplier->name,
+            'list' => implode(', ', $missing),
         ]);
     }
 }

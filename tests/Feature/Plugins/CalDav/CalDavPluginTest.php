@@ -127,4 +127,22 @@ final class CalDavPluginTest extends TestCase {
 
         $this->assertSame(PluginHealth::STATUS_DEGRADED, (new CalDavPlugin())->healthCheck()->status);
     }
+
+    /**
+     * Regression (Befund 2026-08-21): Die ICS-Bibliothek setzte DTSTAMP auf
+     * `now()`. Damit unterschied sich dasselbe unveränderte Ereignis bei jedem
+     * Aufruf, der Publish-Vergleich schlug fehl und jeder Termin wurde bei
+     * JEDEM Lauf erneut hochgeladen — im Test sichtbar als sporadisch
+     * fehlschlagendes „unchanged", im Betrieb als dauerhafte Schreiblast beim
+     * Kunden.
+     */
+    public function test_the_ics_document_is_stable_across_calls(): void {
+        $event = $this->event();
+        $ics = app(\App\Services\Event\IcsFeedService::class);
+
+        $first = $ics->documentForEvent($event);
+        $second = $ics->documentForEvent($event->fresh());
+
+        $this->assertSame($first, $second);
+    }
 }

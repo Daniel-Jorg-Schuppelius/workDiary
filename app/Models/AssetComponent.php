@@ -43,6 +43,7 @@ class AssetComponent extends Model {
         'unit',
         'position',
         'serial_no',
+        'stock_serial_id',
         'installed_on',
         'removed_on',
         'replace_interval_months',
@@ -102,5 +103,15 @@ class AssetComponent extends Model {
         $due = $this->dueOn();
 
         return $this->isInstalled() && $due !== null && $due->lessThanOrEqualTo($reference ?? Carbon::today());
+    }
+
+    /**
+     * Seriennummer aus der eigenen Bestandsführung (Feature 118, optional).
+     * Fremdteile haben keine — für sie bleibt `serial_no` als Freitext.
+     *
+     * @return BelongsTo<StockSerial, $this>
+     */
+    public function stockSerial(): BelongsTo {
+        return $this->belongsTo(StockSerial::class, 'stock_serial_id');
     }
 }

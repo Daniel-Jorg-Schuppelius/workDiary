@@ -172,4 +172,59 @@ class AssetComponentTest extends TestCase {
             ->post(route('assets.components.remove', [$foreignAsset, $component]))
             ->assertNotFound();
     }
+
+    /** Seriennummer der Bestandsführung; die Variante ist dort Pflicht. */
+    private function stockSerial(string $serialNo): \App\Models\StockSerial {
+        $article = Article::factory()->create(['organization_id' => $this->org->id, 'name' => 'Filter F7']);
+        $variant = \App\Models\ArticleVariant::factory()->create([
+            'organization_id' => $this->org->id,
+            'article_id' => $article->id,
+        ]);
+
+        return \App\Models\StockSerial::query()->create([
+            'organization_id' => $this->org->id,
+            'article_id' => $article->id,
+            'article_variant_id' => $variant->id,
+            'serial_no' => $serialNo,
+            'status' => \App\Enums\Inventory\SerialStatus::InStock->value,
+        ]);
+    }
+
+    public function test_a_linked_stock_serial_wins_over_the_free_text(): void {
+        $serial = $this->stockSerial('SN-4711');
+
+        $this->actingAs($this->admin)->post(route('assets.components.store', $this->asset), [
+            'label' => 'Filter',
+            'quantity' => '1',
+            'serial_no' => 'abgetippt-falsch',
+            'stock_serial_id' => $serial->sqid,
+        ])->assertRedirect();
+
+        $component = AssetComponent::query()->firstOrFail();
+        // Zwei verschiedene Nummern an einem Teil wären schlimmer als eine
+        // fehlende — die verknüpfte gewinnt.
+        $this->assertSame('SN-4711', $component->serial_no);
+        $this->assertSame($serial->id, $component->stock_serial_id);
+    }
+
+    public function test_free_text_survives_without_a_link(): void {
+        $this->actingAs($this->admin)->post(route('assets.components.store', $this->asset), [
+            'label' => 'Fremdteil',
+            'quantity' => '1',
+            'serial_no' => 'FREMD-9',
+        ])->assertRedirect();
+
+        $component = AssetComponent::query()->firstOrFail();
+        $this->assertSame('FREMD-9', $component->serial_no);
+        $this->assertNull($component->stock_serial_id);
+    }
+
+    public function test_form_offers_the_stock_serials(): void {
+        $this->stockSerial('SN-0815');
+
+        $this->actingAs($this->admin)
+            ->get(route('assets.components.create', $this->asset))
+            ->assertOk()
+            ->assertSee('SN-0815');
+    }
 }

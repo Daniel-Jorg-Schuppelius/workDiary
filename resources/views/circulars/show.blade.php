@@ -18,6 +18,14 @@
 @section('content')
     <x-index-page :subtitle="$circular->subject">
         <x-slot:actions>
+            @if ($circular->isDraft() && $approvalRequired && ! $circular->isApproved())
+                {{-- Feature 119: Der Versand bleibt gesperrt, bis eine zweite
+                     Person freigegeben hat. --}}
+                <x-action-form :action="route('circulars.approve', $circular)">
+                    <x-icon-btn icon="how_to_reg" tone="primary" size="sm" type="submit"
+                                show-label>{{ __('circular.action.approve') }}</x-icon-btn>
+                </x-action-form>
+            @endif
             @if ($circular->isDraft())
                 <x-action-form :action="route('circulars.send', $circular)"
                                :confirm="__('circular.confirm_send', ['count' => $audience->count()])">
@@ -37,6 +45,11 @@
                 @endif
                 @if ($circular->portal_notice)
                     <x-status-badge tone="info" outline>{{ __('circular.portal_short') }}</x-status-badge>
+                @endif
+                @if ($circular->isApproved())
+                    <x-status-badge tone="success" outline>{{ __('circular.approved_by', ['name' => $circular->approvedBy?->name ?? '—']) }}</x-status-badge>
+                @elseif ($approvalRequired)
+                    <x-status-badge tone="warning" outline>{{ __('circular.approval_pending') }}</x-status-badge>
                 @endif
             </div>
             <p class="mt-3 whitespace-pre-line text-sm">{{ $circular->body }}</p>

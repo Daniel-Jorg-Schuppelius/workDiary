@@ -17,9 +17,10 @@ use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
 /**
- * Gemeinsamer Rufnummern-Abgleich (Audit 2026-08, W2.4): tail-7-Vorfilter +
- * exakter E.164-Vergleich, vorher wortgleich in CtiCallService und
- * FritzboxImportService. Die Klassen-Priorität entscheidet über den Treffer.
+ * Gemeinsamer Rufnummern-Abgleich (Audit 2026-08, W2.4; Suchschlüssel seit
+ * 2026-08-21): exakte Suche auf `phone_e164`/`mobile_e164`, vorher ein
+ * tail-7-LIKE-Vorfilter mit bekannter Lücke. Die Klassen-Priorität
+ * entscheidet über den Treffer.
  */
 class PhoneNumberMatcherTest extends TestCase {
     use RefreshDatabase;
@@ -49,21 +50,49 @@ class PhoneNumberMatcherTest extends TestCase {
     }
 
     /**
-     * Dokumentierte Grenze des Bestandsverfahrens (bei der Zusammenführung in
-     * W2.4 belegt, galt vorher genauso für CTI und Fritzbox): Trennzeichen
-     * INNERHALB der letzten sieben Ziffern hebeln den LIKE-Vorfilter aus.
-     * Behebung bräuchte einen normalisierten Suchschlüssel an den Stammdaten —
-     * eigener Schnitt. Der Test hält den Ist-Zustand sichtbar.
+     * Regression zur behobenen Grenze (Folgepunkt aus W2.4): Trennzeichen
+     * INNERHALB der letzten sieben Ziffern hebelten den früheren LIKE-Vorfilter
+     * aus — der Kunde wurde nicht gefunden, obwohl es dieselbe Nummer war. Mit
+     * dem normalisierten Suchschlüssel trifft der Abgleich.
      */
-    public function test_known_limit_separators_inside_the_tail_defeat_the_prefilter(): void {
-        Customer::factory()->create([
+    public function test_separators_inside_the_tail_no_longer_defeat_the_lookup(): void {
+        $customer = Customer::factory()->create([
             'organization_id' => $this->organization->id,
             'phone' => '0511 / 123 456 78',
         ]);
 
         $match = $this->matcher()->match((int) $this->organization->id, '+4951112345678', [Customer::class]);
 
-        $this->assertNull($match, 'Verhalten geändert — Grenze prüfen und Doku/Folgepunkt anpassen.');
+        $this->assertNotNull($match);
+        $this->assertSame($customer->id, $match->id);
+    }
+
+    public function test_the_search_key_is_kept_current_on_save(): void {
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'phone' => '0511 / 123 456 78',
+        ]);
+        $this->assertSame('+4951112345678', $customer->fresh()?->phone_e164);
+
+        $customer->update(['phone' => '+49 30 111 222 333']);
+        $this->assertSame('+4930111222333', $customer->fresh()?->phone_e164);
+
+        // Unlesbares ergibt keinen Schlüssel — ein geratener fände den
+        // falschen Kunden, und das fiele niemandem auf.
+        $customer->update(['phone' => 'Durchwahl erfragen']);
+        $this->assertNull($customer->fresh()?->phone_e164);
+    }
+
+    public function test_mobile_numbers_are_matched_too(): void {
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'phone' => null,
+            'mobile' => '0171-2345678',
+        ]);
+
+        $match = $this->matcher()->match((int) $this->organization->id, '+491712345678', [Customer::class]);
+
+        $this->assertSame($customer->id, $match?->id);
     }
 
     public function test_class_order_decides_the_winner(): void {
@@ -88,8 +117,8 @@ class PhoneNumberMatcherTest extends TestCase {
     }
 
     public function test_similar_tail_without_exact_match_is_rejected(): void {
-        // Gleiche letzte 7 Ziffern, andere Vorwahl → Vorfilter trifft, der
-        // exakte E.164-Vergleich verwirft.
+        // Gleiche letzte 7 Ziffern, andere Vorwahl — der Schlüssel ist ein
+        // anderer, also kein Treffer.
         Customer::factory()->create([
             'organization_id' => $this->organization->id,
             'phone' => '+49891234567',

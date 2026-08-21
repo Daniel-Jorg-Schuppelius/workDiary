@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing;
 
-use App\Enums\Invoicing\{RetentionKind, RetentionStatus};
+use App\Enums\Invoicing\{RetentionBase, RetentionKind, RetentionStatus};
 use App\Models\{Invoice, User};
 use App\Models\Invoicing\InvoiceRetention;
 use Carbon\CarbonImmutable;
@@ -43,6 +43,7 @@ class RetentionService {
         ?string $dueOn,
         ?User $actor = null,
         ?string $note = null,
+        RetentionBase $baseKind = RetentionBase::Net,
     ): InvoiceRetention {
         if (! $this->isMutable($invoice)) {
             throw new RuntimeException((string) __('invoicing.retention.locked'));
@@ -51,8 +52,14 @@ class RetentionService {
             throw new RuntimeException((string) __('invoicing.retention.needs_one_basis'));
         }
 
-        $base = round($invoice->total?->toFloat() ?? 0.0, 2);
-        if ($base <= 0.0) {
+        // Prozentsätze rechnen auf die vereinbarte Grundlage; der Deckel
+        // gegen zu hohe Einbehalte bleibt der Bruttobetrag, denn nur der wird
+        // tatsächlich überwiesen.
+        $gross = round($invoice->total?->toFloat() ?? 0.0, 2);
+        $base = $baseKind === RetentionBase::Net
+            ? round($invoice->subtotal?->toFloat() ?? 0.0, 2)
+            : $gross;
+        if ($base <= 0.0 || $gross <= 0.0) {
             throw new RuntimeException((string) __('invoicing.retention.no_total'));
         }
 
@@ -63,16 +70,17 @@ class RetentionService {
 
         // Die Summe aller Einbehalte darf den Beleg nicht übersteigen: Ein
         // negativer Zahlbetrag ist keine Sicherheit, sondern ein Rechenfehler.
-        if (round($this->openAmountOf($invoice) + $amount, 2) > $base) {
+        if (round($this->openAmountOf($invoice) + $amount, 2) > $gross) {
             throw new RuntimeException((string) __('invoicing.retention.exceeds_total'));
         }
 
-        return DB::transaction(function () use ($invoice, $kind, $percent, $base, $amount, $dueOn, $actor, $note): InvoiceRetention {
+        return DB::transaction(function () use ($invoice, $kind, $percent, $baseKind, $base, $amount, $dueOn, $actor, $note): InvoiceRetention {
             $retention = InvoiceRetention::query()->create([
                 'organization_id' => $invoice->organization_id,
                 'invoice_id' => $invoice->id,
                 'kind' => $kind->value,
                 'percent' => $percent,
+                'base_kind' => $baseKind->value,
                 'base_amount' => $base,
                 'amount' => $amount,
                 'currency' => $invoice->currency->value,
@@ -84,6 +92,7 @@ class RetentionService {
 
             $invoice->audit('invoice.retention_added', [
                 'kind' => $kind->value,
+                'base_kind' => $baseKind->value,
                 // Rohwerte in den Audit-Payload (Hash-Ketten-Regel): keine
                 // gecasteten Money-/Enum-Objekte.
                 'amount' => (string) $amount,

@@ -126,11 +126,83 @@ class GirocodeTest extends TestCase {
         $this->assertNull(app(GirocodeService::class)->payload($invoice->fresh(), $this->legal()));
     }
 
-    public function test_no_code_for_paid_or_partially_paid_invoices(): void {
-        $service = app(GirocodeService::class);
+    public function test_no_code_for_a_paid_invoice(): void {
+        $this->assertNull(app(GirocodeService::class)->payload($this->invoice(['status' => Invoice::STATUS_PAID]), $this->legal()));
+    }
 
-        $this->assertNull($service->payload($this->invoice(['status' => Invoice::STATUS_PAID]), $this->legal()));
-        $this->assertNull($service->payload($this->invoice(['number' => 'R2030-0008', 'status' => Invoice::STATUS_PARTIALLY_PAID]), $this->legal()));
+    public function test_partial_payment_without_a_known_amount_gets_no_code(): void {
+        // Status gesetzt, aber weder Zuordnung noch Kassenbeleg: Der Rest ist
+        // unbekannt — ein Code über die volle Summe lüde zur Doppelzahlung ein.
+        $invoice = $this->invoice(['number' => 'R2030-0008', 'status' => Invoice::STATUS_PARTIALLY_PAID]);
+
+        $this->assertNull(app(GirocodeService::class)->payload($invoice, $this->legal()));
+    }
+
+    public function test_partial_payment_puts_the_remainder_into_the_code(): void {
+        $invoice = $this->invoice(['number' => 'R2030-0009', 'status' => Invoice::STATUS_PARTIALLY_PAID]);
+        $transaction = \App\Models\Finance\BankTransaction::factory()->create([
+            'organization_id' => $this->org->id,
+            'amount' => '50.00',
+        ]);
+        \App\Models\Finance\PaymentAllocation::query()->create([
+            'organization_id' => $this->org->id,
+            'bank_transaction_id' => $transaction->id,
+            'allocatable_type' => Invoice::class,
+            'allocatable_id' => $invoice->id,
+            'amount' => '50.00',
+            'kind' => \App\Enums\Finance\AllocationKind::Payment->value,
+        ]);
+
+        $payload = (string) app(GirocodeService::class)->payload($invoice->fresh(), $this->legal());
+
+        // 119,00 Rechnung − 50,00 zugeordnet.
+        $this->assertStringContainsString('EUR69.00', $payload);
+    }
+
+    public function test_cash_payments_count_towards_the_remainder(): void {
+        $invoice = $this->invoice(['number' => 'R2030-0010', 'status' => Invoice::STATUS_PARTIALLY_PAID]);
+        $register = \App\Models\CashRegister::query()->create([
+            'organization_id' => $this->org->id,
+            'name' => 'Ladenkasse',
+            'currency' => 'EUR',
+            'opening_balance' => '0.00',
+            'opened_on' => now()->toDateString(),
+            'active' => true,
+        ]);
+        // Über den Kassenbuch-Service, nicht direkt: cash_entries sind
+        // hash-verkettet und tragen eine Registernummer.
+        app(\App\Services\Finance\CashBookService::class)->record($register, [
+            'booked_on' => now()->toDateString(),
+            'direction' => \App\Models\CashEntry::DIRECTION_IN,
+            'amount' => 19.00,
+            'purpose' => 'Teilzahlung bar',
+            'invoice_id' => $invoice->id,
+        ]);
+
+        $payload = (string) app(GirocodeService::class)->payload($invoice->fresh(), $this->legal());
+
+        $this->assertStringContainsString('EUR100.00', $payload);
+    }
+
+    public function test_open_retention_reduces_the_coded_amount(): void {
+        // Der Beleg weist den geminderten Zahlbetrag aus — der Code muss
+        // dieselbe Zahl tragen, sonst überweist der Kunde den Einbehalt mit.
+        $invoice = $this->invoice(['number' => 'R2030-0011', 'status' => Invoice::STATUS_DRAFT]);
+        app(\App\Services\Invoicing\RetentionService::class)->add(
+            $invoice,
+            \App\Enums\Invoicing\RetentionKind::Warranty,
+            percent: 5.0,
+            fixedAmount: null,
+            dueOn: null,
+            actor: $this->user,
+        );
+
+        $invoice->forceFill(['status' => Invoice::STATUS_ISSUED])->save();
+
+        $payload = (string) app(GirocodeService::class)->payload($invoice->fresh(), $this->legal());
+
+        // 119,00 brutto − 5 % der Nettosumme (5,00) = 114,00.
+        $this->assertStringContainsString('EUR114.00', $payload);
     }
 
     public function test_no_code_for_credit_notes(): void {

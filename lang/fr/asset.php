@@ -58,6 +58,9 @@ return [
     // Anlagen-Stückliste (Feature 118, MVP-607).
     'components' => [
         'title' => 'Nomenclature',
+        'stock_serial_none' => 'aucun (pièce tierce)',
+        'stock_serial_hint' => 'Seules les pièces de votre propre stock en ont un.',
+        'serial_no_hint' => 'Texte libre ; écrasé si un numéro de série du stock est lié.',
         'empty' => 'Aucune pièce enregistrée.',
         'saved' => 'Pièce enregistrée.',
         'replaced' => 'Pièce remplacée — l’ancienne reste dans l’historique.',
@@ -82,6 +85,7 @@ return [
             'quantity' => 'Quantité',
             'unit' => 'Unité',
             'serial_no' => 'Numéro de série',
+            'stock_serial' => 'Numéro de série du stock',
             'installed_on' => 'Montée le',
             'removed_on' => 'Déposée le',
             'due_on' => 'Remplacement dû',

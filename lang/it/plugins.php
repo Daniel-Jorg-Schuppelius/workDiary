@@ -9,6 +9,15 @@
  */
 
 return [
+    // Fähigkeiten, die über eigene Registries laufen statt über das
+    // Capability-Enum (Entscheid 2026-08-21 zum Audit-Befund W1.6):
+    // nur für die Anzeige, kein Vertragsbestandteil.
+    'capability' => [
+        'facturation' => 'Trasmissione documenti',
+        'mirror' => 'Mirroring dei file',
+        'inventory' => 'Riscrittura delle giacenze',
+    ],
+
     'compatibility' => [
         'incompatible' => 'Incompatibile',
         'range' => 'Core :min–:max',

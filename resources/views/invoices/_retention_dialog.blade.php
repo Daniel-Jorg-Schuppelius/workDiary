@@ -40,6 +40,18 @@
         <x-input-field name="percent" type="number" step="0.01" min="0.01" max="100"
                        :label="__('invoicing.retention.percent')"
                        :value="old('percent', '5.00')" />
+
+    {{-- Bemessungsgrundlage: „5 % der Nettosumme" und „5 % der
+         Rechnungssumme" sind zwei verschiedene Beträge; welche gilt, steht
+         im Vertrag und gehört deshalb an den einzelnen Einbehalt. --}}
+    <div>
+        <label class="label" for="retention-base-kind"><span class="label-text">{{ __('invoicing.retention.base_kind') }}</span></label>
+        <select id="retention-base-kind" name="base_kind" class="select select-bordered w-full">
+            @foreach (\App\Enums\Invoicing\RetentionBase::cases() as $base)
+                <option value="{{ $base->value }}" @selected(old('base_kind', \App\Enums\Invoicing\RetentionBase::Net->value) === $base->value)>{{ $base->label() }}</option>
+            @endforeach
+        </select>
+    </div>
         <x-input-field name="amount" type="number" step="0.01" min="0.01"
                        :label="__('invoicing.retention.amount')"
                        :value="old('amount', '')" />

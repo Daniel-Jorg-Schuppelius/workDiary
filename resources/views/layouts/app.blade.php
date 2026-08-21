@@ -1318,6 +1318,14 @@
                     {{ session('error') }}
                 </div>
             @endif
+            @if (session('warning'))
+                {{-- Hinweis, der nichts verhindert hat: Der Vorgang lief durch,
+                     aber jemand soll ihn nachsehen (z. B. fehlende
+                     Pflichtnachweise bei der Zahlungsfreigabe, Feature 117). --}}
+                <div class="alert alert-warning mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
+                    {{ session('warning') }}
+                </div>
+            @endif
             @if (session('info'))
                 <div class="alert alert-info mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
                     {{ session('info') }}

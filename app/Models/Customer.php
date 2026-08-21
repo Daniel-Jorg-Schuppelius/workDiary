@@ -13,7 +13,7 @@ namespace App\Models;
 use App\Casts\MoneyCast;
 use App\Enums\Numbering\NumberScope;
 use App\Enums\Project\ProjectStatus;
-use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasClassifications, HasCommunicationNotes, HasContactAndBankDetails, HasPartyDisplayLabel, HasSequentialNumber, HasSqid, HasTags, Searchable};
+use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasClassifications, HasCommunicationNotes, HasContactAndBankDetails, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSequentialNumber, HasSqid, HasTags, Searchable};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne, MorphMany};
@@ -77,6 +77,7 @@ class Customer extends Model {
     use HasFactory;
 
     use HasPartyDisplayLabel;
+    use HasPhoneSearchKeys;
     use HasSequentialNumber;
     use HasSqid;
     use HasTags;

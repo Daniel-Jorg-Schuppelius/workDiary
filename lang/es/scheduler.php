@@ -91,7 +91,7 @@ return [
             'send_scheduled' => 'Enviar mensajes de chat programados',
         ],
         'claims' => ['escalate' => 'Escalado de plazos de reclamaciones'],
-        'cloud-intake' => ['sync' => 'Recuperar la recepción de documentos en la nube'],
+        'cloud-intake' => ['sync' => 'Recuperar la recepción de documentos en la nube', 'wake' => 'Recuperar las conexiones en la nube despertadas'],
         'compliance' => ['scan_findings' => 'Analizar hallazgos de cumplimiento'],
         'shifts' => ['roll_forward' => 'Prolongar planes rotativos'],
         'accounts' => ['post' => 'Contabilizar cuentas de tiempo'],

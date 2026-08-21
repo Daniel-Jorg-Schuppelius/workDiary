@@ -31,7 +31,17 @@ return [
         'heading' => 'Destinatari (:count)',
     ],
 
+    'approved' => 'Circolare approvata.',
+    'approved_by' => 'Approvata da :name',
+    'approval_pending' => 'Approvazione in sospeso',
+
+    'error' => [
+        'approval_missing' => 'L’invio richiede l’approvazione di una seconda persona.',
+        'approval_self' => 'Chi ha creato la circolare non può approvarla da solo.',
+    ],
+
     'action' => [
+        'approve' => 'Approva',
         'create' => 'Crea circolare',
         'save_draft' => 'Salva come bozza',
         'send' => 'Invia',

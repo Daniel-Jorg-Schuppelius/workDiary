@@ -74,6 +74,7 @@ class SchedulerRegistrationTest extends TestCase {
         // Neu mit Feature 095: Calendly-Termin-Backfill (Polling/Reconciliation).
         'calendly:backfill' => ['0 * * * *', true, true],
         // Neu mit Feature 080 (MVP-359): Cloud-Dokumenteingang-Delta-Lauf.
+        'cloud-intake:wake' => ['*/5 * * * *', true, true],
         'cloud-intake:sync' => ['*/15 * * * *', true, true],
         // Neu mit Feature 017 Phase 32 (MVP-364/365): Cloud-Backup + Verify.
         'workdiary:backup:run' => ['30 1 * * *', true, true],

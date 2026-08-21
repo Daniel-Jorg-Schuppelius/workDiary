@@ -54,7 +54,8 @@
     <div class="grid gap-3 sm:grid-cols-3">
         <x-input-field name="serial_no" type="text" maxlength="120"
                        :label="__('asset.components.column.serial_no')"
-                       :value="old('serial_no', '')" />
+                       :value="old('serial_no', '')"
+                       :hint="__('asset.components.serial_no_hint')" />
         <x-input-field name="installed_on" type="date"
                        :label="__('asset.components.column.installed_on')"
                        :value="old('installed_on', now()->toDateString())" />
@@ -62,6 +63,20 @@
                        :label="__('asset.components.column.interval')"
                        :value="old('replace_interval_months', '')"
                        :hint="__('asset.components.interval_hint')" />
+    </div>
+
+    {{-- Feature 118: Optionale Verknüpfung mit der eigenen Bestandsführung.
+         Ist sie gesetzt, gewinnt ihre Nummer über den Freitext — zwei
+         verschiedene Nummern an einem Teil wären schlimmer als eine fehlende. --}}
+    <div>
+        <label class="label" for="comp-serial"><span class="label-text">{{ __('asset.components.column.stock_serial') }}</span></label>
+        <select id="comp-serial" name="stock_serial_id" class="select select-bordered w-full">
+            <option value="">{{ __('asset.components.stock_serial_none') }}</option>
+            @foreach ($serials as $serial)
+                <option value="{{ $serial->sqid }}" @selected(old('stock_serial_id') === $serial->sqid)>{{ $serial->serial_no }}@if ($serial->article) — {{ $serial->article->name }}@endif</option>
+            @endforeach
+        </select>
+        <p class="text-xs text-base-content/60">{{ __('asset.components.stock_serial_hint') }}</p>
     </div>
 
     <x-input-field name="note" type="text" maxlength="500"

@@ -310,6 +310,10 @@ return [
         'revoked' => 'Widerrufen',
         'expired' => 'Abgelaufen',
     ],
+    'retention_base' => [
+        'net' => 'Nettobetrag',
+        'gross' => 'Bruttobetrag',
+    ],
     'retention_kind' => [
         'warranty' => 'Gewährleistungseinbehalt',
         'performance' => 'Vertragserfüllungseinbehalt',

@@ -94,6 +94,7 @@ return [
         'basis' => 'Base',
         'basis_percent' => 'Porcentaje del total de la factura',
         'basis_amount' => 'Importe fijo',
+        'base_kind' => 'Base de cálculo',
         'percent' => 'Porcentaje',
         'amount' => 'Importe fijo',
         'due_on' => 'Pagadero a partir del',

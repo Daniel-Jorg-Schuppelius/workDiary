@@ -58,6 +58,9 @@ return [
     // Anlagen-Stückliste (Feature 118, MVP-607).
     'components' => [
         'title' => 'Stückliste',
+        'stock_serial_none' => 'keine (Fremdteil)',
+        'stock_serial_hint' => 'Nur Teile aus dem eigenen Lager haben eine.',
+        'serial_no_hint' => 'Frei erfassbar; bei verknüpfter Lager-Seriennummer wird sie überschrieben.',
         'empty' => 'Noch kein Teil erfasst.',
         'saved' => 'Teil erfasst.',
         'replaced' => 'Teil ersetzt — das alte bleibt in der Historie.',
@@ -82,6 +85,7 @@ return [
             'quantity' => 'Menge',
             'unit' => 'Einheit',
             'serial_no' => 'Seriennummer',
+            'stock_serial' => 'Lager-Seriennummer',
             'installed_on' => 'Eingebaut am',
             'removed_on' => 'Ausgebaut am',
             'due_on' => 'Wechsel fällig',

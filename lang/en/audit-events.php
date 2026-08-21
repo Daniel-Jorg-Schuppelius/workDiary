@@ -40,6 +40,7 @@ return [
         'revoked' => 'SEPA mandate revoked',
     ],
     'circular' => [
+        'approved' => 'Circular approved',
         'sent' => 'Circular sent',
     ],
     'assetComponent' => [

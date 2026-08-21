@@ -46,6 +46,7 @@ class InvoiceRetention extends Model {
         'invoice_id',
         'kind',
         'percent',
+        'base_kind',
         'base_amount',
         'amount',
         'currency',
@@ -59,6 +60,7 @@ class InvoiceRetention extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'kind' => RetentionKind::class,
+        'base_kind' => \App\Enums\Invoicing\RetentionBase::class,
         'status' => RetentionStatus::class,
         'percent' => PercentageCast::class . ':2',
         'base_amount' => MoneyCast::class . ':currency',

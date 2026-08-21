@@ -469,6 +469,16 @@ return [
             'expected_runtime_minutes' => 10,
         ],
         // --- Cloud-Dokumenteingang (Feature 080, MVP-359) ---
+        // Aufweck-Spur (Feature 080): kurzer Takt, läuft aber nur für
+        // Verbindungen, die ein Webhook gemeldet hat — ohne Flag passiert nichts.
+        'cloud-intake.wake' => [
+            'command' => 'cloud-intake:wake',
+            'plugin' => 'dropbox,google-drive,msgraph,nextcloud',
+            'cadence' => ['type' => 'everyFiveMinutes'],
+            'allowed' => ['everyFiveMinutes', 'everyFifteenMinutes'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 5,
+        ],
         'cloud-intake.sync' => [
             'command' => 'cloud-intake:sync',
             // Plugin-IDs der Intake-Adapter (CloudIntakeProvider::pluginId) — Microsoft läuft

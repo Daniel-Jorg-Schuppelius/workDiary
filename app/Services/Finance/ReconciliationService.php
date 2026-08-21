@@ -431,7 +431,12 @@ class ReconciliationService {
     }
 
     /** Summe der aktiven (nicht soft-deleted) Zuordnungen auf eine Rechnung. */
-    private function allocatedSum(Invoice $invoice): float {
+    /**
+     * Bereits auf die Rechnung zugeordneter Zahlbetrag. Öffentlich, weil auch
+     * der Girocode ihn braucht (MVP-600): Ein Code über den vollen Betrag auf
+     * einer teilweise bezahlten Rechnung lädt zur Doppelzahlung ein.
+     */
+    public function allocatedSum(Invoice $invoice): float {
         return (float) PaymentAllocation::query()
             ->where('allocatable_type', Invoice::class)
             ->where('allocatable_id', $invoice->id)

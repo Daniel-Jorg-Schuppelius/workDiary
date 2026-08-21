@@ -40,6 +40,7 @@ return [
         'revoked' => 'SEPA-Mandat widerrufen',
     ],
     'circular' => [
+        'approved' => 'Rundschreiben freigegeben',
         'sent' => 'Rundschreiben versendet',
     ],
     'assetComponent' => [

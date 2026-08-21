@@ -12,75 +12,57 @@ declare(strict_types=1);
 
 namespace App\Services\Contacts;
 
-use CommonToolkit\Helper\Data\PhoneNumberHelper;
+use App\Support\PhoneSearchKey;
 use Illuminate\Database\Eloquent\Model;
 
 /**
  * Stammdaten-Treffer zu einer Rufnummer (Audit 2026-08, W2.4).
  *
- * Der Algorithmus — tail-7-LIKE-Vorfilter auf `phone`/`mobile`, danach exakter
- * E.164-Vergleich — steckte wortgleich im {@see \App\Services\Cti\CtiCallService}
- * und im {@see \App\Plugins\Fritzbox\FritzboxImportService}; die Kopien waren
- * bereits auseinandergelaufen (Fritzbox mit `whereLikeEscaped`, CTI mit rohem
- * LIKE). Der Vorfilter ist nötig, weil Rufnummern in beliebiger Schreibweise
- * gespeichert sind — verglichen wird erst nach der Normalisierung.
+ * Der Abgleich lief ursprünglich über einen LIKE-Vorfilter auf die letzten
+ * sieben Ziffern von `phone`/`mobile` — wortgleich kopiert im
+ * {@see \App\Services\Cti\CtiCallService} und im
+ * {@see \App\Plugins\Fritzbox\FritzboxImportService}. Der Vorfilter hatte eine
+ * Lücke: Trennzeichen INNERHALB dieser sieben Ziffern („0511 / 123 456 78")
+ * hebelten ihn aus, der Datensatz blieb unauffindbar, und im Alltag sah das
+ * aus wie „der Anrufer wird nicht erkannt".
+ *
+ * Seit dem Folgeschnitt (2026-08-21) tragen die Stammdaten einen
+ * normalisierten Suchschlüssel ({@see \App\Models\Concerns\HasPhoneSearchKeys}):
+ * `phone_e164`/`mobile_e164`, indiziert je Organisation. Gesucht wird exakt
+ * darauf — keine Schreibweise mehr, kein Nachfiltern, kein Kandidatenlimit.
  *
  * Plugin-spezifisch bleibt, was DAVOR läuft: das Nummern-Gedächtnis der
  * Zuordnungs-Inbox (ExternalReference/Alias) kennt nur Fritzbox.
- *
- * BEKANNTE GRENZE (Bestandsverhalten, bei der Zusammenführung belegt): Der
- * Vorfilter sucht die letzten sieben Ziffern als zusammenhängende Zeichenkette.
- * Stehen im gespeicherten Wert Trennzeichen INNERHALB dieser sieben Ziffern
- * („0511 / 123 456 78"), greift er nicht — der Datensatz wird nicht gefunden,
- * obwohl er dieselbe Nummer meint. Eine Behebung braucht einen normalisierten
- * Suchschlüssel an den Stammdaten (E.164-Spalte/Index) statt eines
- * LIKE-Vorfilters; das ist ein eigener Schnitt und bewusst nicht Teil der
- * Konsolidierung. Der Regressionstest hält die Grenze fest.
  */
 class PhoneNumberMatcher {
-    /** Sicherheitsnetz gegen zu breite Vorfilter-Treffer. */
-    private const CANDIDATE_LIMIT = 50;
-
     /**
      * Erster Stammdaten-Treffer zur E.164-Nummer. Die Klassenliste bestimmt
      * die Priorität — der erste Treffer gewinnt (z. B. Endkunde vor Firma).
      *
-     * @param  list<class-string<Model>>  $classes  Modelle mit phone/mobile-Spalten
+     * @param  list<class-string<Model>>  $classes  Modelle mit Rufnummern-Suchschlüssel
      */
     public function match(int $organizationId, string $e164, array $classes): ?Model {
-        $tail = self::tail($e164);
-        if ($tail === null) {
+        // Die gesuchte Nummer selbst normalisieren: Anrufanlagen liefern sie
+        // nicht immer in reiner E.164-Form.
+        $key = PhoneSearchKey::of($e164) ?? $e164;
+        if (trim($key) === '') {
             return null;
         }
 
         foreach ($classes as $class) {
-            $candidates = $class::query()
+            $match = $class::query()
                 ->withoutGlobalScopes()
                 ->where('organization_id', $organizationId)
-                ->where(function ($query) use ($tail): void {
-                    $query->whereLikeEscaped('phone', $tail)
-                        ->orWhereLikeEscaped('mobile', $tail);
+                ->where(function ($query) use ($key): void {
+                    $query->where('phone_e164', $key)->orWhere('mobile_e164', $key);
                 })
-                ->limit(self::CANDIDATE_LIMIT)
-                ->get();
+                ->first();
 
-            foreach ($candidates as $candidate) {
-                // Die Klassenliste garantiert phone/mobile; Model selbst kennt sie nicht.
-                foreach ([(string) $candidate->getAttribute('phone'), (string) $candidate->getAttribute('mobile')] as $stored) {
-                    if ($stored !== '' && PhoneNumberHelper::toE164($stored, 'DE') === $e164) {
-                        return $candidate;
-                    }
-                }
+            if ($match instanceof Model) {
+                return $match;
             }
         }
 
         return null;
-    }
-
-    /** Letzte 7 Ziffern als Vorfilter; null, wenn die Nummer keine hergibt. */
-    public static function tail(string $e164): ?string {
-        $tail = substr((string) preg_replace('/\D/', '', $e164), -7);
-
-        return $tail !== '' ? $tail : null;
     }
 }

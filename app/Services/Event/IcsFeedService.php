@@ -255,6 +255,13 @@ class IcsFeedService {
             ->uniqueIdentifier(self::eventUid($event))
             ->startsAt($start->toDateTimeImmutable())
             ->endsAt($end->toDateTimeImmutable())
+            // DTSTAMP an den Termin binden, nicht an den Erzeugungszeitpunkt:
+            // Die Bibliothek setzt sonst `now()`, und damit unterscheidet sich
+            // dasselbe unveränderte Ereignis bei jedem Aufruf. Der Publish
+            // vergleicht das Dokument über einen Hash — mit wanderndem DTSTAMP
+            // gälte jeder Termin bei JEDEM Lauf als geändert und würde erneut
+            // hochgeladen (Befund 2026-08-21).
+            ->createdAt(($event->updated_at ?? $event->created_at ?? $start)->toDateTimeImmutable())
             ->withoutTimezone(); // Zeiten in lokaler TZ persistiert
 
         if (! empty($event->description)) {

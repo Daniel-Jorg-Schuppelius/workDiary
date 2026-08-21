@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing;
 
-use App\Models\{Invoice, Organization};
+use App\Models\{CashEntry, Invoice, Organization};
+use App\Services\Finance\ReconciliationService;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
@@ -36,6 +37,11 @@ use Throwable;
 class GirocodeService {
     /** Kantenlänge der SVG-Grafik in Pixeln (Druckgröße bestimmt das CSS). */
     private const SIZE_PX = 160;
+
+    public function __construct(
+        private readonly RetentionService $retentions,
+        private readonly ReconciliationService $reconciliation,
+    ) {}
 
     /**
      * SVG-Data-URI des Girocodes — oder null, wenn er nicht erscheinen soll.
@@ -124,22 +130,52 @@ class GirocodeService {
     }
 
     /**
-     * Zu zahlender Betrag.
+     * Betrag, der JETZT noch zu überweisen ist.
      *
-     * Eine bezahlte Rechnung bekommt keinen Code. Bei `partially_paid` fehlt
-     * lokal die Restsumme — workDiary führt keine Teilzahlungsbeträge, nur
-     * den Status — und ein Code über den VOLLEN Betrag würde zu einer
-     * Doppelzahlung einladen. Deshalb: auch dann kein Code, der Textblock
-     * nennt weiterhin die Rechnungssumme.
+     * Der Code muss dieselbe Zahl tragen wie die Summenzeile daneben — sonst
+     * überweist der Kunde etwas anderes, als auf dem Beleg steht. Zwei Dinge
+     * mindern die Forderung:
+     *
+     * 1. **Sicherheitseinbehalt** (MVP-602): Das PDF weist den geminderten
+     *    Zahlbetrag aus; ein Code über die volle Summe würde den Einbehalt
+     *    stillschweigend aushebeln.
+     * 2. **Teilzahlungen**: Die bereits zugeordneten Beträge stehen in den
+     *    `payment_allocations` — daraus entsteht auch der Status
+     *    `partially_paid`. Der Rest ist damit bekannt und gehört in den Code.
+     *
+     * Bleibt nichts übrig, erscheint kein Code.
      */
     private function amount(Invoice $invoice): ?float {
-        if (in_array($invoice->status, [Invoice::STATUS_PAID, Invoice::STATUS_PARTIALLY_PAID], true)) {
+        if ($invoice->status === Invoice::STATUS_PAID) {
             return null;
         }
 
-        $total = $invoice->total?->toFloat() ?? 0.0;
+        $paid = $this->paidAmount($invoice);
+        if ($invoice->status === Invoice::STATUS_PARTIALLY_PAID && $paid < 0.01) {
+            // Teilzahlung bekannt, Betrag aber nicht: dann lieber kein Code
+            // als einer über die volle Summe.
+            return null;
+        }
 
-        return $total >= 0.01 ? round($total, 2) : null;
+        $payable = round($this->retentions->payableAmountOf($invoice) - $paid, 2);
+
+        return $payable >= 0.01 ? $payable : null;
+    }
+
+    /**
+     * Bereits gezahlt — aus BEIDEN Quellen, die den Status `partially_paid`
+     * setzen können: der Bankzuordnung ({@see ReconciliationService}) und dem
+     * Kassenbuch ({@see \App\Services\Finance\CashBookService}). Nur eine
+     * der beiden zu lesen hieße, bar bezahlte Teilbeträge zu übersehen und
+     * einen zu hohen Betrag in den Code zu schreiben.
+     */
+    private function paidAmount(Invoice $invoice): float {
+        $cash = (float) CashEntry::query()
+            ->where('invoice_id', $invoice->id)
+            ->where('direction', CashEntry::DIRECTION_IN)
+            ->sum('amount');
+
+        return round($this->reconciliation->allocatedSum($invoice) + $cash, 2);
     }
 
     private function render(string $payload): string {

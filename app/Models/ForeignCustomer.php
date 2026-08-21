@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Project\ProjectStatus;
-use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, HasPartyDisplayLabel, HasSqid, Searchable};
+use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSqid, Searchable};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
@@ -56,6 +56,7 @@ class ForeignCustomer extends Model {
     use HasFactory;
 
     use HasPartyDisplayLabel;
+    use HasPhoneSearchKeys;
 
     use HasSqid;
     use Searchable;

@@ -94,6 +94,7 @@ return [
         'basis' => 'Bemessung',
         'basis_percent' => 'Prozentsatz der Rechnungssumme',
         'basis_amount' => 'Festbetrag',
+        'base_kind' => 'Bemessungsgrundlage',
         'percent' => 'Prozentsatz',
         'amount' => 'Festbetrag',
         'due_on' => 'Zahlbar ab',

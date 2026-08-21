@@ -40,6 +40,7 @@ return [
         'revoked' => 'Mandat SEPA révoqué',
     ],
     'circular' => [
+        'approved' => 'Circulaire validée',
         'sent' => 'Circulaire envoyée',
     ],
     'assetComponent' => [

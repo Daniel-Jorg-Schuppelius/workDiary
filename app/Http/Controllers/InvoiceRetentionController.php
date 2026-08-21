@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Enums\Invoicing\RetentionKind;
+use App\Enums\Invoicing\{RetentionBase, RetentionKind};
 use App\Models\{Invoice, User};
 use App\Models\Invoicing\InvoiceRetention;
 use App\Services\Invoicing\RetentionService;
@@ -46,6 +46,7 @@ class InvoiceRetentionController extends Controller {
         $data = $request->validate([
             'kind' => ['required', Rule::enum(RetentionKind::class)],
             'basis' => ['required', 'in:percent,amount'],
+            'base_kind' => ['nullable', Rule::enum(RetentionBase::class)],
             'percent' => ['nullable', 'numeric', 'min:0.01', 'max:100', 'required_if:basis,percent'],
             'amount' => ['nullable', 'numeric', 'min:0.01', 'required_if:basis,amount'],
             'due_on' => ['nullable', 'date'],
@@ -61,6 +62,7 @@ class InvoiceRetentionController extends Controller {
                 $data['due_on'] ?? null,
                 $user,
                 $data['note'] ?? null,
+                RetentionBase::tryFrom((string) ($data['base_kind'] ?? '')) ?? RetentionBase::Net,
             );
         } catch (RuntimeException $e) {
             return back()->withInput()->with('error', $e->getMessage());

@@ -31,7 +31,17 @@ return [
         'heading' => 'Empfänger (:count)',
     ],
 
+    'approved' => 'Rundschreiben freigegeben.',
+    'approved_by' => 'Freigegeben von :name',
+    'approval_pending' => 'Freigabe steht aus',
+
+    'error' => [
+        'approval_missing' => 'Der Versand braucht die Freigabe einer zweiten Person.',
+        'approval_self' => 'Wer das Rundschreiben angelegt hat, kann es nicht selbst freigeben.',
+    ],
+
     'action' => [
+        'approve' => 'Freigeben',
         'create' => 'Rundschreiben anlegen',
         'save_draft' => 'Als Entwurf speichern',
         'send' => 'Versenden',

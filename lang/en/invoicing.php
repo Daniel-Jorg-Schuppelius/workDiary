@@ -94,6 +94,7 @@ return [
         'basis' => 'Basis',
         'basis_percent' => 'Percentage of the invoice total',
         'basis_amount' => 'Fixed amount',
+        'base_kind' => 'Calculation basis',
         'percent' => 'Percentage',
         'amount' => 'Fixed amount',
         'due_on' => 'Payable from',

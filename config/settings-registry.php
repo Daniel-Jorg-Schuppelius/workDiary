@@ -122,6 +122,9 @@ return [
     // Festlegung entsteht Ping-Pong: zwei Systeme überschreiben sich
     // gegenseitig. Default: workDiary führt, der Push ist erlaubt.
     'finance.master_data_authority' => ['type' => 'string', 'scopes' => ['organization'], 'options' => ['workdiary', 'accounting'], 'fallback' => 'workdiary'],
+    // Vier-Augen-Freigabe für Kundenrundschreiben (Feature 119). Default aus:
+    // Wer allein arbeitet, hätte sonst eine Sperre ohne Ausweg.
+    'communication.circular_approval' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
     // Nachfass-Vorlauf in Werktagen (Feature 112, MVP-601); 0 = keine Vorbelegung.
     'invoicing.quote_follow_up_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:90', 'fallback' => 7],
     'invoicing.transfer_intro_text' => ['type' => 'text', 'scopes' => ['organization'], 'rules' => 'nullable|max:2000'],

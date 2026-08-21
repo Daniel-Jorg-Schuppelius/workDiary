@@ -1639,6 +1639,7 @@ Route::middleware('auth')->group(function () {
             Route::get('neu', [\App\Http\Controllers\CustomerCircularController::class, 'form'])->name('create');
             Route::post('/', [\App\Http\Controllers\CustomerCircularController::class, 'store'])->name('store');
             Route::get('{circular}', [\App\Http\Controllers\CustomerCircularController::class, 'show'])->name('show');
+            Route::post('{circular}/freigeben', [\App\Http\Controllers\CustomerCircularController::class, 'approve'])->name('approve');
             Route::post('{circular}/versenden', [\App\Http\Controllers\CustomerCircularController::class, 'send'])->name('send');
         });
 

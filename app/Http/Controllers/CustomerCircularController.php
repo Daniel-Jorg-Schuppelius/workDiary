@@ -72,11 +72,27 @@ class CustomerCircularController extends Controller {
         Gate::authorize('viewAny', Customer::class);
 
         return view('circulars.show', [
-            'circular' => $circular->load('recipients.customer'),
+            'circular' => $circular->load(['recipients.customer', 'approvedBy']),
+            'approvalRequired' => $this->circulars->approvalRequired(),
             'audience' => $circular->isDraft()
                 ? $this->circulars->audience((array) ($circular->filters ?? []), (bool) $circular->is_mandatory)
                 : collect(),
         ]);
+    }
+
+    /** Freigabe durch eine zweite Person (Feature 119). */
+    public function approve(Request $request, CustomerCircular $circular): RedirectResponse {
+        Gate::authorize('create', Customer::class);
+        $actor = $request->user();
+        abort_if($actor === null, 403);
+
+        try {
+            $this->circulars->approve($circular, $actor);
+        } catch (RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('status', __('circular.approved'));
     }
 
     public function send(Request $request, CustomerCircular $circular): RedirectResponse {

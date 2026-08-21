@@ -310,6 +310,10 @@ return [
         'revoked' => 'Revocato',
         'expired' => 'Scaduto',
     ],
+    'retention_base' => [
+        'net' => 'Importo netto',
+        'gross' => 'Importo lordo',
+    ],
     'retention_kind' => [
         'warranty' => 'Ritenuta a garanzia',
         'performance' => 'Ritenuta di esecuzione',
