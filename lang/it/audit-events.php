@@ -32,6 +32,20 @@ return [
         'canceled' => 'Richiesta di appuntamento annullata',
         'service_created' => 'Prestazione prenotabile creata',
     ],
+    'paymentRun' => [
+        'released' => 'Distinta di pagamento approvata',
+        'exported' => 'File SEPA creato',
+    ],
+    'sepaMandate' => [
+        'revoked' => 'Mandato SEPA revocato',
+    ],
+    'circular' => [
+        'sent' => 'Circolare inviata',
+    ],
+    'assetComponent' => [
+        'replaced' => 'Componente sostituito',
+        'adopted' => 'Consumo ripreso come componente',
+    ],
     'expense' => [
         'scanned' => 'Spesa creata da documento scansionato',
         'voucher_pushed' => 'Spesa trasmessa alla contabilità come documento',
@@ -309,6 +323,12 @@ return [
         'calendar_selected' => 'Calendario Google selezionato',
         'publish_manual' => 'Calendario Google pubblicato manualmente',
     ],
+    'guarantee' => [
+        'created' => 'Fideiussione registrata',
+        'returned' => 'Fideiussione restituita',
+        'drawn' => 'Fideiussione escussa',
+        'secured_retention' => 'La fideiussione sostituisce una ritenuta',
+    ],
     'idea_map' => [
         'archived' => 'Mappa delle idee archiviata',
         'exported' => 'Mappa delle idee esportata',
@@ -361,6 +381,10 @@ return [
         'reviewed' => 'Investimento riesaminato',
     ],
     'invoice' => [
+        'metering_drafted' => 'Bozza da lettura creata',
+        'retention_added' => 'Ritenuta a garanzia registrata',
+        'retention_released' => 'Ritenuta a garanzia liberata',
+        'retention_secured' => 'Ritenuta sostituita da fideiussione',
         'approved' => 'Fattura approvata',
         'dunned' => 'Fattura sollecitata',
         'document_imported' => 'File fattura importato',
@@ -610,6 +634,7 @@ return [
         'signatureRequested' => 'Firma richiesta',
     ],
     'quote' => [
+        'followed_up' => 'Preventivo sollecitato',
         'accepted' => 'Preventivo accettato',
         'approved' => 'Preventivo approvato',
         'converted' => 'Preventivo convertito',
@@ -866,6 +891,11 @@ return [
     'user_group' => [
         'member_added' => 'Gruppo utenti: membro aggiunto',
         'member_removed' => 'Gruppo utenti: membro rimosso',
+    ],
+    'warranty' => [
+        'created' => 'Termine di garanzia registrato',
+        'claimed' => 'Garanzia contestata',
+        'closed' => 'Termine di garanzia chiuso',
     ],
     'webdav' => [
         'connection_saved' => 'Connessione WebDAV salvata',

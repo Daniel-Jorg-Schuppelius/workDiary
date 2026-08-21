@@ -65,6 +65,9 @@ final class WebhookTenantTest extends TestCase {
         'api/webhooks/gitlab/{setting}',
         'api/webhooks/zammad/{connection}',
         'api/webhooks/todoist',
+        // Zeiterfassungs-Webhooks (Feature 124, MVP-613).
+        'api/webhooks/toggl',
+        'api/webhooks/clockify',
         'api/webhooks/calendly/{token}',
         'api/webhooks/lexoffice/{organization}/{token}',
         'api/cti/webhook/{token}',

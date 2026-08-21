@@ -87,6 +87,46 @@ return [
     ],
 
     'message' => [
+
+        // Pflichtnachweise (Feature 117, MVP-606).
+
+        'supplier_credential_title' => 'Mandatory record :supplier',
+
+        'supplier_credential_expiring' => ':type expires on :date — request a renewal now.',
+
+        'supplier_credential_expired' => ':type expired on :date — the document no longer covers you.',
+
+        // Gewährleistungsfristen (Feature 115, MVP-604).
+
+        'warranty_title' => 'Warranty :project',
+
+        'warranty_expiring' => 'Period ends on :date (:party).',
+
+        'warranty_subcontractor_first' => 'Sub period ends on :date (:party) — BEFORE your own liability. Check now and give notice if in doubt.',
+
+        // Bürgschaftsregister (Feature 114, MVP-603).
+
+        'guarantee_title' => 'Guarantee :reference',
+
+        'guarantee_expiring' => 'Expires on :date — :amount, guarantor :issuer.',
+
+        'guarantee_return_due' => 'Return due — the replaced retention is released (:amount, guarantor :issuer).',
+
+        // Sicherheitseinbehalte (Feature 113, MVP-602).
+
+        'retention_title' => 'Retention on :number',
+
+        'retention_release_due' => 'Release due on :date — :amount from invoice :number.',
+
+        'retention_release_overdue' => 'Release overdue since :date — :amount from invoice :number; the retention lapses in the customer’s favour.',
+
+        // Angebots-Nachfassen (Feature 112, MVP-601).
+
+        'quote_follow_up_title' => 'Quote :number',
+
+        'quote_follow_up_due' => 'Follow-up due — :customer, scheduled for :date.',
+
+        'quote_expiring_without_reaction' => 'Quote expires on :date with no reaction so far (:customer).',
         'new_device_title' => 'Sign-in from new device',
         'new_device_message' => 'New sign-in with :device from :country. If this wasn’t you, change your password immediately and review your sessions.',
         'lockout_title' => 'Too many failed attempts — account briefly locked',

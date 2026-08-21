@@ -39,6 +39,15 @@ return [
         'help' => 'In welchen Kalender des verbundenen Kontos publiziert wird. Ohne Auswahl der Hauptkalender (primary).',
         'target' => 'Kalender',
         'default' => 'Hauptkalender (primary)',
+        // MVP-610a: Rückimport ist Opt-in — er ändert Daten.
+        'two_way' => 'Zwei-Wege: externe Änderungen als Inbox-Vorschläge importieren',
+        'two_way_hint' => 'Rückimport der Änderungsliste des Ziel-Kalenders — neue externe Termine, externe Änderungen an publizierten und Löschungen landen als Fälle in der Integrations-Inbox (nie blinde Anlage).',
+    ],
+
+    // Titel der Inbox-Einträge des Kalenderimports — ein remote
+    // gelöschter Termin wird gemeldet, nicht still nachgezogen.
+    'import' => [
+        'deleted_title' => 'Termin im Google-Kalender gelöscht',
     ],
 
     'flash' => [
@@ -49,6 +58,7 @@ return [
         'connected' => 'Google-Konto verbunden.',
         'disconnected' => 'Google-Kalender-Verbindung getrennt. Bereits publizierte Termine bleiben extern erhalten.',
         'no_connection' => 'Keine aktive Google-Kalender-Verbindung vorhanden.',
+        'two_way_saved' => 'Rückimport-Einstellung gespeichert.',
         'calendar_saved' => 'Ziel-Kalender gespeichert.',
         'calendar_invalid' => 'Der gewählte Kalender wurde nicht gefunden.',
         'publish_done' => 'Publish gestartet.',

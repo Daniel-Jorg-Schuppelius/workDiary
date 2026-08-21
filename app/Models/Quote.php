@@ -32,6 +32,9 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property string $status
  * @property \Illuminate\Support\Carbon|null $valid_until
  * @property string|null $acceptance_token_hash
+ * @property \Illuminate\Support\Carbon|null $follow_up_at
+ * @property int|null $follow_up_user_id
+ * @property \Illuminate\Support\Carbon|null $followed_up_at
  * @property array<string, mixed>|null $decision_snapshot
  * @property Money|null $subtotal
  * @property Money|null $tax_amount
@@ -49,6 +52,8 @@ class Quote extends Model {
     protected $fillable = [
         'organization_id', 'customer_id', 'project_id', 'number', 'version',
         'previous_version_id', 'status', 'valid_until', 'terms',
+        // Nachfassen (Feature 112, MVP-601) — Vertriebstermin, nicht Rechtsfrist.
+        'follow_up_at', 'follow_up_user_id', 'followed_up_at',
         'subtotal', 'tax_amount', 'total', 'acceptance_token_hash',
         'decided_at', 'decision_snapshot', 'created_by',
     ];
@@ -56,6 +61,8 @@ class Quote extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'valid_until' => 'date',
+        'follow_up_at' => 'date',
+        'followed_up_at' => 'datetime',
         'decided_at' => 'datetime',
         'decision_snapshot' => 'array',
         'version' => 'integer',
@@ -76,6 +83,25 @@ class Quote extends Model {
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function followUpUser(): BelongsTo {
+        return $this->belongsTo(User::class, 'follow_up_user_id');
+    }
+
+    /**
+     * Steht das Nachfassen an? (Feature 112, MVP-601)
+     *
+     * Nur für versandte/freigegebene Angebote — vor dem Versand gibt es nichts
+     * nachzufassen. `followed_up_at` schließt den Fall ab, bis ein neuer
+     * Termin gesetzt wird.
+     */
+    public function isFollowUpDue(): bool {
+        return $this->follow_up_at !== null
+            && $this->followed_up_at === null
+            && ! $this->follow_up_at->isFuture()
+            && in_array($this->status, ['approved', 'sent'], true);
     }
 
     public function isExpired(): bool {

@@ -19,8 +19,13 @@
     $design ??= new \App\Services\DocumentDesign\DesignContext(null);
     $accent = $design->accentColor();
     $fmt = fn (float $v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true);
-    $openAmount = $invoice->total?->toFloat() ?? 0.0;
+    // Sicherheitseinbehalt (Feature 113, MVP-602) NIE mitmahnen: Der Betrag
+    // ist vertragsgemäß gestundet — eine Mahnung darüber wäre unbegründet und
+    // beschädigt die Geschäftsbeziehung mehr als die offene Restsumme wert ist.
+    $retained = app(\App\Services\Invoicing\RetentionService::class)->openAmountOf($invoice);
+    $openAmount = round(($invoice->total?->toFloat() ?? 0.0) - $retained, 2);
     $claimTotal = $openAmount + ($fee ?? 0.0);
+    $hasRetention = $retained > 0.0;
 @endphp
 <style>
     body { font-family: 'DejaVu Sans', sans-serif; font-size: 11px; color: #222; }
@@ -101,6 +106,12 @@
     </tbody>
     @if ($design->show(\App\Enums\DocumentDesign\InformationBlock::Totals))
         <tfoot>
+            @if ($hasRetention)
+                {{-- Ohne diese Zeile wirkt der geminderte Betrag wie ein
+                     Rechenfehler; sie belegt zugleich, dass der Einbehalt
+                     bekannt und gewollt ist. --}}
+                <tr><td colspan="3" class="num">{{ __('invoicing.retention.dunning_note') }}</td><td class="num">−{{ $fmt($retained) }} {{ $invoice->currency->value }}</td></tr>
+            @endif
             @if (($fee ?? null) !== null)
                 <tr><td colspan="3" class="num">{{ __('Mahngebühr') }}</td><td class="num">{{ $fmt($fee) }} {{ $invoice->currency->value }}</td></tr>
             @endif

@@ -15,6 +15,8 @@ namespace App\Services\Invoicing;
 use App\Enums\Numbering\NumberScope;
 use App\Models\{Invoice, Quote, User};
 use App\Services\Numbering\NumberSequenceService;
+use App\Support\Setting;
+use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -105,10 +107,21 @@ class QuoteService {
         }
 
         $token = Str::random(48);
-        $quote->update([
+        $attributes = [
             'status' => 'sent',
             'acceptance_token_hash' => CryptoHelper::hash($token),
-        ]);
+        ];
+
+        // Nachfasstermin vorbelegen (Feature 112, MVP-601) — nur vorbelegen,
+        // nicht erzwingen: Ein Pflichtfeld füllt sich mit Fantasiedaten, um
+        // die Maske loszuwerden. Ein bereits gesetzter Termin bleibt.
+        $leadDays = (int) Setting::get('invoicing.quote_follow_up_days', config('invoicing.quote_follow_up_days', 7));
+        if ($quote->follow_up_at === null && $leadDays > 0) {
+            $attributes['follow_up_at'] = CarbonImmutable::now()->addWeekdays($leadDays)->toDateString();
+            $attributes['follow_up_user_id'] = $quote->follow_up_user_id ?? $quote->created_by ?? $actor->id;
+        }
+
+        $quote->update($attributes);
         $quote->audit('quote.sent', ['by' => $actor->id]);
 
         // MVP-650: mit dem Versand den Layoutstand einfrieren — das versandte

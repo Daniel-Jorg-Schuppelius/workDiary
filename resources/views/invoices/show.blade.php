@@ -219,6 +219,12 @@
                                     data-entry-modal-trigger
                                     :href="route('invoices.conditions.form', $invoice)"
                                     show-label>{{ __('Konditionen') }}</x-icon-btn>
+                        {{-- MVP-602: Sicherheitseinbehalt § 17 VOB/B — nur am
+                             Entwurf, danach ist er Teil des eingefrorenen Stands. --}}
+                        <x-icon-btn icon="savings" size="sm"
+                                    data-entry-modal-trigger
+                                    :href="route('invoices.retentions.dialog', $invoice)"
+                                    show-label>{{ __('invoicing.retention.action') }}</x-icon-btn>
                     @endif
                 @endcan
                 @if (! $invoice->isProforma() && ! app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($invoice->customer)->isExternal())
@@ -364,6 +370,28 @@
                 <tr><td colspan="{{ $footColspan + 1 }}" class="text-right text-xs text-base-content/60">{{ __('Steuerschuldnerschaft des Leistungsempfängers (Reverse Charge).') }}</td></tr>
             @endif
             <tr><td colspan="{{ $footColspan }}" class="text-right font-bold">{{ __('Gesamt') }}</td><td class="text-right font-bold">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+            @php
+                // Sicherheitseinbehalte (Feature 113, MVP-602).
+                $openRetentions = $invoice->retentions->where('status', \App\Enums\Invoicing\RetentionStatus::Open);
+            @endphp
+            @foreach ($openRetentions as $retention)
+                <tr>
+                    @php
+                        $retentionLabel = $retention->kind->label();
+                        if ($retention->percent !== null) {
+                            $retentionLabel .= ' (' . \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $retention->percent->getNumericValue(), 2) . ' %)';
+                        }
+                        if ($retention->due_on !== null) {
+                            $retentionLabel .= ' — ' . __('invoicing.retention.due_on') . ' ' . $retention->due_on->fdate();
+                        }
+                    @endphp
+                    <td colspan="{{ $footColspan }}" class="text-right text-xs text-base-content/70">{{ $retentionLabel }}</td>
+                    <td class="text-right text-xs">−{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($retention->amount->toFloat(), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
+                </tr>
+            @endforeach
+            @if ($openRetentions->isNotEmpty())
+                <tr><td colspan="{{ $footColspan }}" class="text-right font-bold">{{ __('invoicing.retention.payable') }}</td><td class="text-right font-bold">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(app(\App\Services\Invoicing\RetentionService::class)->payableAmountOf($invoice), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+            @endif
             @if ($invoice->hasSkonto())
                 <tr><td colspan="{{ $footColspan + 1 }}" class="text-right text-xs text-base-content/60">
                     {{ __(':percent % Skonto bei Zahlung innerhalb von :days Tagen', ['percent' => rtrim(rtrim($invoice->skonto_percent?->getNumericValue() ?? '0', '0'), '.'), 'days' => (int) $invoice->skonto_days]) }}@if ($invoice->skontoDeadline() !== null) ({{ __('bis :date', ['date' => $invoice->skontoDeadline()->fdate()]) }} = {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->total?->toFloat() ?? 0.0) - $invoice->skontoAmount()->toFloat(), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }})@endif

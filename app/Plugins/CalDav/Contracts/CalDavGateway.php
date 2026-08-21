@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\CalDav\Contracts;
 
+use App\Plugins\CalDav\Services\CalDavSyncPage;
+use DateTimeInterface;
+
 /**
  * Schmaler, testbarer Zugriff auf einen CalDAV-Server (Feature 058, MVP-126):
  * ein Kalenderobjekt (`{name}.ics`) idempotent anlegen/ersetzen (PUT) bzw.
@@ -27,4 +30,14 @@ interface CalDavGateway {
 
     /** Liveness/Auth-Check: true, wenn die Ziel-Collection mit den Zugangsdaten erreichbar ist. */
     public function ping(): bool;
+
+    /**
+     * Delta-Lesung der Kalender-Collection (Feature 121, MVP-610b): erst
+     * `sync-collection` (RFC 6578) mit dem letzten Token; kann der Server das
+     * nicht, fällt der Abgleich transparent auf `calendar-query` über ein
+     * Zeitfenster mit ETag-Vergleich zurück (CardDAV-Muster).
+     *
+     * @param  array<string, string>  $localEtags  href → zuletzt gesehenes ETag
+     */
+    public function syncEvents(string $prevSyncToken, array $localEtags, DateTimeInterface $windowStart, DateTimeInterface $windowEnd): CalDavSyncPage;
 }

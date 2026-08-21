@@ -25,6 +25,7 @@
         "sidebar": [
             "/admin/b2b-katalog",
             "/agile/berichte",
+            "/angebote/nachfassen",
             "/archive",
             "/articles",
             "/assets",
@@ -36,6 +37,7 @@
             "/berichte/vergabe",
             "/bill-of-quantities",
             "/bill-of-quantities/pakete",
+            "/buergschaften",
             "/buildings",
             "/compliance/isms/anforderungen",
             "/compliance/isms/auditbereitschaft",
@@ -76,11 +78,14 @@
             "/finanzen/belege",
             "/finanzen/datev-buchungen",
             "/finanzen/gobd",
+            "/finanzen/mandate",
             "/finanzen/offene-zeiten",
             "/finanzen/uebergaben",
+            "/finanzen/zahllaeufe",
             "/flex",
             "/floors",
             "/geofences",
+            "/gewaehrleistung",
             "/helpdesk/berichte",
             "/helpdesk/board",
             "/helpdesk/queues",
@@ -164,6 +169,7 @@
             "/reports/zeitkonten-periodenvergleich",
             "/rooms",
             "/rundgaenge",
+            "/rundschreiben",
             "/safety-events",
             "/schedule",
             "/serials",
@@ -200,6 +206,7 @@
             "/warehouses",
             "/week",
             "/work-centers",
+            "/zaehlerabrechnung",
             "/zeitkonten",
             "/zuordnungsregeln",
             "/zutrittsmedien"
@@ -294,9 +301,11 @@
         ],
         "sidebar": [
             "/archive",
+            "/buergschaften",
             "/customers/create",
             "/expenses",
             "/finanzen/belege",
+            "/gewaehrleistung",
             "/lexoffice-articles",
             "/me/navigation/customize",
             "/per-diem-trips",
@@ -305,7 +314,8 @@
             "/reports/audit-activity",
             "/reports/billing",
             "/reports/expenses",
-            "/travel-logs"
+            "/travel-logs",
+            "/zaehlerabrechnung"
         ],
         "header": [
             "/account/bookmarks",

@@ -33,6 +33,9 @@ use Illuminate\Support\Carbon;
  * @property string|null $calendar_name
  * @property string $status
  * @property Carbon|null $last_published_at
+ * @property bool $two_way
+ * @property string|null $sync_token
+ * @property Carbon|null $last_imported_at
  */
 class GoogleCalendarConnection extends Model implements RemoteCalendarConnection {
     use Auditable;
@@ -61,6 +64,11 @@ class GoogleCalendarConnection extends Model implements RemoteCalendarConnection
         'calendar_name',
         'status',
         'last_published_at',
+        // MVP-610a: Rückimport ist Opt-in je Verbindung; `sync_token` ist der
+        // Wiederanlaufpunkt der Änderungsliste.
+        'two_way',
+        'sync_token',
+        'last_imported_at',
     ];
 
     /** @var array<string, string> */
@@ -69,6 +77,8 @@ class GoogleCalendarConnection extends Model implements RemoteCalendarConnection
         'refresh_token' => 'encrypted',
         'token_expires_at' => 'datetime',
         'last_published_at' => 'datetime',
+        'two_way' => 'boolean',
+        'last_imported_at' => 'datetime',
         'last_error_at' => 'datetime',
         'disabled_at' => 'datetime',
         'connected_at' => 'datetime',

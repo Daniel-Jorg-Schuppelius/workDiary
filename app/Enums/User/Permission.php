@@ -273,6 +273,14 @@ enum Permission: string implements HasLabel {
     case FinanceBookingExport = 'finance.booking.export';
     case FinanceGobdExport = 'finance.gobd.export';
 
+    /**
+     * SEPA-Zahlungsausgang (Feature 120, MVP-609). Bewusst zwei Rechte:
+     * Zusammenstellen und Freigeben sind getrennte Handlungen — dieselbe
+     * Person darf beides haben, aber nicht zwangsläufig.
+     */
+    case FinancePaymentRun = 'finance.payment.run';
+    case FinancePaymentRelease = 'finance.payment.release';
+
         // ── Rechnungen ─────────────────────────────────────────────────────
     case InvoiceViewAny = 'invoice.viewAny';
     case InvoiceView = 'invoice.view';

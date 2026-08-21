@@ -1629,6 +1629,67 @@ Route::middleware('auth')->group(function () {
         Route::delete('invoices/{invoice}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
         Route::post('invoices/{invoice}/issue', [InvoiceController::class, 'issue'])->name('invoices.issue');
         Route::post('invoices/{invoice}/approve', [InvoiceController::class, 'approve'])->name('invoices.approve');
+        // Kontakt-Push in die Buchhaltung (Feature 122, MVP-611).
+        Route::post('kunden/{customer}/buchhaltung/push', [\App\Http\Controllers\Finance\AccountingContactController::class, 'push'])
+            ->name('accounting.contacts.push');
+
+        // Kundenrundschreiben (Feature 119, MVP-608).
+        Route::prefix('rundschreiben')->name('circulars.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\CustomerCircularController::class, 'index'])->name('index');
+            Route::get('neu', [\App\Http\Controllers\CustomerCircularController::class, 'form'])->name('create');
+            Route::post('/', [\App\Http\Controllers\CustomerCircularController::class, 'store'])->name('store');
+            Route::get('{circular}', [\App\Http\Controllers\CustomerCircularController::class, 'show'])->name('show');
+            Route::post('{circular}/versenden', [\App\Http\Controllers\CustomerCircularController::class, 'send'])->name('send');
+        });
+
+        // Anlagen-Stückliste (Feature 118, MVP-607).
+        Route::get('assets/{asset}/stueckliste', [\App\Http\Controllers\AssetComponentController::class, 'index'])->name('assets.components.index');
+        Route::get('assets/{asset}/stueckliste/neu', [\App\Http\Controllers\AssetComponentController::class, 'form'])->name('assets.components.create');
+        Route::post('assets/{asset}/stueckliste', [\App\Http\Controllers\AssetComponentController::class, 'store'])->name('assets.components.store');
+        Route::get('assets/{asset}/stueckliste/{component}/ersetzen', [\App\Http\Controllers\AssetComponentController::class, 'form'])->name('assets.components.replace-form');
+        Route::post('assets/{asset}/stueckliste/{component}/ersetzen', [\App\Http\Controllers\AssetComponentController::class, 'replace'])->name('assets.components.replace');
+        Route::post('assets/{asset}/stueckliste/{component}/ausbauen', [\App\Http\Controllers\AssetComponentController::class, 'remove'])->name('assets.components.remove');
+
+        // Pflichtnachweise von Subunternehmern (Feature 117, MVP-606).
+        Route::get('lieferanten/nachweise', [\App\Http\Controllers\SupplierCredentialController::class, 'index'])->name('suppliers.credentials.index');
+        Route::get('lieferanten/{supplier}/nachweise/neu', [\App\Http\Controllers\SupplierCredentialController::class, 'form'])->name('suppliers.credentials.create');
+        Route::post('lieferanten/{supplier}/nachweise', [\App\Http\Controllers\SupplierCredentialController::class, 'store'])->name('suppliers.credentials.store');
+        Route::delete('lieferanten/{supplier}/nachweise/{credential}', [\App\Http\Controllers\SupplierCredentialController::class, 'destroy'])->name('suppliers.credentials.destroy');
+
+        // Zählerstands-Faktura (Feature 116, MVP-605).
+        Route::prefix('zaehlerabrechnung')->name('metering.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\MeterBillingController::class, 'index'])->name('index');
+            Route::get('neu', [\App\Http\Controllers\MeterBillingController::class, 'form'])->name('create');
+            Route::post('/', [\App\Http\Controllers\MeterBillingController::class, 'store'])->name('store');
+            Route::get('{agreement}/bearbeiten', [\App\Http\Controllers\MeterBillingController::class, 'form'])->name('edit');
+            Route::put('{agreement}', [\App\Http\Controllers\MeterBillingController::class, 'update'])->name('update');
+            Route::post('{agreement}/abrechnen', [\App\Http\Controllers\MeterBillingController::class, 'run'])->name('run');
+        });
+
+        // Gewährleistungsfristen (Feature 115, MVP-604).
+        Route::prefix('gewaehrleistung')->name('warranties.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\WarrantyPeriodController::class, 'index'])->name('index');
+            Route::get('neu', [\App\Http\Controllers\WarrantyPeriodController::class, 'form'])->name('create');
+            Route::post('/', [\App\Http\Controllers\WarrantyPeriodController::class, 'store'])->name('store');
+            Route::post('{warranty}/abschliessen', [\App\Http\Controllers\WarrantyPeriodController::class, 'close'])->name('close');
+        });
+
+        // Bürgschaftsregister (Feature 114, MVP-603).
+        Route::prefix('buergschaften')->name('guarantees.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\GuaranteeController::class, 'index'])->name('index');
+            Route::get('neu', [\App\Http\Controllers\GuaranteeController::class, 'form'])->name('create');
+            Route::post('/', [\App\Http\Controllers\GuaranteeController::class, 'store'])->name('store');
+            Route::get('{guarantee}/bearbeiten', [\App\Http\Controllers\GuaranteeController::class, 'form'])->name('edit');
+            Route::put('{guarantee}', [\App\Http\Controllers\GuaranteeController::class, 'update'])->name('update');
+            Route::post('{guarantee}/zurueckerhalten', [\App\Http\Controllers\GuaranteeController::class, 'returned'])->name('returned');
+            Route::post('{guarantee}/gezogen', [\App\Http\Controllers\GuaranteeController::class, 'drawn'])->name('drawn');
+            Route::post('{guarantee}/einbehalt-abloesen', [\App\Http\Controllers\GuaranteeController::class, 'secure'])->name('secure');
+        });
+
+        // Sicherheitseinbehalte (Feature 113, MVP-602).
+        Route::get('invoices/{invoice}/einbehalte/dialog', [\App\Http\Controllers\InvoiceRetentionController::class, 'dialog'])->name('invoices.retentions.dialog');
+        Route::post('invoices/{invoice}/einbehalte', [\App\Http\Controllers\InvoiceRetentionController::class, 'store'])->name('invoices.retentions.store');
+        Route::post('invoices/{invoice}/einbehalte/{retention}/freigeben', [\App\Http\Controllers\InvoiceRetentionController::class, 'release'])->name('invoices.retentions.release');
         Route::get('invoices/{invoice}/dun', [InvoiceController::class, 'dunForm'])->name('invoices.dun.form');
         Route::post('invoices/{invoice}/dun', [InvoiceController::class, 'dun'])->name('invoices.dun');
         // Vollaudit 2026-07 (M27): § 14 Abs. 2 UStG — Widerspruch dokumentieren.
@@ -2100,6 +2161,12 @@ Route::middleware('auth')->group(function () {
         Route::prefix('angebote')->name('quotes.')->group(function (): void {
             // MVP-549: Bestandsroute → Feed mit vorgesetztem Tab.
             Route::get('/', [\App\Http\Controllers\Billing\DocumentFeedController::class, 'fromQuotes'])->name('index');
+            // Nachfass-Arbeitsliste (Feature 112, MVP-601) — VOR {quote},
+            // sonst schluckt die Show-Route den Pfad als Angebots-Sqid.
+            Route::get('nachfassen', [\App\Http\Controllers\QuoteFollowUpController::class, 'index'])->name('follow-ups.index');
+            Route::get('{quote}/nachfassen/dialog', [\App\Http\Controllers\QuoteFollowUpController::class, 'dialog'])->name('follow-ups.dialog');
+            Route::post('{quote}/nachfassen', [\App\Http\Controllers\QuoteFollowUpController::class, 'store'])->name('follow-ups.store');
+            Route::post('{quote}/nachfass-termin', [\App\Http\Controllers\QuoteFollowUpController::class, 'schedule'])->name('follow-ups.schedule');
             Route::get('neu', [\App\Http\Controllers\QuoteController::class, 'create'])->name('create');
             Route::post('/', [\App\Http\Controllers\QuoteController::class, 'store'])->name('store');
             Route::get('{quote}', [\App\Http\Controllers\QuoteController::class, 'show'])->name('show');
@@ -2219,6 +2286,27 @@ Route::middleware('auth')->group(function () {
             Route::post('{incoming}/uebergeben', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'transfer'])->name('transfer');
             Route::get('{document}/xml', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'xml'])->name('xml');
             Route::get('{document}', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'show'])->name('show');
+        });
+        // SEPA-Zahlungsausgang (Feature 120, MVP-609): Zahllauf zusammenstellen,
+        // freigeben, als pain.001/008-Datei ausleiten. Rechte im Controller.
+        Route::prefix('finanzen/zahllaeufe')->name('finance.payment-runs.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Finance\PaymentRunController::class, 'index'])->name('index');
+            Route::get('vorschlag', [\App\Http\Controllers\Finance\PaymentRunController::class, 'proposals'])->name('proposals');
+            Route::post('/', [\App\Http\Controllers\Finance\PaymentRunController::class, 'store'])->name('store');
+            Route::get('{run}', [\App\Http\Controllers\Finance\PaymentRunController::class, 'show'])->name('show');
+            Route::post('{run}/freigeben', [\App\Http\Controllers\Finance\PaymentRunController::class, 'release'])->name('release');
+            Route::post('{run}/export', [\App\Http\Controllers\Finance\PaymentRunController::class, 'export'])->name('export');
+            Route::post('{run}/storno', [\App\Http\Controllers\Finance\PaymentRunController::class, 'cancel'])->name('cancel');
+            Route::get('{run}/positionen/{item}/kuerzen', [\App\Http\Controllers\Finance\PaymentRunController::class, 'adjustForm'])->name('items.adjust-form');
+            Route::post('{run}/positionen/{item}/kuerzen', [\App\Http\Controllers\Finance\PaymentRunController::class, 'adjust'])->name('items.adjust');
+            Route::post('{run}/positionen/{item}/entfernen', [\App\Http\Controllers\Finance\PaymentRunController::class, 'removeItem'])->name('items.remove');
+        });
+        // Mandatsregister (Feature 120, MVP-609).
+        Route::prefix('finanzen/mandate')->name('finance.mandates.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Finance\SepaMandateController::class, 'index'])->name('index');
+            Route::get('neu', [\App\Http\Controllers\Finance\SepaMandateController::class, 'form'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Finance\SepaMandateController::class, 'store'])->name('store');
+            Route::post('{mandate}/widerrufen', [\App\Http\Controllers\Finance\SepaMandateController::class, 'revoke'])->name('revoke');
         });
         // Steuerregelmatrix (Phase 23, MVP-242) — module.finance über finance.*;
         // Recht finance.config wird im Controller geprüft.

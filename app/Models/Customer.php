@@ -56,6 +56,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $bank_name
  * @property bool $billable
  * @property bool $exclude_from_reports
+ * @property bool $no_bulk_mail
  * @property string|null $buyer_reference
  * @property \App\Enums\Invoicing\InvoiceDeliveryFormat|null $delivery_format
  * @property string|null $debtor_no
@@ -130,6 +131,9 @@ class Customer extends Model {
         'delivery_format',
         'debtor_no',
         'exclude_from_reports',
+        // Rundschreiben-Opt-out (Feature 119, MVP-608) — getrennt von der
+        // Auswertungs-Ausblendung, weil es eine andere Entscheidung ist.
+        'no_bulk_mail',
         'archived_at',
         'created_by',
     ];
@@ -140,6 +144,7 @@ class Customer extends Model {
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'billable' => 'boolean',
         'exclude_from_reports' => 'boolean',
+        'no_bulk_mail' => 'boolean',
         'billing_mode' => \App\Enums\Finance\BillingMode::class,
         // Kunden-Default fürs E-Rechnungs-Ausgabeformat (NULL = PDF).
         'delivery_format' => \App\Enums\Invoicing\InvoiceDeliveryFormat::class,

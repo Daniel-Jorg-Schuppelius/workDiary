@@ -15,8 +15,10 @@ use App\Models\GoogleCalendarConnection;
 use App\Plugins\GoogleCalendar\{GoogleCalendarConfig, GoogleCalendarPlugin};
 use App\Plugins\Support\Calendar\{RemoteCalendarEvent, RemoteCalendarGateway, RemoteCalendarItem};
 use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
+use App\Services\CloudIntake\StaleCheckpointException;
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\CryptoHelper;
+use DateTimeInterface;
 use RuntimeException;
 use Throwable;
 
@@ -143,6 +145,48 @@ class GoogleCalendarClient implements RemoteCalendarGateway {
         }
 
         return $payload;
+    }
+
+    /**
+     * Änderungsliste des Ziel-Kalenders (MVP-610a). Mit `syncToken`
+     * inkrementell, ohne ihn über das Zeitfenster; `showDeleted` liefert
+     * abgesagte Termine, damit publizierte Löschungen auffallen. Ein
+     * abgelaufenes Token beantwortet Google mit 410 — genau ein
+     * Vollabgleich, danach wieder inkrementell.
+     *
+     * @return array{items: list<array<string, mixed>>, pageToken: string|null, syncToken: string|null}
+     */
+    public function eventsDelta(?string $syncToken, ?string $pageToken, DateTimeInterface $windowStart, DateTimeInterface $windowEnd): array {
+        $query = ['showDeleted' => 'true', 'singleEvents' => 'false', 'maxResults' => 250];
+        if (($syncToken ?? '') !== '') {
+            $query['syncToken'] = $syncToken;
+        } else {
+            // timeMin/timeMax und syncToken schließen sich gegenseitig aus.
+            $query['timeMin'] = $windowStart->format('Y-m-d\TH:i:s\Z');
+            $query['timeMax'] = $windowEnd->format('Y-m-d\TH:i:s\Z');
+        }
+        if (($pageToken ?? '') !== '') {
+            $query['pageToken'] = $pageToken;
+        }
+
+        $response = $this->api->getResponse($this->eventsUrl(), $query);
+
+        if ($response->status() === 410) {
+            throw new StaleCheckpointException('Google-Kalender-Sync-Token abgelaufen (410 Gone).');
+        }
+        if (! $response->successful()) {
+            // Nur Statuscode — nie Payload/Token in Fehlermeldungen.
+            throw new RuntimeException(sprintf('Google Calendar events.list antwortete mit HTTP %d.', $response->status()));
+        }
+
+        /** @var array{items?: list<array<string, mixed>>, nextPageToken?: string, nextSyncToken?: string} $data */
+        $data = (array) $response->json();
+
+        return [
+            'items' => $data['items'] ?? [],
+            'pageToken' => ($data['nextPageToken'] ?? '') !== '' ? (string) $data['nextPageToken'] : null,
+            'syncToken' => ($data['nextSyncToken'] ?? '') !== '' ? (string) $data['nextSyncToken'] : null,
+        ];
     }
 
     private function eventsUrl(): string {

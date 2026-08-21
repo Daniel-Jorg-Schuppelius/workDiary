@@ -215,6 +215,15 @@ class Invoice extends Model {
         'skonto_days' => 'integer',
     ];
 
+    /**
+     * Sicherheitseinbehalte (Feature 113, MVP-602).
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Invoicing\InvoiceRetention, $this>
+     */
+    public function retentions(): \Illuminate\Database\Eloquent\Relations\HasMany {
+        return $this->hasMany(\App\Models\Invoicing\InvoiceRetention::class);
+    }
+
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);

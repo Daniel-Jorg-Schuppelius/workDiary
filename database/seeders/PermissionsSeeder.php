@@ -686,6 +686,10 @@ class PermissionsSeeder extends Seeder {
             // (finance.config) bleibt dem Admin vorbehalten.
             PermissionEnum::FinancePaymentImport,
             PermissionEnum::FinancePaymentReconcile,
+            // SEPA-Zahlungsausgang (Feature 120, MVP-609): Zahllauf
+            // zusammenstellen und freigeben.
+            PermissionEnum::FinancePaymentRun,
+            PermissionEnum::FinancePaymentRelease,
             // DATEV-Buchungsstapel (Feature 045, Priorität 2): buchungsreife
             // Belege exportieren. Die Buchhaltungs-Konfiguration (Konten,
             // Steuerschlüssel, Beraternummer) bleibt über finance.config dem

@@ -110,6 +110,20 @@ return [
     'invoicing.default_service_plugin' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|max:32'],
     // Rechnungstexte der Übergabe (MVP-491): Vorlage für Einleitung und
     // Schlussbemerkung; Platzhalter :customer, :from, :to, :channel.
+    // Girocode auf Rechnungs-PDFs (Feature 111, MVP-600).
+    // Pflichtnachweise: Sperrt ein fehlender Nachweis die Beauftragung?
+    // (Feature 117, MVP-606) — Default AUS, siehe config/procurement.php.
+    'procurement.credential_blocking' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
+    'invoicing.girocode_enabled' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
+    // Gläubiger-Identifikationsnummer für SEPA-Lastschriften (Feature 120,
+    // MVP-609). Ohne sie weist die Bank jede pain.008-Datei zurück.
+    'finance.sepa_creditor_id' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|max:35'],
+    // Führungsrichtung der Stammdaten (Feature 122, MVP-611). Ohne
+    // Festlegung entsteht Ping-Pong: zwei Systeme überschreiben sich
+    // gegenseitig. Default: workDiary führt, der Push ist erlaubt.
+    'finance.master_data_authority' => ['type' => 'string', 'scopes' => ['organization'], 'options' => ['workdiary', 'accounting'], 'fallback' => 'workdiary'],
+    // Nachfass-Vorlauf in Werktagen (Feature 112, MVP-601); 0 = keine Vorbelegung.
+    'invoicing.quote_follow_up_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:90', 'fallback' => 7],
     'invoicing.transfer_intro_text' => ['type' => 'text', 'scopes' => ['organization'], 'rules' => 'nullable|max:2000'],
     'invoicing.transfer_closing_text' => ['type' => 'text', 'scopes' => ['organization'], 'rules' => 'nullable|max:2000'],
     'ui.dashboard.recent_limit' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'min:1|max:1000'],

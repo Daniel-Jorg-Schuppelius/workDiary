@@ -338,6 +338,19 @@ class PurchaseOrderController extends Controller {
     }
 
     public function submit(PurchaseOrder $purchaseOrder): RedirectResponse {
+        // Pflichtnachweise (Feature 117, MVP-606): Die Sperre greift an der
+        // BESTELLUNG, weil dort die Verpflichtung entsteht — und nur, wenn die
+        // Organisation das Sperren eingeschaltet hat (Default: Warnung).
+        $supplier = $purchaseOrder->supplier;
+        if ($supplier !== null) {
+            $blocking = app(\App\Services\Supplier\SupplierCredentialService::class)->blockingReasons($supplier);
+            if ($blocking !== []) {
+                return back()->with('error', __('procurement.credentials.blocked', [
+                    'names' => implode(', ', $blocking),
+                ]));
+            }
+        }
+
         return $this->guarded($purchaseOrder, fn () => $this->orders->submit($purchaseOrder), 'procurement.flash.ordered');
     }
 

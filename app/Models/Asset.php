@@ -175,6 +175,16 @@ class Asset extends Model {
         return $relation;
     }
 
+    /**
+     * Verbaute Teile (Feature 118, MVP-607) — die Stückliste dieses
+     * Exemplars, nicht die Fertigungs-BOM des Artikels.
+     *
+     * @return HasMany<AssetComponent, $this>
+     */
+    public function components(): HasMany {
+        return $this->hasMany(AssetComponent::class)->orderBy('position');
+    }
+
     /** @return HasMany<MaintenancePlan, $this> */
     public function maintenancePlans(): HasMany {
         return $this->hasMany(MaintenancePlan::class)->orderBy('next_due_on');

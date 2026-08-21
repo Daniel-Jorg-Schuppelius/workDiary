@@ -251,6 +251,74 @@ return [
         'lead_status' => ['new' => 'Neu', 'contacted' => 'Kontaktiert', 'qualified' => 'Qualifiziert', 'converted' => 'Konvertiert', 'discarded' => 'Verworfen'],
         'lead_source' => ['referral' => 'Empfehlung', 'web' => 'Web', 'trade_fair' => 'Messe', 'phone' => 'Telefon', 'other' => 'Sonstige'],
     ],
+    // Sicherheitseinbehalte (Feature 113, MVP-602).
+    // Bürgschaftsregister (Feature 114, MVP-603).
+    // Gewährleistungsfristen (Feature 115, MVP-604).
+    'warranty_side' => [
+        'owed' => 'Eigene Haftung',
+        'claimable' => 'Einforderbar (Sub)',
+    ],
+    'warranty_basis' => [
+        'bgb_5y' => 'BGB, 5 Jahre',
+        'vob_4y' => 'VOB/B, 4 Jahre',
+        'custom' => 'Frei vereinbart',
+    ],
+    'warranty_status' => [
+        'open' => 'Offen',
+        'closed' => 'Abgeschlossen',
+        'claimed' => 'Gerügt',
+    ],
+    // Pflichtnachweise (Feature 117, MVP-606).
+    'credential_status' => [
+        'ok' => 'Vollständig',
+        'expiring' => 'Läuft ab',
+        'missing' => 'Fehlt',
+        'expired' => 'Abgelaufen',
+    ],
+    'guarantee_direction' => [
+        'issued' => 'Gestellt',
+        'received' => 'Erhalten',
+    ],
+    'guarantee_kind' => [
+        'performance' => 'Vertragserfüllungsbürgschaft',
+        'warranty' => 'Gewährleistungsbürgschaft',
+        'advance_payment' => 'Anzahlungsbürgschaft',
+        'defects' => 'Mängelansprüchebürgschaft',
+    ],
+    'guarantee_status' => [
+        'active' => 'Aktiv',
+        'returned' => 'Zurückgegeben',
+        'drawn' => 'Gezogen',
+        'expired' => 'Abgelaufen',
+    ],
+    'payment_run_kind' => [
+        'credit_transfer' => 'Sammelüberweisung',
+        'direct_debit' => 'Sammeleinzug',
+    ],
+    'payment_run_status' => [
+        'draft' => 'Entwurf',
+        'released' => 'Freigegeben',
+        'exported' => 'Exportiert',
+        'cancelled' => 'Storniert',
+    ],
+    'sepa_mandate_kind' => [
+        'one_off' => 'Einmalig',
+        'recurring' => 'Wiederkehrend',
+    ],
+    'sepa_mandate_status' => [
+        'active' => 'Aktiv',
+        'revoked' => 'Widerrufen',
+        'expired' => 'Abgelaufen',
+    ],
+    'retention_kind' => [
+        'warranty' => 'Gewährleistungseinbehalt',
+        'performance' => 'Vertragserfüllungseinbehalt',
+    ],
+    'retention_status' => [
+        'open' => 'Offen',
+        'released' => 'Freigegeben',
+        'secured' => 'Durch Bürgschaft abgelöst',
+    ],
     'sync_command' => [
         'status' => ['applied' => 'Übernommen', 'duplicate' => 'Wiederholung', 'conflict' => 'Konflikt', 'rejected' => 'Abgewiesen'],
     ],
@@ -439,6 +507,9 @@ return [
                 'highRiskAction' => 'Hochrisiko-Domainaktion freigegeben',
             ],
             'finance' => [
+                'retentionReleaseDue' => 'Sicherheitseinbehalt freizugeben',
+                'guaranteeExpiring' => 'Bürgschaft läuft ab',
+                'guaranteeReturnDue' => 'Bürgschaft zurückfordern',
                 'transferFailed' => 'Fakturierungs-Übergabe fehlgeschlagen',
                 'bankImportFailed' => 'Bankimport fehlgeschlagen',
                 'reconciliationReview' => 'Zahlungsabgleich braucht Klärung',
@@ -467,6 +538,15 @@ return [
                 'cloudIntakeReauth' => 'Cloud-Eingang: neue Anmeldung nötig',
                 'cloudIntakeQuarantined' => 'Cloud-Eingang: Importe abgewiesen',
             ],
+            'quote' => [
+                'followUpDue' => 'Angebot: Nachfassen fällig',
+                'expiringWithoutReaction' => 'Angebot läuft ohne Reaktion ab',
+            ],
+            'warranty' => [
+                'expiring' => 'Gewährleistung läuft ab',
+                'subcontractorEndsFirst' => 'Sub-Frist endet vor der eigenen',
+            ],
+            'supplier' => ['credentialExpiring' => 'Pflichtnachweis läuft ab'],
             'security' => [
                 'integrity' => 'Quelltext-Integrität',
                 'threat' => 'Angriffserkennung',
@@ -1030,6 +1110,7 @@ return [
             'local' => 'Lokal',
             'lexoffice' => 'Lexoffice',
             'orgamax' => 'orgaMAX',
+            'sevdesk' => 'sevDesk',
         ],
         'agreement-mode' => [
             'account' => 'Kundenkonto (rechnungslos)',
@@ -1147,6 +1228,7 @@ return [
             'microsoft' => 'Microsoft OneDrive/SharePoint',
             'google' => 'Google Drive',
             'nextcloud' => 'Nextcloud',
+            'webdav' => 'WebDAV (eigener Server)',
         ],
         'target_status' => [
             'draft' => 'Entwurf',

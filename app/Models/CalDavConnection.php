@@ -33,6 +33,9 @@ use Illuminate\Support\Carbon;
  * @property bool $active
  * @property int|null $created_by
  * @property \Illuminate\Support\Carbon|null $last_published_at
+ * @property bool $two_way
+ * @property string|null $sync_token
+ * @property \Illuminate\Support\Carbon|null $last_imported_at
  */
 class CalDavConnection extends Model implements RemoteCalendarConnection {
     use Auditable;
@@ -57,6 +60,11 @@ class CalDavConnection extends Model implements RemoteCalendarConnection {
         'username',
         'app_password',
         'calendar_path',
+        // MVP-610b: Rückimport-Opt-in + RFC-6578-Stand (leer, wenn der Server
+        // kein sync-collection kann — dann trägt der ETag-Vergleich).
+        'two_way',
+        'sync_token',
+        'last_imported_at',
         'scopes',
         'active',
         'last_published_at',
@@ -68,7 +76,9 @@ class CalDavConnection extends Model implements RemoteCalendarConnection {
         'app_password' => 'encrypted',
         'scopes' => 'array',
         'active' => 'boolean',
+        'two_way' => 'boolean',
         'last_published_at' => 'datetime',
+        'last_imported_at' => 'datetime',
     ];
 
     /** Publish-Scopes dieser Anbindung; null/leer = nur Termine (rückwärtskompatibel). */

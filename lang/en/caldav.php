@@ -28,6 +28,12 @@ return [
         'heading' => 'Connection',
     ],
 
+    // Titel der Inbox-Einträge des Kalenderimports — ein remote
+    // gelöschter Termin wird gemeldet, nicht still nachgezogen.
+    'import' => [
+        'deleted_title' => 'Appointment deleted in the CalDAV calendar',
+    ],
+
     'field' => [
         'name' => 'Label',
         'base_url' => 'DAV base URL',
@@ -39,6 +45,9 @@ return [
         'calendar_path' => 'Calendar path (collection)',
         'calendar_path_help' => 'Relative to the base URL, e.g. calendars/team/roster.',
         'active' => 'Active',
+        // MVP-610b: Rückimport ist Opt-in — er ändert Daten.
+        'two_way' => 'Two-way: import external changes as inbox proposals',
+        'two_way_help' => 'Reimport of the calendar collection via sync-collection (RFC 6578), otherwise over a time window with an ETag comparison — new external appointments, external edits to published ones and deletions land as cases in the integration inbox (never a blind creation).',
         'scopes' => 'Published content',
         'scope_events' => 'Events',
         'scope_schedule' => 'Rosters & leave',

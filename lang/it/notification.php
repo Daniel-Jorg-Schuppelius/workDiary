@@ -87,6 +87,46 @@ return [
     ],
 
     'message' => [
+
+        // Pflichtnachweise (Feature 117, MVP-606).
+
+        'supplier_credential_title' => 'Documento obbligatorio :supplier',
+
+        'supplier_credential_expiring' => ':type scade il :date — richiederlo subito.',
+
+        'supplier_credential_expired' => ':type è scaduto dal :date — il documento non copre più.',
+
+        // Gewährleistungsfristen (Feature 115, MVP-604).
+
+        'warranty_title' => 'Garanzia :project',
+
+        'warranty_expiring' => 'Il termine scade il :date (:party).',
+
+        'warranty_subcontractor_first' => 'Il termine del subappaltatore scade il :date (:party) — PRIMA della responsabilità propria. Verificare e, nel dubbio, contestare.',
+
+        // Bürgschaftsregister (Feature 114, MVP-603).
+
+        'guarantee_title' => 'Fideiussione :reference',
+
+        'guarantee_expiring' => 'Scade il :date — :amount, garante :issuer.',
+
+        'guarantee_return_due' => 'Restituzione dovuta — la ritenuta sostituita è liberata (:amount, garante :issuer).',
+
+        // Sicherheitseinbehalte (Feature 113, MVP-602).
+
+        'retention_title' => 'Ritenuta a garanzia su :number',
+
+        'retention_release_due' => 'Liberazione prevista il :date — :amount dalla fattura :number.',
+
+        'retention_release_overdue' => 'Liberazione scaduta dal :date — :amount dalla fattura :number; la ritenuta si prescrive a favore del cliente.',
+
+        // Angebots-Nachfassen (Feature 112, MVP-601).
+
+        'quote_follow_up_title' => 'Preventivo :number',
+
+        'quote_follow_up_due' => 'Sollecito da fare — :customer, previsto per il :date.',
+
+        'quote_expiring_without_reaction' => 'Il preventivo scade il :date e non è arrivata alcuna risposta (:customer).',
         'new_device_title' => 'Accesso da nuovo dispositivo',
         'new_device_message' => 'Nuovo accesso con :device da :country. Se non eri tu, cambia subito la password e controlla le tue sessioni.',
         'lockout_title' => 'Troppi tentativi falliti — account bloccato brevemente',

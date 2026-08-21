@@ -10,10 +10,14 @@
 
 namespace App\Plugins\Webdav;
 
+use App\Models\Backup\BackupTargetConnection;
 use App\Models\WebdavConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\Plugin;
+use App\Plugins\Contracts\{BackupTarget, Plugin};
+use App\Plugins\Support\Backup\{BackupAccount, BackupRemoteObject};
+use App\Plugins\Webdav\Api\WebdavBackupClient;
 use App\Plugins\Webdav\Contracts\WebdavGatewayFactory;
+use Psr\Http\Message\StreamInterface;
 use Throwable;
 
 /**
@@ -32,7 +36,7 @@ use Throwable;
  * Bewusst ohne Sync-Capability: die Spiegelung ist ereignisgetrieben
  * (Freigabe → Outbox), kein providerneutraler Abgleicheinstieg.
  */
-class WebdavPlugin extends AbstractPlugin {
+class WebdavPlugin extends AbstractPlugin implements BackupTarget {
     public const ID = 'webdav';
 
     public const SERVICE_PROVIDER = WebdavServiceProvider::class;
@@ -69,6 +73,50 @@ class WebdavPlugin extends AbstractPlugin {
     }
 
     /** Per-Org-Konfiguration liegt in `webdav_connections` (Admin-Panel), nicht in plugin_settings. */
+    // ── Backupziel (Feature 123, MVP-612) ───────────────────────────────
+    //
+    // Generisch, ohne Anbieter-Sonderwege. Das Nextcloud-Ziel bleibt daneben
+    // bestehen, weil es Chunked Upload v2 nutzt — den kann ein beliebiger
+    // WebDAV-Server nicht.
+
+    public function backupAccount(BackupTargetConnection $connection): BackupAccount {
+        return $this->backupClient($connection)->account();
+    }
+
+    /** @return array{total: int|null, used: int|null} */
+    public function backupQuota(BackupTargetConnection $connection): array {
+        return $this->backupClient($connection)->quota();
+    }
+
+    public function backupEnsureFolder(BackupTargetConnection $connection, string $path): string {
+        return $this->backupClient($connection)->ensureFolder($path);
+    }
+
+    /** @return list<BackupRemoteObject> */
+    public function backupList(BackupTargetConnection $connection, string $prefix): array {
+        return $this->backupClient($connection)->listObjects($prefix);
+    }
+
+    public function backupUploadPart(BackupTargetConnection $connection, string $localPath, string $remoteName): string {
+        return $this->backupClient($connection)->upload($localPath, $remoteName);
+    }
+
+    public function backupDownload(BackupTargetConnection $connection, string $remoteRef): StreamInterface {
+        return $this->backupClient($connection)->download($remoteRef);
+    }
+
+    public function backupDelete(BackupTargetConnection $connection, string $remoteRef): bool {
+        return $this->backupClient($connection)->delete($remoteRef);
+    }
+
+    /** Tests binden hierüber einen Client mit gemocktem Transport. */
+    public function backupClient(BackupTargetConnection $connection): WebdavBackupClient {
+        return app()->makeWith(WebdavBackupClient::class, [
+            'connection' => $connection,
+            'allowPrivateTargets' => (bool) config('plugins.webdav.allow_private_targets', false),
+        ]);
+    }
+
     public function settingsSchema(): array {
         return [];
     }

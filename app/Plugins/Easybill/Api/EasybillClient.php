@@ -62,6 +62,20 @@ class EasybillClient {
         return (array) $this->guard($this->authed('post', '/customers', ['json' => $payload]), '/customers');
     }
 
+    /**
+     * PUT /customers/{id} — bestehenden Kunden aktualisieren (MVP-611).
+     * Gelöscht wird im Fremdsystem nie; nur angelegt und aktualisiert.
+     *
+     * @param array<string, mixed> $payload
+     * @return array<string, mixed>
+     */
+    public function updateCustomer(string $customerId, array $payload): array {
+        return (array) $this->guard(
+            $this->authed('put', '/customers/' . rawurlencode($customerId), ['json' => $payload]),
+            '/customers/{id}',
+        );
+    }
+
     // ── Belege ──────────────────────────────────────────────────────────
 
     /**

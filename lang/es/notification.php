@@ -87,6 +87,46 @@ return [
     ],
 
     'message' => [
+
+        // Pflichtnachweise (Feature 117, MVP-606).
+
+        'supplier_credential_title' => 'Justificante obligatorio :supplier',
+
+        'supplier_credential_expiring' => ':type vence el :date — solicítelo de nuevo ahora.',
+
+        'supplier_credential_expired' => ':type caducó el :date — el documento ya no cubre.',
+
+        // Gewährleistungsfristen (Feature 115, MVP-604).
+
+        'warranty_title' => 'Garantía :project',
+
+        'warranty_expiring' => 'El plazo termina el :date (:party).',
+
+        'warranty_subcontractor_first' => 'El plazo del subcontratista termina el :date (:party) — ANTES que la responsabilidad propia. Compruebe y reclame en caso de duda.',
+
+        // Bürgschaftsregister (Feature 114, MVP-603).
+
+        'guarantee_title' => 'Aval :reference',
+
+        'guarantee_expiring' => 'Vence el :date — :amount, avalista :issuer.',
+
+        'guarantee_return_due' => 'Devolución pendiente — la retención sustituida está liberada (:amount, avalista :issuer).',
+
+        // Sicherheitseinbehalte (Feature 113, MVP-602).
+
+        'retention_title' => 'Retención de garantía en :number',
+
+        'retention_release_due' => 'Liberación prevista el :date — :amount de la factura :number.',
+
+        'retention_release_overdue' => 'Liberación vencida desde el :date — :amount de la factura :number; la retención prescribe a favor del cliente.',
+
+        // Angebots-Nachfassen (Feature 112, MVP-601).
+
+        'quote_follow_up_title' => 'Presupuesto :number',
+
+        'quote_follow_up_due' => 'Seguimiento pendiente — :customer, previsto para el :date.',
+
+        'quote_expiring_without_reaction' => 'El presupuesto vence el :date y no ha habido reacción (:customer).',
         'new_device_title' => 'Inicio de sesión desde un dispositivo nuevo',
         'new_device_message' => 'Nuevo inicio de sesión con :device desde :country. Si no fue usted, cambie su contraseña de inmediato y revise sus sesiones.',
         'lockout_title' => 'Demasiados intentos fallidos — cuenta bloqueada brevemente',

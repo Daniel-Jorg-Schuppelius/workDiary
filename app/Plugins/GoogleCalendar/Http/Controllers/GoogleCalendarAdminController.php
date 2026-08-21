@@ -120,6 +120,7 @@ class GoogleCalendarAdminController extends ConnectionOAuthController {
 
         $data = $request->validate([
             'calendar_id' => ['nullable', 'string', 'max:255'],
+            'two_way' => ['nullable', 'boolean'],
         ]);
 
         $calendarId = trim((string) ($data['calendar_id'] ?? ''));
@@ -137,11 +138,16 @@ class GoogleCalendarAdminController extends ConnectionOAuthController {
             $calendarName = (string) $match['name'];
         }
 
+        $twoWay = $request->boolean('two_way');
         $connection->forceFill([
             'calendar_id' => $calendarId !== '' ? $calendarId : null,
             'calendar_name' => $calendarName,
+            'two_way' => $twoWay,
+            // Kalenderwechsel entwertet den Checkpoint: der Token gehört zur
+            // Collection, nicht zur Verbindung.
+            'sync_token' => $calendarId !== (string) $connection->calendar_id ? null : $connection->sync_token,
         ])->save();
-        $connection->audit('google_calendar.calendar_selected', ['calendar_name' => $calendarName ?? 'primary']);
+        $connection->audit('google_calendar.calendar_selected', ['calendar_name' => $calendarName ?? 'primary', 'two_way' => $twoWay]);
 
         return back()->with('success', __('google_calendar.flash.calendar_saved'));
     }

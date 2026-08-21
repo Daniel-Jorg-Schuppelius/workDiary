@@ -251,6 +251,74 @@ return [
         'lead_status' => ['new' => 'Nuovo', 'contacted' => 'Contattato', 'qualified' => 'Qualificato', 'converted' => 'Convertito', 'discarded' => 'Scartato'],
         'lead_source' => ['referral' => 'Passaparola', 'web' => 'Web', 'trade_fair' => 'Fiera', 'phone' => 'Telefono', 'other' => 'Altro'],
     ],
+    // Sicherheitseinbehalte (Feature 113, MVP-602).
+    // Bürgschaftsregister (Feature 114, MVP-603).
+    // Gewährleistungsfristen (Feature 115, MVP-604).
+    'warranty_side' => [
+        'owed' => 'Responsabilità propria',
+        'claimable' => 'Esigibile (subappalto)',
+    ],
+    'warranty_basis' => [
+        'bgb_5y' => 'BGB, 5 anni',
+        'vob_4y' => 'VOB/B, 4 anni',
+        'custom' => 'Liberamente pattuito',
+    ],
+    'warranty_status' => [
+        'open' => 'Aperto',
+        'closed' => 'Chiuso',
+        'claimed' => 'Contestato',
+    ],
+    // Pflichtnachweise (Feature 117, MVP-606).
+    'credential_status' => [
+        'ok' => 'Completo',
+        'expiring' => 'In scadenza',
+        'missing' => 'Mancante',
+        'expired' => 'Scaduto',
+    ],
+    'guarantee_direction' => [
+        'issued' => 'Prestata',
+        'received' => 'Ricevuta',
+    ],
+    'guarantee_kind' => [
+        'performance' => 'Fideiussione di buona esecuzione',
+        'warranty' => 'Fideiussione di garanzia',
+        'advance_payment' => 'Fideiussione per anticipo',
+        'defects' => 'Fideiussione per vizi',
+    ],
+    'guarantee_status' => [
+        'active' => 'Attiva',
+        'returned' => 'Restituita',
+        'drawn' => 'Escussa',
+        'expired' => 'Scaduta',
+    ],
+    'payment_run_kind' => [
+        'credit_transfer' => 'Bonifico cumulativo',
+        'direct_debit' => 'Addebito cumulativo',
+    ],
+    'payment_run_status' => [
+        'draft' => 'Bozza',
+        'released' => 'Approvata',
+        'exported' => 'Esportata',
+        'cancelled' => 'Annullata',
+    ],
+    'sepa_mandate_kind' => [
+        'one_off' => 'Una tantum',
+        'recurring' => 'Ricorrente',
+    ],
+    'sepa_mandate_status' => [
+        'active' => 'Attivo',
+        'revoked' => 'Revocato',
+        'expired' => 'Scaduto',
+    ],
+    'retention_kind' => [
+        'warranty' => 'Ritenuta a garanzia',
+        'performance' => 'Ritenuta di esecuzione',
+    ],
+    'retention_status' => [
+        'open' => 'Aperta',
+        'released' => 'Liberata',
+        'secured' => 'Sostituita da fideiussione',
+    ],
     'sync_command' => [
         'status' => ['applied' => 'Applicato', 'duplicate' => 'Duplicato', 'conflict' => 'Conflitto', 'rejected' => 'Respinto'],
     ],
@@ -439,6 +507,9 @@ return [
                 'highRiskAction' => 'Azione dominio ad alto rischio approvata',
             ],
             'finance' => [
+                'retentionReleaseDue' => 'Liberazione ritenuta dovuta',
+                'guaranteeExpiring' => 'Fideiussione in scadenza',
+                'guaranteeReturnDue' => 'Restituzione fideiussione dovuta',
                 'transferFailed' => 'Trasferimento fatturazione non riuscito',
                 'bankImportFailed' => 'Import bancario non riuscito',
                 'reconciliationReview' => 'Riconciliazione pagamenti da chiarire',
@@ -467,6 +538,15 @@ return [
                 'cloudIntakeReauth' => 'Ingresso cloud: nuovo accesso necessario',
                 'cloudIntakeQuarantined' => 'Ingresso cloud: importazioni rifiutate',
             ],
+            'quote' => [
+                'followUpDue' => 'Preventivo: sollecito da fare',
+                'expiringWithoutReaction' => 'Preventivo in scadenza senza risposta',
+            ],
+            'warranty' => [
+                'expiring' => 'Garanzia in scadenza',
+                'subcontractorEndsFirst' => 'Il termine del subappaltatore scade prima del proprio',
+            ],
+            'supplier' => ['credentialExpiring' => 'Documento obbligatorio in scadenza'],
             'security' => [
                 'integrity' => 'Integrità del codice sorgente',
                 'threat' => 'Rilevamento attacchi',
@@ -1030,6 +1110,7 @@ return [
             'local' => 'Locale',
             'lexoffice' => 'Lexoffice',
             'orgamax' => 'orgaMAX',
+            'sevdesk' => 'sevDesk',
         ],
         'agreement-mode' => [
             'account' => 'Conto cliente (senza fattura)',
@@ -1146,6 +1227,7 @@ return [
             'microsoft' => 'Microsoft OneDrive/SharePoint',
             'google' => 'Google Drive',
             'nextcloud' => 'Nextcloud',
+            'webdav' => 'WebDAV (server proprio)',
         ],
         'target_status' => [
             'draft' => 'Bozza',

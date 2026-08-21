@@ -251,6 +251,74 @@ return [
         'lead_status' => ['new' => 'Nuevo', 'contacted' => 'Contactado', 'qualified' => 'Cualificado', 'converted' => 'Convertido', 'discarded' => 'Descartado'],
         'lead_source' => ['referral' => 'Recomendación', 'web' => 'Web', 'trade_fair' => 'Feria', 'phone' => 'Teléfono', 'other' => 'Otro'],
     ],
+    // Sicherheitseinbehalte (Feature 113, MVP-602).
+    // Bürgschaftsregister (Feature 114, MVP-603).
+    // Gewährleistungsfristen (Feature 115, MVP-604).
+    'warranty_side' => [
+        'owed' => 'Responsabilidad propia',
+        'claimable' => 'Exigible (subcontrata)',
+    ],
+    'warranty_basis' => [
+        'bgb_5y' => 'BGB, 5 años',
+        'vob_4y' => 'VOB/B, 4 años',
+        'custom' => 'Libremente pactado',
+    ],
+    'warranty_status' => [
+        'open' => 'Abierto',
+        'closed' => 'Cerrado',
+        'claimed' => 'Reclamado',
+    ],
+    // Pflichtnachweise (Feature 117, MVP-606).
+    'credential_status' => [
+        'ok' => 'Completo',
+        'expiring' => 'Por vencer',
+        'missing' => 'Falta',
+        'expired' => 'Caducado',
+    ],
+    'guarantee_direction' => [
+        'issued' => 'Prestado',
+        'received' => 'Recibido',
+    ],
+    'guarantee_kind' => [
+        'performance' => 'Aval de cumplimiento',
+        'warranty' => 'Aval de garantía',
+        'advance_payment' => 'Aval de anticipo',
+        'defects' => 'Aval por vicios',
+    ],
+    'guarantee_status' => [
+        'active' => 'Activo',
+        'returned' => 'Devuelto',
+        'drawn' => 'Ejecutado',
+        'expired' => 'Vencido',
+    ],
+    'payment_run_kind' => [
+        'credit_transfer' => 'Transferencia agrupada',
+        'direct_debit' => 'Adeudo agrupado',
+    ],
+    'payment_run_status' => [
+        'draft' => 'Borrador',
+        'released' => 'Aprobada',
+        'exported' => 'Exportada',
+        'cancelled' => 'Anulada',
+    ],
+    'sepa_mandate_kind' => [
+        'one_off' => 'Puntual',
+        'recurring' => 'Recurrente',
+    ],
+    'sepa_mandate_status' => [
+        'active' => 'Activo',
+        'revoked' => 'Revocado',
+        'expired' => 'Caducado',
+    ],
+    'retention_kind' => [
+        'warranty' => 'Retención de garantía',
+        'performance' => 'Retención de cumplimiento',
+    ],
+    'retention_status' => [
+        'open' => 'Abierta',
+        'released' => 'Liberada',
+        'secured' => 'Sustituida por un aval',
+    ],
     'sync_command' => [
         'status' => ['applied' => 'Aplicado', 'duplicate' => 'Duplicado', 'conflict' => 'Conflicto', 'rejected' => 'Rechazado'],
     ],
@@ -439,6 +507,9 @@ return [
                 'highRiskAction' => 'Acción de dominio de alto riesgo aprobada',
             ],
             'finance' => [
+                'retentionReleaseDue' => 'Liberación de retención pendiente',
+                'guaranteeExpiring' => 'Aval que vence',
+                'guaranteeReturnDue' => 'Devolución de aval pendiente',
                 'transferFailed' => 'Transferencia de facturación fallida',
                 'bankImportFailed' => 'Importación bancaria fallida',
                 'reconciliationReview' => 'Conciliación de pagos requiere revisión',
@@ -467,6 +538,15 @@ return [
                 'cloudIntakeReauth' => 'Entrada en la nube: se requiere iniciar sesión',
                 'cloudIntakeQuarantined' => 'Entrada en la nube: importaciones rechazadas',
             ],
+            'quote' => [
+                'followUpDue' => 'Presupuesto: seguimiento pendiente',
+                'expiringWithoutReaction' => 'Presupuesto que vence sin reacción',
+            ],
+            'warranty' => [
+                'expiring' => 'Garantía que vence',
+                'subcontractorEndsFirst' => 'El plazo del subcontratista acaba antes que el propio',
+            ],
+            'supplier' => ['credentialExpiring' => 'Justificante obligatorio que vence'],
             'security' => [
                 'integrity' => 'Integridad del código fuente',
                 'threat' => 'Detección de ataques',
@@ -1030,6 +1110,7 @@ return [
             'local' => 'Local',
             'lexoffice' => 'Lexoffice',
             'orgamax' => 'orgaMAX',
+            'sevdesk' => 'sevDesk',
         ],
         'agreement-mode' => [
             'account' => 'Cuenta de cliente (sin factura)',
@@ -1146,6 +1227,7 @@ return [
             'microsoft' => 'Microsoft OneDrive/SharePoint',
             'google' => 'Google Drive',
             'nextcloud' => 'Nextcloud',
+            'webdav' => 'WebDAV (servidor propio)',
         ],
         'target_status' => [
             'draft' => 'Borrador',

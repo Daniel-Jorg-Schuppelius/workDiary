@@ -251,6 +251,74 @@ return [
         'lead_status' => ['new' => 'New', 'contacted' => 'Contacted', 'qualified' => 'Qualified', 'converted' => 'Converted', 'discarded' => 'Discarded'],
         'lead_source' => ['referral' => 'Referral', 'web' => 'Web', 'trade_fair' => 'Trade fair', 'phone' => 'Phone', 'other' => 'Other'],
     ],
+    // Sicherheitseinbehalte (Feature 113, MVP-602).
+    // Bürgschaftsregister (Feature 114, MVP-603).
+    // Gewährleistungsfristen (Feature 115, MVP-604).
+    'warranty_side' => [
+        'owed' => 'Own liability',
+        'claimable' => 'Claimable (sub)',
+    ],
+    'warranty_basis' => [
+        'bgb_5y' => 'BGB, 5 years',
+        'vob_4y' => 'VOB/B, 4 years',
+        'custom' => 'Freely agreed',
+    ],
+    'warranty_status' => [
+        'open' => 'Open',
+        'closed' => 'Closed',
+        'claimed' => 'Notified',
+    ],
+    // Pflichtnachweise (Feature 117, MVP-606).
+    'credential_status' => [
+        'ok' => 'Complete',
+        'expiring' => 'Expiring',
+        'missing' => 'Missing',
+        'expired' => 'Expired',
+    ],
+    'guarantee_direction' => [
+        'issued' => 'Issued',
+        'received' => 'Received',
+    ],
+    'guarantee_kind' => [
+        'performance' => 'Performance bond',
+        'warranty' => 'Warranty bond',
+        'advance_payment' => 'Advance payment bond',
+        'defects' => 'Defects liability bond',
+    ],
+    'guarantee_status' => [
+        'active' => 'Active',
+        'returned' => 'Returned',
+        'drawn' => 'Drawn',
+        'expired' => 'Expired',
+    ],
+    'payment_run_kind' => [
+        'credit_transfer' => 'Bulk credit transfer',
+        'direct_debit' => 'Bulk direct debit',
+    ],
+    'payment_run_status' => [
+        'draft' => 'Draft',
+        'released' => 'Released',
+        'exported' => 'Exported',
+        'cancelled' => 'Cancelled',
+    ],
+    'sepa_mandate_kind' => [
+        'one_off' => 'One-off',
+        'recurring' => 'Recurring',
+    ],
+    'sepa_mandate_status' => [
+        'active' => 'Active',
+        'revoked' => 'Revoked',
+        'expired' => 'Expired',
+    ],
+    'retention_kind' => [
+        'warranty' => 'Warranty retention',
+        'performance' => 'Performance retention',
+    ],
+    'retention_status' => [
+        'open' => 'Open',
+        'released' => 'Released',
+        'secured' => 'Replaced by a guarantee',
+    ],
     'sync_command' => [
         'status' => ['applied' => 'Applied', 'duplicate' => 'Duplicate', 'conflict' => 'Conflict', 'rejected' => 'Rejected'],
     ],
@@ -439,6 +507,9 @@ return [
                 'highRiskAction' => 'High-risk domain action approved',
             ],
             'finance' => [
+                'retentionReleaseDue' => 'Retention release due',
+                'guaranteeExpiring' => 'Guarantee expiring',
+                'guaranteeReturnDue' => 'Guarantee return due',
                 'transferFailed' => 'Billing transfer failed',
                 'bankImportFailed' => 'Bank import failed',
                 'reconciliationReview' => 'Payment reconciliation needs review',
@@ -467,6 +538,15 @@ return [
                 'cloudIntakeReauth' => 'Cloud intake: sign-in required',
                 'cloudIntakeQuarantined' => 'Cloud intake: imports rejected',
             ],
+            'quote' => [
+                'followUpDue' => 'Quote: follow-up due',
+                'expiringWithoutReaction' => 'Quote expiring without reaction',
+            ],
+            'warranty' => [
+                'expiring' => 'Warranty expiring',
+                'subcontractorEndsFirst' => 'Sub period ends before your own',
+            ],
+            'supplier' => ['credentialExpiring' => 'Mandatory record expiring'],
             'security' => [
                 'integrity' => 'Source code integrity',
                 'threat' => 'Threat detection',
@@ -1030,6 +1110,7 @@ return [
             'local' => 'Local',
             'lexoffice' => 'Lexoffice',
             'orgamax' => 'orgaMAX',
+            'sevdesk' => 'sevDesk',
         ],
         'agreement-mode' => [
             'account' => 'Customer account (no invoices)',
@@ -1146,6 +1227,7 @@ return [
             'microsoft' => 'Microsoft OneDrive/SharePoint',
             'google' => 'Google Drive',
             'nextcloud' => 'Nextcloud',
+            'webdav' => 'WebDAV (own server)',
         ],
         'target_status' => [
             'draft' => 'Draft',

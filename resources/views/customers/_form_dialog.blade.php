@@ -68,6 +68,12 @@
                               :hint="__('Zeiten bleiben erfasst; der Kunde erscheint nur nicht in den kundenbezogenen Auswertungen.')"
                               :checked="old('exclude_from_reports', $customer?->exclude_from_reports ?? false)" />
 
+            {{-- Feature 119: Werbe-Opt-out. Getrennt von der Auswertungs-Ausblendung,
+                 weil es zwei verschiedene Fragen sind. Pflichtmitteilungen gehen trotzdem raus. --}}
+            <x-checkbox-field name="no_bulk_mail" :label="__('Keine Sammelmails')"
+                              :hint="__('Der Kunde erhält keine Rundschreiben — Pflichtmitteilungen ausgenommen.')"
+                              :checked="old('no_bulk_mail', $customer?->no_bulk_mail ?? false)" />
+
             {{-- E-Rechnung (Feature 045): Leitweg-ID/Käuferreferenz (BT-10) — Pflicht in der XRechnung. --}}
             <x-input-field name="buyer_reference" :label="__('invoicing.buyer_reference')" maxlength="64"
                            :value="old('buyer_reference', $customer?->buyer_reference)" :hint="__('invoicing.buyer_reference_hint')" />

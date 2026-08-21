@@ -12,9 +12,12 @@ declare(strict_types=1);
 
 namespace App\Plugins\Easybill;
 
+use App\Models\Customer;
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\Plugin;
+use App\Plugins\Contracts\{ContactSyncer, Plugin};
 use App\Plugins\Easybill\Api\{EasybillApiException, EasybillClientFactory};
+use App\Services\Finance\Accounting\ContactPushService;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -30,7 +33,7 @@ use Throwable;
  * - Rate-Limits sind tarifabhängig (PLUS 10, BUSINESS 60 req/min) — das
  *   Intervall kommt aus dem Setting `rate_limit_per_minute`.
  */
-class EasybillPlugin extends AbstractPlugin {
+class EasybillPlugin extends AbstractPlugin implements ContactSyncer {
     public const ID = 'easybill';
 
     public const SERVICE_PROVIDER = EasybillServiceProvider::class;
@@ -59,6 +62,53 @@ class EasybillPlugin extends AbstractPlugin {
     }
 
     /** @return array<int, array{key: string, label: string, type: string, options?: array<string, string>, help?: string, required?: bool, default?: mixed}> */
+    /**
+     * Kontakt-Push (Feature 122, MVP-611): anlegen oder aktualisieren, nie
+     * löschen. Gefunden wird über die Kundennummer.
+     */
+    public function pushContact(Customer $customer): string {
+        $client = app(EasybillClientFactory::class)->for((int) $customer->organization_id);
+        $number = trim((string) $customer->number);
+
+        $existingId = '';
+        if ($number !== '') {
+            foreach ($client->customersByNumber($number) as $row) {
+                if (is_array($row) && (string) ($row['number'] ?? '') === $number && ! empty($row['id'] ?? null)) {
+                    $existingId = (string) $row['id'];
+
+                    break;
+                }
+            }
+        }
+
+        // Eigene USt-IdNr./E-Mail nie an einen Fremdkontakt (MVP-611).
+        $fields = app(ContactPushService::class)->withoutOwnIdentity([
+            'vat_id' => (string) ($customer->vat_id ?? ''),
+            'email' => (string) ($customer->email ?? ''),
+        ]);
+
+        $payload = array_filter([
+            'company_name' => (string) $customer->name,
+            'number' => $number !== '' ? $number : null,
+            'street' => (string) ($customer->address_street ?? '') ?: null,
+            'zip_code' => (string) ($customer->address_zip ?? '') ?: null,
+            'city' => (string) ($customer->address_city ?? '') ?: null,
+            'vat_identifier' => ($fields['vat_id'] ?? '') !== '' ? $fields['vat_id'] : null,
+            'emails' => ($fields['email'] ?? '') !== '' ? [$fields['email']] : null,
+        ], static fn ($value): bool => $value !== null);
+
+        $result = $existingId !== ''
+            ? $client->updateCustomer($existingId, $payload)
+            : $client->createCustomer($payload);
+
+        $customerId = (string) ($result['id'] ?? $existingId);
+        if ($customerId === '') {
+            throw new RuntimeException('easybill customer push returned no id.');
+        }
+
+        return $customerId;
+    }
+
     public function settingsSchema(): array {
         return [
             ['key' => 'api_key', 'label' => __('API-Key'), 'type' => 'password', 'required' => true, 'help' => __('easybill-API-Key (easybill → Einstellungen → API).')],

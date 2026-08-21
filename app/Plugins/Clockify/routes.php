@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Plugins\Clockify\Http\Controllers\ClockifyController;
+use App\Plugins\Clockify\Http\Controllers\{ClockifyController, ClockifyWebhookController};
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -23,3 +23,11 @@ Route::middleware(['web', 'auth'])->group(function (): void {
     Route::post('admin/clockify/import-api', [ClockifyController::class, 'importApi'])->name('admin.clockify.import-api');
     Route::post('admin/clockify/export-api', [ClockifyController::class, 'exportApi'])->name('admin.clockify.export-api');
 });
+
+/*
+ * Eingehender Webhook (Feature 124, MVP-613): sessionlos, ohne CSRF, ohne
+ * Auth — die Echtheit klärt der Signaturvergleich im Controller. Webhooks
+ * setzen bei Clockify einen kostenpflichtigen Tarif voraus.
+ */
+Route::middleware(['api', 'throttle:time-tracking-webhook'])->post('api/webhooks/clockify', ClockifyWebhookController::class)
+    ->name('api.webhooks.clockify');

@@ -251,6 +251,74 @@ return [
         'lead_status' => ['new' => 'Nouveau', 'contacted' => 'Contacté', 'qualified' => 'Qualifié', 'converted' => 'Converti', 'discarded' => 'Écarté'],
         'lead_source' => ['referral' => 'Recommandation', 'web' => 'Web', 'trade_fair' => 'Salon', 'phone' => 'Téléphone', 'other' => 'Autre'],
     ],
+    // Sicherheitseinbehalte (Feature 113, MVP-602).
+    // Bürgschaftsregister (Feature 114, MVP-603).
+    // Gewährleistungsfristen (Feature 115, MVP-604).
+    'warranty_side' => [
+        'owed' => 'Responsabilité propre',
+        'claimable' => 'Opposable (sous-traitant)',
+    ],
+    'warranty_basis' => [
+        'bgb_5y' => 'BGB, 5 ans',
+        'vob_4y' => 'VOB/B, 4 ans',
+        'custom' => 'Librement convenu',
+    ],
+    'warranty_status' => [
+        'open' => 'Ouvert',
+        'closed' => 'Clôturé',
+        'claimed' => 'Dénoncé',
+    ],
+    // Pflichtnachweise (Feature 117, MVP-606).
+    'credential_status' => [
+        'ok' => 'Complet',
+        'expiring' => 'Expire bientôt',
+        'missing' => 'Manquant',
+        'expired' => 'Expiré',
+    ],
+    'guarantee_direction' => [
+        'issued' => 'Donnée',
+        'received' => 'Reçue',
+    ],
+    'guarantee_kind' => [
+        'performance' => 'Caution de bonne exécution',
+        'warranty' => 'Caution de garantie',
+        'advance_payment' => 'Caution d’acompte',
+        'defects' => 'Caution pour vices',
+    ],
+    'guarantee_status' => [
+        'active' => 'Active',
+        'returned' => 'Restituée',
+        'drawn' => 'Appelée',
+        'expired' => 'Expirée',
+    ],
+    'payment_run_kind' => [
+        'credit_transfer' => 'Virement groupé',
+        'direct_debit' => 'Prélèvement groupé',
+    ],
+    'payment_run_status' => [
+        'draft' => 'Brouillon',
+        'released' => 'Validé',
+        'exported' => 'Exporté',
+        'cancelled' => 'Annulé',
+    ],
+    'sepa_mandate_kind' => [
+        'one_off' => 'Ponctuel',
+        'recurring' => 'Récurrent',
+    ],
+    'sepa_mandate_status' => [
+        'active' => 'Actif',
+        'revoked' => 'Révoqué',
+        'expired' => 'Expiré',
+    ],
+    'retention_kind' => [
+        'warranty' => 'Retenue de garantie',
+        'performance' => 'Retenue d’exécution',
+    ],
+    'retention_status' => [
+        'open' => 'Ouverte',
+        'released' => 'Libérée',
+        'secured' => 'Remplacée par une caution',
+    ],
     'sync_command' => [
         'status' => ['applied' => 'Appliqué', 'duplicate' => 'Doublon', 'conflict' => 'Conflit', 'rejected' => 'Rejeté'],
     ],
@@ -439,6 +507,9 @@ return [
                 'highRiskAction' => 'Action de domaine à haut risque approuvée',
             ],
             'finance' => [
+                'retentionReleaseDue' => 'Libération de retenue à effectuer',
+                'guaranteeExpiring' => 'Caution arrivant à échéance',
+                'guaranteeReturnDue' => 'Restitution de caution à demander',
                 'transferFailed' => 'Transfert de facturation échoué',
                 'bankImportFailed' => 'Import bancaire échoué',
                 'reconciliationReview' => 'Rapprochement des paiements à clarifier',
@@ -467,6 +538,15 @@ return [
                 'cloudIntakeReauth' => 'Réception cloud : nouvelle connexion requise',
                 'cloudIntakeQuarantined' => 'Réception cloud : importations refusées',
             ],
+            'quote' => [
+                'followUpDue' => 'Devis : relance à faire',
+                'expiringWithoutReaction' => 'Devis expirant sans réaction',
+            ],
+            'warranty' => [
+                'expiring' => 'Garantie arrivant à échéance',
+                'subcontractorEndsFirst' => 'Le délai du sous-traitant finit avant le vôtre',
+            ],
+            'supplier' => ['credentialExpiring' => 'Justificatif obligatoire arrivant à échéance'],
             'security' => [
                 'integrity' => 'Intégrité du code source',
                 'threat' => 'Détection d’attaques',
@@ -1030,6 +1110,7 @@ return [
             'local' => 'Local',
             'lexoffice' => 'Lexoffice',
             'orgamax' => 'orgaMAX',
+            'sevdesk' => 'sevDesk',
         ],
         'agreement-mode' => [
             'account' => 'Compte client (sans facture)',
@@ -1146,6 +1227,7 @@ return [
             'microsoft' => 'Microsoft OneDrive/SharePoint',
             'google' => 'Google Drive',
             'nextcloud' => 'Nextcloud',
+            'webdav' => 'WebDAV (serveur propre)',
         ],
         'target_status' => [
             'draft' => 'Brouillon',

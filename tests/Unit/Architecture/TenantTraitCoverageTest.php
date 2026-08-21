@@ -58,6 +58,12 @@ class TenantTraitCoverageTest extends TestCase {
         // Auflösung filtert explizit (scopeForOrganization/effectiveProfiles);
         // Anforderungen hängen als Katalog-Kind transitiv am Profil.
         \App\Models\AssetCompliance\AssetComplianceProfile::class,
+        // Feature 117 (MVP-606): Nachweistyp-Katalog nach demselben Muster —
+        // `organization_id NULL` ist die installationsweite Vorlage, Org-Zeilen
+        // ergänzen sie. Ein globaler Scope würde den Katalog ausblenden; die
+        // Abfragen im SupplierCredentialService filtern ausdrücklich
+        // (whereNull OR organization_id).
+        \App\Models\Supplier\SupplierCredentialType::class,
         \App\Models\AssetCompliance\AssetComplianceRequirement::class,
         \App\Models\AssetCompliance\AssetComplianceNormReference::class,
         GeocodeCache::class,
@@ -173,6 +179,12 @@ class TenantTraitCoverageTest extends TestCase {
         // Connection, dann Svix-Signaturprüfung); nullable organization_id,
         // kein Global-Scope. Siehe Allow-List im Audit-Doc.
         \App\Models\EtsyWebhookDelivery::class,
+        // Zeiterfassungs-Webhook-Dedup (Feature 124, MVP-613): analog
+        // Todoist/Calendly ein Betriebsprotokoll, das VOR der Org-Zuordnung
+        // entsteht (Workspace→Org, dann Signaturprüfung); nullable
+        // organization_id, kein Global-Scope. Eine Tabelle für Toggl UND
+        // Clockify, unterschieden über `plugin_id`. Siehe Allow-List im Audit-Doc.
+        \App\Models\TimeTrackingWebhookDelivery::class,
         // Restore-Test-Register (Feature 017): plattformweites Protokoll der
         // Wiederherstellungs-Tests — analog BackupHeartbeat findet der
         // Restore-Vorgang ohne Tenant-Kontext statt. Siehe Allow-List im Audit-Doc.

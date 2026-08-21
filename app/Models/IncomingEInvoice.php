@@ -42,6 +42,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property array<string, mixed>|null $summary
  * @property \Illuminate\Support\Carbon|null $transferred_at
  * @property int|null $transferred_by
+ * @property string|null $creditor_iban
+ * @property string|null $creditor_bic
+ * @property float|null $discount_percent
+ * @property int|null $discount_days
+ * @property int|null $paid_in_run_id
  */
 class IncomingEInvoice extends Model {
     use Auditable;
@@ -69,6 +74,9 @@ class IncomingEInvoice extends Model {
         // und summieren kann. Führend bleibt das geparste Original.
         'invoice_number', 'seller_name', 'issue_date', 'due_date',
         'currency', 'amount_net', 'amount_tax', 'amount_gross',
+        // MVP-609: Zahlungsdaten für den Zahlungsvorschlag.
+        'creditor_iban', 'creditor_bic', 'discount_percent', 'discount_days',
+        'paid_in_run_id',
     ];
 
     /** @var array<string, string> */
@@ -108,6 +116,10 @@ class IncomingEInvoice extends Model {
             'amount_net' => is_numeric($summary['net'] ?? null) ? (string) $summary['net'] : null,
             'amount_tax' => is_numeric($summary['tax'] ?? null) ? (string) $summary['tax'] : null,
             'amount_gross' => is_numeric($summary['gross'] ?? null) ? (string) $summary['gross'] : null,
+            'creditor_iban' => $text($summary['creditor_iban'] ?? null, 40),
+            'creditor_bic' => $text($summary['creditor_bic'] ?? null, 20),
+            'discount_percent' => is_numeric($summary['discount_percent'] ?? null) ? (string) $summary['discount_percent'] : null,
+            'discount_days' => is_numeric($summary['discount_days'] ?? null) ? (string) $summary['discount_days'] : null,
         ];
     }
 

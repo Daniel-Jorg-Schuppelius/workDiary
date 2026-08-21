@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Plugins\OrgaMax;
 
+use APIToolkit\Entities\ID;
 use APIToolkit\Exceptions\ApiException;
-use App\Models\OrgaMaxConnection;
+use App\Models\{Customer, OrgaMaxConnection};
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\Plugin;
+use App\Plugins\Contracts\{ContactSyncer, Plugin};
 use App\Plugins\OrgaMax\Api\OrgaMaxClientFactory;
+use App\Services\Finance\Accounting\ContactPushService;
+use Orgamax\API\Endpoints\CustomersEndpoint;
 use Orgamax\API\Endpoints\Settings\AccountSettingEndpoint;
+use Orgamax\Entities\Customers\Customer as OrgaMaxCustomer;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -33,7 +38,7 @@ use Throwable;
  * eigene {@see \App\Plugins\Contracts\PluginCapability} — die Fähigkeiten
  * hängen an FacturationTarget-/Outbox-Verträgen.
  */
-class OrgaMaxPlugin extends AbstractPlugin {
+class OrgaMaxPlugin extends AbstractPlugin implements ContactSyncer {
     public const ID = 'orgamax';
 
     public const SERVICE_PROVIDER = OrgaMaxServiceProvider::class;
@@ -70,6 +75,64 @@ class OrgaMaxPlugin extends AbstractPlugin {
     }
 
     /** @return array<int, array<string, mixed>> Eigenes Admin-Panel statt Auto-Form. */
+    /**
+     * Kontakt-Push (Feature 122, MVP-611): anlegen oder aktualisieren, nie
+     * löschen. Gefunden wird über die Kundennummer, die orgaMAX führt.
+     */
+    public function pushContact(Customer $customer): string {
+        $connection = OrgaMaxConnection::query()
+            ->where('organization_id', $customer->organization_id)
+            ->first();
+        if (! $connection instanceof OrgaMaxConnection) {
+            throw new RuntimeException('orgaMAX connection is not configured.');
+        }
+
+        $endpoint = new CustomersEndpoint(app(OrgaMaxClientFactory::class)->for($connection));
+        $number = trim((string) $customer->number);
+
+        $existingId = '';
+        if ($number !== '') {
+            foreach (($endpoint->search(['number' => $number, 'limit' => 10])?->getValues() ?? []) as $row) {
+                if ((string) $row->getNumber() === $number && (string) $row->getId() !== '') {
+                    $existingId = (string) $row->getId();
+
+                    break;
+                }
+            }
+        }
+
+        // Eigene USt-IdNr./E-Mail nie an einen Fremdkontakt (MVP-611).
+        $fields = app(ContactPushService::class)->withoutOwnIdentity([
+            'vat_id' => (string) ($customer->vat_id ?? ''),
+            'email' => (string) ($customer->email ?? ''),
+        ]);
+
+        $payload = new OrgaMaxCustomer;
+        $payload->setName((string) $customer->name);
+        if ($number !== '') {
+            $payload->setNumber($number);
+        }
+        if (($fields['email'] ?? '') !== '') {
+            $payload->setEmail((string) $fields['email']);
+        }
+        if (($fields['vat_id'] ?? '') !== '') {
+            $payload->setVatNumber((string) $fields['vat_id']);
+        }
+
+        if ($existingId !== '') {
+            $endpoint->update(new ID($existingId), $payload);
+
+            return $existingId;
+        }
+
+        $created = (string) ($endpoint->create($payload)->getData()?->getId() ?? '');
+        if ($created === '') {
+            throw new RuntimeException('orgaMAX customer push returned no id.');
+        }
+
+        return $created;
+    }
+
     public function settingsSchema(): array {
         return [];
     }

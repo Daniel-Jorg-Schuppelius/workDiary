@@ -887,6 +887,9 @@ class AppServiceProvider extends ServiceProvider {
         // Bursts, aber gegen Flooding gedeckelt; Verluste heilt der stündliche
         // Polling-Abgleich (todoist:sync).
         RateLimiter::for('todoist-webhook', fn(Request $request) => Limit::perMinute(120)->by('twh:' . $request->ip()));
+        // Zeiterfassungs-Webhooks (Feature 124, MVP-613): unauthentifizierter
+        // Endpunkt, deshalb gedrosselt. Verlorene Aufrufe heilt das Polling.
+        RateLimiter::for('time-tracking-webhook', fn (Request $request) => Limit::perMinute(120)->by('ttwh:' . $request->ip()));
 
         // Sessionloser Lexoffice-Webhook (Audit 2026-08, Welle 1.3): gleiche
         // Abwägung — Bursts erlauben, Flooding deckeln; Verluste heilt der

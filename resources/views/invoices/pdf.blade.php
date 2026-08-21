@@ -36,6 +36,10 @@
     .bank-block table { width: 100%; margin: 0; }
     .bank-block table td { border: none; padding: 2px 6px; }
     .bank-block .label { color: #666; width: 25%; }
+    /* Girocode (MVP-600): Grafik rechts neben den Kontodaten. */
+    .bank-block .giro { width: 30mm; vertical-align: top; text-align: center; padding-left: 8px; }
+    .bank-block .giro img { width: 26mm; height: 26mm; }
+    .bank-block .giro span { display: block; font-size: 7px; color: #666; line-height: 1.2; }
     @page { margin: 20mm; }
 </style>
 </head>
@@ -163,6 +167,25 @@
             <tr><td colspan="{{ $footColspan + 1 }}" class="num" style="font-size: 8pt; color: #6b7280;">{{ __('Keine Umsatzsteuer gemäß § 19 UStG (Kleinunternehmerregelung).') }}</td></tr>
         @endif
         <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Gesamt') }}</td><td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+        @php
+            // Sicherheitseinbehalte (Feature 113, MVP-602): Ohne diesen Ausweis
+            // ist der Einbehalt rechtlich angreifbar — er muss auf dem Beleg
+            // stehen, samt Rechtsgrundlage und Freigabetermin.
+            $retentions = $invoice->retentions->where('status', \App\Enums\Invoicing\RetentionStatus::Open);
+        @endphp
+        @foreach ($retentions as $retention)
+            <tr><td colspan="{{ $footColspan }}" class="num" style="font-weight: normal;">
+                {{ __('invoicing.retention.pdf_line', [
+                    'kind' => $retention->kind->label(),
+                    'basis' => $retention->percent !== null
+                        ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $retention->percent->getNumericValue(), 2) . ' %'
+                        : '',
+                ]) }}@if ($retention->due_on !== null) — {{ __('invoicing.retention.pdf_due', ['date' => $retention->due_on->fdate()]) }}@endif
+            </td><td class="num" style="font-weight: normal;">−{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($retention->amount->toFloat(), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+        @endforeach
+        @if ($retentions->isNotEmpty())
+            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('invoicing.retention.pdf_payable') }}</td><td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(app(\App\Services\Invoicing\RetentionService::class)->payableAmountOf($invoice), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+        @endif
         @if ($invoice->hasSkonto())
             {{-- MVP-416: Skonto-Kondition mit Frist und Zahlbetrag. --}}
             <tr><td colspan="{{ $footColspan + 1 }}" class="num" style="font-size: 8pt; color: #6b7280;">
@@ -179,25 +202,40 @@
 @php
     $legal = $orgLegal ?? [];
     $hasOrgBank = ! empty($legal['iban']) || ! empty($legal['bic']) || ! empty($legal['bank_name']);
+    // Girocode (Feature 111, MVP-600): null, wenn er nicht erscheinen darf
+    // (aus, keine EUR-Rechnung, bezahlt, unvollständige Bankverbindung).
+    $girocode = app(\App\Services\Invoicing\GirocodeService::class)->dataUri($invoice, $legal);
 @endphp
 {{-- Feature 076: Bankblock nur, wenn nicht nachweislich auf dem Firmenbogen (MVP-298). --}}
 @if ($hasOrgBank && ! $invoice->isCreditNote() && $design->show(\App\Enums\DocumentDesign\InformationBlock::BankDetails))
     <div class="bank-block">
         <strong>{{ __('Zahlbar per Überweisung auf folgendes Konto') }}:</strong>
         <table>
-            @if (! empty($legal['account_holder']))
-                <tr><td class="label">{{ __('Kontoinhaber') }}</td><td>{{ $legal['account_holder'] }}</td></tr>
-            @endif
-            @if (! empty($legal['bank_name']))
-                <tr><td class="label">{{ __('Bank') }}</td><td>{{ $legal['bank_name'] }}</td></tr>
-            @endif
-            @if (! empty($legal['iban']))
-                <tr><td class="label">{{ __('IBAN') }}</td><td>{{ $legal['iban'] }}</td></tr>
-            @endif
-            @if (! empty($legal['bic']))
-                <tr><td class="label">{{ __('BIC') }}</td><td>{{ $legal['bic'] }}</td></tr>
-            @endif
-            <tr><td class="label">{{ __('Verwendungszweck') }}</td><td>{{ $invoice->number }}</td></tr>
+            <tr>
+                <td style="padding: 0;">
+                    <table>
+                        @if (! empty($legal['account_holder']))
+                            <tr><td class="label">{{ __('Kontoinhaber') }}</td><td>{{ $legal['account_holder'] }}</td></tr>
+                        @endif
+                        @if (! empty($legal['bank_name']))
+                            <tr><td class="label">{{ __('Bank') }}</td><td>{{ $legal['bank_name'] }}</td></tr>
+                        @endif
+                        @if (! empty($legal['iban']))
+                            <tr><td class="label">{{ __('IBAN') }}</td><td>{{ $legal['iban'] }}</td></tr>
+                        @endif
+                        @if (! empty($legal['bic']))
+                            <tr><td class="label">{{ __('BIC') }}</td><td>{{ $legal['bic'] }}</td></tr>
+                        @endif
+                        <tr><td class="label">{{ __('Verwendungszweck') }}</td><td>{{ $invoice->number }}</td></tr>
+                    </table>
+                </td>
+                @if ($girocode !== null)
+                    <td class="giro">
+                        <img src="{{ $girocode }}" alt="{{ __('invoicing.girocode.alt') }}">
+                        <span>{{ __('invoicing.girocode.hint') }}</span>
+                    </td>
+                @endif
+            </tr>
         </table>
     </div>
 @endif

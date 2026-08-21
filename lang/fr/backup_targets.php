@@ -44,6 +44,30 @@ return [
             'unsafe_url' => 'L’URL du serveur doit être accessible publiquement (pas de cible interne/privée).',
         ],
     ],
+    // Generisches WebDAV-Backupziel (Feature 123, MVP-612).
+    'webdav' => [
+        'connect_title' => 'Connecter la cible WebDAV',
+        'connect_legend' => 'Identifiants',
+        'connect_submit' => 'Connecter et tester',
+        'selftest_hint' => 'À la connexion, un dossier de test est créé, un fichier écrit, relu puis supprimé.',
+        'field' => [
+            'name' => 'Nom',
+            'server_url' => 'URL de la collection',
+            'server_url_help' => 'HTTPS uniquement. La collection WebDAV complète, p. ex. https://dav.example.com/remote.php/dav/files/backup/',
+            'username' => 'Nom d’utilisateur',
+            'password' => 'Mot de passe',
+            'password_help' => 'De préférence un jeton d’accès dédié et révocable plutôt que le mot de passe du compte.',
+            'base_path' => 'Sous-dossier (facultatif)',
+            'base_path_help' => 'Vide = directement dans la collection. Le dossier pseudonyme est créé en dessous.',
+        ],
+        'validation' => [
+            'https_required' => 'L’URL de la collection doit commencer par https://.',
+            'unsafe_url' => 'L’URL de la collection doit être accessible publiquement (pas de cible interne/privée).',
+        ],
+        'flash' => [
+            'selftest_failed' => 'Le test de connexion a échoué (:class). La cible n’a pas été activée.',
+        ],
+    ],
     'generations' => [
         'title' => 'Générations de sauvegarde',
         'empty' => 'Aucune génération de sauvegarde pour le moment.',

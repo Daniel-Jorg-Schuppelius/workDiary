@@ -12,10 +12,13 @@ declare(strict_types=1);
 
 namespace App\Plugins\SevDesk;
 
+use App\Models\Customer;
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\Plugin;
+use App\Plugins\Contracts\{ContactSyncer, Plugin};
 use App\Plugins\SevDesk\Api\{SevDeskApiException, SevDeskClient, SevDeskClientFactory};
+use App\Services\Finance\Accounting\ContactPushService;
 use Illuminate\Support\Facades\Cache;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -34,7 +37,7 @@ use Throwable;
  *   GET /Tools/bookkeepingSystemVersion und erneuert den Versions-Cache
  *   des Mandanten.
  */
-class SevDeskPlugin extends AbstractPlugin {
+class SevDeskPlugin extends AbstractPlugin implements ContactSyncer {
     public const ID = 'sevdesk';
 
     public const SERVICE_PROVIDER = SevDeskServiceProvider::class;
@@ -61,6 +64,53 @@ class SevDeskPlugin extends AbstractPlugin {
      */
     public function capabilities(): array {
         return [];
+    }
+
+    /**
+     * Kontakt-Push (Feature 122, MVP-611): anlegen oder aktualisieren, nie
+     * löschen. Gefunden wird über die Kundennummer — sie ist das einzige
+     * Feld, das beide Seiten stabil führen.
+     */
+    public function pushContact(Customer $customer): string {
+        $client = app(SevDeskClientFactory::class)->for((int) $customer->organization_id);
+        $number = trim((string) $customer->number);
+
+        $existingId = '';
+        if ($number !== '') {
+            foreach ($client->contactsByCustomerNumber($number) as $row) {
+                if (is_array($row) && (string) ($row['customerNumber'] ?? '') === $number && ! empty($row['id'] ?? null)) {
+                    $existingId = (string) $row['id'];
+
+                    break;
+                }
+            }
+        }
+
+        // Eigene USt-IdNr./E-Mail nie an einen Fremdkontakt (MVP-611).
+        $fields = app(ContactPushService::class)->withoutOwnIdentity([
+            'vat_id' => (string) ($customer->vat_id ?? ''),
+            'email' => (string) ($customer->email ?? ''),
+        ]);
+
+        $payload = array_filter([
+            'objectName' => 'Contact',
+            'mapAll' => true,
+            'name' => (string) $customer->name,
+            'customerNumber' => $number !== '' ? $number : null,
+            'vatNumber' => ($fields['vat_id'] ?? '') !== '' ? $fields['vat_id'] : null,
+            'category' => ['id' => (int) config('plugins.sevdesk.contact_category_id', 3), 'objectName' => 'Category'],
+        ], static fn ($value): bool => $value !== null);
+
+        $result = $existingId !== ''
+            ? $client->updateContact($existingId, $payload)
+            : $client->createContact($payload);
+
+        $contactId = (string) ($result['id'] ?? $existingId);
+        if ($contactId === '') {
+            throw new RuntimeException('sevDesk contact push returned no id.');
+        }
+
+        return $contactId;
     }
 
     /** @return array<int, array{key: string, label: string, type: string, options?: array<string, string>, help?: string, required?: bool, default?: mixed}> */

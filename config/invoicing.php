@@ -12,6 +12,16 @@
  */
 
 return [
+    // Girocode/EPC-QR auf Rechnungs-PDFs (Feature 111, MVP-600). Standard AUS:
+    // der Code verändert das Druckbild, das ist eine bewusste Entscheidung des
+    // Betriebs. Org-Übersteuerung über die Einstellung 'invoicing.girocode_enabled'.
+    'girocode_enabled' => env('INVOICING_GIROCODE_ENABLED', false),
+
+    // Nachfassen (Feature 112, MVP-601): Vorbelegung in WERKTAGEN ab Versand.
+    // 0 schaltet die Vorbelegung ab — der Termin lässt sich dann weiterhin von
+    // Hand setzen.
+    'quote_follow_up_days' => (int) env('INVOICING_QUOTE_FOLLOW_UP_DAYS', 7),
+
     /** Standard VAT/tax rate applied to new invoices, e.g. "19.00". */
     'default_tax_rate' => (string) env('INVOICING_DEFAULT_TAX_RATE', '19.00'),
 

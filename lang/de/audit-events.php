@@ -32,6 +32,20 @@ return [
         'canceled' => 'Terminanfrage storniert',
         'service_created' => 'Buchbare Leistungsart angelegt',
     ],
+    'paymentRun' => [
+        'released' => 'Zahllauf freigegeben',
+        'exported' => 'SEPA-Datei erzeugt',
+    ],
+    'sepaMandate' => [
+        'revoked' => 'SEPA-Mandat widerrufen',
+    ],
+    'circular' => [
+        'sent' => 'Rundschreiben versendet',
+    ],
+    'assetComponent' => [
+        'replaced' => 'Komponente ersetzt',
+        'adopted' => 'Materialverbrauch als Komponente übernommen',
+    ],
     'expense' => [
         'scanned' => 'Auslage aus Scan-Beleg erzeugt',
         'voucher_pushed' => 'Auslage als Beleg an die Buchhaltung übergeben',
@@ -309,6 +323,12 @@ return [
         'calendar_selected' => 'Google-Kalender gewählt',
         'publish_manual' => 'Google-Kalender manuell veröffentlicht',
     ],
+    'guarantee' => [
+        'created' => 'Bürgschaft erfasst',
+        'returned' => 'Bürgschaft zurückgegeben',
+        'drawn' => 'Bürgschaft gezogen',
+        'secured_retention' => 'Bürgschaft löst Sicherheitseinbehalt ab',
+    ],
     'idea_map' => [
         'archived' => 'Ideenlandkarte archiviert',
         'exported' => 'Ideenlandkarte exportiert',
@@ -361,6 +381,10 @@ return [
         'reviewed' => 'Investition nachbetrachtet',
     ],
     'invoice' => [
+        'metering_drafted' => 'Zählerstands-Entwurf erzeugt',
+        'retention_added' => 'Sicherheitseinbehalt hinterlegt',
+        'retention_released' => 'Sicherheitseinbehalt freigegeben',
+        'retention_secured' => 'Sicherheitseinbehalt durch Bürgschaft abgelöst',
         'approved' => 'Rechnung freigegeben',
         'dunned' => 'Rechnung angemahnt',
         'document_imported' => 'Rechnungsdatei importiert',
@@ -610,6 +634,7 @@ return [
         'signatureRequested' => 'Signatur angefordert',
     ],
     'quote' => [
+        'followed_up' => 'Angebot nachgefasst',
         'accepted' => 'Angebot angenommen',
         'approved' => 'Angebot freigegeben',
         'converted' => 'Angebot umgewandelt',
@@ -866,6 +891,11 @@ return [
     'user_group' => [
         'member_added' => 'Benutzergruppe: Mitglied hinzugefügt',
         'member_removed' => 'Benutzergruppe: Mitglied entfernt',
+    ],
+    'warranty' => [
+        'created' => 'Gewährleistungsfrist erfasst',
+        'claimed' => 'Gewährleistung gerügt',
+        'closed' => 'Gewährleistungsfrist abgeschlossen',
     ],
     'webdav' => [
         'connection_saved' => 'WebDAV-Verbindung gespeichert',

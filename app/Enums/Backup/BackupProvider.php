@@ -26,6 +26,9 @@ enum BackupProvider: string implements HasLabel {
     case Microsoft = 'microsoft';
     case Google = 'google';
     case Nextcloud = 'nextcloud';
+    // Generisches WebDAV (Feature 123, MVP-612): eigener Server, EU-Hoster,
+    // Synology, jeder Apache mit mod_dav.
+    case Webdav = 'webdav';
 
     public function label(): string {
         return (string) __('enums.backup.provider.' . $this->value);
@@ -38,6 +41,7 @@ enum BackupProvider: string implements HasLabel {
             self::Microsoft => 'msgraph',
             self::Google => 'google-drive',
             self::Nextcloud => 'nextcloud',
+            self::Webdav => 'webdav',
         };
     }
 }

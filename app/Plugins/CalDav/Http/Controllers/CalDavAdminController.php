@@ -57,6 +57,7 @@ class CalDavAdminController extends Controller {
             'scopes' => ['nullable', 'array'],
             'scopes.*' => ['in:' . implode(',', CalDavConnection::SCOPES)],
             'active' => ['nullable', 'boolean'],
+            'two_way' => ['nullable', 'boolean'],
         ]);
 
         $baseUrl = trim((string) $data['base_url']);
@@ -75,6 +76,7 @@ class CalDavAdminController extends Controller {
             // Nur bekannte Scopes übernehmen; leer = nur Termine (Default via Model).
             'scopes' => array_values(array_intersect(CalDavConnection::SCOPES, (array) ($data['scopes'] ?? []))),
             'active' => (bool) ($data['active'] ?? false),
+            'two_way' => (bool) ($data['two_way'] ?? false),
             'created_by' => $connection->exists ? $connection->created_by : $admin->id,
         ];
 

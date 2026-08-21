@@ -30,6 +30,7 @@ class GoogleCalendarServiceProvider extends PluginServiceProviderBase {
         if ($this->app->runningInConsole()) {
             $this->commands([
                 Console\GoogleCalendarPublishCommand::class,
+                Console\GoogleCalendarImportCommand::class,
             ]);
         }
     }

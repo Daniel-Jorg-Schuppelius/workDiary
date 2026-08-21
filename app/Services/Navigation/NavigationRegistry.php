@@ -243,6 +243,8 @@ class NavigationRegistry {
             'finance.bank-accounts.index' => 'module.finance',
             'finance.datev.index' => 'module.finance',
             'finance.gobd.index' => 'module.finance',
+            'finance.payment-runs.index' => 'module.finance',
+            'finance.mandates.index' => 'module.finance',
             // Lager & Fertigung: ohne module.lager ausblenden statt nur per Route-Gate (423) sperren.
             'articles.index' => 'module.lager',
             'warehouses.index' => 'module.lager',
@@ -476,6 +478,8 @@ class NavigationRegistry {
                         ['route' => 'leads.index', 'label' => __('Leads'), 'icon' => 'person_search', 'modal' => false, 'matches' => ['leads.*']],
                         // Feature 090: NPS und freie Umfragen.
                         ['route' => 'surveys.index', 'label' => __('Umfragen'), 'icon' => 'reviews', 'modal' => false, 'matches' => ['surveys.*']],
+                        // Feature 119: Rundschreiben sitzen beim Kundenstamm, nicht im Marketing.
+                        ['route' => 'circulars.index', 'label' => __('circular.title'), 'icon' => 'campaign', 'modal' => false, 'matches' => ['circulars.*']],
                         ['route' => 'suppliers.index', 'label' => __('Lieferanten'), 'icon' => 'local_shipping', 'modal' => false, 'matches' => ['suppliers.*']],
                         ['route' => 'projects.index', 'label' => __('Projekte'), 'icon' => 'folder_special', 'modal' => false, 'matches' => ['projects.*']],
                         ['route' => 'events.index', 'label' => __('Veranstaltungen'), 'icon' => 'event', 'modal' => false, 'matches' => ['events.*']],
@@ -517,12 +521,31 @@ class NavigationRegistry {
                     'icon' => 'request_quote',
                     'items' => [
                         ['route' => 'billing.feed', 'label' => __('billing.feed.title'), 'icon' => 'request_quote', 'modal' => false, 'matches' => ['billing.feed', 'invoices.*', 'quotes.*', 'lexoffice.vouchers.*'], 'badge' => $this->overdueDocumentCount()],
+                        // Nachfass-Arbeitsliste (Feature 112, MVP-601): eigene Seite,
+                        // weil der Beleg-Feed auf den globalen Zeitraum begrenzt ist
+                        // und ein drei Monate altes Angebot dort herausfiele.
+                        ...(Gate::allows('viewAny', \App\Models\Quote::class)
+                            ? [['route' => 'quotes.follow-ups.index', 'label' => __('quotes.follow_up.title'), 'icon' => 'phone_forwarded', 'modal' => false, 'matches' => ['quotes.follow-ups.*'], 'badge' => $this->dueQuoteFollowUpCount()]]
+                            : []),
                         ...(Gate::allows('timeEntry.viewAny')
                             ? [['route' => 'finance.open-times.index', 'label' => __('finance.open_times.menu'), 'icon' => 'pending_actions', 'modal' => false, 'matches' => ['finance.open-times.*']]]
                             : []),
                         ['route' => 'finance.transfers.index', 'label' => __('finance.title.menu'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['finance.transfers.*', 'finance.reconciliation.*', 'finance.bank-accounts.*']],
                         ['route' => 'finance.datev.index', 'label' => __('finance.datev.menu'), 'icon' => 'account_tree', 'modal' => false, 'matches' => ['finance.datev.*']],
                         ['route' => 'finance.gobd.index', 'label' => __('gobd.title'), 'icon' => 'gavel', 'modal' => false, 'matches' => ['finance.gobd.*']],
+                        // SEPA-Zahlungsausgang (Feature 120, MVP-609): Zahllauf und
+                        // Mandatsregister sitzen bei der Buchhaltung, nicht beim Einkauf.
+                        ['route' => 'finance.payment-runs.index', 'label' => __('sepa.title'), 'icon' => 'account_balance', 'modal' => false, 'matches' => ['finance.payment-runs.*']],
+                        ['route' => 'finance.mandates.index', 'label' => __('sepa.mandate.title'), 'icon' => 'assignment_turned_in', 'modal' => false, 'matches' => ['finance.mandates.*']],
+                        // Bürgschaftsregister (Feature 114, MVP-603): Sicherheiten
+                        // für Geld gehören zur Abrechnung, nicht zum Projekt.
+                        ['route' => 'guarantees.index', 'label' => __('guarantee.title'), 'icon' => 'gpp_maybe', 'modal' => false, 'matches' => ['guarantees.*']],
+                        // Gewährleistungsfristen (Feature 115, MVP-604): hängen an
+                        // Einbehalt (602) und Bürgschaft (603) — deshalb hier und
+                        // nicht am Projekt.
+                        ['route' => 'warranties.index', 'label' => __('warranty.title'), 'icon' => 'shield_with_heart', 'modal' => false, 'matches' => ['warranties.*']],
+                        // Zählerstands-Faktura (Feature 116, MVP-605).
+                        ['route' => 'metering.index', 'label' => __('metering.title'), 'icon' => 'speed', 'modal' => false, 'matches' => ['metering.*']],
                         ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
                         ['route' => 'investments.index', 'label' => __('Investitionen'), 'icon' => 'trending_up', 'modal' => false, 'matches' => ['investments.*']],
                     ],
@@ -1167,6 +1190,26 @@ class NavigationRegistry {
      * Vormonat ist genau dann interessant, wenn man gerade nicht auf sie
      * schaut. Gezählt wird nur, was tatsächlich noch offen ist.
      */
+    /**
+     * Zähler „Nachfassen fällig" (Feature 112, MVP-601). Bewusst NUR die
+     * fälligen Termine, nicht die ablaufenden Angebote: Ein Badge, das drei
+     * verschiedene Dringlichkeiten zusammenzählt, sagt nichts mehr aus.
+     */
+    private function dueQuoteFollowUpCount(): int {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if ($user === null || $user->organization_id === null) {
+            return 0;
+        }
+
+        return \App\Models\Quote::query()
+            ->whereIn('status', ['approved', 'sent'])
+            ->whereNotNull('follow_up_at')
+            ->whereNull('followed_up_at')
+            ->whereDate('follow_up_at', '<=', \Illuminate\Support\Carbon::today()->toDateString())
+            ->count();
+    }
+
     private function overdueDocumentCount(): int {
         /** @var User|null $user */
         $user = Auth::user();
@@ -1216,6 +1259,8 @@ class NavigationRegistry {
                 ['route' => 'timesheets.index', 'label' => __('Stundenzettel'), 'icon' => 'description', 'modal' => false, 'matches' => ['timesheets.*', 'projects.timesheets.*']],
                 ['route' => 'customers.index', 'label' => __('Kunden'), 'icon' => 'badge', 'modal' => false, 'matches' => ['customers.*']],
                 ['route' => 'customer-queries.index', 'label' => __('customer-query.title'), 'icon' => 'contact_support', 'modal' => false, 'matches' => ['customer-queries.*']],
+                // Feature 119: Rundschreiben sitzen beim Kundenstamm, nicht im Marketing.
+                ['route' => 'circulars.index', 'label' => __('circular.title'), 'icon' => 'campaign', 'modal' => false, 'matches' => ['circulars.*']],
                 ['route' => 'suppliers.index', 'label' => __('Lieferanten'), 'icon' => 'local_shipping', 'modal' => false, 'matches' => ['suppliers.*']],
                 ['route' => 'products.index', 'label' => __('products.title.index'), 'icon' => 'category', 'modal' => false, 'matches' => ['products.*']],
                 ['route' => 'articles.index', 'label' => __('article.title'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['articles.*']],

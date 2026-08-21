@@ -111,7 +111,7 @@ class IncomingEInvoiceService {
      * Kernfelder für Anzeige/Flash — die Detailseite parst das Original
      * bei jedem Aufruf erneut (kein eigenes Schema, Quelle bleibt die Datei).
      *
-     * @return array{number: string, issue_date: ?string, due_date: ?string, seller: ?string, seller_vat: ?string, currency: string, net: string, tax: string, gross: string, profile: string, lines: int, order_reference: ?string, buyer_reference: ?string, project_reference: ?string}
+     * @return array{number: string, issue_date: ?string, due_date: ?string, seller: ?string, seller_vat: ?string, currency: string, net: string, tax: string, gross: string, profile: string, lines: int, order_reference: ?string, buyer_reference: ?string, project_reference: ?string, creditor_iban: ?string, creditor_bic: ?string, discount_percent: ?float, discount_days: ?int}
      */
     public function summary(EInvoiceDocument $document): array {
         return [
@@ -129,6 +129,12 @@ class IncomingEInvoiceService {
             'order_reference' => $document->getOrderReference(),
             'buyer_reference' => $document->getBuyerReference(),
             'project_reference' => $document->getProjectReference(),
+            // MVP-609: Zahlungsdaten aus dem Original. Der Payee gewinnt vor
+            // dem Verkäufer — genau dafür gibt es das Feld (Factoring).
+            'creditor_iban' => $document->getPayee()?->getIban() ?? $document->getSeller()->getIban(),
+            'creditor_bic' => $document->getPayee()?->getBic() ?? $document->getSeller()->getBic(),
+            'discount_percent' => $document->getPaymentTerms()?->getDiscountPercent(),
+            'discount_days' => $document->getPaymentTerms()?->getDiscountDays(),
         ];
     }
 

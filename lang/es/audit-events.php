@@ -32,6 +32,20 @@ return [
         'canceled' => 'Solicitud de cita cancelada',
         'service_created' => 'Servicio reservable creado',
     ],
+    'paymentRun' => [
+        'released' => 'Remesa aprobada',
+        'exported' => 'Fichero SEPA creado',
+    ],
+    'sepaMandate' => [
+        'revoked' => 'Mandato SEPA revocado',
+    ],
+    'circular' => [
+        'sent' => 'Circular enviada',
+    ],
+    'assetComponent' => [
+        'replaced' => 'Componente sustituido',
+        'adopted' => 'Consumo adoptado como componente',
+    ],
     'expense' => [
         'scanned' => 'Gasto creado desde comprobante escaneado',
         'voucher_pushed' => 'Gasto transferido a la contabilidad como comprobante',
@@ -309,6 +323,12 @@ return [
         'calendar_selected' => 'Calendario de Google seleccionado',
         'publish_manual' => 'Calendario de Google publicado manualmente',
     ],
+    'guarantee' => [
+        'created' => 'Aval registrado',
+        'returned' => 'Aval devuelto',
+        'drawn' => 'Aval ejecutado',
+        'secured_retention' => 'El aval sustituye una retención',
+    ],
     'idea_map' => [
         'archived' => 'Mapa de ideas archivado',
         'exported' => 'Mapa de ideas exportado',
@@ -361,6 +381,10 @@ return [
         'reviewed' => 'Inversión revisada',
     ],
     'invoice' => [
+        'metering_drafted' => 'Borrador por lectura creado',
+        'retention_added' => 'Retención de garantía registrada',
+        'retention_released' => 'Retención de garantía liberada',
+        'retention_secured' => 'Retención sustituida por un aval',
         'approved' => 'Factura aprobada',
         'dunned' => 'Factura reclamada',
         'document_imported' => 'Archivo de factura importado',
@@ -610,6 +634,7 @@ return [
         'signatureRequested' => 'Firma solicitada',
     ],
     'quote' => [
+        'followed_up' => 'Seguimiento del presupuesto realizado',
         'accepted' => 'Presupuesto aceptado',
         'approved' => 'Presupuesto aprobado',
         'converted' => 'Presupuesto convertido',
@@ -866,6 +891,11 @@ return [
     'user_group' => [
         'member_added' => 'Grupo de usuarios: miembro añadido',
         'member_removed' => 'Grupo de usuarios: miembro eliminado',
+    ],
+    'warranty' => [
+        'created' => 'Plazo de garantía registrado',
+        'claimed' => 'Garantía reclamada',
+        'closed' => 'Plazo de garantía cerrado',
     ],
     'webdav' => [
         'connection_saved' => 'Conexión WebDAV guardada',

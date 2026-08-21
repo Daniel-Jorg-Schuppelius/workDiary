@@ -108,6 +108,42 @@ class SevDeskClient {
         return $this->object($body);
     }
 
+    /**
+     * PUT /Contact/{id} — bestehenden Kontakt aktualisieren (MVP-611).
+     * Gelöscht wird im Fremdsystem nie.
+     *
+     * @param array<string, mixed> $payload
+     * @return array<string, mixed>
+     */
+    public function updateContact(string $contactId, array $payload): array {
+        $body = (array) $this->guard(
+            $this->authed('put', '/Contact/' . rawurlencode($contactId), ['json' => $payload]),
+            '/Contact/{id}',
+        );
+
+        return $this->object($body);
+    }
+
+    /**
+     * GET /Voucher — Belege, die direkt in sevDesk entstanden sind
+     * (Kassenbon, Lieferantenrechnung). Jüngste zuerst (MVP-611).
+     *
+     * @return array<int, mixed>
+     */
+    public function vouchers(int $offset, int $limit): array {
+        $body = (array) $this->guard(
+            $this->authed('get', '/Voucher', ['query' => [
+                'offset' => $offset,
+                'limit' => $limit,
+                'ordering[id]' => 'DESC',
+                'embed' => 'supplier',
+            ]]),
+            '/Voucher',
+        );
+
+        return $this->rows($body);
+    }
+
     // ── Rechnungen ──────────────────────────────────────────────────────
 
     /**

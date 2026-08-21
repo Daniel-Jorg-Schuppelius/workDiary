@@ -87,6 +87,46 @@ return [
     ],
 
     'message' => [
+
+        // Pflichtnachweise (Feature 117, MVP-606).
+
+        'supplier_credential_title' => 'Justificatif obligatoire :supplier',
+
+        'supplier_credential_expiring' => ':type expire le :date — à redemander maintenant.',
+
+        'supplier_credential_expired' => ':type est expiré depuis le :date — le document ne couvre plus.',
+
+        // Gewährleistungsfristen (Feature 115, MVP-604).
+
+        'warranty_title' => 'Garantie :project',
+
+        'warranty_expiring' => 'Le délai expire le :date (:party).',
+
+        'warranty_subcontractor_first' => 'Le délai du sous-traitant expire le :date (:party) — AVANT votre propre responsabilité. Vérifier et dénoncer en cas de doute.',
+
+        // Bürgschaftsregister (Feature 114, MVP-603).
+
+        'guarantee_title' => 'Caution :reference',
+
+        'guarantee_expiring' => 'Échéance le :date — :amount, garant :issuer.',
+
+        'guarantee_return_due' => 'Restitution à demander — la retenue remplacée est libérée (:amount, garant :issuer).',
+
+        // Sicherheitseinbehalte (Feature 113, MVP-602).
+
+        'retention_title' => 'Retenue de garantie sur :number',
+
+        'retention_release_due' => 'Libération prévue le :date — :amount de la facture :number.',
+
+        'retention_release_overdue' => 'Libération en retard depuis le :date — :amount de la facture :number ; la retenue se prescrit au profit du client.',
+
+        // Angebots-Nachfassen (Feature 112, MVP-601).
+
+        'quote_follow_up_title' => 'Devis :number',
+
+        'quote_follow_up_due' => 'Relance à faire — :customer, prévue le :date.',
+
+        'quote_expiring_without_reaction' => 'Le devis expire le :date et aucune réaction n’est arrivée (:customer).',
         'new_device_title' => 'Connexion depuis un nouvel appareil',
         'new_device_message' => 'Nouvelle connexion avec :device depuis :country. Si ce n’était pas vous, changez immédiatement votre mot de passe et vérifiez vos sessions.',
         'lockout_title' => 'Trop de tentatives échouées — compte brièvement verrouillé',

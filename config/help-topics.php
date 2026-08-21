@@ -125,6 +125,19 @@ return [
         // Angebote (Feature 066)
         'quotes.index' => 'quotes.overview',
         'quotes.show' => 'quotes.overview',
+        // Angebots-Nachfassen (Feature 112, MVP-601)
+        'quotes.follow-ups.*' => 'quotes.follow-ups',
+        // Bürgschaften (Feature 114) und Gewährleistung (Feature 115)
+        'guarantees.*' => 'guarantees.overview',
+        'warranties.*' => 'warranties.overview',
+        // SEPA-Zahlungsausgang und Mandatsregister (Feature 120, MVP-609):
+        // ein Thema, weil Zahllauf und Mandat dieselbe Sache aus zwei Richtungen sind.
+        'finance.payment-runs.*' => 'finance.sepa',
+        'finance.mandates.*' => 'finance.sepa',
+        // Zählerstands-Faktura (Feature 116, MVP-605)
+        'metering.*' => 'metering.billing',
+        // Kundenrundschreiben (Feature 119, MVP-608)
+        'circulars.*' => 'circulars.overview',
         // Steuerregelmatrix (Phase 23) + E-Rechnungs-Eingang + GoBD
         'finance.tax-rules.*' => 'finance.tax-rules',
         'finance.incoming-invoices.*' => 'finance.incoming-invoices',

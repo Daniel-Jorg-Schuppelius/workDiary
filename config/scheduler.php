@@ -50,6 +50,16 @@ return [
         // --- Kunden-Sonderkonditionen: Monatsrechnungen (Feature 098) ---
         // Fakturiert am Monatsersten den Vormonat aller invoice-Mode-Profile;
         // idempotent über exported — Nachläufe erzeugen keine Doppelbelege.
+        // Zählerstands-Faktura (Feature 116, MVP-605): erzeugt ENTWÜRFE aus
+        // fälligen Vereinbarungen. Kurz nach Monatsbeginn, damit die
+        // Ablesungen des Vormonats erfasst sein können.
+        'metering.generate-invoices' => [
+            'command' => 'metering:generate-invoices',
+            'cadence' => ['type' => 'cron', 'expression' => '15 6 2 * *'],
+            'allowed' => ['cron', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 5,
+        ],
         'billing.account-invoices' => [
             'command' => 'customer-billing:generate-invoices',
             'cadence' => ['type' => 'cron', 'expression' => '25 5 1 * *'],
@@ -504,6 +514,24 @@ return [
             'criticality' => 'integration',
             'expected_runtime_minutes' => 15,
         ],
+        // Kalender-Rückimport (Feature 121, MVP-610b; nur two_way-Opt-in).
+        'caldav.import' => [
+            'command' => 'caldav:import',
+            'plugin' => 'caldav',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 10,
+        ],
+        // Beleg-Rückabruf aus sevDesk (Feature 122, MVP-611).
+        'sevdesk.pull-vouchers' => [
+            'command' => 'sevdesk:pull-vouchers',
+            'plugin' => 'sevdesk',
+            'cadence' => ['type' => 'dailyAt', 'time' => '05:05'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 10,
+        ],
         'msgraph.publish' => [
             'command' => 'msgraph:publish',
             'plugin' => 'msgraph',
@@ -559,6 +587,15 @@ return [
             'allowed' => ['everyThirtyMinutes', 'hourly', 'dailyAt'],
             'criticality' => 'integration',
             'expected_runtime_minutes' => 15,
+        ],
+        // Kalender-Rückimport (Feature 121, MVP-610a; nur two_way-Opt-in).
+        'google-calendar.import' => [
+            'command' => 'google-calendar:import',
+            'plugin' => 'google_calendar',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 10,
         ],
         'openproject.push' => [
             'command' => 'openproject:push',

@@ -36,6 +36,18 @@ class QuotePolicy {
         return $user->canManageBilling() && $quote->status === 'draft';
     }
 
+    /**
+     * Nachfassen (Feature 112, MVP-601) — eigene Fähigkeit, NICHT `update`.
+     *
+     * `update` erlaubt bewusst nur Entwürfe: Ein versandtes Angebot darf
+     * inhaltlich nicht mehr verändert werden. Das Nachfassen ändert aber auch
+     * nichts am Angebot, sondern hält einen Kontakt fest — es passiert genau
+     * dann, wenn `update` zu Recht schon gesperrt ist.
+     */
+    public function followUp(User $user, Quote $quote): bool {
+        return $user->canManageBilling() && in_array($quote->status, ['approved', 'sent'], true);
+    }
+
     public function delete(User $user, Quote $quote): bool {
         return $user->canManageBilling() && $quote->status === 'draft';
     }

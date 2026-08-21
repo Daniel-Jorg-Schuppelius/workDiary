@@ -80,6 +80,14 @@
                     </select>
                 </label>
 
+                {{-- MVP-610a: Der Rückimport ändert Daten und läuft deshalb nur auf Zuruf. --}}
+                <label class="flex items-center gap-2 text-sm" title="{{ __('google_calendar.calendar.two_way_hint') }}">
+                    <input type="hidden" name="two_way" value="0">
+                    <input type="checkbox" name="two_way" value="1" class="checkbox checkbox-sm"
+                           @checked(old('two_way', $connection->two_way))>
+                    {{ __('google_calendar.calendar.two_way') }}
+                </label>
+
                 <div class="flex justify-end">
                     <button type="submit" class="btn btn-sm btn-primary">{{ __('google_calendar.action.save') }}</button>
                 </div>

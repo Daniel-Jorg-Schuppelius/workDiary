@@ -349,6 +349,8 @@ return [
         'finance.transfer.material' => 'Préparer et transférer le matériel facturable',
         'finance.payment.import' => 'Importer un fichier bancaire pour le rapprochement des paiements',
         'finance.payment.reconcile' => 'Confirmer les affectations de paiement',
+        'finance.payment.run' => 'Composer un ordre de paiement groupé',
+        'finance.payment.release' => 'Valider un ordre de paiement groupé',
         'finance.booking.export' => 'Exporter des lots d’écritures DATEV',
         'diary.viewAny' => 'Voir toutes les entrées de journal',
         'diary.viewOwn' => 'Voir ses propres entrées de journal',

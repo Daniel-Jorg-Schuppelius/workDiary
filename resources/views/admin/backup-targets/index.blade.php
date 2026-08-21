@@ -31,6 +31,11 @@
                     data-entry-modal-trigger
                     :href="route('admin.backup-targets.nextcloud.connect-form')"
                     show-label>Nextcloud</x-icon-btn>
+        {{-- Generisches WebDAV (MVP-612): eigener Server statt US-Anbieter. --}}
+        <x-icon-btn icon="add" tone="primary" size="sm"
+                    data-entry-modal-trigger
+                    :href="route('admin.backup-targets.webdav.connect-form')"
+                    show-label>WebDAV</x-icon-btn>
     </x-slot:actions>
 
     @if (session('success'))

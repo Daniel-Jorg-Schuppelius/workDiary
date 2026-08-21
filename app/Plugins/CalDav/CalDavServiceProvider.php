@@ -30,6 +30,7 @@ class CalDavServiceProvider extends PluginServiceProviderBase {
         if ($this->app->runningInConsole()) {
             $this->commands([
                 Console\CalDavPublishCommand::class,
+                Console\CalDavImportCommand::class,
             ]);
         }
     }

@@ -29,6 +29,8 @@ enum DocumentOrigin: string implements HasLabel {
     case Local = 'local';
     case Lexoffice = 'lexoffice';
     case OrgaMax = 'orgamax';
+    // MVP-611: Belegspiegel über die anbieterneutrale `accounting_vouchers`.
+    case SevDesk = 'sevdesk';
 
     public function label(): string {
         return (string) __('enums.billing.origin.' . $this->value);

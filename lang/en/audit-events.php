@@ -32,6 +32,20 @@ return [
         'canceled' => 'Appointment request cancelled',
         'service_created' => 'Bookable service created',
     ],
+    'paymentRun' => [
+        'released' => 'Payment run released',
+        'exported' => 'SEPA file created',
+    ],
+    'sepaMandate' => [
+        'revoked' => 'SEPA mandate revoked',
+    ],
+    'circular' => [
+        'sent' => 'Circular sent',
+    ],
+    'assetComponent' => [
+        'replaced' => 'Component replaced',
+        'adopted' => 'Material usage adopted as a component',
+    ],
     'expense' => [
         'scanned' => 'Expense created from scanned receipt',
         'voucher_pushed' => 'Expense pushed to accounting as a voucher',
@@ -309,6 +323,12 @@ return [
         'calendar_selected' => 'Google calendar selected',
         'publish_manual' => 'Google calendar published manually',
     ],
+    'guarantee' => [
+        'created' => 'Guarantee recorded',
+        'returned' => 'Guarantee returned',
+        'drawn' => 'Guarantee drawn',
+        'secured_retention' => 'Guarantee replaces a retention',
+    ],
     'idea_map' => [
         'archived' => 'Idea map archived',
         'exported' => 'Idea map exported',
@@ -361,6 +381,10 @@ return [
         'reviewed' => 'Investment reviewed',
     ],
     'invoice' => [
+        'metering_drafted' => 'Meter-based draft created',
+        'retention_added' => 'Retention recorded',
+        'retention_released' => 'Retention released',
+        'retention_secured' => 'Retention replaced by a guarantee',
         'approved' => 'Invoice approved',
         'dunned' => 'Invoice dunned',
         'document_imported' => 'Invoice file imported',
@@ -610,6 +634,7 @@ return [
         'signatureRequested' => 'Signature requested',
     ],
     'quote' => [
+        'followed_up' => 'Quote followed up',
         'accepted' => 'Quote accepted',
         'approved' => 'Quote approved',
         'converted' => 'Quote converted',
@@ -866,6 +891,11 @@ return [
     'user_group' => [
         'member_added' => 'User group: member added',
         'member_removed' => 'User group: member removed',
+    ],
+    'warranty' => [
+        'created' => 'Warranty period recorded',
+        'claimed' => 'Warranty notified',
+        'closed' => 'Warranty period closed',
     ],
     'webdav' => [
         'connection_saved' => 'WebDAV connection saved',

@@ -87,6 +87,46 @@ return [
     ],
 
     'message' => [
+
+        // Pflichtnachweise (Feature 117, MVP-606).
+
+        'supplier_credential_title' => 'Pflichtnachweis :supplier',
+
+        'supplier_credential_expiring' => ':type läuft am :date ab — jetzt nachfordern.',
+
+        'supplier_credential_expired' => ':type ist seit :date abgelaufen — das Dokument trägt nicht mehr.',
+
+        // Gewährleistungsfristen (Feature 115, MVP-604).
+
+        'warranty_title' => 'Gewährleistung :project',
+
+        'warranty_expiring' => 'Frist endet am :date (:party).',
+
+        'warranty_subcontractor_first' => 'Sub-Frist endet am :date (:party) — VOR der eigenen Haftung. Jetzt prüfen und im Zweifel rügen.',
+
+        // Bürgschaftsregister (Feature 114, MVP-603).
+
+        'guarantee_title' => 'Bürgschaft :reference',
+
+        'guarantee_expiring' => 'Läuft am :date ab — :amount, Bürge :issuer.',
+
+        'guarantee_return_due' => 'Rückgabe fällig — der abgelöste Einbehalt ist freigegeben (:amount, Bürge :issuer).',
+
+        // Sicherheitseinbehalte (Feature 113, MVP-602).
+
+        'retention_title' => 'Sicherheitseinbehalt zu :number',
+
+        'retention_release_due' => 'Freigabe am :date fällig — :amount aus Rechnung :number.',
+
+        'retention_release_overdue' => 'Freigabe seit :date überfällig — :amount aus Rechnung :number; der Einbehalt verjährt zugunsten des Kunden.',
+
+        // Angebots-Nachfassen (Feature 112, MVP-601).
+
+        'quote_follow_up_title' => 'Angebot :number',
+
+        'quote_follow_up_due' => 'Nachfassen fällig — :customer, Termin :date.',
+
+        'quote_expiring_without_reaction' => 'Angebot läuft am :date ab und es kam keine Reaktion (:customer).',
         'new_device_title' => 'Anmeldung von neuem Gerät',
         'new_device_message' => 'Neue Anmeldung mit :device aus :country. Waren Sie das nicht, ändern Sie sofort Ihr Passwort und prüfen Sie Ihre Sitzungen.',
         'lockout_title' => 'Zu viele Fehlversuche — Konto kurzzeitig gesperrt',

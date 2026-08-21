@@ -159,6 +159,29 @@ enum NotificationEvent: string implements HasLabel {
     // Vollaudit 2026-07 (M19), Feature 048 E2: MHD-Überwachung.
     case InventoryLotExpiring = 'inventory.lotExpiring';
 
+    // Angebots-Nachfassen (Feature 112, MVP-601).
+    case QuoteFollowUpDue = 'quote.followUpDue';
+    case QuoteExpiringWithoutReaction = 'quote.expiringWithoutReaction';
+
+    // Sicherheitseinbehalte (Feature 113, MVP-602): Der Einbehalt verjährt
+    // zugunsten des Kunden, wenn ihn niemand einfordert.
+    case RetentionReleaseDue = 'finance.retentionReleaseDue';
+
+    // Bürgschaftsregister (Feature 114, MVP-603). Zwei getrennte Ereignisse,
+    // weil die Risiken gegenläufig sind: Eine GESTELLTE Bürgschaft, die
+    // niemand zurückfordert, kostet weiter Avalprovision; eine ERHALTENE, die
+    // abläuft, nimmt die Sicherheit.
+    case GuaranteeExpiring = 'finance.guaranteeExpiring';
+    case GuaranteeReturnDue = 'finance.guaranteeReturnDue';
+
+    // Gewährleistungsfristen (Feature 115, MVP-604).
+    case WarrantyExpiring = 'warranty.expiring';
+    // Der teure Fall: Die Frist des Subunternehmers endet VOR der eigenen.
+    case WarrantySubcontractorEndsFirst = 'warranty.subcontractorEndsFirst';
+
+    // Pflichtnachweise von Subunternehmern (Feature 117, MVP-606).
+    case SupplierCredentialExpiring = 'supplier.credentialExpiring';
+
     // Vollaudit 2026-07 (M31), Feature 069 Investitionen (MVP-209).
     case InvestmentDecisionDue = 'investment.decisionDue';
     case InvestmentDecided = 'investment.decided';
@@ -220,7 +243,8 @@ enum NotificationEvent: string implements HasLabel {
         return ! in_array($this, [self::TimeCorrectionRequested, self::OvertimeRequested, self::VacationRequested, self::MonthClosureSubmitted, self::IsmsCertificateExpiring, self::IsmsIncidentCritical, self::SafetyCriticalEvent, self::ShiftExchangeRequested, self::CustomerQueryRaised, self::ShipmentDeliveryProblem, self::SlaQuotaWarning,
             // Domain-/Finanz-/Fristereignisse betreffen keine Einzelperson (Vollaudit 2026-07, W3.2).
             self::DomainExpiring, self::DomainTransferChanged, self::DomainSyncFailed, self::DomainHighRiskAction,
-            self::FinanceTransferFailed, self::FinanceBankImportFailed, self::FinanceReconciliationReview,
+            self::FinanceTransferFailed, self::FinanceBankImportFailed, self::FinanceReconciliationReview, self::RetentionReleaseDue,
+            self::GuaranteeExpiring, self::GuaranteeReturnDue, self::SupplierCredentialExpiring,
             self::InvestmentDecisionDue, self::InventoryLotExpiring], true);
     }
 
@@ -320,6 +344,19 @@ enum NotificationEvent: string implements HasLabel {
             self::DomainTransferChanged,
             self::DomainSyncFailed,
             self::DomainHighRiskAction => [UserRole::Admin->value],
+            // Freigabe des Sicherheitseinbehalts (MVP-602): kaufmännische Sache.
+            self::RetentionReleaseDue,
+            // Bürgschaften (MVP-603): Sicherheiten sind kaufmännische Steuerung.
+            self::GuaranteeExpiring,
+            self::GuaranteeReturnDue => [UserRole::Buchhaltung->value],
+            // Gewährleistung (MVP-604): primär der Verantwortliche der Frist
+            // (notify_affected), die Teamleitung als Fallback — eine
+            // ablaufende Frist darf nicht an einem Urlaub scheitern.
+            self::WarrantyExpiring,
+            self::WarrantySubcontractorEndsFirst => [UserRole::Teamleitung->value],
+            // Pflichtnachweise (MVP-606): Einkauf/Leitung — der Nachweis muss
+            // beim Lieferanten angefordert werden, das ist keine Buchhaltung.
+            self::SupplierCredentialExpiring => [UserRole::Teamleitung->value],
             // Finanzschnittstelle (M16): kaufmännische Klärung.
             self::FinanceTransferFailed,
             self::FinanceBankImportFailed,
@@ -329,6 +366,11 @@ enum NotificationEvent: string implements HasLabel {
             self::InvestmentDecisionDue => [UserRole::Teamleitung->value, UserRole::Buchhaltung->value],
             // MHD-Überwachung (M19): Lagerverantwortung ist Leitungsaufgabe.
             self::InventoryLotExpiring => [UserRole::Teamleitung->value],
+            // Angebots-Nachfassen (MVP-601): primär der zugewiesene Zuständige
+            // (notify_affected), die Teamleitung als Fallback — ein Angebot,
+            // dessen Zuständiger im Urlaub ist, darf nicht auslaufen.
+            self::QuoteFollowUpDue,
+            self::QuoteExpiringWithoutReaction => [UserRole::Teamleitung->value],
             default => [],
         };
     }
@@ -415,6 +457,14 @@ enum NotificationEvent: string implements HasLabel {
             self::InvestmentDecisionDue => 'pending_actions',
             self::InvestmentDecided => 'task_alt',
             self::InventoryLotExpiring => 'hourglass_bottom',
+            self::RetentionReleaseDue => 'savings',
+            self::GuaranteeExpiring => 'gpp_maybe',
+            self::GuaranteeReturnDue => 'assignment_return',
+            self::WarrantyExpiring => 'shield_with_heart',
+            self::WarrantySubcontractorEndsFirst => 'crisis_alert',
+            self::SupplierCredentialExpiring => 'verified_user',
+            self::QuoteFollowUpDue => 'phone_forwarded',
+            self::QuoteExpiringWithoutReaction => 'running_with_errors',
             self::SecurityIntegrity => 'verified_user',
             self::SecurityThreat => 'gpp_bad',
             self::SecurityNewDevice => 'devices',

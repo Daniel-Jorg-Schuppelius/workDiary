@@ -22,7 +22,7 @@ class MatchingToleranceTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->service = new MatchingService();
+        $this->service = new MatchingService(new \App\Services\Invoicing\RetentionService());
     }
 
     public function test_exact_amount_is_full_payment(): void {

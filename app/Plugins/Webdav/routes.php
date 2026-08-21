@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Plugins\Webdav\Http\Controllers\{WebdavAdminController, WebdavConflictController};
+use App\Plugins\Webdav\Http\Controllers\{WebdavAdminController, WebdavBackupTargetController, WebdavConflictController};
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -24,6 +24,12 @@ Route::middleware(['web', 'auth'])->group(function (): void {
 
     // Manueller Voll-Spiegellauf über alle freigegebenen Dokumente (auditiert).
     Route::post('admin/webdav/mirror', [WebdavAdminController::class, 'mirror'])->name('admin.webdav.mirror');
+
+    // Generisches WebDAV-Backupziel (Feature 123, MVP-612); Plattform-Admin.
+    Route::get('admin/backup-targets/webdav/connect', [WebdavBackupTargetController::class, 'connectForm'])
+        ->name('admin.backup-targets.webdav.connect-form');
+    Route::post('admin/backup-targets/webdav/connect', [WebdavBackupTargetController::class, 'connect'])
+        ->name('admin.backup-targets.webdav.connect');
 
     // Konfliktauflösung aus der Zuordnungs-Inbox (Rang 18), je Einzel-Item.
     Route::post('admin/webdav/conflict/{item}/overwrite', [WebdavConflictController::class, 'overwrite'])->name('admin.webdav.conflict.overwrite');

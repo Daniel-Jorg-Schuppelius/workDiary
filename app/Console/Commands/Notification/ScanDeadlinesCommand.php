@@ -77,6 +77,11 @@ class ScanDeadlinesCommand extends Command {
         $sent += $this->scanDriverLicenseChecks($dispatcher, $expiringDays);
         $sent += $this->scanDomainExpiry($dispatcher, $expiringDays);
         $sent += $this->scanInvestmentDecisions($dispatcher, $dueDays);
+        $sent += $this->scanQuoteFollowUps($dispatcher, $expiringDays);
+        $sent += $this->scanRetentionReleases($dispatcher, $expiringDays);
+        $sent += $this->scanGuarantees($dispatcher, $expiringDays);
+        $sent += $this->scanWarrantyPeriods($dispatcher);
+        $sent += $this->scanSupplierCredentials($dispatcher, $expiringDays);
 
         $this->info(sprintf('%d Benachrichtigung(en) versendet.', $sent));
 
@@ -296,6 +301,281 @@ class ScanDeadlinesCommand extends Command {
                 'payload' => fn(OpenIssue $issue): array => $this->issuePayload($issue, 'overdue'),
             ],
         ]);
+    }
+
+    /**
+     * Pflichtnachweise von Subunternehmern (Feature 117, MVP-606).
+     *
+     * `due` = läuft im Vorlauf ab, `overdue` = bereits abgelaufen. Der zweite
+     * Fall ist der gefährliche: Das Dokument ist da, sieht vollständig aus und
+     * trägt trotzdem nicht mehr.
+     */
+    private function scanSupplierCredentials(NotificationDispatcher $dispatcher, int $expiringDays): int {
+        $today = Carbon::today();
+        $withDate = static fn () => \App\Models\Supplier\SupplierCredential::query()->whereNotNull('valid_until');
+
+        return $this->runScan($dispatcher, [
+            'due' => [
+                'query' => fn () => $withDate()
+                    ->whereDate('valid_until', '>=', $today->toDateString())
+                    ->whereDate('valid_until', '<=', $today->copy()->addDays($expiringDays)->toDateString()),
+                'event' => NotificationEvent::SupplierCredentialExpiring,
+                'payload' => fn (\App\Models\Supplier\SupplierCredential $credential): array => $this->credentialPayload($credential, 'supplier_credential_expiring'),
+            ],
+            'overdue' => [
+                'query' => fn () => $withDate()->whereDate('valid_until', '<', $today->toDateString()),
+                'event' => NotificationEvent::SupplierCredentialExpiring,
+                'payload' => fn (\App\Models\Supplier\SupplierCredential $credential): array => $this->credentialPayload($credential, 'supplier_credential_expired'),
+            ],
+        ]);
+    }
+
+    /** @return array{title: string, message: string, url: string|null, due_at: \Illuminate\Support\Carbon|null} */
+    private function credentialPayload(\App\Models\Supplier\SupplierCredential $credential, string $messageKey): array {
+        $params = [
+            'supplier' => (string) ($credential->supplier?->displayLabel() ?? '–'),
+            'type' => (string) ($credential->type->name ?? '–'),
+            'date' => $credential->valid_until?->format('d.m.Y') ?? '–',
+        ];
+
+        return [
+            'title' => (string) __('notification.message.supplier_credential_title', ['supplier' => $params['supplier']]),
+            'title_key' => 'notification.message.supplier_credential_title',
+            'title_params' => ['supplier' => $params['supplier']],
+            'message' => (string) __('notification.message.' . $messageKey, $params),
+            'message_key' => 'notification.message.' . $messageKey,
+            'message_params' => $params + ['date' => $credential->valid_until?->toDateString() ?? '–'],
+            'url' => route('suppliers.credentials.index'),
+            'due_at' => $credential->valid_until,
+        ];
+    }
+
+    /**
+     * Gewährleistungsfristen (Feature 115, MVP-604).
+     *
+     * Zwei Zweige mit unterschiedlicher Dringlichkeit:
+     *  - `due`: Die Frist läuft in einem der konfigurierten Vorläufe ab
+     *    (6/3/1 Monate). Danach ist die eigene Haftung beendet bzw. der
+     *    Anspruch gegen den Subunternehmer verloren.
+     *  - `overdue`: Eine SUB-Frist endet vor der eigenen — der teure Fall.
+     *    Wer hier nicht rügt, haftet allein für einen fremden Mangel.
+     */
+    private function scanWarrantyPeriods(NotificationDispatcher $dispatcher): int {
+        $today = Carbon::today();
+        // 6/3/1 Monate: Die Vorläufe sind bewusst grob — eine Gewährleistung
+        // läuft Jahre, eine Tages-Genauigkeit hilft niemandem.
+        $windows = [180, 90, 30];
+        $subcontractorFirst = app(\App\Services\Warranty\WarrantyService::class)->subcontractorsEndingFirst();
+
+        return $this->runScan($dispatcher, [
+            'affected' => fn (\App\Models\Warranty\WarrantyPeriod $period): ?User => $period->responsible_user_id === null
+                ? null
+                : User::query()->find($period->responsible_user_id),
+            'due' => [
+                'query' => fn () => \App\Models\Warranty\WarrantyPeriod::query()
+                    ->where('status', \App\Enums\Warranty\WarrantyStatus::Open->value)
+                    ->whereDate('ends_on', '>=', $today->toDateString())
+                    ->whereDate('ends_on', '<=', $today->copy()->addDays(max($windows))->toDateString()),
+                'event' => NotificationEvent::WarrantyExpiring,
+                'payload' => fn (\App\Models\Warranty\WarrantyPeriod $period): array => $this->warrantyPayload($period, 'warranty_expiring'),
+            ],
+            'overdue' => [
+                'query' => fn () => \App\Models\Warranty\WarrantyPeriod::query()
+                    ->whereKey($subcontractorFirst->pluck('id')->all() ?: [0]),
+                'event' => NotificationEvent::WarrantySubcontractorEndsFirst,
+                'payload' => fn (\App\Models\Warranty\WarrantyPeriod $period): array => $this->warrantyPayload($period, 'warranty_subcontractor_first'),
+            ],
+        ]);
+    }
+
+    /** @return array{title: string, message: string, url: string|null, due_at: \Illuminate\Support\Carbon|null} */
+    private function warrantyPayload(\App\Models\Warranty\WarrantyPeriod $period, string $messageKey): array {
+        $params = [
+            'party' => $period->partyLabel(),
+            'project' => (string) ($period->project->name ?? '–'),
+            'date' => $period->ends_on->format('d.m.Y'),
+        ];
+
+        return [
+            'title' => (string) __('notification.message.warranty_title', ['project' => $params['project']]),
+            'title_key' => 'notification.message.warranty_title',
+            'title_params' => ['project' => $params['project']],
+            'message' => (string) __('notification.message.' . $messageKey, $params),
+            'message_key' => 'notification.message.' . $messageKey,
+            'message_params' => $params + ['date' => $period->ends_on->toDateString()],
+            'url' => route('warranties.index'),
+            'due_at' => $period->ends_on,
+        ];
+    }
+
+    /**
+     * Bürgschaften (Feature 114, MVP-603).
+     *
+     * Zwei gegenläufige Risiken, deshalb zwei Zweige:
+     *  - **Befristung läuft ab** (`due`): Bei einer ERHALTENEN Bürgschaft ist
+     *    danach die Sicherheit weg; bei einer gestellten muss sie ggf.
+     *    verlängert werden.
+     *  - **Rückgabe fällig** (`overdue`): Eine GESTELLTE Bürgschaft, deren
+     *    abgelöster Einbehalt freigegeben ist, gehört zurückgefordert — sonst
+     *    läuft die Avalprovision weiter.
+     */
+    private function scanGuarantees(NotificationDispatcher $dispatcher, int $expiringDays): int {
+        $today = Carbon::today();
+        $active = static fn () => \App\Models\Guarantee\Guarantee::query()
+            ->where('status', \App\Enums\Guarantee\GuaranteeStatus::Active->value);
+
+        return $this->runScan($dispatcher, [
+            'affected' => fn (\App\Models\Guarantee\Guarantee $guarantee): ?User => $guarantee->responsible_user_id === null
+                ? null
+                : User::query()->find($guarantee->responsible_user_id),
+            'due' => [
+                'query' => fn () => $active()
+                    ->whereNotNull('expires_on')
+                    ->whereDate('expires_on', '<=', $today->copy()->addDays($expiringDays)->toDateString()),
+                'event' => NotificationEvent::GuaranteeExpiring,
+                'payload' => fn (\App\Models\Guarantee\Guarantee $guarantee): array => $this->guaranteePayload($guarantee, 'guarantee_expiring', $guarantee->expires_on),
+            ],
+            'overdue' => [
+                // Der abgelöste Einbehalt ist freigegeben ⇒ die Sicherung ist
+                // beendet, die Urkunde gehört zurück.
+                'query' => fn () => $active()
+                    ->whereHas('retention', fn ($q) => $q->whereIn('status', [
+                        \App\Enums\Invoicing\RetentionStatus::Released->value,
+                    ])),
+                'event' => NotificationEvent::GuaranteeReturnDue,
+                'payload' => fn (\App\Models\Guarantee\Guarantee $guarantee): array => $this->guaranteePayload($guarantee, 'guarantee_return_due', $guarantee->expires_on),
+            ],
+        ]);
+    }
+
+    /** @return array{title: string, message: string, url: string|null, due_at: \Illuminate\Support\Carbon|null} */
+    private function guaranteePayload(\App\Models\Guarantee\Guarantee $guarantee, string $messageKey, ?Carbon $dueAt): array {
+        $params = [
+            'reference' => (string) ($guarantee->reference ?? '–'),
+            'issuer' => $guarantee->issuerLabel(),
+            'amount' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($guarantee->amount->toFloat(), 2, withThousandsSeparator: true),
+            'date' => $dueAt?->format('d.m.Y') ?? '–',
+        ];
+
+        return [
+            'title' => (string) __('notification.message.guarantee_title', ['reference' => $params['reference']]),
+            'title_key' => 'notification.message.guarantee_title',
+            'title_params' => ['reference' => $params['reference']],
+            'message' => (string) __('notification.message.' . $messageKey, $params),
+            'message_key' => 'notification.message.' . $messageKey,
+            'message_params' => $params + ['date' => $dueAt?->toDateString() ?? '–'],
+            'url' => route('guarantees.index'),
+            'due_at' => $dueAt,
+        ];
+    }
+
+    /**
+     * Freigabe fälliger Sicherheitseinbehalte (Feature 113, MVP-602).
+     *
+     * Der Einbehalt verjährt zugunsten des Kunden: Wer ihn nach Ablauf der
+     * Gewährleistung nicht einfordert, verliert ihn. Deshalb wird BEIDES
+     * gemeldet — der nahende Termin und der bereits überschrittene.
+     */
+    private function scanRetentionReleases(NotificationDispatcher $dispatcher, int $expiringDays): int {
+        $today = Carbon::today();
+        $open = static fn () => \App\Models\Invoicing\InvoiceRetention::query()
+            ->where('status', \App\Enums\Invoicing\RetentionStatus::Open->value)
+            ->whereNotNull('due_on');
+
+        return $this->runScan($dispatcher, [
+            'due' => [
+                'query' => fn () => $open()
+                    ->whereDate('due_on', '>', $today->toDateString())
+                    ->whereDate('due_on', '<=', $today->copy()->addDays($expiringDays)->toDateString()),
+                'event' => NotificationEvent::RetentionReleaseDue,
+                'payload' => fn (\App\Models\Invoicing\InvoiceRetention $retention): array => $this->retentionPayload($retention, 'retention_release_due'),
+            ],
+            'overdue' => [
+                'query' => fn () => $open()->whereDate('due_on', '<=', $today->toDateString()),
+                'event' => NotificationEvent::RetentionReleaseDue,
+                'payload' => fn (\App\Models\Invoicing\InvoiceRetention $retention): array => $this->retentionPayload($retention, 'retention_release_overdue'),
+            ],
+        ]);
+    }
+
+    /** @return array{title: string, message: string, url: string|null, due_at: \Illuminate\Support\Carbon|null} */
+    private function retentionPayload(\App\Models\Invoicing\InvoiceRetention $retention, string $messageKey): array {
+        $invoice = $retention->invoice;
+        $params = [
+            'number' => (string) ($invoice->number ?? '–'),
+            'amount' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($retention->amount->toFloat(), 2, withThousandsSeparator: true),
+            'date' => $retention->due_on?->format('d.m.Y') ?? '–',
+        ];
+
+        return [
+            'title' => (string) __('notification.message.retention_title', ['number' => $params['number']]),
+            'title_key' => 'notification.message.retention_title',
+            'title_params' => ['number' => $params['number']],
+            'message' => (string) __('notification.message.' . $messageKey, $params),
+            'message_key' => 'notification.message.' . $messageKey,
+            'message_params' => $params + ['date' => $retention->due_on?->toDateString() ?? '–'],
+            'url' => $invoice === null ? null : route('invoices.show', $invoice),
+            'due_at' => $retention->due_on,
+        ];
+    }
+
+    /**
+     * Angebots-Nachfassen (Feature 112, MVP-601). Zwei getrennte Fälle:
+     *
+     *  - `due`: Der gesetzte Nachfasstermin ist erreicht.
+     *  - `overdue`: Das Angebot LÄUFT AB und es kam keine Reaktion. Das ist der
+     *    teurere Fall — ein ausgelaufenes Angebot muss neu erstellt oder
+     *    verlängert werden, und der Kunde hat womöglich nur eine Rückfrage
+     *    gehabt, die er nie gestellt hat.
+     *
+     * Beide nur für versandte/freigegebene Angebote: Vor dem Versand gibt es
+     * nichts nachzufassen.
+     */
+    private function scanQuoteFollowUps(NotificationDispatcher $dispatcher, int $expiringDays): int {
+        $now = Carbon::now();
+        $open = static fn () => \App\Models\Quote::query()->whereIn('status', ['approved', 'sent']);
+
+        return $this->runScan($dispatcher, [
+            'affected' => fn (\App\Models\Quote $quote): ?User => $quote->follow_up_user_id === null
+                ? null
+                : User::query()->find($quote->follow_up_user_id),
+            'due' => [
+                'query' => fn () => $open()
+                    ->whereNotNull('follow_up_at')
+                    ->whereNull('followed_up_at')
+                    ->whereDate('follow_up_at', '<=', $now->toDateString()),
+                'event' => NotificationEvent::QuoteFollowUpDue,
+                'payload' => fn (\App\Models\Quote $quote): array => $this->quotePayload($quote, 'quote_follow_up_due', $quote->follow_up_at),
+            ],
+            'overdue' => [
+                'query' => fn () => $open()
+                    ->whereNotNull('valid_until')
+                    ->whereDate('valid_until', '>=', $now->toDateString())
+                    ->whereDate('valid_until', '<=', $now->copy()->addDays($expiringDays)->toDateString()),
+                'event' => NotificationEvent::QuoteExpiringWithoutReaction,
+                'payload' => fn (\App\Models\Quote $quote): array => $this->quotePayload($quote, 'quote_expiring_without_reaction', $quote->valid_until),
+            ],
+        ]);
+    }
+
+    /** @return array{title: string, message: string, url: string|null, due_at: \Illuminate\Support\Carbon|null} */
+    private function quotePayload(\App\Models\Quote $quote, string $messageKey, ?Carbon $dueAt): array {
+        $params = [
+            'number' => (string) $quote->number,
+            'customer' => (string) ($quote->customer?->displayLabel() ?? '–'),
+            'date' => $dueAt?->format('d.m.Y') ?? '–',
+        ];
+
+        return [
+            'title' => (string) __('notification.message.quote_follow_up_title', ['number' => $params['number']]),
+            'title_key' => 'notification.message.quote_follow_up_title',
+            'title_params' => ['number' => $params['number']],
+            'message' => (string) __('notification.message.' . $messageKey, $params),
+            'message_key' => 'notification.message.' . $messageKey,
+            'message_params' => $params + ['date' => $dueAt?->toDateString() ?? '–'],
+            'url' => route('quotes.show', $quote),
+            'due_at' => $dueAt,
+        ];
     }
 
     private function scanCommunicationFollowups(NotificationDispatcher $dispatcher, int $dueDays): int {

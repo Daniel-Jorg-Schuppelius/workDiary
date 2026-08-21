@@ -376,6 +376,8 @@ return [
         'finance.transfer.material' => 'Faktura-Material vorbereiten und übertragen',
         'finance.payment.import' => 'Bankdatei für den Zahlungsabgleich importieren',
         'finance.payment.reconcile' => 'Zahlungszuordnungen bestätigen',
+        'finance.payment.run' => 'Zahllauf zusammenstellen',
+        'finance.payment.release' => 'Zahllauf freigeben',
         'finance.booking.export' => 'DATEV-Buchungsstapel exportieren',
 
         'diary.viewAny' => 'Alle Auftragsbuch-Einträge sehen',

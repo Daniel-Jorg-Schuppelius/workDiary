@@ -20,4 +20,8 @@
 
 return [
     'enabled' => env('WEBDAV_ENABLED', false),
+    // Backupziel (Feature 123, MVP-612): Ohne ausdrückliche Freigabe nur
+    // öffentlich routbare HTTPS-Ziele (SSRF/DNS-Rebinding). On-Premise-
+    // Installationen dürfen den eigenen Server im internen Netz freigeben.
+    'allow_private_targets' => env('WEBDAV_ALLOW_PRIVATE_TARGETS', false),
 ];

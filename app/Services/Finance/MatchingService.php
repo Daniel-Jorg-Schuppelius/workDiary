@@ -49,6 +49,8 @@ class MatchingService {
 
     public const SCORE_DATE_NEAR = 10;
 
+    public function __construct(private readonly \App\Services\Invoicing\RetentionService $retentions) {}
+
     /**
      * Liefert die besten Zuordnungsvorschläge für einen Bankumsatz.
      *
@@ -405,7 +407,13 @@ class MatchingService {
      * pauschale SKONTO_PERCENT-Toleranz als Fallback.
      */
     public function minAcceptableFor(Invoice $invoice, ?\Carbon\CarbonInterface $paymentDate = null): float {
-        $total = $invoice->total?->toFloat() ?? 0.0;
+        // Sicherheitseinbehalt (Feature 113, MVP-602) zuerst abziehen: Er ist
+        // vertragsgemäß NICHT fällig. Ohne diesen Abzug meldet der Abgleich
+        // bei jedem Bauvorgang dauerhaft eine Unterzahlung — und der Kunde hat
+        // korrekt gezahlt. Skonto rechnet danach auf dem geminderten Betrag,
+        // denn Skonto gilt auf den Zahlbetrag, nicht auf die Sicherheit.
+        $total = round(($invoice->total?->toFloat() ?? 0.0) - $this->retentions->openAmountOf($invoice), 2);
+
         if ($invoice->hasSkonto()) {
             $deadline = $invoice->skontoDeadline();
             $withinDeadline = $deadline === null || $paymentDate === null || $paymentDate->lessThanOrEqualTo($deadline);

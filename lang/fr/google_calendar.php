@@ -39,6 +39,15 @@ return [
         'help' => 'Dans quel agenda du compte connecté la publication a lieu. Sans sélection, l\'agenda principal est utilisé.',
         'target' => 'Agenda',
         'default' => 'Agenda principal',
+        // MVP-610a: Rückimport ist Opt-in — er ändert Daten.
+        'two_way' => 'Bidirectionnel : importer les modifications externes comme propositions',
+        'two_way_hint' => 'Réimport de la liste des modifications de l’agenda cible — nouveaux rendez-vous externes, modifications externes de rendez-vous publiés et suppressions arrivent comme cas dans la boîte d’intégration (jamais de création aveugle).',
+    ],
+
+    // Titel der Inbox-Einträge des Kalenderimports — ein remote
+    // gelöschter Termin wird gemeldet, nicht still nachgezogen.
+    'import' => [
+        'deleted_title' => 'Rendez-vous supprimé dans Google Agenda',
     ],
 
     'flash' => [
@@ -49,6 +58,7 @@ return [
         'connected' => 'Compte Google connecté.',
         'disconnected' => 'Connexion Google Agenda déconnectée. Les rendez-vous déjà publiés restent côté externe.',
         'no_connection' => 'Aucune connexion Google Agenda active.',
+        'two_way_saved' => 'Paramètre de réimport enregistré.',
         'calendar_saved' => 'Agenda cible enregistré.',
         'calendar_invalid' => 'L\'agenda sélectionné est introuvable.',
         'publish_done' => 'Publication lancée.',

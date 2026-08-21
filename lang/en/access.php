@@ -376,6 +376,8 @@ return [
         'finance.transfer.material' => 'Prepare and transfer billable material',
         'finance.payment.import' => 'Import bank file for payment reconciliation',
         'finance.payment.reconcile' => 'Confirm payment allocations',
+        'finance.payment.run' => 'Compile a payment run',
+        'finance.payment.release' => 'Release a payment run',
         'finance.booking.export' => 'Export DATEV booking batches',
 
         'diary.viewAny' => 'See all diary entries',

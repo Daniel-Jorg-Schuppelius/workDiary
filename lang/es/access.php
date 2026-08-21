@@ -349,6 +349,8 @@ return [
         'finance.transfer.material' => 'Preparar y traspasar el material facturable',
         'finance.payment.import' => 'Importar archivo bancario para la conciliación de pagos',
         'finance.payment.reconcile' => 'Confirmar las asignaciones de pago',
+        'finance.payment.run' => 'Componer una remesa de pagos',
+        'finance.payment.release' => 'Aprobar una remesa de pagos',
         'finance.booking.export' => 'Exportar lotes de asientos DATEV',
         'diary.viewAny' => 'Ver todas las entradas de diario',
         'diary.viewOwn' => 'Ver las propias entradas de diario',

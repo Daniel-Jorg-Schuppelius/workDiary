@@ -83,8 +83,11 @@ class SchedulerRegistrationTest extends TestCase {
         // Kalender-Publish-Reconciliation (MS365-Integrationsplan 2026-08, S2):
         // täglicher Voll-Publish; Einzeltermine weiterhin ereignisgetrieben.
         'caldav:publish' => ['35 4 * * *', true, true],
+        'caldav:import' => ['0 * * * *', true, true],
+        'sevdesk:pull-vouchers' => ['5 5 * * *', true, true],
         'msgraph:publish' => ['45 4 * * *', true, true],
         'google-calendar:publish' => ['55 4 * * *', true, true],
+        'google-calendar:import' => ['0 * * * *', true, true],
         // MS365-Plan §8: Graph-Subscription-Anlage/-Renewal (Sender-Seite).
         'msgraph:subscriptions' => ['20 4 * * *', true, true],
         // Audit 2026-08 (W4.4): Google-Drive-Push-Kanäle. Google-Kanäle laufen
@@ -114,6 +117,8 @@ class SchedulerRegistrationTest extends TestCase {
         'orgamax:sync' => ['0 * * * *', true, true],
         // Neu mit MVP-459 (Druck/Kopiershop): Löschfristen der Produktionsdateien.
         'print:purge-files' => ['45 3 * * *', true, true],
+        // Zählerstands-Faktura (Feature 116, MVP-605): Entwürfe am 2. des Monats.
+        'metering:generate-invoices' => ['15 6 2 * *', true, true],
         'payroll:import-minimum-wages' => ['0 4 15 1,7 *', true, true],
         // Neu mit Feature 108 (MVP-629): Bekanntmachungs-Radar. Der Bund stellt
         // einen Veröffentlichungstag erst am Folgetag vollständig bereit — der

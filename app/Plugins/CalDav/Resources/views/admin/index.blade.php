@@ -97,6 +97,16 @@
                         <span class="label-text">{{ __('caldav.field.active') }}</span>
                     </span>
                 </label>
+
+                {{-- MVP-610b: Der Rückimport ändert Daten und läuft deshalb nur auf Zuruf. --}}
+                <label class="form-control justify-end" title="{{ __('caldav.field.two_way_help') }}">
+                    <span class="label cursor-pointer justify-start gap-2">
+                        <input type="hidden" name="two_way" value="0">
+                        <input type="checkbox" name="two_way" value="1" class="toggle toggle-sm toggle-primary"
+                               @checked(old('two_way', $connection->two_way ?? false))>
+                        <span class="label-text">{{ __('caldav.field.two_way') }}</span>
+                    </span>
+                </label>
             </div>
 
             {{-- Publish-Scopes (Rang 17): Termine und/oder Dienstpläne/Urlaube. --}}

@@ -32,6 +32,20 @@ return [
         'canceled' => 'Demande de rendez-vous annulée',
         'service_created' => 'Prestation réservable créée',
     ],
+    'paymentRun' => [
+        'released' => 'Ordre de paiement validé',
+        'exported' => 'Fichier SEPA créé',
+    ],
+    'sepaMandate' => [
+        'revoked' => 'Mandat SEPA révoqué',
+    ],
+    'circular' => [
+        'sent' => 'Circulaire envoyée',
+    ],
+    'assetComponent' => [
+        'replaced' => 'Composant remplacé',
+        'adopted' => 'Consommation reprise comme composant',
+    ],
     'expense' => [
         'scanned' => 'Frais créé depuis un justificatif scanné',
         'voucher_pushed' => 'Frais transmis à la comptabilité comme justificatif',
@@ -309,6 +323,12 @@ return [
         'calendar_selected' => 'Calendrier Google sélectionné',
         'publish_manual' => 'Calendrier Google publié manuellement',
     ],
+    'guarantee' => [
+        'created' => 'Caution enregistrée',
+        'returned' => 'Caution restituée',
+        'drawn' => 'Caution appelée',
+        'secured_retention' => 'La caution remplace une retenue',
+    ],
     'idea_map' => [
         'archived' => 'Carte d\'idées archivée',
         'exported' => 'Carte d\'idées exportée',
@@ -361,6 +381,10 @@ return [
         'reviewed' => 'Investissement réexaminé',
     ],
     'invoice' => [
+        'metering_drafted' => 'Brouillon de relevé créé',
+        'retention_added' => 'Retenue de garantie enregistrée',
+        'retention_released' => 'Retenue de garantie libérée',
+        'retention_secured' => 'Retenue remplacée par une caution',
         'approved' => 'Facture approuvée',
         'dunned' => 'Facture relancée',
         'document_imported' => 'Fichier de facture importé',
@@ -610,6 +634,7 @@ return [
         'signatureRequested' => 'Signature demandée',
     ],
     'quote' => [
+        'followed_up' => 'Devis relancé',
         'accepted' => 'Devis accepté',
         'approved' => 'Devis approuvé',
         'converted' => 'Devis converti',
@@ -866,6 +891,11 @@ return [
     'user_group' => [
         'member_added' => 'Groupe d\'utilisateurs : membre ajouté',
         'member_removed' => 'Groupe d\'utilisateurs : membre retiré',
+    ],
+    'warranty' => [
+        'created' => 'Délai de garantie enregistré',
+        'claimed' => 'Garantie dénoncée',
+        'closed' => 'Délai de garantie clôturé',
     ],
     'webdav' => [
         'connection_saved' => 'Connexion WebDAV enregistrée',

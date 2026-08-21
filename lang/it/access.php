@@ -349,6 +349,8 @@ return [
         'finance.transfer.material' => 'Preparare e trasferire il materiale fatturabile',
         'finance.payment.import' => 'Importare un file bancario per la riconciliazione dei pagamenti',
         'finance.payment.reconcile' => 'Confermare le assegnazioni di pagamento',
+        'finance.payment.run' => 'Comporre una distinta di pagamento',
+        'finance.payment.release' => 'Approvare una distinta di pagamento',
         'finance.booking.export' => 'Esportare lotti di registrazioni DATEV',
         'diary.viewAny' => 'Visualizza tutte le voci di registro',
         'diary.viewOwn' => 'Visualizza le proprie voci di registro',

@@ -39,6 +39,15 @@ return [
         'help' => 'In quale calendario dell\'account collegato viene pubblicato. Senza selezione viene usato il calendario principale.',
         'target' => 'Calendario',
         'default' => 'Calendario principale',
+        // MVP-610a: Rückimport ist Opt-in — er ändert Daten.
+        'two_way' => 'Bidirezionale: importa le modifiche esterne come proposte',
+        'two_way_hint' => 'Reimportazione dell’elenco modifiche del calendario di destinazione — nuovi appuntamenti esterni, modifiche esterne a quelli pubblicati ed eliminazioni arrivano come casi nella inbox di integrazione (mai una creazione cieca).',
+    ],
+
+    // Titel der Inbox-Einträge des Kalenderimports — ein remote
+    // gelöschter Termin wird gemeldet, nicht still nachgezogen.
+    'import' => [
+        'deleted_title' => 'Appuntamento eliminato in Google Calendar',
     ],
 
     'flash' => [
@@ -49,6 +58,7 @@ return [
         'connected' => 'Account Google collegato.',
         'disconnected' => 'Connessione Google Calendar disconnessa. Gli appuntamenti già pubblicati restano nel sistema esterno.',
         'no_connection' => 'Nessuna connessione Google Calendar attiva.',
+        'two_way_saved' => 'Impostazione di reimportazione salvata.',
         'calendar_saved' => 'Calendario di destinazione salvato.',
         'calendar_invalid' => 'Il calendario selezionato non è stato trovato.',
         'publish_done' => 'Pubblicazione avviata.',

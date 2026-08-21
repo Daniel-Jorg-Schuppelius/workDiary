@@ -54,6 +54,7 @@ class SaveCustomerRequest extends BaseFormRequest {
             'invoice_text' => ['nullable', 'string', 'max:5000'],
             'billable' => ['sometimes', 'boolean'],
             'exclude_from_reports' => ['sometimes', 'boolean'],
+            'no_bulk_mail' => ['sometimes', 'boolean'],
             // E-Rechnung (Feature 045): Leitweg-ID/Käuferreferenz (BT-10).
             'buyer_reference' => ['nullable', 'string', 'max:64'],
             'delivery_format' => ['nullable', \Illuminate\Validation\Rule::enum(\App\Enums\Invoicing\InvoiceDeliveryFormat::class)],
@@ -107,6 +108,7 @@ class SaveCustomerRequest extends BaseFormRequest {
         $this->merge(array_merge($this->partyNormalizedData(), [
             'billable' => $this->boolean('billable'),
             'exclude_from_reports' => $this->boolean('exclude_from_reports'),
+            'no_bulk_mail' => $this->boolean('no_bulk_mail'),
             'travel_settings' => $travel === [] ? null : $travel,
         ]));
     }

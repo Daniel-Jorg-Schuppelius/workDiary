@@ -28,6 +28,12 @@ return [
         'heading' => 'Connexion',
     ],
 
+    // Titel der Inbox-Einträge des Kalenderimports — ein remote
+    // gelöschter Termin wird gemeldet, nicht still nachgezogen.
+    'import' => [
+        'deleted_title' => 'Rendez-vous supprimé dans l’agenda CalDAV',
+    ],
+
     'field' => [
         'name' => 'Libellé',
         'base_url' => 'URL de base DAV',
@@ -39,6 +45,9 @@ return [
         'calendar_path' => 'Chemin du calendrier (collection)',
         'calendar_path_help' => 'Relatif à l\'URL de base, p. ex. calendars/team/planning.',
         'active' => 'Actif',
+        // MVP-610b: Rückimport ist Opt-in — er ändert Daten.
+        'two_way' => 'Bidirectionnel : importer les modifications externes comme propositions',
+        'two_way_help' => 'Réimport de la collection d’agenda via sync-collection (RFC 6578), sinon sur une fenêtre temporelle avec comparaison d’ETag — nouveaux rendez-vous externes, modifications externes de rendez-vous publiés et suppressions arrivent comme cas dans la boîte d’intégration (jamais de création aveugle).',
         'scopes' => 'Contenu publié',
         'scope_events' => 'Événements',
         'scope_schedule' => 'Plannings & congés',

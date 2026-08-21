@@ -28,6 +28,12 @@ return [
         'heading' => 'Anbindung',
     ],
 
+    // Titel der Inbox-Einträge des Kalenderimports — ein remote
+    // gelöschter Termin wird gemeldet, nicht still nachgezogen.
+    'import' => [
+        'deleted_title' => 'Termin im CalDAV-Kalender gelöscht',
+    ],
+
     'field' => [
         'name' => 'Bezeichnung',
         'base_url' => 'DAV-Basis-URL',
@@ -39,6 +45,9 @@ return [
         'calendar_path' => 'Kalenderpfad (Collection)',
         'calendar_path_help' => 'Relativ zur Basis-URL, z. B. calendars/team/dienstplan.',
         'active' => 'Aktiv',
+        // MVP-610b: Rückimport ist Opt-in — er ändert Daten.
+        'two_way' => 'Zwei-Wege: externe Änderungen als Inbox-Vorschläge importieren',
+        'two_way_help' => 'Rückimport der Kalender-Collection über sync-collection (RFC 6578), sonst über ein Zeitfenster mit ETag-Vergleich — neue externe Termine, externe Änderungen an publizierten und Löschungen landen als Fälle in der Integrations-Inbox (nie blinde Anlage).',
         'scopes' => 'Publizierte Inhalte',
         'scope_events' => 'Termine',
         'scope_schedule' => 'Dienstpläne & Urlaube',

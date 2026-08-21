@@ -45,6 +45,7 @@ class DatabaseSeeder extends Seeder {
         $this->call(SustainabilityDefaultsSeeder::class); // Feature 071 (D8): Faktoren-Set + VSME-1.0-Matrix
         $this->call(TaxRulesSeeder::class); // Phase 23 (MVP-238): versionierter Steuerkatalog (DE voll, AT/CH)
         $this->call(AssetComplianceCatalogSeeder::class); // Feature 075 (P1): Prüfprofil-Vorlagen + Normen-Referenzmatrix
+        $this->call(SupplierCredentialCatalogSeeder::class); // Feature 117 (MVP-606): Pflichtnachweis-Typen (§ 48b, SOKA, BG, MiLoG, A1)
         $this->call(CatalogRegistrySeeder::class); // Feature 109 (MVP-637): DIN-276-Kostengruppen (2008/2018) + StLB-Leistungsbereiche
 
         // Demo-/Test-Benutzer würden in Produktion Faker (Dev-Dependency)

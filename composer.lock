@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "48607de8ad98d163c615bcd89616cea9",
+    "content-hash": "1b9e72436f427f589a163c35a73d6472",
     "packages": [
         {
             "name": "azuyalabs/yasumi",
@@ -661,16 +661,16 @@
         },
         {
             "name": "daniel-jorg-schuppelius/php-erechnung-toolkit",
-            "version": "v0.10.5",
+            "version": "v0.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit.git",
-                "reference": "e1dfdabe262360a9d065560235ce671fcce4c658"
+                "reference": "2260b997495b316ca712e5308636ee9e49cb7269"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/zipball/e1dfdabe262360a9d065560235ce671fcce4c658",
-                "reference": "e1dfdabe262360a9d065560235ce671fcce4c658",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/zipball/2260b997495b316ca712e5308636ee9e49cb7269",
+                "reference": "2260b997495b316ca712e5308636ee9e49cb7269",
                 "shasum": ""
             },
             "require": {
@@ -723,22 +723,22 @@
             ],
             "support": {
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/issues",
-                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/tree/v0.10.5"
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/tree/v0.11"
             },
-            "time": "2026-08-18T08:42:56+00:00"
+            "time": "2026-08-20T12:21:08+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/php-pdf-toolkit",
-            "version": "v0.15.7",
+            "version": "v0.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/php-pdf-toolkit.git",
-                "reference": "589a1592f52e5b26c08b30858d6212e829fa1e3a"
+                "reference": "71679076766e94e7c1e4ef2ddecc8da38e39a029"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-pdf-toolkit/zipball/589a1592f52e5b26c08b30858d6212e829fa1e3a",
-                "reference": "589a1592f52e5b26c08b30858d6212e829fa1e3a",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-pdf-toolkit/zipball/71679076766e94e7c1e4ef2ddecc8da38e39a029",
+                "reference": "71679076766e94e7c1e4ef2ddecc8da38e39a029",
                 "shasum": ""
             },
             "require": {
@@ -746,6 +746,7 @@
                 "dschuppelius/php-common-toolkit": "^1.22",
                 "ext-gd": "*",
                 "php": ">=8.1 <8.6",
+                "setasign/fpdf": "^1.8",
                 "setasign/fpdi": "^2.3",
                 "tecnickcom/tcpdf": "^6.6 || ^7.0"
             },
@@ -776,9 +777,9 @@
             "description": "PHP 8.2+ library for PDF text extraction with automatic reader selection. Supports embedded text and scanned documents via OCR.",
             "support": {
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/php-pdf-toolkit/issues",
-                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-pdf-toolkit/tree/v0.15.7"
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-pdf-toolkit/tree/v0.16"
             },
-            "time": "2026-08-19T14:07:43+00:00"
+            "time": "2026-08-20T18:29:27+00:00"
         },
         {
             "name": "darkaonline/l5-swagger",
@@ -1507,16 +1508,16 @@
         },
         {
             "name": "dschuppelius/php-common-toolkit",
-            "version": "v1.24.1",
+            "version": "v1.25",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DSchuppelius/php-common-toolkit.git",
-                "reference": "84a1b53db6ab8cdbf5b82c65aec730ea32986ed5"
+                "reference": "e8d35efab61221dd1cd39e39b1a694b71beea916"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/84a1b53db6ab8cdbf5b82c65aec730ea32986ed5",
-                "reference": "84a1b53db6ab8cdbf5b82c65aec730ea32986ed5",
+                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/e8d35efab61221dd1cd39e39b1a694b71beea916",
+                "reference": "e8d35efab61221dd1cd39e39b1a694b71beea916",
                 "shasum": ""
             },
             "require": {
@@ -1552,9 +1553,9 @@
             "description": "Project description.",
             "support": {
                 "issues": "https://github.com/DSchuppelius/php-common-toolkit/issues",
-                "source": "https://github.com/DSchuppelius/php-common-toolkit/tree/v1.24.1"
+                "source": "https://github.com/DSchuppelius/php-common-toolkit/tree/v1.25"
             },
-            "time": "2026-08-12T19:15:36+00:00"
+            "time": "2026-08-20T12:20:52+00:00"
         },
         {
             "name": "dschuppelius/php-config-toolkit",
@@ -13930,16 +13931,16 @@
         },
         {
             "name": "mockery/mockery",
-            "version": "1.6.14",
+            "version": "1.6.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mockery/mockery.git",
-                "reference": "d5362ead1f26e220e64ade458efa4e997f5a8fc0"
+                "reference": "967a801bd188989a5669bd280f252d51c0fdc9ee"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mockery/mockery/zipball/d5362ead1f26e220e64ade458efa4e997f5a8fc0",
-                "reference": "d5362ead1f26e220e64ade458efa4e997f5a8fc0",
+                "url": "https://api.github.com/repos/mockery/mockery/zipball/967a801bd188989a5669bd280f252d51c0fdc9ee",
+                "reference": "967a801bd188989a5669bd280f252d51c0fdc9ee",
                 "shasum": ""
             },
             "require": {
@@ -14008,7 +14009,7 @@
                 "security": "https://github.com/mockery/mockery/security/advisories",
                 "source": "https://github.com/mockery/mockery"
             },
-            "time": "2026-08-18T20:07:53+00:00"
+            "time": "2026-08-19T19:37:52+00:00"
         },
         {
             "name": "myclabs/deep-copy",

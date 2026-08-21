@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Plugins\Toggl\Http\Controllers\TogglController;
+use App\Plugins\Toggl\Http\Controllers\{TogglController, TogglWebhookController};
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -39,3 +39,11 @@ Route::middleware(['web', 'auth'])->group(function (): void {
     Route::get('admin/toggl/import-api', [TogglController::class, 'importApi'])->name('admin.toggl.import-api');
     Route::post('admin/toggl/import-api', [TogglController::class, 'runImportApi'])->name('admin.toggl.import-api.run');
 });
+
+/*
+ * Eingehender Webhook (Feature 124, MVP-613): sessionlos, ohne CSRF, ohne
+ * Auth — die Echtheit klärt die Signaturprüfung im Controller. Er ERSETZT
+ * das Polling nicht, er zieht den Lauf nur vor.
+ */
+Route::middleware(['api', 'throttle:time-tracking-webhook'])->post('api/webhooks/toggl', TogglWebhookController::class)
+    ->name('api.webhooks.toggl');
