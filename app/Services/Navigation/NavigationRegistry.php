@@ -116,7 +116,7 @@ class NavigationRegistry {
             'manageNavItems' => $manageNavItems,
             'adminNavItems' => $adminNavItems,
             'userNavItems' => $this->userNavItems($isLegacyMode),
-            'sidebarSections' => $isLegacyMode ? [] : $this->applyFocus($this->filterSidebar($this->sidebarBlueprint($indexRoute), $hidden), $focusKeep),
+            'sidebarSections' => $isLegacyMode ? [] : $this->markActiveItem($this->applyFocus($this->filterSidebar($this->sidebarBlueprint($indexRoute), $hidden), $focusKeep)),
             'createGroups' => $isLegacyMode ? [] : $this->applyFocusCreateGroups($this->filterCreateGroups($this->createGroupsBlueprint(), $hidden), $focusKeep),
             'pluginPanelItems' => $pluginPanelItems,
             'pluginPanelRoutes' => $pluginPanelRoutes,
@@ -1013,7 +1013,81 @@ class NavigationRegistry {
     /**
      * Modul-/Rechte-Filter + Per-User-Ausblendungen auf den Sidebar-Bauplan
      * (identisch zur früheren Blade-Logik; Ausblendungen greifen ZULETZT).
+     */
+
+    /**
+     * Genau EIN Sidebar-Eintrag wird als aktiv markiert — der spezifischste.
      *
+     * Aktiv-Muster überdecken einander zwangsläufig: `quotes.*` (Belegfluss)
+     * trifft auch `quotes.follow-ups.index` (Angebote nachfassen). Ohne
+     * Rangfolge leuchten dann zwei Punkte, und keiner sagt, wo man ist.
+     * Gewinner ist das längste passende Muster; ein Muster ohne Platzhalter
+     * schlägt bei gleicher Länge eines mit.
+     *
+     * @param  list<array<string, mixed>>  $sections
+     * @return list<array<string, mixed>>
+     */
+    public function markActiveItem(array $sections): array {
+        $best = null;
+        $bestScore = 0;
+
+        foreach ($sections as $si => $section) {
+            foreach (($section['items'] ?? []) as $ii => $item) {
+                $score = $this->matchScore($item);
+                if ($score > $bestScore) {
+                    $bestScore = $score;
+                    $best = [$si, null, $ii];
+                }
+            }
+            foreach (($section['groups'] ?? []) as $gi => $group) {
+                foreach (($group['items'] ?? []) as $ii => $item) {
+                    $score = $this->matchScore($item);
+                    if ($score > $bestScore) {
+                        $bestScore = $score;
+                        $best = [$si, $gi, $ii];
+                    }
+                }
+            }
+        }
+
+        if ($best === null) {
+            return $sections;
+        }
+
+        [$si, $gi, $ii] = $best;
+        if ($gi === null) {
+            $sections[$si]['items'][$ii]['active'] = true;
+        } else {
+            $sections[$si]['groups'][$gi]['items'][$ii]['active'] = true;
+        }
+
+        return $sections;
+    }
+
+    /**
+     * Spezifität des besten passenden Musters — 0, wenn keines passt.
+     *
+     * @param  array<string, mixed>  $item
+     */
+    private function matchScore(array $item): int {
+        /** @var list<string> $patterns */
+        $patterns = $item['matches'] ?? [(string) ($item['route'] ?? '')];
+        $score = 0;
+
+        foreach ($patterns as $pattern) {
+            if ($pattern === '' || ! request()->routeIs($pattern)) {
+                continue;
+            }
+
+            // Länge ohne Platzhalter zählt doppelt, damit ein exaktes Muster
+            // ein gleich langes Präfixmuster schlägt.
+            $score = max($score, mb_strlen(rtrim($pattern, '*')) * 2 + (str_ends_with($pattern, '*') ? 0 : 1));
+        }
+
+        return $score;
+    }
+
+    /**
      * @param  list<array<string, mixed>>  $sections
      * @param  list<string>  $hidden
      * @return list<array<string, mixed>>

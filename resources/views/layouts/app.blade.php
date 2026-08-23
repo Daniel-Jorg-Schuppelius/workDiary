@@ -1094,7 +1094,9 @@
                                                 </summary>
                                                 <ul class="menu menu-sm w-full gap-0.5 p-0">
                                                     @foreach (($group['items'] ?? []) as $item)
-                                                        @php $active = collect($item['matches'] ?? [$item['route']])->contains(fn ($m) => request()->routeIs($m)); @endphp
+                                                        {{-- Aktiv-Markierung kommt vorberechnet aus der Registry:
+                                                             nur der spezifischste Treffer leuchtet. --}}
+                                                        @php $active = $item['active'] ?? false; @endphp
                                                         <li>
                                                             <a href="{{ route($item['route'], $item['route_params'] ?? []) }}"
                                                                @if (! empty($item['modal'])) data-entry-modal-trigger @endif
@@ -1112,7 +1114,7 @@
                                 @else
                                     <ul class="menu menu-sm w-full gap-0.5 p-0 pt-1">
                                         @foreach ($section['items'] as $item)
-                                            @php $active = collect($item['matches'] ?? [$item['route']])->contains(fn ($m) => request()->routeIs($m)); @endphp
+                                            @php $active = $item['active'] ?? false; @endphp
                                             <li>
                                                 <a href="{{ route($item['route'], $item['route_params'] ?? []) }}"
                                                    @if (! empty($item['modal'])) data-entry-modal-trigger @endif
