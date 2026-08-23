@@ -14,8 +14,11 @@
 @section('title', __('sepa.title'))
 @section('nav-title', __('sepa.title'))
 
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+
 @section('content')
-    <x-index-page :subtitle="__('sepa.subtitle')">
+    <x-index-page overflow="clip" :subtitle="__('sepa.subtitle')">
         <x-slot:actions>
             <x-icon-btn icon="playlist_add" tone="primary" size="sm"
                         :href="route('finance.payment-runs.proposals')"

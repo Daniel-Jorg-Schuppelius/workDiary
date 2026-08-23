@@ -72,7 +72,7 @@
                 </ul>
             </x-card>
         @else
-            <x-table scroll="flex" :pin-rows="true" :zebra="true">
+            <x-table :pin-rows="true" :zebra="true">
                 <x-slot:head>
                     <tr>
                         <x-table.th sort type="string">{{ __('circular.column.customer') }}</x-table.th>

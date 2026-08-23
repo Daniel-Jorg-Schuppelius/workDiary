@@ -11,8 +11,11 @@
 @section('title', __('dispatch.reservations.title'))
 @section('nav-title', __('dispatch.reservations.title'))
 
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+
 @section('content')
-    <x-index-page :subtitle="__('dispatch.reservations.subtitle')">
+    <x-index-page overflow="clip" :subtitle="__('dispatch.reservations.subtitle')">
         <x-filter-bar :action="route('vehicle-reservations.index')" submit-label="{{ __('Anwenden') }}">
             <x-filter-field :label="__('dispatch.vehicle.label')" for="res-vehicle">
                 <select id="res-vehicle" name="vehicle" class="select select-sm select-bordered" data-autosubmit>

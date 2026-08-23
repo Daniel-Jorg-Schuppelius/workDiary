@@ -16,8 +16,11 @@
 @section('title', __('accounting.rules.title'))
 @section('nav-title', __('accounting.rules.title'))
 
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+
 @section('content')
-    <x-index-page :subtitle="__('accounting.rules.subtitle')">
+    <x-index-page overflow="clip" :subtitle="__('accounting.rules.subtitle')">
         <x-slot:actions>
             @if ($canConfigure)
                 <x-icon-btn icon="add" size="sm" tone="primary"

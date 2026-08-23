@@ -15,8 +15,11 @@
 @section('title', __('circular.title'))
 @section('nav-title', __('circular.title'))
 
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+
 @section('content')
-    <x-index-page :subtitle="__('circular.subtitle')">
+    <x-index-page overflow="clip" :subtitle="__('circular.subtitle')">
         <x-slot:actions>
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger

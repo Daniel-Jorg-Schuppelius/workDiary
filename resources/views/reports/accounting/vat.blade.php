@@ -16,8 +16,11 @@
 @section('title', __('accounting.reports.card.vat.title'))
 @section('nav-title', __('accounting.reports.card.vat.title'))
 
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+
 @section('content')
-    <x-index-page :subtitle="$period?->label() ?? __('accounting.reports.period', ['from' => $from->fdate(), 'to' => $to->fdate()])">
+    <x-index-page overflow="clip" :subtitle="$period?->label() ?? __('accounting.reports.period', ['from' => $from->fdate(), 'to' => $to->fdate()])">
         <x-slot:actions>
             <x-icon-btn icon="download" size="sm" tone="ghost" show-label
                         :href="route('reports.accounting.vat', ['export' => 'csv'])" :label="__('CSV')" />

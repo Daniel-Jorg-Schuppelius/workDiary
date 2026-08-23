@@ -17,8 +17,11 @@
 @section('title', __('accounting.inbox.title'))
 @section('nav-title', __('accounting.inbox.title'))
 
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+
 @section('content')
-    <x-index-page :subtitle="__('accounting.inbox.subtitle')">
+    <x-index-page overflow="clip" :subtitle="__('accounting.inbox.subtitle')">
         <x-slot:actions>
             @if ($canPost)
                 {{-- Interne Umbuchung (MVP-681): eine Buchung für beide Seiten. --}}

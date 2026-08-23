@@ -16,8 +16,11 @@
 @section('title', __('accounting.filing.calendar.title'))
 @section('nav-title', __('accounting.filing.calendar.title'))
 
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+
 @section('content')
-    <x-index-page :subtitle="__('accounting.filing.calendar.subtitle')">
+    <x-index-page overflow="clip" :subtitle="__('accounting.filing.calendar.subtitle')">
         <div class="alert bg-info/10 border-info/30 text-sm text-base-content" role="note">
             <x-icon name="info" />
             <div>

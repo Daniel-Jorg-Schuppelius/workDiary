@@ -15,8 +15,11 @@
 @section('title', __('guarantee.title'))
 @section('nav-title', __('guarantee.title'))
 
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+
 @section('content')
-    <x-index-page :subtitle="__('guarantee.subtitle')">
+    <x-index-page overflow="clip" :subtitle="__('guarantee.subtitle')">
         <x-slot:actions>
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger

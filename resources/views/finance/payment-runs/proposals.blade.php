@@ -33,7 +33,7 @@
                                :value="old('label', '')" />
             </div>
 
-            <x-table scroll="flex" :pin-rows="true" :zebra="true">
+            <x-table :pin-rows="true" :zebra="true">
                 <x-slot:head>
                     <tr>
                         <th class="w-10"></th>

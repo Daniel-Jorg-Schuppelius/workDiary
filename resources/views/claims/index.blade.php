@@ -11,8 +11,11 @@
 @section('title', __('Reklamationen'))
 @section('nav-title', __('Reklamationen'))
 
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+
 @section('content')
-<x-index-page :subtitle="__('Reklamationen, Gewährleistungsfälle, Kulanz und Rückläufer als nachvollziehbare Fallakten.')">
+<x-index-page overflow="clip" :subtitle="__('Reklamationen, Gewährleistungsfälle, Kulanz und Rückläufer als nachvollziehbare Fallakten.')">
     <x-slot:actions>
         @can('create', \App\Models\Claims\ClaimCase::class)
             <x-icon-btn icon="add" tone="primary" size="sm"

@@ -15,8 +15,11 @@
 @section('title', __('finance.open_times.title'))
 @section('nav-title', __('finance.open_times.title'))
 
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+
 @section('content')
-    <x-index-page :subtitle="__('finance.open_times.subtitle')">
+    <x-index-page overflow="clip" :subtitle="__('finance.open_times.subtitle')">
         <x-slot:actions>
             @if ($canMarkBilled)
                 <x-icon-btn icon="price_check" tone="outline" size="sm"

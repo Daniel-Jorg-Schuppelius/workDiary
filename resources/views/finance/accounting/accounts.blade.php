@@ -15,8 +15,11 @@
 @section('title', __('accounting.ledger.accounts.title'))
 @section('nav-title', __('accounting.ledger.accounts.title'))
 
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+
 @section('content')
-    <x-index-page :subtitle="__('accounting.ledger.accounts.subtitle')">
+    <x-index-page overflow="clip" :subtitle="__('accounting.ledger.accounts.subtitle')">
         <x-slot:actions>
             @if ($canConfigure)
                 <x-icon-btn icon="add" size="sm" tone="primary"
@@ -58,6 +61,41 @@
             <x-filter-toggle name="only_active" class="order-40"
                              :label="__('accounting.ledger.filter.only_active')" :checked="$onlyActive" />
         </x-filter-bar>
+
+        @if ($taxCodes->isNotEmpty())
+            {{-- Steuerkennzeichen samt UStVA-Kennziffern (MVP-688). --}}
+            <x-card :title="__('accounting.filing.fields.tax_codes')" icon="tag" :subtitle="__('accounting.filing.fields.subtitle')">
+                <x-table :bare="true">
+                    <x-slot:head>
+                        <tr>
+                            <th>{{ __('accounting.ledger.column.number') }}</th>
+                            <th>{{ __('accounting.ledger.column.name') }}</th>
+                            <th>{{ __('accounting.reports.column.direction') }}</th>
+                            <th class="text-right">{{ __('accounting.filing.fields.column.base') }}</th>
+                            <th class="text-right">{{ __('accounting.filing.fields.column.tax') }}</th>
+                            <th class="text-right"></th>
+                        </tr>
+                    </x-slot:head>
+                    @foreach ($taxCodes as $taxCode)
+                        <tr class="hover">
+                            <td class="font-mono">{{ $taxCode->code }}</td>
+                            <td>{{ $taxCode->name }}</td>
+                            <td>{{ $taxCode->direction->label() }}</td>
+                            <td class="text-right font-mono">{{ $taxCode->ustva_base_field ?? '—' }}</td>
+                            <td class="text-right font-mono">{{ $taxCode->ustva_tax_field ?? '—' }}</td>
+                            <td class="text-right">
+                                @if ($canConfigure)
+                                    <x-icon-btn icon="edit" size="xs" tone="ghost"
+                                                data-entry-modal-trigger
+                                                :href="route('finance.accounting.tax-codes.edit', $taxCode)"
+                                                :label="__('Bearbeiten')" />
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </x-table>
+            </x-card>
+        @endif
 
         <x-table scroll="flex" :zebra="true">
             <x-slot:head>
@@ -129,41 +167,6 @@
                 <tr><td colspan="7"><x-empty-state icon="account_tree" :title="__('accounting.ledger.empty.accounts')" /></td></tr>
             @endforelse
         </x-table>
-
-        @if ($taxCodes->isNotEmpty())
-            {{-- Steuerkennzeichen samt UStVA-Kennziffern (MVP-688). --}}
-            <x-card :title="__('accounting.filing.fields.tax_codes')" icon="tag" :subtitle="__('accounting.filing.fields.subtitle')">
-                <x-table :bare="true">
-                    <x-slot:head>
-                        <tr>
-                            <th>{{ __('accounting.ledger.column.number') }}</th>
-                            <th>{{ __('accounting.ledger.column.name') }}</th>
-                            <th>{{ __('accounting.reports.column.direction') }}</th>
-                            <th class="text-right">{{ __('accounting.filing.fields.column.base') }}</th>
-                            <th class="text-right">{{ __('accounting.filing.fields.column.tax') }}</th>
-                            <th class="text-right"></th>
-                        </tr>
-                    </x-slot:head>
-                    @foreach ($taxCodes as $taxCode)
-                        <tr class="hover">
-                            <td class="font-mono">{{ $taxCode->code }}</td>
-                            <td>{{ $taxCode->name }}</td>
-                            <td>{{ $taxCode->direction->label() }}</td>
-                            <td class="text-right font-mono">{{ $taxCode->ustva_base_field ?? '—' }}</td>
-                            <td class="text-right font-mono">{{ $taxCode->ustva_tax_field ?? '—' }}</td>
-                            <td class="text-right">
-                                @if ($canConfigure)
-                                    <x-icon-btn icon="edit" size="xs" tone="ghost"
-                                                data-entry-modal-trigger
-                                                :href="route('finance.accounting.tax-codes.edit', $taxCode)"
-                                                :label="__('Bearbeiten')" />
-                                @endif
-                            </td>
-                        </tr>
-                    @endforeach
-                </x-table>
-            </x-card>
-        @endif
 
         <x-pagination :paginator="$accounts" standing />
     </x-index-page>

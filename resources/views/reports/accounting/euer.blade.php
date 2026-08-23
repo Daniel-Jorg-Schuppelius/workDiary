@@ -16,8 +16,11 @@
 @section('title', __('accounting.reports.card.euer.title'))
 @section('nav-title', __('accounting.reports.card.euer.title'))
 
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+
 @section('content')
-    <x-index-page :subtitle="__('accounting.reports.period', ['from' => $from->fdate(), 'to' => $to->fdate()])">
+    <x-index-page overflow="clip" :subtitle="__('accounting.reports.period', ['from' => $from->fdate(), 'to' => $to->fdate()])">
         <x-slot:actions>
             <x-icon-btn icon="download" size="sm" tone="ghost" show-label
                         :href="route('reports.accounting.euer', ['export' => 'csv'])" :label="__('CSV')" />
@@ -38,6 +41,18 @@
             <x-kpi-tile :label="__('accounting.reports.column.result')" :value="$result" />
             <x-kpi-tile :label="__('accounting.reports.column.not_deductible')" :value="$not_deductible" />
         </div>
+
+        <x-card :title="__('accounting.reports.unclear.title')" icon="help">
+            @if ($unclear === [])
+                <p class="text-sm text-base-content/60">{{ __('accounting.reports.unclear.none') }}</p>
+            @else
+                <ul class="list-disc pl-5 text-sm">
+                    @foreach ($unclear as $item)
+                        <li>{{ $item }}</li>
+                    @endforeach
+                </ul>
+            @endif
+        </x-card>
 
         <x-table scroll="flex" :zebra="true">
             <x-slot:head>
@@ -65,16 +80,5 @@
             @endforelse
         </x-table>
 
-        <x-card :title="__('accounting.reports.unclear.title')" icon="help">
-            @if ($unclear === [])
-                <p class="text-sm text-base-content/60">{{ __('accounting.reports.unclear.none') }}</p>
-            @else
-                <ul class="list-disc pl-5 text-sm">
-                    @foreach ($unclear as $item)
-                        <li>{{ $item }}</li>
-                    @endforeach
-                </ul>
-            @endif
-        </x-card>
     </x-index-page>
 @endsection

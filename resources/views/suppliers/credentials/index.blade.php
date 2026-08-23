@@ -16,8 +16,11 @@
 @section('title', __('procurement.credentials.title'))
 @section('nav-title', __('procurement.credentials.title'))
 
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+
 @section('content')
-    <x-index-page :subtitle="__('procurement.credentials.subtitle')">
+    <x-index-page overflow="clip" :subtitle="__('procurement.credentials.subtitle')">
         <div class="alert bg-info/10 border-info/30 text-sm text-base-content" role="note">
             <x-icon name="info" />
             <span>{{ $blockingEnabled ? __('procurement.credentials.blocking_on') : __('procurement.credentials.blocking_off') }}</span>

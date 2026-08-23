@@ -15,8 +15,11 @@
 @section('title', __('accounting.ledger.journal.title'))
 @section('nav-title', __('accounting.ledger.journal.title'))
 
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+
 @section('content')
-    <x-index-page :subtitle="__('accounting.ledger.journal.subtitle')">
+    <x-index-page overflow="clip" :subtitle="__('accounting.ledger.journal.subtitle')">
         <x-slot:actions>
             @if ($canPrepare)
                 <x-icon-btn icon="add" size="sm" tone="primary"

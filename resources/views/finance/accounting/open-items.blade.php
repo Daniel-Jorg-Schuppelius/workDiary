@@ -15,8 +15,11 @@
 @section('title', __('accounting.open_items.title'))
 @section('nav-title', __('accounting.open_items.title'))
 
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+
 @section('content')
-    <x-index-page :subtitle="__('accounting.open_items.subtitle')">
+    <x-index-page overflow="clip" :subtitle="__('accounting.open_items.subtitle')">
         <div role="tablist" class="tabs tabs-box w-fit">
             @foreach (\App\Enums\Finance\OpenItemDirection::cases() as $tab)
                 <a role="tab" class="tab {{ $direction === $tab ? 'tab-active' : '' }}"
