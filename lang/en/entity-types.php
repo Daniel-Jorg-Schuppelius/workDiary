@@ -18,6 +18,7 @@ declare(strict_types=1);
  * setzen. Vollständigkeit erzwingt Tests\Feature\AuditTranslationCoverageTest.
  */
 return [
+    'AccountingReportController' => 'Report export: accounting',
     'AbsenceCalendarReportController' => 'Report export: absence calendar',
     'AbsencesReportController' => 'Report export: absences',
     'AccessMedium' => 'Access medium',
@@ -454,4 +455,23 @@ return [
     'WorkSchedule' => 'Work schedule',
     'ZammadConnection' => 'Zammad connection',
     'AccountingMigrationRun' => 'Accounting migration',
+    'AccountingProfile' => 'Accounting profile',
+    'AccountingSovereigntyPeriod' => 'Posting authority section',
+    'AccountingFiscalYear' => 'Fiscal year',
+    'AccountingPeriod' => 'Accounting period',
+    'AccountingAccount' => 'Account',
+    'AccountingTaxCode' => 'Tax code',
+    'AccountingEntry' => 'Journal entry',
+    'AccountingEntryLine' => 'Entry line',
+    'AccountingEvent' => 'Accounting audit event',
+    'AccountingPostingRule' => 'Posting rule',
+    'AccountingOpenItem' => 'Open item',
+    'AccountingOpenItemSettlement' => 'Settlement',
+    'AccountingTransfer' => 'Internal transfer',
+    'AccountingRecurringTemplate' => 'Recurring template',
+    'AccountingRecurringRun' => 'Recurring item',
+    'AccountingTaxationPeriod' => 'Taxation method section',
+    'AccountingVatFilingPeriod' => 'VAT return period section',
+    'AccountingVatExtension' => 'Deadline extension',
+    'AccountingFilingObligation' => 'Filing obligation',
 ];

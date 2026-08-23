@@ -279,6 +279,12 @@ class TenantTraitCoverageTest extends TestCase {
         // `audit:verify` scope-frei verifizierbar sein muss und der Nachweis
         // des Wechsels die Löschung von Lauf/Organisation überdauert.
         \App\Models\Migration\AccountingMigrationEvent::class,
+        // Nachweiskette des lokalen Buchungskerns (Feature 125, MVP-672):
+        // nullable organization_id BEWUSST ohne FK und ohne Global-Scope —
+        // dieselbe Begründung wie bei den übrigen `config('audit.chains')`-
+        // Ketten: `audit:verify` muss sie scope-frei über alle Zeilen prüfen
+        // können, und der Nachweis überdauert Buchung wie Organisation.
+        \App\Models\Accounting\AccountingEvent::class,
         // Quellnachweis je Buchungssatz eines DATEV-Buchungsstapels (Feature 045,
         // Priorität 2): Kind-Tabelle des tenant-gebundenen DatevBookingBatch —
         // Mandantengrenze transitiv über datev_booking_batches.organization_id

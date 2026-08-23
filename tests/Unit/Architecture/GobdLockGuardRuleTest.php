@@ -48,6 +48,11 @@ class GobdLockGuardRuleTest extends TestCase {
         // Freeze nach Ausstellung/Finalisierung/Übergabe
         'Invoice' => ['file' => 'app/Models/Invoice.php', 'table' => 'invoices'],
         'DatevBookingBatch' => ['file' => 'app/Models/Finance/DatevBookingBatch.php', 'table' => 'datev_booking_batches'],
+        // MVP-672: Festbuchung ist unveränderlich; nur der Storno-Vermerk darf noch entstehen.
+        'AccountingEntry' => ['file' => 'app/Models/Accounting/AccountingEntry.php', 'table' => 'accounting_entries'],
+        'AccountingEntryLine' => ['file' => 'app/Models/Accounting/AccountingEntryLine.php', 'table' => 'accounting_entry_lines'],
+        // MVP-674: Ausgleiche sind unveränderlich — ein Rückläufer erzeugt eine Gegenbewegung.
+        'AccountingOpenItemSettlement' => ['file' => 'app/Models/Accounting/AccountingOpenItemSettlement.php', 'table' => 'accounting_open_item_settlements'],
         'BillingTransfer' => ['file' => 'app/Models/Finance/BillingTransfer.php', 'table' => 'billing_transfers'],
         // Append-only Nachweise (AppendOnly-Trait)
         'StockMovement' => ['file' => 'app/Models/StockMovement.php', 'table' => 'stock_movements'],
@@ -71,6 +76,7 @@ class GobdLockGuardRuleTest extends TestCase {
         'OrganizationAuditLog' => ['file' => 'app/Models/OrganizationAuditLog.php', 'table' => 'organization_audit_logs'],
         'BillingTransferEvent' => ['file' => 'app/Models/Finance/BillingTransferEvent.php', 'table' => 'billing_transfer_events'],
         'DatevBookingEvent' => ['file' => 'app/Models/Finance/DatevBookingEvent.php', 'table' => 'datev_booking_events'],
+        'AccountingEvent' => ['file' => 'app/Models/Accounting/AccountingEvent.php', 'table' => 'accounting_events'], // MVP-672
         'PaymentReconciliationEvent' => ['file' => 'app/Models/Finance/PaymentReconciliationEvent.php', 'table' => 'payment_reconciliation_events'],
         'CaseEvent' => ['file' => 'app/Models/Whistleblowing/CaseEvent.php', 'table' => 'case_events'],
         'RequestEvent' => ['file' => 'app/Models/Privacy/RequestEvent.php', 'table' => 'request_events'],
@@ -127,6 +133,13 @@ class GobdLockGuardRuleTest extends TestCase {
         // MUTABLE_AFTER_ISSUE-Whitelist (status, paid_on), identisch zum
         // ReconciliationService-Fall oben.
         'app/Services/Billing/RetainerVoucherReconciler.php' => 'Retainer-Zahlungsabgleich aktualisiert status/paid_on ausgestellter Pauschal-Rechnungen (dokumentierte Guard-Ausnahme).',
+        // Messdatensatz des Lastprofils (MVP-683): schreibt Buchungen per
+        // Sammel-Insert, weil 30.000 Einzelbuchungen über den JournalService
+        // die Messung selbst zum Engpass machen würden. Das Kommando ist ein
+        // Werkzeug, kein Bestand — es verweigert in der Produktivumgebung den
+        // Dienst und weist am Ende darauf hin, dass die erzeugten Buchungen
+        // ohne Nachweis-Snapshot und ohne Ereignisse entstehen.
+        'app/Console/Commands/Finance/SeedAccountingLoadCommand.php' => 'Messdatensatz des Lastprofils, nur außerhalb der Produktivumgebung (MVP-683).',
     ];
 
     public function test_guarded_models_register_lock_guards(): void {

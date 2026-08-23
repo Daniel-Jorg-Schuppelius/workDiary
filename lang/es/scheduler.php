@@ -111,6 +111,7 @@ return [
         'integration' => ['purge_inbox' => 'Depurar la bandeja de integraciones'],
         'finance' => ['open_times_digest' => 'Resumen de tiempos abiertos para contabilidad'],
         'inventory' => ['cycle_counts' => 'Iniciar inventario cíclico', 'expiring_lots' => 'Vigilancia de caducidad (lotes por vencer)'],
+        'accounting' => ['recurring' => 'Expectativas de documentos y borradores de asiento recurrentes', 'filings' => 'Sincronizar plazos fiscales y recordar'],
         'invoicing' => ['recurring' => 'Generar borradores de facturas recurrentes'],
         'jtl' => ['sync' => 'Sincronización JTL Wawi'],
         'lexoffice' => [

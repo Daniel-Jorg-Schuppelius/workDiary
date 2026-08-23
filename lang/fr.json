@@ -2135,6 +2135,7 @@
     "Der Katalog enthält keine Elemente.": "Le catalogue ne contient aucun élément.",
     "Der Katalogeintrag ist nicht aktiv.": "L'élément de catalogue n'est pas actif.",
     "Der Katalogeintrag wird entfernt.": "L'article de catalogue sera supprimé.",
+    "Der Kunde erhält keine Rundschreiben — Pflichtmitteilungen ausgenommen.": "Le client ne reçoit pas de circulaires — sauf les communications obligatoires.",
     "Der Lauf ist bereits abgeschlossen.": "L’exécution est déjà terminée.",
     "Der Leistungsbereich steht in der Datei; das Stichwort ist eine Vermutung über den Text.": "Le corps d’état figure dans le fichier ; le mot-clé est une supposition sur le texte.",
     "Der Link ist 30 Tage gültig und nur einmal verwendbar.": "Le lien est valable 30 jours et utilisable une seule fois.",
@@ -3071,6 +3072,7 @@
     "Events Σ": "Events Σ",
     "Eventualposition (Option) — zählt erst nach Annahme": "Position éventuelle (option) — ne compte qu'après acceptation",
     "Evidenz": "Preuves",
+    "Excel": "Excel",
     "Exception": "Exception",
     "Existierende Kunden werden über die Spalte \"Nummer\" aktualisiert.": "Les clients existants sont mis à jour via la colonne \"Nummer\".",
     "Export": "Export",
@@ -4584,6 +4586,7 @@
     "Keine Rollpläne": "Aucun plan de rotation",
     "Keine Räume gebucht.": "Aucune salle réservée.",
     "Keine SLA-Frist hinterlegt.": "Aucune échéance SLA définie.",
+    "Keine Sammelmails": "Pas d’envois groupés",
     "Keine Schicht heute": "Aucun service aujourd’hui",
     "Keine Schicht heute.": "Aucun service aujourd’hui.",
     "Keine Schichten an diesem Tag.": "Aucun service ce jour-là.",
@@ -10771,7 +10774,5 @@
     "… und :count weitere": "… et :count autres",
     "€/km": "€/km",
     "≤ 14 Tage": "≤ 14 jours",
-    "≤ 3 Monate": "≤ 3 mois",
-    "Keine Sammelmails": "Pas d’envois groupés",
-    "Der Kunde erhält keine Rundschreiben — Pflichtmitteilungen ausgenommen.": "Le client ne reçoit pas de circulaires — sauf les communications obligatoires."
+    "≤ 3 Monate": "≤ 3 mois"
 }

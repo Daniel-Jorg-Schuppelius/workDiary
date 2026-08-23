@@ -18,6 +18,7 @@ declare(strict_types=1);
  * setzen. Vollständigkeit erzwingt Tests\Unit\Architecture\AuditTranslationCoverageTest.
  */
 return [
+    'AccountingReportController' => 'Esportazione report: contabilità',
     'AbsenceCalendarReportController' => 'Esportazione report: calendario assenze',
     'AbsencesReportController' => 'Esportazione report: assenze',
     'AccessMedium' => 'Supporto di accesso',
@@ -454,4 +455,23 @@ return [
     'WorkSchedule' => 'Orario di lavoro',
     'ZammadConnection' => 'Connessione Zammad',
     'AccountingMigrationRun' => 'Cambio contabile',
+    'AccountingProfile' => 'Profilo contabile',
+    'AccountingSovereigntyPeriod' => 'Tratto di autorità contabile',
+    'AccountingFiscalYear' => 'Esercizio',
+    'AccountingPeriod' => 'Periodo contabile',
+    'AccountingAccount' => 'Conto',
+    'AccountingTaxCode' => 'Codice IVA',
+    'AccountingEntry' => 'Registrazione',
+    'AccountingEntryLine' => 'Riga di registrazione',
+    'AccountingEvent' => 'Prova contabile',
+    'AccountingPostingRule' => 'Regola di registrazione',
+    'AccountingOpenItem' => 'Partita aperta',
+    'AccountingOpenItemSettlement' => 'Compensazione',
+    'AccountingTransfer' => 'Giroconto interno',
+    'AccountingRecurringTemplate' => 'Modello ricorrente',
+    'AccountingRecurringRun' => 'Operazione ricorrente',
+    'AccountingTaxationPeriod' => 'Periodo di regime IVA',
+    'AccountingVatFilingPeriod' => 'Sezione periodo di liquidazione',
+    'AccountingVatExtension' => 'Proroga permanente',
+    'AccountingFilingObligation' => 'Obbligo dichiarativo',
 ];

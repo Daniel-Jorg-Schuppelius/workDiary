@@ -268,6 +268,9 @@ class DemoSeederService {
 
             // Cloud-Dokumenteingang (Feature 080 P9; Audit 2026-08, W4.4).
             $counts['cloud_intake'] = $showcase->seedCloudIntake($organization, $users->first());
+            // Lokale Buchhaltung (Feature 125, MVP-678): Durchstich vom Konto
+            // bis zum offenen Posten.
+            $counts['local_accounting'] = $showcase->seedLocalAccounting($organization, $users->first());
         });
 
         return $counts;

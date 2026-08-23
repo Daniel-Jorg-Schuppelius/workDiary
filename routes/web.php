@@ -2323,6 +2323,123 @@ Route::middleware('auth')->group(function () {
             Route::get('check', [\App\Http\Controllers\Finance\GobdExportController::class, 'check'])->name('check');
             Route::post('export', [\App\Http\Controllers\Finance\GobdExportController::class, 'export'])->name('export');
         });
+        // Lokale Buchhaltung (Feature 125, MVP-671): Einrichtungsprofil,
+        // Buchungshoheit und Perioden. Routen MÜSSEN finance.* heißen
+        // (Plan-Gating 'finance.*' → module.finance); Rechte im Controller.
+        Route::prefix('finanzen/buchhaltung')->name('finance.accounting.')->group(function (): void {
+            Route::get('einrichtung', [\App\Http\Controllers\Finance\AccountingSetupController::class, 'index'])->name('setup');
+            Route::put('einrichtung', [\App\Http\Controllers\Finance\AccountingSetupController::class, 'update'])->name('update');
+            Route::get('geschaeftsjahre/neu', [\App\Http\Controllers\Finance\AccountingSetupController::class, 'fiscalYearForm'])->name('fiscal-years.create');
+            Route::post('geschaeftsjahre', [\App\Http\Controllers\Finance\AccountingSetupController::class, 'storeFiscalYear'])->name('fiscal-years.store');
+            Route::get('hoheit/wechseln', [\App\Http\Controllers\Finance\AccountingSetupController::class, 'sovereigntyForm'])->name('sovereignty.create');
+            Route::post('aktivieren', [\App\Http\Controllers\Finance\AccountingSetupController::class, 'activate'])->name('activate');
+            Route::post('hoheit', [\App\Http\Controllers\Finance\AccountingSetupController::class, 'switchSovereignty'])->name('sovereignty');
+            // Versteuerungsart Soll/Ist (MVP-679).
+            Route::get('versteuerung', [\App\Http\Controllers\Finance\AccountingSetupController::class, 'taxationForm'])->name('taxation.create');
+            Route::post('versteuerung', [\App\Http\Controllers\Finance\AccountingSetupController::class, 'switchTaxation'])->name('taxation');
+            // Meldeprofil: Voranmeldungszeitraum und Dauerfristverlängerung (MVP-684).
+            Route::get('meldezeitraum', [\App\Http\Controllers\Finance\AccountingSetupController::class, 'filingIntervalForm'])->name('filing-interval.create');
+            Route::post('meldezeitraum', [\App\Http\Controllers\Finance\AccountingSetupController::class, 'switchFilingInterval'])->name('filing-interval');
+            Route::get('dauerfristverlaengerung', [\App\Http\Controllers\Finance\AccountingSetupController::class, 'extensionForm'])->name('vat-extension.create');
+            Route::post('dauerfristverlaengerung', [\App\Http\Controllers\Finance\AccountingSetupController::class, 'storeExtension'])->name('vat-extension');
+            Route::get('sondervorauszahlung', [\App\Http\Controllers\Finance\AccountingSetupController::class, 'prepaymentForm'])->name('prepayment.create');
+            Route::post('sondervorauszahlung', [\App\Http\Controllers\Finance\AccountingSetupController::class, 'storePrepayment'])->name('prepayment');
+
+            // Kontenplan (MVP-672).
+            Route::prefix('konten')->name('accounts.')->group(function (): void {
+                Route::get('/', [\App\Http\Controllers\Finance\ChartOfAccountsController::class, 'index'])->name('index');
+                Route::get('neu', [\App\Http\Controllers\Finance\ChartOfAccountsController::class, 'form'])->name('create');
+                Route::post('/', [\App\Http\Controllers\Finance\ChartOfAccountsController::class, 'store'])->name('store');
+                Route::post('import', [\App\Http\Controllers\Finance\ChartOfAccountsController::class, 'import'])->name('import');
+                // Kontenplan aus Vorlage (MVP-678): additiv, überschreibt nichts.
+                Route::post('vorlage', [\App\Http\Controllers\Finance\ChartOfAccountsController::class, 'applyTemplate'])->name('template');
+                Route::get('{account}/bearbeiten', [\App\Http\Controllers\Finance\ChartOfAccountsController::class, 'form'])->name('edit');
+                Route::put('{account}', [\App\Http\Controllers\Finance\ChartOfAccountsController::class, 'update'])->name('update');
+                Route::post('{account}/stilllegen', [\App\Http\Controllers\Finance\ChartOfAccountsController::class, 'deactivate'])->name('deactivate');
+            });
+
+            // Kennziffern der Steuerkennzeichen (MVP-688).
+            Route::prefix('steuerkennzeichen')->name('tax-codes.')->group(function (): void {
+                Route::get('{taxCode}/bearbeiten', [\App\Http\Controllers\Finance\ChartOfAccountsController::class, 'taxCodeForm'])->name('edit');
+                Route::put('{taxCode}', [\App\Http\Controllers\Finance\ChartOfAccountsController::class, 'updateTaxCode'])->name('update');
+            });
+
+            // Buchungs-Inbox und Mappingregeln (MVP-673).
+            Route::prefix('inbox')->name('inbox.')->group(function (): void {
+                Route::get('/', [\App\Http\Controllers\Finance\PostingInboxController::class, 'index'])->name('index');
+                Route::post('vorbereiten', [\App\Http\Controllers\Finance\PostingInboxController::class, 'prepare'])->name('prepare');
+                Route::post('stapel', [\App\Http\Controllers\Finance\PostingInboxController::class, 'batch'])->name('batch');
+                Route::post('{entry}/festschreiben', [\App\Http\Controllers\Finance\PostingInboxController::class, 'post'])->name('post');
+                // Klärungsbuchung und interne Umbuchung (MVP-681).
+                Route::get('klaerung/{transaction}', [\App\Http\Controllers\Finance\PostingInboxController::class, 'clearingForm'])->name('clearing.create');
+                Route::post('klaerung/{transaction}', [\App\Http\Controllers\Finance\PostingInboxController::class, 'storeClearing'])->name('clearing.store');
+                Route::get('umbuchung/neu', [\App\Http\Controllers\Finance\PostingInboxController::class, 'transferForm'])->name('transfer.create');
+                Route::post('umbuchung', [\App\Http\Controllers\Finance\PostingInboxController::class, 'storeTransfer'])->name('transfer.store');
+            });
+
+            // Periodenabschluss (MVP-677): schließen und — mit eigenem Recht
+            // und Begründung — wieder öffnen.
+            Route::prefix('abschluss')->name('closing.')->group(function (): void {
+                Route::get('/', [\App\Http\Controllers\Finance\PeriodClosingController::class, 'index'])->name('index');
+                Route::get('{period}/pruefen', [\App\Http\Controllers\Finance\PeriodClosingController::class, 'preflight'])->name('preflight');
+                Route::post('{period}/vorlaeufig', [\App\Http\Controllers\Finance\PeriodClosingController::class, 'softClose'])->name('soft-close');
+                Route::post('{period}/schliessen', [\App\Http\Controllers\Finance\PeriodClosingController::class, 'close'])->name('close');
+                Route::get('{period}/oeffnen', [\App\Http\Controllers\Finance\PeriodClosingController::class, 'reopenForm'])->name('reopen-form');
+                Route::post('{period}/oeffnen', [\App\Http\Controllers\Finance\PeriodClosingController::class, 'reopen'])->name('reopen');
+                Route::post('jahr/{year}/schliessen', [\App\Http\Controllers\Finance\PeriodClosingController::class, 'closeYear'])->name('close-year');
+                // Startsalden-Übernahme und DATEV-Übergabe aus dem Journal (MVP-677).
+                Route::post('startsalden', [\App\Http\Controllers\Finance\PeriodClosingController::class, 'importOpeningBalances'])->name('opening-balances');
+                Route::post('datev', [\App\Http\Controllers\Finance\PeriodClosingController::class, 'datevExport'])->name('datev');
+            });
+
+            // Wiederkehrende Vorgänge (MVP-675): Belegerwartungen und
+            // Buchungsvorlagen. Serienrechnungen bleiben beim InvoiceSchedule.
+            Route::prefix('wiederkehrend')->name('recurring.')->group(function (): void {
+                Route::get('/', [\App\Http\Controllers\Finance\RecurringAccountingController::class, 'index'])->name('index');
+                Route::get('neu', [\App\Http\Controllers\Finance\RecurringAccountingController::class, 'form'])->name('create');
+                Route::post('/', [\App\Http\Controllers\Finance\RecurringAccountingController::class, 'store'])->name('store');
+                Route::get('{template}/bearbeiten', [\App\Http\Controllers\Finance\RecurringAccountingController::class, 'form'])->name('edit');
+                Route::put('{template}', [\App\Http\Controllers\Finance\RecurringAccountingController::class, 'update'])->name('update');
+                Route::post('{template}/pausieren', [\App\Http\Controllers\Finance\RecurringAccountingController::class, 'pause'])->name('pause');
+                Route::post('{template}/fortsetzen', [\App\Http\Controllers\Finance\RecurringAccountingController::class, 'resume'])->name('resume');
+                Route::post('{template}/beenden', [\App\Http\Controllers\Finance\RecurringAccountingController::class, 'end'])->name('end');
+                Route::post('{template}/lauf', [\App\Http\Controllers\Finance\RecurringAccountingController::class, 'run'])->name('run');
+            });
+
+            // Steuertermine (MVP-686): berechnete Fristen, gespeicherte Erledigung.
+            Route::prefix('steuertermine')->name('filings.')->group(function (): void {
+                Route::get('/', [\App\Http\Controllers\Finance\FilingObligationController::class, 'index'])->name('index');
+                Route::post('{obligation}', [\App\Http\Controllers\Finance\FilingObligationController::class, 'mark'])->name('mark');
+            });
+
+            // Offene Posten (MVP-674): Projektion der Festbuchung.
+            Route::prefix('offene-posten')->name('open-items.')->group(function (): void {
+                Route::get('/', [\App\Http\Controllers\Finance\OpenItemController::class, 'index'])->name('index');
+                Route::get('{item}/ausgleichen', [\App\Http\Controllers\Finance\OpenItemController::class, 'settleForm'])->name('settle-form');
+                Route::post('{item}/ausgleichen', [\App\Http\Controllers\Finance\OpenItemController::class, 'settle'])->name('settle');
+            });
+
+            Route::prefix('regeln')->name('rules.')->group(function (): void {
+                Route::get('/', [\App\Http\Controllers\Finance\PostingRuleController::class, 'index'])->name('index');
+                Route::get('neu', [\App\Http\Controllers\Finance\PostingRuleController::class, 'form'])->name('create');
+                Route::post('/', [\App\Http\Controllers\Finance\PostingRuleController::class, 'store'])->name('store');
+                Route::get('{rule}/bearbeiten', [\App\Http\Controllers\Finance\PostingRuleController::class, 'form'])->name('edit');
+                Route::put('{rule}', [\App\Http\Controllers\Finance\PostingRuleController::class, 'update'])->name('update');
+                Route::delete('{rule}', [\App\Http\Controllers\Finance\PostingRuleController::class, 'destroy'])->name('destroy');
+            });
+
+            // Journal (MVP-672): Festschreibung und Storno laufen über den
+            // JournalService, nie über einen direkten Modell-Write.
+            Route::prefix('journal')->name('journal.')->group(function (): void {
+                Route::get('/', [\App\Http\Controllers\Finance\JournalController::class, 'index'])->name('index');
+                Route::get('neu', [\App\Http\Controllers\Finance\JournalController::class, 'form'])->name('create');
+                Route::post('/', [\App\Http\Controllers\Finance\JournalController::class, 'store'])->name('store');
+                Route::get('{entry}', [\App\Http\Controllers\Finance\JournalController::class, 'show'])->name('show');
+                Route::post('{entry}/festschreiben', [\App\Http\Controllers\Finance\JournalController::class, 'post'])->name('post');
+                Route::get('{entry}/storno', [\App\Http\Controllers\Finance\JournalController::class, 'reverseForm'])->name('reverse-form');
+                Route::post('{entry}/storno', [\App\Http\Controllers\Finance\JournalController::class, 'reverse'])->name('reverse');
+            });
+        });
         Route::patch('projects/{project}/tasks/{task}/complete', [TaskController::class, 'complete'])->name('projects.tasks.complete');
         Route::get('time-entries/create', [TimeEntryController::class, 'pick'])->name('time-entries.create');
         // Massen-Neuzuordnung (MVP-508) — vor der Resource, damit „reassign"
@@ -3177,6 +3294,20 @@ Route::middleware('auth')->group(function () {
         // Beleg-Drilldown je Report-Zelle (Rang 59c, signierte Links).
         Route::get('reports/economics/drilldown', [EconomicsReportController::class, 'drilldown'])->name('reports.economics.drilldown');
         Route::get('reports/billing', [BillingReportController::class, 'index'])->name('reports.billing');
+        // Finanzberichte der lokalen Buchhaltung (Feature 125, MVP-676):
+        // gemeinsamer Zeitraum, gemeinsame Datenquelle.
+        Route::prefix('reports/buchhaltung')->name('reports.accounting.')->group(function (): void {
+            // Zusammenfassende Meldung (MVP-687).
+            Route::get('zusammenfassende-meldung', [\App\Http\Controllers\Reporting\AccountingReportController::class, 'recapitulative'])->name('recapitulative');
+            Route::get('/', [\App\Http\Controllers\Reporting\AccountingReportController::class, 'index'])->name('index');
+            Route::get('susa', [\App\Http\Controllers\Reporting\AccountingReportController::class, 'trialBalance'])->name('trial-balance');
+            Route::get('kontenblatt', [\App\Http\Controllers\Reporting\AccountingReportController::class, 'accountLedger'])->name('account-ledger');
+            Route::get('umsatzsteuer', [\App\Http\Controllers\Reporting\AccountingReportController::class, 'vat'])->name('vat');
+            Route::get('euer', [\App\Http\Controllers\Reporting\AccountingReportController::class, 'euer'])->name('euer');
+            Route::get('ergebnis', [\App\Http\Controllers\Reporting\AccountingReportController::class, 'profitAndLoss'])->name('profit-and-loss');
+            Route::get('liquiditaet', [\App\Http\Controllers\Reporting\AccountingReportController::class, 'liquidity'])->name('liquidity');
+            Route::get('qualitaet', [\App\Http\Controllers\Reporting\AccountingReportController::class, 'quality'])->name('quality');
+        });
         Route::get('reports/expenses', [ExpenseReportController::class, 'index'])->name('reports.expenses');
         Route::get('reports/qualifications', [QualificationReportController::class, 'index'])->name('reports.qualifications');
         // Feature 002: Kohortenvergleich vor/nach Fortbildung.

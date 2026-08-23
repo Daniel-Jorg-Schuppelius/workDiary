@@ -371,6 +371,12 @@ return [
 
         'finance.viewAny' => 'Übergabenachweise einsehen',
         'finance.config' => 'Finanzkonfiguration verwalten',
+        'finance.accounting.view' => 'Buchhaltung einsehen',
+        'finance.accounting.configure' => 'Buchhaltung einrichten',
+        'finance.accounting.prepare' => 'Buchungen vorbereiten',
+        'finance.accounting.post' => 'Buchungen festschreiben',
+        'finance.accounting.close' => 'Perioden abschließen',
+        'finance.accounting.reopen' => 'Perioden wieder öffnen',
         'accountingMigration.manage' => 'Buchhaltungswechsel verwalten',
         'finance.transfer.time' => 'Faktura-Zeiten vorbereiten und übertragen',
         'finance.transfer.material' => 'Faktura-Material vorbereiten und übertragen',

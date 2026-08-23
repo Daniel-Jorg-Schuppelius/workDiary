@@ -250,6 +250,88 @@ class GdpduExportService {
                     ['name' => 'Uebergeben_am', 'type' => 'alpha'],
                 ],
             ],
+            // Lokaler Buchungskern (Feature 125, MVP-677): Kontenplan, Journal,
+            // Buchungszeilen, offene Posten und Perioden. Ohne diese fünf
+            // Tabellen wäre das Hauptbuch für die Prüfung nicht auswertbar.
+            'ledger_accounts' => [
+                'file' => 'kontenplan.csv',
+                'name' => 'Kontenplan',
+                'description' => 'Konten der lokalen Buchhaltung mit Art, Saldenrichtung und DATEV-Zuordnung.',
+                'columns' => [
+                    ['name' => 'Konto', 'type' => 'alpha'],
+                    ['name' => 'Bezeichnung', 'type' => 'alpha'],
+                    ['name' => 'Kontoart', 'type' => 'alpha'],
+                    ['name' => 'Saldenrichtung', 'type' => 'alpha'],
+                    ['name' => 'Offene_Posten', 'type' => 'alpha'],
+                    ['name' => 'DATEV_Konto', 'type' => 'alpha'],
+                    ['name' => 'Aktiv', 'type' => 'alpha'],
+                ],
+            ],
+            'ledger_entries' => [
+                'file' => 'journal.csv',
+                'name' => 'Buchungsjournal',
+                'description' => 'Festgeschriebene Buchungen des Prüfungszeitraums (nach Buchungsdatum).',
+                'columns' => [
+                    ['name' => 'Journalnummer', 'type' => 'numeric', 'accuracy' => 0],
+                    ['name' => 'Buchungsdatum', 'type' => 'date'],
+                    ['name' => 'Belegdatum', 'type' => 'date'],
+                    ['name' => 'Status', 'type' => 'alpha'],
+                    ['name' => 'Buchungstext', 'type' => 'alpha'],
+                    ['name' => 'Beleg', 'type' => 'alpha'],
+                    ['name' => 'Waehrung', 'type' => 'alpha'],
+                    ['name' => 'Soll_Summe', 'type' => 'numeric', 'accuracy' => 2],
+                    ['name' => 'Haben_Summe', 'type' => 'numeric', 'accuracy' => 2],
+                    ['name' => 'Quelle', 'type' => 'alpha'],
+                    ['name' => 'Regelversion', 'type' => 'alpha'],
+                    ['name' => 'Storniert_durch', 'type' => 'alpha'],
+                    ['name' => 'Festgeschrieben_am', 'type' => 'alpha'],
+                ],
+            ],
+            'ledger_entry_lines' => [
+                'file' => 'journalzeilen.csv',
+                'name' => 'Buchungszeilen',
+                'description' => 'Zeilen der festgeschriebenen Buchungen mit Konto, Soll/Haben und Steuerkennzeichen.',
+                'columns' => [
+                    ['name' => 'Journalnummer', 'type' => 'numeric', 'accuracy' => 0],
+                    ['name' => 'Position', 'type' => 'numeric', 'accuracy' => 0],
+                    ['name' => 'Konto', 'type' => 'alpha'],
+                    ['name' => 'Soll', 'type' => 'numeric', 'accuracy' => 2],
+                    ['name' => 'Haben', 'type' => 'numeric', 'accuracy' => 2],
+                    ['name' => 'Steuerkennzeichen', 'type' => 'alpha'],
+                    ['name' => 'Steuerbetrag', 'type' => 'numeric', 'accuracy' => 2],
+                    ['name' => 'Buchungstext', 'type' => 'alpha'],
+                ],
+            ],
+            'ledger_open_items' => [
+                'file' => 'offeneposten.csv',
+                'name' => 'Offene Posten',
+                'description' => 'Forderungen und Verbindlichkeiten aus den Festbuchungen mit Ausgleichsstand.',
+                'columns' => [
+                    ['name' => 'Beleg', 'type' => 'alpha'],
+                    ['name' => 'Richtung', 'type' => 'alpha'],
+                    ['name' => 'Konto', 'type' => 'alpha'],
+                    ['name' => 'Belegdatum', 'type' => 'date'],
+                    ['name' => 'Faelligkeit', 'type' => 'date'],
+                    ['name' => 'Waehrung', 'type' => 'alpha'],
+                    ['name' => 'Ursprungsbetrag', 'type' => 'numeric', 'accuracy' => 2],
+                    ['name' => 'Offener_Betrag', 'type' => 'numeric', 'accuracy' => 2],
+                    ['name' => 'Status', 'type' => 'alpha'],
+                ],
+            ],
+            'ledger_periods' => [
+                'file' => 'buchungsperioden.csv',
+                'name' => 'Buchungsperioden',
+                'description' => 'Perioden der lokalen Buchhaltung mit Abschluss- und Wiedereröffnungsnachweis.',
+                'columns' => [
+                    ['name' => 'Geschaeftsjahr', 'type' => 'alpha'],
+                    ['name' => 'Von', 'type' => 'date'],
+                    ['name' => 'Bis', 'type' => 'date'],
+                    ['name' => 'Status', 'type' => 'alpha'],
+                    ['name' => 'Geschlossen_am', 'type' => 'alpha'],
+                    ['name' => 'Wiedereroeffnet_am', 'type' => 'alpha'],
+                    ['name' => 'Begruendung', 'type' => 'alpha'],
+                ],
+            ],
             'expenses' => [
                 'file' => 'spesen.csv',
                 'name' => 'Spesen',
@@ -517,7 +599,142 @@ class GdpduExportService {
             'cash_daily_closings' => $this->collectCashClosingRows($organization, $from, $to),
             'incoming_einvoices' => $this->collectIncomingEInvoiceRows($organization, $from, $to),
             'expenses' => $this->collectExpenseRows($organization, $from, $to),
+            'ledger_accounts' => $this->collectLedgerAccountRows($organization),
+            'ledger_entries' => $this->collectLedgerEntryRows($organization, $from, $to),
+            'ledger_entry_lines' => $this->collectLedgerLineRows($organization, $from, $to),
+            'ledger_open_items' => $this->collectLedgerOpenItemRows($organization, $from, $to),
+            'ledger_periods' => $this->collectLedgerPeriodRows($organization, $from, $to),
         ];
+    }
+
+    /**
+     * Kontenplan der lokalen Buchhaltung (Feature 125, MVP-677). Bewusst
+     * OHNE Zeitraumfilter: Ein Journal ohne seine Konten ist nicht lesbar.
+     *
+     * @return list<list<string>>
+     */
+    private function collectLedgerAccountRows(Organization $organization): array {
+        return array_values(\App\Models\Accounting\AccountingAccount::query()
+            ->where('organization_id', $organization->id)
+            ->orderBy('number')
+            ->get()
+            ->map(fn ($account): array => [
+                $this->str($account->number),
+                $this->str($account->name),
+                $this->str($account->type->value),
+                $this->str($account->normal_balance->value),
+                $account->is_open_item ? 'Ja' : 'Nein',
+                $this->str($account->datev_account),
+                $account->is_active ? 'Ja' : 'Nein',
+            ])
+            ->values()
+            ->all());
+    }
+
+    /** @return list<list<string>> */
+    private function collectLedgerEntryRows(Organization $organization, CarbonInterface $from, CarbonInterface $to): array {
+        return array_values($this->postedEntries($organization, $from, $to)
+            ->map(fn ($entry): array => [
+                $this->num($entry->journal_no, 0),
+                $this->date($entry->booked_on),
+                $this->date($entry->document_on),
+                $this->str($entry->status->value),
+                $this->str($entry->memo),
+                $this->str($entry->document_reference),
+                $this->str($entry->currency->value),
+                $this->num((float) $entry->debitTotal()->getAmount(), 2),
+                $this->num((float) $entry->creditTotal()->getAmount(), 2),
+                $this->str($entry->source_key),
+                $this->str($entry->rule_version),
+                $this->str($entry->reversed_by_entry_id === null ? '' : (string) $entry->reversedBy?->journal_no),
+                $this->dateTime($entry->posted_at),
+            ])
+            ->values()
+            ->all());
+    }
+
+    /** @return list<list<string>> */
+    private function collectLedgerLineRows(Organization $organization, CarbonInterface $from, CarbonInterface $to): array {
+        $rows = [];
+        foreach ($this->postedEntries($organization, $from, $to) as $entry) {
+            foreach ($entry->lines as $line) {
+                $rows[] = [
+                    $this->num($entry->journal_no, 0),
+                    $this->num($line->line_no, 0),
+                    $this->str($line->account?->number),
+                    $this->num((float) ($line->debit?->getAmount() ?? '0.00'), 2),
+                    $this->num((float) ($line->credit?->getAmount() ?? '0.00'), 2),
+                    $this->str($line->taxCode?->code),
+                    $this->num((float) ($line->tax_amount?->getAmount() ?? '0.00'), 2),
+                    $this->str($line->memo),
+                ];
+            }
+        }
+
+        return $rows;
+    }
+
+    /** @return list<list<string>> */
+    private function collectLedgerOpenItemRows(Organization $organization, CarbonInterface $from, CarbonInterface $to): array {
+        return array_values(\App\Models\Accounting\AccountingOpenItem::query()
+            ->where('organization_id', $organization->id)
+            ->whereDate('document_date', '>=', $from->toDateString())
+            ->whereDate('document_date', '<=', $to->toDateString())
+            ->with('account')
+            ->orderBy('id')
+            ->get()
+            ->map(fn ($item): array => [
+                $this->str($item->document_reference),
+                $this->str($item->direction->value),
+                $this->str($item->account?->number),
+                $this->date($item->document_date),
+                $this->date($item->due_date),
+                $this->str($item->currency->value),
+                $this->num((float) ($item->original_amount?->getAmount() ?? '0.00'), 2),
+                $this->num((float) ($item->open_amount?->getAmount() ?? '0.00'), 2),
+                $this->str($item->status->value),
+            ])
+            ->values()
+            ->all());
+    }
+
+    /** @return list<list<string>> */
+    private function collectLedgerPeriodRows(Organization $organization, CarbonInterface $from, CarbonInterface $to): array {
+        return array_values(\App\Models\Accounting\AccountingPeriod::query()
+            ->where('organization_id', $organization->id)
+            ->whereDate('starts_on', '<=', $to->toDateString())
+            ->whereDate('ends_on', '>=', $from->toDateString())
+            ->with('fiscalYear')
+            ->orderBy('starts_on')
+            ->get()
+            ->map(fn ($period): array => [
+                $this->str($period->fiscalYear?->label),
+                $this->date($period->starts_on),
+                $this->date($period->ends_on),
+                $this->str($period->status->value),
+                $this->dateTime($period->closed_at),
+                $this->dateTime($period->reopened_at),
+                $this->str($period->reopen_reason),
+            ])
+            ->values()
+            ->all());
+    }
+
+    /**
+     * Festgeschriebene Buchungen des Zeitraums — gemeinsame Quelle von
+     * Journal- und Zeilen-Export, damit beide zwangsläufig zusammenpassen.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\Accounting\AccountingEntry>
+     */
+    private function postedEntries(Organization $organization, CarbonInterface $from, CarbonInterface $to) {
+        return \App\Models\Accounting\AccountingEntry::query()
+            ->where('organization_id', $organization->id)
+            ->whereIn('status', ['posted', 'reversed'])
+            ->whereDate('booked_on', '>=', $from->toDateString())
+            ->whereDate('booked_on', '<=', $to->toDateString())
+            ->with(['lines.account', 'lines.taxCode', 'reversedBy'])
+            ->orderBy('journal_no')
+            ->get();
     }
 
     /**

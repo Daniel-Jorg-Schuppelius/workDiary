@@ -991,4 +991,90 @@ class DemoShowcaseSeeder {
             return 0;
         }
     }
+    /**
+     * Lokale Buchhaltung (Feature 125, MVP-678): ein kleiner, aber
+     * vollständiger Durchstich — Profil, Geschäftsjahr, Kontenplan,
+     * Buchungsregeln und eine festgeschriebene Erlösbuchung mit offenem Posten.
+     *
+     * Bewusst OHNE Periodenabschluss: Eine Demo, in der man nichts mehr buchen
+     * kann, beantwortet keine Frage.
+     */
+    public function seedLocalAccounting(Organization $organization, ?User $actor): int {
+        if ($actor === null) {
+            return 0;
+        }
+
+        try {
+            $startsOn = \Carbon\CarbonImmutable::now()->startOfYear();
+
+            app(\App\Services\Accounting\AccountingProfileService::class)->configure($organization, [
+                'profit_determination' => \App\Enums\Finance\ProfitDetermination::DoubleEntry,
+                'base_currency' => \CommonToolkit\Enums\CurrencyCode::Euro,
+                'fiscal_year_start_month' => 1,
+                'starts_on' => $startsOn,
+                'note' => null,
+            ]);
+
+            app(\App\Services\Accounting\FiscalYearService::class)->create($organization, $startsOn);
+            app(\App\Services\Accounting\AccountingProfileService::class)->activateLocal($organization, $actor);
+
+            $chart = app(\App\Services\Accounting\ChartOfAccountsService::class);
+            /** @var array<string, \App\Models\Accounting\AccountingAccount> $accounts */
+            $accounts = [];
+            foreach ([
+                ['receivable', '1400', 'Forderungen aus L+L', \App\Enums\Finance\AccountType::Asset, true],
+                ['bank', '1200', 'Bank', \App\Enums\Finance\AccountType::Asset, false],
+                ['vat', '1776', 'Umsatzsteuer 19 %', \App\Enums\Finance\AccountType::Liability, false],
+                ['revenue', '8400', 'Erlöse 19 %', \App\Enums\Finance\AccountType::Income, false],
+                ['expense', '6300', 'Sonstige Aufwendungen', \App\Enums\Finance\AccountType::Expense, false],
+            ] as [$key, $number, $name, $type, $openItem]) {
+                $accounts[$key] = $chart->create($organization, [
+                    'number' => $number,
+                    'name' => $name,
+                    'type' => $type,
+                    'is_open_item' => $openItem,
+                    'is_bank' => $key === 'bank',
+                    'datev_account' => $number,
+                ]);
+            }
+
+            foreach ([
+                [\App\Enums\Finance\PostingAccountRole::Receivable, 'receivable', null],
+                [\App\Enums\Finance\PostingAccountRole::Revenue, 'revenue', ['tax_rate' => '19.00']],
+                [\App\Enums\Finance\PostingAccountRole::TaxOutput, 'vat', ['tax_rate' => '19.00']],
+            ] as [$role, $accountKey, $match]) {
+                \App\Models\Accounting\AccountingPostingRule::query()->create([
+                    'organization_id' => $organization->id,
+                    'source_kind' => \App\Enums\Finance\PostingSourceKind::SalesInvoice,
+                    'role' => $role,
+                    'accounting_account_id' => $accounts[$accountKey]->id,
+                    'match_criteria' => $match,
+                    'priority' => 100,
+                    'version' => 1,
+                    'valid_from' => $startsOn->toDateString(),
+                    'is_active' => true,
+                ]);
+            }
+
+            app(\App\Services\Accounting\JournalService::class)->postDirect($organization, [
+                'booked_on' => $startsOn->addMonth(),
+                'memo' => 'Demo-Erlösbuchung',
+                'document_reference' => 'DEMO-1',
+                'source_key' => 'demo:accounting:1',
+                'snapshot' => ['due_date' => $startsOn->addMonth()->addDays(14)->toDateString()],
+                'lines' => [
+                    ['accounting_account_id' => $accounts['receivable']->id, 'debit' => '1190.00', 'credit' => '0.00'],
+                    ['accounting_account_id' => $accounts['revenue']->id, 'debit' => '0.00', 'credit' => '1000.00'],
+                    ['accounting_account_id' => $accounts['vat']->id, 'debit' => '0.00', 'credit' => '190.00'],
+                ],
+            ], $actor);
+
+            return count($accounts);
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return 0;
+        }
+    }
+
 }

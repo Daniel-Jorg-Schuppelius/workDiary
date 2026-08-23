@@ -46,6 +46,19 @@ return [
         // PDF-Dokumentdesign / Firmenbogen (Feature 076, Phase 28)
         'admin.document-design.*' => 'admin.document-design',
         'admin.accounting-migration.*' => 'admin.accounting-migration',
+        // Lokale Buchhaltung (Feature 125, MVP-678): Einrichtung, Buchen,
+        // Abschluss und Auswertungen.
+        'finance.accounting.setup' => 'accounting.overview',
+        'finance.accounting.accounts.*' => 'accounting.overview',
+        'finance.accounting.journal.*' => 'accounting.posting',
+        'finance.accounting.inbox.*' => 'accounting.posting',
+        'finance.accounting.rules.*' => 'accounting.posting',
+        'finance.accounting.open-items.*' => 'accounting.posting',
+        'finance.accounting.recurring.*' => 'accounting.posting',
+        'finance.accounting.closing.*' => 'accounting.closing',
+        // Steuertermine (Feature 125, MVP-686).
+        'finance.accounting.filings.*' => 'accounting.filings',
+        'reports.accounting.*' => 'accounting.closing',
         // Schreibfehler-Wörterbuch für Positionstexte
         'admin.text-corrections.*' => 'admin.text-corrections',
         // orgaMAX-Buchhaltung-Plugin (Feature 077, Phase 29)

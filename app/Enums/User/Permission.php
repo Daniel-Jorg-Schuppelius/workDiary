@@ -281,6 +281,30 @@ enum Permission: string implements HasLabel {
     case FinancePaymentRun = 'finance.payment.run';
     case FinancePaymentRelease = 'finance.payment.release';
 
+    /**
+     * Lokale Buchhaltung (Feature 125, MVP-671). Einsehen und Einrichten sind
+     * getrennt: Journal und Perioden liest auch die Sachbearbeitung, die
+     * Buchungshoheit ändert eine Führungsentscheidung.
+     */
+    case AccountingLedgerView = 'finance.accounting.view';
+    case AccountingLedgerConfigure = 'finance.accounting.configure';
+
+    /**
+     * Buchungskern (Feature 125, MVP-672). Vorbereiten und Festschreiben sind
+     * getrennt: Erst die Trennung macht das Vier-Augen-Prinzip möglich, das
+     * die Buchungs-Inbox (MVP-673) darauf aufsetzt.
+     */
+    case AccountingLedgerPrepare = 'finance.accounting.prepare';
+    case AccountingLedgerPost = 'finance.accounting.post';
+
+    /**
+     * Periodenabschluss (Feature 125, MVP-677). Wiedereröffnen ist bewusst ein
+     * eigenes Recht: Es hebt eine Festschreibung auf und gehört nicht in das
+     * normale Buchhalter-Profil.
+     */
+    case AccountingLedgerClose = 'finance.accounting.close';
+    case AccountingLedgerReopen = 'finance.accounting.reopen';
+
         // ── Rechnungen ─────────────────────────────────────────────────────
     case InvoiceViewAny = 'invoice.viewAny';
     case InvoiceView = 'invoice.view';

@@ -59,6 +59,9 @@
                 <th>{{ __('Rechnung') }}</th>
                 <th class="text-right">{{ __('Einnahme') }}</th>
                 <th class="text-right">{{ __('Ausgabe') }}</th>
+                @if ($postingStates !== [])
+                    <th>{{ __('accounting.ledger.column.status') }}</th>
+                @endif
                 <th class="w-px"></th>
             </tr>
         </x-slot:head>
@@ -103,6 +106,17 @@
                 </td>
                 <td class="text-right tabular-nums">{{ $entry->direction === \App\Models\CashEntry::DIRECTION_IN ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $entry->amount, 2, withThousandsSeparator: true) : '' }}</td>
                 <td class="text-right tabular-nums">{{ $entry->direction === \App\Models\CashEntry::DIRECTION_OUT ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $entry->amount, 2, withThousandsSeparator: true) : '' }}</td>
+                @if ($postingStates !== [])
+                    {{-- Buchungsstand aus dem Journal (MVP-681): die Kasse führt keinen eigenen. --}}
+                    @php $posting = $postingStates[$entry->id] ?? null; @endphp
+                    <td>
+                        @if ($posting)
+                            <x-posting-state :state="$posting['state']" :blockers="$posting['blockers']" />
+                        @else
+                            <span class="text-base-content/40">—</span>
+                        @endif
+                    </td>
+                @endif
                 <td class="text-right">
                     @can(\App\Enums\User\Permission::CashManage->value)
                         @if (! $isReversed && $entry->reversal_of_id === null)
@@ -115,7 +129,7 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">point_of_sale</span>' :colspan="8" :title="__('Noch keine Buchungen')" compact />
+            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">point_of_sale</span>' :colspan="$postingStates !== [] ? 9 : 8" :title="__('Noch keine Buchungen')" compact />
         @endforelse
     </x-table>
 

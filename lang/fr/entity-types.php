@@ -18,6 +18,7 @@ declare(strict_types=1);
  * setzen. Vollständigkeit erzwingt Tests\Unit\Architecture\AuditTranslationCoverageTest.
  */
 return [
+    'AccountingReportController' => 'Export de rapport : comptabilité',
     'AbsenceCalendarReportController' => 'Export de rapport : calendrier des absences',
     'AbsencesReportController' => 'Export de rapport : absences',
     'AccessMedium' => 'Support d’accès',
@@ -454,4 +455,23 @@ return [
     'WorkSchedule' => 'Horaire de travail',
     'ZammadConnection' => 'Connexion Zammad',
     'AccountingMigrationRun' => 'Changement comptable',
+    'AccountingProfile' => 'Profil comptable',
+    'AccountingSovereigntyPeriod' => "Tranche d'autorité comptable",
+    'AccountingFiscalYear' => 'Exercice',
+    'AccountingPeriod' => 'Période comptable',
+    'AccountingAccount' => 'Compte',
+    'AccountingTaxCode' => 'Code de taxe',
+    'AccountingEntry' => 'Écriture',
+    'AccountingEntryLine' => 'Ligne d\'écriture',
+    'AccountingEvent' => 'Preuve comptable',
+    'AccountingPostingRule' => 'Règle comptable',
+    'AccountingOpenItem' => 'Poste ouvert',
+    'AccountingOpenItemSettlement' => 'Règlement',
+    'AccountingTransfer' => 'Virement interne',
+    'AccountingRecurringTemplate' => 'Modèle récurrent',
+    'AccountingRecurringRun' => 'Opération récurrente',
+    'AccountingTaxationPeriod' => 'Période de régime de TVA',
+    'AccountingVatFilingPeriod' => 'Section de période de déclaration',
+    'AccountingVatExtension' => 'Prorogation permanente',
+    'AccountingFilingObligation' => 'Obligation déclarative',
 ];

@@ -84,6 +84,18 @@
                                 </span>
                             @endif
                             <x-status-badge :tone="$transaction->match_status->tone()" :label="$transaction->match_status->label()" />
+                            {{-- Buchungsstand aus dem Journal gelesen (MVP-681) — die Bankseite führt keinen eigenen. --}}
+                            @php $posting = $postingStates[$transaction->id] ?? null; @endphp
+                            @if ($posting)
+                                <x-posting-state :state="$posting['state']" :blockers="$posting['blockers']" />
+                                @if ($posting['state'] === 'open' && auth()->user()?->can(\App\Enums\User\Permission::AccountingLedgerPost->value))
+                                    {{-- Bewusste Klärungsbuchung (MVP-681): nie automatisch. --}}
+                                    <x-icon-btn icon="help_center" size="xs" tone="ghost"
+                                                data-entry-modal-trigger
+                                                :href="route('finance.accounting.inbox.clearing.create', $transaction->sqid)"
+                                                :label="__('accounting.clearing.action.post')" />
+                                @endif
+                            @endif
                         </div>
                     </div>
 

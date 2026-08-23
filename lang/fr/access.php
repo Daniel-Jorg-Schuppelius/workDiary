@@ -344,6 +344,12 @@ return [
 
         'finance.viewAny' => 'Consulter les justificatifs de transfert',
         'finance.config' => 'Gérer la configuration financière',
+        'finance.accounting.view' => 'Consulter la comptabilité',
+        'finance.accounting.configure' => 'Configurer la comptabilité',
+        'finance.accounting.prepare' => 'Préparer les écritures',
+        'finance.accounting.post' => 'Comptabiliser les écritures',
+        'finance.accounting.close' => 'Clôturer les périodes',
+        'finance.accounting.reopen' => 'Rouvrir les périodes',
         'accountingMigration.manage' => 'Gérer le changement de logiciel comptable',
         'finance.transfer.time' => 'Préparer et transférer les temps facturables',
         'finance.transfer.material' => 'Préparer et transférer le matériel facturable',

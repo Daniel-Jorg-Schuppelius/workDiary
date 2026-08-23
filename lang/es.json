@@ -2135,6 +2135,7 @@
     "Der Katalog enthält keine Elemente.": "El catálogo no contiene elementos.",
     "Der Katalogeintrag ist nicht aktiv.": "El elemento del catálogo no está activo.",
     "Der Katalogeintrag wird entfernt.": "El artículo de catálogo será eliminado.",
+    "Der Kunde erhält keine Rundschreiben — Pflichtmitteilungen ausgenommen.": "El cliente no recibe circulares — salvo las comunicaciones obligatorias.",
     "Der Lauf ist bereits abgeschlossen.": "La ejecución ya está finalizada.",
     "Der Leistungsbereich steht in der Datei; das Stichwort ist eine Vermutung über den Text.": "El capítulo de obra consta en el archivo; la palabra clave es una suposición sobre el texto.",
     "Der Link ist 30 Tage gültig und nur einmal verwendbar.": "El enlace vale 30 días y solo puede usarse una vez.",
@@ -3071,6 +3072,7 @@
     "Events Σ": "Eventos Σ",
     "Eventualposition (Option) — zählt erst nach Annahme": "Posición eventual (opción) — solo cuenta tras la aceptación",
     "Evidenz": "Evidencias",
+    "Excel": "Excel",
     "Exception": "Excepción",
     "Existierende Kunden werden über die Spalte \"Nummer\" aktualisiert.": "Los clientes existentes se actualizan mediante la columna \"Número\".",
     "Export": "Exportación",
@@ -4584,6 +4586,7 @@
     "Keine Rollpläne": "Sin planes rotativos",
     "Keine Räume gebucht.": "No hay salas reservadas.",
     "Keine SLA-Frist hinterlegt.": "No hay plazo de SLA definido.",
+    "Keine Sammelmails": "Sin envíos masivos",
     "Keine Schicht heute": "Hoy no hay turno",
     "Keine Schicht heute.": "Hoy no hay turno.",
     "Keine Schichten an diesem Tag.": "No hay turnos en este día.",
@@ -10771,7 +10774,5 @@
     "… und :count weitere": "… y :count más",
     "€/km": "€/km",
     "≤ 14 Tage": "≤ 14 días",
-    "≤ 3 Monate": "≤ 3 meses",
-    "Keine Sammelmails": "Sin envíos masivos",
-    "Der Kunde erhält keine Rundschreiben — Pflichtmitteilungen ausgenommen.": "El cliente no recibe circulares — salvo las comunicaciones obligatorias."
+    "≤ 3 Monate": "≤ 3 meses"
 }

@@ -405,6 +405,10 @@ return [
             'contract' => [
                 'deadlineDue' => 'Plazo contractual vencido',
             ],
+            'accounting' => [
+                'recurringOverdue' => 'Operación recurrente vencida',
+                'filingDue' => 'Plazo de declaración próximo',
+            ],
             'invoice' => [
                 'recurringDraft' => 'Borrador de factura desde plan de facturación',
             ],
@@ -1133,6 +1137,140 @@ return [
         ],
     ],
     'finance' => [
+        // Versteuerungsart (Feature 125, MVP-679).
+        'taxation-method' => [
+            'debit' => 'Devengo',
+            'credit' => 'Caja',
+        ],
+        // Steuerliche Meldepflichten (Feature 125, MVP-686).
+        'filing-obligation-kind' => [
+            'vat_advance' => 'Declaración periódica de IVA',
+            'special_prepayment' => 'Pago anticipado especial',
+            'recapitulative' => 'Estado recapitulativo',
+            'annual_return' => 'Declaración anual de IVA',
+        ],
+        'filing-obligation-status' => [
+            'open' => 'Abierto',
+            'submitted' => 'Presentado',
+            'not_required' => 'No necesario',
+        ],
+        // Voranmeldungszeitraum der Umsatzsteuer (Feature 125, MVP-684).
+        'vat-filing-interval' => [
+            'monthly' => 'Mensual',
+            'quarterly' => 'Trimestral',
+            'annual' => 'Solo declaración anual',
+            'none' => 'Sin declaración periódica',
+        ],
+        // Zeilen der Anlage EÜR (Feature 125, MVP-680).
+        'euer-category' => [
+            'income' => 'Ingresos de explotación',
+            'income_vat' => 'IVA repercutido cobrado',
+            'private_use' => 'Uso privado',
+            'expense' => 'Gastos de explotación',
+            'depreciation' => 'Amortizaciones',
+            'low_value_asset' => 'Bienes de escaso valor',
+            'input_tax' => 'IVA soportado pagado',
+            'paid_vat' => 'IVA pagado',
+            'limited_deductible' => 'Deducción limitada',
+            'not_deductible' => 'No deducible',
+        ],
+        // Wiederkehrende Vorgänge (Feature 125, MVP-675).
+        'recurring-template-kind' => [
+            'document_expectation' => 'Expectativa de documento',
+            'posting_template' => 'Plantilla de asiento',
+        ],
+        'recurring-interval' => [
+            'monthly' => 'Mensual',
+            'quarterly' => 'Trimestral',
+            'semi_annually' => 'Semestral',
+            'annually' => 'Anual',
+        ],
+        'recurring-run-status' => [
+            'expected' => 'Documento esperado',
+            'draft_created' => 'Borrador creado',
+            'fulfilled' => 'Cumplido',
+            'blocked' => 'Bloqueado',
+            'skipped' => 'Omitido',
+        ],
+        'recurring-template-status' => [
+            'active' => 'Activa',
+            'paused' => 'Pausada',
+            'ended' => 'Finalizada',
+        ],
+        // Offene Posten (Feature 125, MVP-674).
+        'open-item-direction' => [
+            'receivable' => 'Derecho de cobro',
+            'payable' => 'Obligación de pago',
+        ],
+        'open-item-status' => [
+            'open' => 'Abierta',
+            'partially_settled' => 'Parcialmente compensada',
+            'settled' => 'Compensada',
+            'disputed' => 'En disputa',
+        ],
+        'settlement-kind' => [
+            'payment' => 'Pago',
+            'discount' => 'Descuento',
+            'retention' => 'Retención',
+            'write_off' => 'Baja',
+            'overpayment' => 'Exceso',
+            'reversal' => 'Reversión',
+        ],
+        // Quellenadapter und Buchungsregeln (Feature 125, MVP-673).
+        'posting-source-kind' => [
+            'sales_invoice' => 'Factura emitida',
+            'incoming_invoice' => 'Factura recibida',
+            'expense' => 'Gasto',
+            'cash_entry' => 'Libro de caja',
+        ],
+        'posting-account-role' => [
+            'receivable' => 'Cliente',
+            'revenue' => 'Ingreso',
+            'tax_output' => 'IVA repercutido',
+            'payable' => 'Proveedor',
+            'expense' => 'Gasto',
+            'tax_input' => 'IVA soportado',
+            'cash' => 'Caja',
+            'employee_payable' => 'Deuda con empleados',
+        ],
+        // Buchungskern (Feature 125, MVP-672).
+        'balance-side' => [
+            'debit' => 'Debe',
+            'credit' => 'Haber',
+        ],
+        'account-type' => [
+            'asset' => 'Activo',
+            'liability' => 'Pasivo',
+            'equity' => 'Patrimonio neto',
+            'income' => 'Ingresos',
+            'expense' => 'Gastos',
+        ],
+        'accounting-entry-status' => [
+            'draft' => 'Borrador',
+            'ready' => 'Revisado',
+            'posted' => 'Contabilizado',
+            'reversed' => 'Anulado',
+        ],
+        'tax-code-direction' => [
+            'output' => 'IVA repercutido',
+            'input' => 'IVA soportado',
+            'none' => 'Sin impuesto',
+        ],
+        // Lokale Buchhaltung (Feature 125, MVP-671).
+        'accounting-sovereignty' => [
+            'preaccounting' => 'Precontabilidad (sin libro mayor)',
+            'local' => 'workDiary dirige',
+            'external' => 'Sistema externo dirige',
+        ],
+        'profit-determination' => [
+            'euer' => 'Estimación directa simplificada (criterio de caja)',
+            'double_entry' => 'Contabilidad por partida doble',
+        ],
+        'accounting-period-status' => [
+            'open' => 'Abierto',
+            'soft_closed' => 'Cerrado provisionalmente',
+            'closed' => 'Cerrado',
+        ],
         'billing-mode' => [
             'workdiary' => 'WorkDiary (local)',
             'lexoffice' => 'Lexoffice dirige',

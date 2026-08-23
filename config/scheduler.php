@@ -39,6 +39,28 @@ return [
         // --- Wiederkehrende Rechnungen (Phase 38, MVP-415) ---
         // Erzeugt ausschließlich ENTWÜRFE aus fälligen Abrechnungsplänen;
         // Ausstellung und Versand bleiben manuelle, auditierte Schritte.
+        // --- Wiederkehrende Buchhaltungsvorgänge (Feature 125, MVP-675) ---
+        // Eröffnet Belegerwartungen und erzeugt Buchungsentwürfe; niemals
+        // Festbuchungen und niemals fingierte Eingangsbelege.
+        'accounting.recurring' => [
+            'command' => 'accounting:run-recurring',
+            'cadence' => ['type' => 'dailyAt', 'time' => '05:35'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 2,
+        ],
+
+        // --- Steuertermine (Feature 125, MVP-686) ---
+        // Gleicht die Meldepflichten ab und erinnert an Fristen; meldet nichts
+        // an die Finanzverwaltung.
+        'accounting.filings' => [
+            'command' => 'accounting:check-filings',
+            'cadence' => ['type' => 'dailyAt', 'time' => '05:45'],
+            'allowed' => ['dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 1,
+        ],
+
         'invoicing.recurring' => [
             'command' => 'invoices:generate-recurring',
             'cadence' => ['type' => 'dailyAt', 'time' => '05:15'],

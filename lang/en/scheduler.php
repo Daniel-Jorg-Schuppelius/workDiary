@@ -111,6 +111,7 @@ return [
         'integration' => ['purge_inbox' => 'Purge integration inbox'],
         'finance' => ['open_times_digest' => 'Open-times digest for accounting'],
         'inventory' => ['cycle_counts' => 'Trigger cycle counts', 'expiring_lots' => 'Best-before monitoring (expiring lots)'],
+        'accounting' => ['recurring' => 'Recurring document expectations and posting drafts', 'filings' => 'Sync tax deadlines and send reminders'],
         'invoicing' => ['recurring' => 'Generate recurring invoice drafts'],
         'jtl' => ['sync' => 'JTL Wawi sync'],
         'lexoffice' => [

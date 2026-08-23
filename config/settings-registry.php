@@ -122,6 +122,15 @@ return [
     // Festlegung entsteht Ping-Pong: zwei Systeme überschreiben sich
     // gegenseitig. Default: workDiary führt, der Push ist erlaubt.
     'finance.master_data_authority' => ['type' => 'string', 'scopes' => ['organization'], 'options' => ['workdiary', 'accounting'], 'fallback' => 'workdiary'],
+    // Vier-Augen-Prinzip im Buchungskern (Feature 125, MVP-673): Wer einen
+    // Vorschlag vorbereitet hat, schreibt ihn dann nicht selbst fest. Default
+    // aus — wer allein bucht, hätte sonst eine Sperre ohne Ausweg.
+    'finance.accounting_four_eyes' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
+    // Steuerlich beraten (Feature 125, MVP-686): verlängert die Frist der
+    // Umsatzsteuer-Jahreserklärung auf den letzten Februartag des
+    // Zweitfolgejahres (§ 149 Abs. 3 AO). Eine Angabe, keine Ableitung —
+    // ob eine Kanzlei mandatiert ist, weiß das Programm nicht.
+    'finance.accounting_tax_advised' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
     // Vier-Augen-Freigabe für Kundenrundschreiben (Feature 119). Default aus:
     // Wer allein arbeitet, hätte sonst eine Sperre ohne Ausweg.
     'communication.circular_approval' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],

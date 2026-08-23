@@ -245,6 +245,17 @@ class NavigationRegistry {
             'finance.gobd.index' => 'module.finance',
             'finance.payment-runs.index' => 'module.finance',
             'finance.mandates.index' => 'module.finance',
+            'finance.accounting.setup' => 'module.finance',
+            'finance.accounting.accounts.index' => 'module.finance',
+            'finance.accounting.journal.index' => 'module.finance',
+            'finance.accounting.inbox.index' => 'module.finance',
+            'finance.accounting.open-items.index' => 'module.finance',
+            'finance.accounting.recurring.index' => 'module.finance',
+            'finance.accounting.closing.index' => 'module.finance',
+            'finance.accounting.filings.index' => 'module.finance',
+            'reports.accounting.index' => 'module.finance',
+            'reports.accounting.recapitulative' => 'module.finance',
+            'finance.accounting.rules.index' => 'module.finance',
             // Lager & Fertigung: ohne module.lager ausblenden statt nur per Route-Gate (423) sperren.
             'articles.index' => 'module.lager',
             'warehouses.index' => 'module.lager',
@@ -533,6 +544,22 @@ class NavigationRegistry {
                         ['route' => 'finance.transfers.index', 'label' => __('finance.title.menu'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['finance.transfers.*', 'finance.reconciliation.*', 'finance.bank-accounts.*']],
                         ['route' => 'finance.datev.index', 'label' => __('finance.datev.menu'), 'icon' => 'account_tree', 'modal' => false, 'matches' => ['finance.datev.*']],
                         ['route' => 'finance.gobd.index', 'label' => __('gobd.title'), 'icon' => 'gavel', 'modal' => false, 'matches' => ['finance.gobd.*']],
+                        // Lokale Buchhaltung (Feature 125, MVP-671): Einrichtung und
+                        // Buchungshoheit. Sichtbar nur mit Leserecht — die Seite
+                        // beantwortet, wer das Hauptbuch führt.
+                        ...(Gate::allows(\App\Enums\User\Permission::AccountingLedgerView->value)
+                            ? [
+                                ['route' => 'finance.accounting.inbox.index', 'label' => __('accounting.inbox.menu'), 'icon' => 'inbox', 'modal' => false, 'matches' => ['finance.accounting.inbox.*']],
+                                ['route' => 'finance.accounting.journal.index', 'label' => __('accounting.ledger.journal.menu'), 'icon' => 'menu_book', 'modal' => false, 'matches' => ['finance.accounting.journal.*']],
+                                ['route' => 'finance.accounting.open-items.index', 'label' => __('accounting.open_items.menu'), 'icon' => 'account_balance_wallet', 'modal' => false, 'matches' => ['finance.accounting.open-items.*']],
+                                ['route' => 'finance.accounting.recurring.index', 'label' => __('accounting.recurring.menu'), 'icon' => 'event_repeat', 'modal' => false, 'matches' => ['finance.accounting.recurring.*']],
+                                ['route' => 'finance.accounting.closing.index', 'label' => __('accounting.closing.menu'), 'icon' => 'lock_clock', 'modal' => false, 'matches' => ['finance.accounting.closing.*']],
+                                ['route' => 'finance.accounting.filings.index', 'label' => __('accounting.filing.calendar.menu'), 'icon' => 'event_available', 'modal' => false, 'matches' => ['finance.accounting.filings.*']],
+                                ['route' => 'finance.accounting.rules.index', 'label' => __('accounting.rules.menu'), 'icon' => 'rule', 'modal' => false, 'matches' => ['finance.accounting.rules.*']],
+                                ['route' => 'finance.accounting.accounts.index', 'label' => __('accounting.ledger.accounts.menu'), 'icon' => 'account_tree', 'modal' => false, 'matches' => ['finance.accounting.accounts.*']],
+                                ['route' => 'finance.accounting.setup', 'label' => __('accounting.ledger.menu'), 'icon' => 'account_balance_wallet', 'modal' => false, 'matches' => ['finance.accounting.setup', 'finance.accounting.update', 'finance.accounting.activate', 'finance.accounting.sovereignty*', 'finance.accounting.fiscal-years.*']],
+                            ]
+                            : []),
                         // SEPA-Zahlungsausgang (Feature 120, MVP-609): Zahllauf und
                         // Mandatsregister sitzen bei der Buchhaltung, nicht beim Einkauf.
                         ['route' => 'finance.payment-runs.index', 'label' => __('sepa.title'), 'icon' => 'account_balance', 'modal' => false, 'matches' => ['finance.payment-runs.*']],
@@ -909,6 +936,10 @@ class NavigationRegistry {
                             ? ['route' => 'reports.economics', 'label' => __('Wirtschaftlichkeit'), 'icon' => 'trending_up', 'modal' => false, 'matches' => ['reports.economics']]
                             : null,
                         ['route' => 'reports.billing', 'label' => __('Abrechnung'), 'icon' => 'request_quote', 'modal' => false, 'matches' => ['reports.billing']],
+                        // Finanzberichte der lokalen Buchhaltung (Feature 125, MVP-676).
+                        ...(Gate::allows(\App\Enums\User\Permission::AccountingLedgerView->value)
+                            ? [['route' => 'reports.accounting.index', 'label' => __('accounting.reports.menu'), 'icon' => 'account_balance_wallet', 'modal' => false, 'matches' => ['reports.accounting.*']]]
+                            : []),
                         // Zahlungsverhalten (MVP-468): lokale Rechnungsdaten → nur report.view/Admin.
                         ($user?->isAdmin() || $user?->can(Permission::ReportView->value))
                             ? ['route' => 'reports.payment-behavior', 'label' => __('Zahlungsverhalten'), 'icon' => 'schedule_send', 'modal' => false, 'matches' => ['reports.payment-behavior']]

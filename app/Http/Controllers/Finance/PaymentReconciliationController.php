@@ -15,6 +15,8 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{Expense, Invoice};
 use App\Models\Finance\{BankAccount, BankStatement, BankTransaction, PaymentAllocation};
+use App\Services\Accounting\AccountingSovereigntyResolver;
+use App\Services\Accounting\Posting\PostingInboxService;
 use App\Services\Finance\{BankImportException, BankImportService, FinancialFormatsSupport, MatchingService, ReconciliationService};
 use App\Support\Sqid;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -37,6 +39,8 @@ class PaymentReconciliationController extends Controller {
         private readonly BankImportService $importService,
         private readonly MatchingService $matchingService,
         private readonly ReconciliationService $reconciliationService,
+        private readonly PostingInboxService $inbox,
+        private readonly AccountingSovereigntyResolver $sovereignty,
     ) {}
 
     public function index(): View {
@@ -140,6 +144,7 @@ class PaymentReconciliationController extends Controller {
 
         return view('finance.reconciliation.show', [
             'statement' => $statement,
+            'postingStates' => $this->postingStates($statement->transactions),
             'suggestions' => $suggestions,
             'returnOrigins' => $returnOrigins,
             'splitSuggestions' => $splitSuggestions,
@@ -147,6 +152,26 @@ class PaymentReconciliationController extends Controller {
             'splitTargets' => $splitSuggestions !== [] ? $this->splitTargetOptions() : [],
             'kinds' => AllocationKind::cases(),
         ]);
+    }
+
+    /**
+     * Buchungsstand der Umsätze (Feature 125, MVP-681).
+     *
+     * Gelesen aus dem Journal, nicht auf der Bankseite gespeichert: Eine
+     * eigene Statusspalte würde beim ersten Storno auseinanderlaufen. Ohne
+     * lokale Buchungshoheit bleibt die Spalte leer statt zu behaupten,
+     * es sei etwas zu tun.
+     *
+     * @param  iterable<BankTransaction>  $transactions
+     * @return array<int|string, array<string, mixed>>
+     */
+    private function postingStates(iterable $transactions): array {
+        $organization = $this->currentOrganization();
+        if (! $this->sovereignty->allowsLocalPosting($organization)) {
+            return [];
+        }
+
+        return $this->inbox->bankTransactionStates($organization, $transactions);
     }
 
     /**

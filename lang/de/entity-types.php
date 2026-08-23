@@ -18,6 +18,7 @@ declare(strict_types=1);
  * setzen. Vollständigkeit erzwingt Tests\Feature\AuditTranslationCoverageTest.
  */
 return [
+    'AccountingReportController' => 'Report-Export: Buchhaltung',
     'AbsenceCalendarReportController' => 'Report-Export: Abwesenheitskalender',
     'AbsencesReportController' => 'Report-Export: Abwesenheiten',
     'AccessMedium' => 'Zutrittsmedium',
@@ -454,4 +455,23 @@ return [
     'WorkSchedule' => 'Arbeitszeitplan',
     'ZammadConnection' => 'Zammad-Verbindung',
     'AccountingMigrationRun' => 'Buchhaltungswechsel',
+    'AccountingProfile' => 'Buchhaltungsprofil',
+    'AccountingSovereigntyPeriod' => 'Buchungshoheit-Abschnitt',
+    'AccountingFiscalYear' => 'Geschäftsjahr',
+    'AccountingPeriod' => 'Buchungsperiode',
+    'AccountingAccount' => 'Konto',
+    'AccountingTaxCode' => 'Steuerkennzeichen',
+    'AccountingEntry' => 'Buchung',
+    'AccountingEntryLine' => 'Buchungszeile',
+    'AccountingEvent' => 'Buchungsnachweis',
+    'AccountingPostingRule' => 'Buchungsregel',
+    'AccountingOpenItem' => 'Offener Posten',
+    'AccountingOpenItemSettlement' => 'Ausgleich',
+    'AccountingTransfer' => 'Interne Umbuchung',
+    'AccountingRecurringTemplate' => 'Wiederkehrende Vorlage',
+    'AccountingRecurringRun' => 'Wiederkehrender Vorgang',
+    'AccountingTaxationPeriod' => 'Versteuerungsart-Abschnitt',
+    'AccountingVatFilingPeriod' => 'Meldezeitraum-Abschnitt',
+    'AccountingVatExtension' => 'Dauerfristverlängerung',
+    'AccountingFilingObligation' => 'Meldepflicht',
 ];

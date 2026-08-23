@@ -344,6 +344,12 @@ return [
 
         'finance.viewAny' => 'Consultare le ricevute di trasferimento',
         'finance.config' => 'Gestire la configurazione finanziaria',
+        'finance.accounting.view' => 'Consultare la contabilità',
+        'finance.accounting.configure' => 'Configurare la contabilità',
+        'finance.accounting.prepare' => 'Preparare le registrazioni',
+        'finance.accounting.post' => 'Registrare definitivamente',
+        'finance.accounting.close' => 'Chiudere i periodi',
+        'finance.accounting.reopen' => 'Riaprire i periodi',
         'accountingMigration.manage' => 'Gestire il cambio di software contabile',
         'finance.transfer.time' => 'Preparare e trasferire i tempi fatturabili',
         'finance.transfer.material' => 'Preparare e trasferire il materiale fatturabile',

@@ -405,6 +405,10 @@ return [
             'contract' => [
                 'deadlineDue' => 'Scadenza contrattuale',
             ],
+            'accounting' => [
+                'recurringOverdue' => 'Operazione ricorrente scaduta',
+                'filingDue' => 'Scadenza dichiarativa in arrivo',
+            ],
             'invoice' => [
                 'recurringDraft' => 'Bozza di fattura da piano di fatturazione',
             ],
@@ -1133,6 +1137,140 @@ return [
         ],
     ],
     'finance' => [
+        // Versteuerungsart (Feature 125, MVP-679).
+        'taxation-method' => [
+            'debit' => 'Per competenza',
+            'credit' => 'Per cassa',
+        ],
+        // Steuerliche Meldepflichten (Feature 125, MVP-686).
+        'filing-obligation-kind' => [
+            'vat_advance' => 'Liquidazione IVA periodica',
+            'special_prepayment' => 'Acconto speciale',
+            'recapitulative' => 'Elenco riepilogativo',
+            'annual_return' => 'Dichiarazione IVA annuale',
+        ],
+        'filing-obligation-status' => [
+            'open' => 'Aperto',
+            'submitted' => 'Presentato',
+            'not_required' => 'Non necessario',
+        ],
+        // Voranmeldungszeitraum der Umsatzsteuer (Feature 125, MVP-684).
+        'vat-filing-interval' => [
+            'monthly' => 'Mensile',
+            'quarterly' => 'Trimestrale',
+            'annual' => 'Solo dichiarazione annuale',
+            'none' => 'Nessuna dichiarazione periodica',
+        ],
+        // Zeilen der Anlage EÜR (Feature 125, MVP-680).
+        'euer-category' => [
+            'income' => "Ricavi d'esercizio",
+            'income_vat' => 'IVA incassata',
+            'private_use' => 'Uso privato',
+            'expense' => "Spese d'esercizio",
+            'depreciation' => 'Ammortamenti',
+            'low_value_asset' => 'Beni di modico valore',
+            'input_tax' => 'IVA a credito pagata',
+            'paid_vat' => 'IVA versata',
+            'limited_deductible' => 'Deduzione limitata',
+            'not_deductible' => 'Non deducibile',
+        ],
+        // Wiederkehrende Vorgänge (Feature 125, MVP-675).
+        'recurring-template-kind' => [
+            'document_expectation' => 'Attesa di documento',
+            'posting_template' => 'Modello di registrazione',
+        ],
+        'recurring-interval' => [
+            'monthly' => 'Mensile',
+            'quarterly' => 'Trimestrale',
+            'semi_annually' => 'Semestrale',
+            'annually' => 'Annuale',
+        ],
+        'recurring-run-status' => [
+            'expected' => 'Documento atteso',
+            'draft_created' => 'Bozza creata',
+            'fulfilled' => 'Soddisfatto',
+            'blocked' => 'Bloccato',
+            'skipped' => 'Saltato',
+        ],
+        'recurring-template-status' => [
+            'active' => 'Attivo',
+            'paused' => 'Sospeso',
+            'ended' => 'Terminato',
+        ],
+        // Offene Posten (Feature 125, MVP-674).
+        'open-item-direction' => [
+            'receivable' => 'Credito',
+            'payable' => 'Debito',
+        ],
+        'open-item-status' => [
+            'open' => 'Aperto',
+            'partially_settled' => 'Parzialmente compensato',
+            'settled' => 'Compensato',
+            'disputed' => 'Contestato',
+        ],
+        'settlement-kind' => [
+            'payment' => 'Pagamento',
+            'discount' => 'Sconto',
+            'retention' => 'Ritenuta',
+            'write_off' => 'Stralcio',
+            'overpayment' => 'Eccedenza',
+            'reversal' => 'Storno',
+        ],
+        // Quellenadapter und Buchungsregeln (Feature 125, MVP-673).
+        'posting-source-kind' => [
+            'sales_invoice' => 'Fattura di vendita',
+            'incoming_invoice' => 'Fattura di acquisto',
+            'expense' => 'Spesa',
+            'cash_entry' => 'Libro cassa',
+        ],
+        'posting-account-role' => [
+            'receivable' => 'Credito',
+            'revenue' => 'Ricavo',
+            'tax_output' => 'IVA a debito',
+            'payable' => 'Debito',
+            'expense' => 'Costo',
+            'tax_input' => 'IVA a credito',
+            'cash' => 'Cassa',
+            'employee_payable' => 'Debito verso dipendenti',
+        ],
+        // Buchungskern (Feature 125, MVP-672).
+        'balance-side' => [
+            'debit' => 'Dare',
+            'credit' => 'Avere',
+        ],
+        'account-type' => [
+            'asset' => 'Attività',
+            'liability' => 'Passività',
+            'equity' => 'Patrimonio netto',
+            'income' => 'Ricavi',
+            'expense' => 'Costi',
+        ],
+        'accounting-entry-status' => [
+            'draft' => 'Bozza',
+            'ready' => 'Verificata',
+            'posted' => 'Registrata',
+            'reversed' => 'Stornata',
+        ],
+        'tax-code-direction' => [
+            'output' => 'IVA a debito',
+            'input' => 'IVA a credito',
+            'none' => 'Senza imposta',
+        ],
+        // Lokale Buchhaltung (Feature 125, MVP-671).
+        'accounting-sovereignty' => [
+            'preaccounting' => 'Pre-contabilità (senza libro mastro)',
+            'local' => 'workDiary dirige',
+            'external' => 'Sistema esterno dirige',
+        ],
+        'profit-determination' => [
+            'euer' => 'Contabilità per cassa',
+            'double_entry' => 'Contabilità in partita doppia',
+        ],
+        'accounting-period-status' => [
+            'open' => 'Aperto',
+            'soft_closed' => 'Chiuso provvisoriamente',
+            'closed' => 'Chiuso',
+        ],
         'billing-mode' => [
             'workdiary' => 'WorkDiary (locale)',
             'lexoffice' => 'Lexoffice guida',

@@ -131,6 +131,13 @@ enum NotificationEvent: string implements HasLabel {
     // MVP-415: Rechnungsentwurf aus Abrechnungsplan erzeugt (nie Auto-Versand).
     case InvoiceRecurringDraft = 'invoice.recurringDraft';
 
+    // MVP-675: Wiederkehrender Vorgang überfällig — das Original fehlt oder
+    // der erzeugte Buchungsentwurf liegt ungeprüft.
+    case AccountingRecurringOverdue = 'accounting.recurringOverdue';
+
+    // MVP-686: Steuerliche Meldefrist steht an oder ist überschritten.
+    case AccountingFilingDue = 'accounting.filingDue';
+
     // MVP-417: Führerscheinkontrolle fällig/überfällig (Halterhaftung).
     case DriverLicenseCheckDue = 'fleet.licenseCheckDue';
 
@@ -330,6 +337,8 @@ enum NotificationEvent: string implements HasLabel {
             self::ContractDeadlineDue => [UserRole::Teamleitung->value],
             // Wiederkehrende Rechnungsentwürfe (MVP-415): kaufmännische Prüfung.
             self::InvoiceRecurringDraft => [UserRole::Buchhaltung->value],
+            // Belegerwartung/Buchungsvorlage (MVP-675): dieselbe Zielgruppe.
+            self::AccountingRecurringOverdue, self::AccountingFilingDue => [UserRole::Buchhaltung->value],
             // Führerscheinkontrolle (MVP-417): Fahrer selbst (notify_affected)
             // plus Teamleitung (Fuhrparkverantwortung).
             self::DriverLicenseCheckDue => [UserRole::Teamleitung->value],
@@ -415,6 +424,8 @@ enum NotificationEvent: string implements HasLabel {
             self::AssetFinanceDeadline => 'request_quote',
             self::ContractDeadlineDue => 'contract',
             self::InvoiceRecurringDraft => 'receipt_long',
+            self::AccountingRecurringOverdue => 'event_repeat',
+            self::AccountingFilingDue => 'event_available',
             self::DriverLicenseCheckDue => 'badge',
             self::RecruitingApplicationReceived => 'work',
             self::AssetInspectionDue => 'rule_settings',

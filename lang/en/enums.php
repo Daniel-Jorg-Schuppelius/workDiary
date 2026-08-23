@@ -405,6 +405,10 @@ return [
             'contract' => [
                 'deadlineDue' => 'Contract deadline due',
             ],
+            'accounting' => [
+                'recurringOverdue' => 'Recurring item overdue',
+                'filingDue' => 'Tax filing deadline due',
+            ],
             'invoice' => [
                 'recurringDraft' => 'Invoice draft from billing schedule',
             ],
@@ -1133,6 +1137,140 @@ return [
         ],
     ],
     'finance' => [
+        // Versteuerungsart (Feature 125, MVP-679).
+        'taxation-method' => [
+            'debit' => 'Accrual basis',
+            'credit' => 'Cash basis',
+        ],
+        // Steuerliche Meldepflichten (Feature 125, MVP-686).
+        'filing-obligation-kind' => [
+            'vat_advance' => 'VAT advance return',
+            'special_prepayment' => 'Special prepayment',
+            'recapitulative' => 'Recapitulative statement',
+            'annual_return' => 'Annual VAT return',
+        ],
+        'filing-obligation-status' => [
+            'open' => 'Open',
+            'submitted' => 'Submitted',
+            'not_required' => 'Not required',
+        ],
+        // Voranmeldungszeitraum der Umsatzsteuer (Feature 125, MVP-684).
+        'vat-filing-interval' => [
+            'monthly' => 'Monthly',
+            'quarterly' => 'Quarterly',
+            'annual' => 'Annual return only',
+            'none' => 'No advance return',
+        ],
+        // Zeilen der Anlage EÜR (Feature 125, MVP-680).
+        'euer-category' => [
+            'income' => 'Operating income',
+            'income_vat' => 'VAT received',
+            'private_use' => 'Private use',
+            'expense' => 'Operating expenses',
+            'depreciation' => 'Depreciation',
+            'low_value_asset' => 'Low-value assets',
+            'input_tax' => 'Input VAT paid',
+            'paid_vat' => 'VAT paid',
+            'limited_deductible' => 'Limited deduction',
+            'not_deductible' => 'Not deductible',
+        ],
+        // Wiederkehrende Vorgänge (Feature 125, MVP-675).
+        'recurring-template-kind' => [
+            'document_expectation' => 'Document expectation',
+            'posting_template' => 'Posting template',
+        ],
+        'recurring-interval' => [
+            'monthly' => 'Monthly',
+            'quarterly' => 'Quarterly',
+            'semi_annually' => 'Semi-annually',
+            'annually' => 'Annually',
+        ],
+        'recurring-run-status' => [
+            'expected' => 'Document expected',
+            'draft_created' => 'Draft created',
+            'fulfilled' => 'Fulfilled',
+            'blocked' => 'Blocked',
+            'skipped' => 'Skipped',
+        ],
+        'recurring-template-status' => [
+            'active' => 'Active',
+            'paused' => 'Paused',
+            'ended' => 'Ended',
+        ],
+        // Offene Posten (Feature 125, MVP-674).
+        'open-item-direction' => [
+            'receivable' => 'Receivable',
+            'payable' => 'Payable',
+        ],
+        'open-item-status' => [
+            'open' => 'Open',
+            'partially_settled' => 'Partially settled',
+            'settled' => 'Settled',
+            'disputed' => 'Disputed',
+        ],
+        'settlement-kind' => [
+            'payment' => 'Payment',
+            'discount' => 'Discount',
+            'retention' => 'Retention',
+            'write_off' => 'Write-off',
+            'overpayment' => 'Overpayment',
+            'reversal' => 'Reversal',
+        ],
+        // Quellenadapter und Buchungsregeln (Feature 125, MVP-673).
+        'posting-source-kind' => [
+            'sales_invoice' => 'Sales invoice',
+            'incoming_invoice' => 'Incoming invoice',
+            'expense' => 'Expense',
+            'cash_entry' => 'Cash book',
+        ],
+        'posting-account-role' => [
+            'receivable' => 'Receivable',
+            'revenue' => 'Revenue',
+            'tax_output' => 'Output tax',
+            'payable' => 'Payable',
+            'expense' => 'Expense',
+            'tax_input' => 'Input tax',
+            'cash' => 'Cash',
+            'employee_payable' => 'Employee payable',
+        ],
+        // Buchungskern (Feature 125, MVP-672).
+        'balance-side' => [
+            'debit' => 'Debit',
+            'credit' => 'Credit',
+        ],
+        'account-type' => [
+            'asset' => 'Assets',
+            'liability' => 'Liabilities',
+            'equity' => 'Equity',
+            'income' => 'Income',
+            'expense' => 'Expenses',
+        ],
+        'accounting-entry-status' => [
+            'draft' => 'Draft',
+            'ready' => 'Reviewed',
+            'posted' => 'Posted',
+            'reversed' => 'Reversed',
+        ],
+        'tax-code-direction' => [
+            'output' => 'Output tax',
+            'input' => 'Input tax',
+            'none' => 'Tax-free',
+        ],
+        // Lokale Buchhaltung (Feature 125, MVP-671).
+        'accounting-sovereignty' => [
+            'preaccounting' => 'Pre-accounting (no ledger)',
+            'local' => 'workDiary leads',
+            'external' => 'External system leads',
+        ],
+        'profit-determination' => [
+            'euer' => 'Cash-basis profit statement',
+            'double_entry' => 'Double-entry bookkeeping',
+        ],
+        'accounting-period-status' => [
+            'open' => 'Open',
+            'soft_closed' => 'Provisionally closed',
+            'closed' => 'Closed',
+        ],
         'billing-mode' => [
             'workdiary' => 'WorkDiary (local)',
             'lexoffice' => 'Lexoffice leads',

@@ -2135,6 +2135,7 @@
     "Der Katalog enthält keine Elemente.": "The catalogue contains no elements.",
     "Der Katalogeintrag ist nicht aktiv.": "The catalog item is not active.",
     "Der Katalogeintrag wird entfernt.": "The catalog item will be removed.",
+    "Der Kunde erhält keine Rundschreiben — Pflichtmitteilungen ausgenommen.": "The customer receives no circulars — mandatory notices excepted.",
     "Der Lauf ist bereits abgeschlossen.": "The run is already completed.",
     "Der Leistungsbereich steht in der Datei; das Stichwort ist eine Vermutung über den Text.": "The work category is stated in the file; the keyword is a guess about the text.",
     "Der Link ist 30 Tage gültig und nur einmal verwendbar.": "The link is valid for 30 days and usable only once.",
@@ -3071,6 +3072,7 @@
     "Events Σ": "Events Σ",
     "Eventualposition (Option) — zählt erst nach Annahme": "Contingency item (option) — counts only after acceptance",
     "Evidenz": "Evidence",
+    "Excel": "Excel",
     "Exception": "Exception",
     "Existierende Kunden werden über die Spalte \"Nummer\" aktualisiert.": "Existing customers are updated by the \"Number\" column.",
     "Export": "Export",
@@ -4584,6 +4586,7 @@
     "Keine Rollpläne": "No rotation plans",
     "Keine Räume gebucht.": "No rooms booked.",
     "Keine SLA-Frist hinterlegt.": "No SLA deadline set.",
+    "Keine Sammelmails": "No bulk mail",
     "Keine Schicht heute": "No shift today",
     "Keine Schicht heute.": "No shift today.",
     "Keine Schichten an diesem Tag.": "No shifts on this day.",
@@ -10771,7 +10774,5 @@
     "… und :count weitere": "… and :count more",
     "€/km": "€/km",
     "≤ 14 Tage": "≤ 14 days",
-    "≤ 3 Monate": "≤ 3 months",
-    "Keine Sammelmails": "No bulk mail",
-    "Der Kunde erhält keine Rundschreiben — Pflichtmitteilungen ausgenommen.": "The customer receives no circulars — mandatory notices excepted."
+    "≤ 3 Monate": "≤ 3 months"
 }

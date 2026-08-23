@@ -608,6 +608,9 @@ class AppServiceProvider extends ServiceProvider {
         \App\Models\ArticleVariant::observe(\App\Observers\ArticleVariantSalePriceObserver::class);
         Attachment::observe(AttachmentObserver::class);
         Customer::observe(CustomerObserver::class);
+        // Aufgehobene Zahlungszuordnung → Gegenbuchung im lokalen Hauptbuch
+        // (Feature 125, MVP-674). Ohne aktivierte Buchhaltung passiert nichts.
+        \App\Models\Finance\PaymentAllocation::observe(\App\Observers\PaymentAllocationAccountingObserver::class);
         // Supplier/ForeignCustomer: Audit-Logging via Auditable-Trait, kein Observer mehr (A1).
         EmergencyAssignment::observe(EmergencyAssignmentObserver::class);
         DiaryEntry::observe(DiaryEntryObserver::class);

@@ -35,5 +35,7 @@ return [
         'datev_booking_events' => App\Models\Finance\DatevBookingEvent::class,
         // MVP-653: Auditspur des Buchhaltungswechsels.
         'accounting_migration_events' => App\Models\Migration\AccountingMigrationEvent::class,
+        // MVP-672: Festschreibung und Storno des lokalen Buchungskerns.
+        'accounting_events' => App\Models\Accounting\AccountingEvent::class,
     ],
 ];

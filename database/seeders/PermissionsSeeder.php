@@ -698,6 +698,18 @@ class PermissionsSeeder extends Seeder {
             // GoBD-Z3-Datenträgerüberlassung (Feature 063): steuerrelevante
             // Daten für die Betriebsprüfung als GDPdU-Paket ausleiten.
             PermissionEnum::FinanceGobdExport,
+            // Lokale Buchhaltung (Feature 125, MVP-671): Profil, Perioden und
+            // Journal einsehen. Das Einrichten (finance.accounting.configure)
+            // bleibt dem Admin vorbehalten — es verschiebt die Buchungshoheit.
+            PermissionEnum::AccountingLedgerView,
+            // Buchungskern (MVP-672): Buchhaltung bereitet vor UND schreibt fest.
+            // Die Vier-Augen-Variante entsteht über die Rollenzuordnung, nicht
+            // durch ein fehlendes Recht.
+            PermissionEnum::AccountingLedgerPrepare,
+            PermissionEnum::AccountingLedgerPost,
+            // Periodenabschluss (MVP-677): schließen ja — wiedereröffnen bleibt
+            // dem Admin vorbehalten, es hebt eine Festschreibung auf.
+            PermissionEnum::AccountingLedgerClose,
             // Zuschlagsregeln (Feature 005): Lohnbüro pflegt die Regeln.
             PermissionEnum::SurchargeRuleViewAny,
             PermissionEnum::SurchargeRuleManage,

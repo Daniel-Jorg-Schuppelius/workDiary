@@ -912,6 +912,21 @@ return [
     'customer' => [
         'design_profile_assigned' => 'Design spécifique du client attribué/modifié',
     ],
+    // Lokale Buchhaltung (Feature 125, MVP-671).
+    'accounting' => [
+        'activated' => 'Comptabilité locale activée',
+        'sovereignty_switched' => 'Autorité comptable modifiée',
+        'fiscal_year_created' => 'Exercice créé',
+        'entry_posted' => 'Écriture comptabilisée',
+        'entry_reversed' => 'Écriture extournée',
+        'period_soft_closed' => 'Période clôturée provisoirement',
+        'period_closed' => 'Période clôturée',
+        'period_reopened' => 'Période rouverte',
+        'fiscal_year_closed' => 'Exercice clôturé',
+        'taxation_method_switched' => 'Régime de TVA modifié',
+        'filing_interval_switched' => 'Période de déclaration modifiée',
+        'vat_extension_recorded' => 'Prorogation enregistrée',
+    ],
     'accounting_migration' => [
         'planned' => 'Changement comptable planifié',
         'analyzed' => 'Analyse (simulation) exécutée',

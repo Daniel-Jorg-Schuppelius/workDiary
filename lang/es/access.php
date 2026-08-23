@@ -344,6 +344,12 @@ return [
 
         'finance.viewAny' => 'Consultar los justificantes de traspaso',
         'finance.config' => 'Gestionar la configuración financiera',
+        'finance.accounting.view' => 'Consultar la contabilidad',
+        'finance.accounting.configure' => 'Configurar la contabilidad',
+        'finance.accounting.prepare' => 'Preparar asientos',
+        'finance.accounting.post' => 'Contabilizar asientos',
+        'finance.accounting.close' => 'Cerrar periodos',
+        'finance.accounting.reopen' => 'Reabrir periodos',
         'accountingMigration.manage' => 'Gestionar el cambio de software contable',
         'finance.transfer.time' => 'Preparar y traspasar los tiempos facturables',
         'finance.transfer.material' => 'Preparar y traspasar el material facturable',

@@ -371,6 +371,12 @@ return [
 
         'finance.viewAny' => 'View transfer receipts',
         'finance.config' => 'Manage finance configuration',
+        'finance.accounting.view' => 'View accounting',
+        'finance.accounting.configure' => 'Set up accounting',
+        'finance.accounting.prepare' => 'Prepare postings',
+        'finance.accounting.post' => 'Post entries',
+        'finance.accounting.close' => 'Close periods',
+        'finance.accounting.reopen' => 'Reopen periods',
         'accountingMigration.manage' => 'Manage accounting software migration',
         'finance.transfer.time' => 'Prepare and transfer billable time',
         'finance.transfer.material' => 'Prepare and transfer billable material',

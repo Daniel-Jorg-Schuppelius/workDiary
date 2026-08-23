@@ -10,8 +10,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Finance\PostingSourceKind;
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Models\{CashEntry, CashRegister, Invoice, User};
+use App\Services\Accounting\AccountingSovereigntyResolver;
+use App\Services\Accounting\Posting\PostingInboxService;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Finance\CashBookService;
 use App\Support\Sqid;
@@ -23,7 +27,31 @@ use InvalidArgumentException;
 
 /** Kassenbuch (MVP-414): Kassen, append-only Einträge, Storno, Tagesabschluss. */
 class CashRegisterController extends Controller {
-    public function __construct(private readonly CashBookService $cashBook) {}
+    use ResolvesCurrentOrganization;
+
+    public function __construct(
+        private readonly CashBookService $cashBook,
+        private readonly PostingInboxService $inbox,
+        private readonly AccountingSovereigntyResolver $sovereignty,
+    ) {}
+
+    /**
+     * Buchungsstand der Kassenbuchungen (Feature 125, MVP-681).
+     *
+     * Ohne lokale Buchungshoheit bleibt die Spalte weg — eine leere Spalte
+     * würde Arbeit behaupten, die es nicht gibt.
+     *
+     * @param  iterable<CashEntry>  $entries
+     * @return array<int|string, array<string, mixed>>
+     */
+    private function postingStates(iterable $entries): array {
+        $organization = $this->currentOrganization();
+        if (! $this->sovereignty->allowsLocalPosting($organization)) {
+            return [];
+        }
+
+        return $this->inbox->statusFor($organization, PostingSourceKind::CashEntry, $entries, true);
+    }
 
     public function index(): View {
         Gate::authorize(Permission::CashView->value);
@@ -60,6 +88,7 @@ class CashRegisterController extends Controller {
         return view('cash-registers.show', [
             'register' => $cashRegister,
             'entries' => $entries,
+            'postingStates' => $this->postingStates($entries->getCollection()),
             'reversedIds' => array_flip(array_map(intval(...), $reversedIds)),
             'balance' => $this->cashBook->balance($cashRegister),
             'lastClosing' => $cashRegister->lastClosingDate(),
