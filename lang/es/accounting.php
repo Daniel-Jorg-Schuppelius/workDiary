@@ -36,6 +36,7 @@ return [
     'ledger' => [
         'title' => 'Contabilidad local',
         'menu' => 'Contabilidad',
+        'setup_menu' => 'Configuración',
         'subtitle' => 'Autoridad contable, ejercicios y comprobación previa de la configuración.',
         'open_ended' => 'en curso',
         'section' => [

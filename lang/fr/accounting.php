@@ -36,6 +36,7 @@ return [
     'ledger' => [
         'title' => 'Comptabilité locale',
         'menu' => 'Comptabilité',
+        'setup_menu' => 'Configuration',
         'subtitle' => 'Autorité comptable, exercices et contrôle préalable de la configuration.',
         'open_ended' => 'en cours',
         'section' => [

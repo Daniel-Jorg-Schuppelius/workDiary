@@ -36,6 +36,7 @@ return [
     'ledger' => [
         'title' => 'Local accounting',
         'menu' => 'Accounting',
+        'setup_menu' => 'Setup',
         'subtitle' => 'Posting authority, fiscal years and setup preflight for local bookkeeping.',
         'open_ended' => 'ongoing',
         'section' => [

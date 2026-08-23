@@ -36,6 +36,7 @@ return [
     'ledger' => [
         'title' => 'Lokale Buchhaltung',
         'menu' => 'Buchhaltung',
+        'setup_menu' => 'Einrichtung',
         'subtitle' => 'Buchungshoheit, Geschäftsjahre und Einrichtungs-Preflight der lokalen Buchführung.',
         'open_ended' => 'laufend',
         'section' => [

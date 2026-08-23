@@ -504,14 +504,25 @@ class NavigationRegistry {
                 ],
                 [
                     'key' => 'sales-inventory',
-                    'label' => __('Lager & Fertigung'),
+                    'label' => __('Artikel & Lager'),
                     'icon' => 'warehouse',
                     'items' => [
                         ['route' => 'products.index', 'label' => __('products.title.index'), 'icon' => 'category', 'modal' => false, 'matches' => ['products.*']],
                         ['route' => 'articles.index', 'label' => __('article.title'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['articles.*']],
                         ['route' => 'warehouses.index', 'label' => __('inventory.title'), 'icon' => 'warehouse', 'modal' => false, 'matches' => ['warehouses.*', 'inventory.*']],
-                        ['route' => 'manufacturing-orders.index', 'label' => __('manufacturing.order.title'), 'icon' => 'precision_manufacturing', 'modal' => false, 'matches' => ['manufacturing-orders.*']],
                         ['route' => 'serials.index', 'label' => __('inventory.serial.title'), 'icon' => 'tag', 'modal' => false, 'matches' => ['serials.*']],
+                        ['route' => 'inventory.scan', 'label' => __('inventory.scan.title'), 'icon' => 'qr_code_scanner', 'modal' => false, 'matches' => ['inventory.scan*']],
+                        ['route' => 'inventory.lots', 'label' => __('inventory.lot.title'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['inventory.lots*']],
+                        ['route' => 'inventory.label-templates.index', 'label' => __('inventory.label_template.title'), 'icon' => 'label', 'modal' => false, 'matches' => ['inventory.label-templates.*']],
+                    ],
+                ],
+                [
+                    // Beschaffungsseite und Kataloge: eigener Arbeitsfluss, eigene
+                    // Gruppe — im Lagerblock gingen sie zwischen Beständen unter.
+                    'key' => 'sales-procurement',
+                    'label' => __('Beschaffung & Kataloge'),
+                    'icon' => 'shopping_cart',
+                    'items' => [
                         ['route' => 'purchase-orders.index', 'label' => __('procurement.title'), 'icon' => 'shopping_cart', 'modal' => false, 'matches' => ['purchase-orders.*']],
                         ['route' => 'supplier-catalogs.index', 'label' => __('procurement.catalog.title'), 'icon' => 'import_export', 'modal' => false, 'matches' => ['supplier-catalogs.*']],
                         ['route' => 'b2b-catalog.index', 'label' => __('b2b_catalog.title'), 'icon' => 'storefront', 'modal' => false, 'matches' => ['b2b-catalog.*']],
@@ -520,15 +531,20 @@ class NavigationRegistry {
                         ['route' => 'bill-of-quantities.packages', 'label' => __('Vergabeunterlagen'), 'icon' => 'folder_zip', 'modal' => false, 'matches' => ['bill-of-quantities.packages*']],
                         ['route' => 'catalog-rules.index', 'label' => __('Zuordnungsregeln'), 'icon' => 'auto_fix_high', 'modal' => false, 'matches' => ['catalog-rules.*']],
                         ['route' => 'cost-catalogs.index', 'label' => __('Baukostenkataloge'), 'icon' => 'price_change', 'modal' => false, 'matches' => ['cost-catalogs.*']],
-                        ['route' => 'inventory.scan', 'label' => __('inventory.scan.title'), 'icon' => 'qr_code_scanner', 'modal' => false, 'matches' => ['inventory.scan*']],
+                    ],
+                ],
+                [
+                    'key' => 'sales-manufacturing',
+                    'label' => __('Fertigung'),
+                    'icon' => 'precision_manufacturing',
+                    'items' => [
+                        ['route' => 'manufacturing-orders.index', 'label' => __('manufacturing.order.title'), 'icon' => 'precision_manufacturing', 'modal' => false, 'matches' => ['manufacturing-orders.*']],
                         ['route' => 'work-centers.index', 'label' => __('manufacturing.capacity.title'), 'icon' => 'event_available', 'modal' => false, 'matches' => ['work-centers.*']],
-                        ['route' => 'inventory.lots', 'label' => __('inventory.lot.title'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['inventory.lots*']],
-                        ['route' => 'inventory.label-templates.index', 'label' => __('inventory.label_template.title'), 'icon' => 'label', 'modal' => false, 'matches' => ['inventory.label-templates.*']],
                     ],
                 ],
                 [
                     'key' => 'sales-billing',
-                    'label' => __('Abrechnung & Finanzen'),
+                    'label' => __('Abrechnung'),
                     'icon' => 'request_quote',
                     'items' => [
                         ['route' => 'billing.feed', 'label' => __('billing.feed.title'), 'icon' => 'request_quote', 'modal' => false, 'matches' => ['billing.feed', 'invoices.*', 'quotes.*', 'lexoffice.vouchers.*'], 'badge' => $this->overdueDocumentCount()],
@@ -541,29 +557,6 @@ class NavigationRegistry {
                         ...(Gate::allows('timeEntry.viewAny')
                             ? [['route' => 'finance.open-times.index', 'label' => __('finance.open_times.menu'), 'icon' => 'pending_actions', 'modal' => false, 'matches' => ['finance.open-times.*']]]
                             : []),
-                        ['route' => 'finance.transfers.index', 'label' => __('finance.title.menu'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['finance.transfers.*', 'finance.reconciliation.*', 'finance.bank-accounts.*']],
-                        ['route' => 'finance.datev.index', 'label' => __('finance.datev.menu'), 'icon' => 'account_tree', 'modal' => false, 'matches' => ['finance.datev.*']],
-                        ['route' => 'finance.gobd.index', 'label' => __('gobd.title'), 'icon' => 'gavel', 'modal' => false, 'matches' => ['finance.gobd.*']],
-                        // Lokale Buchhaltung (Feature 125, MVP-671): Einrichtung und
-                        // Buchungshoheit. Sichtbar nur mit Leserecht — die Seite
-                        // beantwortet, wer das Hauptbuch führt.
-                        ...(Gate::allows(\App\Enums\User\Permission::AccountingLedgerView->value)
-                            ? [
-                                ['route' => 'finance.accounting.inbox.index', 'label' => __('accounting.inbox.menu'), 'icon' => 'inbox', 'modal' => false, 'matches' => ['finance.accounting.inbox.*']],
-                                ['route' => 'finance.accounting.journal.index', 'label' => __('accounting.ledger.journal.menu'), 'icon' => 'menu_book', 'modal' => false, 'matches' => ['finance.accounting.journal.*']],
-                                ['route' => 'finance.accounting.open-items.index', 'label' => __('accounting.open_items.menu'), 'icon' => 'account_balance_wallet', 'modal' => false, 'matches' => ['finance.accounting.open-items.*']],
-                                ['route' => 'finance.accounting.recurring.index', 'label' => __('accounting.recurring.menu'), 'icon' => 'event_repeat', 'modal' => false, 'matches' => ['finance.accounting.recurring.*']],
-                                ['route' => 'finance.accounting.closing.index', 'label' => __('accounting.closing.menu'), 'icon' => 'lock_clock', 'modal' => false, 'matches' => ['finance.accounting.closing.*']],
-                                ['route' => 'finance.accounting.filings.index', 'label' => __('accounting.filing.calendar.menu'), 'icon' => 'event_available', 'modal' => false, 'matches' => ['finance.accounting.filings.*']],
-                                ['route' => 'finance.accounting.rules.index', 'label' => __('accounting.rules.menu'), 'icon' => 'rule', 'modal' => false, 'matches' => ['finance.accounting.rules.*']],
-                                ['route' => 'finance.accounting.accounts.index', 'label' => __('accounting.ledger.accounts.menu'), 'icon' => 'account_tree', 'modal' => false, 'matches' => ['finance.accounting.accounts.*']],
-                                ['route' => 'finance.accounting.setup', 'label' => __('accounting.ledger.menu'), 'icon' => 'account_balance_wallet', 'modal' => false, 'matches' => ['finance.accounting.setup', 'finance.accounting.update', 'finance.accounting.activate', 'finance.accounting.sovereignty*', 'finance.accounting.fiscal-years.*']],
-                            ]
-                            : []),
-                        // SEPA-Zahlungsausgang (Feature 120, MVP-609): Zahllauf und
-                        // Mandatsregister sitzen bei der Buchhaltung, nicht beim Einkauf.
-                        ['route' => 'finance.payment-runs.index', 'label' => __('sepa.title'), 'icon' => 'account_balance', 'modal' => false, 'matches' => ['finance.payment-runs.*']],
-                        ['route' => 'finance.mandates.index', 'label' => __('sepa.mandate.title'), 'icon' => 'assignment_turned_in', 'modal' => false, 'matches' => ['finance.mandates.*']],
                         // Bürgschaftsregister (Feature 114, MVP-603): Sicherheiten
                         // für Geld gehören zur Abrechnung, nicht zum Projekt.
                         ['route' => 'guarantees.index', 'label' => __('guarantee.title'), 'icon' => 'gpp_maybe', 'modal' => false, 'matches' => ['guarantees.*']],
@@ -575,6 +568,45 @@ class NavigationRegistry {
                         ['route' => 'metering.index', 'label' => __('metering.title'), 'icon' => 'speed', 'modal' => false, 'matches' => ['metering.*']],
                         ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
                         ['route' => 'investments.index', 'label' => __('Investitionen'), 'icon' => 'trending_up', 'modal' => false, 'matches' => ['investments.*']],
+                    ],
+                ],
+                [
+                    // Geldverkehr: Bankkonten, Zahllauf und Mandate gehören
+                    // zusammen — sie beantworten dieselbe Frage (was ist geflossen?).
+                    'key' => 'sales-payments',
+                    'label' => __('Zahlungsverkehr'),
+                    'icon' => 'account_balance',
+                    'items' => [
+                        ['route' => 'finance.transfers.index', 'label' => __('finance.title.menu'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['finance.transfers.*', 'finance.reconciliation.*', 'finance.bank-accounts.*']],
+                        ['route' => 'finance.payment-runs.index', 'label' => __('sepa.title'), 'icon' => 'account_balance', 'modal' => false, 'matches' => ['finance.payment-runs.*']],
+                        ['route' => 'finance.mandates.index', 'label' => __('sepa.mandate.title'), 'icon' => 'assignment_turned_in', 'modal' => false, 'matches' => ['finance.mandates.*']],
+                    ],
+                ],
+                [
+                    // Hauptbuch und Meldepflichten (Feature 125): eigener
+                    // Arbeitsplatz mit eigener Rolle — in der Abrechnungsliste
+                    // war er zwischen Belegen und Bürgschaften nicht zu finden.
+                    'key' => 'sales-accounting',
+                    'label' => __('accounting.ledger.menu'),
+                    'icon' => 'account_balance_wallet',
+                    'items' => [
+                        ...(Gate::allows(\App\Enums\User\Permission::AccountingLedgerView->value)
+                            ? [
+                                ['route' => 'finance.accounting.inbox.index', 'label' => __('accounting.inbox.menu'), 'icon' => 'inbox', 'modal' => false, 'matches' => ['finance.accounting.inbox.*']],
+                                ['route' => 'finance.accounting.journal.index', 'label' => __('accounting.ledger.journal.menu'), 'icon' => 'menu_book', 'modal' => false, 'matches' => ['finance.accounting.journal.*']],
+                                ['route' => 'finance.accounting.open-items.index', 'label' => __('accounting.open_items.menu'), 'icon' => 'account_balance_wallet', 'modal' => false, 'matches' => ['finance.accounting.open-items.*']],
+                                ['route' => 'finance.accounting.filings.index', 'label' => __('accounting.filing.calendar.menu'), 'icon' => 'event_available', 'modal' => false, 'matches' => ['finance.accounting.filings.*']],
+                                ['route' => 'finance.accounting.closing.index', 'label' => __('accounting.closing.menu'), 'icon' => 'lock_clock', 'modal' => false, 'matches' => ['finance.accounting.closing.*']],
+                                ['route' => 'finance.accounting.recurring.index', 'label' => __('accounting.recurring.menu'), 'icon' => 'event_repeat', 'modal' => false, 'matches' => ['finance.accounting.recurring.*']],
+                                // Einrichtung zuletzt: Kontenplan und Regeln richtet
+                                // man einmal ein, gebucht wird täglich.
+                                ['route' => 'finance.accounting.accounts.index', 'label' => __('accounting.ledger.accounts.menu'), 'icon' => 'account_tree', 'modal' => false, 'matches' => ['finance.accounting.accounts.*']],
+                                ['route' => 'finance.accounting.rules.index', 'label' => __('accounting.rules.menu'), 'icon' => 'rule', 'modal' => false, 'matches' => ['finance.accounting.rules.*']],
+                                ['route' => 'finance.accounting.setup', 'label' => __('accounting.ledger.setup_menu'), 'icon' => 'settings', 'modal' => false, 'matches' => ['finance.accounting.setup', 'finance.accounting.update', 'finance.accounting.activate', 'finance.accounting.sovereignty*', 'finance.accounting.fiscal-years.*', 'finance.accounting.taxation*', 'finance.accounting.filing-interval*', 'finance.accounting.vat-extension*', 'finance.accounting.prepayment*']],
+                            ]
+                            : []),
+                        ['route' => 'finance.datev.index', 'label' => __('finance.datev.menu'), 'icon' => 'account_tree', 'modal' => false, 'matches' => ['finance.datev.*']],
+                        ['route' => 'finance.gobd.index', 'label' => __('gobd.title'), 'icon' => 'gavel', 'modal' => false, 'matches' => ['finance.gobd.*']],
                     ],
                 ],
             ],

@@ -65,6 +65,8 @@ return [
             'icon' => 'inventory_2',
             'keys' => [
                 'group:sales-inventory',
+                'group:sales-procurement',
+                'group:sales-manufacturing',
                 'section:fleet',
                 'group:reports-resources',
             ],
@@ -100,6 +102,8 @@ return [
             'icon' => 'account_balance',
             'keys' => [
                 'group:sales-billing',
+                'group:sales-payments',
+                'group:sales-accounting',
                 'section:travel-expenses',
                 'group:reports-finance',
                 'section:archive',
