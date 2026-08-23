@@ -161,9 +161,9 @@
                         @php $tz = \App\Support\Tz::current(); @endphp
                         <details class="mb-3">
                             <summary class="cursor-pointer text-xs font-medium text-base-content/60">{{ __('Einträge anzeigen') }}</summary>
-                            <div class="mt-2 overflow-x-auto">
-                                <table class="table table-xs">
-                                    <thead>
+                            <div class="mt-2">
+                                <x-table :bare="true" size="xs">
+                                    <x-slot:head>
                                         <tr>
                                             <th>{{ __('Datum') }}</th>
                                             <th>{{ __('Zeit') }}</th>
@@ -171,8 +171,7 @@
                                             <th>{{ __('Beschreibung') }}</th>
                                             <th>{{ __('Benutzer') }}</th>
                                         </tr>
-                                    </thead>
-                                    <tbody>
+                                    </x-slot:head>
                                         @foreach ($g['entries'] as $e)
                                             @php
                                                 $entryStart = $e['started_at'] ? \Carbon\CarbonImmutable::parse($e['started_at'])->setTimezone($tz) : null;
@@ -186,8 +185,7 @@
                                                 <td class="text-xs text-base-content/60">{{ $e['user_email'] ?? '—' }}</td>
                                             </tr>
                                         @endforeach
-                                    </tbody>
-                                </table>
+                                </x-table>
                                 @if (($g['entries_more'] ?? 0) > 0)
                                     <p class="mt-1 text-xs text-base-content/50">{{ __('… und :count weitere', ['count' => $g['entries_more']]) }}</p>
                                 @endif

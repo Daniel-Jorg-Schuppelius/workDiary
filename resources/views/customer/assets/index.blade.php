@@ -29,5 +29,5 @@
             <x-table.empty :colspan="2" :title="__('Keine Objekte vorhanden.')" />
         @endforelse
     </x-table>
-    <x-pagination :paginator="$assets" />
+    <x-pagination :paginator="$assets" standing />
 @endsection

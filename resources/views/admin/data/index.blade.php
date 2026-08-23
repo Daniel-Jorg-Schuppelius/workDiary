@@ -112,17 +112,19 @@
                     <td><x-status-badge :tone="$run->state->tone()">{{ $run->state->label() }}</x-status-badge></td>
                     <td class="text-right tabular-nums">{{ number_format((int) $run->rows_total, 0, ',', '.') }}</td>
                     <td class="text-sm text-base-content/70">{{ $run->created_at?->fdatetime() }}</td>
-                    <td class="flex justify-end gap-1">
-                        @if ($run->state->canDownload())
-                            <x-icon-btn icon="download" size="sm" tone="primary"
-                                        :label="__('Herunterladen')" :href="route('admin.data.download', $run)" />
-                        @endif
-                        <x-action-form :action="route('admin.data.destroy', $run)" method="DELETE"
-                              confirm-icon="delete"
-                              confirm-tone="error"
-                              :confirm="__('Export wirklich löschen?')">
-                            <x-icon-btn icon="delete" size="sm" tone="ghost" type="submit" :label="__('Löschen')" />
-                        </x-action-form>
+                    <td class="text-right">
+                        <div class="flex justify-end gap-1">
+                            @if ($run->state->canDownload())
+                                <x-icon-btn icon="download" size="sm" tone="primary"
+                                            :label="__('Herunterladen')" :href="route('admin.data.download', $run)" />
+                            @endif
+                            <x-action-form :action="route('admin.data.destroy', $run)" method="DELETE"
+                                  confirm-icon="delete"
+                                  confirm-tone="error"
+                                  :confirm="__('Export wirklich löschen?')">
+                                <x-icon-btn icon="delete" size="sm" tone="ghost" type="submit" :label="__('Löschen')" />
+                            </x-action-form>
+                        </div>
                     </td>
                 </tr>
             @endforeach

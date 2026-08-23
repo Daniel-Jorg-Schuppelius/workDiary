@@ -78,23 +78,18 @@
         {{-- Bestehende Anbindungen --}}
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
             <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('shipping.connections_heading') }}</h2>
-            @if ($connections->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('shipping.no_connections') }}</p>
-            @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>{{ __('shipping.field.carrier') }}</th>
-                                <th>{{ __('shipping.field.name') }}</th>
-                                <th>{{ __('shipping.col.mode') }}</th>
-                                <th>{{ __('shipping.col.status') }}</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
+            <x-table :bare="true" :empty-title="__('shipping.no_connections')">
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('shipping.field.carrier') }}</th>
+                        <th>{{ __('shipping.field.name') }}</th>
+                        <th>{{ __('shipping.col.mode') }}</th>
+                        <th>{{ __('shipping.col.status') }}</th>
+                        <th class="text-right"></th>
+                    </tr>
+                </x-slot:head>
                             @foreach ($connections as $connection)
-                                <tr>
+                                <tr class="hover">
                                     <td class="font-medium">{{ strtoupper($connection->carrier) }}</td>
                                     <td>{{ $connection->name }}</td>
                                     <td>
@@ -122,10 +117,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
+            </x-table>
         </div>
     </div>
 </x-page-shell>

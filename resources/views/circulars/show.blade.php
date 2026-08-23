@@ -72,7 +72,7 @@
                 </ul>
             </x-card>
         @else
-            <x-table :pin-rows="true" :zebra="true">
+            <x-table :pin-rows="true" :zebra="true" table-sort="client">
                 <x-slot:head>
                     <tr>
                         <x-table.th sort type="string">{{ __('circular.column.customer') }}</x-table.th>
@@ -96,7 +96,7 @@
                         <td class="whitespace-nowrap">{{ optional($recipient->sent_at)->fdatetime() ?? '—' }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="4"><x-empty-state icon="campaign" :title="__('circular.empty_recipients')" /></td></tr>
+                    <x-table.empty :colspan="4" icon="campaign" :title="__('circular.empty_recipients')" compact />
                 @endforelse
             </x-table>
         @endif

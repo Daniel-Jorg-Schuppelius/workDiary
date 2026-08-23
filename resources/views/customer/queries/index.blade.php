@@ -67,5 +67,5 @@
         @endforelse
     </div>
 
-    <x-pagination :paginator="$queries" />
+    <x-pagination :paginator="$queries" standing />
 @endsection

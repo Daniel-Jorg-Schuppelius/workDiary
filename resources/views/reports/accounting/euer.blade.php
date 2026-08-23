@@ -76,7 +76,7 @@
                     <td class="text-right font-mono">{{ $row['not_deductible'] }}</td>
                 </tr>
             @empty
-                <tr><td colspan="4"><x-empty-state icon="summarize" :title="__('accounting.reports.empty')" /></td></tr>
+                <x-table.empty :colspan="4" icon="summarize" :title="__('accounting.reports.empty')" compact />
             @endforelse
         </x-table>
 

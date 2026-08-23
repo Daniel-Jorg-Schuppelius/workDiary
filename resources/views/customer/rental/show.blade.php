@@ -23,29 +23,23 @@
         <span>{{ $case->starts_at->fdatetime() }} – {{ $case->ends_at->fdatetime() }}</span>
     </div>
 
-    <div class="overflow-x-auto">
-        <table class="table">
-            <thead>
-                <tr><th>{{ __('Gerät') }}</th><th>{{ __('Status') }}</th></tr>
-            </thead>
-            <tbody>
-                @foreach ($case->caseAssets as $caseAsset)
-                    <tr>
-                        <td>{{ $caseAsset->asset->name ?? '—' }}</td>
-                        <td><span class="badge badge-outline">{{ __("values.{$caseAsset->status}") }}</span></td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
+    <x-table>
+        <x-slot:head>
+            <tr><th>{{ __('Gerät') }}</th><th>{{ __('Status') }}</th></tr>
+        </x-slot:head>
+        @foreach ($case->caseAssets as $caseAsset)
+            <tr class="hover">
+                <td>{{ $caseAsset->asset->name ?? '—' }}</td>
+                <td><span class="badge badge-outline">{{ __("values.{$caseAsset->status}") }}</span></td>
+            </tr>
+        @endforeach
+    </x-table>
 
     <h2 class="text-lg font-medium">{{ __('Übergaben') }}</h2>
-    <div class="overflow-x-auto">
-        <table class="table">
-            <thead>
-                <tr><th>{{ __('Zeitpunkt') }}</th><th>{{ __('Zubehör') }}</th><th>{{ __('Bestätigung') }}</th></tr>
-            </thead>
-            <tbody>
+    <x-table>
+        <x-slot:head>
+            <tr><th>{{ __('Zeitpunkt') }}</th><th>{{ __('Zubehör') }}</th><th>{{ __('Bestätigung') }}</th></tr>
+        </x-slot:head>
                 @forelse ($case->handoverReports as $report)
                     <tr>
                         <td>{{ $report->reported_at->fdatetime() }}</td>
@@ -64,8 +58,6 @@
                 @empty
                     <x-table.empty :colspan="3" :title="__('Noch keine Übergabe.')" compact />
                 @endforelse
-            </tbody>
-        </table>
-    </div>
+    </x-table>
 </div>
 @endsection

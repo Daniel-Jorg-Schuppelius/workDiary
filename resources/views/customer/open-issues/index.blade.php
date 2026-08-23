@@ -54,6 +54,6 @@
                 </li>
             @endforeach
         </ul>
-        <x-pagination :paginator="$issues" />
+        <x-pagination :paginator="$issues" standing />
     @endif
 @endsection

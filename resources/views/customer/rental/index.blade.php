@@ -18,32 +18,26 @@
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif
 
-    @if ($cases->isEmpty())
-        <p class="text-sm text-base-content/60">{{ __('Keine Verleihvorgänge vorhanden.') }}</p>
-    @else
-        <div class="overflow-x-auto">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>{{ __('Nummer') }}</th>
-                        <th>{{ __('Geräte') }}</th>
-                        <th>{{ __('Zeitraum') }}</th>
-                        <th>{{ __('Status') }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($cases as $case)
-                        <tr>
-                            <td><a class="link font-mono" href="{{ route('customer.rentals.show', $case) }}">{{ $case->number }}</a></td>
-                            <td>{{ $case->caseAssets->map(fn($ca) => $ca->asset?->name)->filter()->implode(', ') ?: '—' }}</td>
-                            <td>{{ $case->starts_at->fdate() }} – {{ $case->ends_at->fdate() }}</td>
-                            <td><span class="badge badge-outline">{{ $case->status->label() }}</span></td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-        <x-pagination :paginator="$cases" />
-    @endif
+    <x-table>
+        <x-slot:head>
+            <tr>
+                <th>{{ __('Nummer') }}</th>
+                <th>{{ __('Geräte') }}</th>
+                <th>{{ __('Zeitraum') }}</th>
+                <th>{{ __('Status') }}</th>
+            </tr>
+        </x-slot:head>
+        @forelse ($cases as $case)
+            <tr class="hover">
+                <td><a class="link font-mono" href="{{ route('customer.rentals.show', $case) }}">{{ $case->number }}</a></td>
+                <td>{{ $case->caseAssets->map(fn($ca) => $ca->asset?->name)->filter()->implode(', ') ?: '—' }}</td>
+                <td>{{ $case->starts_at->fdate() }} – {{ $case->ends_at->fdate() }}</td>
+                <td><span class="badge badge-outline">{{ $case->status->label() }}</span></td>
+            </tr>
+        @empty
+            <x-table.empty :colspan="4" :title="__('Keine Verleihvorgänge vorhanden.')" />
+        @endforelse
+    </x-table>
+    <x-pagination :paginator="$cases" standing />
 </div>
 @endsection

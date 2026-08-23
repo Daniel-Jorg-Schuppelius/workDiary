@@ -134,30 +134,26 @@
             @if (! empty($run->counters))
                 <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                     <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('accounting_migration.counters_heading') }}</h2>
-                    <div class="overflow-x-auto">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>{{ __('accounting_migration.area') }}</th>
-                                    <th class="text-right">{{ __('accounting_migration.counter_read') }}</th>
-                                    <th class="text-right">{{ __('accounting_migration.counter_matched') }}</th>
-                                    <th class="text-right">{{ __('accounting_migration.counter_pending') }}</th>
-                                    <th class="text-right">{{ __('accounting_migration.counter_conflict') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($run->counters as $areaValue => $counter)
-                                    <tr>
-                                        <td>{{ \App\Enums\Migration\MigrationDataArea::tryFrom((string) $areaValue)?->label() ?? $areaValue }}</td>
-                                        <td class="text-right tabular-nums">{{ $counter['read'] ?? 0 }}</td>
-                                        <td class="text-right tabular-nums">{{ $counter['matched'] ?? ($counter['historic'] ?? 0) }}</td>
-                                        <td class="text-right tabular-nums">{{ $counter['pending'] ?? ($counter['open'] ?? 0) }}</td>
-                                        <td class="text-right tabular-nums">{{ $counter['conflict'] ?? 0 }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                    <x-table :bare="true">
+                        <x-slot:head>
+                            <tr>
+                                <th>{{ __('accounting_migration.area') }}</th>
+                                <th class="text-right">{{ __('accounting_migration.counter_read') }}</th>
+                                <th class="text-right">{{ __('accounting_migration.counter_matched') }}</th>
+                                <th class="text-right">{{ __('accounting_migration.counter_pending') }}</th>
+                                <th class="text-right">{{ __('accounting_migration.counter_conflict') }}</th>
+                            </tr>
+                        </x-slot:head>
+                        @foreach ($run->counters as $areaValue => $counter)
+                            <tr>
+                                <td>{{ \App\Enums\Migration\MigrationDataArea::tryFrom((string) $areaValue)?->label() ?? $areaValue }}</td>
+                                <td class="text-right tabular-nums">{{ $counter['read'] ?? 0 }}</td>
+                                <td class="text-right tabular-nums">{{ $counter['matched'] ?? ($counter['historic'] ?? 0) }}</td>
+                                <td class="text-right tabular-nums">{{ $counter['pending'] ?? ($counter['open'] ?? 0) }}</td>
+                                <td class="text-right tabular-nums">{{ $counter['conflict'] ?? 0 }}</td>
+                            </tr>
+                        @endforeach
+                    </x-table>
                 </div>
             @endif
 
@@ -165,20 +161,18 @@
             @if ($items->isNotEmpty())
                 <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                     <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('accounting_migration.items_heading') }}</h2>
-                    <div class="overflow-x-auto">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>{{ __('accounting_migration.area') }}</th>
-                                    <th>{{ __('accounting_migration.item_title') }}</th>
-                                    <th>{{ __('accounting_migration.item_source') }}</th>
-                                    <th>{{ __('accounting_migration.item_target') }}</th>
-                                    <th>{{ __('accounting_migration.item_status') }}</th>
-                                    <th class="text-right">{{ __('accounting_migration.item_decision') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($items as $item)
+                    <x-table :bare="true">
+                        <x-slot:head>
+                            <tr>
+                                <th>{{ __('accounting_migration.area') }}</th>
+                                <th>{{ __('accounting_migration.item_title') }}</th>
+                                <th>{{ __('accounting_migration.item_source') }}</th>
+                                <th>{{ __('accounting_migration.item_target') }}</th>
+                                <th>{{ __('accounting_migration.item_status') }}</th>
+                                <th class="text-right">{{ __('accounting_migration.item_decision') }}</th>
+                            </tr>
+                        </x-slot:head>
+                        @foreach ($items as $item)
                                     <tr>
                                         <td>{{ $item->data_area->label() }}</td>
                                         <td>{{ $item->display_title }}</td>
@@ -207,9 +201,7 @@
                                         </td>
                                     </tr>
                                 @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                    </x-table>
                 </div>
             @endif
         @endif

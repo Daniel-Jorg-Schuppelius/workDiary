@@ -58,7 +58,7 @@
             </x-filter-field>
         </x-filter-bar>
 
-        <x-table scroll="flex" :pin-rows="true" :zebra="true">
+        <x-table scroll="flex" :pin-rows="true" :zebra="true" table-sort="client">
             <x-slot:head>
                 <tr>
                     <x-table.th sort type="string">{{ __('guarantee.column.reference') }}</x-table.th>
@@ -104,7 +104,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="9"><x-empty-state icon="gpp_maybe" :title="__('guarantee.empty')" /></td></tr>
+                <x-table.empty :colspan="9" icon="gpp_maybe" :title="__('guarantee.empty')" compact />
             @endforelse
         </x-table>
 

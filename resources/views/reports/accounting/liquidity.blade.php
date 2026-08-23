@@ -51,7 +51,7 @@
                         <td class="text-right font-mono">{{ $row['balance'] }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="2"><x-empty-state icon="account_balance" :title="__('accounting.reports.empty')" /></td></tr>
+                    <x-table.empty :colspan="2" icon="account_balance" :title="__('accounting.reports.empty')" compact />
                 @endforelse
             </x-table>
         </x-card>

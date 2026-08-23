@@ -292,21 +292,16 @@
             </div>
         </div>
 
-        @if (count($updates) === 0)
-            <p class="text-sm text-base-content/60">{{ __('updates.empty') }}</p>
-        @else
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>{{ __('updates.field.component') }}</th>
-                            <th>{{ __('updates.field.versions') }}</th>
-                            <th>{{ __('updates.field.classification') }}</th>
-                            <th>{{ __('updates.field.requirements') }}</th>
-                            <th class="text-right"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
+        <x-table :empty-title="__('updates.empty')">
+            <x-slot:head>
+                <tr>
+                    <th>{{ __('updates.field.component') }}</th>
+                    <th>{{ __('updates.field.versions') }}</th>
+                    <th>{{ __('updates.field.classification') }}</th>
+                    <th>{{ __('updates.field.requirements') }}</th>
+                    <th class="text-right"></th>
+                </tr>
+            </x-slot:head>
                         @foreach ($updates as $update)
                             <tr @class(['opacity-50' => $update->isMuted() && ! $update->isSecurityRelevant()])>
                                 <td>
@@ -350,10 +345,7 @@
                                 </td>
                             </tr>
                         @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @endif
+        </x-table>
     </article>
 </x-index-page>
 @endsection

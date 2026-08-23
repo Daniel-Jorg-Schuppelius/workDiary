@@ -60,25 +60,20 @@
         {{-- Zugänge --}}
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
             <h2 class="mb-3 font-['Space_Grotesk'] text-base font-semibold">{{ __('b2b_catalog.access_heading') }}</h2>
-            @if ($accesses->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('b2b_catalog.access_empty') }}</p>
-            @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>{{ __('b2b_catalog.field.customer') }}</th>
-                                <th>{{ __('b2b_catalog.field.label') }}</th>
-                                <th>{{ __('b2b_catalog.field.username') }}</th>
-                                <th>{{ __('b2b_catalog.field.items_count') }}</th>
-                                <th>{{ __('b2b_catalog.field.last_used') }}</th>
-                                <th>{{ __('b2b_catalog.field.status') }}</th>
-                                <th class="text-right">{{ __('b2b_catalog.field.actions') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+            <x-table :bare="true" :empty-title="__('b2b_catalog.access_empty')">
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('b2b_catalog.field.customer') }}</th>
+                        <th>{{ __('b2b_catalog.field.label') }}</th>
+                        <th>{{ __('b2b_catalog.field.username') }}</th>
+                        <th>{{ __('b2b_catalog.field.items_count') }}</th>
+                        <th>{{ __('b2b_catalog.field.last_used') }}</th>
+                        <th>{{ __('b2b_catalog.field.status') }}</th>
+                        <th class="text-right">{{ __('b2b_catalog.field.actions') }}</th>
+                    </tr>
+                </x-slot:head>
                             @foreach ($accesses as $access)
-                                <tr>
+                                <tr class="hover">
                                     <td>{{ $access->customer?->name }}</td>
                                     <td>{{ $access->label }}</td>
                                     <td><code class="text-xs">{{ $access->username }}</code></td>
@@ -104,10 +99,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
+            </x-table>
         </div>
 
         {{-- openTRANS-Bestellungen (MVP-458) --}}
@@ -121,24 +113,19 @@
                 </form>
             </div>
             <p class="mb-3 text-xs text-base-content/60">{{ __('b2b_catalog.orders_hint') }}</p>
-            @if ($orders->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('b2b_catalog.orders_empty') }}</p>
-            @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>{{ __('b2b_catalog.field.order_id') }}</th>
-                                <th>{{ __('b2b_catalog.field.customer') }}</th>
-                                <th>{{ __('b2b_catalog.field.source') }}</th>
-                                <th class="text-right">{{ __('b2b_catalog.field.total_net') }}</th>
-                                <th>{{ __('b2b_catalog.field.ordered_at') }}</th>
-                                <th>{{ __('b2b_catalog.field.status') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+            <x-table :bare="true" :empty-title="__('b2b_catalog.orders_empty')">
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('b2b_catalog.field.order_id') }}</th>
+                        <th>{{ __('b2b_catalog.field.customer') }}</th>
+                        <th>{{ __('b2b_catalog.field.source') }}</th>
+                        <th class="text-right">{{ __('b2b_catalog.field.total_net') }}</th>
+                        <th>{{ __('b2b_catalog.field.ordered_at') }}</th>
+                        <th>{{ __('b2b_catalog.field.status') }}</th>
+                    </tr>
+                </x-slot:head>
                             @foreach ($orders as $order)
-                                <tr>
+                                <tr class="hover">
                                     <td><code class="text-xs">{{ $order->external_order_id }}</code></td>
                                     <td>{{ $order->customer?->name ?? ($order->buyer['name'] ?? '—') }}</td>
                                     <td>{{ $order->source }}</td>
@@ -155,10 +142,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
+            </x-table>
         </div>
     </div>
 </x-page-shell>

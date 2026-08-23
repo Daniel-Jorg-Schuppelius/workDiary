@@ -26,7 +26,7 @@
             <span>{{ $blockingEnabled ? __('procurement.credentials.blocking_on') : __('procurement.credentials.blocking_off') }}</span>
         </div>
 
-        <x-table scroll="flex" :pin-rows="true" :zebra="true">
+        <x-table scroll="flex" :pin-rows="true" :zebra="true" table-sort="client">
             <x-slot:head>
                 <tr>
                     <x-table.th sort type="string">{{ __('procurement.credentials.column.supplier') }}</x-table.th>
@@ -59,7 +59,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="4"><x-empty-state icon="verified_user" :title="__('procurement.credentials.empty')" /></td></tr>
+                <x-table.empty :colspan="4" icon="verified_user" :title="__('procurement.credentials.empty')" compact />
             @endforelse
         </x-table>
     </x-index-page>

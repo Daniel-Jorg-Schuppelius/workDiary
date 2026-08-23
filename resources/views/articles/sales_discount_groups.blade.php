@@ -37,21 +37,19 @@
                 </div>
             </form>
 
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>{{ __('article.discount_group.col.code') }}</th>
-                            <th>{{ __('article.discount_group.col.kind') }}</th>
-                            <th class="text-right">{{ __('article.discount_group.col.value') }}</th>
-                            <th>{{ __('article.discount_group.col.label') }}</th>
-                            <th class="text-right">{{ __('article.discount_group.col.articles') }}</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
+            <x-table :bare="true">
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('article.discount_group.col.code') }}</th>
+                        <th>{{ __('article.discount_group.col.kind') }}</th>
+                        <th class="text-right">{{ __('article.discount_group.col.value') }}</th>
+                        <th>{{ __('article.discount_group.col.label') }}</th>
+                        <th class="text-right">{{ __('article.discount_group.col.articles') }}</th>
+                        <th class="text-right"></th>
+                    </tr>
+                </x-slot:head>
                         @forelse ($groups as $group)
-                            <tr>
+                            <tr class="hover">
                                 <td class="font-mono">{{ $group->code }}</td>
                                 <td>{{ __('article.discount_group.kind.' . $group->kind) }}</td>
                                 <td class="text-right">{{ rtrim(rtrim($group->value, '0'), '.') }}{{ $group->kind === 'factor' ? '' : ' %' }}</td>
@@ -69,11 +67,9 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="text-center text-sm opacity-60">{{ __('article.discount_group.empty') }}</td></tr>
+                            <x-table.empty :colspan="6" :title="__('article.discount_group.empty')" compact />
                         @endforelse
-                    </tbody>
-                </table>
-            </div>
+            </x-table>
         </div>
 
         {{-- MVP-567: kundenindividuelle Overrides je Gruppe --}}
@@ -104,20 +100,18 @@
                 </div>
             </form>
 
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>{{ __('article.discount_group.col.code') }}</th>
-                            <th>{{ __('article.discount_group.override.customer') }}</th>
-                            <th>{{ __('article.discount_group.col.kind') }}</th>
-                            <th class="text-right">{{ __('article.discount_group.col.value') }}</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
+            <x-table :bare="true">
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('article.discount_group.col.code') }}</th>
+                        <th>{{ __('article.discount_group.override.customer') }}</th>
+                        <th>{{ __('article.discount_group.col.kind') }}</th>
+                        <th class="text-right">{{ __('article.discount_group.col.value') }}</th>
+                        <th class="text-right"></th>
+                    </tr>
+                </x-slot:head>
                         @forelse ($overrides ?? [] as $override)
-                            <tr>
+                            <tr class="hover">
                                 <td class="font-mono">{{ $override->group?->code }}</td>
                                 <td>{{ $override->customer?->displayLabel() }} ({{ $override->customer?->number }})</td>
                                 <td>{{ __('article.discount_group.kind.' . $override->kind) }}</td>
@@ -130,11 +124,9 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="5" class="text-center text-sm opacity-60">{{ __('article.discount_group.override.empty') }}</td></tr>
+                            <x-table.empty :colspan="5" :title="__('article.discount_group.override.empty')" compact />
                         @endforelse
-                    </tbody>
-                </table>
-            </div>
+            </x-table>
         </div>
     </div>
 </x-page-shell>

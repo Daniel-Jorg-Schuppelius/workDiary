@@ -137,20 +137,18 @@
                     {{ __('Projektion des Gleitzeitsaldos auf Basis geplanter Dienste; Monate ohne Dienstplanung unterstellen Solltreue.') }}
                     {{ __('Ausgangssaldo') }}: <span class="font-medium tabular-nums">{{ $fmt((int) $forecast['start_balance']) }}</span>
                 </p>
-                <div class="overflow-x-auto">
-                    <table class="table table-xs">
-                        <thead>
-                            <tr>
-                                <th>{{ __('Monat') }}</th>
-                                <th class="text-right">{{ __('Soll') }}</th>
-                                <th class="text-right">{{ __('Geplant') }}</th>
-                                <th class="text-right">{{ __('Δ') }}</th>
-                                <th class="text-right">{{ __('Projizierter Saldo') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                <x-table :bare="true" size="xs">
+                    <x-slot:head>
+                        <tr>
+                            <th>{{ __('Monat') }}</th>
+                            <th class="text-right">{{ __('Soll') }}</th>
+                            <th class="text-right">{{ __('Geplant') }}</th>
+                            <th class="text-right">{{ __('Δ') }}</th>
+                            <th class="text-right">{{ __('Projizierter Saldo') }}</th>
+                        </tr>
+                    </x-slot:head>
                             @foreach ($forecast['months'] as $fm)
-                                <tr>
+                                <tr class="hover">
                                     <td>{{ $fm['label'] }}</td>
                                     <td class="text-right tabular-nums">{{ $fmtPlain($fm['target']) }}</td>
                                     <td class="text-right tabular-nums">{{ $fm['has_shifts'] ? $fmtPlain($fm['planned']) : '–' }}</td>
@@ -162,9 +160,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             </x-card>
         @endif
     @else

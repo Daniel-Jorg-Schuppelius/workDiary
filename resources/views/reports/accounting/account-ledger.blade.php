@@ -71,7 +71,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="6"><x-empty-state icon="menu_book" :title="__('accounting.reports.empty')" /></td></tr>
+                <x-table.empty :colspan="6" icon="menu_book" :title="__('accounting.reports.empty')" compact />
             @endforelse
         </x-table>
 

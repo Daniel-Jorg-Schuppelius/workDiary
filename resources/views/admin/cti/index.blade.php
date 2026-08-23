@@ -60,20 +60,18 @@
             @if ($connections->isEmpty())
                 <p class="text-sm text-base-content/60">{{ __('cti.no_connections') }}</p>
             @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>{{ __('cti.field.name') }}</th>
-                                <th>{{ __('cti.field.provider') }}</th>
-                                <th>{{ __('cti.col.status') }}</th>
-                                <th>{{ __('cti.col.last_event') }}</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                <x-table :bare="true">
+                    <x-slot:head>
+                        <tr>
+                            <th>{{ __('cti.field.name') }}</th>
+                            <th>{{ __('cti.field.provider') }}</th>
+                            <th>{{ __('cti.col.status') }}</th>
+                            <th>{{ __('cti.col.last_event') }}</th>
+                            <th class="text-right"></th>
+                        </tr>
+                    </x-slot:head>
                             @foreach ($connections as $connection)
-                                <tr>
+                                <tr class="hover">
                                     <td>{{ $connection->name }}</td>
                                     <td class="text-base-content/60">{{ ucfirst($connection->provider) }}</td>
                                     <td>
@@ -95,9 +93,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
 
                 {{-- Click-to-Dial je Anbindung (Audit 2026-08, W4.5): ausgehender
                      Anruf-Start. Ohne Schalter bleibt der Anruf-Knopf in den

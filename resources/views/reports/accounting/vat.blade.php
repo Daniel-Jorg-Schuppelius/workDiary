@@ -124,7 +124,7 @@
                     <td class="text-right font-mono">{{ $row['amount'] }}</td>
                 </tr>
             @empty
-                <tr><td colspan="3"><x-empty-state icon="percent" :title="__('accounting.reports.empty')" /></td></tr>
+                <x-table.empty :colspan="3" icon="percent" :title="__('accounting.reports.empty')" compact />
             @endforelse
         </x-table>
     </x-index-page>

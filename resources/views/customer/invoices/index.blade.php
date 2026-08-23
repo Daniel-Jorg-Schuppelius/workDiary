@@ -30,5 +30,5 @@
             <x-table.empty :colspan="4" :title="__('Keine Rechnungen vorhanden.')" />
         @endforelse
     </x-table>
-    <x-pagination :paginator="$invoices" />
+    <x-pagination :paginator="$invoices" standing />
 @endsection

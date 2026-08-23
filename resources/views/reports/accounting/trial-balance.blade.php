@@ -54,7 +54,7 @@
                     <td class="text-right font-mono">{{ $row['balance'] }}</td>
                 </tr>
             @empty
-                <tr><td colspan="6"><x-empty-state icon="table_rows" :title="__('accounting.reports.empty')" /></td></tr>
+                <x-table.empty :colspan="6" icon="table_rows" :title="__('accounting.reports.empty')" compact />
             @endforelse
             <tr class="font-semibold">
                 <td colspan="2">{{ __('accounting.ledger.entry.total') }}</td>

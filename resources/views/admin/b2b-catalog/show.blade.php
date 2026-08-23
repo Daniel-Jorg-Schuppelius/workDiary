@@ -82,23 +82,18 @@
                 <button type="submit" class="btn btn-sm btn-primary">{{ __('b2b_catalog.action.release') }}</button>
             </form>
 
-            @if ($items->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('b2b_catalog.items_empty') }}</p>
-            @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>{{ __('b2b_catalog.field.article_number') }}</th>
-                                <th>{{ __('b2b_catalog.field.article_name') }}</th>
-                                <th class="text-right">{{ __('b2b_catalog.field.default_price') }}</th>
-                                <th class="text-right">{{ __('b2b_catalog.field.custom_price') }}</th>
-                                <th class="text-right">{{ __('b2b_catalog.field.actions') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+            <x-table :bare="true" :empty-title="__('b2b_catalog.items_empty')">
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('b2b_catalog.field.article_number') }}</th>
+                        <th>{{ __('b2b_catalog.field.article_name') }}</th>
+                        <th class="text-right">{{ __('b2b_catalog.field.default_price') }}</th>
+                        <th class="text-right">{{ __('b2b_catalog.field.custom_price') }}</th>
+                        <th class="text-right">{{ __('b2b_catalog.field.actions') }}</th>
+                    </tr>
+                </x-slot:head>
                             @foreach ($items as $item)
-                                <tr>
+                                <tr class="hover">
                                     <td><code class="text-xs">{{ $item->article?->number }}</code></td>
                                     <td>{{ $item->article?->name }}</td>
                                     <td class="text-right">{{ $item->article?->default_sale_price?->format() ?? '—' }}</td>
@@ -114,10 +109,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
+            </x-table>
         </div>
     </div>
 </x-page-shell>

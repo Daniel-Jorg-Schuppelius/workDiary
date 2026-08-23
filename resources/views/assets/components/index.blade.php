@@ -42,7 +42,7 @@
             </div>
         @endif
 
-        <x-table scroll="flex" :pin-rows="true" :zebra="true">
+        <x-table scroll="flex" :pin-rows="true" :zebra="true" table-sort="client">
             <x-slot:head>
                 <tr>
                     <x-table.th sort type="string">{{ __('asset.components.column.name') }}</x-table.th>
@@ -83,34 +83,32 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="7"><x-empty-state icon="build" :title="__('asset.components.empty')" /></td></tr>
+                <x-table.empty :colspan="7" icon="build" :title="__('asset.components.empty')" compact />
             @endforelse
         </x-table>
 
         @if ($history->count() > $installed->count())
             <details class="rounded-box border border-base-300 bg-base-100 shadow-xs">
                 <summary class="cursor-pointer px-4 py-3 text-sm font-medium">{{ __('asset.components.history.heading') }}</summary>
-                <div class="overflow-x-auto px-4 pb-4">
-                    <table class="table table-sm">
-                        <thead>
+                <div class="px-4 pb-4">
+                    <x-table :bare="true">
+                        <x-slot:head>
                             <tr>
                                 <th>{{ __('asset.components.column.name') }}</th>
                                 <th>{{ __('asset.components.column.installed_on') }}</th>
                                 <th>{{ __('asset.components.column.removed_on') }}</th>
                                 <th>{{ __('asset.components.column.status') }}</th>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($history->where('status', '!=', \App\Models\AssetComponent::STATUS_INSTALLED) as $part)
-                                <tr>
-                                    <td>{{ $part->displayName() }}</td>
-                                    <td>{{ optional($part->installed_on)->fdate() ?? '—' }}</td>
-                                    <td>{{ optional($part->removed_on)->fdate() ?? '—' }}</td>
-                                    <td>{{ __('asset.components.status.' . $part->status) }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                        </x-slot:head>
+                        @foreach ($history->where('status', '!=', \App\Models\AssetComponent::STATUS_INSTALLED) as $part)
+                            <tr class="hover">
+                                <td>{{ $part->displayName() }}</td>
+                                <td>{{ optional($part->installed_on)->fdate() ?? '—' }}</td>
+                                <td>{{ optional($part->removed_on)->fdate() ?? '—' }}</td>
+                                <td>{{ __('asset.components.status.' . $part->status) }}</td>
+                            </tr>
+                        @endforeach
+                    </x-table>
                 </div>
             </details>
         @endif

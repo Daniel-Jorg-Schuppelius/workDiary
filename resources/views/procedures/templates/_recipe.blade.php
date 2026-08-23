@@ -36,26 +36,21 @@
         @if ($recipeVersion === null)
             <p class="text-sm text-base-content/60">{{ __('recipes.empty.no_version') }}</p>
         @else
-            @if ($recipeRequirements->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('recipes.empty.no_materials') }}</p>
-            @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>{{ __('recipes.field.position') }}</th>
-                                <th>{{ __('recipes.field.article') }}</th>
-                                <th>{{ __('recipes.field.kind') }}</th>
-                                <th class="text-right">{{ __('recipes.field.quantity') }}</th>
-                                <th>{{ __('recipes.field.unit') }}</th>
-                                <th class="text-right">{{ __('recipes.field.waste') }}</th>
-                                <th>{{ __('recipes.field.tool') }}</th>
-                                @if ($recipeEditable)<th class="text-right">{{ __('recipes.field.actions') }}</th>@endif
-                            </tr>
-                        </thead>
-                        <tbody>
+            <x-table :bare="true" :empty-title="__('recipes.empty.no_materials')">
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('recipes.field.position') }}</th>
+                        <th>{{ __('recipes.field.article') }}</th>
+                        <th>{{ __('recipes.field.kind') }}</th>
+                        <th class="text-right">{{ __('recipes.field.quantity') }}</th>
+                        <th>{{ __('recipes.field.unit') }}</th>
+                        <th class="text-right">{{ __('recipes.field.waste') }}</th>
+                        <th>{{ __('recipes.field.tool') }}</th>
+                        @if ($recipeEditable)<th class="text-right">{{ __('recipes.field.actions') }}</th>@endif
+                    </tr>
+                </x-slot:head>
                             @foreach ($recipeRequirements as $req)
-                                <tr>
+                                <tr class="hover">
                                     <td><code class="text-xs">{{ $req->position_code }}</code></td>
                                     <td>{{ $req->article?->number }} — {{ $req->article?->name }}</td>
                                     <td>{{ $kindOptions[$req->quantity_kind->value] ?? $req->quantity_kind->value }}</td>
@@ -78,10 +73,7 @@
                                     @endif
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
+            </x-table>
 
             @if ($recipeEditable)
                 <form method="POST" action="{{ route('procedures.materials.store', [$template, $recipeVersion]) }}" class="mt-4 grid gap-2 md:grid-cols-7 items-end">
@@ -235,38 +227,34 @@
                 </form>
             </div>
             @if ($recipePlan !== null)
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>{{ __('recipes.field.article') }}</th>
-                                <th class="text-right">{{ __('recipes.field.demand') }}</th>
-                                <th>{{ __('recipes.field.unit') }}</th>
-                                <th class="text-right">{{ __('recipes.field.cost') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($recipePlan['lines'] as $line)
-                                <tr>
-                                    <td>{{ $line['label'] }}</td>
-                                    <td class="text-right">{{ $line['demand'] }}</td>
-                                    <td>{{ $line['unit'] }}</td>
-                                    <td class="text-right">{{ $line['cost']?->format() ?? '—' }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <th colspan="3" class="text-right">{{ __('recipes.plan.total') }}</th>
-                                <th class="text-right">{{ $recipePlan['total']?->format() ?? '—' }}</th>
-                            </tr>
-                            <tr>
-                                <th colspan="3" class="text-right">{{ __('recipes.plan.per_portion') }}</th>
-                                <th class="text-right">{{ $recipePlan['per_portion']?->format() ?? '—' }}</th>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
+                <x-table :bare="true">
+                    <x-slot:head>
+                        <tr>
+                            <th>{{ __('recipes.field.article') }}</th>
+                            <th class="text-right">{{ __('recipes.field.demand') }}</th>
+                            <th>{{ __('recipes.field.unit') }}</th>
+                            <th class="text-right">{{ __('recipes.field.cost') }}</th>
+                        </tr>
+                    </x-slot:head>
+                    <x-slot:foot>
+                        <tr>
+                            <th colspan="3" class="text-right">{{ __('recipes.plan.total') }}</th>
+                            <th class="text-right">{{ $recipePlan['total']?->format() ?? '—' }}</th>
+                        </tr>
+                        <tr>
+                            <th colspan="3" class="text-right">{{ __('recipes.plan.per_portion') }}</th>
+                            <th class="text-right">{{ $recipePlan['per_portion']?->format() ?? '—' }}</th>
+                        </tr>
+                    </x-slot:foot>
+                    @foreach ($recipePlan['lines'] as $line)
+                        <tr class="hover">
+                            <td>{{ $line['label'] }}</td>
+                            <td class="text-right">{{ $line['demand'] }}</td>
+                            <td>{{ $line['unit'] }}</td>
+                            <td class="text-right">{{ $line['cost']?->format() ?? '—' }}</td>
+                        </tr>
+                    @endforeach
+                </x-table>
                 @if ($recipePlan['incomplete'] !== [])
                     <p class="mt-2 text-xs text-warning">{{ implode(' · ', $recipePlan['incomplete']) }}</p>
                 @endif

@@ -27,7 +27,7 @@
                         show-label>{{ __('circular.action.create') }}</x-icon-btn>
         </x-slot:actions>
 
-        <x-table scroll="flex" :pin-rows="true" :zebra="true">
+        <x-table scroll="flex" :pin-rows="true" :zebra="true" table-sort="client">
             <x-slot:head>
                 <tr>
                     <x-table.th sort type="string">{{ __('circular.column.subject') }}</x-table.th>
@@ -59,7 +59,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="6"><x-empty-state icon="campaign" :title="__('circular.empty')" /></td></tr>
+                <x-table.empty :colspan="6" icon="campaign" :title="__('circular.empty')" compact />
             @endforelse
         </x-table>
 

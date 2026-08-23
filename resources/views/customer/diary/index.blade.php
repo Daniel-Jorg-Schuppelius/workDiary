@@ -28,5 +28,5 @@
             <x-table.empty :colspan="3" :title="__('Keine Einträge vorhanden.')" />
         @endforelse
     </x-table>
-    <x-pagination :paginator="$entries" />
+    <x-pagination :paginator="$entries" standing />
 @endsection

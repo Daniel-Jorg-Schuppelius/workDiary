@@ -43,23 +43,18 @@
         </div>
 
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            @if ($menus->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('recipes.menu.empty') }}</p>
-            @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>{{ __('recipes.menu.field.name') }}</th>
-                                <th>{{ __('recipes.menu.field.event_date') }}</th>
-                                <th class="text-right">{{ __('recipes.menu.field.guest_count') }}</th>
-                                <th class="text-right">{{ __('recipes.menu.field.dishes') }}</th>
-                                <th class="text-right">{{ __('recipes.field.actions') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+            <x-table :bare="true" :empty-title="__('recipes.menu.empty')">
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('recipes.menu.field.name') }}</th>
+                        <th>{{ __('recipes.menu.field.event_date') }}</th>
+                        <th class="text-right">{{ __('recipes.menu.field.guest_count') }}</th>
+                        <th class="text-right">{{ __('recipes.menu.field.dishes') }}</th>
+                        <th class="text-right">{{ __('recipes.field.actions') }}</th>
+                    </tr>
+                </x-slot:head>
                             @foreach ($menus as $menu)
-                                <tr>
+                                <tr class="hover">
                                     <td>{{ $menu->name }}</td>
                                     <td>{{ $menu->event_date?->format('d.m.Y') ?? '—' }}</td>
                                     <td class="text-right">{{ $menu->guest_count ?? '—' }}</td>
@@ -71,10 +66,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
+            </x-table>
         </div>
     </div>
 </x-page-shell>

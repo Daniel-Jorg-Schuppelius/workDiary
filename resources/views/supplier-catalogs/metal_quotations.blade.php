@@ -36,19 +36,17 @@
                 </div>
             </form>
 
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>{{ __('procurement.metal.col.metal') }}</th>
-                            <th class="text-right">{{ __('procurement.metal.col.price') }}</th>
-                            <th>{{ __('procurement.metal.col.date') }}</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
+            <x-table :bare="true">
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('procurement.metal.col.metal') }}</th>
+                        <th class="text-right">{{ __('procurement.metal.col.price') }}</th>
+                        <th>{{ __('procurement.metal.col.date') }}</th>
+                        <th class="text-right"></th>
+                    </tr>
+                </x-slot:head>
                         @forelse ($quotations as $quotation)
-                            <tr>
+                            <tr class="hover">
                                 <td class="font-mono">{{ $quotation->metal }}</td>
                                 <td class="text-right">{{ $quotation->price_per_kg?->getAmount() }} €/kg</td>
                                 <td>{{ $quotation->quoted_at->format('d.m.Y') }}</td>
@@ -60,11 +58,9 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="4" class="text-center text-sm opacity-60">{{ __('procurement.metal.empty') }}</td></tr>
+                            <x-table.empty :colspan="4" :title="__('procurement.metal.empty')" compact />
                         @endforelse
-                    </tbody>
-                </table>
-            </div>
+            </x-table>
         </div>
     </div>
 </x-page-shell>

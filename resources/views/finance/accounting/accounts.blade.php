@@ -99,7 +99,7 @@
             </x-card>
         @endif
 
-        <x-table scroll="flex" :zebra="true">
+        <x-table scroll="flex" :zebra="true" table-sort="client">
             <x-slot:head>
                 <tr>
                     <x-table.th sort type="string">{{ __('accounting.ledger.column.number') }}</x-table.th>

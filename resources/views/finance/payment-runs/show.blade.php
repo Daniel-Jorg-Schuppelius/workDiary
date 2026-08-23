@@ -55,7 +55,7 @@
             </dl>
         </x-card>
 
-        <x-table :pin-rows="true" :zebra="true">
+        <x-table :pin-rows="true" :zebra="true" table-sort="client">
             <x-slot:head>
                 <tr>
                     <x-table.th sort type="string">{{ __('sepa.column.creditor') }}</x-table.th>
@@ -94,7 +94,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="6"><x-empty-state icon="account_balance" :title="__('sepa.no_items')" /></td></tr>
+                <x-table.empty :colspan="6" icon="account_balance" :title="__('sepa.no_items')" compact />
             @endforelse
         </x-table>
     </x-index-page>

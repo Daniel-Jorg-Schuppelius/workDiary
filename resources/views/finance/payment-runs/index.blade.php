@@ -34,7 +34,7 @@
             </div>
         @endunless
 
-        <x-table scroll="flex" :pin-rows="true" :zebra="true">
+        <x-table scroll="flex" :pin-rows="true" :zebra="true" table-sort="client">
             <x-slot:head>
                 <tr>
                     <x-table.th sort type="string">{{ __('sepa.column.label') }}</x-table.th>
@@ -65,7 +65,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="8"><x-empty-state icon="account_balance" :title="__('sepa.empty')" /></td></tr>
+                <x-table.empty :colspan="8" icon="account_balance" :title="__('sepa.empty')" compact />
             @endforelse
         </x-table>
 

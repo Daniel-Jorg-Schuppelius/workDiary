@@ -33,7 +33,7 @@
                                :value="old('label', '')" />
             </div>
 
-            <x-table :pin-rows="true" :zebra="true">
+            <x-table :pin-rows="true" :zebra="true" table-sort="client">
                 <x-slot:head>
                     <tr>
                         <th class="w-10"></th>
@@ -70,7 +70,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="8"><x-empty-state icon="task_alt" :title="__('sepa.proposal.empty')" /></td></tr>
+                    <x-table.empty :colspan="8" icon="task_alt" :title="__('sepa.proposal.empty')" compact />
                 @endforelse
             </x-table>
 

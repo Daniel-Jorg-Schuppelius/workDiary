@@ -77,19 +77,17 @@
     </x-card>
 
     <x-card :title="__('Kriterien (erklärbarer Score)')">
-        <div class="overflow-x-auto">
-            <table class="table table-sm">
-                <thead>
-                    <tr>
-                        <th>{{ __('Dimension') }}</th>
-                        <th>{{ __('Kriterium') }}</th>
-                        <th>{{ __('Gewicht') }}</th>
-                        <th>{{ __('Score (0–5)') }}</th>
-                        <th>{{ __('Datenqualität') }}</th>
-                        <th>{{ __('Quelle / Begründung') }}</th>
-                    </tr>
-                </thead>
-                <tbody>
+        <x-table :bare="true">
+            <x-slot:head>
+                <tr>
+                    <th>{{ __('Dimension') }}</th>
+                    <th>{{ __('Kriterium') }}</th>
+                    <th>{{ __('Gewicht') }}</th>
+                    <th>{{ __('Score (0–5)') }}</th>
+                    <th>{{ __('Datenqualität') }}</th>
+                    <th>{{ __('Quelle / Begründung') }}</th>
+                </tr>
+            </x-slot:head>
                     @foreach ($assessment->items as $item)
                         <tr>
                             <td>{{ $item->criterion !== null ? __("values.{$item->criterion->dimension}") : '—' }}</td>
@@ -121,9 +119,7 @@
                             @endif
                         </tr>
                     @endforeach
-                </tbody>
-            </table>
-        </div>
+        </x-table>
         @if ($assessment->isFinal() && $assessment->snapshot !== null)
             <p class="mt-2 text-xs text-base-content/60">
                 {{ __('Methodik (eingefroren): :scoring · Faktor-Sets: :sets', [

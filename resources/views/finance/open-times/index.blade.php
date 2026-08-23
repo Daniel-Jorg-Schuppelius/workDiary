@@ -129,9 +129,9 @@
         @if (count($groups) > 0)
             <details class="rounded-box border border-base-300 bg-base-100 shadow-xs">
                 <summary class="cursor-pointer px-4 py-3 text-sm font-medium">{{ __('finance.open_times.groups_heading') }}</summary>
-                <div class="overflow-x-auto px-4 pb-4">
-                    <table class="table table-sm">
-                        <thead>
+                <div class="px-4 pb-4">
+                    <x-table :bare="true">
+                        <x-slot:head>
                             <tr>
                                 <th>{{ __('finance.open_times.column.customer') }}</th>
                                 <th>{{ __('finance.open_times.column.project') }}</th>
@@ -139,10 +139,9 @@
                                 <th class="text-right">{{ __('finance.open_times.column.duration') }}</th>
                                 <th class="text-right">{{ __('finance.open_times.column.amount') }}</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                        </x-slot:head>
                             @foreach ($groups as $group)
-                                <tr>
+                                <tr class="hover">
                                     <td class="font-medium">{{ $group['customer_name'] ?? '—' }}</td>
                                     <td>{{ $group['project_name'] ?? '—' }}</td>
                                     <td class="text-right tabular-nums">{{ $group['entry_count'] }}</td>
@@ -150,8 +149,7 @@
                                     <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($group['rate_sum'], 2, withThousandsSeparator: true) }}</td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
+                    </x-table>
                 </div>
             </details>
         @endif

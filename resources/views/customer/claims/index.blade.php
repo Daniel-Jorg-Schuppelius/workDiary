@@ -18,32 +18,26 @@
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif
 
-    @if ($cases->isEmpty())
-        <p class="text-sm text-base-content/60">{{ __('Keine Reklamationen vorhanden.') }}</p>
-    @else
-        <div class="overflow-x-auto">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>{{ __('Nummer') }}</th>
-                        <th>{{ __('Titel') }}</th>
-                        <th>{{ __('Status') }}</th>
-                        <th>{{ __('Gemeldet am') }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($cases as $case)
-                        <tr>
-                            <td><a class="link font-mono" href="{{ route('customer.claims.show', $case) }}">{{ $case->number }}</a></td>
-                            <td>{{ $case->title }}</td>
-                            <td><span class="badge badge-outline">{{ $case->status->label() }}</span></td>
-                            <td>{{ $case->reported_at->fdate() }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-        <x-pagination :paginator="$cases" />
-    @endif
+    <x-table>
+        <x-slot:head>
+            <tr>
+                <th>{{ __('Nummer') }}</th>
+                <th>{{ __('Titel') }}</th>
+                <th>{{ __('Status') }}</th>
+                <th>{{ __('Gemeldet am') }}</th>
+            </tr>
+        </x-slot:head>
+        @forelse ($cases as $case)
+            <tr class="hover">
+                <td><a class="link font-mono" href="{{ route('customer.claims.show', $case) }}">{{ $case->number }}</a></td>
+                <td>{{ $case->title }}</td>
+                <td><span class="badge badge-outline">{{ $case->status->label() }}</span></td>
+                <td>{{ $case->reported_at->fdate() }}</td>
+            </tr>
+        @empty
+            <x-table.empty :colspan="4" :title="__('Keine Reklamationen vorhanden.')" />
+        @endforelse
+    </x-table>
+    <x-pagination :paginator="$cases" standing />
 </div>
 @endsection

@@ -51,23 +51,18 @@
                 <button type="submit" class="btn btn-sm btn-primary">{{ __('recipes.menu.action.add_dish') }}</button>
             </form>
 
-            @if ($menu->items->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('recipes.menu.no_dishes') }}</p>
-            @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>{{ __('recipes.menu.field.dish') }}</th>
-                                <th class="text-right">{{ __('recipes.menu.field.portions_per_guest') }}</th>
-                                <th class="text-right">{{ __('recipes.menu.field.portions_total') }}</th>
-                                <th>{{ __('recipes.menu.field.version') }}</th>
-                                <th class="text-right">{{ __('recipes.field.actions') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+            <x-table :bare="true" :empty-title="__('recipes.menu.no_dishes')">
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('recipes.menu.field.dish') }}</th>
+                        <th class="text-right">{{ __('recipes.menu.field.portions_per_guest') }}</th>
+                        <th class="text-right">{{ __('recipes.menu.field.portions_total') }}</th>
+                        <th>{{ __('recipes.menu.field.version') }}</th>
+                        <th class="text-right">{{ __('recipes.field.actions') }}</th>
+                    </tr>
+                </x-slot:head>
                             @foreach ($aggregate['dishes'] as $dish)
-                                <tr>
+                                <tr class="hover">
                                     <td>{{ $dish['item']->template?->name }}</td>
                                     <td class="text-right">{{ $dish['item']->portions_per_guest }}</td>
                                     <td class="text-right">{{ $dish['portions'] }}</td>
@@ -89,10 +84,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
+            </x-table>
         </div>
 
         {{-- Allergene des Menüs --}}
@@ -125,30 +117,22 @@
                 <div class="alert alert-warning mb-2 text-sm">{{ __('recipes.menu.missing_published', ['dishes' => implode(', ', $aggregate['missing_published'])]) }}</div>
             @endif
 
-            @if ($aggregate['materials'] === [])
-                <p class="text-sm text-base-content/60">{{ __('recipes.menu.no_materials') }}</p>
-            @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>{{ __('recipes.field.article') }}</th>
-                                <th class="text-right">{{ __('recipes.field.demand') }}</th>
-                                <th>{{ __('recipes.field.unit') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($aggregate['materials'] as $row)
-                                <tr>
-                                    <td>{{ $row['label'] }}</td>
-                                    <td class="text-right">{{ $row['demand'] }}</td>
-                                    <td>{{ $row['unit'] }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
+            <x-table :bare="true" :empty-title="__('recipes.menu.no_materials')">
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('recipes.field.article') }}</th>
+                        <th class="text-right">{{ __('recipes.field.demand') }}</th>
+                        <th>{{ __('recipes.field.unit') }}</th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($aggregate['materials'] as $row)
+                    <tr class="hover">
+                        <td>{{ $row['label'] }}</td>
+                        <td class="text-right">{{ $row['demand'] }}</td>
+                        <td>{{ $row['unit'] }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
         </div>
     </div>
 </x-page-shell>

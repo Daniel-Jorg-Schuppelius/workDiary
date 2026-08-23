@@ -56,7 +56,7 @@
         @if ($summary['rows'] === [])
             <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">groups</span>' :title="__('Keine Mitarbeitenden im gewählten Bereich.')" />
         @else
-            <x-table>
+            <x-table table-sort="client">
                 <x-slot:head>
                     <tr>
                         <x-table.th sort type="string" default="asc">{{ __('Mitarbeiter:in') }}</x-table.th>

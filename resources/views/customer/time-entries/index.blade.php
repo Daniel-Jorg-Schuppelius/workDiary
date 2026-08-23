@@ -76,6 +76,6 @@
                 <x-table.empty :colspan="$columns" :title="__('Keine Zeiterfassungen vorhanden.')" />
             @endforelse
         </x-table>
-        <x-pagination :paginator="$entries" />
+        <x-pagination :paginator="$entries" standing />
     @endif
 @endsection

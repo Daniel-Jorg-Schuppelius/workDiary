@@ -26,7 +26,7 @@
                         show-label>{{ __('sepa.mandate.action.create') }}</x-icon-btn>
         </x-slot:actions>
 
-        <x-table scroll="flex" :pin-rows="true" :zebra="true">
+        <x-table scroll="flex" :pin-rows="true" :zebra="true" table-sort="client">
             <x-slot:head>
                 <tr>
                     <x-table.th sort type="string">{{ __('sepa.mandate.column.reference') }}</x-table.th>
@@ -63,7 +63,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="7"><x-empty-state icon="assignment" :title="__('sepa.mandate.empty')" /></td></tr>
+                <x-table.empty :colspan="7" icon="assignment" :title="__('sepa.mandate.empty')" compact />
             @endforelse
         </x-table>
 
