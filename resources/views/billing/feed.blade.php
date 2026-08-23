@@ -142,13 +142,16 @@
                         :label="$scopeAll ? __('billing.feed.kpi.internal_all') : __('billing.feed.kpi.internal_mine')"
                         :value="$money($sum['internal']) . ' ' . $sum['currency']" format="raw" tone="neutral"
                         :hint="$sum['internalPending'] > 0.0 ? __('billing.feed.kpi.internal_pending', ['amount' => $money($sum['internalPending'])]) : null" />
+            {{-- Überfällig ist eine TEILMENGE von Offen (gleiche Bedingung plus
+                 Fälligkeit). Ohne „davon" liest man zwei Töpfe und addiert sie. --}}
             <x-kpi-tile class="min-w-40 flex-1" :label="__('billing.feed.kpi.open')"
-                        :value="$money($sum['open']) . ' ' . $sum['currency']" format="raw" tone="info" />
+                        :value="$money($sum['open']) . ' ' . $sum['currency']" format="raw" tone="info"
+                        :hint="trans_choice('billing.feed.kpi.open_count', $sum['openCount'], ['count' => $sum['openCount']])" />
             <x-kpi-tile class="min-w-40 flex-1" :label="__('billing.feed.kpi.overdue')"
                         :value="$money($sum['overdue']) . ' ' . $sum['currency']" format="raw" tone="error"
                         :active="$filters['overdue']"
                         :href="route('billing.feed', ['tab' => $tab, 'overdue' => $filters['overdue'] ? null : 1] + $queryBase)"
-                        :hint="trans_choice('billing.feed.kpi.overdue_count', $sum['overdueCount'], ['count' => $sum['overdueCount']])" />
+                        :hint="__('billing.feed.kpi.overdue_count', ['count' => $sum['overdueCount'], 'total' => $sum['openCount']])" />
             @if ($sum['neutralCount'] > 0)
                 <x-kpi-tile class="min-w-40 flex-1" :label="__('billing.feed.kpi.neutral')"
                             :value="$sum['neutralCount']" tone="neutral"

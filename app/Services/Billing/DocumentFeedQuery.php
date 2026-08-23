@@ -76,8 +76,8 @@ class DocumentFeedQuery {
      * können (Dublettenregel 3).
      *
      * @return list<array{currency: string, revenue: float, expense: float, internal: float,
-     *     internalPending: float, balance: float, open: float, overdue: float,
-     *     overdueCount: int, neutralCount: int}>
+     *     internalPending: float, balance: float, open: float, openCount: int,
+     *     overdue: float, overdueCount: int, neutralCount: int}>
      */
     public function totals(): array {
         $today = Carbon::today()->toDateString();
@@ -90,6 +90,9 @@ class DocumentFeedQuery {
             ->selectRaw("SUM(CASE WHEN $expense THEN sign * amount_gross ELSE 0 END) AS internal_total")
             ->selectRaw("SUM(CASE WHEN $expense AND state = 'open' THEN amount_gross ELSE 0 END) AS internal_pending")
             ->selectRaw("SUM(CASE WHEN state = 'open' THEN open_amount ELSE 0 END) AS open_total")
+            // Grundmenge zur Überfälligkeit: „7 Belege" beantwortet erst mit
+            // dem Nenner die Frage, wovon sieben.
+            ->selectRaw("SUM(CASE WHEN state = 'open' THEN 1 ELSE 0 END) AS open_count")
             ->selectRaw("SUM(CASE WHEN state = 'open' AND due_on IS NOT NULL AND due_on < ? THEN open_amount ELSE 0 END) AS overdue_total", [$today])
             ->selectRaw("SUM(CASE WHEN state = 'open' AND due_on IS NOT NULL AND due_on < ? THEN 1 ELSE 0 END) AS overdue_count", [$today])
             ->selectRaw("SUM(CASE WHEN direction = 'neutral' THEN 1 ELSE 0 END) AS neutral_count")
@@ -105,6 +108,7 @@ class DocumentFeedQuery {
             'internalPending' => (float) $row->internal_pending,
             'balance' => (float) $row->revenue - (float) $row->expense_total,
             'open' => (float) $row->open_total,
+            'openCount' => (int) $row->open_count,
             'overdue' => (float) $row->overdue_total,
             'overdueCount' => (int) $row->overdue_count,
             'neutralCount' => (int) $row->neutral_count,

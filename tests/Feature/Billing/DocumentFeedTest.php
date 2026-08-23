@@ -267,11 +267,46 @@ final class DocumentFeedTest extends TestCase {
         $this->assertEqualsWithDelta(90.0, $totals[0]['overdue'], 0.001);
         $this->assertSame(1, $totals[0]['overdueCount']);
 
+        // Überfällig ist eine TEILMENGE von Offen — nicht daneben, sondern
+        // darin. Die Kachel nennt deshalb beide Zahlen (7 von 12).
+        $this->assertEqualsWithDelta(90.0, $totals[0]['open'], 0.001);
+        $this->assertSame(1, $totals[0]['openCount']);
+
         $response = $this->actingAs($this->admin)
             ->withSession($this->range())
             ->get(route('billing.feed', ['overdue' => 1]));
 
         $response->assertOk()->assertSee('RE-OVERDUE')->assertDontSee('RE-PAID');
+    }
+
+    /**
+     * Die Kachel darf nicht so aussehen, als stünden offen und überfällig
+     * nebeneinander: der überfällige Betrag steckt im offenen.
+     */
+    public function test_the_overdue_tile_names_its_share_of_the_open_total(): void {
+        // Zwei offene Rechnungen, davon eine überfällig.
+        $this->voucher(['external_id' => 'v20', 'customer_id' => $this->customer->id,
+            'voucher_type' => 'salesinvoice', 'voucher_status' => 'open',
+            'voucher_number' => 'RE-LATE', 'total_amount' => '90.00',
+            'due_date' => '2026-01-15', 'open_amount' => '90.00']);
+        $this->voucher(['external_id' => 'v21', 'customer_id' => $this->customer->id,
+            'voucher_type' => 'salesinvoice', 'voucher_status' => 'open',
+            'voucher_number' => 'RE-SOON', 'total_amount' => '60.00',
+            'due_date' => '2027-12-31', 'open_amount' => '60.00']);
+
+        $totals = (new DocumentFeedQuery($this->filters()))->totals();
+
+        $this->assertEqualsWithDelta(150.0, $totals[0]['open'], 0.001);
+        $this->assertSame(2, $totals[0]['openCount']);
+        $this->assertEqualsWithDelta(90.0, $totals[0]['overdue'], 0.001);
+        $this->assertSame(1, $totals[0]['overdueCount']);
+
+        $this->actingAs($this->admin)
+            ->withSession($this->range())
+            ->get(route('billing.feed'))
+            ->assertOk()
+            ->assertSee(__('billing.feed.kpi.overdue'))
+            ->assertSee(__('billing.feed.kpi.overdue_count', ['count' => 1, 'total' => 2]));
     }
 
     public function test_feed_page_renders_with_tabs(): void {
