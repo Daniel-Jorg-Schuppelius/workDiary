@@ -39,6 +39,12 @@ return [
         'setup_menu' => 'Configuration',
         'subtitle' => 'Autorité comptable, exercices et contrôle préalable de la configuration.',
         'open_ended' => 'en cours',
+        'sovereignty_note' => [
+            'preaccounting' => 'La comptabilité locale n\'est pas activée — WorkDiary ne tient pas de grand livre propre, c\'est pourquoi ces listes restent vides. Le contrôle des pièces, les paiements et la transmission (DATEV/GoBD) continuent indépendamment.',
+            'external' => 'Le grand livre est actuellement tenu par un système externe — les chiffres locaux sont une projection et une preuve de transmission, pas un grand livre concurrent.',
+            'external_named' => 'Le grand livre est actuellement tenu par :provider — les chiffres locaux sont une projection et une preuve de transmission, pas un grand livre concurrent.',
+            'setup_link' => 'Ouvrir la configuration',
+        ],
         'section' => [
             'profile' => 'Profil comptable',
             'preflight' => 'Contrôle préalable',

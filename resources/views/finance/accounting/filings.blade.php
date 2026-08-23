@@ -21,6 +21,8 @@
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('accounting.filing.calendar.subtitle')">
+        <x-accounting.sovereignty-note />
+
         <div class="alert bg-info/10 border-info/30 text-sm text-base-content" role="note">
             <x-icon name="info" />
             <div>
@@ -101,7 +103,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="6"><x-empty-state icon="event_available" :title="__('accounting.filing.calendar.empty')" /></td></tr>
+                <x-table.empty :colspan="6" icon="event_available" :title="__('accounting.filing.calendar.empty')" compact />
             @endforelse
         </x-table>
     </x-index-page>

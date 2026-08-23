@@ -18,6 +18,8 @@
 
 @section('content')
     <x-index-page :subtitle="__('accounting.closing.subtitle')">
+        <x-accounting.sovereignty-note />
+
         @forelse ($years as $year)
             <x-card :title="$year->label" icon="calendar_month"
                     :subtitle="$year->starts_on->fdate() . ' – ' . $year->ends_on->fdate()">

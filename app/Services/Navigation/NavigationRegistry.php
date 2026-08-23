@@ -38,6 +38,9 @@ class NavigationRegistry {
     /** Preference-Key der Per-User-Ausblendungen (users.preferences). */
     public const PREFERENCE_HIDDEN = 'nav_hidden';
 
+    /** Request-Memo für {@see localLedgerVisible()}. */
+    private ?bool $localLedgerVisible = null;
+
     public function __construct(
         private readonly FeatureFlagResolver $features,
         private readonly NavGate $gate,
@@ -590,7 +593,10 @@ class NavigationRegistry {
                     'label' => __('accounting.ledger.menu'),
                     'icon' => 'account_balance_wallet',
                     'items' => [
-                        ...(Gate::allows(\App\Enums\User\Permission::AccountingLedgerView->value)
+                        // Arbeitsplatz nur, wenn die Org lokal führt (jetzt oder
+                        // historisch) — bei Fachanwendungs-/Vorstufen-Betrieb wären
+                        // Inbox/Journal/OPOS tote, leere Seiten (Feature 125).
+                        ...(Gate::allows(\App\Enums\User\Permission::AccountingLedgerView->value) && $this->localLedgerVisible()
                             ? [
                                 ['route' => 'finance.accounting.inbox.index', 'label' => __('accounting.inbox.menu'), 'icon' => 'inbox', 'modal' => false, 'matches' => ['finance.accounting.inbox.*']],
                                 ['route' => 'finance.accounting.journal.index', 'label' => __('accounting.ledger.journal.menu'), 'icon' => 'menu_book', 'modal' => false, 'matches' => ['finance.accounting.journal.*']],
@@ -602,6 +608,12 @@ class NavigationRegistry {
                                 // man einmal ein, gebucht wird täglich.
                                 ['route' => 'finance.accounting.accounts.index', 'label' => __('accounting.ledger.accounts.menu'), 'icon' => 'account_tree', 'modal' => false, 'matches' => ['finance.accounting.accounts.*']],
                                 ['route' => 'finance.accounting.rules.index', 'label' => __('accounting.rules.menu'), 'icon' => 'rule', 'modal' => false, 'matches' => ['finance.accounting.rules.*']],
+                            ]
+                            : []),
+                        // Die Einrichtung bleibt immer sichtbar — hier entscheidet
+                        // eine Org sich überhaupt erst für lokale Buchführung.
+                        ...(Gate::allows(\App\Enums\User\Permission::AccountingLedgerView->value)
+                            ? [
                                 ['route' => 'finance.accounting.setup', 'label' => __('accounting.ledger.setup_menu'), 'icon' => 'settings', 'modal' => false, 'matches' => ['finance.accounting.setup', 'finance.accounting.update', 'finance.accounting.activate', 'finance.accounting.sovereignty*', 'finance.accounting.fiscal-years.*', 'finance.accounting.taxation*', 'finance.accounting.filing-interval*', 'finance.accounting.vat-extension*', 'finance.accounting.prepayment*']],
                             ]
                             : []),
@@ -968,8 +980,9 @@ class NavigationRegistry {
                             ? ['route' => 'reports.economics', 'label' => __('Wirtschaftlichkeit'), 'icon' => 'trending_up', 'modal' => false, 'matches' => ['reports.economics']]
                             : null,
                         ['route' => 'reports.billing', 'label' => __('Abrechnung'), 'icon' => 'request_quote', 'modal' => false, 'matches' => ['reports.billing']],
-                        // Finanzberichte der lokalen Buchhaltung (Feature 125, MVP-676).
-                        ...(Gate::allows(\App\Enums\User\Permission::AccountingLedgerView->value)
+                        // Finanzberichte der lokalen Buchhaltung (Feature 125, MVP-676) —
+                        // wie der Hauptbuch-Arbeitsplatz nur bei lokaler Führung.
+                        ...(Gate::allows(\App\Enums\User\Permission::AccountingLedgerView->value) && $this->localLedgerVisible()
                             ? [['route' => 'reports.accounting.index', 'label' => __('accounting.reports.menu'), 'icon' => 'account_balance_wallet', 'modal' => false, 'matches' => ['reports.accounting.*']]]
                             : []),
                         // Zahlungsverhalten (MVP-468): lokale Rechnungsdaten → nur report.view/Admin.
@@ -1372,6 +1385,22 @@ class NavigationRegistry {
             ->count();
 
         return $invoices + $vouchers;
+    }
+
+    /**
+     * Hauptbuch-Arbeitsplatz (Feature 125) nur anbieten, wenn die Org lokal
+     * führt oder führte — Fachanwendungs-/Vorstufen-Orgs sehen nur die
+     * Einrichtung. Memoisiert pro Instanz (Sidebar + Berichte fragen beide).
+     */
+    private function localLedgerVisible(): bool {
+        if ($this->localLedgerVisible !== null) {
+            return $this->localLedgerVisible;
+        }
+
+        $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+
+        return $this->localLedgerVisible = $organization instanceof \App\Models\Organization
+            && app(\App\Services\Accounting\AccountingSovereigntyResolver::class)->hasLocalLedger($organization);
     }
 
     /**

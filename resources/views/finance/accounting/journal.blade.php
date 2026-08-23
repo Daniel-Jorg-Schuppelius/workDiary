@@ -29,6 +29,8 @@
             @endif
         </x-slot:actions>
 
+        <x-accounting.sovereignty-note />
+
         <x-filter-bar :action="route('finance.accounting.journal.index')" :reset="route('finance.accounting.journal.index')">
             <input type="search" name="q" value="{{ $search }}" class="input input-sm input-bordered w-56 shrink-0"
                    placeholder="{{ __('Suche') }}" aria-label="{{ __('Suche') }}">
@@ -71,7 +73,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="7"><x-empty-state icon="menu_book" :title="__('accounting.ledger.empty.entries')" /></td></tr>
+                <x-table.empty :colspan="7" icon="menu_book" :title="__('accounting.ledger.empty.entries')" compact />
             @endforelse
         </x-table>
 

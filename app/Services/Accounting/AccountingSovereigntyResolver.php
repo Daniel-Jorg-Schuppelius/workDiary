@@ -78,4 +78,24 @@ class AccountingSovereigntyResolver {
     public function profile(Organization $organization): ?AccountingProfile {
         return AccountingProfile::query()->where('organization_id', $organization->id)->first();
     }
+
+    /**
+     * Führt die Organisation ihr Hauptbuch lokal — jetzt oder je?
+     *
+     * Sichtbarkeitsfrage des Hauptbuch-Arbeitsplatzes: bei Vorstufe oder rein
+     * externer Führung (Fachanwendung) bleiben Inbox/Journal/OPOS leer und
+     * werden nicht angeboten. Ein historischer lokaler Abschnitt genügt —
+     * nach einem Wechsel nach extern bleibt das Journal als Nachweis
+     * einsehbar (GoBD).
+     */
+    public function hasLocalLedger(Organization $organization): bool {
+        if ($this->profile($organization)?->sovereignty === AccountingSovereignty::Local) {
+            return true;
+        }
+
+        return AccountingSovereigntyPeriod::query()
+            ->where('organization_id', $organization->id)
+            ->where('sovereignty', AccountingSovereignty::Local)
+            ->exists();
+    }
 }

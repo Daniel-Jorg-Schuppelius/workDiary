@@ -39,6 +39,12 @@ return [
         'setup_menu' => 'Setup',
         'subtitle' => 'Posting authority, fiscal years and setup preflight for local bookkeeping.',
         'open_ended' => 'ongoing',
+        'sovereignty_note' => [
+            'preaccounting' => 'Local bookkeeping is not activated — WorkDiary does not keep its own general ledger, which is why these lists stay empty. Document review, payments and handover (DATEV/GoBD) continue regardless.',
+            'external' => 'The general ledger is currently kept by an external system — the local figures are a projection and handover evidence, not a competing ledger.',
+            'external_named' => 'The general ledger is currently kept by :provider — the local figures are a projection and handover evidence, not a competing ledger.',
+            'setup_link' => 'Open setup',
+        ],
         'section' => [
             'profile' => 'Accounting profile',
             'preflight' => 'Preflight',

@@ -27,6 +27,8 @@
             @endif
         </x-slot:actions>
 
+        <x-accounting.sovereignty-note />
+
         <div class="alert bg-info/10 border-info/30 text-sm text-base-content" role="note">
             <x-icon name="info" />
             <span>{{ __('accounting.recurring.principle') }}</span>
@@ -67,7 +69,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="6"><x-empty-state icon="pending_actions" :title="__('accounting.recurring.empty.runs')" /></td></tr>
+                    <x-table.empty :colspan="6" icon="pending_actions" :title="__('accounting.recurring.empty.runs')" compact />
                 @endforelse
             </x-table>
         </x-card>
@@ -130,7 +132,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7"><x-empty-state icon="event_repeat" :title="__('accounting.recurring.empty.templates')" /></td></tr>
+                    <x-table.empty :colspan="7" icon="event_repeat" :title="__('accounting.recurring.empty.templates')" compact />
                 @endforelse
             </x-table>
         </x-card>
@@ -156,7 +158,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="3"><x-empty-state icon="receipt_long" :title="__('accounting.recurring.empty.schedules')" /></td></tr>
+                    <x-table.empty :colspan="3" icon="receipt_long" :title="__('accounting.recurring.empty.schedules')" compact />
                 @endforelse
             </x-table>
         </x-card>

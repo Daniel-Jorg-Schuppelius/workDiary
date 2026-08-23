@@ -30,6 +30,8 @@
             @endif
         </x-slot:actions>
 
+        <x-accounting.sovereignty-note />
+
         <x-table scroll="flex" :zebra="true">
             <x-slot:head>
                 <tr>
@@ -81,7 +83,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="7"><x-empty-state icon="rule" :title="__('accounting.rules.empty')" /></td></tr>
+                <x-table.empty :colspan="7" icon="rule" :title="__('accounting.rules.empty')" compact />
             @endforelse
         </x-table>
     </x-index-page>

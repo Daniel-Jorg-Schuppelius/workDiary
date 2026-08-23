@@ -122,7 +122,7 @@
                         <td><x-status-badge :tone="$year->status->tone()">{{ $year->status->label() }}</x-status-badge></td>
                     </tr>
                 @empty
-                    <tr><td colspan="4"><x-empty-state icon="calendar_month" :title="__('accounting.ledger.empty.fiscal_years')" /></td></tr>
+                    <x-table.empty :colspan="4" icon="calendar_month" :title="__('accounting.ledger.empty.fiscal_years')" compact />
                 @endforelse
             </x-table>
         </x-card>
@@ -267,7 +267,7 @@
                         <td class="text-sm text-base-content/70">{{ $section->reason }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="4"><x-empty-state icon="history" :title="__('accounting.ledger.empty.sections')" /></td></tr>
+                    <x-table.empty :colspan="4" icon="history" :title="__('accounting.ledger.empty.sections')" compact />
                 @endforelse
             </x-table>
         </x-card>

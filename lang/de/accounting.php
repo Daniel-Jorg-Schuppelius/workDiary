@@ -39,6 +39,12 @@ return [
         'setup_menu' => 'Einrichtung',
         'subtitle' => 'Buchungshoheit, Geschäftsjahre und Einrichtungs-Preflight der lokalen Buchführung.',
         'open_ended' => 'laufend',
+        'sovereignty_note' => [
+            'preaccounting' => 'Die lokale Buchhaltung ist nicht aktiviert — WorkDiary führt kein eigenes Hauptbuch, deshalb bleiben diese Listen leer. Belegprüfung, Zahlungsverkehr und Übergabe (DATEV/GoBD) laufen unabhängig davon weiter.',
+            'external' => 'Das Hauptbuch führt derzeit ein externes System — die lokalen Zahlen sind Projektion und Übergabenachweis, kein konkurrierendes Hauptbuch.',
+            'external_named' => 'Das Hauptbuch führt derzeit :provider — die lokalen Zahlen sind Projektion und Übergabenachweis, kein konkurrierendes Hauptbuch.',
+            'setup_link' => 'Zur Einrichtung',
+        ],
         'section' => [
             'profile' => 'Buchhaltungsprofil',
             'preflight' => 'Preflight',

@@ -39,6 +39,12 @@ return [
         'setup_menu' => 'Configuración',
         'subtitle' => 'Autoridad contable, ejercicios y comprobación previa de la configuración.',
         'open_ended' => 'en curso',
+        'sovereignty_note' => [
+            'preaccounting' => 'La contabilidad local no está activada — WorkDiary no lleva un libro mayor propio, por eso estas listas permanecen vacías. La revisión de documentos, los pagos y la entrega (DATEV/GoBD) continúan de forma independiente.',
+            'external' => 'El libro mayor lo lleva actualmente un sistema externo — las cifras locales son una proyección y un justificante de entrega, no un libro mayor paralelo.',
+            'external_named' => 'El libro mayor lo lleva actualmente :provider — las cifras locales son una proyección y un justificante de entrega, no un libro mayor paralelo.',
+            'setup_link' => 'Abrir la configuración',
+        ],
         'section' => [
             'profile' => 'Perfil contable',
             'preflight' => 'Comprobación previa',

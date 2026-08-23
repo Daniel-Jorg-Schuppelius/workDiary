@@ -39,6 +39,12 @@ return [
         'setup_menu' => 'Configurazione',
         'subtitle' => 'Autorità contabile, esercizi e controllo preliminare della configurazione.',
         'open_ended' => 'in corso',
+        'sovereignty_note' => [
+            'preaccounting' => 'La contabilità locale non è attivata — WorkDiary non tiene un proprio libro mastro, per questo questi elenchi restano vuoti. Verifica dei documenti, pagamenti e trasferimento (DATEV/GoBD) proseguono indipendentemente.',
+            'external' => 'Il libro mastro è attualmente tenuto da un sistema esterno — i dati locali sono una proiezione e una prova di trasferimento, non un libro mastro concorrente.',
+            'external_named' => 'Il libro mastro è attualmente tenuto da :provider — i dati locali sono una proiezione e una prova di trasferimento, non un libro mastro concorrente.',
+            'setup_link' => 'Apri la configurazione',
+        ],
         'section' => [
             'profile' => 'Profilo contabile',
             'preflight' => 'Controllo preliminare',

@@ -47,6 +47,8 @@
             @endif
         </x-slot:actions>
 
+        <x-accounting.sovereignty-note />
+
         <div class="grid gap-3 sm:grid-cols-4">
             <x-kpi-tile :label="__('accounting.inbox.state.blocked')" :value="$counts['blocked'] ?? 0" />
             <x-kpi-tile :label="__('accounting.inbox.state.open')" :value="$counts['open'] ?? 0" />
@@ -150,7 +152,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="7"><x-empty-state icon="inbox" :title="__('accounting.inbox.empty')" /></td></tr>
+                <x-table.empty :colspan="7" icon="inbox" :title="__('accounting.inbox.empty')" compact />
             @endforelse
         </x-table>
     </x-index-page>

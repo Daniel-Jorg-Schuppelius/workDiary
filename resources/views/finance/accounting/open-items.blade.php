@@ -20,6 +20,8 @@
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('accounting.open_items.subtitle')">
+        <x-accounting.sovereignty-note />
+
         <div role="tablist" class="tabs tabs-box w-fit">
             @foreach (\App\Enums\Finance\OpenItemDirection::cases() as $tab)
                 <a role="tab" class="tab {{ $direction === $tab ? 'tab-active' : '' }}"
@@ -77,7 +79,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="8"><x-empty-state icon="account_balance_wallet" :title="__('accounting.open_items.empty')" /></td></tr>
+                <x-table.empty :colspan="8" icon="account_balance_wallet" :title="__('accounting.open_items.empty')" compact />
             @endforelse
         </x-table>
 

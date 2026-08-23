@@ -29,6 +29,8 @@
             @endif
         </x-slot:actions>
 
+        <x-accounting.sovereignty-note />
+
         @if ($canConfigure && $templates !== [])
             <x-card :title="__('accounting.template.title')" icon="library_books" :subtitle="__('accounting.template.subtitle')">
                 <form method="POST" action="{{ route('finance.accounting.accounts.template') }}"
@@ -164,7 +166,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="7"><x-empty-state icon="account_tree" :title="__('accounting.ledger.empty.accounts')" /></td></tr>
+                <x-table.empty :colspan="7" icon="account_tree" :title="__('accounting.ledger.empty.accounts')" compact />
             @endforelse
         </x-table>
 
