@@ -14,6 +14,7 @@ namespace App\Models\Finance;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\{Customer, IncomingEInvoice, Supplier};
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -29,6 +30,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class PaymentRunItem extends Model {
     use Auditable;
     use BelongsToOrganization;
+    /** @use HasFactory<\Database\Factories\Finance\PaymentRunItemFactory> */
+    use HasFactory;
     use HasSqid;
 
     protected $fillable = [

@@ -24,6 +24,10 @@ license-keys.env
 /.zed
 /.claude
 /auth.json
+# Playwright-E2E (npm run test:e2e): Läufe + gespeicherte Login-Session
+/test-results
+/playwright-report
+/tests/e2e/.auth
 /node_modules
 /public/build
 /public/hot

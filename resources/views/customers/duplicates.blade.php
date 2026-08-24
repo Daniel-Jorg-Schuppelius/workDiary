@@ -51,7 +51,7 @@
         </form>
     </x-slot:actions>
 
-    <div class="mb-4 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card class="mb-4">
         <details @if (session('manual_open')) open @endif>
             <summary class="cursor-pointer text-sm font-medium">
                 {{ __('Manuell zusammenführen') }}
@@ -84,7 +84,7 @@
                 <button class="btn btn-sm btn-primary">{{ __('Vergleichen →') }}</button>
             </form>
         </details>
-    </div>
+    </x-card>
 
     @if ($candidates->isEmpty())
         <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">difference</span>' :title="__('Keine Dubletten-Kandidaten im gewählten Filter.')" tone="success" framed />
@@ -125,7 +125,7 @@
                     $conf = $pair['confidence'];
                     $pairKey = $source->sqid . ':' . $target->sqid;
                 @endphp
-                <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                <x-card>
                     <div class="mb-3 flex flex-wrap items-center gap-2">
                         <input type="checkbox" class="checkbox checkbox-sm" value="{{ $pairKey }}" x-model="selected"
                                aria-label="{{ __('Für Bulk-Zusammenführung auswählen') }}">
@@ -204,7 +204,7 @@
                             <button class="btn btn-sm btn-ghost">{{ __('Kein Duplikat') }}</button>
                         </form>
                     </div>
-                </div>
+                </x-card>
             @endforeach
             </div>
         </div>

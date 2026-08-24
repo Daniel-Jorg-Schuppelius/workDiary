@@ -50,7 +50,7 @@
             </div>
         @endif
         @if ($subtitle)
-            <p class="text-xs text-base-content/60 md:truncate" title="{{ $subtitle }}">{{ $subtitle }}</p>
+            <p class="text-xs text-muted md:truncate" title="{{ $subtitle }}">{{ $subtitle }}</p>
         @endif
         @if (trim($slot) !== '')
             <div class="text-sm text-base-content/70">{{ $slot }}</div>

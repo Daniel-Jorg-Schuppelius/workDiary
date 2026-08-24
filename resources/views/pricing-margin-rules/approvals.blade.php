@@ -21,7 +21,7 @@
                        :title="__('procurement.approval.empty')" />
     @else
         <x-card padding="p-0">
-            <x-table>
+            <x-table :bare="true">
                 <x-slot:head>
                     <th>{{ __('procurement.catalog.col.internal_article') }}</th>
                     <th class="text-right">{{ __('procurement.alert.col.old_ek') }}</th>

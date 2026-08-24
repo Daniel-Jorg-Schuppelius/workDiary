@@ -156,13 +156,13 @@ class TogglCsvParser {
     }
 
     private function durationToSeconds(string $duration): int {
-        $parts = array_map('intval', explode(':', $duration));
-        // HH:MM:SS oder MM:SS
-        return match (count($parts)) {
-            3 => $parts[0] * 3600 + $parts[1] * 60 + $parts[2],
-            2 => $parts[0] * 60 + $parts[1],
-            default => 0,
-        };
+        try {
+            // Toolkit statt Handzerlegung (Vollscan 2026-08-23, C14, v1.26);
+            // Toggl-Zweiteiler sind MM:SS. Kaputtes Format zählt wie bisher 0.
+            return \CommonToolkit\ValueObjects\Duration::fromClock($duration, twoPartsAreHoursMinutes: false)->getTotalSeconds();
+        } catch (\InvalidArgumentException) {
+            return 0;
+        }
     }
 
     private function isBillable(?string $value): bool {

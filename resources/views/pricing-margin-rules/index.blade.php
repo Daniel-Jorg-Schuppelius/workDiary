@@ -9,9 +9,11 @@
 @extends('layouts.app')
 @section('title', __('procurement.margin.title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('procurement.margin.title'))
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-index-page :subtitle="__('procurement.margin.subtitle')">
+<x-index-page overflow="clip" :subtitle="__('procurement.margin.subtitle')">
     <x-slot:actions>
         <x-icon-btn icon="fact_check" size="sm" :href="route('pricing-margin-rules.approvals')" show-label>
             {{ __('procurement.approval.title') }}@if ($openApprovals > 0) <span class="badge badge-warning badge-sm">{{ $openApprovals }}</span>@endif
@@ -39,9 +41,9 @@
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">percent</span>'
                        :title="__('procurement.margin.empty')" />
     @else
-        <x-card padding="p-0">
-            <x-table>
-                <x-slot:head>
+        <x-table scroll="flex" :pinRows="true">
+            <x-slot:head>
+                <tr>
                     <th>{{ __('procurement.margin.col.name') }}</th>
                     <th>{{ __('procurement.margin.col.scope') }}</th>
                     <th class="text-right">{{ __('procurement.margin.col.calc') }}</th>
@@ -49,9 +51,10 @@
                     <th>{{ __('procurement.margin.col.rounding') }}</th>
                     <th class="text-right">{{ __('procurement.margin.col.priority') }}</th>
                     <th class="text-right">{{ __('procurement.catalog.col.actions') }}</th>
-                </x-slot:head>
+                </tr>
+            </x-slot:head>
                 @foreach ($rules as $rule)
-                    <tr @class(['opacity-50' => ! $rule->active])>
+                    <tr @class(['hover', 'opacity-50' => ! $rule->active])>
                         <td class="font-medium">{{ $rule->name }}</td>
                         <td class="text-sm">
                             {{ $rule->supplier?->name ?: __('procurement.margin.scope_all_suppliers') }}
@@ -78,8 +81,7 @@
                         </td>
                     </tr>
                 @endforeach
-            </x-table>
-        </x-card>
+        </x-table>
         <x-pagination :paginator="$rules" standing />
     @endif
 </x-index-page>

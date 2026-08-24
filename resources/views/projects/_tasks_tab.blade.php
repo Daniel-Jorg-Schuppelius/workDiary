@@ -84,7 +84,7 @@
             @php
                 $ms = $milestoneId > 0 ? ($milestoneMap->get($milestoneId)) : null;
             @endphp
-            <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
+            <x-card padding="p-0">
                 <header class="flex items-center gap-2 border-b border-base-300 px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-base-content/50">
                     @if ($ms)
                         <span class="inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px]
@@ -118,7 +118,7 @@
                         @endcan
                     @endforeach
                 </ul>
-            </div>
+            </x-card>
         @endforeach
     @endif
 </div>

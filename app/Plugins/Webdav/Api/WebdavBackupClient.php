@@ -13,11 +13,14 @@ declare(strict_types=1);
 namespace App\Plugins\Webdav\Api;
 
 use App\Models\Backup\BackupTargetConnection;
+use App\Plugins\PluginHealthService;
 use App\Plugins\Support\Backup\{BackupAccount, BackupRemoteObject};
+use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
+use App\Plugins\Webdav\WebdavPlugin;
 use App\Support\UrlSafety;
 use CommonToolkit\Helper\Data\XmlHelper;
-use GuzzleHttp\{Client as GuzzleClient, ClientInterface};
-use Psr\Http\Message\{ResponseInterface, StreamInterface};
+use Illuminate\Http\Client\Response;
+use Psr\Http\Message\StreamInterface;
 use RuntimeException;
 use SensitiveParameter;
 use Throwable;
@@ -43,19 +46,41 @@ class WebdavBackupClient {
 
     private readonly string $password;
 
-    private ClientInterface $http;
+    private PluginApiClient $http;
 
     public function __construct(
         BackupTargetConnection $connection,
-        ?ClientInterface $http = null,
+        ?PluginApiClient $http = null,
         private readonly bool $allowPrivateTargets = false,
     ) {
         $this->base = rtrim(trim((string) $connection->server_url), '/') . '/';
         $this->username = (string) $connection->username;
         $this->password = (string) $connection->access_token;
-        $this->http = $http ?? new GuzzleClient(['timeout' => 120]);
 
         $this->assertAcceptable($this->base);
+
+        // Toolkit-Client (C4-Rest 2026-08): volle Pipeline inkl. Retry —
+        // WebDAV-Verben gelten im api-toolkit ≥ v2.9.2 als idempotent.
+        if ($http === null) {
+            $http = app(PluginHttpFactory::class)->client(WebdavPlugin::ID, $this->base);
+            // DAV statt JSON-API; Upload-Timeout wie zuvor 120 s (Health-Check
+            // behält sein reduziertes Budget aus dem PluginApiClient).
+            $http->setDefaultHeaders([]);
+            if (! PluginHealthService::inHealthCheck()) {
+                $http->setTimeout(120.0);
+            }
+        }
+        $this->http = $http;
+
+        // Retry nach gesendetem PUT: der Datei-Stream wäre sonst verbraucht —
+        // vor jedem Versuch zurückspulen, damit der volle Body erneut geht.
+        $this->http->onRequest(static function (string $method, string $uri, array $options): array {
+            if (isset($options['body']) && is_resource($options['body'])) {
+                @rewind($options['body']);
+            }
+
+            return $options;
+        });
     }
 
     /**
@@ -97,7 +122,7 @@ class WebdavBackupClient {
             return false;
         }
 
-        return $response->getStatusCode() === 207;
+        return $response->status() === 207;
     }
 
     /**
@@ -116,11 +141,11 @@ class WebdavBackupClient {
         } catch (Throwable) {
             return ['total' => null, 'used' => null];
         }
-        if ($response->getStatusCode() !== 207) {
+        if ($response->status() !== 207) {
             return ['total' => null, 'used' => null];
         }
 
-        $xml = (string) $response->getBody();
+        $xml = $response->body();
         $available = $this->firstInt($xml, '//d:quota-available-bytes');
         $used = $this->firstInt($xml, '//d:quota-used-bytes');
 
@@ -139,7 +164,7 @@ class WebdavBackupClient {
             }
             $accumulated .= ($accumulated === '' ? '' : '/') . $segment;
             $response = $this->send('MKCOL', $this->fileUrl($accumulated));
-            $code = $response->getStatusCode();
+            $code = $response->status();
             if (! in_array($code, [200, 201, 301, 405], true)) {
                 throw new RuntimeException("WebDAV MKCOL failed for '{$accumulated}' (HTTP {$code}).");
             }
@@ -162,12 +187,12 @@ class WebdavBackupClient {
             'headers' => ['Content-Type' => 'application/octet-stream'],
             'body' => $payload,
         ]);
-        if ($put->getStatusCode() < 200 || $put->getStatusCode() >= 300) {
-            throw new RuntimeException('WebDAV-Testdatei konnte nicht geschrieben werden (HTTP ' . $put->getStatusCode() . ').');
+        if (! $put->successful()) {
+            throw new RuntimeException('WebDAV-Testdatei konnte nicht geschrieben werden (HTTP ' . $put->status() . ').');
         }
 
         $get = $this->send('GET', $this->fileUrl($probe));
-        if ((string) $get->getBody() !== $payload) {
+        if ($get->body() !== $payload) {
             throw new RuntimeException('WebDAV-Testdatei kam verändert zurück.');
         }
 
@@ -189,14 +214,14 @@ class WebdavBackupClient {
         } catch (Throwable) {
             return [];
         }
-        if ($response->getStatusCode() === 404) {
+        if ($response->status() === 404) {
             return []; // Prefix existiert (noch) nicht.
         }
-        if ($response->getStatusCode() !== 207) {
-            throw new RuntimeException('WebDAV PROPFIND failed (HTTP ' . $response->getStatusCode() . ').');
+        if ($response->status() !== 207) {
+            throw new RuntimeException('WebDAV PROPFIND failed (HTTP ' . $response->status() . ').');
         }
 
-        return $this->parseChildren((string) $response->getBody(), $prefix);
+        return $this->parseChildren($response->body(), $prefix);
     }
 
     /**
@@ -227,9 +252,8 @@ class WebdavBackupClient {
             }
         }
 
-        $code = $response->getStatusCode();
-        if ($code < 200 || $code >= 300) {
-            throw new RuntimeException("WebDAV PUT failed (HTTP {$code}).");
+        if (! $response->successful()) {
+            throw new RuntimeException('WebDAV PUT failed (HTTP ' . $response->status() . ').');
         }
 
         $localSize = (int) filesize($localPath);
@@ -243,19 +267,18 @@ class WebdavBackupClient {
 
     public function download(string $remoteRef): StreamInterface {
         $response = $this->send('GET', $this->fileUrl($remoteRef));
-        if ($response->getStatusCode() >= 400) {
-            throw new RuntimeException('WebDAV GET failed (HTTP ' . $response->getStatusCode() . ').');
+        if ($response->status() >= 400) {
+            throw new RuntimeException('WebDAV GET failed (HTTP ' . $response->status() . ').');
         }
 
-        return $response->getBody();
+        return $response->toPsrResponse()->getBody();
     }
 
     /** Löscht ein eigenes Objekt; 404 gilt als bereits gelöscht (idempotent). */
     public function delete(string $remoteRef): bool {
         $response = $this->send('DELETE', $this->fileUrl($remoteRef));
-        $code = $response->getStatusCode();
 
-        return $code === 404 || ($code >= 200 && $code < 300);
+        return $response->status() === 404 || $response->successful();
     }
 
     // ── Bausteine ───────────────────────────────────────────────────────
@@ -271,11 +294,11 @@ class WebdavBackupClient {
 
     private function contentLength(string $path): int {
         $response = $this->send('HEAD', $this->fileUrl($path));
-        if ($response->getStatusCode() >= 400) {
+        if ($response->status() >= 400) {
             return -1;
         }
 
-        return (int) $response->getHeaderLine('Content-Length');
+        return (int) $response->header('Content-Length');
     }
 
     private function propfindBody(string $props): string {
@@ -344,12 +367,13 @@ class WebdavBackupClient {
     }
 
     /** @param array<string, mixed> $options */
-    private function send(string $method, string $url, array $options = []): ResponseInterface {
+    private function send(string $method, string $url, array $options = []): Response {
+        // Basic-Auth über die Guzzle-auth-Option — der Toolkit-Client reicht
+        // sie durch; HTTP-Fehlerstatus kommt als Response, nie als Exception.
         $options['auth'] = [$this->username, $this->password];
-        $options['http_errors'] = false;
 
         try {
-            return $this->http->request($method, $url, $options);
+            return $this->http->requestResponse($method, $url, $options);
         } catch (Throwable $e) {
             // Nur die Fehlerklasse — nie URL oder Passwort in der Meldung.
             throw new RuntimeException('WebDAV request failed (' . class_basename($e) . ').', 0, $e);

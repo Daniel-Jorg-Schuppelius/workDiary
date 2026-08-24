@@ -54,7 +54,7 @@
         @endunless
 
         @if(session('error'))
-            <div class="alert err">{{ session('error') }}</div>
+            <div role="alert" class="alert err">{{ session('error') }}</div>
         @endif
         @if($errors->any())
             <div class="alert err"><ul class="errs">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>

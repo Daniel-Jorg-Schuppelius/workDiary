@@ -50,71 +50,64 @@
             </div>
         </div>
 
-        <div class="fieldset" data-time-mode-pane="range">
-            <label class="fieldset-label">{{ __('Start (Uhrzeit)') }}</label>
-            <input type="time" name="start_time" class="input input-bordered w-full">
+        {{-- Pane-Wrapper: das JS (initDynamicFields) versteckt/disabled das
+             Element mit data-time-mode-pane samt Kind-Inputs — der Wrapper
+             bleibt daher außerhalb der Feld-Komponente. --}}
+        <div data-time-mode-pane="range">
+            <x-input-field name="start_time" type="time" :label="__('Start (Uhrzeit)')" />
         </div>
-        <div class="fieldset" data-time-mode-pane="range">
-            <label class="fieldset-label">{{ __('Ende (Uhrzeit)') }}</label>
-            <input type="time" name="end_time" class="input input-bordered w-full">
+        <div data-time-mode-pane="range">
+            <x-input-field name="end_time" type="time" :label="__('Ende (Uhrzeit)')" />
         </div>
         <p class="text-xs text-base-content/60 md:col-span-2" data-time-mode-pane="range">
             {{ __('Datum stammt aus dem Stundenzettel (:date). Endet die Zeit nach Mitternacht? Einfach die kleinere Uhrzeit eintragen.', ['date' => optional($timesheet->work_date)->fdate()]) }}
         </p>
-        <div class="fieldset" data-time-mode-pane="range">
-            <label class="fieldset-label">{{ __('Pause (Min.)') }}</label>
-            <input type="number" name="break_minutes" value="0" min="0" max="480" class="input input-bordered w-full">
+        <div data-time-mode-pane="range">
+            <x-input-field name="break_minutes" type="number" :label="__('Pause (Min.)')" value="0" min="0" max="480" />
         </div>
 
         <div class="fieldset" data-time-mode-pane="duration">
-            <label class="fieldset-label">{{ __('Dauer (HH:MM)') }}</label>
-            <input type="text" data-time-hhmm
+            {{-- Bewusst ohne name: das JS spiegelt HH:MM in das Hidden-Feld
+                 minutes — deshalb Roh-Input mit manueller Label-/Fehler-Verknüpfung. --}}
+            <label class="fieldset-label" for="ts-entry-hhmm">{{ __('Dauer (HH:MM)') }}</label>
+            <input type="text" data-time-hhmm id="ts-entry-hhmm"
                    class="input input-bordered w-full"
                    pattern="^\d{1,2}:[0-5]\d$"
                    placeholder="1:30"
+                   @error('minutes') aria-invalid="true" aria-describedby="ts-entry-hhmm-error" @enderror
                    value="{{ $hh }}:{{ $mm }}">
-            @error('minutes')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
+            @error('minutes')<p id="ts-entry-hhmm-error" class="text-error text-xs mt-1">{{ $message }}</p>@enderror
         </div>
 
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Art') }}</label>
-            <select name="kind" class="select select-bordered w-full">
-                <option value="work">{{ __('Arbeit') }}</option>
-                <option value="travel">{{ __('Anfahrt') }}</option>
-                <option value="standby">{{ __('Bereitschaft') }}</option>
-            </select>
-        </div>
+        <x-select-field name="kind" :label="__('Art')">
+            <option value="work">{{ __('Arbeit') }}</option>
+            <option value="travel">{{ __('Anfahrt') }}</option>
+            <option value="standby">{{ __('Bereitschaft') }}</option>
+        </x-select-field>
     </x-form-group>
 
     <x-form-group :legend="__('Bezug')" icon="task" tone="info" cols="1">
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Aufgabe') }}</label>
-            <select name="task_id" class="select select-bordered w-full">
-                <option value="">—</option>
-                @foreach ($tasks as $t)
-                    <option value="{{ $t->sqid }}" @selected((string) old('task_id') === $t->sqid)>{{ $t->title }}</option>
+        <x-select-field name="task_id" :label="__('Aufgabe')">
+            <option value="">—</option>
+            @foreach ($tasks as $t)
+                <option value="{{ $t->sqid }}" @selected((string) old('task_id') === $t->sqid)>{{ $t->title }}</option>
+            @endforeach
+        </x-select-field>
+        {{-- Vorschlagsliste aus den letzten Buchungstexten dieses Projekts —
+             dasselbe Prinzip wie der Quick-Pick der Heute-Leiste, hier ohne
+             eigenes JS über <datalist>. --}}
+        <x-input-field name="description" :label="__('Beschreibung')" maxlength="500"
+                       list="{{ $descriptionListId }}"
+                       autocomplete="off"
+                       :placeholder="__('Woran hast du gearbeitet?')"
+                       :value="old('description')" />
+        @if (! empty($recentDescriptions))
+            <datalist id="{{ $descriptionListId }}">
+                @foreach ($recentDescriptions as $suggestion)
+                    <option value="{{ $suggestion }}"></option>
                 @endforeach
-            </select>
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Beschreibung') }}</label>
-            {{-- Vorschlagsliste aus den letzten Buchungstexten dieses Projekts —
-                 dasselbe Prinzip wie der Quick-Pick der Heute-Leiste, hier ohne
-                 eigenes JS über <datalist>. --}}
-            <input type="text" name="description" maxlength="500"
-                   list="{{ $descriptionListId }}"
-                   autocomplete="off"
-                   placeholder="{{ __('Woran hast du gearbeitet?') }}"
-                   value="{{ old('description') }}"
-                   class="input input-bordered w-full">
-            @if (! empty($recentDescriptions))
-                <datalist id="{{ $descriptionListId }}">
-                    @foreach ($recentDescriptions as $suggestion)
-                        <option value="{{ $suggestion }}"></option>
-                    @endforeach
-                </datalist>
-            @endif
-        </div>
+            </datalist>
+        @endif
         <div class="fieldset">
             <label class="fieldset-label">{{ __('Tags') }}</label>
             <x-tag-picker :tags="$allTags" :selected="$selectedTagIds" :recent="$recentTagIds" />

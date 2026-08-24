@@ -19,10 +19,6 @@
                         show-label>{{ __('Zurück zur Liste') }}</x-icon-btn>
         </x-slot:actions>
 
-        @if (session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-
         <x-card>
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Fallinformationen') }}</h2>
             <div class="mt-2 space-y-1">

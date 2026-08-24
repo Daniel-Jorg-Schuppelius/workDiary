@@ -21,7 +21,7 @@
 @endphp
 
 <div id="rezeptur" class="mt-6 space-y-4">
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card>
         <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('recipes.title.materials') }}</h2>
             @if ($recipeVersion !== null)
@@ -118,11 +118,11 @@
                 </form>
             @endif
         @endif
-    </div>
+    </x-card>
 
     @if ($recipePartyActive && $recipeVersion !== null)
         {{-- Partyservice: Grundausbeute, Skalierung, Plankosten --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('recipes.title.party') }}</h2>
                 <a href="{{ route('recipe-menus.index') }}" class="btn btn-xs btn-ghost">{{ __('recipes.menu.title') }} →</a>
@@ -172,10 +172,10 @@
                     </label>
                 </fieldset>
             </form>
-        </div>
+        </x-card>
 
         {{-- Allergenlage --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('recipes.title.allergens') }}</h2>
             @error('allergens')
                 <div class="alert alert-error mb-2 text-sm">{{ $message }}</div>
@@ -214,10 +214,10 @@
                     @endforeach
                 @endif
             @endif
-        </div>
+        </x-card>
 
         {{-- Skalierung + Plankosten --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('recipes.title.plan') }}</h2>
                 <form method="GET" action="{{ route('procedures.edit', $template) }}" class="flex items-center gap-2">
@@ -259,6 +259,6 @@
                     <p class="mt-2 text-xs text-warning">{{ implode(' · ', $recipePlan['incomplete']) }}</p>
                 @endif
             @endif
-        </div>
+        </x-card>
     @endif
 </div>

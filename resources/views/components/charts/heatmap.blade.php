@@ -59,14 +59,14 @@
 <figure class="wd-chart rounded-box border border-base-300 bg-base-100 p-3">
     <figcaption>
         <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ $title }}</span>
-        <span class="ml-2 text-xs text-base-content/60">
+        <span class="ml-2 text-xs text-muted">
             {{ $unit }}
             @if ($computedAt) · {{ __('Stand:') }} {{ \Illuminate\Support\Carbon::parse($computedAt)->isoFormat('L LT') }} @endif
         </span>
     </figcaption>
 
     @if ($note)
-        <p class="mt-1 text-xs text-base-content/50">{{ $note }}</p>
+        <p class="mt-1 text-xs text-muted">{{ $note }}</p>
     @endif
 
     @if ($rowList->isEmpty() || $maxCell <= 0)
@@ -78,9 +78,9 @@
             <table class="table table-xs w-full text-center tabular-nums">
                 <thead>
                     <tr>
-                        <th class="text-left font-semibold uppercase tracking-[0.12em] text-[0.65rem] text-base-content/60">{{ $xLabel ?? '' }}</th>
+                        <th class="text-left font-semibold uppercase tracking-[0.12em] text-[0.65rem] text-muted">{{ $xLabel ?? '' }}</th>
                         @foreach ($colLabels as $colLabel)
-                            <th class="px-1 font-semibold text-[0.65rem] text-base-content/50">{{ $colLabel }}</th>
+                            <th class="px-1 font-semibold text-[0.65rem] text-muted">{{ $colLabel }}</th>
                         @endforeach
                         @if ($totals)
                             <th class="bg-base-200 px-2 font-semibold uppercase tracking-[0.12em] text-[0.65rem] text-base-content/70">Σ</th>
@@ -99,7 +99,7 @@
                             </th>
                             @foreach ($row['cells'] ?? [] as $cell)
                                 @if ($cell === null)
-                                    <td class="bg-base-200/40 text-base-content/30">·</td>
+                                    <td class="bg-base-200/40 text-muted">·</td>
                                 @else
                                     @php
                                         $value = (float) ($cell['value'] ?? 0);
@@ -117,7 +117,7 @@
                                 @endif
                             @endforeach
                             @if ($totals)
-                                <td class="bg-base-200 font-semibold {{ $rowTotals[$rowIndex] > 0 ? 'text-base-content' : 'text-base-content/40' }}">
+                                <td class="bg-base-200 font-semibold {{ $rowTotals[$rowIndex] > 0 ? 'text-base-content' : 'text-muted' }}">
                                     {{ $rowTotals[$rowIndex] > 0 ? $display($rowTotals[$rowIndex]) : '·' }}
                                 </td>
                             @endif
@@ -129,7 +129,7 @@
                         <tr>
                             <th class="bg-base-200 text-left text-[0.65rem] uppercase tracking-[0.12em] text-base-content/70">Σ</th>
                             @foreach ($colTotals as $colTotal)
-                                <th class="bg-base-200 text-[0.65rem] {{ $colTotal > 0 ? 'text-base-content' : 'text-base-content/40' }}">
+                                <th class="bg-base-200 text-[0.65rem] {{ $colTotal > 0 ? 'text-base-content' : 'text-muted' }}">
                                     {{ $colTotal > 0 ? $display($colTotal) : '' }}
                                 </th>
                             @endforeach

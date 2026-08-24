@@ -23,6 +23,9 @@ use Tests\TestCase;
  * Teilzahlungsstatus.
  */
 final class InvoiceTaxModelTest extends TestCase {
+    /** D12: deterministische Nummern statt random_int (Unique-Kollisionsschutz bleibt). */
+    private static int $invoiceNo = 0;
+
     use RefreshDatabase;
 
     private Organization $org;
@@ -49,7 +52,7 @@ final class InvoiceTaxModelTest extends TestCase {
         return Invoice::query()->create([
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
-            'number' => 'R2026-' . str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT),
+            'number' => 'R2026-' . str_pad((string) ++self::$invoiceNo, 4, '0', STR_PAD_LEFT),
             'status' => Invoice::STATUS_DRAFT,
             'type' => Invoice::TYPE_INVOICE,
             'tax_rate' => '19.00',

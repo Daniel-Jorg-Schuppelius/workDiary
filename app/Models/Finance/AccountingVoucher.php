@@ -14,6 +14,7 @@ namespace App\Models\Finance;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\{Customer, Supplier};
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -33,6 +34,8 @@ use Illuminate\Support\Carbon;
 class AccountingVoucher extends Model {
     use Auditable;
     use BelongsToOrganization;
+    /** @use HasFactory<\Database\Factories\Finance\AccountingVoucherFactory> */
+    use HasFactory;
     use HasSqid;
 
     protected $fillable = [

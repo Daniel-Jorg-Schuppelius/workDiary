@@ -13,10 +13,6 @@
 
 @section('content')
 <x-index-page :subtitle="__('Genehmigte Monatsfreigaben in einen Lohnabrechnungs-Export zusammenfassen.')">
-    @if (session('error'))
-        <div role="alert" class="alert alert-warning"><span>{{ session('error') }}</span></div>
-    @endif
-
     <div class="card bg-base-100 shadow-sm">
         <div class="card-body">
             <form method="POST" action="{{ route('exports.store') }}" class="space-y-4">

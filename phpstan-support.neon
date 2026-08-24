@@ -1,0 +1,15 @@
+# Vollscan 2026-08-23, D15: Level-5-Analyse für die bisher unanalysierten
+# Nicht-app-Pfade (factories/seeders/routes/scripts). Bewusst eigene Config:
+# app/ bleibt Level 8 (phpstan.neon); ein Level-Mix in einer Config geht nicht.
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 5
+    paths:
+        - database/factories
+        - database/seeders
+        - routes
+        - scripts
+    scanFiles:
+        - stubs/inotify.php

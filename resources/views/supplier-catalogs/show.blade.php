@@ -146,7 +146,7 @@
     @if ($imports->isNotEmpty())
         <x-card class="mb-4">
             <h2 class="font-semibold mb-2">{{ __('procurement.catalog.history.title') }}</h2>
-            <x-table>
+            <x-table :bare="true">
                 <x-slot:head>
                     <th>{{ __('procurement.catalog.history.when') }}</th>
                     <th>{{ __('procurement.catalog.history.trigger') }}</th>
@@ -192,7 +192,7 @@
         <x-empty-state framed :title="__('procurement.catalog.no_items')" />
     @else
         <x-card padding="p-0">
-            <x-table>
+            <x-table :bare="true">
                 <x-slot:head>
                     <th>{{ __('procurement.catalog.map.external_no') }}</th>
                     <th>{{ __('procurement.catalog.map.name') }}</th>

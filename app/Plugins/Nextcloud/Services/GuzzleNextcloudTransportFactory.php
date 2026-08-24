@@ -12,22 +12,32 @@ namespace App\Plugins\Nextcloud\Services;
 
 use App\Plugins\Nextcloud\Api\NextcloudWebdavClient;
 use App\Plugins\Nextcloud\Contracts\NextcloudTransportFactory;
-use App\Plugins\Nextcloud\NextcloudConfig;
-use GuzzleHttp\Client;
+use App\Plugins\Nextcloud\{NextcloudConfig, NextcloudPlugin};
+use App\Plugins\PluginHealthService;
+use App\Plugins\Support\PluginHttpFactory;
 use SensitiveParameter;
 
 /**
  * Standard-Factory: baut je Anbindung einen {@see NextcloudWebdavClient} mit
- * frischem Guzzle-Client. Timeout, Chunk-Größe und die On-Premise-Freigabe
- * interner Ziele kommen aus der Plugin-Konfiguration. Im Test durch eine
- * Fake-Factory mit MockHandler ersetzt.
+ * einem {@see \App\Plugins\Support\PluginApiClient} aus der
+ * {@see PluginHttpFactory} (C4-Rest 2026-08). Timeout, Chunk-Größe und die
+ * On-Premise-Freigabe interner Ziele kommen aus der Plugin-Konfiguration.
+ * Im Test durch eine Fake-Factory mit MockHandler-Transport ersetzt.
  */
 class GuzzleNextcloudTransportFactory implements NextcloudTransportFactory {
     public function forCredentials(string $serverUrl, string $username, #[SensitiveParameter] string $appPassword): NextcloudWebdavClient {
         $config = NextcloudConfig::resolve();
 
+        $client = app(PluginHttpFactory::class)->client(NextcloudPlugin::ID, rtrim(trim($serverUrl), '/'));
+        // DAV statt JSON-API; Timeout wie zuvor aus der Plugin-Konfiguration
+        // (Health-Check behält sein reduziertes Budget aus dem PluginApiClient).
+        $client->setDefaultHeaders([]);
+        if (! PluginHealthService::inHealthCheck()) {
+            $client->setTimeout((float) $config['timeout']);
+        }
+
         return new NextcloudWebdavClient(
-            new Client(['timeout' => (int) $config['timeout']]),
+            $client,
             $serverUrl,
             $username,
             $appPassword,

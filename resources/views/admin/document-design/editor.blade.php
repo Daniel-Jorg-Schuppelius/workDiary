@@ -38,15 +38,8 @@
     <div class="space-y-4" x-data="designEditor" data-config="{{ json_encode($editorConfig) }}"
          @pointermove.window="onPointerMove($event)" @pointerup.window="endDrag()" @keydown.window="nudge($event)">
 
-        @if (session('success'))
-            <div class="alert alert-success text-sm">{{ session('success') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-error text-sm">{{ session('error') }}</div>
-        @endif
-
         {{-- Kopf: Versionsstand + Aktionen --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <div class="flex flex-wrap items-center justify-between gap-2">
                 <div>
                     <h1 class="flex items-center gap-2 font-['Space_Grotesk'] text-lg font-semibold">
@@ -93,10 +86,10 @@
                     @endif
                 </div>
             </div>
-        </div>
+        </x-card>
 
         {{-- Preflight-Ergebnis --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs" x-show="preflight.errors.length || preflight.warnings.length" x-cloak>
+        <x-card x-show="preflight.errors.length || preflight.warnings.length" x-cloak>
             <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.preflight') }}</h2>
             <ul class="space-y-1 text-sm">
                 <template x-for="issue in preflight.errors" :key="issue.code + (issue.block || '') + (issue.page || '')">
@@ -106,11 +99,11 @@
                     <li class="flex items-start gap-2"><span class="badge badge-warning badge-xs mt-1"></span><span x-text="issue.message"></span></li>
                 </template>
             </ul>
-        </div>
+        </x-card>
 
         <div class="grid gap-4 lg:grid-cols-2">
             {{-- Visuelle A4-Vorschau --}}
-            <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <x-card>
                 <div class="mb-2 flex items-center justify-between">
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.preview_heading') }}</h2>
                     <div class="join">
@@ -192,7 +185,7 @@
 
                 {{-- Eingebettete PDF-Vorschau (#83): dieselbe Render-Pipeline
                      wie die finale Ausgabe, Art und Beispieldaten umschaltbar. --}}
-                <div class="mt-4 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                <x-card class="mt-4">
                     <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
                         <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.pdf_preview_heading') }}</h2>
                         <div class="flex flex-wrap items-center gap-2">
@@ -225,14 +218,14 @@
                     </p>
                     <iframe :src="previewSrc()" title="{{ __('document_design.editor.pdf_preview_heading') }}"
                             class="h-160 w-full rounded border border-base-300 bg-white"></iframe>
-                </div>
-            </div>
+                </x-card>
+            </x-card>
 
             {{-- Numerische Millimeterwerte + Optionen --}}
             <div class="space-y-4">
                 {{-- Vererbung vom CI-Basisdesign (#83) --}}
                 @if ($canInherit)
-                    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                    <x-card>
                         <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.inherit_heading') }}</h2>
                         <p class="mb-2 text-xs text-base-content/50">{{ __('document_design.editor.inherit_hint', ['base' => $baseName]) }}</p>
                         <label class="flex items-center gap-2 text-sm">
@@ -262,9 +255,9 @@
                             @endforeach
                             <p class="text-xs text-base-content/50">{{ __('document_design.editor.inherit_reset_hint') }}</p>
                         </div>
-                    </div>
+                    </x-card>
                 @endif
-                <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                <x-card>
                     <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.margins_heading') }}</h2>
                     @foreach ([['content_first', __('Erste Seite')], ['content_following', __('Folgeseiten')]] as [$key, $label])
                         <fieldset class="mb-3">
@@ -349,11 +342,11 @@
                             </template>
                         </div>
                     </template>
-                </div>
+                </x-card>
 
                 {{-- Firmenbogen-Zuordnung --}}
                 @if ($canManage && $isDraft)
-                    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                    <x-card>
                         <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.assets_heading') }}</h2>
                         <form method="POST" action="{{ route('admin.document-design.draft.update', $profile->sqid) }}" class="grid gap-2 sm:grid-cols-2">
                             @csrf
@@ -380,11 +373,11 @@
                                 <button type="submit" class="btn btn-sm btn-outline">{{ __('document_design.editor.assets_save') }}</button>
                             </div>
                         </form>
-                    </div>
+                    </x-card>
                 @endif
 
                 {{-- Informationsblöcke --}}
-                <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                <x-card>
                     <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.blocks_heading') }}</h2>
                     <p class="mb-2 text-xs text-base-content/50">{{ __('document_design.editor.blocks_hint') }}</p>
                     <div class="space-y-2">
@@ -414,10 +407,10 @@
                             </div>
                         @endforeach
                     </div>
-                </div>
+                </x-card>
 
                 {{-- Tabellenstil --}}
-                <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                <x-card>
                     <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.table_heading') }}</h2>
                     <div class="grid gap-2 sm:grid-cols-2">
                         <label class="form-control">
@@ -500,10 +493,10 @@
                             {{ __('document_design.editor.highlight_totals') }}
                         </label>
                     </div>
-                </div>
+                </x-card>
 
                 {{-- Kopf-/Fußtexte (MVP-651, vormals invoice_templates) --}}
-                <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                <x-card>
                     <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.texts_heading') }}</h2>
                     <p class="mb-2 text-xs text-base-content/50">{{ __('document_design.editor.texts_hint') }}</p>
                     <label class="form-control">
@@ -516,10 +509,10 @@
                         <textarea class="textarea textarea-bordered textarea-sm" rows="3" maxlength="2000"
                                   x-model="contentTexts.footer_text" @change="markDirty()" :disabled="!editable"></textarea>
                     </label>
-                </div>
+                </x-card>
 
                 {{-- Testdokumente --}}
-                <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                <x-card>
                     <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.test_heading') }}</h2>
                     <p class="mb-2 text-xs text-base-content/50">{{ __('document_design.editor.test_hint') }}</p>
                     <div class="flex flex-wrap gap-2">
@@ -530,10 +523,10 @@
                             </a>
                         @endforeach
                     </div>
-                </div>
+                </x-card>
 
                 {{-- Zuweisung + Versionen --}}
-                <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                <x-card>
                     <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.assign_heading') }}</h2>
                     <form method="POST" action="{{ route('admin.document-design.assign', $profile->sqid) }}" class="space-y-2">
                         @csrf
@@ -586,7 +579,7 @@
                             @endforeach
                         </ul>
                     </div>
-                </div>
+                </x-card>
             </div>
         </div>
     </div>

@@ -13,23 +13,20 @@
 @section('content')
 <x-page-shell>
     <div class="space-y-4">
-        @if (session('success'))
-            <div class="alert alert-success text-sm">{{ session('success') }}</div>
-        @endif
         <x-validation-errors first />
 
         <x-page-toolbar :subtitle="__('b2b_catalog.intro')" />
 
         {{-- Punchout-Endpunkt für die Beschaffungsseite --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <div class="text-sm">
                 <span class="text-base-content/60">{{ __('b2b_catalog.punchout_url') }}:</span>
                 <code class="rounded bg-base-200 px-2 py-0.5">{{ $punchoutUrl }}</code>
             </div>
-        </div>
+        </x-card>
 
         {{-- Neuer Zugang --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('b2b_catalog.access_new_heading') }}</h2>
             <p class="mb-3 text-xs text-base-content/60">{{ __('b2b_catalog.access_new_hint') }}</p>
             <form method="POST" action="{{ route('b2b-catalog.store') }}" class="grid gap-3 md:grid-cols-4">
@@ -55,10 +52,10 @@
                     <button type="submit" class="btn btn-sm btn-primary">{{ __('b2b_catalog.action.issue') }}</button>
                 </div>
             </form>
-        </div>
+        </x-card>
 
         {{-- Zugänge --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h2 class="mb-3 font-['Space_Grotesk'] text-base font-semibold">{{ __('b2b_catalog.access_heading') }}</h2>
             <x-table :bare="true" :empty-title="__('b2b_catalog.access_empty')">
                 <x-slot:head>
@@ -100,10 +97,10 @@
                                 </tr>
                             @endforeach
             </x-table>
-        </div>
+        </x-card>
 
         {{-- openTRANS-Bestellungen (MVP-458) --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('b2b_catalog.orders_heading') }}</h2>
                 <form method="POST" action="{{ route('b2b-catalog.orders.upload') }}" enctype="multipart/form-data" class="flex items-center gap-2">
@@ -143,7 +140,7 @@
                                 </tr>
                             @endforeach
             </x-table>
-        </div>
+        </x-card>
     </div>
 </x-page-shell>
 @endsection

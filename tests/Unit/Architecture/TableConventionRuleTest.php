@@ -29,6 +29,12 @@ use SplFileInfo;
  *      (in Karten mit :bare="true"). PDF-/Druck-/Legacy-Views und die
  *      dokumentierten Matrix-/Formularraster sind ausgenommen; neue bewusste
  *      Ausnahmen pro Zeile mit dem Marker `raw-table-ok` freigeben.
+ *  R5  Nach einer Voll-Höhe-Tabelle (<x-table scroll="flex">) folgt kein
+ *      sichtbarer Inhalt mehr — er läge unter dem Fold (flex-1 nimmt die
+ *      Resthöhe) und bliebe unentdeckt. Erlaubt danach: <x-pagination
+ *      standing>, versteckte Zeilen-Formulare (class="hidden"), <x-modal>
+ *      (Dialog, unsichtbar) und schließende Tags. Bestand steht auf der
+ *      Allow-List FLEX_TAIL_EXEMPT und wird beim nächsten Anfassen bereinigt.
  */
 class TableConventionRuleTest extends TestCase {
     private const MARKER = 'raw-table-ok';
@@ -63,6 +69,19 @@ class TableConventionRuleTest extends TestCase {
         'b2b/catalog/browse.blade.php',          // Punchout-Eigenlayout
     ];
 
+    /**
+     * R5-Bestand (Vollscan 2026-08-23, I10): scroll=flex mit sichtbarem
+     * Folge-Inhalt — außerhalb Welle 4 Batch C; beim nächsten Anfassen der
+     * Seite auf „Inhalt vor die Tabelle" oder normale Tabelle umstellen.
+     */
+    private const FLEX_TAIL_EXEMPT = [
+        'admin/wage-type-mappings/index.blade.php',    // Liefer-Karte unter der Tabelle
+        'admin/plugin-errors/index.blade.php',         // Bulk-Aktionsleiste unter der Tabelle
+        'admin/invoice-mail-templates/index.blade.php', // Variablen-Legende unter der Tabelle
+        'admin/number-formats/index.blade.php',        // Hinweistext unter der Tabelle
+        'cash-registers/show.blade.php',               // Tagesabschluss-Karte unter der Tabelle
+    ];
+
     public function test_tables_follow_app_standard(): void {
         $root = dirname(__DIR__, 3);
         $viewsDir = $root . '/resources/views';
@@ -92,6 +111,14 @@ class TableConventionRuleTest extends TestCase {
                 $violations[] = $rel . ':' . $this->lineOf($src, $m[0][1]) . '  R3 ->links() — <x-pagination :paginator=… standing> nutzen';
             }
 
+            // R5: sichtbarer Inhalt nach <x-table scroll="flex">
+            if (! $isComponent && ! in_array($rel, self::FLEX_TAIL_EXEMPT, true)) {
+                $r5 = $this->flexTailViolation($src);
+                if ($r5 !== null) {
+                    $violations[] = $rel . ':' . $r5 . '  R5 sichtbarer Inhalt nach scroll="flex"-Tabelle — vor die Tabelle ziehen oder normale Tabelle nutzen';
+                }
+            }
+
             // R4: rohes <table> in Screen-Views
             if (! $this->rawTableExempt($rel)) {
                 $lines = preg_split('/\r?\n/', $src) ?: [];
@@ -114,6 +141,42 @@ class TableConventionRuleTest extends TestCase {
                 . "Bewusste R4-Ausnahmen pro Zeile mit '" . self::MARKER . "' markieren oder (Matrix/Druck) in die Ausnahmeliste aufnehmen:\n  "
                 . implode("\n  ", $violations)
         );
+    }
+
+    /**
+     * R5: Zeilennummer des ersten sichtbaren Inhalts nach der
+     * scroll="flex"-Tabelle — oder null, wenn der Nachlauf sauber ist.
+     */
+    private function flexTailViolation(string $src): ?int {
+        if (! preg_match('/<x-table\b[^>]*scroll="flex"/s', $src, $m, PREG_OFFSET_CAPTURE)) {
+            return null;
+        }
+        $close = strpos($src, '</x-table>', $m[0][1] + strlen($m[0][0]));
+        if ($close === false) {
+            return null;
+        }
+        $tailStart = $close + strlen('</x-table>');
+        $tail = substr($src, $tailStart);
+        if (($end = strpos($tail, '@endsection')) !== false) {
+            $tail = substr($tail, 0, $end);
+        }
+
+        // Erlaubtes ausblenden, Offsets erhalten (Ersatz durch Leerraum):
+        $blank = static fn (array $mm): string => preg_replace('/\S/', ' ', $mm[0]) ?? '';
+        // Blade-Kommentare
+        $tail = (string) preg_replace_callback('/\{\{--.*?--\}\}/s', $blank, $tail);
+        // Dialoge (unsichtbar, egal ob embedded)
+        $tail = (string) preg_replace_callback('/<x-modal\b.*?<\/x-modal>/s', $blank, $tail);
+        // versteckte Zeilen-Formulare (Tag darf mehrzeilig sein, -> beachten)
+        $tail = (string) preg_replace_callback('/<form\b(?:[^>]|->)*?class="hidden"(?:[^>]|->)*?>.*?<\/form>/s', $blank, $tail);
+        // stehende Pagination
+        $tail = (string) preg_replace_callback('/<x-pagination\b[^>]*standing[^>]*\/?>/s', $blank, $tail);
+
+        if (preg_match('/<(?:div|details|section|form|ul|ol|p|h[1-6]|table|x-card|x-table\b|x-form-group|x-kpi-tile|x-empty-state|x-filter-bar)\b/', $tail, $hit, PREG_OFFSET_CAPTURE)) {
+            return $this->lineOf($src, $tailStart + (int) $hit[0][1]);
+        }
+
+        return null;
     }
 
     private function rawTableExempt(string $rel): bool {

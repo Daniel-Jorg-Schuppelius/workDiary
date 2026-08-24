@@ -40,10 +40,6 @@
     @if (session('status'))
         <div class="alert alert-success text-sm">{{ session('status') }}</div>
     @endif
-    @if (session('error'))
-        <div class="alert alert-error text-sm">{{ session('error') }}</div>
-    @endif
-
     <x-card :title="__('Stammdaten')" icon="badge">
         <x-detail-grid>
             <x-detail-grid.row :label="__('Typ')" :value="$document->document_type->label()" />

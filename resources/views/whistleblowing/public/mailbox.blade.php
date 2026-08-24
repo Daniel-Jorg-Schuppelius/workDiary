@@ -12,7 +12,7 @@
 
 @section('content')
     @if (session('success'))
-        <section class="wb-card wb-success"><p>{{ session('success') }}</p></section>
+        <section role="status" class="wb-card wb-success"><p>{{ session('success') }}</p></section>
     @endif
 
     <section class="wb-card">

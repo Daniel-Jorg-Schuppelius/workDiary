@@ -54,7 +54,7 @@ $allowedSymbolsPerFile = [
 $pattern = '/App\\\\Legacy\\\\[A-Za-z0-9_\\\\]+/';
 $hits = [];
 
-$iter = function (string $dir) use (&$iter, $root, $pattern, $allowList, $allowedSymbols, $allowedSymbolsPerFile, &$hits): void {
+$iter = function (string $dir) use ($root, $pattern, $allowList, $allowedSymbols, $allowedSymbolsPerFile, &$hits): void {
     $abs = $root . '/' . $dir;
     if (! is_dir($abs)) {
         return;

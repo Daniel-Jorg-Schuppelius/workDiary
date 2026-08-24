@@ -48,7 +48,7 @@
         </x-card>
 
         <x-card padding="p-0">
-            <x-table>
+            <x-table :bare="true">
                 <x-slot:head>
                     <th>{{ __('gaeb.columns.reference_no') }}</th>
                     <th>{{ __('gaeb.columns.short_text') }}</th>

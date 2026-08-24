@@ -25,7 +25,7 @@
         <div class="grid gap-3 sm:grid-cols-2">
             @foreach ($phases as $phase)
                 <div>
-                    <div class="mb-1 text-xs font-medium uppercase tracking-wide text-base-content/60">{{ $phase->label() }}</div>
+                    <div class="mb-1 text-xs font-medium uppercase tracking-wide text-muted">{{ $phase->label() }}</div>
                     <div class="flex flex-wrap gap-2">
                         @foreach ($byPhase[$phase->value] as $photo)
                             @php($att = $photo->attachment)
@@ -37,7 +37,7 @@
                                              class="h-20 w-24 rounded-box border border-base-300 object-cover" loading="lazy">
                                     </a>
                                 @endif
-                                <figcaption class="mt-0.5 truncate text-[11px] text-base-content/60" title="{{ $photo->caption }}">
+                                <figcaption class="mt-0.5 truncate text-[11px] text-muted" title="{{ $photo->caption }}">
                                     {{ $photo->caption ?? '—' }}
                                 </figcaption>
                                 @if ($canManage)

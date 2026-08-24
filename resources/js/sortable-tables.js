@@ -17,7 +17,9 @@
  *   <th data-sort-default="asc|desc"> – initial sort & icon shown on load
  *
  * Sort state is kept per table in memory (no URL changes). Headers append a
- * span.sort-icon (↕/↑/↓). Only direct child <tbody> rows are sorted.
+ * span.sort-icon (↕/↑/↓, aria-hidden) and mirror the state via aria-sort;
+ * keyboard: button inside th (from <x-table.th>) or tabindex+Enter/Space
+ * fallback for raw <th data-sort>. Only direct child <tbody> rows are sorted.
  *
  * For paginated tables this sorts only the current page – which is the
  * accepted trade-off given that we did not want to refactor every controller.
@@ -163,19 +165,29 @@ function setIcons(table, activeIndex, dir) {
     if (!ths) return;
     Array.from(ths).forEach((th, idx) => {
         if (!Object.prototype.hasOwnProperty.call(th.dataset, "sort")) return;
+        // A11y (I3): Sortierzustand maschinenlesbar am columnheader halten.
+        th.setAttribute(
+            "aria-sort",
+            idx === activeIndex
+                ? dir === "asc"
+                    ? "ascending"
+                    : "descending"
+                : "none",
+        );
         let icon = th.querySelector(".sort-icon");
         if (!icon) {
             icon = document.createElement("span");
-            icon.className = "sort-icon ml-1 text-base-content/50";
+            icon.className = "sort-icon ml-1 text-muted";
+            icon.setAttribute("aria-hidden", "true");
             th.appendChild(icon);
         }
         if (idx === activeIndex) {
             icon.textContent = dir === "asc" ? "↑" : "↓";
-            icon.classList.remove("text-base-content/50");
+            icon.classList.remove("text-muted");
             icon.classList.add("text-base-content");
         } else {
             icon.textContent = "↕";
-            icon.classList.add("text-base-content/50");
+            icon.classList.add("text-muted");
             icon.classList.remove("text-base-content");
         }
     });
@@ -192,6 +204,18 @@ function initTable(table) {
     Array.from(headRow.cells).forEach((th, idx) => {
         if (!Object.prototype.hasOwnProperty.call(th.dataset, "sort")) return;
         th.classList.add("cursor-pointer", "select-none");
+        // Tastatur (I3): <x-table.th> rendert einen echten <button> im th
+        // (Enter/Space → nativer click, bubbelt hierher). Rohe <th data-sort>
+        // ohne Button werden fokussierbar gemacht und per keydown bedient.
+        if (!th.querySelector(":scope > button")) {
+            th.tabIndex = 0;
+            th.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    th.click();
+                }
+            });
+        }
         th.addEventListener("click", () => {
             const dir =
                 state.index === idx && state.dir === "asc" ? "desc" : "asc";

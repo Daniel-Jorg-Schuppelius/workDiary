@@ -127,7 +127,7 @@
             @if ($formControl)
                 <label class="fieldset-label">{{ $label }}</label>
             @else
-                <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ $label }}</span></label>
+                <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-muted">{{ $label }}</span></label>
             @endif
         @endif
         <div class="join w-full">

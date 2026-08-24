@@ -38,13 +38,6 @@
                     show-label>WebDAV</x-icon-btn>
     </x-slot:actions>
 
-    @if (session('success'))
-        <div role="alert" class="alert alert-success"><span>{{ session('success') }}</span></div>
-    @endif
-    @if (session('error'))
-        <div role="alert" class="alert alert-warning"><span>{{ session('error') }}</span></div>
-    @endif
-
     @unless ($hasMasterKey)
         <div role="alert" class="alert alert-error">
             <x-icon name="key_off" />

@@ -77,7 +77,7 @@
             ? __('Erben (aktuell: :value)', ['value' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($value, 2)])
             : __('Erben (kein Satz hinterlegt)');
     @endphp
-    <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
+    <x-card padding="p-0">
         <header class="border-b border-base-300 px-4 py-3">
             <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Sätze') }}</span>
             <p class="mt-0.5 text-xs text-base-content/60">
@@ -111,10 +111,10 @@
                 <x-button type="submit" tone="primary" size="sm" icon="save">{{ __('Sätze speichern') }}</x-button>
             </div>
         </form>
-    </div>
+    </x-card>
 
     {{-- Abrechnungs-Regeln --}}
-    <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
+    <x-card padding="p-0">
         <header class="flex items-center justify-between gap-3 border-b border-base-300 px-4 py-3">
             <div>
                 <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Abrechnungs-Regeln (Lexoffice)') }}</span>
@@ -189,5 +189,5 @@
                 @endforeach
             </x-table>
         @endif
-    </div>
+    </x-card>
 </div>

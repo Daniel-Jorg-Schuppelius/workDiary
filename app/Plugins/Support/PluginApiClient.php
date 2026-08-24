@@ -102,12 +102,14 @@ class PluginApiClient extends ClientAbstract {
 
     /**
      * Generischer Request für Sonderfälle (Multipart-Upload, abweichende
-     * Accept-Header, Raw-Body); Fehlerstatus kommt als Response zurück.
+     * Accept-Header, Raw-Body) und beliebige Verben inkl. WebDAV/CalDAV
+     * (PROPFIND, REPORT, MKCOL, MOVE, …; api-toolkit ≥ v2.9.2 stuft sie
+     * idempotent ein und retryt sie); Fehlerstatus kommt als Response zurück.
      *
      * @param  array<string, mixed>  $options  Guzzle-Optionen (z. B. ['multipart' => [...]])
      */
     public function requestResponse(string $method, string $url, array $options = []): Response {
-        return $this->send(strtolower($method), $url, $options);
+        return $this->send($method, $url, $options);
     }
 
     /**
@@ -120,7 +122,9 @@ class PluginApiClient extends ClientAbstract {
      */
     protected function send(string $method, string $url, array $options): Response {
         try {
-            $psrResponse = $this->{$method}($url, $options);
+            // request() statt Verb-Methoden: trägt auch WebDAV-Verben durch
+            // dieselbe Pipeline (Throttle, Auth, methodenbewusster Retry).
+            $psrResponse = $this->request($method, $url, $options);
         } catch (ApiException $e) {
             $psrResponse = $e->getResponse();
             if ($psrResponse === null) {

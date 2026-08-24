@@ -122,7 +122,7 @@
             <h3 class="text-sm font-semibold text-base-content/70">{{ __('Zeit-Import-Gruppen') }}</h3>
             @foreach ($groups as $g)
                 @php $form = $g['form'] ?? 'customer_project'; @endphp
-                <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                <x-card>
                     <div class="mb-3 flex flex-wrap items-center gap-2">
                         <span class="badge badge-sm badge-info">{{ $pluginNames[$g['plugin_id']] ?? $g['plugin_id'] }}</span>
                         @if ($form === 'asset')
@@ -408,7 +408,7 @@
                         <input type="hidden" name="plugin" value="{{ $g['plugin_id'] }}">
                         <input type="hidden" name="group_key" value="{{ $g['group_key'] }}">
                     </form>
-                </div>
+                </x-card>
             @endforeach
         </div>
     @endif
@@ -425,7 +425,7 @@
                     $candidates = $item->candidate_ids ?? [];
                     $targetLabel = $targets[$item->target_type] ?? class_basename($item->target_type);
                 @endphp
-                <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                <x-card>
                     <div class="mb-2 flex flex-wrap items-center gap-2">
                         @php
                             $caseBadge = match ($item->case_type) {
@@ -644,7 +644,7 @@
                             {{ optional($item->resolved_at)->format('d.m.Y H:i') }}
                         </div>
                     @endif
-                </div>
+                </x-card>
             @endforeach
         </div>
         <x-pagination :paginator="$items" standing />

@@ -39,7 +39,7 @@
         </form>
     </x-slot:actions>
 
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-3">
+    <x-card class="space-y-3">
         <div class="flex flex-wrap gap-6">
             <div>
                 <div class="text-xs uppercase text-base-content/60">{{ __('Organisation') }}</div>
@@ -90,7 +90,7 @@
                 <pre class="text-xs bg-base-200 rounded p-2 overflow-auto max-h-150" data-trace-content>{{ $error->trace }}</pre>
             </div>
         @endif
-    </div>
+    </x-card>
 </x-index-page>
 
 @push('scripts')

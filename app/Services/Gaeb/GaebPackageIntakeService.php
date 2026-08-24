@@ -17,11 +17,13 @@ use App\Models\Applications\ApplicationOpportunity;
 use App\Models\{GaebImport, User};
 use App\Services\Document\DocumentService;
 use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use ERechnungToolkit\Enums\GaebFormat;
 use ERechnungToolkit\Helper\Gaeb\GaebFormatDetector;
+use Exception;
 use Illuminate\Support\Facades\Storage;
+use InvalidArgumentException;
 use RuntimeException;
-use ZipArchive;
 
 /**
  * Paketeingang für Vergabeunterlagen (Feature 108, MVP-627).
@@ -180,61 +182,46 @@ final class GaebPackageIntakeService {
     }
 
     /**
-     * Entpackt das Archiv.
+     * Entpackt das Archiv über das Common-Toolkit (Vollscan 2026-08-23, C6).
      *
-     * Verzeichniseinträge und Pfadangaben mit `..` werden übergangen: Ein
-     * Archiv aus fremder Hand darf nicht bestimmen, wohin geschrieben wird.
+     * {@see ZipFile::readEntries()} bringt den harten Zip-Slip-Guard und den
+     * ZIP-Bomb-Guard (deklarierte Größe wird VOR dem Entpacken geprüft) mit:
+     * Ein Archiv aus fremder Hand darf weder Pfade bestimmen noch Gigabytes
+     * in den Speicher entfalten. Ein unsicherer Eintragspfad verwirft das
+     * ganze Paket — ein manipuliertes Paket ist als Ganzes nicht vertrauenswürdig.
      *
      * @return list<array{name: string, contents: string}>
      */
     private function unpack(string $contents): array {
-        $path = tempnam(sys_get_temp_dir(), 'gaeb-package-') ?: throw new RuntimeException('Kein Temp-Pfad.');
-        file_put_contents($path, $contents);
-
-        $archive = new ZipArchive;
-        if ($archive->open($path) !== true) {
-            unlink($path);
-            throw new RuntimeException((string) __('Das Paket ließ sich nicht öffnen.'));
+        try {
+            $raw = ZipFile::readEntries($contents, maxBytes: self::MAX_UNCOMPRESSED_BYTES);
+        } catch (InvalidArgumentException $e) {
+            // Byte-Limit → bestehende Größen-Meldung; alles andere ist ein
+            // unsicherer Eintragspfad (harter Zip-Slip-Guard des Toolkits).
+            throw new RuntimeException((string) (str_contains($e->getMessage(), 'Byte-Limit')
+                ? __('Das Paket überschreitet die zulässige entpackte Größe.')
+                : __('Das Paket enthält unsichere Dateipfade.')), previous: $e);
+        } catch (Exception $e) {
+            throw new RuntimeException((string) __('Das Paket ließ sich nicht öffnen.'), previous: $e);
         }
 
-        if ($archive->numFiles > self::MAX_ENTRIES) {
-            $count = $archive->numFiles;
-            $archive->close();
-            unlink($path);
-            throw new RuntimeException((string) __('Das Paket enthält :count Dateien — mehr als :max.', ['count' => $count, 'max' => self::MAX_ENTRIES]));
-        }
-
-        // ZIP-Bomb-Guard (Vollscan 2026-08-23, E7): die Summe der entpackten
-        // Größen ist VOR dem Lesen aus dem Verzeichnis bekannt — ein 100-MB-
-        // Upload darf nicht Gigabytes in den Speicher entfalten (Muster
-        // InvoicePdfImportService::openOfficeArchive).
-        $uncompressed = 0;
-        for ($i = 0; $i < $archive->numFiles; $i++) {
-            $stat = $archive->statIndex($i);
-            $entrySize = (int) ($stat['size'] ?? 0);
-            $uncompressed += $entrySize;
-            if ($entrySize > self::MAX_ENTRY_BYTES || $uncompressed > self::MAX_UNCOMPRESSED_BYTES) {
-                $archive->close();
-                unlink($path);
-                throw new RuntimeException((string) __('Das Paket überschreitet die zulässige entpackte Größe.'));
-            }
+        // Entry-Limit app-seitig: so bleibt die Nutzer-Meldung mit der echten
+        // Anzahl erhalten (das Toolkit kennt sie beim Abbruch nicht); der
+        // Speicher ist durch maxBytes bereits gedeckelt.
+        if (count($raw) > self::MAX_ENTRIES) {
+            throw new RuntimeException((string) __('Das Paket enthält :count Dateien — mehr als :max.', ['count' => count($raw), 'max' => self::MAX_ENTRIES]));
         }
 
         $entries = [];
-        for ($i = 0; $i < $archive->numFiles; $i++) {
-            $name = (string) $archive->getNameIndex($i);
-            if ($name === '' || str_ends_with($name, '/') || str_contains($name, '..')) {
+        foreach ($raw as $name => $entryContents) {
+            if ($entryContents === '') {
                 continue;
             }
-            $entryContents = $archive->getFromIndex($i);
-            if ($entryContents === false || $entryContents === '') {
-                continue;
+            if (strlen($entryContents) > self::MAX_ENTRY_BYTES) {
+                throw new RuntimeException((string) __('Das Paket überschreitet die zulässige entpackte Größe.'));
             }
             $entries[] = ['name' => $name, 'contents' => $entryContents];
         }
-
-        $archive->close();
-        unlink($path);
 
         return $entries;
     }

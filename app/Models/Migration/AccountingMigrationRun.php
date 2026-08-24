@@ -16,6 +16,7 @@ use App\Enums\Migration\{AccountingMigrationStatus, MigrationDataArea, Migration
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\User;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
@@ -30,6 +31,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 class AccountingMigrationRun extends Model {
     use Auditable;
     use BelongsToOrganization;
+    /** @use HasFactory<\Database\Factories\Migration\AccountingMigrationRunFactory> */
+    use HasFactory;
     use HasSqid;
 
     protected $fillable = [

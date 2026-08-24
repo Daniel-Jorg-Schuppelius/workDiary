@@ -34,9 +34,6 @@ class VehicleReservationFactory extends Factory {
         ];
     }
 
-    /**
-     * @param array{0: \DateTimeInterface|string, 1: \DateTimeInterface|string} $window
-     */
     public function window(\DateTimeInterface|string $from, \DateTimeInterface|string $to): self {
         return $this->state(fn() => [
             'reserved_from' => $from,

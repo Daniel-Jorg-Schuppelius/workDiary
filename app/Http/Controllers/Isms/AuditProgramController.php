@@ -38,13 +38,21 @@ class AuditProgramController extends Controller {
                 ->with(['scope', 'audits'])
                 ->orderByDesc('starts_on')
                 ->paginate(25),
-            'scopes' => IsmsScope::query()->orderByDesc('is_default')->orderBy('name')->get(),
             'unassignedAudits' => IsmsAudit::query()
                 ->whereNull('isms_audit_program_id')
                 ->orderByDesc('planned_on')
                 ->limit(50)
                 ->get(),
             'canManage' => Gate::allows('create', IsmsAudit::class),
+        ]);
+    }
+
+    /** Dialog-Fragment für <x-modal> (data-entry-modal-trigger). */
+    public function create(): View {
+        Gate::authorize('create', IsmsAudit::class);
+
+        return view('isms.audit-programs._form_dialog', [
+            'scopes' => IsmsScope::query()->orderByDesc('is_default')->orderBy('name')->get(),
         ]);
     }
 

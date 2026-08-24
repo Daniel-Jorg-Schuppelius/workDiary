@@ -31,6 +31,21 @@ class LegalPageController extends Controller {
         return $this->page('legal.privacy', __('Datenschutz'));
     }
 
+    /**
+     * Barrierefreiheitserklärung (Vollscan 2026-08-23, H18 — BFSG):
+     * Betreiber-Text über `legal.accessibility`; ohne hinterlegten Text
+     * rendert die View das Anlage-3-Gerüst als strukturierten Default,
+     * damit die Pflichtseite nie leer ist.
+     */
+    public function accessibility(): View {
+        $content = Setting::get('legal.accessibility');
+
+        return view('legal.accessibility', [
+            'title' => __('Barrierefreiheit'),
+            'content' => is_string($content) && trim($content) !== '' ? $content : null,
+        ]);
+    }
+
     private function page(string $settingKey, string $title): View {
         $content = Setting::get($settingKey);
 

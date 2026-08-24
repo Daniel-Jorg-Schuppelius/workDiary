@@ -58,12 +58,15 @@
                        :label="__('accounting.rules.column.priority')"
                        :hint="__('accounting.rules.hint.priority')"
                        :value="old('priority', (string) ($rule->priority ?? 100))" />
-        <x-input-field name="valid_from" type="date" required
-                       :label="__('accounting.ledger.column.from')"
-                       :value="old('valid_from', $rule?->valid_from?->toDateString() ?? now()->toDateString())" />
-        <x-input-field name="valid_to" type="date"
-                       :label="__('accounting.ledger.column.to')"
-                       :value="old('valid_to', $rule?->valid_to?->toDateString() ?? '')" />
+        <x-date-range layout="split" grid-class="contents" form-control size="" type="date"
+                      from-name="valid_from" to-name="valid_to"
+                      from-id="valid_from" to-id="valid_to" from-required
+                      :from-label="__('accounting.ledger.column.from')"
+                      :to-label="__('accounting.ledger.column.to')"
+                      :from="old('valid_from', $rule?->valid_from?->toDateString() ?? now()->toDateString())"
+                      :to="old('valid_to', $rule?->valid_to?->toDateString() ?? '')"
+                      :from-error="$errors->first('valid_from') ?: null"
+                      :to-error="$errors->first('valid_to') ?: null" />
     </div>
 
     <x-input-field name="note" type="text" maxlength="191"

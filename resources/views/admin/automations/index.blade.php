@@ -16,6 +16,12 @@
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Regeln werten bei festgelegten Ereignissen Bedingungen aus und führen Aktionen automatisch aus (z. B. Kleinbetragsspesen genehmigen). Jede Auswertung wird im Audit-Log protokolliert.')">
+    <x-slot:actions>
+        <x-icon-btn icon="add" tone="primary" size="sm"
+                    data-entry-modal-trigger
+                    :href="route('admin.automations.create')"
+                    show-label>{{ __('Neue Regel anlegen (JSON)') }}</x-icon-btn>
+    </x-slot:actions>
 
     <x-table scroll="flex" :pinRows="true" table-sort="client">
         <x-slot:head>
@@ -67,30 +73,5 @@
                 :title="__('Keine Regeln definiert.')" compact />
         @endforelse
     </x-table>
-
-    <details class="collapse collapse-arrow bg-base-200">
-        <summary class="collapse-title font-medium">{{ __('Neue Regel anlegen (JSON)') }}</summary>
-        <div class="collapse-content">
-            <form method="POST" action="{{ route('admin.automations.store') }}" class="space-y-3">
-                @csrf
-                <x-form-group :label="__('Name')" name="name">
-                    <input type="text" name="name" class="input input-bordered w-full" required maxlength="255">
-                </x-form-group>
-                <x-form-group :label="__('Trigger-Event')" name="trigger_event">
-                    <input type="text" name="trigger_event" class="input input-bordered w-full" value="expense.submitted" required>
-                </x-form-group>
-                <x-form-group :label="__('Priorität')" name="priority">
-                    <input type="number" name="priority" class="input input-bordered w-32" value="100" min="1" max="9999">
-                </x-form-group>
-                <x-form-group :label="__('Bedingungen (JSON)')" name="conditions">
-                    <textarea name="conditions" rows="4" class="textarea textarea-bordered w-full font-mono text-xs" required>{"all":[{"field":"amount_gross","op":"<=","value":50}]}</textarea>
-                </x-form-group>
-                <x-form-group :label="__('Aktionen (JSON)')" name="actions">
-                    <textarea name="actions" rows="3" class="textarea textarea-bordered w-full font-mono text-xs" required>[{"type":"expense.approve","params":{}}]</textarea>
-                </x-form-group>
-                <x-button type="submit" tone="primary" size="md">{{ __('Regel anlegen') }}</x-button>
-            </form>
-        </div>
-    </details>
 </x-index-page>
 @endsection

@@ -32,7 +32,7 @@
             <div class="border-b border-base-300 px-4 py-3">
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Versionen') }}</h2>
             </div>
-            <x-table>
+            <x-table :bare="true">
                 <x-slot:head>
                     <tr>
                         <x-table.th>{{ __('Version') }}</x-table.th>

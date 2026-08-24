@@ -13,12 +13,6 @@
 @section('content')
 <x-page-shell>
     <div class="space-y-4">
-        @if (session('success'))
-            <div class="alert alert-success text-sm">{{ session('success') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-error text-sm">{{ session('error') }}</div>
-        @endif
         <x-validation-errors first />
 
         <x-page-toolbar :subtitle="__('terminal.intro')" />
@@ -33,12 +27,17 @@
         @endif
 
         {{-- Terminals --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('terminal.terminals_heading') }}</h2>
+        <x-card :title="__('terminal.terminals_heading')">
+            <x-slot:actions>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('admin.terminals.create')"
+                            show-label>{{ __('terminal.action.register') }}</x-icon-btn>
+            </x-slot:actions>
             @if ($terminals->isEmpty())
-                <p class="mb-3 text-sm text-base-content/60">{{ __('terminal.no_terminals') }}</p>
+                <p class="text-sm text-base-content/60">{{ __('terminal.no_terminals') }}</p>
             @else
-                <x-table class="mb-3">
+                <x-table :bare="true">
                     <x-slot:head>
                             <tr>
                                 <th>{{ __('terminal.field.name') }}</th>
@@ -97,33 +96,20 @@
                             @endforeach
                 </x-table>
             @endif
-
-            <form method="POST" action="{{ route('admin.terminals.store') }}" class="flex flex-wrap items-end gap-2">
-                @csrf
-                <label class="form-control grow">
-                    <span class="label-text">{{ __('terminal.field.name') }}</span>
-                    <input type="text" name="name" value="{{ old('name') }}" placeholder="{{ __('terminal.field.name_placeholder') }}" class="input input-bordered input-sm" required>
-                </label>
-                <label class="form-control">
-                    <span class="label-text">{{ __('terminal.field.site') }}</span>
-                    <select name="site" class="select select-bordered select-sm">
-                        <option value="">{{ __('terminal.field.no_site') }}</option>
-                        @foreach ($sites as $site)
-                            <option value="{{ $site['sqid'] }}">{{ $site['name'] }}</option>
-                        @endforeach
-                    </select>
-                </label>
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('terminal.action.register') }}</button>
-            </form>
-        </div>
+        </x-card>
 
         {{-- Badges --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('terminal.badges_heading') }}</h2>
+        <x-card :title="__('terminal.badges_heading')">
+            <x-slot:actions>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('admin.terminals.badges.create')"
+                            show-label>{{ __('terminal.action.assign') }}</x-icon-btn>
+            </x-slot:actions>
             @if ($badges->isEmpty())
-                <p class="mb-3 text-sm text-base-content/60">{{ __('terminal.no_badges') }}</p>
+                <p class="text-sm text-base-content/60">{{ __('terminal.no_badges') }}</p>
             @else
-                <x-table class="mb-3">
+                <x-table :bare="true">
                     <x-slot:head>
                             <tr>
                                 <th>{{ __('terminal.badge.user') }}</th>
@@ -167,34 +153,7 @@
                             @endforeach
                 </x-table>
             @endif
-
-            <form method="POST" action="{{ route('admin.terminals.badges.store') }}" class="flex flex-wrap items-end gap-2">
-                @csrf
-                <label class="form-control">
-                    <span class="label-text">{{ __('terminal.badge.user') }}</span>
-                    <select name="user" class="select select-bordered select-sm" required>
-                        @foreach ($users as $user)
-                            <option value="{{ $user['sqid'] }}">{{ $user['name'] }}</option>
-                        @endforeach
-                    </select>
-                </label>
-                <label class="form-control grow">
-                    <span class="label-text">{{ __('terminal.badge.uid') }}</span>
-                    <input type="text" name="badge_uid" value="{{ old('badge_uid') }}" placeholder="{{ __('terminal.badge.uid_placeholder') }}" class="input input-bordered input-sm" required>
-                    <span class="label-text-alt text-base-content/50">{{ __('terminal.badge.uid_help') }}</span>
-                </label>
-                <label class="form-control">
-                    <span class="label-text">{{ __('terminal.badge.label') }}</span>
-                    <input type="text" name="label" value="{{ old('label') }}" class="input input-bordered input-sm">
-                </label>
-                <x-date-range layout="split" form-control grid-class="contents"
-                              from-name="valid_from" to-name="valid_until" type="date"
-                              :from="old('valid_from')" :to="old('valid_until')"
-                              :from-label="__('terminal.badge.valid_from')"
-                              :to-label="__('terminal.badge.valid_until')" />
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('terminal.action.assign') }}</button>
-            </form>
-        </div>
+        </x-card>
     </div>
 </x-page-shell>
 @endsection

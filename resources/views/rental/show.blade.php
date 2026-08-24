@@ -156,7 +156,8 @@
                                                 @endif
                                             @endforeach
                                         </x-select-field>
-                                        <x-input-field name="note" :label="__('Grund')" />
+                                        {{-- :id — Tausch-Formular wiederholt sich pro Leihobjekt (doppelte ids, I13) --}}
+                                        <x-input-field name="note" :id="'swap-note-' . $caseAsset->sqid" :label="__('Grund')" />
                                         <button type="submit" class="btn btn-sm">{{ __('Tauschen') }}</button>
                                     </form>
                                 </details>
@@ -329,8 +330,9 @@
                                     <summary class="btn btn-xs">{{ __('Abrechnen') }}</summary>
                                     <form method="POST" action="{{ route('rental.deposits.settle', $deposit) }}" class="mt-2 flex flex-wrap items-end gap-2 rounded-box border border-base-300 p-3">
                                         @csrf
-                                        <x-input-field name="retained_amount" type="number" step="0.01" min="0" :label="__('Einbehalt (0 = volle Erstattung)')" value="0" />
-                                        <x-input-field name="reason" :label="__('Begründung (Pflicht bei Einbehalt)')" />
+                                        {{-- :id — Abrechnungs-Formular wiederholt sich pro Kaution (doppelte ids, I13) --}}
+                                        <x-input-field name="retained_amount" type="number" step="0.01" min="0" :id="'deposit-retained-' . $deposit->sqid" :label="__('Einbehalt (0 = volle Erstattung)')" value="0" />
+                                        <x-input-field name="reason" :id="'deposit-reason-' . $deposit->sqid" :label="__('Begründung (Pflicht bei Einbehalt)')" />
                                         <button type="submit" class="btn btn-sm">{{ __('Abrechnen') }}</button>
                                     </form>
                                 </details>
@@ -347,7 +349,7 @@
                     <form method="POST" action="{{ route('rental.deposits.store', $case) }}" class="mt-2 flex flex-wrap items-end gap-2 rounded-box border border-base-300 p-3">
                         @csrf
                         <x-input-field name="amount" type="number" step="0.01" min="0.01" :label="__('Betrag')" :value="$case->deposit_amount" required />
-                        <x-input-field name="note" :label="__('Notiz')" />
+                        <x-input-field name="note" id="deposit-note" :label="__('Notiz')" />
                         <button type="submit" class="btn btn-sm">{{ __('Anfordern') }}</button>
                     </form>
                 </details>

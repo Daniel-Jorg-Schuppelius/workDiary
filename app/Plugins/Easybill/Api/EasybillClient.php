@@ -59,7 +59,9 @@ class EasybillClient {
      * @return array<string, mixed>
      */
     public function createCustomer(array $payload): array {
-        return (array) $this->guard($this->authed('post', '/customers', ['json' => $payload]), '/customers');
+        // 429/5xx-Retry gewollt (api-toolkit ≥2.9.2: POST-Retry ist Opt-in):
+        // Dubletten fängt die Reconciliation über den external-id-Marker.
+        return (array) $this->guard($this->authed('post', '/customers', ['json' => $payload, 'retry_non_idempotent' => true]), '/customers');
     }
 
     /**
@@ -87,7 +89,10 @@ class EasybillClient {
      * @return array<string, mixed>
      */
     public function createInvoiceDraft(array $payload): array {
-        return (array) $this->guard($this->authed('post', '/documents', ['json' => $payload]), '/documents');
+        // 429/5xx-Retry gewollt (POST-Opt-in seit api-toolkit 2.9.2): der
+        // Beleg entsteht als Entwurf mit external-id-Marker — ein doppelter
+        // Draft würde von der Adoptions-Reconciliation eingefangen.
+        return (array) $this->guard($this->authed('post', '/documents', ['json' => $payload, 'retry_non_idempotent' => true]), '/documents');
     }
 
     /** @return array<string, mixed> GET /documents/{id} — Status-/Nummernrücklauf. */

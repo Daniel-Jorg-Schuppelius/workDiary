@@ -15,6 +15,7 @@ namespace App\Models\Finance;
 use App\Enums\Finance\{PaymentRunKind, PaymentRunStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\{Document, User};
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
@@ -37,6 +38,8 @@ use Illuminate\Support\Carbon;
 class PaymentRun extends Model {
     use Auditable;
     use BelongsToOrganization;
+    /** @use HasFactory<\Database\Factories\Finance\PaymentRunFactory> */
+    use HasFactory;
     use HasSqid;
 
     protected $fillable = [

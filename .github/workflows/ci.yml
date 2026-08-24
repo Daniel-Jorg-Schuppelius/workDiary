@@ -50,6 +50,11 @@ jobs:
       - name: Run static analysis
         run: composer lint
 
+      # D15 (Vollscan 2026-08-23): Level-5-Analyse der Nicht-app-Pfade
+      # (factories/seeders/routes/scripts) — app/ bleibt Level 8.
+      - name: Static analysis (support paths, level 5)
+        run: composer lint:support
+
       # Vollreview W0.4/W0.5: Routen müssen auf existierende Controller-
       # Methoden zeigen; neuer Code betritt App\Legacy nur über die Bridge.
       - name: Route action check
@@ -425,3 +430,70 @@ jobs:
       - name: Stop application server
         if: always()
         run: kill "${SERVER_PID}" 2>/dev/null || true
+
+  e2e:
+    name: E2E (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Vollscan 2026-08-23, D4: eingecheckter E2E-Grundbestand (tests/e2e/).
+    # Die Playwright-Config startet den Server selbst (webServer →
+    # tests/e2e/server.sh: eigene SQLite-DB seeden + php artisan serve);
+    # Session/Moduswechsel erledigt tests/e2e/global-setup.ts.
+    #
+    # NICHT-BLOCKIEREND (continue-on-error), wie der pa11y-Job: headless
+    # Chromium hängt von Runner-Systembibliotheken ab, und Browser-Läufe
+    # gegen den PHP-Dev-Server können auf geteilten Runnern flaken. Ziel
+    # ist die etablierte E2E-Infrastruktur mit Sichtbarkeit im CI-Log —
+    # kein hartes Gate. Lokal: npm run test:e2e.
+    continue-on-error: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@2.37.2
+        with:
+          php-version: "8.4"
+          extensions: bcmath, curl, dom, fileinfo, gd, intl, mbstring, openssl, pcntl, pdo_sqlite, sodium, sqlite3, tokenizer, xml, xmlwriter, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Prepare application environment
+        run: |
+          # .env.testing hat SESSION_DRIVER=array — die Playwright-webServer-
+          # ENV (SESSION_DRIVER=file, DB_DATABASE, APP_INSTALLED=true, …)
+          # überstimmt das für den Serverprozess; siehe playwright.config.ts.
+          cp .env.testing .env
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+
+      - name: Run Playwright E2E tests
+        run: npx playwright test
+
+      - name: Upload Playwright artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-results
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore

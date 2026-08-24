@@ -20,6 +20,9 @@ use Tests\TestCase;
  * Hoheits-Sperre (BillingModeResolver), Gate und Cross-Org-Isolation.
  */
 class XRechnungTest extends TestCase {
+    /** D12: deterministische Nummern statt random_int (Unique-Kollisionsschutz bleibt). */
+    private static int $invoiceNo = 0;
+
     use RefreshDatabase;
     use WithOrganization;
 
@@ -73,7 +76,7 @@ class XRechnungTest extends TestCase {
         $invoice = Invoice::create([
             'organization_id' => $orgId,
             'customer_id' => $customer->id,
-            'number' => 'R2026-' . str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT),
+            'number' => 'R2026-' . str_pad((string) ++self::$invoiceNo, 4, '0', STR_PAD_LEFT),
             'status' => $status,
             'issued_on' => '2026-06-01',
             'due_on' => '2026-06-15',

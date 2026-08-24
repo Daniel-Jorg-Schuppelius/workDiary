@@ -137,8 +137,18 @@ else
     "$DB_NAME" | gzip > "$DB_FILE"
 fi
 
-# 2) Storage-Nutzdaten (Anhänge, Dokumente, Exporte)
-tar -C "$APP_DIR" -czf "$STORAGE_FILE" storage/app
+# 2) Storage-Nutzdaten (Anhänge, Dokumente, Exporte).
+# Backup-Artefakte ausnehmen: liegt BACKUP_DIR in storage/app (Default des
+# deploy.sh-Pre-Backups), liest tar sonst sein eigenes wachsendes Archiv mit
+# ("Datei hat sich beim Lesen geändert" → Abbruch); predeploy-backups gehören
+# auch sonst nicht in Folge-Backups (Archiv-in-Archiv-Wachstum).
+TAR_EXCLUDES=(--exclude 'storage/app/private/predeploy-backups')
+APP_DIR_ABS="$(cd "$APP_DIR" && pwd)"
+BACKUP_DIR_ABS="$(cd "$BACKUP_DIR" && pwd)"
+if [[ "$BACKUP_DIR_ABS/" == "$APP_DIR_ABS/storage/app/"* ]]; then
+  TAR_EXCLUDES+=(--exclude "${BACKUP_DIR_ABS#"$APP_DIR_ABS/"}")
+fi
+tar -C "$APP_DIR" "${TAR_EXCLUDES[@]}" -czf "$STORAGE_FILE" storage/app
 
 # 3) .env separat (geschützt — enthält den APP_KEY: ohne ihn sind alle
 #    encrypted-Felder des DB-Dumps unbrauchbar)

@@ -212,13 +212,12 @@ class ClockifyCsvParser {
     private function durationToSeconds(?string $hms, ?string $decimal): int {
         $hms = trim((string) $hms);
         if ($hms !== '' && str_contains($hms, ':')) {
-            $parts = array_map('intval', explode(':', $hms));
-
-            return match (count($parts)) {
-                3 => $parts[0] * 3600 + $parts[1] * 60 + $parts[2],
-                2 => $parts[0] * 3600 + $parts[1] * 60,
-                default => 0,
-            };
+            try {
+                // Toolkit (C14, v1.26); Clockify-Zweiteiler sind H:MM.
+                return \CommonToolkit\ValueObjects\Duration::fromClock($hms)->getTotalSeconds();
+            } catch (\InvalidArgumentException) {
+                return 0;
+            }
         }
 
         $decimal = NumberHelper::normalizeDecimalStringOrNull((string) $decimal);

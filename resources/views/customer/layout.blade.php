@@ -27,10 +27,16 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-base-200 min-h-screen text-base-content">
+    {{-- Sprunglink (WCAG 2.4.1) — gleiches Muster wie layouts/app; MUSS das
+         erste fokussierbare Element sein. --}}
+    <a href="#main-content"
+       class="wd-skip-link sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-100 focus:rounded-box focus:bg-primary focus:px-4 focus:py-2 focus:font-semibold focus:text-primary-content focus:shadow-lg focus:ring-2 focus:ring-primary/60">
+        {{ __('Zum Inhalt springen') }}
+    </a>
     <header class="bg-base-100 border-b border-base-300">
         <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
             <a href="{{ route('customer.dashboard') }}" class="flex items-center gap-2 font-semibold">
-                <span class="material-symbols-outlined">support_agent</span>
+                <span class="material-symbols-outlined" aria-hidden="true">support_agent</span>
                 <span>{{ __('Customer-Portal') }}</span>
             </a>
             @if ($portalUser)
@@ -80,9 +86,23 @@
             @endif
         </div>
     </header>
-    <main class="max-w-5xl mx-auto px-4 py-6">
+    <main id="main-content" class="max-w-5xl mx-auto px-4 py-6">
+        {{-- Zentrale Flashes (I4, Gegenstück zu layouts/app): Portal-Views
+             rendern success/error/warning/info nicht erneut. --}}
         @if (session('status'))
-            <div class="alert alert-info mb-4">{{ session('status') }}</div>
+            <div role="status" class="alert alert-info mb-4">{{ session('status') }}</div>
+        @endif
+        @if (session('success'))
+            <div role="status" class="alert alert-success mb-4 text-sm">{{ session('success') }}</div>
+        @endif
+        @if (session('error'))
+            <div role="alert" class="alert alert-error mb-4 text-sm">{{ session('error') }}</div>
+        @endif
+        @if (session('warning'))
+            <div role="alert" class="alert alert-warning mb-4 text-sm">{{ session('warning') }}</div>
+        @endif
+        @if (session('info'))
+            <div role="status" class="alert alert-info mb-4 text-sm">{{ session('info') }}</div>
         @endif
         {{ $slot ?? '' }}
         @yield('content')

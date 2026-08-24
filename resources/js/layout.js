@@ -6,6 +6,7 @@
  * Übersetzungen) kommen über window.__layout (inline gesetzt, vor diesem Modul).
  */
 import { html, setHtml } from "./lib/html.js";
+import { putJson } from "./lib/http.js";
 
 (function () {
     var cfg = window.__layout || {};
@@ -42,28 +43,13 @@ import { html, setHtml } from "./lib/html.js";
     // an den aktuellen Zustand angleichen.
     syncLabel();
 
-    var csrf =
-        /** @type {HTMLMetaElement} */ (
-            document.querySelector('meta[name="csrf-token"]') || {}
-        ).content || "";
     function persistScheme(scheme) {
         // Eingeloggt zählt allein die DB-Wahl → der Farbmodus muss
         // serverseitig persistiert werden, damit er den Reload übersteht.
         // Es wird NUR der Modus gespeichert; welches Theme das ist,
         // bestimmt das Org-Hell/Dunkel-Paar (ThemeService).
         if (!seed.authenticated) return;
-        try {
-            fetch(cfg.themeUpdateUrl, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": csrf,
-                    "X-Requested-With": "XMLHttpRequest",
-                    Accept: "application/json",
-                },
-                body: JSON.stringify({ scheme: scheme }),
-            });
-        } catch (e) {}
+        putJson(cfg.themeUpdateUrl, { scheme: scheme }).catch(function () {});
     }
 
     toggles.forEach(function (toggle) {

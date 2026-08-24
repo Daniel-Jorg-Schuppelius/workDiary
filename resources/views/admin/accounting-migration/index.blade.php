@@ -13,13 +13,6 @@
 @section('content')
 <x-page-shell>
     <div class="space-y-4">
-        @if (session('success'))
-            <div class="alert alert-success text-sm">{{ session('success') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-error text-sm">{{ session('error') }}</div>
-        @endif
-
         <x-page-toolbar :subtitle="__('accounting_migration.intro')" />
 
         @if ($run === null)
@@ -73,7 +66,7 @@
             </form>
         @else
             {{-- Laufender Wechsel --}}
-            <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <x-card>
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <div>
                         <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
@@ -116,7 +109,7 @@
                 @if ($run->blocked_reason)
                     <div class="alert alert-warning mt-3 text-sm">{{ $run->blocked_reason }}</div>
                 @endif
-            </div>
+            </x-card>
 
             {{-- Blocker der Umschaltung bzw. des Abschlusses --}}
             @if ($blockers !== [] || $completionBlockers !== [])
@@ -132,7 +125,7 @@
 
             {{-- Zählwerke je Datenbereich --}}
             @if (! empty($run->counters))
-                <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                <x-card>
                     <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('accounting_migration.counters_heading') }}</h2>
                     <x-table :bare="true">
                         <x-slot:head>
@@ -154,12 +147,12 @@
                             </tr>
                         @endforeach
                     </x-table>
-                </div>
+                </x-card>
             @endif
 
             {{-- Positionen mit Entscheidung --}}
             @if ($items->isNotEmpty())
-                <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                <x-card>
                     <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('accounting_migration.items_heading') }}</h2>
                     <x-table :bare="true">
                         <x-slot:head>
@@ -202,12 +195,12 @@
                                     </tr>
                                 @endforeach
                     </x-table>
-                </div>
+                </x-card>
             @endif
         @endif
 
         @if ($history->isNotEmpty())
-            <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <x-card>
                 <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('accounting_migration.history_heading') }}</h2>
                 <ul class="space-y-1 text-sm">
                     @foreach ($history as $past)
@@ -219,7 +212,7 @@
                         </li>
                     @endforeach
                 </ul>
-            </div>
+            </x-card>
         @endif
     </div>
 </x-page-shell>

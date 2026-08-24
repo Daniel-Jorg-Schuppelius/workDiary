@@ -13,12 +13,6 @@
 @section('content')
 <x-page-shell>
     <div class="space-y-4">
-        @if (session('success'))
-            <div class="alert alert-success text-sm">{{ session('success') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-error text-sm">{{ session('error') }}</div>
-        @endif
         <x-validation-errors first />
 
         <x-page-toolbar :subtitle="__('chat.intro')">
@@ -28,7 +22,7 @@
         </x-page-toolbar>
 
         {{-- Vorhandene Kanäle --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('chat.channels_heading') }}</h2>
             @if ($webhooks->isEmpty())
                 <p class="text-sm text-base-content/60">{{ __('chat.no_channels') }}</p>
@@ -75,7 +69,7 @@
                             @endforeach
                 </x-table>
             @endif
-        </div>
+        </x-card>
 
         {{-- Kanal hinzufügen --}}
         <form method="POST" action="{{ route('admin.chat.connection.store') }}"

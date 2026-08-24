@@ -13,16 +13,10 @@
 @section('content')
 <x-page-shell>
     <div class="space-y-4">
-        @if (session('success'))
-            <div class="alert alert-success text-sm">{{ session('success') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-error text-sm">{{ session('error') }}</div>
-        @endif
         <x-validation-errors first />
 
         {{-- Einführung + Aktionen --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
                 <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('mail.title') }}</h1>
                 <div class="flex items-center gap-2">
@@ -39,10 +33,10 @@
                 </div>
             </div>
             <p class="text-sm text-base-content/60">{{ __('mail.intro') }}</p>
-        </div>
+        </x-card>
 
         {{-- Vorhandene Postfächer --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('mail.mailboxes_heading') }}</h2>
             @if ($connections->isEmpty())
                 <p class="text-sm text-base-content/60">{{ __('mail.no_connections') }}</p>
@@ -82,7 +76,7 @@
                             @endforeach
                 </x-table>
             @endif
-        </div>
+        </x-card>
 
         {{-- Neues Postfach --}}
         <form method="POST" action="{{ route('admin.mail.connection.store') }}"

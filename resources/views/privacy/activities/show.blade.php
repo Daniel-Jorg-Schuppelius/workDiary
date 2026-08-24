@@ -44,7 +44,7 @@
                     </form>
                 @endcan
             </div>
-            <x-table>
+            <x-table :bare="true">
                 <x-slot:head>
 <tr><th>{{ __('Version') }}</th><th>{{ __('Notiz') }}</th><th>{{ __('Freigabe') }}</th><th></th></tr>
                 </x-slot:head>

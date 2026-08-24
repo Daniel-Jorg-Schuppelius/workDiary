@@ -22,7 +22,7 @@
 
 <x-card :title="__('Anhänge')" icon="attach_file" :count="$attachments->count()">
     @if ($attachments->isEmpty())
-        <x-empty-state compact icon='<span class="material-symbols-outlined">attach_file</span>'
+        <x-empty-state compact icon='<span class="material-symbols-outlined" aria-hidden="true">attach_file</span>'
                        :title="__('Keine Anhänge')"
                        :message="__('Keine Anhänge.')" />
     @else
@@ -31,7 +31,7 @@
                 <li class="flex items-center justify-between gap-2 py-2">
                     <div class="min-w-0 truncate">
                         <a class="link link-hover" href="{{ URL::signedRoute('attachments.download', $att) }}">{{ $att->original_name }}</a>
-                        <span class="text-base-content/60">· {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($att->size / 1024, 0, withThousandsSeparator: true) }} KB</span>
+                        <span class="text-muted">· {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($att->size / 1024, 0, withThousandsSeparator: true) }} KB</span>
                     </div>
                     @can('delete', $att)
                         <x-action-form :action="route('attachments.destroy', $att)" method="DELETE"

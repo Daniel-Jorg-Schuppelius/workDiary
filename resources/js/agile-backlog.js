@@ -7,6 +7,8 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
+import { submitForm } from "./lib/http.js";
+
 /**
  * Drag-&-Drop-Umsortierung des Agile-Backlogs (Audit 2026-08, W4.2).
  *
@@ -23,28 +25,7 @@
 
 /** @param {string} url @param {Record<string,string>} fields */
 function submitRerank(url, fields) {
-    const csrf =
-        document
-            .querySelector('meta[name="csrf-token"]')
-            ?.getAttribute("content") ?? "";
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = url;
-    form.hidden = true;
-
-    const add = (name, value) => {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = name;
-        input.value = value;
-        form.appendChild(input);
-    };
-    add("_token", csrf);
-    add("_method", "PATCH");
-    Object.entries(fields || {}).forEach(([name, value]) => add(name, value));
-
-    document.body.appendChild(form);
-    form.submit();
+    submitForm(url, fields || {}, "PATCH");
 }
 
 function init() {

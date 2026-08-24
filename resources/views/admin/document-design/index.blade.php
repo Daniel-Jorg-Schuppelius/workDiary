@@ -25,12 +25,6 @@
         @endif
     </x-slot:actions>
 
-        @if (session('success'))
-            <div class="alert alert-success text-sm">{{ session('success') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-error text-sm">{{ session('error') }}</div>
-        @endif
         <x-validation-errors first />
 
         {{-- Renderprofile --}}

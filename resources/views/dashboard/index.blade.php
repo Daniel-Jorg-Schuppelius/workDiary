@@ -347,12 +347,12 @@
                     {{ __('Monat') }} · {{ $finance['month']['label'] ?? '' }}
                 </p>
                 <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
-                    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                    <x-card>
                         <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Spesen eingereicht (Brutto)') }}</p>
                         <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold tabular-nums">
                             {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($finance['month']['expenses_submitted_gross'] ?? 0), 2, withThousandsSeparator: true) }} €
                         </p>
-                    </div>
+                    </x-card>
                     <div class="rounded-box border border-success/40 bg-success/5 p-4">
                         <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Davon erstattet') }}</p>
                         <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold tabular-nums text-success">
@@ -367,14 +367,14 @@
                             <span class="opacity-70">{{ $finance['month']['expenses_draft_count'] ?? 0 }}</span>
                         </p>
                     </div>
-                    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                    <x-card>
                         <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Reisen (Monat) / Entwürfe') }}</p>
                         <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold">
                             {{ $finance['month']['trips_count'] ?? 0 }}
                             <span class="text-base-content/40 text-base font-normal">/</span>
                             <span class="opacity-70">{{ $finance['month']['trip_drafts'] ?? 0 }}</span>
                         </p>
-                    </div>
+                    </x-card>
                     <div class="rounded-box border border-info/40 bg-info/5 p-4">
                         <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Urlaub offen / genehmigt :year', ['year' => $now->year]) }}</p>
                         <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold">

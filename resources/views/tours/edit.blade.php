@@ -53,7 +53,7 @@
                   class="space-y-4 rounded-box border border-base-300 bg-base-100 p-4">
                 @csrf
                 @method('PUT')
-                <input type="hidden" name="user_id" value="{{ $tour->user_id }}">
+                <input type="hidden" name="user_id" value="{{ \App\Support\Sqid::encode(\App\Models\User::class, (int) $tour->user_id) }}">
                 <input type="hidden" name="tour_date" value="{{ $tour->tour_date?->toDateString() }}">
 
                 <div class="grid gap-3 md:grid-cols-2">
@@ -92,7 +92,7 @@
                         @foreach ($stops as $s)
                             <li class="flex items-center gap-2 rounded-box border border-base-200 p-2" draggable="true" data-stop-item>
                                 <span class="material-symbols-outlined cursor-grab text-base-content/40 select-none" aria-hidden="true" data-stop-handle>drag_indicator</span>
-                                <input type="hidden" name="order_ids[]" value="{{ $s->id }}">
+                                <input type="hidden" name="order_ids[]" value="{{ $s->sqid }}">
                                 <x-status-badge tone="primary" size="sm" data-stop-pos>{{ $s->tour_position ?? '?' }}</x-status-badge>
                                 <div class="flex-1">
                                     <div class="font-medium text-sm">{{ $s->title }}</div>
@@ -125,10 +125,10 @@
                         <form method="POST" action="{{ route('tours.update', $tour) }}">
                             @csrf
                             @method('PUT')
-                            <input type="hidden" name="user_id" value="{{ $tour->user_id }}">
+                            <input type="hidden" name="user_id" value="{{ \App\Support\Sqid::encode(\App\Models\User::class, (int) $tour->user_id) }}">
                             <input type="hidden" name="tour_date" value="{{ $tour->tour_date?->toDateString() }}">
                             @foreach ($stops as $s)
-                                <input type="hidden" name="order_ids[]" value="{{ $s->id }}">
+                                <input type="hidden" name="order_ids[]" value="{{ $s->sqid }}">
                             @endforeach
 
                             @if ($available->isNotEmpty())
@@ -136,7 +136,7 @@
                                 <ul class="space-y-1">
                                     @foreach ($available as $a)
                                         <li class="flex items-center gap-2 rounded-box border border-base-200 p-2">
-                                            <input type="checkbox" name="order_ids[]" value="{{ $a->id }}" class="checkbox checkbox-sm">
+                                            <input type="checkbox" name="order_ids[]" value="{{ $a->sqid }}" class="checkbox checkbox-sm">
                                             <div class="flex-1">
                                                 <div class="text-sm">{{ $a->title }}</div>
                                                 <div class="text-xs text-base-content/60">{{ $a->address_city }}</div>
@@ -157,7 +157,7 @@
                                             $svcLabel = $svc ? \App\Support\Formats::duration((int) $svc, 'clock') : __('keine Dauer');
                                         @endphp
                                         <li class="flex items-center gap-2 rounded-box border border-base-200 bg-base-200/30 p-2">
-                                            <input type="checkbox" name="order_ids[]" value="{{ $a->id }}" class="checkbox checkbox-sm">
+                                            <input type="checkbox" name="order_ids[]" value="{{ $a->sqid }}" class="checkbox checkbox-sm">
                                             <div class="flex-1">
                                                 <div class="flex flex-wrap items-center gap-2 text-sm">
                                                     <span>{{ $a->title ?: \Illuminate\Support\Str::limit((string) $a->content, 50) }}</span>

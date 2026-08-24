@@ -160,13 +160,12 @@ class KimaiCsvParser {
         }
 
         if (str_contains($duration, ':')) {
-            $parts = array_map('intval', explode(':', $duration));
-
-            return match (count($parts)) {
-                3 => $parts[0] * 3600 + $parts[1] * 60 + $parts[2],
-                2 => $parts[0] * 3600 + $parts[1] * 60, // H:MM — NICHT MM:SS
-                default => 0,
-            };
+            try {
+                // Toolkit (C14, v1.26); Kimai-Zweiteiler sind H:MM — NICHT MM:SS.
+                return \CommonToolkit\ValueObjects\Duration::fromClock($duration)->getTotalSeconds();
+            } catch (\InvalidArgumentException) {
+                return 0;
+            }
         }
 
         // Dezimalstunden (Kimai „Export dezimal", Punkt-separiert).

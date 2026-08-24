@@ -9,65 +9,43 @@
 @extends('layouts.app')
 @section('title', __('recipes.menu.title'))
 @section('nav-title', __('recipes.menu.title'))
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-page-shell>
-    <div class="space-y-4">
-        @if (session('success'))
-            <div class="alert alert-success text-sm">{{ session('success') }}</div>
-        @endif
-        <x-validation-errors first />
+<x-index-page overflow="clip" :subtitle="__('recipes.menu.intro')">
+    <x-slot:actions>
+        <x-icon-btn icon="add" tone="primary" size="sm"
+                    data-entry-modal-trigger
+                    :href="route('recipe-menus.create')"
+                    show-label>{{ __('recipes.menu.action.create') }}</x-icon-btn>
+    </x-slot:actions>
 
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <h1 class="mb-1 font-['Space_Grotesk'] text-lg font-semibold">{{ __('recipes.menu.title') }}</h1>
-            <p class="mb-3 text-sm text-base-content/60">{{ __('recipes.menu.intro') }}</p>
+    <x-validation-errors first />
 
-            <form method="POST" action="{{ route('recipe-menus.store') }}" class="grid gap-2 md:grid-cols-4 items-end">
-                @csrf
-                <label class="form-control md:col-span-2">
-                    <span class="label-text">{{ __('recipes.menu.field.name') }}</span>
-                    <input type="text" name="name" maxlength="160" required value="{{ old('name') }}" class="input input-bordered input-sm">
-                </label>
-                <label class="form-control">
-                    <span class="label-text">{{ __('recipes.menu.field.event_date') }}</span>
-                    <input type="date" name="event_date" value="{{ old('event_date') }}" class="input input-bordered input-sm">
-                </label>
-                <div class="flex items-end gap-2">
-                    <label class="form-control">
-                        <span class="label-text">{{ __('recipes.menu.field.guest_count') }}</span>
-                        <input type="number" name="guest_count" min="1" max="100000" value="{{ old('guest_count') }}" class="input input-bordered input-sm w-28">
-                    </label>
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('recipes.menu.action.create') }}</button>
-                </div>
-            </form>
-        </div>
-
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <x-table :bare="true" :empty-title="__('recipes.menu.empty')">
-                <x-slot:head>
-                    <tr>
-                        <th>{{ __('recipes.menu.field.name') }}</th>
-                        <th>{{ __('recipes.menu.field.event_date') }}</th>
-                        <th class="text-right">{{ __('recipes.menu.field.guest_count') }}</th>
-                        <th class="text-right">{{ __('recipes.menu.field.dishes') }}</th>
-                        <th class="text-right">{{ __('recipes.field.actions') }}</th>
-                    </tr>
-                </x-slot:head>
-                            @foreach ($menus as $menu)
-                                <tr class="hover">
-                                    <td>{{ $menu->name }}</td>
-                                    <td>{{ $menu->event_date?->format('d.m.Y') ?? '—' }}</td>
-                                    <td class="text-right">{{ $menu->guest_count ?? '—' }}</td>
-                                    <td class="text-right">{{ $menu->items_count }}</td>
-                                    <td class="text-right">
-                                        <div class="flex justify-end">
-                                            <a href="{{ route('recipe-menus.show', $menu) }}" class="btn btn-xs btn-ghost">{{ __('recipes.menu.action.open') }}</a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-            </x-table>
-        </div>
-    </div>
-</x-page-shell>
+    <x-table scroll="flex" :pinRows="true" :empty-title="__('recipes.menu.empty')">
+        <x-slot:head>
+            <tr>
+                <th>{{ __('recipes.menu.field.name') }}</th>
+                <th>{{ __('recipes.menu.field.event_date') }}</th>
+                <th class="text-right">{{ __('recipes.menu.field.guest_count') }}</th>
+                <th class="text-right">{{ __('recipes.menu.field.dishes') }}</th>
+                <th class="text-right">{{ __('recipes.field.actions') }}</th>
+            </tr>
+        </x-slot:head>
+        @foreach ($menus as $menu)
+            <tr class="hover">
+                <td>{{ $menu->name }}</td>
+                <td>{{ $menu->event_date?->format('d.m.Y') ?? '—' }}</td>
+                <td class="text-right">{{ $menu->guest_count ?? '—' }}</td>
+                <td class="text-right">{{ $menu->items_count }}</td>
+                <td class="text-right">
+                    <div class="flex justify-end">
+                        <a href="{{ route('recipe-menus.show', $menu) }}" class="btn btn-xs btn-ghost">{{ __('recipes.menu.action.open') }}</a>
+                    </div>
+                </td>
+            </tr>
+        @endforeach
+    </x-table>
+</x-index-page>
 @endsection

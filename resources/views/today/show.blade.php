@@ -70,9 +70,6 @@
         </x-slot:toolbar>
 
         {{-- Flash (Status sitzt jetzt als Badge in der Toolbar). --}}
-        @if (session('error'))
-            <div role="alert" class="alert alert-warning"><span>{{ session('error') }}</span></div>
-        @endif
         @if (session('status'))
             <div role="alert" class="alert alert-success"><span>{{ session('status') }}</span></div>
         @endif

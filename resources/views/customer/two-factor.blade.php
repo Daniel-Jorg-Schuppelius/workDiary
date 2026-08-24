@@ -25,7 +25,6 @@
             <x-status-badge :tone="$statusTone" size="sm">{{ $statusBadge }}</x-status-badge>
         </div>
 
-        @if (session('success'))<div class="alert alert-success text-sm">{{ session('success') }}</div>@endif
         <x-validation-errors first />
 
         {{-- Recovery-Codes einmalig --}}

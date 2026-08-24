@@ -82,7 +82,7 @@
 <figure class="wd-chart rounded-box border border-base-300 bg-base-100 p-3">
     <figcaption>
         <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ $title }}</span>
-        <span class="ml-2 text-xs text-base-content/60">
+        <span class="ml-2 text-xs text-muted">
             {{ $unit }}
             @if ($points->isNotEmpty()) · {{ $points->first()['x'] }} – {{ $points->last()['x'] }} @endif
             @if ($computedAt) · {{ __('Stand:') }} {{ \Illuminate\Support\Carbon::parse($computedAt)->isoFormat('L LT') }} @endif
@@ -90,7 +90,7 @@
     </figcaption>
 
     @if ($note)
-        <p class="mt-1 text-xs text-base-content/50">{{ $note }}</p>
+        <p class="mt-1 text-xs text-muted">{{ $note }}</p>
     @endif
 
     @if ($points->isEmpty() || $bandList->isEmpty())
@@ -190,7 +190,7 @@
         </p>
 
         @if ($hasCompare)
-            <p class="mt-1 text-xs text-base-content/60">
+            <p class="mt-1 text-xs text-muted">
                 <span class="inline-flex items-center gap-1">
                     <svg width="16" height="8" aria-hidden="true"><line x1="0" y1="4" x2="16" y2="4" class="stroke-accent" stroke-width="2" stroke-dasharray="4 3" /></svg>
                     {{ $compareLabel ?? __('Vergleich') }}

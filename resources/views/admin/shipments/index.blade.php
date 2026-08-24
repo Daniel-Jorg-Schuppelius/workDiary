@@ -13,12 +13,6 @@
 @section('content')
 <x-page-shell>
     <div class="space-y-4">
-        @if (session('success'))
-            <div class="alert alert-success text-sm">{{ session('success') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-error text-sm">{{ session('error') }}</div>
-        @endif
         <x-validation-errors first />
 
         <x-page-toolbar :subtitle="__('shipping.intro')" />
@@ -76,7 +70,7 @@
         </form>
 
         {{-- Bestehende Anbindungen --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('shipping.connections_heading') }}</h2>
             <x-table :bare="true" :empty-title="__('shipping.no_connections')">
                 <x-slot:head>
@@ -118,7 +112,7 @@
                                 </tr>
                             @endforeach
             </x-table>
-        </div>
+        </x-card>
     </div>
 </x-page-shell>
 @endsection

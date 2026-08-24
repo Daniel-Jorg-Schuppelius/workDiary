@@ -9,6 +9,8 @@
 @extends('layouts.app')
 @section('title', __('GVV-Register'))
 @section('nav-title', __('Gemeinsame Verantwortlichkeit (Art. 26)'))
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 @php
     $matrixLabels = [
         'information_duties' => __('Informationspflichten (Art. 13/14)'),
@@ -19,7 +21,7 @@
     $roleOptions = ['us' => __('Wir'), 'partner' => __('Partner'), 'joint' => __('Gemeinsam')];
 @endphp
 @section('content')
-    <x-index-page :subtitle="__('Vereinbarungen über gemeinsame Verantwortlichkeit (Art. 26 DSGVO) verwalten.')">
+    <x-index-page overflow="clip" :subtitle="__('Vereinbarungen über gemeinsame Verantwortlichkeit (Art. 26 DSGVO) verwalten.')">
         <x-slot:actions>
             <x-icon-btn icon="diversity_3" tone="ghost" size="sm"
                         :href="route('dataprotection.processors.index')"
@@ -34,28 +36,26 @@
         @if (session('status'))<div class="alert alert-success">{{ session('status') }}</div>@endif
         <x-validation-errors />
 
-        <x-card padding="p-0">
-            <x-table>
-                <x-slot:head>
-                    <tr>
-                        <x-table.th>{{ __('Titel') }}</x-table.th>
-                        <x-table.th>{{ __('Partner') }}</x-table.th>
-                        <x-table.th>{{ __('Status') }}</x-table.th>
-                        <x-table.th>{{ __('Wesentliches bereitgestellt') }}</x-table.th>
-                    </tr>
-                </x-slot:head>
-                @forelse ($agreements as $g)
-                    <tr class="hover">
-                        <td><a class="link" href="{{ route('dataprotection.gvv.show', $g) }}">{{ $g->title }}</a></td>
-                        <td>{{ $g->partner?->name ?? '—' }}</td>
-                        <td><x-status-badge tone="ghost" size="sm">{{ $g->status->label() }}</x-status-badge></td>
-                        <td>{{ $g->essence_provided ? __('ja') : '—' }}</td>
-                    </tr>
-                @empty
-                    <x-table.empty :colspan="4" :title="__('Keine GVV erfasst.')" />
-                @endforelse
-            </x-table>
-        </x-card>
+        <x-table scroll="flex" :pinRows="true">
+            <x-slot:head>
+                <tr>
+                    <x-table.th>{{ __('Titel') }}</x-table.th>
+                    <x-table.th>{{ __('Partner') }}</x-table.th>
+                    <x-table.th>{{ __('Status') }}</x-table.th>
+                    <x-table.th>{{ __('Wesentliches bereitgestellt') }}</x-table.th>
+                </tr>
+            </x-slot:head>
+            @forelse ($agreements as $g)
+                <tr class="hover">
+                    <td><a class="link" href="{{ route('dataprotection.gvv.show', $g) }}">{{ $g->title }}</a></td>
+                    <td>{{ $g->partner?->name ?? '—' }}</td>
+                    <td><x-status-badge tone="ghost" size="sm">{{ $g->status->label() }}</x-status-badge></td>
+                    <td>{{ $g->essence_provided ? __('ja') : '—' }}</td>
+                </tr>
+            @empty
+                <x-table.empty :colspan="4" :title="__('Keine GVV erfasst.')" />
+            @endforelse
+        </x-table>
 
         <x-pagination :paginator="$agreements" standing />
 

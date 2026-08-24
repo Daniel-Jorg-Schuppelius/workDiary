@@ -117,7 +117,8 @@
                                         <option value="dispatch">{{ __('Disposition') }}</option>
                                         <option value="rental">{{ __('Verleih') }}</option>
                                     </x-select-field>
-                                    <x-input-field name="valid_until" type="date" :label="__('Befristet bis')" required />
+                                    {{-- :id — Formular wiederholt sich pro Sperre (doppelte ids, I13) --}}
+                                    <x-input-field name="valid_until" type="date" :id="'block-exception-valid-until-' . $block->sqid" :label="__('Befristet bis')" required />
                                     <x-textarea-field name="reason_text" :label="__('Pflichtbegründung (min. 20 Zeichen)')" rows="2" required></x-textarea-field>
                                     <button type="submit" class="btn btn-sm btn-warning">{{ __('Ausnahme erteilen') }}</button>
                                 </form>
@@ -127,7 +128,7 @@
                             <summary class="btn btn-xs btn-ghost">{{ __('Aufheben') }}</summary>
                             <form method="POST" action="{{ route('asset-compliance.blocks.release', $block) }}" class="mt-2 flex items-end gap-2 rounded-box border border-base-300 p-3">
                                 @csrf
-                                <x-input-field name="note" :label="__('Begründung')" required />
+                                <x-input-field name="note" :id="'block-release-note-' . $block->sqid" :label="__('Begründung')" required />
                                 <button type="submit" class="btn btn-sm">{{ __('Aufheben') }}</button>
                             </form>
                         </details>
@@ -153,7 +154,7 @@
                         @endforeach
                     </x-select-field>
                     <x-input-field name="blocked_until" type="date" :label="__('Befristet bis (optional)')" />
-                    <x-input-field name="note" :label="__('Begründung')" required />
+                    <x-input-field name="note" id="block-create-note" :label="__('Begründung')" required />
                     <button type="submit" class="btn btn-sm btn-error">{{ __('Sperren') }}</button>
                 </form>
             </details>

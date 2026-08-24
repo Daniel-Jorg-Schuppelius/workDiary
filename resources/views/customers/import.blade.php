@@ -21,10 +21,6 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if (session('error'))
-        <div class="alert alert-error"><span>{{ session('error') }}</span></div>
-    @endif
-
     <div class="card border border-base-300 bg-base-100 shadow-xs">
         <div class="card-body">
             <form method="POST" action="{{ route('customers.import') }}" enctype="multipart/form-data" class="space-y-4">

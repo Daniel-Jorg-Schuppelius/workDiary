@@ -39,10 +39,6 @@
     @if (session('status'))
         <div role="alert" class="alert alert-success"><span>{{ session('status') }}</span></div>
     @endif
-    @if (session('error'))
-        <div role="alert" class="alert alert-warning"><span>{{ session('error') }}</span></div>
-    @endif
-
     <div class="grid gap-4 lg:grid-cols-3">
         <div class="card bg-base-100 shadow-sm lg:col-span-2">
             <div class="card-body space-y-2">

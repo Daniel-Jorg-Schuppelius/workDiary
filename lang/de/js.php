@@ -35,4 +35,7 @@ return [
     'entry_bar' => [
         'options_failed' => 'Aufgaben/Aufträge konnten nicht geladen werden.',
     ],
+    'http' => [
+        'session_expired' => 'Deine Sitzung ist abgelaufen — die Seite wird neu geladen.',
+    ],
 ];

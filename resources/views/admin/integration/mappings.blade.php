@@ -30,7 +30,7 @@
         </form>
     </x-slot:actions>
 
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card>
         @if ($references->isEmpty())
             {{-- Prerequisite-Audit (MVP-181): erklären, WIE Zuordnungen
                  entstehen, statt nur den leeren Zustand zu zeigen. --}}
@@ -82,6 +82,6 @@
             </x-table>
             <x-pagination :paginator="$references" standing />
         @endif
-    </div>
+    </x-card>
 </x-index-page>
 @endsection

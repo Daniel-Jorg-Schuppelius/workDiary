@@ -9,7 +9,7 @@
 {{-- Tab: Aufträge — erwartet: $project, $entries
      $entries enthält Initial-Aufträge (project_id=p) UND Aufträge, die nur
      über TimeEntries auf diesem Projekt buchen. --}}
-<div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
+<x-card padding="p-0">
     <header class="flex items-center justify-between border-b border-base-300 px-4 py-3">
         <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Aufträge') }}</span>
         <a href="{{ route('diary.index', ['project' => \App\Support\Sqid::encode(\App\Models\Project::class, $project->id)]) }}"
@@ -57,7 +57,7 @@
             </li>
         @endforelse
     </ul>
-</div>
+</x-card>
 
 {{-- Stehendes Pagination-Panel, nur im Aufträge-Tab sichtbar. --}}
 <x-pagination :paginator="$entries" standing data-tab-footer="diary"

@@ -45,8 +45,14 @@
             <input type="checkbox" id="ride-destination-open" name="destination_open" value="1" class="checkbox checkbox-sm" @checked(old('destination_open'))>
             <label for="ride-destination-open" class="text-sm">{{ __('passenger.field.destination_open') }}</label>
         </div>
-        <x-input-field name="window_start" type="datetime-local" :label="__('passenger.field.window_start')" :value="old('window_start')" />
-        <x-input-field name="window_end" type="datetime-local" :label="__('passenger.field.window_end')" :value="old('window_end')" />
+        <x-date-range layout="split" grid-class="contents" form-control size="" type="datetime-local"
+                      from-name="window_start" to-name="window_end"
+                      from-id="window_start" to-id="window_end"
+                      :from-label="__('passenger.field.window_start')"
+                      :to-label="__('passenger.field.window_end')"
+                      :from="old('window_start')" :to="old('window_end')"
+                      :from-error="$errors->first('window_start') ?: null"
+                      :to-error="$errors->first('window_end') ?: null" />
     </x-form-group>
 
     <x-form-group :legend="__('passenger.section.passengers')" icon="groups" tone="primary" cols="3">

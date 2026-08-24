@@ -7,10 +7,12 @@
         "dev": "vite",
         "typecheck": "node scripts/typecheck.mjs",
         "typecheck:baseline": "node scripts/typecheck.mjs --update",
-        "test:frontend": "node scripts/test-frontend-lib.mjs",
+        "test:frontend": "node scripts/test-frontend-lib.mjs && node --test \"tests/frontend/*.test.mjs\"",
+        "test:e2e": "playwright test",
         "a11y": "pa11y-ci --config .pa11yci.json"
     },
     "devDependencies": {
+        "@playwright/test": "^1.62.1",
         "@tailwindcss/vite": "^4.3.3",
         "concurrently": "^10.0.5",
         "daisyui": "^5.7.17",

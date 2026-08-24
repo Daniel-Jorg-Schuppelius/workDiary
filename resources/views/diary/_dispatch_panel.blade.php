@@ -188,22 +188,18 @@
                         @endforeach
                     </select>
                 </label>
-                <label class="form-control">
-                    <span class="label-text text-xs">{{ __('dispatch.vehicle.from') }}</span>
-                    <input type="datetime-local" name="reserved_from" required
-                           value="{{ optional($diary->start_at)->format('Y-m-d\TH:i') }}"
-                           class="input input-bordered input-sm @error('reserved_from') input-error @enderror">
-                </label>
-                <label class="form-control">
-                    <span class="label-text text-xs">{{ __('dispatch.vehicle.to') }}</span>
-                    <input type="datetime-local" name="reserved_to" required
-                           value="{{ optional($diary->end_at)->format('Y-m-d\TH:i') }}"
-                           class="input input-bordered input-sm">
-                </label>
+                {{-- Von-Bis gekoppelt (I6): Rückgabe nie vor Abholung; Feldnamen unverändert. --}}
+                <x-date-range layout="split" grid-class="contents" type="datetime-local" size="sm" required
+                              from-name="reserved_from" to-name="reserved_to"
+                              from-id="reserved_from" to-id="reserved_to"
+                              label-class="label text-xs py-1"
+                              :from-label="__('dispatch.vehicle.from')"
+                              :to-label="__('dispatch.vehicle.to')"
+                              :from="optional($diary->start_at)->format('Y-m-d\TH:i')"
+                              :to="optional($diary->end_at)->format('Y-m-d\TH:i')"
+                              :from-error="$errors->first('reserved_from') ?: null"
+                              :to-error="$errors->first('reserved_to') ?: null" />
                 <x-button type="submit" tone="primary" size="sm">{{ __('dispatch.vehicle.reserve') }}</x-button>
-                @error('reserved_from')
-                    <p class="text-error text-xs sm:col-span-2 lg:col-span-4">{{ $message }}</p>
-                @enderror
             </form>
         @endif
     </div>

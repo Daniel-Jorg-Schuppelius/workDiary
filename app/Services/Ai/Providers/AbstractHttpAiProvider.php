@@ -62,7 +62,10 @@ abstract class AbstractHttpAiProvider {
         $url = $this->api()->buildUrl($path);
 
         try {
-            $response = $this->api()->postJson($url, $payload);
+            // LLM-Generate-Calls sind POSTs ohne serverseitigen Zustand — der
+            // 429/5xx-Retry des Toolkits ist hier gewollt (Provider-Rate-
+            // Limits) und seit api-toolkit v2.9.2 für POST Opt-in.
+            $response = $this->api()->postJson($url, $payload, ['retry_non_idempotent' => true]);
         } catch (Throwable) {
             throw AiProviderCallException::transport(
                 $this->providerName(),

@@ -51,16 +51,16 @@
                 @if ($title)
                     <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold text-base-content">
                         @if ($icon)
-                            <x-icon :name="$icon" class="text-base-content/60" />
+                            <x-icon :name="$icon" class="text-muted" />
                         @endif
                         <span class="truncate">{{ $title }}</span>
                         @if ($count !== null)
-                            <span class="font-normal text-base-content/50">({{ $count }})</span>
+                            <span class="font-normal text-muted">({{ $count }})</span>
                         @endif
                     </h2>
                 @endif
                 @if ($subtitle)
-                    <p class="text-xs text-base-content/60">{{ $subtitle }}</p>
+                    <p class="text-xs text-muted">{{ $subtitle }}</p>
                 @endif
             </div>
 

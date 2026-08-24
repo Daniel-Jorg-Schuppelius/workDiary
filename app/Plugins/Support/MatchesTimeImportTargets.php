@@ -326,14 +326,7 @@ trait MatchesTimeImportTargets {
     }
 
     protected function similarity(string $a, string $b): float {
-        if ($a === '' || $b === '') {
-            return 0.0;
-        }
-        if ($a === $b) {
-            return 1.0;
-        }
-        similar_text($a, $b, $percent);
-
-        return $percent / 100;
+        // Toolkit (Vollscan 2026-08-23, B20, common-toolkit v1.26).
+        return \CommonToolkit\Helper\Data\StringHelper::similarity($a, $b);
     }
 }

@@ -21,10 +21,6 @@
         @if (session('status'))
             <div class="alert alert-success">{{ session('status') }}</div>
         @endif
-        @if (session('error'))
-            <div class="alert alert-error">{{ session('error') }}</div>
-        @endif
-
         <div class="card bg-base-200">
             <div class="card-body space-y-2">
                 <div class="flex items-center gap-3 flex-wrap">

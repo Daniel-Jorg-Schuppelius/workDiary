@@ -177,14 +177,14 @@
     <aside id="chat-thread" class="hidden min-h-0 flex-col border border-base-300 bg-base-100 shadow-xs fixed inset-0 z-40 lg:static lg:inset-auto lg:z-auto lg:w-80 lg:shrink-0 lg:rounded-box">
         <div class="flex h-14 shrink-0 items-center justify-between border-b border-base-300 px-3">
             <h2 class="font-['Space_Grotesk'] font-semibold">{{ __('Thread') }}</h2>
-            <button id="chat-thread-close" class="btn btn-xs btn-ghost btn-square"><x-icon name="close" /></button>
+            <button id="chat-thread-close" class="btn btn-xs btn-ghost btn-square" aria-label="{{ __('Thread schließen') }}" title="{{ __('Thread schließen') }}"><x-icon name="close" /></button>
         </div>
         <div id="chat-thread-body" class="min-h-0 flex-1 overflow-y-auto p-2"></div>
         <form id="chat-thread-form" class="border-t border-base-300 p-3" enctype="multipart/form-data">
             @csrf
             <div class="flex items-end gap-2">
                 <textarea name="body" rows="1" class="textarea textarea-bordered min-h-10 flex-1" placeholder="{{ __('Antworten …') }}"></textarea>
-                <button type="submit" class="btn btn-primary btn-square"><x-icon name="send" /></button>
+                <button type="submit" class="btn btn-primary btn-square" aria-label="{{ __('Senden') }}" title="{{ __('Senden') }}"><x-icon name="send" /></button>
             </div>
         </form>
     </aside>

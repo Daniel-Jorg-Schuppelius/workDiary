@@ -9,8 +9,6 @@
 @extends('layouts.app')
 @section('title', __('inventory.stock') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('inventory.stock'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @php
     /** @var \App\Models\Warehouse|null $selected */
@@ -23,7 +21,10 @@
 @endphp
 
 @section('content')
-<x-index-page overflow="clip" :subtitle="__('inventory.stock')">
+{{-- Kein Voll-Höhe-Layout (scroll=flex): unter der Bestandstabelle folgen
+     Reservierungen/Beschaffungsbedarf/Bestandsgrenzen — die Seite scrollt
+     normal (Vollscan 2026-08 I10). --}}
+<x-index-page :subtitle="__('inventory.stock')">
     <x-slot:actions>
         <x-icon-btn icon="fact_check" size="sm" :href="route('inventory.counts.index', ['warehouse' => $selected?->sqid])" show-label>{{ __('inventory.count_ui.title') }}</x-icon-btn>
         <x-icon-btn icon="warehouse" size="sm" :href="route('warehouses.index')" show-label>{{ __('inventory.warehouses') }}</x-icon-btn>
@@ -99,7 +100,7 @@
             @endif
 
             {{-- Bestandstabelle --}}
-            <x-table :zebra="true" scroll="flex" :pinRows="true">
+            <x-table :zebra="true" :pinRows="true">
                 <x-slot:head>
                     <tr>
                         <th>{{ __('inventory.field.variant') }}</th>

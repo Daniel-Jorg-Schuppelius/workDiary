@@ -42,6 +42,9 @@ class AccountInvoiceRunnerTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        // D12 (Vollscan 2026-08-23): Mittmonats-Werktag statt Echtzeit —
+        // an Wochen-/Monatsgrenzen kippten die relativen Zeitrechnungen.
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-06-17 10:00:00'));
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id]);

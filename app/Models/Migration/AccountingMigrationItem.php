@@ -14,6 +14,7 @@ namespace App\Models\Migration;
 
 use App\Enums\Migration\MigrationDataArea;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 
@@ -26,6 +27,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
  */
 class AccountingMigrationItem extends Model {
     use BelongsToOrganization;
+    /** @use HasFactory<\Database\Factories\Migration\AccountingMigrationItemFactory> */
+    use HasFactory;
     use HasSqid;
 
     /** Erkannt, noch nicht entschieden. */

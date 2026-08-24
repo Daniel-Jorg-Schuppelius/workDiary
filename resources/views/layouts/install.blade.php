@@ -72,7 +72,7 @@
         </ul>
 
         @if (session('success'))
-            <div class="alert alert-success mb-4">
+            <div role="status" class="alert alert-success mb-4">
                 <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
                 <span>{{ session('success') }}</span>
             </div>

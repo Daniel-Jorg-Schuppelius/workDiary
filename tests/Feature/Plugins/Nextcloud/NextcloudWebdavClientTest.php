@@ -11,6 +11,7 @@
 namespace Tests\Feature\Plugins\Nextcloud;
 
 use App\Plugins\Nextcloud\Api\{NextcloudNotFoundException, NextcloudWebdavClient};
+use App\Plugins\Support\PluginApiClient;
 use GuzzleHttp\{Client, HandlerStack, Middleware};
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
@@ -35,7 +36,7 @@ class NextcloudWebdavClientTest extends TestCase {
         $stack->push(Middleware::history($this->history));
 
         return new NextcloudWebdavClient(
-            new Client(['handler' => $stack]),
+            $this->apiClient('https://nextcloud.test', $stack),
             'https://nextcloud.test',
             'alice',
             'app-pw',
@@ -44,14 +45,19 @@ class NextcloudWebdavClientTest extends TestCase {
         );
     }
 
+    /** PluginApiClient mit Mock-Transport — gleiche Naht wie produktiv (C4-Rest). */
+    private function apiClient(string $baseUrl, ?HandlerStack $stack = null): PluginApiClient {
+        return new PluginApiClient('nextcloud', $baseUrl, new Client($stack !== null ? ['handler' => $stack] : []));
+    }
+
     public function test_https_is_required(): void {
         $this->expectException(RuntimeException::class);
-        new NextcloudWebdavClient(new Client(), 'http://nextcloud.test', 'alice', 'pw', allowPrivateTargets: true);
+        new NextcloudWebdavClient($this->apiClient('http://nextcloud.test'), 'http://nextcloud.test', 'alice', 'pw', allowPrivateTargets: true);
     }
 
     public function test_private_target_is_rejected_without_override(): void {
         $this->expectException(RuntimeException::class);
-        new NextcloudWebdavClient(new Client(), 'https://127.0.0.1', 'alice', 'pw', allowPrivateTargets: false);
+        new NextcloudWebdavClient($this->apiClient('https://127.0.0.1'), 'https://127.0.0.1', 'alice', 'pw', allowPrivateTargets: false);
     }
 
     public function test_list_children_parses_files_and_skips_self(): void {

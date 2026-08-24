@@ -49,7 +49,7 @@ $whitelist = [
 /**
  * @return iterable<SplFileInfo>
  */
-function walk(string $dir, string $ext): iterable {
+function walkWithExtension(string $dir, string $ext): iterable {
     if (! is_dir($dir)) {
         return;
     }
@@ -86,7 +86,7 @@ function isAlreadyTranslated(string $content, int $offset): bool {
 $hits = ['blade' => [], 'js' => []];
 
 // --- Blade scan: look for {{ "string" }} or attributes like title="text" outside __()/@lang
-foreach (walk($targets['blade'], '.blade.php') as $file) {
+foreach (walkWithExtension($targets['blade'], '.blade.php') as $file) {
     $content = (string) file_get_contents($file->getPathname());
     // Match raw German/English content between blade tags, but skip already-translated calls.
     if (preg_match_all('/[\'"]([\p{Lu}\p{Ll}][\p{L}\p{N}\s\.,!?\'\-äöüÄÖÜß]{3,})[\'"]/u', $content, $matches, PREG_OFFSET_CAPTURE)) {
@@ -110,7 +110,7 @@ foreach (walk($targets['blade'], '.blade.php') as $file) {
 }
 
 // --- JS scan
-foreach (walk($targets['js'], '.js') as $file) {
+foreach (walkWithExtension($targets['js'], '.js') as $file) {
     $content = (string) file_get_contents($file->getPathname());
     if (preg_match_all('/[\'"`]([A-Za-zäöüÄÖÜß][\p{L}\p{N}\s\.,!?\'\-äöüÄÖÜß]{4,})[\'"`]/u', $content, $matches, PREG_OFFSET_CAPTURE)) {
         foreach ($matches[1] as $match) {

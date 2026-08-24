@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Stoppuhr-Panel — erwartet: $current (TimeEntry|null) --}}
-<div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+<x-card>
     <h2 class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Stoppuhr') }}</h2>
     @if($current)
         <div class="mt-2">
@@ -23,4 +23,4 @@
     @else
         <div class="mt-2 text-sm text-base-content/60">{{ __('Keine laufende Erfassung.') }}</div>
     @endif
-</div>
+</x-card>

@@ -29,10 +29,6 @@
         @endif
     </x-slot:actions>
 
-    @if (session('success'))
-        <div role="alert" class="alert alert-success"><span>{{ session('success') }}</span></div>
-    @endif
-
     <x-filter-bar :action="route('products.index')" :reset="$search !== '' ? route('products.index') : null">
         <x-filter-field :label="__('Suche')" for="prod-q" class="flex-1 min-w-60">
             <input id="prod-q" type="text" name="q" value="{{ $search }}" placeholder="{{ __('Suche…') }}"

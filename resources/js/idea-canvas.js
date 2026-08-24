@@ -15,6 +15,8 @@
 // "idea-outline-changed" aus der Gliederung den Canvas auf stale — beim
 // nächsten Anzeigen holt er den Serverbaum neu statt den Mount-Stand zu zeigen.
 
+import { getJson, postJson } from "./lib/http.js";
+
 const DEBOUNCE_MS = 1200;
 
 export function registerIdeaCanvas(Alpine) {
@@ -323,26 +325,13 @@ export function registerIdeaCanvas(Alpine) {
                 label: s.label || null,
             }));
             try {
-                const res = await fetch(this.cfg.urls.sync, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                        "X-CSRF-TOKEN":
-                            /** @type {HTMLMetaElement} */ (
-                                document.querySelector(
-                                    'meta[name="csrf-token"]',
-                                )
-                            )?.content || "",
-                    },
-                    body: JSON.stringify({
-                        lock_version: this.lockVersion,
-                        tree,
-                        links,
-                        summaries,
-                    }),
+                const res = await postJson(this.cfg.urls.sync, {
+                    lock_version: this.lockVersion,
+                    tree,
+                    links,
+                    summaries,
                 });
-                const json = await res.json().catch(() => ({}));
+                const json = res.data ?? {};
                 if (res.status === 409) {
                     this.conflict = true;
                     return;
@@ -351,7 +340,7 @@ export function registerIdeaCanvas(Alpine) {
                     this.error =
                         (json.errors && Object.values(json.errors)[0]?.[0]) ||
                         json.message ||
-                        res.statusText;
+                        `HTTP ${res.status}`;
                     return;
                 }
                 this.lockVersion = json.lock_version;
@@ -420,10 +409,8 @@ export function registerIdeaCanvas(Alpine) {
         // lock_version) und setzt die Identitäts-Tabellen zurück — hydrate()
         // befüllt sie beim nächsten Aufbau neu.
         async refetchTree() {
-            const res = await fetch(this.cfg.urls.tree, {
-                headers: { Accept: "application/json" },
-            }).catch(() => null);
-            const json = res ? await res.json().catch(() => null) : null;
+            const res = await getJson(this.cfg.urls.tree).catch(() => null);
+            const json = res?.ok ? res.data : null;
             if (!json) return false;
             this.cfg.nodes = json.nodes;
             this.cfg.links = json.links;

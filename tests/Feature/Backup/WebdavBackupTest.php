@@ -13,6 +13,7 @@ namespace Tests\Feature\Backup;
 use App\Enums\Backup\{BackupProvider, BackupTargetStatus};
 use App\Models\Backup\BackupTargetConnection;
 use App\Models\User;
+use App\Plugins\Support\PluginApiClient;
 use App\Plugins\Webdav\Api\WebdavBackupClient;
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};
 use GuzzleHttp\Handler\MockHandler;
@@ -61,7 +62,12 @@ class WebdavBackupTest extends TestCase {
             };
         });
 
-        return new WebdavBackupClient($this->connection->fresh(), new GuzzleClient(['handler' => $stack]));
+        return new WebdavBackupClient($this->connection->fresh(), $this->apiClient($stack));
+    }
+
+    /** PluginApiClient mit Mock-Transport — gleiche Naht wie produktiv (C4-Rest). */
+    private function apiClient(HandlerStack $stack): PluginApiClient {
+        return new PluginApiClient('webdav', 'https://dav.example.com/dav/backup', new GuzzleClient(['handler' => $stack]));
     }
 
     private function multiStatus(string $inner): Response {
@@ -145,7 +151,7 @@ class WebdavBackupTest extends TestCase {
 
             return \GuzzleHttp\Promise\Create::promiseFor($response);
         });
-        $client = new WebdavBackupClient($this->connection->fresh(), new GuzzleClient(['handler' => $stack]));
+        $client = new WebdavBackupClient($this->connection->fresh(), $this->apiClient($stack));
 
         $client->selfTest('wd-backups-abc');
 
@@ -167,7 +173,7 @@ class WebdavBackupTest extends TestCase {
 
             return \GuzzleHttp\Promise\Create::promiseFor($response);
         });
-        $client = new WebdavBackupClient($this->connection->fresh(), new GuzzleClient(['handler' => $stack]));
+        $client = new WebdavBackupClient($this->connection->fresh(), $this->apiClient($stack));
 
         $this->expectException(RuntimeException::class);
         $client->selfTest('wd-backups-abc');
@@ -258,8 +264,9 @@ class WebdavBackupTest extends TestCase {
             'access_token' => 'token',
         ]);
 
+        // Der Guard wirft VOR dem Bau des HTTP-Clients — kein Client nötig.
         $this->expectException(RuntimeException::class);
-        new WebdavBackupClient($connection, new GuzzleClient());
+        new WebdavBackupClient($connection);
     }
 
     public function test_private_target_is_rejected_without_opt_in(): void {
@@ -271,7 +278,7 @@ class WebdavBackupTest extends TestCase {
         ]);
 
         $this->expectException(RuntimeException::class);
-        new WebdavBackupClient($connection, new GuzzleClient());
+        new WebdavBackupClient($connection);
     }
 
     public function test_connect_dialog_and_validation(): void {

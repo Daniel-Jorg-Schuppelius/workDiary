@@ -12,16 +12,18 @@ namespace Tests\Support;
 
 use App\Plugins\Nextcloud\Api\NextcloudWebdavClient;
 use App\Plugins\Nextcloud\Contracts\NextcloudTransportFactory;
+use App\Plugins\Support\PluginApiClient;
 use GuzzleHttp\{Client, HandlerStack, Middleware};
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
 use SensitiveParameter;
 
 /**
- * Test-Factory: liefert einen {@see NextcloudWebdavClient} über einen Guzzle-
- * MockHandler (kein echter HTTP-Verkehr, kein DNS/SSRF — `allowPrivateTargets`
- * ist im Test aktiv). Die Antwortschlange und die aufgezeichnete Request-
- * Historie sind für Assertions öffentlich.
+ * Test-Factory: liefert einen {@see NextcloudWebdavClient} über einen
+ * PluginApiClient mit Guzzle-MockHandler-Transport (gleiche Naht wie
+ * produktiv, C4-Rest; kein echter HTTP-Verkehr, kein DNS/SSRF —
+ * `allowPrivateTargets` ist im Test aktiv). Die Antwortschlange und die
+ * aufgezeichnete Request-Historie sind für Assertions öffentlich.
  */
 class FakeNextcloudTransportFactory implements NextcloudTransportFactory {
     /** @var list<array{request: \Psr\Http\Message\RequestInterface, response: \Psr\Http\Message\ResponseInterface, error: mixed, options: array<mixed>}> */
@@ -42,7 +44,7 @@ class FakeNextcloudTransportFactory implements NextcloudTransportFactory {
             $stack->push(Middleware::history($this->history));
 
             $this->client = new NextcloudWebdavClient(
-                new Client(['handler' => $stack]),
+                new PluginApiClient('nextcloud', $serverUrl, new Client(['handler' => $stack])),
                 $serverUrl,
                 $username,
                 $appPassword,

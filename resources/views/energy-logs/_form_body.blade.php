@@ -42,8 +42,14 @@
 </x-form-group>
 
 <x-form-group :legend="__('Zeitraum & Ladestand')" icon="schedule" tone="success" cols="2">
-    <x-input-field name="started_at" type="datetime-local" :label="__('Beginn')" required :value="old('started_at', $log?->started_at?->orgTz()->format('Y-m-d\TH:i'))" />
-    <x-input-field name="ended_at" type="datetime-local" :label="__('Ende')" :value="old('ended_at', $log?->ended_at?->orgTz()->format('Y-m-d\TH:i'))" />
+    <x-date-range layout="split" grid-class="contents" form-control size="" type="datetime-local"
+                  from-name="started_at" to-name="ended_at"
+                  from-id="started_at" to-id="ended_at" from-required
+                  :from-label="__('Beginn')" :to-label="__('Ende')"
+                  :from="old('started_at', $log?->started_at?->orgTz()->format('Y-m-d\TH:i'))"
+                  :to="old('ended_at', $log?->ended_at?->orgTz()->format('Y-m-d\TH:i'))"
+                  :from-error="$errors->first('started_at') ?: null"
+                  :to-error="$errors->first('ended_at') ?: null" />
     <x-input-field name="soc_before" type="number" :label="__('SoC vorher (%)')" min="0" max="100" :value="old('soc_before', $log?->soc_before)" />
     <x-input-field name="soc_after" type="number" :label="__('SoC nachher (%)')" min="0" max="100" :value="old('soc_after', $log?->soc_after)" />
 </x-form-group>

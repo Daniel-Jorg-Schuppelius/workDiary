@@ -15,9 +15,11 @@ namespace App\Services\Tenders;
 use App\Models\Tenders\TenderNotice;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use Carbon\CarbonInterface;
+use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
+use Exception;
 use Illuminate\Support\Carbon;
+use InvalidArgumentException;
 use RuntimeException;
-use ZipArchive;
 
 /**
  * Holt die Bekanntmachungen des Bundes und legt sie ab (MVP-629).
@@ -40,6 +42,12 @@ use ZipArchive;
 final class TenderNoticeImporter {
     private const BASE_URL = 'https://oeffentlichevergabe.de';
     private const PATH = '/api/notice-exports';
+
+    /** Mehr Einzeldateien enthält kein plausibles Tagespaket (C6-Guard). */
+    private const MAX_ENTRIES = 20_000;
+
+    /** Obergrenze der entpackten Gesamtgröße — wird VOR dem Entpacken geprüft. */
+    private const MAX_UNCOMPRESSED_BYTES = 256 * 1024 * 1024;
 
     private readonly PluginApiClient $client;
 
@@ -101,23 +109,19 @@ final class TenderNoticeImporter {
             return [];
         }
 
-        $path = tempnam(sys_get_temp_dir(), 'tender-notices-') ?: throw new RuntimeException('Kein Temp-Pfad.');
-        file_put_contents($path, $zip);
-
-        $archive = new ZipArchive;
-        if ($archive->open($path) !== true) {
-            unlink($path);
-            throw new RuntimeException('Das Tagespaket ließ sich nicht öffnen.');
+        // C6 (Vollscan 2026-08-23): In-Memory-Lesen über das Common-Toolkit —
+        // harter Zip-Slip-Guard und Größen-Limits inklusive.
+        try {
+            $entries = ZipFile::readEntries($zip, self::MAX_ENTRIES, self::MAX_UNCOMPRESSED_BYTES);
+        } catch (InvalidArgumentException $e) {
+            throw new RuntimeException('Das Tagespaket verletzt die Archiv-Grenzen: ' . $e->getMessage(), previous: $e);
+        } catch (Exception $e) {
+            throw new RuntimeException('Das Tagespaket ließ sich nicht öffnen.', previous: $e);
         }
 
         $documents = [];
-        for ($i = 0; $i < $archive->numFiles; $i++) {
-            $name = (string) $archive->getNameIndex($i);
+        foreach ($entries as $name => $content) {
             if (!str_ends_with(strtolower($name), '.json')) {
-                continue;
-            }
-            $content = $archive->getFromIndex($i);
-            if ($content === false) {
                 continue;
             }
             $decoded = json_decode($content, true);
@@ -130,9 +134,6 @@ final class TenderNoticeImporter {
                 $documents[] = $release;
             }
         }
-
-        $archive->close();
-        unlink($path);
 
         return $documents;
     }

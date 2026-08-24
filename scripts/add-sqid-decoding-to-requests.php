@@ -101,7 +101,7 @@ foreach ($files as $file) {
     )) {
         foreach ($matches as $m) {
             $field = $m[1];
-            $table = $m[2] !== '' ? $m[2] : ($m[3] ?? '');
+            $table = (string) ($m[2] ?: ($m[3] ?? ''));
             if ($table === '' || ! array_key_exists($table, $tableToModel)) {
                 continue;
             }

@@ -18,10 +18,6 @@
                         :subtitle="__('Organisations-Stammdaten, Mindestlohn und betroffene Mitarbeiter.')" />
     </x-slot:toolbar>
 
-    @if (session('success'))
-        <div class="alert alert-success mb-4 text-sm">{{ session('success') }}</div>
-    @endif
-
     {{-- Org-Stammdaten --}}
     <div class="card bg-base-100 shadow-sm">
         <div class="card-body">

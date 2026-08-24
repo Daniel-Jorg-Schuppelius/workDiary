@@ -12,6 +12,8 @@
 // "idea-outline-changed" (der Canvas lädt beim nächsten Anzeigen neu); nach
 // einem Canvas-Sync kommt "idea-map-synced" zurück und die Gliederung lädt den
 // Serverbaum nach — sofort, wenn sie sichtbar ist, sonst beim Tab-Wechsel.
+import { request } from "./lib/http.js";
+
 export function registerIdeaEditor(Alpine) {
     Alpine.data("ideaEditor", (configElId) => ({
         cfg: {},
@@ -177,19 +179,9 @@ export function registerIdeaEditor(Alpine) {
             this.busy = true;
             this.error = null;
             try {
-                const res = await fetch(url, {
+                const res = await request(url, {
                     method,
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                        "X-CSRF-TOKEN":
-                            /** @type {HTMLMetaElement | null} */ (
-                                document.querySelector(
-                                    'meta[name="csrf-token"]',
-                                )
-                            )?.content || "",
-                    },
-                    body: body ? JSON.stringify(body) : undefined,
+                    json: body ? body : undefined,
                 });
                 const json = await res.json().catch(() => ({}));
                 if (res.status === 409) {

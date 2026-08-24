@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Attendance-Panel — erwartet: $current (App\Models\Attendance|null) --}}
-<div class="rounded-box border border-base-300 bg-base-100 px-4 py-3 shadow-xs" data-attendance-panel>
+<x-card padding="px-4 py-3" data-attendance-panel>
     <div class="flex flex-wrap items-center justify-between gap-2">
         <h2 class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ __('Stempeluhr') }}</h2>
         <div class="flex flex-wrap items-center justify-end gap-1.5">
@@ -84,4 +84,4 @@
             </x-button>
         </form>
     @endif
-</div>
+</x-card>

@@ -165,7 +165,7 @@
         <x-kpi-tile :label="__('Material netto')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float)$timesheet->total_material_net, 2, withThousandsSeparator: true) . ' €'" />
     </div>
 
-    <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
+    <x-card padding="p-0">
         <header class="flex items-center justify-between border-b border-base-300 px-4 py-3">
             <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Zeiteinträge') }}</span>
             @if($editable)
@@ -232,9 +232,9 @@
                 <x-table.empty :icon="false" :colspan="8" compact />
             @endforelse
         </x-table>
-    </div>
+    </x-card>
 
-    <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
+    <x-card padding="p-0">
         <header class="flex items-center justify-between border-b border-base-300 px-4 py-3">
             <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Verbrauchsmaterial') }}</span>
             @if($editable)
@@ -279,7 +279,7 @@
                 <x-table.empty :icon="false" :colspan="6" compact />
             @endforelse
         </x-table>
-    </div>
+    </x-card>
 
     {{-- Signatur — kompakte Karte unterhalb des Stundenzettels --}}
     <x-card :title="__('Kundenfreigabe')">

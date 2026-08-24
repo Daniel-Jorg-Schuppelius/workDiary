@@ -43,6 +43,13 @@ class SalesDiscountGroupController extends Controller {
     public function storeOverride(Request $request): RedirectResponse {
         Gate::authorize('create', Article::class);
         $organizationId = $this->currentOrganization()->id;
+
+        // Sqids aus dem Formular (I7); rohe numerische IDs bleiben als Fallback lesbar.
+        $request->merge([
+            'sales_discount_group_id' => \App\Support\Sqid::decodeOrNumeric(SalesDiscountGroup::class, $request->input('sales_discount_group_id')),
+            'customer_id' => \App\Support\Sqid::decodeOrNumeric(\App\Models\Customer::class, $request->input('customer_id')),
+        ]);
+
         $data = $request->validate([
             'sales_discount_group_id' => ['required', 'integer', Rule::exists('sales_discount_groups', 'id')->where('organization_id', $organizationId)],
             'customer_id' => ['required', 'integer', Rule::exists('customers', 'id')->where('organization_id', $organizationId)],

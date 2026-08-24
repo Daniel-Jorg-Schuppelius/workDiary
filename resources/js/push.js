@@ -1,3 +1,5 @@
+import { del, getJson, postJson } from "./lib/http.js";
+
 function urlBase64ToUint8Array(base64String) {
     const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding)
@@ -7,13 +9,6 @@ function urlBase64ToUint8Array(base64String) {
     const out = new Uint8Array(raw.length);
     for (let i = 0; i < raw.length; ++i) out[i] = raw.charCodeAt(i);
     return out;
-}
-
-function csrf() {
-    const m = /** @type {HTMLMetaElement} */ (
-        document.querySelector('meta[name="csrf-token"]')
-    );
-    return m ? m.content : "";
 }
 
 async function ensureRegistration() {
@@ -44,10 +39,8 @@ export async function pushSubscribe() {
     if (perm !== "granted") return false;
     const reg = await ensureRegistration();
     if (!reg) return false;
-    const r = await fetch("/push/vapid", {
-        headers: { Accept: "application/json" },
-    });
-    const { publicKey } = await r.json();
+    const { data } = await getJson("/push/vapid");
+    const publicKey = data?.publicKey;
     if (!publicKey) return false;
     let sub = await reg.pushManager.getSubscription();
     if (!sub) {
@@ -57,18 +50,10 @@ export async function pushSubscribe() {
         });
     }
     const json = sub.toJSON();
-    await fetch("/push/subscribe", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            "X-CSRF-TOKEN": csrf(),
-        },
-        body: JSON.stringify({
-            endpoint: json.endpoint,
-            keys: json.keys,
-            contentEncoding: "aesgcm",
-        }),
+    await postJson("/push/subscribe", {
+        endpoint: json.endpoint,
+        keys: json.keys,
+        contentEncoding: "aesgcm",
     });
     return true;
 }
@@ -80,15 +65,7 @@ export async function pushUnsubscribe() {
     if (!sub) return true;
     const endpoint = sub.endpoint;
     await sub.unsubscribe();
-    await fetch("/push/unsubscribe", {
-        method: "DELETE",
-        headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            "X-CSRF-TOKEN": csrf(),
-        },
-        body: JSON.stringify({ endpoint }),
-    });
+    await del("/push/unsubscribe", { endpoint });
     return true;
 }
 

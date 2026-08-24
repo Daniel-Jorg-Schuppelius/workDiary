@@ -7,26 +7,10 @@
 // an denselben Endpunkt und laden danach die Seite neu (nächster offener Block
 // wird automatisch der erste).
 
-function csrfToken() {
-    return (
-        document
-            .querySelector('meta[name="csrf-token"]')
-            ?.getAttribute("content") || ""
-    );
-}
+import { postJson } from "./lib/http.js";
 
 async function postBooking(url, payload) {
-    const res = await fetch(url, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            "X-CSRF-TOKEN": csrfToken(),
-            "X-Requested-With": "XMLHttpRequest",
-        },
-        body: JSON.stringify(payload),
-    });
-    return res.ok;
+    return (await postJson(url, payload)).ok;
 }
 
 function payloadFromForm(form) {

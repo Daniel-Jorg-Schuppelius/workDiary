@@ -15,13 +15,6 @@
 
         @include('schedule._shift_tabs')
 
-        @if (session('success'))
-            <div class="alert alert-success text-sm">{{ session('success') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-error text-sm">{{ session('error') }}</div>
-        @endif
-
         {{-- ── Freigabe (nur Teamleitung) ──────────────────────────────── --}}
         @if ($canApprove)
             <x-form-group :legend="__('schedule.exchange.pending_legend')" icon="approval" tone="warning">

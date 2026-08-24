@@ -12,15 +12,11 @@
 
 import { __ } from "./i18n.js";
 import { escHtml, safeUrl, html, setHtml, clearHtml } from "./lib/html.js";
+import { getJson } from "./lib/http.js";
 
 const DIALOG_ID = "global-search-dialog";
 const DEBOUNCE_MS = 220;
 const MIN_LEN = 2;
-
-const csrfToken = () => {
-    const meta = document.querySelector('meta[name="csrf-token"]');
-    return meta ? meta.getAttribute("content") || "" : "";
-};
 
 const searchUrl = () => {
     // Route ist mit web-Middleware registriert; Standardpfad fix verdrahtet.
@@ -64,7 +60,7 @@ const renderHint = (root, message) => {
     if (!results) return;
     setHtml(
         results,
-        html`<div class="px-4 py-8 text-center text-sm text-base-content/50">
+        html`<div class="px-4 py-8 text-center text-sm text-muted">
             ${message}
         </div>`,
     );
@@ -86,7 +82,7 @@ const renderResults = (root, groups, allUrl = null) => {
     groups.forEach((group) => {
         parts.push(
             html`<div
-                class="px-4 pt-3 pb-1 text-[0.65rem] uppercase tracking-[0.15em] text-base-content/50 flex items-center gap-1.5"
+                class="px-4 pt-3 pb-1 text-[0.65rem] uppercase tracking-[0.15em] text-muted flex items-center gap-1.5"
             >
                 <span
                     class="material-symbols-outlined text-[0.95rem]"
@@ -109,7 +105,7 @@ const renderResults = (root, groups, allUrl = null) => {
                     class="flex items-start gap-3 rounded-box px-3 py-2 hover:bg-base-200 focus:bg-base-200 focus:outline-none"
                 >
                     <span
-                        class="material-symbols-outlined text-base text-base-content/60"
+                        class="material-symbols-outlined text-base text-muted"
                         aria-hidden="true"
                         >${group.icon || "search"}</span
                     >
@@ -119,7 +115,7 @@ const renderResults = (root, groups, allUrl = null) => {
                         >
                         ${item.subtitle
                             ? html`<span
-                                  class="block text-xs text-base-content/60 truncate"
+                                  class="block text-xs text-muted truncate"
                                   >${item.subtitle}</span
                               >`
                             : ""}
@@ -175,23 +171,13 @@ const updateActive = (root) => {
 const fetchResults = async (root, term) => {
     setStatus(root, __("Suche …"), { loading: true });
     try {
-        const res = await fetch(
+        const { ok, data: json } = await getJson(
             `${searchUrl()}?q=${encodeURIComponent(term)}`,
-            {
-                method: "GET",
-                credentials: "same-origin",
-                headers: {
-                    Accept: "application/json",
-                    "X-Requested-With": "XMLHttpRequest",
-                    "X-CSRF-TOKEN": csrfToken(),
-                },
-            },
         );
-        if (!res.ok) {
+        if (!ok || !json) {
             setStatus(root, __("Suche fehlgeschlagen."));
             return;
         }
-        const json = await res.json();
         setStatus(root, "");
         renderResults(root, json.groups || [], json.allUrl || null);
     } catch (e) {

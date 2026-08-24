@@ -26,8 +26,14 @@
     </x-select-field>
     <x-input-field name="location" :label="__('Ort / Tätigkeitsstätte')" required maxlength="255" :value="old('location', $trip?->location)" :placeholder="__('z. B. Frankfurt am Main')" />
     <x-input-field name="purpose" :label="__('Zweck')" required span="2" maxlength="255" :value="old('purpose', $trip?->purpose)" :placeholder="__('z. B. Workshop, Onsite-Termin, Schulung …')" />
-    <x-input-field name="started_at" type="datetime-local" :label="__('Beginn')" required :value="old('started_at', $trip ? $trip->started_at->orgTz()->format('Y-m-d\\TH:i') : $date . 'T08:00')" />
-    <x-input-field name="ended_at" type="datetime-local" :label="__('Ende')" required :value="old('ended_at', $trip ? $trip->ended_at->format('Y-m-d\\TH:i') : $date . 'T18:00')" />
+    <x-date-range layout="split" grid-class="contents" form-control size="" type="datetime-local"
+                  from-name="started_at" to-name="ended_at"
+                  from-id="started_at" to-id="ended_at" required
+                  :from-label="__('Beginn')" :to-label="__('Ende')"
+                  :from="old('started_at', $trip ? $trip->started_at->orgTz()->format('Y-m-d\\TH:i') : $date . 'T08:00')"
+                  :to="old('ended_at', $trip ? $trip->ended_at->format('Y-m-d\\TH:i') : $date . 'T18:00')"
+                  :from-error="$errors->first('started_at') ?: null"
+                  :to-error="$errors->first('ended_at') ?: null" />
     <x-checkbox-field name="accommodation_provided" :label="__('Übernachtung wurde vom Arbeitgeber gestellt')" :checked="old('accommodation_provided', $trip?->accommodation_provided ?? false)" :toggle="false" span="2" />
     <x-textarea-field name="notes" :label="__('Notizen')" rows="2" maxlength="5000" span="2" :value="old('notes', $trip?->notes)" />
 </x-form-group>

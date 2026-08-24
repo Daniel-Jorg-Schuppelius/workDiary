@@ -16,6 +16,7 @@ use App\Casts\MoneyCast;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
@@ -45,6 +46,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 class Quote extends Model {
     use Auditable;
     use BelongsToOrganization;
+    /** @use HasFactory<\Database\Factories\QuoteFactory> */
+    use HasFactory;
     use HasSqid;
 
     public const STATUSES = ['draft', 'approved', 'sent', 'accepted', 'partially_accepted', 'rejected', 'expired'];

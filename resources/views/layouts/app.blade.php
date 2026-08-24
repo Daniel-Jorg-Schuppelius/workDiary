@@ -450,7 +450,7 @@
                                                         @foreach ($group['items'] as $item)
                                                             @php $active = request()->routeIs($item['route']); @endphp
                                                             <li class="w-full">
-                                                                <a href="{{ route($item['route'], $item['route_params'] ?? []) }}" class="flex! w-full items-center gap-3 {{ $active ? 'menu-active' : '' }}">
+                                                                <a href="{{ route($item['route'], $item['route_params'] ?? []) }}" class="flex! w-full items-center gap-3 {{ $active ? 'menu-active' : '' }}" @if ($active) aria-current="page" @endif>
                                                                     <x-icon :name="$item['icon'] ?? 'tune'" class="text-[1.1rem] shrink-0" />
                                                                     <span class="min-w-0 flex-1 truncate">{{ $item['label'] }}</span>
                                                                 </a>
@@ -463,7 +463,7 @@
                                         @foreach ($manageUngrouped as $item)
                                             @php $active = request()->routeIs($item['route']); @endphp
                                             <li class="w-full">
-                                                <a href="{{ route($item['route'], $item['route_params'] ?? []) }}" class="flex! w-full items-center gap-3 {{ $active ? 'menu-active' : '' }}">
+                                                <a href="{{ route($item['route'], $item['route_params'] ?? []) }}" class="flex! w-full items-center gap-3 {{ $active ? 'menu-active' : '' }}" @if ($active) aria-current="page" @endif>
                                                     <x-icon :name="$item['icon'] ?? 'tune'" class="text-[1.1rem] shrink-0" />
                                                     <span class="min-w-0 flex-1 truncate">{{ $item['label'] }}</span>
                                                 </a>
@@ -540,7 +540,7 @@
                                                             <li class="w-full">
                                                                 <a href="{{ route($item['route'], $item['route_params'] ?? []) }}"
                                                                    @if (! empty($item['modal'])) data-entry-modal-trigger @endif
-                                                                   class="flex! w-full items-center gap-3 {{ $active ? 'menu-active' : '' }}">
+                                                                   class="flex! w-full items-center gap-3 {{ $active ? 'menu-active' : '' }}" @if ($active) aria-current="page" @endif>
                                                                     <x-icon :name="$item['icon'] ?? 'tune'" class="text-[1.1rem] shrink-0" />
                                                                     <span class="min-w-0 flex-1 truncate">{{ $item['label'] }}</span>
                                                                     @if (! empty($item['badge']))
@@ -558,7 +558,7 @@
                                             <li class="w-full">
                                                 <a href="{{ route($item['route'], $item['route_params'] ?? []) }}"
                                                    @if (! empty($item['modal'])) data-entry-modal-trigger @endif
-                                                   class="flex! w-full items-center gap-3 {{ $active ? 'menu-active' : '' }}">
+                                                   class="flex! w-full items-center gap-3 {{ $active ? 'menu-active' : '' }}" @if ($active) aria-current="page" @endif>
                                                     <x-icon :name="$item['icon'] ?? 'tune'" class="text-[1.1rem] shrink-0" />
                                                     <span class="min-w-0 flex-1 truncate">{{ $item['label'] }}</span>
                                                     @if (! empty($item['badge']))
@@ -1100,7 +1100,7 @@
                                                         <li>
                                                             <a href="{{ route($item['route'], $item['route_params'] ?? []) }}"
                                                                @if (! empty($item['modal'])) data-entry-modal-trigger @endif
-                                                               class="menu-link flex items-center gap-3 {{ $active ? 'menu-active' : '' }}"
+                                                               class="menu-link flex items-center gap-3 {{ $active ? 'menu-active' : '' }}" @if ($active) aria-current="page" @endif
                                                                title="{{ $item['label'] }}">
                                                                 <x-icon :name="$item['icon'] ?? 'circle'" />
                                                                 <span data-sidebar-label class="truncate transition-opacity duration-150">{{ $item['label'] }}</span>
@@ -1118,7 +1118,7 @@
                                             <li>
                                                 <a href="{{ route($item['route'], $item['route_params'] ?? []) }}"
                                                    @if (! empty($item['modal'])) data-entry-modal-trigger @endif
-                                                   class="menu-link flex items-center gap-3 {{ $active ? 'menu-active' : '' }}"
+                                                   class="menu-link flex items-center gap-3 {{ $active ? 'menu-active' : '' }}" @if ($active) aria-current="page" @endif
                                                    title="{{ $item['label'] }}">
                                                     <x-icon :name="$item['icon'] ?? 'circle'" />
                                                     <span data-sidebar-label class="truncate transition-opacity duration-150">{{ $item['label'] }}</span>
@@ -1310,13 +1310,17 @@
             <x-support-banner />
         @endauth
         <div class="mx-auto @yield('wrapper-height-class', 'wd-page-fill') w-full {{ $_wrapperMaxW }} px-2 pt-(--sidebar-gap) pb-[calc(var(--app-footer-h)+var(--sidebar-gap))] md:pb-(--sidebar-gap) sm:px-4 xl:px-8 2xl:px-12 @auth @unless($isLegacyMode) with-help-pad with-sidebar-pad @endunless @endauth">
+            {{-- Zentrale Flashes (I4): einzige Render-Stelle für success/error/
+                 warning/info — Views rendern diese Keys NICHT erneut
+                 (Gate: DuplicateFlashRuleTest). role macht sie für
+                 Screenreader wahrnehmbar. --}}
             @if (session('success'))
-                <div class="alert alert-success mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
+                <div role="status" class="alert alert-success mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
                     {{ session('success') }}
                 </div>
             @endif
             @if (session('error'))
-                <div class="alert alert-error mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
+                <div role="alert" class="alert alert-error mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
                     {{ session('error') }}
                 </div>
             @endif
@@ -1324,12 +1328,12 @@
                 {{-- Hinweis, der nichts verhindert hat: Der Vorgang lief durch,
                      aber jemand soll ihn nachsehen (z. B. fehlende
                      Pflichtnachweise bei der Zahlungsfreigabe, Feature 117). --}}
-                <div class="alert alert-warning mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
+                <div role="alert" class="alert alert-warning mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
                     {{ session('warning') }}
                 </div>
             @endif
             @if (session('info'))
-                <div class="alert alert-info mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
+                <div role="status" class="alert alert-info mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
                     {{ session('info') }}
                 </div>
             @endif

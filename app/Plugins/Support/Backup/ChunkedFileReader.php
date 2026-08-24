@@ -15,14 +15,11 @@ namespace App\Plugins\Support\Backup;
 use RuntimeException;
 
 /**
- * Chunkweises Lesen für Backup-Uploads.
- *
- * BEWUSST app-lokal (Vollscan 2026-08-23, C9 — Klasse F): `File::readChunks`
- * im common-toolkit bricht bei `fread === false` STILL ab (break) — für
- * Backup-Teile wäre das ein stiller Datenverlust; hier ist ein Lesefehler
- * eine RuntimeException. Zusätzlich braucht der Upload (chunk, startOffset)
- * und die Gesamt-Bytezahl. Toolkit-Erweiterung (strict-Modus) ist als
- * Welle-6-Kandidat notiert; bis dahin bleibt diese Klasse die Wahrheit.
+ * Chunkweises Lesen für Backup-Uploads: dünne Fach-Naht über
+ * `File::readChunks(strict: true)` (common-toolkit v1.26, Vollscan C9) —
+ * die Klasse bündelt, was app-spezifisch bleibt: (chunk, startOffset) für
+ * Resumable-Uploads, Gesamt-Bytezahl und die RuntimeException-Semantik der
+ * Backup-Clients.
  */
 final class ChunkedFileReader {
     /**
@@ -46,29 +43,24 @@ final class ChunkedFileReader {
      * @param  callable(string $chunk, int $offset): void  $onChunk
      */
     public static function each(string $localPath, int $chunkSize, callable $onChunk): int {
-        $size = @filesize($localPath);
-        $in = @fopen($localPath, 'rb');
-        if ($in === false || $size === false) {
+        if (@filesize($localPath) === false) {
             throw new RuntimeException("Backup-Teil nicht lesbar: {$localPath}");
         }
 
+        // Seit common-toolkit v1.26 (Vollscan 2026-08-23, C9): readChunks im
+        // strict-Modus wirft bei Lesefehlern statt still abzubrechen — die
+        // frühere App-eigene Leseschleife entfällt; (chunk, offset) und die
+        // Gesamt-Bytezahl bleiben App-Vertrag der Backup-Uploads.
         try {
             $offset = 0;
-            while (! feof($in)) {
-                $chunk = fread($in, max(1, $chunkSize));
-                if ($chunk === false) {
-                    throw new RuntimeException("Lesefehler in {$localPath}.");
-                }
-                if ($chunk === '') {
-                    continue;
-                }
+            foreach (\CommonToolkit\Helper\FileSystem\File::readChunks($localPath, max(1, $chunkSize), null, strict: true) as $chunk) {
                 $onChunk($chunk, $offset);
                 $offset += strlen($chunk);
             }
 
             return $offset;
-        } finally {
-            fclose($in);
+        } catch (\ERRORToolkit\Exceptions\FileSystemException $e) {
+            throw new RuntimeException("Lesefehler in {$localPath}: {$e->getMessage()}", 0, $e);
         }
     }
 }

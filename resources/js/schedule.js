@@ -10,6 +10,7 @@
 
 import { __ } from "./i18n.js";
 import { escHtml, escCssValue, html, setHtml, clearHtml } from "./lib/html.js";
+import { request } from "./lib/http.js";
 
 /* ──────────────────────────── State ──────────────────────────── */
 
@@ -866,17 +867,10 @@ function addTypeRow(type) {
  * Generic fetch helper — sends JSON, returns parsed JSON, throws on errors.
  */
 async function apiFetch(method, url, body = null) {
-    const opts = {
+    const resp = await request(url, {
         method,
-        headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            "X-CSRF-TOKEN": _cfg?.csrf ?? "",
-        },
-    };
-    if (body && method !== "GET") opts.body = JSON.stringify(body);
-
-    const resp = await fetch(url, opts);
+        json: body && method !== "GET" ? body : undefined,
+    });
 
     if (resp.status === 204) return null; // DELETE success
 

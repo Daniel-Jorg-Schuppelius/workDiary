@@ -32,6 +32,16 @@
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">local_shipping</span>'
                        :title="__('procurement.ui.none')" />
     @else
+        {{-- Übernehmen-Aktion VOR der Voll-Höhe-Tabelle (scroll=flex):
+             darunter läge sie unterm Fold (Vollscan 2026-08 I10). --}}
+        @if ($warehouse)
+            <form method="POST" action="{{ route('purchase-orders.suggestions.apply') }}" class="flex flex-none justify-end">
+                @csrf
+                <input type="hidden" name="warehouse" value="{{ $warehouse->sqid }}">
+                <x-icon-btn icon="check_circle" tone="primary" size="sm" type="submit" show-label>{{ __('procurement.action.apply') }}</x-icon-btn>
+            </form>
+        @endif
+
         <x-table :zebra="true" scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>
@@ -50,14 +60,6 @@
                 </tr>
             @endforeach
         </x-table>
-
-        @if ($warehouse)
-            <form method="POST" action="{{ route('purchase-orders.suggestions.apply') }}" class="mt-3 self-end">
-                @csrf
-                <input type="hidden" name="warehouse" value="{{ $warehouse->sqid }}">
-                <x-icon-btn icon="check_circle" tone="primary" size="sm" type="submit" show-label>{{ __('procurement.action.apply') }}</x-icon-btn>
-            </form>
-        @endif
     @endif
 </x-index-page>
 @endsection

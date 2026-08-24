@@ -120,7 +120,7 @@
         </ul>
     </div>
 
-    <p class="text-xs text-base-content/50 mt-1">
+    <p class="text-xs text-muted mt-1">
         {{ __('Auf einen Tag klicken oder tippen, um zu suchen bzw. neue Tags anzulegen.') }}
     </p>
 </div>

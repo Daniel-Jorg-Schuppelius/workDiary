@@ -35,7 +35,7 @@
 <div {{ $attributes->merge(['class' => 'space-y-1']) }}
      x-data="userChecklist({{ count($checklistSelected) }})">
     @if ($checklistItems->isEmpty())
-        <p class="text-xs text-base-content/60">{{ $emptyText ?? __('Keine Einträge vorhanden.') }}</p>
+        <p class="text-xs text-muted">{{ $emptyText ?? __('Keine Einträge vorhanden.') }}</p>
     @else
         <label class="input input-bordered input-sm flex w-full items-center gap-2">
             <span class="material-symbols-outlined text-[1.05rem] opacity-50" aria-hidden="true">search</span>
@@ -56,7 +56,7 @@
             @endforeach
         </div>
 
-        <p class="text-xs text-base-content/50">
+        <p class="text-xs text-muted">
             <span x-text="count"></span> {{ __('ausgewählt') }}
         </p>
     @endif

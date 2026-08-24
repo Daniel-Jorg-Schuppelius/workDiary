@@ -432,6 +432,21 @@
     appearance: none;
 }
 
+/* ------------------------------------------------------------------ */
+/* Semantischer Token für Sekundärtext (Vollscan 2026-08-23, I2 /      */
+/* WCAG 1.4.3): text-base-content/60 und darunter unterschreiten in    */
+/* corporate/dim teils 4,5:1 (/60 → 3,88:1 dunkel). `.text-muted`      */
+/* setzt einheitlich 70 % base-content — für neuen Sekundärtext IMMER  */
+/* text-muted statt text-base-content/30–/60 verwenden (Gate:          */
+/* TextContrastRuleTest). Als @utility statt ungelayert, damit         */
+/* bestehende hover:text-base-content-Kombis (help-drawer) weiter      */
+/* gewinnen und Varianten (hover:text-muted) möglich sind.             */
+/* Änderungen hier brauchen `npm run build`.                           */
+/* ------------------------------------------------------------------ */
+@utility text-muted {
+    color: color-mix(in oklab, var(--color-base-content) 70%, transparent);
+}
+
 @theme {
     --font-sans:
         "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif,

@@ -8,6 +8,7 @@
 --}}
 @props([
     'name',
+    'id' => null,       // explizite id; nötig, wenn derselbe name mehrfach auf der Seite vorkommt (Loops/Detail-Formulare) — sonst doppelte ids (I13)
     'label' => null,
     'value' => null,
     'rows' => 2,
@@ -23,20 +24,23 @@
     $controlError = $hasError ? 'textarea-error' : null;
     $wrapperClass = 'fieldset' . ($span ? ' md:col-span-' . (int) $span : '');
 
+    // Default bleibt name-basiert (stabile ids für Tests/Labels).
+    $fieldId      = $id ?? $name;
+
     // Barrierefreiheit: Hilfetext/Fehler programmatisch mit dem Feld verknüpfen.
-    $hintId       = $hint ? $name . '-hint' : null;
-    $errorId      = $hasError ? $name . '-error' : null;
+    $hintId       = $hint ? $fieldId . '-hint' : null;
+    $errorId      = $hasError ? $fieldId . '-error' : null;
     $describedBy  = implode(' ', array_filter([$hintId, $errorId])) ?: null;
 @endphp
 
 <div class="{{ $wrapperClass }}">
     @if ($label)
-        <label class="fieldset-label" for="{{ $name }}">{{ $label }}@if ($required) *@endif</label>
+        <label class="fieldset-label" for="{{ $fieldId }}">{{ $label }}@if ($required) *@endif</label>
     @endif
 
     <textarea
         name="{{ $name }}"
-        id="{{ $name }}"
+        id="{{ $fieldId }}"
         rows="{{ $rows }}"
         @if ($required) required aria-required="true" @endif
         @if ($hasError) aria-invalid="true" @endif
@@ -45,7 +49,7 @@
     >{{ trim($slot) !== '' ? $slot : $value }}</textarea>
 
     @if ($hint)
-        <p id="{{ $hintId }}" class="text-xs text-base-content/60 mt-1">{{ $hint }}</p>
+        <p id="{{ $hintId }}" class="text-xs text-muted mt-1">{{ $hint }}</p>
     @endif
 
     @if ($hasError)

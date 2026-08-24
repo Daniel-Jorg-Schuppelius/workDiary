@@ -15,6 +15,7 @@ namespace App\Models\Survey;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use App\Models\Customer;
 use CommonToolkit\Helper\Data\CryptoHelper;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -42,6 +43,8 @@ use Illuminate\Support\Carbon;
  */
 class SurveyInvitation extends Model {
     use BelongsToOrganization;
+    /** @use HasFactory<\Database\Factories\Survey\SurveyInvitationFactory> */
+    use HasFactory;
     use HasSqid;
 
     public const STATUS_CREATED = 'created';

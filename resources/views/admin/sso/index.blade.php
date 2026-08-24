@@ -13,20 +13,17 @@
 @section('content')
 <x-page-shell>
     <div class="space-y-4">
-        @if (session('success'))
-            <div class="alert alert-success text-sm">{{ session('success') }}</div>
-        @endif
         <x-validation-errors first />
 
         <x-page-toolbar :subtitle="__('sso.intro')" />
 
         {{-- Endpunkt für die IdP-Konfiguration --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <div class="text-sm">
                 <span class="text-base-content/60">{{ __('sso.base_url') }}:</span>
                 <code class="rounded bg-base-200 px-2 py-0.5">{{ $scimBaseUrl }}</code>
             </div>
-        </div>
+        </x-card>
 
         {{-- OIDC-Verbindungen je Anbieter (custom/Microsoft/Google) + SAML. --}}
         @php
@@ -40,7 +37,7 @@
             @php($conn = $entry['connection'])
             @php($isOidc = $entry['protocol'] === 'oidc')
             @php($providerType = $entry['provider_type'])
-            <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <x-card>
                 <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ $isOidc ? __('sso.oidc_heading') . ' — ' . $providerType->label() : __('sso.saml_heading') }}</h2>
                     <div class="flex items-center gap-2">
@@ -179,12 +176,12 @@
                         </form>
                     </div>
                 @endif
-            </div>
+            </x-card>
         @endforeach
 
         {{-- E-Mail-Domain-Discovery: aus der E-Mail-Adresse leitet der Login die
              passende Organisation ab. Domains sind global eindeutig. --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('sso.domains_heading') }}</h2>
             <p class="mb-2 text-xs text-base-content/60">{{ __('sso.domains_hint') }}</p>
 
@@ -213,11 +210,11 @@
                 </label>
                 <button type="submit" class="btn btn-sm btn-primary">{{ __('sso.action.domain_add') }}</button>
             </form>
-        </div>
+        </x-card>
 
         {{-- Break-Glass: nicht föderierte Notfallkonten, die trotz SSO-Pflicht
              lokal anmelden dürfen (DoD MVP-120). Änderung wird auditiert. --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('sso.break_glass_heading') }}</h2>
             <p class="mb-2 text-xs text-base-content/60">{{ __('sso.break_glass_hint') }}</p>
 
@@ -253,7 +250,7 @@
                 </label>
                 <button type="submit" class="btn btn-sm">{{ __('sso.action.break_glass_add') }}</button>
             </form>
-        </div>
+        </x-card>
 
         {{-- Einmalige Klartext-Anzeige eines frisch ausgestellten Tokens --}}
         @if ($issuedToken)
@@ -280,7 +277,7 @@
         </form>
 
         {{-- Token-Liste --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('sso.tokens_heading') }}</h2>
             @if ($tokens->isEmpty())
                 <p class="text-sm text-base-content/60">{{ __('sso.no_tokens') }}</p>
@@ -317,11 +314,11 @@
                             @endforeach
                 </x-table>
             @endif
-        </div>
+        </x-card>
 
         {{-- SCIM-Gruppen → Team (Rang 16): Mitgliederprojektion nach team_user
              passiert NUR bei bewusster Zuordnung; SCIM selbst vergibt nie ein Team. --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('sso.groups_heading') }}</h2>
             <p class="mb-2 text-xs text-base-content/60">{{ __('sso.groups_hint') }}</p>
             @if ($groups->isEmpty())
@@ -356,7 +353,7 @@
                             @endforeach
                 </x-table>
             @endif
-        </div>
+        </x-card>
     </div>
 </x-page-shell>
 @endsection

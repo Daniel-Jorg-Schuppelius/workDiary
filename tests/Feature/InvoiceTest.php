@@ -21,6 +21,9 @@ use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
 class InvoiceTest extends TestCase {
+    /** D12: deterministische Nummern statt random_int (Unique-Kollisionsschutz bleibt). */
+    private static int $invoiceNo = 0;
+
     use RefreshDatabase;
     use WithOrganization;
 
@@ -767,7 +770,7 @@ class InvoiceTest extends TestCase {
         return Invoice::create(array_merge([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
-            'number' => 'R2030-' . str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT),
+            'number' => 'R2030-' . str_pad((string) ++self::$invoiceNo, 4, '0', STR_PAD_LEFT),
             'status' => $status,
             'currency' => 'EUR',
             'tax_rate' => '19.00',

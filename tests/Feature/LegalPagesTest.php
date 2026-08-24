@@ -96,4 +96,26 @@ class LegalPagesTest extends TestCase {
             ->assertSee('href="' . route('legal.imprint') . '"', false)
             ->assertSee('href="' . route('legal.privacy') . '"', false);
     }
+    /** H18 (Vollscan 2026-08-23): BFSG-Pflichtseite mit Anlage-3-Gerüst als Default. */
+    public function test_accessibility_statement_renders_the_default_skeleton(): void {
+        $this->get(route('legal.accessibility'))
+            ->assertOk()
+            ->assertSee(__('Barrierefreiheit'))
+            ->assertSee(__('Stand der Vereinbarkeit mit den Anforderungen'))
+            ->assertSee(__('Durchsetzungsverfahren'));
+    }
+
+    /** H18: Betreiber-Text (legal.accessibility) ersetzt das Gerüst. */
+    public function test_accessibility_statement_prefers_operator_text(): void {
+        $admin = User::factory()->admin()->create();
+        $this->actingAs($admin)->put(route('admin.settings.update', ['key' => 'legal.accessibility']), [
+            'scope' => 'system',
+            'value' => 'Individuelle Erklärung des Betreibers.',
+        ])->assertRedirect()->assertSessionMissing('error');
+
+        $this->get(route('legal.accessibility'))
+            ->assertOk()
+            ->assertSee('Individuelle Erklärung des Betreibers.')
+            ->assertDontSee(__('Durchsetzungsverfahren'));
+    }
 }

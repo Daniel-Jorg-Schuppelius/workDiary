@@ -17,6 +17,7 @@ use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\BankHelper;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -40,6 +41,8 @@ use Illuminate\Support\Carbon;
 class SepaMandate extends Model {
     use Auditable;
     use BelongsToOrganization;
+    /** @use HasFactory<\Database\Factories\Finance\SepaMandateFactory> */
+    use HasFactory;
     use HasSqid;
 
     /** Nach 36 Monaten ohne Einzug verfällt ein Mandat (SEPA-Regelwerk). */

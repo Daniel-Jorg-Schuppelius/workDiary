@@ -30,4 +30,7 @@ return [
     'entry_bar' => [
         'options_failed' => 'No se pudieron cargar las tareas/pedidos.',
     ],
+    'http' => [
+        'session_expired' => 'Tu sesión ha caducado — la página se recargará.',
+    ],
 ];

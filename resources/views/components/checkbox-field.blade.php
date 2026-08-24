@@ -8,6 +8,7 @@
 --}}
 @props([
     'name',
+    'id' => null,       // explizite id; nötig, wenn derselbe name mehrfach auf der Seite vorkommt (Loops/Detail-Formulare) — sonst doppelte ids (I13)
     'label' => null,
     'checked' => false,
     'value' => '1',
@@ -24,6 +25,16 @@
     $hasError     = $errorKey && $errors->has($errorKey);
     $wrapperClass = 'fieldset' . ($span ? ' md:col-span-' . (int) $span : '');
     $controlBase  = $toggle ? 'toggle toggle-' . $tone : 'checkbox checkbox-' . $tone;
+
+    // Das Label umschließt die Checkbox (implizite Verknüpfung) — die id wird
+    // nur gerendert, wenn explizit gesetzt (Loops wie name="…[]" kollidierten
+    // sonst); Hint-/Fehler-ids bleiben name-basiert stabil.
+    $fieldId      = $id ?? $name;
+
+    // Barrierefreiheit: Hilfetext/Fehler programmatisch mit dem Feld verknüpfen.
+    $hintId       = $hint ? $fieldId . '-hint' : null;
+    $errorId      = $hasError ? $fieldId . '-error' : null;
+    $describedBy  = implode(' ', array_filter([$hintId, $errorId])) ?: null;
 @endphp
 
 <div class="{{ $wrapperClass }}">
@@ -32,16 +43,19 @@
             <input type="hidden" name="{{ $name }}" value="0">
         @endif
         <input type="checkbox" name="{{ $name }}" value="{{ $value }}"
+               @if ($id !== null) id="{{ $id }}" @endif
+               @if ($hasError) aria-invalid="true" @endif
+               @if ($describedBy) aria-describedby="{{ $describedBy }}" @endif
                {{ $attributes->class([$controlBase]) }}
                @checked($checked)>
         <span>{{ $label ?? $slot }}</span>
     </label>
 
     @if ($hint)
-        <p class="text-xs text-base-content/60 mt-1">{{ $hint }}</p>
+        <p id="{{ $hintId }}" class="text-xs text-muted mt-1">{{ $hint }}</p>
     @endif
 
     @if ($hasError)
-        <p class="text-error text-sm">{{ $errors->first($errorKey) }}</p>
+        <p id="{{ $errorId }}" class="text-error text-sm">{{ $errors->first($errorKey) }}</p>
     @endif
 </div>

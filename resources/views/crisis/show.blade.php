@@ -16,10 +16,6 @@
     @if (session('status'))
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif
-    @if (session('error'))
-        <div class="alert alert-error">{{ session('error') }}</div>
-    @endif
-
     <x-slot:toolbar>
         <x-page-toolbar :badge="__('values.' . $case->status)" badge-tone="outline">
             <div class="text-sm text-base-content/70">

@@ -29,7 +29,7 @@
              hoch (items-center). Die Topic-Überschrift sitzt im
              Inhaltsbereich darunter. --}}
         <header class="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-base-300 px-4">
-            <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Hilfe') }}</p>
+            <p class="text-xs uppercase tracking-wider text-muted">{{ __('Hilfe') }}</p>
             {{-- Rot, damit der Schließen-Button sich klar abhebt (analog zur
                  roten Schließen-Optik der Dialoge). Outline + Farbe, weil
                  nacktes btn-outline auf dem dunklen wd-badge-Grund zu blass
@@ -44,7 +44,7 @@
         </div>
 
         <div class="min-h-0 flex-1 overflow-y-auto px-4 py-4 text-sm leading-relaxed text-base-content" data-help-body>
-            <p class="text-base-content/60">{{ __('Wird geladen…') }}</p>
+            <p class="text-muted">{{ __('Wird geladen…') }}</p>
         </div>
 
         {{-- Footer mit Feedback/Aktionen. Auf niedrigen Bildschirmen frisst er
@@ -53,7 +53,7 @@
              Höhe klappt er standardmäßig ein (JS in help-drawer.js). --}}
         <footer class="shrink-0 border-t border-base-300" data-help-footer>
             <button type="button"
-                    class="flex w-full items-center justify-between gap-2 px-4 py-2 text-xs uppercase tracking-wider text-base-content/60 transition-colors hover:text-base-content"
+                    class="flex w-full items-center justify-between gap-2 px-4 py-2 text-xs uppercase tracking-wider text-muted transition-colors hover:text-base-content"
                     data-help-footer-toggle
                     aria-expanded="true"
                     aria-controls="help-footer-content">
@@ -61,7 +61,7 @@
                 <x-icon name="expand_more" class="shrink-0 transition-transform" data-help-footer-chevron />
             </button>
             <div id="help-footer-content" class="px-4 pb-3" data-help-footer-content>
-                <p class="mb-2 text-xs uppercase tracking-wider text-base-content/60">{{ __('War das hilfreich?') }}</p>
+                <p class="mb-2 text-xs uppercase tracking-wider text-muted">{{ __('War das hilfreich?') }}</p>
                 {{-- Outline + Akzentfarbe (grün/rot): nacktes btn-outline ist auf
                      dem dunklen wd-badge-Grund kaum sichtbar – die leuchtenden
                      success/error-Farben heben sich klar ab (wie der Schließen-
@@ -73,10 +73,10 @@
                     <x-button type="button" tone="outline" size="sm" icon="thumb_down" class="btn-error" data-help-feedback="0">
                         {{ __('Nein') }}
                     </x-button>
-                    <span class="ml-2 text-xs text-base-content/60 hidden" data-help-feedback-thanks>{{ __('Danke für dein Feedback.') }}</span>
+                    <span class="ml-2 text-xs text-muted hidden" data-help-feedback-thanks>{{ __('Danke für dein Feedback.') }}</span>
                 </div>
                 <div class="mt-3 hidden" data-help-related>
-                    <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Verwandte Themen') }}</p>
+                    <p class="text-xs uppercase tracking-wider text-muted">{{ __('Verwandte Themen') }}</p>
                     <ul class="mt-1 space-y-1 text-sm" data-help-related-list></ul>
                 </div>
                 {{-- „Problem melden" (Feature 041, MVP-053): primärer Einstieg des
@@ -92,7 +92,7 @@
                                   ]))">
                             {{ __('errors.report_problem') }}
                         </x-button>
-                        <a href="{{ route('problem-reports.index') }}" class="mt-1 block text-center text-xs text-base-content/60 hover:text-base-content">
+                        <a href="{{ route('problem-reports.index') }}" class="mt-1 block text-center text-xs text-muted hover:text-base-content">
                             {{ __('problemreport.title.index') }}
                         </a>
                     </div>
@@ -124,7 +124,7 @@
                  data-help-news data-news-rotation-ms="{{ $newsRotationMs }}"
                  data-label-pause="{{ __('Neuigkeiten pausieren') }}"
                  data-label-resume="{{ __('Neuigkeiten fortsetzen') }}">
-                <x-icon name="newspaper" class="shrink-0 text-base-content/60" />
+                <x-icon name="newspaper" class="shrink-0 text-muted" />
                 <div class="relative min-h-0 w-full flex-1 overflow-hidden" data-help-news-items>
                     @foreach ($newsItems as $index => $newsItem)
                         @php($newsLabel = __('Neuigkeit von :source: :title', ['source' => $newsItem['source'], 'title' => $newsItem['title']]))
@@ -160,7 +160,7 @@
                         data-help-trigger aria-haspopup="dialog" aria-controls="help-drawer" />
         @else
             <button type="button"
-                    class="flex h-full w-full flex-col items-center justify-between rounded-xl text-xs uppercase tracking-wider text-base-content/50 transition-colors hover:bg-base-content/10 hover:text-base-content"
+                    class="flex h-full w-full flex-col items-center justify-between rounded-xl text-xs uppercase tracking-wider text-muted transition-colors hover:bg-base-content/10 hover:text-base-content"
                     data-help-trigger aria-haspopup="dialog" aria-controls="help-drawer"
                     title="{{ __('Hilfe öffnen') }}" aria-label="{{ __('Hilfe öffnen') }}">
                 <span class="btn btn-sm btn-ghost btn-square pointer-events-none" aria-hidden="true">
@@ -193,7 +193,7 @@
         <p class="text-base-content/70" data-help-fallback-message>{{ __('Für diese Seite gibt es noch keine Hilfe.') }}</p>
         <form data-help-search-form role="search" class="flex items-center gap-2">
             <label class="input input-sm input-bordered flex grow items-center gap-2">
-                <x-icon name="search" class="text-base-content/50" />
+                <x-icon name="search" class="text-muted" />
                 <input type="search" name="q" class="grow" minlength="2"
                        placeholder="{{ __('Hilfethemen durchsuchen…') }}"
                        aria-label="{{ __('Hilfethemen durchsuchen') }}">

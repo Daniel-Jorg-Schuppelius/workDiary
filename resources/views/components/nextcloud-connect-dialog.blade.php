@@ -51,7 +51,7 @@
             <input id="{{ $idPrefix }}-server" type="url" name="server_url" required maxlength="512"
                    value="{{ old('server_url', $connection->server_url ?? '') }}"
                    class="input input-bordered w-full font-mono" placeholder="https://cloud.example.com">
-            <p class="text-xs text-base-content/60">{{ __($langPrefix . '.field.server_url_help') }}</p>
+            <p class="text-xs text-muted">{{ __($langPrefix . '.field.server_url_help') }}</p>
             @error('server_url')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
@@ -67,7 +67,7 @@
             <label class="fieldset-label" for="{{ $idPrefix }}-pass">{{ __($langPrefix . '.field.app_password') }}</label>
             <input id="{{ $idPrefix }}-pass" type="password" name="app_password" required maxlength="512" autocomplete="new-password"
                    class="input input-bordered w-full font-mono" placeholder="••••••••">
-            <p class="text-xs text-base-content/60">{{ __($langPrefix . '.field.app_password_help') }}</p>
+            <p class="text-xs text-muted">{{ __($langPrefix . '.field.app_password_help') }}</p>
             @error('app_password')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
     </x-form-group>

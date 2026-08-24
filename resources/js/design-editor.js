@@ -3,6 +3,8 @@
 // sind gleichwertig; Pfeiltasten verschieben die ausgewählte Box (Shift = 5 mm).
 // Speichert Entwürfe per fetch (PUT, JSON) und zeigt das Preflight-Ergebnis an.
 
+import { putJson } from "./lib/http.js";
+
 // Seitenmaße kommen ab MVP-652 aus der Editor-Config (A4 hoch ODER quer).
 const DEFAULT_PAGE_W = 210;
 const DEFAULT_PAGE_H = 297;
@@ -312,30 +314,20 @@ export function registerDesignEditor(Alpine) {
             this.saving = true;
             this.message = null;
             try {
-                const response = await fetch(this.saveUrl, {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                        "X-CSRF-TOKEN": /** @type {HTMLMetaElement} */ (
-                            document.querySelector('meta[name="csrf-token"]')
-                        ).content,
-                    },
-                    body: JSON.stringify({
-                        layout: this.layout,
-                        block_rules: this.blocks,
-                        table_style: this.tableStyle,
-                        content_texts: this.contentTexts,
-                        ...(this.canInherit
-                            ? {
-                                  override_sections: this.inheritEnabled
-                                      ? this.overrideList()
-                                      : null,
-                              }
-                            : {}),
-                    }),
+                const response = await putJson(this.saveUrl, {
+                    layout: this.layout,
+                    block_rules: this.blocks,
+                    table_style: this.tableStyle,
+                    content_texts: this.contentTexts,
+                    ...(this.canInherit
+                        ? {
+                              override_sections: this.inheritEnabled
+                                  ? this.overrideList()
+                                  : null,
+                          }
+                        : {}),
                 });
-                const data = await response.json();
+                const data = response.data ?? {};
                 if (!response.ok) {
                     this.message = {
                         tone: "error",

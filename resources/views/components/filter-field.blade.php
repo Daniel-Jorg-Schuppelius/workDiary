@@ -31,7 +31,7 @@
         @if ($label)
             <label @if ($for) for="{{ $for }}" @endif
                    @class([
-                       'text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-base-content/60' => $showLabel,
+                       'text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-muted' => $showLabel,
                        'sr-only' => ! $showLabel,
                    ])>
                 {{ $label }}

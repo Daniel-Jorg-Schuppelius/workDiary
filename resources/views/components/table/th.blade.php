@@ -39,10 +39,21 @@
         'center' => 'text-center',
         default  => null,
     };
+
+    // Barrierefreiheit (I3, WCAG 1.3.1): aria-sort serverseitig aus der
+    // aktuellen Sortierung ableiten — ascending/descending an der aktiven
+    // Spalte, none an den übrigen sortierbaren Spalten.
+    $dirNorm = strtolower((string) ($currentDir ?? 'desc')) === 'asc' ? 'ascending' : 'descending';
+    $serverActive = $tableSort === 'server' && is_string($sort) && $sort !== ''
+        && ($currentSort === $sort || (($currentSort === null || $currentSort === '') && $default !== null));
+    $serverAriaSort = $serverActive ? $dirNorm : 'none';
+    // Client-Modus: Initialzustand aus data-sort-default; sortable-tables.js
+    // hält aria-sort danach synchron.
+    $clientAriaSort = $default ? ($default === 'desc' ? 'descending' : 'ascending') : 'none';
 @endphp
 
 @if ($tableSort === 'server' && is_string($sort) && $sort !== '')
-    <th @if ($scope) scope="{{ $scope }}" @endif {{ $attributes->class([$alignClass])->except(['sort', 'type', 'default', 'align', 'scope']) }}>
+    <th @if ($scope) scope="{{ $scope }}" @endif aria-sort="{{ $serverAriaSort }}" {{ $attributes->class([$alignClass])->except(['sort', 'type', 'default', 'align', 'scope']) }}>
         <x-sort-th
             :column="$sort"
             :route="$route"
@@ -56,10 +67,12 @@
     <th
         @if ($scope) scope="{{ $scope }}" @endif
         data-sort
+        aria-sort="{{ $clientAriaSort }}"
         @if ($type) data-sort-type="{{ $type }}" @endif
         @if ($default) data-sort-default="{{ $default }}" @endif
         {{ $attributes->class([$alignClass])->except(['sort', 'type', 'default', 'align', 'scope']) }}
-    >{{ $slot }}</th>
+    >{{-- Echter Button (I3): Tastatur-Sortierung — Enter/Space lösen den
+         Klick-Handler von sortable-tables.js aus (bubbelt zum <th>). --}}<button type="button" class="cursor-pointer select-none">{{ $slot }}</button></th>
 @else
     <th @if ($scope) scope="{{ $scope }}" @endif {{ $attributes->class([$alignClass])->except(['sort', 'type', 'default', 'align', 'scope']) }}>{{ $slot }}</th>
 @endif

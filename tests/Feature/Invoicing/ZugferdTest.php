@@ -21,6 +21,9 @@ use Tests\TestCase;
  * Preflight-Differenz zur XRechnung (BT-10 nur dort Pflicht) und Gate.
  */
 class ZugferdTest extends TestCase {
+    /** D12: deterministische Nummern statt random_int (Unique-Kollisionsschutz bleibt). */
+    private static int $invoiceNo = 0;
+
     use RefreshDatabase;
     use WithOrganization;
 
@@ -71,7 +74,7 @@ class ZugferdTest extends TestCase {
         $invoice = Invoice::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
-            'number' => 'R2026-' . str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT),
+            'number' => 'R2026-' . str_pad((string) ++self::$invoiceNo, 4, '0', STR_PAD_LEFT),
             'status' => $status,
             'issued_on' => '2026-06-01',
             'due_on' => '2026-06-15',

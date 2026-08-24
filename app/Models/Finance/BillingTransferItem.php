@@ -10,6 +10,7 @@
 
 namespace App\Models\Finance;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 use Illuminate\Support\Carbon;
@@ -38,6 +39,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  */
 class BillingTransferItem extends Model {
+    /** @use HasFactory<\Database\Factories\Finance\BillingTransferItemFactory> */
+    use HasFactory;
     public const UPDATED_AT = null;
 
     protected $fillable = [

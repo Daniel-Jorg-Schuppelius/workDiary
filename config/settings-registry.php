@@ -236,6 +236,7 @@ return [
     // System-Scope); Klartext, Ausgabe HTML-escaped auf /impressum bzw. /datenschutz.
     'legal.imprint' => ['type' => 'text', 'scopes' => ['system'], 'rules' => 'nullable|max:65535'],
     'legal.privacy' => ['type' => 'text', 'scopes' => ['system'], 'rules' => 'nullable|max:65535'],
+    'legal.accessibility' => ['type' => 'text', 'scopes' => ['system'], 'rules' => 'nullable|max:65535'],
 
     // --- Öffentlicher Karrierebereich (Feature 068, MVP-437) ---
     // Je Organisation Opt-in (Default AUS). Öffentliche Stellen + sessionlose

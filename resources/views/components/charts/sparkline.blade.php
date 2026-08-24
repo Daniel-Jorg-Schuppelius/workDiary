@@ -36,7 +36,7 @@
 @endphp
 
 @if ($nums->isEmpty())
-    <span class="text-base-content/40">—</span>
+    <span class="text-muted">—</span>
 @else
     <svg viewBox="0 0 {{ $w }} {{ $h }}" width="{{ $w }}" height="{{ $h }}" role="img" class="inline-block align-middle"
          aria-label="{{ $label ?? __('Verlauf') }}: {{ __('zuletzt') }} {{ $num((float) $nums->last()) }} {{ $unit }} ({{ __('Min') }} {{ $num($lo) }}, {{ __('Max') }} {{ $num($hi) }})">

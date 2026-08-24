@@ -13,9 +13,11 @@
 @extends('layouts.app')
 @section('title', __('external.contact.title'))
 @section('nav-title', __('external.contact.title'))
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-page-shell>
+<x-page-shell overflow="clip">
     <x-slot:toolbar>
         <x-page-toolbar>
             <x-slot:subtitle>{{ __('external.contact.intro') }}</x-slot:subtitle>
@@ -26,12 +28,7 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if (session('success'))
-        <div class="alert alert-success text-sm">{{ session('success') }}</div>
-    @endif
-
-    <x-card padding="p-0">
-        <x-table class="table-sm">
+    <x-table scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>
                     <th>{{ __('external.field.name') }}</th>
@@ -42,7 +39,7 @@
                 </tr>
             </x-slot:head>
             @forelse ($contacts as $contact)
-                <tr>
+                <tr class="hover">
                     <td class="font-medium">{{ $contact->name }}</td>
                     <td><span class="badge badge-sm badge-ghost">{{ $contact->party->label() }}</span></td>
                     <td>{{ $contact->role }}</td>
@@ -62,8 +59,7 @@
             @empty
                 <x-table.empty :colspan="5" :title="__('external.contact.empty')" compact />
             @endforelse
-        </x-table>
-    </x-card>
+    </x-table>
 
     <x-pagination :paginator="$contacts" standing />
 </x-page-shell>

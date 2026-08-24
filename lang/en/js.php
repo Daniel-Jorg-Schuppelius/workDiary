@@ -35,4 +35,7 @@ return [
     'entry_bar' => [
         'options_failed' => 'Tasks/orders could not be loaded.',
     ],
+    'http' => [
+        'session_expired' => 'Your session has expired — the page will reload.',
+    ],
 ];

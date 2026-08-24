@@ -19,56 +19,41 @@
               x-data="reveal(@js(old('compensation_model', $member?->compensation_model?->value ?? '')))">
     {{-- Vergütungsmodell steuert, welche Felder gelten: intern (dt. Lohn),
          pauschal (Festbetrag) oder extern nach Zeitaufwand (Stundensatz). --}}
-    <div class="fieldset md:col-span-2">
-        <label class="fieldset-label">{{ __('Vergütungsmodell') }}</label>
-        <select name="compensation_model" x-model="value"
-                class="select select-bordered w-full @error('compensation_model') select-error @enderror"
-                @disabled(! $canManagePayroll)>
-            <option value="">{{ __('Intern (Lohnabrechnung)') }}</option>
-            @foreach (\App\Enums\User\CompensationModel::options() as $value => $label)
-                <option value="{{ $value }}" @selected(old('compensation_model', $member?->compensation_model?->value) === $value)>{{ $label }}</option>
-            @endforeach
-        </select>
-        @error('compensation_model')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        <p class="mt-1 text-xs text-base-content/60">{{ __('Extern (pauschal / nach Zeitaufwand) blendet die deutschen Lohnfelder aus.') }}</p>
-    </div>
+    <x-select-field name="compensation_model" :label="__('Vergütungsmodell')" span="2"
+                    x-model="value" :disabled="! $canManagePayroll"
+                    :hint="__('Extern (pauschal / nach Zeitaufwand) blendet die deutschen Lohnfelder aus.')">
+        <option value="">{{ __('Intern (Lohnabrechnung)') }}</option>
+        @foreach (\App\Enums\User\CompensationModel::options() as $value => $label)
+            <option value="{{ $value }}" @selected(old('compensation_model', $member?->compensation_model?->value) === $value)>{{ $label }}</option>
+        @endforeach
+    </x-select-field>
 
-    {{-- Pauschale --}}
-    <div class="fieldset" x-show="is('pauschal')" x-cloak>
-        <label class="fieldset-label">{{ __('Pauschalbetrag (€)') }}</label>
-        <input type="number" name="flat_amount" step="0.01" min="0"
-               class="input input-bordered w-full @error('flat_amount') input-error @enderror"
-               value="{{ old('flat_amount', $member?->flat_amount) }}"
-               @disabled(! $canManagePayroll)>
-        @error('flat_amount')<p class="text-error text-sm">{{ $message }}</p>@enderror
+    {{-- Pauschale (x-show muss auf einem Wrapper AUSSERHALB der Komponente
+         sitzen — sonst verschwände nur das Input, nicht das Label). --}}
+    <div x-show="is('pauschal')" x-cloak>
+        <x-input-field name="flat_amount" type="number" :label="__('Pauschalbetrag (€)')" step="0.01" min="0"
+                       :value="old('flat_amount', $member?->flat_amount)" :disabled="! $canManagePayroll" />
     </div>
-    <div class="fieldset" x-show="is('pauschal')" x-cloak>
-        <label class="fieldset-label">{{ __('Intervall') }}</label>
-        <select name="flat_interval" class="select select-bordered w-full @error('flat_interval') select-error @enderror"
-                @disabled(! $canManagePayroll)>
+    <div x-show="is('pauschal')" x-cloak>
+        <x-select-field name="flat_interval" :label="__('Intervall')" :disabled="! $canManagePayroll">
             <option value="">{{ __('— bitte wählen —') }}</option>
             @foreach (\App\Enums\User\FlatInterval::options() as $value => $label)
                 <option value="{{ $value }}" @selected(old('flat_interval', $member?->flat_interval?->value) === $value)>{{ $label }}</option>
             @endforeach
-        </select>
-        @error('flat_interval')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </x-select-field>
     </div>
 
     {{-- Nach Zeitaufwand --}}
-    <div class="fieldset" x-show="is('nach_zeitaufwand')" x-cloak>
-        <label class="fieldset-label">{{ __('Stundensatz (Vergütung, €)') }}</label>
-        <input type="number" name="compensation_rate" step="0.01" min="0"
-               class="input input-bordered w-full @error('compensation_rate') input-error @enderror"
-               value="{{ old('compensation_rate', $member?->compensation_rate) }}"
-               x-bind:required="is('nach_zeitaufwand')"
-               @disabled(! $canManagePayroll)>
-        @error('compensation_rate')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        <p class="mt-1 text-xs text-base-content/60">{{ __('Wird auf die erfasste Zeit angewandt (nicht der Kundensatz).') }}</p>
+    <div x-show="is('nach_zeitaufwand')" x-cloak>
+        <x-input-field name="compensation_rate" type="number" :label="__('Stundensatz (Vergütung, €)')" step="0.01" min="0"
+                       :value="old('compensation_rate', $member?->compensation_rate)"
+                       x-bind:required="is('nach_zeitaufwand')" :disabled="! $canManagePayroll"
+                       :hint="__('Wird auf die erfasste Zeit angewandt (nicht der Kundensatz).')" />
     </div>
 
     <div class="fieldset" x-show="isAny('payroll', '')" x-cloak>
-        <label class="fieldset-label">{{ __('Stundenlohn') }}</label>
-        <input type="number" name="payroll_hourly_wage" step="0.01" min="0"
+        <label class="fieldset-label" for="payroll_hourly_wage">{{ __('Stundenlohn') }}</label>
+        <input type="number" name="payroll_hourly_wage" id="payroll_hourly_wage" step="0.01" min="0"
                class="input input-bordered w-full @error('payroll_hourly_wage') @enderror @if($belowMin) input-warning @endif"
                value="{{ $wageVal }}"
                @disabled(! $canManagePayroll)>
@@ -84,70 +69,48 @@
         @endif
     </div>
 
-    <div class="fieldset" x-show="isAny('payroll', '')" x-cloak>
-        <label class="fieldset-label">{{ __('Beschäftigungsart') }}</label>
-        <select name="employment_type" class="select select-bordered w-full @error('employment_type') select-error @enderror">
+    <div x-show="isAny('payroll', '')" x-cloak>
+        <x-select-field name="employment_type" :label="__('Beschäftigungsart')">
             <option value="">{{ __('— bitte wählen —') }}</option>
             @foreach (\App\Enums\User\EmploymentType::options() as $value => $label)
                 <option value="{{ $value }}" @selected(old('employment_type', $member?->employment_type?->value) === $value)>{{ $label }}</option>
             @endforeach
-        </select>
-        @error('employment_type')<p class="text-error text-sm">{{ $message }}</p>@enderror
+        </x-select-field>
     </div>
 
-    <div class="fieldset" x-show="isAny('payroll', '')" x-cloak>
-        <label class="fieldset-label">{{ __('Steuer-ID / Steuernummer') }}</label>
-        <input type="text" name="tax_identification_number" maxlength="32"
-               class="input input-bordered w-full @error('tax_identification_number') input-error @enderror"
-               value="{{ old('tax_identification_number', $member?->tax_identification_number) }}">
-        @error('tax_identification_number')<p class="text-error text-sm">{{ $message }}</p>@enderror
+    <div x-show="isAny('payroll', '')" x-cloak>
+        <x-input-field name="tax_identification_number" :label="__('Steuer-ID / Steuernummer')" maxlength="32"
+                       :value="old('tax_identification_number', $member?->tax_identification_number)" />
     </div>
 
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Geburtstag') }}</label>
-        <input type="date" name="date_of_birth"
-               class="input input-bordered w-full @error('date_of_birth') input-error @enderror"
-               value="{{ old('date_of_birth', $member?->date_of_birth?->format('Y-m-d')) }}">
-        @error('date_of_birth')<p class="text-error text-sm">{{ $message }}</p>@enderror
+    <x-input-field name="date_of_birth" type="date" :label="__('Geburtstag')"
+                   :value="old('date_of_birth', $member?->date_of_birth?->format('Y-m-d'))" />
+
+    <div x-show="isAny('payroll', '')" x-cloak>
+        <x-input-field name="social_security_number" :label="__('Sozialversicherungsnummer')" maxlength="64"
+                       :value="old('social_security_number', $member?->social_security_number)" />
     </div>
 
-    <div class="fieldset" x-show="isAny('payroll', '')" x-cloak>
-        <label class="fieldset-label">{{ __('Sozialversicherungsnummer') }}</label>
-        <input type="text" name="social_security_number" maxlength="64"
-               class="input input-bordered w-full @error('social_security_number') input-error @enderror"
-               value="{{ old('social_security_number', $member?->social_security_number) }}">
-        @error('social_security_number')<p class="text-error text-sm">{{ $message }}</p>@enderror
+    <div x-show="isAny('payroll', '')" x-cloak>
+        <x-input-field name="health_insurance" :label="__('Krankenkasse')" maxlength="128"
+                       :value="old('health_insurance', $member?->health_insurance)" />
     </div>
 
-    <div class="fieldset" x-show="isAny('payroll', '')" x-cloak>
-        <label class="fieldset-label">{{ __('Krankenkasse') }}</label>
-        <input type="text" name="health_insurance" maxlength="128"
-               class="input input-bordered w-full @error('health_insurance') input-error @enderror"
-               value="{{ old('health_insurance', $member?->health_insurance) }}">
-        @error('health_insurance')<p class="text-error text-sm">{{ $message }}</p>@enderror
+    <div x-show="isAny('payroll', '')" x-cloak>
+        <x-input-field name="tax_class" :label="__('Steuerklasse')" maxlength="16"
+                       :value="old('tax_class', $member?->tax_class)" />
     </div>
 
-    <div class="fieldset" x-show="isAny('payroll', '')" x-cloak>
-        <label class="fieldset-label">{{ __('Steuerklasse') }}</label>
-        <input type="text" name="tax_class" maxlength="16"
-               class="input input-bordered w-full @error('tax_class') input-error @enderror"
-               value="{{ old('tax_class', $member?->tax_class) }}">
-        @error('tax_class')<p class="text-error text-sm">{{ $message }}</p>@enderror
-    </div>
-
-    <div class="fieldset" x-show="isAny('payroll', '')" x-cloak>
-        <label class="fieldset-label">{{ __('Kinderfreibeträge') }}</label>
-        <input type="number" name="child_allowances" step="0.01" min="0"
-               class="input input-bordered w-full @error('child_allowances') input-error @enderror"
-               value="{{ old('child_allowances', $member?->child_allowances) }}">
-        @error('child_allowances')<p class="text-error text-sm">{{ $message }}</p>@enderror
+    <div x-show="isAny('payroll', '')" x-cloak>
+        <x-input-field name="child_allowances" type="number" :label="__('Kinderfreibeträge')" step="0.01" min="0"
+                       :value="old('child_allowances', $member?->child_allowances)" />
     </div>
 
     {{-- Wochenstunden: read-only aus dem Arbeitszeit-Modell (Single Source of Truth). --}}
     <div class="fieldset">
-        <label class="fieldset-label">{{ __('Wochenstunden') }}</label>
+        <label class="fieldset-label" for="weekly-hours-display">{{ __('Wochenstunden') }}</label>
         @php $ws = $member?->workSchedule(); @endphp
-        <input type="text" class="input input-bordered w-full" disabled
+        <input type="text" id="weekly-hours-display" class="input input-bordered w-full" disabled
                value="{{ $ws ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($ws->weekly_minutes / 60, 2, withThousandsSeparator: true) . ' h' : __('— kein Arbeitszeit-Modell —') }}">
         @can('create', \App\Models\WorkSchedule::class)
             @if ($member)
@@ -161,21 +124,16 @@
         <p class="mt-1 text-xs text-base-content/60">{{ __('Stammt aus dem Arbeitszeit-Modell.') }}</p>
     </div>
 
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Eintrittsdatum') }}</label>
-        <input type="date" name="employment_start_date"
-               class="input input-bordered w-full @error('employment_start_date') input-error @enderror"
-               value="{{ old('employment_start_date', $member?->employment_start_date?->format('Y-m-d')) }}">
-        @error('employment_start_date')<p class="text-error text-sm">{{ $message }}</p>@enderror
-    </div>
-
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Austrittsdatum') }}</label>
-        <input type="date" name="employment_end_date"
-               class="input input-bordered w-full @error('employment_end_date') input-error @enderror"
-               value="{{ old('employment_end_date', $member?->employment_end_date?->format('Y-m-d')) }}">
-        @error('employment_end_date')<p class="text-error text-sm">{{ $message }}</p>@enderror
-    </div>
+    {{-- Ein-/Austritt als gekoppeltes Von-Bis (I6): Austritt nie vor Eintritt;
+         Feldnamen bleiben unverändert (Request-Seite unberührt). --}}
+    <x-date-range layout="split" form-control size="" class="md:col-span-2"
+                  from-name="employment_start_date" to-name="employment_end_date"
+                  from-id="employment_start_date" to-id="employment_end_date"
+                  :from-label="__('Eintrittsdatum')" :to-label="__('Austrittsdatum')"
+                  :from="old('employment_start_date', $member?->employment_start_date?->format('Y-m-d'))"
+                  :to="old('employment_end_date', $member?->employment_end_date?->format('Y-m-d'))"
+                  :from-error="$errors->first('employment_start_date') ?: null"
+                  :to-error="$errors->first('employment_end_date') ?: null" />
 
     <label class="label cursor-pointer justify-start gap-3 md:col-span-2" x-show="isAny('payroll', '')" x-cloak>
         <input type="checkbox" name="church_tax" value="1" class="checkbox checkbox-sm"

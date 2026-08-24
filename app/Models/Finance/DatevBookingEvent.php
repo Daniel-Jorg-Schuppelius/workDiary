@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Finance;
 
 use App\Models\Concerns\{HashChainable, HashChained};
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -34,6 +35,8 @@ use Illuminate\Database\Eloquent\Model;
  * @phpstan-consistent-constructor
  */
 class DatevBookingEvent extends Model implements HashChainable {
+    /** @use HasFactory<\Database\Factories\Finance\DatevBookingEventFactory> */
+    use HasFactory;
     use HashChained;
 
     protected $table = 'datev_booking_events';

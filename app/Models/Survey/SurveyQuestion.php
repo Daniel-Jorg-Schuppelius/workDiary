@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Survey;
 
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -31,6 +32,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class SurveyQuestion extends Model {
     use BelongsToOrganization;
+    /** @use HasFactory<\Database\Factories\Survey\SurveyQuestionFactory> */
+    use HasFactory;
     use HasSqid;
 
     public const TYPES = ['nps', 'scale', 'choice', 'text'];

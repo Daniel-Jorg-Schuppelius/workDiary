@@ -24,7 +24,7 @@ $router = $app->make('router');
 $failures = [];
 $checked = 0;
 
-foreach ($router->getRoutes() as $route) {
+foreach ($router->getRoutes()->getRoutes() as $route) {
     $action = $route->getActionName();
 
     if ($action === 'Closure' || ! str_contains($action, '@')) {

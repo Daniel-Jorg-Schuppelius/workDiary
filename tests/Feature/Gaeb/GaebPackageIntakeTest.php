@@ -194,15 +194,21 @@ final class GaebPackageIntakeTest extends TestCase {
         $this->assertSame(0, Document::query()->count());
     }
 
-    /** Ein Archiv aus fremder Hand darf nicht bestimmen, wohin geschrieben wird. */
-    public function test_path_traversal_entries_are_skipped(): void {
+    /**
+     * Ein Archiv aus fremder Hand darf nicht bestimmen, wohin geschrieben
+     * wird. Seit C6 (Vollscan 2026-08-23) prüft der harte Zip-Slip-Guard von
+     * `ZipFile::readEntries()` — er verwirft das ganze Paket statt nur den
+     * Eintrag zu übergehen: ein manipuliertes Paket ist als Ganzes verdächtig.
+     */
+    public function test_path_traversal_entries_reject_the_package(): void {
         $package = $this->zip(['../evil.x83' => $this->gaebXml()]);
 
-        $result = app(GaebPackageIntakeService::class)->intake(
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage((string) __('Das Paket enthält unsichere Dateipfade.'));
+
+        app(GaebPackageIntakeService::class)->intake(
             $package, 'Paket.zip', $this->organization->id, $this->admin, $this->opportunity()
         );
-
-        $this->assertSame([], $result['gaeb']);
     }
 
     /**

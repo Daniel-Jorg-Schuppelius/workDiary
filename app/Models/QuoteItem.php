@@ -14,6 +14,7 @@ namespace App\Models;
 
 use App\Casts\{MoneyCast, PercentageCast};
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -32,6 +33,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class QuoteItem extends Model {
     use BelongsToOrganization;
+    /** @use HasFactory<\Database\Factories\QuoteItemFactory> */
+    use HasFactory;
     use HasSqid;
 
     protected $fillable = [

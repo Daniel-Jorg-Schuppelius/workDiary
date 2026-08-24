@@ -24,15 +24,13 @@
 
         @include('schedule._duty_tabs')
 
-        @if (session('success'))
-            <div class="alert alert-success text-sm">{{ session('success') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-error text-sm">{{ session('error') }}</div>
-        @endif
         <x-validation-errors />
 
         {{-- ── Verfügbarkeiten ─────────────────────────────────────────── --}}
+        {{-- Bewusst Inline-Quick-Add statt _form_dialog (Modal-first-Ausnahme,
+             Vollscan 2026-08 I9): Self-Service-Serienerfassung — mehrere
+             Fenster/Wünsche direkt nacheinander, ein Modal pro Zeile würde
+             den Fluss brechen. --}}
         <x-form-group :legend="__('schedule.availability.windows_legend')" icon="event_available" tone="primary">
             <form method="POST" action="{{ route('schedule.availability.windows.store') }}"
                   class="grid grid-cols-1 gap-2 md:grid-cols-6 md:items-end">
@@ -130,6 +128,7 @@
         </x-form-group>
 
         {{-- ── Wunschdienste ───────────────────────────────────────────── --}}
+        {{-- Inline-Quick-Add: gleiche Ausnahme wie oben (Serienerfassung). --}}
         <x-form-group :legend="__('schedule.availability.desired_legend')" icon="favorite" tone="success">
             <form method="POST" action="{{ route('schedule.availability.desired.store') }}"
                   class="grid grid-cols-1 gap-2 md:grid-cols-5 md:items-end">

@@ -9,9 +9,11 @@
 @extends('layouts.app')
 @section('title', __('procurement.catalog.title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('procurement.catalog.title'))
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-index-page :subtitle="__('procurement.catalog.subtitle')">
+<x-index-page overflow="clip" :subtitle="__('procurement.catalog.subtitle')">
     <x-slot:actions>
         <x-icon-btn icon="paid" size="sm" :href="route('supplier-catalogs.metal-quotations.index')" show-label>{{ __('procurement.metal.title') }}</x-icon-btn>
         <x-icon-btn icon="warning" size="sm" :href="route('supplier-catalogs.alerts')" show-label
@@ -24,18 +26,19 @@
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">import_export</span>'
                        :title="__('procurement.catalog.empty')" />
     @else
-        <x-card padding="p-0">
-            <x-table>
-                <x-slot:head>
+        <x-table scroll="flex" :pinRows="true">
+            <x-slot:head>
+                <tr>
                     <th>{{ __('procurement.catalog.col.source') }}</th>
                     <th>{{ __('procurement.field.supplier') }}</th>
                     <th>{{ __('procurement.catalog.col.format') }}</th>
                     <th class="text-right">{{ __('procurement.catalog.col.items') }}</th>
                     <th>{{ __('procurement.catalog.col.last_import') }}</th>
                     <th class="text-right">{{ __('procurement.catalog.col.actions') }}</th>
-                </x-slot:head>
+                </tr>
+            </x-slot:head>
                 @foreach ($sources as $source)
-                    <tr @class(['opacity-50' => ! $source->active])>
+                    <tr @class(['hover', 'opacity-50' => ! $source->active])>
                         <td><a href="{{ route('supplier-catalogs.show', $source) }}" class="link link-hover font-medium">{{ $source->name }}</a></td>
                         <td>{{ $source->supplier?->name }}</td>
                         <td><span class="badge badge-sm badge-ghost">{{ $source->format->label() }}</span></td>
@@ -59,8 +62,7 @@
                         </td>
                     </tr>
                 @endforeach
-            </x-table>
-        </x-card>
+        </x-table>
         <x-pagination :paginator="$sources" standing />
     @endif
 </x-index-page>

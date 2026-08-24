@@ -16,10 +16,6 @@
     @if (session('status'))
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif
-    @if (session('error'))
-        <div class="alert alert-error">{{ session('error') }}</div>
-    @endif
-
     @if (session('acceptance_url'))
         <div class="alert alert-info">
             <span class="material-symbols-outlined" aria-hidden="true">link</span>

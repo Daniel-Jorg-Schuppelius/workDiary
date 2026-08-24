@@ -63,7 +63,7 @@
     </x-slot:toolbar>
 
     {{-- Legend --}}
-    <div class="flex flex-wrap items-center gap-4 rounded-box border border-base-300 bg-base-100 px-4 py-2 text-xs text-base-content/70 shadow-xs">
+    <x-card padding="px-4 py-2" class="flex flex-wrap items-center gap-4 text-xs text-base-content/70">
         <span class="inline-flex items-center gap-2"><span class="wd-week-legend wd-week-band--core"></span>{{ __('Kernarbeitszeit') }}</span>
         <span class="inline-flex items-center gap-2"><span class="wd-week-legend wd-week-band--extended"></span>{{ __('Erweiterte Arbeitszeit') }}</span>
         <span class="inline-flex items-center gap-2"><span class="wd-week-legend wd-week-shift"></span>{{ __('Bereitschaft') }}</span>
@@ -72,7 +72,7 @@
         <span class="inline-flex items-center gap-2"><span class="wd-week-legend wd-week-entry--alert"></span>{{ __('Problem') }}</span>
         <span class="inline-flex items-center gap-2"><span class="wd-week-legend wd-week-entry--progress"></span>{{ __('Bestätigt') }}</span>
         <span class="inline-flex items-center gap-2"><span class="wd-week-legend wd-week-entry--done"></span>{{ __('Erledigt') }}</span>
-    </div>
+    </x-card>
 
     {{-- User-Tabs (nur in Team-Sicht) --}}
     @if ($teamScope && $weekUsers->isNotEmpty())

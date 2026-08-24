@@ -44,9 +44,6 @@
                 :title="__('Keine Monate im Filter')"
                 :message="__('Passen Sie die Filter an oder warten Sie auf eingereichte Monate.')" />
         @else
-            @if (session('error'))
-                <div role="alert" class="alert alert-warning"><span>{{ session('error') }}</span></div>
-            @endif
             @if (session('status'))
                 <div role="alert" class="alert alert-success"><span>{{ session('status') }}</span></div>
             @endif

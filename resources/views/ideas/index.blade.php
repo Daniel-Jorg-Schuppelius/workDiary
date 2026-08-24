@@ -9,9 +9,11 @@
 @extends('layouts.app')
 @section('title', __('ideas.title.index') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('ideas.title.index'))
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-index-page :subtitle="__('ideas.subtitle')">
+<x-index-page overflow="clip" :subtitle="__('ideas.subtitle')">
     <x-slot:actions>
         @can('create', \App\Models\IdeaMap::class)
             <button type="button" class="btn btn-sm btn-ghost gap-1"
@@ -31,7 +33,7 @@
         </div>
     @enderror
 
-    <div class="flex flex-wrap items-center gap-2 mb-4">
+    <div class="flex flex-none flex-wrap items-center gap-2">
         @foreach (['active', 'archived', 'trashed'] as $f)
             <a href="{{ route('ideas.index', ['filter' => $f]) }}"
                @class(['btn btn-xs', 'btn-primary' => $filter === $f, 'btn-ghost' => $filter !== $f])>
@@ -44,18 +46,19 @@
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">emoji_objects</span>'
                        :title="__('ideas.empty')" />
     @else
-        <x-card padding="p-0">
-            <x-table>
-                <x-slot:head>
+        <x-table scroll="flex" :pinRows="true">
+            <x-slot:head>
+                <tr>
                     <th>{{ __('ideas.col.title') }}</th>
                     <th>{{ __('ideas.col.owner') }}</th>
                     <th>{{ __('ideas.col.visibility') }}</th>
                     <th class="text-right">{{ __('ideas.col.nodes') }}</th>
                     <th>{{ __('ideas.col.updated') }}</th>
                     <th class="text-right">{{ __('ideas.col.actions') }}</th>
-                </x-slot:head>
+                </tr>
+            </x-slot:head>
                 @foreach ($maps as $map)
-                    <tr>
+                    <tr class="hover">
                         <td>
                             @if ($filter === 'trashed')
                                 {{ $map->title }}
@@ -102,8 +105,7 @@
                         </td>
                     </tr>
                 @endforeach
-            </x-table>
-        </x-card>
+        </x-table>
         <x-pagination :paginator="$maps" standing />
     @endif
 </x-index-page>

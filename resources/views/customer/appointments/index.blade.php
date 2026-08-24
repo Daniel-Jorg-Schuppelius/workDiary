@@ -14,13 +14,6 @@
     <h1 class="mb-1 text-2xl font-semibold">{{ __('Termin anfragen') }}</h1>
     <p class="mb-4 text-sm text-base-content/70">{{ __('Sie wählen ein Zeitfenster, wir bestätigen verbindlich — erst dann ist der Termin fest.') }}</p>
 
-    @if (session('error'))
-        <div class="alert alert-error mb-4 text-sm">{{ session('error') }}</div>
-    @endif
-    @if (session('success'))
-        <div class="alert alert-success mb-4 text-sm">{{ session('success') }}</div>
-    @endif
-
     <div class="mb-6 rounded-box bg-base-100 p-4 shadow">
         <form method="GET" action="{{ route('customer.appointments.index') }}" class="flex flex-wrap items-end gap-3">
             <label class="form-control">

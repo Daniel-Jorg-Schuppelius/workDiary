@@ -183,7 +183,7 @@
             @endif
             <div class="min-w-0 flex-1">
                 @if ($eyebrow)
-                    <p class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-base-content/60">{{ $eyebrow }}</p>
+                    <p class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-muted">{{ $eyebrow }}</p>
                 @endif
                 @if ($title)
                     <h2 @if ($titleId) id="{{ $titleId }}" @endif

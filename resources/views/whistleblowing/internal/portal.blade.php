@@ -13,9 +13,6 @@
 
 @section('content')
     <x-index-page :subtitle="__('Öffentliches Meldeportal für Hinweisgeber konfigurieren.')">
-        @if (session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
         <x-validation-errors />
 
         @if ($portal->exists)

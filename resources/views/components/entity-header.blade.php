@@ -49,7 +49,7 @@
                 @isset($badges){{ $badges }}@endisset
             </div>
             @isset($meta)
-                <p class="mt-1 text-sm text-base-content/60">{{ $meta }}</p>
+                <p class="mt-1 text-sm text-muted">{{ $meta }}</p>
             @endisset
             @isset($tags)
                 <div class="mt-2 flex flex-wrap gap-1">{{ $tags }}</div>

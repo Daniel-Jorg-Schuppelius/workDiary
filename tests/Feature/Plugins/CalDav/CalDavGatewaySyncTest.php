@@ -12,6 +12,7 @@ namespace Tests\Feature\Plugins\CalDav;
 
 use App\Models\CalDavConnection;
 use App\Plugins\CalDav\Services\HttpCalDavGateway;
+use App\Plugins\Support\PluginApiClient;
 use Carbon\CarbonImmutable;
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};
 use GuzzleHttp\Handler\MockHandler;
@@ -21,7 +22,8 @@ use Tests\TestCase;
 /**
  * CalDAV-Delta auf der Leitung (Feature 121, MVP-610b): sync-collection wird
  * bevorzugt; kann der Server ihn nicht, greift der Zeitfenster-Report mit
- * ETag-Vergleich. Kein echtes HTTP — Guzzle-MockHandler.
+ * ETag-Vergleich. Kein echtes HTTP — PluginApiClient mit Guzzle-MockHandler
+ * (gleiche Naht wie produktiv, C4-Rest).
  */
 final class CalDavGatewaySyncTest extends TestCase {
     /** @var list<Request> */
@@ -45,7 +47,9 @@ final class CalDavGatewaySyncTest extends TestCase {
         $connection->app_password = 'secret';
         $connection->calendar_path = 'calendars/team/plan';
 
-        return new HttpCalDavGateway(new GuzzleClient(['handler' => $stack]), $connection);
+        $client = new PluginApiClient('caldav', (string) $connection->base_url, new GuzzleClient(['handler' => $stack]));
+
+        return new HttpCalDavGateway($client, $connection);
     }
 
     private function multiStatus(string $inner): string {

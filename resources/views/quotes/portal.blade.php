@@ -37,7 +37,7 @@
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif
     @if (session('error'))
-        <div class="alert alert-error">{{ session('error') }}</div>
+        <div role="alert" class="alert alert-error">{{ session('error') }}</div>
     @endif
 
     <x-table>

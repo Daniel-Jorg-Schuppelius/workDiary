@@ -12,6 +12,7 @@ namespace App\Models\Chat;
 
 use App\Models\{Attachment, User};
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany, HasOne, MorphMany};
 
@@ -29,6 +30,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany, H
  */
 class Message extends Model {
     use BelongsToOrganization;
+    /** @use HasFactory<\Database\Factories\Chat\MessageFactory> */
+    use HasFactory;
     use HasSqid;
     use SoftDeletes;
 

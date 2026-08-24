@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Survey;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -37,6 +38,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Survey extends Model {
     use Auditable;
     use BelongsToOrganization;
+    /** @use HasFactory<\Database\Factories\Survey\SurveyFactory> */
+    use HasFactory;
     use HasSqid;
 
     protected $fillable = [

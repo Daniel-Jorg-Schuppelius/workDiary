@@ -32,7 +32,6 @@
         <x-help-button topic="account.two-factor" />
     </x-slot:actions>
 
-    @if (session('success'))<div class="alert alert-success text-sm">{{ session('success') }}</div>@endif
     <x-validation-errors first />
 
     {{-- Recovery-Codes einmalig --}}

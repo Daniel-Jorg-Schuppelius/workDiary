@@ -60,6 +60,39 @@ class AccessibilityComponentTest extends TestCase {
         $this->assertStringNotContainsString('scope="col"', $html);
     }
 
+    // ---- Sortierbare Spalten (I3): aria-sort + Tastatur ----------------
+
+    public function test_client_sort_th_renders_button_and_aria_sort(): void {
+        $html = Blade::render(
+            '<x-table table-sort="client"><x-slot:head><tr>'
+            . '<x-table.th sort default="desc">Datum</x-table.th>'
+            . '<x-table.th sort>Name</x-table.th>'
+            . '</tr></x-slot:head><tr><td>x</td><td>y</td></tr></x-table>'
+        );
+
+        // Default-Spalte startet sortiert, übrige sortierbare Spalten "none".
+        $this->assertStringContainsString('aria-sort="descending"', $html);
+        $this->assertStringContainsString('aria-sort="none"', $html);
+        // Echter Button im th → Enter/Space lösen den Klick-Handler aus.
+        $this->assertStringContainsString('<button type="button"', $html);
+        $this->assertStringContainsString('data-sort', $html);
+    }
+
+    public function test_server_sort_th_sets_aria_sort_from_current_sort(): void {
+        $html = Blade::render(
+            '<x-table table-sort="server" route="https://example.test/list" current-sort="name" current-dir="asc">'
+            . '<x-slot:head><tr>'
+            . '<x-table.th sort="name">Name</x-table.th>'
+            . '<x-table.th sort="date">Datum</x-table.th>'
+            . '</tr></x-slot:head><tr><td>x</td><td>y</td></tr></x-table>'
+        );
+
+        $this->assertStringContainsString('aria-sort="ascending"', $html);
+        $this->assertStringContainsString('aria-sort="none"', $html);
+        // Das Sortier-Icon ist Deko — Zustand kommt über aria-sort.
+        $this->assertStringContainsString('aria-hidden="true"', $html);
+    }
+
     // ---- <x-table caption> ---------------------------------------------
 
     public function test_table_renders_screenreader_caption(): void {
@@ -129,6 +162,19 @@ class AccessibilityComponentTest extends TestCase {
         $this->assertStringContainsString('aria-describedby="email-hint email-error"', $html);
         $this->assertStringContainsString('id="email-hint"', $html);
         $this->assertStringContainsString('id="email-error"', $html);
+    }
+
+    public function test_input_field_supports_explicit_id_for_repeated_names(): void {
+        // I13: gleicher name mehrfach auf der Seite (Loops) → explizite id
+        // verhindert doppelte ids; label/for und describedby folgen der id.
+        $this->shareErrors();
+        $html = Blade::render('<x-input-field name="note" id="swap-note-abc" label="Grund" hint="Kurz halten" />');
+
+        $this->assertStringContainsString('id="swap-note-abc"', $html);
+        $this->assertStringContainsString('for="swap-note-abc"', $html);
+        $this->assertStringContainsString('name="note"', $html);
+        $this->assertStringContainsString('id="swap-note-abc-hint"', $html);
+        $this->assertStringNotContainsString('id="note"', $html);
     }
 
     public function test_select_and_textarea_mark_required_with_aria(): void {

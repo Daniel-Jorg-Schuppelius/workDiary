@@ -272,7 +272,7 @@ function fetch(string $url, ?string &$errorOut = null): ?string
         $errorOut = 'network/timeout';
         return null;
     }
-    foreach ($http_response_header ?? [] as $h) {
+    foreach ($http_response_header as $h) {
         if (preg_match('#^HTTP/\S+\s+(\d+)#', $h, $m)) {
             $code = (int) $m[1];
             if ($code === 200) {

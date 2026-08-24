@@ -29,7 +29,6 @@ class TerminalAdminController extends Controller {
     public function index(): View {
         $admin = $this->admin();
         $organization = $this->organization($admin);
-        $sqids = app(SqidEncoder::class);
 
         return view('admin.terminals.index', [
             'terminals' => AttendanceTerminal::query()
@@ -42,11 +41,31 @@ class TerminalAdminController extends Controller {
                 ->with('user:id,name')
                 ->orderByDesc('id')
                 ->get(),
+            'issuedUrl' => is_array(session('terminal_issued')) ? (session('terminal_issued')['url'] ?? null) : null,
+        ]);
+    }
+
+    /** Dialog-Fragment: Terminal registrieren (data-entry-modal-trigger). */
+    public function createTerminal(): View {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+        $sqids = app(SqidEncoder::class);
+
+        return view('admin.terminals._terminal_form_dialog', [
             'sites' => Site::query()->where('organization_id', $organization->id)->orderBy('name')->get(['id', 'name'])
                 ->map(fn (Site $s): array => ['sqid' => $sqids->encode(Site::class, (int) $s->id), 'name' => $s->name]),
+        ]);
+    }
+
+    /** Dialog-Fragment: Badge zuordnen (data-entry-modal-trigger). */
+    public function createBadge(): View {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+        $sqids = app(SqidEncoder::class);
+
+        return view('admin.terminals._badge_form_dialog', [
             'users' => User::query()->where('organization_id', $organization->id)->whereNull('customer_id')->orderBy('name')->get(['id', 'name'])
                 ->map(fn (User $u): array => ['sqid' => $sqids->encode(User::class, (int) $u->id), 'name' => $u->name]),
-            'issuedUrl' => is_array(session('terminal_issued')) ? (session('terminal_issued')['url'] ?? null) : null,
         ]);
     }
 

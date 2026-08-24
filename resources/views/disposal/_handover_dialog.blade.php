@@ -32,7 +32,7 @@
         <x-select-field name="external_contact_id" :label="__('disposal.handover.disposer')" required>
             <option value="">{{ __('disposal.treatment.please_select') }}</option>
             @foreach ($disposers as $disposer)
-                <option value="{{ $disposer->id }}" @selected((string) old('external_contact_id') === (string) $disposer->id)>{{ $disposer->name }}</option>
+                <option value="{{ $disposer->sqid }}" @selected((string) old('external_contact_id') === $disposer->sqid)>{{ $disposer->name }}</option>
             @endforeach
         </x-select-field>
         <x-select-field name="proof_type" :label="__('disposal.handover.proof_type')" required>

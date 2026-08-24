@@ -196,14 +196,8 @@ class FritzboxSuggestionService {
     }
 
     private function similarity(string $a, string $b): float {
-        $a = mb_strtolower(trim($a));
-        $b = mb_strtolower(trim($b));
-        if ($a === '' || $b === '') {
-            return 0.0;
-        }
-
-        similar_text($a, $b, $percent);
-
-        return $percent / 100;
+        // Kleinschreibung bleibt App-Sache (Namen vs. Freitext); der
+        // Vergleichskern kommt aus dem Toolkit (B20, v1.26).
+        return \CommonToolkit\Helper\Data\StringHelper::similarity(mb_strtolower(trim($a)), mb_strtolower(trim($b)));
     }
 }

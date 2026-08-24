@@ -38,6 +38,13 @@ class AutomationRuleController extends Controller {
         ]);
     }
 
+    /** Dialog-Fragment für <x-modal> (data-entry-modal-trigger). */
+    public function create(): View {
+        $this->ensureAdmin();
+
+        return view('admin.automations._form_dialog');
+    }
+
     public function show(AutomationRule $automationRule): View {
         $this->ensureAdmin();
         $this->ensureOwnsRule($automationRule);

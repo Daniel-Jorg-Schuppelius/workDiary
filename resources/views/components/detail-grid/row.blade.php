@@ -16,6 +16,6 @@
 @endphp
 
 @if ($hasSlot || ($value !== null && $value !== ''))
-    <dt class="text-base-content/60">{{ $label }}</dt>
+    <dt class="text-muted">{{ $label }}</dt>
     <dd {{ $attributes }}>{{ $hasSlot ? $slot : $value }}</dd>
 @endif

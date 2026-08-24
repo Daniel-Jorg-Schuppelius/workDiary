@@ -22,7 +22,7 @@
 @endphp
 
 @if ($eval === null)
-    <span class="text-base-content/40 text-xs">{{ __('reporting.target.no_target') }}</span>
+    <span class="text-muted text-xs">{{ __('reporting.target.no_target') }}</span>
 @else
     @php
         $toneMap = ['success' => 'success', 'warning' => 'warning', 'error' => 'error', 'neutral' => 'ghost'];

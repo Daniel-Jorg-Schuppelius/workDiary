@@ -26,12 +26,6 @@
 @endphp
 
 <x-page-shell>
-    @if (session('success'))
-        <div class="alert alert-success">
-            <x-icon name="check_circle" /> <span>{{ session('success') }}</span>
-        </div>
-    @endif
-
     {{-- ── Logos (eigene Forms, deshalb außerhalb des Settings-Forms) ── --}}
     <div class="card bg-base-100 shadow">
         <div class="card-body">

@@ -54,7 +54,7 @@
 <figure class="wd-chart rounded-box border border-base-300 bg-base-100 p-3">
     <figcaption>
         <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ $title }}</span>
-        <span class="ml-2 text-xs text-base-content/60">
+        <span class="ml-2 text-xs text-muted">
             {{ $unit }}
             @if ($points->isNotEmpty()) · {{ $points->first()['x'] }} – {{ $points->last()['x'] }} @endif
             @if ($computedAt) · {{ __('Stand:') }} {{ \Illuminate\Support\Carbon::parse($computedAt)->isoFormat('L LT') }} @endif
@@ -62,7 +62,7 @@
     </figcaption>
 
     @if ($note)
-        <p class="mt-1 text-xs text-base-content/50">{{ $note }}</p>
+        <p class="mt-1 text-xs text-muted">{{ $note }}</p>
     @endif
 
     @if ($points->isEmpty())

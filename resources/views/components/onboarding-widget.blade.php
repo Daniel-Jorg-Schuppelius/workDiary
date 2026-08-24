@@ -70,7 +70,7 @@
                     <ul class="space-y-1 text-sm">
                         @foreach ($openSteps as $step)
                             <li class="flex items-center gap-2">
-                                <x-icon name="radio_button_unchecked" class="text-base-content/50" />
+                                <x-icon name="radio_button_unchecked" class="text-muted" />
                                 <span>{{ $step['title'] }}</span>
                                 @if ($step['required'])
                                     <span class="badge badge-xs badge-primary badge-outline">{{ __('onboarding.page.badge_required') }}</span>

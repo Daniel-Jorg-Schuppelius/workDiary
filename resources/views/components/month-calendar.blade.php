@@ -86,7 +86,7 @@
         ['label' => __('Mi'), 'tone' => ''],
         ['label' => __('Do'), 'tone' => ''],
         ['label' => __('Fr'), 'tone' => ''],
-        ['label' => __('Sa'), 'tone' => 'text-base-content/50'],
+        ['label' => __('Sa'), 'tone' => 'text-muted'],
         ['label' => __('So'), 'tone' => 'text-error'],
     ];
 
@@ -127,7 +127,7 @@
     @if ($showWeekHeader)
         <div class="grid shrink-0 {{ $headerGridCols }} border-b border-base-300 bg-base-200 text-center text-xs font-semibold uppercase tracking-wide">
             @if ($showWeekNumbers)
-                <div class="px-2 py-2 text-base-content/60">{{ __('KW') }}</div>
+                <div class="px-2 py-2 text-muted">{{ __('KW') }}</div>
             @endif
             @foreach ($weekDays as $w)
                 <div class="px-2 py-2 {{ $w['tone'] }}">{{ $w['label'] }}</div>
@@ -139,7 +139,7 @@
          @if ($fullHeight) style="grid-template-rows: repeat({{ $weekCount }}, minmax(0, 1fr));" @endif>
         @foreach ($days as $index => $day)
             @if ($showWeekNumbers && $index % 7 === 0)
-                <div class="flex items-start justify-center border-b border-r border-base-300 bg-base-200/60 px-1 py-1 text-xs font-mono text-base-content/60">
+                <div class="flex items-start justify-center border-b border-r border-base-300 bg-base-200/60 px-1 py-1 text-xs font-mono text-muted">
                     {{ $day->isoWeek }}
                 </div>
             @endif
@@ -159,7 +159,7 @@
                 //   - sonst neutral
                 $cellBgClass = match (true) {
                     $isHoliday  => 'bg-warning/5',
-                    $isOther    => 'bg-base-200/40 text-base-content/50',
+                    $isOther    => 'bg-base-200/40 text-muted',
                     $isSaturday => 'bg-base-200/40',
                     default     => '',
                 };

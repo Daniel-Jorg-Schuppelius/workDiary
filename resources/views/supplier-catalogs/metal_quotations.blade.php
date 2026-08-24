@@ -13,14 +13,11 @@
 @section('content')
 <x-page-shell>
     <div class="space-y-4">
-        @if (session('success'))
-            <div class="alert alert-success text-sm">{{ session('success') }}</div>
-        @endif
         <x-validation-errors first />
 
         <x-page-toolbar :subtitle="__('procurement.metal.hint')" />
 
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
 
             <form method="POST" action="{{ route('supplier-catalogs.metal-quotations.store') }}" class="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 @csrf
@@ -61,7 +58,7 @@
                             <x-table.empty :colspan="4" :title="__('procurement.metal.empty')" compact />
                         @endforelse
             </x-table>
-        </div>
+        </x-card>
     </div>
 </x-page-shell>
 @endsection

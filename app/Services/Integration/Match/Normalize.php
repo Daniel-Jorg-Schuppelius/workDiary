@@ -35,16 +35,8 @@ final class Normalize {
         return (string) preg_replace('/\s+/', '', mb_strtolower(trim(is_scalar($value) ? (string) $value : '')));
     }
 
-    /** Ähnlichkeit zweier Strings als 0..1-Score (similar_text). */
+    /** Ähnlichkeit zweier Strings als 0..1-Score (Toolkit, B20/v1.26). */
     public static function similarity(string $a, string $b): float {
-        if ($a === '' || $b === '') {
-            return 0.0;
-        }
-        if ($a === $b) {
-            return 1.0;
-        }
-        similar_text($a, $b, $percent);
-
-        return $percent / 100;
+        return \CommonToolkit\Helper\Data\StringHelper::similarity($a, $b);
     }
 }

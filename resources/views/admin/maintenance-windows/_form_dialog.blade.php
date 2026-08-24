@@ -30,16 +30,15 @@
             <input type="datetime-local" name="announce_from" class="input input-bordered w-full" value="{{ old('announce_from') }}">
             @error('announce_from')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
-        <div class="fieldset">
-            <span class="fieldset-label">{{ __('maintenance.window.field.starts_at') }}</span>
-            <input type="datetime-local" name="starts_at" required class="input input-bordered w-full" value="{{ old('starts_at') }}">
-            @error('starts_at')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
-        </div>
-        <div class="fieldset">
-            <span class="fieldset-label">{{ __('maintenance.window.field.ends_at') }}</span>
-            <input type="datetime-local" name="ends_at" required class="input input-bordered w-full" value="{{ old('ends_at') }}">
-            @error('ends_at')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
-        </div>
+        {{-- Von-Bis gekoppelt (I6): Ende nie vor Beginn; Feldnamen unverändert. --}}
+        <x-date-range layout="split" grid-class="contents" form-control size="" type="datetime-local"
+                      from-name="starts_at" to-name="ends_at"
+                      from-id="starts_at" to-id="ends_at" required
+                      :from-label="__('maintenance.window.field.starts_at')"
+                      :to-label="__('maintenance.window.field.ends_at')"
+                      :from="old('starts_at')" :to="old('ends_at')"
+                      :from-error="$errors->first('starts_at') ?: null"
+                      :to-error="$errors->first('ends_at') ?: null" />
         <div class="fieldset md:col-span-2">
             <span class="fieldset-label">{{ __('maintenance.window.field.message') }}</span>
             <input type="text" name="message" maxlength="300" class="input input-bordered w-full" value="{{ old('message') }}"

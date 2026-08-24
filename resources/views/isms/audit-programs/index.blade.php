@@ -22,54 +22,15 @@
             <x-slot:subtitle>{{ __('Mehrjahres-Zyklen (z. B. Erst-/Überwachungs-/Re-Zertifizierung) — Nachweis über die verknüpften Audits.') }}</x-slot:subtitle>
             <x-slot:actions>
                 <x-icon-btn icon="checklist" tone="ghost" size="sm" :href="route('isms.audits.index')" show-label>{{ __('isms.title.audits') }}</x-icon-btn>
+                @if ($canManage)
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('isms.audit-programs.create')"
+                                show-label>{{ __('Programm anlegen') }}</x-icon-btn>
+                @endif
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
-
-    @if ($canManage)
-        <x-card :title="__('Programm anlegen')">
-            <form method="POST" action="{{ route('isms.audit-programs.store') }}">
-                @csrf
-                <x-form-group :legend="__('Auditprogramm')" icon="event_repeat" tone="primary" cols="3" compact>
-                    <div class="fieldset md:col-span-2">
-                        <label class="fieldset-label">{{ __('Name') }}</label>
-                        <input name="name" required minlength="3" maxlength="180" class="input input-bordered w-full"
-                               placeholder="{{ __('z. B. ISO-27001-Zyklus 2026–2028') }}" value="{{ old('name') }}">
-                        @error('name')<p class="text-sm text-error">{{ $message }}</p>@enderror
-                    </div>
-                    <div class="fieldset">
-                        <label class="fieldset-label">{{ __('Geltungsbereich') }}</label>
-                        <select name="isms_scope_id" class="select select-bordered w-full" required>
-                            @foreach ($scopes as $scopeOption)
-                                <option value="{{ $scopeOption->sqid }}">{{ $scopeOption->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="fieldset">
-                        <label class="fieldset-label">{{ __('Norm') }}</label>
-                        <input name="norm" maxlength="64" class="input input-bordered w-full" placeholder="ISO/IEC 27001" value="{{ old('norm') }}">
-                    </div>
-                    <div class="fieldset">
-                        <label class="fieldset-label">{{ __('Ausgabe') }}</label>
-                        <input name="edition" maxlength="16" class="input input-bordered w-full" placeholder="2022" value="{{ old('edition') }}">
-                    </div>
-                    <div class="fieldset">
-                        <label class="fieldset-label">{{ __('Zyklus (Jahre)') }}</label>
-                        <input name="cycle_years" type="number" min="1" max="6" value="{{ old('cycle_years', 3) }}" class="input input-bordered w-full" required>
-                    </div>
-                    <div class="fieldset">
-                        <label class="fieldset-label">{{ __('Beginn') }}</label>
-                        <input name="starts_on" type="date" value="{{ old('starts_on', now()->format('Y-m-d')) }}" class="input input-bordered w-full" required>
-                    </div>
-                    <div class="fieldset md:col-span-2">
-                        <label class="fieldset-label">{{ __('Notizen') }}</label>
-                        <input name="notes" maxlength="5000" class="input input-bordered w-full" value="{{ old('notes') }}">
-                    </div>
-                </x-form-group>
-                <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Programm anlegen') }}</x-icon-btn>
-            </form>
-        </x-card>
-    @endif
 
     @if ($programs->isEmpty())
         <x-empty-state icon="event_repeat" :title="__('Noch kein Auditprogramm angelegt.')" framed />

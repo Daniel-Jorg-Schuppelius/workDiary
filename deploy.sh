@@ -56,6 +56,10 @@ echo "→ Lizenz-Signierschlüssel absichern (falls vorhanden)"
 [ -f storage/license-keys.env ] && chmod 600 storage/license-keys.env || true
 
 echo "→ Composer-Abhängigkeiten (ohne dev)"
+# Composer-Cache in die Site legen: das ISPConfig-Home des Web-Users (…/webNNN)
+# ist immutable — dort kann Composer sein ~/.cache/composer nicht anlegen
+# (die vcs-Klone der Toolkit-Repos brechen sonst hart ab).
+export COMPOSER_CACHE_DIR="$PWD/storage/framework/cache/composer"
 # Das private Zusatzmodul php-financial-formats ist NICHT Teil der committeten
 # composer.lock (siehe AGENTS.md §9.1) — so läuft der Deploy auch für Installationen
 # OHNE Zugriff auf das private Repo. Liegt lokal eine composer.local.json (nur

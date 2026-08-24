@@ -45,9 +45,6 @@
             @endif
         </x-slot:actions>
 
-        @if (session('error'))
-            <div role="alert" class="alert alert-warning"><span>{{ session('error') }}</span></div>
-        @endif
         @if (session('status'))
             <div role="alert" class="alert alert-success"><span>{{ session('status') }}</span></div>
         @endif

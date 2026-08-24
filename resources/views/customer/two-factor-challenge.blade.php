@@ -18,10 +18,6 @@
         <p class="text-sm text-base-content/70 mb-4" x-show="recovery" x-cloak>{{ __('Geben Sie einen Ihrer Recovery-Codes ein.') }}</p>
 
         <x-validation-errors first class="mb-4" />
-        @if (session('success'))
-            <div class="alert alert-success text-sm mb-4">{{ session('success') }}</div>
-        @endif
-
         @if ($hasWebauthn ?? false)
             <div class="mb-5" data-webauthn-block>
                 <p id="passkey-error" class="mb-2 hidden text-sm text-error"></p>

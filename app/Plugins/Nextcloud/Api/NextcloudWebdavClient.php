@@ -10,10 +10,11 @@
 
 namespace App\Plugins\Nextcloud\Api;
 
+use App\Plugins\Support\PluginApiClient;
 use App\Support\UrlSafety;
 use CommonToolkit\Helper\Data\XmlHelper;
 use DOMElement;
-use GuzzleHttp\ClientInterface;
+use Illuminate\Http\Client\Response;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
 use SensitiveParameter;
@@ -28,10 +29,12 @@ use Throwable;
  * die für den Import/das Backup nötigen Operationen: PROPFIND-Listing mit
  * `oc:fileid`/ETag, Quota, resumable Chunked-Upload v2 und rekursives MKCOL.
  *
- * Ein injizierbarer Guzzle-Client macht den Transport ohne echten HTTP-Verkehr
- * testbar (MockHandler). PROPFIND-Multistatus wird über den namespaced-XPath des
- * gemeinsamen {@see XmlHelper} geparst (toolkit-first) — der generische
- * `xmlToArray` scheitert an den DAV:/oc:-Präfixen.
+ * Läuft über den {@see PluginApiClient} (api-toolkit ≥ v2.9.2: WebDAV-Verben
+ * mit methodenbewusstem Retry); der injizierbare Client macht den Transport
+ * ohne echten HTTP-Verkehr testbar (MockHandler-Transport). PROPFIND-
+ * Multistatus wird über den namespaced-XPath des gemeinsamen {@see XmlHelper}
+ * geparst (toolkit-first) — der generische `xmlToArray` scheitert an den
+ * DAV:/oc:-Präfixen.
  */
 class NextcloudWebdavClient {
     private const DAV_NS = 'DAV:';
@@ -41,7 +44,7 @@ class NextcloudWebdavClient {
     private readonly string $server;
 
     public function __construct(
-        private readonly ClientInterface $http,
+        private readonly PluginApiClient $http,
         string $serverUrl,
         private readonly string $username,
         #[SensitiveParameter] private readonly string $appPassword,
@@ -77,7 +80,7 @@ class NextcloudWebdavClient {
             return false;
         }
 
-        return $response->getStatusCode() === 207;
+        return $response->status() === 207;
     }
 
     /**
@@ -95,7 +98,7 @@ class NextcloudWebdavClient {
             ),
         ]);
 
-        $status = $response->getStatusCode();
+        $status = $response->status();
         if ($status === 404) {
             throw new NextcloudNotFoundException("Nextcloud path not found: {$serverPath}");
         }
@@ -103,7 +106,7 @@ class NextcloudWebdavClient {
             throw new RuntimeException("Nextcloud PROPFIND failed (HTTP {$status}).");
         }
 
-        return $this->parseChildren((string) $response->getBody(), $serverPath);
+        return $this->parseChildren($response->body(), $serverPath);
     }
 
     /**
@@ -116,11 +119,11 @@ class NextcloudWebdavClient {
             'headers' => ['Depth' => '0', 'Content-Type' => 'application/xml; charset=utf-8'],
             'body' => $this->propfindBody('<d:quota-available-bytes/><d:quota-used-bytes/>'),
         ]);
-        if ($response->getStatusCode() !== 207) {
-            throw new RuntimeException('Nextcloud quota PROPFIND failed (HTTP ' . $response->getStatusCode() . ').');
+        if ($response->status() !== 207) {
+            throw new RuntimeException('Nextcloud quota PROPFIND failed (HTTP ' . $response->status() . ').');
         }
 
-        $nodes = XmlHelper::xpathNodes((string) $response->getBody(), '//d:response', ['d' => self::DAV_NS, 'oc' => self::OC_NS]);
+        $nodes = XmlHelper::xpathNodes($response->body(), '//d:response', ['d' => self::DAV_NS, 'oc' => self::OC_NS]);
         $self = $nodes[0] ?? null;
         if (! $self instanceof DOMElement) {
             return ['total' => null, 'used' => null];
@@ -140,11 +143,11 @@ class NextcloudWebdavClient {
     /** Inhalt einer Datei als Stream (Quarantäne-/Restore-Download). */
     public function getStream(string $serverPath): StreamInterface {
         $response = $this->send('GET', $this->fileUrl($serverPath));
-        if ($response->getStatusCode() >= 400) {
-            throw new RuntimeException('Nextcloud GET failed (HTTP ' . $response->getStatusCode() . ').');
+        if ($response->status() >= 400) {
+            throw new RuntimeException('Nextcloud GET failed (HTTP ' . $response->status() . ').');
         }
 
-        return $response->getBody();
+        return $response->toPsrResponse()->getBody();
     }
 
     /** Legt eine Collection (rekursiv) an; idempotent (405 = existiert). */
@@ -156,7 +159,7 @@ class NextcloudWebdavClient {
             }
             $accumulated .= ($accumulated === '' ? '' : '/') . $segment;
             $response = $this->send('MKCOL', $this->fileUrl($accumulated));
-            $code = $response->getStatusCode();
+            $code = $response->status();
             if (! in_array($code, [200, 201, 301, 405], true)) {
                 throw new RuntimeException("Nextcloud MKCOL failed for '{$accumulated}' (HTTP {$code}).");
             }
@@ -185,8 +188,8 @@ class NextcloudWebdavClient {
 
         // 1. Upload-Session eröffnen (Ziel als Destination-Header).
         $create = $this->send('MKCOL', $uploadDir, ['headers' => $totalHeader]);
-        if (! in_array($create->getStatusCode(), [201, 405], true)) {
-            throw new RuntimeException('Nextcloud upload session MKCOL failed (HTTP ' . $create->getStatusCode() . ').');
+        if (! in_array($create->status(), [201, 405], true)) {
+            throw new RuntimeException('Nextcloud upload session MKCOL failed (HTTP ' . $create->status() . ').');
         }
 
         // 2. Chunks als 0-basierten Start-Offset (lexikografisch sortierbar).
@@ -196,15 +199,15 @@ class NextcloudWebdavClient {
                 'headers' => ['OC-Total-Length' => (string) $size, 'Content-Type' => 'application/octet-stream'],
                 'body' => $chunk,
             ]);
-            if ($put->getStatusCode() < 200 || $put->getStatusCode() >= 300) {
-                throw new RuntimeException('Nextcloud chunk PUT failed (HTTP ' . $put->getStatusCode() . ').');
+            if (! $put->successful()) {
+                throw new RuntimeException('Nextcloud chunk PUT failed (HTTP ' . $put->status() . ').');
             }
         });
 
         // 3. Zusammensetzen: MOVE der Sonderdatei `.file` auf das Ziel.
         $move = $this->send('MOVE', $uploadDir . '/.file', ['headers' => $totalHeader]);
-        if (! in_array($move->getStatusCode(), [201, 204], true)) {
-            throw new RuntimeException('Nextcloud upload assemble MOVE failed (HTTP ' . $move->getStatusCode() . ').');
+        if (! in_array($move->status(), [201, 204], true)) {
+            throw new RuntimeException('Nextcloud upload assemble MOVE failed (HTTP ' . $move->status() . ').');
         }
 
         // 4. Remote-Größe verifizieren (Konzept §„über die Größe verifiziert").
@@ -219,12 +222,11 @@ class NextcloudWebdavClient {
     /** Löscht ein Objekt; 404 gilt als bereits gelöscht (idempotent). */
     public function deletePath(string $serverPath): bool {
         $response = $this->send('DELETE', $this->fileUrl($serverPath));
-        $code = $response->getStatusCode();
-        if ($code === 404) {
+        if ($response->status() === 404) {
             return true;
         }
 
-        return $code >= 200 && $code < 300;
+        return $response->successful();
     }
 
     // ── URL-/Pfad-Bausteine ─────────────────────────────────────────────
@@ -258,11 +260,11 @@ class NextcloudWebdavClient {
 
     private function contentLength(string $serverPath): int {
         $response = $this->send('HEAD', $this->fileUrl($serverPath));
-        if ($response->getStatusCode() >= 400) {
+        if ($response->status() >= 400) {
             return -1;
         }
 
-        return (int) $response->getHeaderLine('Content-Length');
+        return (int) $response->header('Content-Length');
     }
 
     private function propfindBody(string $props): string {
@@ -275,12 +277,13 @@ class NextcloudWebdavClient {
     /**
      * @param  array<string, mixed>  $options
      */
-    private function send(string $method, string $url, array $options = []): \Psr\Http\Message\ResponseInterface {
+    private function send(string $method, string $url, array $options = []): Response {
+        // Basic-Auth über die Guzzle-auth-Option — der Toolkit-Client reicht
+        // sie durch; HTTP-Fehlerstatus kommt als Response, nie als Exception.
         $options['auth'] = [$this->username, $this->appPassword];
-        $options['http_errors'] = false;
 
         try {
-            return $this->http->request($method, $url, $options);
+            return $this->http->requestResponse($method, $url, $options);
         } catch (Throwable $e) {
             throw new RuntimeException('Nextcloud WebDAV request failed (' . class_basename($e) . ').', 0, $e);
         }

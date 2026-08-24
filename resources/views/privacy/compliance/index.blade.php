@@ -57,46 +57,46 @@
             </div>
         </x-card>
 
-        <x-card padding="p-0">
-            <x-table>
-                <x-slot:head>
-                    <tr>
-                        <x-table.th>{{ __('Anforderung') }}</x-table.th>
-                        <x-table.th>{{ __('Status') }}</x-table.th>
-                        <x-table.th>{{ __('Auslöser') }}</x-table.th>
-                        <x-table.th>{{ __('Bezug') }}</x-table.th>
-                        @can('manage', \App\Models\Privacy\ComplianceFinding::class)<x-table.th>{{ __('Entscheidung') }}</x-table.th>@endcan
-                    </tr>
-                </x-slot:head>
-                @forelse ($findings as $f)
-                    <tr>
-                        <td>{{ $f->label }}</td>
-                        <td><x-status-badge :tone="$statusTone[$f->status] ?? 'ghost'" size="sm">{{ __($statusMeta[$f->status][0] ?? $f->status) }}</x-status-badge></td>
-                        <td class="text-sm">{{ $f->trigger ?? '—' }}</td>
-                        <td class="text-sm">
-                            @if ($f->activity)<a class="link" href="{{ route('dataprotection.activities.show', $f->activity) }}">{{ $f->activity->name }}</a>
-                            @elseif ($f->agreement)<a class="link" href="{{ route('dataprotection.agreements.show', $f->agreement) }}">{{ $f->agreement->title }}</a>
-                            @elseif ($f->processor)<a class="link" href="{{ route('dataprotection.processors.show', $f->processor) }}">{{ $f->processor->name }}</a>
-                            @else — @endif
+        {{-- Kein scroll=flex: unter der Tabelle folgt der Anforderungskatalog —
+             die Seite scrollt normal (Vollscan 2026-08 I11). --}}
+        <x-table>
+            <x-slot:head>
+                <tr>
+                    <x-table.th>{{ __('Anforderung') }}</x-table.th>
+                    <x-table.th>{{ __('Status') }}</x-table.th>
+                    <x-table.th>{{ __('Auslöser') }}</x-table.th>
+                    <x-table.th>{{ __('Bezug') }}</x-table.th>
+                    @can('manage', \App\Models\Privacy\ComplianceFinding::class)<x-table.th>{{ __('Entscheidung') }}</x-table.th>@endcan
+                </tr>
+            </x-slot:head>
+            @forelse ($findings as $f)
+                <tr class="hover">
+                    <td>{{ $f->label }}</td>
+                    <td><x-status-badge :tone="$statusTone[$f->status] ?? 'ghost'" size="sm">{{ __($statusMeta[$f->status][0] ?? $f->status) }}</x-status-badge></td>
+                    <td class="text-sm">{{ $f->trigger ?? '—' }}</td>
+                    <td class="text-sm">
+                        @if ($f->activity)<a class="link" href="{{ route('dataprotection.activities.show', $f->activity) }}">{{ $f->activity->name }}</a>
+                        @elseif ($f->agreement)<a class="link" href="{{ route('dataprotection.agreements.show', $f->agreement) }}">{{ $f->agreement->title }}</a>
+                        @elseif ($f->processor)<a class="link" href="{{ route('dataprotection.processors.show', $f->processor) }}">{{ $f->processor->name }}</a>
+                        @else — @endif
+                    </td>
+                    @can('manage', \App\Models\Privacy\ComplianceFinding::class)
+                        <td>
+                            <form method="post" action="{{ route('dataprotection.compliance.update', $f) }}" class="flex flex-wrap items-center gap-1">
+                                @csrf @method('PUT')
+                                <select name="status" class="select select-xs select-bordered">
+                                    @foreach ($statusOptions as $v => $l)<option value="{{ $v }}" @selected($f->status === $v)>{{ $l }}</option>@endforeach
+                                </select>
+                                <input name="justification" class="input input-xs input-bordered" placeholder="{{ __('Begründung') }}" value="{{ $f->justification }}">
+                                <x-icon-btn icon="check" tone="primary" size="sm" type="submit" show-label>{{ __('OK') }}</x-icon-btn>
+                            </form>
                         </td>
-                        @can('manage', \App\Models\Privacy\ComplianceFinding::class)
-                            <td>
-                                <form method="post" action="{{ route('dataprotection.compliance.update', $f) }}" class="flex flex-wrap items-center gap-1">
-                                    @csrf @method('PUT')
-                                    <select name="status" class="select select-xs select-bordered">
-                                        @foreach ($statusOptions as $v => $l)<option value="{{ $v }}" @selected($f->status === $v)>{{ $l }}</option>@endforeach
-                                    </select>
-                                    <input name="justification" class="input input-xs input-bordered" placeholder="{{ __('Begründung') }}" value="{{ $f->justification }}">
-                                    <x-icon-btn icon="check" tone="primary" size="sm" type="submit" show-label>{{ __('OK') }}</x-icon-btn>
-                                </form>
-                            </td>
-                        @endcan
-                    </tr>
-                @empty
-                    <x-table.empty :colspan="5" :title="__('Keine Befunde – Analyse ausführen.')" />
-                @endforelse
-            </x-table>
-        </x-card>
+                    @endcan
+                </tr>
+            @empty
+                <x-table.empty :colspan="5" :title="__('Keine Befunde – Analyse ausführen.')" />
+            @endforelse
+        </x-table>
 
         {{-- Konfigurierbarer Anforderungskatalog (Nachtrag 043c). --}}
         @can('manage', \App\Models\Privacy\ComplianceFinding::class)

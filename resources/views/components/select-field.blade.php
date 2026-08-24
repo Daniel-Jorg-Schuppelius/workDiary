@@ -8,6 +8,7 @@
 --}}
 @props([
     'name',
+    'id' => null,       // explizite id; nötig, wenn derselbe name mehrfach auf der Seite vorkommt (Loops/Detail-Formulare) — sonst doppelte ids (I13)
     'label' => null,
     'required' => false,
     'span' => null,
@@ -21,15 +22,18 @@
     $controlError = $hasError ? 'select-error' : null;
     $wrapperClass = 'fieldset' . ($span ? ' md:col-span-' . (int) $span : '');
 
+    // Default bleibt name-basiert (stabile ids für Tests/Labels).
+    $fieldId      = $id ?? $name;
+
     // Barrierefreiheit: Hilfetext/Fehler programmatisch mit dem Feld verknüpfen.
-    $hintId       = $hint ? $name . '-hint' : null;
-    $errorId      = $hasError ? $name . '-error' : null;
+    $hintId       = $hint ? $fieldId . '-hint' : null;
+    $errorId      = $hasError ? $fieldId . '-error' : null;
     $describedBy  = implode(' ', array_filter([$hintId, $errorId])) ?: null;
 @endphp
 
 <div class="{{ $wrapperClass }}">
     @if ($label)
-        <label class="fieldset-label" for="{{ $name }}">{{ $label }}@if ($required) *@endif</label>
+        <label class="fieldset-label" for="{{ $fieldId }}">{{ $label }}@if ($required) *@endif</label>
     @endif
 
     {{-- Optionaler Einschub zwischen Label und Select (z. B. Suchfeld). --}}
@@ -37,7 +41,7 @@
 
     <select
         name="{{ $name }}"
-        id="{{ $name }}"
+        id="{{ $fieldId }}"
         @if ($required) required aria-required="true" @endif
         @if ($hasError) aria-invalid="true" @endif
         @if ($describedBy) aria-describedby="{{ $describedBy }}" @endif
@@ -45,7 +49,7 @@
     >{{ $slot }}</select>
 
     @if ($hint)
-        <p id="{{ $hintId }}" class="text-xs text-base-content/60 mt-1">{{ $hint }}</p>
+        <p id="{{ $hintId }}" class="text-xs text-muted mt-1">{{ $hint }}</p>
     @endif
 
     @if ($hasError)

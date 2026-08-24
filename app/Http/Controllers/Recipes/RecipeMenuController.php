@@ -43,6 +43,14 @@ class RecipeMenuController extends Controller {
         ]);
     }
 
+    /** Dialog-Fragment für <x-modal> (data-entry-modal-trigger). */
+    public function create(): View {
+        Gate::authorize('create', ProcedureTemplate::class);
+        $this->partyOrganization();
+
+        return view('recipes.menus._form_dialog');
+    }
+
     public function store(Request $request): RedirectResponse {
         Gate::authorize('create', ProcedureTemplate::class);
         $organization = $this->partyOrganization();

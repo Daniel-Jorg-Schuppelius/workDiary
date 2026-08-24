@@ -56,10 +56,6 @@
     @if (session('status'))
         <div role="alert" class="alert alert-success"><span>{{ session('status') }}</span></div>
     @endif
-    @if (session('error'))
-        <div role="alert" class="alert alert-warning"><span>{{ session('error') }}</span></div>
-    @endif
-
     @if ($exports->isEmpty())
         <x-empty-state framed
             icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>'

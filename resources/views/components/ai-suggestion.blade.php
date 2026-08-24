@@ -60,12 +60,12 @@
     <div class="grid grid-cols-1 gap-2 {{ $original !== null ? 'md:grid-cols-2' : '' }}">
         @if ($original !== null)
             <div>
-                <div class="text-xs text-base-content/60">{{ __('ai.suggestion.original') }}</div>
+                <div class="text-xs text-muted">{{ __('ai.suggestion.original') }}</div>
                 <div class="rounded bg-base-200/60 p-2 text-sm whitespace-pre-wrap">{{ $original }}</div>
             </div>
         @endif
         <div>
-            <div class="text-xs text-base-content/60">{{ __('ai.suggestion.proposal') }}</div>
+            <div class="text-xs text-muted">{{ __('ai.suggestion.proposal') }}</div>
             @if ($acceptAction !== null && $editable)
                 <textarea id="{{ $suggestionId }}" name="{{ $fieldName }}" form="{{ $suggestionId }}-accept"
                           rows="3" class="textarea textarea-bordered w-full text-sm">{{ $suggestion }}</textarea>
@@ -91,6 +91,6 @@
                 <x-button type="submit" tone="primary" size="xs" icon="check">{{ __('ai.suggestion.accept') }}</x-button>
             </form>
         </footer>
-        <p class="text-right text-xs text-base-content/50">{{ __('ai.suggestion.edit_hint') }}</p>
+        <p class="text-right text-xs text-muted">{{ __('ai.suggestion.edit_hint') }}</p>
     @endif
 </section>

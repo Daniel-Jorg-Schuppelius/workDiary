@@ -40,14 +40,11 @@
     <div x-show="isTab('pagination')" x-cloak>
         <x-form-group :legend="__('settings.tabs.pagination')" :icon="$tabs['pagination']['icon']" :tone="$tabs['pagination']['tone']" cols="3" compact>
             @foreach ((array) config('pagination') as $k => $v)
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('settings.pagination.' . $k) }}</label>
-                    <input type="number" min="1" max="500"
-                           name="settings[pagination][{{ $k }}]"
-                           value="{{ old('settings.pagination.' . $k, data_get($stored, 'pagination.' . $k, '')) }}"
-                           placeholder="{{ __('settings.placeholder_default', ['value' => (string) $v]) }}"
-                           class="input input-bordered w-full">
-                </div>
+                <x-input-field name="settings[pagination][{{ $k }}]" type="number" min="1" max="500"
+                               :label="__('settings.pagination.' . $k)"
+                               :error="'settings.pagination.' . $k"
+                               :value="old('settings.pagination.' . $k, data_get($stored, 'pagination.' . $k, ''))"
+                               :placeholder="__('settings.placeholder_default', ['value' => (string) $v])" />
             @endforeach
         </x-form-group>
     </div>
@@ -55,26 +52,18 @@
     {{-- INVOICING --}}
     <div x-show="isTab('invoicing')" x-cloak class="space-y-4">
         <x-form-group :legend="__('settings.tabs.invoicing')" :icon="$tabs['invoicing']['icon']" :tone="$tabs['invoicing']['tone']" cols="3" compact>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.invoicing.default_tax_rate') }}</label>
-                <input type="text" name="settings[invoicing][default_tax_rate]"
-                       value="{{ old('settings.invoicing.default_tax_rate', data_get($stored, 'invoicing.default_tax_rate', '')) }}"
-                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) config('invoicing.default_tax_rate')]) }}"
-                       class="input input-bordered w-full" inputmode="decimal">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.invoicing.default_currency') }}</label>
-                <select name="settings[invoicing][default_currency]" class="select select-bordered w-full">
-                    <x-currency-options :selected="old('settings.invoicing.default_currency', data_get($stored, 'invoicing.default_currency', ''))" nullable :null-label="__('settings.placeholder_default', ['value' => (string) config('invoicing.default_currency')])" />
-                </select>
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.invoicing.time_unit') }}</label>
-                <input type="text" maxlength="8" name="settings[invoicing][time_unit]"
-                       value="{{ old('settings.invoicing.time_unit', data_get($stored, 'invoicing.time_unit', '')) }}"
-                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) config('invoicing.time_unit')]) }}"
-                       class="input input-bordered w-full">
-            </div>
+            <x-input-field name="settings[invoicing][default_tax_rate]" :label="__('settings.invoicing.default_tax_rate')"
+                           error="settings.invoicing.default_tax_rate" inputmode="decimal"
+                           :value="old('settings.invoicing.default_tax_rate', data_get($stored, 'invoicing.default_tax_rate', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => (string) config('invoicing.default_tax_rate')])" />
+            <x-select-field name="settings[invoicing][default_currency]" :label="__('settings.invoicing.default_currency')"
+                            error="settings.invoicing.default_currency">
+                <x-currency-options :selected="old('settings.invoicing.default_currency', data_get($stored, 'invoicing.default_currency', ''))" nullable :null-label="__('settings.placeholder_default', ['value' => (string) config('invoicing.default_currency')])" />
+            </x-select-field>
+            <x-input-field name="settings[invoicing][time_unit]" :label="__('settings.invoicing.time_unit')"
+                           error="settings.invoicing.time_unit" maxlength="8"
+                           :value="old('settings.invoicing.time_unit', data_get($stored, 'invoicing.time_unit', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => (string) config('invoicing.time_unit')])" />
 
             {{-- Standardleistung (MVP-486): Artikel des Faktura-Systems für
                  Bezeichnung, Einheit, Standardtext und Preis-Rückfall.
@@ -90,201 +79,137 @@
                     : collect();
                 $selectedArticle = (string) old('settings.invoicing.default_service_article', data_get($stored, 'invoicing.default_service_article', ''));
             @endphp
-            <div class="fieldset md:col-span-2">
-                <label class="fieldset-label">{{ __('settings.invoicing.default_service_article') }}</label>
-                <select name="settings[invoicing][default_service_article]" class="select select-bordered w-full">
-                    <option value="">{{ __('settings.invoicing.default_service_none') }}</option>
-                    @foreach ($serviceArticles as $article)
-                        <option value="{{ $article->external_id }}" @selected($selectedArticle === (string) $article->external_id)>
-                            {{ $article->name }}@if ($article->unit_name) · {{ $article->unit_name }}@endif @if ($article->net_unit_price) · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($article->net_unit_price->toFloat(), 2) }} {{ $article->currency->value }}@endif
-                        </option>
-                    @endforeach
-                </select>
-                <p class="text-xs text-base-content/60 mt-1">
-                    {{ $serviceArticles->isEmpty() ? __('settings.invoicing.default_service_empty') : __('settings.invoicing.default_service_hint') }}
-                </p>
-            </div>
+            <x-select-field name="settings[invoicing][default_service_article]" span="2"
+                            :label="__('settings.invoicing.default_service_article')"
+                            error="settings.invoicing.default_service_article"
+                            :hint="$serviceArticles->isEmpty() ? __('settings.invoicing.default_service_empty') : __('settings.invoicing.default_service_hint')">
+                <option value="">{{ __('settings.invoicing.default_service_none') }}</option>
+                @foreach ($serviceArticles as $article)
+                    <option value="{{ $article->external_id }}" @selected($selectedArticle === (string) $article->external_id)>
+                        {{ $article->name }}@if ($article->unit_name) · {{ $article->unit_name }}@endif @if ($article->net_unit_price) · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($article->net_unit_price->toFloat(), 2) }} {{ $article->currency->value }}@endif
+                    </option>
+                @endforeach
+            </x-select-field>
 
             {{-- Rechnungstexte-Vorlagen der Übergabe (MVP-491). --}}
-            <div class="fieldset md:col-span-2">
-                <label class="fieldset-label">{{ __('settings.invoicing.transfer_intro_text') }}</label>
-                <textarea name="settings[invoicing][transfer_intro_text]" rows="2" maxlength="2000"
-                          class="textarea textarea-bordered w-full">{{ old('settings.invoicing.transfer_intro_text', data_get($stored, 'invoicing.transfer_intro_text', '')) }}</textarea>
-                <p class="text-xs text-base-content/60 mt-1">{{ __('settings.invoicing.transfer_text_hint') }}</p>
-            </div>
-            <div class="fieldset md:col-span-2">
-                <label class="fieldset-label">{{ __('settings.invoicing.transfer_closing_text') }}</label>
-                <textarea name="settings[invoicing][transfer_closing_text]" rows="2" maxlength="2000"
-                          class="textarea textarea-bordered w-full">{{ old('settings.invoicing.transfer_closing_text', data_get($stored, 'invoicing.transfer_closing_text', '')) }}</textarea>
-                <p class="text-xs text-base-content/60 mt-1">{{ __('settings.invoicing.transfer_closing_hint') }}</p>
-            </div>
+            <x-textarea-field name="settings[invoicing][transfer_intro_text]" span="2" rows="2" maxlength="2000"
+                              :label="__('settings.invoicing.transfer_intro_text')"
+                              error="settings.invoicing.transfer_intro_text"
+                              :value="old('settings.invoicing.transfer_intro_text', data_get($stored, 'invoicing.transfer_intro_text', ''))"
+                              :hint="__('settings.invoicing.transfer_text_hint')" />
+            <x-textarea-field name="settings[invoicing][transfer_closing_text]" span="2" rows="2" maxlength="2000"
+                              :label="__('settings.invoicing.transfer_closing_text')"
+                              error="settings.invoicing.transfer_closing_text"
+                              :value="old('settings.invoicing.transfer_closing_text', data_get($stored, 'invoicing.transfer_closing_text', ''))"
+                              :hint="__('settings.invoicing.transfer_closing_hint')" />
 
             {{-- Standard-Erlös: letzte Stufe der Satzhierarchie (MVP-482). --}}
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.invoicing.default_hourly_rate') }}</label>
-                <input type="number" min="0" max="10000" step="0.01" name="settings[invoicing][default_hourly_rate]"
-                       value="{{ old('settings.invoicing.default_hourly_rate', data_get($stored, 'invoicing.default_hourly_rate', '')) }}"
-                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) (config('invoicing.default_hourly_rate') ?? '—')]) }}"
-                       class="input input-bordered w-full" inputmode="decimal">
-                <p class="text-xs text-base-content/60 mt-1">{{ __('settings.invoicing.default_hourly_rate_hint') }}</p>
-            </div>
+            <x-input-field name="settings[invoicing][default_hourly_rate]" type="number" min="0" max="10000" step="0.01"
+                           :label="__('settings.invoicing.default_hourly_rate')"
+                           error="settings.invoicing.default_hourly_rate" inputmode="decimal"
+                           :value="old('settings.invoicing.default_hourly_rate', data_get($stored, 'invoicing.default_hourly_rate', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => (string) (config('invoicing.default_hourly_rate') ?? '—')])"
+                           :hint="__('settings.invoicing.default_hourly_rate_hint')" />
 
             {{-- Kalkulationsstundensatz Montage (Feature 107, MVP-602). --}}
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.invoicing.assembly_hourly_rate') }}</label>
-                <input type="number" min="0" max="10000" step="0.01" name="settings[invoicing][assembly_hourly_rate]"
-                       value="{{ old('settings.invoicing.assembly_hourly_rate', data_get($stored, 'invoicing.assembly_hourly_rate', '')) }}"
-                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) (config('invoicing.assembly_hourly_rate') ?? '—')]) }}"
-                       class="input input-bordered w-full" inputmode="decimal">
-                <p class="text-xs text-base-content/60 mt-1">{{ __('settings.invoicing.assembly_hourly_rate_hint') }}</p>
-            </div>
+            <x-input-field name="settings[invoicing][assembly_hourly_rate]" type="number" min="0" max="10000" step="0.01"
+                           :label="__('settings.invoicing.assembly_hourly_rate')"
+                           error="settings.invoicing.assembly_hourly_rate" inputmode="decimal"
+                           :value="old('settings.invoicing.assembly_hourly_rate', data_get($stored, 'invoicing.assembly_hourly_rate', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => (string) (config('invoicing.assembly_hourly_rate') ?? '—')])"
+                           :hint="__('settings.invoicing.assembly_hourly_rate_hint')" />
 
             {{-- Standardtaktung: greift, wenn weder Projekt noch Kunde eine Taktung setzen. --}}
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.invoicing.billing_increment_minutes') }}</label>
-                <input type="number" min="1" max="1440" step="1" name="settings[invoicing][billing_increment_minutes]"
-                       value="{{ old('settings.invoicing.billing_increment_minutes', data_get($stored, 'invoicing.billing_increment_minutes', '')) }}"
-                       placeholder="{{ __('settings.placeholder_default', ['value' => '1']) }}"
-                       class="input input-bordered w-full">
-                <p class="text-xs text-base-content/60 mt-1">{{ __('settings.invoicing.billing_increment_minutes_hint') }}</p>
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.invoicing.billing_grouping_gap_minutes') }}</label>
-                <input type="number" min="0" max="1440" step="1" name="settings[invoicing][billing_grouping_gap_minutes]"
-                       value="{{ old('settings.invoicing.billing_grouping_gap_minutes', data_get($stored, 'invoicing.billing_grouping_gap_minutes', '')) }}"
-                       placeholder="{{ __('settings.placeholder_default', ['value' => '0']) }}"
-                       class="input input-bordered w-full">
-                <p class="text-xs text-base-content/60 mt-1">{{ __('settings.invoicing.billing_grouping_gap_minutes_hint') }}</p>
-            </div>
+            <x-input-field name="settings[invoicing][billing_increment_minutes]" type="number" min="1" max="1440" step="1"
+                           :label="__('settings.invoicing.billing_increment_minutes')"
+                           error="settings.invoicing.billing_increment_minutes"
+                           :value="old('settings.invoicing.billing_increment_minutes', data_get($stored, 'invoicing.billing_increment_minutes', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => '1'])"
+                           :hint="__('settings.invoicing.billing_increment_minutes_hint')" />
+            <x-input-field name="settings[invoicing][billing_grouping_gap_minutes]" type="number" min="0" max="1440" step="1"
+                           :label="__('settings.invoicing.billing_grouping_gap_minutes')"
+                           error="settings.invoicing.billing_grouping_gap_minutes"
+                           :value="old('settings.invoicing.billing_grouping_gap_minutes', data_get($stored, 'invoicing.billing_grouping_gap_minutes', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => '0'])"
+                           :hint="__('settings.invoicing.billing_grouping_gap_minutes_hint')" />
 
             @can(\App\Enums\User\Permission::FinanceConfig->value)
                 {{-- Fakturierungsweg (Feature 045): Org-Default, Kunden können übersteuern. --}}
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('finance.field.billing_mode') }}</label>
-                    <select name="settings[billing_mode]" class="select select-bordered w-full">
-                        <option value="">{{ __('finance.field.billing_mode_default') }}</option>
-                        @foreach (\App\Enums\Finance\BillingMode::options() as $value => $label)
-                            <option value="{{ $value }}" @selected(old('settings.billing_mode', data_get($stored, 'billing_mode', '')) === $value)>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                    <p class="text-xs text-base-content/60 mt-1">{{ __('finance.field.billing_mode_org_hint') }}</p>
-                </div>
+                <x-select-field name="settings[billing_mode]" :label="__('finance.field.billing_mode')"
+                                error="settings.billing_mode"
+                                :hint="__('finance.field.billing_mode_org_hint')">
+                    <option value="">{{ __('finance.field.billing_mode_default') }}</option>
+                    @foreach (\App\Enums\Finance\BillingMode::options() as $value => $label)
+                        <option value="{{ $value }}" @selected(old('settings.billing_mode', data_get($stored, 'billing_mode', '')) === $value)>{{ $label }}</option>
+                    @endforeach
+                </x-select-field>
             @endcan
         </x-form-group>
 
         {{-- E-RECHNUNG (Feature 045, Abschnitt 8): Verkäuferstammdaten für XRechnung (EN 16931). --}}
         <x-form-group :legend="__('settings.einvoice.heading')" icon="receipt" tone="info" cols="3" compact
                       :description="__('settings.einvoice.description')">
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.einvoice.seller_name') }}</label>
-                <input type="text" maxlength="200" name="settings[einvoice][seller_name]"
-                       value="{{ old('settings.einvoice.seller_name', data_get($stored, 'einvoice.seller_name', '')) }}"
-                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) ($organization?->name ?? '')]) }}"
-                       class="input input-bordered w-full">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.einvoice.street') }}</label>
-                <input type="text" maxlength="255" name="settings[einvoice][street]"
-                       value="{{ old('settings.einvoice.street', data_get($stored, 'einvoice.street', '')) }}"
-                       class="input input-bordered w-full">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.einvoice.zip') }}</label>
-                <input type="text" maxlength="32" name="settings[einvoice][zip]"
-                       value="{{ old('settings.einvoice.zip', data_get($stored, 'einvoice.zip', '')) }}"
-                       class="input input-bordered w-full">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.einvoice.city') }}</label>
-                <input type="text" maxlength="128" name="settings[einvoice][city]"
-                       value="{{ old('settings.einvoice.city', data_get($stored, 'einvoice.city', '')) }}"
-                       class="input input-bordered w-full">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.einvoice.country') }}</label>
-                <input type="text" maxlength="2" name="settings[einvoice][country]"
-                       value="{{ old('settings.einvoice.country', data_get($stored, 'einvoice.country', '')) }}"
-                       placeholder="{{ __('settings.placeholder_default', ['value' => 'DE']) }}"
-                       class="input input-bordered w-full uppercase">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.einvoice.vat_id') }}</label>
-                <input type="text" maxlength="64" name="settings[einvoice][vat_id]"
-                       value="{{ old('settings.einvoice.vat_id', data_get($stored, 'einvoice.vat_id', '')) }}"
-                       placeholder="DE123456789" class="input input-bordered w-full">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.einvoice.tax_number') }}</label>
-                <input type="text" maxlength="64" name="settings[einvoice][tax_number]"
-                       value="{{ old('settings.einvoice.tax_number', data_get($stored, 'einvoice.tax_number', '')) }}"
-                       class="input input-bordered w-full">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.einvoice.contact_name') }}</label>
-                <input type="text" maxlength="200" name="settings[einvoice][contact_name]"
-                       value="{{ old('settings.einvoice.contact_name', data_get($stored, 'einvoice.contact_name', '')) }}"
-                       class="input input-bordered w-full">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.einvoice.contact_email') }}</label>
-                <input type="email" maxlength="255" name="settings[einvoice][contact_email]"
-                       value="{{ old('settings.einvoice.contact_email', data_get($stored, 'einvoice.contact_email', '')) }}"
-                       class="input input-bordered w-full">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.einvoice.contact_phone') }}</label>
-                <input type="text" maxlength="64" name="settings[einvoice][contact_phone]"
-                       value="{{ old('settings.einvoice.contact_phone', data_get($stored, 'einvoice.contact_phone', '')) }}"
-                       class="input input-bordered w-full">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.einvoice.iban') }}</label>
-                <input type="text" maxlength="64" name="settings[einvoice][iban]"
-                       value="{{ old('settings.einvoice.iban', data_get($stored, 'einvoice.iban', '')) }}"
-                       class="input input-bordered w-full uppercase">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.einvoice.bic') }}</label>
-                <input type="text" maxlength="32" name="settings[einvoice][bic]"
-                       value="{{ old('settings.einvoice.bic', data_get($stored, 'einvoice.bic', '')) }}"
-                       class="input input-bordered w-full uppercase">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.einvoice.account_holder') }}</label>
-                <input type="text" maxlength="200" name="settings[einvoice][account_holder]"
-                       value="{{ old('settings.einvoice.account_holder', data_get($stored, 'einvoice.account_holder', '')) }}"
-                       class="input input-bordered w-full">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.einvoice.payment_terms_days') }}</label>
-                <input type="number" min="0" max="365" name="settings[einvoice][payment_terms_days]"
-                       value="{{ old('settings.einvoice.payment_terms_days', data_get($stored, 'einvoice.payment_terms_days', '')) }}"
-                       placeholder="{{ __('settings.placeholder_default', ['value' => '14']) }}"
-                       class="input input-bordered w-full">
-            </div>
-            <div class="fieldset md:col-span-2">
-                <label class="label cursor-pointer justify-start gap-3">
-                    <input type="hidden" name="settings[einvoice][small_business]" value="0">
-                    <input type="checkbox" name="settings[einvoice][small_business]" value="1" class="toggle toggle-info"
-                           @checked((string) old('settings.einvoice.small_business', data_get($stored, 'einvoice.small_business', '0')) === '1')>
-                    <span class="label-text">{{ __('settings.einvoice.small_business') }}</span>
-                </label>
-                <p class="text-xs text-base-content/60 mt-1">{{ __('settings.einvoice.small_business_hint') }}</p>
-            </div>
+            <x-input-field name="settings[einvoice][seller_name]" :label="__('settings.einvoice.seller_name')"
+                           error="settings.einvoice.seller_name" maxlength="200"
+                           :value="old('settings.einvoice.seller_name', data_get($stored, 'einvoice.seller_name', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => (string) ($organization?->name ?? '')])" />
+            <x-input-field name="settings[einvoice][street]" :label="__('settings.einvoice.street')"
+                           error="settings.einvoice.street" maxlength="255"
+                           :value="old('settings.einvoice.street', data_get($stored, 'einvoice.street', ''))" />
+            <x-input-field name="settings[einvoice][zip]" :label="__('settings.einvoice.zip')"
+                           error="settings.einvoice.zip" maxlength="32"
+                           :value="old('settings.einvoice.zip', data_get($stored, 'einvoice.zip', ''))" />
+            <x-input-field name="settings[einvoice][city]" :label="__('settings.einvoice.city')"
+                           error="settings.einvoice.city" maxlength="128"
+                           :value="old('settings.einvoice.city', data_get($stored, 'einvoice.city', ''))" />
+            <x-input-field name="settings[einvoice][country]" :label="__('settings.einvoice.country')"
+                           error="settings.einvoice.country" maxlength="2" class="uppercase"
+                           :value="old('settings.einvoice.country', data_get($stored, 'einvoice.country', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => 'DE'])" />
+            <x-input-field name="settings[einvoice][vat_id]" :label="__('settings.einvoice.vat_id')"
+                           error="settings.einvoice.vat_id" maxlength="64" placeholder="DE123456789"
+                           :value="old('settings.einvoice.vat_id', data_get($stored, 'einvoice.vat_id', ''))" />
+            <x-input-field name="settings[einvoice][tax_number]" :label="__('settings.einvoice.tax_number')"
+                           error="settings.einvoice.tax_number" maxlength="64"
+                           :value="old('settings.einvoice.tax_number', data_get($stored, 'einvoice.tax_number', ''))" />
+            <x-input-field name="settings[einvoice][contact_name]" :label="__('settings.einvoice.contact_name')"
+                           error="settings.einvoice.contact_name" maxlength="200"
+                           :value="old('settings.einvoice.contact_name', data_get($stored, 'einvoice.contact_name', ''))" />
+            <x-input-field name="settings[einvoice][contact_email]" type="email" :label="__('settings.einvoice.contact_email')"
+                           error="settings.einvoice.contact_email" maxlength="255"
+                           :value="old('settings.einvoice.contact_email', data_get($stored, 'einvoice.contact_email', ''))" />
+            <x-input-field name="settings[einvoice][contact_phone]" :label="__('settings.einvoice.contact_phone')"
+                           error="settings.einvoice.contact_phone" maxlength="64"
+                           :value="old('settings.einvoice.contact_phone', data_get($stored, 'einvoice.contact_phone', ''))" />
+            <x-input-field name="settings[einvoice][iban]" :label="__('settings.einvoice.iban')"
+                           error="settings.einvoice.iban" maxlength="64" class="uppercase"
+                           :value="old('settings.einvoice.iban', data_get($stored, 'einvoice.iban', ''))" />
+            <x-input-field name="settings[einvoice][bic]" :label="__('settings.einvoice.bic')"
+                           error="settings.einvoice.bic" maxlength="32" class="uppercase"
+                           :value="old('settings.einvoice.bic', data_get($stored, 'einvoice.bic', ''))" />
+            <x-input-field name="settings[einvoice][account_holder]" :label="__('settings.einvoice.account_holder')"
+                           error="settings.einvoice.account_holder" maxlength="200"
+                           :value="old('settings.einvoice.account_holder', data_get($stored, 'einvoice.account_holder', ''))" />
+            <x-input-field name="settings[einvoice][payment_terms_days]" type="number" min="0" max="365"
+                           :label="__('settings.einvoice.payment_terms_days')"
+                           error="settings.einvoice.payment_terms_days"
+                           :value="old('settings.einvoice.payment_terms_days', data_get($stored, 'einvoice.payment_terms_days', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => '14'])" />
+            <x-checkbox-field name="settings[einvoice][small_business]" span="2" tone="info"
+                             :label="__('settings.einvoice.small_business')"
+                             error="settings.einvoice.small_business"
+                             :checked="(string) old('settings.einvoice.small_business', data_get($stored, 'einvoice.small_business', '0')) === '1'"
+                             :hint="__('settings.einvoice.small_business_hint')" />
         </x-form-group>
 
         {{-- ZEIT-IMPORT (MVP-483): Schlüsselwort-Zuordnung importierter Zeiten. --}}
         <x-form-group :legend="__('settings.time_import.heading')" icon="conversion_path" tone="info" cols="1" compact
                       :description="__('settings.time_import.description')">
-            <div class="fieldset">
-                <label class="label cursor-pointer justify-start gap-3">
-                    <input type="hidden" name="settings[project][keyword_matching][enabled]" value="0">
-                    <input type="checkbox" name="settings[project][keyword_matching][enabled]" value="1" class="toggle toggle-info"
-                           @checked((string) old('settings.project.keyword_matching.enabled', data_get($stored, 'project.keyword_matching.enabled', config('project.keyword_matching.enabled') ? '1' : '0')) === '1')>
-                    <span class="label-text">{{ __('settings.time_import.keyword_matching') }}</span>
-                </label>
-                <p class="fieldset-label text-base-content/60">{{ __('settings.time_import.keyword_matching_hint') }}</p>
-            </div>
+            <x-checkbox-field name="settings[project][keyword_matching][enabled]" tone="info"
+                             :label="__('settings.time_import.keyword_matching')"
+                             error="settings.project.keyword_matching.enabled"
+                             :checked="(string) old('settings.project.keyword_matching.enabled', data_get($stored, 'project.keyword_matching.enabled', config('project.keyword_matching.enabled') ? '1' : '0')) === '1'"
+                             :hint="__('settings.time_import.keyword_matching_hint')" />
         </x-form-group>
     </div>
 
@@ -292,13 +217,11 @@
     <div x-show="isTab('uploads')" x-cloak>
         <x-form-group :legend="__('settings.tabs.uploads')" :icon="$tabs['uploads']['icon']" :tone="$tabs['uploads']['tone']" cols="2" compact>
             @foreach ((array) config('uploads') as $k => $v)
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('settings.uploads.' . $k) }}</label>
-                    <input type="number" min="1" name="settings[uploads][{{ $k }}]"
-                           value="{{ old('settings.uploads.' . $k, data_get($stored, 'uploads.' . $k, '')) }}"
-                           placeholder="{{ __('settings.placeholder_default', ['value' => (string) $v]) }}"
-                           class="input input-bordered w-full">
-                </div>
+                <x-input-field name="settings[uploads][{{ $k }}]" type="number" min="1"
+                               :label="__('settings.uploads.' . $k)"
+                               :error="'settings.uploads.' . $k"
+                               :value="old('settings.uploads.' . $k, data_get($stored, 'uploads.' . $k, ''))"
+                               :placeholder="__('settings.placeholder_default', ['value' => (string) $v])" />
             @endforeach
         </x-form-group>
     </div>
@@ -308,14 +231,11 @@
         @foreach ((array) config('validation') as $group => $fields)
             <x-form-group :legend="__('settings.validation.' . $group . '.heading')" :icon="$tabs['validation']['icon']" :tone="$tabs['validation']['tone']" cols="3" compact>
                 @foreach ((array) $fields as $field => $val)
-                    <div class="fieldset">
-                        <label class="fieldset-label">{{ __('settings.validation.' . $group . '.' . $field) }}</label>
-                        <input type="number" min="1"
-                               name="settings[validation][{{ $group }}][{{ $field }}]"
-                               value="{{ old('settings.validation.' . $group . '.' . $field, data_get($stored, 'validation.' . $group . '.' . $field, '')) }}"
-                               placeholder="{{ __('settings.placeholder_default', ['value' => (string) $val]) }}"
-                               class="input input-bordered w-full">
-                    </div>
+                    <x-input-field name="settings[validation][{{ $group }}][{{ $field }}]" type="number" min="1"
+                                   :label="__('settings.validation.' . $group . '.' . $field)"
+                                   :error="'settings.validation.' . $group . '.' . $field"
+                                   :value="old('settings.validation.' . $group . '.' . $field, data_get($stored, 'validation.' . $group . '.' . $field, ''))"
+                                   :placeholder="__('settings.placeholder_default', ['value' => (string) $val])" />
                 @endforeach
             </x-form-group>
         @endforeach
@@ -324,14 +244,11 @@
     {{-- NOTIFICATIONS --}}
     <div x-show="isTab('notifications')" x-cloak>
         <x-form-group :legend="__('settings.tabs.notifications')" :icon="$tabs['notifications']['icon']" :tone="$tabs['notifications']['tone']" cols="2" compact>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.notifications.push.body_truncate') }}</label>
-                <input type="number" min="20" max="500"
-                       name="settings[notifications][push][body_truncate]"
-                       value="{{ old('settings.notifications.push.body_truncate', data_get($stored, 'notifications.push.body_truncate', '')) }}"
-                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) config('notifications.push.body_truncate')]) }}"
-                       class="input input-bordered w-full">
-            </div>
+            <x-input-field name="settings[notifications][push][body_truncate]" type="number" min="20" max="500"
+                           :label="__('settings.notifications.push.body_truncate')"
+                           error="settings.notifications.push.body_truncate"
+                           :value="old('settings.notifications.push.body_truncate', data_get($stored, 'notifications.push.body_truncate', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => (string) config('notifications.push.body_truncate')])" />
         </x-form-group>
     </div>
 
@@ -340,14 +257,11 @@
         @foreach ((array) config('ui') as $group => $fields)
             <x-form-group :legend="__('settings.ui.' . $group . '.heading')" :icon="$tabs['ui']['icon']" :tone="$tabs['ui']['tone']" cols="3" compact>
                 @foreach ((array) $fields as $field => $val)
-                    <div class="fieldset">
-                        <label class="fieldset-label">{{ __('settings.ui.' . $group . '.' . $field) }}</label>
-                        <input type="number" min="1"
-                               name="settings[ui][{{ $group }}][{{ $field }}]"
-                               value="{{ old('settings.ui.' . $group . '.' . $field, data_get($stored, 'ui.' . $group . '.' . $field, '')) }}"
-                               placeholder="{{ __('settings.placeholder_default', ['value' => (string) $val]) }}"
-                               class="input input-bordered w-full">
-                    </div>
+                    <x-input-field name="settings[ui][{{ $group }}][{{ $field }}]" type="number" min="1"
+                                   :label="__('settings.ui.' . $group . '.' . $field)"
+                                   :error="'settings.ui.' . $group . '.' . $field"
+                                   :value="old('settings.ui.' . $group . '.' . $field, data_get($stored, 'ui.' . $group . '.' . $field, ''))"
+                                   :placeholder="__('settings.placeholder_default', ['value' => (string) $val])" />
                 @endforeach
             </x-form-group>
         @endforeach
@@ -356,68 +270,52 @@
     {{-- ROUTING --}}
     <div x-show="isTab('routing')" x-cloak class="space-y-4">
         <x-form-group :legend="__('settings.routing.nominatim.heading')" :icon="$tabs['routing']['icon']" :tone="$tabs['routing']['tone']" cols="2" compact>
-            <div class="fieldset md:col-span-2">
-                <label class="fieldset-label">{{ __('settings.routing.nominatim.base_url') }}</label>
-                <input type="text" name="settings[routing][nominatim][base_url]"
-                       value="{{ old('settings.routing.nominatim.base_url', data_get($stored, 'routing.nominatim.base_url', '')) }}"
-                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) config('routing.nominatim.base_url')]) }}"
-                       class="input input-bordered w-full" inputmode="url">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.routing.nominatim.email') }}</label>
-                <input type="email" name="settings[routing][nominatim][email]"
-                       value="{{ old('settings.routing.nominatim.email', data_get($stored, 'routing.nominatim.email', '')) }}"
-                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) config('routing.nominatim.email')]) }}"
-                       class="input input-bordered w-full">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.routing.nominatim.rate_limit_per_sec') }}</label>
-                <input type="number" min="1" max="50" name="settings[routing][nominatim][rate_limit_per_sec]"
-                       value="{{ old('settings.routing.nominatim.rate_limit_per_sec', data_get($stored, 'routing.nominatim.rate_limit_per_sec', '')) }}"
-                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) config('routing.nominatim.rate_limit_per_sec')]) }}"
-                       class="input input-bordered w-full">
-            </div>
+            <x-input-field name="settings[routing][nominatim][base_url]" span="2" inputmode="url"
+                           :label="__('settings.routing.nominatim.base_url')"
+                           error="settings.routing.nominatim.base_url"
+                           :value="old('settings.routing.nominatim.base_url', data_get($stored, 'routing.nominatim.base_url', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => (string) config('routing.nominatim.base_url')])" />
+            <x-input-field name="settings[routing][nominatim][email]" type="email"
+                           :label="__('settings.routing.nominatim.email')"
+                           error="settings.routing.nominatim.email"
+                           :value="old('settings.routing.nominatim.email', data_get($stored, 'routing.nominatim.email', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => (string) config('routing.nominatim.email')])" />
+            <x-input-field name="settings[routing][nominatim][rate_limit_per_sec]" type="number" min="1" max="50"
+                           :label="__('settings.routing.nominatim.rate_limit_per_sec')"
+                           error="settings.routing.nominatim.rate_limit_per_sec"
+                           :value="old('settings.routing.nominatim.rate_limit_per_sec', data_get($stored, 'routing.nominatim.rate_limit_per_sec', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => (string) config('routing.nominatim.rate_limit_per_sec')])" />
         </x-form-group>
 
         <x-form-group :legend="__('settings.routing.osrm.heading')" :icon="$tabs['routing']['icon']" :tone="$tabs['routing']['tone']" cols="2" compact>
-            <div class="fieldset md:col-span-2">
-                <label class="fieldset-label">{{ __('settings.routing.osrm.base_url') }}</label>
-                <input type="text" name="settings[routing][osrm][base_url]"
-                       value="{{ old('settings.routing.osrm.base_url', data_get($stored, 'routing.osrm.base_url', '')) }}"
-                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) config('routing.osrm.base_url')]) }}"
-                       class="input input-bordered w-full" inputmode="url">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.routing.osrm.profile') }}</label>
-                <input type="text" maxlength="32" name="settings[routing][osrm][profile]"
-                       value="{{ old('settings.routing.osrm.profile', data_get($stored, 'routing.osrm.profile', '')) }}"
-                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) config('routing.osrm.profile')]) }}"
-                       class="input input-bordered w-full">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.routing.osrm.timeout') }}</label>
-                <input type="number" min="1" max="120" name="settings[routing][osrm][timeout]"
-                       value="{{ old('settings.routing.osrm.timeout', data_get($stored, 'routing.osrm.timeout', '')) }}"
-                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) config('routing.osrm.timeout')]) }}"
-                       class="input input-bordered w-full">
-            </div>
+            <x-input-field name="settings[routing][osrm][base_url]" span="2" inputmode="url"
+                           :label="__('settings.routing.osrm.base_url')"
+                           error="settings.routing.osrm.base_url"
+                           :value="old('settings.routing.osrm.base_url', data_get($stored, 'routing.osrm.base_url', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => (string) config('routing.osrm.base_url')])" />
+            <x-input-field name="settings[routing][osrm][profile]" maxlength="32"
+                           :label="__('settings.routing.osrm.profile')"
+                           error="settings.routing.osrm.profile"
+                           :value="old('settings.routing.osrm.profile', data_get($stored, 'routing.osrm.profile', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => (string) config('routing.osrm.profile')])" />
+            <x-input-field name="settings[routing][osrm][timeout]" type="number" min="1" max="120"
+                           :label="__('settings.routing.osrm.timeout')"
+                           error="settings.routing.osrm.timeout"
+                           :value="old('settings.routing.osrm.timeout', data_get($stored, 'routing.osrm.timeout', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => (string) config('routing.osrm.timeout')])" />
         </x-form-group>
 
         <x-form-group :legend="__('settings.routing.tiles.heading')" :icon="$tabs['routing']['icon']" :tone="$tabs['routing']['tone']" cols="2" compact>
-            <div class="fieldset md:col-span-2">
-                <label class="fieldset-label">{{ __('settings.routing.tiles.url') }}</label>
-                <input type="text" name="settings[routing][tiles][url]"
-                       value="{{ old('settings.routing.tiles.url', data_get($stored, 'routing.tiles.url', '')) }}"
-                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) config('routing.tiles.url')]) }}"
-                       class="input input-bordered w-full" inputmode="url">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.routing.tiles.max_zoom') }}</label>
-                <input type="number" min="1" max="22" name="settings[routing][tiles][max_zoom]"
-                       value="{{ old('settings.routing.tiles.max_zoom', data_get($stored, 'routing.tiles.max_zoom', '')) }}"
-                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) config('routing.tiles.max_zoom')]) }}"
-                       class="input input-bordered w-full">
-            </div>
+            <x-input-field name="settings[routing][tiles][url]" span="2" inputmode="url"
+                           :label="__('settings.routing.tiles.url')"
+                           error="settings.routing.tiles.url"
+                           :value="old('settings.routing.tiles.url', data_get($stored, 'routing.tiles.url', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => (string) config('routing.tiles.url')])" />
+            <x-input-field name="settings[routing][tiles][max_zoom]" type="number" min="1" max="22"
+                           :label="__('settings.routing.tiles.max_zoom')"
+                           error="settings.routing.tiles.max_zoom"
+                           :value="old('settings.routing.tiles.max_zoom', data_get($stored, 'routing.tiles.max_zoom', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => (string) config('routing.tiles.max_zoom')])" />
         </x-form-group>
     </div>
 
@@ -434,42 +332,34 @@
                 </label>
             </div>
 
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Modus') }}</label>
-                <select name="settings[travel][mode]" class="select select-bordered w-full" x-model="mode">
-                    <option value="flat">{{ __('Pauschale') }}</option>
-                    <option value="km">{{ __('Kilometer') }}</option>
-                </select>
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Positionstext') }}</label>
-                <input type="text" maxlength="50" name="settings[travel][label]"
-                       value="{{ old('settings.travel.label', data_get($stored, 'travel.label', '')) }}"
-                       placeholder="Anfahrt" class="input input-bordered w-full">
-            </div>
+            <x-select-field name="settings[travel][mode]" :label="__('Modus')"
+                            error="settings.travel.mode" x-model="mode">
+                <option value="flat">{{ __('Pauschale') }}</option>
+                <option value="km">{{ __('Kilometer') }}</option>
+            </x-select-field>
+            <x-input-field name="settings[travel][label]" :label="__('Positionstext')"
+                           error="settings.travel.label" maxlength="50" placeholder="Anfahrt"
+                           :value="old('settings.travel.label', data_get($stored, 'travel.label', ''))" />
 
-            <div class="fieldset" x-show="isMode('flat')">
-                <label class="fieldset-label">{{ __('Pauschale (netto €)') }}</label>
-                <input type="number" step="0.01" min="0" name="settings[travel][flat_amount]"
-                       value="{{ old('settings.travel.flat_amount', data_get($stored, 'travel.flat_amount', '')) }}"
-                       class="input input-bordered w-full">
+            {{-- x-show sitzt auf dem Wrapper (Komponente kapselt nur das Feld). --}}
+            <div x-show="isMode('flat')">
+                <x-input-field name="settings[travel][flat_amount]" type="number" step="0.01" min="0"
+                               :label="__('Pauschale (netto €)')"
+                               error="settings.travel.flat_amount"
+                               :value="old('settings.travel.flat_amount', data_get($stored, 'travel.flat_amount', ''))" />
             </div>
 
             <template x-if="isMode('km')">
                 <div class="contents">
-                    <div class="fieldset">
-                        <label class="fieldset-label">{{ __('Satz (€/km)') }}</label>
-                        <input type="number" step="0.01" min="0" name="settings[travel][rate_per_km]"
-                               value="{{ old('settings.travel.rate_per_km', data_get($stored, 'travel.rate_per_km', '')) }}"
-                               class="input input-bordered w-full">
-                    </div>
-                    <div class="fieldset">
-                        <label class="fieldset-label">{{ __('Kilometer-Quelle') }}</label>
-                        <select name="settings[travel][km_source]" class="select select-bordered w-full" x-model="kmSource">
-                            <option value="company">{{ __('Immer vom Firmenstandort') }}</option>
-                            <option value="tour">{{ __('Je nach Tour (tatsächliche km)') }}</option>
-                        </select>
-                    </div>
+                    <x-input-field name="settings[travel][rate_per_km]" type="number" step="0.01" min="0"
+                                   :label="__('Satz (€/km)')"
+                                   error="settings.travel.rate_per_km"
+                                   :value="old('settings.travel.rate_per_km', data_get($stored, 'travel.rate_per_km', ''))" />
+                    <x-select-field name="settings[travel][km_source]" :label="__('Kilometer-Quelle')"
+                                    error="settings.travel.km_source" x-model="kmSource">
+                        <option value="company">{{ __('Immer vom Firmenstandort') }}</option>
+                        <option value="tour">{{ __('Je nach Tour (tatsächliche km)') }}</option>
+                    </x-select-field>
                     <div class="fieldset md:col-span-2">
                         <label class="label cursor-pointer justify-start gap-3">
                             <input type="hidden" name="settings[travel][round_trip]" :value="roundTripValue">
@@ -477,17 +367,17 @@
                             <span class="label-text">{{ __('Hin- und Rückfahrt (×2, nur Firmenstandort)') }}</span>
                         </label>
                     </div>
-                    <div class="fieldset" x-show="isKmSource('company')">
-                        <label class="fieldset-label">{{ __('Firmenstandort Breite (lat)') }}</label>
-                        <input type="number" step="0.0000001" min="-90" max="90" name="settings[travel][origin_lat]"
-                               value="{{ old('settings.travel.origin_lat', data_get($stored, 'travel.origin_lat', '')) }}"
-                               class="input input-bordered w-full">
+                    <div x-show="isKmSource('company')">
+                        <x-input-field name="settings[travel][origin_lat]" type="number" step="0.0000001" min="-90" max="90"
+                                       :label="__('Firmenstandort Breite (lat)')"
+                                       error="settings.travel.origin_lat"
+                                       :value="old('settings.travel.origin_lat', data_get($stored, 'travel.origin_lat', ''))" />
                     </div>
-                    <div class="fieldset" x-show="isKmSource('company')">
-                        <label class="fieldset-label">{{ __('Firmenstandort Länge (lng)') }}</label>
-                        <input type="number" step="0.0000001" min="-180" max="180" name="settings[travel][origin_lng]"
-                               value="{{ old('settings.travel.origin_lng', data_get($stored, 'travel.origin_lng', '')) }}"
-                               class="input input-bordered w-full">
+                    <div x-show="isKmSource('company')">
+                        <x-input-field name="settings[travel][origin_lng]" type="number" step="0.0000001" min="-180" max="180"
+                                       :label="__('Firmenstandort Länge (lng)')"
+                                       error="settings.travel.origin_lng"
+                                       :value="old('settings.travel.origin_lng', data_get($stored, 'travel.origin_lng', ''))" />
                     </div>
                 </div>
             </template>
@@ -498,21 +388,20 @@
     <div x-show="isTab('region')" x-cloak class="space-y-4">
         <x-form-group :legend="__('settings.region.heading')" icon="public" tone="info" cols="2" compact
                       :description="__('settings.region.description')">
-            <div class="fieldset md:col-span-2">
-                <label class="fieldset-label">{{ __('settings.region.holiday_provider') }}</label>
-                <select name="settings[holidays][provider]" class="select select-bordered w-full">
-                    <option value="">{{ __('settings.placeholder_default', ['value' => \App\Support\HolidayRegions::label((string) config('holidays.provider', 'Germany'))]) }}</option>
-                    @foreach (\App\Support\HolidayRegions::grouped() as $group => $providers)
-                        <optgroup label="{{ $group }}">
-                            @foreach ($providers as $value => $label)
-                                <option value="{{ $value }}"
-                                    @selected((string) old('settings.holidays.provider', data_get($stored, 'holidays.provider', '')) === $value)>{{ $label }}</option>
-                            @endforeach
-                        </optgroup>
-                    @endforeach
-                </select>
-                <p class="fieldset-label text-base-content/60">{{ __('settings.region.holiday_provider_hint') }}</p>
-            </div>
+            <x-select-field name="settings[holidays][provider]" span="2"
+                            :label="__('settings.region.holiday_provider')"
+                            error="settings.holidays.provider"
+                            :hint="__('settings.region.holiday_provider_hint')">
+                <option value="">{{ __('settings.placeholder_default', ['value' => \App\Support\HolidayRegions::label((string) config('holidays.provider', 'Germany'))]) }}</option>
+                @foreach (\App\Support\HolidayRegions::grouped() as $group => $providers)
+                    <optgroup label="{{ $group }}">
+                        @foreach ($providers as $value => $label)
+                            <option value="{{ $value }}"
+                                @selected((string) old('settings.holidays.provider', data_get($stored, 'holidays.provider', '')) === $value)>{{ $label }}</option>
+                        @endforeach
+                    </optgroup>
+                @endforeach
+            </x-select-field>
         </x-form-group>
     </div>
 
@@ -520,15 +409,11 @@
     <div x-show="isTab('weather')" x-cloak>
         <x-form-group :legend="__('settings.weather.heading')" icon="partly_cloudy_day" tone="info" cols="1" compact
                       :description="__('settings.weather.description')">
-            <div class="fieldset">
-                <label class="label cursor-pointer justify-start gap-3">
-                    <input type="hidden" name="settings[weather][auto_fetch]" value="0">
-                    <input type="checkbox" name="settings[weather][auto_fetch]" value="1" class="toggle toggle-info"
-                           @checked((string) old('settings.weather.auto_fetch', data_get($stored, 'weather.auto_fetch', '0')) === '1')>
-                    <span class="label-text">{{ __('settings.weather.auto_fetch') }}</span>
-                </label>
-                <p class="fieldset-label text-base-content/60">{{ __('settings.weather.auto_fetch_hint') }}</p>
-            </div>
+            <x-checkbox-field name="settings[weather][auto_fetch]" tone="info"
+                             :label="__('settings.weather.auto_fetch')"
+                             error="settings.weather.auto_fetch"
+                             :checked="(string) old('settings.weather.auto_fetch', data_get($stored, 'weather.auto_fetch', '0')) === '1'"
+                             :hint="__('settings.weather.auto_fetch_hint')" />
             {{-- Provider-Auswahl (Bauturbo A7/MVP-131): Open-Meteo (Default) oder amtliche DWD-Open-Data. --}}
             <div class="fieldset">
                 <label class="label" for="settings_weather_provider">{{ __('settings.weather.provider') }}</label>
@@ -556,39 +441,25 @@
     <div x-show="isTab('maintenance')" x-cloak>
         <x-form-group :legend="__('settings.maintenance.heading')" icon="engineering" tone="warning" cols="2" compact
                       :description="__('settings.maintenance.description')">
-            <div class="fieldset md:col-span-2">
-                <label class="label cursor-pointer justify-start gap-3">
-                    <input type="hidden" name="settings[maintenance][enabled]" value="0">
-                    <input type="checkbox" name="settings[maintenance][enabled]" value="1" class="toggle toggle-warning"
-                           @checked((string) old('settings.maintenance.enabled', data_get($stored, 'maintenance.enabled', '0')) === '1')>
-                    <span class="label-text">{{ __('settings.maintenance.enabled') }}</span>
-                </label>
-            </div>
-            <div class="fieldset md:col-span-2">
-                <label class="fieldset-label">{{ __('settings.maintenance.message') }}</label>
-                <input type="text" maxlength="300"
-                       name="settings[maintenance][message]"
-                       value="{{ old('settings.maintenance.message', data_get($stored, 'maintenance.message', '')) }}"
-                       placeholder="{{ __('settings.maintenance.message_placeholder') }}"
-                       class="input input-bordered w-full">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('settings.maintenance.until') }}</label>
-                <input type="datetime-local"
-                       name="settings[maintenance][until]"
-                       value="{{ old('settings.maintenance.until', data_get($stored, 'maintenance.until', '')) }}"
-                       class="input input-bordered w-full">
-                <p class="fieldset-label text-base-content/60">{{ __('settings.maintenance.until_hint') }}</p>
-            </div>
-            <div class="fieldset">
-                <label class="label cursor-pointer justify-start gap-3">
-                    <input type="hidden" name="settings[maintenance][block_ingest]" value="0">
-                    <input type="checkbox" name="settings[maintenance][block_ingest]" value="1" class="toggle toggle-warning"
-                           @checked((string) old('settings.maintenance.block_ingest', data_get($stored, 'maintenance.block_ingest', '0')) === '1')>
-                    <span class="label-text">{{ __('settings.maintenance.block_ingest') }}</span>
-                </label>
-                <p class="fieldset-label text-base-content/60">{{ __('settings.maintenance.block_ingest_hint') }}</p>
-            </div>
+            <x-checkbox-field name="settings[maintenance][enabled]" span="2" tone="warning"
+                             :label="__('settings.maintenance.enabled')"
+                             error="settings.maintenance.enabled"
+                             :checked="(string) old('settings.maintenance.enabled', data_get($stored, 'maintenance.enabled', '0')) === '1'" />
+            <x-input-field name="settings[maintenance][message]" span="2" maxlength="300"
+                           :label="__('settings.maintenance.message')"
+                           error="settings.maintenance.message"
+                           :value="old('settings.maintenance.message', data_get($stored, 'maintenance.message', ''))"
+                           :placeholder="__('settings.maintenance.message_placeholder')" />
+            <x-input-field name="settings[maintenance][until]" type="datetime-local"
+                           :label="__('settings.maintenance.until')"
+                           error="settings.maintenance.until"
+                           :value="old('settings.maintenance.until', data_get($stored, 'maintenance.until', ''))"
+                           :hint="__('settings.maintenance.until_hint')" />
+            <x-checkbox-field name="settings[maintenance][block_ingest]" tone="warning"
+                             :label="__('settings.maintenance.block_ingest')"
+                             error="settings.maintenance.block_ingest"
+                             :checked="(string) old('settings.maintenance.block_ingest', data_get($stored, 'maintenance.block_ingest', '0')) === '1'"
+                             :hint="__('settings.maintenance.block_ingest_hint')" />
         </x-form-group>
     </div>
 </x-form-group>

@@ -222,6 +222,7 @@
                 <nav class="flex items-center gap-4">
                     <a href="{{ route('legal.imprint') }}" class="transition hover:text-base-content">{{ __('Impressum') }}</a>
                     <a href="{{ route('legal.privacy') }}" class="transition hover:text-base-content">{{ __('Datenschutz') }}</a>
+                    <a href="{{ route('legal.accessibility') }}" class="transition hover:text-base-content">{{ __('Barrierefreiheit') }}</a>
                 </nav>
             </div>
         </footer>

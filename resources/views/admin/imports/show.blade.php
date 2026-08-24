@@ -83,10 +83,6 @@
         </div>
     @endif
 
-    @if (session('error'))
-        <div class="alert alert-error text-sm">{{ session('error') }}</div>
-    @endif
-
     {{-- Wert-Mapping (Rang 58, A13): unbekannte Quellwerte zuordnen — Ziel je
          Spalte (user_email → Benutzer, sonst Tag/Klassifikation). --}}
     @php($pendingColumn = array_key_first((array) ($run->unresolved_values ?? [])))

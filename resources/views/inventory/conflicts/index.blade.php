@@ -9,9 +9,11 @@
 @extends('layouts.app')
 @section('title', __('inventory.conflict.title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('inventory.conflict.title'))
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-index-page :subtitle="__('inventory.conflict.title')">
+<x-index-page overflow="clip" :subtitle="__('inventory.conflict.title')">
     <x-slot:actions>
         <x-icon-btn icon="inventory" size="sm" :href="route('inventory.stock')" show-label>{{ __('inventory.stock') }}</x-icon-btn>
     </x-slot:actions>
@@ -27,19 +29,20 @@
     @if ($conflicts->isEmpty())
         <x-empty-state framed :title="__('inventory.conflict.empty')" />
     @else
-        <x-card>
-            <x-table>
-                <x-slot:head>
+        <x-table scroll="flex" :pinRows="true">
+            <x-slot:head>
+                <tr>
                     <th>{{ __('inventory.conflict.col.id') }}</th>
                     <th>{{ __('inventory.conflict.col.operation') }}</th>
                     <th class="text-right">{{ __('inventory.conflict.col.qty') }}</th>
                     <th>{{ __('inventory.conflict.col.status') }}</th>
                     <th class="text-right">{{ __('inventory.conflict.col.actions') }}</th>
-                </x-slot:head>
+                </tr>
+            </x-slot:head>
 
                 @foreach ($conflicts as $conflict)
                     @php($snap = $conflict->local_snapshot ?? [])
-                    <tr>
+                    <tr class="hover">
                         <td>
                             <div class="font-mono text-xs">#{{ $conflict->referenceable_id }}</div>
                             <div class="text-xs opacity-60">{{ $conflict->plugin_id }}</div>
@@ -75,10 +78,9 @@
                         </td>
                     </tr>
                 @endforeach
-            </x-table>
+        </x-table>
 
-            <x-pagination :paginator="$conflicts" standing />
-        </x-card>
+        <x-pagination :paginator="$conflicts" standing />
     @endif
 </x-index-page>
 @endsection

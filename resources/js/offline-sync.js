@@ -7,6 +7,8 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
+import { postForm, postJson } from "./lib/http.js";
+
 /**
  * Offline-Sync-Outbox (Feature 035, Phase 2 — offline-sync-architektur.md
  * §3.1/§3.5). Formulare mit `data-offline-sync="<typ>"` werden NUR im
@@ -18,6 +20,10 @@
  *
  * Bewusst KEIN Service-Worker-Request-Replay (sw.js bleibt ohne
  * fetch-Handler) — die Outbox ist explizit und testbar.
+ *
+ * HTTP läuft über lib/http.js — mit on419 "ignore": eine abgelaufene
+ * Session darf hier NICHT die Seite neu laden, die Outbox bleibt liegen
+ * und der nächste Flush versucht es erneut.
  */
 
 const DB_NAME = "workdiary-sync";
@@ -187,7 +193,7 @@ async function updateBadge() {
  * naechste Flush versucht es erneut. Bei 410 („Abgabe weg") wird es verworfen,
  * sonst laege es fuer immer im Speicher des Geraets.
  */
-async function uploadPhotos(clientUuid, csrf) {
+async function uploadPhotos(clientUuid) {
     let photos;
     try {
         photos = await photosFor(clientUuid);
@@ -199,7 +205,7 @@ async function uploadPhotos(clientUuid, csrf) {
     const endpoint = document
         .querySelector('meta[name="sync-attachment-endpoint"]')
         ?.getAttribute("content");
-    if (!endpoint || !csrf) return;
+    if (!endpoint) return;
 
     for (const photo of photos) {
         const body = new FormData();
@@ -209,12 +215,7 @@ async function uploadPhotos(clientUuid, csrf) {
 
         let response;
         try {
-            response = await fetch(endpoint, {
-                method: "POST",
-                headers: { "X-CSRF-TOKEN": csrf, Accept: "application/json" },
-                credentials: "same-origin",
-                body,
-            });
+            response = await postForm(endpoint, body, { on419: "ignore" });
         } catch (_) {
             return; // Netz weg — Rest bleibt in der Queue
         }
@@ -247,32 +248,24 @@ async function flush() {
 
     flushing = true;
     try {
-        const csrf = document
-            .querySelector('meta[name="csrf-token"]')
-            ?.getAttribute("content");
         const endpoint = document
             .querySelector('meta[name="sync-endpoint"]')
             ?.getAttribute("content");
-        if (!csrf || !endpoint) return;
+        if (!endpoint) return;
 
         // Batches von 50 (Server-Limit), sequentiell.
         for (let i = 0; i < commands.length; i += 50) {
             const batch = commands.slice(i, i + 50);
-            const response = await fetch(endpoint, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": csrf,
-                    Accept: "application/json",
-                },
-                credentials: "same-origin",
-                body: JSON.stringify({ commands: batch }),
-            });
+            const response = await postJson(
+                endpoint,
+                { commands: batch },
+                { on419: "ignore" },
+            );
 
             // Session abgelaufen o. ä.: Outbox behalten, später erneut.
             if (!response.ok) return;
 
-            const data = await response.json();
+            const data = response.data ?? {};
             for (const result of data.results || []) {
                 const original = batch.find(
                     (c) => c.client_uuid === result.client_uuid,
@@ -284,7 +277,7 @@ async function flush() {
                 ) {
                     // Erst die Fotos nachreichen, dann den Befehl raeumen —
                     // andersherum waere die Zuordnung (client_uuid) weg.
-                    await uploadPhotos(result.client_uuid, csrf);
+                    await uploadPhotos(result.client_uuid);
                     await outboxDelete(result.client_uuid);
                 } else if (result.status === "conflict") {
                     // Konflikt: KEIN „Erneut anwenden" ohne Entscheidung —
@@ -641,3 +634,19 @@ export function initOfflineSync() {
     const changesRoot = document.querySelector("[data-offline-changes]");
     if (changesRoot) renderChangesPage(changesRoot);
 }
+
+// Nur für Unit-Tests (tests/frontend/offline-sync.test.mjs, node:test):
+// pure Outbox-/Flush-/Payload-Logik ohne UI-Bindung. Kein App-Code
+// importiert dieses Objekt.
+export const __testables = {
+    buildPayload,
+    flush,
+    updateBadge,
+    uploadPhotos,
+    outboxAll,
+    outboxPut,
+    outboxDelete,
+    storeAll,
+    storePut,
+    clearAll,
+};

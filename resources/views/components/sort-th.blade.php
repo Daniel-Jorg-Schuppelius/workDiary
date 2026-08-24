@@ -30,9 +30,10 @@
 
 <a href="{{ $href }}" {{ $attributes->merge(['class' => 'link link-hover whitespace-nowrap']) }}>
     {{ $slot }}
-    <span @class([
+    {{-- Deko-Icon: Sortierzustand kommt maschinenlesbar über aria-sort am <th> --}}
+    <span aria-hidden="true" @class([
         'ml-1',
-        'text-base-content/40' => ! $isActive,
+        'text-muted' => ! $isActive,
         'text-base-content' => $isActive,
     ])>{!! $icon !!}</span>
 </a>

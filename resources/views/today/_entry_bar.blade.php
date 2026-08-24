@@ -166,12 +166,12 @@
                 <div class="join" x-cloak>
                     @if ($isToday)
                         <button type="button" class="btn btn-sm join-item" :class="timerBtnClass"
-                                @click="setModeTimer">{{ __('Timer') }}</button>
+                                @click="setModeTimer()">{{ __('Timer') }}</button>
                     @endif
                     <button type="button" class="btn btn-sm join-item" :class="durationBtnClass"
-                            @click="setDuration">{{ __('Dauer') }}</button>
+                            @click="setDuration()">{{ __('Dauer') }}</button>
                     <button type="button" class="btn btn-sm join-item" :class="rangeBtnClass"
-                            @click="setRange">{{ __('Von / Bis') }}</button>
+                            @click="setRange()">{{ __('Von / Bis') }}</button>
                 </div>
 
                 {{-- fieldset statt x-show/:disabled am Input: flatpickr (altInput)
@@ -221,7 +221,7 @@
                 </fieldset>
 
                 <button type="button" class="btn btn-sm btn-ghost btn-square" x-cloak x-show="hasProject"
-                        @click="toggleMore"
+                        @click="toggleMore()"
                         title="{{ __('Weitere Felder') }}" aria-label="{{ __('Weitere Felder') }}">
                     <span class="material-symbols-outlined" aria-hidden="true" x-text="moreChevron">expand_more</span>
                 </button>

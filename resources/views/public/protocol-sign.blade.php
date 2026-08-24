@@ -24,7 +24,7 @@
     </div>
 
     @if(session('success'))
-        <div class="alert alert-success mb-4">{{ session('success') }}</div>
+        <div role="status" class="alert alert-success mb-4">{{ session('success') }}</div>
     @endif
     <x-validation-errors class="mb-4" />
 

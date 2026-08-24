@@ -14,6 +14,7 @@ namespace App\Models\Investments;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\{CostCenter, Project, User};
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne};
 
@@ -42,6 +43,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne};
 class InvestmentCase extends Model {
     use Auditable;
     use BelongsToOrganization;
+    /** @use HasFactory<\Database\Factories\Investments\InvestmentCaseFactory> */
+    use HasFactory;
     use HasSqid;
 
     public const CATEGORIES = ['replacement', 'expansion', 'project', 'machine', 'it', 'infrastructure', 'inventory', 'compliance'];

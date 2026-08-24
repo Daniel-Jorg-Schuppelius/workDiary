@@ -14,21 +14,23 @@ namespace App\Plugins\Webdav\Services;
 
 use App\Models\WebdavConnection;
 use App\Plugins\Support\Mirror\RemoteFileGateway;
+use App\Plugins\Support\PluginApiClient;
 use App\Support\UrlSafety;
-use GuzzleHttp\ClientInterface;
 use RuntimeException;
 use Throwable;
 
 /**
  * WebDAV-Gateway über HTTP (Feature 058, MVP-127). Basic-Auth mit dem
  * verschlüsselten App-Passwort der Anbindung; generisches WebDAV (Nextcloud/
- * ownCloud als Referenz). Ein injizierbarer Guzzle-Client macht den Adapter
- * testbar (MockHandler). Rückgaben sind bewusst schlicht (bool / ?string); die
- * Fehlerbehandlung (Retry/Konflikt) liegt im Spiegel-Service bzw. der Outbox.
+ * ownCloud als Referenz). Läuft über den {@see PluginApiClient} (api-toolkit
+ * ≥ v2.9.2: WebDAV-Verben mit methodenbewusstem Retry); der injizierbare
+ * Client macht den Adapter testbar (MockHandler-Transport). Rückgaben sind
+ * bewusst schlicht (bool / ?string); die Fehlerbehandlung (Retry/Konflikt)
+ * liegt im Spiegel-Service bzw. der Outbox.
  */
 class HttpWebdavGateway implements RemoteFileGateway {
     public function __construct(
-        private readonly ClientInterface $http,
+        private readonly PluginApiClient $http,
         private readonly WebdavConnection $connection,
     ) {
         // SSRF-Schutz: die org-konfigurierte Basis-URL muss öffentlich routbar
@@ -46,14 +48,13 @@ class HttpWebdavGateway implements RemoteFileGateway {
             }
             $accumulated .= ($accumulated === '' ? '' : '/') . $segment;
             try {
-                $response = $this->http->request('MKCOL', $this->connection->objectUrl($accumulated), [
+                $response = $this->http->requestResponse('MKCOL', $this->connection->objectUrl($accumulated), [
                     'auth' => $this->auth(),
-                    'http_errors' => false,
                 ]);
             } catch (Throwable) {
                 return false;
             }
-            $code = $response->getStatusCode();
+            $code = $response->status();
             // 201 angelegt, 405 existiert bereits, 200/301 tolerant.
             if (! in_array($code, [200, 201, 301, 405], true)) {
                 return false;
@@ -65,59 +66,54 @@ class HttpWebdavGateway implements RemoteFileGateway {
 
     public function putFile(string $path, string $contents, string $mime): bool {
         try {
-            $response = $this->http->request('PUT', $this->connection->objectUrl($path), [
+            $response = $this->http->requestResponse('PUT', $this->connection->objectUrl($path), [
                 'auth' => $this->auth(),
                 'headers' => ['Content-Type' => $mime !== '' ? $mime : 'application/octet-stream'],
                 'body' => $contents,
-                'http_errors' => false,
             ]);
         } catch (Throwable) {
             return false;
         }
 
-        $code = $response->getStatusCode();
-
-        return $code >= 200 && $code < 300;
+        return $response->successful();
     }
 
     public function getFile(string $path): ?string {
         try {
-            $response = $this->http->request('GET', $this->connection->objectUrl($path), [
+            $response = $this->http->requestResponse('GET', $this->connection->objectUrl($path), [
                 'auth' => $this->auth(),
-                'http_errors' => false,
             ]);
         } catch (Throwable) {
             return null;
         }
 
-        if ($response->getStatusCode() >= 400) {
+        if ($response->status() >= 400) {
             return null; // nicht vorhanden / Fehler
         }
 
-        return (string) $response->getBody();
+        return $response->body();
     }
 
     public function remoteSignature(string $path): ?string {
         try {
-            $response = $this->http->request('HEAD', $this->connection->objectUrl($path), [
+            $response = $this->http->requestResponse('HEAD', $this->connection->objectUrl($path), [
                 'auth' => $this->auth(),
-                'http_errors' => false,
             ]);
         } catch (Throwable) {
             return null;
         }
 
-        if ($response->getStatusCode() >= 400) {
+        if ($response->status() >= 400) {
             return null; // nicht vorhanden / Fehler
         }
 
-        $etag = trim($response->getHeaderLine('ETag'), '"');
+        $etag = trim($response->header('ETag'), '"');
         if ($etag !== '') {
             return $etag;
         }
 
         // Fallback-Signatur ohne ETag.
-        $signature = $response->getHeaderLine('Last-Modified') . '|' . $response->getHeaderLine('Content-Length');
+        $signature = $response->header('Last-Modified') . '|' . $response->header('Content-Length');
 
         return $signature !== '|' ? $signature : null;
     }
@@ -125,17 +121,16 @@ class HttpWebdavGateway implements RemoteFileGateway {
     public function ping(): bool {
         try {
             // PROPFIND Depth:0 auf die Collection: 207 Multi-Status = erreichbar + Auth gültig.
-            $response = $this->http->request('PROPFIND', rtrim($this->connection->base_url, '/'), [
+            $response = $this->http->requestResponse('PROPFIND', rtrim($this->connection->base_url, '/'), [
                 'auth' => $this->auth(),
                 'headers' => ['Depth' => '0', 'Content-Type' => 'application/xml; charset=utf-8'],
                 'body' => '<?xml version="1.0" encoding="utf-8"?><d:propfind xmlns:d="DAV:"><d:prop><d:resourcetype/></d:prop></d:propfind>',
-                'http_errors' => false,
             ]);
         } catch (Throwable) {
             return false;
         }
 
-        return $response->getStatusCode() === 207;
+        return $response->status() === 207;
     }
 
     /** @return array{0: string, 1: string} */

@@ -8,6 +8,7 @@ import {
     clearHtml,
     trustedServerHtml,
 } from "./lib/html.js";
+import { request } from "./lib/http.js";
 
 const root = document.getElementById("chat-root");
 if (root) {
@@ -22,15 +23,9 @@ function initSidebar(root) {
     if (!listEl?.dataset.listUrl) return;
     const activeSqid = root.dataset.channelId || "";
     const refresh = () => {
-        fetch(
+        request(
             listEl.dataset.listUrl +
                 (activeSqid ? `?active=${activeSqid}` : ""),
-            {
-                headers: {
-                    Accept: "application/json",
-                    "X-Requested-With": "XMLHttpRequest",
-                },
-            },
         )
             .then((r) => (r.ok ? r.json() : null))
             // Serverseitig gerenderte Kanalliste (Blade escaped Nutzerdaten).
@@ -82,12 +77,9 @@ function initSearch() {
             return;
         }
         timer = setTimeout(async () => {
-            const r = await fetch(`/chat/search?q=${encodeURIComponent(q)}`, {
-                headers: {
-                    Accept: "application/json",
-                    "X-Requested-With": "XMLHttpRequest",
-                },
-            });
+            const r = await request(
+                `/chat/search?q=${encodeURIComponent(q)}`,
+            );
             if (!r.ok) return;
             const d = await r.json();
             results.classList.remove("hidden");
@@ -101,7 +93,7 @@ function initSearch() {
                                   class="block border-b border-base-200 px-3 py-2 text-sm last:border-b-0 hover:bg-base-200"
                                   ><div class="truncate font-medium">
                                       ${x.channel} ·
-                                      <span class="text-base-content/60"
+                                      <span class="text-muted"
                                           >${x.user || ""}</span
                                       >
                                   </div>
@@ -110,7 +102,7 @@ function initSearch() {
                                   </div></a
                               >`,
                       )}`
-                    : html`<p class="px-3 py-4 text-sm text-base-content/50">
+                    : html`<p class="px-3 py-4 text-sm text-muted">
                           ${input.dataset.empty || "Keine Treffer."}
                       </p>`,
             );
@@ -130,19 +122,15 @@ function initChat(root) {
     const channelId = root.dataset.channelId; // Sqid: API-URLs + Echtzeit-Channelname
     if (!channelId) return;
     const list = document.getElementById("chat-messages");
-    const csrf =
-        /** @type {HTMLMetaElement | null} */ (
-            document.querySelector('meta[name="csrf-token"]')
-        )?.content || "";
-    const base = headersBase(csrf);
     let oldest = null;
     let newest = 0;
     let loadingOlder = false;
     let noMoreOlder = false;
     let socketId = "";
 
+    // Nur die Chat-Sonderheit (Echo-Socket-Id) — Rest kommt aus lib/http.js.
     function headers() {
-        return socketId ? { ...base, "X-Socket-ID": socketId } : { ...base };
+        return socketId ? { "X-Socket-ID": socketId } : {};
     }
     const append = (html) => list.insertAdjacentHTML("beforeend", html);
     const prepend = (html) => list.insertAdjacentHTML("afterbegin", html);
@@ -166,7 +154,10 @@ function initChat(root) {
         setTimeout(updateScrollBtn, 80);
     });
     const markRead = () =>
-        fetch(`/chat/${channelId}/read`, { method: "POST", headers: headers() })
+        request(`/chat/${channelId}/read`, {
+            method: "POST",
+            headers: headers(),
+        })
             .then(() => {
                 window.refreshChatUnread?.();
                 window.refreshChatChannelList?.();
@@ -334,7 +325,9 @@ function initChat(root) {
     }
     async function refreshMessage(id) {
         if (!id) return;
-        const r = await fetch(`/chat/messages/${id}`, { headers: headers() });
+        const r = await request(`/chat/messages/${id}`, {
+            headers: headers(),
+        });
         if (!r.ok) {
             document.getElementById(`chat-msg-${id}`)?.remove();
             return;
@@ -625,14 +618,10 @@ function initChat(root) {
             const body = (composerBody?.value || "").trim();
             scheduleDialog?.close();
             if (!when || !body) return;
-            const r = await fetch(`/chat/${channelId}/messages`, {
+            const r = await request(`/chat/${channelId}/messages`, {
                 method: "POST",
-                headers: {
-                    ...headers(),
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                },
-                body: JSON.stringify({ body, scheduled_at: when }),
+                headers: headers(),
+                json: { body, scheduled_at: when },
             });
             if (r.ok) {
                 if (composerBody) composerBody.value = "";
@@ -658,7 +647,7 @@ function initChat(root) {
     form?.addEventListener("submit", async (e) => {
         e.preventDefault();
         const fd = new FormData(form);
-        const r = await fetch(`/chat/${channelId}/messages`, {
+        const r = await request(`/chat/${channelId}/messages`, {
             method: "POST",
             headers: headers(),
             body: fd,
@@ -838,7 +827,7 @@ function initChat(root) {
     async function openThread(id) {
         const drawer = document.getElementById("chat-thread");
         const body = document.getElementById("chat-thread-body");
-        const r = await fetch(`/chat/messages/${id}/replies`, {
+        const r = await request(`/chat/messages/${id}/replies`, {
             headers: headers(),
         });
         if (!r.ok) return;
@@ -859,7 +848,7 @@ function initChat(root) {
             e.preventDefault();
             const fd = new FormData(tf);
             fd.append("parent_id", id);
-            const rr = await fetch(`/chat/${channelId}/messages`, {
+            const rr = await request(`/chat/${channelId}/messages`, {
                 method: "POST",
                 headers: headers(),
                 body: fd,
@@ -976,22 +965,15 @@ function initChat(root) {
     loadInitial();
 
     // ── helpers ──
-    function headersBase(token) {
-        return {
-            "X-CSRF-TOKEN": token,
-            Accept: "application/json",
-            "X-Requested-With": "XMLHttpRequest",
-        };
-    }
     async function getJson(url) {
-        const r = await fetch(url, { headers: headers() });
+        const r = await request(url, { headers: headers() });
         return r.ok ? r.json() : null;
     }
     function send(url, method, data) {
-        return fetch(url, {
+        return request(url, {
             method,
-            headers: { ...headers(), "Content-Type": "application/json" },
-            body: data ? JSON.stringify(data) : undefined,
+            headers: headers(),
+            json: data ? data : undefined,
         });
     }
 }

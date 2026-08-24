@@ -14,23 +14,25 @@ namespace App\Plugins\CalDav\Services;
 
 use App\Models\CalDavConnection;
 use App\Plugins\CalDav\Contracts\CalDavGateway;
+use App\Plugins\Support\PluginApiClient;
 use App\Support\UrlSafety;
 use CommonToolkit\Helper\Data\XmlHelper;
 use DateTimeInterface;
-use GuzzleHttp\ClientInterface;
 use RuntimeException;
 use Throwable;
 
 /**
  * CalDAV-Gateway über HTTP (Feature 058, MVP-126). Basic-Auth mit dem
  * verschlüsselten App-Passwort der Anbindung; RFC-4791-konform (Nextcloud/
- * ownCloud als Referenz, generisch). Ein injizierbarer Guzzle-Client macht den
- * Adapter testbar (MockHandler). Fehler werden zu `false` — der Publisher zählt
- * sie als `failed` und versucht sie beim nächsten Lauf erneut.
+ * ownCloud als Referenz, generisch). Läuft über den {@see PluginApiClient}
+ * (api-toolkit ≥ v2.9.2: WebDAV-Verben mit methodenbewusstem Retry); der
+ * injizierbare Client macht den Adapter testbar (MockHandler-Transport).
+ * Fehler werden zu `false` — der Publisher zählt sie als `failed` und
+ * versucht sie beim nächsten Lauf erneut.
  */
 class HttpCalDavGateway implements CalDavGateway {
     public function __construct(
-        private readonly ClientInterface $http,
+        private readonly PluginApiClient $http,
         private readonly CalDavConnection $connection,
     ) {
         // SSRF-Schutz: die org-konfigurierte Basis-URL muss öffentlich routbar
@@ -42,47 +44,44 @@ class HttpCalDavGateway implements CalDavGateway {
 
     public function putObject(string $objectName, string $ics): bool {
         try {
-            $response = $this->http->request('PUT', $this->connection->objectUrl($objectName), [
+            $response = $this->http->requestResponse('PUT', $this->connection->objectUrl($objectName), [
                 'auth' => [$this->connection->username, $this->connection->app_password],
                 'headers' => ['Content-Type' => 'text/calendar; charset=utf-8'],
                 'body' => $ics,
-                'http_errors' => false,
             ]);
         } catch (Throwable) {
             return false;
         }
 
-        return $this->isSuccess($response->getStatusCode());
+        return $response->successful();
     }
 
     public function deleteObject(string $objectName): bool {
         try {
-            $response = $this->http->request('DELETE', $this->connection->objectUrl($objectName), [
+            $response = $this->http->requestResponse('DELETE', $this->connection->objectUrl($objectName), [
                 'auth' => [$this->connection->username, $this->connection->app_password],
-                'http_errors' => false,
             ]);
         } catch (Throwable) {
             return false;
         }
 
         // 404 = bereits entfernt → idempotenter Erfolg.
-        return $this->isSuccess($response->getStatusCode()) || $response->getStatusCode() === 404;
+        return $response->successful() || $response->status() === 404;
     }
 
     public function ping(): bool {
         try {
             // PROPFIND Depth:0 auf die Collection: 207 Multi-Status = erreichbar + Auth gültig.
-            $response = $this->http->request('PROPFIND', rtrim($this->connection->base_url, '/') . '/' . trim($this->connection->calendar_path, '/'), [
+            $response = $this->http->requestResponse('PROPFIND', rtrim($this->connection->base_url, '/') . '/' . trim($this->connection->calendar_path, '/'), [
                 'auth' => [$this->connection->username, $this->connection->app_password],
                 'headers' => ['Depth' => '0', 'Content-Type' => 'application/xml; charset=utf-8'],
                 'body' => '<?xml version="1.0" encoding="utf-8"?><d:propfind xmlns:d="DAV:"><d:prop><d:resourcetype/></d:prop></d:propfind>',
-                'http_errors' => false,
             ]);
         } catch (Throwable) {
             return false;
         }
 
-        return $response->getStatusCode() === 207;
+        return $response->status() === 207;
     }
 
     public function syncEvents(string $prevSyncToken, array $localEtags, DateTimeInterface $windowStart, DateTimeInterface $windowEnd): CalDavSyncPage {
@@ -108,21 +107,20 @@ class HttpCalDavGateway implements CalDavGateway {
         );
 
         try {
-            $response = $this->http->request('REPORT', $collection, [
+            $response = $this->http->requestResponse('REPORT', $collection, [
                 'auth' => [$this->connection->username, $this->connection->app_password],
                 'headers' => ['Depth' => '1', 'Content-Type' => 'application/xml; charset=utf-8'],
                 'body' => $body,
-                'http_errors' => false,
             ]);
         } catch (Throwable) {
             return null;
         }
 
-        if ($response->getStatusCode() !== 207) {
+        if ($response->status() !== 207) {
             return null; // 400/403/501 & Co. ⇒ Fallback, nicht Abbruch
         }
 
-        $xml = (string) $response->getBody();
+        $xml = $response->body();
         [$changed, $deleted] = $this->parseMultiStatus($xml);
         $token = (string) (XmlHelper::xpathFirst($xml, '//d:multistatus/d:sync-token', ['d' => 'DAV:']) ?? '');
 
@@ -150,23 +148,22 @@ class HttpCalDavGateway implements CalDavGateway {
         );
 
         try {
-            $response = $this->http->request('REPORT', $collection, [
+            $response = $this->http->requestResponse('REPORT', $collection, [
                 'auth' => [$this->connection->username, $this->connection->app_password],
                 'headers' => ['Depth' => '1', 'Content-Type' => 'application/xml; charset=utf-8'],
                 'body' => $body,
-                'http_errors' => false,
             ]);
         } catch (Throwable) {
             return new CalDavSyncPage([], [], '');
         }
 
-        if ($response->getStatusCode() !== 207) {
+        if ($response->status() !== 207) {
             return new CalDavSyncPage([], [], '');
         }
 
         $changed = [];
         $seen = [];
-        foreach ($this->responseRows((string) $response->getBody()) as $row) {
+        foreach ($this->responseRows($response->body()) as $row) {
             // Verglichen wird über den Objektnamen: der href-Präfix ist
             // serverabhängig, der letzte Pfadteil ist unsere Remote-ID.
             $key = rawurldecode(basename($row['href']));
@@ -189,15 +186,14 @@ class HttpCalDavGateway implements CalDavGateway {
     /** Einzelobjekt nachladen, wenn der Report kein calendar-data mitliefert. */
     private function fetchObject(string $href): string {
         try {
-            $response = $this->http->request('GET', $this->absolute($href), [
+            $response = $this->http->requestResponse('GET', $this->absolute($href), [
                 'auth' => [$this->connection->username, $this->connection->app_password],
-                'http_errors' => false,
             ]);
         } catch (Throwable) {
             return '';
         }
 
-        return $this->isSuccess($response->getStatusCode()) ? (string) $response->getBody() : '';
+        return $response->successful() ? $response->body() : '';
     }
 
     /**
@@ -276,9 +272,5 @@ class HttpCalDavGateway implements CalDavGateway {
         $origin = ($parts['scheme'] ?? 'https') . '://' . ($parts['host'] ?? '') . (isset($parts['port']) ? ':' . $parts['port'] : '');
 
         return $origin . '/' . ltrim($href, '/');
-    }
-
-    private function isSuccess(int $status): bool {
-        return $status >= 200 && $status < 300;
     }
 }

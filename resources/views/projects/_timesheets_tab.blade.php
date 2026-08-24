@@ -8,7 +8,7 @@
 --}}
 {{-- Tab: Stundenzettel — erwartet: $project, $timesheets (Collection<Timesheet>) --}}
 <div class="flex flex-col gap-3">
-    <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
+    <x-card padding="p-0">
         <header class="flex items-center justify-between border-b border-base-300 px-4 py-3">
             <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Stundenzettel') }}</span>
             @can('create', \App\Models\Timesheet::class)
@@ -61,7 +61,7 @@
                 @endforeach
             </x-table>
         @endif
-    </div>
+    </x-card>
 </div>
 
 {{-- Stehendes Pagination-Panel, nur im Stundenzettel-Tab sichtbar. --}}

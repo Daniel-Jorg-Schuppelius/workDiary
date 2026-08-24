@@ -169,6 +169,8 @@ fi
 
 if [[ "$SKIP_COMPOSER" -eq 0 ]]; then
     log "Installiere PHP-Abhaengigkeiten"
+    # Composer-Cache in die Site legen: ISPConfig-Home (.../webNNN) ist immutable.
+    export COMPOSER_CACHE_DIR="$PWD/storage/framework/cache/composer"
     composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
 fi
 

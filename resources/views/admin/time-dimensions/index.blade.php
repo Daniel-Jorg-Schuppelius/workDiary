@@ -13,15 +13,12 @@
 @section('content')
 <x-page-shell>
     <div class="space-y-4">
-        @if (session('success'))
-            <div class="alert alert-success text-sm">{{ session('success') }}</div>
-        @endif
         <x-validation-errors first />
 
         <x-page-toolbar :subtitle="__('allocation.dimensions.intro')" />
 
         {{-- Neuer Dimensionstyp --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('allocation.dimensions.new_type') }}</h2>
             <form method="POST" action="{{ route('admin.time-dimensions.types.store') }}" class="flex flex-wrap items-end gap-2">
                 @csrf
@@ -36,11 +33,11 @@
                 </label>
                 <button type="submit" class="btn btn-sm btn-primary">{{ __('allocation.dimensions.create_type') }}</button>
             </form>
-        </div>
+        </x-card>
 
         {{-- Typen + Werte --}}
         @forelse ($types as $type)
-            <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+            <x-card>
                 <div class="mb-2 flex flex-wrap items-center gap-2">
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ $type->name }}</h2>
                     <code class="rounded bg-base-200 px-2 py-0.5 text-xs">{{ $type->code }}</code>
@@ -107,11 +104,11 @@
                                   :to-label="__('allocation.dimensions.valid_until')" />
                     <button type="submit" class="btn btn-sm btn-primary">{{ __('allocation.dimensions.create_value') }}</button>
                 </form>
-            </div>
+            </x-card>
         @empty
-            <div class="rounded-box border border-base-300 bg-base-100 p-4 text-sm text-base-content/60 shadow-xs">
+            <x-card class="text-sm text-base-content/60">
                 {{ __('allocation.dimensions.no_types') }}
-            </div>
+            </x-card>
         @endforelse
     </div>
 </x-page-shell>

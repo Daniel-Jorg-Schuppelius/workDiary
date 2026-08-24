@@ -23,7 +23,7 @@
                 <x-status-badge tone="ghost">{{ $log->eventLabel() }}</x-status-badge>
                 {{ optional($log->user)->name ?? '—' }}
             </span>
-            <span class="text-base-content/60">{{ $log->created_at->fdatetime() }}</span>
+            <span class="text-muted">{{ $log->created_at->fdatetime() }}</span>
         </li>
     @endforeach
 </ul>

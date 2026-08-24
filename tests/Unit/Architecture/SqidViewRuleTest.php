@@ -31,10 +31,8 @@ class SqidViewRuleTest extends TestCase {
     /** @var array<string, string> Pfad-Präfix → Begründung / Nachzieh-Welle */
     private const ALLOW_LIST = [
         'resources/views/legacy/' => 'Legacy-Modul, wird abgelöst.',
-        // Welle 3/4 (I7): View sendet rohe IDs, Controller erwartet Sqids.
-        'resources/views/tours/edit.blade.php' => 'Welle 4 (I7): order_ids[] auf Sqid.',
-        'resources/views/articles/sales_discount_groups.blade.php' => 'Welle 4 (I7): Overrides auf Sqid + DecodesSqidInputs.',
-        'resources/views/disposal/_handover_dialog.blade.php' => 'Welle 4 (I7): Entsorger-Select auf Sqid.',
+        // I7 (Welle 4 Batch B, 2026-08-24): tours/edit, sales_discount_groups
+        // und disposal/_handover_dialog sind auf Sqid umgestellt — Einträge raus.
         'resources/views/admin/access/members/_form_dialog.blade.php' => 'Welle 4 (D9): Rollen-IDs (Spatie) — Sqid-Encoder für Role prüfen.',
         'resources/views/admin/access/groups/_form_dialog.blade.php' => 'Welle 4 (D9): Rollen-IDs (Spatie).',
         'resources/views/admin/cloud-intake/index.blade.php' => 'Welle 4 (D9): Container-Picker.',

@@ -13,14 +13,11 @@
 @section('content')
 <x-page-shell>
     <div class="space-y-4">
-        @if (session('success'))
-            <div class="alert alert-success text-sm">{{ session('success') }}</div>
-        @endif
         <x-validation-errors first />
 
         <x-page-toolbar :subtitle="__('article.discount_group.hint')" />
 
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
 
             <form method="POST" action="{{ route('articles.sales-discount-groups.store') }}" class="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
                 @csrf
@@ -70,10 +67,10 @@
                             <x-table.empty :colspan="6" :title="__('article.discount_group.empty')" compact />
                         @endforelse
             </x-table>
-        </div>
+        </x-card>
 
         {{-- MVP-567: kundenindividuelle Overrides je Gruppe --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h2 class="mb-1 font-semibold">{{ __('article.discount_group.override.title') }}</h2>
             <p class="mb-4 text-sm opacity-70">{{ __('article.discount_group.override.hint') }}</p>
 
@@ -81,12 +78,12 @@
                 @csrf
                 <x-select-field name="sales_discount_group_id" :label="__('article.discount_group.col.code')" required>
                     @foreach ($groups as $group)
-                        <option value="{{ $group->id }}">{{ $group->code }}{{ $group->label ? ' — ' . $group->label : '' }}</option>
+                        <option value="{{ $group->sqid }}">{{ $group->code }}{{ $group->label ? ' — ' . $group->label : '' }}</option>
                     @endforeach
                 </x-select-field>
                 <x-select-field name="customer_id" :label="__('article.discount_group.override.customer')" required>
                     @foreach ($customers ?? [] as $customer)
-                        <option value="{{ $customer->id }}">{{ $customer->displayLabel() }} ({{ $customer->number }})</option>
+                        <option value="{{ $customer->sqid }}">{{ $customer->displayLabel() }} ({{ $customer->number }})</option>
                     @endforeach
                 </x-select-field>
                 <x-select-field name="kind" :label="__('article.discount_group.col.kind')" required>
@@ -127,7 +124,7 @@
                             <x-table.empty :colspan="5" :title="__('article.discount_group.override.empty')" compact />
                         @endforelse
             </x-table>
-        </div>
+        </x-card>
     </div>
 </x-page-shell>
 @endsection

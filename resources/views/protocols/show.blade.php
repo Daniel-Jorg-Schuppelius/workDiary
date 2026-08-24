@@ -38,10 +38,6 @@
     @if (session('status'))
         <div class="alert alert-success text-sm">{{ session('status') }}</div>
     @endif
-    @if (session('error'))
-        <div class="alert alert-error text-sm">{{ session('error') }}</div>
-    @endif
-
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('Stammdaten')" icon="badge">
             <x-detail-grid>

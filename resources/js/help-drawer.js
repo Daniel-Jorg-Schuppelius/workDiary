@@ -12,6 +12,7 @@
 // NEUEN Seitenkontext, nie mit veraltetem Inhalt.
 
 import { html, setHtml, clearHtml, trustedServerHtml } from "./lib/html.js";
+import { getJson, postJson } from "./lib/http.js";
 
 const DRAWER_SELECTOR = "[data-help-drawer]";
 const BACKDROP_SELECTOR = "[data-help-backdrop]";
@@ -34,11 +35,6 @@ let newsRotationTimer = null;
 
 function isDesktop() {
     return window.matchMedia(DESKTOP_QUERY).matches;
-}
-
-function getCsrfToken() {
-    const meta = document.querySelector('meta[name="csrf-token"]');
-    return meta ? meta.getAttribute("content") || "" : "";
 }
 
 function getDrawerText(key, fallback) {
@@ -349,7 +345,7 @@ function renderFallback(message = null) {
         if (bodyEl && message) {
             clearHtml(bodyEl);
             const p = document.createElement("p");
-            p.className = "text-base-content/60";
+            p.className = "text-muted";
             p.textContent = message;
             bodyEl.appendChild(p);
         }
@@ -365,22 +361,15 @@ async function runFallbackSearch(form) {
 
     clearHtml(resultsEl);
     try {
-        const response = await fetch(
+        const { ok, data: payload } = await getJson(
             `/help/search?q=${encodeURIComponent(query)}`,
-            {
-                headers: { Accept: "application/json" },
-                credentials: "same-origin",
-            },
         );
-        const payload = await response.json();
         const items =
-            response.ok && payload && Array.isArray(payload.items)
-                ? payload.items
-                : [];
+            ok && payload && Array.isArray(payload.items) ? payload.items : [];
 
         if (items.length === 0) {
             const li = document.createElement("li");
-            li.className = "text-base-content/60";
+            li.className = "text-muted";
             li.textContent = template
                 ? template.getAttribute("data-empty-results") || ""
                 : "";
@@ -400,7 +389,7 @@ async function runFallbackSearch(form) {
         });
     } catch (error) {
         const li = document.createElement("li");
-        li.className = "text-base-content/60";
+        li.className = "text-muted";
         li.textContent = getDrawerText("data-text-error", "");
         resultsEl.appendChild(li);
     }
@@ -457,20 +446,15 @@ async function loadTopic(topic, options = {}) {
     const titleEl = document.querySelector("[data-help-title]");
     const bodyEl = document.querySelector("[data-help-body]");
     if (titleEl) titleEl.textContent = "…";
-    if (bodyEl) setHtml(bodyEl, html`<p class="text-base-content/60">…</p>`);
+    if (bodyEl) setHtml(bodyEl, html`<p class="text-muted">…</p>`);
 
     openDrawer(options);
 
     try {
-        const response = await fetch(
+        const { ok, data: payload } = await getJson(
             `/help/topics/${encodeURIComponent(topic)}`,
-            {
-                headers: { Accept: "application/json" },
-                credentials: "same-origin",
-            },
         );
-        const payload = await response.json();
-        if (response.ok && payload && payload.found) {
+        if (ok && payload && payload.found) {
             renderTopic(payload);
         } else {
             // 404 / unsichtbares Topic → definierter Fallback statt Spinner.
@@ -509,22 +493,9 @@ async function submitFeedback(helpful) {
     feedbackSent = true;
 
     try {
-        await fetch(
+        await postJson(
             `/help/topics/${encodeURIComponent(currentTopic)}/feedback`,
-            {
-                method: "POST",
-                headers: {
-                    Accept: "application/json",
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": getCsrfToken(),
-                    "X-Requested-With": "XMLHttpRequest",
-                },
-                credentials: "same-origin",
-                body: JSON.stringify({
-                    helpful: !!helpful,
-                    locale: currentLocale,
-                }),
-            },
+            { helpful: !!helpful, locale: currentLocale },
         );
         const thanksEl = document.querySelector("[data-help-feedback-thanks]");
         if (thanksEl) thanksEl.classList.remove("hidden");

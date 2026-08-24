@@ -61,7 +61,7 @@
 
         <div tabindex="0"
              class="dropdown-content z-60 mt-2 w-[min(18rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-2 shadow-lg">
-            <div class="mb-2 px-2 pt-1 text-[0.7rem] uppercase tracking-[0.2em] text-base-content/60">
+            <div class="mb-2 px-2 pt-1 text-[0.7rem] uppercase tracking-[0.2em] text-muted">
                 {{ __('Schnellauswahl') }}
             </div>
             <ul class="flex flex-col gap-0.5 p-0 m-0 list-none">
@@ -85,10 +85,10 @@
                 @endforeach
             </ul>
 
-            <div class="divider my-1.5 text-[0.7rem] uppercase tracking-[0.2em] text-base-content/50">
+            <div class="divider my-1.5 text-[0.7rem] uppercase tracking-[0.2em] text-muted">
                 {{ __('Eigener Zeitraum') }}
             </div>
-            <p class="px-3 pb-2 text-[0.7rem] text-base-content/60">
+            <p class="px-3 pb-2 text-[0.7rem] text-muted">
                 {{ __('Nutze die Von/Bis-Felder direkt im Header.') }}
             </p>
         </div>

@@ -30,4 +30,7 @@ return [
     'entry_bar' => [
         'options_failed' => 'Impossibile caricare le attività/gli ordini.',
     ],
+    'http' => [
+        'session_expired' => 'La sessione è scaduta — la pagina verrà ricaricata.',
+    ],
 ];

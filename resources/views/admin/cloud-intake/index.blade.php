@@ -35,13 +35,6 @@
         @endif
     </x-slot:actions>
 
-    @if (session('success'))
-        <div role="alert" class="alert alert-success"><span>{{ session('success') }}</span></div>
-    @endif
-    @if (session('error'))
-        <div role="alert" class="alert alert-warning"><span>{{ session('error') }}</span></div>
-    @endif
-
     @if ($connections->isEmpty())
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">cloud_download</span>'
                        :title="__('cloud_intake.title.empty')" />

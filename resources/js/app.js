@@ -20,6 +20,7 @@ import { registerServiceWorker, bindInstallPrompt } from "./pwa.js";
 import { initOfflineSync } from "./offline-sync.js";
 import { __ } from "./i18n.js";
 import { html, setHtml, safeUrl, trustedServerHtml } from "./lib/html.js";
+import { postJson, request } from "./lib/http.js";
 import { initCharts } from "./charts.js";
 import "./sortable-tables.js";
 import "./bulk-selection.js";
@@ -949,14 +950,10 @@ document.addEventListener("click", (event) => {
                 if (submitButton) submitButton.disabled = true;
 
                 try {
-                    const response = await fetch(action, {
+                    const response = await request(action, {
                         method,
                         body: formData,
-                        headers: {
-                            "X-Entry-Dialog": "1",
-                            "X-Requested-With": "XMLHttpRequest",
-                            Accept: "application/json",
-                        },
+                        headers: { "X-Entry-Dialog": "1" },
                     });
 
                     if (response.ok) {
@@ -1105,19 +1102,9 @@ document.addEventListener("click", (event) => {
             if (!retryBtn) return;
             retryBtn.addEventListener("click", async () => {
                 retryBtn.disabled = true;
-                const csrf =
-                    document
-                        .querySelector('meta[name="csrf-token"]')
-                        ?.getAttribute("content") ?? "";
                 try {
-                    const res = await fetch(`/mode/${mode}`, {
+                    const res = await request(`/mode/${mode}`, {
                         method: "POST",
-                        headers: {
-                            "X-CSRF-TOKEN": csrf,
-                            "X-Requested-With": "XMLHttpRequest",
-                            Accept: "application/json",
-                        },
-                        credentials: "same-origin",
                     });
                     if (!res.ok && res.status !== 302) {
                         retryBtn.disabled = false;
@@ -1133,10 +1120,9 @@ document.addEventListener("click", (event) => {
         };
 
         try {
-            const response = await fetch(url, {
-                headers: {
-                    "X-Requested-With": "XMLHttpRequest",
-                },
+            // Dialog-Fragmente kommen als HTML — Accept bewusst offen lassen.
+            const response = await request(url, {
+                headers: { Accept: "*/*" },
             });
             const markup = await response.text();
 
@@ -1249,30 +1235,16 @@ document.addEventListener("click", (event) => {
             .querySelector('meta[name="geocode-url"]')
             ?.getAttribute("content");
         if (!url) return;
-        const csrf =
-            document
-                .querySelector('meta[name="csrf-token"]')
-                ?.getAttribute("content") ?? "";
         const q = input.value.trim();
         if (q.length < 3) return;
         input.classList.add("opacity-70");
         try {
-            const res = await fetch(url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                    "X-CSRF-TOKEN": csrf,
-                    "X-Requested-With": "XMLHttpRequest",
-                },
-                credentials: "same-origin",
-                body: JSON.stringify({ query: q }),
-            });
-            if (!res.ok) {
+            const res = await postJson(url, { query: q });
+            if (!res.ok || !res.data) {
                 input.dataset.geocode = "miss";
                 return;
             }
-            const data = await res.json();
+            const data = res.data;
             input.dataset.geocode = "hit";
             input.dataset.lat = data.lat;
             input.dataset.lng = data.lng;

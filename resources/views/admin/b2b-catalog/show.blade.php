@@ -13,9 +13,6 @@
 @section('content')
 <x-page-shell>
     <div class="space-y-4">
-        @if (session('success'))
-            <div class="alert alert-success text-sm">{{ session('success') }}</div>
-        @endif
         <x-validation-errors first />
 
         {{-- Einmalige Klartext-Anzeige des Secrets (Muster SCIM-Token) --}}
@@ -38,7 +35,7 @@
             @endif
         </x-page-toolbar>
 
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <div class="mb-3 space-y-1 text-sm">
                 <div><span class="text-base-content/60">{{ __('b2b_catalog.field.customer') }}:</span> {{ $access->customer?->name }}</div>
                 <div><span class="text-base-content/60">{{ __('b2b_catalog.field.username') }}:</span> <code class="rounded bg-base-200 px-1.5 py-0.5 text-xs">{{ $access->username }}</code></div>
@@ -57,10 +54,10 @@
                 @endif
                 <a href="{{ route('b2b-catalog.index') }}" class="btn btn-sm btn-ghost">{{ __('b2b_catalog.action.back') }}</a>
             </div>
-        </div>
+        </x-card>
 
         {{-- Artikel-Freigaben --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('b2b_catalog.items_heading') }}</h2>
             <p class="mb-3 text-xs text-base-content/60">{{ __('b2b_catalog.items_hint') }}</p>
 
@@ -110,7 +107,7 @@
                                 </tr>
                             @endforeach
             </x-table>
-        </div>
+        </x-card>
     </div>
 </x-page-shell>
 @endsection

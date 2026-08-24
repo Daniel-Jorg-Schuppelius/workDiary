@@ -29,7 +29,7 @@
         @endif
 
         @if (session('error'))
-            <div class="alert alert-error mt-3 text-sm">{{ session('error') }}</div>
+            <div role="alert" class="alert alert-error mt-3 text-sm">{{ session('error') }}</div>
         @endif
 
         <form method="POST" action="{{ route('surveys.public-store', $token) }}" class="mt-4 space-y-5">

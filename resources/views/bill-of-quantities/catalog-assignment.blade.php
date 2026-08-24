@@ -62,8 +62,10 @@
             </div>
         @endif
 
+        {{-- flex-1: das Formular muss die Resthöhe füllen, sonst kollabiert
+             die scroll=flex-Tabelle darin auf ihre Mindesthöhe (I10). --}}
         <form method="POST" action="{{ route('bill-of-quantities.catalog-assignment.bulk', $bill) }}"
-              class="flex min-h-0 flex-col gap-2">
+              class="flex min-h-0 flex-1 flex-col gap-2">
             @csrf
 
             @if ($canManage)

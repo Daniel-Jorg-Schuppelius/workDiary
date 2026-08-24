@@ -13,12 +13,9 @@
 @section('content')
 <x-page-shell>
     <div class="space-y-4">
-        @if (session('success'))
-            <div class="alert alert-success text-sm">{{ session('success') }}</div>
-        @endif
         <x-validation-errors first />
 
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
                 <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ $menu->name }}</h1>
                 <a href="{{ route('recipe-menus.index') }}" class="btn btn-sm btn-ghost">{{ __('recipes.action.back') }}</a>
@@ -27,10 +24,10 @@
                 {{ $menu->event_date?->format('d.m.Y') ?? __('recipes.menu.no_date') }}
                 @if ($menu->guest_count) · {{ __('recipes.menu.field.guest_count') }}: {{ $menu->guest_count }} @endif
             </p>
-        </div>
+        </x-card>
 
         {{-- Gerichte --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('recipes.menu.dishes_heading') }}</h2>
 
             <form method="POST" action="{{ route('recipe-menus.items.store', $menu) }}" class="mb-3 flex flex-wrap items-end gap-2">
@@ -85,10 +82,10 @@
                                 </tr>
                             @endforeach
             </x-table>
-        </div>
+        </x-card>
 
         {{-- Allergene des Menüs --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('recipes.title.allergens') }}</h2>
             <div class="flex flex-wrap gap-1">
                 @forelse ($allergens['effective'] as $code)
@@ -100,10 +97,10 @@
             @if ($allergens['unresolved'] !== [])
                 <p class="mt-2 text-xs text-warning">{{ __('recipes.allergens.unresolved_heading') }}: {{ implode(', ', $allergens['unresolved']) }}</p>
             @endif
-        </div>
+        </x-card>
 
         {{-- Aggregierter Materialbedarf --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('recipes.menu.aggregate_heading') }}</h2>
                 <form method="GET" action="{{ route('recipe-menus.show', $menu) }}" class="flex items-center gap-2">
@@ -133,7 +130,7 @@
                     </tr>
                 @endforeach
             </x-table>
-        </div>
+        </x-card>
     </div>
 </x-page-shell>
 @endsection

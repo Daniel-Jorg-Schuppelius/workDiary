@@ -62,7 +62,7 @@
 
     {{-- Positionen (MVP-082/083/084) --}}
     <x-card padding="p-0" class="mt-4">
-        <x-table>
+        <x-table :bare="true">
             <x-slot:head>
                 <th>{{ __('gaeb.columns.reference_no') }}</th>
                 <th>{{ __('gaeb.columns.short_text') }}</th>
@@ -126,7 +126,7 @@
         <p class="text-sm opacity-60">{{ __('gaeb.workflow.no_remaining') }}</p>
     @else
         <x-card padding="p-0">
-            <x-table>
+            <x-table :bare="true">
                 <x-slot:head>
                     <th>{{ __('gaeb.columns.reference_no') }}</th>
                     <th>{{ __('gaeb.columns.short_text') }}</th>
@@ -151,7 +151,7 @@
         <p class="text-sm opacity-60">{{ __('gaeb.show.no_imports') }}</p>
     @else
         <x-card padding="p-0">
-            <x-table>
+            <x-table :bare="true">
                 <x-slot:head>
                     <th>{{ __('gaeb.show.imported_at') }}</th>
                     <th>{{ __('gaeb.columns.phase') }}</th>

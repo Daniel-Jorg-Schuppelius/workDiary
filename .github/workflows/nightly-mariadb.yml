@@ -1,0 +1,118 @@
+# Created on   : Mon Aug 24 2026
+# Author       : Daniel Jörg Schuppelius
+# License      : AGPL-3.0-or-later
+#
+# Nightly-MariaDB-Lauf (Vollscan 2026-08-23, D8): Die reguläre CI testet auf
+# SQLite (bewusst, testing-mariadb-lokal.md) — Strict-Mode-, Collation- und
+# DDL-Unterschiede fallen dort nicht auf. Dieser Lauf prüft nächtlich die
+# risikobasierte Teilmenge (Finance/Accounting, Audit-Ketten, Architektur-
+# Gates) gegen mariadb:11; mit FINANCIAL_FORMATS_TOKEN inklusive der sonst
+# geskippten financial-formats-Tests.
+name: Nightly (MariaDB)
+
+on:
+  schedule:
+    - cron: "30 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mariadb:
+    name: Finance/Audit/Gates auf MariaDB 11
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      FINANCIAL_FORMATS_TOKEN: ${{ secrets.FINANCIAL_FORMATS_TOKEN }}
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: "3306"
+      DB_DATABASE: workdiary_testing
+      DB_USERNAME: root
+      DB_PASSWORD: root
+
+    services:
+      mariadb:
+        image: mariadb:11
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: workdiary_testing
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@2.37.2
+        with:
+          php-version: "8.4"
+          extensions: bcmath, curl, dom, fileinfo, gd, intl, mbstring, mysqli, openssl, pcntl, pdo_mysql, pdo_sqlite, sodium, sqlite3, tokenizer, xml, xmlwriter, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache Composer packages
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/composer/files
+          key: composer-${{ runner.os }}-php-8.4-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            composer-${{ runner.os }}-php-8.4-
+
+      - name: Install dependencies (incl. php-financial-formats, wenn Token vorhanden)
+        env:
+          COMPOSER_AUTH: '{"github-oauth":{"github.com":"${{ secrets.FINANCIAL_FORMATS_TOKEN }}"}}'
+        run: |
+          if [ -n "$FINANCIAL_FORMATS_TOKEN" ]; then
+            cat > composer.local.json <<'JSON'
+          {
+              "repositories": {
+                  "php-financial-formats": {
+                      "type": "vcs",
+                      "url": "https://github.com/Daniel-Jorg-Schuppelius/php-financial-formats.git",
+                      "canonical": false
+                  }
+              },
+              "require": {
+                  "daniel-jorg-schuppelius/php-financial-formats": "^1.4"
+              }
+          }
+          JSON
+          fi
+          composer install --no-interaction --no-progress --prefer-dist
+          if [ -n "$FINANCIAL_FORMATS_TOKEN" ]; then
+            composer update daniel-jorg-schuppelius/php-financial-formats --no-interaction --no-progress --prefer-dist
+          fi
+
+      - name: Install system dependencies (PDF + common toolkit)
+        env:
+          CONFIG_DIR: ${{ github.workspace }}/vendor/daniel-jorg-schuppelius/php-pdf-toolkit/config
+        run: bash .tools/install-dependencies/install-dependencies.sh --all
+
+      - name: Prepare test environment
+        run: |
+          cp .env.testing .env
+          php artisan config:clear --ansi
+
+      # Sequenziell (eine Service-DB); die Teilmenge ist auf Nightly-Laufzeit
+      # zugeschnitten. --recreate über RefreshDatabase + mysql-schema.sql-Dump.
+      - name: Run risk-based subset on MariaDB
+        run: |
+          XDEBUG_MODE=off php artisan test \
+            tests/Unit/Architecture \
+            tests/Feature/Finance \
+            tests/Feature/AuditChainRepairMigrationTest.php \
+            --log-junit "${{ runner.temp }}/junit-nightly.xml"
+
+      - name: Fail on unexpected skips (nur mit financial-formats)
+        if: env.FINANCIAL_FORMATS_TOKEN != ''
+        run: php scripts/check-junit-skips.php "${{ runner.temp }}/junit-nightly.xml" --max=3

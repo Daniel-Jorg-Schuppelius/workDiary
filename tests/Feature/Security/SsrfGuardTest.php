@@ -12,9 +12,9 @@ namespace Tests\Feature\Security;
 
 use App\Models\{CalDavConnection, WebdavConnection, ZammadConnection};
 use App\Plugins\CalDav\Services\HttpCalDavGateway;
+use App\Plugins\Support\PluginApiClient;
 use App\Plugins\Webdav\Services\HttpWebdavGateway;
 use App\Plugins\Zammad\Services\ZammadClientGateway;
-use GuzzleHttp\Client as GuzzleClient;
 use RuntimeException;
 use Tests\TestCase;
 
@@ -30,7 +30,7 @@ final class SsrfGuardTest extends TestCase {
         $connection->base_url = 'http://127.0.0.1/remote.php/dav';
 
         $this->expectException(RuntimeException::class);
-        new HttpWebdavGateway(new GuzzleClient(), $connection);
+        new HttpWebdavGateway(new PluginApiClient('webdav', (string) $connection->base_url), $connection);
     }
 
     public function test_caldav_gateway_rejects_private_base_url(): void {
@@ -38,7 +38,7 @@ final class SsrfGuardTest extends TestCase {
         $connection->base_url = 'http://10.0.0.5/remote.php/dav';
 
         $this->expectException(RuntimeException::class);
-        new HttpCalDavGateway(new GuzzleClient(), $connection);
+        new HttpCalDavGateway(new PluginApiClient('caldav', (string) $connection->base_url), $connection);
     }
 
     public function test_zammad_gateway_rejects_metadata_base_url(): void {

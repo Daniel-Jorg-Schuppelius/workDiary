@@ -44,6 +44,7 @@ Route::get('/', HomeController::class)->name('home');
 // die Settings-Registry (legal.imprint / legal.privacy).
 Route::get('/impressum', [\App\Http\Controllers\LegalPageController::class, 'imprint'])->name('legal.imprint');
 Route::get('/datenschutz', [\App\Http\Controllers\LegalPageController::class, 'privacy'])->name('legal.privacy');
+Route::get('/barrierefreiheit', [\App\Http\Controllers\LegalPageController::class, 'accessibility'])->name('legal.accessibility');
 
 // CVD-Meldekanal nach RFC 9116 (öffentlich, CRA-Welle 1): 404 solange
 // SECURITY_TXT_CONTACT nicht gesetzt ist. Top-Level-Pfad ist der vom RFC
@@ -486,6 +487,7 @@ Route::middleware('auth')->group(function () {
             // Mehrjähriges Auditprogramm (Nachtrag 044d)
             Route::get('auditprogramme', [\App\Http\Controllers\Isms\AuditProgramController::class, 'index'])->name('audit-programs.index');
             Route::post('auditprogramme', [\App\Http\Controllers\Isms\AuditProgramController::class, 'store'])->name('audit-programs.store');
+            Route::get('auditprogramme/anlegen', [\App\Http\Controllers\Isms\AuditProgramController::class, 'create'])->name('audit-programs.create');
             Route::put('auditprogramme/{program}', [\App\Http\Controllers\Isms\AuditProgramController::class, 'update'])->name('audit-programs.update');
             Route::delete('auditprogramme/{program}', [\App\Http\Controllers\Isms\AuditProgramController::class, 'destroy'])->name('audit-programs.destroy');
 
@@ -1528,6 +1530,8 @@ Route::middleware('auth')->group(function () {
         // ── Hardware-Stempelterminals (Admin, Feature 061) ──────────────────────
         Route::get('admin/terminals', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'index'])->name('admin.terminals.index');
         Route::post('admin/terminals', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'storeTerminal'])->name('admin.terminals.store');
+        Route::get('admin/terminals/create', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'createTerminal'])->name('admin.terminals.create');
+        Route::get('admin/terminals/badges/create', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'createBadge'])->name('admin.terminals.badges.create');
         Route::post('admin/terminals/disconnect', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'disconnectTerminal'])->name('admin.terminals.disconnect');
         Route::post('admin/terminals/rotate', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'rotateTerminal'])->name('admin.terminals.rotate');
         Route::post('admin/terminals/toggle-status', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'toggleStatus'])->name('admin.terminals.toggle-status');
@@ -2694,6 +2698,8 @@ Route::middleware('auth')->group(function () {
         // ── Menü-/Buffetplanung (MVP-455, Partyservice, module.lager) ──
         Route::get('recipe-menus', [\App\Http\Controllers\Recipes\RecipeMenuController::class, 'index'])->name('recipe-menus.index');
         Route::post('recipe-menus', [\App\Http\Controllers\Recipes\RecipeMenuController::class, 'store'])->name('recipe-menus.store');
+        // Vor der Show-Route, damit 'create' nicht als {menu} bindet.
+        Route::get('recipe-menus/create', [\App\Http\Controllers\Recipes\RecipeMenuController::class, 'create'])->name('recipe-menus.create');
         Route::get('recipe-menus/{menu}', [\App\Http\Controllers\Recipes\RecipeMenuController::class, 'show'])->name('recipe-menus.show');
         Route::post('recipe-menus/{menu}/items', [\App\Http\Controllers\Recipes\RecipeMenuController::class, 'storeItem'])->name('recipe-menus.items.store');
         Route::delete('recipe-menus/{menu}/items/{item}', [\App\Http\Controllers\Recipes\RecipeMenuController::class, 'destroyItem'])->name('recipe-menus.items.destroy');
@@ -3544,6 +3550,9 @@ Route::middleware('auth')->group(function () {
             ->name('admin.automations.index');
         Route::post('admin/automations', [AutomationRuleController::class, 'store'])
             ->name('admin.automations.store');
+        // Vor der Show-Route, damit 'create' nicht als {automationRule} bindet.
+        Route::get('admin/automations/create', [AutomationRuleController::class, 'create'])
+            ->name('admin.automations.create');
         Route::get('admin/automations/{automationRule}', [AutomationRuleController::class, 'show'])
             ->name('admin.automations.show');
         Route::post('admin/automations/{automationRule}/toggle', [AutomationRuleController::class, 'toggle'])

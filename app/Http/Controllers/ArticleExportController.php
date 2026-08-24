@@ -15,12 +15,12 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Models\Article;
 use App\Services\Procurement\DatanormExportService;
+use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use ERechnungToolkit\Enums\{DatanormPriceIndicator, DatanormVersion};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use ZipArchive;
 
 /**
  * DATANORM-Export des Artikelstamms (Feature 107, W5): liefert ein ZIP mit
@@ -94,12 +94,9 @@ class ArticleExportController extends Controller {
         if ($path === false) {
             throw new RuntimeException('Failed to create temporary export file.');
         }
-        $zip = new ZipArchive;
-        $zip->open($path, ZipArchive::OVERWRITE);
-        foreach ($files as $name => $bytes) {
-            $zip->addFromString($name, $bytes);
-        }
-        $zip->close();
+        // C6 (Vollscan 2026-08-23): ZIP-Bau übers Common-Toolkit inkl.
+        // Eintragspfad-Guard; die Tempdatei bleibt nur fürs Download-Handling.
+        file_put_contents($path, ZipFile::createFromStrings($files));
 
         return response()->download($path, $downloadName, [
             'Content-Type' => 'application/zip',

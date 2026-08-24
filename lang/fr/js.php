@@ -30,4 +30,7 @@ return [
     'entry_bar' => [
         'options_failed' => 'Les tâches/commandes n\'ont pas pu être chargées.',
     ],
+    'http' => [
+        'session_expired' => 'Votre session a expiré — la page va être rechargée.',
+    ],
 ];

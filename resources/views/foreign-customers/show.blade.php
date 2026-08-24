@@ -51,7 +51,7 @@
             </x-slot:actions>
         </x-page-toolbar>
 
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <div class="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
                 @if ($foreignCustomer->company)<div><span class="text-base-content/50">{{ __('Firma') }}:</span> {{ $foreignCustomer->company }}</div>@endif
                 @if ($foreignCustomer->contact_name)<div><span class="text-base-content/50">{{ __('Ansprechpartner') }}:</span> {{ $foreignCustomer->contact_name }}</div>@endif
@@ -60,7 +60,7 @@
                 @if ($foreignCustomer->address)<div class="sm:col-span-2"><span class="text-base-content/50">{{ __('Adresse') }}:</span> {{ $foreignCustomer->address }}</div>@endif
                 @if ($foreignCustomer->comment)<div class="sm:col-span-2"><span class="text-base-content/50">{{ __('Notiz') }}:</span> {{ $foreignCustomer->comment }}</div>@endif
             </div>
-        </div>
+        </x-card>
 
         {{-- Projekte — gleiche Darstellung wie auf der Kunden-Detailseite --}}
         <x-card :title="__('Projekte')" icon="folder" :count="$projects->count()">

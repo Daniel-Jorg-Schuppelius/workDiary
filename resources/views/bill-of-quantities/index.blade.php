@@ -9,9 +9,11 @@
 @extends('layouts.app')
 @section('title', __('gaeb.title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('gaeb.title'))
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-index-page :subtitle="__('gaeb.subtitle')">
+<x-index-page overflow="clip" :subtitle="__('gaeb.subtitle')">
     <x-slot:actions>
         <x-icon-btn icon="upload" tone="primary" size="sm" data-entry-modal-trigger
                     :href="route('bill-of-quantities.import-form')" show-label>{{ __('gaeb.import_button') }}</x-icon-btn>
@@ -33,26 +35,26 @@
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">request_quote</span>'
                        :title="__('gaeb.empty')" />
     @else
-        <x-card padding="p-0">
-            <x-table>
-                <x-slot:head>
+        <x-table scroll="flex" :pinRows="true">
+            <x-slot:head>
+                <tr>
                     <th>{{ __('gaeb.columns.name') }}</th>
                     <th>{{ __('gaeb.columns.project') }}</th>
                     <th>{{ __('gaeb.columns.phase') }}</th>
                     <th>{{ __('gaeb.columns.version') }}</th>
                     <th class="text-right">{{ __('gaeb.columns.items') }}</th>
-                </x-slot:head>
-                @foreach ($bills as $bill)
-                    <tr>
-                        <td><a href="{{ route('bill-of-quantities.show', $bill) }}" class="link link-hover font-medium">{{ $bill->name }}</a></td>
-                        <td>{{ $bill->project?->name ?: '—' }}</td>
-                        <td>{{ $bill->phase?->label() ?: '—' }}</td>
-                        <td class="text-sm opacity-70">{{ $bill->gaeb_version ?: '—' }}</td>
-                        <td class="text-right tabular-nums">{{ $bill->items_count }}</td>
-                    </tr>
-                @endforeach
-            </x-table>
-        </x-card>
+                </tr>
+            </x-slot:head>
+            @foreach ($bills as $bill)
+                <tr class="hover">
+                    <td><a href="{{ route('bill-of-quantities.show', $bill) }}" class="link link-hover font-medium">{{ $bill->name }}</a></td>
+                    <td>{{ $bill->project?->name ?: '—' }}</td>
+                    <td>{{ $bill->phase?->label() ?: '—' }}</td>
+                    <td class="text-sm opacity-70">{{ $bill->gaeb_version ?: '—' }}</td>
+                    <td class="text-right tabular-nums">{{ $bill->items_count }}</td>
+                </tr>
+            @endforeach
+        </x-table>
 
         <x-pagination :paginator="$bills" standing />
     @endif

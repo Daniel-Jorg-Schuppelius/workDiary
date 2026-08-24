@@ -16,7 +16,7 @@
     $serviceTickets = $diary->serviceTickets;
 @endphp
 @if ($serviceTickets->isNotEmpty())
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card>
         <h3 class="mb-2 font-['Space_Grotesk'] text-sm font-semibold">{{ __('sla.diary_panel_heading') }}</h3>
         <x-table>
             <x-slot:head>
@@ -39,5 +39,5 @@
                         </tr>
                     @endforeach
         </x-table>
-    </div>
+    </x-card>
 @endif

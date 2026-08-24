@@ -6,6 +6,7 @@
  * Standard-Build, daher migrierbar OHNE Build-Wechsel.
  */
 import { clearHtml, setHtml, trustedServerHtml } from "../lib/html.js";
+import { patchJson, postJson, request } from "../lib/http.js";
 
 export function registerAlpineComponents(Alpine) {
     // Zwei-Faktor-Login: Umschalten zwischen TOTP-Code und Recovery-Code.
@@ -519,7 +520,6 @@ export function registerAlpineComponents(Alpine) {
         url: "",
         editable: false,
         color: "",
-        csrf: "",
         _d: null,
         init() {
             const d = this.$el.dataset;
@@ -530,7 +530,6 @@ export function registerAlpineComponents(Alpine) {
             this.url = d.url || "";
             this.editable = d.editable === "1";
             this.color = d.color || "";
-            this.csrf = d.csrf || "";
         },
         get offsetPct() {
             return Math.max(0, (this.offset / this.total) * 100);
@@ -629,20 +628,12 @@ export function registerAlpineComponents(Alpine) {
             }
         },
         persist() {
-            fetch(this.url, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                    "X-CSRF-TOKEN": this.csrf,
-                },
-                body: JSON.stringify({
-                    start_date: this.addDays(this.fromIso, this.offset),
-                    due_date: this.addDays(
-                        this.fromIso,
-                        this.offset + this.duration,
-                    ),
-                }),
+            patchJson(this.url, {
+                start_date: this.addDays(this.fromIso, this.offset),
+                due_date: this.addDays(
+                    this.fromIso,
+                    this.offset + this.duration,
+                ),
             }).catch(() => {});
         },
         addDays(iso, days) {
@@ -1454,7 +1445,9 @@ export function registerAlpineComponents(Alpine) {
     }));
 
     // Plugin-Verbindungstest (Health-Check) im Admin-Dialog.
-    Alpine.data("pluginHealthCheck", (url, csrf, failMsg) => ({
+    // _csrf bleibt in der Signatur (Blade übergibt positional), Token kommt
+    // inzwischen zentral aus lib/http.js.
+    Alpine.data("pluginHealthCheck", (url, _csrf, failMsg) => ({
         testing: false,
         result: null,
         get idle() {
@@ -1472,13 +1465,12 @@ export function registerAlpineComponents(Alpine) {
         run() {
             this.testing = true;
             this.result = null;
-            fetch(url, {
-                method: "POST",
-                headers: { "X-CSRF-TOKEN": csrf, Accept: "application/json" },
-            })
-                .then((r) => r.json())
-                .then((d) => {
-                    this.result = d;
+            postJson(url)
+                .then((res) => {
+                    this.result = res.data ?? {
+                        status: "failing",
+                        message: failMsg,
+                    };
                 })
                 .catch(() => {
                     this.result = { status: "failing", message: failMsg };
@@ -1606,15 +1598,12 @@ export function registerAlpineComponents(Alpine) {
                 return;
             }
             try {
-                const res = await fetch(box.dataset.url || "", {
+                // URLSearchParams-Body → fetch setzt den urlencoded
+                // Content-Type selbst; Accept bleibt HTML (Fragment).
+                const res = await request(box.dataset.url || "", {
                     method: "POST",
-                    headers: {
-                        "X-CSRF-TOKEN": box.dataset.csrf || "",
-                        "X-Requested-With": "XMLHttpRequest",
-                        "Content-Type": "application/x-www-form-urlencoded",
-                        Accept: "text/html",
-                    },
-                    body: params.toString(),
+                    headers: { Accept: "text/html" },
+                    body: params,
                 });
                 if (!res.ok) {
                     clearHtml(box);

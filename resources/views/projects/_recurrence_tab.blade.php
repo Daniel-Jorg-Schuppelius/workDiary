@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Tab: Wiederkehr — erwartet: $project, $recurrenceRules --}}
-<div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
+<x-card padding="p-0">
     <header class="flex items-center justify-between border-b border-base-300 px-4 py-3">
         <div>
             <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Wiederkehr-Regeln') }}</span>
@@ -80,4 +80,4 @@
             @endforeach
         </ul>
     @endif
-</div>
+</x-card>

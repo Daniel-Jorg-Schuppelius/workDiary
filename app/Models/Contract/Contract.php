@@ -17,6 +17,7 @@ use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSq
 use App\Models\{Customer, Document, Supplier, User};
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Database\Eloquent\{Builder, Model};
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
 /**
@@ -47,6 +48,8 @@ class Contract extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
+    /** @use HasFactory<\Database\Factories\Contract\ContractFactory> */
+    use HasFactory;
     use HasSqid;
 
     protected $fillable = [

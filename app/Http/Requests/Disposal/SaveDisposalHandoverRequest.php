@@ -14,6 +14,7 @@ namespace App\Http\Requests\Disposal;
 
 use App\Enums\Disposal\DisposalProofType;
 use App\Http\Requests\BaseFormRequest;
+use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;
 
@@ -23,6 +24,12 @@ use Illuminate\Validation\Rule;
  * (Upload) und EfbV-Zertifikat-Referenz.
  */
 class SaveDisposalHandoverRequest extends BaseFormRequest {
+    use DecodesSqidInputs;
+
+    /** @var array<string, class-string> */
+    protected array $sqidFields = [
+        'external_contact_id' => \App\Models\ExternalContact::class,
+    ];
     /** @return array<string, mixed> */
     public function rules(): array {
         return [

@@ -20,6 +20,7 @@
  */
 
 import { __ } from "./i18n.js";
+import { submitForm } from "./lib/http.js";
 
 // from-Status → to-Status → Aktion (Status-Codes aus App\Enums\Diary\Status).
 // dialog: Dialog-ID für Pflichtangaben; fields: feste Zusatzfelder;
@@ -57,27 +58,7 @@ function notify(tone, message) {
 // Klassischer Form-POST statt fetch: die Lifecycle-Antwort ist ein Redirect
 // mit Flash-Meldung, die Seite lädt danach ohnehin neu.
 function submitLifecycle(url, fields) {
-    const csrf =
-        document
-            .querySelector('meta[name="csrf-token"]')
-            ?.getAttribute("content") ?? "";
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = url;
-    form.hidden = true;
-
-    const add = (name, value) => {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = name;
-        input.value = value;
-        form.appendChild(input);
-    };
-    add("_token", csrf);
-    Object.entries(fields || {}).forEach(([name, value]) => add(name, value));
-
-    document.body.appendChild(form);
-    form.submit();
+    submitForm(url, fields || {});
 }
 
 function openActionDialog(dialogId, url) {
